@@ -1,0 +1,14 @@
+{
+  "extends": "airbnb",
+  "env": {
+    "node": true,
+    "browser": true,
+  },
+  "rules": {
+    "no-alert": 0,
+    "no-console": 0
+  },
+  "plugins": [
+    "react"
+  ]
+}

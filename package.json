@@ -1,0 +1,41 @@
+{
+  "name": "lossless-cut",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron src",
+    "build": "rm -rf dist && ./node_modules/.bin/babel src -d dist --copy-files && ln -s ../node_modules dist/ && ln -s ../package.json ./dist/",
+    "package": "electron-packager dist LosslessCut --out=package --overwrite --platform darwin,linux --version 1.3.8"
+  },
+  "author": {
+    "name": "Mikael Finstad",
+    "email": "finstaden@gmail.com",
+    "url": "mifi.no"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-preset-es2015": "^6.18.0",
+    "electron-packager": "^8.1.0",
+    "electron-prebuilt-compile": "^1.4.4",
+    "eslint": "^3.8.0",
+    "eslint-config-airbnb": "^12.0.0",
+    "eslint-plugin-jsx-a11y": "^2.2.3",
+    "eslint-plugin-react": "^6.4.1"
+  },
+  "dependencies": {
+    "bluebird": "^3.4.6",
+    "capture-frame": "^1.0.0",
+    "classnames": "^2.2.5",
+    "configstore": "^2.1.0",
+    "electron-default-menu": "^1.0.0",
+    "execa": "^0.5.0",
+    "jquery": "^3.1.1",
+    "keyboardjs": "^2.3.3",
+    "lodash": "^4.16.4",
+    "react": "^15.3.2",
+    "react-dom": "^15.3.2",
+    "which": "^1.2.11"
+  }
+}

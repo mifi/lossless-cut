@@ -1,0 +1,106 @@
+html {
+  font-family: sans-serif;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  color: white;
+  background: black;
+}
+
+:not(input):not(textarea),
+:not(input):not(textarea)::after,
+:not(input):not(textarea)::before {
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+input, button, textarea, :focus {
+    outline: none; // You should add some other style for :focus to help UX/a11y
+}
+
+#player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 6rem;
+}
+
+#player video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+#play, #set-start, #set-end, #seek-start, #seek-end, #cut {
+  padding: .4em;
+}
+
+.controls-wrapper {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6rem;
+  background: #6b6b6b;
+  text-align: center;
+}
+
+#current-time-display {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.3);
+  padding: .5em;
+}
+
+.timeline-wrapper {
+  width: 100%;
+  position: relative;
+  background-color: #444;
+}
+
+.timeline-wrapper .current-time, .timeline-wrapper .cursor-time, .timeline-wrapper .cut-start-time, .timeline-wrapper .cut-end-time {
+  position: absolute;
+  bottom: 0;
+  top: 0;
+  width: 1px;
+}
+
+.timeline-wrapper .current-time {
+  background-color: red;
+}
+.timeline-wrapper .cursor-time {
+  background-color: black;
+}
+.timeline-wrapper .cut-start-time {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-left: 1px solid black;
+  border-right: 1px solid black;
+  z-index: 1;
+}
+.timeline-wrapper .cut-end-time {
+  background-color: green;
+  z-index: 2;
+}
+
+#working {
+  color: white;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+}
+
+#working i {
+  padding: .3em;
+}
+
+#drag-drop-field {
+  padding: 5rem;
+  border: 1rem dashed #252525;
+  color: #252525;
+  margin: 3rem;
+  font-size: 3em;
+  text-align: center;
+}
