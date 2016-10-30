@@ -1,5 +1,5 @@
 # LosslessCut
-GUI tool for lossless trimming / cutting of videos using ffmpeg. Great for rough processing of large video files taken from a video camera, drone, etc. Lets you quickly get rid of the useless parts. It doesn't do any decoding / encoding and is therefore very fast and has no quality loss. Also allows for taking JPEG snapshots of the video at the selected time.
+Cross platform GUI tool for lossless trimming / cutting of videos using ffmpeg and electron. Great for rough processing of large video files taken from a video camera, drone, etc. Lets you quickly get rid of the useless parts. It doesn't do any decoding / encoding and is therefore very fast and has no quality loss. Also allows for taking JPEG snapshots of the video at the selected time.
 
 ## Download
 
