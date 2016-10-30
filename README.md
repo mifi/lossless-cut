@@ -28,6 +28,7 @@ Drag drop a video file into player to load or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>
 
 ## Development building / running
 
+Make sure you have at least node v4 with npm 3.
 ```
 git clone https://github.com/mifi/lossless-cut.git
 cd lossless-cut
