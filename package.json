@@ -6,7 +6,8 @@
   "scripts": {
     "start": "electron src",
     "build": "rm -rf dist && babel src -d dist --copy-files && ln -s ../node_modules dist/ && ln -s ../package.json ./dist/",
-    "package": "electron-packager dist LosslessCut --out=package --asar --overwrite --all --version 1.3.8"
+    "package": "electron-packager dist LosslessCut --out=package --asar --overwrite --all --version 1.3.8",
+    "lint": "eslint ."
   },
   "author": {
     "name": "Mikael Finstad",
@@ -21,6 +22,7 @@
     "electron-prebuilt-compile": "^1.4.4",
     "eslint": "^3.8.0",
     "eslint-config-airbnb": "^12.0.0",
+    "eslint-plugin-import": "^1.16.0",
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.4.1"
   },
