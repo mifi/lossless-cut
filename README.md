@@ -29,6 +29,9 @@ The original video files will not be modified. Instead it creates a lossless exp
 - <kbd>→</kbd> Seek forward 1 sec
 - <kbd>.</kbd> (period) Tiny seek forward
 - <kbd>,</kbd> (comma) Tiny seek backward
+- <kbd>i</kbd> Mark in / cut start point
+- <kbd>o</kbd> Mark out / cut end point
+- <kbd>e</kbd> Export selection (in the same dir as the video)
 - <kbd>c</kbd> Capture snapshot (in the same dir as the video)
 
 ## Development building / running
@@ -51,16 +54,23 @@ npm run build
 npm run package
 ```
 
-## TODO
-- more hotkeys
-- ffprobe show keyframes?
-- ffprobe format
+## TODO / ideas
 - About menu
+- icon
+- Visual feedback on button presses
+- ffprobe show keyframes
+- ffprobe format
 - improve ffmpeg error handling
-- timeline scrub support
+- Slow scrub with modifier key
+- show frame number
+- Bundle ffmpeg
+- support for loading other formats by streaming through ffmpeg?
+- cutting out the commercials in a video file while saving the rest to a single file?
 
 ## Links
 - http://apple.stackexchange.com/questions/117306/what-options-are-available-to-losslessly-trim-mp4-m4v-video-on-10-8-or-above
-- https://www.google.no/webhp?sourceid=chrome-instant&ion=1&espv=2&ie=UTF-8#q=lossless%20cut%20video
+- http://superuser.com/questions/554620/how-to-get-time-stamp-of-closest-keyframe-before-a-given-timestamp-with-ffmpeg/554679#554679
+- http://www.fame-ring.com/smart_cutter.html
+- http://electron.atom.io/apps/
 - https://github.com/electron/electron/blob/master/docs/api/file-object.md
 - https://github.com/electron/electron/issues/2538

@@ -5,6 +5,7 @@ const ffmpeg = require('./ffmpeg');
 const _ = require('lodash');
 const captureFrame = require('capture-frame');
 const fs = require('fs');
+const Hammer = require('react-hammerjs');
 
 const React = require('react');
 const ReactDOM = require('react-dom');
@@ -91,18 +92,51 @@ class App extends React.Component {
     keyboardJs.bind('right', () => seekRel(1));
     keyboardJs.bind('period', () => shortStep(1));
     keyboardJs.bind('comma', () => shortStep(-1));
-    keyboardJs.bind('c', this.capture);
+    keyboardJs.bind('c', () => this.capture());
+    keyboardJs.bind('e', () => this.cutClick());
+    keyboardJs.bind('i', () => this.setCutStart());
+    keyboardJs.bind('o', () => this.setCutEnd());
   }
 
-  mouseDown(e) {
-    const $target = $('.timeline-wrapper'); // $(e.target);
+  setCutStart() {
+    this.setState({ cutStartTime: this.state.currentTime });
+  }
+
+  setCutEnd() {
+    this.setState({ cutEndTime: this.state.currentTime });
+  }
+
+  jumpCutStart() {
+    seekAbs(this.state.cutStartTime);
+  }
+
+  jumpCutEnd() {
+    seekAbs(this.state.cutEndTime);
+  }
+
+  handlePan(e) {
+    _.throttle(e2 => this.handleTap(e2), 200)(e);
+  }
+
+  handleTap(e) {
+    const $target = $('.timeline-wrapper');
     const parentOffset = $target.offset();
-    const relX = e.pageX - parentOffset.left;
+    const relX = e.srcEvent.pageX - parentOffset.left;
     setCursor((relX / $target[0].offsetWidth) * this.state.duration);
   }
 
   playCommand() {
-    getVideo()[this.state.playing ? 'pause' : 'play']();
+    const video = getVideo();
+    if (this.state.playing) {
+      return video.pause();
+    }
+
+    return video.play().catch((err) => {
+      console.log(err);
+      if (err.name === 'NotSupportedError') {
+        alert('This video format is not supported, maybe you can re-format the file first using ffmpeg');
+      }
+    });
   }
 
   cutClick() {
@@ -125,6 +159,7 @@ class App extends React.Component {
   }
 
   capture() {
+    if (!this.state.filePath) return;
     const buf = captureFrame(getVideo(), 'jpg');
     const outPath = `${this.state.filePath}-${formatDuration(this.state.currentTime)}.jpg`;
     fs.writeFile(outPath, buf, (err) => {
@@ -149,70 +184,89 @@ class App extends React.Component {
       </div>
 
       <div className="controls-wrapper">
-        <div className="timeline-wrapper" onMouseDown={e => this.mouseDown(e)}>
-          <div className="current-time" style={{ left: `${(this.state.currentTime / this.state.duration) * 100}%` }} />
-          <div
-            className="cut-start-time"
-            style={{
-              left: `${(this.state.cutStartTime / this.state.duration) * 100}%`,
-              width: `${((this.state.cutEndTime - this.state.cutStartTime) / this.state.duration) * 100}%`,
-            }}
+        <Hammer
+          onTap={e => this.handleTap(e)}
+          onPan={e => this.handlePan(e)}
+          options={{
+            recognizers: {
+            },
+          }}
+        >
+          <div className="timeline-wrapper">
+            <div className="current-time" style={{ left: `${(this.state.currentTime / this.state.duration) * 100}%` }} />
+            <div
+              className="cut-start-time"
+              style={{
+                left: `${(this.state.cutStartTime / this.state.duration) * 100}%`,
+                width: `${((this.state.cutEndTime - this.state.cutStartTime) / this.state.duration) * 100}%`,
+              }}
+            />
+
+            <div id="current-time-display">{formatDuration(this.state.currentTime)}</div>
+          </div>
+        </Hammer>
+
+        <div>
+          <i
+            className="button fa fa-step-backward"
+            aria-hidden="true"
+            onClick={() => seekAbs(0)}
           />
-
-          <div id="current-time-display">{formatDuration(this.state.currentTime)}</div>
+          <i
+            className="button fa fa-caret-left"
+            aria-hidden="true"
+            onClick={() => shortStep(-1)}
+          />
+          <i
+            className={classnames({ button: true, fa: true, 'fa-pause': this.state.playing, 'fa-play': !this.state.playing })}
+            aria-hidden="true"
+            onClick={() => this.playCommand()}
+          />
+          <i
+            className="button fa fa-caret-right"
+            aria-hidden="true"
+            onClick={() => shortStep(1)}
+          />
+          <i
+            className="button fa fa-step-forward"
+            aria-hidden="true"
+            onClick={() => seekAbs(this.state.duration)}
+          />
         </div>
+        <div>
+          <button
+            className="jump-cut-start" title="Cut start time"
+            onClick={() => this.jumpCutStart()}
+          >{formatDuration(this.state.cutStartTime || 0)}</button>
+          <i
+            title="Set cut start"
+            className="button fa fa-angle-left"
+            aria-hidden="true"
+            onClick={() => this.setCutStart()}
+          />
+          <i
+            title="Export selection"
+            className="button fa fa-scissors"
+            aria-hidden="true"
+            onClick={() => this.cutClick()}
+          />
+          <i
+            title="Set cut end"
+            className="button fa fa-angle-right"
+            aria-hidden="true"
+            onClick={() => this.setCutEnd()}
+          />
+          <button
+            className="jump-cut-end" title="Cut end time"
+            onClick={() => this.jumpCutEnd()}
+          >{formatDuration(this.state.cutEndTime || 0)}</button>
+        </div>
+      </div>
 
+      <div className="right-menu">
         <i
-          id="seek-start"
-          className="fa fa-step-backward"
-          aria-hidden="true"
-          onClick={() => seekAbs(0)}
-        />
-        <i
-          id="play"
-          className={classnames({ fa: true, 'fa-pause': this.state.playing, 'fa-play': !this.state.playing })}
-          aria-hidden="true"
-          onClick={() => this.playCommand()}
-        />
-        <i
-          id="seek-end"
-          className="fa fa-step-forward"
-          aria-hidden="true"
-          onClick={() => seekAbs(this.state.duration)}
-        />
-        <i
-          id="short-step"
-          title="Short step"
-          className="fa fa-ellipsis-h"
-          aria-hidden="true"
-          onClick={() => shortStep(1)}
-        />
-        <br />
-        <i
-          id="set-start"
-          title="Set cut start"
-          className="fa fa-angle-left"
-          aria-hidden="true"
-          onClick={() => this.setState({ cutStartTime: this.state.currentTime })}
-        />
-        <i
-          id="cut"
-          title="Cut/export"
-          className="fa fa-scissors"
-          aria-hidden="true"
-          onClick={() => this.cutClick()}
-        />
-        <i
-          id="set-end"
-          title="Set cut end"
-          className="fa fa-angle-right"
-          aria-hidden="true"
-          onClick={() => this.setState({ cutEndTime: this.state.currentTime })}
-        />
-        <i
-          id="capture-frame"
           title="Capture frame"
-          className="fa fa-camera"
+          className="button fa fa-camera"
           aria-hidden="true"
           onClick={() => this.capture()}
         />

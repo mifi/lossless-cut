@@ -34,8 +34,25 @@ input, button, textarea, :focus {
   object-fit: contain;
 }
 
-#play, #set-start, #set-end, #seek-start, #seek-end, #cut {
+.button {
   padding: .4em;
+}
+
+.jump-cut-start, .jump-cut-end {
+  background: white;
+  border-radius: .3em;
+  color: rgba(0, 0, 0, 0.7);
+  font-size: 60%;
+  vertical-align: middle;
+  padding: .2em;
+  margin: 0 .5em;
+  border: none;
+}
+
+.right-menu {
+  position: absolute;
+  right: 0;
+  bottom: 0;
 }
 
 .controls-wrapper {
@@ -60,7 +77,7 @@ input, button, textarea, :focus {
   background-color: #444;
 }
 
-.timeline-wrapper .current-time, .timeline-wrapper .cursor-time, .timeline-wrapper .cut-start-time, .timeline-wrapper .cut-end-time {
+.timeline-wrapper .current-time, .timeline-wrapper .cursor-time, .timeline-wrapper .cut-start-time {
   position: absolute;
   bottom: 0;
   top: 0;
@@ -69,6 +86,7 @@ input, button, textarea, :focus {
 
 .timeline-wrapper .current-time {
   background-color: red;
+  z-index: 2;
 }
 .timeline-wrapper .cursor-time {
   background-color: black;
@@ -78,10 +96,6 @@ input, button, textarea, :focus {
   border-left: 1px solid black;
   border-right: 1px solid black;
   z-index: 1;
-}
-.timeline-wrapper .cut-end-time {
-  background-color: green;
-  z-index: 2;
 }
 
 #working {
@@ -97,10 +111,11 @@ input, button, textarea, :focus {
 }
 
 #drag-drop-field {
-  padding: 5rem;
-  border: 1rem dashed #252525;
-  color: #252525;
-  margin: 3rem;
-  font-size: 3em;
-  text-align: center;
+    padding: 15vw 0;
+    border: 2vw dashed #252525;
+    color: #252525;
+    margin: 7vw;
+    font-size: 9vw;
+    text-align: center;
+    white-space: nowrap;
 }
