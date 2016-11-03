@@ -44,7 +44,7 @@ function changeFfmpegPath() {
 }
 
 function configureFfmpeg() {
-  return which('ffmpegf')
+  return which('ffmpeg')
     .then(() => true)
     .catch(() => {
       if (configstore.get('ffmpegPath') !== undefined) {
