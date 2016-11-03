@@ -38,7 +38,7 @@ input, button, textarea, :focus {
   padding: .4em;
 }
 
-.jump-cut-start, .jump-cut-end {
+.jump-cut-start, .jump-cut-end, .playback-rate {
   background: white;
   border-radius: .3em;
   color: rgba(0, 0, 0, 0.7);

@@ -57,7 +57,7 @@ class App extends React.Component {
 
     const defaultState = {
       working: false,
-      filePath: '', // Setting video src="" prevents memory leak
+      filePath: '', // Setting video src="" prevents memory leak in chromium
       playing: false,
       currentTime: undefined,
       duration: undefined,
@@ -67,7 +67,12 @@ class App extends React.Component {
 
     this.state = _.cloneDeep(defaultState);
 
-    const resetState = () => this.setState(defaultState);
+    const resetState = () => {
+      const video = getVideo();
+      video.currentTime = 0;
+      video.playbackRate = 1;
+      this.setState(defaultState);
+    };
 
     const load = (filePath) => {
       resetState();
@@ -88,6 +93,9 @@ class App extends React.Component {
     };
 
     keyboardJs.bind('space', () => this.playCommand());
+    keyboardJs.bind('k', () => this.playCommand());
+    keyboardJs.bind('j', () => this.changePlaybackRate(-1));
+    keyboardJs.bind('l', () => this.changePlaybackRate(1));
     keyboardJs.bind('left', () => seekRel(-1));
     keyboardJs.bind('right', () => seekRel(1));
     keyboardJs.bind('period', () => shortStep(1));
@@ -96,6 +104,14 @@ class App extends React.Component {
     keyboardJs.bind('e', () => this.cutClick());
     keyboardJs.bind('i', () => this.setCutStart());
     keyboardJs.bind('o', () => this.setCutEnd());
+  }
+
+  onPlay(playing) {
+    this.setState({ playing });
+
+    if (!playing) {
+      getVideo().playbackRate = 1;
+    }
   }
 
   setCutStart() {
@@ -125,11 +141,24 @@ class App extends React.Component {
     setCursor((relX / $target[0].offsetWidth) * this.state.duration);
   }
 
+  changePlaybackRate(dir) {
+    const video = getVideo();
+    if (!this.state.playing) {
+      video.playbackRate = 0.5; // dir * 0.5;
+      video.play();
+    } else {
+      const newRate = video.playbackRate + (dir * 0.15);
+      video.playbackRate = _.clamp(newRate, 0.05, 16);
+    }
+  }
+
+  playbackRateChange() {
+    this.state.playbackRate = getVideo().playbackRate;
+  }
+
   playCommand() {
     const video = getVideo();
-    if (this.state.playing) {
-      return video.pause();
-    }
+    if (this.state.playing) return video.pause();
 
     return video.play().catch((err) => {
       console.log(err);
@@ -176,8 +205,9 @@ class App extends React.Component {
       <div id="player">
         <video
           src={this.state.filePath}
-          onPlay={() => this.setState({ playing: true })}
-          onPause={() => this.setState({ playing: false })}
+          onRateChange={() => this.playbackRateChange()}
+          onPlay={() => this.onPlay(true)}
+          onPause={() => this.onPlay(false)}
           onDurationChange={e => this.setState({ duration: e.target.duration })}
           onTimeUpdate={e => this.setState({ currentTime: e.target.currentTime })}
         />
@@ -264,6 +294,9 @@ class App extends React.Component {
       </div>
 
       <div className="right-menu">
+        <button className="playback-rate" title="Playback rate">
+          {_.round(this.state.playbackRate, 1) || 1}x
+        </button>
         <i
           title="Capture frame"
           className="button fa fa-camera"

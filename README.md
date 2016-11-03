@@ -24,7 +24,9 @@ Simple, cross platform video editor for lossless trimming / cutting of videos. G
 The original video files will not be modified. Instead it creates a lossless export in the same directory as the original file with from/to timestamps. Note that the cut is currently not precise around the cutpoints, so video before/after the nearest keyframe will be lost. EXIF data is preserved.
 
 ### Keyboard shortcuts
-- <kbd>SPACE</kbd> Play/pause
+- <kbd>SPACE</kbd>, <kbd>k</kbd> Play/pause
+- <kbd>j</kbd> Slow down video
+- <kbd>l</kbd> Speed up video
 - <kbd>←</kbd> Seek backward 1 sec
 - <kbd>→</kbd> Seek forward 1 sec
 - <kbd>.</kbd> (period) Tiny seek forward
