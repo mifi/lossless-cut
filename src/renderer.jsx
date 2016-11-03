@@ -1,7 +1,6 @@
 const electron = require('electron'); // eslint-disable-line
 const $ = require('jquery');
 const keyboardJs = require('keyboardjs');
-const ffmpeg = require('./ffmpeg');
 const _ = require('lodash');
 const captureFrame = require('capture-frame');
 const fs = require('fs');
@@ -11,19 +10,8 @@ const React = require('react');
 const ReactDOM = require('react-dom');
 const classnames = require('classnames');
 
-function formatDuration(_seconds) {
-  const seconds = _seconds || 0;
-  const minutes = seconds / 60;
-  const hours = minutes / 60;
-
-  const hoursPadded = _.padStart(Math.floor(hours), 2, '0');
-  const minutesPadded = _.padStart(Math.floor(minutes % 60), 2, '0');
-  const secondsPadded = _.padStart(Math.floor(seconds) % 60, 2, '0');
-  const msPadded = _.padStart(Math.floor((seconds - Math.floor(seconds)) * 1000), 3, '0');
-
-  // Be nice to filenames and use .
-  return `${hoursPadded}.${minutesPadded}.${secondsPadded}.${msPadded}`;
-}
+const ffmpeg = require('./ffmpeg');
+const util = require('./util');
 
 function getVideo() {
   return $('#player video')[0];
@@ -63,6 +51,7 @@ class App extends React.Component {
       duration: undefined,
       cutStartTime: 0,
       cutEndTime: undefined,
+      fileFormat: undefined,
     };
 
     this.state = _.cloneDeep(defaultState);
@@ -76,7 +65,19 @@ class App extends React.Component {
 
     const load = (filePath) => {
       resetState();
-      this.setState({ filePath });
+
+      ffmpeg.getFormats(filePath)
+        .then((formats) => {
+          if (formats.length < 1) return alert('Unsupported file');
+          return this.setState({ filePath, fileFormat: formats[0] });
+        })
+        .catch((err) => {
+          if (err.code === 1) {
+            alert('Unsupported file');
+            return;
+          }
+          ffmpeg.showFfmpegFail(err);
+        });
     };
 
     electron.ipcRenderer.on('file-opened', (event, message) => {
@@ -180,17 +181,14 @@ class App extends React.Component {
     }
 
     this.setState({ working: true });
-    const ext = 'mp4';
-    const outFileAppend = `${formatDuration(cutStartTime)}-${formatDuration(cutEndTime)}`;
-    const outPath = `${filePath}-${outFileAppend}.${ext}`;
-    return ffmpeg.cut(filePath, cutStartTime, cutEndTime, outPath)
+    return ffmpeg.cut(filePath, this.state.fileFormat, cutStartTime, cutEndTime)
       .finally(() => this.setState({ working: false }));
   }
 
   capture() {
     if (!this.state.filePath) return;
     const buf = captureFrame(getVideo(), 'jpg');
-    const outPath = `${this.state.filePath}-${formatDuration(this.state.currentTime)}.jpg`;
+    const outPath = `${this.state.filePath}-${util.formatDuration(this.state.currentTime)}.jpg`;
     fs.writeFile(outPath, buf, (err) => {
       if (err) alert(err);
     });
@@ -223,16 +221,16 @@ class App extends React.Component {
           }}
         >
           <div className="timeline-wrapper">
-            <div className="current-time" style={{ left: `${(this.state.currentTime / this.state.duration) * 100}%` }} />
+            <div className="current-time" style={{ left: `${((this.state.currentTime || 0) / (this.state.duration || 1)) * 100}%` }} />
             <div
               className="cut-start-time"
               style={{
-                left: `${(this.state.cutStartTime / this.state.duration) * 100}%`,
-                width: `${((this.state.cutEndTime - this.state.cutStartTime) / this.state.duration) * 100}%`,
+                left: `${((this.state.cutStartTime || 0) / (this.state.duration || 1)) * 100}%`,
+                width: `${(((this.state.cutEndTime || 0) - (this.state.cutStartTime || 0)) / (this.state.duration || 1)) * 100}%`,
               }}
             />
 
-            <div id="current-time-display">{formatDuration(this.state.currentTime)}</div>
+            <div id="current-time-display">{util.formatDuration(this.state.currentTime)}</div>
           </div>
         </Hammer>
 
@@ -267,7 +265,7 @@ class App extends React.Component {
           <button
             className="jump-cut-start" title="Cut start time"
             onClick={() => this.jumpCutStart()}
-          >{formatDuration(this.state.cutStartTime || 0)}</button>
+          >{util.formatDuration(this.state.cutStartTime || 0)}</button>
           <i
             title="Set cut start"
             className="button fa fa-angle-left"
@@ -289,11 +287,14 @@ class App extends React.Component {
           <button
             className="jump-cut-end" title="Cut end time"
             onClick={() => this.jumpCutEnd()}
-          >{formatDuration(this.state.cutEndTime || 0)}</button>
+          >{util.formatDuration(this.state.cutEndTime || 0)}</button>
         </div>
       </div>
 
       <div className="right-menu">
+        <button className="file-format" title="Format">
+          {this.state.fileFormat || '-'}
+        </button>
         <button className="playback-rate" title="Playback rate">
           {_.round(this.state.playbackRate, 1) || 1}x
         </button>

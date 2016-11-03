@@ -1,5 +1,5 @@
 # LosslessCut 🎥 [![Travis](https://img.shields.io/travis/mifi/lossless-cut.svg)]()
-Simple, cross platform video editor for lossless trimming / cutting of videos. Great for rough processing of large video files taken from a video camera, GoPro, drone, etc. Lets you quickly extract the good parts from your videos. It doesn't do any decoding / encoding and is therefore extremely fast and has no quality loss. Also allows for taking JPEG snapshots of the video at the selected time. This app uses the awesome ffmpeg🙏 for doing the grunt work. ffmpeg is not included and must be installed separately.
+Simple, cross platform video editor for lossless trimming / cutting of videos. Great for rough processing of large video files taken from a video camera, GoPro, drone, etc. Lets you quickly extract the good parts from your videos. It doesn't do any decoding / encoding and is therefore extremely fast and has no quality loss. Also allows for taking JPEG snapshots of the video at the selected time. This app uses the awesome ffmpeg🙏 for doing the grunt work. ffmpeg is not included and must be installed separately. Also supports lossless cutting in the most common audio formats.
 
 ![Demo](demo.gif)
 
@@ -38,7 +38,7 @@ The original video files will not be modified. Instead it creates a lossless exp
 
 ## Development building / running
 
-This app is made using Electron. [electron-compile](https://github.com/electron/electron-compile) is used for development. Make sure you have at least node v4 with npm 3.
+This app is made using Electron. Make sure you have at least node v4 with npm 3.
 ```
 git clone https://github.com/mifi/lossless-cut.git
 cd lossless-cut
@@ -46,6 +46,11 @@ npm install
 ```
 
 ### Running
+In one terminal:
+```
+npm run watch
+```
+Then:
 ```
 npm start
 ```
@@ -59,14 +64,12 @@ npm run package
 ## TODO / ideas
 - About menu
 - icon
-- Visual feedback on button presses
-- ffprobe show keyframes
-- ffprobe format
-- improve ffmpeg error handling
-- Slow scrub with modifier key
-- show frame number
 - Bundle ffmpeg
-- support for loading other formats by streaming through ffmpeg?
+- Visual feedback on button presses
+- support for previewing other formats by streaming through ffmpeg?
+- Slow scrub with modifier key
+- show frame number (approx?)
+- ffprobe show keyframes
 - cutting out the commercials in a video file while saving the rest to a single file?
 
 ## Links

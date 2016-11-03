@@ -10,6 +10,10 @@ const BrowserWindow = electron.BrowserWindow;
 const dialog = electron.dialog;
 const configstore = new Configstore('lossless-cut');
 
+// http://stackoverflow.com/questions/39362292/how-do-i-set-node-env-production-on-electron-app-when-packaged-with-electron-pac
+const isProd = process.execPath.search('electron-prebuilt') === -1;
+if (isProd) process.env.NODE_ENV = 'production';
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
