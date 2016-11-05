@@ -17,6 +17,11 @@ For an indication of supported formats / codecs, see https://www.chromium.org/au
 
 ## Documentation
 
+### Supported platforms
+- Mac OS X
+- Windows (64/32bit)
+- Linux (64/32bit, not tested)
+
 ### Typical flow
 - Drag drop a video file into player to load or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
 - Press <kbd>SPACE</kbd> to play/pause
