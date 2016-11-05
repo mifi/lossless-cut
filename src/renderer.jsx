@@ -1,3 +1,4 @@
+const bluebird = require('bluebird');
 const electron = require('electron'); // eslint-disable-line
 const $ = require('jquery');
 const keyboardJs = require('keyboardjs');
@@ -64,9 +65,12 @@ class App extends React.Component {
     };
 
     const load = (filePath) => {
+      if (this.state.working) return alert('I\'m busy');
+
       resetState();
 
-      ffmpeg.getFormats(filePath)
+      this.setState({ working: true });
+      return bluebird.resolve(ffmpeg.getFormats(filePath))
         .then((formats) => {
           if (formats.length < 1) return alert('Unsupported file');
           return this.setState({ filePath, fileFormat: formats[0] });
@@ -77,7 +81,8 @@ class App extends React.Component {
             return;
           }
           ffmpeg.showFfmpegFail(err);
-        });
+        })
+        .finally(() => this.setState({ working: false }));
     };
 
     electron.ipcRenderer.on('file-opened', (event, message) => {
@@ -170,6 +175,8 @@ class App extends React.Component {
   }
 
   cutClick() {
+    if (this.state.working) return alert('I\'m busy');
+
     const cutStartTime = this.state.cutStartTime;
     const cutEndTime = this.state.cutEndTime;
     const filePath = this.state.filePath;
@@ -181,7 +188,7 @@ class App extends React.Component {
     }
 
     this.setState({ working: true });
-    return ffmpeg.cut(filePath, this.state.fileFormat, cutStartTime, cutEndTime)
+    return bluebird.resolve(ffmpeg.cut(filePath, this.state.fileFormat, cutStartTime, cutEndTime))
       .finally(() => this.setState({ working: false }));
   }
 
@@ -292,7 +299,7 @@ class App extends React.Component {
       </div>
 
       <div className="right-menu">
-        <button className="file-format" title="Format">
+        <button title="Format">
           {this.state.fileFormat || '-'}
         </button>
         <button className="playback-rate" title="Playback rate">

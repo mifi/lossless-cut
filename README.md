@@ -1,25 +1,28 @@
 # LosslessCut 🎥 [![Travis](https://img.shields.io/travis/mifi/lossless-cut.svg)]()
-Simple, cross platform video editor for lossless trimming / cutting of videos. Great for rough processing of large video files taken from a video camera, GoPro, drone, etc. Lets you quickly extract the good parts from your videos. It doesn't do any decoding / encoding and is therefore extremely fast and has no quality loss. Also allows for taking JPEG snapshots of the video at the selected time. This app uses the awesome ffmpeg🙏 for doing the grunt work. ffmpeg is not included and must be installed separately. Also supports lossless cutting in the most common audio formats.
 
-![Demo](demo.gif)
+![Screenshot](screenshot.jpg)
 
-## Download
+Simple, cross platform video editor for lossless trimming / cutting of videos. Great for rough processing of large video files taken from a video camera, GoPro, drone, etc. Lets you quickly extract the good parts from your videos. It doesn't do any decoding / encoding and is therefore extremely fast and has no quality loss. Also allows for taking JPEG snapshots of the video at the selected time. This app uses the awesome ffmpeg🙏 for doing the grunt work. Also supports lossless cutting in the most common audio formats.
 
+<b>ffmpeg is now included in the app! 🎉</b>
+
+For an indication of supported formats / codecs, see https://www.chromium.org/audio-video
+
+![Demo](https://giant.gfycat.com/HighAcclaimedAnaconda.gif)
 
 ## Installing / running
 
-- Install [ffmpeg](https://www.ffmpeg.org/download.html)
 - Download [latest LosslessCut from releases](https://github.com/mifi/lossless-cut/releases)
-- Run app
-- If ffmpeg is available in <b>$PATH</b>/<b>%PATH%</b> it will just work  
-- If not, a dialog will pop up to select ffmpeg executable path.
+- Run LosslessCut app/exe
 
 ## Documentation
 
+### Typical flow
 - Drag drop a video file into player to load or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
-- Select the start and end time
-- Press the scissors button to export a slice.
-- Press the camera button to take a snapshot.
+- Press <kbd>SPACE</kbd> to play/pause
+- Select the cut start and end time
+- Press the scissors button to export the slice
+- Press the camera button to take a snapshot
 
 The original video files will not be modified. Instead it creates a lossless export in the same directory as the original file with from/to timestamps. Note that the cut is currently not precise around the cutpoints, so video before/after the nearest keyframe will be lost. EXIF data is preserved.
 
@@ -38,7 +41,7 @@ The original video files will not be modified. Instead it creates a lossless exp
 
 ## Development building / running
 
-This app is made using Electron. Make sure you have at least node v4 with npm 3.
+This app is built using Electron. Make sure you have at least node v4 with npm 3. The app uses ffmpeg from PATH when developing.
 ```
 git clone https://github.com/mifi/lossless-cut.git
 cd lossless-cut
@@ -57,25 +60,12 @@ npm start
 
 ### Building package
 ```
+npm run download-ffmpeg
+npm run extract-ffmpeg
 npm run build
-npm run package
+npm run icon-gen
+npm run package # builds all platforms
 ```
 
-## TODO / ideas
-- About menu
-- icon
-- Bundle ffmpeg
-- Visual feedback on button presses
-- support for previewing other formats by streaming through ffmpeg?
-- Slow scrub with modifier key
-- show frame number (approx?)
-- ffprobe show keyframes
-- cutting out the commercials in a video file while saving the rest to a single file?
-
-## Links
-- http://apple.stackexchange.com/questions/117306/what-options-are-available-to-losslessly-trim-mp4-m4v-video-on-10-8-or-above
-- http://superuser.com/questions/554620/how-to-get-time-stamp-of-closest-keyframe-before-a-given-timestamp-with-ffmpeg/554679#554679
-- http://www.fame-ring.com/smart_cutter.html
-- http://electron.atom.io/apps/
-- https://github.com/electron/electron/blob/master/docs/api/file-object.md
-- https://github.com/electron/electron/issues/2538
+## Credits
+- App icon made by [Dimi Kazak](http://www.flaticon.com/authors/dimi-kazak "Dimi Kazak") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0")

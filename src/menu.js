@@ -6,12 +6,13 @@ const dialog = electron.dialog;
 
 const homepage = 'https://github.com/mifi/lossless-cut';
 
-module.exports = (app, mainWindow, changeFfmpegPath) => {
+module.exports = (app, mainWindow) => {
   const menu = defaultMenu(app, electron.shell);
 
-  menu.splice(1, 1);
+  const editMenuIndex = menu.findIndex(item => item.Label === 'Edit');
+  if (editMenuIndex >= 0) menu.splice(editMenuIndex, 1);
 
-  menu.splice(1, 0, {
+  menu.splice((process.platform === 'darwin' ? 1 : 0), 0, {
     label: 'File',
     submenu: [
       {
@@ -23,22 +24,21 @@ module.exports = (app, mainWindow, changeFfmpegPath) => {
           });
         },
       },
-      {
-        label: 'Change ffmpeg path',
-        click: changeFfmpegPath,
-      },
     ],
   });
 
-  menu.splice(menu.findIndex(item => item.role === 'help'), 1, {
-    role: 'help',
-    submenu: [
-      {
-        label: 'Learn More',
-        click() { electron.shell.openExternal(homepage); },
-      },
-    ],
-  });
+  const helpIndex = menu.findIndex(item => item.role === 'help');
+  if (helpIndex >= 0) {
+    menu.splice(helpIndex, 1, {
+      role: 'help',
+      submenu: [
+        {
+          label: 'Learn More',
+          click() { electron.shell.openExternal(homepage); },
+        },
+      ],
+    });
+  }
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
 };

@@ -1,18 +1,14 @@
 const electron = require('electron'); // eslint-disable-line
-const Configstore = require('configstore');
-const bluebird = require('bluebird');
-const which = bluebird.promisify(require('which'));
 
+const util = require('./util');
 const menu = require('./menu');
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
-const dialog = electron.dialog;
-const configstore = new Configstore('lossless-cut');
 
-// http://stackoverflow.com/questions/39362292/how-do-i-set-node-env-production-on-electron-app-when-packaged-with-electron-pac
-const isProd = process.execPath.search('electron-prebuilt') === -1;
-if (isProd) process.env.NODE_ENV = 'production';
+app.setName('LosslessCut');
+
+if (util.isPackaged()) process.env.NODE_ENV = 'production';
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -32,48 +28,12 @@ function createWindow() {
   });
 }
 
-function showFfmpegDialog() {
-  console.log('Show ffmpeg dialog');
-  return new Promise(resolve => dialog.showOpenDialog({
-    defaultPath: '/usr/local/bin/ffmpeg',
-    properties: ['openFile', 'showHiddenFiles'],
-  }, ffmpegPath => resolve(ffmpegPath !== undefined ? ffmpegPath[0] : undefined)));
-}
-
-function changeFfmpegPath() {
-  return showFfmpegDialog()
-    .then((ffmpegPath) => {
-      if (ffmpegPath !== undefined) configstore.set('ffmpegPath', ffmpegPath);
-    });
-}
-
-function configureFfmpeg() {
-  return which('ffmpeg')
-    .then(() => true)
-    .catch(() => {
-      if (configstore.get('ffmpegPath') !== undefined) {
-        return undefined;
-      }
-
-      console.log('Show first time dialog');
-      return new Promise(resolve => dialog.showMessageBox({
-        buttons: ['OK'],
-        message: 'This is the first time you run LosslessCut and ffmpeg path was not auto detected. Please close this dialog and then select the path to the ffmpeg executable.',
-      }, resolve))
-        .then(showFfmpegDialog)
-        .then((ffmpegPath) => {
-          configstore.set('ffmpegPath', ffmpegPath !== undefined ? ffmpegPath : '');
-        });
-    });
-}
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
   createWindow();
-  menu(app, mainWindow, changeFfmpegPath);
-  configureFfmpeg();
+  menu(app, mainWindow);
 });
 
 // Quit when all windows are closed.

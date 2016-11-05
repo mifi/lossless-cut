@@ -14,6 +14,12 @@ function formatDuration(_seconds) {
   return `${hoursPadded}.${minutesPadded}.${secondsPadded}.${msPadded}`;
 }
 
+function isPackaged() {
+  // http://stackoverflow.com/questions/39362292/how-do-i-set-node-env-production-on-electron-app-when-packaged-with-electron-pac
+  return process.execPath.search('electron-prebuilt') === -1;
+}
+
 module.exports = {
   formatDuration,
+  isPackaged,
 };

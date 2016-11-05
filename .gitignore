@@ -3,3 +3,5 @@ node_modules
 npm-debug.log
 dist
 package
+ffmpeg-tmp
+icon-dist

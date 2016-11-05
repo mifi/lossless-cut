@@ -38,16 +38,21 @@ input, button, textarea, :focus {
   padding: .4em;
 }
 
-.jump-cut-start, .jump-cut-end, .playback-rate {
+.controls-wrapper button, .right-menu button {
   background: white;
   border-radius: .3em;
   color: rgba(0, 0, 0, 0.7);
   font-size: 60%;
   vertical-align: middle;
-  padding: .2em;
+  padding: .2em .4em;
   margin: 0 .5em;
   border: none;
 }
+
+.controls-wrapper button:active, .right-menu button:active  {
+  background: #ccc;
+}
+
 
 .right-menu {
   position: absolute;
@@ -60,7 +65,7 @@ input, button, textarea, :focus {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 6rem;
+  height: 5.75rem;
   background: #6b6b6b;
   text-align: center;
 }
