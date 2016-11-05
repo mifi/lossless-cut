@@ -8,7 +8,7 @@ Simple, cross platform video editor for lossless trimming / cutting of videos. G
 
 For an indication of supported formats / codecs, see https://www.chromium.org/audio-video
 
-![Demo](https://giant.gfycat.com/HighAcclaimedAnaconda.gif)
+![Demo](https://thumbs.gfycat.com/HighAcclaimedAnaconda-size_restricted.gif)
 
 ## Installing / running
 
