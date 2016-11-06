@@ -1,10 +1,8 @@
 # LosslessCut 🎥 [![Travis](https://img.shields.io/travis/mifi/lossless-cut.svg)]()
 
-Simple, cross platform video editor for lossless trimming / cutting of videos. Great for rough processing of large video files taken from a video camera, GoPro, drone, etc. Lets you quickly extract the good parts from your videos. It doesn't do any decoding / encoding and is therefore extremely fast and has no quality loss. Also allows for taking JPEG snapshots of the video at the selected time. This app uses the awesome ffmpeg🙏 for doing the grunt work. Also supports lossless cutting in the most common audio formats.
+Simple, cross platform video editor for lossless trimming / cutting of videos. Great for rough processing of large video files taken from a video camera, GoPro, drone, etc. Lets you quickly extract the good parts from your videos and discard GB of data without losing quality. It doesn't do any decoding / encoding and is therefore extremely fast. Also allows for taking JPEG snapshots of the video at the selected time. This app uses the awesome ffmpeg🙏 for doing the grunt work. Also supports lossless cutting in the most common audio formats.
 
 <b>ffmpeg is now included in the app! 🎉</b>
-
-For an indication of supported formats / codecs, see https://www.chromium.org/audio-video
 
 ![Demo](https://thumbs.gfycat.com/HighAcclaimedAnaconda-size_restricted.gif)
 
@@ -19,6 +17,12 @@ For an indication of supported formats / codecs, see https://www.chromium.org/au
 - Mac OS X
 - Windows (64/32bit)
 - Linux (64/32bit, not tested)
+
+### Supported formats
+
+Since LosslessCut is based on Chromium and uses the HTML5 video player, not all ffmpeg supported formats will be supported.
+The following formats/codecs should generally work: MP4, MOV, WebM, MKV, OGG, WAV, MP3, AAC, H264, Theora, VP8, VP9
+For more information about supported formats / codecs, see https://www.chromium.org/audio-video.
 
 ### Typical flow
 - Drag drop a video file into player to load or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
