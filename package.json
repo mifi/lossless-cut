@@ -16,7 +16,7 @@
     "package:win32_x64": "PLATFORM=win32 ARCH=x64 ICON=app.ico npm run package-single",
     "package:linux_ia32": "PLATFORM=linux ARCH=ia32 ICON=app.ico npm run package-single",
     "package:linux_x64": "PLATFORM=linux ARCH=x64 ICON=app.ico npm run package-single",
-    "zip": "(cd package && rm -f LosslessCut-*.zip && for f in LosslessCut-*; do zip -r \"$f\".zip \"$f\"; done)",
+    "zip": "(cd package && rm -f LosslessCut-*.zip && for f in LosslessCut-*; do zip -r --symlinks \"$f\".zip \"$f\"; done)",
     "icon-gen": "icon-gen -i src/icon.svg -o ./icon-dist -r",
     "package": "npm run package:darwin_x64 && npm run package:win32_ia32 && npm run package:win32_x64 && npm run package:linux_ia32 && npm run package:linux_x64 && npm run zip",
     "gifify": "gifify -p 405:299 -r 5@3 Untitled.mov-00.00.00.971-00.00.19.780.mp4",
