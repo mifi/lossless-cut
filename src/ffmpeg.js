@@ -32,49 +32,46 @@ function getFfmpegPath() {
 }
 
 function cut(filePath, format, cutFrom, cutTo) {
-  const ext = path.extname(filePath) || format;
-  const outFileAppend = `${util.formatDuration(cutFrom)}-${util.formatDuration(cutTo)}`;
-  const outFile = `${filePath}-${outFileAppend}.${ext}`;
+  return bluebird.try(() => {
+    const ext = path.extname(filePath) || format;
+    const outFileAppend = `${util.formatDuration(cutFrom)}-${util.formatDuration(cutTo)}`;
+    const outFile = `${filePath}-${outFileAppend}.${ext}`;
 
-  console.log('Cutting from', cutFrom, 'to', cutTo);
+    console.log('Cutting from', cutFrom, 'to', cutTo);
 
-  const ffmpegArgs = [
-    '-i', filePath, '-y', '-vcodec', 'copy', '-acodec', 'copy',
-    '-ss', cutFrom, '-t', cutTo - cutFrom,
-    '-f', format,
-    outFile,
-  ];
+    const ffmpegArgs = [
+      '-i', filePath, '-y', '-vcodec', 'copy', '-acodec', 'copy',
+      '-ss', cutFrom, '-t', cutTo - cutFrom,
+      '-f', format,
+      outFile,
+    ];
 
-  console.log('ffmpeg', ffmpegArgs.join(' '));
+    console.log('ffmpeg', ffmpegArgs.join(' '));
 
-  return getFfmpegPath()
-    .then(ffmpegPath => execa(ffmpegPath, ffmpegArgs))
-    .then((result) => {
-      console.log(result.stdout);
-    })
-    .catch((err) => {
-      if (err.code === 1) {
-        alert('Whoops! ffmpeg was unable to cut this video. It may be of an unknown format or codec combination');
-        return;
-      }
-      showFfmpegFail(err);
-    });
+    return getFfmpegPath()
+      .then(ffmpegPath => execa(ffmpegPath, ffmpegArgs))
+      .then((result) => {
+        console.log(result.stdout);
+      });
+  });
 }
 
 function getFormats(filePath) {
-  console.log('getFormat', filePath);
+  return bluebird.try(() => {
+    console.log('getFormat', filePath);
 
-  return getFfmpegPath()
-    .then(ffmpegPath => path.join(path.dirname(ffmpegPath), getWithExt('ffprobe')))
-    .then(ffprobePath => execa(ffprobePath, [
-      '-of', 'json', '-show_format', '-i', filePath,
-    ]))
-    .then((result) => {
-      const formatsStr = JSON.parse(result.stdout).format.format_name;
-      console.log('formats', formatsStr);
-      const formats = formatsStr.split(',');
-      return formats;
-    });
+    return getFfmpegPath()
+      .then(ffmpegPath => path.join(path.dirname(ffmpegPath), getWithExt('ffprobe')))
+      .then(ffprobePath => execa(ffprobePath, [
+        '-of', 'json', '-show_format', '-i', filePath,
+      ]))
+      .then((result) => {
+        const formatsStr = JSON.parse(result.stdout).format.format_name;
+        console.log('formats', formatsStr);
+        const formats = formatsStr.split(',');
+        return formats;
+      });
+  });
 }
 
 module.exports = {

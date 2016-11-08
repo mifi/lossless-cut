@@ -70,7 +70,7 @@ class App extends React.Component {
       resetState();
 
       this.setState({ working: true });
-      return bluebird.resolve(ffmpeg.getFormats(filePath))
+      return ffmpeg.getFormats(filePath)
         .then((formats) => {
           if (formats.length < 1) return alert('Unsupported file');
           return this.setState({ filePath, fileFormat: formats[0] });
@@ -188,7 +188,14 @@ class App extends React.Component {
     }
 
     this.setState({ working: true });
-    return bluebird.resolve(ffmpeg.cut(filePath, this.state.fileFormat, cutStartTime, cutEndTime))
+    return ffmpeg.cut(filePath, this.state.fileFormat, cutStartTime, cutEndTime)
+      .catch((err) => {
+        if (err.code === 1) {
+          alert('Whoops! ffmpeg was unable to cut this video. It may be of an unknown format or codec combination');
+          return;
+        }
+        ffmpeg.showFfmpegFail(err);
+      })
       .finally(() => this.setState({ working: false }));
   }
 
