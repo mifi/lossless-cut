@@ -78,7 +78,7 @@ function getFormat(filePath) {
         return readChunk(filePath, 0, 262)
           .then((bytes) => {
             const ft = fileType(bytes);
-            if (_.includes(formats, ft.ext)) return ft.ext;
+            if (_.includes(formats, (ft || {}).ext)) return ft.ext;
             return formats[0] || undefined;
           });
       });

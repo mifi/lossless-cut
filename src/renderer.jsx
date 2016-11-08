@@ -78,7 +78,7 @@ class App extends React.Component {
           return this.setState({ filePath, fileFormat });
         })
         .catch((err) => {
-          if (err.code === 1) {
+          if (err.code === 1 || err.code === 'ENOENT') {
             alert('Unsupported file');
             return;
           }
