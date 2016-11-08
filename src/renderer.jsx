@@ -65,15 +65,17 @@ class App extends React.Component {
     };
 
     const load = (filePath) => {
+      console.log('Load', filePath);
       if (this.state.working) return alert('I\'m busy');
 
       resetState();
 
       this.setState({ working: true });
-      return ffmpeg.getFormats(filePath)
-        .then((formats) => {
-          if (formats.length < 1) return alert('Unsupported file');
-          return this.setState({ filePath, fileFormat: formats[0] });
+
+      return ffmpeg.getFormat(filePath)
+        .then((fileFormat) => {
+          if (!fileFormat) return alert('Unsupported file');
+          return this.setState({ filePath, fileFormat });
         })
         .catch((err) => {
           if (err.code === 1) {
@@ -85,9 +87,9 @@ class App extends React.Component {
         .finally(() => this.setState({ working: false }));
     };
 
-    electron.ipcRenderer.on('file-opened', (event, message) => {
-      if (!message) return;
-      load(message);
+    electron.ipcRenderer.on('file-opened', (event, filePaths) => {
+      if (!filePaths || filePaths.length !== 1) return;
+      load(filePaths[0]);
     });
 
     document.ondragover = document.ondragend = ev => ev.preventDefault();

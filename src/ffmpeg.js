@@ -2,8 +2,12 @@ const execa = require('execa');
 const bluebird = require('bluebird');
 const which = bluebird.promisify(require('which'));
 const path = require('path');
-const util = require('./util');
 const fs = require('fs');
+const fileType = require('file-type');
+const readChunk = require('read-chunk');
+const _ = require('lodash');
+
+const util = require('./util');
 
 bluebird.promisifyAll(fs);
 
@@ -56,7 +60,7 @@ function cut(filePath, format, cutFrom, cutTo) {
   });
 }
 
-function getFormats(filePath) {
+function getFormat(filePath) {
   return bluebird.try(() => {
     console.log('getFormat', filePath);
 
@@ -68,14 +72,21 @@ function getFormats(filePath) {
       .then((result) => {
         const formatsStr = JSON.parse(result.stdout).format.format_name;
         console.log('formats', formatsStr);
-        const formats = formatsStr.split(',');
-        return formats;
+        const formats = (formatsStr || '').split(',');
+
+        // ffprobe sometimes returns a list of formats, try to be a bit smarter about it.
+        return readChunk(filePath, 0, 262)
+          .then((bytes) => {
+            const ft = fileType(bytes);
+            if (_.includes(formats, ft.ext)) return ft.ext;
+            return formats[0] || undefined;
+          });
       });
   });
 }
 
 module.exports = {
   cut,
-  getFormats,
+  getFormat,
   showFfmpegFail,
 };

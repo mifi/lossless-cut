@@ -19,8 +19,8 @@ module.exports = (app, mainWindow) => {
         label: 'Open',
         accelerator: 'CmdOrCtrl+O',
         click() {
-          dialog.showOpenDialog({ properties: ['openFile'] }, (data) => {
-            mainWindow.webContents.send('file-opened', data);
+          dialog.showOpenDialog({ properties: ['openFile'] }, (filePaths) => {
+            mainWindow.webContents.send('file-opened', filePaths);
           });
         },
       },
