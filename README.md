@@ -10,6 +10,7 @@ Simple, cross platform video editor for lossless trimming / cutting of videos. G
 
 - Download [latest LosslessCut from releases](https://github.com/mifi/lossless-cut/releases)
 - Run LosslessCut app/exe
+- On OSX, to open LosslessCut.app, Right Click > Open to bypass the security warning.
 
 ## Documentation
 
