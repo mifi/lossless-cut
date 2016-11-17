@@ -44,8 +44,9 @@ function cut(filePath, format, cutFrom, cutTo) {
     console.log('Cutting from', cutFrom, 'to', cutTo);
 
     const ffmpegArgs = [
+      '-ss', cutFrom,
       '-i', filePath, '-y', '-vcodec', 'copy', '-acodec', 'copy',
-      '-ss', cutFrom, '-t', cutTo - cutFrom,
+      '-to', cutTo,
       '-f', format,
       outFile,
     ];
