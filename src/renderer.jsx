@@ -111,6 +111,8 @@ class App extends React.Component {
     keyboardJs.bind('e', () => this.cutClick());
     keyboardJs.bind('i', () => this.setCutStart());
     keyboardJs.bind('o', () => this.setCutEnd());
+
+    electron.ipcRenderer.send('renderer-ready');
   }
 
   onPlay(playing) {

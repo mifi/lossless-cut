@@ -48,3 +48,10 @@ app.on('activate', () => {
     createWindow();
   }
 });
+
+electron.ipcMain.on('renderer-ready', () => {
+  if (!isDev) {
+    const fileToOpen = process.argv[1];
+    if (fileToOpen) mainWindow.webContents.send('file-opened', [fileToOpen]);
+  }
+});
