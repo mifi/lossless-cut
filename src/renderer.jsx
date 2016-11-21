@@ -191,7 +191,10 @@ class App extends React.Component {
     this.setState({ working: true });
     return ffmpeg.cut(filePath, this.state.fileFormat, cutStartTime, cutEndTime)
       .catch((err) => {
-        if (err.code === 1) {
+        console.error('stdout:', err.stdout);
+        console.error('stderr:', err.stderr);
+
+        if (err.code === 1 || err.code === 'ENOENT') {
           alert('Whoops! ffmpeg was unable to cut this video. It may be of an unknown format or codec combination');
           return;
         }
