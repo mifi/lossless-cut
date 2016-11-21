@@ -46,6 +46,7 @@
     "classnames": "^2.2.5",
     "electron": "^1.4.5",
     "electron-default-menu": "^1.0.0",
+    "electron-is-dev": "^0.1.2",
     "execa": "^0.5.0",
     "file-type": "^3.9.0",
     "jquery": "^3.1.1",

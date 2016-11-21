@@ -1,6 +1,6 @@
 const electron = require('electron'); // eslint-disable-line
+const isDev = require('electron-is-dev');
 
-const util = require('./util');
 const menu = require('./menu');
 
 const app = electron.app;
@@ -8,7 +8,7 @@ const BrowserWindow = electron.BrowserWindow;
 
 app.setName('LosslessCut');
 
-if (util.isPackaged()) process.env.NODE_ENV = 'production';
+if (!isDev) process.env.NODE_ENV = 'production';
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
