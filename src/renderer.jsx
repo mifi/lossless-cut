@@ -1,4 +1,3 @@
-const bluebird = require('bluebird');
 const electron = require('electron'); // eslint-disable-line
 const $ = require('jquery');
 const keyboardJs = require('keyboardjs');

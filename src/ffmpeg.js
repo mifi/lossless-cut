@@ -37,9 +37,9 @@ function getFfmpegPath() {
 
 function cut(filePath, format, cutFrom, cutTo) {
   return bluebird.try(() => {
-    const ext = path.extname(filePath) || format;
+    const ext = path.extname(filePath) || `.${format}`;
     const outFileAppend = `${util.formatDuration(cutFrom)}-${util.formatDuration(cutTo)}`;
-    const outFile = `${filePath}-${outFileAppend}.${ext}`;
+    const outFile = `${filePath}-${outFileAppend}${ext}`;
 
     console.log('Cutting from', cutFrom, 'to', cutTo);
 
