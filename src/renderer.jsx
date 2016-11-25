@@ -4,7 +4,6 @@ const keyboardJs = require('keyboardjs');
 const _ = require('lodash');
 const captureFrame = require('capture-frame');
 const fs = require('fs');
-const path = require('path');
 const Hammer = require('react-hammerjs');
 
 const React = require('react');
