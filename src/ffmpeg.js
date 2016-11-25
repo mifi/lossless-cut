@@ -28,18 +28,21 @@ function canExecuteFfmpeg(ffmpegPath) {
 function getFfmpegPath() {
   const internalFfmpeg = path.join(__dirname, '..', 'app.asar.unpacked', 'ffmpeg', getWithExt('ffmpeg'));
   return canExecuteFfmpeg(internalFfmpeg)
-      .then(() => internalFfmpeg)
-      .catch(() => {
-        console.log('Internal ffmpeg unavail');
-        return which('ffmpeg');
-      });
+    .then(() => internalFfmpeg)
+    .catch(() => {
+      console.log('Internal ffmpeg unavail');
+      return which('ffmpeg');
+    });
 }
 
-function cut(filePath, format, cutFrom, cutTo) {
+function cut(outputDir, filePath, format, cutFrom, cutTo) {
   return bluebird.try(() => {
     const ext = path.extname(filePath) || `.${format}`;
-    const outFileAppend = `${util.formatDuration(cutFrom)}-${util.formatDuration(cutTo)}`;
-    const outFile = `${filePath}-${outFileAppend}${ext}`;
+    const duration = `${util.formatDuration(cutFrom)}-${util.formatDuration(cutTo)}`;
+    const basename = path.basename(filePath);
+    const outFile = outputDir ?
+      path.join(outputDir, `${basename}-${duration}${ext}`) :
+      `${filePath}-${duration}${ext}`;
 
     console.log('Cutting from', cutFrom, 'to', cutTo);
 

@@ -4,6 +4,7 @@ const keyboardJs = require('keyboardjs');
 const _ = require('lodash');
 const captureFrame = require('capture-frame');
 const fs = require('fs');
+const path = require('path');
 const Hammer = require('react-hammerjs');
 
 const React = require('react');
@@ -12,6 +13,8 @@ const classnames = require('classnames');
 
 const ffmpeg = require('./ffmpeg');
 const util = require('./util');
+
+const dialog = electron.remote.dialog;
 
 function getVideo() {
   return $('#player video')[0];
@@ -131,6 +134,12 @@ class App extends React.Component {
     this.setState({ cutEndTime: this.state.currentTime });
   }
 
+  setOutputDir() {
+    dialog.showOpenDialog({ properties: ['openDirectory'] }, (paths) => {
+      this.setState({ outputDir: (paths && paths.length === 1) ? paths[0] : undefined });
+    });
+  }
+
   jumpCutStart() {
     seekAbs(this.state.cutStartTime);
   }
@@ -191,7 +200,9 @@ class App extends React.Component {
     }
 
     this.setState({ working: true });
-    return ffmpeg.cut(filePath, this.state.fileFormat, cutStartTime, cutEndTime)
+    const outputDir = this.state.outputDir;
+    const fileFormat = this.state.fileFormat;
+    return ffmpeg.cut(outputDir, filePath, fileFormat, cutStartTime, cutEndTime)
       .catch((err) => {
         console.error('stdout:', err.stdout);
         console.error('stderr:', err.stderr);
@@ -283,7 +294,7 @@ class App extends React.Component {
         </div>
         <div>
           <button
-            className="jump-cut-start" title="Cut start time"
+            className="jump-cut-start" title="Cut start time (jump)"
             onClick={() => this.jumpCutStart()}
           >{util.formatDuration(this.state.cutStartTime || 0)}</button>
           <i
@@ -305,15 +316,21 @@ class App extends React.Component {
             onClick={() => this.setCutEnd()}
           />
           <button
-            className="jump-cut-end" title="Cut end time"
+            className="jump-cut-end" title="Cut end time (jump)"
             onClick={() => this.jumpCutEnd()}
           >{util.formatDuration(this.state.cutEndTime || 0)}</button>
         </div>
       </div>
 
       <div className="right-menu">
+        <button
+          title={`Custom output dir (cancel to restore default). Current: ${this.state.outputDir || 'Not set'}`}
+          onClick={() => this.setOutputDir()}
+        >
+          {this.state.outputDir ? `...${this.state.outputDir.substr(-10)}` : 'OUT PATH'}
+        </button>
         <button title="Format">
-          {this.state.fileFormat || '-'}
+          {this.state.fileFormat || 'FMT'}
         </button>
         <button className="playback-rate" title="Playback rate">
           {_.round(this.state.playbackRate, 1) || 1}x
