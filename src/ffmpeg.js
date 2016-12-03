@@ -78,7 +78,7 @@ function getFormat(filePath) {
         const formats = (formatsStr || '').split(',');
 
         // ffprobe sometimes returns a list of formats, try to be a bit smarter about it.
-        return readChunk(filePath, 0, 262)
+        return readChunk(filePath, 0, 4100)
           .then((bytes) => {
             const ft = fileType(bytes);
             if (_.includes(formats, (ft || {}).ext)) return ft.ext;
