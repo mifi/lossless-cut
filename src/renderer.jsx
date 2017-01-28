@@ -139,6 +139,10 @@ class App extends React.Component {
     });
   }
 
+  getFileUri() {
+    return (this.state.filePath || '').replace(/#/g, '%23');
+  }
+
   jumpCutStart() {
     seekAbs(this.state.cutStartTime);
   }
@@ -222,10 +226,6 @@ class App extends React.Component {
     fs.writeFile(outPath, buf, (err) => {
       if (err) alert(err);
     });
-  }
-
-  getFileUri() {
-    return (this.state.filePath || '').replace(/#/g, '%23');
   }
 
   render() {
