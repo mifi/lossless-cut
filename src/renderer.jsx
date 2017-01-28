@@ -40,6 +40,29 @@ function shortStep(dir) {
   seekRel((1 / 60) * dir);
 }
 
+function renderHelpSheet(visible) {
+  if (visible) {
+    return (<div className="help-sheet">
+      <h1>Keyboard shortcuts</h1>
+      <ul>
+        <li><kbd>H</kbd> Show/hide help</li>
+        <li><kbd>SPACE</kbd>, <kbd>k</kbd> Play/pause</li>
+        <li><kbd>J</kbd> Slow down video</li>
+        <li><kbd>L</kbd> Speed up video</li>
+        <li><kbd>←</kbd> Seek backward 1 sec</li>
+        <li><kbd>→</kbd> Seek forward 1 sec</li>
+        <li><kbd>.</kbd> (period) Tiny seek forward (1/60 sec)</li>
+        <li><kbd>,</kbd> (comma) Tiny seek backward (1/60 sec)</li>
+        <li><kbd>I</kbd> Mark in / cut start point</li>
+        <li><kbd>O</kbd> Mark out / cut end point</li>
+        <li><kbd>E</kbd> Export selection (in the same dir as the video)</li>
+        <li><kbd>C</kbd> Capture snapshot (in the same dir as the video)</li>
+      </ul>
+    </div>);
+  }
+
+  return undefined;
+}
 
 class App extends React.Component {
   constructor(props) {
@@ -113,6 +136,7 @@ class App extends React.Component {
     keyboardJs.bind('e', () => this.cutClick());
     keyboardJs.bind('i', () => this.setCutStart());
     keyboardJs.bind('o', () => this.setCutEnd());
+    keyboardJs.bind('h', () => this.toggleHelp());
 
     electron.ipcRenderer.send('renderer-ready');
   }
@@ -226,6 +250,10 @@ class App extends React.Component {
     fs.writeFile(outPath, buf, (err) => {
       if (err) alert(err);
     });
+  }
+
+  toggleHelp() {
+    this.setState({ helpVisible: !this.state.helpVisible });
   }
 
   render() {
@@ -345,6 +373,8 @@ class App extends React.Component {
           onClick={() => this.capture()}
         />
       </div>
+
+      {renderHelpSheet(this.state.helpVisible)}
     </div>);
   }
 }

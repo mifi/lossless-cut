@@ -35,17 +35,7 @@ For more information about supported formats / codecs, see https://www.chromium.
 The original video files will not be modified. Instead it creates a lossless export in the same directory as the original file with from/to timestamps. Note that the cut is currently not precise around the cutpoints, so video before/after the nearest keyframe will be lost. EXIF data is preserved.
 
 ### Keyboard shortcuts
-- <kbd>SPACE</kbd>, <kbd>k</kbd> Play/pause
-- <kbd>j</kbd> Slow down video
-- <kbd>l</kbd> Speed up video
-- <kbd>←</kbd> Seek backward 1 sec
-- <kbd>→</kbd> Seek forward 1 sec
-- <kbd>.</kbd> (period) Tiny seek forward (1/60 sec)
-- <kbd>,</kbd> (comma) Tiny seek backward (1/60 sec)
-- <kbd>i</kbd> Mark in / cut start point
-- <kbd>o</kbd> Mark out / cut end point
-- <kbd>e</kbd> Export selection (in the same dir as the video)
-- <kbd>c</kbd> Capture snapshot (in the same dir as the video)
+Press <kbd>h</kbd> To show/hide list of shortcuts
 
 ## Development building / running
 
