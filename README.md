@@ -37,6 +37,9 @@ The original video files will not be modified. Instead it creates a lossless exp
 ### Keyboard shortcuts
 Press <kbd>h</kbd> To show/hide list of shortcuts
 
+For old shortcuts see here:
+https://github.com/mifi/lossless-cut/blob/41d6991c11b0a82b08344fd22a1ea094af217417/README.md#keyboard-shortcuts
+
 ## Development building / running
 
 This app is built using Electron. Make sure you have at least node v4 with npm 3. The app uses ffmpeg from PATH when developing.
