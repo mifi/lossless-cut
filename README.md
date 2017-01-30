@@ -40,6 +40,9 @@ Press <kbd>h</kbd> To show/hide list of shortcuts
 For old shortcuts see here:
 https://github.com/mifi/lossless-cut/blob/41d6991c11b0a82b08344fd22a1ea094af217417/README.md#keyboard-shortcuts
 
+### Known issues
+- If you get an error when cutting any kind of file under Windows, please check your anti-virus. It might be blocking execution of ffmpeg, see https://github.com/mifi/lossless-cut/issues/18
+
 ## Development building / running
 
 This app is built using Electron. Make sure you have at least node v4 with npm 3. The app uses ffmpeg from PATH when developing.
