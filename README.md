@@ -41,7 +41,8 @@ For old shortcuts see here:
 https://github.com/mifi/lossless-cut/blob/41d6991c11b0a82b08344fd22a1ea094af217417/README.md#keyboard-shortcuts
 
 ### Known issues
-- If you get an error when cutting any kind of file under Windows, please check your anti-virus. It might be blocking execution of ffmpeg, see https://github.com/mifi/lossless-cut/issues/18
+- Output videos will have an empty portion in the beginning, see discussion in [#13](https://github.com/mifi/lossless-cut/pull/13)
+- If you get an error when cutting any kind of file under Windows, please check your anti-virus. It might be blocking execution of ffmpeg, see [#18](https://github.com/mifi/lossless-cut/issues/18)
 
 ## Development building / running
 
