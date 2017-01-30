@@ -19,10 +19,10 @@ mkdir -p binaries/linux_x64 &&
 mkdir -p binaries/win32_ia32 &&
 mkdir -p binaries/win32_x64 &&
 mkdir -p binaries/darwin_x64 &&
-mv extracted/linux_ia32/ffmpeg-3.2-32bit-static/ffmpeg binaries/linux_ia32 &&
-mv extracted/linux_ia32/ffmpeg-3.2-32bit-static/ffprobe binaries/linux_ia32 &&
-mv extracted/linux_x64/ffmpeg-3.2-64bit-static/ffmpeg binaries/linux_x64 &&
-mv extracted/linux_x64/ffmpeg-3.2-64bit-static/ffprobe binaries/linux_x64 &&
+mv extracted/linux_ia32/ffmpeg-3.2.2-32bit-static/ffmpeg binaries/linux_ia32 &&
+mv extracted/linux_ia32/ffmpeg-3.2.2-32bit-static/ffprobe binaries/linux_ia32 &&
+mv extracted/linux_x64/ffmpeg-3.2.2-64bit-static/ffmpeg binaries/linux_x64 &&
+mv extracted/linux_x64/ffmpeg-3.2.2-64bit-static/ffprobe binaries/linux_x64 &&
 mv extracted/win32_ia32/ffmpeg-3.1.5-win32-static/bin/ffmpeg.exe binaries/win32_ia32 &&
 mv extracted/win32_ia32/ffmpeg-3.1.5-win32-static/bin/ffprobe.exe binaries/win32_ia32 &&
 mv extracted/win32_x64/ffmpeg-3.1.5-win64-static/bin/ffmpeg.exe binaries/win32_x64 &&
