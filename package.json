@@ -10,7 +10,7 @@
     "download-ffmpeg": "bash ./scripts/ffmpeg-dl/dl.sh",
     "extract-ffmpeg": "bash ./scripts/ffmpeg-dl/extract.sh",
     "copy-ffmpeg": "rm -rf dist/ffmpeg && mkdir dist/ffmpeg && cp ffmpeg-tmp/binaries/${PLATFORM}_${ARCH}/* dist/ffmpeg",
-    "package-single": "npm run copy-ffmpeg && electron-packager dist LosslessCut --out=package --asar.unpackDir=ffmpeg --overwrite --platform=${PLATFORM} --arch=${ARCH} --icon=icon-dist/${ICON} --win32metadata.CompanyName=mifi --win32metadata.FileDescription=LosslessCut --win32metadata.OriginalFilename=LosslessCut.exe --win32metadata.ProductName=LosslessCut --win32metadata.InternalName=LosslessCut",
+    "package-single": "npm run copy-ffmpeg && electron-packager dist LosslessCut --out=package --asar.unpackDir=ffmpeg --overwrite --platform=${PLATFORM} --arch=${ARCH} --icon=icon-dist/${ICON} --app-copyright='Copyright (c) 2016 Mikael Finstad' --win32metadata.CompanyName=mifi --win32metadata.FileDescription=LosslessCut --win32metadata.OriginalFilename=LosslessCut.exe --win32metadata.ProductName=LosslessCut --win32metadata.InternalName=LosslessCut",
     "package:darwin_x64": "PLATFORM=darwin ARCH=x64 ICON=app.icns npm run package-single",
     "package:win32_ia32": "PLATFORM=win32 ARCH=ia32 ICON=app.ico npm run package-single",
     "package:win32_x64": "PLATFORM=win32 ARCH=x64 ICON=app.ico npm run package-single",
