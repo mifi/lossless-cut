@@ -5,8 +5,15 @@ ffmpeg_win32_ia32=https://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-3.1.5-wi
 ffmpeg_win32_x64=https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-3.1.5-win64-static.zip
 ffprobe_darwin_x64=http://evermeet.cx/ffmpeg/ffprobe-3.2.7z
 
-mkdir -p ffmpeg-tmp/archives &&
-(cd ffmpeg-tmp/archives &&
+OUT_DIR=ffmpeg-tmp/archives
+
+if [ -d "$OUT_DIR" ]; then
+  echo "$OUT_DIR exists, skipping download."
+  exit
+fi
+
+mkdir "$OUT_DIR" &&
+(cd "$OUT_DIR" &&
 wget -O ffmpeg_linux_ia32.tar.xz "${ffmpeg_linux_ia32}" &&
 wget -O ffmpeg_linux_x64.tar.xz "${ffmpeg_linux_x64}" &&
 wget -O ffmpeg_darwin_x64.7z "${ffmpeg_darwin_x64}" &&

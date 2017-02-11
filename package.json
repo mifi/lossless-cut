@@ -19,13 +19,21 @@
     "zip": "(cd package && rm -f LosslessCut-*.zip && for f in LosslessCut-*; do zip -r --symlinks \"$f\".zip \"$f\"; done)",
     "icon-gen": "icon-gen -i src/icon.svg -o ./icon-dist -r",
     "package": "npm run package:darwin_x64 && npm run package:win32_ia32 && npm run package:win32_x64 && npm run package:linux_ia32 && npm run package:linux_x64 && npm run zip",
+    "release": "gh-release -a package/LosslessCut-darwin-x64.zip,package/LosslessCut-win32-ia32.zip,package/LosslessCut-win32-x64.zip,package/LosslessCut-linux-ia32.zip,package/LosslessCut-linux-x64.zip",
     "gifify": "gifify -p 405:299 -r 5@3 Untitled.mov-00.00.00.971-00.00.19.780.mp4",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "clean": "rm -rf ffmpeg-tmp/extracted ffmpeg-tmp/binaries package",
+    "clean-ffmpeg": "rm -rf ffmpeg-tmp/archives"
   },
   "author": {
     "name": "Mikael Finstad",
     "email": "finstaden@gmail.com",
     "url": "mifi.no"
+  },
+  "repository" :
+  {
+    "type" : "git",
+    "url" : "https://github.com/mifi/lossless-cut.git"
   },
   "license": "MIT",
   "devDependencies": {
@@ -38,6 +46,7 @@
     "eslint-plugin-import": "^1.16.0",
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.4.1",
+    "gh-release": "^2.2.1",
     "icon-gen": "git+https://github.com/mifi/npm-icon-gen.git#ca9a098482d09bd378328bc1810ec2846429d109"
   },
   "dependencies": {

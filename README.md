@@ -63,13 +63,19 @@ Then:
 npm start
 ```
 
-### Building package
+### Release new version
 ```
+# Commit changes
+# Wait for Travis
+npm version ...
+# Update CHANGELOG.md
 npm run download-ffmpeg
 npm run extract-ffmpeg
 npm run build
 npm run icon-gen
-npm run package # builds all platforms
+npm run package
+npm run release
+
 ```
 
 ## Credits
