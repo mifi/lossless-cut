@@ -69,6 +69,8 @@ npm start
 # Wait for Travis
 npm version ...
 # Update CHANGELOG.md
+# Commit CHANGELOG.md
+# Push
 npm run download-ffmpeg
 npm run extract-ffmpeg
 npm run build
