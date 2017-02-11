@@ -42,7 +42,6 @@
   },
   "dependencies": {
     "bluebird": "^3.4.6",
-    "capture-frame": "^1.0.0",
     "classnames": "^2.2.5",
     "electron": "^1.4.5",
     "electron-default-menu": "^1.0.0",
@@ -52,10 +51,12 @@
     "jquery": "^3.1.1",
     "keyboardjs": "^2.3.3",
     "lodash": "^4.16.4",
+    "mime-types": "^2.1.14",
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
     "react-hammerjs": "^0.5.0",
     "read-chunk": "^2.0.0",
+    "strong-data-uri": "^1.0.4",
     "which": "^1.2.11"
   }
 }

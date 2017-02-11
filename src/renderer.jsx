@@ -2,14 +2,13 @@ const electron = require('electron'); // eslint-disable-line
 const $ = require('jquery');
 const keyboardJs = require('keyboardjs');
 const _ = require('lodash');
-const captureFrame = require('capture-frame');
-const fs = require('fs');
 const Hammer = require('react-hammerjs');
 
 const React = require('react');
 const ReactDOM = require('react-dom');
 const classnames = require('classnames');
 
+const captureFrame = require('./capture-frame');
 const ffmpeg = require('./ffmpeg');
 const util = require('./util');
 
@@ -245,11 +244,8 @@ class App extends React.Component {
 
   capture() {
     if (!this.state.filePath) return;
-    const buf = captureFrame(getVideo(), 'jpg');
-    const outPath = `${this.state.filePath}-${util.formatDuration(this.state.currentTime)}.jpg`;
-    fs.writeFile(outPath, buf, (err) => {
-      if (err) alert(err);
-    });
+    const outPathWithoutExt = `${this.state.filePath}-${util.formatDuration(this.state.currentTime)}`;
+    captureFrame(getVideo(), outPathWithoutExt).catch(err => alert(err));
   }
 
   toggleHelp() {
