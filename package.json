@@ -1,6 +1,6 @@
 {
   "name": "lossless-cut",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -30,10 +30,9 @@
     "email": "finstaden@gmail.com",
     "url": "mifi.no"
   },
-  "repository" :
-  {
-    "type" : "git",
-    "url" : "https://github.com/mifi/lossless-cut.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mifi/lossless-cut.git"
   },
   "license": "MIT",
   "devDependencies": {
