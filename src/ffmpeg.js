@@ -97,7 +97,7 @@ function getFormat(filePath) {
             return {
               fileFormat: formats[0] || undefined,
               cutEndTime: mediaDuration
-            }
+            };
           });
       });
   });
