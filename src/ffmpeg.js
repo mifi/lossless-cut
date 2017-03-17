@@ -11,7 +11,6 @@ const util = require('./util');
 
 bluebird.promisifyAll(fs);
 
-
 function showFfmpegFail(err) {
   alert(`Failed to run ffmpeg:\n${err.stack}`);
   console.error(err.stack);
@@ -73,16 +72,32 @@ function getFormat(filePath) {
         '-of', 'json', '-show_format', '-i', filePath,
       ]))
       .then((result) => {
-        const formatsStr = JSON.parse(result.stdout).format.format_name;
+        const resultAsJSON = JSON.parse(result.stdout);
+        const formatsStr = resultAsJSON.format.format_name;
         console.log('formats', formatsStr);
         const formats = (formatsStr || '').split(',');
+
+        // Get duration of media using info from ffprobe
+        const mediaDuration = resultAsJSON.format.duration;
+        console.log(`length of clip: ${mediaDuration}`);
 
         // ffprobe sometimes returns a list of formats, try to be a bit smarter about it.
         return readChunk(filePath, 0, 4100)
           .then((bytes) => {
             const ft = fileType(bytes);
-            if (_.includes(formats, (ft || {}).ext)) return ft.ext;
-            return formats[0] || undefined;
+            if (_.includes(formats, (ft || {}).ext)) {
+              // return an object that will help set values for defaultState
+              return {
+                fileFormat: ft.ext,
+                cutEndTime: mediaDuration,
+              };
+            }
+
+            // return an object that will help set values for defaultState
+            return {
+              fileFormat: formats[0] || undefined,
+              cutEndTime: mediaDuration,
+            };
           });
       });
   });
