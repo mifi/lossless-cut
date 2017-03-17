@@ -89,14 +89,14 @@ function getFormat(filePath) {
               // return an object that will help set values for defaultState
               return {
                 fileFormat: ft.ext,
-                cutEndTime: mediaDuration
+                cutEndTime: mediaDuration,
               };
             }
 
             // return an object that will help set values for defaultState
             return {
               fileFormat: formats[0] || undefined,
-              cutEndTime: mediaDuration
+              cutEndTime: mediaDuration,
             };
           });
       });
