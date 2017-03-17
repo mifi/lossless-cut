@@ -96,9 +96,9 @@ class App extends React.Component {
       this.setState({ working: true });
 
       return ffmpeg.getFormat(filePath)
-        .then((fileFormat) => {
+        .then(({ fileFormat, cutEndTime }) => {
           if (!fileFormat) return alert('Unsupported file');
-          return this.setState({ filePath, fileFormat });
+          return this.setState({ filePath, fileFormat, cutEndTime });
         })
         .catch((err) => {
           if (err.code === 1 || err.code === 'ENOENT') {
