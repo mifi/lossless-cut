@@ -148,6 +148,11 @@ class App extends React.Component {
     }
   }
 
+  onDurationChange(duration) {
+    this.setState({ duration });
+    if (!this.state.cutEndTime) this.setState({ cutEndTime: duration });
+  }
+
   setCutStart() {
     this.setState({ cutStartTime: this.state.currentTime });
   }
@@ -218,9 +223,6 @@ class App extends React.Component {
     const cutStartTime = this.state.cutStartTime;
     const cutEndTime = this.state.cutEndTime;
     const filePath = this.state.filePath;
-    if (cutStartTime === undefined || cutEndTime === undefined) {
-      return alert('Please select both start and time');
-    }
     if (cutStartTime >= cutEndTime) {
       return alert('Start time must be before end time');
     }
@@ -264,7 +266,7 @@ class App extends React.Component {
           onRateChange={() => this.playbackRateChange()}
           onPlay={() => this.onPlay(true)}
           onPause={() => this.onPlay(false)}
-          onDurationChange={e => this.setState({ duration: e.target.duration })}
+          onDurationChange={e => this.onDurationChange(e.target.duration)}
           onTimeUpdate={e => this.setState({ currentTime: e.target.currentTime })}
         />
       </div>
