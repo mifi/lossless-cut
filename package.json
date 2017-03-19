@@ -22,7 +22,7 @@
     "release": "gh-release -a package/LosslessCut-darwin-x64.zip,package/LosslessCut-win32-ia32.zip,package/LosslessCut-win32-x64.zip,package/LosslessCut-linux-ia32.zip,package/LosslessCut-linux-x64.zip",
     "gifify": "gifify -p 405:299 -r 5@3 Untitled.mov-00.00.00.971-00.00.19.780.mp4",
     "lint": "eslint .",
-    "clean": "rm -rf ffmpeg-tmp/extracted ffmpeg-tmp/binaries package",
+    "clean": "rm -rf dist ffmpeg-tmp/extracted ffmpeg-tmp/binaries package",
     "clean-ffmpeg": "rm -rf ffmpeg-tmp/archives"
   },
   "author": {
