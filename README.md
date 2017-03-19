@@ -1,6 +1,6 @@
 # LosslessCut 🎥 [![Travis](https://img.shields.io/travis/mifi/lossless-cut.svg)]()
 
-Simple, cross platform video editor for lossless trimming / cutting of videos. Great for rough processing of large video files taken from a video camera, GoPro, drone, etc. Lets you quickly extract the good parts from your videos and discard GB of data without losing quality. It doesn't do any decoding / encoding and is therefore extremely fast. Also allows for taking JPEG snapshots of the video at the selected time. This app uses the awesome ffmpeg🙏 for doing the grunt work. Also supports lossless cutting in the most common audio formats.
+Simple, cross platform tool for lossless trimming / cutting of video and audio files. Great for rough processing of large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard GBs of data without losing quality. It doesn't do any decoding / encoding and is therefore extremely fast. Also allows for taking JPEG snapshots of the video at the selected time. This app uses the awesome ffmpeg🙏 for doing the grunt work. Also supports lossless cutting in the most common audio formats.
 
 <b>ffmpeg is now included in the app! 🎉</b>
 
@@ -25,7 +25,7 @@ Since LosslessCut is based on Chromium and uses the HTML5 video player, not all 
 The following formats/codecs should generally work: MP4, MOV, WebM, MKV, OGG, WAV, MP3, AAC, H264, Theora, VP8, VP9
 For more information about supported formats / codecs, see https://www.chromium.org/audio-video.
 
-### Typical flow
+### Typical workflow
 - Drag drop a video file into player to load or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
 - Press <kbd>SPACE</kbd> to play/pause
 - Select the cut start and end time
