@@ -63,6 +63,29 @@ function cut(outputDir, filePath, format, cutFrom, cutTo) {
   });
 }
 
+/**
+ * ffmpeg only supports encoding certain formats, and some of the detected input
+ * formats are not the same as the names used for encoding.
+ * Therefore we have to map between detected format and encode format
+ * See also ffmpeg -formats
+ */
+function mapFormat(requestedFormat) {
+  switch (requestedFormat) {
+    // These two cmds produce identical output, so we assume that encoding "ipod" means encoding m4a
+    // ffmpeg -i example.aac -c copy OutputFile2.m4a
+    // ffmpeg -i example.aac -c copy -f ipod OutputFile.m4a
+    // See also https://github.com/mifi/lossless-cut/issues/28
+    case 'm4a': return 'ipod';
+    case 'aac': return 'ipod';
+    default: return requestedFormat;
+  }
+}
+
+function determineOutputFormat(ffprobeFormats, ft) {
+  if (_.includes(ffprobeFormats, ft.ext)) return ft.ext;
+  return ffprobeFormats[0] || undefined;
+}
+
 function getFormat(filePath) {
   return bluebird.try(() => {
     console.log('getFormat', filePath);
@@ -80,9 +103,10 @@ function getFormat(filePath) {
         // ffprobe sometimes returns a list of formats, try to be a bit smarter about it.
         return readChunk(filePath, 0, 4100)
           .then((bytes) => {
-            const ft = fileType(bytes);
-            if (_.includes(formats, (ft || {}).ext)) return ft.ext;
-            return formats[0] || undefined;
+            const ft = fileType(bytes) || {};
+            console.log(`fileType detected format ${JSON.stringify(ft)}`);
+            const assumedFormat = determineOutputFormat(formats, ft);
+            return mapFormat(assumedFormat);
           });
       });
   });
