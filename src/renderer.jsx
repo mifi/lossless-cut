@@ -63,6 +63,13 @@ function renderHelpSheet(visible) {
   return undefined;
 }
 
+function withBlur(cb) {
+  return (e) => {
+    e.target.blur();
+    cb();
+  };
+}
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -324,7 +331,7 @@ class App extends React.Component {
         <div>
           <button
             className="jump-cut-start" title="Cut start time (jump)"
-            onClick={() => this.jumpCutStart()}
+            onClick={withBlur(() => this.jumpCutStart())}
           >{util.formatDuration(this.state.cutStartTime || 0)}</button>
           <i
             title="Set cut start"
@@ -346,7 +353,7 @@ class App extends React.Component {
           />
           <button
             className="jump-cut-end" title="Cut end time (jump)"
-            onClick={() => this.jumpCutEnd()}
+            onClick={withBlur(() => this.jumpCutEnd())}
           >{util.formatDuration(this.state.cutEndTime || 0)}</button>
         </div>
       </div>
@@ -354,7 +361,7 @@ class App extends React.Component {
       <div className="right-menu">
         <button
           title={`Custom output dir (cancel to restore default). Current: ${this.state.outputDir || 'Not set'}`}
-          onClick={() => this.setOutputDir()}
+          onClick={withBlur(() => this.setOutputDir())}
         >
           {this.state.outputDir ? `...${this.state.outputDir.substr(-10)}` : 'OUT PATH'}
         </button>
