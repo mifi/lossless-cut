@@ -35,6 +35,34 @@ function getFfmpegPath() {
     });
 }
 
+function getFfprobePath() {
+  return getFfmpegPath()
+    .then(ffmpegPath => path.join(path.dirname(ffmpegPath), getWithExt('ffprobe')));
+}
+
+function getNearestKeyframeTime(filePath, cutTime) {
+  return getFfprobePath()
+    .then(ffprobePath => execa(ffprobePath, [
+      '-of', 'json', '-select_streams', 'v', '-show_frames', '-read_intervals', `${cutTime}%+#1`, '-i', filePath,
+    ]))
+    .then((result) => {
+      // We are gived one frame, which is an I-frame
+      const frame = (JSON.parse(result.stdout).frames[0] || {});
+      console.log('Frame', frame);
+      if (frame.pict_type !== 'I') throw new Error(`Expected I-frame from ffprobe, got ${frame.pict_type}`);
+      const safetyOffset = frame.pkt_duration_time * 3; // 3 seems to be working
+      const keyframeTime = frame.best_effort_timestamp_time - safetyOffset;
+      const keykeyframeTimeTruncated = keyframeTime >= 0 ? keyframeTime : 0;
+      console.log('Keyframe time', keykeyframeTimeTruncated);
+
+      return keykeyframeTimeTruncated;
+    })
+    .catch((err) => {
+      console.error('Failed to get nearest keyframe time', err);
+      return cutTime;
+    });
+}
+
 function cut(outputDir, filePath, format, cutFrom, cutTo) {
   return bluebird.try(() => {
     const ext = path.extname(filePath) || `.${format}`;
@@ -46,19 +74,29 @@ function cut(outputDir, filePath, format, cutFrom, cutTo) {
 
     console.log('Cutting from', cutFrom, 'to', cutTo);
 
-    const ffmpegArgs = [
-      '-i', filePath, '-y', '-vcodec', 'copy', '-acodec', 'copy',
-      '-ss', cutFrom, '-t', cutTo - cutFrom,
-      '-f', format,
-      outFile,
-    ];
+    return getNearestKeyframeTime(filePath, cutFrom)
+      .then((cutFromKeyframe) => {
+        const ffmpegArgs = [].concat(
+          [
+            '-i', filePath, '-y', '-vcodec', 'copy', '-acodec', 'copy',
+          ],
+          cutFromKeyframe ? [
+            '-ss', cutFromKeyframe,
+          ] : [],
+          [
+            '-t', cutTo - cutFromKeyframe,
+            '-f', format,
+            outFile,
+          ]
+        );
 
-    console.log('ffmpeg', ffmpegArgs.join(' '));
+        console.log('ffmpeg', ffmpegArgs.join(' '));
 
-    return getFfmpegPath()
-      .then(ffmpegPath => execa(ffmpegPath, ffmpegArgs))
-      .then((result) => {
-        console.log(result.stdout);
+        return getFfmpegPath()
+          .then(ffmpegPath => execa(ffmpegPath, ffmpegArgs))
+          .then((result) => {
+            console.log(result.stdout);
+          });
       });
   });
 }
@@ -90,8 +128,7 @@ function getFormat(filePath) {
   return bluebird.try(() => {
     console.log('getFormat', filePath);
 
-    return getFfmpegPath()
-      .then(ffmpegPath => path.join(path.dirname(ffmpegPath), getWithExt('ffprobe')))
+    return getFfprobePath()
       .then(ffprobePath => execa(ffprobePath, [
         '-of', 'json', '-show_format', '-i', filePath,
       ]))
