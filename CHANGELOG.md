@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.6.0] - 2017-03-27
+### Fixed
+- Be a bit smarter about aac/m4a files #28
+- Make end time the end of video by default
+- Prevent buttons from stealing focus
+
 ## [1.5.0] - 2017-02-11
 ### Fixed
 - Add missing win32 metadata
