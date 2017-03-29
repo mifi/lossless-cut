@@ -20,6 +20,8 @@ function getVideo() {
 
 function seekAbs(val) {
   const video = getVideo();
+  if (val == null || isNaN(val)) return;
+
   let outVal = val;
   if (outVal < 0) outVal = 0;
   if (outVal > video.duration) outVal = video.duration;
@@ -230,6 +232,9 @@ class App extends React.Component {
     const cutStartTime = this.state.cutStartTime;
     const cutEndTime = this.state.cutEndTime;
     const filePath = this.state.filePath;
+    if (cutStartTime === undefined || cutEndTime === undefined) {
+      return alert('Please select both start and end time');
+    }
     if (cutStartTime >= cutEndTime) {
       return alert('Start time must be before end time');
     }
