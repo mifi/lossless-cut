@@ -257,9 +257,11 @@ class App extends React.Component {
   }
 
   capture() {
-    if (!this.state.filePath) return;
-    const outPathWithoutExt = `${this.state.filePath}-${util.formatDuration(this.state.currentTime)}`;
-    captureFrame(getVideo(), outPathWithoutExt).catch(err => alert(err));
+    const filePath = this.state.filePath;
+    const outputDir = this.state.outputDir;
+    const currentTime = this.state.currentTime;
+    if (!filePath) return;
+    captureFrame(outputDir, filePath, getVideo(), currentTime).catch(err => alert(err));
   }
 
   toggleHelp() {

@@ -3,6 +3,8 @@ const fs = require('fs');
 const mime = require('mime-types');
 const strongDataUri = require('strong-data-uri');
 
+const util = require('./util');
+
 bluebird.promisifyAll(fs);
 
 function getFrameFromVideo(video) {
@@ -19,10 +21,13 @@ function getFrameFromVideo(video) {
   return strongDataUri.decode(dataUri);
 }
 
-function captureFrame(video, outPathWithoutExt) {
+function captureFrame(customOutDir, filePath, video, currentTime) {
   const buf = getFrameFromVideo(video);
+
   const ext = mime.extension(buf.mimetype);
-  const outPath = `${outPathWithoutExt}.${ext}`;
+  const time = util.formatDuration(currentTime);
+
+  const outPath = util.getOutPath(customOutDir, filePath, `${time}.${ext}`);
   return fs.writeFileAsync(outPath, buf);
 }
 

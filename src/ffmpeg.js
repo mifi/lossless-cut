@@ -35,14 +35,13 @@ function getFfmpegPath() {
     });
 }
 
-function cut(outputDir, filePath, format, cutFrom, cutTo) {
+function cut(customOutDir, filePath, format, cutFrom, cutTo) {
   return bluebird.try(() => {
-    const ext = path.extname(filePath) || `.${format}`;
+    const extWithoutDot = path.extname(filePath) || `.${format}`;
+    const ext = `.${extWithoutDot}`;
     const duration = `${util.formatDuration(cutFrom)}-${util.formatDuration(cutTo)}`;
-    const basename = path.basename(filePath);
-    const outFile = outputDir ?
-      path.join(outputDir, `${basename}-${duration}${ext}`) :
-      `${filePath}-${duration}${ext}`;
+
+    const outPath = util.getOutPath(customOutDir, filePath, `${duration}${ext}`);
 
     console.log('Cutting from', cutFrom, 'to', cutTo);
 
@@ -50,7 +49,7 @@ function cut(outputDir, filePath, format, cutFrom, cutTo) {
       '-i', filePath, '-y', '-vcodec', 'copy', '-acodec', 'copy',
       '-ss', cutFrom, '-t', cutTo - cutFrom,
       '-f', format,
-      outFile,
+      outPath,
     ];
 
     console.log('ffmpeg', ffmpegArgs.join(' '));

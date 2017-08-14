@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const path = require('path');
 
 function formatDuration(_seconds) {
   const seconds = _seconds || 0;
@@ -14,6 +15,15 @@ function formatDuration(_seconds) {
   return `${hoursPadded}.${minutesPadded}.${secondsPadded}.${msPadded}`;
 }
 
+function getOutPath(customOutDir, filePath, nameSuffix) {
+  const basename = path.basename(filePath);
+
+  return customOutDir ?
+    path.join(customOutDir, `${basename}-${nameSuffix}`) :
+    `${filePath}-${nameSuffix}`;
+}
+
 module.exports = {
   formatDuration,
+  getOutPath,
 };
