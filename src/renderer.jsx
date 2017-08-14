@@ -163,6 +163,10 @@ class App extends React.Component {
     if (!this.state.cutEndTime) this.setState({ cutEndTime: duration });
   }
 
+  onCutProgress(cutProgress) {
+    this.setState({ cutProgress });
+  }
+
   setCutStart() {
     this.setState({ cutStartTime: this.state.currentTime });
   }
@@ -248,7 +252,14 @@ class App extends React.Component {
     this.setState({ working: true });
     const outputDir = this.state.outputDir;
     const fileFormat = this.state.fileFormat;
-    return ffmpeg.cut(outputDir, filePath, fileFormat, cutStartTime, cutEndTime)
+    return ffmpeg.cut(
+      outputDir,
+      filePath,
+      fileFormat,
+      cutStartTime,
+      cutEndTime,
+      progress => this.onCutProgress(progress),
+    )
       .catch((err) => {
         console.error('stdout:', err.stdout);
         console.error('stderr:', err.stderr);
@@ -278,9 +289,15 @@ class App extends React.Component {
 
   render() {
     return (<div>
-      {this.state.filePath ? undefined : <div id="drag-drop-field">DROP VIDEO</div>}
-      {this.state.working ? <div id="working"><i className="fa fa-cog fa-spin fa-3x fa-fw" /></div>
-        : undefined}
+      {!this.state.filePath && <div id="drag-drop-field">DROP VIDEO</div>}
+      {this.state.working && (
+        <div id="working">
+          <i className="fa fa-cog fa-spin fa-3x fa-fw" style={{ verticalAlign: 'middle' }} />
+          <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+            {Math.floor((this.state.cutProgress || 0) * 100)} %
+          </span>
+        </div>
+      )}
 
       <div id="player">
         <video

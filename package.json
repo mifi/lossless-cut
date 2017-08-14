@@ -60,6 +60,7 @@
     "keyboardjs": "^2.3.3",
     "lodash": "^4.16.4",
     "mime-types": "^2.1.14",
+    "moment": "^2.18.1",
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
     "react-hammerjs": "^0.5.0",

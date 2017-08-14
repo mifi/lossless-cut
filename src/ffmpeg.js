@@ -6,6 +6,8 @@ const fs = require('fs');
 const fileType = require('file-type');
 const readChunk = require('read-chunk');
 const _ = require('lodash');
+const readline = require('readline');
+const moment = require('moment');
 
 const util = require('./util');
 
@@ -35,7 +37,25 @@ function getFfmpegPath() {
     });
 }
 
-function cut(customOutDir, filePath, format, cutFrom, cutTo) {
+function handleProgress(process, cutDuration, onProgress) {
+  const rl = readline.createInterface({ input: process.stderr });
+  rl.on('line', (line) => {
+    try {
+      const match = line.match(/frame=\s*[^\s]+\s+fps=\s*[^\s]+\s+q=\s*[^\s]+\s+(?:size|Lsize)=\s*[^\s]+\s+time=\s*([^\s]+)\s+/); // eslint-disable-line max-len
+      if (!match) return;
+
+      const str = match[1];
+      console.log(str);
+      const progressTime = moment.duration(str).asSeconds();
+      console.log(progressTime);
+      onProgress(progressTime / cutDuration);
+    } catch (err) {
+      console.log('Failed to parse ffmpeg progress line', err);
+    }
+  });
+}
+
+function cut(customOutDir, filePath, format, cutFrom, cutTo, onProgress) {
   return bluebird.try(() => {
     const extWithoutDot = path.extname(filePath) || `.${format}`;
     const ext = `.${extWithoutDot}`;
@@ -54,8 +74,14 @@ function cut(customOutDir, filePath, format, cutFrom, cutTo) {
 
     console.log('ffmpeg', ffmpegArgs.join(' '));
 
+    onProgress(0);
+
     return getFfmpegPath()
-      .then(ffmpegPath => execa(ffmpegPath, ffmpegArgs))
+      .then((ffmpegPath) => {
+        const process = execa(ffmpegPath, ffmpegArgs);
+        handleProgress(process, cutTo - cutFrom, onProgress);
+        return process;
+      })
       .then((result) => {
         console.log(result.stdout);
       });
