@@ -85,6 +85,7 @@ class App extends React.Component {
       cutStartTime: 0,
       cutEndTime: undefined,
       fileFormat: undefined,
+      captureFormat: 'jpeg',
     };
 
     this.state = _.cloneDeep(defaultState);
@@ -180,6 +181,11 @@ class App extends React.Component {
     return (this.state.filePath || '').replace(/#/g, '%23');
   }
 
+  toggleCaptureFormat() {
+    const isPng = this.state.captureFormat === 'png';
+    this.setState({ captureFormat: isPng ? 'jpeg' : 'png' });
+  }
+
   jumpCutStart() {
     seekAbs(this.state.cutStartTime);
   }
@@ -260,8 +266,10 @@ class App extends React.Component {
     const filePath = this.state.filePath;
     const outputDir = this.state.outputDir;
     const currentTime = this.state.currentTime;
+    const captureFormat = this.state.captureFormat;
     if (!filePath) return;
-    captureFrame(outputDir, filePath, getVideo(), currentTime).catch(err => alert(err));
+    captureFrame(outputDir, filePath, getVideo(), currentTime, captureFormat)
+      .catch(err => alert(err));
   }
 
   toggleHelp() {
@@ -367,7 +375,7 @@ class App extends React.Component {
 
       <div className="right-menu">
         <button
-          title={`Custom output dir (cancel to restore default). Current: ${this.state.outputDir || 'Not set'}`}
+          title={`Custom output dir (cancel to restore default). Current: ${this.state.outputDir || 'Not set (use input dir)'}`}
           onClick={withBlur(() => this.setOutputDir())}
         >
           {this.state.outputDir ? `...${this.state.outputDir.substr(-10)}` : 'OUT PATH'}
@@ -384,6 +392,12 @@ class App extends React.Component {
           aria-hidden="true"
           onClick={() => this.capture()}
         />
+        <button
+          title="Capture frame format"
+          onClick={withBlur(() => this.toggleCaptureFormat())}
+        >
+          {this.state.captureFormat}
+        </button>
       </div>
 
       {renderHelpSheet(this.state.helpVisible)}

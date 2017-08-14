@@ -7,9 +7,7 @@ const util = require('./util');
 
 bluebird.promisifyAll(fs);
 
-function getFrameFromVideo(video) {
-  const format = 'jpeg';
-
+function getFrameFromVideo(video, format) {
   const canvas = document.createElement('canvas');
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
@@ -21,8 +19,8 @@ function getFrameFromVideo(video) {
   return strongDataUri.decode(dataUri);
 }
 
-function captureFrame(customOutDir, filePath, video, currentTime) {
-  const buf = getFrameFromVideo(video);
+function captureFrame(customOutDir, filePath, video, currentTime, captureFormat) {
+  const buf = getFrameFromVideo(video, captureFormat);
 
   const ext = mime.extension(buf.mimetype);
   const time = util.formatDuration(currentTime);
