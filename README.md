@@ -28,7 +28,7 @@ For more information about supported formats / codecs, see https://www.chromium.
 ### Typical workflow
 - Drag drop a video file into player to load or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
 - Press <kbd>SPACE</kbd> to play/pause
-- Select the cut start and end time
+- Select the cut start and end time.  Press <kbd>I</kbd> to select the start time, <kbd>O</kbd> to select the end time for the cut.
 - Press the scissors button to export the slice
 - Press the camera button to take a snapshot
 
