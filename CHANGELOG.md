@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.7.0] - 2017-08-17
+### Added
+- Progress when cutting (percent done)
+- Ability to change frame capture image format (JPEG/PNG)
+
+### Changed
+- Don't allow cutting without a valid start/end
+
+### Fixed
+- Don't try to seek when no duration
+- Also capture frame to custom output dir
+- Fix running LosslessCut from strange directories
+
 ## [1.6.0] - 2017-03-27
 ### Fixed
 - Be a bit smarter about aac/m4a files #28
