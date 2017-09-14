@@ -262,16 +262,16 @@ class App extends React.Component {
       progress => this.onCutProgress(progress),
       );
     } catch (err) {
-        console.error('stdout:', err.stdout);
-        console.error('stderr:', err.stderr);
+      console.error('stdout:', err.stdout);
+      console.error('stderr:', err.stderr);
 
-        if (err.code === 1 || err.code === 'ENOENT') {
+      if (err.code === 1 || err.code === 'ENOENT') {
         return alert('Whoops! ffmpeg was unable to cut this video. It may be of an unknown format or codec combination');
       }
       return ffmpeg.showFfmpegFail(err);
     } finally {
       this.setState({ working: false });
-        }
+    }
   }
 
   capture() {
