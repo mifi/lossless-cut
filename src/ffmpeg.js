@@ -56,30 +56,31 @@ function handleProgress(process, cutDuration, onProgress) {
 }
 
 async function cut(customOutDir, filePath, format, cutFrom, cutTo, onProgress) {
-    const extWithoutDot = path.extname(filePath) || `.${format}`;
-    const ext = `.${extWithoutDot}`;
-    const duration = `${util.formatDuration(cutFrom)}-${util.formatDuration(cutTo)}`;
+  const extWithoutDot = path.extname(filePath) || `.${format}`;
+  const ext = `.${extWithoutDot}`;
+  const duration = `${util.formatDuration(cutFrom)}-${util.formatDuration(cutTo)}`;
 
-    const outPath = util.getOutPath(customOutDir, filePath, `${duration}${ext}`);
+  const outPath = util.getOutPath(customOutDir, filePath, `${duration}${ext}`);
 
-    console.log('Cutting from', cutFrom, 'to', cutTo);
+  console.log('Cutting from', cutFrom, 'to', cutTo);
 
-    const ffmpegArgs = [
-      '-i', filePath, '-y', '-vcodec', 'copy', '-acodec', 'copy',
-      '-ss', cutFrom, '-t', cutTo - cutFrom,
-      '-f', format,
-      outPath,
-    ];
+  const ffmpegArgs = [
+    '-i', filePath, '-y', '-vcodec', 'copy', '-acodec', 'copy',
+    '-ss', cutFrom, '-t', cutTo - cutFrom,
+    '-map_metadata', '0',
+    '-f', format,
+    outPath,
+  ];
 
-    console.log('ffmpeg', ffmpegArgs.join(' '));
+  console.log('ffmpeg', ffmpegArgs.join(' '));
 
-    onProgress(0);
+  onProgress(0);
 
   const ffmpegPath = await getFfmpegPath();
-        const process = execa(ffmpegPath, ffmpegArgs);
-        handleProgress(process, cutTo - cutFrom, onProgress);
+  const process = execa(ffmpegPath, ffmpegArgs);
+  handleProgress(process, cutTo - cutFrom, onProgress);
   const result = await process;
-        console.log(result.stdout);
+  console.log(result.stdout);
 
   return util.transferTimestamps(filePath, outPath);
 }
