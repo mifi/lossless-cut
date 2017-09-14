@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.8.0] - 2017-09-14
+
+### Changed
+- Preserve input file modification time when cutting/screenshotting
+- Make ffmpeg map metadata using `-map_metadata 0`
+
 ## [1.7.0] - 2017-08-17
 ### Added
 - Progress when cutting (percent done)
