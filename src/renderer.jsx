@@ -236,7 +236,7 @@ class App extends React.Component {
     });
   }
 
-  cutClick() {
+  async cutClick() {
     if (this.state.working) return alert('I\'m busy');
 
     const cutStartTime = this.state.cutStartTime;
@@ -252,25 +252,26 @@ class App extends React.Component {
     this.setState({ working: true });
     const outputDir = this.state.outputDir;
     const fileFormat = this.state.fileFormat;
-    return ffmpeg.cut(
+    try {
+      return await ffmpeg.cut(
       outputDir,
       filePath,
       fileFormat,
       cutStartTime,
       cutEndTime,
       progress => this.onCutProgress(progress),
-    )
-      .catch((err) => {
+      );
+    } catch (err) {
         console.error('stdout:', err.stdout);
         console.error('stderr:', err.stderr);
 
         if (err.code === 1 || err.code === 'ENOENT') {
-          alert('Whoops! ffmpeg was unable to cut this video. It may be of an unknown format or codec combination');
-          return;
+        return alert('Whoops! ffmpeg was unable to cut this video. It may be of an unknown format or codec combination');
+      }
+      return ffmpeg.showFfmpegFail(err);
+    } finally {
+      this.setState({ working: false });
         }
-        ffmpeg.showFfmpegFail(err);
-      })
-      .finally(() => this.setState({ working: false }));
   }
 
   capture() {

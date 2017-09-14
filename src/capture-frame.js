@@ -19,14 +19,15 @@ function getFrameFromVideo(video, format) {
   return strongDataUri.decode(dataUri);
 }
 
-function captureFrame(customOutDir, filePath, video, currentTime, captureFormat) {
+async function captureFrame(customOutDir, filePath, video, currentTime, captureFormat) {
   const buf = getFrameFromVideo(video, captureFormat);
 
   const ext = mime.extension(buf.mimetype);
   const time = util.formatDuration(currentTime);
 
   const outPath = util.getOutPath(customOutDir, filePath, `${time}.${ext}`);
-  return fs.writeFileAsync(outPath, buf);
+  await fs.writeFileAsync(outPath, buf);
+  return util.transferTimestamps(filePath, outPath);
 }
 
 module.exports = captureFrame;

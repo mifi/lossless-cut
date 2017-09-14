@@ -55,8 +55,7 @@ function handleProgress(process, cutDuration, onProgress) {
   });
 }
 
-function cut(customOutDir, filePath, format, cutFrom, cutTo, onProgress) {
-  return bluebird.try(() => {
+async function cut(customOutDir, filePath, format, cutFrom, cutTo, onProgress) {
     const extWithoutDot = path.extname(filePath) || `.${format}`;
     const ext = `.${extWithoutDot}`;
     const duration = `${util.formatDuration(cutFrom)}-${util.formatDuration(cutTo)}`;
@@ -76,16 +75,13 @@ function cut(customOutDir, filePath, format, cutFrom, cutTo, onProgress) {
 
     onProgress(0);
 
-    return getFfmpegPath()
-      .then((ffmpegPath) => {
+  const ffmpegPath = await getFfmpegPath();
         const process = execa(ffmpegPath, ffmpegArgs);
         handleProgress(process, cutTo - cutFrom, onProgress);
-        return process;
-      })
-      .then((result) => {
+  const result = await process;
         console.log(result.stdout);
-      });
-  });
+
+  return util.transferTimestamps(filePath, outPath);
 }
 
 /**

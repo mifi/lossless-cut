@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const path = require('path');
+const fs = require('fs');
 
 function formatDuration(_seconds) {
   const seconds = _seconds || 0;
@@ -23,7 +24,17 @@ function getOutPath(customOutDir, filePath, nameSuffix) {
     `${filePath}-${nameSuffix}`;
 }
 
+async function transferTimestamps(inPath, outPath) {
+  try {
+    const stat = await fs.statAsync(inPath);
+    await fs.utimesAsync(outPath, stat.atime.getTime() / 1000, stat.mtime.getTime() / 1000);
+  } catch (err) {
+    console.error('Failed to set output file modified time', err);
+  }
+}
+
 module.exports = {
   formatDuration,
   getOutPath,
+  transferTimestamps,
 };
