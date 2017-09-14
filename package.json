@@ -21,7 +21,7 @@
     "package": "npm run package:darwin_x64 && npm run package:win32_ia32 && npm run package:win32_x64 && npm run package:linux_ia32 && npm run package:linux_x64 && npm run zip",
     "release": "gh-release -a package/LosslessCut-darwin-x64.zip,package/LosslessCut-win32-ia32.zip,package/LosslessCut-win32-x64.zip,package/LosslessCut-linux-ia32.zip,package/LosslessCut-linux-x64.zip",
     "gifify": "gifify -p 405:299 -r 5@3 Untitled.mov-00.00.00.971-00.00.19.780.mp4",
-    "lint": "eslint .",
+    "lint": "eslint --ext .jsx --ext .js .",
     "clean": "rm -rf dist ffmpeg-tmp/extracted ffmpeg-tmp/binaries package",
     "clean-ffmpeg": "rm -rf ffmpeg-tmp/archives"
   },
