@@ -23,7 +23,9 @@
     "gifify": "gifify -p 405:299 -r 5@3 Untitled.mov-00.00.00.971-00.00.19.780.mp4",
     "lint": "eslint --ext .jsx --ext .js .",
     "clean": "rm -rf dist ffmpeg-tmp/extracted ffmpeg-tmp/binaries package",
-    "clean-ffmpeg": "rm -rf ffmpeg-tmp/archives"
+    "clean-ffmpeg": "rm -rf ffmpeg-tmp/archives",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "author": {
     "name": "Mikael Finstad",
@@ -66,6 +68,8 @@
     "react-hammerjs": "^0.5.0",
     "read-chunk": "^2.0.0",
     "strong-data-uri": "^1.0.4",
-    "which": "^1.2.11"
-  }
+    "which": "^1.2.11",
+    "snyk": "^1.40.2"
+  },
+  "snyk": true
 }
