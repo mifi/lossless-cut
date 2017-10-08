@@ -3,6 +3,7 @@ const $ = require('jquery');
 const keyboardJs = require('keyboardjs');
 const _ = require('lodash');
 const Hammer = require('react-hammerjs');
+const path = require('path');
 
 const React = require('react');
 const ReactDOM = require('react-dom');
@@ -13,6 +14,11 @@ const ffmpeg = require('./ffmpeg');
 const util = require('./util');
 
 const dialog = electron.remote.dialog;
+
+function setFileNameTitle(filePath) {
+  const appName = 'LosslessCut';
+  document.title = `${appName} - ${path.basename(filePath)}`;
+}
 
 function getVideo() {
   return $('#player video')[0];
@@ -108,6 +114,7 @@ class App extends React.Component {
       return ffmpeg.getFormat(filePath)
         .then((fileFormat) => {
           if (!fileFormat) return alert('Unsupported file');
+          setFileNameTitle(filePath);
           return this.setState({ filePath, fileFormat });
         })
         .catch((err) => {
