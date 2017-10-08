@@ -1,8 +1,10 @@
 # LosslessCut 🎥 [![Travis](https://img.shields.io/travis/mifi/lossless-cut.svg)]()
 
-Simple, cross platform tool for lossless trimming / cutting of video and audio files. Great for rough processing of large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard GBs of data without losing quality. It doesn't do any decoding / encoding and is therefore extremely fast. Also allows for taking JPEG snapshots of the video at the selected time. This app uses the awesome ffmpeg🙏 for doing the grunt work. Also supports lossless cutting in the most common audio formats.
+Simple, cross platform tool for lossless trimming / cutting of video and audio files. Great for rough processing of large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard GBs of data without losing quality. It doesn't do any decoding / encoding and is therefore extremely fast. Also allows for taking JPEG snapshots of the video at the selected time. This app uses the awesome ffmpeg🙏 for doing the grunt work. Also supports lossless cutting in the most common audio formats. ffmpeg is included in the app.
 
-<b>ffmpeg is now included in the app! 🎉</b>
+<a target='_blank' rel='nofollow' href='https://app.codesponsor.io/link/a3DabSrJLUgh3DWQzN9s8KRM/mifi/lossless-cut'>
+  <img alt='Sponsor' width='888' height='68' src='https://app.codesponsor.io/embed/a3DabSrJLUgh3DWQzN9s8KRM/mifi/lossless-cut.svg' />
+</a>
 
 ![Demo](https://thumbs.gfycat.com/HighAcclaimedAnaconda-size_restricted.gif)
 
