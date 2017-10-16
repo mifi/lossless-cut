@@ -24,6 +24,10 @@ function getOutPath(customOutDir, filePath, nameSuffix) {
     `${filePath}-${nameSuffix}`;
 }
 
+function getDirFromFilePath(filePath){
+  return filePath ? filePath.replace(/\\[^\\]*$/,'') : '';
+}
+
 async function transferTimestamps(inPath, outPath) {
   try {
     const stat = await fs.statAsync(inPath);
@@ -37,4 +41,5 @@ module.exports = {
   formatDuration,
   getOutPath,
   transferTimestamps,
+  getDirFromFilePath,
 };
