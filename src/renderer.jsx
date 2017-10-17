@@ -404,8 +404,8 @@ class App extends React.Component {
             this.state.outputDir || util.getDirFromFilePath(this.state.filePath) || 'Not set (use input dir)'}`}
           onClick={withBlur(() => this.setOutputDir())}
         >
-          {this.state.outputDir ? `...${this.state.outputDir.substr(-10)}` :
-          (this.state.filePath ? `...${util.getDirFromFilePath(this.state.filePath).substr(-10)}` : 'OUT PATH')}
+          {(this.state.outputDir && `...${this.state.outputDir.substr(-10)}`) ||
+          (this.state.filePath && `...${util.getDirFromFilePath(this.state.filePath).substr(-10)}`) || 'OUT PATH'}
         </button>
         <button title="Format">
           {this.state.fileFormat || 'FMT'}
