@@ -193,11 +193,10 @@ class App extends React.Component {
   }
 
   getOutputDir() {
-    var directory = '';
+    let directory = '';
     if (this.state.outputDir) {
       directory = this.state.outputDir;
-    }
-    else if (this.state.filePath) {
+    } else if (this.state.filePath) {
       directory = path.dirname(this.state.filePath);
     }
     return directory;
