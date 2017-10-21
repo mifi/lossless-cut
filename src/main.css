@@ -82,7 +82,7 @@ input, button, textarea, :focus {
   background-color: #444;
 }
 
-.timeline-wrapper .current-time, .timeline-wrapper .cursor-time, .timeline-wrapper .cut-start-time {
+.timeline-wrapper .current-time, .timeline-wrapper .cut-start-time {
   position: absolute;
   bottom: 0;
   top: 0;
@@ -92,9 +92,6 @@ input, button, textarea, :focus {
 .timeline-wrapper .current-time {
   background-color: red;
   z-index: 2;
-}
-.timeline-wrapper .cursor-time {
-  background-color: black;
 }
 .timeline-wrapper .cut-start-time {
   background-color: rgba(0, 0, 0, 0.3);
