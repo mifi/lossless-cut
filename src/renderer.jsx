@@ -192,6 +192,17 @@ class App extends React.Component {
     return (this.state.filePath || '').replace(/#/g, '%23');
   }
 
+  getOutputDir() {
+    var directory = '';
+    if (this.state.outputDir) {
+      directory = this.state.outputDir;
+    }
+    else if (this.state.filePath) {
+      directory = path.dirname(this.state.filePath);
+    }
+    return directory;
+  }
+
   toggleCaptureFormat() {
     const isPng = this.state.captureFormat === 'png';
     this.setState({ captureFormat: isPng ? 'jpeg' : 'png' });
@@ -400,12 +411,10 @@ class App extends React.Component {
 
       <div className="right-menu">
         <button
-          title={`Custom output dir (cancel to restore default). Current: ${
-            this.state.outputDir || util.getDirFromFilePath(this.state.filePath) || 'Not set (use input dir)'}`}
+          title={`Custom output dir (cancel to restore default). Current: ${this.getOutputDir() || 'Not set (use input dir)'}`}
           onClick={withBlur(() => this.setOutputDir())}
         >
-          {(this.state.outputDir && `...${this.state.outputDir.substr(-10)}`) ||
-          (this.state.filePath && `...${util.getDirFromFilePath(this.state.filePath).substr(-10)}`) || 'OUT PATH'}
+          {this.getOutputDir() ? `...${this.getOutputDir().substr(-10)}` : 'OUT PATH'}
         </button>
         <button title="Format">
           {this.state.fileFormat || 'FMT'}
