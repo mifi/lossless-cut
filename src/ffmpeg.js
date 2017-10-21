@@ -55,7 +55,7 @@ function handleProgress(process, cutDuration, onProgress) {
   });
 }
 
-async function cut(customOutDir, filePath, format, cutFrom, cutTo, onProgress) {
+async function cut(customOutDir, filePath, format, cutFrom, cutTo, onProgress, cutArgsFirst) {
   const extWithoutDot = path.extname(filePath) || `.${format}`;
   const ext = `.${extWithoutDot}`;
   const duration = `${util.formatDuration(cutFrom)}-${util.formatDuration(cutTo)}`;
@@ -64,13 +64,23 @@ async function cut(customOutDir, filePath, format, cutFrom, cutTo, onProgress) {
 
   console.log('Cutting from', cutFrom, 'to', cutTo);
 
-  const ffmpegArgs = [
+  // https://github.com/mifi/lossless-cut/pull/13
+  const ffmpegCutArgs = ['-ss', cutFrom];
+  const ffmpegArgs1 = [
     '-i', filePath, '-y', '-vcodec', 'copy', '-acodec', 'copy',
-    '-ss', cutFrom, '-t', cutTo - cutFrom,
+  ];
+  const ffmpegArgs2 = [
+    '-t', cutTo - cutFrom,
+    // '-to', cutTo - cutFrom,
     '-map_metadata', '0',
     '-f', format,
+    '-avoid_negative_ts', 'make_zero',
     outPath,
   ];
+
+  const ffmpegArgs = cutArgsFirst
+    ? [...ffmpegCutArgs, ...ffmpegArgs1, ...ffmpegArgs2]
+    : [...ffmpegArgs1, ...ffmpegCutArgs, ...ffmpegArgs2];
 
   console.log('ffmpeg', ffmpegArgs.join(' '));
 
@@ -134,8 +144,42 @@ function getFormat(filePath) {
   });
 }
 
+function handleKeyFramesProcess(process, onKeyFrame) {
+  const rl = readline.createInterface({ input: process.stdout });
+  rl.on('line', (line) => {
+    try {
+      // console.log(line);
+      // const match = line.match(/^packet,([.\d]+),K/);
+      // const match = line.match(/^frame,1,([.\d]+),./);
+      const match = line.match(/^frame,1,([.\d]+),./);
+      if (!match) return;
+
+      const time = parseFloat(match[1]);
+      if (!isNaN(time)) onKeyFrame(time);
+    } catch (err) {
+      console.log('Failed to parse ffprobe keyframe line', err);
+    }
+  });
+}
+async function getKeyFrames(filePath, onKeyFrame) {
+  console.log('Getting keyframes');
+  const ffmpegPath = await getFfmpegPath();
+  const ffprobePath = path.join(path.dirname(ffmpegPath), getWithExt('ffprobe'));
+
+  // const args = ['-show_packets', '-show_entries', 'packet=pts_time,flags',
+  // '-of', 'csv', filePath];
+
+  // const args = ['-select_streams', 'v', '-show_frames', '-skip_frame', 'nokey', '-show_entries', 'frame=key_frame,pict_type,pkt_dts_time', '-of', 'csv', filePath];
+  const args = ['-select_streams', 'v', '-show_frames', '-show_entries', 'frame=coded_picture_number,key_frame,pict_type,pkt_dts_time', '-of', 'csv', filePath];
+  const process = execa(ffprobePath, args);
+  handleKeyFramesProcess(process, onKeyFrame);
+  return process; // promise
+  // process.then(result => console.log(result.stdout));
+}
+
 module.exports = {
   cut,
   getFormat,
   showFfmpegFail,
+  getKeyFrames,
 };

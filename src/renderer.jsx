@@ -92,6 +92,8 @@ class App extends React.Component {
       cutEndTime: undefined,
       fileFormat: undefined,
       captureFormat: 'jpeg',
+      keyframes: [],
+      keyframesLoaded: false,
     };
 
     this.state = _.cloneDeep(defaultState);
@@ -101,6 +103,23 @@ class App extends React.Component {
       video.currentTime = 0;
       video.playbackRate = 1;
       this.setState(defaultState);
+    };
+
+    const loadKeyframes = async (filePath) => {
+      // TODO cancel already running process
+      this.setState({ keyframesLoaded: false });
+      try {
+        ffmpeg.getKeyFrames(filePath, (time) => {
+          console.log('keyframe', time);
+          if (this.state.keyframes.includes(time)) return;
+          this.setState(state => ({ keyframes: state.keyframes.concat(time) }));
+        });
+        console.log('Done reading keyframes');
+      } catch (err) {
+        console.error('Failed to read keyframes', err);
+      } finally {
+        this.setState({ keyframesLoaded: true });
+      }
     };
 
     const load = (filePath) => {
@@ -114,6 +133,9 @@ class App extends React.Component {
       return ffmpeg.getFormat(filePath)
         .then((fileFormat) => {
           if (!fileFormat) return alert('Unsupported file');
+
+          loadKeyframes(filePath);
+
           setFileNameTitle(filePath);
           return this.setState({ filePath, fileFormat });
         })
@@ -144,6 +166,7 @@ class App extends React.Component {
     keyboardJs.bind('k', () => this.playCommand());
     keyboardJs.bind('j', () => this.changePlaybackRate(-1));
     keyboardJs.bind('l', () => this.changePlaybackRate(1));
+    keyboardJs.bind('m', () => this.snapToKeyFrame());
     keyboardJs.bind('left', () => seekRel(-1));
     keyboardJs.bind('right', () => seekRel(1));
     keyboardJs.bind('period', () => shortStep(1));
@@ -175,11 +198,11 @@ class App extends React.Component {
   }
 
   setCutStart() {
-    this.setState({ cutStartTime: this.state.currentTime });
+    this.setState({ cutStartTime: this.findNearestKeyFrame(this.state.currentTime) });
   }
 
   setCutEnd() {
-    this.setState({ cutEndTime: this.state.currentTime });
+    this.setState({ cutEndTime: this.findNearestKeyFrame(this.state.currentTime) });
   }
 
   setOutputDir() {
@@ -203,6 +226,16 @@ class App extends React.Component {
 
   jumpCutEnd() {
     seekAbs(this.state.cutEndTime);
+  }
+
+  findNearestKeyFrame(time) {
+    return this.state.keyframes.sort((a, b) => Math.abs(time - a) - Math.abs(time - b))[0];
+  }
+
+  snapToKeyFrame() {
+    const currentTime = getVideo().currentTime;
+    const nearestKeyFrame = this.findNearestKeyFrame(currentTime);
+    seekAbs(nearestKeyFrame);
   }
 
   handlePan(e) {
@@ -267,6 +300,7 @@ class App extends React.Component {
       cutStartTime,
       cutEndTime,
       progress => this.onCutProgress(progress),
+      true,
       );
     } catch (err) {
       console.error('stdout:', err.stdout);
@@ -329,6 +363,11 @@ class App extends React.Component {
         >
           <div className="timeline-wrapper">
             <div className="current-time" style={{ left: `${((this.state.currentTime || 0) / (this.state.duration || 1)) * 100}%` }} />
+
+            {this.state.keyframes.map(keyframeTime => (
+              <div key={keyframeTime.toString()} className="keyframe-marker" style={{ left: `${((keyframeTime || 0) / (this.state.duration || 1)) * 100}%` }} />
+            ))}
+
             <div
               className="cut-start-time"
               style={{
