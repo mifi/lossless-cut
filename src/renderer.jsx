@@ -184,12 +184,18 @@ class App extends React.Component {
 
   setOutputDir() {
     dialog.showOpenDialog({ properties: ['openDirectory'] }, (paths) => {
-      this.setState({ outputDir: (paths && paths.length === 1) ? paths[0] : undefined });
+      this.setState({ customOutDir: (paths && paths.length === 1) ? paths[0] : undefined });
     });
   }
 
   getFileUri() {
     return (this.state.filePath || '').replace(/#/g, '%23');
+  }
+
+  getOutputDir() {
+    if (this.state.customOutDir) return this.state.customOutDir;
+    if (this.state.filePath) return path.dirname(this.state.filePath);
+    return undefined;
   }
 
   toggleCaptureFormat() {
@@ -257,7 +263,7 @@ class App extends React.Component {
     }
 
     this.setState({ working: true });
-    const outputDir = this.state.outputDir;
+    const outputDir = this.state.customOutDir;
     const fileFormat = this.state.fileFormat;
     try {
       return await ffmpeg.cut(
@@ -283,7 +289,7 @@ class App extends React.Component {
 
   capture() {
     const filePath = this.state.filePath;
-    const outputDir = this.state.outputDir;
+    const outputDir = this.state.customOutDir;
     const currentTime = this.state.currentTime;
     const captureFormat = this.state.captureFormat;
     if (!filePath) return;
@@ -400,10 +406,10 @@ class App extends React.Component {
 
       <div className="right-menu">
         <button
-          title={`Custom output dir (cancel to restore default). Current: ${this.state.outputDir || 'Not set (use input dir)'}`}
+          title={`Custom output dir (cancel to restore default). Current: ${this.getOutputDir() || 'Not set (use input dir)'}`}
           onClick={withBlur(() => this.setOutputDir())}
         >
-          {this.state.outputDir ? `...${this.state.outputDir.substr(-10)}` : 'OUT PATH'}
+          {this.getOutputDir() ? `...${this.getOutputDir().substr(-10)}` : 'OUT PATH'}
         </button>
         <button title="Format">
           {this.state.fileFormat || 'FMT'}
