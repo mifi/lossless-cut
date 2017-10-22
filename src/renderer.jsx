@@ -184,7 +184,7 @@ class App extends React.Component {
 
   setOutputDir() {
     dialog.showOpenDialog({ properties: ['openDirectory'] }, (paths) => {
-      this.setState({ outputDir: (paths && paths.length === 1) ? paths[0] : undefined });
+      this.setState({ customOutDir: (paths && paths.length === 1) ? paths[0] : undefined });
     });
   }
 
@@ -194,8 +194,8 @@ class App extends React.Component {
 
   getOutputDir() {
     let directory = '';
-    if (this.state.outputDir) {
-      directory = this.state.outputDir;
+    if (this.state.customOutDir) {
+      directory = this.state.customOutDir;
     } else if (this.state.filePath) {
       directory = path.dirname(this.state.filePath);
     }
@@ -267,7 +267,7 @@ class App extends React.Component {
     }
 
     this.setState({ working: true });
-    const outputDir = this.state.outputDir;
+    const outputDir = this.state.customOutDir;
     const fileFormat = this.state.fileFormat;
     try {
       return await ffmpeg.cut(
@@ -293,7 +293,7 @@ class App extends React.Component {
 
   capture() {
     const filePath = this.state.filePath;
-    const outputDir = this.state.outputDir;
+    const outputDir = this.state.customOutDir;
     const currentTime = this.state.currentTime;
     const captureFormat = this.state.captureFormat;
     if (!filePath) return;
