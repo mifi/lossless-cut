@@ -193,13 +193,9 @@ class App extends React.Component {
   }
 
   getOutputDir() {
-    let directory = '';
-    if (this.state.customOutDir) {
-      directory = this.state.customOutDir;
-    } else if (this.state.filePath) {
-      directory = path.dirname(this.state.filePath);
-    }
-    return directory;
+    if (this.state.customOutDir) return this.state.customOutDir;
+    if (this.state.filePath) return path.dirname(this.state.filePath);
+    return undefined;
   }
 
   toggleCaptureFormat() {
