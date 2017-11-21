@@ -64,9 +64,12 @@ async function cut(customOutDir, filePath, format, cutFrom, cutTo, onProgress) {
 
   console.log('Cutting from', cutFrom, 'to', cutTo);
 
+  // https://github.com/mifi/lossless-cut/issues/50
+  const cutFromArgs = cutFrom === 0 ? [] : ['-ss', cutFrom];
+
   const ffmpegArgs = [
     '-i', filePath, '-y', '-vcodec', 'copy', '-acodec', 'copy',
-    '-ss', cutFrom, '-t', cutTo - cutFrom,
+    ...cutFromArgs, '-t', cutTo - cutFrom,
     '-map_metadata', '0',
     '-f', format,
     outPath,
