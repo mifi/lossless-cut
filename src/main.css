@@ -38,7 +38,7 @@ input, button, textarea, :focus {
   padding: .4em;
 }
 
-.controls-wrapper button, .right-menu button {
+.controls-wrapper button, .right-menu button, .left-menu button {
   background: white;
   border-radius: .3em;
   color: rgba(0, 0, 0, 0.7);
@@ -49,7 +49,7 @@ input, button, textarea, :focus {
   border: none;
 }
 
-.controls-wrapper button:active, .right-menu button:active  {
+.controls-wrapper button:active, .right-menu button:active, .left-menu button:active  {
   background: #ccc;
 }
 
@@ -58,6 +58,14 @@ input, button, textarea, :focus {
   position: absolute;
   right: 0;
   bottom: 0;
+  padding: .3em;
+}
+
+.left-menu {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding: .3em;
 }
 
 .controls-wrapper {

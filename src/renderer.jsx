@@ -404,25 +404,32 @@ class App extends React.Component {
         </div>
       </div>
 
+      <div className="left-menu">
+        <button title="Format">
+          {this.state.fileFormat || 'FMT'}
+        </button>
+
+        <button className="playback-rate" title="Playback rate">
+          {_.round(this.state.playbackRate, 1) || 1}x
+        </button>
+      </div>
+
       <div className="right-menu">
         <button
           title={`Custom output dir (cancel to restore default). Current: ${this.getOutputDir() || 'Not set (use input dir)'}`}
           onClick={withBlur(() => this.setOutputDir())}
         >
-          {this.getOutputDir() ? `...${this.getOutputDir().substr(-10)}` : 'OUT PATH'}
+          {this.getOutputDir() ? `...${this.getOutputDir().substr(-10)}` : 'OUTDIR'}
         </button>
-        <button title="Format">
-          {this.state.fileFormat || 'FMT'}
-        </button>
-        <button className="playback-rate" title="Playback rate">
-          {_.round(this.state.playbackRate, 1) || 1}x
-        </button>
+
         <i
           title="Capture frame"
+          style={{ margin: '-.4em -.2em' }}
           className="button fa fa-camera"
           aria-hidden="true"
           onClick={() => this.capture()}
         />
+
         <button
           title="Capture frame format"
           onClick={withBlur(() => this.toggleCaptureFormat())}
