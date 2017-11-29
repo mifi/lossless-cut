@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.9.0] - 2017-11-21
+
+### Changed
+- Change icons a bit
+- Don't cut at start if start time is 0 (remove -ss 0)
+- Show input dir in out path when file is loaded
+- Show file title in window title
+
 ## [1.8.0] - 2017-09-14
 
 ### Changed
