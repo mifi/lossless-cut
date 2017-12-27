@@ -33,8 +33,19 @@ async function transferTimestamps(inPath, outPath) {
   }
 }
 
+async function transferTimestampsWithOffset(inPath, outPath, offset) {
+  try {
+    const stat = await fs.statAsync(inPath);
+    const time = (stat.mtime.getTime() / 1000) + offset;
+    await fs.utimesAsync(outPath, time, time);
+  } catch (err) {
+    console.error('Failed to set output file modified time', err);
+  }
+}
+
 module.exports = {
   formatDuration,
   getOutPath,
   transferTimestamps,
+  transferTimestampsWithOffset,
 };

@@ -27,7 +27,8 @@ async function captureFrame(customOutDir, filePath, video, currentTime, captureF
 
   const outPath = util.getOutPath(customOutDir, filePath, `${time}.${ext}`);
   await fs.writeFileAsync(outPath, buf);
-  return util.transferTimestamps(filePath, outPath);
+  const offset = -video.duration + currentTime;
+  return util.transferTimestampsWithOffset(filePath, outPath, offset);
 }
 
 module.exports = captureFrame;
