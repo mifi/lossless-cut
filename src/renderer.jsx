@@ -10,6 +10,7 @@ const ReactDOM = require('react-dom');
 const classnames = require('classnames');
 
 const captureFrame = require('./capture-frame');
+const captureBookmark = require('./capture-bookmark');
 const ffmpeg = require('./ffmpeg');
 const util = require('./util');
 
@@ -64,6 +65,7 @@ function renderHelpSheet(visible) {
         <li><kbd>O</kbd> Mark out / cut end point</li>
         <li><kbd>E</kbd> Export selection (in the same dir as the video)</li>
         <li><kbd>C</kbd> Capture snapshot (in the same dir as the video)</li>
+        <li><kbd>B</kbd> Bookmark timestamp</li>
       </ul>
     </div>);
   }
@@ -153,6 +155,7 @@ class App extends React.Component {
     keyboardJs.bind('i', () => this.setCutStart());
     keyboardJs.bind('o', () => this.setCutEnd());
     keyboardJs.bind('h', () => this.toggleHelp());
+    keyboardJs.bind('b', () => this.markInterest());
 
     electron.ipcRenderer.send('renderer-ready');
   }
@@ -247,6 +250,16 @@ class App extends React.Component {
         alert('This video format is not supported, maybe you can re-format the file first using ffmpeg');
       }
     });
+  }
+
+  async markInterest() {
+    const interestedTime = this.state.currentTime;
+
+    const filePath = this.state.filePath;
+    const outputDir = this.state.customOutDir;
+
+    captureBookmark(outputDir, filePath, interestedTime)
+      .catch(err => alert(err));
   }
 
   async cutClick() {
