@@ -17,7 +17,7 @@ body {
     cursor: default;
 }
 input, button, textarea, :focus {
-    outline: none; // You should add some other style for :focus to help UX/a11y
+    outline: none; /* You should add some other style for :focus to help UX/a11y */
 }
 
 #player {
@@ -38,7 +38,7 @@ input, button, textarea, :focus {
   padding: .4em;
 }
 
-.controls-wrapper button, .right-menu button, .left-menu button {
+.controls-wrapper button, .right-menu button, .left-menu button, .left-top-menu button, .right-top-menu button {
   background: white;
   border-radius: .3em;
   color: rgba(0, 0, 0, 0.7);
@@ -49,21 +49,34 @@ input, button, textarea, :focus {
   border: none;
 }
 
-.controls-wrapper button:active, .right-menu button:active, .left-menu button:active  {
+.controls-wrapper button:active, .right-menu button:active, .left-menu button:active, .left-top-menu button:active, .right-top-menu button:active  {
   background: #ccc;
 }
 
+.left-top-menu {
+  position: absolute;
+  left: 0;
+  bottom: 1.5em;
+  padding: .3em;
+}
 
-.right-menu {
+.right-top-menu {
   position: absolute;
   right: 0;
-  bottom: 0;
+  bottom: 1.8em;
   padding: .3em;
 }
 
 .left-menu {
   position: absolute;
-  left: 0;
+  left: 0em;
+  bottom: 0em;
+  padding: .3em;
+}
+
+.right-menu {
+  position: absolute;
+  right: 0;
   bottom: 0;
   padding: .3em;
 }
@@ -101,11 +114,16 @@ input, button, textarea, :focus {
   background-color: red;
   z-index: 2;
 }
+
 .timeline-wrapper .cut-start-time {
   background-color: rgba(0, 0, 0, 0.3);
   border-left: 1px solid black;
   border-right: 1px solid black;
   z-index: 1;
+}
+
+.timeline-wrapper .cut-start-time.active {
+  background-color: rgba(0, 0, 0, 0.6);
 }
 
 #working {

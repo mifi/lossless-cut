@@ -88,11 +88,12 @@ class App extends React.Component {
       playing: false,
       currentTime: undefined,
       duration: undefined,
-      cutStartTime: 0,
-      cutEndTime: undefined,
+      currentCutPoint: 0,
+      cutPoints: [
+        {cutStartTime: 0, cutEndTime: undefined},
+      ],
       fileFormat: undefined,
       captureFormat: 'jpeg',
-      rotation: 360,
     };
 
     this.state = _.cloneDeep(defaultState);
@@ -168,7 +169,64 @@ class App extends React.Component {
 
   onDurationChange(duration) {
     this.setState({ duration });
-    if (!this.state.cutEndTime) this.setState({ cutEndTime: duration });
+    var cutPoints = this.state.cutPoints;
+    if (!cutPoints[0].cutEndTime) {
+      cutPoints[0].cutEndTime = duration;
+      this.setState({ cutPoints });
+    }
+  }
+
+  previousCut() {
+    if (this.state.currentCutPoint > 0) {
+      this.setState({ currentCutPoint: this.state.currentCutPoint - 1 });
+    }
+  }
+
+  nextCut() {
+    if (this.state.currentCutPoint < this.state.cutPoints.length-1) {
+      this.setState({ currentCutPoint: this.state.currentCutPoint + 1 });
+    }
+  }
+
+  addCutPoint() {
+    const currentCutPoint = this.state.currentCutPoint;
+    const futureCutPoint = this.state.cutPoints.length;
+    const duration = this.state.duration;
+    var cutPoints = this.state.cutPoints;
+    
+    var cutStartTime = this.state.currentTime;
+    var cutEndTime = undefined;
+    const lastCutPointDuration = cutPoints[currentCutPoint].cutEndTime - cutPoints[currentCutPoint].cutStartTime;
+    if (lastCutPointDuration + cutStartTime < duration) cutEndTime = lastCutPointDuration + cutStartTime;
+    cutPoints.push({cutStartTime: cutStartTime, cutEndTime: cutEndTime});
+    this.setState({ currentCutPoint: futureCutPoint, cutPoints });
+  }
+
+  removeCutPoint() {
+    const currentCutPoint = this.state.currentCutPoint;
+    var cutPoints = this.state.cutPoints;
+    if (currentCutPoint > 0) {
+      cutPoints.splice(currentCutPoint, 1);
+      this.setState({ currentCutPoint: currentCutPoint - 1, cutPoints });
+    }
+  }
+
+  getDurationOfCurrentCut() {
+    const cutStartTime = this.getCurrentCutStartTime();
+    const cutEndTime = this.getCurrentCutEndTime();
+    if (cutStartTime !== undefined && cutEndTime !== undefined){
+      return util.formatDuration(cutEndTime - cutStartTime);
+    } else {
+      return util.formatDuration(0);
+    }
+  }
+
+  getCurrentCutStartTime() {
+    return this.state.cutPoints[this.state.currentCutPoint].cutStartTime;
+  }
+  
+  getCurrentCutEndTime() {
+    return this.state.cutPoints[this.state.currentCutPoint].cutEndTime;
   }
 
   onCutProgress(cutProgress) {
@@ -176,11 +234,15 @@ class App extends React.Component {
   }
 
   setCutStart() {
-    this.setState({ cutStartTime: this.state.currentTime });
+    var cutPoints = this.state.cutPoints;
+    cutPoints[this.state.currentCutPoint].cutStartTime = this.state.currentTime;
+    this.setState({ cutPoints });
   }
 
   setCutEnd() {
-    this.setState({ cutEndTime: this.state.currentTime });
+    var cutPoints = this.state.cutPoints;
+    cutPoints[this.state.currentCutPoint].cutEndTime = this.state.currentTime;
+    this.setState({ cutPoints });
   }
 
   setOutputDir() {
@@ -199,35 +261,17 @@ class App extends React.Component {
     return undefined;
   }
 
-  getRotation() {
-    return this.state.rotation;
-  }
-
-  getRotationStr() {
-    return `${this.getRotation()}°`;
-  }
-
-  isRotationSet() {
-    // 360 means we don't modify rotation
-    return this.state.rotation !== 360;
-  }
-
-  increaseRotation() {
-    const rotation = (this.state.rotation + 90) % 450;
-    this.setState({ rotation });
-  }
-
   toggleCaptureFormat() {
     const isPng = this.state.captureFormat === 'png';
     this.setState({ captureFormat: isPng ? 'jpeg' : 'png' });
   }
 
   jumpCutStart() {
-    seekAbs(this.state.cutStartTime);
+    seekAbs(this.getCurrentCutStartTime());
   }
 
   jumpCutEnd() {
-    seekAbs(this.state.cutEndTime);
+    seekAbs(this.getCurrentCutEndTime());
   }
 
   handlePan(e) {
@@ -268,24 +312,19 @@ class App extends React.Component {
     });
   }
 
-  async cutClick() {
-    if (this.state.working) return alert('I\'m busy');
-
-    const cutStartTime = this.state.cutStartTime;
-    const cutEndTime = this.state.cutEndTime;
-    const filePath = this.state.filePath;
-    const rotation = this.isRotationSet() ? this.getRotation() : undefined;
-
-    if (cutStartTime === undefined || cutEndTime === undefined) {
-      return alert('Please select both start and end time');
+  cutProofClips() {
+    const cutPoints = this.state.cutPoints;
+    for (var i=0; i < cutPoints.length; i++) {
+      if (cutPoints[i].cutStartTime === undefined || cutPoints[i].cutEndTime === undefined) {
+        return alert(`Please select both start and end time of cut ${i+1}`);
+      }
+      if (cutPoints[i].cutStartTime >= cutPoints[i].cutEndTime) {
+        return alert(`Start time must be before end time of cut ${i+1}`);
+      }
     }
-    if (cutStartTime >= cutEndTime) {
-      return alert('Start time must be before end time');
-    }
+  }
 
-    this.setState({ working: true });
-    const outputDir = this.state.customOutDir;
-    const fileFormat = this.state.fileFormat;
+  async cutClickClip(cutStartTime, cutEndTime , filePath, outputDir, fileFormat) {
     try {
       return await ffmpeg.cut(
       outputDir,
@@ -293,7 +332,6 @@ class App extends React.Component {
       fileFormat,
       cutStartTime,
       cutEndTime,
-      rotation,
       progress => this.onCutProgress(progress),
       );
     } catch (err) {
@@ -304,9 +342,25 @@ class App extends React.Component {
         return alert('Whoops! ffmpeg was unable to cut this video. It may be of an unknown format or codec combination');
       }
       return ffmpeg.showFfmpegFail(err);
-    } finally {
-      this.setState({ working: false });
     }
+  }
+
+  async cutClick() {
+    if (this.state.working) return alert('I\'m busy');
+
+    this.cutProofClips();
+
+    const cutPoints = this.state.cutPoints;
+    const filePath = this.state.filePath;
+    const outputDir = this.state.customOutDir;
+    const fileFormat = this.state.fileFormat;
+    this.setState({ working: true });
+    
+    for (var i=0; i < cutPoints.length; i++) {
+      await this.cutClickClip(cutPoints[i].cutStartTime, cutPoints[i].cutEndTime, filePath, outputDir, fileFormat);
+    }
+
+    this.setState({ working: false });
   }
 
   capture() {
@@ -357,13 +411,16 @@ class App extends React.Component {
         >
           <div className="timeline-wrapper">
             <div className="current-time" style={{ left: `${((this.state.currentTime || 0) / (this.state.duration || 1)) * 100}%` }} />
-            <div
-              className="cut-start-time"
-              style={{
-                left: `${((this.state.cutStartTime || 0) / (this.state.duration || 1)) * 100}%`,
-                width: `${(((this.state.cutEndTime || 0) - (this.state.cutStartTime || 0)) / (this.state.duration || 1)) * 100}%`,
-              }}
-            />
+            {this.state.cutPoints.map((cutPoint,i) => 
+              <div
+                key={i}
+                className={`cut-start-time${this.state.currentCutPoint === i ? (' active'):('')}`}
+                style={{
+                  left: `${((cutPoint.cutStartTime || 0) / (this.state.duration || 1)) * 100}%`,
+                  width: `${(((cutPoint.cutEndTime || 0) - (cutPoint.cutStartTime || 0)) / (this.state.duration || 1)) * 100}%`,
+                }}
+              />
+            )}
 
             <div id="current-time-display">{util.formatDuration(this.state.currentTime)}</div>
           </div>
@@ -400,7 +457,7 @@ class App extends React.Component {
           <button
             className="jump-cut-start" title="Cut start time (jump)"
             onClick={withBlur(() => this.jumpCutStart())}
-          >{util.formatDuration(this.state.cutStartTime || 0)}</button>
+          >{util.formatDuration(this.getCurrentCutStartTime() || 0)}</button>
           <i
             title="Set cut start"
             className="button fa fa-angle-left"
@@ -422,9 +479,43 @@ class App extends React.Component {
           <button
             className="jump-cut-end" title="Cut end time (jump)"
             onClick={withBlur(() => this.jumpCutEnd())}
-          >{util.formatDuration(this.state.cutEndTime || 0)}</button>
+          >{util.formatDuration(this.getCurrentCutEndTime() || 0)}</button>
         </div>
       </div>
+
+      <div className="left-top-menu">
+        <button 
+          title="Add new cutting point"
+          onClick={() => this.addCutPoint()}
+        > +
+        </button>
+        <i
+          title="Go to previous cutting point"
+          className="button fa fa-angle-left"
+          aria-hidden="true"
+          onClick={() => this.previousCut()}
+        />
+        <button title="Current cut point">
+          {this.state.currentCutPoint + 1} / {this.state.cutPoints.length}
+        </button>
+        <i
+          title="Go to next cutting point"
+          className="button fa fa-angle-right"
+          aria-hidden="true"
+          onClick={() => this.nextCut()}
+        />
+        <button 
+          title="Remove current cutting point"
+          onClick={() => this.removeCutPoint()}
+        > -
+        </button>
+        <button title="Duration of current cut">
+          {this.getDurationOfCurrentCut()}
+        </button>
+      </div>
+
+{/*       <div className="right-top-menu">
+      </div> */}
 
       <div className="left-menu">
         <button title="Format">
@@ -437,13 +528,6 @@ class App extends React.Component {
       </div>
 
       <div className="right-menu">
-        <button
-          title={`Set output rotation. Current: ${this.isRotationSet() ? this.getRotationStr() : 'Don\'t modify'}`}
-          onClick={withBlur(() => this.increaseRotation())}
-        >
-          {this.isRotationSet() ? this.getRotationStr() : '-°'}
-        </button>
-
         <button
           title={`Custom output dir (cancel to restore default). Current: ${this.getOutputDir() || 'Not set (use input dir)'}`}
           onClick={withBlur(() => this.setOutputDir())}
