@@ -84,6 +84,7 @@ class App extends React.Component {
 
     const defaultState = {
       working: false,
+      cutting: false,
       filePath: '', // Setting video src="" prevents memory leak in chromium
       playing: false,
       currentTime: undefined,
@@ -205,9 +206,13 @@ class App extends React.Component {
   removeCutPoint() {
     const currentCutPoint = this.state.currentCutPoint;
     var cutPoints = this.state.cutPoints;
-    if (currentCutPoint > 0) {
+    if (currentCutPoint > 0 || cutPoints.length > 1) {
       cutPoints.splice(currentCutPoint, 1);
-      this.setState({ currentCutPoint: currentCutPoint - 1, cutPoints });
+      if (currentCutPoint === 0) {
+        this.setState({ currentCutPoint: currentCutPoint, cutPoints });
+      } else {
+        this.setState({ currentCutPoint: currentCutPoint - 1, cutPoints });
+      }
     }
   }
 
@@ -324,8 +329,27 @@ class App extends React.Component {
     }
   }
 
-  async cutClickClip(cutStartTime, cutEndTime , filePath, outputDir, fileFormat) {
+  async cutClick() {
+    if (this.state.working) return alert('I\'m busy');
+
+    this.cutProofClips();
+
+    const cutPoints = this.state.cutPoints;
+    const filePath = this.state.filePath;
+    const outputDir = this.state.customOutDir;
+    const fileFormat = this.state.fileFormat;
+    this.setState({ working: true, cutting: true });
+    
+    for (var i=0; i < cutPoints.length; i++) {
+      await this.cutClickClip(i, cutPoints[i].cutStartTime, cutPoints[i].cutEndTime, filePath, outputDir, fileFormat);
+    }
+
+    this.setState({ working: false, cutting: false });
+  }
+
+  async cutClickClip(cutPointNr, cutStartTime, cutEndTime , filePath, outputDir, fileFormat) {
     try {
+      this.setState({ currentCutPoint: cutPointNr });
       return await ffmpeg.cut(
       outputDir,
       filePath,
@@ -343,24 +367,6 @@ class App extends React.Component {
       }
       return ffmpeg.showFfmpegFail(err);
     }
-  }
-
-  async cutClick() {
-    if (this.state.working) return alert('I\'m busy');
-
-    this.cutProofClips();
-
-    const cutPoints = this.state.cutPoints;
-    const filePath = this.state.filePath;
-    const outputDir = this.state.customOutDir;
-    const fileFormat = this.state.fileFormat;
-    this.setState({ working: true });
-    
-    for (var i=0; i < cutPoints.length; i++) {
-      await this.cutClickClip(cutPoints[i].cutStartTime, cutPoints[i].cutEndTime, filePath, outputDir, fileFormat);
-    }
-
-    this.setState({ working: false });
   }
 
   capture() {
@@ -384,8 +390,11 @@ class App extends React.Component {
         <div id="working">
           <i className="fa fa-cog fa-spin fa-3x fa-fw" style={{ verticalAlign: 'middle' }} />
           <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-            {Math.floor((this.state.cutProgress || 0) * 100)} %
+            {Math.floor((this.state.cutProgress || 0) * 100)} % 
           </span>
+          {this.state.cutting && this.state.cutPoints.length > 1 && <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+            ({this.state.currentCutPoint+1} of {this.state.cutPoints.length})
+          </span>}
         </div>
       )}
 
