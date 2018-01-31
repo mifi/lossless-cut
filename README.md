@@ -27,6 +27,7 @@ For more information about supported formats / codecs, see https://www.chromium.
 
 ### Typical workflow
 - Drag drop a video file into player to load or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
+- Find out that none of normal ffmpeg formats are actually supported (because ~reasons~), and delete the app.
 - Press <kbd>SPACE</kbd> to play/pause
 - Select the cut start and end time.  Press <kbd>I</kbd> to select the start time, <kbd>O</kbd> to select the end time for the cut.
 - Press the rotation button if you want to set rotation metadata
