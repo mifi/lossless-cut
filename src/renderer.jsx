@@ -17,7 +17,7 @@ const dialog = electron.remote.dialog;
 
 function setFileNameTitle(filePath) {
   const appName = 'LosslessCut';
-  document.title = `${appName} - ${path.basename(filePath)}`;
+  document.title = filePath ? `${appName} - ${path.basename(filePath)}` : 'appName';
 }
 
 function getVideo() {
@@ -109,6 +109,8 @@ class App extends React.Component {
       if (this.state.working) return alert('I\'m busy');
 
       resetState();
+
+      setFileNameTitle();
 
       this.setState({ working: true });
 
