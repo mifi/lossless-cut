@@ -68,7 +68,7 @@ async function cut(customOutDir, filePath, format, cutFrom, cutTo, rotation, onP
   const cutFromArgs = cutFrom === 0 ? [] : ['-ss', cutFrom];
   const rotationArgs = rotation !== undefined ? ['-metadata:s:v:0', `rotate=${rotation}`] : [];
   const ffmpegArgs = [
-    '-i', filePath, '-y', '-vcodec', 'copy', '-acodec', 'copy',
+    '-i', filePath, '-y', '-vcodec', 'copy', '-acodec', 'copy', '-scodec', 'copy',
     ...cutFromArgs, '-t', cutTo - cutFrom,
     '-map_metadata', '0',
     ...rotationArgs,
