@@ -29,6 +29,7 @@ For more information about supported formats / codecs, see https://www.chromium.
 - Drag drop a video file into player to load or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
 - Press <kbd>SPACE</kbd> to play/pause
 - Select the cut start and end time.  Press <kbd>I</kbd> to select the start time, <kbd>O</kbd> to select the end time for the cut.
+- Press the rotation button if you want to set rotation metadata
 - Press the scissors button to export the slice
 - Press the camera button to take a snapshot
 
@@ -41,7 +42,7 @@ For old shortcuts see here:
 https://github.com/mifi/lossless-cut/blob/41d6991c11b0a82b08344fd22a1ea094af217417/README.md#keyboard-shortcuts
 
 ### Known issues
-- Output videos will have an empty portion in the beginning, see discussion in [#13](https://github.com/mifi/lossless-cut/pull/13)
+- Some output videos will have an empty portion in the beginning (you might lose a few seconds after your in-cutpoint). A tip is to set the cutpoint a few extra seconds before the part you want to keep, that way you will not lose anything. See discussion in [#13](https://github.com/mifi/lossless-cut/pull/13)
 - If you get an error when cutting any kind of file under Windows, please check your anti-virus. It might be blocking execution of ffmpeg, see [#18](https://github.com/mifi/lossless-cut/issues/18)
 
 ## Development building / running

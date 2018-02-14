@@ -17,7 +17,7 @@ const dialog = electron.remote.dialog;
 
 function setFileNameTitle(filePath) {
   const appName = 'LosslessCut';
-  document.title = `${appName} - ${path.basename(filePath)}`;
+  document.title = filePath ? `${appName} - ${path.basename(filePath)}` : 'appName';
 }
 
 function getVideo() {
@@ -92,6 +92,7 @@ class App extends React.Component {
       cutEndTime: undefined,
       fileFormat: undefined,
       captureFormat: 'jpeg',
+      rotation: 360,
     };
 
     this.state = _.cloneDeep(defaultState);
@@ -108,6 +109,8 @@ class App extends React.Component {
       if (this.state.working) return alert('I\'m busy');
 
       resetState();
+
+      setFileNameTitle();
 
       this.setState({ working: true });
 
@@ -198,6 +201,24 @@ class App extends React.Component {
     return undefined;
   }
 
+  getRotation() {
+    return this.state.rotation;
+  }
+
+  getRotationStr() {
+    return `${this.getRotation()}°`;
+  }
+
+  isRotationSet() {
+    // 360 means we don't modify rotation
+    return this.state.rotation !== 360;
+  }
+
+  increaseRotation() {
+    const rotation = (this.state.rotation + 90) % 450;
+    this.setState({ rotation });
+  }
+
   toggleCaptureFormat() {
     const isPng = this.state.captureFormat === 'png';
     this.setState({ captureFormat: isPng ? 'jpeg' : 'png' });
@@ -255,6 +276,8 @@ class App extends React.Component {
     const cutStartTime = this.state.cutStartTime;
     const cutEndTime = this.state.cutEndTime;
     const filePath = this.state.filePath;
+    const rotation = this.isRotationSet() ? this.getRotation() : undefined;
+
     if (cutStartTime === undefined || cutEndTime === undefined) {
       return alert('Please select both start and end time');
     }
@@ -272,6 +295,7 @@ class App extends React.Component {
       fileFormat,
       cutStartTime,
       cutEndTime,
+      rotation,
       progress => this.onCutProgress(progress),
       );
     } catch (err) {
@@ -415,6 +439,13 @@ class App extends React.Component {
       </div>
 
       <div className="right-menu">
+        <button
+          title={`Set output rotation. Current: ${this.isRotationSet() ? this.getRotationStr() : 'Don\'t modify'}`}
+          onClick={withBlur(() => this.increaseRotation())}
+        >
+          {this.isRotationSet() ? this.getRotationStr() : '-°'}
+        </button>
+
         <button
           title={`Custom output dir (cancel to restore default). Current: ${this.getOutputDir() || 'Not set (use input dir)'}`}
           onClick={withBlur(() => this.setOutputDir())}
