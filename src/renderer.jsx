@@ -285,19 +285,22 @@ class App extends React.Component {
       return alert('Start time must be before end time');
     }
 
+    const videoDuration = this.state.duration;
+
     this.setState({ working: true });
     const outputDir = this.state.customOutDir;
     const fileFormat = this.state.fileFormat;
     try {
-      return await ffmpeg.cut(
-      outputDir,
-      filePath,
-      fileFormat,
-      cutStartTime,
-      cutEndTime,
-      rotation,
-      progress => this.onCutProgress(progress),
-      );
+      return await ffmpeg.cut({
+        customOutDir: outputDir,
+        filePath,
+        format: fileFormat,
+        cutFrom: cutStartTime,
+        cutTo: cutEndTime,
+        videoDuration,
+        rotation,
+        onProgress: progress => this.onCutProgress(progress),
+      });
     } catch (err) {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);

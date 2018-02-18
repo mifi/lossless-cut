@@ -55,21 +55,24 @@ function handleProgress(process, cutDuration, onProgress) {
   });
 }
 
-async function cut(customOutDir, filePath, format, cutFrom, cutTo, rotation, onProgress) {
-  const extWithoutDot = path.extname(filePath) || `.${format}`;
-  const ext = `.${extWithoutDot}`;
-  const duration = `${util.formatDuration(cutFrom)}-${util.formatDuration(cutTo)}`;
+async function cut({
+  customOutDir, filePath, format, cutFrom, cutTo, videoDuration, rotation, onProgress,
+}) {
+  const ext = path.extname(filePath) || `.${format}`;
+  const cutSpecification = `${util.formatDuration(cutFrom)}-${util.formatDuration(cutTo)}`;
 
-  const outPath = util.getOutPath(customOutDir, filePath, `${duration}${ext}`);
+  const outPath = util.getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
 
   console.log('Cutting from', cutFrom, 'to', cutTo);
 
   // https://github.com/mifi/lossless-cut/issues/50
   const cutFromArgs = cutFrom === 0 ? [] : ['-ss', cutFrom];
+  const cutToArgs = cutTo === videoDuration ? [] : ['-t', cutTo - cutFrom];
+
   const rotationArgs = rotation !== undefined ? ['-metadata:s:v:0', `rotate=${rotation}`] : [];
   const ffmpegArgs = [
     '-i', filePath, '-y', '-vcodec', 'copy', '-acodec', 'copy', '-scodec', 'copy',
-    ...cutFromArgs, '-t', cutTo - cutFrom,
+    ...cutFromArgs, ...cutToArgs,
     '-map_metadata', '0',
     ...rotationArgs,
     '-f', format,
