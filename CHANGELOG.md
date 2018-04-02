@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.10.0] - 2018-02-18
+
+### Added
+- Version check
+
+### Changed
+- Offset captured photo modified date to respect the frame offset, for better sorting
+- Copy subtitles too
+- Implement lossless rotation of videos (changing EXIF)
+- Don't cut end if endpoint is the end of the video
+- Remove extraneous dot in output file extension
+
 ## [1.9.0] - 2017-11-21
 
 ### Changed

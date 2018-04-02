@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+ffmpeg_version=3.4.2
+
 (
   mkdir -p ffmpeg-tmp/extracted &&
   cd ffmpeg-tmp/extracted &&
@@ -19,14 +22,14 @@ mkdir -p binaries/linux_x64 &&
 mkdir -p binaries/win32_ia32 &&
 mkdir -p binaries/win32_x64 &&
 mkdir -p binaries/darwin_x64 &&
-mv extracted/linux_ia32/ffmpeg-3.4.1-32bit-static/ffmpeg binaries/linux_ia32 &&
-mv extracted/linux_ia32/ffmpeg-3.4.1-32bit-static/ffprobe binaries/linux_ia32 &&
-mv extracted/linux_x64/ffmpeg-3.4.1-64bit-static/ffmpeg binaries/linux_x64 &&
-mv extracted/linux_x64/ffmpeg-3.4.1-64bit-static/ffprobe binaries/linux_x64 &&
-mv extracted/win32_ia32/ffmpeg-3.4.1-win32-static/bin/ffmpeg.exe binaries/win32_ia32 &&
-mv extracted/win32_ia32/ffmpeg-3.4.1-win32-static/bin/ffprobe.exe binaries/win32_ia32 &&
-mv extracted/win32_x64/ffmpeg-3.4.1-win64-static/bin/ffmpeg.exe binaries/win32_x64 &&
-mv extracted/win32_x64/ffmpeg-3.4.1-win64-static/bin/ffprobe.exe binaries/win32_x64 &&
+mv extracted/linux_ia32/ffmpeg-"${ffmpeg_version}"-32bit-static/ffmpeg binaries/linux_ia32 &&
+mv extracted/linux_ia32/ffmpeg-"${ffmpeg_version}"-32bit-static/ffprobe binaries/linux_ia32 &&
+mv extracted/linux_x64/ffmpeg-"${ffmpeg_version}"-64bit-static/ffmpeg binaries/linux_x64 &&
+mv extracted/linux_x64/ffmpeg-"${ffmpeg_version}"-64bit-static/ffprobe binaries/linux_x64 &&
+mv extracted/win32_ia32/ffmpeg-"${ffmpeg_version}"-win32-static/bin/ffmpeg.exe binaries/win32_ia32 &&
+mv extracted/win32_ia32/ffmpeg-"${ffmpeg_version}"-win32-static/bin/ffprobe.exe binaries/win32_ia32 &&
+mv extracted/win32_x64/ffmpeg-"${ffmpeg_version}"-win64-static/bin/ffmpeg.exe binaries/win32_x64 &&
+mv extracted/win32_x64/ffmpeg-"${ffmpeg_version}"-win64-static/bin/ffprobe.exe binaries/win32_x64 &&
 mv extracted/darwin_x64/ffmpeg binaries/darwin_x64 &&
 mv extracted/darwin_x64/ffprobe binaries/darwin_x64 &&
 echo Done

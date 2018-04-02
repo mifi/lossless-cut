@@ -5,6 +5,8 @@ const url = require('url');
 
 const menu = require('./menu');
 
+const { checkNewVersion } = require('./update-checker');
+
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 
@@ -37,9 +39,14 @@ function createWindow() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', () => {
+app.on('ready', async () => {
   createWindow();
   menu(app, mainWindow);
+
+  const newVersion = await checkNewVersion();
+  if (newVersion) {
+    menu(app, mainWindow, newVersion);
+  }
 });
 
 // Quit when all windows are closed.

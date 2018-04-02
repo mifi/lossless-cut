@@ -1,6 +1,6 @@
 {
   "name": "lossless-cut",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -37,7 +37,7 @@
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.18.0",
-    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.16.0",
     "electron-packager": "^8.1.0",
     "eslint": "^3.8.0",
@@ -46,7 +46,7 @@
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.4.1",
     "gh-release": "^2.2.1",
-    "icon-gen": "git+https://github.com/mifi/npm-icon-gen.git#ca9a098482d09bd378328bc1810ec2846429d109"
+    "icon-gen": "^1.2.0"
   },
   "dependencies": {
     "bluebird": "^3.4.6",
@@ -56,6 +56,7 @@
     "electron-is-dev": "^0.1.2",
     "execa": "^0.5.0",
     "file-type": "^4.1.0",
+    "github-api": "^3.0.0",
     "jquery": "^3.1.1",
     "keyboardjs": "^2.3.3",
     "lodash": "^4.16.4",

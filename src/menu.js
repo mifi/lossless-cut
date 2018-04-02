@@ -5,8 +5,9 @@ const Menu = electron.Menu;
 const dialog = electron.dialog;
 
 const homepage = 'https://github.com/mifi/lossless-cut';
+const releasesPage = 'https://github.com/mifi/lossless-cut/releases';
 
-module.exports = (app, mainWindow) => {
+module.exports = (app, mainWindow, newVersion) => {
   const menu = defaultMenu(app, electron.shell);
 
   const editMenuIndex = menu.findIndex(item => item.Label === 'Edit');
@@ -35,6 +36,18 @@ module.exports = (app, mainWindow) => {
         {
           label: 'Learn More',
           click() { electron.shell.openExternal(homepage); },
+        },
+      ],
+    });
+  }
+
+  if (newVersion) {
+    menu.push({
+      label: 'New version!',
+      submenu: [
+        {
+          label: `Download ${newVersion}`,
+          click() { electron.shell.openExternal(releasesPage); },
         },
       ],
     });
