@@ -286,6 +286,9 @@ class App extends React.Component {
     const cutStartTime = this.state.cutStartTime;
     const cutEndTime = this.state.cutEndTime;
     const filePath = this.state.filePath;
+    const outputDir = this.state.customOutDir;
+    const fileFormat = this.state.fileFormat;
+    const videoDuration = this.state.duration;
     const rotation = this.isRotationSet() ? this.getRotation() : undefined;
 
     if (!this.areCutTimesSet()) {
@@ -295,11 +298,7 @@ class App extends React.Component {
       return alert('Start time must be before end time');
     }
 
-    const videoDuration = this.state.duration;
-
     this.setState({ working: true });
-    const outputDir = this.state.customOutDir;
-    const fileFormat = this.state.fileFormat;
     try {
       return await ffmpeg.cut({
         customOutDir: outputDir,
@@ -411,13 +410,13 @@ class App extends React.Component {
             <div className="current-time" style={{ left: `${((this.state.currentTime || 0) / (this.state.duration || 1)) * 100}%` }} />
 
             {this.isCutRangeValid() &&
-            <div
-              className="cut-start-time"
-              style={{
+              <div
+                className="cut-start-time"
+                style={{
                   left: `${((this.state.cutStartTime) / (this.state.duration || 1)) * 100}%`,
                   width: `${(((this.state.cutEndTime) - this.state.cutStartTime) / (this.state.duration || 1)) * 100}%`,
-              }}
-            />
+                }}
+              />
             }
 
             <div id="current-time-display">{util.formatDuration(this.state.currentTime)}</div>
