@@ -409,13 +409,16 @@ class App extends React.Component {
         >
           <div className="timeline-wrapper">
             <div className="current-time" style={{ left: `${((this.state.currentTime || 0) / (this.state.duration || 1)) * 100}%` }} />
+
+            {this.isCutRangeValid() &&
             <div
               className="cut-start-time"
               style={{
-                left: `${((this.state.cutStartTime || 0) / (this.state.duration || 1)) * 100}%`,
-                width: `${(((this.state.cutEndTime || 0) - (this.state.cutStartTime || 0)) / (this.state.duration || 1)) * 100}%`,
+                  left: `${((this.state.cutStartTime) / (this.state.duration || 1)) * 100}%`,
+                  width: `${(((this.state.cutEndTime) - this.state.cutStartTime) / (this.state.duration || 1)) * 100}%`,
               }}
             />
+            }
 
             <div id="current-time-display">{util.formatDuration(this.state.currentTime)}</div>
           </div>
