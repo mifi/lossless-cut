@@ -59,7 +59,7 @@ async function cut({
   customOutDir, filePath, format, cutFrom, cutTo, videoDuration, rotation, onProgress,
 }) {
   const ext = path.extname(filePath) || `.${format}`;
-  const cutSpecification = `${util.formatDuration(cutFrom)}-${util.formatDuration(cutTo)}`;
+  const cutSpecification = `${util.formatDuration(cutFrom, true)}-${util.formatDuration(cutTo, true)}`;
 
   const outPath = util.getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
 

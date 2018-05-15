@@ -36,17 +36,21 @@ input, button, textarea, :focus {
 
 .button {
   padding: .4em;
+  vertical-align: middle;
 }
 
-.controls-wrapper button, .right-menu button, .left-menu button {
+.controls-wrapper button, .right-menu button, .left-menu button, .controls-wrapper input {
   background: white;
   border-radius: .3em;
   color: rgba(0, 0, 0, 0.7);
-  font-size: 60%;
+  font-size: 13px;
   vertical-align: middle;
-  padding: .2em .4em;
-  margin: 0 .5em;
+  padding: 0 .5em;
+  margin: 0 3px;
   border: none;
+  height: 18px;
+  box-sizing: border-box;
+  font-family: inherit;
 }
 
 .controls-wrapper button:active, .right-menu button:active, .left-menu button:active  {

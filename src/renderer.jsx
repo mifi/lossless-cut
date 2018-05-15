@@ -62,8 +62,8 @@ function renderHelpSheet(visible) {
         <li><kbd>,</kbd> (comma) Tiny seek backward (1/60 sec)</li>
         <li><kbd>I</kbd> Mark in / cut start point</li>
         <li><kbd>O</kbd> Mark out / cut end point</li>
-        <li><kbd>E</kbd> Export selection (in the same dir as the video)</li>
-        <li><kbd>C</kbd> Capture snapshot (in the same dir as the video)</li>
+        <li><kbd>E</kbd> Cut (export selection in the same directory)</li>
+        <li><kbd>C</kbd> Capture snapshot (in the same directory)</li>
       </ul>
     </div>);
   }
@@ -89,7 +89,9 @@ class App extends React.Component {
       currentTime: undefined,
       duration: undefined,
       cutStartTime: 0,
+      cutStartTimeManual: undefined,
       cutEndTime: undefined,
+      cutEndTimeManual: undefined,
       fileFormat: undefined,
       captureFormat: 'jpeg',
       rotation: 360,
@@ -214,6 +216,14 @@ class App extends React.Component {
     return this.state.rotation !== 360;
   }
 
+  areCutTimesSet() {
+    return (this.state.cutStartTime !== undefined || this.state.cutEndTime !== undefined);
+  }
+
+  isCutRangeValid() {
+    return this.areCutTimesSet() && this.state.cutStartTime < this.state.cutEndTime;
+  }
+
   increaseRotation() {
     const rotation = (this.state.rotation + 90) % 450;
     this.setState({ rotation });
@@ -278,10 +288,10 @@ class App extends React.Component {
     const filePath = this.state.filePath;
     const rotation = this.isRotationSet() ? this.getRotation() : undefined;
 
-    if (cutStartTime === undefined || cutEndTime === undefined) {
+    if (!this.areCutTimesSet()) {
       return alert('Please select both start and end time');
     }
-    if (cutStartTime >= cutEndTime) {
+    if (!this.isCutRangeValid()) {
       return alert('Start time must be before end time');
     }
 
@@ -328,7 +338,44 @@ class App extends React.Component {
     this.setState({ helpVisible: !this.state.helpVisible });
   }
 
+  renderCutTimeInput(type) {
+    const cutTimeKey = type === 'start' ? 'cutStartTime' : 'cutEndTime';
+    const cutTimeManualKey = type === 'start' ? 'cutStartTimeManual' : 'cutEndTimeManual';
+    const cutTimeInputStyle = Object.assign({}, { width: '8em', textAlign: type === 'start' ? 'right' : 'left' });
+
+    const isCutTimeManualSet = () => this.state[cutTimeManualKey] !== undefined;
+
+    const handleCutTimeInput = (text) => {
+      // Allow the user to erase
+      if (text.length === 0) {
+        this.setState({ [cutTimeManualKey]: undefined });
+        return;
+      }
+
+      const time = util.parseDuration(text);
+      if (time === undefined) {
+        this.setState({ [cutTimeManualKey]: text });
+        return;
+      }
+
+      this.setState({ [cutTimeManualKey]: undefined, [cutTimeKey]: time });
+    };
+
+
+    return (<input
+      style={Object.assign({}, cutTimeInputStyle, { color: isCutTimeManualSet() ? '#dc1d1d' : undefined })}
+      type="text"
+      onChange={e => handleCutTimeInput(e.target.value)}
+      value={isCutTimeManualSet()
+        ? this.state[cutTimeManualKey]
+        : util.formatDuration(this.state[cutTimeKey])
+      }
+    />);
+  }
+
   render() {
+    const jumpCutButtonStyle = { position: 'absolute', color: 'black', bottom: 0, top: 0, padding: '2px 8px' };
+
     return (<div>
       {!this.state.filePath && <div id="drag-drop-field">DROP VIDEO</div>}
       {this.state.working && (
@@ -374,12 +421,25 @@ class App extends React.Component {
           </div>
         </Hammer>
 
-        <div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <i
             className="button fa fa-step-backward"
             aria-hidden="true"
+            title="Jump to start of video"
             onClick={() => seekAbs(0)}
           />
+
+          <div style={{ position: 'relative' }}>
+            {this.renderCutTimeInput('start')}
+            <i
+              style={Object.assign({}, jumpCutButtonStyle, { left: 0 })}
+              className="fa fa-step-backward"
+              title="Jump to cut start"
+              aria-hidden="true"
+              onClick={withBlur(() => this.jumpCutStart())}
+            />
+          </div>
+
           <i
             className="button fa fa-caret-left"
             aria-hidden="true"
@@ -395,44 +455,50 @@ class App extends React.Component {
             aria-hidden="true"
             onClick={() => shortStep(1)}
           />
+
+          <div style={{ position: 'relative' }}>
+            {this.renderCutTimeInput('end')}
+            <i
+              style={Object.assign({}, jumpCutButtonStyle, { right: 0 })}
+              className="fa fa-step-forward"
+              title="Jump to cut end"
+              aria-hidden="true"
+              onClick={withBlur(() => this.jumpCutEnd())}
+            />
+          </div>
+
           <i
             className="button fa fa-step-forward"
             aria-hidden="true"
+            title="Jump to end of video"
             onClick={() => seekAbs(this.state.duration)}
           />
         </div>
+
         <div>
-          <button
-            className="jump-cut-start" title="Cut start time (jump)"
-            onClick={withBlur(() => this.jumpCutStart())}
-          >{util.formatDuration(this.state.cutStartTime || 0)}</button>
           <i
-            title="Set cut start"
+            title="Set cut start to current position"
             className="button fa fa-angle-left"
             aria-hidden="true"
             onClick={() => this.setCutStart()}
           />
           <i
-            title="Export selection"
+            title="Cut"
             className="button fa fa-scissors"
             aria-hidden="true"
             onClick={() => this.cutClick()}
           />
           <i
-            title="Set cut end"
+            title="Set cut end to current position"
             className="button fa fa-angle-right"
             aria-hidden="true"
             onClick={() => this.setCutEnd()}
           />
-          <button
-            className="jump-cut-end" title="Cut end time (jump)"
-            onClick={withBlur(() => this.jumpCutEnd())}
-          >{util.formatDuration(this.state.cutEndTime || 0)}</button>
         </div>
       </div>
 
       <div className="left-menu">
-        <button title="Format">
+        <button title="Format of current file">
           {this.state.fileFormat || 'FMT'}
         </button>
 
