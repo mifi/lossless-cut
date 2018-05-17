@@ -340,7 +340,7 @@ class App extends React.Component {
   renderCutTimeInput(type) {
     const cutTimeKey = type === 'start' ? 'cutStartTime' : 'cutEndTime';
     const cutTimeManualKey = type === 'start' ? 'cutStartTimeManual' : 'cutEndTimeManual';
-    const cutTimeInputStyle = Object.assign({}, { width: '8em', textAlign: type === 'start' ? 'right' : 'left' });
+    const cutTimeInputStyle = { width: '8em', textAlign: type === 'start' ? 'right' : 'left' };
 
     const isCutTimeManualSet = () => this.state[cutTimeManualKey] !== undefined;
 
@@ -362,7 +362,7 @@ class App extends React.Component {
 
 
     return (<input
-      style={Object.assign({}, cutTimeInputStyle, { color: isCutTimeManualSet() ? '#dc1d1d' : undefined })}
+      style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? '#dc1d1d' : undefined }}
       type="text"
       onChange={e => handleCutTimeInput(e.target.value)}
       value={isCutTimeManualSet()
@@ -434,7 +434,7 @@ class App extends React.Component {
           <div style={{ position: 'relative' }}>
             {this.renderCutTimeInput('start')}
             <i
-              style={Object.assign({}, jumpCutButtonStyle, { left: 0 })}
+              style={{ ...jumpCutButtonStyle, left: 0 }}
               className="fa fa-step-backward"
               title="Jump to cut start"
               aria-hidden="true"
@@ -461,7 +461,7 @@ class App extends React.Component {
           <div style={{ position: 'relative' }}>
             {this.renderCutTimeInput('end')}
             <i
-              style={Object.assign({}, jumpCutButtonStyle, { right: 0 })}
+              style={{ ...jumpCutButtonStyle, right: 0 }}
               className="fa fa-step-forward"
               title="Jump to cut end"
               aria-hidden="true"
