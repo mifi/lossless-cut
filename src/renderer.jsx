@@ -1,6 +1,6 @@
 const electron = require('electron'); // eslint-disable-line
 const $ = require('jquery');
-const keyboardJs = require('keyboardjs');
+const Mousetrap = require('mousetrap');
 const _ = require('lodash');
 const Hammer = require('react-hammerjs');
 const path = require('path');
@@ -145,19 +145,19 @@ class App extends React.Component {
       load(ev.dataTransfer.files[0].path);
     };
 
-    keyboardJs.bind('space', () => this.playCommand());
-    keyboardJs.bind('k', () => this.playCommand());
-    keyboardJs.bind('j', () => this.changePlaybackRate(-1));
-    keyboardJs.bind('l', () => this.changePlaybackRate(1));
-    keyboardJs.bind('left', () => seekRel(-1));
-    keyboardJs.bind('right', () => seekRel(1));
-    keyboardJs.bind('period', () => shortStep(1));
-    keyboardJs.bind('comma', () => shortStep(-1));
-    keyboardJs.bind('c', () => this.capture());
-    keyboardJs.bind('e', () => this.cutClick());
-    keyboardJs.bind('i', () => this.setCutStart());
-    keyboardJs.bind('o', () => this.setCutEnd());
-    keyboardJs.bind('h', () => this.toggleHelp());
+    Mousetrap.bind('space', () => this.playCommand());
+    Mousetrap.bind('k', () => this.playCommand());
+    Mousetrap.bind('j', () => this.changePlaybackRate(-1));
+    Mousetrap.bind('l', () => this.changePlaybackRate(1));
+    Mousetrap.bind('left', () => seekRel(-1));
+    Mousetrap.bind('right', () => seekRel(1));
+    Mousetrap.bind('.', () => shortStep(1));
+    Mousetrap.bind(',', () => shortStep(-1));
+    Mousetrap.bind('c', () => this.capture());
+    Mousetrap.bind('e', () => this.cutClick());
+    Mousetrap.bind('i', () => this.setCutStart());
+    Mousetrap.bind('o', () => this.setCutEnd());
+    Mousetrap.bind('h', () => this.toggleHelp());
 
     electron.ipcRenderer.send('renderer-ready');
   }
