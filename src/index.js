@@ -22,11 +22,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     darkTheme: true,
   });
-  mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'index.html'),
-    protocol: 'file:',
-    slashes: true,
-  }));
+  mainWindow.loadFile('index.html');
 
   mainWindow.on('closed', () => {
     // Dereference the window object, usually you would store windows
