@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.11.0] - 2018-05-21
+
+### Added
+- Allow pre-formatting or pre-encoding the video for more format support
+
+### Changed
+- Implement manual input field for cutting range
+- Improve keyboard shortcut triggering
+- Rearrange GUI a bit
+
 ## [1.10.0] - 2018-02-18
 
 ### Added
