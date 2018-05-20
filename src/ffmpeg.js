@@ -92,6 +92,27 @@ async function cut({
   return util.transferTimestamps(filePath, outPath);
 }
 
+async function html5ify(filePath, outPath, encodeVideo) {
+  console.log('Making HTML5 friendly version', { filePath, outPath, encodeVideo });
+
+  const videoArgs = encodeVideo
+    ? ['-vf', 'scale=-2:400,format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libx264', '-profile:v', 'baseline', '-x264opts', 'level=3.0', '-preset:v', 'ultrafast', '-crf', '28']
+    : ['-vcodec', 'copy'];
+
+  const ffmpegArgs = [
+    '-i', filePath, ...videoArgs, '-an',
+    '-y',
+    outPath,
+  ];
+
+  console.log('ffmpeg', ffmpegArgs.join(' '));
+
+  const ffmpegPath = await getFfmpegPath();
+  const process = execa(ffmpegPath, ffmpegArgs);
+  const result = await process;
+  console.log(result.stdout);
+}
+
 /**
  * ffmpeg only supports encoding certain formats, and some of the detected input
  * formats are not the same as the names used for encoding.
@@ -145,4 +166,5 @@ module.exports = {
   cut,
   getFormat,
   showFfmpegFail,
+  html5ify,
 };

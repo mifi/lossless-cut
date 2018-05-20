@@ -85,6 +85,7 @@ class App extends React.Component {
     const defaultState = {
       working: false,
       filePath: '', // Setting video src="" prevents memory leak in chromium
+      html5FriendlyPath: undefined,
       playing: false,
       currentTime: undefined,
       duration: undefined,
@@ -95,6 +96,7 @@ class App extends React.Component {
       fileFormat: undefined,
       captureFormat: 'jpeg',
       rotation: 360,
+      cutProgress: undefined,
     };
 
     this.state = _.cloneDeep(defaultState);
@@ -106,8 +108,8 @@ class App extends React.Component {
       this.setState(defaultState);
     };
 
-    const load = (filePath) => {
-      console.log('Load', filePath);
+    const load = (filePath, html5FriendlyPath) => {
+      console.log('Load', { filePath, html5FriendlyPath });
       if (this.state.working) return alert('I\'m busy');
 
       resetState();
@@ -120,7 +122,7 @@ class App extends React.Component {
         .then((fileFormat) => {
           if (!fileFormat) return alert('Unsupported file');
           setFileNameTitle(filePath);
-          return this.setState({ filePath, fileFormat });
+          return this.setState({ filePath, html5FriendlyPath, fileFormat });
         })
         .catch((err) => {
           if (err.code === 1 || err.code === 'ENOENT') {
@@ -135,6 +137,23 @@ class App extends React.Component {
     electron.ipcRenderer.on('file-opened', (event, filePaths) => {
       if (!filePaths || filePaths.length !== 1) return;
       load(filePaths[0]);
+    });
+
+    electron.ipcRenderer.on('html5ify', async (event, encodeVideo) => {
+      const { filePath, customOutDir } = this.state;
+      if (!filePath) return;
+
+      try {
+        this.setState({ working: true });
+        const html5ifiedPath = util.getOutPath(customOutDir, filePath, 'html5ified.mp4');
+        await ffmpeg.html5ify(filePath, html5ifiedPath, encodeVideo);
+        this.setState({ working: false });
+        load(filePath, html5ifiedPath);
+      } catch (err) {
+        alert('Failed to html5ify file');
+        console.error('Failed to html5ify file', err);
+        this.setState({ working: false });
+      }
     });
 
     document.ondragover = document.ondragend = ev => ev.preventDefault();
@@ -194,7 +213,7 @@ class App extends React.Component {
   }
 
   getFileUri() {
-    return (this.state.filePath || '').replace(/#/g, '%23');
+    return (this.state.html5FriendlyPath || this.state.filePath || '').replace(/#/g, '%23');
   }
 
   getOutputDir() {
@@ -275,7 +294,7 @@ class App extends React.Component {
     return video.play().catch((err) => {
       console.log(err);
       if (err.name === 'NotSupportedError') {
-        alert('This video format is not supported, maybe you can re-format the file first using ffmpeg');
+        alert('This video format or codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu.');
       }
     });
   }
@@ -380,9 +399,11 @@ class App extends React.Component {
       {this.state.working && (
         <div id="working">
           <i className="fa fa-cog fa-spin fa-3x fa-fw" style={{ verticalAlign: 'middle' }} />
-          <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-            {Math.floor((this.state.cutProgress || 0) * 100)} %
-          </span>
+          {this.state.cutProgress != null &&
+            <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+              {Math.floor(this.state.cutProgress * 100)} %
+            </span>
+          }
         </div>
       )}
 
