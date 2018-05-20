@@ -1,7 +1,5 @@
 const electron = require('electron'); // eslint-disable-line
 const isDev = require('electron-is-dev');
-const path = require('path');
-const url = require('url');
 
 const menu = require('./menu');
 
