@@ -22,10 +22,12 @@ Simple, cross platform tool for lossless trimming/cutting of video and audio fil
 
 ## Supported formats
 
-Since LosslessCut is based on Chromium and uses the HTML5 video player, not all ffmpeg supported formats will be supported.
+Since LosslessCut is based on Chromium and uses the HTML5 video player, not all ffmpeg supported formats will be supported directly.
 The following formats/codecs should generally work: MP4, MOV, WebM, MKV, OGG, WAV, MP3, AAC, H264, Theora, VP8, VP9
 For more information about supported formats / codecs, see https://www.chromium.org/audio-video.
-Note that the MPEG TS format is not supported. See known issues.
+
+**New in v1.11.0:** Unsupported files can now be remuxed (fast) or encoded (slow) to a friendly format/codec from the `File` menu. A processed version of the file will then be opened in the player. The cut operation will still be performed using the original file as input. This allows for potentially opening any file that ffmpeg is able to decode.
+
 
 ## Typical workflow
 - Drag drop a video file into player to load or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
@@ -46,8 +48,6 @@ https://github.com/mifi/lossless-cut/blob/41d6991c11b0a82b08344fd22a1ea094af2174
 ## Known issues
 - Some output videos will have an empty portion in the beginning (you might lose a few seconds after your in-cutpoint). A tip is to set the cutpoint a few extra seconds before the part you want to keep, that way you will not lose anything. See discussion in [#13](https://github.com/mifi/lossless-cut/pull/13)
 - If you get an error when cutting any kind of file under Windows, please check your anti-virus. It might be blocking execution of ffmpeg, see [#18](https://github.com/mifi/lossless-cut/issues/18)
-- Unsupported files can be losslessly remuxed to for example mp4 first with the following command: `ffmpeg -i input.ts -acodec copy -vcodec copy out.mp4`
-
 
 ## Development building / running
 
@@ -55,7 +55,7 @@ This app is built using Electron. Make sure you have at least node v6 and yarn i
 ```
 git clone https://github.com/mifi/lossless-cut.git
 cd lossless-cut
-yarn
+npm install
 ```
 
 ### Running
@@ -63,26 +63,9 @@ In one terminal:
 ```
 npm run watch
 ```
-Then:
+In another:
 ```
 npm start
-```
-
-### Release new version
-```
-# Commit changes
-# Wait for Travis
-npm version ...
-# Update CHANGELOG.md
-# Commit CHANGELOG.md
-# Push
-npm run download-ffmpeg
-npm run extract-ffmpeg
-npm run build
-npm run icon-gen
-npm run package
-npm run release
-
 ```
 
 ## Credits
