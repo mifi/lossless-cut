@@ -8,6 +8,9 @@ const repo = gh.getRepo('mifi', 'lossless-cut');
 
 async function checkNewVersion() {
   try {
+    // From API: https://developer.github.com/v3/repos/releases/#get-the-latest-release
+    // View the latest published full release for the repository.
+    // Draft releases and prereleases are not returned by this endpoint.
     const res = (await repo.getRelease('latest')).data;
     const tagName = res.tag_name;
     console.log(tagName);
