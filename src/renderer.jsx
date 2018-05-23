@@ -539,10 +539,10 @@ class App extends React.Component {
 
       <div className="right-menu">
         <button
-          title={`Set output streams. Current: ${this.state.includeAllStreams ? 'all streams' : 'default streams'}`}
+          title={`Set output streams. Current: ${this.state.includeAllStreams ? 'include (and cut) all streams' : 'include only primary streams'}`}
           onClick={withBlur(() => this.toggleIncludeAllStreams())}
         >
-          {this.state.includeAllStreams ? 'all' : 'default'}
+          {this.state.includeAllStreams ? 'all' : 'ps'}
         </button>
 
         <button
