@@ -56,7 +56,8 @@ function handleProgress(process, cutDuration, onProgress) {
 }
 
 async function cut({
-  customOutDir, filePath, format, cutFrom, cutTo, videoDuration, rotation, onProgress,
+  customOutDir, filePath, format, cutFrom, cutTo, videoDuration, rotation, includeAllStreams,
+  onProgress,
 }) {
   const ext = path.extname(filePath) || `.${format}`;
   const cutSpecification = `${util.formatDuration(cutFrom, true)}-${util.formatDuration(cutTo, true)}`;
@@ -73,6 +74,7 @@ async function cut({
   const ffmpegArgs = [
     '-i', filePath, '-y', '-vcodec', 'copy', '-acodec', 'copy', '-scodec', 'copy',
     ...cutFromArgs, ...cutToArgs,
+    ...(includeAllStreams ? ['-map', '0'] : []),
     '-map_metadata', '0',
     ...rotationArgs,
     '-f', format,
