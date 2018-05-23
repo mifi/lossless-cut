@@ -97,6 +97,7 @@ class App extends React.Component {
       captureFormat: 'jpeg',
       rotation: 360,
       cutProgress: undefined,
+      includeAllStreams: false,
     };
 
     this.state = _.cloneDeep(defaultState);
@@ -253,6 +254,10 @@ class App extends React.Component {
     this.setState({ captureFormat: isPng ? 'jpeg' : 'png' });
   }
 
+  toggleIncludeAllStreams() {
+    this.setState({ includeAllStreams: !this.state.includeAllStreams });
+  }
+
   jumpCutStart() {
     seekAbs(this.state.cutStartTime);
   }
@@ -309,6 +314,7 @@ class App extends React.Component {
     const fileFormat = this.state.fileFormat;
     const videoDuration = this.state.duration;
     const rotation = this.isRotationSet() ? this.getRotation() : undefined;
+    const includeAllStreams = this.state.includeAllStreams;
 
     if (!this.areCutTimesSet()) {
       return alert('Please select both start and end time');
@@ -327,6 +333,7 @@ class App extends React.Component {
         cutTo: cutEndTime,
         videoDuration,
         rotation,
+        includeAllStreams,
         onProgress: progress => this.onCutProgress(progress),
       });
     } catch (err) {
@@ -531,6 +538,13 @@ class App extends React.Component {
       </div>
 
       <div className="right-menu">
+        <button
+          title={`Set output streams. Current: ${this.state.includeAllStreams ? 'all streams' : 'default streams'}`}
+          onClick={withBlur(() => this.toggleIncludeAllStreams())}
+        >
+          {this.state.includeAllStreams ? 'all' : 'default'}
+        </button>
+
         <button
           title={`Set output rotation. Current: ${this.isRotationSet() ? this.getRotationStr() : 'Don\'t modify'}`}
           onClick={withBlur(() => this.increaseRotation())}
