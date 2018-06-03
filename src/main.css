@@ -112,18 +112,6 @@ input, button, textarea, :focus {
   z-index: 1;
 }
 
-#working {
-  color: white;
-  position: absolute;
-  z-index: 1;
-  top: 0;
-  left: 0;
-}
-
-#working i {
-  padding: .3em;
-}
-
 #drag-drop-field {
   padding: 15vw 0;
   border: 2vw dashed #252525;
