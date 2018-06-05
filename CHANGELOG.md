@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.12.0] - 2018-06-05
+
+### Added
+- Button to include all streams
+- Button to delete audio
+
+### Changed
+- Improve loading icon on white background
+
 ## [1.11.0] - 2018-05-21
 
 ### Added
