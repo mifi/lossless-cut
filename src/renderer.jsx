@@ -98,6 +98,7 @@ class App extends React.Component {
       rotation: 360,
       cutProgress: undefined,
       includeAllStreams: false,
+      stripAudio: false,
     };
 
     this.state = _.cloneDeep(defaultState);
@@ -315,6 +316,7 @@ class App extends React.Component {
     const videoDuration = this.state.duration;
     const rotation = this.isRotationSet() ? this.getRotation() : undefined;
     const includeAllStreams = this.state.includeAllStreams;
+    const stripAudio = this.state.stripAudio;
 
     if (!this.areCutTimesSet()) {
       return alert('Please select both start and end time');
@@ -334,6 +336,7 @@ class App extends React.Component {
         videoDuration,
         rotation,
         includeAllStreams,
+        stripAudio,
         onProgress: progress => this.onCutProgress(progress),
       });
     } catch (err) {
@@ -543,6 +546,13 @@ class App extends React.Component {
           onClick={withBlur(() => this.toggleIncludeAllStreams())}
         >
           {this.state.includeAllStreams ? 'all' : 'ps'}
+        </button>
+
+        <button
+          title={`Delete audio? Current: ${this.state.stripAudio ? 'delete audio tracks' : "don't delete audio tracks"}`}
+          onClick={withBlur(() => this.setState({ stripAudio: !this.state.stripAudio }))}
+        >
+          {this.state.stripAudio ? 'da' : 'ka'}
         </button>
 
         <button
