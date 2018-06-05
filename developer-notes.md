@@ -3,9 +3,9 @@
 ### Release new version
 ```
 # Commit changes
-npm version ...
 # Update CHANGELOG.md
 # Commit CHANGELOG.md
+npm version ...
 # Push with tag
 # Wait for Travis
 ```
