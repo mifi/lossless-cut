@@ -8,6 +8,8 @@ Simple, cross platform tool for lossless trimming/cutting of video and audio fil
 - Lossless cutting of common video and audio formats
 - Take full-resolution snapshots from videos in JPEG/PNG format
 - Change rotation/orientation metadata in videos. Great for rotating phone videos that turns out the wrong way without actually re-encoding the video.
+- Manual input range of cutpoints
+- Can include more than 2 streams or remove audio track (optional)
 
 ## Installing / running
 
