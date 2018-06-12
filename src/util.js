@@ -2,7 +2,7 @@ const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
 
-function formatDuration(_seconds) {
+function formatDuration(_seconds, fileNameFriendly) {
   const seconds = _seconds || 0;
   const minutes = seconds / 60;
   const hours = minutes / 60;
@@ -13,7 +13,21 @@ function formatDuration(_seconds) {
   const msPadded = _.padStart(Math.floor((seconds - Math.floor(seconds)) * 1000), 3, '0');
 
   // Be nice to filenames and use .
-  return `${hoursPadded}.${minutesPadded}.${secondsPadded}.${msPadded}`;
+  const delim = fileNameFriendly ? '.' : ':';
+  return `${hoursPadded}${delim}${minutesPadded}${delim}${secondsPadded}.${msPadded}`;
+}
+
+function parseDuration(str) {
+  if (!str) return undefined;
+  const match = str.trim().match(/^(\d{2}):(\d{2}):(\d{2})\.(\d{3})$/);
+  if (!match) return undefined;
+  const hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const seconds = parseInt(match[3], 10);
+  const ms = parseInt(match[4], 10);
+  if (hours > 59 || minutes > 59 || seconds > 59) return undefined;
+
+  return ((((hours * 60) + minutes) * 60) + seconds) + (ms / 1000);
 }
 
 function getOutPath(customOutDir, filePath, nameSuffix) {
@@ -45,6 +59,7 @@ async function transferTimestampsWithOffset(inPath, outPath, offset) {
 
 module.exports = {
   formatDuration,
+  parseDuration,
   getOutPath,
   transferTimestamps,
   transferTimestampsWithOffset,

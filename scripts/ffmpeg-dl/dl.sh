@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-ffmpeg_version=3.4.2
+ffmpeg_version=4.0
 
 ffmpeg_linux_ia32=https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-32bit-static.tar.xz
 ffmpeg_linux_x64=https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz
@@ -10,7 +10,7 @@ ffprobe_darwin_x64=http://evermeet.cx/ffmpeg/ffprobe-"${ffmpeg_version}".7z
 
 OUT_DIR=ffmpeg-tmp/archives
 
-if [ -d "$OUT_DIR" ]; then
+if test "$(ls -A "$OUT_DIR" 2>/dev/null)"; then
   echo "$OUT_DIR exists, skipping download."
   exit
 fi

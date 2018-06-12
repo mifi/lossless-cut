@@ -1,7 +1,5 @@
 const electron = require('electron'); // eslint-disable-line
 const isDev = require('electron-is-dev');
-const path = require('path');
-const url = require('url');
 
 const menu = require('./menu');
 
@@ -22,11 +20,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     darkTheme: true,
   });
-  mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'index.html'),
-    protocol: 'file:',
-    slashes: true,
-  }));
+  mainWindow.loadFile('index.html');
 
   mainWindow.on('closed', () => {
     // Dereference the window object, usually you would store windows

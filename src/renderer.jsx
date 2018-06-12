@@ -1,6 +1,6 @@
 const electron = require('electron'); // eslint-disable-line
 const $ = require('jquery');
-const keyboardJs = require('keyboardjs');
+const Mousetrap = require('mousetrap');
 const _ = require('lodash');
 const Hammer = require('react-hammerjs');
 const path = require('path');
@@ -62,8 +62,8 @@ function renderHelpSheet(visible) {
         <li><kbd>,</kbd> (comma) Tiny seek backward (1/60 sec)</li>
         <li><kbd>I</kbd> Mark in / cut start point</li>
         <li><kbd>O</kbd> Mark out / cut end point</li>
-        <li><kbd>E</kbd> Export selection (in the same dir as the video)</li>
-        <li><kbd>C</kbd> Capture snapshot (in the same dir as the video)</li>
+        <li><kbd>E</kbd> Cut (export selection in the same directory)</li>
+        <li><kbd>C</kbd> Capture snapshot (in the same directory)</li>
       </ul>
     </div>);
   }
@@ -85,14 +85,20 @@ class App extends React.Component {
     const defaultState = {
       working: false,
       filePath: '', // Setting video src="" prevents memory leak in chromium
+      html5FriendlyPath: undefined,
       playing: false,
       currentTime: undefined,
       duration: undefined,
       cutStartTime: 0,
+      cutStartTimeManual: undefined,
       cutEndTime: undefined,
+      cutEndTimeManual: undefined,
       fileFormat: undefined,
       captureFormat: 'jpeg',
       rotation: 360,
+      cutProgress: undefined,
+      includeAllStreams: false,
+      stripAudio: false,
     };
 
     this.state = _.cloneDeep(defaultState);
@@ -104,8 +110,8 @@ class App extends React.Component {
       this.setState(defaultState);
     };
 
-    const load = (filePath) => {
-      console.log('Load', filePath);
+    const load = (filePath, html5FriendlyPath) => {
+      console.log('Load', { filePath, html5FriendlyPath });
       if (this.state.working) return alert('I\'m busy');
 
       resetState();
@@ -118,7 +124,7 @@ class App extends React.Component {
         .then((fileFormat) => {
           if (!fileFormat) return alert('Unsupported file');
           setFileNameTitle(filePath);
-          return this.setState({ filePath, fileFormat });
+          return this.setState({ filePath, html5FriendlyPath, fileFormat });
         })
         .catch((err) => {
           if (err.code === 1 || err.code === 'ENOENT') {
@@ -135,6 +141,23 @@ class App extends React.Component {
       load(filePaths[0]);
     });
 
+    electron.ipcRenderer.on('html5ify', async (event, encodeVideo) => {
+      const { filePath, customOutDir } = this.state;
+      if (!filePath) return;
+
+      try {
+        this.setState({ working: true });
+        const html5ifiedPath = util.getOutPath(customOutDir, filePath, 'html5ified.mp4');
+        await ffmpeg.html5ify(filePath, html5ifiedPath, encodeVideo);
+        this.setState({ working: false });
+        load(filePath, html5ifiedPath);
+      } catch (err) {
+        alert('Failed to html5ify file');
+        console.error('Failed to html5ify file', err);
+        this.setState({ working: false });
+      }
+    });
+
     document.ondragover = document.ondragend = ev => ev.preventDefault();
 
     document.body.ondrop = (ev) => {
@@ -143,19 +166,19 @@ class App extends React.Component {
       load(ev.dataTransfer.files[0].path);
     };
 
-    keyboardJs.bind('space', () => this.playCommand());
-    keyboardJs.bind('k', () => this.playCommand());
-    keyboardJs.bind('j', () => this.changePlaybackRate(-1));
-    keyboardJs.bind('l', () => this.changePlaybackRate(1));
-    keyboardJs.bind('left', () => seekRel(-1));
-    keyboardJs.bind('right', () => seekRel(1));
-    keyboardJs.bind('period', () => shortStep(1));
-    keyboardJs.bind('comma', () => shortStep(-1));
-    keyboardJs.bind('c', () => this.capture());
-    keyboardJs.bind('e', () => this.cutClick());
-    keyboardJs.bind('i', () => this.setCutStart());
-    keyboardJs.bind('o', () => this.setCutEnd());
-    keyboardJs.bind('h', () => this.toggleHelp());
+    Mousetrap.bind('space', () => this.playCommand());
+    Mousetrap.bind('k', () => this.playCommand());
+    Mousetrap.bind('j', () => this.changePlaybackRate(-1));
+    Mousetrap.bind('l', () => this.changePlaybackRate(1));
+    Mousetrap.bind('left', () => seekRel(-1));
+    Mousetrap.bind('right', () => seekRel(1));
+    Mousetrap.bind('.', () => shortStep(1));
+    Mousetrap.bind(',', () => shortStep(-1));
+    Mousetrap.bind('c', () => this.capture());
+    Mousetrap.bind('e', () => this.cutClick());
+    Mousetrap.bind('i', () => this.setCutStart());
+    Mousetrap.bind('o', () => this.setCutEnd());
+    Mousetrap.bind('h', () => this.toggleHelp());
 
     electron.ipcRenderer.send('renderer-ready');
   }
@@ -192,7 +215,7 @@ class App extends React.Component {
   }
 
   getFileUri() {
-    return (this.state.filePath || '').replace(/#/g, '%23');
+    return (this.state.html5FriendlyPath || this.state.filePath || '').replace(/#/g, '%23');
   }
 
   getOutputDir() {
@@ -214,6 +237,14 @@ class App extends React.Component {
     return this.state.rotation !== 360;
   }
 
+  areCutTimesSet() {
+    return (this.state.cutStartTime !== undefined || this.state.cutEndTime !== undefined);
+  }
+
+  isCutRangeValid() {
+    return this.areCutTimesSet() && this.state.cutStartTime < this.state.cutEndTime;
+  }
+
   increaseRotation() {
     const rotation = (this.state.rotation + 90) % 450;
     this.setState({ rotation });
@@ -222,6 +253,10 @@ class App extends React.Component {
   toggleCaptureFormat() {
     const isPng = this.state.captureFormat === 'png';
     this.setState({ captureFormat: isPng ? 'jpeg' : 'png' });
+  }
+
+  toggleIncludeAllStreams() {
+    this.setState({ includeAllStreams: !this.state.includeAllStreams });
   }
 
   jumpCutStart() {
@@ -265,7 +300,7 @@ class App extends React.Component {
     return video.play().catch((err) => {
       console.log(err);
       if (err.name === 'NotSupportedError') {
-        alert('This video format is not supported, maybe you can re-format the file first using ffmpeg');
+        alert('This video format or codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu.');
       }
     });
   }
@@ -276,20 +311,21 @@ class App extends React.Component {
     const cutStartTime = this.state.cutStartTime;
     const cutEndTime = this.state.cutEndTime;
     const filePath = this.state.filePath;
+    const outputDir = this.state.customOutDir;
+    const fileFormat = this.state.fileFormat;
+    const videoDuration = this.state.duration;
     const rotation = this.isRotationSet() ? this.getRotation() : undefined;
+    const includeAllStreams = this.state.includeAllStreams;
+    const stripAudio = this.state.stripAudio;
 
-    if (cutStartTime === undefined || cutEndTime === undefined) {
+    if (!this.areCutTimesSet()) {
       return alert('Please select both start and end time');
     }
-    if (cutStartTime >= cutEndTime) {
+    if (!this.isCutRangeValid()) {
       return alert('Start time must be before end time');
     }
 
-    const videoDuration = this.state.duration;
-
     this.setState({ working: true });
-    const outputDir = this.state.customOutDir;
-    const fileFormat = this.state.fileFormat;
     try {
       return await ffmpeg.cut({
         customOutDir: outputDir,
@@ -299,6 +335,8 @@ class App extends React.Component {
         cutTo: cutEndTime,
         videoDuration,
         rotation,
+        includeAllStreams,
+        stripAudio,
         onProgress: progress => this.onCutProgress(progress),
       });
     } catch (err) {
@@ -328,15 +366,54 @@ class App extends React.Component {
     this.setState({ helpVisible: !this.state.helpVisible });
   }
 
+  renderCutTimeInput(type) {
+    const cutTimeKey = type === 'start' ? 'cutStartTime' : 'cutEndTime';
+    const cutTimeManualKey = type === 'start' ? 'cutStartTimeManual' : 'cutEndTimeManual';
+    const cutTimeInputStyle = { width: '8em', textAlign: type === 'start' ? 'right' : 'left' };
+
+    const isCutTimeManualSet = () => this.state[cutTimeManualKey] !== undefined;
+
+    const handleCutTimeInput = (text) => {
+      // Allow the user to erase
+      if (text.length === 0) {
+        this.setState({ [cutTimeManualKey]: undefined });
+        return;
+      }
+
+      const time = util.parseDuration(text);
+      if (time === undefined) {
+        this.setState({ [cutTimeManualKey]: text });
+        return;
+      }
+
+      this.setState({ [cutTimeManualKey]: undefined, [cutTimeKey]: time });
+    };
+
+
+    return (<input
+      style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? '#dc1d1d' : undefined }}
+      type="text"
+      onChange={e => handleCutTimeInput(e.target.value)}
+      value={isCutTimeManualSet()
+        ? this.state[cutTimeManualKey]
+        : util.formatDuration(this.state[cutTimeKey])
+      }
+    />);
+  }
+
   render() {
+    const jumpCutButtonStyle = { position: 'absolute', color: 'black', bottom: 0, top: 0, padding: '2px 8px' };
+
     return (<div>
       {!this.state.filePath && <div id="drag-drop-field">DROP VIDEO</div>}
       {this.state.working && (
-        <div id="working">
-          <i className="fa fa-cog fa-spin fa-3x fa-fw" style={{ verticalAlign: 'middle' }} />
-          <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-            {Math.floor((this.state.cutProgress || 0) * 100)} %
-          </span>
+        <div style={{ color: 'white', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '.5em', margin: '1em', padding: '.2em .5em', position: 'absolute', zIndex: 1, top: 0, left: 0 }}>
+          <i className="fa fa-cog fa-spin fa-3x fa-fw" style={{ verticalAlign: 'middle', width: '1em', height: '1em' }} />
+          {this.state.cutProgress != null &&
+            <span style={{ color: 'rgba(255, 255, 255, 0.7)', paddingLeft: '.4em' }}>
+              {Math.floor(this.state.cutProgress * 100)} %
+            </span>
+          }
         </div>
       )}
 
@@ -362,24 +439,40 @@ class App extends React.Component {
         >
           <div className="timeline-wrapper">
             <div className="current-time" style={{ left: `${((this.state.currentTime || 0) / (this.state.duration || 1)) * 100}%` }} />
-            <div
-              className="cut-start-time"
-              style={{
-                left: `${((this.state.cutStartTime || 0) / (this.state.duration || 1)) * 100}%`,
-                width: `${(((this.state.cutEndTime || 0) - (this.state.cutStartTime || 0)) / (this.state.duration || 1)) * 100}%`,
-              }}
-            />
+
+            {this.isCutRangeValid() &&
+              <div
+                className="cut-start-time"
+                style={{
+                  left: `${((this.state.cutStartTime) / (this.state.duration || 1)) * 100}%`,
+                  width: `${(((this.state.cutEndTime) - this.state.cutStartTime) / (this.state.duration || 1)) * 100}%`,
+                }}
+              />
+            }
 
             <div id="current-time-display">{util.formatDuration(this.state.currentTime)}</div>
           </div>
         </Hammer>
 
-        <div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <i
             className="button fa fa-step-backward"
             aria-hidden="true"
+            title="Jump to start of video"
             onClick={() => seekAbs(0)}
           />
+
+          <div style={{ position: 'relative' }}>
+            {this.renderCutTimeInput('start')}
+            <i
+              style={{ ...jumpCutButtonStyle, left: 0 }}
+              className="fa fa-step-backward"
+              title="Jump to cut start"
+              aria-hidden="true"
+              onClick={withBlur(() => this.jumpCutStart())}
+            />
+          </div>
+
           <i
             className="button fa fa-caret-left"
             aria-hidden="true"
@@ -395,44 +488,50 @@ class App extends React.Component {
             aria-hidden="true"
             onClick={() => shortStep(1)}
           />
+
+          <div style={{ position: 'relative' }}>
+            {this.renderCutTimeInput('end')}
+            <i
+              style={{ ...jumpCutButtonStyle, right: 0 }}
+              className="fa fa-step-forward"
+              title="Jump to cut end"
+              aria-hidden="true"
+              onClick={withBlur(() => this.jumpCutEnd())}
+            />
+          </div>
+
           <i
             className="button fa fa-step-forward"
             aria-hidden="true"
+            title="Jump to end of video"
             onClick={() => seekAbs(this.state.duration)}
           />
         </div>
+
         <div>
-          <button
-            className="jump-cut-start" title="Cut start time (jump)"
-            onClick={withBlur(() => this.jumpCutStart())}
-          >{util.formatDuration(this.state.cutStartTime || 0)}</button>
           <i
-            title="Set cut start"
+            title="Set cut start to current position"
             className="button fa fa-angle-left"
             aria-hidden="true"
             onClick={() => this.setCutStart()}
           />
           <i
-            title="Export selection"
+            title="Cut"
             className="button fa fa-scissors"
             aria-hidden="true"
             onClick={() => this.cutClick()}
           />
           <i
-            title="Set cut end"
+            title="Set cut end to current position"
             className="button fa fa-angle-right"
             aria-hidden="true"
             onClick={() => this.setCutEnd()}
           />
-          <button
-            className="jump-cut-end" title="Cut end time (jump)"
-            onClick={withBlur(() => this.jumpCutEnd())}
-          >{util.formatDuration(this.state.cutEndTime || 0)}</button>
         </div>
       </div>
 
       <div className="left-menu">
-        <button title="Format">
+        <button title="Format of current file">
           {this.state.fileFormat || 'FMT'}
         </button>
 
@@ -442,6 +541,20 @@ class App extends React.Component {
       </div>
 
       <div className="right-menu">
+        <button
+          title={`Set output streams. Current: ${this.state.includeAllStreams ? 'include (and cut) all streams' : 'include only primary streams'}`}
+          onClick={withBlur(() => this.toggleIncludeAllStreams())}
+        >
+          {this.state.includeAllStreams ? 'all' : 'ps'}
+        </button>
+
+        <button
+          title={`Delete audio? Current: ${this.state.stripAudio ? 'delete audio tracks' : "don't delete audio tracks"}`}
+          onClick={withBlur(() => this.setState({ stripAudio: !this.state.stripAudio }))}
+        >
+          {this.state.stripAudio ? 'da' : 'ka'}
+        </button>
+
         <button
           title={`Set output rotation. Current: ${this.isRotationSet() ? this.getRotationStr() : 'Don\'t modify'}`}
           onClick={withBlur(() => this.increaseRotation())}

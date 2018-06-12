@@ -25,6 +25,18 @@ module.exports = (app, mainWindow, newVersion) => {
           });
         },
       },
+      {
+        label: 'Convert to friendly format (fast)',
+        click() {
+          mainWindow.webContents.send('html5ify', false);
+        },
+      },
+      {
+        label: 'Convert to friendly codec (slow)',
+        click() {
+          mainWindow.webContents.send('html5ify', true);
+        },
+      },
     ],
   });
 

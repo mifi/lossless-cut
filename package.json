@@ -1,6 +1,6 @@
 {
   "name": "lossless-cut",
-  "version": "1.10.0",
+  "version": "1.12.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -37,6 +37,8 @@
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.18.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.16.0",
     "electron-packager": "^8.1.0",
@@ -51,17 +53,17 @@
   "dependencies": {
     "bluebird": "^3.4.6",
     "classnames": "^2.2.5",
-    "electron": "^1.4.5",
+    "electron": "^2.0.1",
     "electron-default-menu": "^1.0.0",
     "electron-is-dev": "^0.1.2",
     "execa": "^0.5.0",
     "file-type": "^4.1.0",
     "github-api": "^3.0.0",
     "jquery": "^3.1.1",
-    "keyboardjs": "^2.3.3",
     "lodash": "^4.16.4",
     "mime-types": "^2.1.14",
     "moment": "^2.18.1",
+    "mousetrap": "^1.6.1",
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
     "react-hammerjs": "^0.5.0",

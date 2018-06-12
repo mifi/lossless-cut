@@ -1,7 +1,53 @@
+# https://github.com/develar/onshape-desktop-shell/blob/master/.travis.yml
+
+os: osx
+osx_image: xcode9.3
 language: node_js
 node_js:
-  - "4"
-  - "6"
+  - "8"
+
+# https://discourse.brew.sh/t/wine-first-time-configuration-gets-stuck-forever-on-macos/1612
+env:
+  - ELECTRON_CACHE=$HOME/.cache/electron ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder WINEARCH=win32
+
+cache:
+  directories:
+  - node_modules
+  - $HOME/.cache/electron
+  - $HOME/.cache/electron-builder
+  - ffmpeg-tmp/archives
+  - $HOME/Library/Caches/Homebrew
+
+before_cache:
+  - rm -rf $HOME/.cache/electron-builder/wine
+
+before_install:
+  - brew install wine
+  - brew install p7zip
 
 script:
-  npm run lint
+  - |
+    npm run lint &&
+    npm run download-ffmpeg &&
+    ls ffmpeg-tmp/archives &&
+    npm run extract-ffmpeg &&
+    npm run build &&
+    npm run icon-gen &&
+    npm run package
+
+deploy:
+  provider: releases
+  overwrite: true
+  api_key:
+    secure: "ncttMNBIvaY1R5iDUzB3vFkLXMNDtNiNNBZsvxvD0FxtuYVMLA3NYVcqbYxO94LgE1idR6GePlyhGmrxtjD3cahLf0+2DhoVZqykZF6Y/EGaC8aLP5di6UQKR2gubDiP+GWvqHTA9Y9oZp8vOh2zGz20tT92U6F9hLxiD0k6wHachLAWDKTOU+TjpZjpmnT7Cchmn9s0pmGzn3557kCh4v4X+D+GPk/kGzvN0wuEf75kHPJ2wCj0NgO2TfH3pK7w4mI7NDtnAooNr9UJc4fWxo+Pelob7XY6A/pfkCfywx0lZjBg0A6AsL3pon/p9ERuHN1s4Sqj4njpkeqfk3y4s0wOh4uF71PPN5TCJbb6mwdbmbAKMnx4VaQZC9G55+xjSeh5Kr0Due5TMlaEWF14Ft4klEBsoRF7QmCxkAoitzYmPlz78oeEpnhU/kZcdvptXnREiv/093MD+MIfg7a6+xZEkJjDGvDB9GrWnVcnq5MOo/fknWhE/az8AW8h7A/zCykmJeUwS67CD/lhBouzjblIBhuGzWZMMUEqbNFJy1qXOgFO2YrXfMMUms6U0NpK4fDVMgghQqLf+95vv/8e/CnpWxLmPgFN+BPFPQPBVLqOVyZtw/brLzebAaaInudVKsmjhw6hXF11hX4U+fBdbc+JeLxMcLaVO/zP25ZeUak="
+  file:
+    - package/LosslessCut-darwin-x64.zip
+    - package/LosslessCut-win32-ia32.zip
+    - package/LosslessCut-win32-x64.zip
+    - package/LosslessCut-linux-ia32.zip
+    - package/LosslessCut-linux-x64.zip
+  skip_cleanup: true
+  draft: true
+  tag_name: $TRAVIS_TAG
+  on:
+    tags: true
