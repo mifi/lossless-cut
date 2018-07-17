@@ -193,7 +193,6 @@ class App extends React.Component {
 
   onDurationChange(duration) {
     this.setState({ duration });
-    if (!this.state.cutEndTime) this.setState({ cutEndTime: duration });
   }
 
   onCutProgress(cutProgress) {
@@ -232,17 +231,19 @@ class App extends React.Component {
     return `${this.getRotation()}°`;
   }
 
+  getApparentCutEndTime() {
+    if (this.state.cutEndTime !== undefined) return this.state.cutEndTime;
+    if (this.state.duration !== undefined) return this.state.duration;
+    return 0; // Haven't gotten duration yet
+  }
+
   isRotationSet() {
     // 360 means we don't modify rotation
     return this.state.rotation !== 360;
   }
 
-  areCutTimesSet() {
-    return (this.state.cutStartTime !== undefined || this.state.cutEndTime !== undefined);
-  }
-
   isCutRangeValid() {
-    return this.areCutTimesSet() && this.state.cutStartTime < this.state.cutEndTime;
+    return this.state.cutStartTime < this.getApparentCutEndTime();
   }
 
   increaseRotation() {
@@ -264,7 +265,7 @@ class App extends React.Component {
   }
 
   jumpCutEnd() {
-    seekAbs(this.state.cutEndTime);
+    seekAbs(this.getApparentCutEndTime());
   }
 
   handlePan(e) {
@@ -318,9 +319,6 @@ class App extends React.Component {
     const includeAllStreams = this.state.includeAllStreams;
     const stripAudio = this.state.stripAudio;
 
-    if (!this.areCutTimesSet()) {
-      return alert('Please select both start and end time');
-    }
     if (!this.isCutRangeValid()) {
       return alert('Start time must be before end time');
     }
@@ -333,6 +331,7 @@ class App extends React.Component {
         format: fileFormat,
         cutFrom: cutStartTime,
         cutTo: cutEndTime,
+        cutToApparent: this.getApparentCutEndTime(),
         videoDuration,
         rotation,
         includeAllStreams,
@@ -367,7 +366,6 @@ class App extends React.Component {
   }
 
   renderCutTimeInput(type) {
-    const cutTimeKey = type === 'start' ? 'cutStartTime' : 'cutEndTime';
     const cutTimeManualKey = type === 'start' ? 'cutStartTimeManual' : 'cutEndTimeManual';
     const cutTimeInputStyle = { width: '8em', textAlign: type === 'start' ? 'right' : 'left' };
 
@@ -386,7 +384,7 @@ class App extends React.Component {
         return;
       }
 
-      this.setState({ [cutTimeManualKey]: undefined, [cutTimeKey]: time });
+      this.setState({ [cutTimeManualKey]: undefined, [type === 'start' ? 'cutStartTime' : 'cutEndTime']: time });
     };
 
 
@@ -396,7 +394,7 @@ class App extends React.Component {
       onChange={e => handleCutTimeInput(e.target.value)}
       value={isCutTimeManualSet()
         ? this.state[cutTimeManualKey]
-        : util.formatDuration(this.state[cutTimeKey])
+        : util.formatDuration(type === 'start' ? this.state.cutStartTime : this.getApparentCutEndTime())
       }
     />);
   }
@@ -445,7 +443,7 @@ class App extends React.Component {
                 className="cut-start-time"
                 style={{
                   left: `${((this.state.cutStartTime) / (this.state.duration || 1)) * 100}%`,
-                  width: `${(((this.state.cutEndTime) - this.state.cutStartTime) / (this.state.duration || 1)) * 100}%`,
+                  width: `${(((this.getApparentCutEndTime()) - this.state.cutStartTime) / (this.state.duration || 1)) * 100}%`,
                 }}
               />
             }
