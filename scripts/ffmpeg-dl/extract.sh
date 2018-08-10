@@ -22,6 +22,7 @@ mkdir -p binaries/linux_x64 &&
 mkdir -p binaries/win32_ia32 &&
 mkdir -p binaries/win32_x64 &&
 mkdir -p binaries/darwin_x64 &&
+ls -R extracted &&
 mv extracted/linux_ia32/ffmpeg-"${ffmpeg_version}"-32bit-static/ffmpeg binaries/linux_ia32 &&
 mv extracted/linux_ia32/ffmpeg-"${ffmpeg_version}"-32bit-static/ffprobe binaries/linux_ia32 &&
 mv extracted/linux_x64/ffmpeg-"${ffmpeg_version}"-64bit-static/ffmpeg binaries/linux_x64 &&
