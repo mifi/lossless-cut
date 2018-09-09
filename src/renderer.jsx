@@ -82,7 +82,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
 
-    const defaultState = {
+    const localState = {
       working: false,
       filePath: '', // Setting video src="" prevents memory leak in chromium
       html5FriendlyPath: undefined,
@@ -94,20 +94,26 @@ class App extends React.Component {
       cutEndTime: undefined,
       cutEndTimeManual: undefined,
       fileFormat: undefined,
-      captureFormat: 'jpeg',
       rotation: 360,
       cutProgress: undefined,
-      includeAllStreams: false,
-      stripAudio: false,
     };
 
-    this.state = _.cloneDeep(defaultState);
+    const globalState = {
+      stripAudio: false,
+      includeAllStreams: false,
+      captureFormat: 'jpeg',
+    };
+
+    this.state = {
+      ...localState,
+      ...globalState,
+    };
 
     const resetState = () => {
       const video = getVideo();
       video.currentTime = 0;
       video.playbackRate = 1;
-      this.setState(defaultState);
+      this.setState(localState);
     };
 
     const load = (filePath, html5FriendlyPath) => {
