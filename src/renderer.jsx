@@ -102,6 +102,7 @@ class App extends React.Component {
       stripAudio: false,
       includeAllStreams: false,
       captureFormat: 'jpeg',
+      customOutDir: undefined,
     };
 
     this.state = {
