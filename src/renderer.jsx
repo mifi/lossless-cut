@@ -103,6 +103,7 @@ class App extends React.Component {
       includeAllStreams: false,
       captureFormat: 'jpeg',
       customOutDir: undefined,
+      keyframeCut: false,
     };
 
     this.state = {
@@ -316,15 +317,12 @@ class App extends React.Component {
   async cutClick() {
     if (this.state.working) return alert('I\'m busy');
 
-    const cutStartTime = this.state.cutStartTime;
-    const cutEndTime = this.state.cutEndTime;
-    const filePath = this.state.filePath;
-    const outputDir = this.state.customOutDir;
-    const fileFormat = this.state.fileFormat;
-    const videoDuration = this.state.duration;
+    const {
+      cutStartTime, cutEndTime, filePath, customOutDir, fileFormat, duration, includeAllStreams,
+      stripAudio, keyframeCut,
+    } = this.state;
+
     const rotation = this.isRotationSet() ? this.getRotation() : undefined;
-    const includeAllStreams = this.state.includeAllStreams;
-    const stripAudio = this.state.stripAudio;
 
     if (!this.isCutRangeValid()) {
       return alert('Start time must be before end time');
@@ -333,16 +331,17 @@ class App extends React.Component {
     this.setState({ working: true });
     try {
       return await ffmpeg.cut({
-        customOutDir: outputDir,
+        customOutDir,
         filePath,
         format: fileFormat,
         cutFrom: cutStartTime,
         cutTo: cutEndTime,
         cutToApparent: this.getApparentCutEndTime(),
-        videoDuration,
+        videoDuration: duration,
         rotation,
         includeAllStreams,
         stripAudio,
+        keyframeCut,
         onProgress: progress => this.onCutProgress(progress),
       });
     } catch (err) {
@@ -548,6 +547,13 @@ class App extends React.Component {
 
       <div className="right-menu">
         <button
+          title={`Cut mode ${this.state.keyframeCut ? 'nearest keyframe cut' : 'normal cut'}`}
+          onClick={withBlur(() => this.setState({ keyframeCut: !this.state.keyframeCut }))}
+        >
+          {this.state.keyframeCut ? 'kc' : 'nc'}
+        </button>
+
+        <button
           title={`Set output streams. Current: ${this.state.includeAllStreams ? 'include (and cut) all streams' : 'include only primary streams'}`}
           onClick={withBlur(() => this.toggleIncludeAllStreams())}
         >
@@ -555,7 +561,7 @@ class App extends React.Component {
         </button>
 
         <button
-          title={`Delete audio? Current: ${this.state.stripAudio ? 'delete audio tracks' : "don't delete audio tracks"}`}
+          title={`Delete audio? Current: ${this.state.stripAudio ? 'delete audio tracks' : 'keep audio tracks'}`}
           onClick={withBlur(() => this.setState({ stripAudio: !this.state.stripAudio }))}
         >
           {this.state.stripAudio ? 'da' : 'ka'}
@@ -572,7 +578,7 @@ class App extends React.Component {
           title={`Custom output dir (cancel to restore default). Current: ${this.getOutputDir() || 'Not set (use input dir)'}`}
           onClick={withBlur(() => this.setOutputDir())}
         >
-          {this.getOutputDir() ? `...${this.getOutputDir().substr(-10)}` : 'OUTDIR'}
+          {this.getOutputDir() ? 'cd' : 'id'}
         </button>
 
         <i
