@@ -96,7 +96,7 @@ async function cut({
   const result = await process;
   console.log(result.stdout);
 
-  return util.transferTimestamps(filePath, outPath);
+  await util.transferTimestamps(filePath, outPath);
 }
 
 async function html5ify(filePath, outPath, encodeVideo) {
@@ -118,6 +118,8 @@ async function html5ify(filePath, outPath, encodeVideo) {
   const process = execa(ffmpegPath, ffmpegArgs);
   const result = await process;
   console.log(result.stdout);
+
+  await util.transferTimestamps(filePath, outPath);
 }
 
 /**
