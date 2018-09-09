@@ -408,6 +408,7 @@ class App extends React.Component {
 
   render() {
     const jumpCutButtonStyle = { position: 'absolute', color: 'black', bottom: 0, top: 0, padding: '2px 8px' };
+    const infoSpanStyle = { background: 'rgba(255, 255, 255, 0.4)', padding: '.1em .4em', margin: '0 3px', fontSize: 13, borderRadius: '.3em' };
 
     return (<div>
       {!this.state.filePath && <div id="drag-drop-field">DROP VIDEO</div>}
@@ -536,13 +537,13 @@ class App extends React.Component {
       </div>
 
       <div className="left-menu">
-        <button title="Format of current file">
+        <span style={infoSpanStyle} title="Format of current file">
           {this.state.fileFormat || 'FMT'}
-        </button>
+        </span>
 
-        <button className="playback-rate" title="Playback rate">
+        <span style={infoSpanStyle} title="Playback rate">
           {_.round(this.state.playbackRate, 1) || 1}x
-        </button>
+        </span>
       </div>
 
       <div className="right-menu">
