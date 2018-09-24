@@ -4,6 +4,7 @@ const Mousetrap = require('mousetrap');
 const _ = require('lodash');
 const Hammer = require('react-hammerjs');
 const path = require('path');
+const trash = require('trash');
 
 const React = require('react');
 const ReactDOM = require('react-dom');
@@ -78,53 +79,45 @@ function withBlur(cb) {
   };
 }
 
+
+const localState = {
+  working: false,
+  filePath: '', // Setting video src="" prevents memory leak in chromium
+  html5FriendlyPath: undefined,
+  playing: false,
+  currentTime: undefined,
+  duration: undefined,
+  cutStartTime: 0,
+  cutStartTimeManual: undefined,
+  cutEndTime: undefined,
+  cutEndTimeManual: undefined,
+  fileFormat: undefined,
+  rotation: 360,
+  cutProgress: undefined,
+};
+
+const globalState = {
+  stripAudio: false,
+  includeAllStreams: false,
+  captureFormat: 'jpeg',
+  customOutDir: undefined,
+  keyframeCut: false,
+};
+
 class App extends React.Component {
   constructor(props) {
     super(props);
-
-    const localState = {
-      working: false,
-      filePath: '', // Setting video src="" prevents memory leak in chromium
-      html5FriendlyPath: undefined,
-      playing: false,
-      currentTime: undefined,
-      duration: undefined,
-      cutStartTime: 0,
-      cutStartTimeManual: undefined,
-      cutEndTime: undefined,
-      cutEndTimeManual: undefined,
-      fileFormat: undefined,
-      rotation: 360,
-      cutProgress: undefined,
-    };
-
-    const globalState = {
-      stripAudio: false,
-      includeAllStreams: false,
-      captureFormat: 'jpeg',
-      customOutDir: undefined,
-      keyframeCut: false,
-    };
 
     this.state = {
       ...localState,
       ...globalState,
     };
 
-    const resetState = () => {
-      const video = getVideo();
-      video.currentTime = 0;
-      video.playbackRate = 1;
-      this.setState(localState);
-    };
-
     const load = (filePath, html5FriendlyPath) => {
       console.log('Load', { filePath, html5FriendlyPath });
       if (this.state.working) return alert('I\'m busy');
 
-      resetState();
-
-      setFileNameTitle();
+      this.resetState();
 
       this.setState({ working: true });
 
@@ -259,6 +252,14 @@ class App extends React.Component {
     this.setState({ rotation });
   }
 
+  resetState() {
+    const video = getVideo();
+    video.currentTime = 0;
+    video.playbackRate = 1;
+    this.setState(localState);
+    setFileNameTitle();
+  }
+
   toggleCaptureFormat() {
     const isPng = this.state.captureFormat === 'png';
     this.setState({ captureFormat: isPng ? 'jpeg' : 'png' });
@@ -312,6 +313,15 @@ class App extends React.Component {
         alert('This video format or codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu.');
       }
     });
+  }
+
+  async deleteSourceClick() {
+    if (this.state.working || !confirm('Are you sure you want to move the source file to trash?')) return;
+    const { filePath } = this.state;
+
+    this.setState({ working: true });
+    await trash(filePath);
+    this.resetState();
   }
 
   async cutClick() {
@@ -525,6 +535,12 @@ class App extends React.Component {
             className="button fa fa-scissors"
             aria-hidden="true"
             onClick={() => this.cutClick()}
+          />
+          <i
+            title="Delete source file"
+            className="button fa fa-trash"
+            aria-hidden="true"
+            onClick={() => this.deleteSourceClick()}
           />
           <i
             title="Set cut end to current position"

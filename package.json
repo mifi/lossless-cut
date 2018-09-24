@@ -53,7 +53,7 @@
   "dependencies": {
     "bluebird": "^3.4.6",
     "classnames": "^2.2.5",
-    "electron": "^2.0.1",
+    "electron": "^2.0.9",
     "electron-default-menu": "^1.0.0",
     "electron-is-dev": "^0.1.2",
     "execa": "^0.5.0",
@@ -69,6 +69,7 @@
     "react-hammerjs": "^0.5.0",
     "read-chunk": "^2.0.0",
     "strong-data-uri": "^1.0.4",
+    "trash": "^4.3.0",
     "which": "^1.2.11"
   }
 }
