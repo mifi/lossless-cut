@@ -37,8 +37,8 @@ For more information about supported formats / codecs, see https://www.chromium.
 - Select the cut start and end time.  Press <kbd>I</kbd> to select the start time, <kbd>O</kbd> to select the end time for the cut.
 - Press the custom output dir button if you want to export to a certain dir (default: source file dir)
 - Press the rotation button if you want to override orientation metadata
-- Press the scissors button to export the slice
-- Press the camera button to take a snapshot
+- Press the scissors button (or <kbd>E</kbd>) to export the slice
+- Press the camera button (or <kbd>C</kbd>) to take a snapshot
 - Press the trash button if you want to move the original file to trash
 
 The original video files will not be modified. Instead it creates a lossless export in the same directory as the original file with from/to timestamps. Note that the cut is currently not precise around the cutpoints, so video before/after the nearest keyframe will be lost. EXIF data is preserved.
