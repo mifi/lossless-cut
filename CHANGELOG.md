@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.14.0] - 2018-09-25
+
+### Added
+- Add "Delete source" button
+
 ## [1.13.0] - 2018-09-09
 
 ### Added
