@@ -10,10 +10,10 @@ const releasesPage = 'https://github.com/mifi/lossless-cut/releases';
 module.exports = (app, mainWindow, newVersion) => {
   const menu = defaultMenu(app, electron.shell);
 
-  const editMenuIndex = menu.findIndex(item => item.Label === 'Edit');
+  const editMenuIndex = menu.findIndex(item => item.label === 'Edit');
   if (editMenuIndex >= 0) menu.splice(editMenuIndex, 1);
 
-  menu.splice((process.platform === 'darwin' ? 1 : 0), 0, {
+  const fileMenu = {
     label: 'File',
     submenu: [
       {
@@ -44,7 +44,9 @@ module.exports = (app, mainWindow, newVersion) => {
         },
       },
     ],
-  });
+  };
+
+  menu.splice((process.platform === 'darwin' ? 1 : 0), 0, fileMenu);
 
   const helpIndex = menu.findIndex(item => item.role === 'help');
   if (helpIndex >= 0) {
