@@ -1,7 +1,9 @@
 const electron = require('electron'); // eslint-disable-line
 const $ = require('jquery');
 const Mousetrap = require('mousetrap');
-const _ = require('lodash');
+const round = require('lodash/round');
+const clamp = require('lodash/clamp');
+const throttle = require('lodash/throttle');
 const Hammer = require('react-hammerjs');
 const path = require('path');
 const trash = require('trash');
@@ -274,16 +276,14 @@ class App extends React.Component {
     seekAbs(this.getApparentCutEndTime());
   }
 
-  handlePan = (e) => {
-    _.throttle(e2 => this.handleTap(e2), 200)(e);
-  }
-
-  handleTap = (e) => {
+  /* eslint-disable react/sort-comp */
+  handleTap = throttle((e) => {
     const $target = $('.timeline-wrapper');
     const parentOffset = $target.offset();
     const relX = e.srcEvent.pageX - parentOffset.left;
     setCursor((relX / $target[0].offsetWidth) * this.state.duration);
-  }
+  }, 200);
+  /* eslint-enable react/sort-comp */
 
   playbackRateChange = () => {
     this.state.playbackRate = getVideo().playbackRate;
@@ -369,7 +369,7 @@ class App extends React.Component {
       video.play();
     } else {
       const newRate = video.playbackRate + (dir * 0.15);
-      video.playbackRate = _.clamp(newRate, 0.05, 16);
+      video.playbackRate = clamp(newRate, 0.05, 16);
     }
   }
 
@@ -471,7 +471,7 @@ class App extends React.Component {
         <div className="controls-wrapper">
           <Hammer
             onTap={this.handleTap}
-            onPan={this.handlePan}
+            onPan={this.handleTap}
             options={{ recognizers: {} }}
           >
             <div className="timeline-wrapper">
@@ -582,7 +582,7 @@ class App extends React.Component {
           </span>
 
           <span style={infoSpanStyle} title="Playback rate">
-            {_.round(this.state.playbackRate, 1) || 1}
+            {round(this.state.playbackRate, 1) || 1}
           </span>
         </div>
 
