@@ -1,7 +1,7 @@
 const GitHub = require('github-api');
 const electron = require('electron');
 
-const app = electron.app;
+const { app } = electron;
 
 const gh = new GitHub();
 const repo = gh.getRepo('mifi', 'lossless-cut');

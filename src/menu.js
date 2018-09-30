@@ -1,8 +1,8 @@
 const electron = require('electron'); // eslint-disable-line
 const defaultMenu = require('electron-default-menu');
 
-const Menu = electron.Menu;
-const dialog = electron.dialog;
+const { Menu } = electron;
+const { dialog } = electron;
 
 const homepage = 'https://github.com/mifi/lossless-cut';
 const releasesPage = 'https://github.com/mifi/lossless-cut/releases';

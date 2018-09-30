@@ -5,8 +5,8 @@ const menu = require('./menu');
 
 const { checkNewVersion } = require('./update-checker');
 
-const app = electron.app;
-const BrowserWindow = electron.BrowserWindow;
+const { app } = electron;
+const { BrowserWindow } = electron;
 
 app.setName('LosslessCut');
 
