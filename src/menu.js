@@ -1,8 +1,8 @@
 const electron = require('electron'); // eslint-disable-line
 const defaultMenu = require('electron-default-menu');
 
-const Menu = electron.Menu;
-const dialog = electron.dialog;
+const { Menu } = electron;
+const { dialog } = electron;
 
 const homepage = 'https://github.com/mifi/lossless-cut';
 const releasesPage = 'https://github.com/mifi/lossless-cut/releases';
@@ -10,10 +10,10 @@ const releasesPage = 'https://github.com/mifi/lossless-cut/releases';
 module.exports = (app, mainWindow, newVersion) => {
   const menu = defaultMenu(app, electron.shell);
 
-  const editMenuIndex = menu.findIndex(item => item.Label === 'Edit');
+  const editMenuIndex = menu.findIndex(item => item.label === 'Edit');
   if (editMenuIndex >= 0) menu.splice(editMenuIndex, 1);
 
-  menu.splice((process.platform === 'darwin' ? 1 : 0), 0, {
+  const fileMenu = {
     label: 'File',
     submenu: [
       {
@@ -37,8 +37,16 @@ module.exports = (app, mainWindow, newVersion) => {
           mainWindow.webContents.send('html5ify', true);
         },
       },
+      {
+        label: 'Exit',
+        click() {
+          app.quit();
+        },
+      },
     ],
-  });
+  };
+
+  menu.splice((process.platform === 'darwin' ? 1 : 0), 0, fileMenu);
 
   const helpIndex = menu.findIndex(item => item.role === 'help');
   if (helpIndex >= 0) {

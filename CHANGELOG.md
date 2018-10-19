@@ -6,6 +6,26 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.14.0] - 2018-09-25
+
+### Added
+- Add "Delete source" button
+
+## [1.13.0] - 2018-09-09
+
+### Added
+- Add exit menu item
+
+### Changed
+- Remember certain settings across file loads
+- Some UI tweaks
+- Transfer timestamps when convering to friendly format
+- Allow for testing keyframe cut (see discussion in https://github.com/mifi/lossless-cut/pull/13)
+- Update ffmpeg
+
+### Fixed
+- Fix a rare bug with duration
+
 ## [1.12.0] - 2018-06-05
 
 ### Added

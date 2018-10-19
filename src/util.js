@@ -33,9 +33,9 @@ function parseDuration(str) {
 function getOutPath(customOutDir, filePath, nameSuffix) {
   const basename = path.basename(filePath);
 
-  return customOutDir ?
-    path.join(customOutDir, `${basename}-${nameSuffix}`) :
-    `${filePath}-${nameSuffix}`;
+  return customOutDir
+    ? path.join(customOutDir, `${basename}-${nameSuffix}`)
+    : `${filePath}-${nameSuffix}`;
 }
 
 async function transferTimestamps(inPath, outPath) {

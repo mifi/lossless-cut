@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-ffmpeg_version=4.0
+ffmpeg_version=4.0.2
 
 ffmpeg_linux_ia32=https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-32bit-static.tar.xz
 ffmpeg_linux_x64=https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz

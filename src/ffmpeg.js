@@ -56,32 +56,48 @@ function handleProgress(process, cutDuration, onProgress) {
 }
 
 async function cut({
-  customOutDir, filePath, format, cutFrom, cutTo, videoDuration, rotation, includeAllStreams,
-  onProgress, stripAudio,
+  customOutDir, filePath, format, cutFrom, cutTo, cutToApparent, videoDuration, rotation,
+  includeAllStreams, onProgress, stripAudio, keyframeCut,
 }) {
   const ext = path.extname(filePath) || `.${format}`;
-  const cutSpecification = `${util.formatDuration(cutFrom, true)}-${util.formatDuration(cutTo, true)}`;
+  const cutSpecification = `${util.formatDuration(cutFrom, true)}-${util.formatDuration(cutToApparent, true)}`;
 
   const outPath = util.getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
 
-  console.log('Cutting from', cutFrom, 'to', cutTo);
+  console.log('Cutting from', cutFrom, 'to', cutToApparent);
+
+  const cutDuration = cutToApparent - cutFrom;
 
   // https://github.com/mifi/lossless-cut/issues/50
   const cutFromArgs = cutFrom === 0 ? [] : ['-ss', cutFrom];
-  const cutToArgs = cutTo === videoDuration ? [] : ['-t', cutTo - cutFrom];
+  const cutToArgs = cutTo === undefined || cutTo === videoDuration ? [] : ['-t', cutDuration];
+
+  const inputCutArgs = keyframeCut ? [
+    ...cutFromArgs,
+    '-i', filePath,
+    ...cutToArgs,
+    '-avoid_negative_ts', 'make_zero',
+  ] : [
+    '-i', filePath,
+    ...cutFromArgs,
+    ...cutToArgs,
+  ];
 
   const rotationArgs = rotation !== undefined ? ['-metadata:s:v:0', `rotate=${rotation}`] : [];
   const ffmpegArgs = [
-    '-i', filePath, '-y',
+    ...inputCutArgs,
+
     ...(stripAudio ? ['-an'] : ['-acodec', 'copy']),
+
     '-vcodec', 'copy',
     '-scodec', 'copy',
-    ...cutFromArgs, ...cutToArgs,
+
     ...(includeAllStreams ? ['-map', '0'] : []),
     '-map_metadata', '0',
+
     ...rotationArgs,
-    '-f', format,
-    outPath,
+
+    '-f', format, '-y', outPath,
   ];
 
   console.log('ffmpeg', ffmpegArgs.join(' '));
@@ -90,11 +106,11 @@ async function cut({
 
   const ffmpegPath = await getFfmpegPath();
   const process = execa(ffmpegPath, ffmpegArgs);
-  handleProgress(process, cutTo - cutFrom, onProgress);
+  handleProgress(process, cutDuration, onProgress);
   const result = await process;
   console.log(result.stdout);
 
-  return util.transferTimestamps(filePath, outPath);
+  await util.transferTimestamps(filePath, outPath);
 }
 
 async function html5ify(filePath, outPath, encodeVideo) {
@@ -106,8 +122,7 @@ async function html5ify(filePath, outPath, encodeVideo) {
 
   const ffmpegArgs = [
     '-i', filePath, ...videoArgs, '-an',
-    '-y',
-    outPath,
+    '-y', outPath,
   ];
 
   console.log('ffmpeg', ffmpegArgs.join(' '));
@@ -116,6 +131,8 @@ async function html5ify(filePath, outPath, encodeVideo) {
   const process = execa(ffmpegPath, ffmpegArgs);
   const result = await process;
   console.log(result.stdout);
+
+  await util.transferTimestamps(filePath, outPath);
 }
 
 /**
