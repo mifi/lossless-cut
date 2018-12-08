@@ -65,11 +65,11 @@
     "mime-types": "^2.1.14",
     "moment": "^2.18.1",
     "mousetrap": "^1.6.1",
-    "react": "^15.3.2",
-    "react-dom": "^15.3.2",
+    "react": "^15.6.2",
+    "react-dom": "^15.6.2",
     "react-hammerjs": "^0.5.0",
     "read-chunk": "^2.0.0",
-    "strong-data-uri": "^1.0.4",
+    "strong-data-uri": "^1.0.5",
     "trash": "^4.3.0",
     "which": "^1.2.11"
   }
