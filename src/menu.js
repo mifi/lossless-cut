@@ -35,6 +35,12 @@ module.exports = (app, mainWindow, newVersion) => {
         },
       },
       {
+        label: 'Set custom start time offset',
+        click() {
+          mainWindow.webContents.send('set-start-offset', true);
+        },
+      },
+      {
         label: 'Exit',
         click() {
           app.quit();

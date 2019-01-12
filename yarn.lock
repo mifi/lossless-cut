@@ -4631,6 +4631,11 @@ svg2png@4.1.1:
     pn "^1.0.0"
     yargs "^6.5.0"
 
+sweetalert2@^7.28.6:
+  version "7.28.6"
+  resolved "https://registry.yarnpkg.com/sweetalert2/-/sweetalert2-7.28.6.tgz#6e20519eaf007dc3703c890c8db3797b6b08bc17"
+  integrity sha512-rkMfmOSkg7zWTCg/YOg1VuJDSf2fpniiYhYpBc0MNrOzJnx24bfDOCTj35RulgyDtKrwQIEVR2gVaG3eOnpCXQ==
+
 table@^4.0.3:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/table/-/table-4.0.3.tgz#00b5e2b602f1794b9acaf9ca908a76386a7813bc"
