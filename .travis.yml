@@ -9,6 +9,7 @@ node_js:
 # https://discourse.brew.sh/t/wine-first-time-configuration-gets-stuck-forever-on-macos/1612
 env:
   - ELECTRON_CACHE=$HOME/.cache/electron ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder WINEARCH=win32
+  - HOMEBREW_LOGS=/tmp # Prevent crash
 
 cache:
   yarn: true
