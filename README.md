@@ -50,7 +50,7 @@ For old shortcuts see here:
 https://github.com/mifi/lossless-cut/blob/41d6991c11b0a82b08344fd22a1ea094af217417/README.md#keyboard-shortcuts
 
 ## Known issues
-- Some output videos will have an empty portion in the beginning (you might lose a few seconds after your in-cutpoint). A tip is to set the cutpoint a few extra seconds before the part you want to keep, that way you will not lose anything. Some editors have trouble opening these files. To workaround this problem, a new cutting mode has been introduced. It can be enabled by toggling the button `nc` *(normal cut)* to `kc` *(keyframe cut)*. See discussion in [#13](https://github.com/mifi/lossless-cut/pull/13)
+- If you have trouble with audio sync or something else with the output video, try toggling the button `kc` *(keyframe cut)* to `nc` *(normal cut)*. See discussion in [#13](https://github.com/mifi/lossless-cut/pull/13)
 - If you get an error when cutting any kind of file under Windows, please check your anti-virus. It might be blocking execution of ffmpeg, see [#18](https://github.com/mifi/lossless-cut/issues/18)
 
 ## Development building / running

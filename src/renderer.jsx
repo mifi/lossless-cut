@@ -110,7 +110,7 @@ const globalState = {
   includeAllStreams: false,
   captureFormat: 'jpeg',
   customOutDir: undefined,
-  keyframeCut: false,
+  keyframeCut: true,
 };
 
 class App extends React.Component {
