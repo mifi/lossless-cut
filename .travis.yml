@@ -1,5 +1,10 @@
 # https://github.com/develar/onshape-desktop-shell/blob/master/.travis.yml
 
+branches:
+  only:
+    - master
+    - travis-debug
+
 os: osx
 osx_image: xcode9.3
 language: node_js
@@ -9,9 +14,11 @@ node_js:
 # https://discourse.brew.sh/t/wine-first-time-configuration-gets-stuck-forever-on-macos/1612
 env:
   global:
-    - ELECTRON_CACHE=$HOME/.cache/electron ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder WINEARCH=win32
-    - HOMEBREW_LOGS=/tmp/homebrew-logs # Prevent crash
-    - HOMEBREW_TEMP=/tmp/homebrew-temp # Prevent crash
+    - ELECTRON_CACHE=$HOME/.cache/electron
+    - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
+    - WINEARCH=win32
+#    - HOMEBREW_LOGS=/tmp/homebrew-logs # Prevent crash
+#    - HOMEBREW_TEMP=/tmp/homebrew-temp # Prevent crash
 
 cache:
   yarn: true
@@ -19,7 +26,7 @@ cache:
   - $HOME/.cache/electron
   - $HOME/.cache/electron-builder
   - ffmpeg-tmp/archives
-  - $HOME/Library/Caches/Homebrew
+#  - $HOME/Library/Caches/Homebrew
 
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
