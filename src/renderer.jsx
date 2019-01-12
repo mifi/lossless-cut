@@ -337,7 +337,7 @@ class App extends React.Component {
     return video.play().catch((err) => {
       console.log(err);
       if (err.name === 'NotSupportedError') {
-        alert('This video format or codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu.');
+        alert('This video format or codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu. Note that this will only create a temporary, low quality encoded file used for previewing your cuts, and will not affect the final cut. The final cut will still be lossless. Audio is also removed to make it faster, but only in the preview.');
       }
     });
   }
