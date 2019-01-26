@@ -57,12 +57,12 @@ function handleProgress(process, cutDuration, onProgress) {
 
 async function cut({
   customOutDir, filePath, format, cutFrom, cutTo, cutToApparent, videoDuration, rotation,
-  includeAllStreams, onProgress, stripAudio, keyframeCut,
+  includeAllStreams, onProgress, stripAudio, keyframeCut, customFilename,
 }) {
   const ext = path.extname(filePath) || `.${format}`;
   const cutSpecification = `${util.formatDuration(cutFrom, true)}-${util.formatDuration(cutToApparent, true)}`;
 
-  const outPath = util.getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
+  const outPath = util.getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`, customFilename);
 
   console.log('Cutting from', cutFrom, 'to', cutToApparent);
 

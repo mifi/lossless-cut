@@ -103,6 +103,7 @@ const localState = {
   rotation: 360,
   cutProgress: undefined,
   startTimeOffset: 0,
+  customFilename: undefined,
 };
 
 const globalState = {
@@ -273,6 +274,29 @@ class App extends React.Component {
     return undefined;
   }
 
+  getOuputFilename() {
+    const {
+      cutStartTime, filePath, customFilename, fileFormat,
+    } = this.state;
+
+    if (!filePath) return '';
+    // Accept '' as valid filename, onBlur will set it to undefined
+    if (customFilename !== undefined) return customFilename;
+
+    const ext = path.extname(filePath) || `.${fileFormat}`;
+    const cutSpecification = `${util.formatDuration(cutStartTime, true)}-${util.formatDuration(this.getApparentCutEndTime(), true)}`;
+    const basename = path.basename(filePath);
+    return `${basename}-${cutSpecification}${ext}`;
+  }
+
+  onCustomFilenameBlur(value) {
+    const { filePath } = this.state;
+    if (!value) this.setState({ customFilename: undefined });
+    else if (!value.endsWith(path.extname(filePath))) {
+      this.setState({ customFilename: `${value}${path.extname(filePath)}` });
+    }
+  }
+
   getRotation() {
     return this.state.rotation;
   }
@@ -356,7 +380,7 @@ class App extends React.Component {
 
     const {
       cutStartTime, cutEndTime, filePath, customOutDir, fileFormat, duration, includeAllStreams,
-      stripAudio, keyframeCut,
+      stripAudio, keyframeCut, customFilename,
     } = this.state;
 
     const rotation = this.isRotationSet() ? this.getRotation() : undefined;
@@ -380,6 +404,7 @@ class App extends React.Component {
         stripAudio,
         keyframeCut,
         onProgress: this.onCutProgress,
+        customFilename,
       });
     } catch (err) {
       console.error('stdout:', err.stdout);
@@ -630,6 +655,15 @@ class App extends React.Component {
           <span style={infoSpanStyle} title="Playback rate">
             {round(this.state.playbackRate, 1) || 1}
           </span>
+
+          <input
+            style={{ width: '8em', borderRadius: '.3em' }}
+            type="text"
+            title={this.getOuputFilename() || 'Ouput filename'}
+            onChange={e => this.setState({ customFilename: e.target.value })}
+            onBlur={e => this.onCustomFilenameBlur(e.target.value)}
+            value={this.getOuputFilename()}
+          />
         </div>
 
         <div className="right-menu">

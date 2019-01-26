@@ -30,8 +30,14 @@ function parseDuration(str) {
   return ((((hours * 60) + minutes) * 60) + seconds) + (ms / 1000);
 }
 
-function getOutPath(customOutDir, filePath, nameSuffix) {
+function getOutPath(customOutDir, filePath, nameSuffix, customFilename) {
   const basename = path.basename(filePath);
+
+  if (customFilename) {
+    return customOutDir
+      ? path.join(customOutDir, customFilename)
+      : path.join(path.dirname(filePath), customFilename);
+  }
 
   return customOutDir
     ? path.join(customOutDir, `${basename}-${nameSuffix}`)
