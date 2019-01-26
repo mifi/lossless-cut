@@ -7,6 +7,7 @@ const throttle = require('lodash/throttle');
 const Hammer = require('react-hammerjs');
 const path = require('path');
 const trash = require('trash');
+const swal = require('sweetalert2');
 
 const React = require('react');
 const ReactDOM = require('react-dom');
@@ -101,6 +102,7 @@ const localState = {
   fileFormat: undefined,
   rotation: 360,
   cutProgress: undefined,
+  startTimeOffset: 0,
 };
 
 const globalState = {
@@ -166,6 +168,41 @@ class App extends React.Component {
         console.error('Failed to html5ify file', err);
         this.setState({ working: false });
       }
+    });
+
+    async function promptTimeOffset(inputValue) {
+      const { value } = await swal({
+        title: 'Set custom start time offset',
+        text: 'Instead of video apparently starting at 0, you can offset by a specified value (useful for timecodes)',
+        input: 'text',
+        inputValue: inputValue || '',
+        showCancelButton: true,
+        inputPlaceholder: '00:00:00.000',
+      });
+
+      if (value === undefined) {
+        return undefined;
+      }
+
+      const duration = util.parseDuration(value);
+      // Invalid, try again
+      if (duration === undefined) return promptTimeOffset(value);
+
+      return duration;
+    }
+
+    electron.ipcRenderer.on('set-start-offset', async () => {
+      const { startTimeOffset: startTimeOffsetOld } = this.state;
+      const startTimeOffset = await promptTimeOffset(
+        startTimeOffsetOld !== undefined ? util.formatDuration(startTimeOffsetOld) : undefined,
+      );
+
+      if (startTimeOffset === undefined) {
+        console.log('Cancelled');
+        return;
+      }
+
+      this.setState({ startTimeOffset });
     });
 
     document.ondragover = ev => ev.preventDefault();
@@ -248,6 +285,10 @@ class App extends React.Component {
     if (this.state.cutEndTime !== undefined) return this.state.cutEndTime;
     if (this.state.duration !== undefined) return this.state.duration;
     return 0; // Haven't gotten duration yet
+  }
+
+  getOffsetCurrentTime() {
+    return (this.state.currentTime || 0) + this.state.startTimeOffset;
   }
 
 
@@ -413,9 +454,14 @@ class App extends React.Component {
         return;
       }
 
-      this.setState({ [cutTimeManualKey]: undefined, [type === 'start' ? 'cutStartTime' : 'cutEndTime']: time });
+      const cutTimeKey = type === 'start' ? 'cutStartTime' : 'cutEndTime';
+      this.setState(state => ({
+        [cutTimeManualKey]: undefined,
+        [cutTimeKey]: time - state.startTimeOffset,
+      }));
     };
 
+    const cutTime = type === 'start' ? this.state.cutStartTime : this.getApparentCutEndTime();
 
     return (
       <input
@@ -424,8 +470,8 @@ class App extends React.Component {
         onChange={e => handleCutTimeInput(e.target.value)}
         value={isCutTimeManualSet()
           ? this.state[cutTimeManualKey]
-          : util.formatDuration(type === 'start' ? this.state.cutStartTime : this.getApparentCutEndTime())
-      }
+          : util.formatDuration(cutTime + this.state.startTimeOffset)
+        }
       />
     );
   }
@@ -488,7 +534,7 @@ class App extends React.Component {
               )
             }
 
-              <div id="current-time-display">{util.formatDuration(this.state.currentTime)}</div>
+              <div id="current-time-display">{util.formatDuration(this.getOffsetCurrentTime())}</div>
             </div>
           </Hammer>
 

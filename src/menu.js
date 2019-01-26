@@ -10,9 +10,6 @@ const releasesPage = 'https://github.com/mifi/lossless-cut/releases';
 module.exports = (app, mainWindow, newVersion) => {
   const menu = defaultMenu(app, electron.shell);
 
-  const editMenuIndex = menu.findIndex(item => item.label === 'Edit');
-  if (editMenuIndex >= 0) menu.splice(editMenuIndex, 1);
-
   const fileMenu = {
     label: 'File',
     submenu: [
@@ -35,6 +32,12 @@ module.exports = (app, mainWindow, newVersion) => {
         label: 'Convert to friendly codec (slow)',
         click() {
           mainWindow.webContents.send('html5ify', true);
+        },
+      },
+      {
+        label: 'Set custom start time offset',
+        click() {
+          mainWindow.webContents.send('set-start-offset', true);
         },
       },
       {

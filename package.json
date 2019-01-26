@@ -70,6 +70,7 @@
     "react-hammerjs": "^0.5.0",
     "read-chunk": "^2.0.0",
     "strong-data-uri": "^1.0.4",
+    "sweetalert2": "^7.28.6",
     "trash": "^4.3.0",
     "which": "^1.2.11"
   }
