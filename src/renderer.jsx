@@ -657,8 +657,8 @@ class App extends React.Component {
           </span>
 
           <input
-            style={{ width: '8em', borderRadius: '.3em' }}
             type="text"
+            className="custom-filename"
             title={this.getOuputFilename() || 'Ouput filename'}
             onChange={e => this.setState({ customFilename: e.target.value })}
             onBlur={e => this.onCustomFilenameBlur(e.target.value)}

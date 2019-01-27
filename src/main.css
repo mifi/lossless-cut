@@ -34,6 +34,15 @@ input, button, textarea, :focus {
   object-fit: contain;
 }
 
+.custom-filename {
+  width: 8em;
+  border-radius: .3em;
+}
+
+.custom-filename:focus {
+  width: 20em;
+}
+
 .button {
   padding: .4em;
   vertical-align: middle;
