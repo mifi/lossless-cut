@@ -115,9 +115,8 @@ input, button, textarea, :focus {
 #drag-drop-field {
   padding: 15vw 0;
   border: 2vw dashed #252525;
-  color: #252525;
+  color: #303030;
   margin: 7vw;
-  font-size: 9vw;
   text-align: center;
   white-space: nowrap;
 }

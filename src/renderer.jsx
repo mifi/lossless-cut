@@ -486,7 +486,12 @@ class App extends React.Component {
 
     return (
       <div>
-        {!this.state.filePath && <div id="drag-drop-field">DROP VIDEO</div>}
+        {!this.state.filePath && (
+          <div id="drag-drop-field">
+            <div style={{ fontSize: '9vw' }}>DROP VIDEO</div>
+            <div>PRESS H FOR HELP</div>
+          </div>
+        )}
         {this.state.working && (
         <div style={{
           color: 'white', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '.5em', margin: '1em', padding: '.2em .5em', position: 'absolute', zIndex: 1, top: 0, left: 0,
