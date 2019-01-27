@@ -15,7 +15,10 @@ const classnames = require('classnames');
 
 const captureFrame = require('./capture-frame');
 const ffmpeg = require('./ffmpeg');
-const util = require('./util');
+
+const {
+  getOutPath, parseDuration, formatDuration, toast, errorToast, showFfmpegFail,
+} = require('./util');
 
 const { dialog } = electron.remote;
 
@@ -122,30 +125,36 @@ class App extends React.Component {
       ...globalState,
     };
 
-    const load = (filePath, html5FriendlyPath) => {
+    const load = async (filePath, html5FriendlyPath) => {
       const { working } = this.state;
 
       console.log('Load', { filePath, html5FriendlyPath });
-      if (working) return alert('I\'m busy');
+      if (working) {
+        errorToast('I\'m busy');
+        return;
+      }
 
       this.resetState();
 
       this.setState({ working: true });
 
-      return ffmpeg.getFormat(filePath)
-        .then((fileFormat) => {
-          if (!fileFormat) return alert('Unsupported file');
+      try {
+        const fileFormat = await ffmpeg.getFormat(filePath);
+        if (!fileFormat) {
+          errorToast('Unsupported file');
+          return;
+        }
           setFileNameTitle(filePath);
-          return this.setState({ filePath, html5FriendlyPath, fileFormat });
-        })
-        .catch((err) => {
+        this.setState({ filePath, html5FriendlyPath, fileFormat });
+      } catch (err) {
           if (err.code === 1 || err.code === 'ENOENT') {
-            alert('Unsupported file');
+          errorToast('Unsupported file');
             return;
           }
-          ffmpeg.showFfmpegFail(err);
-        })
-        .finally(() => this.setState({ working: false }));
+        showFfmpegFail(err);
+      } finally {
+        this.setState({ working: false });
+      }
     };
 
     electron.ipcRenderer.on('file-opened', (event, filePaths) => {
@@ -159,12 +168,12 @@ class App extends React.Component {
 
       try {
         this.setState({ working: true });
-        const html5ifiedPath = util.getOutPath(customOutDir, filePath, 'html5ified.mp4');
+        const html5ifiedPath = getOutPath(customOutDir, filePath, 'html5ified.mp4');
         await ffmpeg.html5ify(filePath, html5ifiedPath, encodeVideo);
         this.setState({ working: false });
         load(filePath, html5ifiedPath);
       } catch (err) {
-        alert('Failed to html5ify file');
+        errorToast('Failed to html5ify file');
         console.error('Failed to html5ify file', err);
         this.setState({ working: false });
       }
@@ -184,7 +193,7 @@ class App extends React.Component {
         return undefined;
       }
 
-      const duration = util.parseDuration(value);
+      const duration = parseDuration(value);
       // Invalid, try again
       if (duration === undefined) return promptTimeOffset(value);
 
@@ -194,7 +203,7 @@ class App extends React.Component {
     electron.ipcRenderer.on('set-start-offset', async () => {
       const { startTimeOffset: startTimeOffsetOld } = this.state;
       const startTimeOffset = await promptTimeOffset(
-        startTimeOffsetOld !== undefined ? util.formatDuration(startTimeOffsetOld) : undefined,
+        startTimeOffsetOld !== undefined ? formatDuration(startTimeOffsetOld) : undefined,
       );
 
       if (startTimeOffset === undefined) {
@@ -210,7 +219,10 @@ class App extends React.Component {
 
     document.body.ondrop = (ev) => {
       ev.preventDefault();
-      if (ev.dataTransfer.files.length !== 1) return;
+      if (ev.dataTransfer.files.length !== 1) {
+        errorToast('Please drop only one file');
+        return;
+      }
       load(ev.dataTransfer.files[0].path);
     };
 
@@ -337,12 +349,13 @@ class App extends React.Component {
     return video.play().catch((err) => {
       console.log(err);
       if (err.name === 'NotSupportedError') {
-        alert('This video format or codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu. Note that this will only create a temporary, low quality encoded file used for previewing your cuts, and will not affect the final cut. The final cut will still be lossless. Audio is also removed to make it faster, but only in the preview.');
+        toast({ type: 'error', title: 'This format/codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu. Note that this will only create a temporary, low quality encoded file used for previewing your cuts, and will not affect the final cut. The final cut will still be lossless. Audio is also removed to make it faster, but only in the preview.', timer: 10000 });
       }
     });
   }
 
   deleteSourceClick = async () => {
+    // eslint-disable-next-line no-alert
     if (this.state.working || !window.confirm('Are you sure you want to move the source file to trash?')) return;
     const { filePath } = this.state;
 
@@ -352,7 +365,10 @@ class App extends React.Component {
   }
 
   cutClick = async () => {
-    if (this.state.working) return alert('I\'m busy');
+    if (this.state.working) {
+      errorToast('I\'m busy');
+      return;
+    }
 
     const {
       cutStartTime, cutEndTime, filePath, customOutDir, fileFormat, duration, includeAllStreams,
@@ -362,12 +378,13 @@ class App extends React.Component {
     const rotation = this.isRotationSet() ? this.getRotation() : undefined;
 
     if (!this.isCutRangeValid()) {
-      return alert('Start time must be before end time');
+      errorToast('Start time must be before end time');
+      return;
     }
 
     this.setState({ working: true });
     try {
-      return await ffmpeg.cut({
+      await ffmpeg.cut({
         customOutDir,
         filePath,
         format: fileFormat,
@@ -386,21 +403,26 @@ class App extends React.Component {
       console.error('stderr:', err.stderr);
 
       if (err.code === 1 || err.code === 'ENOENT') {
-        return alert('Whoops! ffmpeg was unable to cut this video. It may be of an unknown format or codec combination');
+        errorToast('Whoops! ffmpeg was unable to cut this video. It may be of an unknown format or codec combination');
+        return;
       }
-      return ffmpeg.showFfmpegFail(err);
+      showFfmpegFail(err);
     } finally {
       this.setState({ working: false });
     }
   }
 
-  capture = () => {
+  capture = async () => {
     const {
       filePath, customOutDir: outputDir, currentTime, captureFormat,
     } = this.state;
     if (!filePath) return;
-    captureFrame(outputDir, filePath, getVideo(), currentTime, captureFormat)
-      .catch(err => alert(err));
+    try {
+      await captureFrame(outputDir, filePath, getVideo(), currentTime, captureFormat);
+    } catch (err) {
+      console.error(err);
+      errorToast('Failed to capture frame');
+    }
   }
 
   changePlaybackRate(dir) {
@@ -448,7 +470,7 @@ class App extends React.Component {
         return;
       }
 
-      const time = util.parseDuration(text);
+      const time = parseDuration(text);
       if (time === undefined) {
         this.setState({ [cutTimeManualKey]: text });
         return;
@@ -470,7 +492,7 @@ class App extends React.Component {
         onChange={e => handleCutTimeInput(e.target.value)}
         value={isCutTimeManualSet()
           ? this.state[cutTimeManualKey]
-          : util.formatDuration(cutTime + this.state.startTimeOffset)
+          : formatDuration(cutTime + this.state.startTimeOffset)
         }
       />
     );
@@ -539,7 +561,7 @@ class App extends React.Component {
               )
             }
 
-              <div id="current-time-display">{util.formatDuration(this.getOffsetCurrentTime())}</div>
+              <div id="current-time-display">{formatDuration(this.getOffsetCurrentTime())}</div>
             </div>
           </Hammer>
 

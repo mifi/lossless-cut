@@ -2,7 +2,6 @@ const execa = require('execa');
 const bluebird = require('bluebird');
 const which = bluebird.promisify(require('which'));
 const path = require('path');
-const fs = require('fs');
 const fileType = require('file-type');
 const readChunk = require('read-chunk');
 const _ = require('lodash');
@@ -10,14 +9,6 @@ const readline = require('readline');
 const moment = require('moment');
 
 const util = require('./util');
-
-bluebird.promisifyAll(fs);
-
-
-function showFfmpegFail(err) {
-  alert(`Failed to run ffmpeg:\n${err.stack}`);
-  console.error(err.stack);
-}
 
 function getWithExt(name) {
   return process.platform === 'win32' ? `${name}.exe` : name;
@@ -187,6 +178,5 @@ function getFormat(filePath) {
 module.exports = {
   cut,
   getFormat,
-  showFfmpegFail,
   html5ify,
 };

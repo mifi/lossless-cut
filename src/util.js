@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
+const swal = require('sweetalert2');
 
 function formatDuration(_seconds, fileNameFriendly) {
   const seconds = _seconds || 0;
@@ -57,10 +58,31 @@ async function transferTimestampsWithOffset(inPath, outPath, offset) {
   }
 }
 
+const toast = swal.mixin({
+  toast: true,
+  position: 'top',
+  showConfirmButton: false,
+  timer: 3000,
+});
+
+const errorToast = title => toast({
+  type: 'error',
+  title,
+});
+
+async function showFfmpegFail(err) {
+  console.error(err);
+  return errorToast(`Failed to run ffmpeg: ${err.stack}`);
+}
+
+
 module.exports = {
   formatDuration,
   parseDuration,
   getOutPath,
   transferTimestamps,
   transferTimestampsWithOffset,
+  toast,
+  errorToast,
+  showFfmpegFail,
 };
