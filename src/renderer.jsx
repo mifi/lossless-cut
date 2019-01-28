@@ -68,7 +68,7 @@ const localState = {
   playing: false,
   currentTime: undefined,
   duration: undefined,
-  cutStartTime: 0,
+  cutStartTime: undefined,
   cutStartTimeManual: undefined,
   cutEndTime: undefined,
   cutEndTimeManual: undefined,
@@ -274,6 +274,11 @@ class App extends React.Component {
     return `${this.getRotation()}°`;
   }
 
+  getApparentCutStartTime() {
+    if (this.state.cutStartTime !== undefined) return this.state.cutStartTime;
+    return 0;
+  }
+
   getApparentCutEndTime() {
     if (this.state.cutEndTime !== undefined) return this.state.cutEndTime;
     if (this.state.duration !== undefined) return this.state.duration;
@@ -302,7 +307,7 @@ class App extends React.Component {
   toggleKeyframeCut = () => this.setState(({ keyframeCut }) => ({ keyframeCut: !keyframeCut }));
 
   jumpCutStart = () => {
-    seekAbs(this.state.cutStartTime);
+    seekAbs(this.getApparentCutStartTime());
   }
 
   jumpCutEnd = () => {
@@ -314,7 +319,7 @@ class App extends React.Component {
     const $target = $('.timeline-wrapper');
     const parentOffset = $target.offset();
     const relX = e.srcEvent.pageX - parentOffset.left;
-    setCursor((relX / $target[0].offsetWidth) * this.state.duration);
+    setCursor((relX / $target[0].offsetWidth) * (this.state.duration || 0));
   }, 200);
   /* eslint-enable react/sort-comp */
 
@@ -351,13 +356,13 @@ class App extends React.Component {
     }
 
     const {
-      cutStartTime, cutEndTime, filePath, customOutDir, fileFormat, duration, includeAllStreams,
+      cutEndTime, cutStartTime, filePath, customOutDir, fileFormat, duration, includeAllStreams,
       stripAudio, keyframeCut,
     } = this.state;
 
     const rotation = this.isRotationSet() ? this.getRotation() : undefined;
 
-    if (!this.isCutRangeValid()) {
+    if (!(this.isCutRangeValid() || cutEndTime === undefined || cutStartTime === undefined)) {
       errorToast('Start time must be before end time');
       return;
     }
@@ -368,7 +373,7 @@ class App extends React.Component {
         customOutDir,
         filePath,
         format: fileFormat,
-        cutFrom: cutStartTime,
+        cutFrom: this.getApparentCutStartTime(),
         cutTo: cutEndTime,
         cutToApparent: this.getApparentCutEndTime(),
         videoDuration: duration,
@@ -430,7 +435,7 @@ class App extends React.Component {
   }
 
   isCutRangeValid() {
-    return this.state.cutStartTime < this.getApparentCutEndTime();
+    return this.getApparentCutStartTime() < this.getApparentCutEndTime();
   }
 
   toggleHelp() {
@@ -463,7 +468,7 @@ class App extends React.Component {
       }));
     };
 
-    const cutTime = type === 'start' ? this.state.cutStartTime : this.getApparentCutEndTime();
+    const cutTime = type === 'start' ? this.getApparentCutStartTime() : this.getApparentCutEndTime();
 
     return (
       <input
@@ -486,23 +491,59 @@ class App extends React.Component {
       background: 'rgba(255, 255, 255, 0.4)', padding: '.1em .4em', margin: '0 3px', fontSize: 13, borderRadius: '.3em',
     };
 
+    const {
+      working, filePath, duration: durationRaw, cutProgress, currentTime, playing,
+      fileFormat, playbackRate, keyframeCut, includeAllStreams, stripAudio, captureFormat,
+      helpVisible, cutStartTime, cutEndTime,
+    } = this.state;
+
+    const markerWidth = 4;
+    const apparentCutStart = this.getApparentCutStartTime();
+    const apprentCutEnd = this.getApparentCutEndTime();
+    const duration = durationRaw || 1;
+    const currentTimePos = currentTime !== undefined && `${(currentTime / duration) * 100}%`;
+    const cutSectionWidth = `calc(${((apprentCutEnd - apparentCutStart) / duration) * 100}% - ${markerWidth * 2}px)`;
+
+    const isCutRangeValid = this.isCutRangeValid();
+
+    const startTimePos = `${(apparentCutStart / duration) * 100}%`;
+    const endTimePos = `${(apprentCutEnd / duration) * 100}%`;
+    const markerBorder = '2px solid rgb(0, 255, 149)';
+    const markerBorderRadius = 5;
+
+    const startMarkerStyle = {
+      width: markerWidth,
+      left: startTimePos,
+      borderLeft: markerBorder,
+      borderTopLeftRadius: markerBorderRadius,
+      borderBottomLeftRadius: markerBorderRadius,
+    };
+    const endMarkerStyle = {
+      width: markerWidth,
+      marginLeft: -markerWidth,
+      left: endTimePos,
+      borderRight: markerBorder,
+      borderTopRightRadius: markerBorderRadius,
+      borderBottomRightRadius: markerBorderRadius,
+    };
+
     return (
       <div>
-        {!this.state.filePath && (
+        {!filePath && (
           <div id="drag-drop-field">
             <div style={{ fontSize: '9vw' }}>DROP VIDEO</div>
             <div>PRESS H FOR HELP</div>
           </div>
         )}
-        {this.state.working && (
+        {working && (
         <div style={{
           color: 'white', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '.5em', margin: '1em', padding: '.2em .5em', position: 'absolute', zIndex: 1, top: 0, left: 0,
         }}
         >
           <i className="fa fa-cog fa-spin fa-3x fa-fw" style={{ verticalAlign: 'middle', width: '1em', height: '1em' }} />
-          {this.state.cutProgress != null && (
+          {cutProgress != null && (
             <span style={{ color: 'rgba(255, 255, 255, 0.7)', paddingLeft: '.4em' }}>
-              {`${Math.floor(this.state.cutProgress * 100)} %`}
+              {`${Math.floor(cutProgress * 100)} %`}
             </span>
           )}
         </div>
@@ -528,18 +569,20 @@ class App extends React.Component {
             options={{ recognizers: {} }}
           >
             <div className="timeline-wrapper">
-              <div className="current-time" style={{ left: `${((this.state.currentTime || 0) / (this.state.duration || 1)) * 100}%` }} />
+              {currentTimePos !== undefined && <div className="current-time" style={{ left: currentTimePos }} />}
 
-              {this.isCutRangeValid() && (
-              <div
-                className="cut-start-time"
-                style={{
-                  left: `${((this.state.cutStartTime) / (this.state.duration || 1)) * 100}%`,
-                  width: `${(((this.getApparentCutEndTime()) - this.state.cutStartTime) / (this.state.duration || 1)) * 100}%`,
-                }}
-              />
-              )
-            }
+              {cutStartTime !== undefined && <div style={startMarkerStyle} className="cut-time-marker" />}
+              {isCutRangeValid && (cutStartTime !== undefined || cutEndTime !== undefined) && (
+                <div
+                  className="cut-section"
+                  style={{
+                    marginLeft: markerWidth,
+                    left: startTimePos,
+                    width: cutSectionWidth,
+                  }}
+                />
+              )}
+              {cutEndTime !== undefined && <div style={endMarkerStyle} className="cut-time-marker" />}
 
               <div id="current-time-display">{formatDuration(this.getOffsetCurrentTime())}</div>
             </div>
@@ -571,7 +614,7 @@ class App extends React.Component {
             />
             <i
               className={classnames({
-                button: true, fa: true, 'fa-pause': this.state.playing, 'fa-play': !this.state.playing,
+                button: true, fa: true, 'fa-pause': playing, 'fa-play': !playing,
               })}
               aria-hidden="true"
               onClick={this.playCommand}
@@ -597,7 +640,7 @@ class App extends React.Component {
               className="button fa fa-step-forward"
               aria-hidden="true"
               title="Jump to end of video"
-              onClick={() => seekAbs(this.state.duration)}
+              onClick={() => seekAbs(duration)}
             />
           </div>
 
@@ -631,37 +674,37 @@ class App extends React.Component {
 
         <div className="left-menu">
           <span style={infoSpanStyle} title="Format of current file">
-            {this.state.fileFormat || 'FMT'}
+            {fileFormat || 'FMT'}
           </span>
 
           <span style={infoSpanStyle} title="Playback rate">
-            {round(this.state.playbackRate, 1) || 1}
+            {round(playbackRate, 1) || 1}
           </span>
         </div>
 
         <div className="right-menu">
           <button
             type="button"
-            title={`Cut mode ${this.state.keyframeCut ? 'nearest keyframe cut' : 'normal cut'}`}
+            title={`Cut mode ${keyframeCut ? 'nearest keyframe cut' : 'normal cut'}`}
             onClick={withBlur(this.toggleKeyframeCut)}
           >
-            {this.state.keyframeCut ? 'kc' : 'nc'}
+            {keyframeCut ? 'kc' : 'nc'}
           </button>
 
           <button
             type="button"
-            title={`Set output streams. Current: ${this.state.includeAllStreams ? 'include (and cut) all streams' : 'include only primary streams'}`}
+            title={`Set output streams. Current: ${includeAllStreams ? 'include (and cut) all streams' : 'include only primary streams'}`}
             onClick={withBlur(this.toggleIncludeAllStreams)}
           >
-            {this.state.includeAllStreams ? 'all' : 'ps'}
+            {includeAllStreams ? 'all' : 'ps'}
           </button>
 
           <button
             type="button"
-            title={`Delete audio? Current: ${this.state.stripAudio ? 'delete audio tracks' : 'keep audio tracks'}`}
+            title={`Delete audio? Current: ${stripAudio ? 'delete audio tracks' : 'keep audio tracks'}`}
             onClick={withBlur(this.toggleStripAudio)}
           >
-            {this.state.stripAudio ? 'da' : 'ka'}
+            {stripAudio ? 'da' : 'ka'}
           </button>
 
           <button
@@ -693,11 +736,11 @@ class App extends React.Component {
             title="Capture frame format"
             onClick={withBlur(this.toggleCaptureFormat)}
           >
-            {this.state.captureFormat}
+            {captureFormat}
           </button>
         </div>
 
-        <HelpSheet visible={!!this.state.helpVisible} />
+        <HelpSheet visible={!!helpVisible} />
       </div>
     );
   }
