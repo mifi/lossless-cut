@@ -7,8 +7,9 @@ const readChunk = require('read-chunk');
 const _ = require('lodash');
 const readline = require('readline');
 const moment = require('moment');
+const stringToStream = require('string-to-stream');
 
-const util = require('./util');
+const { formatDuration, getOutPath, transferTimestamps } = require('./util');
 
 function getWithExt(name) {
   return process.platform === 'win32' ? `${name}.exe` : name;
@@ -51,9 +52,9 @@ async function cut({
   includeAllStreams, onProgress, stripAudio, keyframeCut,
 }) {
   const ext = path.extname(filePath) || `.${format}`;
-  const cutSpecification = `${util.formatDuration(cutFrom, true)}-${util.formatDuration(cutToApparent, true)}`;
+  const cutSpecification = `${formatDuration(cutFrom, true)}-${formatDuration(cutToApparent, true)}`;
 
-  const outPath = util.getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
+  const outPath = getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
 
   console.log('Cutting from', cutFrom, 'to', cutToApparent);
 
@@ -101,7 +102,7 @@ async function cut({
   const result = await process;
   console.log(result.stdout);
 
-  await util.transferTimestamps(filePath, outPath);
+  await transferTimestamps(filePath, outPath);
 }
 
 async function html5ify(filePath, outPath, encodeVideo) {
@@ -123,7 +124,37 @@ async function html5ify(filePath, outPath, encodeVideo) {
   const result = await process;
   console.log(result.stdout);
 
-  await util.transferTimestamps(filePath, outPath);
+  await transferTimestamps(filePath, outPath);
+}
+
+async function mergeFiles(paths) {
+  const firstPath = paths[0];
+  const ext = path.extname(firstPath);
+  const outPath = `${firstPath}-merged.${ext}`;
+  console.log('Merging files', { paths }, 'to', outPath);
+
+  // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
+  const ffmpegArgs = [
+    '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe', '-i', '-',
+    '-c', 'copy',
+    '-map_metadata', '0',
+    '-y', outPath,
+  ];
+
+  console.log('ffmpeg', ffmpegArgs.join(' '));
+
+  // https://superuser.com/questions/787064/filename-quoting-in-ffmpeg-concat
+  const concatTxt = paths.map(file => `file '${path.join(file).replace(/'/g, "'\\''")}'`).join('\n');
+
+  console.log(concatTxt);
+
+  const ffmpegPath = await getFfmpegPath();
+  const process = execa(ffmpegPath, ffmpegArgs);
+
+  stringToStream(concatTxt).pipe(process.stdin);
+
+  const result = await process;
+  console.log(result.stdout);
 }
 
 /**
@@ -179,4 +210,5 @@ module.exports = {
   cut,
   getFormat,
   html5ify,
+  mergeFiles,
 };

@@ -4,28 +4,27 @@ const Mousetrap = require('mousetrap');
 const round = require('lodash/round');
 const clamp = require('lodash/clamp');
 const throttle = require('lodash/throttle');
-const Hammer = require('react-hammerjs');
+const Hammer = require('react-hammerjs').default;
 const path = require('path');
 const trash = require('trash');
-const swal = require('sweetalert2');
 
 const React = require('react');
 const ReactDOM = require('react-dom');
 const classnames = require('classnames');
 
+const HelpSheet = require('./HelpSheet');
+const { showMergeDialog } = require('./merge/merge');
+
 const captureFrame = require('./capture-frame');
 const ffmpeg = require('./ffmpeg');
 
+
 const {
-  getOutPath, parseDuration, formatDuration, toast, errorToast, showFfmpegFail,
+  getOutPath, parseDuration, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
+  promptTimeOffset,
 } = require('./util');
 
 const { dialog } = electron.remote;
-
-function setFileNameTitle(filePath) {
-  const appName = 'LosslessCut';
-  document.title = filePath ? `${appName} - ${path.basename(filePath)}` : 'appName';
-}
 
 function getVideo() {
   return $('#player video')[0];
@@ -53,35 +52,6 @@ function seekRel(val) {
 function shortStep(dir) {
   seekRel((1 / 60) * dir);
 }
-
-/* eslint-disable react/jsx-one-expression-per-line */
-function renderHelpSheet(visible) {
-  if (visible) {
-    return (
-      <div className="help-sheet">
-        <h1>Keyboard shortcuts</h1>
-        <ul>
-          <li><kbd>H</kbd> Show/hide help</li>
-          <li><kbd>SPACE</kbd>, <kbd>k</kbd> Play/pause</li>
-          <li><kbd>J</kbd> Slow down video</li>
-          <li><kbd>L</kbd> Speed up video</li>
-          <li><kbd>←</kbd> Seek backward 1 sec</li>
-          <li><kbd>→</kbd> Seek forward 1 sec</li>
-          <li><kbd>.</kbd> (period) Tiny seek forward (1/60 sec)</li>
-          <li><kbd>,</kbd> (comma) Tiny seek backward (1/60 sec)</li>
-          <li><kbd>I</kbd> Mark in / cut start point</li>
-          <li><kbd>O</kbd> Mark out / cut end point</li>
-          <li><kbd>E</kbd> Cut (export selection in the same directory)</li>
-          <li><kbd>C</kbd> Capture snapshot (in the same directory)</li>
-        </ul>
-      </div>
-    );
-  }
-
-  return undefined;
-}
-/* eslint-enable react/jsx-one-expression-per-line */
-
 
 function withBlur(cb) {
   return (e) => {
@@ -144,13 +114,13 @@ class App extends React.Component {
           errorToast('Unsupported file');
           return;
         }
-          setFileNameTitle(filePath);
+        setFileNameTitle(filePath);
         this.setState({ filePath, html5FriendlyPath, fileFormat });
       } catch (err) {
-          if (err.code === 1 || err.code === 'ENOENT') {
+        if (err.code === 1 || err.code === 'ENOENT') {
           errorToast('Unsupported file');
-            return;
-          }
+          return;
+        }
         showFfmpegFail(err);
       } finally {
         this.setState({ working: false });
@@ -179,26 +149,24 @@ class App extends React.Component {
       }
     });
 
-    async function promptTimeOffset(inputValue) {
-      const { value } = await swal({
-        title: 'Set custom start time offset',
-        text: 'Instead of video apparently starting at 0, you can offset by a specified value (useful for timecodes)',
-        input: 'text',
-        inputValue: inputValue || '',
-        showCancelButton: true,
-        inputPlaceholder: '00:00:00.000',
-      });
+    electron.ipcRenderer.on('show-merge-dialog', () => showMergeDialog({
+      dialog,
+      defaultPath: this.getOutputDir(),
+      onMergeClick: async (paths) => {
+        try {
+          this.setState({ working: true });
 
-      if (value === undefined) {
-        return undefined;
-      }
-
-      const duration = parseDuration(value);
-      // Invalid, try again
-      if (duration === undefined) return promptTimeOffset(value);
-
-      return duration;
-    }
+          // TODO customOutDir ?
+          // console.log('merge', paths);
+          await ffmpeg.mergeFiles(paths);
+        } catch (err) {
+          errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
+          console.error('Failed to merge files', err);
+        } finally {
+          this.setState({ working: false });
+        }
+      },
+    }));
 
     electron.ipcRenderer.on('set-start-offset', async () => {
       const { startTimeOffset: startTimeOffsetOld } = this.state;
@@ -303,7 +271,6 @@ class App extends React.Component {
     return (this.state.currentTime || 0) + this.state.startTimeOffset;
   }
 
-
   increaseRotation = () => {
     this.setState(({ rotation }) => ({ rotation: (rotation + 90) % 450 }));
   }
@@ -349,7 +316,7 @@ class App extends React.Component {
     return video.play().catch((err) => {
       console.log(err);
       if (err.name === 'NotSupportedError') {
-        toast({ type: 'error', title: 'This format/codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu. Note that this will only create a temporary, low quality encoded file used for previewing your cuts, and will not affect the final cut. The final cut will still be lossless. Audio is also removed to make it faster, but only in the preview.', timer: 10000 });
+        toast.fire({ type: 'error', title: 'This format/codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu. Note that this will only create a temporary, low quality encoded file used for previewing your cuts, and will not affect the final cut. The final cut will still be lossless. Audio is also removed to make it faster, but only in the preview.', timer: 10000 });
       }
     });
   }
@@ -717,7 +684,7 @@ class App extends React.Component {
           </button>
         </div>
 
-        {renderHelpSheet(this.state.helpVisible)}
+        <HelpSheet visible={!!this.state.helpVisible} />
       </div>
     );
   }

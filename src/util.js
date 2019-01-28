@@ -65,7 +65,7 @@ const toast = swal.mixin({
   timer: 3000,
 });
 
-const errorToast = title => toast({
+const errorToast = title => toast.fire({
   type: 'error',
   title,
 });
@@ -75,6 +75,31 @@ async function showFfmpegFail(err) {
   return errorToast(`Failed to run ffmpeg: ${err.stack}`);
 }
 
+function setFileNameTitle(filePath) {
+  const appName = 'LosslessCut';
+  document.title = filePath ? `${appName} - ${path.basename(filePath)}` : 'appName';
+}
+
+async function promptTimeOffset(inputValue) {
+  const { value } = await swal.fire({
+    title: 'Set custom start time offset',
+    text: 'Instead of video apparently starting at 0, you can offset by a specified value (useful for timecodes)',
+    input: 'text',
+    inputValue: inputValue || '',
+    showCancelButton: true,
+    inputPlaceholder: '00:00:00.000',
+  });
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const duration = parseDuration(value);
+  // Invalid, try again
+  if (duration === undefined) return promptTimeOffset(value);
+
+  return duration;
+}
 
 module.exports = {
   formatDuration,
@@ -85,4 +110,6 @@ module.exports = {
   toast,
   errorToast,
   showFfmpegFail,
+  setFileNameTitle,
+  promptTimeOffset,
 };

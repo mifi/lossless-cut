@@ -151,3 +151,7 @@ input, button, textarea, :focus {
     border-radius: 3px;
     box-shadow: inset 0 -1px 0 #bbb;
 }
+
+.dragging-helper-class {
+  color: rgba(0,0,0,0.5);
+}

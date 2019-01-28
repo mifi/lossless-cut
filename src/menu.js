@@ -54,6 +54,17 @@ module.exports = (app, mainWindow, newVersion) => {
   const helpIndex = menu.findIndex(item => item.role === 'help');
   if (helpIndex >= 0) {
     menu.splice(helpIndex, 1, {
+      label: 'Tools',
+      submenu: [
+        {
+          label: 'Merge files',
+          click() {
+            mainWindow.webContents.send('show-merge-dialog', true);
+          },
+        },
+      ],
+    },
+    {
       role: 'help',
       submenu: [
         {
