@@ -213,34 +213,35 @@ async function getAllStreams(filePath) {
   return JSON.parse(result.stdout);
 }
 
+function mapCodecToOutputFormat(codec, type) {
+  const map = {
+    // See mapFormat
+    m4a: { ext: 'm4a', format: 'ipod' },
+    aac: { ext: 'm4a', format: 'ipod' },
+
+    mp3: { ext: 'mp3', format: 'mp3' },
+    opus: { ext: 'opus', format: 'opus' },
+    vorbis: { ext: 'ogg', format: 'ogg' },
+    h264: { ext: 'mp4', format: 'mp4' },
+    eac3: { ext: 'eac3', format: 'eac3' },
+
+    subrip: { ext: 'srt', format: 'srt' },
+
+    // TODO add more
+    // TODO allow user to change?
+  };
+
+  if (map[codec]) return map[codec];
+  if (type === 'video') return { ext: 'mkv', format: 'matroska' };
+  if (type === 'audio') return { ext: 'mka', format: 'matroska' };
+  if (type === 'subtitle') return { ext: 'mks', format: 'matroska' };
+  return undefined;
+}
+
 // https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
 async function extractAllStreams(filePath) {
   const { streams } = await getAllStreams(filePath);
   console.log('streams', streams);
-
-  function mapCodecToOutputFormat(codec, type) {
-    const map = {
-      // See mapFormat
-      m4a: { ext: 'm4a', format: 'ipod' },
-      aac: { ext: 'm4a', format: 'ipod' },
-
-      mp3: { ext: 'mp3', format: 'mp3' },
-      opus: { ext: 'opus', format: 'opus' },
-      vorbis: { ext: 'ogg', format: 'ogg' },
-      h264: { ext: 'mp4', format: 'mp4' },
-      eac3: { ext: 'eac3', format: 'eac3' },
-
-      subrip: { ext: 'srt', format: 'srt' },
-
-      // TODO add more
-      // TODO allow user to change?
-    };
-
-    if (map[codec]) return map[codec];
-    if (type === 'video') return { ext: 'mkv', format: 'mkv' };
-    if (type === 'audio') return { ext: 'mkv', format: 'mkv' };
-    return undefined;
-  }
 
   const outStreams = streams.map((s, i) => ({
     i,
