@@ -20,6 +20,8 @@ const HelpSheet = ({ visible }) => {
           <li><kbd>O</kbd> Mark out / cut end point</li>
           <li><kbd>E</kbd> Cut (export selection in the same directory)</li>
           <li><kbd>C</kbd> Capture snapshot (in the same directory)</li>
+          <li><kbd>+</kbd> Add cut segment</li>
+          <li><kbd>BACKSPACE</kbd> Remove current cut segment</li>
         </ul>
       </div>
     );

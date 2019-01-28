@@ -54,6 +54,7 @@
   "dependencies": {
     "bluebird": "^3.4.6",
     "classnames": "^2.2.5",
+    "color": "^3.1.0",
     "electron": "^2.0.9",
     "electron-default-menu": "^1.0.0",
     "electron-is-dev": "^0.1.2",
@@ -77,6 +78,7 @@
     "sweetalert2": "^8.0.1",
     "sweetalert2-react-content": "^1.0.1",
     "trash": "^4.3.0",
+    "uuid": "^3.3.2",
     "which": "^1.2.11"
   }
 }

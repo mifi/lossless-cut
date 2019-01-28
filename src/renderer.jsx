@@ -3,16 +3,19 @@ const $ = require('jquery');
 const Mousetrap = require('mousetrap');
 const round = require('lodash/round');
 const clamp = require('lodash/clamp');
+const clone = require('lodash/clone');
 const throttle = require('lodash/throttle');
 const Hammer = require('react-hammerjs').default;
 const path = require('path');
 const trash = require('trash');
+const uuid = require('uuid');
 
 const React = require('react');
 const ReactDOM = require('react-dom');
 const classnames = require('classnames');
 
 const HelpSheet = require('./HelpSheet');
+const TimelineSeg = require('./TimelineSeg');
 const { showMergeDialog } = require('./merge/merge');
 
 const captureFrame = require('./capture-frame');
@@ -21,7 +24,7 @@ const ffmpeg = require('./ffmpeg');
 
 const {
   getOutPath, parseDuration, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
-  promptTimeOffset,
+  promptTimeOffset, generateColor,
 } = require('./util');
 
 const { dialog } = electron.remote;
@@ -60,23 +63,31 @@ function withBlur(cb) {
   };
 }
 
+function createSegment({ start, end } = {}) {
+  return {
+    start,
+    end,
+    color: generateColor(),
+    uuid: uuid.v4(),
+  };
+}
 
-const localState = {
+const getInitialLocalState = () => ({
   working: false,
   filePath: '', // Setting video src="" prevents memory leak in chromium
   html5FriendlyPath: undefined,
   playing: false,
   currentTime: undefined,
   duration: undefined,
-  cutStartTime: undefined,
+  cutSegments: [createSegment()],
+  currentSeg: 0,
   cutStartTimeManual: undefined,
-  cutEndTime: undefined,
   cutEndTimeManual: undefined,
   fileFormat: undefined,
   rotation: 360,
   cutProgress: undefined,
   startTimeOffset: 0,
-};
+});
 
 const globalState = {
   stripAudio: false,
@@ -91,7 +102,7 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      ...localState,
+      ...getInitialLocalState(),
       ...globalState,
     };
 
@@ -220,6 +231,8 @@ class App extends React.Component {
     Mousetrap.bind('i', () => this.setCutStart());
     Mousetrap.bind('o', () => this.setCutEnd());
     Mousetrap.bind('h', () => this.toggleHelp());
+    Mousetrap.bind('+', () => this.addCutSegment());
+    Mousetrap.bind('backspace', () => this.removeCutSegment());
 
     electron.ipcRenderer.send('renderer-ready');
   }
@@ -241,11 +254,13 @@ class App extends React.Component {
   }
 
   setCutStart = () => {
-    this.setState(({ currentTime }) => ({ cutStartTime: currentTime }));
+    const { currentTime } = this.state;
+    this.setCutTime('start', currentTime);
   }
 
   setCutEnd = () => {
-    this.setState(({ currentTime }) => ({ cutEndTime: currentTime }));
+    const { currentTime } = this.state;
+    this.setCutTime('end', currentTime);
   }
 
   setOutputDir = () => {
@@ -274,13 +289,35 @@ class App extends React.Component {
     return `${this.getRotation()}°`;
   }
 
-  getApparentCutStartTime() {
-    if (this.state.cutStartTime !== undefined) return this.state.cutStartTime;
+  getCutSeg(i) {
+    const { currentSeg, cutSegments } = this.state;
+    return cutSegments[i !== undefined ? i : currentSeg];
+  }
+
+  getCutStartTime(i) {
+    return this.getCutSeg(i).start;
+  }
+
+  getCutEndTime(i) {
+    return this.getCutSeg(i).end;
+  }
+
+  setCutTime(type, time) {
+    const { currentSeg, cutSegments } = this.state;
+    const cloned = clone(cutSegments);
+    cloned[currentSeg][type] = time;
+    this.setState({ cutSegments: cloned });
+  }
+
+  getApparentCutStartTime(i) {
+    const cutStartTime = this.getCutStartTime(i);
+    if (cutStartTime !== undefined) return cutStartTime;
     return 0;
   }
 
-  getApparentCutEndTime() {
-    if (this.state.cutEndTime !== undefined) return this.state.cutEndTime;
+  getApparentCutEndTime(i) {
+    const cutEndTime = this.getCutEndTime(i);
+    if (cutEndTime !== undefined) return cutEndTime;
     if (this.state.duration !== undefined) return this.state.duration;
     return 0; // Haven't gotten duration yet
   }
@@ -305,6 +342,41 @@ class App extends React.Component {
   toggleStripAudio = () => this.setState(({ stripAudio }) => ({ stripAudio: !stripAudio }));
 
   toggleKeyframeCut = () => this.setState(({ keyframeCut }) => ({ keyframeCut: !keyframeCut }));
+
+  addCutSegment = () => {
+    const { cutSegments, currentTime, duration } = this.state;
+
+    const cutStartTime = this.getCutStartTime();
+    const cutEndTime = this.getCutEndTime();
+
+    if (cutStartTime === undefined && cutEndTime === undefined) return;
+
+    const suggestedStart = currentTime;
+    const suggestedEnd = suggestedStart + 10;
+
+    const cutSegmentsNew = [
+      ...cutSegments,
+      createSegment({
+        start: currentTime,
+        end: suggestedEnd <= duration ? suggestedEnd : undefined,
+      }),
+    ];
+
+    const currentSegNew = cutSegmentsNew.length - 1;
+    this.setState({ currentSeg: currentSegNew, cutSegments: cutSegmentsNew });
+  }
+
+  removeCutSegment = () => {
+    const { currentSeg, cutSegments } = this.state;
+
+    if (cutSegments.length < 2) return;
+
+    const cutSegmentsNew = [...cutSegments];
+    cutSegmentsNew.splice(currentSeg, 1);
+
+    const currentSegNew = Math.min(currentSeg, cutSegmentsNew.length - 1);
+    this.setState({ currentSeg: currentSegNew, cutSegments: cutSegmentsNew });
+  }
 
   jumpCutStart = () => {
     seekAbs(this.getApparentCutStartTime());
@@ -350,37 +422,45 @@ class App extends React.Component {
   }
 
   cutClick = async () => {
-    if (this.state.working) {
+    const {
+      filePath, customOutDir, fileFormat, duration, includeAllStreams,
+      stripAudio, keyframeCut, working, cutSegments,
+    } = this.state;
+
+    if (working) {
       errorToast('I\'m busy');
       return;
     }
 
-    const {
-      cutEndTime, cutStartTime, filePath, customOutDir, fileFormat, duration, includeAllStreams,
-      stripAudio, keyframeCut,
-    } = this.state;
-
     const rotation = this.isRotationSet() ? this.getRotation() : undefined;
+
+    const cutStartTime = this.getCutStartTime();
+    const cutEndTime = this.getCutEndTime();
 
     if (!(this.isCutRangeValid() || cutEndTime === undefined || cutStartTime === undefined)) {
       errorToast('Start time must be before end time');
       return;
     }
 
-    this.setState({ working: true });
     try {
-      await ffmpeg.cut({
+      this.setState({ working: true });
+
+      const segments = cutSegments.map((seg, i) => ({
+        cutFrom: this.getApparentCutStartTime(i),
+        cutTo: this.getCutEndTime(i),
+        cutToApparent: this.getApparentCutEndTime(i),
+      }));
+
+      await ffmpeg.cutMultiple({
         customOutDir,
         filePath,
         format: fileFormat,
-        cutFrom: this.getApparentCutStartTime(),
-        cutTo: cutEndTime,
-        cutToApparent: this.getApparentCutEndTime(),
         videoDuration: duration,
         rotation,
         includeAllStreams,
         stripAudio,
         keyframeCut,
+        segments,
         onProgress: this.onCutProgress,
       });
     } catch (err) {
@@ -425,7 +505,7 @@ class App extends React.Component {
     const video = getVideo();
     video.currentTime = 0;
     video.playbackRate = 1;
-    this.setState(localState);
+    this.setState(getInitialLocalState());
     setFileNameTitle();
   }
 
@@ -434,8 +514,8 @@ class App extends React.Component {
     return this.state.rotation !== 360;
   }
 
-  isCutRangeValid() {
-    return this.getApparentCutStartTime() < this.getApparentCutEndTime();
+  isCutRangeValid(i) {
+    return this.getApparentCutStartTime(i) < this.getApparentCutEndTime(i);
   }
 
   toggleHelp() {
@@ -461,11 +541,9 @@ class App extends React.Component {
         return;
       }
 
-      const cutTimeKey = type === 'start' ? 'cutStartTime' : 'cutEndTime';
-      this.setState(state => ({
-        [cutTimeManualKey]: undefined,
-        [cutTimeKey]: time - state.startTimeOffset,
-      }));
+      this.setState({ [cutTimeManualKey]: undefined });
+
+      this.setCutTime(type, time - this.state.startTimeOffset);
     };
 
     const cutTime = type === 'start' ? this.getApparentCutStartTime() : this.getApparentCutEndTime();
@@ -484,47 +562,23 @@ class App extends React.Component {
   }
 
   render() {
+    const {
+      working, filePath, duration: durationRaw, cutProgress, currentTime, playing,
+      fileFormat, playbackRate, keyframeCut, includeAllStreams, stripAudio, captureFormat,
+      helpVisible, currentSeg, cutSegments,
+    } = this.state;
+
+    const duration = durationRaw || 1;
+    const currentTimePos = currentTime !== undefined && `${(currentTime / duration) * 100}%`;
+
+    const segColor = this.getCutSeg().color;
+    const segBgColor = segColor.alpha(0.5).string();
+
     const jumpCutButtonStyle = {
       position: 'absolute', color: 'black', bottom: 0, top: 0, padding: '2px 8px',
     };
     const infoSpanStyle = {
       background: 'rgba(255, 255, 255, 0.4)', padding: '.1em .4em', margin: '0 3px', fontSize: 13, borderRadius: '.3em',
-    };
-
-    const {
-      working, filePath, duration: durationRaw, cutProgress, currentTime, playing,
-      fileFormat, playbackRate, keyframeCut, includeAllStreams, stripAudio, captureFormat,
-      helpVisible, cutStartTime, cutEndTime,
-    } = this.state;
-
-    const markerWidth = 4;
-    const apparentCutStart = this.getApparentCutStartTime();
-    const apprentCutEnd = this.getApparentCutEndTime();
-    const duration = durationRaw || 1;
-    const currentTimePos = currentTime !== undefined && `${(currentTime / duration) * 100}%`;
-    const cutSectionWidth = `calc(${((apprentCutEnd - apparentCutStart) / duration) * 100}% - ${markerWidth * 2}px)`;
-
-    const isCutRangeValid = this.isCutRangeValid();
-
-    const startTimePos = `${(apparentCutStart / duration) * 100}%`;
-    const endTimePos = `${(apprentCutEnd / duration) * 100}%`;
-    const markerBorder = '2px solid rgb(0, 255, 149)';
-    const markerBorderRadius = 5;
-
-    const startMarkerStyle = {
-      width: markerWidth,
-      left: startTimePos,
-      borderLeft: markerBorder,
-      borderTopLeftRadius: markerBorderRadius,
-      borderBottomLeftRadius: markerBorderRadius,
-    };
-    const endMarkerStyle = {
-      width: markerWidth,
-      marginLeft: -markerWidth,
-      left: endTimePos,
-      borderRight: markerBorder,
-      borderTopRightRadius: markerBorderRadius,
-      borderBottomRightRadius: markerBorderRadius,
     };
 
     return (
@@ -571,18 +625,21 @@ class App extends React.Component {
             <div className="timeline-wrapper">
               {currentTimePos !== undefined && <div className="current-time" style={{ left: currentTimePos }} />}
 
-              {cutStartTime !== undefined && <div style={startMarkerStyle} className="cut-time-marker" />}
-              {isCutRangeValid && (cutStartTime !== undefined || cutEndTime !== undefined) && (
-                <div
-                  className="cut-section"
-                  style={{
-                    marginLeft: markerWidth,
-                    left: startTimePos,
-                    width: cutSectionWidth,
-                  }}
+              {cutSegments.map((seg, i) => (
+                <TimelineSeg
+                  key={seg.uuid}
+                  segNum={i}
+                  color={seg.color}
+                  onSegClick={currentSegNew => this.setState({ currentSeg: currentSegNew })}
+                  isActive={i === currentSeg}
+                  isCutRangeValid={this.isCutRangeValid(i)}
+                  duration={duration}
+                  cutStartTime={this.getCutStartTime(i)}
+                  cutEndTime={this.getCutEndTime(i)}
+                  apparentCutStart={this.getApparentCutStartTime(i)}
+                  apparentCutEnd={this.getApparentCutEndTime(i)}
                 />
-              )}
-              {cutEndTime !== undefined && <div style={endMarkerStyle} className="cut-time-marker" />}
+              ))}
 
               <div id="current-time-display">{formatDuration(this.getOffsetCurrentTime())}</div>
             </div>
@@ -591,7 +648,8 @@ class App extends React.Component {
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <i
               className="button fa fa-step-backward"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               title="Jump to start of video"
               onClick={() => seekAbs(0)}
             />
@@ -602,26 +660,30 @@ class App extends React.Component {
                 style={{ ...jumpCutButtonStyle, left: 0 }}
                 className="fa fa-step-backward"
                 title="Jump to cut start"
-                aria-hidden="true"
+                role="button"
+                tabIndex="0"
                 onClick={withBlur(this.jumpCutStart)}
               />
             </div>
 
             <i
               className="button fa fa-caret-left"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               onClick={() => shortStep(-1)}
             />
             <i
               className={classnames({
                 button: true, fa: true, 'fa-pause': playing, 'fa-play': !playing,
               })}
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               onClick={this.playCommand}
             />
             <i
               className="button fa fa-caret-right"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               onClick={() => shortStep(1)}
             />
 
@@ -631,14 +693,16 @@ class App extends React.Component {
                 style={{ ...jumpCutButtonStyle, right: 0 }}
                 className="fa fa-step-forward"
                 title="Jump to cut end"
-                aria-hidden="true"
+                role="button"
+                tabIndex="0"
                 onClick={withBlur(this.jumpCutEnd)}
               />
             </div>
 
             <i
               className="button fa fa-step-forward"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               title="Jump to end of video"
               onClick={() => seekAbs(duration)}
             />
@@ -646,27 +710,33 @@ class App extends React.Component {
 
           <div>
             <i
+              style={{ background: segBgColor }}
               title="Set cut start to current position"
               className="button fa fa-angle-left"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               onClick={this.setCutStart}
             />
             <i
-              title="Cut"
+              title={cutSegments.length > 1 ? 'Export all segments' : 'Export selection'}
               className="button fa fa-scissors"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               onClick={this.cutClick}
             />
             <i
               title="Delete source file"
               className="button fa fa-trash"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               onClick={this.deleteSourceClick}
             />
             <i
+              style={{ background: segBgColor }}
               title="Set cut end to current position"
               className="button fa fa-angle-right"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               onClick={this.setCutEnd}
             />
           </div>
@@ -680,6 +750,25 @@ class App extends React.Component {
           <span style={infoSpanStyle} title="Playback rate">
             {round(playbackRate, 1) || 1}
           </span>
+
+          <button
+            style={{ ...infoSpanStyle, background: segBgColor, color: 'white' }}
+            disabled={cutSegments.length < 2}
+            type="button"
+            title={`Delete selected segment ${currentSeg + 1}`}
+            onClick={withBlur(() => this.removeCutSegment())}
+          >
+            d
+            {currentSeg + 1}
+          </button>
+
+          <button
+            type="button"
+            title={`Add cut segment ${currentSeg + 1}`}
+            onClick={withBlur(() => this.addCutSegment())}
+          >
+            c+
+          </button>
         </div>
 
         <div className="right-menu">
@@ -727,7 +816,8 @@ class App extends React.Component {
             title="Capture frame"
             style={{ margin: '-.4em -.2em' }}
             className="button fa fa-camera"
-            aria-hidden="true"
+            role="button"
+            tabIndex="0"
             onClick={this.capture}
           />
 

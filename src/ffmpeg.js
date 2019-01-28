@@ -5,6 +5,7 @@ const path = require('path');
 const fileType = require('file-type');
 const readChunk = require('read-chunk');
 const flatMap = require('lodash/flatMap');
+const sum = require('lodash/sum');
 const readline = require('readline');
 const moment = require('moment');
 const stringToStream = require('string-to-stream');
@@ -108,6 +109,39 @@ async function cut({
   console.log(result.stdout);
 
   await transferTimestamps(filePath, outPath);
+}
+
+async function cutMultiple({
+  customOutDir, filePath, format, segments, videoDuration, rotation,
+  includeAllStreams, onProgress, stripAudio, keyframeCut,
+}) {
+  const singleProgresses = {};
+  function onSingleProgress(id, singleProgress) {
+    singleProgresses[id] = singleProgress;
+    return onProgress((sum(Object.values(singleProgresses)) / segments.length));
+  }
+
+  let i = 0;
+  // eslint-disable-next-line no-restricted-syntax
+  for (const { cutFrom, cutTo, cutToApparent } of segments) {
+    // eslint-disable-next-line no-await-in-loop
+    await cut({
+      customOutDir,
+      filePath,
+      format,
+      videoDuration,
+      rotation,
+      includeAllStreams,
+      stripAudio,
+      keyframeCut,
+      cutFrom,
+      cutTo,
+      cutToApparent,
+      // eslint-disable-next-line no-loop-func
+      onProgress: progress => onSingleProgress(i, progress),
+    });
+    i += 1;
+  }
 }
 
 async function html5ify(filePath, outPath, encodeVideo) {
@@ -274,7 +308,7 @@ async function extractAllStreams(filePath) {
 }
 
 module.exports = {
-  cut,
+  cutMultiple,
   getFormat,
   html5ify,
   mergeFiles,

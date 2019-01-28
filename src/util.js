@@ -3,6 +3,9 @@ const path = require('path');
 const fs = require('fs');
 const swal = require('sweetalert2');
 
+const randomColor = require('./random-color');
+
+
 function formatDuration(_seconds, fileNameFriendly) {
   const seconds = _seconds || 0;
   const minutes = seconds / 60;
@@ -101,6 +104,10 @@ async function promptTimeOffset(inputValue) {
   return duration;
 }
 
+function generateColor() {
+  return randomColor(1, 0.95);
+}
+
 module.exports = {
   formatDuration,
   parseDuration,
@@ -112,4 +119,5 @@ module.exports = {
   showFfmpegFail,
   setFileNameTitle,
   promptTimeOffset,
+  generateColor,
 };

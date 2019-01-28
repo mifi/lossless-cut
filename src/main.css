@@ -35,6 +35,7 @@ input, button, textarea, :focus {
 }
 
 .button {
+  border-radius: 3px;
   padding: .4em;
   vertical-align: middle;
 }
@@ -102,12 +103,10 @@ input, button, textarea, :focus {
 
 .timeline-wrapper .cut-section {
   z-index: 1;
-  background-color: rgba(0, 255, 149, 0.5);
 }
 .timeline-wrapper .cut-time-marker {
   z-index: 2;
   box-sizing: border-box;
-  background: rgba(0, 255, 149, 0.5);
 }
 .timeline-wrapper .current-time {
   z-index: 3;
