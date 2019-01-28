@@ -80,7 +80,7 @@ const localState = {
 
 const globalState = {
   stripAudio: false,
-  includeAllStreams: false,
+  includeAllStreams: true,
   captureFormat: 'jpeg',
   customOutDir: undefined,
   keyframeCut: true,
