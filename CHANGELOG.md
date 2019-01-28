@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.1.0] - 2019-01-29
+
+### Added
+- Implement auto merge multiple segments
+
 ## [2.0.0] - 2019-01-28
 
 ### Added
