@@ -174,10 +174,7 @@ class App extends React.Component {
         startTimeOffsetOld !== undefined ? formatDuration(startTimeOffsetOld) : undefined,
       );
 
-      if (startTimeOffset === undefined) {
-        console.log('Cancelled');
-        return;
-      }
+      if (startTimeOffset === undefined) return;
 
       this.setState({ startTimeOffset });
     });

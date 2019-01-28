@@ -41,7 +41,7 @@ module.exports = (app, mainWindow, newVersion) => {
         },
       },
       {
-        label: 'Set custom start time offset',
+        label: 'Set custom start offset/timecode',
         click() {
           mainWindow.webContents.send('set-start-offset', true);
         },

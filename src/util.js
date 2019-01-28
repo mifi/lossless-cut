@@ -83,7 +83,7 @@ function setFileNameTitle(filePath) {
 async function promptTimeOffset(inputValue) {
   const { value } = await swal.fire({
     title: 'Set custom start time offset',
-    text: 'Instead of video apparently starting at 0, you can offset by a specified value (useful for timecodes)',
+    text: 'Instead of video apparently starting at 0, you can offset by a specified value (useful for viewing/cutting videos according to timecodes)',
     input: 'text',
     inputValue: inputValue || '',
     showCancelButton: true,
