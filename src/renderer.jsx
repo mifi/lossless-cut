@@ -95,6 +95,7 @@ const globalState = {
   captureFormat: 'jpeg',
   customOutDir: undefined,
   keyframeCut: true,
+  autoMerge: false,
 };
 
 class App extends React.Component {
@@ -169,7 +170,7 @@ class App extends React.Component {
 
           // TODO customOutDir ?
           // console.log('merge', paths);
-          await ffmpeg.mergeFiles(paths);
+          await ffmpeg.mergeAnyFiles(paths);
         } catch (err) {
           errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
           console.error('Failed to merge files', err);
@@ -343,6 +344,8 @@ class App extends React.Component {
 
   toggleKeyframeCut = () => this.setState(({ keyframeCut }) => ({ keyframeCut: !keyframeCut }));
 
+  toggleAutoMerge = () => this.setState(({ autoMerge }) => ({ autoMerge: !autoMerge }));
+
   addCutSegment = () => {
     const { cutSegments, currentTime, duration } = this.state;
 
@@ -424,7 +427,7 @@ class App extends React.Component {
   cutClick = async () => {
     const {
       filePath, customOutDir, fileFormat, duration, includeAllStreams,
-      stripAudio, keyframeCut, working, cutSegments,
+      stripAudio, keyframeCut, autoMerge, working, cutSegments,
     } = this.state;
 
     if (working) {
@@ -451,7 +454,7 @@ class App extends React.Component {
         cutToApparent: this.getApparentCutEndTime(i),
       }));
 
-      await ffmpeg.cutMultiple({
+      const outFiles = await ffmpeg.cutMultiple({
         customOutDir,
         filePath,
         format: fileFormat,
@@ -463,6 +466,16 @@ class App extends React.Component {
         segments,
         onProgress: this.onCutProgress,
       });
+
+      if (outFiles.length > 1 && autoMerge) {
+        this.onCutProgress(0); // TODO
+
+        await ffmpeg.autoMergeSegments({
+          customOutDir,
+          sourceFile: filePath,
+          segmentPaths: outFiles,
+        });
+      }
     } catch (err) {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
@@ -471,6 +484,7 @@ class App extends React.Component {
         errorToast('Whoops! ffmpeg was unable to cut this video. It may be of an unknown format or codec combination');
         return;
       }
+
       showFfmpegFail(err);
     } finally {
       this.setState({ working: false });
@@ -565,7 +579,7 @@ class App extends React.Component {
     const {
       working, filePath, duration: durationRaw, cutProgress, currentTime, playing,
       fileFormat, playbackRate, keyframeCut, includeAllStreams, stripAudio, captureFormat,
-      helpVisible, currentSeg, cutSegments,
+      helpVisible, currentSeg, cutSegments, autoMerge,
     } = this.state;
 
     const duration = durationRaw || 1;
@@ -764,10 +778,18 @@ class App extends React.Component {
 
           <button
             type="button"
-            title={`Add cut segment ${currentSeg + 1}`}
+            title="Add cut segment"
             onClick={withBlur(() => this.addCutSegment())}
           >
             c+
+          </button>
+
+          <button
+            type="button"
+            title={`Auto merge segments to one file after export? ${autoMerge ? 'Auto merge enabled' : 'No merging'}`}
+            onClick={withBlur(this.toggleAutoMerge)}
+          >
+            {autoMerge ? 'am' : 'nm'}
           </button>
         </div>
 

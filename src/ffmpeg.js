@@ -54,14 +54,9 @@ function handleProgress(process, cutDuration, onProgress) {
 }
 
 async function cut({
-  customOutDir, filePath, format, cutFrom, cutTo, cutToApparent, videoDuration, rotation,
-  includeAllStreams, onProgress, stripAudio, keyframeCut,
+  filePath, format, cutFrom, cutTo, cutToApparent, videoDuration, rotation,
+  includeAllStreams, onProgress, stripAudio, keyframeCut, outPath,
 }) {
-  const ext = path.extname(filePath) || `.${format}`;
-  const cutSpecification = `${formatDuration(cutFrom, true)}-${formatDuration(cutToApparent, true)}`;
-
-  const outPath = getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
-
   console.log('Cutting from', cutFrom, 'to', cutToApparent);
 
   const cutDuration = cutToApparent - cutFrom;
@@ -121,11 +116,19 @@ async function cutMultiple({
     return onProgress((sum(Object.values(singleProgresses)) / segments.length));
   }
 
+  const outFiles = [];
+
   let i = 0;
   // eslint-disable-next-line no-restricted-syntax
   for (const { cutFrom, cutTo, cutToApparent } of segments) {
+    const ext = path.extname(filePath) || `.${format}`;
+    const cutSpecification = `${formatDuration(cutFrom, true)}-${formatDuration(cutToApparent, true)}`;
+
+    const outPath = getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
+
     // eslint-disable-next-line no-await-in-loop
     await cut({
+      outPath,
       customOutDir,
       filePath,
       format,
@@ -140,8 +143,13 @@ async function cutMultiple({
       // eslint-disable-next-line no-loop-func
       onProgress: progress => onSingleProgress(i, progress),
     });
+
+    outFiles.push(outPath);
+
     i += 1;
   }
+
+  return outFiles;
 }
 
 async function html5ify(filePath, outPath, encodeVideo) {
@@ -166,10 +174,7 @@ async function html5ify(filePath, outPath, encodeVideo) {
   await transferTimestamps(filePath, outPath);
 }
 
-async function mergeFiles(paths) {
-  const firstPath = paths[0];
-  const ext = path.extname(firstPath);
-  const outPath = `${firstPath}-merged${ext}`;
+async function mergeFiles(paths, outPath) {
   console.log('Merging files', { paths }, 'to', outPath);
 
   // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
@@ -194,6 +199,19 @@ async function mergeFiles(paths) {
 
   const result = await process;
   console.log(result.stdout);
+}
+
+async function mergeAnyFiles(paths) {
+  const firstPath = paths[0];
+  const ext = path.extname(firstPath);
+  const outPath = `${firstPath}-merged${ext}`;
+  return mergeFiles(paths, outPath);
+}
+
+async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths }) {
+  const ext = path.extname(sourceFile);
+  const outPath = getOutPath(customOutDir, sourceFile, `cut-merged-${new Date().getTime()}${ext}`);
+  return mergeFiles(segmentPaths, outPath);
 }
 
 /**
@@ -311,6 +329,7 @@ module.exports = {
   cutMultiple,
   getFormat,
   html5ify,
-  mergeFiles,
+  mergeAnyFiles,
+  autoMergeSegments,
   extractAllStreams,
 };
