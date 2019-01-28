@@ -2,7 +2,7 @@
 
 Simple and ultra fast cross platform tool for lossless trimming/cutting of video and audio files. Great for saving space by rough cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. It extremely fast because it does an almost direct data copy. It uses the awesome ffmpeg (included) for doing the grunt work.
 
-![Demo](https://thumbs.gfycat.com/HighAcclaimedAnaconda-size_restricted.gif)
+![Demo](https://github.com/mifi/gifs/raw/master/2019-01-28-lossless-cut.gif)
 
 ## Features
 - Lossless cutting of common video and audio formats
