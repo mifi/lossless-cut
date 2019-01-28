@@ -57,6 +57,6 @@ deploy:
     - package/LosslessCut-linux-x64.zip
   skip_cleanup: true
   draft: true
-  tag_name: $TRAVIS_TAG
+#  tag_name: $TRAVIS_TAG
   on:
     tags: true
