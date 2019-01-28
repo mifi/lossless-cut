@@ -182,6 +182,22 @@ class App extends React.Component {
       this.setState({ startTimeOffset });
     });
 
+    electron.ipcRenderer.on('extract-all-streams', async () => {
+      const { filePath } = this.state;
+      if (!filePath) return;
+
+      try {
+        this.setState({ working: true });
+        // TODO customOutDir ?
+        await ffmpeg.extractAllStreams(filePath);
+        this.setState({ working: false });
+      } catch (err) {
+        errorToast('Failed to extract all streams');
+        console.error('Failed to extract all streams', err);
+        this.setState({ working: false });
+      }
+    });
+
     document.ondragover = ev => ev.preventDefault();
     document.ondragend = document.ondragover;
 

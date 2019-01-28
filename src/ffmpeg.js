@@ -4,7 +4,7 @@ const which = bluebird.promisify(require('which'));
 const path = require('path');
 const fileType = require('file-type');
 const readChunk = require('read-chunk');
-const _ = require('lodash');
+const flatMap = require('lodash/flatMap');
 const readline = require('readline');
 const moment = require('moment');
 const stringToStream = require('string-to-stream');
@@ -27,6 +27,11 @@ function getFfmpegPath() {
       console.log('Internal ffmpeg unavail');
       return which('ffmpeg');
     });
+}
+
+async function getFFprobePath() {
+  const ffmpegPath = await getFfmpegPath();
+  return path.join(path.dirname(ffmpegPath), getWithExt('ffprobe'));
 }
 
 function handleProgress(process, cutDuration, onProgress) {
@@ -176,34 +181,95 @@ function mapFormat(requestedFormat) {
 }
 
 function determineOutputFormat(ffprobeFormats, ft) {
-  if (_.includes(ffprobeFormats, ft.ext)) return ft.ext;
+  if (ffprobeFormats.includes(ft.ext)) return ft.ext;
   return ffprobeFormats[0] || undefined;
 }
 
-function getFormat(filePath) {
-  return bluebird.try(() => {
-    console.log('getFormat', filePath);
+async function getFormat(filePath) {
+  console.log('getFormat', filePath);
 
-    return getFfmpegPath()
-      .then(ffmpegPath => path.join(path.dirname(ffmpegPath), getWithExt('ffprobe')))
-      .then(ffprobePath => execa(ffprobePath, [
-        '-of', 'json', '-show_format', '-i', filePath,
-      ]))
-      .then((result) => {
-        const formatsStr = JSON.parse(result.stdout).format.format_name;
-        console.log('formats', formatsStr);
-        const formats = (formatsStr || '').split(',');
+  const ffprobePath = await getFFprobePath();
+  const result = await execa(ffprobePath, [
+    '-of', 'json', '-show_format', '-i', filePath,
+  ]);
+  const formatsStr = JSON.parse(result.stdout).format.format_name;
+  console.log('formats', formatsStr);
+  const formats = (formatsStr || '').split(',');
 
-        // ffprobe sometimes returns a list of formats, try to be a bit smarter about it.
-        return readChunk(filePath, 0, 4100)
-          .then((bytes) => {
-            const ft = fileType(bytes) || {};
-            console.log(`fileType detected format ${JSON.stringify(ft)}`);
-            const assumedFormat = determineOutputFormat(formats, ft);
-            return mapFormat(assumedFormat);
-          });
-      });
-  });
+  // ffprobe sometimes returns a list of formats, try to be a bit smarter about it.
+  const bytes = await readChunk(filePath, 0, 4100);
+  const ft = fileType(bytes) || {};
+  console.log(`fileType detected format ${JSON.stringify(ft)}`);
+  const assumedFormat = determineOutputFormat(formats, ft);
+  return mapFormat(assumedFormat);
+}
+
+async function getAllStreams(filePath) {
+  const ffprobePath = await getFFprobePath();
+  const result = await execa(ffprobePath, [
+    '-of', 'json', '-show_entries', 'stream', '-i', filePath,
+  ]);
+
+  return JSON.parse(result.stdout);
+}
+
+// https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
+async function extractAllStreams(filePath) {
+  const { streams } = await getAllStreams(filePath);
+  console.log('streams', streams);
+
+  function mapCodecToOutputFormat(codec, type) {
+    const map = {
+      // See mapFormat
+      m4a: { ext: 'm4a', format: 'ipod' },
+      aac: { ext: 'm4a', format: 'ipod' },
+
+      mp3: { ext: 'mp3', format: 'mp3' },
+      opus: { ext: 'opus', format: 'opus' },
+      vorbis: { ext: 'ogg', format: 'ogg' },
+      h264: { ext: 'mp4', format: 'mp4' },
+      eac3: { ext: 'eac3', format: 'eac3' },
+
+      subrip: { ext: 'srt', format: 'srt' },
+
+      // TODO add more
+      // TODO allow user to change?
+    };
+
+    if (map[codec]) return map[codec];
+    if (type === 'video') return { ext: 'mkv', format: 'mkv' };
+    if (type === 'audio') return { ext: 'mkv', format: 'mkv' };
+    return undefined;
+  }
+
+  const outStreams = streams.map((s, i) => ({
+    i,
+    codec: s.codec_name,
+    type: s.codec_type,
+    format: mapCodecToOutputFormat(s.codec_name, s.codec_type),
+  }))
+    .filter(it => it);
+
+  // console.log(outStreams);
+
+  const streamArgs = flatMap(outStreams, ({
+    i, codec, type, format: { format, ext },
+  }) => [
+    '-map', `0:${i}`, '-c', 'copy', '-f', format, '-y', `${filePath}-${i}-${type}-${codec}.${ext}`,
+  ]);
+
+  const ffmpegArgs = [
+    '-i', filePath,
+    ...streamArgs,
+  ];
+
+  console.log(ffmpegArgs);
+
+  // TODO progress
+  const ffmpegPath = await getFfmpegPath();
+  const process = execa(ffmpegPath, ffmpegArgs);
+  const result = await process;
+  console.log(result.stdout);
 }
 
 module.exports = {
@@ -211,4 +277,5 @@ module.exports = {
   getFormat,
   html5ify,
   mergeFiles,
+  extractAllStreams,
 };

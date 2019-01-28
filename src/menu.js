@@ -35,6 +35,12 @@ module.exports = (app, mainWindow, newVersion) => {
         },
       },
       {
+        label: 'Extract all streams',
+        click() {
+          mainWindow.webContents.send('extract-all-streams', false);
+        },
+      },
+      {
         label: 'Set custom start time offset',
         click() {
           mainWindow.webContents.send('set-start-offset', true);
