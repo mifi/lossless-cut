@@ -19,10 +19,10 @@ Simple and ultra fast cross platform tool for lossless trimming/cutting of video
 
 - Download [latest LosslessCut from releases](https://github.com/mifi/lossless-cut/releases)
 - Run LosslessCut app/exe
-- On OSX, to open LosslessCut.app, Right Click > Open to bypass the security warning.
+- On macOS, to open LosslessCut.app, Right Click > Open to bypass the security warning.
 
 ## Supported platforms
-- Mac OS X
+- macOS
 - Windows (64/32bit)
 - Linux (64/32bit, not tested)
 
