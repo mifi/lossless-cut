@@ -7,7 +7,7 @@ Simple and ultra fast cross platform tool for lossless trimming/cutting of video
 ## Features
 - Lossless cutting of common video and audio formats
 - Lossless merge of files (identical codecs)
-- Lossless extracting of all streams from a file
+- Lossless extracting of all streams from a file (video, audio, subtitle, ++)
 - Take full-resolution snapshots from videos in JPEG/PNG format
 - Manual input range of cutpoints
 - Can include more than 2 streams or remove audio track (optional)
