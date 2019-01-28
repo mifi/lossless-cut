@@ -135,7 +135,7 @@ async function html5ify(filePath, outPath, encodeVideo) {
 async function mergeFiles(paths) {
   const firstPath = paths[0];
   const ext = path.extname(firstPath);
-  const outPath = `${firstPath}-merged.${ext}`;
+  const outPath = `${firstPath}-merged${ext}`;
   console.log('Merging files', { paths }, 'to', outPath);
 
   // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
