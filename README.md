@@ -6,13 +6,13 @@ Simple and ultra fast cross platform tool for lossless trimming/cutting of video
 
 ## Features
 - Lossless cutting of common video and audio formats
-- Lossless merge of files (identical codecs)
-- Lossless extracting of all streams from a file (video, audio, subtitle, ++)
-- Cut out multiple segments at the same time
+- Lossless merge of selected segments if more the one
+- Lossless merge of arbitrary files (with identical codecs)
+- Lossless extracting of all data streams from a file (video, audio, subtitle, ++)
 - Take full-resolution snapshots from videos in JPEG/PNG format
 - Manual input range of cutpoints
 - Can include more than 2 streams or remove audio track (optional)
-- Apply timecode offset
+- Apply a timecode offset
 - Change rotation/orientation metadata in videos. Great for rotating phone videos that come out the wrong way without actually re-encoding the video.
 
 ## Installing / running
