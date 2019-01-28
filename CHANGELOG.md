@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.0.0] - 2019-01-28
+
+### Added
+- Implement multiple cutpoints
+- Implement function for extracting all streams from a file
+- Implement crude merge funtcion for files of the same codec
+- Allow setting a time offset (video timecode)
+
+### Changed
+- Keyframe cut mode is now default
+- Default include all streams
+- Improve cut rendering graphics to make it easier to see what is cut start/end
+- GUI improvments
+
 ## [1.14.0] - 2018-09-25
 
 ### Added
