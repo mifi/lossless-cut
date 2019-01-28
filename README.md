@@ -6,10 +6,13 @@ Simple and ultra fast cross platform tool for lossless trimming/cutting of video
 
 ## Features
 - Lossless cutting of common video and audio formats
+- Lossless merge of files (identical codecs)
+- Lossless extracting of all streams from a file
 - Take full-resolution snapshots from videos in JPEG/PNG format
-- Change rotation/orientation metadata in videos. Great for rotating phone videos that turns out the wrong way without actually re-encoding the video.
 - Manual input range of cutpoints
 - Can include more than 2 streams or remove audio track (optional)
+- Apply timecode offset
+- Change rotation/orientation metadata in videos. Great for rotating phone videos that come out the wrong way without actually re-encoding the video.
 
 ## Installing / running
 
@@ -28,7 +31,7 @@ Since LosslessCut is based on Chromium and uses the HTML5 video player, not all 
 The following formats/codecs should generally work: MP4, MOV, WebM, MKV, OGG, WAV, MP3, AAC, H264, Theora, VP8, VP9
 For more information about supported formats / codecs, see https://www.chromium.org/audio-video.
 
-**New in v1.11.0:** Unsupported files can now be remuxed (fast) or encoded (slow) to a friendly format/codec from the `File` menu. A processed version of the file will then be opened in the player. The cut operation will still be performed using the original file as input. This allows for potentially opening any file that ffmpeg is able to decode.
+Unsupported files can now be remuxed (fast) or encoded (slow) to a friendly format/codec from the `File` menu. A processed version of the file will then be opened in the player. The cut operation will still be performed using the original file as input, so it will be lossless. This allows for potentially opening any file that ffmpeg is able to decode.
 
 
 ## Typical workflow
@@ -50,12 +53,12 @@ For old shortcuts see here:
 https://github.com/mifi/lossless-cut/blob/41d6991c11b0a82b08344fd22a1ea094af217417/README.md#keyboard-shortcuts
 
 ## Known issues
-- If you have trouble with audio sync or something else with the output video, try toggling the button `kc` *(keyframe cut)* to `nc` *(normal cut)*. See discussion in [#13](https://github.com/mifi/lossless-cut/pull/13)
+- If you have trouble with audio sync or something else with the output video, try toggling the button `nc` *(normal cut)* to `kc` *(kc cut)*. See discussion in [#13](https://github.com/mifi/lossless-cut/pull/13)
 - If you get an error when cutting any kind of file under Windows, please check your anti-virus. It might be blocking execution of ffmpeg, see [#18](https://github.com/mifi/lossless-cut/issues/18)
 
 ## Development building / running
 
-This app is built using Electron. Make sure you have at least node v6 and yarn installed. The app uses ffmpeg from PATH when developing.
+This app is built using Electron. Make sure you have at least node v8 and yarn installed. The app uses ffmpeg from PATH when developing.
 ```
 git clone https://github.com/mifi/lossless-cut.git
 cd lossless-cut
