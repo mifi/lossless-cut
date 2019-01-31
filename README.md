@@ -6,7 +6,7 @@ Simple and ultra fast cross platform tool for lossless trimming/cutting of video
 
 ## Features
 - Lossless cutting of common video and audio formats
-- Lossless merge of selected segments if more the one
+- Lossless re-merge of selected segments if more the one (for cutting out commercials etc.)
 - Lossless merge of arbitrary files (with identical codecs)
 - Lossless extracting of all data streams from a file (video, audio, subtitle, ++)
 - Take full-resolution snapshots from videos in JPEG/PNG format
@@ -39,22 +39,21 @@ Unsupported files can now be remuxed (fast) or encoded (slow) to a friendly form
 - Drag drop a video file into player to load or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
 - Press <kbd>SPACE</kbd> to play/pause
 - Select the cut start and end time.  Press <kbd>I</kbd> to select the start time, <kbd>O</kbd> to select the end time for the cut.
-- Press the custom output dir button if you want to export to a certain dir (default: source file dir)
-- Press the rotation button if you want to override orientation metadata
+- If you want to cut more segments out of the video, press <kbd>+</kbd> or the `c+` button to add another segment, then select the next segment with <kbd>I</kbd>/<kbd>O</kbd>.
+- If you want to re-merge all the selected segments after cutting, toggle the button `nm` (no merge) to `am` (auto merge). This is useful for *cutting away* certain parts of a video (by selecting everything except the parts not needed.)
+- If you want to export to a certain dir, press the custom output dir button (default: input file dir)
+- If you want to override orientation metadata, press the rotation button
 - Press the scissors button (or <kbd>E</kbd>) to export the slice
 - Press the camera button (or <kbd>C</kbd>) to take a snapshot
-- Press the trash button if you want to move the original file to trash
+- If you want to move the original file to trash, press the trash button
 
-The original video files will not be modified. Instead it creates a lossless export in the same directory as the original file with from/to timestamps. Note that the cut is currently not precise around the cutpoints, so video before/after the nearest keyframe will be lost. EXIF data is preserved.
+Note: The original video files will not be modified. Instead it creates a lossless export in the same directory as the original file with from/to timestamps. Note that the cut is currently not precise around the cutpoints, so video before/after the nearest keyframe will be lost. EXIF data is preserved.
 
 ## Keyboard shortcuts
 Press <kbd>h</kbd> To show/hide list of shortcuts
 
-For old shortcuts see here:
-https://github.com/mifi/lossless-cut/blob/41d6991c11b0a82b08344fd22a1ea094af217417/README.md#keyboard-shortcuts
-
 ## Known issues
-- If you have trouble with audio sync or something else with the output video, try toggling the button `nc` *(normal cut)* to `kc` *(kc cut)*. See discussion in [#13](https://github.com/mifi/lossless-cut/pull/13)
+- If you have trouble with audio sync or something else with the output video, try toggling the button `nc` *(normal cut)* to `kc` *(kc cut)*. Also try to toggle `all` (all streams) to `ps` (primary streams). See discussion in [#13](https://github.com/mifi/lossless-cut/pull/13)
 - If you get an error when cutting any kind of file under Windows, please check your anti-virus. It might be blocking execution of ffmpeg, see [#18](https://github.com/mifi/lossless-cut/issues/18)
 
 ## Development building / running
