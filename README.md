@@ -37,8 +37,8 @@ Unsupported files can now be remuxed (fast) or encoded (slow) to a friendly form
 
 ## Typical workflow
 - Drag drop a video file into player to load or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
-- Press <kbd>SPACE</kbd> to play/pause
-- Select the cut start and end time.  Press <kbd>I</kbd> to select the start time, <kbd>O</kbd> to select the end time for the cut.
+- Press <kbd>SPACE</kbd> to play/pause or <kbd>◀</kbd><kbd>▶</kbd>, <kbd>,</kbd><kbd>.</kbd> to seek back/forth
+- Select the cut start and end time. Press <kbd>I</kbd> to select the start time, <kbd>O</kbd> to select the end time for the cut.
 - If you want to cut more segments out of the video, press <kbd>+</kbd> or the `c+` button to add another segment, then select the next segment with <kbd>I</kbd>/<kbd>O</kbd>.
 - If you want to re-merge all the selected segments after cutting, toggle the button `nm` (no merge) to `am` (auto merge). This is useful for *cutting away* certain parts of a video (by selecting everything except the parts not needed.)
 - If you want to export to a certain dir, press the custom output dir button (default: input file dir)
