@@ -74,7 +74,7 @@
     "react-sortable-hoc": "^1.5.3",
     "read-chunk": "^2.0.0",
     "string-to-stream": "^1.1.1",
-    "strong-data-uri": "^1.0.4",
+    "strong-data-uri": "^1.0.5",
     "sweetalert2": "^8.0.1",
     "sweetalert2-react-content": "^1.0.1",
     "trash": "^4.3.0",
