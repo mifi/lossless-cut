@@ -35,6 +35,7 @@ input, button, textarea, :focus {
 }
 
 .button {
+  border-radius: 3px;
   padding: .4em;
   vertical-align: middle;
 }
@@ -84,7 +85,7 @@ input, button, textarea, :focus {
 
 #current-time-display {
   text-align: center;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.8);
   padding: .5em;
 }
 
@@ -94,30 +95,30 @@ input, button, textarea, :focus {
   background-color: #444;
 }
 
-.timeline-wrapper .current-time, .timeline-wrapper .cut-start-time {
+.timeline-wrapper .current-time, .timeline-wrapper .cut-section, .timeline-wrapper .cut-time-marker {
   position: absolute;
   bottom: 0;
   top: 0;
-  width: 1px;
 }
 
-.timeline-wrapper .current-time {
-  background-color: red;
-  z-index: 2;
-}
-.timeline-wrapper .cut-start-time {
-  background-color: rgba(0, 0, 0, 0.3);
-  border-left: 1px solid black;
-  border-right: 1px solid black;
+.timeline-wrapper .cut-section {
   z-index: 1;
+}
+.timeline-wrapper .cut-time-marker {
+  z-index: 2;
+  box-sizing: border-box;
+}
+.timeline-wrapper .current-time {
+  z-index: 3;
+  background-color: rgba(255, 255, 255, 1);
+  width: 1px;
 }
 
 #drag-drop-field {
   padding: 15vw 0;
   border: 2vw dashed #252525;
-  color: #252525;
+  color: #303030;
   margin: 7vw;
-  font-size: 9vw;
   text-align: center;
   white-space: nowrap;
 }
@@ -151,4 +152,8 @@ input, button, textarea, :focus {
     border-bottom-color: #bbb;
     border-radius: 3px;
     box-shadow: inset 0 -1px 0 #bbb;
+}
+
+.dragging-helper-class {
+  color: rgba(0,0,0,0.5);
 }

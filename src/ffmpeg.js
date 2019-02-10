@@ -2,22 +2,15 @@ const execa = require('execa');
 const bluebird = require('bluebird');
 const which = bluebird.promisify(require('which'));
 const path = require('path');
-const fs = require('fs');
 const fileType = require('file-type');
 const readChunk = require('read-chunk');
-const _ = require('lodash');
+const flatMap = require('lodash/flatMap');
+const sum = require('lodash/sum');
 const readline = require('readline');
 const moment = require('moment');
+const stringToStream = require('string-to-stream');
 
-const util = require('./util');
-
-bluebird.promisifyAll(fs);
-
-
-function showFfmpegFail(err) {
-  alert(`Failed to run ffmpeg:\n${err.stack}`);
-  console.error(err.stack);
-}
+const { formatDuration, getOutPath, transferTimestamps } = require('./util');
 
 function getWithExt(name) {
   return process.platform === 'win32' ? `${name}.exe` : name;
@@ -35,6 +28,11 @@ function getFfmpegPath() {
       console.log('Internal ffmpeg unavail');
       return which('ffmpeg');
     });
+}
+
+async function getFFprobePath() {
+  const ffmpegPath = await getFfmpegPath();
+  return path.join(path.dirname(ffmpegPath), getWithExt('ffprobe'));
 }
 
 function handleProgress(process, cutDuration, onProgress) {
@@ -56,14 +54,9 @@ function handleProgress(process, cutDuration, onProgress) {
 }
 
 async function cut({
-  customOutDir, filePath, format, cutFrom, cutTo, cutToApparent, videoDuration, rotation,
-  includeAllStreams, onProgress, stripAudio, keyframeCut,
+  filePath, format, cutFrom, cutTo, cutToApparent, videoDuration, rotation,
+  includeAllStreams, onProgress, stripAudio, keyframeCut, outPath,
 }) {
-  const ext = path.extname(filePath) || `.${format}`;
-  const cutSpecification = `${util.formatDuration(cutFrom, true)}-${util.formatDuration(cutToApparent, true)}`;
-
-  const outPath = util.getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
-
   console.log('Cutting from', cutFrom, 'to', cutToApparent);
 
   const cutDuration = cutToApparent - cutFrom;
@@ -110,7 +103,53 @@ async function cut({
   const result = await process;
   console.log(result.stdout);
 
-  await util.transferTimestamps(filePath, outPath);
+  await transferTimestamps(filePath, outPath);
+}
+
+async function cutMultiple({
+  customOutDir, filePath, format, segments, videoDuration, rotation,
+  includeAllStreams, onProgress, stripAudio, keyframeCut,
+}) {
+  const singleProgresses = {};
+  function onSingleProgress(id, singleProgress) {
+    singleProgresses[id] = singleProgress;
+    return onProgress((sum(Object.values(singleProgresses)) / segments.length));
+  }
+
+  const outFiles = [];
+
+  let i = 0;
+  // eslint-disable-next-line no-restricted-syntax
+  for (const { cutFrom, cutTo, cutToApparent } of segments) {
+    const ext = path.extname(filePath) || `.${format}`;
+    const cutSpecification = `${formatDuration(cutFrom, true)}-${formatDuration(cutToApparent, true)}`;
+
+    const outPath = getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
+
+    // eslint-disable-next-line no-await-in-loop
+    await cut({
+      outPath,
+      customOutDir,
+      filePath,
+      format,
+      videoDuration,
+      rotation,
+      includeAllStreams,
+      stripAudio,
+      keyframeCut,
+      cutFrom,
+      cutTo,
+      cutToApparent,
+      // eslint-disable-next-line no-loop-func
+      onProgress: progress => onSingleProgress(i, progress),
+    });
+
+    outFiles.push(outPath);
+
+    i += 1;
+  }
+
+  return outFiles;
 }
 
 async function html5ify(filePath, outPath, encodeVideo) {
@@ -132,7 +171,47 @@ async function html5ify(filePath, outPath, encodeVideo) {
   const result = await process;
   console.log(result.stdout);
 
-  await util.transferTimestamps(filePath, outPath);
+  await transferTimestamps(filePath, outPath);
+}
+
+async function mergeFiles(paths, outPath) {
+  console.log('Merging files', { paths }, 'to', outPath);
+
+  // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
+  const ffmpegArgs = [
+    '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe', '-i', '-',
+    '-c', 'copy',
+    '-map_metadata', '0',
+    '-y', outPath,
+  ];
+
+  console.log('ffmpeg', ffmpegArgs.join(' '));
+
+  // https://superuser.com/questions/787064/filename-quoting-in-ffmpeg-concat
+  const concatTxt = paths.map(file => `file '${path.join(file).replace(/'/g, "'\\''")}'`).join('\n');
+
+  console.log(concatTxt);
+
+  const ffmpegPath = await getFfmpegPath();
+  const process = execa(ffmpegPath, ffmpegArgs);
+
+  stringToStream(concatTxt).pipe(process.stdin);
+
+  const result = await process;
+  console.log(result.stdout);
+}
+
+async function mergeAnyFiles(paths) {
+  const firstPath = paths[0];
+  const ext = path.extname(firstPath);
+  const outPath = `${firstPath}-merged${ext}`;
+  return mergeFiles(paths, outPath);
+}
+
+async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths }) {
+  const ext = path.extname(sourceFile);
+  const outPath = getOutPath(customOutDir, sourceFile, `cut-merged-${new Date().getTime()}${ext}`);
+  return mergeFiles(segmentPaths, outPath);
 }
 
 /**
@@ -154,39 +233,103 @@ function mapFormat(requestedFormat) {
 }
 
 function determineOutputFormat(ffprobeFormats, ft) {
-  if (_.includes(ffprobeFormats, ft.ext)) return ft.ext;
+  if (ffprobeFormats.includes(ft.ext)) return ft.ext;
   return ffprobeFormats[0] || undefined;
 }
 
-function getFormat(filePath) {
-  return bluebird.try(() => {
-    console.log('getFormat', filePath);
+async function getFormat(filePath) {
+  console.log('getFormat', filePath);
 
-    return getFfmpegPath()
-      .then(ffmpegPath => path.join(path.dirname(ffmpegPath), getWithExt('ffprobe')))
-      .then(ffprobePath => execa(ffprobePath, [
-        '-of', 'json', '-show_format', '-i', filePath,
-      ]))
-      .then((result) => {
-        const formatsStr = JSON.parse(result.stdout).format.format_name;
-        console.log('formats', formatsStr);
-        const formats = (formatsStr || '').split(',');
+  const ffprobePath = await getFFprobePath();
+  const result = await execa(ffprobePath, [
+    '-of', 'json', '-show_format', '-i', filePath,
+  ]);
+  const formatsStr = JSON.parse(result.stdout).format.format_name;
+  console.log('formats', formatsStr);
+  const formats = (formatsStr || '').split(',');
 
-        // ffprobe sometimes returns a list of formats, try to be a bit smarter about it.
-        return readChunk(filePath, 0, 4100)
-          .then((bytes) => {
-            const ft = fileType(bytes) || {};
-            console.log(`fileType detected format ${JSON.stringify(ft)}`);
-            const assumedFormat = determineOutputFormat(formats, ft);
-            return mapFormat(assumedFormat);
-          });
-      });
-  });
+  // ffprobe sometimes returns a list of formats, try to be a bit smarter about it.
+  const bytes = await readChunk(filePath, 0, 4100);
+  const ft = fileType(bytes) || {};
+  console.log(`fileType detected format ${JSON.stringify(ft)}`);
+  const assumedFormat = determineOutputFormat(formats, ft);
+  return mapFormat(assumedFormat);
+}
+
+async function getAllStreams(filePath) {
+  const ffprobePath = await getFFprobePath();
+  const result = await execa(ffprobePath, [
+    '-of', 'json', '-show_entries', 'stream', '-i', filePath,
+  ]);
+
+  return JSON.parse(result.stdout);
+}
+
+function mapCodecToOutputFormat(codec, type) {
+  const map = {
+    // See mapFormat
+    m4a: { ext: 'm4a', format: 'ipod' },
+    aac: { ext: 'm4a', format: 'ipod' },
+
+    mp3: { ext: 'mp3', format: 'mp3' },
+    opus: { ext: 'opus', format: 'opus' },
+    vorbis: { ext: 'ogg', format: 'ogg' },
+    h264: { ext: 'mp4', format: 'mp4' },
+    eac3: { ext: 'eac3', format: 'eac3' },
+
+    subrip: { ext: 'srt', format: 'srt' },
+
+    // TODO add more
+    // TODO allow user to change?
+  };
+
+  if (map[codec]) return map[codec];
+  if (type === 'video') return { ext: 'mkv', format: 'matroska' };
+  if (type === 'audio') return { ext: 'mka', format: 'matroska' };
+  if (type === 'subtitle') return { ext: 'mks', format: 'matroska' };
+  return undefined;
+}
+
+// https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
+async function extractAllStreams(filePath) {
+  const { streams } = await getAllStreams(filePath);
+  console.log('streams', streams);
+
+  const outStreams = streams.map((s, i) => ({
+    i,
+    codec: s.codec_name,
+    type: s.codec_type,
+    format: mapCodecToOutputFormat(s.codec_name, s.codec_type),
+  }))
+    .filter(it => it);
+
+  // console.log(outStreams);
+
+  const streamArgs = flatMap(outStreams, ({
+    i, codec, type, format: { format, ext },
+  }) => [
+    '-map', `0:${i}`, '-c', 'copy', '-f', format, '-y', `${filePath}-${i}-${type}-${codec}.${ext}`,
+  ]);
+
+  const ffmpegArgs = [
+    '-i', filePath,
+    ...streamArgs,
+  ];
+
+  console.log(ffmpegArgs);
+
+  // TODO progress
+  const ffmpegPath = await getFfmpegPath();
+  const process = execa(ffmpegPath, ffmpegArgs);
+  const result = await process;
+  console.log(result.stdout);
 }
 
 module.exports = {
-  cut,
+  cutMultiple,
   getFormat,
-  showFfmpegFail,
   html5ify,
+  mergeAnyFiles,
+  autoMergeSegments,
+  extractAllStreams,
 };

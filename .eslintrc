@@ -6,9 +6,10 @@
     "browser": true,
   },
   "rules": {
-    "no-alert": 0,
     "no-console": 0,
     "react/destructuring-assignment": 0,
+    "react/forbid-prop-types": [1, { "forbid": ["any"] }],
+    "jsx-a11y/click-events-have-key-events": 0,
   },
   "plugins": [
     "react"

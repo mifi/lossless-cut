@@ -3,25 +3,31 @@ const $ = require('jquery');
 const Mousetrap = require('mousetrap');
 const round = require('lodash/round');
 const clamp = require('lodash/clamp');
+const clone = require('lodash/clone');
 const throttle = require('lodash/throttle');
-const Hammer = require('react-hammerjs');
+const Hammer = require('react-hammerjs').default;
 const path = require('path');
 const trash = require('trash');
+const uuid = require('uuid');
 
 const React = require('react');
 const ReactDOM = require('react-dom');
 const classnames = require('classnames');
 
+const HelpSheet = require('./HelpSheet');
+const TimelineSeg = require('./TimelineSeg');
+const { showMergeDialog } = require('./merge/merge');
+
 const captureFrame = require('./capture-frame');
 const ffmpeg = require('./ffmpeg');
-const util = require('./util');
+
+
+const {
+  getOutPath, parseDuration, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
+  promptTimeOffset, generateColor,
+} = require('./util');
 
 const { dialog } = electron.remote;
-
-function setFileNameTitle(filePath) {
-  const appName = 'LosslessCut';
-  document.title = filePath ? `${appName} - ${path.basename(filePath)}` : 'appName';
-}
 
 function getVideo() {
   return $('#player video')[0];
@@ -50,35 +56,6 @@ function shortStep(dir) {
   seekRel((1 / 60) * dir);
 }
 
-/* eslint-disable react/jsx-one-expression-per-line */
-function renderHelpSheet(visible) {
-  if (visible) {
-    return (
-      <div className="help-sheet">
-        <h1>Keyboard shortcuts</h1>
-        <ul>
-          <li><kbd>H</kbd> Show/hide help</li>
-          <li><kbd>SPACE</kbd>, <kbd>k</kbd> Play/pause</li>
-          <li><kbd>J</kbd> Slow down video</li>
-          <li><kbd>L</kbd> Speed up video</li>
-          <li><kbd>←</kbd> Seek backward 1 sec</li>
-          <li><kbd>→</kbd> Seek forward 1 sec</li>
-          <li><kbd>.</kbd> (period) Tiny seek forward (1/60 sec)</li>
-          <li><kbd>,</kbd> (comma) Tiny seek backward (1/60 sec)</li>
-          <li><kbd>I</kbd> Mark in / cut start point</li>
-          <li><kbd>O</kbd> Mark out / cut end point</li>
-          <li><kbd>E</kbd> Cut (export selection in the same directory)</li>
-          <li><kbd>C</kbd> Capture snapshot (in the same directory)</li>
-        </ul>
-      </div>
-    );
-  }
-
-  return undefined;
-}
-/* eslint-enable react/jsx-one-expression-per-line */
-
-
 function withBlur(cb) {
   return (e) => {
     e.target.blur();
@@ -86,29 +63,39 @@ function withBlur(cb) {
   };
 }
 
+function createSegment({ start, end } = {}) {
+  return {
+    start,
+    end,
+    color: generateColor(),
+    uuid: uuid.v4(),
+  };
+}
 
-const localState = {
+const getInitialLocalState = () => ({
   working: false,
   filePath: '', // Setting video src="" prevents memory leak in chromium
   html5FriendlyPath: undefined,
   playing: false,
   currentTime: undefined,
   duration: undefined,
-  cutStartTime: 0,
+  cutSegments: [createSegment()],
+  currentSeg: 0,
   cutStartTimeManual: undefined,
-  cutEndTime: undefined,
   cutEndTimeManual: undefined,
   fileFormat: undefined,
   rotation: 360,
   cutProgress: undefined,
-};
+  startTimeOffset: 0,
+});
 
 const globalState = {
   stripAudio: false,
-  includeAllStreams: false,
+  includeAllStreams: true,
   captureFormat: 'jpeg',
   customOutDir: undefined,
-  keyframeCut: false,
+  keyframeCut: true,
+  autoMerge: false,
 };
 
 class App extends React.Component {
@@ -116,34 +103,40 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      ...localState,
+      ...getInitialLocalState(),
       ...globalState,
     };
 
-    const load = (filePath, html5FriendlyPath) => {
+    const load = async (filePath, html5FriendlyPath) => {
       const { working } = this.state;
 
       console.log('Load', { filePath, html5FriendlyPath });
-      if (working) return alert('I\'m busy');
+      if (working) {
+        errorToast('I\'m busy');
+        return;
+      }
 
       this.resetState();
 
       this.setState({ working: true });
 
-      return ffmpeg.getFormat(filePath)
-        .then((fileFormat) => {
-          if (!fileFormat) return alert('Unsupported file');
-          setFileNameTitle(filePath);
-          return this.setState({ filePath, html5FriendlyPath, fileFormat });
-        })
-        .catch((err) => {
-          if (err.code === 1 || err.code === 'ENOENT') {
-            alert('Unsupported file');
-            return;
-          }
-          ffmpeg.showFfmpegFail(err);
-        })
-        .finally(() => this.setState({ working: false }));
+      try {
+        const fileFormat = await ffmpeg.getFormat(filePath);
+        if (!fileFormat) {
+          errorToast('Unsupported file');
+          return;
+        }
+        setFileNameTitle(filePath);
+        this.setState({ filePath, html5FriendlyPath, fileFormat });
+      } catch (err) {
+        if (err.code === 1 || err.code === 'ENOENT') {
+          errorToast('Unsupported file');
+          return;
+        }
+        showFfmpegFail(err);
+      } finally {
+        this.setState({ working: false });
+      }
     };
 
     electron.ipcRenderer.on('file-opened', (event, filePaths) => {
@@ -157,13 +150,59 @@ class App extends React.Component {
 
       try {
         this.setState({ working: true });
-        const html5ifiedPath = util.getOutPath(customOutDir, filePath, 'html5ified.mp4');
+        const html5ifiedPath = getOutPath(customOutDir, filePath, 'html5ified.mp4');
         await ffmpeg.html5ify(filePath, html5ifiedPath, encodeVideo);
         this.setState({ working: false });
         load(filePath, html5ifiedPath);
       } catch (err) {
-        alert('Failed to html5ify file');
+        errorToast('Failed to html5ify file');
         console.error('Failed to html5ify file', err);
+        this.setState({ working: false });
+      }
+    });
+
+    electron.ipcRenderer.on('show-merge-dialog', () => showMergeDialog({
+      dialog,
+      defaultPath: this.getOutputDir(),
+      onMergeClick: async (paths) => {
+        try {
+          this.setState({ working: true });
+
+          // TODO customOutDir ?
+          // console.log('merge', paths);
+          await ffmpeg.mergeAnyFiles(paths);
+        } catch (err) {
+          errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
+          console.error('Failed to merge files', err);
+        } finally {
+          this.setState({ working: false });
+        }
+      },
+    }));
+
+    electron.ipcRenderer.on('set-start-offset', async () => {
+      const { startTimeOffset: startTimeOffsetOld } = this.state;
+      const startTimeOffset = await promptTimeOffset(
+        startTimeOffsetOld !== undefined ? formatDuration(startTimeOffsetOld) : undefined,
+      );
+
+      if (startTimeOffset === undefined) return;
+
+      this.setState({ startTimeOffset });
+    });
+
+    electron.ipcRenderer.on('extract-all-streams', async () => {
+      const { filePath } = this.state;
+      if (!filePath) return;
+
+      try {
+        this.setState({ working: true });
+        // TODO customOutDir ?
+        await ffmpeg.extractAllStreams(filePath);
+        this.setState({ working: false });
+      } catch (err) {
+        errorToast('Failed to extract all streams');
+        console.error('Failed to extract all streams', err);
         this.setState({ working: false });
       }
     });
@@ -173,7 +212,10 @@ class App extends React.Component {
 
     document.body.ondrop = (ev) => {
       ev.preventDefault();
-      if (ev.dataTransfer.files.length !== 1) return;
+      if (ev.dataTransfer.files.length !== 1) {
+        errorToast('Please drop only one file');
+        return;
+      }
       load(ev.dataTransfer.files[0].path);
     };
 
@@ -190,6 +232,8 @@ class App extends React.Component {
     Mousetrap.bind('i', () => this.setCutStart());
     Mousetrap.bind('o', () => this.setCutEnd());
     Mousetrap.bind('h', () => this.toggleHelp());
+    Mousetrap.bind('+', () => this.addCutSegment());
+    Mousetrap.bind('backspace', () => this.removeCutSegment());
 
     electron.ipcRenderer.send('renderer-ready');
   }
@@ -211,11 +255,13 @@ class App extends React.Component {
   }
 
   setCutStart = () => {
-    this.setState(({ currentTime }) => ({ cutStartTime: currentTime }));
+    const { currentTime } = this.state;
+    this.setCutTime('start', currentTime);
   }
 
   setCutEnd = () => {
-    this.setState(({ currentTime }) => ({ cutEndTime: currentTime }));
+    const { currentTime } = this.state;
+    this.setCutTime('end', currentTime);
   }
 
   setOutputDir = () => {
@@ -244,12 +290,42 @@ class App extends React.Component {
     return `${this.getRotation()}°`;
   }
 
-  getApparentCutEndTime() {
-    if (this.state.cutEndTime !== undefined) return this.state.cutEndTime;
+  getCutSeg(i) {
+    const { currentSeg, cutSegments } = this.state;
+    return cutSegments[i !== undefined ? i : currentSeg];
+  }
+
+  getCutStartTime(i) {
+    return this.getCutSeg(i).start;
+  }
+
+  getCutEndTime(i) {
+    return this.getCutSeg(i).end;
+  }
+
+  setCutTime(type, time) {
+    const { currentSeg, cutSegments } = this.state;
+    const cloned = clone(cutSegments);
+    cloned[currentSeg][type] = time;
+    this.setState({ cutSegments: cloned });
+  }
+
+  getApparentCutStartTime(i) {
+    const cutStartTime = this.getCutStartTime(i);
+    if (cutStartTime !== undefined) return cutStartTime;
+    return 0;
+  }
+
+  getApparentCutEndTime(i) {
+    const cutEndTime = this.getCutEndTime(i);
+    if (cutEndTime !== undefined) return cutEndTime;
     if (this.state.duration !== undefined) return this.state.duration;
     return 0; // Haven't gotten duration yet
   }
 
+  getOffsetCurrentTime() {
+    return (this.state.currentTime || 0) + this.state.startTimeOffset;
+  }
 
   increaseRotation = () => {
     this.setState(({ rotation }) => ({ rotation: (rotation + 90) % 450 }));
@@ -268,8 +344,45 @@ class App extends React.Component {
 
   toggleKeyframeCut = () => this.setState(({ keyframeCut }) => ({ keyframeCut: !keyframeCut }));
 
+  toggleAutoMerge = () => this.setState(({ autoMerge }) => ({ autoMerge: !autoMerge }));
+
+  addCutSegment = () => {
+    const { cutSegments, currentTime, duration } = this.state;
+
+    const cutStartTime = this.getCutStartTime();
+    const cutEndTime = this.getCutEndTime();
+
+    if (cutStartTime === undefined && cutEndTime === undefined) return;
+
+    const suggestedStart = currentTime;
+    const suggestedEnd = suggestedStart + 10;
+
+    const cutSegmentsNew = [
+      ...cutSegments,
+      createSegment({
+        start: currentTime,
+        end: suggestedEnd <= duration ? suggestedEnd : undefined,
+      }),
+    ];
+
+    const currentSegNew = cutSegmentsNew.length - 1;
+    this.setState({ currentSeg: currentSegNew, cutSegments: cutSegmentsNew });
+  }
+
+  removeCutSegment = () => {
+    const { currentSeg, cutSegments } = this.state;
+
+    if (cutSegments.length < 2) return;
+
+    const cutSegmentsNew = [...cutSegments];
+    cutSegmentsNew.splice(currentSeg, 1);
+
+    const currentSegNew = Math.min(currentSeg, cutSegmentsNew.length - 1);
+    this.setState({ currentSeg: currentSegNew, cutSegments: cutSegmentsNew });
+  }
+
   jumpCutStart = () => {
-    seekAbs(this.state.cutStartTime);
+    seekAbs(this.getApparentCutStartTime());
   }
 
   jumpCutEnd = () => {
@@ -281,7 +394,7 @@ class App extends React.Component {
     const $target = $('.timeline-wrapper');
     const parentOffset = $target.offset();
     const relX = e.srcEvent.pageX - parentOffset.left;
-    setCursor((relX / $target[0].offsetWidth) * this.state.duration);
+    setCursor((relX / $target[0].offsetWidth) * (this.state.duration || 0));
   }, 200);
   /* eslint-enable react/sort-comp */
 
@@ -296,12 +409,13 @@ class App extends React.Component {
     return video.play().catch((err) => {
       console.log(err);
       if (err.name === 'NotSupportedError') {
-        alert('This video format or codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu.');
+        toast.fire({ type: 'error', title: 'This format/codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu. Note that this will only create a temporary, low quality encoded file used for previewing your cuts, and will not affect the final cut. The final cut will still be lossless. Audio is also removed to make it faster, but only in the preview.', timer: 10000 });
       }
     });
   }
 
   deleteSourceClick = async () => {
+    // eslint-disable-next-line no-alert
     if (this.state.working || !window.confirm('Are you sure you want to move the source file to trash?')) return;
     const { filePath } = this.state;
 
@@ -311,55 +425,83 @@ class App extends React.Component {
   }
 
   cutClick = async () => {
-    if (this.state.working) return alert('I\'m busy');
-
     const {
-      cutStartTime, cutEndTime, filePath, customOutDir, fileFormat, duration, includeAllStreams,
-      stripAudio, keyframeCut,
+      filePath, customOutDir, fileFormat, duration, includeAllStreams,
+      stripAudio, keyframeCut, autoMerge, working, cutSegments,
     } = this.state;
+
+    if (working) {
+      errorToast('I\'m busy');
+      return;
+    }
 
     const rotation = this.isRotationSet() ? this.getRotation() : undefined;
 
-    if (!this.isCutRangeValid()) {
-      return alert('Start time must be before end time');
+    const cutStartTime = this.getCutStartTime();
+    const cutEndTime = this.getCutEndTime();
+
+    if (!(this.isCutRangeValid() || cutEndTime === undefined || cutStartTime === undefined)) {
+      errorToast('Start time must be before end time');
+      return;
     }
 
-    this.setState({ working: true });
     try {
-      return await ffmpeg.cut({
+      this.setState({ working: true });
+
+      const segments = cutSegments.map((seg, i) => ({
+        cutFrom: this.getApparentCutStartTime(i),
+        cutTo: this.getCutEndTime(i),
+        cutToApparent: this.getApparentCutEndTime(i),
+      }));
+
+      const outFiles = await ffmpeg.cutMultiple({
         customOutDir,
         filePath,
         format: fileFormat,
-        cutFrom: cutStartTime,
-        cutTo: cutEndTime,
-        cutToApparent: this.getApparentCutEndTime(),
         videoDuration: duration,
         rotation,
         includeAllStreams,
         stripAudio,
         keyframeCut,
+        segments,
         onProgress: this.onCutProgress,
       });
+
+      if (outFiles.length > 1 && autoMerge) {
+        this.onCutProgress(0); // TODO
+
+        await ffmpeg.autoMergeSegments({
+          customOutDir,
+          sourceFile: filePath,
+          segmentPaths: outFiles,
+        });
+      }
     } catch (err) {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
 
       if (err.code === 1 || err.code === 'ENOENT') {
-        return alert('Whoops! ffmpeg was unable to cut this video. It may be of an unknown format or codec combination');
+        errorToast('Whoops! ffmpeg was unable to cut this video. It may be of an unknown format or codec combination');
+        return;
       }
-      return ffmpeg.showFfmpegFail(err);
+
+      showFfmpegFail(err);
     } finally {
       this.setState({ working: false });
     }
   }
 
-  capture = () => {
+  capture = async () => {
     const {
       filePath, customOutDir: outputDir, currentTime, captureFormat,
     } = this.state;
     if (!filePath) return;
-    captureFrame(outputDir, filePath, getVideo(), currentTime, captureFormat)
-      .catch(err => alert(err));
+    try {
+      await captureFrame(outputDir, filePath, getVideo(), currentTime, captureFormat);
+    } catch (err) {
+      console.error(err);
+      errorToast('Failed to capture frame');
+    }
   }
 
   changePlaybackRate(dir) {
@@ -377,7 +519,7 @@ class App extends React.Component {
     const video = getVideo();
     video.currentTime = 0;
     video.playbackRate = 1;
-    this.setState(localState);
+    this.setState(getInitialLocalState());
     setFileNameTitle();
   }
 
@@ -386,8 +528,8 @@ class App extends React.Component {
     return this.state.rotation !== 360;
   }
 
-  isCutRangeValid() {
-    return this.state.cutStartTime < this.getApparentCutEndTime();
+  isCutRangeValid(i) {
+    return this.getApparentCutStartTime(i) < this.getApparentCutEndTime(i);
   }
 
   toggleHelp() {
@@ -407,15 +549,18 @@ class App extends React.Component {
         return;
       }
 
-      const time = util.parseDuration(text);
+      const time = parseDuration(text);
       if (time === undefined) {
         this.setState({ [cutTimeManualKey]: text });
         return;
       }
 
-      this.setState({ [cutTimeManualKey]: undefined, [type === 'start' ? 'cutStartTime' : 'cutEndTime']: time });
+      this.setState({ [cutTimeManualKey]: undefined });
+
+      this.setCutTime(type, time - this.state.startTimeOffset);
     };
 
+    const cutTime = type === 'start' ? this.getApparentCutStartTime() : this.getApparentCutEndTime();
 
     return (
       <input
@@ -424,13 +569,25 @@ class App extends React.Component {
         onChange={e => handleCutTimeInput(e.target.value)}
         value={isCutTimeManualSet()
           ? this.state[cutTimeManualKey]
-          : util.formatDuration(type === 'start' ? this.state.cutStartTime : this.getApparentCutEndTime())
-      }
+          : formatDuration(cutTime + this.state.startTimeOffset)
+        }
       />
     );
   }
 
   render() {
+    const {
+      working, filePath, duration: durationRaw, cutProgress, currentTime, playing,
+      fileFormat, playbackRate, keyframeCut, includeAllStreams, stripAudio, captureFormat,
+      helpVisible, currentSeg, cutSegments, autoMerge,
+    } = this.state;
+
+    const duration = durationRaw || 1;
+    const currentTimePos = currentTime !== undefined && `${(currentTime / duration) * 100}%`;
+
+    const segColor = this.getCutSeg().color;
+    const segBgColor = segColor.alpha(0.5).string();
+
     const jumpCutButtonStyle = {
       position: 'absolute', color: 'black', bottom: 0, top: 0, padding: '2px 8px',
     };
@@ -440,16 +597,21 @@ class App extends React.Component {
 
     return (
       <div>
-        {!this.state.filePath && <div id="drag-drop-field">DROP VIDEO</div>}
-        {this.state.working && (
+        {!filePath && (
+          <div id="drag-drop-field">
+            <div style={{ fontSize: '9vw' }}>DROP VIDEO</div>
+            <div>PRESS H FOR HELP</div>
+          </div>
+        )}
+        {working && (
         <div style={{
           color: 'white', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '.5em', margin: '1em', padding: '.2em .5em', position: 'absolute', zIndex: 1, top: 0, left: 0,
         }}
         >
           <i className="fa fa-cog fa-spin fa-3x fa-fw" style={{ verticalAlign: 'middle', width: '1em', height: '1em' }} />
-          {this.state.cutProgress != null && (
+          {cutProgress != null && (
             <span style={{ color: 'rgba(255, 255, 255, 0.7)', paddingLeft: '.4em' }}>
-              {`${Math.floor(this.state.cutProgress * 100)} %`}
+              {`${Math.floor(cutProgress * 100)} %`}
             </span>
           )}
         </div>
@@ -475,27 +637,33 @@ class App extends React.Component {
             options={{ recognizers: {} }}
           >
             <div className="timeline-wrapper">
-              <div className="current-time" style={{ left: `${((this.state.currentTime || 0) / (this.state.duration || 1)) * 100}%` }} />
+              {currentTimePos !== undefined && <div className="current-time" style={{ left: currentTimePos }} />}
 
-              {this.isCutRangeValid() && (
-              <div
-                className="cut-start-time"
-                style={{
-                  left: `${((this.state.cutStartTime) / (this.state.duration || 1)) * 100}%`,
-                  width: `${(((this.getApparentCutEndTime()) - this.state.cutStartTime) / (this.state.duration || 1)) * 100}%`,
-                }}
-              />
-              )
-            }
+              {cutSegments.map((seg, i) => (
+                <TimelineSeg
+                  key={seg.uuid}
+                  segNum={i}
+                  color={seg.color}
+                  onSegClick={currentSegNew => this.setState({ currentSeg: currentSegNew })}
+                  isActive={i === currentSeg}
+                  isCutRangeValid={this.isCutRangeValid(i)}
+                  duration={duration}
+                  cutStartTime={this.getCutStartTime(i)}
+                  cutEndTime={this.getCutEndTime(i)}
+                  apparentCutStart={this.getApparentCutStartTime(i)}
+                  apparentCutEnd={this.getApparentCutEndTime(i)}
+                />
+              ))}
 
-              <div id="current-time-display">{util.formatDuration(this.state.currentTime)}</div>
+              <div id="current-time-display">{formatDuration(this.getOffsetCurrentTime())}</div>
             </div>
           </Hammer>
 
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <i
               className="button fa fa-step-backward"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               title="Jump to start of video"
               onClick={() => seekAbs(0)}
             />
@@ -506,26 +674,30 @@ class App extends React.Component {
                 style={{ ...jumpCutButtonStyle, left: 0 }}
                 className="fa fa-step-backward"
                 title="Jump to cut start"
-                aria-hidden="true"
+                role="button"
+                tabIndex="0"
                 onClick={withBlur(this.jumpCutStart)}
               />
             </div>
 
             <i
               className="button fa fa-caret-left"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               onClick={() => shortStep(-1)}
             />
             <i
               className={classnames({
-                button: true, fa: true, 'fa-pause': this.state.playing, 'fa-play': !this.state.playing,
+                button: true, fa: true, 'fa-pause': playing, 'fa-play': !playing,
               })}
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               onClick={this.playCommand}
             />
             <i
               className="button fa fa-caret-right"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               onClick={() => shortStep(1)}
             />
 
@@ -535,42 +707,50 @@ class App extends React.Component {
                 style={{ ...jumpCutButtonStyle, right: 0 }}
                 className="fa fa-step-forward"
                 title="Jump to cut end"
-                aria-hidden="true"
+                role="button"
+                tabIndex="0"
                 onClick={withBlur(this.jumpCutEnd)}
               />
             </div>
 
             <i
               className="button fa fa-step-forward"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               title="Jump to end of video"
-              onClick={() => seekAbs(this.state.duration)}
+              onClick={() => seekAbs(duration)}
             />
           </div>
 
           <div>
             <i
+              style={{ background: segBgColor }}
               title="Set cut start to current position"
               className="button fa fa-angle-left"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               onClick={this.setCutStart}
             />
             <i
-              title="Cut"
+              title={cutSegments.length > 1 ? 'Export all segments' : 'Export selection'}
               className="button fa fa-scissors"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               onClick={this.cutClick}
             />
             <i
               title="Delete source file"
               className="button fa fa-trash"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               onClick={this.deleteSourceClick}
             />
             <i
+              style={{ background: segBgColor }}
               title="Set cut end to current position"
               className="button fa fa-angle-right"
-              aria-hidden="true"
+              role="button"
+              tabIndex="0"
               onClick={this.setCutEnd}
             />
           </div>
@@ -578,37 +758,64 @@ class App extends React.Component {
 
         <div className="left-menu">
           <span style={infoSpanStyle} title="Format of current file">
-            {this.state.fileFormat || 'FMT'}
+            {fileFormat || 'FMT'}
           </span>
 
           <span style={infoSpanStyle} title="Playback rate">
-            {round(this.state.playbackRate, 1) || 1}
+            {round(playbackRate, 1) || 1}
           </span>
+
+          <button
+            style={{ ...infoSpanStyle, background: segBgColor, color: 'white' }}
+            disabled={cutSegments.length < 2}
+            type="button"
+            title={`Delete selected segment ${currentSeg + 1}`}
+            onClick={withBlur(() => this.removeCutSegment())}
+          >
+            d
+            {currentSeg + 1}
+          </button>
+
+          <button
+            type="button"
+            title="Add cut segment"
+            onClick={withBlur(() => this.addCutSegment())}
+          >
+            c+
+          </button>
+
+          <button
+            type="button"
+            title={`Auto merge segments to one file after export? ${autoMerge ? 'Auto merge enabled' : 'No merging'}`}
+            onClick={withBlur(this.toggleAutoMerge)}
+          >
+            {autoMerge ? 'am' : 'nm'}
+          </button>
         </div>
 
         <div className="right-menu">
           <button
             type="button"
-            title={`Cut mode ${this.state.keyframeCut ? 'nearest keyframe cut' : 'normal cut'}`}
+            title={`Cut mode ${keyframeCut ? 'nearest keyframe cut' : 'normal cut'}`}
             onClick={withBlur(this.toggleKeyframeCut)}
           >
-            {this.state.keyframeCut ? 'kc' : 'nc'}
+            {keyframeCut ? 'kc' : 'nc'}
           </button>
 
           <button
             type="button"
-            title={`Set output streams. Current: ${this.state.includeAllStreams ? 'include (and cut) all streams' : 'include only primary streams'}`}
+            title={`Set output streams. Current: ${includeAllStreams ? 'include (and cut) all streams' : 'include only primary streams'}`}
             onClick={withBlur(this.toggleIncludeAllStreams)}
           >
-            {this.state.includeAllStreams ? 'all' : 'ps'}
+            {includeAllStreams ? 'all' : 'ps'}
           </button>
 
           <button
             type="button"
-            title={`Delete audio? Current: ${this.state.stripAudio ? 'delete audio tracks' : 'keep audio tracks'}`}
+            title={`Delete audio? Current: ${stripAudio ? 'delete audio tracks' : 'keep audio tracks'}`}
             onClick={withBlur(this.toggleStripAudio)}
           >
-            {this.state.stripAudio ? 'da' : 'ka'}
+            {stripAudio ? 'da' : 'ka'}
           </button>
 
           <button
@@ -631,7 +838,8 @@ class App extends React.Component {
             title="Capture frame"
             style={{ margin: '-.4em -.2em' }}
             className="button fa fa-camera"
-            aria-hidden="true"
+            role="button"
+            tabIndex="0"
             onClick={this.capture}
           />
 
@@ -640,11 +848,11 @@ class App extends React.Component {
             title="Capture frame format"
             onClick={withBlur(this.toggleCaptureFormat)}
           >
-            {this.state.captureFormat}
+            {captureFormat}
           </button>
         </div>
 
-        {renderHelpSheet(this.state.helpVisible)}
+        <HelpSheet visible={!!helpVisible} />
       </div>
     );
   }

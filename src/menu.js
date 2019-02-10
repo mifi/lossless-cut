@@ -10,9 +10,6 @@ const releasesPage = 'https://github.com/mifi/lossless-cut/releases';
 module.exports = (app, mainWindow, newVersion) => {
   const menu = defaultMenu(app, electron.shell);
 
-  const editMenuIndex = menu.findIndex(item => item.label === 'Edit');
-  if (editMenuIndex >= 0) menu.splice(editMenuIndex, 1);
-
   const fileMenu = {
     label: 'File',
     submenu: [
@@ -38,6 +35,18 @@ module.exports = (app, mainWindow, newVersion) => {
         },
       },
       {
+        label: 'Extract all streams',
+        click() {
+          mainWindow.webContents.send('extract-all-streams', false);
+        },
+      },
+      {
+        label: 'Set custom start offset/timecode',
+        click() {
+          mainWindow.webContents.send('set-start-offset', true);
+        },
+      },
+      {
         label: 'Exit',
         click() {
           app.quit();
@@ -51,6 +60,17 @@ module.exports = (app, mainWindow, newVersion) => {
   const helpIndex = menu.findIndex(item => item.role === 'help');
   if (helpIndex >= 0) {
     menu.splice(helpIndex, 1, {
+      label: 'Tools',
+      submenu: [
+        {
+          label: 'Merge files',
+          click() {
+            mainWindow.webContents.send('show-merge-dialog', true);
+          },
+        },
+      ],
+    },
+    {
       role: 'help',
       submenu: [
         {
