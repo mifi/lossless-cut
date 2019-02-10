@@ -53,7 +53,7 @@ Note: The original video files will not be modified. Instead it creates a lossle
 Press <kbd>h</kbd> To show/hide list of shortcuts
 
 ## Known issues
-- If you have trouble with audio sync or something else with the output video, try toggling the button `nc` *(normal cut)* to `kc` *(kc cut)*. Also try to toggle `all` (all streams) to `ps` (primary streams). See discussion in [#13](https://github.com/mifi/lossless-cut/pull/13)
+- If you have trouble cutting, try toggling the button `kc` *(kc cut)* to `nc` *(normal cut)*. Also try to toggle `all` (all streams) to `ps` (primary streams). See discussion in [#13](https://github.com/mifi/lossless-cut/pull/13) GoPro 6/7 seems to require `nc`.
 - If you get an error when cutting any kind of file under Windows, please check your anti-virus. It might be blocking execution of ffmpeg, see [#18](https://github.com/mifi/lossless-cut/issues/18)
 
 ## Development building / running
