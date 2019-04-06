@@ -55,7 +55,7 @@
     "bluebird": "^3.4.6",
     "classnames": "^2.2.5",
     "color": "^3.1.0",
-    "electron": "^2.0.9",
+    "electron": "^2.0.18",
     "electron-default-menu": "^1.0.0",
     "electron-is-dev": "^0.1.2",
     "execa": "^0.5.0",
