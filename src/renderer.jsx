@@ -168,9 +168,10 @@ class App extends React.Component {
         try {
           this.setState({ working: true });
 
-          // TODO customOutDir ?
+          const { customOutDir } = this.state;
+
           // console.log('merge', paths);
-          await ffmpeg.mergeAnyFiles(paths);
+          await ffmpeg.mergeAnyFiles({ customOutDir, paths });
         } catch (err) {
           errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
           console.error('Failed to merge files', err);
@@ -192,13 +193,12 @@ class App extends React.Component {
     });
 
     electron.ipcRenderer.on('extract-all-streams', async () => {
-      const { filePath } = this.state;
+      const { filePath, customOutDir } = this.state;
       if (!filePath) return;
 
       try {
         this.setState({ working: true });
-        // TODO customOutDir ?
-        await ffmpeg.extractAllStreams(filePath);
+        await ffmpeg.extractAllStreams({ customOutDir, filePath });
         this.setState({ working: false });
       } catch (err) {
         errorToast('Failed to extract all streams');

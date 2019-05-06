@@ -202,10 +202,10 @@ async function mergeFiles(paths, outPath) {
   console.log(result.stdout);
 }
 
-async function mergeAnyFiles(paths) {
+async function mergeAnyFiles({ customOutDir, paths }) {
   const firstPath = paths[0];
   const ext = path.extname(firstPath);
-  const outPath = `${firstPath}-merged${ext}`;
+  const outPath = getOutPath(customOutDir, firstPath, `merged${ext}`);
   return mergeFiles(paths, outPath);
 }
 
@@ -293,7 +293,7 @@ function mapCodecToOutputFormat(codec, type) {
 }
 
 // https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
-async function extractAllStreams(filePath) {
+async function extractAllStreams({ customOutDir, filePath }) {
   const { streams } = await getAllStreams(filePath);
   console.log('streams', streams);
 
@@ -310,7 +310,7 @@ async function extractAllStreams(filePath) {
   const streamArgs = flatMap(outStreams, ({
     i, codec, type, format: { format, ext },
   }) => [
-    '-map', `0:${i}`, '-c', 'copy', '-f', format, '-y', `${filePath}-${i}-${type}-${codec}.${ext}`,
+    '-map', `0:${i}`, '-c', 'copy', '-f', format, '-y', getOutPath(customOutDir, filePath, `${i}-${type}-${codec}.${ext}`),
   ]);
 
   const ffmpegArgs = [
