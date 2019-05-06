@@ -303,7 +303,7 @@ async function extractAllStreams({ customOutDir, filePath }) {
     type: s.codec_type,
     format: mapCodecToOutputFormat(s.codec_name, s.codec_type),
   }))
-    .filter(it => it);
+    .filter(it => it && it.format);
 
   // console.log(outStreams);
 
