@@ -786,7 +786,7 @@ class App extends React.Component {
 
           <button
             type="button"
-            title={`Auto merge segments to one file after export? ${autoMerge ? 'Auto merge enabled' : 'No merging'}`}
+            title={`Auto merge segments to one file after export (and trash segments)? ${autoMerge ? 'Auto merge enabled' : 'No merging'}`}
             onClick={withBlur(this.toggleAutoMerge)}
           >
             {autoMerge ? 'am' : 'nm'}

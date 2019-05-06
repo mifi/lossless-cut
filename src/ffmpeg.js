@@ -9,6 +9,7 @@ const sum = require('lodash/sum');
 const readline = require('readline');
 const moment = require('moment');
 const stringToStream = require('string-to-stream');
+const trash = require('trash');
 
 const { formatDuration, getOutPath, transferTimestamps } = require('./util');
 
@@ -211,7 +212,8 @@ async function mergeAnyFiles(paths) {
 async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths }) {
   const ext = path.extname(sourceFile);
   const outPath = getOutPath(customOutDir, sourceFile, `cut-merged-${new Date().getTime()}${ext}`);
-  return mergeFiles(segmentPaths, outPath);
+  await mergeFiles(segmentPaths, outPath);
+  await bluebird.map(segmentPaths, trash, { concurrency: 5 });
 }
 
 /**
