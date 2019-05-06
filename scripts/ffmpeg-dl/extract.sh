@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-ffmpeg_version=4.1
+ffmpeg_version=4.1.3
 
 (
   mkdir -p ffmpeg-tmp/extracted &&
