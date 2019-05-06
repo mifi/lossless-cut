@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.2.0] - 2019-05-06
+
+### Changed
+- Auto delete (trash) segments when auto merge
+- Bump ffmpeg version
+- Remove linux 32 bit build because static builds are no longer provided
+
+### Fixed
+- Security fixes for npm packages
+- Allow custom output dir for merge and extract also
+- Attempt to fix extract streams (ignore unknown streams)
+
 ## [2.1.0] - 2019-01-29
 
 ### Added
