@@ -58,7 +58,7 @@
     "electron-default-menu": "^1.0.0",
     "electron-is-dev": "^0.1.2",
     "execa": "^0.5.0",
-    "file-type": "^4.1.0",
+    "file-type": "^11.0.0",
     "github-api": "^3.0.0",
     "hammerjs": "^2.0.8",
     "jquery": "^3.1.1",
