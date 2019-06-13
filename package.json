@@ -22,7 +22,9 @@
     "gifify": "gifify -p 405:299 -r 5@3 Untitled.mov-00.00.00.971-00.00.19.780.mp4",
     "lint": "eslint --ext .jsx --ext .js .",
     "clean": "rm -rf dist ffmpeg-tmp/extracted ffmpeg-tmp/binaries package",
-    "clean-ffmpeg": "rm -rf ffmpeg-tmp/archives"
+    "clean-ffmpeg": "rm -rf ffmpeg-tmp/archives",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "author": {
     "name": "Mikael Finstad",
@@ -78,6 +80,8 @@
     "sweetalert2-react-content": "^1.0.1",
     "trash": "^4.3.0",
     "uuid": "^3.3.2",
-    "which": "^1.2.11"
-  }
+    "which": "^1.2.11",
+    "snyk": "^1.177.1"
+  },
+  "snyk": true
 }
