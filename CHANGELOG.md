@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.3.0] - 2019-06-13
+
+### Fixed
+- upgrade file-type to fix mp4/mov detection #144
+- Fix for TS with unknown streams #170
+
 ## [2.2.0] - 2019-05-06
 
 ### Changed
