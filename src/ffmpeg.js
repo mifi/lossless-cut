@@ -78,6 +78,7 @@ async function cut({
   ];
 
   const rotationArgs = rotation !== undefined ? ['-metadata:s:v:0', `rotate=${rotation}`] : [];
+
   const ffmpegArgs = [
     ...inputCutArgs,
 
@@ -88,6 +89,9 @@ async function cut({
 
     ...(includeAllStreams ? ['-map', '0'] : []),
     '-map_metadata', '0',
+
+    // See https://github.com/mifi/lossless-cut/issues/170
+    '-ignore_unknown',
 
     ...rotationArgs,
 
