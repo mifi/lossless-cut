@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.4.0] - 2019-08-12
+
+### Added
+- Allow user to select output format to workaround certain issues like #173
+- Show troubleshooting workarounds when cut fails
+
+### Changed
+- Upgrade ffmpeg to 2.2
+
+### Fixed
+- Fix vulnerabilities
+
 ## [2.3.0] - 2019-06-13
 
 ### Fixed
