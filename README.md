@@ -43,8 +43,9 @@ Unsupported files can now be remuxed (fast) or encoded (slow) to a friendly form
 - If you want to re-merge all the selected segments after cutting, toggle the button `nm` (no merge) to `am` (auto merge). This is useful for *cutting away* certain parts of a video (by selecting everything except the parts not needed.)
 - If you want to export to a certain dir, press the custom output dir button (default: input file dir)
 - If you want to override orientation metadata, press the rotation button
-- Press the scissors button (or <kbd>E</kbd>) to export the slice
-- Press the camera button (or <kbd>C</kbd>) to take a snapshot
+- By default, all streams from input file will be exported to output. If you like to only export primary streams (1video&1audio) (pre-2.0 behaviour), toggle the button `all` to `ps`.
+- Press the scissors button (or <kbd>E</kbd>) to export the slice(s)
+- Press the camera button (or <kbd>C</kbd>) to take a JPEG/PNG snapshot from the current time
 - If you want to move the original file to trash, press the trash button
 
 Note: The original video files will not be modified. Instead it creates a lossless export in the same directory as the original file with from/to timestamps. Note that the cut is currently not precise around the cutpoints, so video before/after the nearest keyframe will be lost. EXIF data is preserved.
