@@ -35,9 +35,11 @@ cache:
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
 
+before_install:
+  - HOMEBREW_NO_AUTO_UPDATE=1 brew install p7zip
+
 script:
   - |
-    HOMEBREW_NO_AUTO_UPDATE=1 brew install p7zip &&
     npm run lint &&
     npm run download-ffmpeg &&
     ls ffmpeg-tmp/archives &&
