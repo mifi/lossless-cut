@@ -1,6 +1,6 @@
 # LosslessCut 🎥 [![Travis](https://img.shields.io/travis/mifi/lossless-cut.svg)](https://travis-ci.org/mifi/lossless-cut) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/mifino)
 
-Simple and ultra fast cross platform tool for lossless trimming/cutting of video and audio files. Great for saving space by rough cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. It extremely fast because it does an almost direct data copy. It uses the awesome ffmpeg (included) for doing the grunt work.
+Simple and ultra fast cross platform tool for lossless trimming/cutting of video and audio files. Great for saving space by rough cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. It extremely fast because it does an almost direct data copy. It is fueled by the awesome ffmpeg (included) for doing the grunt work. It also features some other lossless operations on videos.
 
 ![Demo](https://github.com/mifi/gifs/raw/master/2019-01-28-lossless-cut.gif)
 
@@ -8,11 +8,13 @@ Simple and ultra fast cross platform tool for lossless trimming/cutting of video
 - Lossless cutting of common video and audio formats
 - Lossless re-merge of selected segments (for cutting out commercials etc.)
 - Lossless merge of arbitrary files (with identical codecs)
-- Lossless extracting of all data streams from a file (video, audio, subtitle, ++)
+- Lossless extracting of all data streams from a file (explode video, audio, subtitle and other streams of a file into separate files)
 - Take full-resolution snapshots from videos in JPEG/PNG format
 - Manual input range of cutpoints
-- Can include more than 2 streams or remove audio track (optional)
+- Can include primary streams (audio/video), or all streams
+- Can remove audio track
 - Apply a timecode offset
+- Remux into different output format
 - Change rotation/orientation metadata in videos. Great for rotating phone videos that come out the wrong way without actually re-encoding the video.
 
 ## Installing / running
@@ -24,7 +26,7 @@ Simple and ultra fast cross platform tool for lossless trimming/cutting of video
 ## Supported platforms
 - macOS
 - Windows (64/32bit)
-- Linux (64/32bit, partially tested)
+- Linux (64, partially tested)
 
 ## Supported formats
 
@@ -32,18 +34,18 @@ Since LosslessCut is based on Chromium and uses the HTML5 video player, not all 
 The following formats/codecs should generally work: MP4, MOV, WebM, MKV, OGG, WAV, MP3, AAC, H264, Theora, VP8, VP9
 For more information about supported formats / codecs, see https://www.chromium.org/audio-video.
 
-Unsupported files can now be remuxed (fast) or encoded (slow) to a friendly format/codec from the `File` menu. A processed version of the file will then be opened in the player. The cut operation will still be performed using the original file as input, so it will be lossless. This allows for potentially opening any file that ffmpeg is able to decode.
+Unsupported files can now be remuxed (fast) or encoded (slow) to a friendly format/codec from the `File` menu. A processed version of the file (without audio) will then be created and opened in the player. The cut operation will still be performed using the original file as input, so it will be lossless. This allows for potentially opening any file that ffmpeg is able to decode.
 
 
 ## Typical workflow
 - Drag drop a video file into player to load or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
 - Press <kbd>SPACE</kbd> to play/pause or <kbd>◀</kbd><kbd>▶</kbd>, <kbd>,</kbd><kbd>.</kbd> to seek back/forth
 - Select the cut start and end time. Press <kbd>I</kbd> to select the start time, <kbd>O</kbd> to select the end time for the cut.
-- If you want to cut more segments out of the video, press <kbd>+</kbd> or the `c+` button to add another segment, then select the next segment with <kbd>I</kbd>/<kbd>O</kbd>.
-- If you want to re-merge all the selected segments after cutting, toggle the button `nm` (no merge) to `am` (auto merge). This is useful for *cutting away* certain parts of a video (by selecting everything except the parts not needed.)
-- If you want to export to a certain dir, press the custom output dir button (default: input file dir)
-- If you want to override orientation metadata, press the rotation button
-- By default, all streams from input file will be exported to output. If you like to only export primary streams (1video&1audio) (pre-2.0 behaviour), toggle the button `all` to `ps`.
+- *(optional)* If you want to cut more segments out of the video, press <kbd>+</kbd> or the `c+` button to add another segment, then select the next segment with <kbd>I</kbd>/<kbd>O</kbd>.
+- *(optional)* If you want to re-merge all the selected segments after cutting, toggle the button `nm` (no merge) to `am` (auto merge). This is useful for *cutting away* certain parts of a video (by selecting everything except the parts not needed.)
+- *(optional)* If you want to export to a certain dir, press the custom output dir button (default: input file dir)
+- *(optional)* If you want to override orientation metadata, press the rotation button
+- *(optional)* By default, all streams from input file will be exported to output. If you like to only export primary streams (1video&1audio) (pre-2.0 behaviour), toggle the button `all` to `ps`.
 - Press the scissors button (or <kbd>E</kbd>) to export the slice(s)
 - Press the camera button (or <kbd>C</kbd>) to take a JPEG/PNG snapshot from the current time
 - If you want to move the original file to trash, press the trash button
