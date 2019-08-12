@@ -24,7 +24,7 @@ Simple and ultra fast cross platform tool for lossless trimming/cutting of video
 ## Supported platforms
 - macOS
 - Windows (64/32bit)
-- Linux (64/32bit, not tested)
+- Linux (64/32bit, partially tested)
 
 ## Supported formats
 
