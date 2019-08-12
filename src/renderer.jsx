@@ -59,7 +59,7 @@ function shortStep(dir) {
 function withBlur(cb) {
   return (e) => {
     e.target.blur();
-    cb();
+    cb(e);
   };
 }
 
@@ -84,6 +84,7 @@ const getInitialLocalState = () => ({
   cutStartTimeManual: undefined,
   cutEndTimeManual: undefined,
   fileFormat: undefined,
+  detectedFileFormat: undefined,
   rotation: 360,
   cutProgress: undefined,
   startTimeOffset: 0,
@@ -127,7 +128,7 @@ class App extends React.Component {
           return;
         }
         setFileNameTitle(filePath);
-        this.setState({ filePath, html5FriendlyPath, fileFormat });
+        this.setState({ filePath, html5FriendlyPath, fileFormat, detectedFileFormat: fileFormat });
       } catch (err) {
         if (err.code === 1 || err.code === 'ENOENT') {
           errorToast('Unsupported file');
@@ -481,7 +482,7 @@ class App extends React.Component {
       console.error('stderr:', err.stderr);
 
       if (err.code === 1 || err.code === 'ENOENT') {
-        errorToast('Whoops! ffmpeg was unable to cut this video. It may be of an unknown format or codec combination');
+        errorToast(`Whoops! ffmpeg was unable to cut this video. Try each the following things before attempting to cut again:\n1. Select a different output format from the ${fileFormat} button (matroska takes almost everything).\n2. toggle the button "all" to "ps"`);
         return;
       }
 
@@ -578,9 +579,11 @@ class App extends React.Component {
   render() {
     const {
       working, filePath, duration: durationRaw, cutProgress, currentTime, playing,
-      fileFormat, playbackRate, keyframeCut, includeAllStreams, stripAudio, captureFormat,
+      fileFormat, detectedFileFormat, playbackRate, keyframeCut, includeAllStreams, stripAudio, captureFormat,
       helpVisible, currentSeg, cutSegments, autoMerge,
     } = this.state;
+
+    const selectableFormats = ['mov', 'mp4', 'matroska'].filter(f => f !== detectedFileFormat);
 
     const duration = durationRaw || 1;
     const currentTimePos = currentTime !== undefined && `${(currentTime / duration) * 100}%`;
@@ -757,9 +760,11 @@ class App extends React.Component {
         </div>
 
         <div className="left-menu">
-          <span style={infoSpanStyle} title="Format of current file">
-            {fileFormat || 'FMT'}
-          </span>
+          <select style={{ width: 60 }} value={fileFormat} title="Format of current file" onChange={withBlur(e => this.setState({ fileFormat: e.target.value }))}>
+            <option disabled selected>Out fmt</option>
+            {detectedFileFormat && <option value={detectedFileFormat}>{detectedFileFormat}</option>}
+            {selectableFormats.map(f => <option value={f}>{f}</option>)}
+          </select>
 
           <span style={infoSpanStyle} title="Playback rate">
             {round(playbackRate, 1) || 1}

@@ -65,7 +65,7 @@ const toast = swal.mixin({
   toast: true,
   position: 'top',
   showConfirmButton: false,
-  timer: 3000,
+  timer: 5000,
 });
 
 const errorToast = title => toast.fire({
