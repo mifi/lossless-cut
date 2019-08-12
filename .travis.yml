@@ -12,12 +12,6 @@ language: node_js
 node_js:
   - "8"
 
-addons:
-  homebrew:
-    packages:
-    - wine
-    - p7zip
-
 # https://discourse.brew.sh/t/wine-first-time-configuration-gets-stuck-forever-on-macos/1612
 env:
   global:
@@ -36,6 +30,7 @@ before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
 
 before_install:
+  - HOMEBREW_NO_AUTO_UPDATE=1 brew install wine
   - HOMEBREW_NO_AUTO_UPDATE=1 brew install p7zip
 
 script:
