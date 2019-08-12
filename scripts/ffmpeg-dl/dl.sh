@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-ffmpeg_version=4.1.3
+ffmpeg_version=4.2
 
 ffmpeg_linux_x64=https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
 ffmpeg_darwin_x64=https://evermeet.cx/ffmpeg/ffmpeg-"${ffmpeg_version}".7z
