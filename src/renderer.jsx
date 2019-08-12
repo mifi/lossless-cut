@@ -128,7 +128,9 @@ class App extends React.Component {
           return;
         }
         setFileNameTitle(filePath);
-        this.setState({ filePath, html5FriendlyPath, fileFormat, detectedFileFormat: fileFormat });
+        this.setState({
+          filePath, html5FriendlyPath, fileFormat, detectedFileFormat: fileFormat,
+        });
       } catch (err) {
         if (err.code === 1 || err.code === 'ENOENT') {
           errorToast('Unsupported file');
@@ -579,8 +581,8 @@ class App extends React.Component {
   render() {
     const {
       working, filePath, duration: durationRaw, cutProgress, currentTime, playing,
-      fileFormat, detectedFileFormat, playbackRate, keyframeCut, includeAllStreams, stripAudio, captureFormat,
-      helpVisible, currentSeg, cutSegments, autoMerge,
+      fileFormat, detectedFileFormat, playbackRate, keyframeCut, includeAllStreams, stripAudio,
+      captureFormat, helpVisible, currentSeg, cutSegments, autoMerge,
     } = this.state;
 
     const selectableFormats = ['mov', 'mp4', 'matroska'].filter(f => f !== detectedFileFormat);
