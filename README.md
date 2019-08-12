@@ -54,8 +54,8 @@ Press <kbd>h</kbd> To show/hide list of shortcuts
 
 ## Known issues & limitations
 - **Cutting times are not accurate and will be "rounded" to the nearest keyframe.** In the future I plan on showing keyframes in the timecale, and eventually implement a "smart cut" feature that re-encodes the part before the keyframe. See #126
+- **If you have an error when running the cut:** Try toggling the button `all` (all streams) to `ps` (primary streams). If that doesn't help, try to toggle `kc` *(keyframe cut)* to `nc` *(normal cut)*. See discussion in [#13](https://github.com/mifi/lossless-cut/pull/13). GoPro 6/7 seems to require `nc`. `all` (all streams) seems to cause wrong length in GoPro footage (see [#146](https://github.com/mifi/lossless-cut/issues/146) [#121](https://github.com/mifi/lossless-cut/issues/121))
 - H265 is not yet supported natively. You need to convert to friendly codec from the menu, see [#88](https://github.com/mifi/lossless-cut/issues/88)
-- If you have trouble cutting, try toggling the button `kc` *(kc cut)* to `nc` *(normal cut)*. Also try to toggle `all` (all streams) to `ps` (primary streams). See discussion in [#13](https://github.com/mifi/lossless-cut/pull/13). GoPro 6/7 seems to require `nc`. `all` (all streams) seems to cause wrong length in GoPro footage (see [#146](https://github.com/mifi/lossless-cut/issues/146) [#121](https://github.com/mifi/lossless-cut/issues/121))
 - If you get an error when cutting any kind of file under Windows, please check your anti-virus. It might be blocking execution of ffmpeg, see [#18](https://github.com/mifi/lossless-cut/issues/18)
 
 ## Development building / running
