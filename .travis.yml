@@ -37,6 +37,7 @@ before_cache:
 
 script:
   - |
+    HOMEBREW_NO_AUTO_UPDATE=1 brew install p7zip &&
     npm run lint &&
     npm run download-ffmpeg &&
     ls ffmpeg-tmp/archives &&
