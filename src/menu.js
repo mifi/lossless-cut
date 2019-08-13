@@ -77,6 +77,8 @@ module.exports = (app, mainWindow, newVersion) => {
           label: 'Learn More',
           click() { electron.shell.openExternal(homepage); },
         },
+
+        ...(process.platform === 'darwin' ? [] : [{ role: 'about' }]),
       ],
     });
   }
