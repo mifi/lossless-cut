@@ -4,6 +4,9 @@ Simple and ultra fast cross platform tool for lossless trimming/cutting of video
 
 ![Demo](https://github.com/mifi/gifs/raw/master/2019-01-28-lossless-cut.gif)
 
+🆕 Shameless Plug 🆕 I made a tool for cross platform sharing of files between computer/phone over the local network: [ezshare](https://github.com/mifi/ezshare)
+
+
 ## Features
 - Lossless cutting of common video and audio formats
 - Lossless re-merge of selected segments (for cutting out commercials etc.)
