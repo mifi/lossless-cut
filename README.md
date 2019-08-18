@@ -59,7 +59,7 @@ Note: The original video files will not be modified. Instead it creates a lossle
 Press <kbd>h</kbd> To show/hide list of shortcuts
 
 ## Known issues & limitations
-- **Cutting times are not accurate and will be "rounded" to the nearest keyframe.** In the future I plan on showing keyframes in the timecale, and eventually implement a "smart cut" feature that re-encodes only the part before the keyframe. See #126
+- **Cutting times are not accurate and will be "rounded" to the nearest keyframe.** In the future I plan on showing keyframes in the timecale, and eventually implement a "smart cut" feature that re-encodes only the part before the keyframe. See [#126](https://github.com/mifi/lossless-cut/issues/126)
 - Your mileage may vary when it comes to `kc` *(keyframe cut)* vs `nc` *(normal cut)*. You may need to try both, depending on the video. GoPro 6/7 seems to require Normal Cut `nc`. See [#121](https://github.com/mifi/lossless-cut/issues/121). [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `kc` means `-ss` *before* `-i` and `nc` means `-ss` *after* `-i`.
 - `all` *(all streams)* seems to cause wrong length in GoPro footage. Use `ps` instead. See [#146](https://github.com/mifi/lossless-cut/issues/146)
 - H265 is not yet supported natively. You need to convert to friendly codec from the menu, see [#88](https://github.com/mifi/lossless-cut/issues/88)
