@@ -43,9 +43,9 @@ Unsupported files can now be remuxed (fast) or encoded (slow) to a friendly form
 ## Typical workflow
 - Drag drop a video file into player to load or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
 - Press <kbd>SPACE</kbd> to play/pause or <kbd>◀</kbd><kbd>▶</kbd>, <kbd>,</kbd><kbd>.</kbd> to seek back/forth
-- Select the cut start and end time. Press <kbd>I</kbd> to select the start time, <kbd>O</kbd> to select the end time for the cut.
-- *(optional)* If you want to cut more segments out of the video, press <kbd>+</kbd> or the `c+` button to add another segment, then select the next segment with <kbd>I</kbd>/<kbd>O</kbd>.
-- *(optional)* If you want to re-merge all the selected segments after cutting, toggle the button `nm` (no merge) to `am` (auto merge). This is useful for *cutting away* certain parts of a video (by selecting everything except the parts not needed.)
+- Select the cut start and end time. Press <kbd>I</kbd> to select the start time, <kbd>O</kbd> to select the end time for the cut. *Note that the portions you select will be PRESERVED and exported to a new file.*
+- *(optional)* If you want to export more segments out of the video, press <kbd>+</kbd> or the `c+` button to add another segment, then select the next segment with <kbd>I</kbd>/<kbd>O</kbd>.
+- *(optional)* If you want to re-merge all the selected segments after cutting, toggle the button `nm` (no merge) to `am` (auto merge). This is useful for *cutting away* certain parts of a video like advertisements (by selecting everything *except* the advertisements.)
 - *(optional)* If you want to export to a certain dir, press the custom output dir button (default: input file dir)
 - *(optional)* If you want to override orientation metadata, press the rotation button
 - *(optional)* By default, all streams from input file will be exported to output. If you like to only export primary streams (1video&1audio) (pre-2.0 behaviour), toggle the button `all` to `ps`.
@@ -63,6 +63,7 @@ Press <kbd>h</kbd> To show/hide list of shortcuts
 - Your mileage may vary when it comes to `kc` *(keyframe cut)* vs `nc` *(normal cut)*. You may need to try both, depending on the video. GoPro 6/7 seems to require Normal Cut `nc`. See [#121](https://github.com/mifi/lossless-cut/issues/121). [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `kc` means `-ss` *before* `-i` and `nc` means `-ss` *after* `-i`.
 - `all` *(all streams)* seems to cause wrong length in GoPro footage. Use `ps` instead. See [#146](https://github.com/mifi/lossless-cut/issues/146) and [121](https://github.com/mifi/lossless-cut/issues/121#issuecomment-522196244)
 - H265 is not yet supported natively. You need to convert to friendly codec from the menu, see [#88](https://github.com/mifi/lossless-cut/issues/88)
+- Maybe counter-intuitively for some, cutting will remove the parts that of the video that are NOT selected. This is because in previous versions of LosslessCut there was no possibility to cut/merge multiple segments, but this was retrofitted later. Need to redesign the UI to make it more intuitive. See [#128](https://github.com/mifi/lossless-cut/issues/128)
 
 ## Troubleshooting
 
