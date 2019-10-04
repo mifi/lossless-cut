@@ -98,3 +98,7 @@ This project is maintained by me alone. The project will always remain free and 
 
 ## Credits
 - App icon made by [Dimi Kazak](http://www.flaticon.com/authors/dimi-kazak "Dimi Kazak") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0")
+
+---
+
+Made with ❤️ in 🇳🇴
