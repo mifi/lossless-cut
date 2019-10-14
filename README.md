@@ -93,7 +93,9 @@ npm start
 
 This project is maintained by me alone. The project will always remain free and open source, but if it's useful for you, consider supporting me. :) It will give me extra motivation to improve it. Or even better [donate to ffmpeg](https://www.ffmpeg.org/donations.html) because they are doing the world a big favor 🙏
 
-- Paypal: [https://paypal.me/mifino](https://paypal.me/mifino)
+- [Paypal](https://paypal.me/mifino)
+- [liberapay](https://liberapay.com/mifi)
+- [Open Collective](https://opencollective.com/losslesscut)
 - Bitcoin: 1ApBmaN98YtSzTuYofEoSRnYBUycPr5qtC
 
 ## Credits
