@@ -13,6 +13,8 @@ const uuid = require('uuid');
 const React = require('react');
 const ReactDOM = require('react-dom');
 const classnames = require('classnames');
+const { default: PQueue } = require('p-queue');
+
 
 const HelpSheet = require('./HelpSheet');
 const TimelineSeg = require('./TimelineSeg');
@@ -72,10 +74,17 @@ function createSegment({ start, end } = {}) {
   };
 }
 
+function doesPlayerSupportFile(streams) {
+  // TODO improve, whitelist supported codecs instead
+  return !streams.find(s => ['hevc', 'prores'].includes(s.codec_name));
+  // return true;
+}
+
 const getInitialLocalState = () => ({
   working: false,
   filePath: '', // Setting video src="" prevents memory leak in chromium
   html5FriendlyPath: undefined,
+  userHtml5ified: false,
   playing: false,
   currentTime: undefined,
   duration: undefined,
@@ -85,9 +94,12 @@ const getInitialLocalState = () => ({
   cutEndTimeManual: undefined,
   fileFormat: undefined,
   detectedFileFormat: undefined,
+  streams: [],
   rotation: 360,
   cutProgress: undefined,
   startTimeOffset: 0,
+  framePath: undefined,
+  rotationPreviewRequested: false,
 });
 
 const globalState = {
@@ -108,6 +120,8 @@ class App extends React.Component {
       ...globalState,
     };
 
+    this.queue = new PQueue({ concurrency: 1 });
+
     const load = async (filePath, html5FriendlyPath) => {
       const { working } = this.state;
 
@@ -127,10 +141,27 @@ class App extends React.Component {
           errorToast('Unsupported file');
           return;
         }
+
+        const { streams } = await ffmpeg.getAllStreams(filePath);
+
         setFileNameTitle(filePath);
         this.setState({
-          filePath, html5FriendlyPath, fileFormat, detectedFileFormat: fileFormat,
+          streams,
+          filePath,
+          html5FriendlyPath,
+          fileFormat,
+          detectedFileFormat: fileFormat,
         });
+
+        if (html5FriendlyPath) {
+          this.setState({ userHtml5ified: true });
+        } else if (!doesPlayerSupportFile(streams)) {
+          const { customOutDir } = this.state;
+          const html5ifiedDummyPath = getOutPath(customOutDir, filePath, 'html5ified-dummy.mkv');
+          await ffmpeg.html5ifyDummy(filePath, html5ifiedDummyPath);
+          this.setState({ html5FriendlyPath: html5ifiedDummyPath });
+          this.throttledRenderFrame(0);
+        }
       } catch (err) {
         if (err.code === 1 || err.code === 'ENOENT') {
           errorToast('Unsupported file');
@@ -241,7 +272,7 @@ class App extends React.Component {
     electron.ipcRenderer.send('renderer-ready');
   }
 
-  onPlay(playing) {
+  onPlayingChange(playing) {
     this.setState({ playing });
 
     if (!playing) {
@@ -251,6 +282,16 @@ class App extends React.Component {
 
   onDurationChange(duration) {
     this.setState({ duration });
+  }
+
+  onTimeUpdate = (e) => {
+    const { currentTime } = e.target;
+    if (this.state.currentTime === currentTime) return;
+
+    this.setState({ rotationPreviewRequested: false }); // Reset this
+    this.setState({ currentTime }, () => {
+      this.throttledRenderFrame();
+    });
   }
 
   onCutProgress = (cutProgress) => {
@@ -287,6 +328,10 @@ class App extends React.Component {
 
   getRotation() {
     return this.state.rotation;
+  }
+
+  getEffectiveRotation() {
+    return this.isRotationSet() ? this.getRotation() : undefined;
   }
 
   getRotationStr() {
@@ -330,8 +375,38 @@ class App extends React.Component {
     return (this.state.currentTime || 0) + this.state.startTimeOffset;
   }
 
+  frameRenderEnabled = () => {
+    const { rotationPreviewRequested, userHtml5ified, streams } = this.state;
+    if (rotationPreviewRequested) return true;
+    return !userHtml5ified && !doesPlayerSupportFile(streams);
+  }
+
+  /* eslint-disable react/sort-comp */
+  throttledRenderFrame = async () => {
+    if (this.queue.size < 2) {
+      this.queue.add(async () => {
+        if (!this.frameRenderEnabled()) return;
+
+        const { filePath, currentTime } = this.state;
+        const rotation = this.getEffectiveRotation();
+        if (currentTime == null || !filePath) return;
+
+        try {
+          if (this.state.framePath) URL.revokeObjectURL(this.state.framePath);
+          const framePath = await ffmpeg.renderFrame(currentTime, filePath, rotation);
+          this.setState({ framePath });
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    }
+
+    await this.queue.onIdle();
+  };
+
   increaseRotation = () => {
     this.setState(({ rotation }) => ({ rotation: (rotation + 90) % 450 }));
+    this.setState({ rotationPreviewRequested: true }, () => this.throttledRenderFrame());
   }
 
   toggleCaptureFormat = () => {
@@ -438,7 +513,7 @@ class App extends React.Component {
       return;
     }
 
-    const rotation = this.isRotationSet() ? this.getRotation() : undefined;
+    const rotation = this.getEffectiveRotation();
 
     const cutStartTime = this.getCutStartTime();
     const cutEndTime = this.getCutEndTime();
@@ -622,16 +697,35 @@ class App extends React.Component {
         </div>
         )}
 
+        {this.state.rotationPreviewRequested && (
+          <div style={{
+            position: 'absolute', zIndex: 1, top: '1em', right: '1em', color: 'white',
+          }}
+          >
+            Lossless rotation preview
+          </div>
+        )}
+
         {/* eslint-disable jsx-a11y/media-has-caption */}
         <div id="player">
           <video
             src={this.getFileUri()}
             onRateChange={this.playbackRateChange}
-            onPlay={() => this.onPlay(true)}
-            onPause={() => this.onPlay(false)}
+            onPlay={() => this.onPlayingChange(true)}
+            onPause={() => this.onPlayingChange(false)}
             onDurationChange={e => this.onDurationChange(e.target.duration)}
-            onTimeUpdate={e => this.setState({ currentTime: e.target.currentTime })}
+            onTimeUpdate={this.onTimeUpdate}
           />
+
+          {this.state.framePath && this.frameRenderEnabled() && (
+            <img
+              style={{
+                width: '100%', height: '100%', objectFit: 'contain', left: 0, right: 0, top: 0, bottom: 0, position: 'absolute', background: 'black',
+              }}
+              src={this.state.framePath}
+              alt=""
+            />
+          )}
         </div>
         {/* eslint-enable jsx-a11y/media-has-caption */}
 

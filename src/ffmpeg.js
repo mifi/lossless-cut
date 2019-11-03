@@ -31,10 +31,17 @@ function getFfmpegPath() {
     });
 }
 
-async function getFFprobePath() {
+async function runFfprobe(args) {
   const ffmpegPath = await getFfmpegPath();
-  return path.join(path.dirname(ffmpegPath), getWithExt('ffprobe'));
+  const ffprobePath = path.join(path.dirname(ffmpegPath), getWithExt('ffprobe'));
+  return execa(ffprobePath, args);
 }
+
+async function runFfmpeg(args) {
+  const ffmpegPath = await getFfmpegPath();
+  return execa(ffmpegPath, args);
+}
+
 
 function handleProgress(process, cutDuration, onProgress) {
   const rl = readline.createInterface({ input: process.stderr });
@@ -171,10 +178,38 @@ async function html5ify(filePath, outPath, encodeVideo) {
 
   console.log('ffmpeg', ffmpegArgs.join(' '));
 
-  const ffmpegPath = await getFfmpegPath();
-  const process = execa(ffmpegPath, ffmpegArgs);
-  const result = await process;
-  console.log(result.stdout);
+  const { stdout } = await runFfmpeg(ffmpegArgs);
+  console.log(stdout);
+
+  await transferTimestamps(filePath, outPath);
+}
+
+async function getDuration(filePpath) {
+  // https://superuser.com/questions/650291/how-to-get-video-duration-in-seconds
+  const { stdout } = await runFfprobe(['-i', filePpath, '-show_entries', 'format=duration', '-print_format', 'json']);
+  return parseFloat(JSON.parse(stdout).format.duration);
+}
+
+// This is just used to load something into the player with correct length,
+// so user can seek and then we render frames using ffmpeg
+async function html5ifyDummy(filePath, outPath) {
+  console.log('Making HTML5 friendly dummy', { filePath, outPath });
+
+  const duration = await getDuration(filePath);
+
+  const ffmpegArgs = [
+    // This is just a fast way of generating an empty dummy file
+    // TODO use existing audio track file if it has one
+    '-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',
+    '-t', duration,
+    '-acodec', 'flac',
+    '-y', outPath,
+  ];
+
+  console.log('ffmpeg', ffmpegArgs.join(' '));
+
+  const { stdout } = await runFfmpeg(ffmpegArgs);
+  console.log(stdout);
 
   await transferTimestamps(filePath, outPath);
 }
@@ -246,11 +281,10 @@ function determineOutputFormat(ffprobeFormats, ft) {
 async function getFormat(filePath) {
   console.log('getFormat', filePath);
 
-  const ffprobePath = await getFFprobePath();
-  const result = await execa(ffprobePath, [
+  const { stdout } = await runFfprobe([
     '-of', 'json', '-show_format', '-i', filePath,
   ]);
-  const formatsStr = JSON.parse(result.stdout).format.format_name;
+  const formatsStr = JSON.parse(stdout).format.format_name;
   console.log('formats', formatsStr);
   const formats = (formatsStr || '').split(',');
 
@@ -263,12 +297,11 @@ async function getFormat(filePath) {
 }
 
 async function getAllStreams(filePath) {
-  const ffprobePath = await getFFprobePath();
-  const result = await execa(ffprobePath, [
+  const { stdout } = await runFfprobe([
     '-of', 'json', '-show_entries', 'stream', '-i', filePath,
   ]);
 
-  return JSON.parse(result.stdout);
+  return JSON.parse(stdout);
 }
 
 function mapCodecToOutputFormat(codec, type) {
@@ -325,17 +358,49 @@ async function extractAllStreams({ customOutDir, filePath }) {
   console.log(ffmpegArgs);
 
   // TODO progress
-  const ffmpegPath = await getFfmpegPath();
-  const process = execa(ffmpegPath, ffmpegArgs);
-  const result = await process;
-  console.log(result.stdout);
+  const { stdout } = await runFfmpeg(ffmpegArgs);
+  console.log(stdout);
 }
+
+async function renderFrame(timestamp, filePath, rotation) {
+  const transpose = {
+    90: 'transpose=2',
+    180: 'transpose=1,transpose=1',
+    270: 'transpose=1',
+  };
+  const args = [
+    '-ss', timestamp,
+    ...(rotation !== undefined ? ['-noautorotate'] : []),
+    '-i', filePath,
+    // ...(rotation !== undefined ? ['-metadata:s:v:0', 'rotate=0'] : []), // Reset the rotation metadata first
+    ...(rotation !== undefined && rotation > 0 ? ['-vf', `${transpose[rotation]}`] : []),
+    '-f', 'image2',
+    '-vframes', '1',
+    '-q:v', '10',
+    '-',
+    // '-y', outPath,
+  ];
+
+  // console.time('ffmpeg');
+  const ffmpegPath = await getFfmpegPath();
+  // console.timeEnd('ffmpeg');
+  console.log('ffmpeg', args);
+  const { stdout } = await execa(ffmpegPath, args, { encoding: null });
+
+  const blob = new Blob([stdout], { type: 'image/jpeg' });
+  const url = URL.createObjectURL(blob);
+  return url;
+}
+
 
 module.exports = {
   cutMultiple,
   getFormat,
   html5ify,
+  html5ifyDummy,
   mergeAnyFiles,
   autoMergeSegments,
   extractAllStreams,
+  renderFrame,
+  getAllStreams,
 };

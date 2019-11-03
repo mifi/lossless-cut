@@ -66,6 +66,7 @@
     "mime-types": "^2.1.14",
     "moment": "^2.18.1",
     "mousetrap": "^1.6.1",
+    "p-queue": "^6.2.0",
     "prop-types": "^15.6.2",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
