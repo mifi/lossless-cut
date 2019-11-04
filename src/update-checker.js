@@ -13,10 +13,12 @@ async function checkNewVersion() {
     // Draft releases and prereleases are not returned by this endpoint.
     const res = (await repo.getRelease('latest')).data;
     const tagName = res.tag_name;
-    console.log(tagName);
 
     const currentVersion = app.getVersion();
     // const currentVersion = '1.8.0';
+
+    console.log('Current version', currentVersion);
+    console.log('Newest version', tagName);
 
     if (tagName !== `v${currentVersion}`) return tagName;
     return undefined;
