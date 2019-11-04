@@ -1,7 +1,6 @@
 node_modules
 .DS_Store
-npm-debug.log
 dist
-package
-ffmpeg-tmp
-icon-dist
+build
+watch-build
+icon-build
