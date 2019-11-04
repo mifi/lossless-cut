@@ -361,7 +361,7 @@ class App extends React.Component {
     return (this.state.currentTime || 0) + this.state.startTimeOffset;
   }
 
-  mergeFiles = async (paths, onMergeClick) => {
+  mergeFiles = async (paths) => {
     try {
       this.setState({ working: true });
 
