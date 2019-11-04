@@ -18,7 +18,7 @@
     "pack-linux": "electron-builder --linux",
     "prepack-linux": "yarn build-js",
     "prerelease": "yarn build-js",
-    "release": "build",
+    "release": "electron-builder",
     "gifify": "gifify -p 405:299 -r 5@3 Untitled.mov-00.00.00.971-00.00.19.780.mp4",
     "lint": "eslint --ext .jsx --ext .js ."
   },
