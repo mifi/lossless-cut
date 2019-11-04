@@ -8,7 +8,7 @@
   "scripts": {
     "start": "electron watch-build",
     "watch": "babel src -d watch-build --copy-files -w",
-    "icon-gen": "svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512",
+    "icon-gen": "mkdir -p icon-build && svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512",
     "build-js": "rm -rf build && babel src -d build --copy-files",
     "postinstall": "electron-builder install-app-deps",
     "pack-mac": "electron-builder --mac",
