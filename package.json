@@ -57,7 +57,7 @@
     "execa": "^0.5.0",
     "ffmpeg-static": "^2.7.0",
     "ffprobe-static": "^3.0.0",
-    "file-type": "^11.0.0",
+    "file-type": "^12.4.0",
     "github-api": "^3.2.2",
     "hammerjs": "^2.0.8",
     "jquery": "^3.4.0",
