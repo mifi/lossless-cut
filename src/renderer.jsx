@@ -18,7 +18,7 @@ const { default: PQueue } = require('p-queue');
 
 const HelpSheet = require('./HelpSheet');
 const TimelineSeg = require('./TimelineSeg');
-const { showMergeDialog } = require('./merge/merge');
+const { showMergeDialog, showOpenAndMergeDialog } = require('./merge/merge');
 
 const captureFrame = require('./capture-frame');
 const ffmpeg = require('./ffmpeg');
@@ -195,24 +195,10 @@ class App extends React.Component {
       }
     });
 
-    electron.ipcRenderer.on('show-merge-dialog', () => showMergeDialog({
+    electron.ipcRenderer.on('show-merge-dialog', () => showOpenAndMergeDialog({
       dialog,
       defaultPath: this.getOutputDir(),
-      onMergeClick: async (paths) => {
-        try {
-          this.setState({ working: true });
-
-          const { customOutDir } = this.state;
-
-          // console.log('merge', paths);
-          await ffmpeg.mergeAnyFiles({ customOutDir, paths });
-        } catch (err) {
-          errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
-          console.error('Failed to merge files', err);
-        } finally {
-          this.setState({ working: false });
-        }
-      },
+      onMergeClick: this.mergeFiles,
     }));
 
     electron.ipcRenderer.on('set-start-offset', async () => {
@@ -246,11 +232,10 @@ class App extends React.Component {
 
     document.body.ondrop = (ev) => {
       ev.preventDefault();
-      if (ev.dataTransfer.files.length !== 1) {
-        errorToast('Please drop only one file');
-        return;
-      }
-      load(ev.dataTransfer.files[0].path);
+      const { files } = ev.dataTransfer;
+      if (files.length < 1) return;
+      if (files.length === 1) load(files[0].path);
+      else showMergeDialog(Array.from(files).map(f => f.path), this.mergeFiles);
     };
 
     Mousetrap.bind('space', () => this.playCommand());
@@ -308,9 +293,10 @@ class App extends React.Component {
     this.setCutTime('end', currentTime);
   }
 
-  setOutputDir = () => {
-    dialog.showOpenDialog({ properties: ['openDirectory'] }, (paths) => {
-      this.setState({ customOutDir: (paths && paths.length === 1) ? paths[0] : undefined });
+  setOutputDir = async () => {
+    const { filePaths } = await dialog.showOpenDialog({ properties: ['openDirectory'] });
+    this.setState({
+      customOutDir: (filePaths && filePaths.length === 1) ? filePaths[0] : undefined,
     });
   }
 
@@ -373,6 +359,22 @@ class App extends React.Component {
 
   getOffsetCurrentTime() {
     return (this.state.currentTime || 0) + this.state.startTimeOffset;
+  }
+
+  mergeFiles = async (paths, onMergeClick) => {
+    try {
+      this.setState({ working: true });
+
+      const { customOutDir } = this.state;
+
+      // console.log('merge', paths);
+      await ffmpeg.mergeAnyFiles({ customOutDir, paths });
+    } catch (err) {
+      errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
+      console.error('Failed to merge files', err);
+    } finally {
+      this.setState({ working: false });
+    }
   }
 
   frameRenderEnabled = () => {
@@ -856,10 +858,14 @@ class App extends React.Component {
         </div>
 
         <div className="left-menu">
-          <select style={{ width: 60 }} value={fileFormat} title="Format of current file" onChange={withBlur(e => this.setState({ fileFormat: e.target.value }))}>
-            <option disabled selected>Out fmt</option>
-            {detectedFileFormat && <option value={detectedFileFormat}>{detectedFileFormat}</option>}
-            {selectableFormats.map(f => <option value={f}>{f}</option>)}
+          <select style={{ width: 60 }} defaultValue="" value={fileFormat} title="Format of current file" onChange={withBlur(e => this.setState({ fileFormat: e.target.value }))}>
+            <option key="" value="" disabled>Out fmt</option>
+            {detectedFileFormat && (
+              <option key={detectedFileFormat} value={detectedFileFormat}>
+                {detectedFileFormat}
+              </option>
+            )}
+            {selectableFormats.map(f => <option key={f} value={f}>{f}</option>)}
           </select>
 
           <span style={infoSpanStyle} title="Playback rate">

@@ -16,10 +16,10 @@ module.exports = (app, mainWindow, newVersion) => {
       {
         label: 'Open',
         accelerator: 'CmdOrCtrl+O',
-        click() {
-          dialog.showOpenDialog({ properties: ['openFile'] }, (filePaths) => {
-            mainWindow.webContents.send('file-opened', filePaths);
-          });
+        async click() {
+          const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'] });
+          if (canceled) return;
+          mainWindow.webContents.send('file-opened', filePaths);
         },
       },
       {
