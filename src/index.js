@@ -19,8 +19,12 @@ let mainWindow;
 function createWindow() {
   mainWindow = new BrowserWindow({
     darkTheme: true,
+    webPreferences: {
+      nodeIntegration: true,
+    },
+
   });
-  mainWindow.loadFile('index.html');
+  mainWindow.loadFile(isDev ? 'index.html' : 'build/index.html');
 
   mainWindow.on('closed', () => {
     // Dereference the window object, usually you would store windows

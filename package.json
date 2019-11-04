@@ -1,28 +1,26 @@
 {
   "name": "lossless-cut",
+  "productName": "LosslessCut",
+  "description": "Lossless video editor",
+  "copyright": "Copyright © 2019 ${author}",
   "version": "2.4.0",
-  "description": "",
-  "main": "index.js",
+  "main": "build/index.js",
   "scripts": {
-    "start": "electron dist",
-    "watch": "npm run build && babel src -d dist --copy-files -w",
-    "build": "rm -rf dist && babel src -d dist --copy-files && ln -s ../node_modules dist/ && ln -s ../package.json ./dist/",
-    "download-ffmpeg": "bash ./scripts/ffmpeg-dl/dl.sh",
-    "extract-ffmpeg": "bash ./scripts/ffmpeg-dl/extract.sh",
-    "copy-ffmpeg": "rm -rf dist/ffmpeg && mkdir dist/ffmpeg && cp ffmpeg-tmp/binaries/${PLATFORM}_${ARCH}/* dist/ffmpeg",
-    "package-single": "npm run copy-ffmpeg && electron-packager dist LosslessCut --out=package --asar.unpackDir=ffmpeg --overwrite --platform=${PLATFORM} --arch=${ARCH} --icon=icon-dist/${ICON} --app-copyright='Copyright (c) 2017 Mikael Finstad' --win32metadata.CompanyName=mifi --win32metadata.FileDescription=LosslessCut --win32metadata.OriginalFilename=LosslessCut.exe --win32metadata.ProductName=LosslessCut --win32metadata.InternalName=LosslessCut",
-    "package:darwin_x64": "PLATFORM=darwin ARCH=x64 ICON=app.icns npm run package-single",
-    "package:win32_ia32": "PLATFORM=win32 ARCH=ia32 ICON=app.ico npm run package-single",
-    "package:win32_x64": "PLATFORM=win32 ARCH=x64 ICON=app.ico npm run package-single",
-    "package:linux_x64": "PLATFORM=linux ARCH=x64 ICON=app.ico npm run package-single",
-    "zip": "(cd package && rm -f LosslessCut-*.zip && for f in LosslessCut-*; do zip -r --symlinks \"$f\".zip \"$f\"; done)",
-    "icon-gen": "icon-gen -i src/icon.svg -o ./icon-dist -r",
-    "package": "npm run package:darwin_x64 && npm run package:win32_ia32 && npm run package:win32_x64 && npm run package:linux_x64 && npm run zip",
-    "release": "gh-release -a package/LosslessCut-darwin-x64.zip,package/LosslessCut-win32-ia32.zip,package/LosslessCut-win32-x64.zip,package/LosslessCut-linux-ia32.zip,package/LosslessCut-linux-x64.zip",
+    "start": "electron watch-build",
+    "watch": "babel src -d watch-build --copy-files -w",
+    "icon-gen": "svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512",
+    "build-js": "rm -rf build && babel src -d build --copy-files",
+    "postinstall": "electron-builder install-app-deps",
+    "pack-mac": "electron-builder --mac",
+    "prepack-mac": "yarn build-js",
+    "pack-win": "electron-builder --win",
+    "prepack-win": "yarn build-js",
+    "pack-linux": "electron-builder --linux",
+    "prepack-linux": "yarn build-js",
+    "prerelease": "yarn build-js",
+    "release": "build",
     "gifify": "gifify -p 405:299 -r 5@3 Untitled.mov-00.00.00.971-00.00.19.780.mp4",
-    "lint": "eslint --ext .jsx --ext .js .",
-    "clean": "rm -rf dist ffmpeg-tmp/extracted ffmpeg-tmp/binaries package",
-    "clean-ffmpeg": "rm -rf ffmpeg-tmp/archives"
+    "lint": "eslint --ext .jsx --ext .js ."
   },
   "author": {
     "name": "Mikael Finstad",
@@ -41,23 +39,24 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.16.0",
-    "electron-packager": "^8.1.0",
+    "electron": "^7.0.1",
+    "electron-builder": "21",
     "eslint": "^5.6.1",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsx-a11y": "^6.1.1",
     "eslint-plugin-react": "^7.11.1",
-    "gh-release": "^2.2.1",
-    "icon-gen": "^1.2.0"
+    "svg2png": "^4.1.1"
   },
   "dependencies": {
     "bluebird": "^3.4.6",
     "classnames": "^2.2.5",
     "color": "^3.1.0",
-    "electron": "^2.0.18",
     "electron-default-menu": "^1.0.0",
     "electron-is-dev": "^0.1.2",
     "execa": "^0.5.0",
+    "ffmpeg-static": "^2.7.0",
+    "ffprobe-static": "^3.0.0",
     "file-type": "^11.0.0",
     "github-api": "^3.2.2",
     "hammerjs": "^2.0.8",
@@ -80,5 +79,47 @@
     "trash": "^4.3.0",
     "uuid": "^3.3.2",
     "which": "^1.2.11"
+  },
+  "browserslist": {
+    "production": [
+      "electron 7.0"
+    ],
+    "development": [
+      "electron 7.0"
+    ]
+  },
+  "build": {
+    "appId": "no.mifi.losslesscut",
+    "files": [
+      "build/**/*",
+      "!node_modules/ffmpeg-static/bin/**/*",
+      "!node_modules/ffprobe-static/bin/**/*"
+    ],
+    "asar": {
+      "smartUnpack": false
+    },
+    "mac": {
+      "target": "dmg",
+      "extraResources": [
+        "node_modules/ffmpeg-static/bin/darwin/**",
+        "node_modules/ffprobe-static/bin/darwin/**"
+      ],
+      "icon": "icon-build/app-512.png"
+    },
+    "win": {
+      "target": "portable",
+      "extraResources": [
+        "node_modules/ffmpeg-static/bin/win32/x64/**",
+        "node_modules/ffprobe-static/bin/win32/x64/**"
+      ],
+      "icon": "icon-build/app-512.png"
+    },
+    "linux": {
+      "extraResources": [
+        "node_modules/ffmpeg-static/bin/linux/x64/**",
+        "node_modules/ffprobe-static/bin/linux/x64/**"
+      ],
+      "icon": "icon-build/app-512.png"
+    }
   }
 }

@@ -1,6 +1,5 @@
 const execa = require('execa');
 const bluebird = require('bluebird');
-const which = bluebird.promisify(require('which'));
 const path = require('path');
 const fileType = require('file-type');
 const readChunk = require('read-chunk');
@@ -10,35 +9,36 @@ const readline = require('readline');
 const moment = require('moment');
 const stringToStream = require('string-to-stream');
 const trash = require('trash');
+const isDev = require('electron-is-dev');
+const os = require('os');
 
 const { formatDuration, getOutPath, transferTimestamps } = require('./util');
 
-function getWithExt(name) {
-  return process.platform === 'win32' ? `${name}.exe` : name;
-}
+function getPath(type) {
+  const platform = os.platform();
 
-function canExecuteFfmpeg(ffmpegPath) {
-  return execa(ffmpegPath, ['-version']);
-}
+  const map = {
+    darwin: `darwin/x64/${type}`,
+    win32: `win32/x64/${type}.exe`,
+    linux: `linux/x64/${type}`,
+  };
 
-function getFfmpegPath() {
-  const internalFfmpeg = path.join(__dirname, '..', 'app.asar.unpacked', 'ffmpeg', getWithExt('ffmpeg'));
-  return canExecuteFfmpeg(internalFfmpeg)
-    .then(() => internalFfmpeg)
-    .catch(() => {
-      console.log('Internal ffmpeg unavail');
-      return which('ffmpeg');
-    });
+  const subPath = map[platform];
+
+  if (!subPath) throw new Error(`Unsupported platform ${platform}`);
+
+  return isDev
+    ? `node_modules/${type}-static/bin/${subPath}`
+    : path.join(window.process.resourcesPath, `node_modules/${type}-static/bin/${subPath}`);
 }
 
 async function runFfprobe(args) {
-  const ffmpegPath = await getFfmpegPath();
-  const ffprobePath = path.join(path.dirname(ffmpegPath), getWithExt('ffprobe'));
+  const ffprobePath = await getPath('ffprobe');
   return execa(ffprobePath, args);
 }
 
 async function runFfmpeg(args) {
-  const ffmpegPath = await getFfmpegPath();
+  const ffmpegPath = await getPath('ffmpeg');
   return execa(ffmpegPath, args);
 }
 
@@ -109,7 +109,7 @@ async function cut({
 
   onProgress(0);
 
-  const ffmpegPath = await getFfmpegPath();
+  const ffmpegPath = await getPath('ffmpeg');
   const process = execa(ffmpegPath, ffmpegArgs);
   handleProgress(process, cutDuration, onProgress);
   const result = await process;
@@ -232,7 +232,7 @@ async function mergeFiles(paths, outPath) {
 
   console.log(concatTxt);
 
-  const ffmpegPath = await getFfmpegPath();
+  const ffmpegPath = await getPath('ffmpeg');
   const process = execa(ffmpegPath, ffmpegArgs);
 
   stringToStream(concatTxt).pipe(process.stdin);
@@ -382,7 +382,7 @@ async function renderFrame(timestamp, filePath, rotation) {
   ];
 
   // console.time('ffmpeg');
-  const ffmpegPath = await getFfmpegPath();
+  const ffmpegPath = await getPath('ffmpeg');
   // console.timeEnd('ffmpeg');
   console.log('ffmpeg', args);
   const { stdout } = await execa(ffmpegPath, args, { encoding: null });
