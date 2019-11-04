@@ -3,8 +3,6 @@
 ### Release new version
 ```
 # Commit changes
-# Update CHANGELOG.md
-# Commit CHANGELOG.md
 npm version ...
 # Push with tag
 # Wait for Travis
@@ -13,16 +11,6 @@ npm version ...
 With travis deploy:
 ```
 Go to github releases and release the created draft
-```
-
-Manual release
-```
-npm run download-ffmpeg
-npm run extract-ffmpeg
-npm run build
-npm run icon-gen
-npm run package
-npm run release
 ```
 
 
