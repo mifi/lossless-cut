@@ -5,6 +5,7 @@ const fileType = require('file-type');
 const readChunk = require('read-chunk');
 const flatMap = require('lodash/flatMap');
 const sum = require('lodash/sum');
+const sortBy = require('lodash/sortBy');
 const readline = require('readline');
 const moment = require('moment');
 const stringToStream = require('string-to-stream');
@@ -119,9 +120,10 @@ async function cut({
 }
 
 async function cutMultiple({
-  customOutDir, filePath, format, segments, videoDuration, rotation,
+  customOutDir, filePath, format, segments: segmentsUnsorted, videoDuration, rotation,
   includeAllStreams, onProgress, stripAudio, keyframeCut,
 }) {
+  const segments = sortBy(segmentsUnsorted, 'cutFrom');
   const singleProgresses = {};
   function onSingleProgress(id, singleProgress) {
     singleProgresses[id] = singleProgress;
