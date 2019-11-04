@@ -13,4 +13,4 @@ node_js:
 script:
   - |
     npm run icon-gen &&
-    yarn release
+    yarn release --win --linux --mac
