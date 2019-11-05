@@ -120,7 +120,7 @@
         "node_modules/ffprobe-static/bin/linux/x64/**"
       ],
       "icon": "icon-build/app-512.png",
-      "target": "tar.bz2"
+      "target": ["tar.bz2", "snap", "AppImage"]
     }
   }
 }
