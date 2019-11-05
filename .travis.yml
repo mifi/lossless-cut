@@ -13,4 +13,4 @@ node_js:
 script:
   - |
     npm run icon-gen &&
-    yarn release --win --linux --mac
+    yarn release --win --linux --mac -c.snap.publish=github
