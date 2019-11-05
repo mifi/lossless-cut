@@ -3,7 +3,7 @@
   "productName": "LosslessCut",
   "description": "Lossless video editor",
   "copyright": "Copyright © 2019 ${author}",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "main": "build/index.js",
   "scripts": {
     "start": "electron watch-build",
@@ -120,7 +120,11 @@
         "node_modules/ffprobe-static/bin/linux/x64/**"
       ],
       "icon": "icon-build/app-512.png",
-      "target": ["tar.bz2", "snap", "AppImage"]
+      "target": [
+        "tar.bz2",
+        "snap",
+        "AppImage"
+      ]
     }
   }
 }
