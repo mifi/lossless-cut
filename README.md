@@ -1,4 +1,4 @@
-# LosslessCut 🎥 [![Travis](https://img.shields.io/travis/mifi/lossless-cut.svg)](https://travis-ci.org/mifi/lossless-cut) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/mifino)
+# LosslessCut 🎥 [![Financial Contributors on Open Collective](https://opencollective.com/losslesscut/all/badge.svg?label=financial+contributors)](https://opencollective.com/losslesscut) [![Travis](https://img.shields.io/travis/mifi/lossless-cut.svg)](https://travis-ci.org/mifi/lossless-cut) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/mifino)
 
 Simple and ultra fast cross platform tool for lossless trimming/cutting of video and audio files. Great for saving space by rough cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. It extremely fast because it does an almost direct data copy. It is fueled by the awesome ffmpeg (included) for doing the grunt work. It also features some other lossless operations on videos.
 
@@ -101,3 +101,33 @@ If you want to support me, press the `💜Sponsor` button on the top. If you cho
 ---
 
 Made with ❤️ in 🇳🇴
+
+## Contributors
+
+### Code Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="https://github.com/mifi/lossless-cut/graphs/contributors"><img src="https://opencollective.com/losslesscut/contributors.svg?width=890&button=false" /></a>
+
+### Financial Contributors
+
+Become a financial contributor and help us sustain our community. [[Contribute](https://opencollective.com/losslesscut/contribute)]
+
+#### Individuals
+
+<a href="https://opencollective.com/losslesscut"><img src="https://opencollective.com/losslesscut/individuals.svg?width=890"></a>
+
+#### Organizations
+
+Support this project with your organization. Your logo will show up here with a link to your website. [[Contribute](https://opencollective.com/losslesscut/contribute)]
+
+<a href="https://opencollective.com/losslesscut/organization/0/website"><img src="https://opencollective.com/losslesscut/organization/0/avatar.svg"></a>
+<a href="https://opencollective.com/losslesscut/organization/1/website"><img src="https://opencollective.com/losslesscut/organization/1/avatar.svg"></a>
+<a href="https://opencollective.com/losslesscut/organization/2/website"><img src="https://opencollective.com/losslesscut/organization/2/avatar.svg"></a>
+<a href="https://opencollective.com/losslesscut/organization/3/website"><img src="https://opencollective.com/losslesscut/organization/3/avatar.svg"></a>
+<a href="https://opencollective.com/losslesscut/organization/4/website"><img src="https://opencollective.com/losslesscut/organization/4/avatar.svg"></a>
+<a href="https://opencollective.com/losslesscut/organization/5/website"><img src="https://opencollective.com/losslesscut/organization/5/avatar.svg"></a>
+<a href="https://opencollective.com/losslesscut/organization/6/website"><img src="https://opencollective.com/losslesscut/organization/6/avatar.svg"></a>
+<a href="https://opencollective.com/losslesscut/organization/7/website"><img src="https://opencollective.com/losslesscut/organization/7/avatar.svg"></a>
+<a href="https://opencollective.com/losslesscut/organization/8/website"><img src="https://opencollective.com/losslesscut/organization/8/avatar.svg"></a>
+<a href="https://opencollective.com/losslesscut/organization/9/website"><img src="https://opencollective.com/losslesscut/organization/9/avatar.svg"></a>
