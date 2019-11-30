@@ -223,6 +223,7 @@ async function mergeFiles(paths, outPath) {
   const ffmpegArgs = [
     '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe', '-i', '-',
     '-c', 'copy',
+    '-map', '0',
     '-map_metadata', '0',
     '-y', outPath,
   ];
