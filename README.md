@@ -6,7 +6,7 @@ Simple and ultra fast cross platform tool for lossless trimming/cutting of video
 
 **Shameless Plugs**
 
-🆕I made an easy to use Instagram bot with a GUI: [SimpleInstaBot](https://mifi.github.io/SimpleInstaBot/)
+🆕I made an easy to use Instagram bot with a GUI: [SimpleInstaBot](https://github.com/mifi/SimpleInstaBot/)
 
 I made a tool for cross platform sharing of files between computer/phone over the local network: [ezshare](https://github.com/mifi/ezshare)
 
