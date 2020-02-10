@@ -9,16 +9,16 @@
     "start": "electron watch-build",
     "watch": "babel src -d watch-build --copy-files -w",
     "icon-gen": "mkdir -p icon-build && svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512",
-    "build-js": "rm -rf build && babel src -d build --copy-files",
+    "build": "yarn icon-gen && rm -rf build && babel src -d build --copy-files",
     "postinstall": "electron-builder install-app-deps",
     "pack-mac": "electron-builder --mac",
-    "prepack-mac": "yarn build-js",
+    "prepack-mac": "yarn build",
     "pack-win": "electron-builder --win",
-    "prepack-win": "yarn build-js",
+    "prepack-win": "yarn build",
     "pack-linux": "electron-builder --linux",
-    "prepack-linux": "yarn build-js",
-    "prerelease": "yarn build-js",
+    "prepack-linux": "yarn build",
     "release": "electron-builder",
+    "prerelease": "yarn build",
     "gifify": "gifify -p 405:299 -r 5@3 Untitled.mov-00.00.00.971-00.00.19.780.mp4",
     "lint": "eslint --ext .jsx --ext .js ."
   },
@@ -40,7 +40,8 @@
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.16.0",
     "electron": "^7.0.1",
-    "electron-builder": "21",
+    "electron-builder": "^22.3.2",
+    "electron-builder-notarize": "^1.1.2",
     "eslint": "^5.6.1",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.14.0",
@@ -89,7 +90,6 @@
     ]
   },
   "build": {
-    "appId": "no.mifi.losslesscut",
     "files": [
       "build/**/*",
       "!node_modules/ffmpeg-static/bin/**/*",
@@ -98,7 +98,11 @@
     "asar": {
       "smartUnpack": false
     },
+    "appId": "no.mifi.losslesscut",
+    "artifactName": "${productName}-${os}.${ext}",
+    "afterSign": "electron-builder-notarize",
     "mac": {
+      "hardenedRuntime": true,
       "target": "dmg",
       "extraResources": [
         "node_modules/ffmpeg-static/bin/darwin/**",
@@ -122,7 +126,6 @@
       "icon": "icon-build/app-512.png",
       "target": [
         "tar.bz2",
-        "snap",
         "AppImage"
       ]
     }
