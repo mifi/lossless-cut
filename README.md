@@ -4,7 +4,11 @@ Simple and ultra fast cross platform tool for lossless trimming/cutting of video
 
 ![Demo](https://github.com/mifi/gifs/raw/master/2019-01-28-lossless-cut.gif)
 
-🆕 Shameless Plug 🆕 I made a tool for cross platform sharing of files between computer/phone over the local network: [ezshare](https://github.com/mifi/ezshare)
+**Shameless Plugs**
+
+🆕I made an easy to use Instagram bot with a GUI: [SimpleInstaBot](https://mifi.github.io/SimpleInstaBot/)
+
+I made a tool for cross platform sharing of files between computer/phone over the local network: [ezshare](https://github.com/mifi/ezshare)
 
 
 ## Features
@@ -20,16 +24,15 @@ Simple and ultra fast cross platform tool for lossless trimming/cutting of video
 - Remux into different output format
 - Change rotation/orientation metadata in videos. Great for rotating phone videos that come out the wrong way without actually re-encoding the video.
 
-## Installing / running
+## Download
 
-- Download [latest LosslessCut from releases](https://github.com/mifi/lossless-cut/releases)
-- Run LosslessCut app/exe
-- On macOS, to open LosslessCut.app, Right Click > Open to bypass the security warning.
+- [Mac OS X](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac.dmg)
+- [Windows](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win.exe)
+- [Linux AppImage](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux.AppImage)
+- [Linux snap](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux.snap)
+- [Linux tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux.tar.bz2)
 
-## Supported platforms
-- macOS
-- Windows (64/32bit)
-- Linux (64, partially tested)
+NOTE: After installing you may need to right click the application icon and then "Open" in order to bypass "Untrusted app" dialogs. This is because Microsoft requires a $300/year certificate just to remove this block (I'm not going to pay for that.) Alternatively try to google `windows how to run untrusted app`.
 
 ## Supported formats
 
