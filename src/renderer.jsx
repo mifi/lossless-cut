@@ -497,10 +497,11 @@ class App extends React.Component {
   deleteSourceClick = async () => {
     // eslint-disable-next-line no-alert
     if (this.state.working || !window.confirm('Are you sure you want to move the source file to trash?')) return;
-    const { filePath } = this.state;
+    const { filePath, html5FriendlyPath } = this.state;
 
     this.setState({ working: true });
     await trash(filePath);
+    if (html5FriendlyPath) await trash(html5FriendlyPath);
     this.resetState();
   }
 
