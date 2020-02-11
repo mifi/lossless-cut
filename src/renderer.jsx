@@ -688,6 +688,7 @@ class App extends React.Component {
             <div>PRESS H FOR HELP</div>
           </div>
         )}
+
         {working && (
         <div style={{
           color: 'white', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '.5em', margin: '1em', padding: '.2em .5em', position: 'absolute', zIndex: 1, top: 0, left: 0,
@@ -733,6 +734,13 @@ class App extends React.Component {
           )}
         </div>
         {/* eslint-enable jsx-a11y/media-has-caption */}
+
+        {this.state.html5FriendlyPath && (
+          <div style={{ position: 'absolute', top: 0, right: 0, maxWidth: 300, background: 'rgba(0,0,0,0.2)', color: 'rgba(255,255,255,0.8)', boxShadow: 'rgba(0,0,0,0.2) 0 0 15px 15px' }}>
+            This video is not natively supported, so there is no audio in the preview and low FPS.
+            <b>The final cut operation will still be lossless and contain audio!</b>
+          </div>
+        )}
 
         <div className="controls-wrapper">
           <Hammer
