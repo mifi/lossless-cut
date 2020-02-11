@@ -63,6 +63,7 @@ app.on('activate', () => {
 electron.ipcMain.on('renderer-ready', () => {
   if (!isDev) {
     const fileToOpen = process.argv[1];
-    if (fileToOpen) mainWindow.webContents.send('file-opened', [fileToOpen]);
+    // https://github.com/electron/electron/issues/3657
+    if (fileToOpen && !fileToOpen.startsWith('-psn_')) mainWindow.webContents.send('file-opened', [fileToOpen]);
   }
 });
