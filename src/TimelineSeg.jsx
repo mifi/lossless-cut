@@ -1,6 +1,9 @@
 const React = require('react');
 const PropTypes = require('prop-types');
 
+const { formatDuration } = require('./util');
+
+
 const TimelineSeg = ({
   isCutRangeValid, duration: durationRaw, cutStartTime, cutEndTime, apparentCutStart,
   apparentCutEnd, isActive, segNum, onSegClick, color,
@@ -52,6 +55,7 @@ const TimelineSeg = ({
           role="button"
           tabIndex="0"
           onClick={onThisSegClick}
+          title={`${formatDuration(cutEndTime - cutStartTime)}`}
         />
       )}
       {cutEndTime !== undefined && (
