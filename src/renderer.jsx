@@ -638,7 +638,9 @@ class App extends React.Component {
 
       this.setState({ [cutTimeManualKey]: undefined });
 
-      this.setCutTime(type, time - this.state.startTimeOffset);
+      const rel = time - this.state.startTimeOffset;
+      this.setCutTime(type, rel);
+      setCursor(rel);
     };
 
     const cutTime = type === 'start' ? this.getApparentCutStartTime() : this.getApparentCutEndTime();
