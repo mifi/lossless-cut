@@ -77,7 +77,7 @@
     "strong-data-uri": "^1.0.5",
     "sweetalert2": "^8.0.1",
     "sweetalert2-react-content": "^1.0.1",
-    "trash": "^4.3.0",
+    "trash": "^6.1.1",
     "uuid": "^3.3.2",
     "which": "^1.2.11"
   },
