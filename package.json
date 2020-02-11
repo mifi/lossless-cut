@@ -111,7 +111,10 @@
       "icon": "icon-build/app-512.png"
     },
     "win": {
-      "target": "portable",
+      "target": [
+        "portable",
+        "zip"
+      ],
       "extraResources": [
         "node_modules/ffmpeg-static/bin/win32/x64/**",
         "node_modules/ffprobe-static/bin/win32/x64/**"
