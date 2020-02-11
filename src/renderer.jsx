@@ -743,8 +743,7 @@ class App extends React.Component {
 
         {this.state.html5FriendlyPath && (
           <div style={{ position: 'absolute', top: 0, right: 0, maxWidth: 300, background: 'rgba(0,0,0,0.2)', color: 'rgba(255,255,255,0.8)', boxShadow: 'rgba(0,0,0,0.2) 0 0 15px 15px' }}>
-            This video is not natively supported, so there is no audio in the preview and low FPS.
-            <b>The final cut operation will still be lossless and contain audio!</b>
+            This video is not natively supported, so there is no audio in the preview and low FPS. <b>The final cut operation will still be lossless and contain audio!</b>
           </div>
         )}
 
