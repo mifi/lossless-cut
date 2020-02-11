@@ -10,6 +10,8 @@
     "react/destructuring-assignment": 0,
     "react/forbid-prop-types": [1, { "forbid": ["any"] }],
     "jsx-a11y/click-events-have-key-events": 0,
+    "react/jsx-one-expression-per-line": 0,
+    "object-curly-newline": 0
   },
   "plugins": [
     "react"
