@@ -8,7 +8,7 @@ const { checkNewVersion } = require('./update-checker');
 const { app } = electron;
 const { BrowserWindow } = electron;
 
-app.setName('LosslessCut');
+app.name = 'LosslessCut';
 
 if (!isDev) process.env.NODE_ENV = 'production';
 
