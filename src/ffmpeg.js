@@ -216,14 +216,20 @@ async function html5ifyDummy(filePath, outPath) {
   await transferTimestamps(filePath, outPath);
 }
 
-async function mergeFiles(paths, outPath) {
+async function mergeFiles({ paths, outPath, includeAllStreams }) {
   console.log('Merging files', { paths }, 'to', outPath);
 
   // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
   const ffmpegArgs = [
     '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe', '-i', '-',
     '-c', 'copy',
+
+    ...(includeAllStreams ? ['-map', '0'] : []),
     '-map_metadata', '0',
+
+    // See https://github.com/mifi/lossless-cut/issues/170
+    '-ignore_unknown',
+
     '-y', outPath,
   ];
 
@@ -243,17 +249,17 @@ async function mergeFiles(paths, outPath) {
   console.log(result.stdout);
 }
 
-async function mergeAnyFiles({ customOutDir, paths }) {
+async function mergeAnyFiles({ customOutDir, paths, includeAllStreams }) {
   const firstPath = paths[0];
   const ext = path.extname(firstPath);
   const outPath = getOutPath(customOutDir, firstPath, `merged${ext}`);
-  return mergeFiles(paths, outPath);
+  return mergeFiles({ paths, outPath, includeAllStreams });
 }
 
-async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths }) {
+async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths, includeAllStreams }) {
   const ext = path.extname(sourceFile);
   const outPath = getOutPath(customOutDir, sourceFile, `cut-merged-${new Date().getTime()}${ext}`);
-  await mergeFiles(segmentPaths, outPath);
+  await mergeFiles({ paths: segmentPaths, outPath, includeAllStreams });
   await bluebird.map(segmentPaths, trash, { concurrency: 5 });
 }
 

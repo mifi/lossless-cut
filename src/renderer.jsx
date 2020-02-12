@@ -365,10 +365,10 @@ class App extends React.Component {
     try {
       this.setState({ working: true });
 
-      const { customOutDir } = this.state;
+      const { customOutDir, includeAllStreams } = this.state;
 
       // console.log('merge', paths);
-      await ffmpeg.mergeAnyFiles({ customOutDir, paths });
+      await ffmpeg.mergeAnyFiles({ customOutDir, paths, includeAllStreams });
     } catch (err) {
       errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
       console.error('Failed to merge files', err);
@@ -561,6 +561,7 @@ class App extends React.Component {
           customOutDir,
           sourceFile: filePath,
           segmentPaths: outFiles,
+          includeAllStreams,
         });
       }
     } catch (err) {
