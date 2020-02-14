@@ -3,7 +3,7 @@
   "productName": "LosslessCut",
   "description": "Lossless video editor",
   "copyright": "Copyright © 2019 ${author}",
-  "version": "2.7.1",
+  "version": "2.8.0",
   "main": "build/index.js",
   "scripts": {
     "start": "electron watch-build",
