@@ -85,7 +85,6 @@ const App = memo(() => {
   const [unsupportedFile, setUnsupportedFile] = useState(false);
   const [html5FriendlyPath, setHtml5FriendlyPath] = useState();
   const [working, setWorking] = useState(false);
-  const [userHtml5ified, setUserHtml5ified] = useState(false);
   const [dummyVideoPath, setDummyVideoPath] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState();
@@ -123,7 +122,6 @@ const App = memo(() => {
     setHtml5FriendlyPath();
     setDummyVideoPath();
     setWorking(false);
-    setUserHtml5ified(false);
     setPlaying(false);
     setDuration();
     setCurrentSeg(0);
@@ -144,7 +142,7 @@ const App = memo(() => {
     if (dummyVideoPath) unlink(dummyVideoPath).catch(console.error);
   }, [dummyVideoPath]);
 
-  const frameRenderEnabled = rotationPreviewRequested || (!userHtml5ified && unsupportedFile);
+  const frameRenderEnabled = rotationPreviewRequested || (!html5FriendlyPath && unsupportedFile);
 
   const setCutTime = useCallback((type, time) => {
     const cloned = clone(cutSegments);
@@ -160,7 +158,7 @@ const App = memo(() => {
     setCustomOutDir((filePaths && filePaths.length === 1) ? filePaths[0] : undefined);
   }
 
-  const fileUri = (html5FriendlyPath || filePath || '').replace(/#/g, '%23');
+  const fileUri = (dummyVideoPath || html5FriendlyPath || filePath || '').replace(/#/g, '%23');
 
   function getOutputDir() {
     if (customOutDir) return customOutDir;
@@ -409,7 +407,7 @@ const App = memo(() => {
   // TODO use ffmpeg to capture frame
   const capture = useCallback(async () => {
     if (!filePath) return;
-    if (html5FriendlyPath) {
+    if (html5FriendlyPath || dummyVideoPath) {
       errorToast('Capture frame from this video not yet implemented');
       return;
     }
@@ -419,7 +417,7 @@ const App = memo(() => {
       console.error(err);
       errorToast('Failed to capture frame');
     }
-  }, [filePath, currentTime, captureFormat, customOutDir, html5FriendlyPath]);
+  }, [filePath, currentTime, captureFormat, customOutDir, html5FriendlyPath, dummyVideoPath]);
 
   const changePlaybackRate = useCallback((dir) => {
     const video = getVideo();
@@ -456,15 +454,13 @@ const App = memo(() => {
       setFilePath(fp);
       setFileFormat(ff);
       setDetectedFileFormat(ff);
-      setHtml5FriendlyPath(html5FriendlyPathIn);
 
       if (html5FriendlyPathIn) {
-        setUserHtml5ified(true);
+        setHtml5FriendlyPath(html5FriendlyPathIn);
       } else if (!doesPlayerSupportFile(newStreams)) {
         setUnsupportedFile(true);
         const html5ifiedDummyPathDummy = getOutPath(customOutDir, fp, 'html5ified-dummy.mkv');
         await ffmpeg.html5ifyDummy(fp, html5ifiedDummyPathDummy);
-        setHtml5FriendlyPath(html5ifiedDummyPathDummy);
         setDummyVideoPath(html5ifiedDummyPathDummy);
       }
     } catch (err) {
@@ -722,7 +718,7 @@ const App = memo(() => {
       </div>
       {/* eslint-enable jsx-a11y/media-has-caption */}
 
-      {html5FriendlyPath && (
+      {(html5FriendlyPath || dummyVideoPath) && (
         <div style={{ position: 'absolute', bottom: 100, right: 0, maxWidth: 300, background: 'rgba(0,0,0,0.2)', color: 'rgba(255,255,255,0.8)', boxShadow: 'rgba(0,0,0,0.2) 0 0 15px 15px' }}>
           This video is not natively supported, so there is no audio in the preview and low FPS. <b>The final cut operation will still be lossless and contain audio!</b>
         </div>
