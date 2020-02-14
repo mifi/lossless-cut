@@ -155,7 +155,48 @@ const App = memo(() => {
     return formatDuration({ seconds: sec, fps: timecodeShowFrames ? detectedFps : undefined });
   }
 
-  const setCutStart = useCallback(() => setCutTime('start', currentTime), [setCutTime, currentTime]);
+  const getCutSeg = useCallback((i) => cutSegments[i !== undefined ? i : currentSeg],
+    [currentSeg, cutSegments]);
+
+  const getCutStartTime = useCallback((i) => getCutSeg(i).start, [getCutSeg]);
+  const getCutEndTime = useCallback((i) => getCutSeg(i).end, [getCutSeg]);
+
+  const addCutSegment = useCallback(() => {
+    const cutStartTime = getCutStartTime();
+    const cutEndTime = getCutEndTime();
+
+    if (cutStartTime === undefined && cutEndTime === undefined) return;
+
+    const suggestedStart = currentTime;
+    const suggestedEnd = suggestedStart + 10;
+
+    const cutSegmentsNew = [
+      ...cutSegments,
+      createSegment({
+        start: currentTime,
+        end: suggestedEnd <= duration ? suggestedEnd : undefined,
+      }),
+    ];
+
+    const currentSegNew = cutSegmentsNew.length - 1;
+    setCutSegments(cutSegmentsNew);
+    setCurrentSeg(currentSegNew);
+  }, [
+    getCutEndTime, getCutStartTime, cutSegments, currentTime, duration,
+  ]);
+
+  const setCutStart = useCallback(() => {
+    const curSeg = getCutSeg();
+    // https://github.com/mifi/lossless-cut/issues/168
+    // If we are after the end of the last segment in the timeline,
+    // add a new segment that starts at currentTime
+    if (curSeg.start != null && curSeg.end != null && currentTime > curSeg.end) {
+      addCutSegment();
+    } else {
+      setCutTime('start', currentTime);
+    }
+  }, [setCutTime, currentTime, getCutSeg, addCutSegment]);
+
   const setCutEnd = useCallback(() => setCutTime('end', currentTime), [setCutTime, currentTime]);
 
   async function setOutputDir() {
@@ -223,12 +264,6 @@ const App = memo(() => {
     setRotationPreviewRequested(true);
   }
 
-  const getCutSeg = useCallback((i) => cutSegments[i !== undefined ? i : currentSeg],
-    [currentSeg, cutSegments]);
-
-  const getCutStartTime = useCallback((i) => getCutSeg(i).start, [getCutSeg]);
-  const getCutEndTime = useCallback((i) => getCutSeg(i).end, [getCutSeg]);
-
   const getApparentCutStartTime = useCallback((i) => {
     const cutStartTime = getCutStartTime(i);
     if (cutStartTime !== undefined) return cutStartTime;
@@ -265,30 +300,6 @@ const App = memo(() => {
   const toggleStripAudio = () => setStripAudio(sa => !sa);
   const toggleKeyframeCut = () => setKeyframeCut(val => !val);
   const toggleAutoMerge = () => setAutoMerge(val => !val);
-
-  const addCutSegment = useCallback(() => {
-    const cutStartTime = getCutStartTime();
-    const cutEndTime = getCutEndTime();
-
-    if (cutStartTime === undefined && cutEndTime === undefined) return;
-
-    const suggestedStart = currentTime;
-    const suggestedEnd = suggestedStart + 10;
-
-    const cutSegmentsNew = [
-      ...cutSegments,
-      createSegment({
-        start: currentTime,
-        end: suggestedEnd <= duration ? suggestedEnd : undefined,
-      }),
-    ];
-
-    const currentSegNew = cutSegmentsNew.length - 1;
-    setCutSegments(cutSegmentsNew);
-    setCurrentSeg(currentSegNew);
-  }, [
-    getCutEndTime, getCutStartTime, cutSegments, currentTime, duration,
-  ]);
 
   const removeCutSegment = useCallback(() => {
     if (cutSegments.length < 2) return;
