@@ -166,15 +166,17 @@ async function cutMultiple({
   return outFiles;
 }
 
-async function html5ify(filePath, outPath, encodeVideo) {
+async function html5ify(filePath, outPath, encodeVideo, encodeAudio) {
   console.log('Making HTML5 friendly version', { filePath, outPath, encodeVideo });
 
   const videoArgs = encodeVideo
     ? ['-vf', 'scale=-2:400,format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libx264', '-profile:v', 'baseline', '-x264opts', 'level=3.0', '-preset:v', 'ultrafast', '-crf', '28']
     : ['-vcodec', 'copy'];
 
+  const audioArgs = encodeAudio ? ['-acodec', 'aac', '-b:a', '96k'] : ['-an'];
+
   const ffmpegArgs = [
-    '-i', filePath, ...videoArgs, '-an',
+    '-i', filePath, ...videoArgs, ...audioArgs,
     '-y', outPath,
   ];
 

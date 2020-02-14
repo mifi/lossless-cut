@@ -22,7 +22,6 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
     },
-
   });
   mainWindow.loadFile(isDev ? 'index.html' : 'build/index.html');
 

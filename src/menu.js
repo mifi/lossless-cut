@@ -41,6 +41,12 @@ module.exports = (app, mainWindow, newVersion) => {
         },
       },
       {
+        label: 'Convert to friendly codec (slowest, audio)',
+        click() {
+          mainWindow.webContents.send('html5ify', 'slow-audio');
+        },
+      },
+      {
         label: 'Extract all streams',
         click() {
           mainWindow.webContents.send('extract-all-streams', false);

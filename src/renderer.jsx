@@ -490,7 +490,7 @@ const App = memo(() => {
       if (html5FriendlyPathRequested) {
         setHtml5FriendlyPath(html5FriendlyPathRequested);
       } else if (
-        !(await checkExistingHtml5FriendlyFile(fp, 'slow') || await checkExistingHtml5FriendlyFile(fp, 'fast'))
+        !(await checkExistingHtml5FriendlyFile(fp, 'slow-audio') || await checkExistingHtml5FriendlyFile(fp, 'slow') || await checkExistingHtml5FriendlyFile(fp, 'fast'))
         && !doesPlayerSupportFile(streams)
       ) {
         await createDummyVideo(fp);
@@ -565,10 +565,11 @@ const App = memo(() => {
 
       try {
         setWorking(true);
-        if (['fast', 'slow'].includes(speed)) {
+        if (['fast', 'slow', 'slow-audio'].includes(speed)) {
           const html5FriendlyPathNew = getHtml5ifiedPath(filePath, speed);
-          const encodeVideo = speed === 'slow';
-          await ffmpeg.html5ify(filePath, html5FriendlyPathNew, encodeVideo);
+          const encodeVideo = ['slow', 'slow-audio'].includes(speed);
+          const encodeAudio = speed === 'slow-audio';
+          await ffmpeg.html5ify(filePath, html5FriendlyPathNew, encodeVideo, encodeAudio);
           load(filePath, html5FriendlyPathNew);
         } else {
           await createDummyVideo(filePath);
