@@ -6,7 +6,7 @@ const swal = require('sweetalert2');
 const randomColor = require('./random-color');
 
 
-function formatDuration(_seconds, fileNameFriendly) {
+function formatDuration({ seconds: _seconds, fileNameFriendly, fps }) {
   const seconds = _seconds || 0;
   const minutes = seconds / 60;
   const hours = minutes / 60;
@@ -14,7 +14,9 @@ function formatDuration(_seconds, fileNameFriendly) {
   const hoursPadded = _.padStart(Math.floor(hours), 2, '0');
   const minutesPadded = _.padStart(Math.floor(minutes % 60), 2, '0');
   const secondsPadded = _.padStart(Math.floor(seconds) % 60, 2, '0');
-  const msPadded = _.padStart(Math.floor((seconds - Math.floor(seconds)) * 1000), 3, '0');
+  const msPadded = fps != null
+    ? _.padStart(Math.floor((seconds * fps) % fps), 2, '0')
+    : _.padStart(Math.floor((seconds - Math.floor(seconds)) * 1000), 3, '0');
 
   // Be nice to filenames and use .
   const delim = fileNameFriendly ? '.' : ':';

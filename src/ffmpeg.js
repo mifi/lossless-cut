@@ -136,7 +136,7 @@ async function cutMultiple({
   // eslint-disable-next-line no-restricted-syntax,no-unused-vars
   for (const { cutFrom, cutTo, cutToApparent } of segments) {
     const ext = path.extname(filePath) || `.${format}`;
-    const cutSpecification = `${formatDuration(cutFrom, true)}-${formatDuration(cutToApparent, true)}`;
+    const cutSpecification = `${formatDuration({ seconds: cutFrom, fileNameFriendly: true })}-${formatDuration({ seconds: cutToApparent, fileNameFriendly: true })}`;
 
     const outPath = getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
 

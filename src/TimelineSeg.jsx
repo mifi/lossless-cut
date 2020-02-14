@@ -55,7 +55,7 @@ const TimelineSeg = ({
           role="button"
           tabIndex="0"
           onClick={onThisSegClick}
-          title={`${formatDuration(cutEndTime - cutStartTime)}`}
+          title={`${formatDuration({ seconds: cutEndTime - cutStartTime })}`}
         />
       )}
       {cutEndTime !== undefined && (

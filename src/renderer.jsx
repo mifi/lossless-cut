@@ -100,6 +100,7 @@ const App = memo(() => {
   const [rotationPreviewRequested, setRotationPreviewRequested] = useState(false);
   const [filePath, setFilePath] = useState('');
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [detectedFps, setDetectedFps] = useState();
 
   // Global state
   const [stripAudio, setStripAudio] = useState(false);
@@ -109,6 +110,7 @@ const App = memo(() => {
   const [keyframeCut, setKeyframeCut] = useState(true);
   const [autoMerge, setAutoMerge] = useState(false);
   const [helpVisible, setHelpVisible] = useState(false);
+  const [timecodeShowFrames, setTimecodeShowFrames] = useState(false);
 
   const resetState = useCallback(() => {
     const video = getVideo();
@@ -134,6 +136,7 @@ const App = memo(() => {
     setRotationPreviewRequested(false);
     setFilePath(''); // Setting video src="" prevents memory leak in chromium
     setPlaybackRate(1);
+    setDetectedFps();
   }, []);
 
   useEffect(() => () => {
@@ -147,6 +150,10 @@ const App = memo(() => {
     cloned[currentSeg][type] = time;
     setCutSegments(cloned);
   }, [currentSeg, cutSegments]);
+
+  function formatTimecode(sec) {
+    return formatDuration({ seconds: sec, fps: timecodeShowFrames ? detectedFps : undefined });
+  }
 
   const setCutStart = useCallback(() => setCutTime('start', currentTime), [setCutTime, currentTime]);
   const setCutEnd = useCallback(() => setCutTime('end', currentTime), [setCutTime, currentTime]);
@@ -462,7 +469,18 @@ const App = memo(() => {
         return;
       }
 
-      const { streams: newStreams } = await ffmpeg.getAllStreams(fp);
+      const { streams } = await ffmpeg.getAllStreams(fp);
+      // console.log('streams', streams);
+
+      streams.find((stream) => {
+        const match = typeof stream.avg_frame_rate === 'string' && stream.avg_frame_rate.match(/^([0-9]+)\/([0-9]+)$/);
+        if (stream.codec_type === 'video' && match) {
+          const fps = parseInt(match[1], 10) / parseInt(match[2], 10);
+          setDetectedFps(fps);
+          return true;
+        }
+        return false;
+      });
 
       setFileNameTitle(fp);
       setFilePath(fp);
@@ -473,7 +491,7 @@ const App = memo(() => {
         setHtml5FriendlyPath(html5FriendlyPathRequested);
       } else if (
         !(await checkExistingHtml5FriendlyFile(fp, 'slow') || await checkExistingHtml5FriendlyFile(fp, 'fast'))
-        && !doesPlayerSupportFile(newStreams)
+        && !doesPlayerSupportFile(streams)
       ) {
         await createDummyVideo(fp);
       }
@@ -573,7 +591,7 @@ const App = memo(() => {
 
     async function setStartOffset() {
       const newStartTimeOffset = await promptTimeOffset(
-        startTimeOffset !== undefined ? formatDuration(startTimeOffset) : undefined,
+        startTimeOffset !== undefined ? formatDuration({ seconds: startTimeOffset }) : undefined,
       );
 
       if (newStartTimeOffset === undefined) return;
@@ -663,7 +681,7 @@ const App = memo(() => {
         onChange={e => handleCutTimeInput(e.target.value)}
         value={isCutTimeManualSet()
           ? cutTimeManual
-          : formatDuration(cutTime + startTimeOffset)}
+          : formatDuration({ seconds: cutTime + startTimeOffset })}
       />
     );
   }
@@ -769,7 +787,7 @@ const App = memo(() => {
               />
             ))}
 
-            <div id="current-time-display">{formatDuration(offsetCurrentTime)}</div>
+            <div id="current-time-display">{formatTimecode(offsetCurrentTime)}</div>
           </div>
         </Hammer>
 
@@ -884,6 +902,14 @@ const App = memo(() => {
         <span style={infoSpanStyle} title="Playback rate">
           {round(playbackRate, 1) || 1}
         </span>
+
+        <button
+          type="button"
+          title={`Average FPS (${timecodeShowFrames ? 'FPS fraction' : 'millisecond fraction'})`}
+          onClick={withBlur(() => setTimecodeShowFrames(v => !v))}
+        >
+          {detectedFps ? round(detectedFps, 1) || 1 : '-'}
+        </button>
 
         <button
           style={{ ...infoSpanStyle, background: segBgColor, color: 'white' }}

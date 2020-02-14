@@ -23,7 +23,7 @@ async function captureFrame(customOutDir, filePath, video, currentTime, captureF
   const buf = getFrameFromVideo(video, captureFormat);
 
   const ext = mime.extension(buf.mimetype);
-  const time = formatDuration(currentTime, true);
+  const time = formatDuration({ seconds: currentTime, fileNameFriendly: true });
 
   const outPath = getOutPath(customOutDir, filePath, `${time}.${ext}`);
   await fs.writeFileAsync(outPath, buf);
