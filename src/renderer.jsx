@@ -17,7 +17,7 @@ const uuid = require('uuid');
 const ReactDOM = require('react-dom');
 const classnames = require('classnames');
 const { default: PQueue } = require('p-queue');
-const { unlink } = require('fs-extra');
+const { unlink, exists } = require('fs-extra');
 
 
 const { showMergeDialog, showOpenAndMergeDialog } = require('./merge/merge');
@@ -430,8 +430,10 @@ const App = memo(() => {
     }
   }, [playing]);
 
-  const load = useCallback(async (fp, html5FriendlyPathIn) => {
-    console.log('Load', { fp, html5FriendlyPathIn });
+  const getHtml5ifiedPath = useCallback((fp) => getOutPath(customOutDir, fp, 'html5ified.mp4'), [customOutDir]);
+
+  const load = useCallback(async (fp, html5FriendlyPathRequested) => {
+    console.log('Load', { fp, html5FriendlyPathRequested });
     if (working) {
       errorToast('I\'m busy');
       return;
@@ -455,8 +457,12 @@ const App = memo(() => {
       setFileFormat(ff);
       setDetectedFileFormat(ff);
 
-      if (html5FriendlyPathIn) {
-        setHtml5FriendlyPath(html5FriendlyPathIn);
+      const html5FriendlyPathExisting = getHtml5ifiedPath(fp);
+
+      if (html5FriendlyPathRequested) {
+        setHtml5FriendlyPath(html5FriendlyPathRequested);
+      } else if (html5FriendlyPathExisting && await exists(html5FriendlyPathExisting)) {
+        setHtml5FriendlyPath(html5FriendlyPathExisting);
       } else if (!doesPlayerSupportFile(newStreams)) {
         setUnsupportedFile(true);
         const html5ifiedDummyPathDummy = getOutPath(customOutDir, fp, 'html5ified-dummy.mkv');
@@ -472,7 +478,7 @@ const App = memo(() => {
     } finally {
       setWorking(false);
     }
-  }, [resetState, working, customOutDir]);
+  }, [resetState, working, customOutDir, getHtml5ifiedPath]);
 
   useEffect(() => {
     const toggleHelp = () => setHelpVisible(val => !val);
@@ -533,10 +539,10 @@ const App = memo(() => {
 
       try {
         setWorking(true);
-        const html5ifiedPath = getOutPath(customOutDir, filePath, 'html5ified.mp4');
-        await ffmpeg.html5ify(filePath, html5ifiedPath, encodeVideo);
+        const html5FriendlyPathNew = getHtml5ifiedPath(filePath);
+        await ffmpeg.html5ify(filePath, html5FriendlyPathNew, encodeVideo);
         setWorking(false);
-        load(filePath, html5ifiedPath);
+        load(filePath, html5FriendlyPathNew);
       } catch (err) {
         errorToast('Failed to html5ify file');
         console.error('Failed to html5ify file', err);
@@ -590,7 +596,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('extract-all-streams', extractAllStreams);
     };
   }, [
-    load, mergeFiles, outputDir, filePath, customOutDir, startTimeOffset,
+    load, mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, getHtml5ifiedPath,
   ]);
 
   useEffect(() => {
@@ -720,7 +726,7 @@ const App = memo(() => {
 
       {(html5FriendlyPath || dummyVideoPath) && (
         <div style={{ position: 'absolute', bottom: 100, right: 0, maxWidth: 300, background: 'rgba(0,0,0,0.2)', color: 'rgba(255,255,255,0.8)', boxShadow: 'rgba(0,0,0,0.2) 0 0 15px 15px' }}>
-          This video is not natively supported, so there is no audio in the preview and low FPS. <b>The final cut operation will still be lossless and contain audio!</b>
+          This video is not natively supported, so there is no audio in the preview and it is of low quality. <b>The final cut operation will however be lossless and contain audio!</b>
         </div>
       )}
 
