@@ -334,6 +334,7 @@ function mapCodecToOutputFormat(codec, type) {
   if (type === 'video') return { ext: 'mkv', format: 'matroska' };
   if (type === 'audio') return { ext: 'mka', format: 'matroska' };
   if (type === 'subtitle') return { ext: 'mks', format: 'matroska' };
+  if (type === 'data') return { ext: 'bin', format: 'data' }; // https://superuser.com/questions/1243257/save-data-stream
   return undefined;
 }
 
@@ -344,7 +345,7 @@ async function extractAllStreams({ customOutDir, filePath }) {
 
   const outStreams = streams.map((s, i) => ({
     i,
-    codec: s.codec_name,
+    codec: s.codec_name || s.codec_tag_string || s.codec_type,
     type: s.codec_type,
     format: mapCodecToOutputFormat(s.codec_name, s.codec_type),
   }))
