@@ -39,7 +39,7 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.16.0",
-    "electron": "^7.0.1",
+    "electron": "^8.0.0",
     "electron-builder": "^22.3.2",
     "electron-builder-notarize": "^1.1.2",
     "eslint": "^5.16.0 || ^6.1.0",
