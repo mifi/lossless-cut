@@ -1,5 +1,4 @@
-const React = require('react');
-const PropTypes = require('prop-types');
+import React, { Fragment } from 'react';
 
 const { formatDuration } = require('./util');
 
@@ -44,7 +43,8 @@ const TimelineSeg = ({
   const onThisSegClick = () => onSegClick(segNum);
 
   return (
-    <React.Fragment>
+    // eslint-disable-next-line react/jsx-fragments
+    <Fragment>
       {cutStartTime !== undefined && (
         <div style={startMarkerStyle} className="cut-time-marker" role="button" tabIndex="0" onClick={onThisSegClick} />
       )}
@@ -61,27 +61,8 @@ const TimelineSeg = ({
       {cutEndTime !== undefined && (
         <div style={endMarkerStyle} className="cut-time-marker" role="button" tabIndex="0" onClick={onThisSegClick} />
       )}
-    </React.Fragment>
+    </Fragment>
   );
 };
 
-TimelineSeg.propTypes = {
-  isCutRangeValid: PropTypes.bool.isRequired,
-  duration: PropTypes.number,
-  cutStartTime: PropTypes.number,
-  cutEndTime: PropTypes.number,
-  apparentCutStart: PropTypes.number.isRequired,
-  apparentCutEnd: PropTypes.number.isRequired,
-  isActive: PropTypes.bool.isRequired,
-  segNum: PropTypes.number.isRequired,
-  onSegClick: PropTypes.func.isRequired,
-  color: PropTypes.object.isRequired,
-};
-
-TimelineSeg.defaultProps = {
-  duration: undefined,
-  cutStartTime: undefined,
-  cutEndTime: undefined,
-};
-
-module.exports = TimelineSeg;
+export default TimelineSeg;

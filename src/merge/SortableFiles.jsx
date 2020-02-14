@@ -16,7 +16,8 @@ const SortableItem = sortableElement(({ value, sortIndex }) => (
     {sortIndex + 1}
     {'. '}
     {basename(value)}
-  </div>));
+  </div>
+));
 
 const SortableContainer = sortableContainer(({ items }) => (
   <div>

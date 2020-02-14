@@ -1,2 +1,4 @@
 dist
 package
+build
+watch-build

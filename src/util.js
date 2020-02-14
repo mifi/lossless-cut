@@ -68,7 +68,7 @@ const toast = swal.mixin({
   timer: 5000,
 });
 
-const errorToast = title => toast.fire({
+const errorToast = (title) => toast.fire({
   type: 'error',
   title,
 });
