@@ -60,6 +60,7 @@
     "ffmpeg-static": "3",
     "ffprobe-static": "^3.0.0",
     "file-type": "^12.4.0",
+    "fs-extra": "^8.1.0",
     "github-api": "^3.2.2",
     "hammerjs": "^2.0.8",
     "jquery": "^3.4.0",

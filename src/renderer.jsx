@@ -17,6 +17,7 @@ const uuid = require('uuid');
 const ReactDOM = require('react-dom');
 const classnames = require('classnames');
 const { default: PQueue } = require('p-queue');
+const { unlink } = require('fs-extra');
 
 
 const { showMergeDialog, showOpenAndMergeDialog } = require('./merge/merge');
@@ -85,6 +86,7 @@ const App = memo(() => {
   const [html5FriendlyPath, setHtml5FriendlyPath] = useState();
   const [working, setWorking] = useState(false);
   const [userHtml5ified, setUserHtml5ified] = useState(false);
+  const [dummyVideoPath, setDummyVideoPath] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState();
   const [duration, setDuration] = useState();
@@ -119,6 +121,7 @@ const App = memo(() => {
     setFramePath();
     setUnsupportedFile(false);
     setHtml5FriendlyPath();
+    setDummyVideoPath();
     setWorking(false);
     setUserHtml5ified(false);
     setPlaying(false);
@@ -136,6 +139,10 @@ const App = memo(() => {
     setFilePath(''); // Setting video src="" prevents memory leak in chromium
     setPlaybackRate(1);
   }, []);
+
+  useEffect(() => () => {
+    if (dummyVideoPath) unlink(dummyVideoPath).catch(console.error);
+  }, [dummyVideoPath]);
 
   const frameRenderEnabled = rotationPreviewRequested || (!userHtml5ified && unsupportedFile);
 
@@ -458,6 +465,7 @@ const App = memo(() => {
         const html5ifiedDummyPathDummy = getOutPath(customOutDir, fp, 'html5ified-dummy.mkv');
         await ffmpeg.html5ifyDummy(fp, html5ifiedDummyPathDummy);
         setHtml5FriendlyPath(html5ifiedDummyPathDummy);
+        setDummyVideoPath(html5ifiedDummyPathDummy);
       }
     } catch (err) {
       if (err.code === 1 || err.code === 'ENOENT') {
