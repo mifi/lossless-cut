@@ -82,7 +82,6 @@ const queue = new PQueue({ concurrency: 1 });
 
 const App = memo(() => {
   const [framePath, setFramePath] = useState();
-  const [unsupportedFile, setUnsupportedFile] = useState(false);
   const [html5FriendlyPath, setHtml5FriendlyPath] = useState();
   const [working, setWorking] = useState(false);
   const [dummyVideoPath, setDummyVideoPath] = useState(false);
@@ -118,7 +117,6 @@ const App = memo(() => {
 
     setFileNameTitle();
     setFramePath();
-    setUnsupportedFile(false);
     setHtml5FriendlyPath();
     setDummyVideoPath();
     setWorking(false);
@@ -142,7 +140,7 @@ const App = memo(() => {
     if (dummyVideoPath) unlink(dummyVideoPath).catch(console.error);
   }, [dummyVideoPath]);
 
-  const frameRenderEnabled = rotationPreviewRequested || (!html5FriendlyPath && unsupportedFile);
+  const frameRenderEnabled = !!(rotationPreviewRequested || dummyVideoPath);
 
   const setCutTime = useCallback((type, time) => {
     const cloned = clone(cutSegments);
@@ -315,7 +313,7 @@ const App = memo(() => {
     return video.play().catch((err) => {
       console.error(err);
       if (err.name === 'NotSupportedError') {
-        toast.fire({ type: 'error', title: 'This format/codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu. Note that this will only create a temporary, low quality encoded file used for previewing your cuts, and will not affect the final cut. The final cut will still be lossless. Audio is also removed to make it faster, but only in the preview.', timer: 10000 });
+        toast.fire({ type: 'error', title: 'This format/codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu.', timer: 10000 });
       }
     });
   }, [playing]);
@@ -430,7 +428,21 @@ const App = memo(() => {
     }
   }, [playing]);
 
-  const getHtml5ifiedPath = useCallback((fp) => getOutPath(customOutDir, fp, 'html5ified.mp4'), [customOutDir]);
+  const getHtml5ifiedPath = useCallback((fp, type) => getOutPath(customOutDir, fp, `html5ified-${type}.mp4`), [customOutDir]);
+
+  const createDummyVideo = useCallback(async (fp) => {
+    const html5ifiedDummyPathDummy = getOutPath(customOutDir, fp, 'html5ified-dummy.mkv');
+    await ffmpeg.html5ifyDummy(fp, html5ifiedDummyPathDummy);
+    setDummyVideoPath(html5ifiedDummyPathDummy);
+    setHtml5FriendlyPath();
+  }, [customOutDir]);
+
+  const checkExistingHtml5FriendlyFile = useCallback(async (fp, speed) => {
+    const existing = getHtml5ifiedPath(fp, speed);
+    const ret = existing && await exists(existing);
+    if (ret) setHtml5FriendlyPath(existing);
+    return ret;
+  }, [getHtml5ifiedPath]);
 
   const load = useCallback(async (fp, html5FriendlyPathRequested) => {
     console.log('Load', { fp, html5FriendlyPathRequested });
@@ -457,17 +469,13 @@ const App = memo(() => {
       setFileFormat(ff);
       setDetectedFileFormat(ff);
 
-      const html5FriendlyPathExisting = getHtml5ifiedPath(fp);
-
       if (html5FriendlyPathRequested) {
         setHtml5FriendlyPath(html5FriendlyPathRequested);
-      } else if (html5FriendlyPathExisting && await exists(html5FriendlyPathExisting)) {
-        setHtml5FriendlyPath(html5FriendlyPathExisting);
-      } else if (!doesPlayerSupportFile(newStreams)) {
-        setUnsupportedFile(true);
-        const html5ifiedDummyPathDummy = getOutPath(customOutDir, fp, 'html5ified-dummy.mkv');
-        await ffmpeg.html5ifyDummy(fp, html5ifiedDummyPathDummy);
-        setDummyVideoPath(html5ifiedDummyPathDummy);
+      } else if (
+        !(await checkExistingHtml5FriendlyFile(fp, 'slow') || await checkExistingHtml5FriendlyFile(fp, 'fast'))
+        && !doesPlayerSupportFile(newStreams)
+      ) {
+        await createDummyVideo(fp);
       }
     } catch (err) {
       if (err.code === 1 || err.code === 'ENOENT') {
@@ -478,7 +486,7 @@ const App = memo(() => {
     } finally {
       setWorking(false);
     }
-  }, [resetState, working, customOutDir, getHtml5ifiedPath]);
+  }, [resetState, working, createDummyVideo, checkExistingHtml5FriendlyFile]);
 
   useEffect(() => {
     const toggleHelp = () => setHelpVisible(val => !val);
@@ -534,18 +542,23 @@ const App = memo(() => {
       load(filePaths[0]);
     }
 
-    async function html5ify(event, encodeVideo) {
+    async function html5ify(event, speed) {
       if (!filePath) return;
 
       try {
         setWorking(true);
-        const html5FriendlyPathNew = getHtml5ifiedPath(filePath);
-        await ffmpeg.html5ify(filePath, html5FriendlyPathNew, encodeVideo);
-        setWorking(false);
-        load(filePath, html5FriendlyPathNew);
+        if (['fast', 'slow'].includes(speed)) {
+          const html5FriendlyPathNew = getHtml5ifiedPath(filePath, speed);
+          const encodeVideo = speed === 'slow';
+          await ffmpeg.html5ify(filePath, html5FriendlyPathNew, encodeVideo);
+          load(filePath, html5FriendlyPathNew);
+        } else {
+          await createDummyVideo(filePath);
+        }
       } catch (err) {
         errorToast('Failed to html5ify file');
         console.error('Failed to html5ify file', err);
+      } finally {
         setWorking(false);
       }
     }
@@ -597,6 +610,7 @@ const App = memo(() => {
     };
   }, [
     load, mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, getHtml5ifiedPath,
+    createDummyVideo,
   ]);
 
   useEffect(() => {

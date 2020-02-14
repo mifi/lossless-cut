@@ -23,15 +23,21 @@ module.exports = (app, mainWindow, newVersion) => {
         },
       },
       {
+        label: 'Convert to friendly format (fastest)',
+        click() {
+          mainWindow.webContents.send('html5ify', 'fastest');
+        },
+      },
+      {
         label: 'Convert to friendly format (fast)',
         click() {
-          mainWindow.webContents.send('html5ify', false);
+          mainWindow.webContents.send('html5ify', 'fast');
         },
       },
       {
         label: 'Convert to friendly codec (slow)',
         click() {
-          mainWindow.webContents.send('html5ify', true);
+          mainWindow.webContents.send('html5ify', 'slow');
         },
       },
       {
