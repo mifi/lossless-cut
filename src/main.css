@@ -17,21 +17,7 @@ body {
     cursor: default;
 }
 input, button, textarea, :focus {
-    outline: none; // You should add some other style for :focus to help UX/a11y
-}
-
-#player {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 6rem;
-}
-
-#player video {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+    outline: none;
 }
 
 .button {
@@ -114,25 +100,17 @@ input, button, textarea, :focus {
   width: 1px;
 }
 
-#drag-drop-field {
-  padding: 15vw 0;
-  border: 2vw dashed #252525;
-  color: #303030;
-  margin: 7vw;
-  text-align: center;
-  white-space: nowrap;
-}
-
 .help-sheet {
   background: #525252;
   color: white;
   padding: 1em 2em;
-  position: absolute;
+  position: fixed;
   left: 0;
   right: 0;
   top: 0;
   bottom: 0;
   z-index: 10;
+  overflow-y: scroll;
 }
 
 .help-sheet h1 {

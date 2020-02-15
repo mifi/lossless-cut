@@ -51,6 +51,7 @@
     "svg2png": "^4.1.1"
   },
   "dependencies": {
+    "axios": "^0.19.2",
     "bluebird": "^3.4.6",
     "classnames": "^2.2.5",
     "color": "^3.1.0",
@@ -73,6 +74,7 @@
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-hammerjs": "^1.0.1",
+    "react-icons": "^3.9.0",
     "react-sortable-hoc": "^1.5.3",
     "react-use": "^13.24.0",
     "read-chunk": "^2.0.0",

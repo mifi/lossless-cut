@@ -1,7 +1,9 @@
-import React, { memo, useEffect, useState, useCallback } from 'react';
+import React, { memo, useEffect, useState, useCallback, useRef } from 'react';
+import { IoIosHelpCircle } from 'react-icons/io';
 
 import HelpSheet from './HelpSheet';
 import TimelineSeg from './TimelineSeg';
+import { loadMifiLink } from './mifi';
 
 const electron = require('electron'); // eslint-disable-line
 const $ = require('jquery');
@@ -33,29 +35,6 @@ const {
 
 const { dialog } = electron.remote;
 
-function getVideo() {
-  return $('#player video')[0];
-}
-
-function seekAbs(val) {
-  const video = getVideo();
-  if (val == null || Number.isNaN(val)) return;
-
-  let outVal = val;
-  if (outVal < 0) outVal = 0;
-  if (outVal > video.duration) outVal = video.duration;
-
-  video.currentTime = outVal;
-}
-
-function seekRel(val) {
-  seekAbs(getVideo().currentTime + val);
-}
-
-function shortStep(dir) {
-  seekRel((1 / 60) * dir);
-}
-
 function withBlur(cb) {
   return (e) => {
     cb(e);
@@ -71,6 +50,10 @@ function createSegment({ start, end } = {}) {
     uuid: uuid.v4(),
   };
 }
+
+const dragPreventer = ev => {
+  ev.preventDefault();
+};
 
 function doesPlayerSupportFile(streams) {
   // TODO improve, whitelist supported codecs instead
@@ -111,9 +94,31 @@ const App = memo(() => {
   const [autoMerge, setAutoMerge] = useState(false);
   const [helpVisible, setHelpVisible] = useState(false);
   const [timecodeShowFrames, setTimecodeShowFrames] = useState(false);
+  const [mifiLink, setMifiLink] = useState();
+
+  const videoRef = useRef();
+
+  function seekAbs(val) {
+    const video = videoRef.current;
+    if (val == null || Number.isNaN(val)) return;
+
+    let outVal = val;
+    if (outVal < 0) outVal = 0;
+    if (outVal > video.duration) outVal = video.duration;
+
+    video.currentTime = outVal;
+  }
+
+  const seekRel = useCallback((val) => {
+    seekAbs(videoRef.current.currentTime + val);
+  }, []);
+
+  const shortStep = useCallback((dir) => {
+    seekRel((1 / 60) * dir);
+  }, [seekRel]);
 
   const resetState = useCallback(() => {
-    const video = getVideo();
+    const video = videoRef.current;
     video.currentTime = 0;
     video.playbackRate = 1;
 
@@ -249,7 +254,7 @@ const App = memo(() => {
 
   function onPlayingChange(val) {
     setPlaying(val);
-    if (!val) getVideo().playbackRate = 1;
+    if (!val) videoRef.current.playbackRate = 1;
   }
 
   function onTimeUpdate(e) {
@@ -322,10 +327,10 @@ const App = memo(() => {
     seekAbs((relX / $target[0].offsetWidth) * (duration || 0));
   }
 
-  const onPlaybackRateChange = () => setPlaybackRate(getVideo().playbackRate);
+  const onPlaybackRateChange = () => setPlaybackRate(videoRef.current.playbackRate);
 
   const playCommand = useCallback(() => {
-    const video = getVideo();
+    const video = videoRef.current;
     if (playing) return video.pause();
 
     return video.play().catch((err) => {
@@ -428,7 +433,7 @@ const App = memo(() => {
       return;
     }
     try {
-      await captureFrame(customOutDir, filePath, getVideo(), currentTime, captureFormat);
+      await captureFrame(customOutDir, filePath, videoRef.current, currentTime, captureFormat);
     } catch (err) {
       console.error(err);
       errorToast('Failed to capture frame');
@@ -436,7 +441,7 @@ const App = memo(() => {
   }, [filePath, currentTime, captureFormat, customOutDir, html5FriendlyPath, dummyVideoPath]);
 
   const changePlaybackRate = useCallback((dir) => {
-    const video = getVideo();
+    const video = videoRef.current;
     if (!playing) {
       video.playbackRate = 0.5; // dir * 0.5;
       video.play();
@@ -517,9 +522,9 @@ const App = memo(() => {
     }
   }, [resetState, working, createDummyVideo, checkExistingHtml5FriendlyFile]);
 
-  useEffect(() => {
-    const toggleHelp = () => setHelpVisible(val => !val);
+  const toggleHelp = () => setHelpVisible(val => !val);
 
+  useEffect(() => {
     Mousetrap.bind('space', () => playCommand());
     Mousetrap.bind('k', () => playCommand());
     Mousetrap.bind('j', () => changePlaybackRate(-1));
@@ -555,12 +560,12 @@ const App = memo(() => {
     };
   }, [
     addCutSegment, capture, changePlaybackRate, cutClick, playCommand, removeCutSegment,
-    setCutEnd, setCutStart,
+    setCutEnd, setCutStart, seekRel, shortStep,
   ]);
 
   useEffect(() => {
-    document.ondragover = ev => ev.preventDefault();
-    document.ondragend = document.ondragover;
+    document.ondragover = dragPreventer;
+    document.ondragend = dragPreventer;
 
     electron.ipcRenderer.send('renderer-ready');
   }, []);
@@ -643,18 +648,18 @@ const App = memo(() => {
     createDummyVideo,
   ]);
 
-  useEffect(() => {
-    function onDrop(ev) {
-      ev.preventDefault();
-      const { files } = ev.dataTransfer;
-      if (files.length < 1) return;
-      if (files.length === 1) load(files[0].path);
-      else showMergeDialog(Array.from(files).map(f => f.path), mergeFiles);
-    }
+  const onDrop = useCallback((ev) => {
+    ev.preventDefault();
+    const { files } = ev.dataTransfer;
+    if (files.length < 1) return;
+    if (files.length === 1) load(files[0].path);
+    else showMergeDialog(Array.from(files).map(f => f.path), mergeFiles);
+  }, [load, mergeFiles]);
 
+  useEffect(() => {
     document.body.addEventListener('drop', onDrop);
     return () => document.body.removeEventListener('drop', onDrop);
-  }, [load, mergeFiles]);
+  }, [load, mergeFiles, onDrop]);
 
   function renderCutTimeInput(type) {
     const cutTimeManual = type === 'start' ? cutStartTimeManual : cutEndTimeManual;
@@ -713,12 +718,149 @@ const App = memo(() => {
     background: 'rgba(255, 255, 255, 0.4)', padding: '.1em .4em', margin: '0 3px', fontSize: 13, borderRadius: '.3em',
   };
 
+  function renderOutFmt({ width } = {}) {
+    return (
+      <select style={{ width }} defaultValue="" value={fileFormat} title="Format of current file" onChange={withBlur(e => setFileFormat(e.target.value))}>
+        <option key="" value="" disabled>Out fmt</option>
+        {detectedFileFormat && (
+          <option key={detectedFileFormat} value={detectedFileFormat}>
+            {detectedFileFormat}
+          </option>
+        )}
+        {selectableFormats.map(f => <option key={f} value={f}>{f}</option>)}
+      </select>
+    );
+  }
+
+  function renderCaptureFormatButton() {
+    return (
+      <button
+        type="button"
+        title="Capture frame format"
+        onClick={withBlur(toggleCaptureFormat)}
+      >
+        {captureFormat}
+      </button>
+    );
+  }
+
+  function renderSettings() {
+    return (
+      <table>
+        <tbody>
+          <tr>
+            <td>Output format (default autodetected)</td>
+            <td style={{ width: '50%' }}>{renderOutFmt()}</td>
+          </tr>
+          <tr>
+            <td>In timecode show</td>
+            <td>
+              <button
+                type="button"
+                onClick={() => setTimecodeShowFrames(v => !v)}
+              >
+                {timecodeShowFrames ? 'frame numbers' : 'millisecond fractions'}
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td>Auto merge segments to one file after export?</td>
+            <td>
+              <button
+                type="button"
+                onClick={toggleAutoMerge}
+              >
+                {autoMerge ? 'Auto merge segments to one file (am)' : 'Export separate segments (nm)'}
+              </button>
+            </td>
+          </tr>
+
+          <tr>
+            <td>Cut mode</td>
+            <td>
+              <button
+                type="button"
+                onClick={toggleKeyframeCut}
+              >
+                {keyframeCut ? 'Nearest keyframe cut (kc) - will cut at the nearest keyframe' : 'Normal cut (nc) - cut accurate position but could leave an empty portion'}
+              </button>
+            </td>
+          </tr>
+
+          <tr>
+            <td>Include treams</td>
+            <td>
+              <button
+                type="button"
+                onClick={toggleIncludeAllStreams}
+              >
+                {includeAllStreams ? 'include all streams (audio, video, subtitle, data) (all)' : 'include only primary streams (1 audio and 1 video stream only) (ps)'}
+              </button>
+
+              <div>
+                Note that some streams like subtitles and data are not possible to cut and will therefore be transferred as is.
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              Delete audio?
+            </td>
+            <td>
+              <button
+                type="button"
+                onClick={toggleStripAudio}
+              >
+                {stripAudio ? 'Delete all audio tracks' : 'Keep all audio tracks'}
+              </button>
+            </td>
+          </tr>
+
+          <tr>
+            <td>Output directory</td>
+            <td>
+              <button
+                type="button"
+                onClick={setOutputDir}
+              >
+                {outputDir ? 'Custom output directory (cd)' : 'Output files to same directory as input (id)'}
+              </button>
+              <div>{outputDir}</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              Snapshot capture format
+            </td>
+            <td>
+              {renderCaptureFormatButton()}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    );
+  }
+
+  useEffect(() => {
+    loadMifiLink().then(setMifiLink);
+  }, []);
+
   return (
     <div>
       {!filePath && (
-        <div id="drag-drop-field">
-          <div style={{ fontSize: '9vw' }}>DROP VIDEO</div>
-          <div>PRESS H FOR HELP</div>
+        <div style={{ position: 'fixed', left: 0, right: 0, top: 0, bottom: '6rem', border: '2vmin dashed #252525', color: '#505050', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}>
+          <div style={{ fontSize: '9vmin' }}>DROP VIDEO</div>
+          <div style={{ fontSize: '3vmin' }}>PRESS H FOR HELP</div>
+
+          {mifiLink && mifiLink.loadUrl && (
+            <div style={{ position: 'relative', margin: '3vmin', width: '60vmin', height: '20vmin' }}>
+              <iframe src={mifiLink.loadUrl} title="iframe" style={{ background: 'rgba(0,0,0,0)', border: 'none', pointerEvents: 'none', width: '100%', height: '100%', position: 'absolute' }} />
+              {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus */}
+              <div style={{ width: '100%', height: '100%', position: 'absolute', cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal(mifiLink.targetUrl)} />
+            </div>
+          )}
         </div>
       )}
 
@@ -746,8 +888,10 @@ const App = memo(() => {
       )}
 
       {/* eslint-disable jsx-a11y/media-has-caption */}
-      <div id="player">
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: '6rem', pointerEvents: 'none' }}>
         <video
+          ref={videoRef}
+          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
           src={fileUri}
           onRateChange={onPlaybackRateChange}
           onPlay={() => onPlayingChange(true)}
@@ -901,15 +1045,7 @@ const App = memo(() => {
       </div>
 
       <div className="left-menu">
-        <select style={{ width: 60 }} defaultValue="" value={fileFormat} title="Format of current file" onChange={withBlur(e => setFileFormat(e.target.value))}>
-          <option key="" value="" disabled>Out fmt</option>
-          {detectedFileFormat && (
-            <option key={detectedFileFormat} value={detectedFileFormat}>
-              {detectedFileFormat}
-            </option>
-          )}
-          {selectableFormats.map(f => <option key={f} value={f}>{f}</option>)}
-        </select>
+        {renderOutFmt({ width: 30 })}
 
         <span style={infoSpanStyle} title="Playback rate">
           {round(playbackRate, 1) || 1}
@@ -949,6 +1085,8 @@ const App = memo(() => {
         >
           {autoMerge ? 'am' : 'nm'}
         </button>
+
+        <IoIosHelpCircle size={22} role="button" onClick={toggleHelp} style={{ verticalAlign: 'middle' }} />
       </div>
 
       <div className="right-menu">
@@ -1001,16 +1139,14 @@ const App = memo(() => {
           onClick={capture}
         />
 
-        <button
-          type="button"
-          title="Capture frame format"
-          onClick={withBlur(toggleCaptureFormat)}
-        >
-          {captureFormat}
-        </button>
+        {renderCaptureFormatButton()}
       </div>
 
-      <HelpSheet visible={!!helpVisible} />
+      <HelpSheet
+        visible={!!helpVisible}
+        onTogglePress={toggleHelp}
+        renderSettings={renderSettings}
+      />
     </div>
   );
 });

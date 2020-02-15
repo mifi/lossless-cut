@@ -1,14 +1,15 @@
-const React = require('react');
-const PropTypes = require('prop-types');
+import React from 'react';
+import { IoIosCloseCircleOutline } from 'react-icons/io';
 
-/* eslint-disable react/jsx-one-expression-per-line */
-const HelpSheet = ({ visible }) => {
+const HelpSheet = ({ visible, onTogglePress, renderSettings }) => {
   if (visible) {
     return (
       <div className="help-sheet">
+        <IoIosCloseCircleOutline role="button" onClick={onTogglePress} size={30} style={{ position: 'fixed', right: 0, top: 0, padding: 20 }} />
+
         <h1>Keyboard shortcuts</h1>
         <ul>
-          <li><kbd>H</kbd> Show/hide help</li>
+          <li><kbd>H</kbd> Show/hide this screen</li>
           <li><kbd>SPACE</kbd>, <kbd>k</kbd> Play/pause</li>
           <li><kbd>J</kbd> Slow down video</li>
           <li><kbd>L</kbd> Speed up video</li>
@@ -23,16 +24,16 @@ const HelpSheet = ({ visible }) => {
           <li><kbd>+</kbd> Add cut segment</li>
           <li><kbd>BACKSPACE</kbd> Remove current cut segment</li>
         </ul>
+
+        <p style={{ fontWeight: 'bold' }}>Hover mouse over buttons to see which function they have.</p>
+
+        <h1 style={{ marginTop: 40 }}>Settings</h1>
+        {renderSettings()}
       </div>
     );
   }
 
   return null;
 };
-/* eslint-enable react/jsx-one-expression-per-line */
 
-HelpSheet.propTypes = {
-  visible: PropTypes.bool.isRequired,
-};
-
-module.exports = HelpSheet;
+export default HelpSheet;
