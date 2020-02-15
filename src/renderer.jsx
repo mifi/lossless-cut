@@ -30,7 +30,7 @@ const ffmpeg = require('./ffmpeg');
 
 const {
   getOutPath, parseDuration, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
-  promptTimeOffset, generateColor,
+  promptTimeOffset, generateColor, getOutDir,
 } = require('./util');
 
 const { dialog } = electron.remote;
@@ -417,6 +417,7 @@ const App = memo(() => {
 
       showFfmpegFail(err);
     } finally {
+      toast.fire({ timer: 10000, type: 'success', title: `Cut completed! Output file(s) can be found at: ${getOutDir(customOutDir, filePath)}. You can change the output directory in settings` });
       setWorking(false);
     }
   }, [

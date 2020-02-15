@@ -36,12 +36,15 @@ function parseDuration(str) {
   return ((((hours * 60) + minutes) * 60) + seconds) + (ms / 1000);
 }
 
+function getOutDir(customOutDir, filePath) {
+  const dirname = path.dirname(filePath);
+  return customOutDir || dirname;
+}
+
 function getOutPath(customOutDir, filePath, nameSuffix) {
   const basename = path.basename(filePath);
 
-  return customOutDir
-    ? path.join(customOutDir, `${basename}-${nameSuffix}`)
-    : `${filePath}-${nameSuffix}`;
+  return path.join(getOutDir(customOutDir, filePath), `${basename}-${nameSuffix}`);
 }
 
 async function transferTimestamps(inPath, outPath) {
@@ -114,6 +117,7 @@ module.exports = {
   formatDuration,
   parseDuration,
   getOutPath,
+  getOutDir,
   transferTimestamps,
   transferTimestampsWithOffset,
   toast,
