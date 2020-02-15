@@ -23,6 +23,12 @@ module.exports = (app, mainWindow, newVersion) => {
         },
       },
       {
+        label: 'Close',
+        async click() {
+          mainWindow.webContents.send('close-file');
+        },
+      },
+      {
         label: 'Convert to friendly format (fastest)',
         click() {
           mainWindow.webContents.send('html5ify', 'fastest');

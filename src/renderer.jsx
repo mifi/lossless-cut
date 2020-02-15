@@ -576,6 +576,10 @@ const App = memo(() => {
       load(filePaths[0]);
     }
 
+    function closeFile() {
+      resetState();
+    }
+
     async function html5ify(event, speed) {
       if (!filePath) return;
 
@@ -631,6 +635,7 @@ const App = memo(() => {
     }
 
     electron.ipcRenderer.on('file-opened', fileOpened);
+    electron.ipcRenderer.on('close-file', closeFile);
     electron.ipcRenderer.on('html5ify', html5ify);
     electron.ipcRenderer.on('show-merge-dialog', showOpenAndMergeDialog2);
     electron.ipcRenderer.on('set-start-offset', setStartOffset);
@@ -638,6 +643,7 @@ const App = memo(() => {
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
+      electron.ipcRenderer.removeListener('close-file', fileOpened);
       electron.ipcRenderer.removeListener('html5ify', html5ify);
       electron.ipcRenderer.removeListener('show-merge-dialog', showOpenAndMergeDialog2);
       electron.ipcRenderer.removeListener('set-start-offset', setStartOffset);
