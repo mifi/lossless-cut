@@ -6,7 +6,6 @@ import TimelineSeg from './TimelineSeg';
 import { loadMifiLink } from './mifi';
 
 const electron = require('electron'); // eslint-disable-line
-const $ = require('jquery');
 const Mousetrap = require('mousetrap');
 const round = require('lodash/round');
 const clamp = require('lodash/clamp');
@@ -17,7 +16,6 @@ const trash = require('trash');
 const uuid = require('uuid');
 
 const ReactDOM = require('react-dom');
-const classnames = require('classnames');
 const { default: PQueue } = require('p-queue');
 const { unlink, exists } = require('fs-extra');
 
@@ -84,6 +82,7 @@ const App = memo(() => {
   const [filePath, setFilePath] = useState('');
   const [playbackRate, setPlaybackRate] = useState(1);
   const [detectedFps, setDetectedFps] = useState();
+  const [streams, setStreams] = useState([]);
 
   // Global state
   const [stripAudio, setStripAudio] = useState(false);
@@ -97,6 +96,7 @@ const App = memo(() => {
   const [mifiLink, setMifiLink] = useState();
 
   const videoRef = useRef();
+  const timelineWrapperRef = useRef();
 
   function seekAbs(val) {
     const video = videoRef.current;
@@ -321,10 +321,10 @@ const App = memo(() => {
   const jumpCutEnd = () => seekAbs(getApparentCutEndTime());
 
   function handleTap(e) {
-    const $target = $('.timeline-wrapper');
-    const parentOffset = $target.offset();
-    const relX = e.srcEvent.pageX - parentOffset.left;
-    seekAbs((relX / $target[0].offsetWidth) * (duration || 0));
+    const target = timelineWrapperRef.current;
+    const rect = target.getBoundingClientRect();
+    const relX = e.srcEvent.pageX - (rect.left + document.body.scrollLeft);
+    seekAbs((relX / target.offsetWidth) * (duration || 0));
   }
 
   const onPlaybackRateChange = () => setPlaybackRate(videoRef.current.playbackRate);
@@ -486,10 +486,11 @@ const App = memo(() => {
         return;
       }
 
-      const { streams } = await ffmpeg.getAllStreams(fp);
+      const { streams: streamsNew } = await ffmpeg.getAllStreams(fp);
       // console.log('streams', streams);
+      setStreams(streamsNew);
 
-      streams.find((stream) => {
+      streamsNew.find((stream) => {
         const match = typeof stream.avg_frame_rate === 'string' && stream.avg_frame_rate.match(/^([0-9]+)\/([0-9]+)$/);
         if (stream.codec_type === 'video' && match) {
           const fps = parseInt(match[1], 10) / parseInt(match[2], 10);
@@ -508,7 +509,7 @@ const App = memo(() => {
         setHtml5FriendlyPath(html5FriendlyPathRequested);
       } else if (
         !(await checkExistingHtml5FriendlyFile(fp, 'slow-audio') || await checkExistingHtml5FriendlyFile(fp, 'slow') || await checkExistingHtml5FriendlyFile(fp, 'fast'))
-        && !doesPlayerSupportFile(streams)
+        && !doesPlayerSupportFile(streamsNew)
       ) {
         await createDummyVideo(fp);
       }
@@ -931,26 +932,28 @@ const App = memo(() => {
           onPan={handleTap}
           options={{ recognizers: {} }}
         >
-          <div className="timeline-wrapper">
-            {currentTimePos !== undefined && <div className="current-time" style={{ left: currentTimePos }} />}
+          <div>
+            <div className="timeline-wrapper" ref={timelineWrapperRef}>
+              {currentTimePos !== undefined && <div className="current-time" style={{ left: currentTimePos }} />}
 
-            {cutSegments.map((seg, i) => (
-              <TimelineSeg
-                key={seg.uuid}
-                segNum={i}
-                color={seg.color}
-                onSegClick={currentSegNew => setCurrentSeg(currentSegNew)}
-                isActive={i === currentSeg}
-                isCutRangeValid={isCutRangeValid(i)}
-                duration={durationSafe}
-                cutStartTime={getCutStartTime(i)}
-                cutEndTime={getCutEndTime(i)}
-                apparentCutStart={getApparentCutStartTime(i)}
-                apparentCutEnd={getApparentCutEndTime(i)}
-              />
-            ))}
+              {cutSegments.map((seg, i) => (
+                <TimelineSeg
+                  key={seg.uuid}
+                  segNum={i}
+                  color={seg.color}
+                  onSegClick={currentSegNew => setCurrentSeg(currentSegNew)}
+                  isActive={i === currentSeg}
+                  isCutRangeValid={isCutRangeValid(i)}
+                  duration={durationSafe}
+                  cutStartTime={getCutStartTime(i)}
+                  cutEndTime={getCutEndTime(i)}
+                  apparentCutStart={getApparentCutStartTime(i)}
+                  apparentCutEnd={getApparentCutEndTime(i)}
+                />
+              ))}
 
-            <div id="current-time-display">{formatTimecode(offsetCurrentTime)}</div>
+              <div id="current-time-display">{formatTimecode(offsetCurrentTime)}</div>
+            </div>
           </div>
         </Hammer>
 
@@ -982,9 +985,7 @@ const App = memo(() => {
             onClick={() => shortStep(-1)}
           />
           <i
-            className={classnames({
-              button: true, fa: true, 'fa-pause': playing, 'fa-play': !playing,
-            })}
+            className={`button fa ${playing ? 'fa-pause' : 'fa-play'}`}
             role="button"
             tabIndex="0"
             onClick={playCommand}

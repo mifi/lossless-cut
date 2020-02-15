@@ -1,5 +1,5 @@
 const execa = require('execa');
-const bluebird = require('bluebird');
+const pMap = require('p-map');
 const path = require('path');
 const fileType = require('file-type');
 const readChunk = require('read-chunk');
@@ -262,7 +262,7 @@ async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths, inclu
   const ext = path.extname(sourceFile);
   const outPath = getOutPath(customOutDir, sourceFile, `cut-merged-${new Date().getTime()}${ext}`);
   await mergeFiles({ paths: segmentPaths, outPath, includeAllStreams });
-  await bluebird.map(segmentPaths, trash, { concurrency: 5 });
+  await pMap(segmentPaths, trash, { concurrency: 5 });
 }
 
 /**
