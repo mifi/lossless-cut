@@ -652,7 +652,7 @@ const App = memo(() => {
     };
   }, [
     load, mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, getHtml5ifiedPath,
-    createDummyVideo,
+    createDummyVideo, resetState,
   ]);
 
   const onDrop = useCallback((ev) => {
