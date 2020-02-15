@@ -13,7 +13,7 @@ const TimelineSeg = ({
 
   const startTimePos = `${(apparentCutStart / duration) * 100}%`;
   const endTimePos = `${(apparentCutEnd / duration) * 100}%`;
-  const markerBorder = isActive ? `2px solid ${color.string()}` : undefined;
+  const markerBorder = isActive ? `2px solid ${color.lighten(0.5).string()}` : undefined;
   const markerBorderRadius = 5;
 
   const startMarkerStyle = {
