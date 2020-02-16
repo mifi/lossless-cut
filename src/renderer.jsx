@@ -1,9 +1,10 @@
 import React, { memo, useEffect, useState, useCallback, useRef } from 'react';
 import { IoIosHelpCircle, IoIosCamera } from 'react-icons/io';
-import { FaPlus, FaMinus, FaAngleLeft, FaAngleRight, FaTrashAlt, FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
+import { FaPlus, FaMinus, FaAngleLeft, FaAngleRight, FaTrashAlt, FaVolumeMute, FaVolumeUp, FaYinYang } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
+import { GiYinYang } from 'react-icons/gi';
 import { FiScissors } from 'react-icons/fi';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { Popover, Button } from 'evergreen-ui';
 import fromPairs from 'lodash/fromPairs';
@@ -13,6 +14,7 @@ import sortBy from 'lodash/sortBy';
 
 import HelpSheet from './HelpSheet';
 import TimelineSeg from './TimelineSeg';
+import InverseCutSegment from './InverseCutSegment';
 import StreamsSelector from './StreamsSelector';
 import { loadMifiLink } from './mifi';
 
@@ -82,7 +84,7 @@ const App = memo(() => {
   const [currentTime, setCurrentTime] = useState();
   const [duration, setDuration] = useState();
   const [cutSegments, setCutSegments] = useState([createSegment()]);
-  const [currentSeg, setCurrentSeg] = useState(0);
+  const [currentSegIndex, setCurrentSegIndex] = useState(0);
   const [cutStartTimeManual, setCutStartTimeManual] = useState();
   const [cutEndTimeManual, setCutEndTimeManual] = useState();
   const [fileFormat, setFileFormat] = useState();
@@ -105,6 +107,7 @@ const App = memo(() => {
   const [helpVisible, setHelpVisible] = useState(false);
   const [timecodeShowFrames, setTimecodeShowFrames] = useState(false);
   const [mifiLink, setMifiLink] = useState();
+  const [invertCutSegments, setInvertCutSegments] = useState(false);
 
   const videoRef = useRef();
   const timelineWrapperRef = useRef();
@@ -152,7 +155,7 @@ const App = memo(() => {
     setWorking(false);
     setPlaying(false);
     setDuration();
-    setCurrentSeg(0);
+    setCurrentSegIndex(0);
     setCutSegments([createSegment()]);
     setCutStartTimeManual();
     setCutEndTimeManual();
@@ -167,6 +170,7 @@ const App = memo(() => {
     setStreams([]);
     setCopyStreamIds({});
     setMuted(false);
+    setInvertCutSegments(false);
   }, []);
 
   useEffect(() => () => {
@@ -175,10 +179,10 @@ const App = memo(() => {
 
   const frameRenderEnabled = !!(rotationPreviewRequested || dummyVideoPath);
 
-  // Because segments could have undefined start / end (meaning extend to start of timeline or end duration)
+  // Because segments could have undefined start / end
+  // (meaning extend to start of timeline or end duration)
   function getSegApparentStart(time) {
-    if (time !== undefined) return time;
-    return 0;
+    return time !== undefined ? time : 0;
   }
 
   const getSegApparentEnd = useCallback((time) => {
@@ -198,6 +202,9 @@ const App = memo(() => {
     .map(cutSegment => cutSegment.uuid);
 
   const haveInvalidSegs = invalidSegUuids.length > 0;
+
+  const currentCutSeg = cutSegments[currentSegIndex];
+  const currentApparentCutSeg = apparentCutSegments[currentSegIndex];
 
   const inverseCutSegments = (() => {
     if (haveInvalidSegs) return undefined;
@@ -242,20 +249,17 @@ const App = memo(() => {
 
   const setCutTime = useCallback((type, time) => {
     const cloned = clone(cutSegments);
-    cloned[currentSeg][type] = time;
+    cloned[currentSegIndex][type] = time;
     setCutSegments(cloned);
-  }, [currentSeg, cutSegments]);
+  }, [currentSegIndex, cutSegments]);
 
   function formatTimecode(sec) {
     return formatDuration({ seconds: sec, fps: timecodeShowFrames ? detectedFps : undefined });
   }
 
-  const getCutSeg = useCallback((i) => cutSegments[i !== undefined ? i : currentSeg],
-    [currentSeg, cutSegments]);
-
   const addCutSegment = useCallback(() => {
-    const cutStartTime = getCutSeg().start;
-    const cutEndTime = getCutSeg().end;
+    const cutStartTime = currentCutSeg.start;
+    const cutEndTime = currentCutSeg.end;
 
     if (cutStartTime === undefined && cutEndTime === undefined) return;
 
@@ -270,24 +274,24 @@ const App = memo(() => {
       }),
     ];
 
-    const currentSegNew = cutSegmentsNew.length - 1;
+    const currentSegIndexNew = cutSegmentsNew.length - 1;
     setCutSegments(cutSegmentsNew);
-    setCurrentSeg(currentSegNew);
+    setCurrentSegIndex(currentSegIndexNew);
   }, [
-    getCutSeg, cutSegments, currentTime, duration,
+    currentCutSeg, cutSegments, currentTime, duration,
   ]);
 
   const setCutStart = useCallback(() => {
-    const curSeg = getCutSeg();
     // https://github.com/mifi/lossless-cut/issues/168
     // If we are after the end of the last segment in the timeline,
     // add a new segment that starts at currentTime
-    if (curSeg.start != null && curSeg.end != null && currentTime > curSeg.end) {
+    if (currentCutSeg.start != null && currentCutSeg.end != null
+      && currentTime > currentCutSeg.end) {
       addCutSegment();
     } else {
       setCutTime('start', currentTime);
     }
-  }, [setCutTime, currentTime, getCutSeg, addCutSegment]);
+  }, [setCutTime, currentTime, currentCutSeg, addCutSegment]);
 
   const setCutEnd = useCallback(() => setCutTime('end', currentTime), [setCutTime, currentTime]);
 
@@ -356,13 +360,6 @@ const App = memo(() => {
     setRotationPreviewRequested(true);
   }
 
-  const getApparentCutStartTimeOrCurrent = useCallback((i) => getSegApparentStart(getCutSeg(i).start), [getCutSeg]);
-
-  const getApparentCutEndTimeOrCurrent = useCallback((i) => {
-    const cutEndTime = getCutSeg(i).end;
-    return getSegApparentEnd(cutEndTime);
-  }, [getCutSeg, getSegApparentEnd]);
-
   const offsetCurrentTime = (currentTime || 0) + startTimeOffset;
 
   const mergeFiles = useCallback(async (paths) => {
@@ -400,15 +397,15 @@ const App = memo(() => {
     if (cutSegments.length < 2) return;
 
     const cutSegmentsNew = [...cutSegments];
-    cutSegmentsNew.splice(currentSeg, 1);
+    cutSegmentsNew.splice(currentSegIndex, 1);
 
-    const currentSegNew = Math.min(currentSeg, cutSegmentsNew.length - 1);
-    setCurrentSeg(currentSegNew);
+    const currentSegIndexNew = Math.min(currentSegIndex, cutSegmentsNew.length - 1);
+    setCurrentSegIndex(currentSegIndexNew);
     setCutSegments(cutSegmentsNew);
-  }, [currentSeg, cutSegments]);
+  }, [currentSegIndex, cutSegments]);
 
-  const jumpCutStart = () => seekAbs(getApparentCutStartTimeOrCurrent());
-  const jumpCutEnd = () => seekAbs(getApparentCutEndTimeOrCurrent());
+  const jumpCutStart = () => seekAbs(currentApparentCutSeg.start);
+  const jumpCutEnd = () => seekAbs(currentApparentCutSeg.end);
 
   function handleTap(e) {
     const target = timelineWrapperRef.current;
@@ -462,13 +459,20 @@ const App = memo(() => {
       return;
     }
 
+    const segments = invertCutSegments ? inverseCutSegments : apparentCutSegments;
+
+    const ffmpegSegments = segments.map((seg) => ({
+      cutFrom: seg.start,
+      cutTo: seg.end,
+    }));
+
+    if (segments.length < 1) {
+      errorToast('No segments to export');
+      return;
+    }
+
     try {
       setWorking(true);
-
-      const segments = cutSegments.map((seg, i) => ({
-        cutFrom: getApparentCutStartTimeOrCurrent(i),
-        cutTo: getApparentCutEndTimeOrCurrent(i),
-      }));
 
       const outFiles = await ffmpeg.cutMultiple({
         customOutDir,
@@ -478,7 +482,7 @@ const App = memo(() => {
         rotation: effectiveRotation,
         copyStreamIds,
         keyframeCut,
-        segments,
+        segments: ffmpegSegments,
         onProgress: setCutProgress,
       });
 
@@ -507,8 +511,8 @@ const App = memo(() => {
       setWorking(false);
     }
   }, [
-    effectiveRotation, getApparentCutStartTimeOrCurrent, getApparentCutEndTimeOrCurrent,
-    working, cutSegments, duration, filePath, keyframeCut,
+    effectiveRotation, apparentCutSegments, invertCutSegments, inverseCutSegments,
+    working, duration, filePath, keyframeCut,
     autoMerge, customOutDir, fileFormat, copyStreamIds, haveInvalidSegs,
   ]);
 
@@ -801,7 +805,7 @@ const App = memo(() => {
       seekAbs(rel);
     };
 
-    const cutTime = type === 'start' ? getApparentCutStartTimeOrCurrent() : getApparentCutEndTimeOrCurrent();
+    const cutTime = type === 'start' ? currentApparentCutSeg.start : currentApparentCutSeg.end;
 
     return (
       <input
@@ -820,7 +824,7 @@ const App = memo(() => {
   const durationSafe = duration || 1;
   const currentTimePos = currentTime !== undefined && `${(currentTime / durationSafe) * 100}%`;
 
-  const segColor = (getCutSeg() || {}).color;
+  const segColor = (currentCutSeg || {}).color;
   const segBgColor = segColor.alpha(0.5).string();
 
   const jumpCutButtonStyle = {
@@ -882,19 +886,33 @@ const App = memo(() => {
                 type="button"
                 onClick={toggleAutoMerge}
               >
-                {autoMerge ? 'Auto merge segments to one file' : 'Export separate segments'}
+                {autoMerge ? 'Auto merge segments to one file' : 'Export separate files'}
               </button>
             </td>
           </tr>
 
           <tr>
-            <td>Cut mode</td>
+            <td>keyframe cut mode</td>
             <td>
               <button
                 type="button"
                 onClick={toggleKeyframeCut}
               >
                 {keyframeCut ? 'Nearest keyframe cut - will cut at the nearest keyframe' : 'Normal cut - cut accurate position but could leave an empty portion'}
+              </button>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              Discard (cut away) or keep selected segments from video when exporting
+            </td>
+            <td>
+              <button
+                type="button"
+                onClick={withBlur(() => setInvertCutSegments(v => !v))}
+              >
+                {invertCutSegments ? 'Discard' : 'Keep'}
               </button>
             </td>
           </tr>
@@ -953,6 +971,25 @@ const App = memo(() => {
 
   const VolumeIcon = muted ? FaVolumeMute : FaVolumeUp;
 
+  function renderInvertCutButton() {
+    const KeepOrDiscardIcon = invertCutSegments ? GiYinYang : FaYinYang;
+
+    return (
+      <div style={{ position: 'relative', width: 26, height: 26, marginLeft: 5 }}>
+        <AnimatePresence>
+          <motion.div style={{ position: 'absolute' }} key={invertCutSegments} initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0 }}>
+            <KeepOrDiscardIcon
+              size={26}
+              role="button"
+              title={invertCutSegments ? 'Discard selected segments' : 'Keep selected segments'}
+              onClick={withBlur(() => setInvertCutSegments(v => !v))}
+            />
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div style={{ background: '#6b6b6b', height: topBarHeight, display: 'flex', alignItems: 'center', padding: '0 5px', justifyContent: 'space-between' }}>
@@ -976,10 +1013,10 @@ const App = memo(() => {
         <button
           style={{ opacity: cutSegments.length < 2 ? 0.4 : undefined }}
           type="button"
-          title={`Auto merge segments to one file after export? ${autoMerge ? 'Auto merge enabled' : 'No merging'}`}
+          title={autoMerge ? 'Auto merge segments to one file after export' : 'Export to separate files'}
           onClick={withBlur(toggleAutoMerge)}
         >
-          {autoMerge ? 'Merge cuts' : 'Separate cuts'}
+          {autoMerge ? 'Merge cuts' : 'Separate files'}
         </button>
 
         <button
@@ -1083,52 +1120,39 @@ const App = memo(() => {
           options={{ recognizers: {} }}
         >
           <div>
-            <div style={{ width: '100%', position: 'relative', backgroundColor: '#444' }} ref={timelineWrapperRef} onWheel={onWheel}>
+            <div style={{ height: 36, width: '100%', position: 'relative', backgroundColor: '#444' }} ref={timelineWrapperRef} onWheel={onWheel}>
               {currentTimePos !== undefined && <div style={{ position: 'absolute', bottom: 0, top: 0, left: currentTimePos, zIndex: 3, backgroundColor: 'rgba(255, 255, 255, 1)', width: 1, pointerEvents: 'none' }} />}
 
               <AnimatePresence>
-                {cutSegments.map((seg, i) => (
+                {apparentCutSegments.map((seg, i) => (
                   <TimelineSeg
                     key={seg.uuid}
                     segNum={i}
                     color={seg.color}
-                    onSegClick={currentSegNew => setCurrentSeg(currentSegNew)}
-                    isActive={i === currentSeg}
+                    onSegClick={currentSegIndexNew => setCurrentSegIndex(currentSegIndexNew)}
+                    isActive={i === currentSegIndex}
                     duration={durationSafe}
-                    apparentCutStart={getApparentCutStartTimeOrCurrent(i)}
-                    apparentCutEnd={getApparentCutEndTimeOrCurrent(i)}
+                    cutStart={seg.start}
+                    cutEnd={seg.end}
+                    invertCutSegments={invertCutSegments}
                   />
                 ))}
               </AnimatePresence>
 
-              <div>
-                {inverseCutSegments && inverseCutSegments.map((seg) => (
-                  <div
-                    key={seg.start}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      bottom: 0,
-                      left: `${(seg.start / duration) * 100}%`,
-                      width: `${Math.max(((seg.end - seg.start) / duration) * 100, 1)}%`,
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <div style={{ flexGrow: 1, borderBottom: '1px dashed rgba(255, 255, 255, 0.3)', marginLeft: 5, marginRight: 5 }} />
-                    <FaTrashAlt
-                      style={{ color: 'rgba(255, 255, 255, 0.3)' }}
-                      size={16}
-                    />
-                    <div style={{ flexGrow: 1, borderBottom: '1px dashed rgba(255, 255, 255, 0.3)', marginLeft: 5, marginRight: 5 }} />
-                  </div>
-                ))}
-              </div>
+              {inverseCutSegments && inverseCutSegments.map((seg, i) => (
+                <InverseCutSegment
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={i}
+                  seg={seg}
+                  duration={duration}
+                  invertCutSegments={invertCutSegments}
+                />
+              ))}
 
-              <div style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', padding: '.5em' }}>
-                <span role="button" onClick={() => setTimecodeShowFrames(v => !v)} style={{ background: 'rgba(0,0,0,0.5)', borderRadius: 3, padding: '2px 4px' }}>
+              <div style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' }}>
                   {formatTimecode(offsetCurrentTime)}
-                </span>
+                </div>
               </div>
             </div>
           </div>
@@ -1225,9 +1249,11 @@ const App = memo(() => {
           size={30}
           style={{ margin: '0 5px', background: cutSegments.length < 2 ? undefined : segBgColor, borderRadius: 3, color: 'white' }}
           role="button"
-          title={`Delete current segment ${currentSeg + 1}`}
+          title={`Delete current segment ${currentSegIndex + 1}`}
           onClick={removeCutSegment}
         />
+
+        {renderInvertCutButton()}
       </div>
 
       <div className="right-menu" style={{ position: 'absolute', right: 0, bottom: 0, padding: '.3em', display: 'flex', alignItems: 'center' }}>
