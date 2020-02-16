@@ -321,6 +321,7 @@ function mapCodecToOutputFormat(codec, type) {
     opus: { ext: 'opus', format: 'opus' },
     vorbis: { ext: 'ogg', format: 'ogg' },
     h264: { ext: 'mp4', format: 'mp4' },
+    hevc: { ext: 'mp4', format: 'mp4' },
     eac3: { ext: 'eac3', format: 'eac3' },
 
     subrip: { ext: 'srt', format: 'srt' },
