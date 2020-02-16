@@ -1043,7 +1043,7 @@ const App = memo(() => {
 
       {!filePath && (
         <div style={{ position: 'fixed', left: 0, right: 0, top: topBarHeight, bottom: bottomBarHeight, border: '2vmin dashed #252525', color: '#505050', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}>
-          <div style={{ fontSize: '9vmin' }}>DROP VIDEO</div>
+          <div style={{ fontSize: '9vmin' }}>DROP VIDEO(S)</div>
 
           {mifiLink && mifiLink.loadUrl && (
             <div style={{ position: 'relative', margin: '3vmin', width: '60vmin', height: '20vmin' }}>
