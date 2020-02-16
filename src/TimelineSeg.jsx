@@ -5,7 +5,7 @@ const { formatDuration } = require('./util');
 
 
 const TimelineSeg = ({
-  isCutRangeValid, duration, apparentCutStart, apparentCutEnd, isActive, segNum,
+  duration, apparentCutStart, apparentCutEnd, isActive, segNum,
   onSegClick, color,
 }) => {
   const markerWidth = 4;
@@ -57,7 +57,7 @@ const TimelineSeg = ({
 
       <div
         style={{ flexGrow: 1, textAlign: 'left', fontSize: 10 }}
-        title={apparentCutEnd > apparentCutStart && formatDuration({ seconds: apparentCutEnd - apparentCutStart })}
+        title={apparentCutEnd > apparentCutStart ? formatDuration({ seconds: apparentCutEnd - apparentCutStart }) : undefined}
       >
         {segNum + 1}
       </div>

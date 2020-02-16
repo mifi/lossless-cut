@@ -61,12 +61,6 @@ input, button, textarea, :focus {
   text-align: center;
 }
 
-.timeline-wrapper {
-  width: 100%;
-  position: relative;
-  background-color: #444;
-}
-
 .help-sheet {
   background: #525252;
   color: white;

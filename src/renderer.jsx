@@ -414,7 +414,11 @@ const App = memo(() => {
     const target = timelineWrapperRef.current;
     const rect = target.getBoundingClientRect();
     const relX = e.srcEvent.pageX - (rect.left + document.body.scrollLeft);
-    seekAbs((relX / target.offsetWidth) * (duration || 0));
+    if (duration) seekAbs((relX / target.offsetWidth) * duration);
+  }
+
+  function onWheel(e) {
+    seekRel(e.deltaX / 10);
   }
 
   const playCommand = useCallback(() => {
@@ -1079,7 +1083,7 @@ const App = memo(() => {
           options={{ recognizers: {} }}
         >
           <div>
-            <div className="timeline-wrapper" ref={timelineWrapperRef}>
+            <div style={{ width: '100%', position: 'relative', backgroundColor: '#444' }} ref={timelineWrapperRef} onWheel={onWheel}>
               {currentTimePos !== undefined && <div style={{ position: 'absolute', bottom: 0, top: 0, left: currentTimePos, zIndex: 3, backgroundColor: 'rgba(255, 255, 255, 1)', width: 1, pointerEvents: 'none' }} />}
 
               <AnimatePresence>
