@@ -73,10 +73,10 @@ const TimelineSeg = ({
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
-            style={{ width: 16, height: 16 }}
+            style={{ width: 16, height: 16, flexShrink: 1 }}
           >
             <FaTrashAlt
-              style={{ flexShrink: 1, color: strongColor }}
+              style={{ width: '100%', color: strongColor }}
               size={16}
             />
           </motion.div>
