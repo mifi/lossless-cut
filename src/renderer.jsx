@@ -218,6 +218,7 @@ const App = memo(() => {
     });
 
     if (foundOverlap) return undefined;
+    if (duration == null) return undefined;
 
     const ret = [];
 
@@ -1146,7 +1147,7 @@ const App = memo(() => {
                   // eslint-disable-next-line react/no-array-index-key
                   key={i}
                   seg={seg}
-                  duration={duration}
+                  duration={durationSafe}
                   invertCutSegments={invertCutSegments}
                 />
               ))}
