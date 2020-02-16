@@ -64,7 +64,7 @@ function handleProgress(process, cutDuration, onProgress) {
 
 async function cut({
   filePath, format, cutFrom, cutTo, cutToApparent, videoDuration, rotation,
-  includeAllStreams, onProgress, stripAudio, keyframeCut, outPath,
+  onProgress, copyStreamIds, keyframeCut, outPath,
 }) {
   console.log('Cutting from', cutFrom, 'to', cutToApparent);
 
@@ -90,13 +90,12 @@ async function cut({
   const ffmpegArgs = [
     ...inputCutArgs,
 
-    ...(stripAudio ? ['-an'] : ['-acodec', 'copy']),
+    '-c', 'copy',
 
-    '-vcodec', 'copy',
-    '-scodec', 'copy',
-
-    ...(includeAllStreams ? ['-map', '0'] : []),
+    ...flatMap(Object.keys(copyStreamIds).filter(index => copyStreamIds[index]), index => ['-map', `0:${index}`]),
     '-map_metadata', '0',
+    // https://video.stackexchange.com/questions/23741/how-to-prevent-ffmpeg-from-dropping-metadata
+    '-movflags', 'use_metadata_tags',
 
     // See https://github.com/mifi/lossless-cut/issues/170
     '-ignore_unknown',
@@ -121,7 +120,7 @@ async function cut({
 
 async function cutMultiple({
   customOutDir, filePath, format, segments: segmentsUnsorted, videoDuration, rotation,
-  includeAllStreams, onProgress, stripAudio, keyframeCut,
+  onProgress, keyframeCut, copyStreamIds,
 }) {
   const segments = sortBy(segmentsUnsorted, 'cutFrom');
   const singleProgresses = {};
@@ -148,8 +147,7 @@ async function cutMultiple({
       format,
       videoDuration,
       rotation,
-      includeAllStreams,
-      stripAudio,
+      copyStreamIds,
       keyframeCut,
       cutFrom,
       cutTo,
@@ -218,7 +216,7 @@ async function html5ifyDummy(filePath, outPath) {
   await transferTimestamps(filePath, outPath);
 }
 
-async function mergeFiles({ paths, outPath, includeAllStreams }) {
+async function mergeFiles({ paths, outPath }) {
   console.log('Merging files', { paths }, 'to', outPath);
 
   // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
@@ -226,7 +224,7 @@ async function mergeFiles({ paths, outPath, includeAllStreams }) {
     '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe', '-i', '-',
     '-c', 'copy',
 
-    ...(includeAllStreams ? ['-map', '0'] : []),
+    '-map', '0',
     '-map_metadata', '0',
 
     // See https://github.com/mifi/lossless-cut/issues/170
@@ -251,17 +249,17 @@ async function mergeFiles({ paths, outPath, includeAllStreams }) {
   console.log(result.stdout);
 }
 
-async function mergeAnyFiles({ customOutDir, paths, includeAllStreams }) {
+async function mergeAnyFiles({ customOutDir, paths }) {
   const firstPath = paths[0];
   const ext = path.extname(firstPath);
   const outPath = getOutPath(customOutDir, firstPath, `merged${ext}`);
-  return mergeFiles({ paths, outPath, includeAllStreams });
+  return mergeFiles({ paths, outPath });
 }
 
-async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths, includeAllStreams }) {
+async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths }) {
   const ext = path.extname(sourceFile);
   const outPath = getOutPath(customOutDir, sourceFile, `cut-merged-${new Date().getTime()}${ext}`);
-  await mergeFiles({ paths: segmentPaths, outPath, includeAllStreams });
+  await mergeFiles({ paths: segmentPaths, outPath });
   await pMap(segmentPaths, trash, { concurrency: 5 });
 }
 
@@ -403,6 +401,21 @@ async function renderFrame(timestamp, filePath, rotation) {
   return url;
 }
 
+// https://www.ffmpeg.org/doxygen/3.2/libavutil_2utils_8c_source.html#l00079
+const defaultProcessedCodecTypes = [
+  'video',
+  'audio',
+  'subtitle',
+];
+
+function getStreamFps(stream) {
+  const match = typeof stream.avg_frame_rate === 'string' && stream.avg_frame_rate.match(/^([0-9]+)\/([0-9]+)$/);
+  if (stream.codec_type === 'video' && match) {
+    return parseInt(match[1], 10) / parseInt(match[2], 10);
+  }
+  return undefined;
+}
+
 
 module.exports = {
   cutMultiple,
@@ -414,4 +427,6 @@ module.exports = {
   extractAllStreams,
   renderFrame,
   getAllStreams,
+  defaultProcessedCodecTypes,
+  getStreamFps,
 };

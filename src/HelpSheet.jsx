@@ -1,10 +1,16 @@
 import React from 'react';
 import { IoIosCloseCircleOutline } from 'react-icons/io';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const HelpSheet = ({ visible, onTogglePress, renderSettings }) => {
-  if (visible) {
-    return (
-      <div className="help-sheet">
+const HelpSheet = ({ visible, onTogglePress, renderSettings }) => (
+  <AnimatePresence>
+    {visible && (
+      <motion.div
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0, opacity: 0 }}
+        className="help-sheet"
+      >
         <IoIosCloseCircleOutline role="button" onClick={onTogglePress} size={30} style={{ position: 'fixed', right: 0, top: 0, padding: 20 }} />
 
         <h1>Keyboard shortcuts</h1>
@@ -29,11 +35,9 @@ const HelpSheet = ({ visible, onTogglePress, renderSettings }) => {
 
         <h1 style={{ marginTop: 40 }}>Settings</h1>
         {renderSettings()}
-      </div>
-    );
-  }
-
-  return null;
-};
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
 
 export default HelpSheet;

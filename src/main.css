@@ -52,19 +52,11 @@ input, button, textarea, :focus {
   padding: .3em;
 }
 
-.left-menu {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  padding: .3em;
-}
-
 .controls-wrapper {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 5.75rem;
   background: #6b6b6b;
   text-align: center;
 }
@@ -114,7 +106,7 @@ input, button, textarea, :focus {
 }
 
 .help-sheet h1 {
-  font-size: 1em;
+  font-size: 1.2em;
   text-transform: uppercase;
 }
 

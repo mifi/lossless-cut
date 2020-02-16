@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const path = require('path');
-const fs = require('fs');
-const swal = require('sweetalert2');
+const fs = require('fs-extra');
+const Swal = require('sweetalert2');
 
 const randomColor = require('./random-color');
 
@@ -49,8 +49,8 @@ function getOutPath(customOutDir, filePath, nameSuffix) {
 
 async function transferTimestamps(inPath, outPath) {
   try {
-    const stat = await fs.statAsync(inPath);
-    await fs.utimesAsync(outPath, stat.atime.getTime() / 1000, stat.mtime.getTime() / 1000);
+    const stat = await fs.stat(inPath);
+    await fs.utimes(outPath, stat.atime.getTime() / 1000, stat.mtime.getTime() / 1000);
   } catch (err) {
     console.error('Failed to set output file modified time', err);
   }
@@ -58,15 +58,15 @@ async function transferTimestamps(inPath, outPath) {
 
 async function transferTimestampsWithOffset(inPath, outPath, offset) {
   try {
-    const stat = await fs.statAsync(inPath);
+    const stat = await fs.stat(inPath);
     const time = (stat.mtime.getTime() / 1000) + offset;
-    await fs.utimesAsync(outPath, time, time);
+    await fs.utimes(outPath, time, time);
   } catch (err) {
     console.error('Failed to set output file modified time', err);
   }
 }
 
-const toast = swal.mixin({
+const toast = Swal.mixin({
   toast: true,
   position: 'top',
   showConfirmButton: false,
@@ -89,7 +89,7 @@ function setFileNameTitle(filePath) {
 }
 
 async function promptTimeOffset(inputValue) {
-  const { value } = await swal.fire({
+  const { value } = await Swal.fire({
     title: 'Set custom start time offset',
     text: 'Instead of video apparently starting at 0, you can offset by a specified value (useful for viewing/cutting videos according to timecodes)',
     input: 'text',

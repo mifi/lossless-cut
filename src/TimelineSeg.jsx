@@ -1,4 +1,5 @@
-import React, { Fragment } from 'react';
+import React from 'react';
+import { motion } from 'framer-motion';
 
 const { formatDuration } = require('./util');
 
@@ -44,12 +45,17 @@ const TimelineSeg = ({
 
   return (
     // eslint-disable-next-line react/jsx-fragments
-    <Fragment>
+    <div>
       {cutStartTime !== undefined && (
         <div style={startMarkerStyle} className="cut-time-marker" role="button" tabIndex="0" onClick={onThisSegClick} />
       )}
       {isCutRangeValid && (cutStartTime !== undefined || cutEndTime !== undefined) && (
-        <div
+        <motion.div
+          layoutTransition
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+
           className="cut-section"
           style={cutSectionStyle}
           role="button"
@@ -61,7 +67,7 @@ const TimelineSeg = ({
       {cutEndTime !== undefined && (
         <div style={endMarkerStyle} className="cut-time-marker" role="button" tabIndex="0" onClick={onThisSegClick} />
       )}
-    </Fragment>
+    </div>
   );
 };
 
