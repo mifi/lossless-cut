@@ -1019,7 +1019,7 @@ const App = memo(() => {
         >
           <div>
             <div className="timeline-wrapper" ref={timelineWrapperRef}>
-              {currentTimePos !== undefined && <div className="current-time" style={{ left: currentTimePos, pointerEvents: 'none' }} />}
+              {currentTimePos !== undefined && <div style={{ position: 'absolute', bottom: 0, top: 0, left: currentTimePos, zIndex: 3, backgroundColor: 'rgba(255, 255, 255, 1)', width: 1, pointerEvents: 'none' }} />}
 
               <AnimatePresence>
                 {cutSegments.map((seg, i) => (

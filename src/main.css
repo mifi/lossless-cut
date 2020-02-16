@@ -73,25 +73,6 @@ input, button, textarea, :focus {
   background-color: #444;
 }
 
-.timeline-wrapper .current-time, .timeline-wrapper .cut-section, .timeline-wrapper .cut-time-marker {
-  position: absolute;
-  bottom: 0;
-  top: 0;
-}
-
-.timeline-wrapper .cut-section {
-  z-index: 1;
-}
-.timeline-wrapper .cut-time-marker {
-  z-index: 2;
-  box-sizing: border-box;
-}
-.timeline-wrapper .current-time {
-  z-index: 3;
-  background-color: rgba(255, 255, 255, 1);
-  width: 1px;
-}
-
 .help-sheet {
   background: #525252;
   color: white;
