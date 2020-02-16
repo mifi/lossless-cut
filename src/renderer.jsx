@@ -430,7 +430,7 @@ const App = memo(() => {
     });
   }, [playing]);
 
-  async function deleteSourceClick() {
+  const deleteSource = useCallback(async () => {
     if (!filePath) return;
 
     // eslint-disable-next-line no-alert
@@ -446,7 +446,7 @@ const App = memo(() => {
     } finally {
       resetState();
     }
-  }
+  }, [filePath, html5FriendlyPath, resetState, working]);
 
   const cutClick = useCallback(async () => {
     if (working) {
@@ -645,6 +645,7 @@ const App = memo(() => {
     Mousetrap.bind('h', () => toggleHelp());
     Mousetrap.bind('+', () => addCutSegment());
     Mousetrap.bind('backspace', () => removeCutSegment());
+    Mousetrap.bind('d', () => deleteSource());
 
     return () => {
       Mousetrap.unbind('space');
@@ -662,10 +663,11 @@ const App = memo(() => {
       Mousetrap.unbind('h');
       Mousetrap.unbind('+');
       Mousetrap.unbind('backspace');
+      Mousetrap.unbind('d');
     };
   }, [
     addCutSegment, capture, changePlaybackRate, cutClick, playCommand, removeCutSegment,
-    setCutEnd, setCutStart, seekRel, shortStep,
+    setCutEnd, setCutStart, seekRel, shortStep, deleteSource,
   ]);
 
   useEffect(() => {
@@ -1272,7 +1274,7 @@ const App = memo(() => {
           title="Delete source file"
           style={{ padding: '5px 10px' }}
           size={16}
-          onClick={deleteSourceClick}
+          onClick={deleteSource}
           role="button"
         />
 
