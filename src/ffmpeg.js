@@ -63,16 +63,16 @@ function handleProgress(process, cutDuration, onProgress) {
 }
 
 async function cut({
-  filePath, format, cutFrom, cutTo, cutToApparent, videoDuration, rotation,
+  filePath, format, cutFrom, cutTo, videoDuration, rotation,
   onProgress, copyStreamIds, keyframeCut, outPath,
 }) {
-  console.log('Cutting from', cutFrom, 'to', cutToApparent);
+  console.log('Cutting from', cutFrom, 'to', cutTo);
 
-  const cutDuration = cutToApparent - cutFrom;
+  const cutDuration = cutTo - cutFrom;
 
   // https://github.com/mifi/lossless-cut/issues/50
   const cutFromArgs = cutFrom === 0 ? [] : ['-ss', cutFrom];
-  const cutToArgs = cutTo === undefined || cutTo === videoDuration ? [] : ['-t', cutDuration];
+  const cutToArgs = cutTo === videoDuration ? [] : ['-t', cutDuration];
 
   const inputCutArgs = keyframeCut ? [
     ...cutFromArgs,
@@ -133,9 +133,9 @@ async function cutMultiple({
 
   let i = 0;
   // eslint-disable-next-line no-restricted-syntax,no-unused-vars
-  for (const { cutFrom, cutTo, cutToApparent } of segments) {
+  for (const { cutFrom, cutTo } of segments) {
     const ext = path.extname(filePath) || `.${format}`;
-    const cutSpecification = `${formatDuration({ seconds: cutFrom, fileNameFriendly: true })}-${formatDuration({ seconds: cutToApparent, fileNameFriendly: true })}`;
+    const cutSpecification = `${formatDuration({ seconds: cutFrom, fileNameFriendly: true })}-${formatDuration({ seconds: cutTo, fileNameFriendly: true })}`;
 
     const outPath = getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
 
@@ -151,7 +151,6 @@ async function cutMultiple({
       keyframeCut,
       cutFrom,
       cutTo,
-      cutToApparent,
       // eslint-disable-next-line no-loop-func
       onProgress: progress => onSingleProgress(i, progress),
     });

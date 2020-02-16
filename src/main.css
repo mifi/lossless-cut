@@ -61,12 +61,6 @@ input, button, textarea, :focus {
   text-align: center;
 }
 
-#current-time-display {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.8);
-  padding: .5em;
-}
-
 .timeline-wrapper {
   width: 100%;
   position: relative;

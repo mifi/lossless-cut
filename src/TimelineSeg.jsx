@@ -5,12 +5,11 @@ const { formatDuration } = require('./util');
 
 
 const TimelineSeg = ({
-  isCutRangeValid, duration: durationRaw, cutStartTime, cutEndTime, apparentCutStart,
-  apparentCutEnd, isActive, segNum, onSegClick, color,
+  isCutRangeValid, duration, apparentCutStart, apparentCutEnd, isActive, segNum,
+  onSegClick, color,
 }) => {
-  const duration = durationRaw || 1;
-  const cutSectionWidth = `${((apparentCutEnd - apparentCutStart) / duration) * 100}%`;
   const markerWidth = 4;
+  const cutSectionWidth = `${Math.max(((apparentCutEnd - apparentCutStart) / duration) * 100, 1)}%`;
 
   const startTimePos = `${(apparentCutStart / duration) * 100}%`;
   const markerBorder = isActive ? `2px solid ${color.lighten(0.5).string()}` : undefined;
@@ -30,29 +29,39 @@ const TimelineSeg = ({
     borderBottomRightRadius: markerBorderRadius,
   };
 
+  const wrapperStyle = {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: startTimePos,
+    width: cutSectionWidth,
+    display: 'flex',
+    background: backgroundColor,
+    originX: 0,
+    borderRadius: markerBorderRadius,
+  };
+
   const onThisSegClick = () => onSegClick(segNum);
 
   return (
     <motion.div
-      style={{ position: 'absolute', top: 0, bottom: 0, left: startTimePos, width: cutSectionWidth, display: 'flex', background: backgroundColor, originX: 0 }}
+      style={wrapperStyle}
       layoutTransition={{ type: 'spring', damping: 30, stiffness: 1000 }}
       initial={{ opacity: 0, scaleX: 0 }}
       animate={{ opacity: 1, scaleX: 1 }}
       exit={{ opacity: 0, scaleX: 0 }}
+      role="button"
       onClick={onThisSegClick}
     >
-      {cutStartTime !== undefined && (
-        <div style={startMarkerStyle} role="button" tabIndex="0" />
-      )}
-      {isCutRangeValid && (cutStartTime !== undefined || cutEndTime !== undefined) && (
-        <div
-          role="button"
-          tabIndex="0"
-          style={{ flexGrow: 1 }}
-          title={`${formatDuration({ seconds: cutEndTime - cutStartTime })}`}
-        />
-      )}
-      {cutEndTime !== undefined && (
+      <div style={startMarkerStyle} role="button" tabIndex="0" />
+
+      <div
+        style={{ flexGrow: 1, textAlign: 'left', fontSize: 10 }}
+        title={apparentCutEnd > apparentCutStart && formatDuration({ seconds: apparentCutEnd - apparentCutStart })}
+      >
+        {segNum + 1}
+      </div>
+      {apparentCutEnd > apparentCutStart && (
         <div style={endMarkerStyle} role="button" tabIndex="0" />
       )}
     </motion.div>

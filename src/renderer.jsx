@@ -9,6 +9,7 @@ import { Popover, Button } from 'evergreen-ui';
 import fromPairs from 'lodash/fromPairs';
 import clamp from 'lodash/clamp';
 import clone from 'lodash/clone';
+import sortBy from 'lodash/sortBy';
 
 import HelpSheet from './HelpSheet';
 import TimelineSeg from './TimelineSeg';
@@ -113,6 +114,13 @@ const App = memo(() => {
     setCopyStreamIds(v => ({ ...v, [index]: !v[index] }));
   }
 
+  function toggleMute() {
+    setMuted((v) => {
+      if (!v) toast.fire({ title: 'Muted preview (note that exported file will not be affected)' });
+      return !v;
+    });
+  }
+
   function seekAbs(val) {
     const video = videoRef.current;
     if (val == null || Number.isNaN(val)) return;
@@ -167,6 +175,71 @@ const App = memo(() => {
 
   const frameRenderEnabled = !!(rotationPreviewRequested || dummyVideoPath);
 
+  // Because segments could have undefined start / end (meaning extend to start of timeline or end duration)
+  function getSegApparentStart(time) {
+    if (time !== undefined) return time;
+    return 0;
+  }
+
+  const getSegApparentEnd = useCallback((time) => {
+    if (time !== undefined) return time;
+    if (duration !== undefined) return duration;
+    return 0; // Haven't gotten duration yet
+  }, [duration]);
+
+  const apparentCutSegments = cutSegments.map(cutSegment => ({
+    ...cutSegment,
+    start: getSegApparentStart(cutSegment.start),
+    end: getSegApparentEnd(cutSegment.end),
+  }));
+
+  const invalidSegUuids = apparentCutSegments
+    .filter(cutSegment => cutSegment.start >= cutSegment.end)
+    .map(cutSegment => cutSegment.uuid);
+
+  const haveInvalidSegs = invalidSegUuids.length > 0;
+
+  const inverseCutSegments = (() => {
+    if (haveInvalidSegs) return undefined;
+    if (apparentCutSegments.length < 1) return undefined;
+
+    const sorted = sortBy(apparentCutSegments, 'start');
+
+    const foundOverlap = sorted.some((cutSegment, i) => {
+      if (i === 0) return false;
+      return sorted[i - 1].end > cutSegment.start;
+    });
+
+    if (foundOverlap) return undefined;
+
+    const ret = [];
+
+    if (sorted[0].start > 0) {
+      ret.push({
+        start: 0,
+        end: sorted[0].start,
+      });
+    }
+
+    sorted.forEach((cutSegment, i) => {
+      if (i === 0) return;
+      ret.push({
+        start: sorted[i - 1].end,
+        end: cutSegment.start,
+      });
+    });
+
+    const last = sorted[sorted.length - 1];
+    if (last.end < duration) {
+      ret.push({
+        start: last.end,
+        end: duration,
+      });
+    }
+
+    return ret;
+  })();
+
   const setCutTime = useCallback((type, time) => {
     const cloned = clone(cutSegments);
     cloned[currentSeg][type] = time;
@@ -180,12 +253,9 @@ const App = memo(() => {
   const getCutSeg = useCallback((i) => cutSegments[i !== undefined ? i : currentSeg],
     [currentSeg, cutSegments]);
 
-  const getCutStartTime = useCallback((i) => getCutSeg(i).start, [getCutSeg]);
-  const getCutEndTime = useCallback((i) => getCutSeg(i).end, [getCutSeg]);
-
   const addCutSegment = useCallback(() => {
-    const cutStartTime = getCutStartTime();
-    const cutEndTime = getCutEndTime();
+    const cutStartTime = getCutSeg().start;
+    const cutEndTime = getCutSeg().end;
 
     if (cutStartTime === undefined && cutEndTime === undefined) return;
 
@@ -204,7 +274,7 @@ const App = memo(() => {
     setCutSegments(cutSegmentsNew);
     setCurrentSeg(currentSegNew);
   }, [
-    getCutEndTime, getCutStartTime, cutSegments, currentTime, duration,
+    getCutSeg, cutSegments, currentTime, duration,
   ]);
 
   const setCutStart = useCallback(() => {
@@ -286,18 +356,12 @@ const App = memo(() => {
     setRotationPreviewRequested(true);
   }
 
-  const getApparentCutStartTime = useCallback((i) => {
-    const cutStartTime = getCutStartTime(i);
-    if (cutStartTime !== undefined) return cutStartTime;
-    return 0;
-  }, [getCutStartTime]);
+  const getApparentCutStartTimeOrCurrent = useCallback((i) => getSegApparentStart(getCutSeg(i).start), [getCutSeg]);
 
-  const getApparentCutEndTime = useCallback((i) => {
-    const cutEndTime = getCutEndTime(i);
-    if (cutEndTime !== undefined) return cutEndTime;
-    if (duration !== undefined) return duration;
-    return 0; // Haven't gotten duration yet
-  }, [getCutEndTime, duration]);
+  const getApparentCutEndTimeOrCurrent = useCallback((i) => {
+    const cutEndTime = getCutSeg(i).end;
+    return getSegApparentEnd(cutEndTime);
+  }, [getCutSeg, getSegApparentEnd]);
 
   const offsetCurrentTime = (currentTime || 0) + startTimeOffset;
 
@@ -343,8 +407,8 @@ const App = memo(() => {
     setCutSegments(cutSegmentsNew);
   }, [currentSeg, cutSegments]);
 
-  const jumpCutStart = () => seekAbs(getApparentCutStartTime());
-  const jumpCutEnd = () => seekAbs(getApparentCutEndTime());
+  const jumpCutStart = () => seekAbs(getApparentCutStartTimeOrCurrent());
+  const jumpCutEnd = () => seekAbs(getApparentCutEndTimeOrCurrent());
 
   function handleTap(e) {
     const target = timelineWrapperRef.current;
@@ -366,8 +430,10 @@ const App = memo(() => {
   }, [playing]);
 
   async function deleteSourceClick() {
+    if (!filePath) return;
+
     // eslint-disable-next-line no-alert
-    if (working || !window.confirm('Are you sure you want to move the source file to trash?')) return;
+    if (working || !window.confirm(`Are you sure you want to move the source file to trash? ${filePath}`)) return;
 
     try {
       setWorking(true);
@@ -381,19 +447,13 @@ const App = memo(() => {
     }
   }
 
-  const isCutRangeValid = useCallback((i) => getApparentCutStartTime(i) < getApparentCutEndTime(i),
-    [getApparentCutStartTime, getApparentCutEndTime]);
-
   const cutClick = useCallback(async () => {
     if (working) {
       errorToast('I\'m busy');
       return;
     }
 
-    const cutStartTime = getCutStartTime();
-    const cutEndTime = getCutEndTime();
-
-    if (!(isCutRangeValid() || cutEndTime === undefined || cutStartTime === undefined)) {
+    if (haveInvalidSegs) {
       errorToast('Start time must be before end time');
       return;
     }
@@ -402,9 +462,8 @@ const App = memo(() => {
       setWorking(true);
 
       const segments = cutSegments.map((seg, i) => ({
-        cutFrom: getApparentCutStartTime(i),
-        cutTo: getCutEndTime(i),
-        cutToApparent: getApparentCutEndTime(i),
+        cutFrom: getApparentCutStartTimeOrCurrent(i),
+        cutTo: getApparentCutEndTimeOrCurrent(i),
       }));
 
       const outFiles = await ffmpeg.cutMultiple({
@@ -444,9 +503,9 @@ const App = memo(() => {
       setWorking(false);
     }
   }, [
-    effectiveRotation, getApparentCutStartTime, getApparentCutEndTime, getCutEndTime,
-    getCutStartTime, isCutRangeValid, working, cutSegments, duration, filePath, keyframeCut,
-    autoMerge, customOutDir, fileFormat, copyStreamIds,
+    effectiveRotation, getApparentCutStartTimeOrCurrent, getApparentCutEndTimeOrCurrent,
+    working, cutSegments, duration, filePath, keyframeCut,
+    autoMerge, customOutDir, fileFormat, copyStreamIds, haveInvalidSegs,
   ]);
 
   function showUnsupportedFileMessage() {
@@ -498,6 +557,7 @@ const App = memo(() => {
     }
     return ret;
   }, [getHtml5ifiedPath]);
+
 
   const load = useCallback(async (fp, html5FriendlyPathRequested) => {
     console.log('Load', { fp, html5FriendlyPathRequested });
@@ -737,7 +797,7 @@ const App = memo(() => {
       seekAbs(rel);
     };
 
-    const cutTime = type === 'start' ? getApparentCutStartTime() : getApparentCutEndTime();
+    const cutTime = type === 'start' ? getApparentCutStartTimeOrCurrent() : getApparentCutEndTimeOrCurrent();
 
     return (
       <input
@@ -756,7 +816,7 @@ const App = memo(() => {
   const durationSafe = duration || 1;
   const currentTimePos = currentTime !== undefined && `${(currentTime / durationSafe) * 100}%`;
 
-  const segColor = getCutSeg().color;
+  const segColor = (getCutSeg() || {}).color;
   const segBgColor = segColor.alpha(0.5).string();
 
   const jumpCutButtonStyle = {
@@ -797,17 +857,20 @@ const App = memo(() => {
             <td>Output format (default autodetected)</td>
             <td style={{ width: '50%' }}>{renderOutFmt()}</td>
           </tr>
+
           <tr>
-            <td>In timecode show</td>
+            <td>Output directory</td>
             <td>
               <button
                 type="button"
-                onClick={() => setTimecodeShowFrames(v => !v)}
+                onClick={setOutputDir}
               >
-                {timecodeShowFrames ? 'frame numbers' : 'millisecond fractions'}
+                {customOutDir ? 'Custom output directory' : 'Output files to same directory as current file'}
               </button>
+              <div>{customOutDir}</div>
             </td>
           </tr>
+
           <tr>
             <td>Auto merge segments to one file after export?</td>
             <td>
@@ -847,24 +910,23 @@ const App = memo(() => {
           </tr>
 
           <tr>
-            <td>Output directory</td>
-            <td>
-              <button
-                type="button"
-                onClick={setOutputDir}
-              >
-                {customOutDir ? 'Custom output directory' : 'Output files to same directory as current file'}
-              </button>
-              <div>{customOutDir}</div>
-            </td>
-          </tr>
-
-          <tr>
             <td>
               Snapshot capture format
             </td>
             <td>
               {renderCaptureFormatButton()}
+            </td>
+          </tr>
+
+          <tr>
+            <td>In timecode show</td>
+            <td>
+              <button
+                type="button"
+                onClick={() => setTimecodeShowFrames(v => !v)}
+              >
+                {timecodeShowFrames ? 'Frame numbers' : 'Millisecond fractions'}
+              </button>
             </td>
           </tr>
         </tbody>
@@ -950,21 +1012,21 @@ const App = memo(() => {
       )}
 
       {working && (
-      <div style={{
-        color: 'white', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '.5em', margin: '1em', padding: '.2em .5em', position: 'absolute', zIndex: 1, top: topBarHeight, left: 0,
-      }}
-      >
-        <i className="fa fa-cog fa-spin fa-3x fa-fw" style={{ verticalAlign: 'middle', width: '1em', height: '1em' }} />
-        {cutProgress != null && (
-          <span style={{ color: 'rgba(255, 255, 255, 0.7)', paddingLeft: '.4em' }}>
-            {`${Math.floor(cutProgress * 100)} %`}
-          </span>
-        )}
-      </div>
+        <div style={{
+          color: 'white', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '.5em', margin: '1em', padding: '.2em .5em', position: 'absolute', zIndex: 1, top: topBarHeight, left: 0,
+        }}
+        >
+          <i className="fa fa-cog fa-spin fa-3x fa-fw" style={{ verticalAlign: 'middle', width: '1em', height: '1em' }} />
+          {cutProgress != null && (
+            <span style={{ color: 'rgba(255, 255, 255, 0.7)', paddingLeft: '.4em' }}>
+              {`${Math.floor(cutProgress * 100)} %`}
+            </span>
+          )}
+        </div>
       )}
 
-      {/* eslint-disable jsx-a11y/media-has-caption */}
       <div style={{ position: 'absolute', top: topBarHeight, left: 0, right: 0, bottom: bottomBarHeight }}>
+        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <video
           muted={muted}
           ref={videoRef}
@@ -986,7 +1048,6 @@ const App = memo(() => {
           />
         )}
       </div>
-      {/* eslint-enable jsx-a11y/media-has-caption */}
 
       {rotationPreviewRequested && (
         <div style={{
@@ -1006,7 +1067,7 @@ const App = memo(() => {
             title="Mute preview? (will not affect output)"
             size={30}
             role="button"
-            onClick={() => setMuted(v => !v)}
+            onClick={toggleMute}
           />
         </div>
       )}
@@ -1029,18 +1090,39 @@ const App = memo(() => {
                     color={seg.color}
                     onSegClick={currentSegNew => setCurrentSeg(currentSegNew)}
                     isActive={i === currentSeg}
-                    isCutRangeValid={isCutRangeValid(i)}
                     duration={durationSafe}
-                    cutStartTime={getCutStartTime(i)}
-                    cutEndTime={getCutEndTime(i)}
-                    apparentCutStart={getApparentCutStartTime(i)}
-                    apparentCutEnd={getApparentCutEndTime(i)}
+                    apparentCutStart={getApparentCutStartTimeOrCurrent(i)}
+                    apparentCutEnd={getApparentCutEndTimeOrCurrent(i)}
                   />
                 ))}
               </AnimatePresence>
 
-              <div id="current-time-display">
-                <span role="button" onClick={() => setTimecodeShowFrames(v => !v)}>
+              <div>
+                {inverseCutSegments && inverseCutSegments.map((seg) => (
+                  <div
+                    key={seg.start}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      bottom: 0,
+                      left: `${(seg.start / duration) * 100}%`,
+                      width: `${Math.max(((seg.end - seg.start) / duration) * 100, 1)}%`,
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <div style={{ flexGrow: 1, borderBottom: '1px dashed rgba(255, 255, 255, 0.3)', marginLeft: 5, marginRight: 5 }} />
+                    <FaTrashAlt
+                      style={{ color: 'rgba(255, 255, 255, 0.3)' }}
+                      size={16}
+                    />
+                    <div style={{ flexGrow: 1, borderBottom: '1px dashed rgba(255, 255, 255, 0.3)', marginLeft: 5, marginRight: 5 }} />
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', padding: '.5em' }}>
+                <span role="button" onClick={() => setTimecodeShowFrames(v => !v)} style={{ background: 'rgba(0,0,0,0.5)', borderRadius: 3, padding: '2px 4px' }}>
                   {formatTimecode(offsetCurrentTime)}
                 </span>
               </div>
@@ -1049,6 +1131,14 @@ const App = memo(() => {
         </Hammer>
 
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <FaAngleLeft
+            title="Set cut start to current position"
+            style={{ background: segBgColor, borderRadius: 10, padding: 3 }}
+            size={16}
+            onClick={setCutStart}
+            role="button"
+          />
+
           <i
             className="button fa fa-step-backward"
             role="button"
@@ -1107,26 +1197,10 @@ const App = memo(() => {
             title="Jump to end of video"
             onClick={() => seekAbs(durationSafe)}
           />
-        </div>
 
-        <div>
-          <FaAngleLeft
-            title="Set cut start to current position"
-            style={{ background: segBgColor, borderRadius: 10, padding: 5 }}
-            size={16}
-            onClick={setCutStart}
-            role="button"
-          />
-          <FaTrashAlt
-            title="Delete source file"
-            style={{ padding: 5 }}
-            size={16}
-            onClick={deleteSourceClick}
-            role="button"
-          />
           <FaAngleRight
             title="Set cut end to current position"
-            style={{ background: segBgColor, borderRadius: 10, padding: 5 }}
+            style={{ background: segBgColor, borderRadius: 10, padding: 3 }}
             size={16}
             onClick={setCutEnd}
             role="button"
@@ -1139,7 +1213,7 @@ const App = memo(() => {
           size={30}
           style={{ margin: '0 5px', color: 'white' }}
           role="button"
-          title="Add cut segment"
+          title="Add segment"
           onClick={addCutSegment}
         />
 
@@ -1163,6 +1237,14 @@ const App = memo(() => {
             role="button"
           />
         </div>
+
+        <FaTrashAlt
+          title="Delete source file"
+          style={{ padding: '5px 10px' }}
+          size={16}
+          onClick={deleteSourceClick}
+          role="button"
+        />
 
         {renderCaptureFormatButton()}
 
