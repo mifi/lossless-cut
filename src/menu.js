@@ -17,7 +17,7 @@ module.exports = (app, mainWindow, newVersion) => {
         label: 'Open',
         accelerator: 'CmdOrCtrl+O',
         async click() {
-          const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'] });
+          const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'] });
           if (canceled) return;
           mainWindow.webContents.send('file-opened', filePaths);
         },

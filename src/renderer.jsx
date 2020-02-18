@@ -1,16 +1,18 @@
 import React, { memo, useEffect, useState, useCallback, useRef } from 'react';
 import { IoIosHelpCircle, IoIosCamera } from 'react-icons/io';
-import { FaPlus, FaMinus, FaAngleLeft, FaAngleRight, FaTrashAlt, FaVolumeMute, FaVolumeUp, FaYinYang } from 'react-icons/fa';
+import { FaPlus, FaMinus, FaAngleLeft, FaAngleRight, FaTrashAlt, FaVolumeMute, FaVolumeUp, FaYinYang, FaFileExport } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { GiYinYang } from 'react-icons/gi';
 import { FiScissors } from 'react-icons/fi';
 import { AnimatePresence, motion } from 'framer-motion';
+import Swal from 'sweetalert2';
 
-import { Popover, Button } from 'evergreen-ui';
+import { SideSheet, Button, Position } from 'evergreen-ui';
 import fromPairs from 'lodash/fromPairs';
 import clamp from 'lodash/clamp';
 import clone from 'lodash/clone';
 import sortBy from 'lodash/sortBy';
+import flatMap from 'lodash/flatMap';
 
 import HelpSheet from './HelpSheet';
 import TimelineSeg from './TimelineSeg';
@@ -23,7 +25,7 @@ const isDev = require('electron-is-dev');
 const electron = require('electron'); // eslint-disable-line
 const Mousetrap = require('mousetrap');
 const Hammer = require('react-hammerjs').default;
-const path = require('path');
+const { dirname } = require('path');
 const trash = require('trash');
 const uuid = require('uuid');
 
@@ -33,11 +35,11 @@ const { unlink, exists } = require('fs-extra');
 
 
 const { showMergeDialog, showOpenAndMergeDialog } = require('./merge/merge');
-
+const allOutFormats = require('./outFormats');
 const captureFrame = require('./capture-frame');
 const ffmpeg = require('./ffmpeg');
 
-const { defaultProcessedCodecTypes, getStreamFps } = ffmpeg;
+const { defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd } = ffmpeg;
 
 
 const {
@@ -94,10 +96,12 @@ const App = memo(() => {
   const [startTimeOffset, setStartTimeOffset] = useState(0);
   const [rotationPreviewRequested, setRotationPreviewRequested] = useState(false);
   const [filePath, setFilePath] = useState('');
+  const [externalStreamFiles, setExternalStreamFiles] = useState([]);
   const [detectedFps, setDetectedFps] = useState();
-  const [streams, setStreams] = useState([]);
-  const [copyStreamIds, setCopyStreamIds] = useState({});
+  const [mainStreams, setStreams] = useState([]);
+  const [copyStreamIdsByFile, setCopyStreamIdsByFile] = useState({});
   const [muted, setMuted] = useState(false);
+  const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
 
   // Global state
   const [captureFormat, setCaptureFormat] = useState('jpeg');
@@ -113,8 +117,15 @@ const App = memo(() => {
   const timelineWrapperRef = useRef();
 
 
-  function toggleCopyStreamId(index) {
-    setCopyStreamIds(v => ({ ...v, [index]: !v[index] }));
+  function setCopyStreamIdsForPath(path, cb) {
+    setCopyStreamIdsByFile((old) => {
+      const oldIds = old[path] || {};
+      return ({ ...old, [path]: cb(oldIds) });
+    });
+  }
+
+  function toggleCopyStreamId(path, index) {
+    setCopyStreamIdsForPath(path, (old) => ({ ...old, [index]: !old[index] }));
   }
 
   function toggleMute() {
@@ -166,11 +177,13 @@ const App = memo(() => {
     setStartTimeOffset(0);
     setRotationPreviewRequested(false);
     setFilePath(''); // Setting video src="" prevents memory leak in chromium
+    setExternalStreamFiles([]);
     setDetectedFps();
     setStreams([]);
-    setCopyStreamIds({});
+    setCopyStreamIdsByFile({});
     setMuted(false);
     setInvertCutSegments(false);
+    setStreamsSelectorShown(false);
   }, []);
 
   useEffect(() => () => {
@@ -205,6 +218,9 @@ const App = memo(() => {
 
   const currentCutSeg = cutSegments[currentSegIndex];
   const currentApparentCutSeg = apparentCutSegments[currentSegIndex];
+  const areWeCutting = apparentCutSegments.length > 1
+    || isCuttingStart(currentApparentCutSeg.start)
+    || isCuttingEnd(currentApparentCutSeg.end, duration);
 
   const inverseCutSegments = (() => {
     if (haveInvalidSegs) return undefined;
@@ -305,7 +321,7 @@ const App = memo(() => {
 
   function getOutputDir() {
     if (customOutDir) return customOutDir;
-    if (filePath) return path.dirname(filePath);
+    if (filePath) return dirname(filePath);
     return undefined;
   }
 
@@ -383,11 +399,29 @@ const App = memo(() => {
   const toggleKeyframeCut = () => setKeyframeCut(val => !val);
   const toggleAutoMerge = () => setAutoMerge(val => !val);
 
-  const copyAnyAudioTrack = streams.some(stream => copyStreamIds[stream.index] && stream.codec_type === 'audio');
+  const isCopyingStreamId = useCallback((path, streamId) => (
+    !!(copyStreamIdsByFile[path] || {})[streamId]
+  ), [copyStreamIdsByFile]);
+
+  const copyAnyAudioTrack = mainStreams.some(stream => isCopyingStreamId(filePath, stream.index) && stream.codec_type === 'audio');
+
+  const copyStreamIds = Object.entries(copyStreamIdsByFile).map(([path, streamIdsMap]) => ({
+    path,
+    streamIds: Object.keys(streamIdsMap).filter(index => streamIdsMap[index]),
+  }));
+
+  const numStreamsToCopy = copyStreamIds
+    .reduce((acc, { streamIds }) => acc + streamIds.length, 0);
+
+  const numStreamsTotal = [
+    ...mainStreams,
+    ...flatMap(Object.values(externalStreamFiles), ({ streams }) => streams),
+  ].length;
+
   function toggleStripAudio() {
-    setCopyStreamIds((old) => {
+    setCopyStreamIdsForPath(filePath, (old) => {
       const newCopyStreamIds = { ...old };
-      streams.forEach((stream) => {
+      mainStreams.forEach((stream) => {
         if (stream.codec_type === 'audio') newCopyStreamIds[stream.index] = !copyAnyAudioTrack;
       });
       return newCopyStreamIds;
@@ -478,7 +512,8 @@ const App = memo(() => {
       const outFiles = await ffmpeg.cutMultiple({
         customOutDir,
         filePath,
-        format: fileFormat,
+        outFormat: fileFormat,
+        isOutFormatUserSelected: fileFormat !== detectedFileFormat,
         videoDuration: duration,
         rotation: effectiveRotation,
         copyStreamIds,
@@ -497,13 +532,13 @@ const App = memo(() => {
         });
       }
 
-      toast.fire({ timer: 10000, type: 'success', title: `Cut completed! Output file(s) can be found at: ${getOutDir(customOutDir, filePath)}. You can change the output directory in settings` });
+      toast.fire({ timer: 10000, type: 'success', title: `Export completed! Output file(s) can be found at: ${getOutDir(customOutDir, filePath)}. You can change the output directory in settings` });
     } catch (err) {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
 
       if (err.code === 1 || err.code === 'ENOENT') {
-        errorToast(`Whoops! ffmpeg was unable to cut this video. Try each the following things before attempting to cut again:\n1. Select a different output format from the ${fileFormat} button (matroska takes almost everything).\n2. toggle the button "all" to "ps"`);
+        errorToast(`Whoops! ffmpeg was unable to export this video. Try one of the following before exporting again:\n1. Select a different output format from the ${fileFormat} button (matroska takes almost everything).\n2. Exclude unnecessary tracks`);
         return;
       }
 
@@ -513,12 +548,12 @@ const App = memo(() => {
     }
   }, [
     effectiveRotation, apparentCutSegments, invertCutSegments, inverseCutSegments,
-    working, duration, filePath, keyframeCut,
-    autoMerge, customOutDir, fileFormat, copyStreamIds, haveInvalidSegs,
+    working, duration, filePath, keyframeCut, detectedFileFormat,
+    autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyStreamIds,
   ]);
 
   function showUnsupportedFileMessage() {
-    toast.fire({ timer: 10000, type: 'warning', title: 'This video is not natively supported', text: 'This means that there is no audio in the preview and it has low quality. The final cut operation will however be lossless and contains audio!' });
+    toast.fire({ timer: 10000, type: 'warning', title: 'This video is not natively supported', text: 'This means that there is no audio in the preview and it has low quality. The final export operation will however be lossless and contains audio!' });
   }
 
   // TODO use ffmpeg to capture frame
@@ -586,15 +621,15 @@ const App = memo(() => {
         return;
       }
 
-      const { streams: streamsNew } = await ffmpeg.getAllStreams(fp);
-      console.log('streams', streamsNew);
-      setStreams(streamsNew);
-      setCopyStreamIds(fromPairs(streamsNew.map((stream) => [
+      const { streams } = await ffmpeg.getAllStreams(fp);
+      // console.log('streams', streamsNew);
+      setStreams(streams);
+      setCopyStreamIdsForPath(fp, () => fromPairs(streams.map((stream) => [
         stream.index, defaultProcessedCodecTypes.includes(stream.codec_type),
       ])));
 
 
-      streamsNew.find((stream) => {
+      streams.find((stream) => {
         const streamFps = getStreamFps(stream);
         if (streamFps != null) {
           setDetectedFps(streamFps);
@@ -613,7 +648,7 @@ const App = memo(() => {
         showUnsupportedFileMessage();
       } else if (
         !(await checkExistingHtml5FriendlyFile(fp, 'slow-audio') || await checkExistingHtml5FriendlyFile(fp, 'slow') || await checkExistingHtml5FriendlyFile(fp, 'fast'))
-        && !doesPlayerSupportFile(streamsNew)
+        && !doesPlayerSupportFile(streams)
       ) {
         await createDummyVideo(fp);
       }
@@ -697,13 +732,61 @@ const App = memo(() => {
     extractAllStreams();
   }
 
+  const addStreamSourceFile = useCallback(async (path) => {
+    if (externalStreamFiles[path]) return;
+    const { streams } = await ffmpeg.getAllStreams(path);
+    // console.log('streams', streams);
+    setExternalStreamFiles(old => ({ ...old, [path]: { streams } }));
+    setCopyStreamIdsForPath(path, () => fromPairs(streams.map(({ index }) => [index, true])));
+  }, [externalStreamFiles]);
+
+  const userOpenFiles = useCallback(async (filePaths) => {
+    if (filePaths.length < 1) return;
+    if (filePaths.length > 1) {
+      showMergeDialog(filePaths, mergeFiles);
+      return;
+    }
+
+    const firstFile = filePaths[0];
+
+    if (!filePath) {
+      load(firstFile);
+      return;
+    }
+    const { value } = await Swal.fire({
+      title: 'You opened a new file. What do you want to do?',
+      input: 'radio',
+      showCancelButton: true,
+      inputOptions: {
+        open: 'Open the file instead of the current one. You will lose all work',
+        add: 'Include all tracks from the new file',
+      },
+      inputValidator: (v) => !v && 'You need to choose something!',
+    });
+
+    if (value === 'open') {
+      load(firstFile);
+    } else if (value === 'add') {
+      addStreamSourceFile(firstFile);
+      setStreamsSelectorShown(true);
+    }
+  }, [addStreamSourceFile, filePath, load, mergeFiles]);
+
+  const onDrop = useCallback(async (ev) => {
+    ev.preventDefault();
+    const { files } = ev.dataTransfer;
+    userOpenFiles(Array.from(files).map(f => f.path));
+  }, [userOpenFiles]);
+
   useEffect(() => {
     function fileOpened(event, filePaths) {
-      if (!filePaths || filePaths.length !== 1) return;
-      load(filePaths[0]);
+      userOpenFiles(filePaths);
     }
 
     function closeFile() {
+      // eslint-disable-next-line no-alert
+      if (!window.confirm('Are you sure you want to replace the current file? You will lose all work')) return;
+
       resetState();
     }
 
@@ -756,7 +839,7 @@ const App = memo(() => {
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
-      electron.ipcRenderer.removeListener('close-file', fileOpened);
+      electron.ipcRenderer.removeListener('close-file', closeFile);
       electron.ipcRenderer.removeListener('html5ify', html5ify);
       electron.ipcRenderer.removeListener('show-merge-dialog', showOpenAndMergeDialog2);
       electron.ipcRenderer.removeListener('set-start-offset', setStartOffset);
@@ -764,16 +847,14 @@ const App = memo(() => {
     };
   }, [
     load, mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, getHtml5ifiedPath,
-    createDummyVideo, resetState, extractAllStreams,
+    createDummyVideo, resetState, extractAllStreams, userOpenFiles,
   ]);
 
-  const onDrop = useCallback((ev) => {
-    ev.preventDefault();
-    const { files } = ev.dataTransfer;
-    if (files.length < 1) return;
-    if (files.length === 1) load(files[0].path);
-    else showMergeDialog(Array.from(files).map(f => f.path), mergeFiles);
-  }, [load, mergeFiles]);
+  async function showAddStreamSourceDialog() {
+    const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'] });
+    if (canceled || filePaths.length < 1) return;
+    await addStreamSourceFile(filePaths[0]);
+  }
 
   useEffect(() => {
     document.body.addEventListener('drop', onDrop);
@@ -822,7 +903,11 @@ const App = memo(() => {
     );
   }
 
-  const selectableFormats = ['mov', 'mp4', 'matroska'].filter(f => f !== detectedFileFormat);
+  const commonFormats = ['mov', 'mp4', 'matroska', 'mp3', 'ipod'];
+  const commonFormatsMap = fromPairs(commonFormats.map(format => [format, allOutFormats[format]])
+    .filter(([f]) => f !== detectedFileFormat));
+  const otherFormatsMap = fromPairs(Object.entries(allOutFormats)
+    .filter(([f]) => ![...commonFormats, detectedFileFormat].includes(f)));
 
   const durationSafe = duration || 1;
   const currentTimePos = currentTime !== undefined && `${(currentTime / durationSafe) * 100}%`;
@@ -834,16 +919,27 @@ const App = memo(() => {
     position: 'absolute', color: 'black', bottom: 0, top: 0, padding: '2px 8px',
   };
 
+  function renderFormatOptions(map) {
+    return Object.entries(map).map(([f, name]) => (
+      <option key={f} value={f}>{f} - {name}</option>
+    ));
+  }
   function renderOutFmt({ width } = {}) {
     return (
-      <select style={{ width }} defaultValue="" value={fileFormat} title="Format of current file" onChange={withBlur(e => setFileFormat(e.target.value))}>
-        <option key="" value="" disabled>Out fmt</option>
+      <select style={{ width }} defaultValue="" value={fileFormat} title="Output format" onChange={withBlur(e => setFileFormat(e.target.value))}>
+        <option key="disabled1" value="" disabled>Format</option>
+
         {detectedFileFormat && (
           <option key={detectedFileFormat} value={detectedFileFormat}>
-            {detectedFileFormat}
+            {detectedFileFormat} - {allOutFormats[detectedFileFormat]} (detected)
           </option>
         )}
-        {selectableFormats.map(f => <option key={f} value={f}>{f}</option>)}
+
+        <option key="disabled2" value="" disabled>--- Common formats: ---</option>
+        {renderFormatOptions(commonFormatsMap)}
+
+        <option key="disabled3" value="" disabled>--- All formats: ---</option>
+        {renderFormatOptions(otherFormatsMap)}
       </select>
     );
   }
@@ -922,14 +1018,14 @@ const App = memo(() => {
 
           <tr>
             <td>
-              Delete audio?
+              Discard audio?
             </td>
             <td>
               <button
                 type="button"
                 onClick={toggleStripAudio}
               >
-                {!copyAnyAudioTrack ? 'Delete all audio tracks' : 'Keep audio tracks'}
+                {!copyAnyAudioTrack ? 'Discard all audio tracks' : 'Keep audio tracks'}
               </button>
             </td>
           </tr>
@@ -973,6 +1069,7 @@ const App = memo(() => {
   const bottomBarHeight = '6rem';
 
   const VolumeIcon = muted ? FaVolumeMute : FaVolumeUp;
+  const CutIcon = areWeCutting ? FiScissors : FaFileExport;
 
   function renderInvertCutButton() {
     const KeepOrDiscardIcon = invertCutSegments ? GiYinYang : FaYinYang;
@@ -996,20 +1093,37 @@ const App = memo(() => {
   return (
     <div>
       <div style={{ background: '#6b6b6b', height: topBarHeight, display: 'flex', alignItems: 'center', padding: '0 5px', justifyContent: 'space-between' }}>
-        <Popover
-          content={(
-            <StreamsSelector
-              streams={streams}
-              copyStreamIds={copyStreamIds}
-              toggleCopyStreamId={toggleCopyStreamId}
-              onExtractAllStreamsPress={onExtractAllStreamsPress}
-            />
-          )}
+        <SideSheet
+          containerProps={{ style: { maxWidth: '100%' } }}
+          position={Position.LEFT}
+          isShown={streamsSelectorShown}
+          onCloseComplete={() => setStreamsSelectorShown(false)}
         >
-          <Button height={20} iconBefore="list">Tracks</Button>
-        </Popover>
+          <StreamsSelector
+            mainFilePath={filePath}
+            externalFiles={externalStreamFiles}
+            setExternalFiles={setExternalStreamFiles}
+            showAddStreamSourceDialog={showAddStreamSourceDialog}
+            streams={mainStreams}
+            isCopyingStreamId={isCopyingStreamId}
+            toggleCopyStreamId={toggleCopyStreamId}
+            setCopyStreamIdsForPath={setCopyStreamIdsForPath}
+            onExtractAllStreamsPress={onExtractAllStreamsPress}
+          />
+        </SideSheet>
+        <Button height={20} iconBefore="list" onClick={withBlur(() => setStreamsSelectorShown(true))}>
+          Tracks ({numStreamsToCopy}/{numStreamsTotal})
+        </Button>
 
         <div style={{ flexGrow: 1 }} />
+
+        <button
+          type="button"
+          onClick={withBlur(setOutputDir)}
+          title={customOutDir}
+        >
+          {`Out path ${customOutDir ? 'set' : 'unset'}`}
+        </button>
 
         {renderOutFmt({ width: 60 })}
 
@@ -1032,10 +1146,10 @@ const App = memo(() => {
 
         <button
           type="button"
-          title={`Delete audio? Current: ${copyAnyAudioTrack ? 'keep audio tracks' : 'delete audio tracks'}`}
+          title={`Discard audio? Current: ${copyAnyAudioTrack ? 'keep audio tracks' : 'Discard audio tracks'}`}
           onClick={withBlur(toggleStripAudio)}
         >
-          {copyAnyAudioTrack ? 'Keep audio' : 'Delete audio'}
+          {copyAnyAudioTrack ? 'Keep audio' : 'Discard audio'}
         </button>
 
         <IoIosHelpCircle size={24} role="button" onClick={toggleHelp} style={{ verticalAlign: 'middle', marginLeft: 5 }} />
@@ -1162,20 +1276,20 @@ const App = memo(() => {
         </Hammer>
 
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <FaAngleLeft
-            title="Set cut start to current position"
-            style={{ background: segBgColor, borderRadius: 10, padding: 3 }}
-            size={16}
-            onClick={setCutStart}
-            role="button"
-          />
-
           <i
             className="button fa fa-step-backward"
             role="button"
             tabIndex="0"
             title="Jump to start of video"
             onClick={() => seekAbs(0)}
+          />
+
+          <FaAngleLeft
+            title="Set cut start to current position"
+            style={{ background: segBgColor, borderRadius: 10, padding: 3 }}
+            size={16}
+            onClick={setCutStart}
+            role="button"
           />
 
           <div style={{ position: 'relative' }}>
@@ -1221,20 +1335,20 @@ const App = memo(() => {
             />
           </div>
 
-          <i
-            className="button fa fa-step-forward"
-            role="button"
-            tabIndex="0"
-            title="Jump to end of video"
-            onClick={() => seekAbs(durationSafe)}
-          />
-
           <FaAngleRight
             title="Set cut end to current position"
             style={{ background: segBgColor, borderRadius: 10, padding: 3 }}
             size={16}
             onClick={setCutEnd}
             role="button"
+          />
+
+          <i
+            className="button fa fa-step-forward"
+            role="button"
+            tabIndex="0"
+            title="Jump to end of video"
+            onClick={() => seekAbs(durationSafe)}
           />
         </div>
       </div>
@@ -1288,12 +1402,15 @@ const App = memo(() => {
           onClick={capture}
         />
 
-        <span style={{ background: 'hsl(194, 78%, 47%)', borderRadius: 5, padding: '3px 7px', fontSize: 14 }}>
-          <FiScissors
+        <span
+          style={{ background: 'hsl(194, 78%, 47%)', borderRadius: 5, padding: '3px 7px', fontSize: 14 }}
+          onClick={cutClick}
+          title={cutSegments.length > 1 ? 'Export all segments' : 'Export selection'}
+          role="button"
+        >
+          <CutIcon
             style={{ verticalAlign: 'middle', marginRight: 3 }}
             size={16}
-            onClick={cutClick}
-            title={cutSegments.length > 1 ? 'Export all segments' : 'Export selection'}
           />
           Export
         </span>

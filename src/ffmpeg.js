@@ -1,9 +1,10 @@
 const execa = require('execa');
 const pMap = require('p-map');
-const path = require('path');
+const { join, extname } = require('path');
 const fileType = require('file-type');
 const readChunk = require('read-chunk');
 const flatMap = require('lodash/flatMap');
+const flatMapDeep = require('lodash/flatMapDeep');
 const sum = require('lodash/sum');
 const sortBy = require('lodash/sortBy');
 const readline = require('readline');
@@ -30,7 +31,7 @@ function getPath(type) {
 
   return isDev
     ? `node_modules/${type}-static/bin/${subPath}`
-    : path.join(window.process.resourcesPath, `node_modules/${type}-static/bin/${subPath}`);
+    : join(window.process.resourcesPath, `node_modules/${type}-static/bin/${subPath}`);
 }
 
 async function runFfprobe(args) {
@@ -62,8 +63,16 @@ function handleProgress(process, cutDuration, onProgress) {
   });
 }
 
+function isCuttingStart(cutFrom) {
+  return cutFrom > 0;
+}
+
+function isCuttingEnd(cutTo, duration) {
+  return cutTo < duration;
+}
+
 async function cut({
-  filePath, format, cutFrom, cutTo, videoDuration, rotation,
+  filePath, outFormat, cutFrom, cutTo, videoDuration, rotation,
   onProgress, copyStreamIds, keyframeCut, outPath,
 }) {
   console.log('Cutting from', cutFrom, 'to', cutTo);
@@ -71,16 +80,19 @@ async function cut({
   const cutDuration = cutTo - cutFrom;
 
   // https://github.com/mifi/lossless-cut/issues/50
-  const cutFromArgs = cutFrom === 0 ? [] : ['-ss', cutFrom];
-  const cutToArgs = cutTo === videoDuration ? [] : ['-t', cutDuration];
+  const cutFromArgs = isCuttingStart(cutFrom) ? ['-ss', cutFrom] : [];
+  const cutToArgs = isCuttingEnd(cutTo, videoDuration) ? ['-t', cutDuration] : [];
 
+  const copyStreamIdsFiltered = copyStreamIds.filter(({ streamIds }) => streamIds.length > 0);
+
+  const inputArgs = flatMap(copyStreamIdsFiltered, ({ path }) => ['-i', path]);
   const inputCutArgs = keyframeCut ? [
     ...cutFromArgs,
-    '-i', filePath,
+    ...inputArgs,
     ...cutToArgs,
     '-avoid_negative_ts', 'make_zero',
   ] : [
-    '-i', filePath,
+    ...inputArgs,
     ...cutFromArgs,
     ...cutToArgs,
   ];
@@ -92,7 +104,7 @@ async function cut({
 
     '-c', 'copy',
 
-    ...flatMap(Object.keys(copyStreamIds).filter(index => copyStreamIds[index]), index => ['-map', `0:${index}`]),
+    ...flatMapDeep(copyStreamIdsFiltered, ({ streamIds }, fileIndex) => streamIds.map(streamId => ['-map', `${fileIndex}:${streamId}`])),
     '-map_metadata', '0',
     // https://video.stackexchange.com/questions/23741/how-to-prevent-ffmpeg-from-dropping-metadata
     '-movflags', 'use_metadata_tags',
@@ -102,7 +114,7 @@ async function cut({
 
     ...rotationArgs,
 
-    '-f', format, '-y', outPath,
+    '-f', outFormat, '-y', outPath,
   ];
 
   console.log('ffmpeg', ffmpegArgs.join(' '));
@@ -119,8 +131,8 @@ async function cut({
 }
 
 async function cutMultiple({
-  customOutDir, filePath, format, segments: segmentsUnsorted, videoDuration, rotation,
-  onProgress, keyframeCut, copyStreamIds,
+  customOutDir, filePath, segments: segmentsUnsorted, videoDuration, rotation,
+  onProgress, keyframeCut, copyStreamIds, outFormat, isOutFormatUserSelected,
 }) {
   const segments = sortBy(segmentsUnsorted, 'cutFrom');
   const singleProgresses = {};
@@ -134,7 +146,7 @@ async function cutMultiple({
   let i = 0;
   // eslint-disable-next-line no-restricted-syntax,no-unused-vars
   for (const { cutFrom, cutTo } of segments) {
-    const ext = path.extname(filePath) || `.${format}`;
+    const ext = isOutFormatUserSelected ? `.${outFormat}` : extname(filePath);
     const cutSpecification = `${formatDuration({ seconds: cutFrom, fileNameFriendly: true })}-${formatDuration({ seconds: cutTo, fileNameFriendly: true })}`;
 
     const outPath = getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
@@ -144,7 +156,7 @@ async function cutMultiple({
       outPath,
       customOutDir,
       filePath,
-      format,
+      outFormat,
       videoDuration,
       rotation,
       copyStreamIds,
@@ -235,7 +247,7 @@ async function mergeFiles({ paths, outPath }) {
   console.log('ffmpeg', ffmpegArgs.join(' '));
 
   // https://superuser.com/questions/787064/filename-quoting-in-ffmpeg-concat
-  const concatTxt = paths.map(file => `file '${path.join(file).replace(/'/g, "'\\''")}'`).join('\n');
+  const concatTxt = paths.map(file => `file '${join(file).replace(/'/g, "'\\''")}'`).join('\n');
 
   console.log(concatTxt);
 
@@ -250,13 +262,13 @@ async function mergeFiles({ paths, outPath }) {
 
 async function mergeAnyFiles({ customOutDir, paths }) {
   const firstPath = paths[0];
-  const ext = path.extname(firstPath);
+  const ext = extname(firstPath);
   const outPath = getOutPath(customOutDir, firstPath, `merged${ext}`);
   return mergeFiles({ paths, outPath });
 }
 
 async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths }) {
-  const ext = path.extname(sourceFile);
+  const ext = extname(sourceFile);
   const outPath = getOutPath(customOutDir, sourceFile, `cut-merged-${new Date().getTime()}${ext}`);
   await mergeFiles({ paths: segmentPaths, outPath });
   await pMap(segmentPaths, trash, { concurrency: 5 });
@@ -278,6 +290,15 @@ function mapFormat(requestedFormat) {
     case 'aac': return 'ipod';
     default: return requestedFormat;
   }
+}
+
+function getExtensionForFormat(format) {
+  const ext = {
+    matroska: 'mkv',
+    ipod: 'm4a',
+  }[format];
+
+  return ext || format;
 }
 
 function determineOutputFormat(ffprobeFormats, ft) {
@@ -311,26 +332,27 @@ async function getAllStreams(filePath) {
   return JSON.parse(stdout);
 }
 
-function mapCodecToOutputFormat(codec, type) {
+function getPreferredCodecFormat(codec, type) {
   const map = {
+    mp3: 'mp3',
+    opus: 'opus',
+    vorbis: 'ogg',
+    h264: 'mp4',
+    hevc: 'mp4',
+    eac3: 'eac3',
+
+    subrip: 'srt',
+
     // See mapFormat
-    m4a: { ext: 'm4a', format: 'ipod' },
-    aac: { ext: 'm4a', format: 'ipod' },
-
-    mp3: { ext: 'mp3', format: 'mp3' },
-    opus: { ext: 'opus', format: 'opus' },
-    vorbis: { ext: 'ogg', format: 'ogg' },
-    h264: { ext: 'mp4', format: 'mp4' },
-    hevc: { ext: 'mp4', format: 'mp4' },
-    eac3: { ext: 'eac3', format: 'eac3' },
-
-    subrip: { ext: 'srt', format: 'srt' },
+    m4a: 'ipod',
+    aac: 'ipod',
 
     // TODO add more
     // TODO allow user to change?
   };
 
-  if (map[codec]) return map[codec];
+  const format = map[codec];
+  if (format) return { format, ext: getExtensionForFormat(format) };
   if (type === 'video') return { ext: 'mkv', format: 'matroska' };
   if (type === 'audio') return { ext: 'mka', format: 'matroska' };
   if (type === 'subtitle') return { ext: 'mks', format: 'matroska' };
@@ -347,7 +369,7 @@ async function extractAllStreams({ customOutDir, filePath }) {
     i,
     codec: s.codec_name || s.codec_tag_string || s.codec_type,
     type: s.codec_type,
-    format: mapCodecToOutputFormat(s.codec_name, s.codec_type),
+    format: getPreferredCodecFormat(s.codec_name, s.codec_type),
   }))
     .filter(it => it && it.format);
 
@@ -429,4 +451,6 @@ module.exports = {
   getAllStreams,
   defaultProcessedCodecTypes,
   getStreamFps,
+  isCuttingStart,
+  isCuttingEnd,
 };
