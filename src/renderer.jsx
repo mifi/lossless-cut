@@ -504,6 +504,11 @@ const App = memo(() => {
 
     const segments = invertCutSegments ? inverseCutSegments : apparentCutSegments;
 
+    if (!segments) {
+      errorToast('No segments to export!');
+      return;
+    }
+
     const ffmpegSegments = segments.map((seg) => ({
       cutFrom: seg.start,
       cutTo: seg.end,
