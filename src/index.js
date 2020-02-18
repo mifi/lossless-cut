@@ -31,6 +31,19 @@ function createWindow() {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
+
+  // https://stackoverflow.com/questions/39574636/prompt-to-save-quit-before-closing-window/47434365
+  mainWindow.on('close', (e) => {
+    const choice = electron.dialog.showMessageBoxSync(mainWindow, {
+      type: 'question',
+      buttons: ['Yes', 'No'],
+      title: 'Confirm quit',
+      message: 'Are you sure you want to quit? You will lose all unsaved work',
+    });
+    if (choice === 1) {
+      e.preventDefault();
+    }
+  });
 }
 
 // This method will be called when Electron has finished
