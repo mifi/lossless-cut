@@ -785,7 +785,7 @@ const App = memo(() => {
 
     function closeFile() {
       // eslint-disable-next-line no-alert
-      if (!window.confirm('Are you sure you want to replace the current file? You will lose all work')) return;
+      if (!window.confirm('Are you sure you want to close the current file? You will lose all work')) return;
 
       resetState();
     }
