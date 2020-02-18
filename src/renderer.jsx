@@ -6,8 +6,9 @@ import { GiYinYang } from 'react-icons/gi';
 import { FiScissors } from 'react-icons/fi';
 import { AnimatePresence, motion } from 'framer-motion';
 import Swal from 'sweetalert2';
-
+import Lottie from 'react-lottie';
 import { SideSheet, Button, Position } from 'evergreen-ui';
+
 import fromPairs from 'lodash/fromPairs';
 import clamp from 'lodash/clamp';
 import clone from 'lodash/clone';
@@ -19,6 +20,8 @@ import TimelineSeg from './TimelineSeg';
 import InverseCutSegment from './InverseCutSegment';
 import StreamsSelector from './StreamsSelector';
 import { loadMifiLink } from './mifi';
+
+import loadingLottie from './7077-magic-flow.json';
 
 
 const isDev = require('electron-is-dev');
@@ -460,7 +463,7 @@ const App = memo(() => {
     return video.play().catch((err) => {
       console.error(err);
       if (err.name === 'NotSupportedError') {
-        toast.fire({ type: 'error', title: 'This format/codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu.', timer: 10000 });
+        toast.fire({ icon: 'error', title: 'This format/codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu.', timer: 10000 });
       }
     });
   }, [playing]);
@@ -477,7 +480,7 @@ const App = memo(() => {
       await trash(filePath);
       if (html5FriendlyPath) await trash(html5FriendlyPath);
     } catch (err) {
-      toast.fire({ type: 'error', title: `Failed to trash source file: ${err.message}` });
+      toast.fire({ icon: 'error', title: `Failed to trash source file: ${err.message}` });
     } finally {
       resetState();
     }
@@ -491,6 +494,11 @@ const App = memo(() => {
 
     if (haveInvalidSegs) {
       errorToast('Start time must be before end time');
+      return;
+    }
+
+    if (numStreamsToCopy === 0) {
+      errorToast('No tracks to export!');
       return;
     }
 
@@ -532,7 +540,7 @@ const App = memo(() => {
         });
       }
 
-      toast.fire({ timer: 10000, type: 'success', title: `Export completed! Output file(s) can be found at: ${getOutDir(customOutDir, filePath)}. You can change the output directory in settings` });
+      toast.fire({ timer: 10000, icon: 'success', title: `Export completed! Output file(s) can be found at: ${getOutDir(customOutDir, filePath)}. You can change the output directory in settings` });
     } catch (err) {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
@@ -549,11 +557,11 @@ const App = memo(() => {
   }, [
     effectiveRotation, apparentCutSegments, invertCutSegments, inverseCutSegments,
     working, duration, filePath, keyframeCut, detectedFileFormat,
-    autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyStreamIds,
+    autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyStreamIds, numStreamsToCopy,
   ]);
 
   function showUnsupportedFileMessage() {
-    toast.fire({ timer: 10000, type: 'warning', title: 'This video is not natively supported', text: 'This means that there is no audio in the preview and it has low quality. The final export operation will however be lossless and contains audio!' });
+    toast.fire({ timer: 10000, icon: 'warning', title: 'This video is not natively supported', text: 'This means that there is no audio in the preview and it has low quality. The final export operation will however be lossless and contains audio!' });
   }
 
   // TODO use ffmpeg to capture frame
@@ -719,7 +727,7 @@ const App = memo(() => {
     try {
       setWorking(true);
       await ffmpeg.extractAllStreams({ customOutDir, filePath });
-      toast.fire({ type: 'success', title: `All streams can be found as separate files at: ${getOutDir(customOutDir, filePath)}` });
+      toast.fire({ icon: 'success', title: `All streams can be found as separate files at: ${getOutDir(customOutDir, filePath)}` });
     } catch (err) {
       errorToast('Failed to extract all streams');
       console.error('Failed to extract all streams', err);
@@ -755,6 +763,7 @@ const App = memo(() => {
     }
     const { value } = await Swal.fire({
       title: 'You opened a new file. What do you want to do?',
+      icon: 'question',
       input: 'radio',
       showCancelButton: true,
       inputOptions: {
@@ -1068,7 +1077,7 @@ const App = memo(() => {
   const topBarHeight = '2rem';
   const bottomBarHeight = '6rem';
 
-  const VolumeIcon = muted ? FaVolumeMute : FaVolumeUp;
+  const VolumeIcon = muted || dummyVideoPath ? FaVolumeMute : FaVolumeUp;
   const CutIcon = areWeCutting ? FiScissors : FaFileExport;
 
   function renderInvertCutButton() {
@@ -1089,6 +1098,8 @@ const App = memo(() => {
       </div>
     );
   }
+
+  const primaryColor = 'hsl(194, 78%, 47%)';
 
   return (
     <div>
@@ -1169,19 +1180,38 @@ const App = memo(() => {
         </div>
       )}
 
-      {working && (
-        <div style={{
-          color: 'white', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '.5em', margin: '1em', padding: '.2em .5em', position: 'absolute', zIndex: 1, top: topBarHeight, left: 0,
-        }}
-        >
-          <i className="fa fa-cog fa-spin fa-3x fa-fw" style={{ verticalAlign: 'middle', width: '1em', height: '1em' }} />
-          {cutProgress != null && (
-            <span style={{ color: 'rgba(255, 255, 255, 0.7)', paddingLeft: '.4em' }}>
-              {`${Math.floor(cutProgress * 100)} %`}
-            </span>
-          )}
-        </div>
-      )}
+      <AnimatePresence>
+        {working && (
+          <div style={{
+            position: 'absolute', zIndex: 1, bottom: bottomBarHeight, top: topBarHeight, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', pointerEvents: 'none',
+          }}
+          >
+            <motion.div
+              style={{ background: primaryColor, boxShadow: `${primaryColor} 0px 0px 20px 25px`, borderRadius: 20, paddingBottom: 15, color: 'white', textAlign: 'center', fontSize: 14 }}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0 }}
+            >
+              <div style={{ width: 150, height: 150 }}>
+                <Lottie
+                  options={{ loop: true, autoplay: true, animationData: loadingLottie }}
+                  style={{ width: '170%', height: '130%', marginLeft: '-35%', marginTop: '-29%' }}
+                />
+              </div>
+
+              <div style={{ marginTop: 10 }}>
+                WORKING
+              </div>
+
+              {(cutProgress != null) && (
+                <div style={{ marginTop: 10 }}>
+                  {`${Math.floor(cutProgress * 100)} %`}
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <div style={{ position: 'absolute', top: topBarHeight, left: 0, right: 0, bottom: bottomBarHeight }}>
         {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
@@ -1403,7 +1433,7 @@ const App = memo(() => {
         />
 
         <span
-          style={{ background: 'hsl(194, 78%, 47%)', borderRadius: 5, padding: '3px 7px', fontSize: 14 }}
+          style={{ background: primaryColor, borderRadius: 5, padding: '3px 7px', fontSize: 14 }}
           onClick={cutClick}
           title={cutSegments.length > 1 ? 'Export all segments' : 'Export selection'}
           role="button"

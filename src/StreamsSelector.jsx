@@ -1,8 +1,13 @@
 import React, { memo, Fragment } from 'react';
 
-import { FaVideo, FaVideoSlash, FaFileExport, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaTrashAlt } from 'react-icons/fa';
+import { FaVideo, FaVideoSlash, FaFileExport, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaTrashAlt, FaInfoCircle } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
 import { MdSubtitles } from 'react-icons/md';
+import Swal from 'sweetalert2';
+
+import withReactContent from 'sweetalert2-react-content';
+
+const ReactSwal = withReactContent(Swal);
 
 const { formatDuration } = require('./util');
 const { getStreamFps } = require('./ffmpeg');
@@ -25,12 +30,17 @@ const Stream = memo(({ stream, onToggle, copyStream }) => {
 
   const streamFps = getStreamFps(stream);
 
+  function onInfoClick(s) {
+    ReactSwal.fire({
+      icon: 'info',
+      title: 'Stream info',
+      html: <div style={{ whiteSpace: 'pre', textAlign: 'left', overflow: 'auto' }}>{JSON.stringify(s, null, 2)}</div>,
+    });
+  }
+
   return (
-    <tr
-      style={{ opacity: copyStream ? undefined : 0.4 }}
-      onClick={() => onToggle && onToggle(stream.index)}
-    >
-      <td><Icon size={20} style={{ padding: '0 5px', cursor: 'pointer' }} /></td>
+    <tr style={{ opacity: copyStream ? undefined : 0.4 }}>
+      <td><Icon size={20} style={{ padding: '0 5px', cursor: 'pointer' }} role="button" onClick={() => onToggle && onToggle(stream.index)} /></td>
       <td>{stream.index}</td>
       <td>{stream.codec_type}</td>
       <td>{stream.codec_tag !== '0x0000' && stream.codec_tag_string}</td>
@@ -39,6 +49,7 @@ const Stream = memo(({ stream, onToggle, copyStream }) => {
       <td>{stream.nb_frames}</td>
       <td>{!Number.isNaN(bitrate) && `${(bitrate / 1e6).toFixed(1)}MBit/s`}</td>
       <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(1)}fps`}</td>
+      <td><FaInfoCircle role="button" onClick={() => onInfoClick(stream)} size={30} /></td>
     </tr>
   );
 });
@@ -75,6 +86,7 @@ const StreamsSelector = memo(({
             <td>Frames</td>
             <td>Bitrate</td>
             <td>Data</td>
+            <td />
           </tr>
         </thead>
         <tbody>

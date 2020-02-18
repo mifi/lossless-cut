@@ -3896,6 +3896,11 @@ loose-envify@^1.4.0:
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
 
+lottie-web@^5.1.3:
+  version "5.6.4"
+  resolved "https://registry.yarnpkg.com/lottie-web/-/lottie-web-5.6.4.tgz#8520f9e7e8daa9e0ab8343c628c3f470800088a4"
+  integrity sha512-eU+21Wo/RSi4i260S7fDUxfhNJ9PhfzUJMVQpip0yZd19oJ18jrNCoSQKVUzjC2TzOjqumlLZXR636ezKoWNQg==
+
 lowercase-keys@^1.0.0, lowercase-keys@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/lowercase-keys/-/lowercase-keys-1.0.1.tgz#6f9e30b47084d971a7c820ff15a6c5167b74c26f"
@@ -4804,6 +4809,14 @@ react-lifecycles-compat@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
+
+react-lottie@^1.2.3:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/react-lottie/-/react-lottie-1.2.3.tgz#8544b96939e088658072eea5e12d912cdaa3acc1"
+  integrity sha512-qLCERxUr8M+4mm1LU0Ruxw5Y5Fn/OmYkGfnA+JDM/dZb3oKwVAJCjwnjkj9TMHtzR2U6sMEUD3ZZ1RaHagM7kA==
+  dependencies:
+    babel-runtime "^6.26.0"
+    lottie-web "^5.1.3"
 
 react-scrollbar-size@^2.0.2:
   version "2.1.0"
@@ -5752,10 +5765,10 @@ sweetalert2-react-content@^1.0.1:
   resolved "https://registry.yarnpkg.com/sweetalert2-react-content/-/sweetalert2-react-content-1.0.1.tgz#0403145a1af819504e394df0dfc6194df67068a0"
   integrity sha512-wZxDGbF24jzNXGsr3hjkSa5wQlhgq4wOPPZShe4RMujGdDuPtniodQGZOW2Tn38dzpgXSZ4/sb7++zxwueberw==
 
-sweetalert2@^8.0.1:
-  version "8.0.1"
-  resolved "https://registry.yarnpkg.com/sweetalert2/-/sweetalert2-8.0.1.tgz#d59fa124a56595c1e799dd4c635689afa0a5f811"
-  integrity sha512-N88+meCLt1t/5dQEAvBs31j6qcEVucE/bwMj8JiuPsMRvXhnWKMbvLAFPGNO7a/LECRVjT6o0/mccmIVZqQZSQ==
+sweetalert2@^9.7.2:
+  version "9.7.2"
+  resolved "https://registry.yarnpkg.com/sweetalert2/-/sweetalert2-9.7.2.tgz#ad11a75e765b543792b032c27a5ab981a7c8429e"
+  integrity sha512-VmFmigf+rO20t5fOql21wIZlk60B8M02kXwPLmMA2qaBcVwvDQA+qGXuqtXipx1wsztTOiXgyDiBvdbHbIvQpw==
 
 table@^5.2.3:
   version "5.4.6"
