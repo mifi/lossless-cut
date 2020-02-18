@@ -24,6 +24,7 @@ module.exports = (app, mainWindow, newVersion) => {
       },
       {
         label: 'Close',
+        accelerator: 'CmdOrCtrl+W',
         async click() {
           mainWindow.webContents.send('close-file');
         },
