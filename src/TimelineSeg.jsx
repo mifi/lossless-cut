@@ -9,7 +9,7 @@ const { formatDuration } = require('./util');
 
 const TimelineSeg = ({
   duration, cutStart, cutEnd, isActive, segNum,
-  onSegClick, color, invertCutSegments, zoomed,
+  onSegClick, color, invertCutSegments,
 }) => {
   const cutSectionWidth = `${((cutEnd - cutStart) / duration) * 100}%`;
 
