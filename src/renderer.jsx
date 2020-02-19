@@ -501,7 +501,7 @@ const App = memo(() => {
   }
 
   function onWheel(e) {
-    if (!zoomed) seekRel(e.deltaX / 10);
+    if (!zoomed) seekRel((e.deltaX + e.deltaY) / 15);
   }
 
   const playCommand = useCallback(() => {
