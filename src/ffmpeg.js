@@ -71,6 +71,15 @@ function isCuttingEnd(cutTo, duration) {
   return cutTo < duration;
 }
 
+function getExtensionForFormat(format) {
+  const ext = {
+    matroska: 'mkv',
+    ipod: 'm4a',
+  }[format];
+
+  return ext || format;
+}
+
 async function cut({
   filePath, outFormat, cutFrom, cutTo, videoDuration, rotation,
   onProgress, copyStreamIds, keyframeCut, outPath,
@@ -146,7 +155,7 @@ async function cutMultiple({
   let i = 0;
   // eslint-disable-next-line no-restricted-syntax,no-unused-vars
   for (const { cutFrom, cutTo } of segments) {
-    const ext = isOutFormatUserSelected ? `.${outFormat}` : extname(filePath);
+    const ext = isOutFormatUserSelected ? `.${getExtensionForFormat(outFormat)}` : extname(filePath);
     const cutSpecification = `${formatDuration({ seconds: cutFrom, fileNameFriendly: true })}-${formatDuration({ seconds: cutTo, fileNameFriendly: true })}`;
 
     const outPath = getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
@@ -290,15 +299,6 @@ function mapFormat(requestedFormat) {
     case 'aac': return 'ipod';
     default: return requestedFormat;
   }
-}
-
-function getExtensionForFormat(format) {
-  const ext = {
-    matroska: 'mkv',
-    ipod: 'm4a',
-  }[format];
-
-  return ext || format;
 }
 
 function determineOutputFormat(ffprobeFormats, ft) {
