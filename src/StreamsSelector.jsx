@@ -32,9 +32,10 @@ const Stream = memo(({ stream, onToggle, copyStream }) => {
 
   function onInfoClick(s) {
     ReactSwal.fire({
+      showCloseButton: true,
       icon: 'info',
       title: 'Stream info',
-      html: <div style={{ whiteSpace: 'pre', textAlign: 'left', overflow: 'auto' }}>{JSON.stringify(s, null, 2)}</div>,
+      html: <div style={{ whiteSpace: 'pre', textAlign: 'left', overflow: 'auto', maxHeight: 300, overflowY: 'scroll' }}>{JSON.stringify(s, null, 2)}</div>,
     });
   }
 
@@ -77,16 +78,16 @@ const StreamsSelector = memo(({
       <table style={{ marginBottom: 10 }}>
         <thead style={{ background: 'rgba(0,0,0,0.1)' }}>
           <tr>
-            <td />
-            <td />
-            <td>Type</td>
-            <td>Tag</td>
-            <td>Codec</td>
-            <td>Duration</td>
-            <td>Frames</td>
-            <td>Bitrate</td>
-            <td>Data</td>
-            <td />
+            <th>?</th>
+            <th />
+            <th>Type</th>
+            <th>Tag</th>
+            <th>Codec</th>
+            <th>Duration</th>
+            <th>Frames</th>
+            <th>Bitrate</th>
+            <th>Data</th>
+            <th />
           </tr>
         </thead>
         <tbody>
