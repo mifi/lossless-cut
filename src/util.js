@@ -74,7 +74,7 @@ const toast = Swal.mixin({
 });
 
 const errorToast = (title) => toast.fire({
-  type: 'error',
+  icon: 'error',
   title,
 });
 
