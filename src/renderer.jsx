@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useState, useCallback, useRef } from 'react';
 import { IoIosHelpCircle, IoIosCamera } from 'react-icons/io';
 import { FaPlus, FaMinus, FaAngleLeft, FaAngleRight, FaTrashAlt, FaVolumeMute, FaVolumeUp, FaYinYang, FaFileExport } from 'react-icons/fa';
-import { MdRotate90DegreesCcw } from 'react-icons/md';
+import { MdRotate90DegreesCcw, MdCallSplit, MdCallMerge } from 'react-icons/md';
 import { GiYinYang } from 'react-icons/gi';
 import { FiScissors } from 'react-icons/fi';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -593,13 +593,13 @@ const App = memo(() => {
         });
       }
 
-      toast.fire({ timer: 10000, icon: 'success', title: `Export completed! Output file(s) can be found at: ${getOutDir(customOutDir, filePath)}. You can change the output directory in settings` });
+      toast.fire({ timer: 5000, icon: 'success', title: `Export completed! Output file(s) can be found at: ${getOutDir(customOutDir, filePath)}. You can change the output directory in settings` });
     } catch (err) {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
 
       if (err.code === 1 || err.code === 'ENOENT') {
-        errorToast(`Whoops! ffmpeg was unable to export this video. Try one of the following before exporting again:\n1. Select a different output format from the ${fileFormat} button (matroska takes almost everything).\n2. Exclude unnecessary tracks`);
+        toast.fire({ icon: 'error', title: `Whoops! ffmpeg was unable to export this video. Try one of the following before exporting again:\n1. Select a different output format from the ${fileFormat} button (matroska takes almost everything).\n2. Exclude unnecessary tracks\n3. Try "Normal cut" and "Keyframe cut"`, timer: 10000 });
         return;
       }
 
@@ -1167,6 +1167,8 @@ const App = memo(() => {
 
   const primaryColor = 'hsl(194, 78%, 47%)';
 
+  const AutoMergeIcon = autoMerge ? MdCallMerge : MdCallSplit;
+
   return (
     <div>
       <div style={{ background: '#6b6b6b', height: topBarHeight, display: 'flex', alignItems: 'center', padding: '0 5px', justifyContent: 'space-between' }}>
@@ -1210,7 +1212,7 @@ const App = memo(() => {
           title={autoMerge ? 'Auto merge segments to one file after export' : 'Export to separate files'}
           onClick={withBlur(toggleAutoMerge)}
         >
-          {autoMerge ? 'Merge cuts' : 'Separate files'}
+          <AutoMergeIcon /> {autoMerge ? 'Merge cuts' : 'Separate files'}
         </button>
 
         <button
