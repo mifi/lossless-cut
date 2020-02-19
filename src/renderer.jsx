@@ -1,8 +1,7 @@
-import React, { memo, useEffect, useState, useCallback, useRef } from 'react';
+import React, { memo, useEffect, useState, useCallback, useRef, Fragment } from 'react';
 import { IoIosHelpCircle, IoIosCamera } from 'react-icons/io';
 import { FaPlus, FaMinus, FaAngleLeft, FaAngleRight, FaTrashAlt, FaVolumeMute, FaVolumeUp, FaYinYang, FaFileExport } from 'react-icons/fa';
 import { MdRotate90DegreesCcw, MdCallSplit, MdCallMerge } from 'react-icons/md';
-import { GiYinYang } from 'react-icons/gi';
 import { FiScissors } from 'react-icons/fi';
 import { AnimatePresence, motion } from 'framer-motion';
 import Swal from 'sweetalert2';
@@ -504,6 +503,31 @@ const App = memo(() => {
     if (!zoomed) seekRel((e.deltaX + e.deltaY) / 15);
   }
 
+  function showUnsupportedFileMessage() {
+    toast.fire({ timer: 10000, icon: 'warning', title: 'This video is not natively supported', text: 'This means that there is no audio in the preview and it has low quality. The final export operation will however be lossless and contains audio!' });
+  }
+
+  const createDummyVideo = useCallback(async (fp) => {
+    const html5ifiedDummyPathDummy = getOutPath(customOutDir, fp, 'html5ified-dummy.mkv');
+    await ffmpeg.html5ifyDummy(fp, html5ifiedDummyPathDummy);
+    setDummyVideoPath(html5ifiedDummyPathDummy);
+    setHtml5FriendlyPath();
+    showUnsupportedFileMessage();
+  }, [customOutDir]);
+
+  const tryCreateDummyVideo = useCallback(async () => {
+    try {
+      if (working) return;
+      setWorking(true);
+      await createDummyVideo(filePath);
+    } catch (err) {
+      console.error(err);
+      errorToast('Failed to playback this file. Try to convert to friendly format from the menu');
+    } finally {
+      setWorking(false);
+    }
+  }, [createDummyVideo, filePath, working]);
+
   const playCommand = useCallback(() => {
     const video = videoRef.current;
     if (playing) return video.pause();
@@ -511,10 +535,11 @@ const App = memo(() => {
     return video.play().catch((err) => {
       console.error(err);
       if (err.name === 'NotSupportedError') {
-        toast.fire({ icon: 'error', title: 'This format/codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu.', timer: 10000 });
+        console.log('NotSupportedError, trying to create dummy');
+        tryCreateDummyVideo(filePath);
       }
     });
-  }, [playing]);
+  }, [playing, filePath, tryCreateDummyVideo]);
 
   const deleteSource = useCallback(async () => {
     if (!filePath) return;
@@ -613,10 +638,6 @@ const App = memo(() => {
     autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyStreamIds, numStreamsToCopy,
   ]);
 
-  function showUnsupportedFileMessage() {
-    toast.fire({ timer: 10000, icon: 'warning', title: 'This video is not natively supported', text: 'This means that there is no audio in the preview and it has low quality. The final export operation will however be lossless and contains audio!' });
-  }
-
   // TODO use ffmpeg to capture frame
   const capture = useCallback(async () => {
     if (!filePath) return;
@@ -645,14 +666,6 @@ const App = memo(() => {
 
   const getHtml5ifiedPath = useCallback((fp, type) => getOutPath(customOutDir, fp, `html5ified-${type}.mp4`), [customOutDir]);
 
-  const createDummyVideo = useCallback(async (fp) => {
-    const html5ifiedDummyPathDummy = getOutPath(customOutDir, fp, 'html5ified-dummy.mkv');
-    await ffmpeg.html5ifyDummy(fp, html5ifiedDummyPathDummy);
-    setDummyVideoPath(html5ifiedDummyPathDummy);
-    setHtml5FriendlyPath();
-    showUnsupportedFileMessage();
-  }, [customOutDir]);
-
   const checkExistingHtml5FriendlyFile = useCallback(async (fp, speed) => {
     const existing = getHtml5ifiedPath(fp, speed);
     const ret = existing && await exists(existing);
@@ -667,7 +680,7 @@ const App = memo(() => {
   const load = useCallback(async (fp, html5FriendlyPathRequested) => {
     console.log('Load', { fp, html5FriendlyPathRequested });
     if (working) {
-      errorToast('I\'m busy');
+      errorToast('Tried to load file while busy');
       return;
     }
 
@@ -1135,20 +1148,19 @@ const App = memo(() => {
   const CutIcon = areWeCutting ? FiScissors : FaFileExport;
 
   function renderInvertCutButton() {
-    const KeepOrDiscardIcon = invertCutSegments ? GiYinYang : FaYinYang;
-
     return (
-      <div style={{ position: 'relative', width: 26, height: 26, marginLeft: 5 }}>
-        <AnimatePresence>
-          <motion.div style={{ position: 'absolute' }} key={invertCutSegments} initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0 }}>
-            <KeepOrDiscardIcon
-              size={26}
-              role="button"
-              title={invertCutSegments ? 'Discard selected segments' : 'Keep selected segments'}
-              onClick={withBlur(() => setInvertCutSegments(v => !v))}
-            />
-          </motion.div>
-        </AnimatePresence>
+      <div style={{ marginLeft: 5 }}>
+        <motion.div
+          animate={{ rotateX: invertCutSegments ? 0 : 180, width: 26, height: 26 }}
+          transition={{ duration: 0.3 }}
+        >
+          <FaYinYang
+            size={26}
+            role="button"
+            title={invertCutSegments ? 'Discard selected segments' : 'Keep selected segments'}
+            onClick={withBlur(() => setInvertCutSegments(v => !v))}
+          />
+        </motion.div>
       </div>
     );
   }
@@ -1172,64 +1184,73 @@ const App = memo(() => {
   return (
     <div>
       <div style={{ background: '#6b6b6b', height: topBarHeight, display: 'flex', alignItems: 'center', padding: '0 5px', justifyContent: 'space-between' }}>
-        <SideSheet
-          containerProps={{ style: { maxWidth: '100%' } }}
-          position={Position.LEFT}
-          isShown={streamsSelectorShown}
-          onCloseComplete={() => setStreamsSelectorShown(false)}
-        >
-          <StreamsSelector
-            mainFilePath={filePath}
-            externalFiles={externalStreamFiles}
-            setExternalFiles={setExternalStreamFiles}
-            showAddStreamSourceDialog={showAddStreamSourceDialog}
-            streams={mainStreams}
-            isCopyingStreamId={isCopyingStreamId}
-            toggleCopyStreamId={toggleCopyStreamId}
-            setCopyStreamIdsForPath={setCopyStreamIdsForPath}
-            onExtractAllStreamsPress={onExtractAllStreamsPress}
-          />
-        </SideSheet>
-        <Button height={20} iconBefore="list" onClick={withBlur(() => setStreamsSelectorShown(true))}>
-          Tracks ({numStreamsToCopy}/{numStreamsTotal})
-        </Button>
+        {filePath && (
+          <Fragment>
+            <SideSheet
+              containerProps={{ style: { maxWidth: '100%' } }}
+              position={Position.LEFT}
+              isShown={streamsSelectorShown}
+              onCloseComplete={() => setStreamsSelectorShown(false)}
+            >
+              <StreamsSelector
+                mainFilePath={filePath}
+                externalFiles={externalStreamFiles}
+                setExternalFiles={setExternalStreamFiles}
+                showAddStreamSourceDialog={showAddStreamSourceDialog}
+                streams={mainStreams}
+                isCopyingStreamId={isCopyingStreamId}
+                toggleCopyStreamId={toggleCopyStreamId}
+                setCopyStreamIdsForPath={setCopyStreamIdsForPath}
+                onExtractAllStreamsPress={onExtractAllStreamsPress}
+              />
+            </SideSheet>
+            <Button height={20} iconBefore="list" onClick={withBlur(() => setStreamsSelectorShown(true))}>
+              Tracks ({numStreamsToCopy}/{numStreamsTotal})
+            </Button>
+          </Fragment>
+        )}
 
         <div style={{ flexGrow: 1 }} />
 
-        <button
-          type="button"
-          onClick={withBlur(setOutputDir)}
-          title={customOutDir}
-        >
-          {`Out path ${customOutDir ? 'set' : 'unset'}`}
-        </button>
+        {filePath && (
+          <Fragment>
 
-        {renderOutFmt({ width: 60 })}
+            <button
+              type="button"
+              onClick={withBlur(setOutputDir)}
+              title={customOutDir}
+            >
+              {`Out path ${customOutDir ? 'set' : 'unset'}`}
+            </button>
 
-        <button
-          style={{ opacity: cutSegments.length < 2 ? 0.4 : undefined }}
-          type="button"
-          title={autoMerge ? 'Auto merge segments to one file after export' : 'Export to separate files'}
-          onClick={withBlur(toggleAutoMerge)}
-        >
-          <AutoMergeIcon /> {autoMerge ? 'Merge cuts' : 'Separate files'}
-        </button>
+            {renderOutFmt({ width: 60 })}
 
-        <button
-          type="button"
-          title={`Cut mode ${keyframeCut ? 'nearest keyframe cut' : 'normal cut'}`}
-          onClick={withBlur(toggleKeyframeCut)}
-        >
-          {keyframeCut ? 'Keyframe cut' : 'Normal cut'}
-        </button>
+            <button
+              style={{ opacity: cutSegments.length < 2 ? 0.4 : undefined }}
+              type="button"
+              title={autoMerge ? 'Auto merge segments to one file after export' : 'Export to separate files'}
+              onClick={withBlur(toggleAutoMerge)}
+            >
+              <AutoMergeIcon /> {autoMerge ? 'Merge cuts' : 'Separate files'}
+            </button>
 
-        <button
-          type="button"
-          title={`Discard audio? Current: ${copyAnyAudioTrack ? 'keep audio tracks' : 'Discard audio tracks'}`}
-          onClick={withBlur(toggleStripAudio)}
-        >
-          {copyAnyAudioTrack ? 'Keep audio' : 'Discard audio'}
-        </button>
+            <button
+              type="button"
+              title={`Cut mode ${keyframeCut ? 'nearest keyframe cut' : 'normal cut'}`}
+              onClick={withBlur(toggleKeyframeCut)}
+            >
+              {keyframeCut ? 'Keyframe cut' : 'Normal cut'}
+            </button>
+
+            <button
+              type="button"
+              title={`Discard audio? Current: ${copyAnyAudioTrack ? 'keep audio tracks' : 'Discard audio tracks'}`}
+              onClick={withBlur(toggleStripAudio)}
+            >
+              {copyAnyAudioTrack ? 'Keep audio' : 'Discard audio'}
+            </button>
+          </Fragment>
+        )}
 
         <IoIosHelpCircle size={24} role="button" onClick={toggleHelp} style={{ verticalAlign: 'middle', marginLeft: 5 }} />
       </div>
