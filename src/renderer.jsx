@@ -105,6 +105,7 @@ const App = memo(() => {
   const [copyStreamIdsByFile, setCopyStreamIdsByFile] = useState({});
   const [muted, setMuted] = useState(false);
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
+  const [zoom, setZoom] = useState(1);
 
   // Global state
   const [captureFormat, setCaptureFormat] = useState('jpeg');
@@ -118,7 +119,8 @@ const App = memo(() => {
 
   const videoRef = useRef();
   const timelineWrapperRef = useRef();
-
+  const timelineScrollerRef = useRef();
+  const timelineScrollerSkipEventRef = useRef();
 
   function setCopyStreamIdsForPath(path, cb) {
     setCopyStreamIdsByFile((old) => {
@@ -187,6 +189,7 @@ const App = memo(() => {
     setMuted(false);
     setInvertCutSegments(false);
     setStreamsSelectorShown(false);
+    setZoom(1);
   }, []);
 
   useEffect(() => () => {
@@ -197,11 +200,13 @@ const App = memo(() => {
 
   // Because segments could have undefined start / end
   // (meaning extend to start of timeline or end duration)
-  function getSegApparentStart(time) {
+  function getSegApparentStart(seg) {
+    const time = seg.start;
     return time !== undefined ? time : 0;
   }
 
-  const getSegApparentEnd = useCallback((time) => {
+  const getSegApparentEnd = useCallback((seg) => {
+    const time = seg.end;
     if (time !== undefined) return time;
     if (duration !== undefined) return duration;
     return 0; // Haven't gotten duration yet
@@ -209,8 +214,8 @@ const App = memo(() => {
 
   const apparentCutSegments = cutSegments.map(cutSegment => ({
     ...cutSegment,
-    start: getSegApparentStart(cutSegment.start),
-    end: getSegApparentEnd(cutSegment.end),
+    start: getSegApparentStart(cutSegment),
+    end: getSegApparentEnd(cutSegment),
   }));
 
   const invalidSegUuids = apparentCutSegments
@@ -269,9 +274,16 @@ const App = memo(() => {
 
   const setCutTime = useCallback((type, time) => {
     const cloned = clone(cutSegments);
+    const currentSeg = cloned[currentSegIndex];
+    if (type === 'start' && time >= getSegApparentEnd(currentSeg)) {
+      throw new Error('Start time must precede end time');
+    }
+    if (type === 'end' && time <= getSegApparentStart(currentSeg)) {
+      throw new Error('Start time must precede end time');
+    }
     cloned[currentSegIndex][type] = time;
     setCutSegments(cloned);
-  }, [currentSegIndex, cutSegments]);
+  }, [currentSegIndex, getSegApparentEnd, cutSegments]);
 
   function formatTimecode(sec) {
     return formatDuration({ seconds: sec, fps: timecodeShowFrames ? detectedFps : undefined });
@@ -305,15 +317,25 @@ const App = memo(() => {
     // https://github.com/mifi/lossless-cut/issues/168
     // If we are after the end of the last segment in the timeline,
     // add a new segment that starts at currentTime
-    if (currentCutSeg.start != null && currentCutSeg.end != null
+    if (currentCutSeg.end != null
       && currentTime > currentCutSeg.end) {
       addCutSegment();
     } else {
-      setCutTime('start', currentTime);
+      try {
+        setCutTime('start', currentTime);
+      } catch (err) {
+        errorToast(err.message);
+      }
     }
   }, [setCutTime, currentTime, currentCutSeg, addCutSegment]);
 
-  const setCutEnd = useCallback(() => setCutTime('end', currentTime), [setCutTime, currentTime]);
+  const setCutEnd = useCallback(() => {
+    try {
+      setCutTime('end', currentTime);
+    } catch (err) {
+      errorToast(err.message);
+    }
+  }, [setCutTime, currentTime]);
 
   async function setOutputDir() {
     const { filePaths } = await dialog.showOpenDialog({ properties: ['openDirectory'] });
@@ -452,8 +474,34 @@ const App = memo(() => {
     if (duration) seekAbs((relX / target.offsetWidth) * duration);
   }
 
+  const durationSafe = duration || 1;
+  const currentTimeWidth = 1;
+  // Prevent it from overflowing (and causing scroll) when end of timeline
+  const currentTimePos = currentTime !== undefined && currentTime < durationSafe ? `${(currentTime / durationSafe) * 100}%` : undefined;
+
+  const zoomed = zoom > 1;
+
+  useEffect(() => {
+    const { currentTime: ct } = videoRef.current;
+    timelineScrollerSkipEventRef.current = true;
+    if (zoom > 1) {
+      timelineScrollerRef.current.scrollLeft = (ct / durationSafe)
+        * (timelineWrapperRef.current.offsetWidth - timelineScrollerRef.current.offsetWidth);
+    }
+  }, [zoom, durationSafe]);
+
+  function onTimelineScroll(e) {
+    if (timelineScrollerSkipEventRef.current) {
+      timelineScrollerSkipEventRef.current = false;
+      return;
+    }
+    if (!zoomed) return;
+    seekAbs((((e.target.scrollLeft + (timelineScrollerRef.current.offsetWidth / 2))
+      / timelineWrapperRef.current.offsetWidth) * duration));
+  }
+
   function onWheel(e) {
-    seekRel(e.deltaX / 10);
+    if (!zoomed) seekRel(e.deltaX / 10);
   }
 
   const playCommand = useCallback(() => {
@@ -899,7 +947,11 @@ const App = memo(() => {
       set();
 
       const rel = time - startTimeOffset;
-      setCutTime(type, rel);
+      try {
+        setCutTime(type, rel);
+      } catch (err) {
+        console.error('Cannot set cut time', err);
+      }
       seekAbs(rel);
     };
 
@@ -922,9 +974,6 @@ const App = memo(() => {
     .filter(([f]) => f !== detectedFileFormat));
   const otherFormatsMap = fromPairs(Object.entries(allOutFormats)
     .filter(([f]) => ![...commonFormats, detectedFileFormat].includes(f)));
-
-  const durationSafe = duration || 1;
-  const currentTimePos = currentTime !== undefined && `${(currentTime / durationSafe) * 100}%`;
 
   const segColor = (currentCutSeg || {}).color;
   const segBgColor = segColor.alpha(0.5).string();
@@ -1104,6 +1153,18 @@ const App = memo(() => {
     );
   }
 
+  useEffect(() => {
+    const keyScrollPreventer = (e) => {
+      // https://stackoverflow.com/questions/8916620/disable-arrow-key-scrolling-in-users-browser
+      if (e.target === document.body && [32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('keydown', keyScrollPreventer);
+    return () => window.removeEventListener('keydown', keyScrollPreventer);
+  }, []);
+
   const primaryColor = 'hsl(194, 78%, 47%)';
 
   return (
@@ -1271,11 +1332,20 @@ const App = memo(() => {
           onPan={handleTap}
           options={{ recognizers: {} }}
         >
-          <div>
-            <div style={{ height: 36, width: '100%', position: 'relative', backgroundColor: '#444' }} ref={timelineWrapperRef} onWheel={onWheel}>
-              {currentTimePos !== undefined && <div style={{ position: 'absolute', bottom: 0, top: 0, left: currentTimePos, zIndex: 3, backgroundColor: 'rgba(255, 255, 255, 1)', width: 1, pointerEvents: 'none' }} />}
+          <div style={{ position: 'relative' }}>
+            <div
+              style={{ overflowX: 'scroll' }}
+              id="timeline-scroller"
+              onWheel={onWheel}
+              onScroll={onTimelineScroll}
+              ref={timelineScrollerRef}
+            >
+              <div
+                style={{ height: 36, width: `${zoom * 100}%`, position: 'relative', backgroundColor: '#444' }}
+                ref={timelineWrapperRef}
+              >
+                {currentTimePos !== undefined && <div style={{ position: 'absolute', bottom: 0, top: 0, left: currentTimePos, zIndex: 3, backgroundColor: 'rgba(255, 255, 255, 1)', width: currentTimeWidth, pointerEvents: 'none' }} />}
 
-              <AnimatePresence>
                 {apparentCutSegments.map((seg, i) => (
                   <TimelineSeg
                     key={seg.uuid}
@@ -1287,24 +1357,25 @@ const App = memo(() => {
                     cutStart={seg.start}
                     cutEnd={seg.end}
                     invertCutSegments={invertCutSegments}
+                    zoomed={zoomed}
                   />
                 ))}
-              </AnimatePresence>
 
-              {inverseCutSegments && inverseCutSegments.map((seg, i) => (
-                <InverseCutSegment
-                  // eslint-disable-next-line react/no-array-index-key
-                  key={i}
-                  seg={seg}
-                  duration={durationSafe}
-                  invertCutSegments={invertCutSegments}
-                />
-              ))}
+                {inverseCutSegments && inverseCutSegments.map((seg, i) => (
+                  <InverseCutSegment
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={i}
+                    seg={seg}
+                    duration={durationSafe}
+                    invertCutSegments={invertCutSegments}
+                  />
+                ))}
+              </div>
+            </div>
 
-              <div style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' }}>
-                  {formatTimecode(offsetCurrentTime)}
-                </div>
+            <div style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+              <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' }}>
+                {formatTimecode(offsetCurrentTime)}
               </div>
             </div>
           </div>
@@ -1406,6 +1477,15 @@ const App = memo(() => {
         />
 
         {renderInvertCutButton()}
+
+        <select style={{ width: 80, margin: '0 10px' }} value={zoom.toString()} title="Zoom" onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
+          {Array(10).fill().map((unused, z) => {
+            const val = 2 ** z;
+            return (
+              <option key={val} value={String(val)}>Zoom {val}x</option>
+            );
+          })}
+        </select>
       </div>
 
       <div className="right-menu" style={{ position: 'absolute', right: 0, bottom: 0, padding: '.3em', display: 'flex', alignItems: 'center' }}>

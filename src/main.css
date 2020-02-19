@@ -96,3 +96,7 @@ input, button, textarea, :focus {
 .dragging-helper-class {
   color: rgba(0,0,0,0.5);
 }
+
+#timeline-scroller::-webkit-scrollbar {
+  display: none;
+}

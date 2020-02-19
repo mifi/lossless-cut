@@ -11,7 +11,7 @@ const InverseCutSegment = ({ seg, duration, invertCutSegments }) => (
       top: 0,
       bottom: 0,
       left: `${(seg.start / duration) * 100}%`,
-      width: `${Math.max(((seg.end - seg.start) / duration) * 100, 1)}%`,
+      width: `${((seg.end - seg.start) / duration) * 100}%`,
       display: 'flex',
       alignItems: 'center',
       pointerEvents: 'none',
