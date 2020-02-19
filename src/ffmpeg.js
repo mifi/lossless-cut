@@ -433,7 +433,9 @@ const defaultProcessedCodecTypes = [
 function getStreamFps(stream) {
   const match = typeof stream.avg_frame_rate === 'string' && stream.avg_frame_rate.match(/^([0-9]+)\/([0-9]+)$/);
   if (stream.codec_type === 'video' && match) {
-    return parseInt(match[1], 10) / parseInt(match[2], 10);
+    const num = parseInt(match[1], 10);
+    const den = parseInt(match[2], 10);
+    if (den > 0) return num / den;
   }
   return undefined;
 }
