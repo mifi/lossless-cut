@@ -49,7 +49,7 @@ const HelpSheet = ({ visible, onTogglePress, renderSettings, ffmpegCommandLog })
         <h1>Last ffmpeg commands</h1>
         <div style={{ overflowY: 'scroll', height: 200 }}>
           {ffmpegCommandLog.reverse().map((log) => (
-            <div style={{ whiteSpace: 'pre' }}>
+            <div key={log} style={{ whiteSpace: 'pre' }}>
               {log}
             </div>
           ))}
