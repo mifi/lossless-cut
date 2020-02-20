@@ -82,7 +82,7 @@ function getExtensionForFormat(format) {
 
 async function cut({
   filePath, outFormat, cutFrom, cutTo, videoDuration, rotation,
-  onProgress, copyStreamIds, keyframeCut, outPath,
+  onProgress, copyStreamIds, keyframeCut, outPath, appendFfmpegCommandLog,
 }) {
   console.log('Cutting from', cutFrom, 'to', cutTo);
 
@@ -126,7 +126,11 @@ async function cut({
     '-f', outFormat, '-y', outPath,
   ];
 
-  console.log('ffmpeg', ffmpegArgs.join(' '));
+  const mapArg = arg => (/[^0-9a-zA-Z-_]/.test(arg) ? `'${arg}'` : arg);
+  const ffmpegCommand = `ffmpeg ${ffmpegArgs.map(mapArg).join(' ')}`;
+
+  console.log(ffmpegCommand);
+  appendFfmpegCommandLog(ffmpegCommand);
 
   onProgress(0);
 
@@ -142,6 +146,7 @@ async function cut({
 async function cutMultiple({
   customOutDir, filePath, segments: segmentsUnsorted, videoDuration, rotation,
   onProgress, keyframeCut, copyStreamIds, outFormat, isOutFormatUserSelected,
+  appendFfmpegCommandLog,
 }) {
   const segments = sortBy(segmentsUnsorted, 'cutFrom');
   const singleProgresses = {};
@@ -174,6 +179,7 @@ async function cutMultiple({
       cutTo,
       // eslint-disable-next-line no-loop-func
       onProgress: progress => onSingleProgress(i, progress),
+      appendFfmpegCommandLog,
     });
 
     outFiles.push(outPath);

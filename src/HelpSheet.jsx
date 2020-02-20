@@ -2,7 +2,7 @@ import React from 'react';
 import { IoIosCloseCircleOutline } from 'react-icons/io';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const HelpSheet = ({ visible, onTogglePress, renderSettings }) => (
+const HelpSheet = ({ visible, onTogglePress, renderSettings, ffmpegCommandLog }) => (
   <AnimatePresence>
     {visible && (
       <motion.div
@@ -45,6 +45,15 @@ const HelpSheet = ({ visible, onTogglePress, renderSettings }) => (
             {renderSettings()}
           </tbody>
         </table>
+
+        <h1>Last ffmpeg commands</h1>
+        <div style={{ overflowY: 'scroll', height: 200 }}>
+          {ffmpegCommandLog.reverse().map((log) => (
+            <div style={{ whiteSpace: 'pre' }}>
+              {log}
+            </div>
+          ))}
+        </div>
       </motion.div>
     )}
   </AnimatePresence>

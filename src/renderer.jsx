@@ -107,6 +107,7 @@ const App = memo(() => {
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [commandedTime, setCommandedTime] = useState(0);
+  const [ffmpegCommandLog, setFfmpegCommandLog] = useState([]);
 
   // Preferences
   const [captureFormat, setCaptureFormat] = useState(configStore.get('captureFormat'));
@@ -136,6 +137,11 @@ const App = memo(() => {
   const timelineWrapperRef = useRef();
   const timelineScrollerRef = useRef();
   const timelineScrollerSkipEventRef = useRef();
+
+
+  function appendFfmpegCommandLog(command) {
+    setFfmpegCommandLog(old => [...old, command]);
+  }
 
   function setCopyStreamIdsForPath(path, cb) {
     setCopyStreamIdsByFile((old) => {
@@ -641,6 +647,7 @@ const App = memo(() => {
         keyframeCut,
         segments: ffmpegSegments,
         onProgress: setCutProgress,
+        appendFfmpegCommandLog,
       });
 
       if (outFiles.length > 1 && autoMerge) {
@@ -1631,6 +1638,7 @@ const App = memo(() => {
         visible={!!helpVisible}
         onTogglePress={toggleHelp}
         renderSettings={renderSettings}
+        ffmpegCommandLog={ffmpegCommandLog}
       />
     </div>
   );
