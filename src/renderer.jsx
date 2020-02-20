@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useState, useCallback, useRef, Fragment } from 'react';
 import { IoIosHelpCircle, IoIosCamera } from 'react-icons/io';
-import { FaPlus, FaMinus, FaHandPointRight, FaHandPointLeft, FaTrashAlt, FaVolumeMute, FaVolumeUp, FaYinYang, FaFileExport } from 'react-icons/fa';
+import { FaPlus, FaMinus, FaHandPointRight, FaHandPointLeft, FaTrashAlt, FaVolumeMute, FaVolumeUp, FaYinYang, FaFileExport, FaTag } from 'react-icons/fa';
 import { MdRotate90DegreesCcw, MdCallSplit, MdCallMerge } from 'react-icons/md';
 import { FiScissors } from 'react-icons/fi';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -64,6 +64,7 @@ function createSegment({ start, end } = {}) {
   return {
     start,
     end,
+    name: '',
     color: generateColor(),
     uuid: uuid.v4(),
   };
@@ -302,7 +303,6 @@ const App = memo(() => {
   })();
 
   const setCutTime = useCallback((type, time) => {
-    const cloned = cloneDeep(cutSegments);
     const currentSeg = currentCutSeg;
     if (type === 'start' && time >= getSegApparentEnd(currentSeg)) {
       throw new Error('Start time must precede end time');
@@ -310,11 +310,18 @@ const App = memo(() => {
     if (type === 'end' && time <= getSegApparentStart(currentSeg)) {
       throw new Error('Start time must precede end time');
     }
+    const cloned = cloneDeep(cutSegments);
     cloned[currentSegIndexSafe][type] = Math.min(Math.max(time, 0), duration);
     setCutSegments(cloned);
   }, [
     currentSegIndexSafe, getSegApparentEnd, cutSegments, currentCutSeg, setCutSegments, duration,
   ]);
+
+  const setCurrentSegmentName = (name) => {
+    const cloned = cloneDeep(cutSegments);
+    cloned[currentSegIndexSafe].name = name;
+    setCutSegments(cloned);
+  };
 
   function formatTimecode(sec) {
     return formatDuration({ seconds: sec, fps: timecodeShowFrames ? detectedFps : undefined });
@@ -1063,10 +1070,21 @@ const App = memo(() => {
   const otherFormatsMap = fromPairs(Object.entries(allOutFormats)
     .filter(([f]) => ![...commonFormats, detectedFileFormat].includes(f)));
 
-  const segColor = (currentCutSeg || {}).color;
-  const segBgColor = segColor.alpha(0.5).string();
-  const segActiveBgColor = segColor.lighten(0.5).alpha(0.5).string();
-  const segBorderColor = segColor.lighten(0.5).string();
+  function getSegColors(seg) {
+    if (!seg) return {};
+    const { color } = seg;
+    return {
+      segBgColor: color.alpha(0.5).string(),
+      segActiveBgColor: color.lighten(0.5).alpha(0.5).string(),
+      segBorderColor: color.lighten(0.5).string(),
+    };
+  }
+
+  const {
+    segBgColor: currentSegBgColor,
+    segActiveBgColor: currentSegActiveBgColor,
+    segBorderColor: currentSegBorderColor,
+  } = getSegColors(currentCutSeg);
 
   const jumpCutButtonStyle = {
     position: 'absolute', color: 'black', bottom: 0, top: 0, padding: '2px 8px',
@@ -1277,16 +1295,27 @@ const App = memo(() => {
     return () => window.removeEventListener('keydown', keyScrollPreventer);
   }, []);
 
+  async function onLabelSegmentPress() {
+    const { value } = await Swal.fire({
+      showCancelButton: true,
+      title: 'Label current segment',
+      inputValue: currentCutSeg.name,
+      input: 'text',
+    });
+
+    if (value != null) setCurrentSegmentName(value);
+  }
+
   function renderSetCutpointButton(side) {
     const start = side === 'start';
     const Icon = start ? FaHandPointLeft : FaHandPointRight;
-    const border = `4px solid ${segBorderColor}`;
+    const border = `4px solid ${currentSegBorderColor}`;
     return (
       <Icon
         size={13}
         title="Set cut end to current position"
         role="button"
-        style={{ padding: start ? '4px 4px 4px 2px' : '4px 2px 4px 4px', borderLeft: start && border, borderRight: !start && border, background: segActiveBgColor, borderRadius: 6 }}
+        style={{ padding: start ? '4px 4px 4px 2px' : '4px 2px 4px 4px', borderLeft: start && border, borderRight: !start && border, background: currentSegActiveBgColor, borderRadius: 6 }}
         onClick={start ? setCutStart : setCutEnd}
       />
     );
@@ -1485,22 +1514,29 @@ const App = memo(() => {
                 {currentTimePos !== undefined && <motion.div transition={{ type: 'spring', damping: 70, stiffness: 800 }} animate={{ left: currentTimePos }} style={{ position: 'absolute', bottom: 0, top: 0, zIndex: 3, backgroundColor: 'black', width: currentTimeWidth, pointerEvents: 'none' }} />}
                 {commandedTimePos !== undefined && <div style={{ left: commandedTimePos, position: 'absolute', bottom: 0, top: 0, zIndex: 4, backgroundColor: 'white', width: currentTimeWidth, pointerEvents: 'none' }} />}
 
-                {apparentCutSegments.map((seg, i) => (
-                  <TimelineSeg
-                    key={seg.uuid}
-                    segNum={i}
-                    segBgColor={segBgColor}
-                    segActiveBgColor={segActiveBgColor}
-                    segBorderColor={segBorderColor}
-                    onSegClick={currentSegIndexNew => setCurrentSegIndex(currentSegIndexNew)}
-                    isActive={i === currentSegIndexSafe}
-                    duration={durationSafe}
-                    cutStart={seg.start}
-                    cutEnd={seg.end}
-                    invertCutSegments={invertCutSegments}
-                    zoomed={zoomed}
-                  />
-                ))}
+                {apparentCutSegments.map((seg, i) => {
+                  const {
+                    segBgColor, segActiveBgColor, segBorderColor,
+                  } = getSegColors(seg);
+
+                  return (
+                    <TimelineSeg
+                      key={seg.uuid}
+                      segNum={i}
+                      segBgColor={segBgColor}
+                      segActiveBgColor={segActiveBgColor}
+                      segBorderColor={segBorderColor}
+                      onSegClick={currentSegIndexNew => setCurrentSegIndex(currentSegIndexNew)}
+                      isActive={i === currentSegIndexSafe}
+                      duration={durationSafe}
+                      name={seg.name}
+                      cutStart={seg.start}
+                      cutEnd={seg.end}
+                      invertCutSegments={invertCutSegments}
+                      zoomed={zoomed}
+                    />
+                  );
+                })}
 
                 {inverseCutSegments && inverseCutSegments.map((seg, i) => (
                   <InverseCutSegment
@@ -1599,7 +1635,7 @@ const App = memo(() => {
 
         <FaMinus
           size={30}
-          style={{ margin: '0 5px', background: cutSegments.length < 2 ? undefined : segBgColor, borderRadius: 3, color: 'white' }}
+          style={{ margin: '0 5px', background: cutSegments.length < 2 ? undefined : currentSegBgColor, borderRadius: 3, color: 'white' }}
           role="button"
           title={`Delete current segment ${currentSegIndexSafe + 1}`}
           onClick={removeCutSegment}
@@ -1615,6 +1651,15 @@ const App = memo(() => {
             );
           })}
         </select>
+
+        <FaTag
+          size={14}
+          title="Label segment"
+          role="button"
+          style={{ padding: 4, border: `2px solid ${currentSegBorderColor}`, background: currentSegActiveBgColor, borderRadius: 6 }}
+          onClick={onLabelSegmentPress}
+        />
+
       </div>
 
       <div className="right-menu" style={{ position: 'absolute', right: 0, bottom: 0, padding: '.3em', display: 'flex', alignItems: 'center' }}>

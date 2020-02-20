@@ -8,7 +8,7 @@ const { formatDuration } = require('./util');
 
 
 const TimelineSeg = ({
-  duration, cutStart, cutEnd, isActive, segNum,
+  duration, cutStart, cutEnd, isActive, segNum, name,
   onSegClick, invertCutSegments, segBgColor, segActiveBgColor, segBorderColor,
 }) => {
   const cutSectionWidth = `${((cutEnd - cutStart) / duration) * 100}%`;
@@ -42,6 +42,9 @@ const TimelineSeg = ({
 
   const onThisSegClick = () => onSegClick(segNum);
 
+  const durationStr = cutEnd > cutStart ? `${formatDuration({ seconds: cutEnd - cutStart })} ` : '';
+  const title = `${durationStr}${name}`;
+
   return (
     <motion.div
       style={wrapperStyle}
@@ -51,7 +54,7 @@ const TimelineSeg = ({
       exit={{ opacity: 0, scaleX: 0 }}
       role="button"
       onClick={onThisSegClick}
-      title={cutEnd > cutStart ? formatDuration({ seconds: cutEnd - cutStart }) : undefined}
+      title={title}
     >
       <div style={{ alignSelf: 'flex-start', flexShrink: 1, fontSize: 10, minWidth: 0, overflow: 'hidden' }}>{segNum + 1}</div>
 
@@ -70,6 +73,10 @@ const TimelineSeg = ({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {name && <div style={{ flexBasis: 4, flexShrink: 1 }} />}
+
+      {name && <div style={{ flexShrink: 1, fontSize: 11, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap' }}>{name}</div>}
 
       <div style={{ flexGrow: 1 }} />
     </motion.div>
