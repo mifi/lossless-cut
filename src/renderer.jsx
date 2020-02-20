@@ -188,7 +188,6 @@ const App = memo(() => {
     setDetectedFps();
     setStreams([]);
     setCopyStreamIdsByFile({});
-    setInvertCutSegments(false);
     setStreamsSelectorShown(false);
     setZoom(1);
   }, []);
