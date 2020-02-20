@@ -103,7 +103,6 @@ const App = memo(() => {
   const [detectedFps, setDetectedFps] = useState();
   const [mainStreams, setStreams] = useState([]);
   const [copyStreamIdsByFile, setCopyStreamIdsByFile] = useState({});
-  const [muted, setMuted] = useState(false);
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
   const [zoom, setZoom] = useState(1);
 
@@ -118,6 +117,7 @@ const App = memo(() => {
   const [invertCutSegments, setInvertCutSegments] = useState(false);
   const [autoExportExtraStreams, setAutoExportExtraStreams] = useState(true);
   const [askBeforeClose, setAskBeforeClose] = useState(true);
+  const [muted, setMuted] = useState(false);
 
   const videoRef = useRef();
   const timelineWrapperRef = useRef();
@@ -188,7 +188,6 @@ const App = memo(() => {
     setDetectedFps();
     setStreams([]);
     setCopyStreamIdsByFile({});
-    setMuted(false);
     setInvertCutSegments(false);
     setStreamsSelectorShown(false);
     setZoom(1);
