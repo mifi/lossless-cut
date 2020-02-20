@@ -17,6 +17,7 @@ async function showMergeDialog(paths, onMergeClick) {
 
   let swalElem;
   let outPaths = paths;
+  let allStreams = false;
   const { dismiss } = await MySwal.fire({
     width: '90%',
     showCancelButton: true,
@@ -25,12 +26,13 @@ async function showMergeDialog(paths, onMergeClick) {
     html: (<SortableFiles
       items={outPaths}
       onChange={(val) => { outPaths = val; }}
+      onAllStreamsChange={(val) => { allStreams = val; }}
       helperContainer={() => swalElem}
     />),
   });
 
   if (!dismiss) {
-    onMergeClick(outPaths);
+    onMergeClick({ paths: outPaths, allStreams });
   }
 }
 

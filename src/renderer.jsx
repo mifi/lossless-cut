@@ -416,13 +416,13 @@ const App = memo(() => {
 
   const offsetCurrentTime = (currentTime || 0) + startTimeOffset;
 
-  const mergeFiles = useCallback(async (paths) => {
+  const mergeFiles = useCallback(async ({ paths, allStreams }) => {
     try {
       setWorking(true);
 
       // console.log('merge', paths);
       await ffmpeg.mergeAnyFiles({
-        customOutDir, paths,
+        customOutDir, paths, allStreams,
       });
     } catch (err) {
       errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
