@@ -310,9 +310,11 @@ const App = memo(() => {
     if (type === 'end' && time <= getSegApparentStart(currentSeg)) {
       throw new Error('Start time must precede end time');
     }
-    cloned[currentSegIndexSafe][type] = time;
+    cloned[currentSegIndexSafe][type] = Math.min(Math.max(time, 0), duration);
     setCutSegments(cloned);
-  }, [currentSegIndexSafe, getSegApparentEnd, cutSegments, currentCutSeg, setCutSegments]);
+  }, [
+    currentSegIndexSafe, getSegApparentEnd, cutSegments, currentCutSeg, setCutSegments, duration,
+  ]);
 
   function formatTimecode(sec) {
     return formatDuration({ seconds: sec, fps: timecodeShowFrames ? detectedFps : undefined });
