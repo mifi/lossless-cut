@@ -53,6 +53,8 @@
   "dependencies": {
     "axios": "^0.19.2",
     "color": "^3.1.0",
+    "csv-parse": "^4.8.5",
+    "csv-stringify": "^5.3.6",
     "electron-default-menu": "^1.0.0",
     "electron-is-dev": "^0.1.2",
     "electron-store": "^5.1.0",

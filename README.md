@@ -80,7 +80,7 @@ Unsupported files can be remuxed (fast) or encoded (slow) to a friendly format/c
 - Select the cut segment's start and end time by moving the time marker and then pressing <kbd>I</kbd> to set start time, and <kbd>O</kbd> to set end time. *Note that the segments you select will be **preserved** and exported to a new file. You can change this behavior with the Yin Yang symbol ☯️, after which it will instead **cut away** all selected segments.*
 - *(optional)* If you want to add more than one segment, move to the desired start time and press <kbd>+</kbd>, then select the next segment start/end times with <kbd>I</kbd>/<kbd>O</kbd>.
 - *(optional)* If you want to re-merge all the selected segments to one file after cutting, toggle the button `Separate files` to `Merge cuts`.
-- *(optional)* If you want to export to a certain dir, press the `Out path unset` button (default: Input file path)
+- *(optional)* If you want to export to a certain dir, press the `Working dir unset` button (default: Input file path)
 - *(optional)* If you want to change orientation, press the rotation button
 - *(optional)* By default, audio, video and subtitle tracks from the input file will be exported. Press the `Tracks` button to customise and/or add new tracks from other files.
 - *(optional)* select a new output format

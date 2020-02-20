@@ -3,12 +3,15 @@ import { IoIosCloseCircleOutline } from 'react-icons/io';
 import { FaClipboard } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const { toast } = require('./util');
-
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { clipboard } = require('electron');
 
-const HelpSheet = ({ visible, onTogglePress, renderSettings, ffmpegCommandLog }) => (
+const { toast } = require('./util');
+
+const HelpSheet = ({
+  visible, onTogglePress, renderSettings, ffmpegCommandLog, sortedCutSegments,
+  formatTimecode,
+}) => (
   <AnimatePresence>
     {visible && (
       <motion.div
@@ -52,7 +55,16 @@ const HelpSheet = ({ visible, onTogglePress, renderSettings, ffmpegCommandLog })
           </tbody>
         </table>
 
-        <h1>Last ffmpeg commands</h1>
+        <h1 style={{ marginTop: 40 }}>Segment list</h1>
+        <div style={{ overflowY: 'scroll', height: 200 }}>
+          {sortedCutSegments.map((seg) => (
+            <div key={seg.uuid} style={{ margin: '5px 0' }}>
+              {formatTimecode(seg.start)} - {formatTimecode(seg.end)} {seg.name}
+            </div>
+          ))}
+        </div>
+
+        <h1 style={{ marginTop: 40 }}>Last ffmpeg commands</h1>
         <div style={{ overflowY: 'scroll', height: 200 }}>
           {ffmpegCommandLog.reverse().map((log) => (
             <div key={log} style={{ whiteSpace: 'pre', margin: '5px 0' }}>

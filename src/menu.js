@@ -30,6 +30,18 @@ module.exports = (app, mainWindow, newVersion) => {
         },
       },
       {
+        label: 'Import CSV cut file',
+        click() {
+          mainWindow.webContents.send('importEdlFile');
+        },
+      },
+      {
+        label: 'Export CSV cut file',
+        click() {
+          mainWindow.webContents.send('exportEdlFile');
+        },
+      },
+      {
         label: 'Convert to friendly format (fastest)',
         click() {
           mainWindow.webContents.send('html5ify', 'fastest');
@@ -59,12 +71,7 @@ module.exports = (app, mainWindow, newVersion) => {
           mainWindow.webContents.send('extract-all-streams', false);
         },
       },
-      {
-        label: 'Set custom start offset/timecode',
-        click() {
-          mainWindow.webContents.send('set-start-offset', true);
-        },
-      },
+      { type: 'separator' },
       {
         label: 'Exit',
         click() {
@@ -103,6 +110,12 @@ module.exports = (app, mainWindow, newVersion) => {
           label: 'Merge files',
           click() {
             mainWindow.webContents.send('show-merge-dialog', true);
+          },
+        },
+        {
+          label: 'Set custom start offset/timecode',
+          click() {
+            mainWindow.webContents.send('set-start-offset', true);
           },
         },
       ],

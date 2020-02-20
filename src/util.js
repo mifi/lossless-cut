@@ -38,11 +38,13 @@ function parseDuration(str) {
 }
 
 function getOutDir(customOutDir, filePath) {
-  const dirname = path.dirname(filePath);
-  return customOutDir || dirname;
+  if (customOutDir) return customOutDir;
+  if (filePath) return path.dirname(filePath);
+  return undefined;
 }
 
 function getOutPath(customOutDir, filePath, nameSuffix) {
+  if (!filePath) return undefined;
   const basename = path.basename(filePath);
 
   return path.join(getOutDir(customOutDir, filePath), `${basename}-${nameSuffix}`);

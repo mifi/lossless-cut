@@ -14,6 +14,7 @@ import clamp from 'lodash/clamp';
 import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
 import flatMap from 'lodash/flatMap';
+import isEqual from 'lodash/isEqual';
 
 import HelpSheet from './HelpSheet';
 import TimelineSeg from './TimelineSeg';
@@ -28,7 +29,6 @@ const isDev = require('electron-is-dev');
 const electron = require('electron'); // eslint-disable-line
 const Mousetrap = require('mousetrap');
 const Hammer = require('react-hammerjs').default;
-const { dirname } = require('path');
 const trash = require('trash');
 const uuid = require('uuid');
 
@@ -42,6 +42,7 @@ const allOutFormats = require('./outFormats');
 const captureFrame = require('./capture-frame');
 const ffmpeg = require('./ffmpeg');
 const configStore = require('./store');
+const edlStore = require('./edlStore');
 
 const { defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd } = ffmpeg;
 
@@ -60,15 +61,18 @@ function withBlur(cb) {
   };
 }
 
-function createSegment({ start, end } = {}) {
+function createSegment({ start, end, name } = {}) {
   return {
     start,
     end,
-    name: '',
+    name: name || '',
     color: generateColor(),
     uuid: uuid.v4(),
   };
 }
+
+const createInitialCutSegments = () => [createSegment()];
+
 
 const dragPreventer = ev => {
   ev.preventDefault();
@@ -112,7 +116,7 @@ const App = memo(() => {
   const [cutStartTimeManual, setCutStartTimeManual] = useState();
   const [cutEndTimeManual, setCutEndTimeManual] = useState();
   const [cutSegments, setCutSegments, cutSegmentsHistory] = useStateWithHistory(
-    [createSegment()],
+    createInitialCutSegments(),
     100,
   );
 
@@ -136,6 +140,8 @@ const App = memo(() => {
   useEffect(() => configStore.set('askBeforeClose', askBeforeClose), [askBeforeClose]);
   const [muted, setMuted] = useState(configStore.get('muted'));
   useEffect(() => configStore.set('muted', muted), [muted]);
+  const [autoSaveProjectFile, setAutoSaveProjectFile] = useState(configStore.get('autoSaveProjectFile'));
+  useEffect(() => configStore.set('autoSaveProjectFile', autoSaveProjectFile), [autoSaveProjectFile]);
 
   // Global state
   const [helpVisible, setHelpVisible] = useState(false);
@@ -145,6 +151,7 @@ const App = memo(() => {
   const timelineWrapperRef = useRef();
   const timelineScrollerRef = useRef();
   const timelineScrollerSkipEventRef = useRef();
+  const lastSavedCutSegmentsRef = useRef();
 
 
   function appendFfmpegCommandLog(command) {
@@ -203,7 +210,7 @@ const App = memo(() => {
     setPlaying(false);
     setDuration();
     cutSegmentsHistory.go(0);
-    setCutSegments([createSegment()]); // TODO this will cause two history items
+    setCutSegments(createInitialCutSegments()); // TODO this will cause two history items
     setCutStartTimeManual();
     setCutEndTimeManual();
     setFileFormat();
@@ -241,6 +248,12 @@ const App = memo(() => {
     return 0; // Haven't gotten duration yet
   }, [duration]);
 
+  const cleanCutSegments = (cs) => cs.map((seg) => ({
+    start: seg.start,
+    end: seg.end,
+    name: seg.name,
+  }));
+
   const apparentCutSegments = cutSegments.map(cutSegment => ({
     ...cutSegment,
     start: getSegApparentStart(cutSegment),
@@ -260,15 +273,15 @@ const App = memo(() => {
     || isCuttingStart(currentApparentCutSeg.start)
     || isCuttingEnd(currentApparentCutSeg.end, duration);
 
+  const sortedCutSegments = sortBy(apparentCutSegments, 'start');
+
   const inverseCutSegments = (() => {
     if (haveInvalidSegs) return undefined;
     if (apparentCutSegments.length < 1) return undefined;
 
-    const sorted = sortBy(apparentCutSegments, 'start');
-
-    const foundOverlap = sorted.some((cutSegment, i) => {
+    const foundOverlap = sortedCutSegments.some((cutSegment, i) => {
       if (i === 0) return false;
-      return sorted[i - 1].end > cutSegment.start;
+      return sortedCutSegments[i - 1].end > cutSegment.start;
     });
 
     if (foundOverlap) return undefined;
@@ -276,22 +289,22 @@ const App = memo(() => {
 
     const ret = [];
 
-    if (sorted[0].start > 0) {
+    if (sortedCutSegments[0].start > 0) {
       ret.push({
         start: 0,
-        end: sorted[0].start,
+        end: sortedCutSegments[0].start,
       });
     }
 
-    sorted.forEach((cutSegment, i) => {
+    sortedCutSegments.forEach((cutSegment, i) => {
       if (i === 0) return;
       ret.push({
-        start: sorted[i - 1].end,
+        start: sortedCutSegments[i - 1].end,
         end: cutSegment.start,
       });
     });
 
-    const last = sorted[sorted.length - 1];
+    const last = sortedCutSegments[sortedCutSegments.length - 1];
     if (last.end < duration) {
       ret.push({
         start: last.end,
@@ -323,9 +336,9 @@ const App = memo(() => {
     setCutSegments(cloned);
   };
 
-  function formatTimecode(sec) {
-    return formatDuration({ seconds: sec, fps: timecodeShowFrames ? detectedFps : undefined });
-  }
+  const formatTimecode = useCallback((sec) => formatDuration({
+    seconds: sec, fps: timecodeShowFrames ? detectedFps : undefined,
+  }), [detectedFps, timecodeShowFrames]);
 
   const getCurrentTime = useCallback(() => (
     playing ? playerTime : commandedTime), [commandedTime, playerTime, playing]);
@@ -384,13 +397,38 @@ const App = memo(() => {
 
   const fileUri = (dummyVideoPath || html5FriendlyPath || filePath || '').replace(/#/g, '%23');
 
-  function getOutputDir() {
-    if (customOutDir) return customOutDir;
-    if (filePath) return dirname(filePath);
-    return undefined;
-  }
+  const outputDir = getOutDir(customOutDir, filePath);
 
-  const outputDir = getOutputDir();
+  const getEdlFilePath = useCallback((fp) => getOutPath(customOutDir, fp, 'llc-edl.csv'), [customOutDir]);
+  const edlFilePath = getEdlFilePath(filePath);
+
+  useEffect(() => {
+    async function save() {
+      if (!edlFilePath) return;
+
+      try {
+        if (!autoSaveProjectFile) return;
+
+        // Initial state? don't save
+        if (isEqual(cleanCutSegments(cutSegments),
+          cleanCutSegments(createInitialCutSegments()))) return;
+
+        if (lastSavedCutSegmentsRef.current
+          && isEqual(cleanCutSegments(lastSavedCutSegmentsRef.current),
+            cleanCutSegments(cutSegments))) {
+          // console.log('Seg state didn\'t change, skipping save');
+          return;
+        }
+
+        await edlStore.save(edlFilePath, cutSegments);
+        lastSavedCutSegmentsRef.current = cutSegments;
+      } catch (err) {
+        errorToast('Failed to save CSV');
+        console.error('Failed to save CSV', err);
+      }
+    }
+    save();
+  }, [cutSegments, edlFilePath, autoSaveProjectFile]);
 
   // 360 means we don't modify rotation
   const isRotationSet = rotation !== 360;
@@ -684,7 +722,7 @@ const App = memo(() => {
         }
       }
 
-      toast.fire({ timer: 5000, icon: 'success', title: `Export completed! Output file(s) can be found at: ${getOutDir(customOutDir, filePath)}.${exportExtraStreams ? ' Extra unprocessable stream(s) exported as separate files.' : ''}` });
+      toast.fire({ timer: 5000, icon: 'success', title: `Export completed! Output file(s) can be found at: ${outputDir}.${exportExtraStreams ? ' Extra unprocessable stream(s) exported as separate files.' : ''}` });
     } catch (err) {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
@@ -702,7 +740,7 @@ const App = memo(() => {
     effectiveRotation, apparentCutSegments, invertCutSegments, inverseCutSegments,
     working, duration, filePath, keyframeCut, detectedFileFormat,
     autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyStreamIds, numStreamsToCopy,
-    exportExtraStreams, nonCopiedExtraStreams,
+    exportExtraStreams, nonCopiedExtraStreams, outputDir,
   ]);
 
   // TODO use ffmpeg to capture frame
@@ -743,6 +781,26 @@ const App = memo(() => {
     return ret;
   }, [getHtml5ifiedPath]);
 
+  const loadEdlFile = useCallback(async (edlPath) => {
+    try {
+      const storedEdl = await edlStore.load(edlPath);
+      const allRowsValid = storedEdl
+        .every(row => row.start === undefined || row.end === undefined || row.start < row.end);
+
+      if (!allRowsValid) {
+        throw new Error('Invalid start or end values for one or more segments');
+      }
+
+      cutSegmentsHistory.go(0);
+      setCutSegments(storedEdl.map(createSegment));
+    } catch (err) {
+      if (err.code !== 'ENOENT') {
+        console.error('EDL load failed', err);
+        errorToast(`Failed to load EDL file (${err.message})`);
+      }
+    }
+  }, [cutSegmentsHistory, setCutSegments]);
+
   const load = useCallback(async (fp, html5FriendlyPathRequested) => {
     console.log('Load', { fp, html5FriendlyPathRequested });
     if (working) {
@@ -768,7 +826,6 @@ const App = memo(() => {
         stream.index, defaultProcessedCodecTypes.includes(stream.codec_type),
       ])));
 
-
       streams.find((stream) => {
         const streamFps = getStreamFps(stream);
         if (streamFps != null) {
@@ -792,6 +849,8 @@ const App = memo(() => {
       ) {
         await createDummyVideo(fp);
       }
+
+      await loadEdlFile(getEdlFilePath(fp));
     } catch (err) {
       if (err.code === 1 || err.code === 'ENOENT') {
         errorToast('Unsupported file');
@@ -801,7 +860,10 @@ const App = memo(() => {
     } finally {
       setWorking(false);
     }
-  }, [resetState, working, createDummyVideo, checkExistingHtml5FriendlyFile]);
+  }, [
+    resetState, working, createDummyVideo, checkExistingHtml5FriendlyFile, loadEdlFile,
+    getEdlFilePath,
+  ]);
 
   const toggleHelp = () => setHelpVisible(val => !val);
 
@@ -863,14 +925,14 @@ const App = memo(() => {
     try {
       setWorking(true);
       await ffmpeg.extractStreams({ customOutDir, filePath, streams: mainStreams });
-      toast.fire({ icon: 'success', title: `All streams can be found as separate files at: ${getOutDir(customOutDir, filePath)}` });
+      toast.fire({ icon: 'success', title: `All streams can be found as separate files at: ${outputDir}` });
     } catch (err) {
       errorToast('Failed to extract all streams');
       console.error('Failed to extract all streams', err);
     } finally {
       setWorking(false);
     }
-  }, [customOutDir, filePath, mainStreams]);
+  }, [customOutDir, filePath, mainStreams, outputDir]);
 
   function onExtractAllStreamsPress() {
     extractAllStreams();
@@ -920,8 +982,14 @@ const App = memo(() => {
   const onDrop = useCallback(async (ev) => {
     ev.preventDefault();
     const { files } = ev.dataTransfer;
-    userOpenFiles(Array.from(files).map(f => f.path));
-  }, [userOpenFiles]);
+    const filePaths = Array.from(files).map(f => f.path);
+
+    if (filePaths.length === 1 && filePaths[0].toLowerCase().endsWith('.csv')) {
+      loadEdlFile(filePaths[0]);
+      return;
+    }
+    userOpenFiles(filePaths);
+  }, [userOpenFiles, loadEdlFile]);
 
   useEffect(() => {
     function fileOpened(event, filePaths) {
@@ -983,6 +1051,28 @@ const App = memo(() => {
       cutSegmentsHistory.forward();
     }
 
+    async function exportEdlFile() {
+      try {
+        const { canceled, filePath: fp } = await dialog.showSaveDialog({ defaultPath: `${new Date().getTime()}.csv`, filters: [{ name: 'CSV files', extensions: ['csv'] }] });
+        if (canceled || !fp) return;
+        if (await exists(fp)) {
+          errorToast('File exists, bailing');
+          return;
+        }
+        await edlStore.save(fp, cutSegments);
+      } catch (err) {
+        errorToast('Failed to export CSV');
+        console.error('Failed to export CSV', err);
+      }
+    }
+
+    async function importEdlFile() {
+      if (!filePath) return;
+      const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters: [{ name: 'CSV files', extensions: ['csv'] }] });
+      if (canceled || filePaths.length < 1) return;
+      await loadEdlFile(filePaths[0]);
+    }
+
     electron.ipcRenderer.on('file-opened', fileOpened);
     electron.ipcRenderer.on('close-file', closeFile);
     electron.ipcRenderer.on('html5ify', html5ify);
@@ -991,6 +1081,8 @@ const App = memo(() => {
     electron.ipcRenderer.on('extract-all-streams', extractAllStreams);
     electron.ipcRenderer.on('undo', undo);
     electron.ipcRenderer.on('redo', redo);
+    electron.ipcRenderer.on('importEdlFile', importEdlFile);
+    electron.ipcRenderer.on('exportEdlFile', exportEdlFile);
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
@@ -1000,11 +1092,13 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('set-start-offset', setStartOffset);
       electron.ipcRenderer.removeListener('extract-all-streams', extractAllStreams);
       electron.ipcRenderer.removeListener('undo', undo);
-      electron.ipcRenderer.removeListener('redo', redo);
+      electron.ipcRenderer.removeListener('importEdlFile', importEdlFile);
+      electron.ipcRenderer.removeListener('exportEdlFile', exportEdlFile);
     };
   }, [
     load, mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, getHtml5ifiedPath,
     createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory,
+    loadEdlFile, cutSegments, edlFilePath,
   ]);
 
   async function showAddStreamSourceDialog() {
@@ -1135,13 +1229,16 @@ const App = memo(() => {
       </tr>
 
       <tr>
-        <td>Output directory</td>
+        <td>
+          Working directory<br />
+          This is where working files, exported files, project files (CSV) are stored.
+        </td>
         <td>
           <button
             type="button"
             onClick={setOutputDir}
           >
-            {customOutDir ? 'Custom output directory' : 'Output files to same directory as current file'}
+            {customOutDir ? 'Custom working directory' : 'Same directory as input file'}
           </button>
           <div>{customOutDir}</div>
         </td>
@@ -1210,6 +1307,21 @@ const App = memo(() => {
             onClick={() => setAutoExportExtraStreams(v => !v)}
           >
             {autoExportExtraStreams ? 'Extract unprocessable tracks' : 'Discard all unprocessable tracks'}
+          </button>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          Auto save project?<br />
+          The project will be stored along with the output files as a CSV file
+        </td>
+        <td>
+          <button
+            type="button"
+            onClick={() => setAutoSaveProjectFile(v => !v)}
+          >
+            {autoSaveProjectFile ? 'Auto save project' : 'Don\'t save project file'}
           </button>
         </td>
       </tr>
@@ -1364,7 +1476,7 @@ const App = memo(() => {
               onClick={withBlur(setOutputDir)}
               title={customOutDir}
             >
-              {`Out path ${customOutDir ? 'set' : 'unset'}`}
+              {`Working dir ${customOutDir ? 'set' : 'unset'}`}
             </button>
 
             {renderOutFmt({ width: 60 })}
@@ -1653,13 +1765,12 @@ const App = memo(() => {
         </select>
 
         <FaTag
-          size={14}
+          size={10}
           title="Label segment"
           role="button"
           style={{ padding: 4, border: `2px solid ${currentSegBorderColor}`, background: currentSegActiveBgColor, borderRadius: 6 }}
           onClick={onLabelSegmentPress}
         />
-
       </div>
 
       <div className="right-menu" style={{ position: 'absolute', right: 0, bottom: 0, padding: '.3em', display: 'flex', alignItems: 'center' }}>
@@ -1710,6 +1821,8 @@ const App = memo(() => {
         onTogglePress={toggleHelp}
         renderSettings={renderSettings}
         ffmpegCommandLog={ffmpegCommandLog}
+        sortedCutSegments={sortedCutSegments}
+        formatTimecode={formatTimecode}
       />
     </div>
   );

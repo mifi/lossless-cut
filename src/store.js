@@ -11,6 +11,7 @@ const store = new Store({
     autoExportExtraStreams: true,
     askBeforeClose: true,
     muted: false,
+    autoSaveProjectFile: true,
   },
 });
 
