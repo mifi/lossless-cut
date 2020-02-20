@@ -9,15 +9,13 @@ const { formatDuration } = require('./util');
 
 const TimelineSeg = ({
   duration, cutStart, cutEnd, isActive, segNum,
-  onSegClick, color, invertCutSegments,
+  onSegClick, invertCutSegments, segBgColor, segActiveBgColor, segBorderColor,
 }) => {
   const cutSectionWidth = `${((cutEnd - cutStart) / duration) * 100}%`;
 
-  const strongColor = color.lighten(0.5).string();
-  const strongBgColor = color.lighten(0.5).alpha(0.5).string();
   const startTimePos = `${(cutStart / duration) * 100}%`;
-  const markerBorder = `2px solid ${isActive ? strongColor : 'transparent'}`;
-  const backgroundColor = isActive ? strongBgColor : color.alpha(0.5).string();
+  const markerBorder = `2px solid ${isActive ? segBorderColor : 'transparent'}`;
+  const backgroundColor = isActive ? segActiveBgColor : segBgColor;
   const markerBorderRadius = 5;
 
   const wrapperStyle = {
@@ -66,7 +64,7 @@ const TimelineSeg = ({
             style={{ width: 16, height: 16, flexShrink: 1 }}
           >
             <FaTrashAlt
-              style={{ width: '100%', color: strongColor }}
+              style={{ width: '100%', color: segBorderColor }}
               size={16}
             />
           </motion.div>

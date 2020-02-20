@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useState, useCallback, useRef, Fragment } from 'react';
 import { IoIosHelpCircle, IoIosCamera } from 'react-icons/io';
-import { FaPlus, FaMinus, FaAngleLeft, FaAngleRight, FaTrashAlt, FaVolumeMute, FaVolumeUp, FaYinYang, FaFileExport } from 'react-icons/fa';
+import { FaPlus, FaMinus, FaHandPointRight, FaHandPointLeft, FaTrashAlt, FaVolumeMute, FaVolumeUp, FaYinYang, FaFileExport } from 'react-icons/fa';
 import { MdRotate90DegreesCcw, MdCallSplit, MdCallMerge } from 'react-icons/md';
 import { FiScissors } from 'react-icons/fi';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -1063,6 +1063,8 @@ const App = memo(() => {
 
   const segColor = (currentCutSeg || {}).color;
   const segBgColor = segColor.alpha(0.5).string();
+  const segActiveBgColor = segColor.lighten(0.5).alpha(0.5).string();
+  const segBorderColor = segColor.lighten(0.5).string();
 
   const jumpCutButtonStyle = {
     position: 'absolute', color: 'black', bottom: 0, top: 0, padding: '2px 8px',
@@ -1273,6 +1275,21 @@ const App = memo(() => {
     return () => window.removeEventListener('keydown', keyScrollPreventer);
   }, []);
 
+  function renderSetCutpointButton(side) {
+    const start = side === 'start';
+    const Icon = start ? FaHandPointLeft : FaHandPointRight;
+    const border = `4px solid ${segBorderColor}`;
+    return (
+      <Icon
+        size={13}
+        title="Set cut end to current position"
+        role="button"
+        style={{ padding: start ? '4px 4px 4px 2px' : '4px 2px 4px 4px', borderLeft: start && border, borderRight: !start && border, background: segActiveBgColor, borderRadius: 6 }}
+        onClick={start ? setCutStart : setCutEnd}
+      />
+    );
+  }
+
   const primaryColor = 'hsl(194, 78%, 47%)';
 
   const AutoMergeIcon = autoMerge ? MdCallMerge : MdCallSplit;
@@ -1470,7 +1487,9 @@ const App = memo(() => {
                   <TimelineSeg
                     key={seg.uuid}
                     segNum={i}
-                    color={seg.color}
+                    segBgColor={segBgColor}
+                    segActiveBgColor={segActiveBgColor}
+                    segBorderColor={segBorderColor}
                     onSegClick={currentSegIndexNew => setCurrentSegIndex(currentSegIndexNew)}
                     isActive={i === currentSegIndexSafe}
                     duration={durationSafe}
@@ -1510,13 +1529,7 @@ const App = memo(() => {
             onClick={() => seekAbs(0)}
           />
 
-          <FaAngleLeft
-            title="Set cut start to current position"
-            style={{ background: segBgColor, borderRadius: 10, padding: 3 }}
-            size={16}
-            onClick={setCutStart}
-            role="button"
-          />
+          {renderSetCutpointButton('start')}
 
           <div style={{ position: 'relative' }}>
             {renderCutTimeInput('start')}
@@ -1561,13 +1574,7 @@ const App = memo(() => {
             />
           </div>
 
-          <FaAngleRight
-            title="Set cut end to current position"
-            style={{ background: segBgColor, borderRadius: 10, padding: 3 }}
-            size={16}
-            onClick={setCutEnd}
-            role="button"
-          />
+          {renderSetCutpointButton('end')}
 
           <i
             className="button fa fa-step-forward"
