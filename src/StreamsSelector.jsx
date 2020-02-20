@@ -90,6 +90,7 @@ const StreamsSelector = memo(({
             <th />
           </tr>
         </thead>
+
         <tbody>
           {existingStreams.map((stream) => (
             <Stream

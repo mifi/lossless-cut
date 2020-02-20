@@ -439,6 +439,8 @@ const App = memo(() => {
   const nonCopiedExtraStreams = extraStreams
     .filter((stream) => !isCopyingStreamId(filePath, stream.index));
 
+  const exportExtraStreams = autoExportExtraStreams && nonCopiedExtraStreams.length > 0;
+
   const copyStreamIds = Object.entries(copyStreamIdsByFile).map(([path, streamIdsMap]) => ({
     path,
     streamIds: Object.keys(streamIdsMap).filter(index => streamIdsMap[index]),
@@ -628,7 +630,6 @@ const App = memo(() => {
         });
       }
 
-      const exportExtraStreams = autoExportExtraStreams && nonCopiedExtraStreams.length > 0;
       if (exportExtraStreams) {
         try {
           await ffmpeg.extractStreams({
@@ -1128,7 +1129,7 @@ const App = memo(() => {
         <tr>
           <td>
             Extract unprocessable tracks to separate files?<br />
-            (data tracks such as GoPro GPS, telemetry etc.)
+            (data tracks such as GoPro GPS, telemetry etc. are not copied over by default because ffmpeg cannot cut them, thus they will cause the media duration to stay the same after cutting video/audio)
           </td>
           <td>
             <button
