@@ -657,8 +657,9 @@ const App = memo(() => {
     }
   }, [
     effectiveRotation, apparentCutSegments, invertCutSegments, inverseCutSegments,
-    working, duration, filePath, keyframeCut, detectedFileFormat, extraStreams,
+    working, duration, filePath, keyframeCut, detectedFileFormat,
     autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyStreamIds, numStreamsToCopy,
+    exportExtraStreams, nonCopiedExtraStreams,
   ]);
 
   // TODO use ffmpeg to capture frame
@@ -826,7 +827,7 @@ const App = memo(() => {
     } finally {
       setWorking(false);
     }
-  }, [customOutDir, filePath]);
+  }, [customOutDir, filePath, mainStreams]);
 
   function onExtractAllStreamsPress() {
     extractAllStreams();
