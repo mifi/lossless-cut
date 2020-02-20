@@ -40,6 +40,7 @@ const { showMergeDialog, showOpenAndMergeDialog } = require('./merge/merge');
 const allOutFormats = require('./outFormats');
 const captureFrame = require('./capture-frame');
 const ffmpeg = require('./ffmpeg');
+const configStore = require('./store');
 
 const { defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd } = ffmpeg;
 
@@ -106,18 +107,29 @@ const App = memo(() => {
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
   const [zoom, setZoom] = useState(1);
 
-  // Global state & preferences
-  const [captureFormat, setCaptureFormat] = useState('jpeg');
-  const [customOutDir, setCustomOutDir] = useState();
-  const [keyframeCut, setKeyframeCut] = useState(true);
-  const [autoMerge, setAutoMerge] = useState(false);
+  // Preferences
+  const [captureFormat, setCaptureFormat] = useState(configStore.get('captureFormat'));
+  useEffect(() => configStore.set('captureFormat', captureFormat), [captureFormat]);
+  const [customOutDir, setCustomOutDir] = useState(configStore.get('customOutDir'));
+  useEffect(() => (customOutDir === undefined ? configStore.delete('customOutDir') : configStore.set('customOutDir', customOutDir)), [customOutDir]);
+  const [keyframeCut, setKeyframeCut] = useState(configStore.get('keyframeCut'));
+  useEffect(() => configStore.set('keyframeCut', keyframeCut), [keyframeCut]);
+  const [autoMerge, setAutoMerge] = useState(configStore.get('autoMerge'));
+  useEffect(() => configStore.set('autoMerge', autoMerge), [autoMerge]);
+  const [timecodeShowFrames, setTimecodeShowFrames] = useState(configStore.get('timecodeShowFrames'));
+  useEffect(() => configStore.set('timecodeShowFrames', timecodeShowFrames), [timecodeShowFrames]);
+  const [invertCutSegments, setInvertCutSegments] = useState(configStore.get('invertCutSegments'));
+  useEffect(() => configStore.set('invertCutSegments', invertCutSegments), [invertCutSegments]);
+  const [autoExportExtraStreams, setAutoExportExtraStreams] = useState(configStore.get('autoExportExtraStreams'));
+  useEffect(() => configStore.set('autoExportExtraStreams', autoExportExtraStreams), [autoExportExtraStreams]);
+  const [askBeforeClose, setAskBeforeClose] = useState(configStore.get('askBeforeClose'));
+  useEffect(() => configStore.set('askBeforeClose', askBeforeClose), [askBeforeClose]);
+  const [muted, setMuted] = useState(configStore.get('muted'));
+  useEffect(() => configStore.set('muted', muted), [muted]);
+
+  // Global state
   const [helpVisible, setHelpVisible] = useState(false);
-  const [timecodeShowFrames, setTimecodeShowFrames] = useState(false);
   const [mifiLink, setMifiLink] = useState();
-  const [invertCutSegments, setInvertCutSegments] = useState(false);
-  const [autoExportExtraStreams, setAutoExportExtraStreams] = useState(true);
-  const [askBeforeClose, setAskBeforeClose] = useState(true);
-  const [muted, setMuted] = useState(false);
 
   const videoRef = useRef();
   const timelineWrapperRef = useRef();

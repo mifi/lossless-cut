@@ -55,6 +55,7 @@
     "color": "^3.1.0",
     "electron-default-menu": "^1.0.0",
     "electron-is-dev": "^0.1.2",
+    "electron-store": "^5.1.0",
     "evergreen-ui": "^4.23.0",
     "execa": "^0.5.0",
     "ffmpeg-static": "3",
