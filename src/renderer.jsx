@@ -117,6 +117,7 @@ const App = memo(() => {
   const [mifiLink, setMifiLink] = useState();
   const [invertCutSegments, setInvertCutSegments] = useState(false);
   const [autoExportExtraStreams, setAutoExportExtraStreams] = useState(true);
+  const [askBeforeClose, setAskBeforeClose] = useState(true);
 
   const videoRef = useRef();
   const timelineWrapperRef = useRef();
@@ -808,6 +809,10 @@ const App = memo(() => {
     electron.ipcRenderer.send('renderer-ready');
   }, []);
 
+  useEffect(() => {
+    electron.ipcRenderer.send('setAskBeforeClose', askBeforeClose);
+  }, [askBeforeClose]);
+
   const extractAllStreams = useCallback(async () => {
     if (!filePath) return;
 
@@ -1053,117 +1058,127 @@ const App = memo(() => {
     );
   }
 
-  function renderSettings() {
-    return (
-      <Fragment>
-        <tr>
-          <td>Output format (default autodetected)</td>
-          <td style={{ width: '50%' }}>{renderOutFmt()}</td>
-        </tr>
+  const renderSettings = () => (
+    <Fragment>
+      <tr>
+        <td>Output format (default autodetected)</td>
+        <td style={{ width: '50%' }}>{renderOutFmt()}</td>
+      </tr>
 
-        <tr>
-          <td>Output directory</td>
-          <td>
-            <button
-              type="button"
-              onClick={setOutputDir}
-            >
-              {customOutDir ? 'Custom output directory' : 'Output files to same directory as current file'}
-            </button>
-            <div>{customOutDir}</div>
-          </td>
-        </tr>
+      <tr>
+        <td>Output directory</td>
+        <td>
+          <button
+            type="button"
+            onClick={setOutputDir}
+          >
+            {customOutDir ? 'Custom output directory' : 'Output files to same directory as current file'}
+          </button>
+          <div>{customOutDir}</div>
+        </td>
+      </tr>
 
-        <tr>
-          <td>Auto merge segments to one file after export?</td>
-          <td>
-            <button
-              type="button"
-              onClick={toggleAutoMerge}
-            >
-              {autoMerge ? 'Auto merge segments to one file' : 'Export separate files'}
-            </button>
-          </td>
-        </tr>
+      <tr>
+        <td>Auto merge segments to one file after export?</td>
+        <td>
+          <button
+            type="button"
+            onClick={toggleAutoMerge}
+          >
+            {autoMerge ? 'Auto merge segments to one file' : 'Export separate files'}
+          </button>
+        </td>
+      </tr>
 
-        <tr>
-          <td>keyframe cut mode</td>
-          <td>
-            <button
-              type="button"
-              onClick={toggleKeyframeCut}
-            >
-              {keyframeCut ? 'Nearest keyframe cut - will cut at the nearest keyframe' : 'Normal cut - cut accurate position but could leave an empty portion'}
-            </button>
-          </td>
-        </tr>
+      <tr>
+        <td>keyframe cut mode</td>
+        <td>
+          <button
+            type="button"
+            onClick={toggleKeyframeCut}
+          >
+            {keyframeCut ? 'Nearest keyframe cut - will cut at the nearest keyframe' : 'Normal cut - cut accurate position but could leave an empty portion'}
+          </button>
+        </td>
+      </tr>
 
-        <tr>
-          <td>
-            Discard (cut away) or keep selected segments from video when exporting
-          </td>
-          <td>
-            <button
-              type="button"
-              onClick={withBlur(() => setInvertCutSegments(v => !v))}
-            >
-              {invertCutSegments ? 'Discard' : 'Keep'}
-            </button>
-          </td>
-        </tr>
+      <tr>
+        <td>
+          Discard (cut away) or keep selected segments from video when exporting
+        </td>
+        <td>
+          <button
+            type="button"
+            onClick={withBlur(() => setInvertCutSegments(v => !v))}
+          >
+            {invertCutSegments ? 'Discard' : 'Keep'}
+          </button>
+        </td>
+      </tr>
 
-        <tr>
-          <td>
-            Discard audio?
-          </td>
-          <td>
-            <button
-              type="button"
-              onClick={toggleStripAudio}
-            >
-              {copyAnyAudioTrack ? 'Keep audio tracks' : 'Discard all audio tracks'}
-            </button>
-          </td>
-        </tr>
+      <tr>
+        <td>
+          Discard audio?
+        </td>
+        <td>
+          <button
+            type="button"
+            onClick={toggleStripAudio}
+          >
+            {copyAnyAudioTrack ? 'Keep audio tracks' : 'Discard all audio tracks'}
+          </button>
+        </td>
+      </tr>
 
-        <tr>
-          <td>
-            Extract unprocessable tracks to separate files?<br />
-            (data tracks such as GoPro GPS, telemetry etc. are not copied over by default because ffmpeg cannot cut them, thus they will cause the media duration to stay the same after cutting video/audio)
-          </td>
-          <td>
-            <button
-              type="button"
-              onClick={() => setAutoExportExtraStreams(v => !v)}
-            >
-              {autoExportExtraStreams ? 'Extract unprocessable tracks' : 'Discard all unprocessable tracks'}
-            </button>
-          </td>
-        </tr>
+      <tr>
+        <td>
+          Extract unprocessable tracks to separate files?<br />
+          (data tracks such as GoPro GPS, telemetry etc. are not copied over by default because ffmpeg cannot cut them, thus they will cause the media duration to stay the same after cutting video/audio)
+        </td>
+        <td>
+          <button
+            type="button"
+            onClick={() => setAutoExportExtraStreams(v => !v)}
+          >
+            {autoExportExtraStreams ? 'Extract unprocessable tracks' : 'Discard all unprocessable tracks'}
+          </button>
+        </td>
+      </tr>
 
-        <tr>
-          <td>
-            Snapshot capture format
-          </td>
-          <td>
-            {renderCaptureFormatButton()}
-          </td>
-        </tr>
+      <tr>
+        <td>
+          Snapshot capture format
+        </td>
+        <td>
+          {renderCaptureFormatButton()}
+        </td>
+      </tr>
 
-        <tr>
-          <td>In timecode show</td>
-          <td>
-            <button
-              type="button"
-              onClick={() => setTimecodeShowFrames(v => !v)}
-            >
-              {timecodeShowFrames ? 'Frame numbers' : 'Millisecond fractions'}
-            </button>
-          </td>
-        </tr>
-      </Fragment>
-    );
-  }
+      <tr>
+        <td>In timecode show</td>
+        <td>
+          <button
+            type="button"
+            onClick={() => setTimecodeShowFrames(v => !v)}
+          >
+            {timecodeShowFrames ? 'Frame numbers' : 'Millisecond fractions'}
+          </button>
+        </td>
+      </tr>
+
+      <tr>
+        <td>Ask for confirmation when closing app?</td>
+        <td>
+          <button
+            type="button"
+            onClick={() => setAskBeforeClose(v => !v)}
+          >
+            {askBeforeClose ? 'Ask before closing' : 'Don\'t ask before closing'}
+          </button>
+        </td>
+      </tr>
+    </Fragment>
+  );
 
   useEffect(() => {
     loadMifiLink().then(setMifiLink);

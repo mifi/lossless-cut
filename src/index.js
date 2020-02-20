@@ -16,6 +16,8 @@ if (!isDev) process.env.NODE_ENV = 'production';
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
+let askBeforeClose = false;
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     darkTheme: true,
@@ -34,6 +36,8 @@ function createWindow() {
 
   // https://stackoverflow.com/questions/39574636/prompt-to-save-quit-before-closing-window/47434365
   mainWindow.on('close', (e) => {
+    if (!askBeforeClose) return;
+
     const choice = electron.dialog.showMessageBoxSync(mainWindow, {
       type: 'question',
       buttons: ['Yes', 'No'],
@@ -78,4 +82,8 @@ electron.ipcMain.on('renderer-ready', () => {
     // https://github.com/electron/electron/issues/3657
     if (fileToOpen && !fileToOpen.startsWith('-psn_')) mainWindow.webContents.send('file-opened', [fileToOpen]);
   }
+});
+
+electron.ipcMain.on('setAskBeforeClose', (e, val) => {
+  askBeforeClose = val;
 });
