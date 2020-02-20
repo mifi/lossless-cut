@@ -87,7 +87,7 @@ const App = memo(() => {
   const [working, setWorking] = useState(false);
   const [dummyVideoPath, setDummyVideoPath] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState();
+  const [playerTime, setPlayerTime] = useState();
   const [duration, setDuration] = useState();
   const [cutSegments, setCutSegments] = useState([createSegment()]);
   const [currentSegIndex, setCurrentSegIndex] = useState(0);
@@ -106,6 +106,7 @@ const App = memo(() => {
   const [copyStreamIdsByFile, setCopyStreamIdsByFile] = useState({});
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [commandedTime, setCommandedTime] = useState(0);
 
   // Preferences
   const [captureFormat, setCaptureFormat] = useState(configStore.get('captureFormat'));
@@ -163,6 +164,7 @@ const App = memo(() => {
     if (outVal > video.duration) outVal = video.duration;
 
     video.currentTime = outVal;
+    setCommandedTime(outVal);
   }
 
   const seekRel = useCallback((val) => {
@@ -175,6 +177,7 @@ const App = memo(() => {
 
   const resetState = useCallback(() => {
     const video = videoRef.current;
+    setCommandedTime(0);
     video.currentTime = 0;
     video.playbackRate = 1;
 
@@ -301,19 +304,22 @@ const App = memo(() => {
     return formatDuration({ seconds: sec, fps: timecodeShowFrames ? detectedFps : undefined });
   }
 
+  const getCurrentTime = useCallback(() => (
+    playing ? playerTime : commandedTime), [commandedTime, playerTime, playing]);
+
   const addCutSegment = useCallback(() => {
     const cutStartTime = currentCutSeg.start;
     const cutEndTime = currentCutSeg.end;
 
     if (cutStartTime === undefined && cutEndTime === undefined) return;
 
-    const suggestedStart = currentTime;
+    const suggestedStart = getCurrentTime();
     const suggestedEnd = suggestedStart + 10;
 
     const cutSegmentsNew = [
       ...cutSegments,
       createSegment({
-        start: currentTime,
+        start: suggestedStart,
         end: suggestedEnd <= duration ? suggestedEnd : undefined,
       }),
     ];
@@ -322,32 +328,32 @@ const App = memo(() => {
     setCutSegments(cutSegmentsNew);
     setCurrentSegIndex(currentSegIndexNew);
   }, [
-    currentCutSeg, cutSegments, currentTime, duration,
+    currentCutSeg, cutSegments, getCurrentTime, duration,
   ]);
 
   const setCutStart = useCallback(() => {
     // https://github.com/mifi/lossless-cut/issues/168
     // If we are after the end of the last segment in the timeline,
-    // add a new segment that starts at currentTime
+    // add a new segment that starts at playerTime
     if (currentCutSeg.end != null
-      && currentTime > currentCutSeg.end) {
+      && getCurrentTime() > currentCutSeg.end) {
       addCutSegment();
     } else {
       try {
-        setCutTime('start', currentTime);
+        setCutTime('start', getCurrentTime());
       } catch (err) {
         errorToast(err.message);
       }
     }
-  }, [setCutTime, currentTime, currentCutSeg, addCutSegment]);
+  }, [setCutTime, getCurrentTime, currentCutSeg, addCutSegment]);
 
   const setCutEnd = useCallback(() => {
     try {
-      setCutTime('end', currentTime);
+      setCutTime('end', getCurrentTime());
     } catch (err) {
       errorToast(err.message);
     }
-  }, [setCutTime, currentTime]);
+  }, [setCutTime, getCurrentTime]);
 
   async function setOutputDir() {
     const { filePaths } = await dialog.showOpenDialog({ properties: ['openDirectory'] });
@@ -375,10 +381,10 @@ const App = memo(() => {
         queue.add(async () => {
           if (!frameRenderEnabled) return;
 
-          if (currentTime == null || !filePath) return;
+          if (playerTime == null || !filePath) return;
 
           try {
-            const framePathNew = await ffmpeg.renderFrame(currentTime, filePath, effectiveRotation);
+            const framePathNew = await ffmpeg.renderFrame(playerTime, filePath, effectiveRotation);
             setFramePath(framePathNew);
           } catch (err) {
             console.error(err);
@@ -391,7 +397,7 @@ const App = memo(() => {
 
     throttledRender();
   }, [
-    filePath, currentTime, frameRenderEnabled, effectiveRotation,
+    filePath, playerTime, frameRenderEnabled, effectiveRotation,
   ]);
 
   // Cleanup old frames
@@ -399,14 +405,17 @@ const App = memo(() => {
 
   function onPlayingChange(val) {
     setPlaying(val);
-    if (!val) videoRef.current.playbackRate = 1;
+    if (!val) {
+      videoRef.current.playbackRate = 1;
+      setCommandedTime(videoRef.current.currentTime);
+    }
   }
 
   function onTimeUpdate(e) {
-    const { currentTime: ct } = e.target;
-    if (currentTime === ct) return;
+    const { currentTime } = e.target;
+    if (playerTime === currentTime) return;
     setRotationPreviewRequested(false); // Reset this
-    setCurrentTime(ct);
+    setPlayerTime(currentTime);
   }
 
   function increaseRotation() {
@@ -414,7 +423,7 @@ const App = memo(() => {
     setRotationPreviewRequested(true);
   }
 
-  const offsetCurrentTime = (currentTime || 0) + startTimeOffset;
+  const offsetCurrentTime = (getCurrentTime() || 0) + startTimeOffset;
 
   const mergeFiles = useCallback(async ({ paths, allStreams }) => {
     try {
@@ -499,15 +508,18 @@ const App = memo(() => {
   const durationSafe = duration || 1;
   const currentTimeWidth = 1;
   // Prevent it from overflowing (and causing scroll) when end of timeline
-  const currentTimePos = currentTime !== undefined && currentTime < durationSafe ? `${(currentTime / durationSafe) * 100}%` : undefined;
+
+  const calculateTimelinePos = (time) => (time !== undefined && time < durationSafe ? `${(time / durationSafe) * 100}%` : undefined);
+  const currentTimePos = calculateTimelinePos(playerTime);
+  const commandedTimePos = calculateTimelinePos(commandedTime);
 
   const zoomed = zoom > 1;
 
   useEffect(() => {
-    const { currentTime: ct } = videoRef.current;
+    const { currentTime } = videoRef.current;
     timelineScrollerSkipEventRef.current = true;
     if (zoom > 1) {
-      timelineScrollerRef.current.scrollLeft = (ct / durationSafe)
+      timelineScrollerRef.current.scrollLeft = (currentTime / durationSafe)
         * (timelineWrapperRef.current.offsetWidth - timelineScrollerRef.current.offsetWidth);
     }
   }, [zoom, durationSafe]);
@@ -680,12 +692,12 @@ const App = memo(() => {
       return;
     }
     try {
-      await captureFrame(customOutDir, filePath, videoRef.current, currentTime, captureFormat);
+      await captureFrame(customOutDir, filePath, videoRef.current, playerTime, captureFormat);
     } catch (err) {
       console.error(err);
       errorToast('Failed to capture frame');
     }
-  }, [filePath, currentTime, captureFormat, customOutDir, html5FriendlyPath, dummyVideoPath]);
+  }, [filePath, playerTime, captureFormat, customOutDir, html5FriendlyPath, dummyVideoPath]);
 
   const changePlaybackRate = useCallback((dir) => {
     const video = videoRef.current;
@@ -1427,7 +1439,8 @@ const App = memo(() => {
                 style={{ height: 36, width: `${zoom * 100}%`, position: 'relative', backgroundColor: '#444' }}
                 ref={timelineWrapperRef}
               >
-                {currentTimePos !== undefined && <div style={{ position: 'absolute', bottom: 0, top: 0, left: currentTimePos, zIndex: 3, backgroundColor: 'rgba(255, 255, 255, 1)', width: currentTimeWidth, pointerEvents: 'none' }} />}
+                {currentTimePos !== undefined && <motion.div transition={{ type: 'spring', damping: 70, stiffness: 800 }} animate={{ left: currentTimePos }} style={{ position: 'absolute', bottom: 0, top: 0, zIndex: 3, backgroundColor: 'black', width: currentTimeWidth, pointerEvents: 'none' }} />}
+                {commandedTimePos !== undefined && <div style={{ left: commandedTimePos, position: 'absolute', bottom: 0, top: 0, zIndex: 4, backgroundColor: 'white', width: currentTimeWidth, pointerEvents: 'none' }} />}
 
                 {apparentCutSegments.map((seg, i) => (
                   <TimelineSeg
