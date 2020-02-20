@@ -78,7 +78,7 @@
     "react-icons": "^3.9.0",
     "react-lottie": "^1.2.3",
     "react-sortable-hoc": "^1.5.3",
-    "react-use": "^13.24.0",
+    "react-use": "^13.26.1",
     "read-chunk": "^2.0.0",
     "string-to-stream": "^1.1.1",
     "strong-data-uri": "^1.0.5",

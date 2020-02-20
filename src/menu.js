@@ -74,6 +74,24 @@ module.exports = (app, mainWindow, newVersion) => {
     ],
   };
 
+  const editSubMenu = menu.find(item => item.label === 'Edit').submenu;
+  editSubMenu.splice(editSubMenu.findIndex(item => item.label === 'Undo'), 1, {
+    label: 'Undo',
+    accelerator: 'CmdOrCtrl+Z',
+    click() {
+      mainWindow.webContents.send('undo');
+    },
+  });
+
+  editSubMenu.splice(editSubMenu.findIndex(item => item.label === 'Redo'), 1, {
+    label: 'Redo',
+    accelerator: 'Shift+CmdOrCtrl+Z',
+    click() {
+      mainWindow.webContents.send('redo');
+    },
+  });
+
+
   menu.splice((process.platform === 'darwin' ? 1 : 0), 0, fileMenu);
 
   const helpIndex = menu.findIndex(item => item.role === 'help');

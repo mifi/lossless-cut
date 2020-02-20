@@ -7,10 +7,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import Lottie from 'react-lottie';
 import { SideSheet, Button, Position } from 'evergreen-ui';
+import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 
 import fromPairs from 'lodash/fromPairs';
 import clamp from 'lodash/clamp';
-import clone from 'lodash/clone';
+import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
 import flatMap from 'lodash/flatMap';
 
@@ -89,10 +90,6 @@ const App = memo(() => {
   const [playing, setPlaying] = useState(false);
   const [playerTime, setPlayerTime] = useState();
   const [duration, setDuration] = useState();
-  const [cutSegments, setCutSegments] = useState([createSegment()]);
-  const [currentSegIndex, setCurrentSegIndex] = useState(0);
-  const [cutStartTimeManual, setCutStartTimeManual] = useState();
-  const [cutEndTimeManual, setCutEndTimeManual] = useState();
   const [fileFormat, setFileFormat] = useState();
   const [detectedFileFormat, setDetectedFileFormat] = useState();
   const [rotation, setRotation] = useState(360);
@@ -108,6 +105,16 @@ const App = memo(() => {
   const [zoom, setZoom] = useState(1);
   const [commandedTime, setCommandedTime] = useState(0);
   const [ffmpegCommandLog, setFfmpegCommandLog] = useState([]);
+
+  // Segment related state
+  const [currentSegIndex, setCurrentSegIndex] = useState(0);
+  const [cutStartTimeManual, setCutStartTimeManual] = useState();
+  const [cutEndTimeManual, setCutEndTimeManual] = useState();
+  const [cutSegments, setCutSegments, cutSegmentsHistory] = useStateWithHistory(
+    [createSegment()],
+    100,
+  );
+
 
   // Preferences
   const [captureFormat, setCaptureFormat] = useState(configStore.get('captureFormat'));
@@ -194,8 +201,8 @@ const App = memo(() => {
     setWorking(false);
     setPlaying(false);
     setDuration();
-    setCurrentSegIndex(0);
-    setCutSegments([createSegment()]);
+    cutSegmentsHistory.go(0);
+    setCutSegments([createSegment()]); // TODO this will cause two history items
     setCutStartTimeManual();
     setCutEndTimeManual();
     setFileFormat();
@@ -211,7 +218,7 @@ const App = memo(() => {
     setCopyStreamIdsByFile({});
     setStreamsSelectorShown(false);
     setZoom(1);
-  }, []);
+  }, [cutSegmentsHistory, setCutSegments]);
 
   useEffect(() => () => {
     if (dummyVideoPath) unlink(dummyVideoPath).catch(console.error);
@@ -245,8 +252,9 @@ const App = memo(() => {
 
   const haveInvalidSegs = invalidSegUuids.length > 0;
 
-  const currentCutSeg = cutSegments[currentSegIndex];
-  const currentApparentCutSeg = apparentCutSegments[currentSegIndex];
+  const currentSegIndexSafe = Math.min(currentSegIndex, cutSegments.length - 1);
+  const currentCutSeg = cutSegments[currentSegIndexSafe];
+  const currentApparentCutSeg = apparentCutSegments[currentSegIndexSafe];
   const areWeCutting = apparentCutSegments.length > 1
     || isCuttingStart(currentApparentCutSeg.start)
     || isCuttingEnd(currentApparentCutSeg.end, duration);
@@ -294,17 +302,17 @@ const App = memo(() => {
   })();
 
   const setCutTime = useCallback((type, time) => {
-    const cloned = clone(cutSegments);
-    const currentSeg = cloned[currentSegIndex];
+    const cloned = cloneDeep(cutSegments);
+    const currentSeg = currentCutSeg;
     if (type === 'start' && time >= getSegApparentEnd(currentSeg)) {
       throw new Error('Start time must precede end time');
     }
     if (type === 'end' && time <= getSegApparentStart(currentSeg)) {
       throw new Error('Start time must precede end time');
     }
-    cloned[currentSegIndex][type] = time;
+    cloned[currentSegIndexSafe][type] = time;
     setCutSegments(cloned);
-  }, [currentSegIndex, getSegApparentEnd, cutSegments]);
+  }, [currentSegIndexSafe, getSegApparentEnd, cutSegments, currentCutSeg, setCutSegments]);
 
   function formatTimecode(sec) {
     return formatDuration({ seconds: sec, fps: timecodeShowFrames ? detectedFps : undefined });
@@ -330,11 +338,10 @@ const App = memo(() => {
       }),
     ];
 
-    const currentSegIndexNew = cutSegmentsNew.length - 1;
     setCutSegments(cutSegmentsNew);
-    setCurrentSegIndex(currentSegIndexNew);
+    setCurrentSegIndex(cutSegmentsNew.length - 1);
   }, [
-    currentCutSeg, cutSegments, getCurrentTime, duration,
+    currentCutSeg, cutSegments, getCurrentTime, duration, setCutSegments,
   ]);
 
   const setCutStart = useCallback(() => {
@@ -494,12 +501,10 @@ const App = memo(() => {
     if (cutSegments.length < 2) return;
 
     const cutSegmentsNew = [...cutSegments];
-    cutSegmentsNew.splice(currentSegIndex, 1);
+    cutSegmentsNew.splice(currentSegIndexSafe, 1);
 
-    const currentSegIndexNew = Math.min(currentSegIndex, cutSegmentsNew.length - 1);
-    setCurrentSegIndex(currentSegIndexNew);
     setCutSegments(cutSegmentsNew);
-  }, [currentSegIndex, cutSegments]);
+  }, [currentSegIndexSafe, cutSegments, setCutSegments]);
 
   const jumpCutStart = () => seekAbs(currentApparentCutSeg.start);
   const jumpCutEnd = () => seekAbs(currentApparentCutSeg.end);
@@ -961,12 +966,22 @@ const App = memo(() => {
       setStartTimeOffset(newStartTimeOffset);
     }
 
+    function undo() {
+      cutSegmentsHistory.back();
+    }
+
+    function redo() {
+      cutSegmentsHistory.forward();
+    }
+
     electron.ipcRenderer.on('file-opened', fileOpened);
     electron.ipcRenderer.on('close-file', closeFile);
     electron.ipcRenderer.on('html5ify', html5ify);
     electron.ipcRenderer.on('show-merge-dialog', showOpenAndMergeDialog2);
     electron.ipcRenderer.on('set-start-offset', setStartOffset);
     electron.ipcRenderer.on('extract-all-streams', extractAllStreams);
+    electron.ipcRenderer.on('undo', undo);
+    electron.ipcRenderer.on('redo', redo);
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
@@ -975,10 +990,12 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('show-merge-dialog', showOpenAndMergeDialog2);
       electron.ipcRenderer.removeListener('set-start-offset', setStartOffset);
       electron.ipcRenderer.removeListener('extract-all-streams', extractAllStreams);
+      electron.ipcRenderer.removeListener('undo', undo);
+      electron.ipcRenderer.removeListener('redo', redo);
     };
   }, [
     load, mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, getHtml5ifiedPath,
-    createDummyVideo, resetState, extractAllStreams, userOpenFiles,
+    createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory,
   ]);
 
   async function showAddStreamSourceDialog() {
@@ -1455,7 +1472,7 @@ const App = memo(() => {
                     segNum={i}
                     color={seg.color}
                     onSegClick={currentSegIndexNew => setCurrentSegIndex(currentSegIndexNew)}
-                    isActive={i === currentSegIndex}
+                    isActive={i === currentSegIndexSafe}
                     duration={durationSafe}
                     cutStart={seg.start}
                     cutEnd={seg.end}
@@ -1575,7 +1592,7 @@ const App = memo(() => {
           size={30}
           style={{ margin: '0 5px', background: cutSegments.length < 2 ? undefined : segBgColor, borderRadius: 3, color: 'white' }}
           role="button"
-          title={`Delete current segment ${currentSegIndex + 1}`}
+          title={`Delete current segment ${currentSegIndexSafe + 1}`}
           onClick={removeCutSegment}
         />
 
