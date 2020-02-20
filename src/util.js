@@ -14,9 +14,10 @@ function formatDuration({ seconds: _seconds, fileNameFriendly, fps }) {
   const hoursPadded = _.padStart(Math.floor(hours), 2, '0');
   const minutesPadded = _.padStart(Math.floor(minutes % 60), 2, '0');
   const secondsPadded = _.padStart(Math.floor(seconds) % 60, 2, '0');
+  const ms = seconds - Math.floor(seconds);
   const msPadded = fps != null
-    ? _.padStart(Math.floor((seconds * fps) % fps), 2, '0')
-    : _.padStart(Math.floor((seconds - Math.floor(seconds)) * 1000), 3, '0');
+    ? _.padStart(Math.floor(ms * fps), 2, '0')
+    : _.padStart(Math.floor(ms * 1000), 3, '0');
 
   // Be nice to filenames and use .
   const delim = fileNameFriendly ? '.' : ':';
