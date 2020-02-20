@@ -1,6 +1,12 @@
 import React from 'react';
 import { IoIosCloseCircleOutline } from 'react-icons/io';
+import { FaClipboard } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const { toast } = require('./util');
+
+// eslint-disable-next-line import/no-extraneous-dependencies
+const { clipboard } = require('electron');
 
 const HelpSheet = ({ visible, onTogglePress, renderSettings, ffmpegCommandLog }) => (
   <AnimatePresence>
@@ -49,8 +55,8 @@ const HelpSheet = ({ visible, onTogglePress, renderSettings, ffmpegCommandLog })
         <h1>Last ffmpeg commands</h1>
         <div style={{ overflowY: 'scroll', height: 200 }}>
           {ffmpegCommandLog.reverse().map((log) => (
-            <div key={log} style={{ whiteSpace: 'pre' }}>
-              {log}
+            <div key={log} style={{ whiteSpace: 'pre', margin: '5px 0' }}>
+              <FaClipboard style={{ cursor: 'pointer' }} title="Copy to clipboard" onClick={() => { clipboard.writeText(log); toast.fire({ timer: 2000, icon: 'success', title: 'Copied to clipboard' }); }} /> {log}
             </div>
           ))}
         </div>
