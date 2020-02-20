@@ -361,24 +361,21 @@ function getPreferredCodecFormat(codec, type) {
 }
 
 // https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
-async function extractAllStreams({ customOutDir, filePath }) {
-  const { streams } = await getAllStreams(filePath);
-  console.log('streams', streams);
-
-  const outStreams = streams.map((s, i) => ({
-    i,
+async function extractStreams({ filePath, customOutDir, streams }) {
+  const outStreams = streams.map((s) => ({
+    index: s.index,
     codec: s.codec_name || s.codec_tag_string || s.codec_type,
     type: s.codec_type,
     format: getPreferredCodecFormat(s.codec_name, s.codec_type),
   }))
-    .filter(it => it && it.format);
+    .filter(it => it && it.format && it.index != null);
 
   // console.log(outStreams);
 
   const streamArgs = flatMap(outStreams, ({
-    i, codec, type, format: { format, ext },
+    index, codec, type, format: { format, ext },
   }) => [
-    '-map', `0:${i}`, '-c', 'copy', '-f', format, '-y', getOutPath(customOutDir, filePath, `${i}-${type}-${codec}.${ext}`),
+    '-map', `0:${index}`, '-c', 'copy', '-f', format, '-y', getOutPath(customOutDir, filePath, `stream-${index}-${type}-${codec}.${ext}`),
   ]);
 
   const ffmpegArgs = [
@@ -448,7 +445,7 @@ module.exports = {
   html5ifyDummy,
   mergeAnyFiles,
   autoMergeSegments,
-  extractAllStreams,
+  extractStreams,
   renderFrame,
   getAllStreams,
   defaultProcessedCodecTypes,

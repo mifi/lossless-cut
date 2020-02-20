@@ -34,8 +34,17 @@ const HelpSheet = ({ visible, onTogglePress, renderSettings }) => (
 
         <p style={{ fontWeight: 'bold' }}>Hover mouse over buttons to see which function they have.</p>
 
-        <h1 style={{ marginTop: 40 }}>Settings</h1>
-        {renderSettings()}
+        <table style={{ marginTop: 40 }}>
+          <thead>
+            <tr style={{ textAlign: 'left' }}>
+              <th>Settings</th>
+              <th>Current setting</th>
+            </tr>
+          </thead>
+          <tbody>
+            {renderSettings()}
+          </tbody>
+        </table>
       </motion.div>
     )}
   </AnimatePresence>

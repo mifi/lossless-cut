@@ -80,6 +80,7 @@ function doesPlayerSupportFile(streams) {
 const queue = new PQueue({ concurrency: 1 });
 
 const App = memo(() => {
+  // Per project state
   const [framePath, setFramePath] = useState();
   const [html5FriendlyPath, setHtml5FriendlyPath] = useState();
   const [working, setWorking] = useState(false);
@@ -106,7 +107,7 @@ const App = memo(() => {
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
   const [zoom, setZoom] = useState(1);
 
-  // Global state
+  // Global state & preferences
   const [captureFormat, setCaptureFormat] = useState('jpeg');
   const [customOutDir, setCustomOutDir] = useState();
   const [keyframeCut, setKeyframeCut] = useState(true);
@@ -115,6 +116,7 @@ const App = memo(() => {
   const [timecodeShowFrames, setTimecodeShowFrames] = useState(false);
   const [mifiLink, setMifiLink] = useState();
   const [invertCutSegments, setInvertCutSegments] = useState(false);
+  const [autoExportExtraStreams, setAutoExportExtraStreams] = useState(true);
 
   const videoRef = useRef();
   const timelineWrapperRef = useRef();
@@ -429,6 +431,14 @@ const App = memo(() => {
 
   const copyAnyAudioTrack = mainStreams.some(stream => isCopyingStreamId(filePath, stream.index) && stream.codec_type === 'audio');
 
+  // Streams that are not copy enabled by default
+  const extraStreams = mainStreams
+    .filter((stream) => !defaultProcessedCodecTypes.includes(stream.codec_type));
+
+  // Extra streams that the user has not selected for copy
+  const nonCopiedExtraStreams = extraStreams
+    .filter((stream) => !isCopyingStreamId(filePath, stream.index));
+
   const copyStreamIds = Object.entries(copyStreamIdsByFile).map(([path, streamIdsMap]) => ({
     path,
     streamIds: Object.keys(streamIdsMap).filter(index => streamIdsMap[index]),
@@ -618,7 +628,18 @@ const App = memo(() => {
         });
       }
 
-      toast.fire({ timer: 5000, icon: 'success', title: `Export completed! Output file(s) can be found at: ${getOutDir(customOutDir, filePath)}. You can change the output directory in settings` });
+      const exportExtraStreams = autoExportExtraStreams && nonCopiedExtraStreams.length > 0;
+      if (exportExtraStreams) {
+        try {
+          await ffmpeg.extractStreams({
+            filePath, customOutDir, streams: nonCopiedExtraStreams,
+          });
+        } catch (err) {
+          console.error('Extra stream export failed', err);
+        }
+      }
+
+      toast.fire({ timer: 5000, icon: 'success', title: `Export completed! Output file(s) can be found at: ${getOutDir(customOutDir, filePath)}.${exportExtraStreams ? ' Extra unprocessable stream(s) exported as separate files.' : ''}` });
     } catch (err) {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
@@ -634,7 +655,7 @@ const App = memo(() => {
     }
   }, [
     effectiveRotation, apparentCutSegments, invertCutSegments, inverseCutSegments,
-    working, duration, filePath, keyframeCut, detectedFileFormat,
+    working, duration, filePath, keyframeCut, detectedFileFormat, extraStreams,
     autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyStreamIds, numStreamsToCopy,
   ]);
 
@@ -675,7 +696,6 @@ const App = memo(() => {
     }
     return ret;
   }, [getHtml5ifiedPath]);
-
 
   const load = useCallback(async (fp, html5FriendlyPathRequested) => {
     console.log('Load', { fp, html5FriendlyPathRequested });
@@ -792,7 +812,7 @@ const App = memo(() => {
 
     try {
       setWorking(true);
-      await ffmpeg.extractAllStreams({ customOutDir, filePath });
+      await ffmpeg.extractStreams({ customOutDir, filePath, streams: mainStreams });
       toast.fire({ icon: 'success', title: `All streams can be found as separate files at: ${getOutDir(customOutDir, filePath)}` });
     } catch (err) {
       errorToast('Failed to extract all streams');
@@ -1034,100 +1054,113 @@ const App = memo(() => {
 
   function renderSettings() {
     return (
-      <table>
-        <tbody>
-          <tr>
-            <td>Output format (default autodetected)</td>
-            <td style={{ width: '50%' }}>{renderOutFmt()}</td>
-          </tr>
+      <Fragment>
+        <tr>
+          <td>Output format (default autodetected)</td>
+          <td style={{ width: '50%' }}>{renderOutFmt()}</td>
+        </tr>
 
-          <tr>
-            <td>Output directory</td>
-            <td>
-              <button
-                type="button"
-                onClick={setOutputDir}
-              >
-                {customOutDir ? 'Custom output directory' : 'Output files to same directory as current file'}
-              </button>
-              <div>{customOutDir}</div>
-            </td>
-          </tr>
+        <tr>
+          <td>Output directory</td>
+          <td>
+            <button
+              type="button"
+              onClick={setOutputDir}
+            >
+              {customOutDir ? 'Custom output directory' : 'Output files to same directory as current file'}
+            </button>
+            <div>{customOutDir}</div>
+          </td>
+        </tr>
 
-          <tr>
-            <td>Auto merge segments to one file after export?</td>
-            <td>
-              <button
-                type="button"
-                onClick={toggleAutoMerge}
-              >
-                {autoMerge ? 'Auto merge segments to one file' : 'Export separate files'}
-              </button>
-            </td>
-          </tr>
+        <tr>
+          <td>Auto merge segments to one file after export?</td>
+          <td>
+            <button
+              type="button"
+              onClick={toggleAutoMerge}
+            >
+              {autoMerge ? 'Auto merge segments to one file' : 'Export separate files'}
+            </button>
+          </td>
+        </tr>
 
-          <tr>
-            <td>keyframe cut mode</td>
-            <td>
-              <button
-                type="button"
-                onClick={toggleKeyframeCut}
-              >
-                {keyframeCut ? 'Nearest keyframe cut - will cut at the nearest keyframe' : 'Normal cut - cut accurate position but could leave an empty portion'}
-              </button>
-            </td>
-          </tr>
+        <tr>
+          <td>keyframe cut mode</td>
+          <td>
+            <button
+              type="button"
+              onClick={toggleKeyframeCut}
+            >
+              {keyframeCut ? 'Nearest keyframe cut - will cut at the nearest keyframe' : 'Normal cut - cut accurate position but could leave an empty portion'}
+            </button>
+          </td>
+        </tr>
 
-          <tr>
-            <td>
-              Discard (cut away) or keep selected segments from video when exporting
-            </td>
-            <td>
-              <button
-                type="button"
-                onClick={withBlur(() => setInvertCutSegments(v => !v))}
-              >
-                {invertCutSegments ? 'Discard' : 'Keep'}
-              </button>
-            </td>
-          </tr>
+        <tr>
+          <td>
+            Discard (cut away) or keep selected segments from video when exporting
+          </td>
+          <td>
+            <button
+              type="button"
+              onClick={withBlur(() => setInvertCutSegments(v => !v))}
+            >
+              {invertCutSegments ? 'Discard' : 'Keep'}
+            </button>
+          </td>
+        </tr>
 
-          <tr>
-            <td>
-              Discard audio?
-            </td>
-            <td>
-              <button
-                type="button"
-                onClick={toggleStripAudio}
-              >
-                {!copyAnyAudioTrack ? 'Discard all audio tracks' : 'Keep audio tracks'}
-              </button>
-            </td>
-          </tr>
+        <tr>
+          <td>
+            Discard audio?
+          </td>
+          <td>
+            <button
+              type="button"
+              onClick={toggleStripAudio}
+            >
+              {copyAnyAudioTrack ? 'Keep audio tracks' : 'Discard all audio tracks'}
+            </button>
+          </td>
+        </tr>
 
-          <tr>
-            <td>
-              Snapshot capture format
-            </td>
-            <td>
-              {renderCaptureFormatButton()}
-            </td>
-          </tr>
+        <tr>
+          <td>
+            Extract unprocessable tracks to separate files?<br />
+            (data tracks such as GoPro GPS, telemetry etc.)
+          </td>
+          <td>
+            <button
+              type="button"
+              onClick={() => setAutoExportExtraStreams(v => !v)}
+            >
+              {autoExportExtraStreams ? 'Extract unprocessable tracks' : 'Discard all unprocessable tracks'}
+            </button>
+          </td>
+        </tr>
 
-          <tr>
-            <td>In timecode show</td>
-            <td>
-              <button
-                type="button"
-                onClick={() => setTimecodeShowFrames(v => !v)}
-              >
-                {timecodeShowFrames ? 'Frame numbers' : 'Millisecond fractions'}
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <tr>
+          <td>
+            Snapshot capture format
+          </td>
+          <td>
+            {renderCaptureFormatButton()}
+          </td>
+        </tr>
+
+        <tr>
+          <td>In timecode show</td>
+          <td>
+            <button
+              type="button"
+              onClick={() => setTimecodeShowFrames(v => !v)}
+            >
+              {timecodeShowFrames ? 'Frame numbers' : 'Millisecond fractions'}
+            </button>
+          </td>
+        </tr>
+      </Fragment>
     );
   }
 
