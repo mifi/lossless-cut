@@ -6,7 +6,7 @@ import { FiScissors } from 'react-icons/fi';
 import { AnimatePresence, motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import Lottie from 'react-lottie';
-import { SideSheet, Button, Position } from 'evergreen-ui';
+import { SideSheet, Button, Position, Table, SegmentedControl, Checkbox } from 'evergreen-ui';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 
 import fromPairs from 'lodash/fromPairs';
@@ -1220,9 +1220,9 @@ const App = memo(() => {
       <option key={f} value={f}>{f} - {name}</option>
     ));
   }
-  function renderOutFmt({ width } = {}) {
+  function renderOutFmt(style = {}) {
     return (
-      <select style={{ width }} defaultValue="" value={fileFormat} title="Output format" onChange={withBlur(e => setFileFormat(e.target.value))}>
+      <select style={style} defaultValue="" value={fileFormat} title="Output format" onChange={withBlur(e => setFileFormat(e.target.value))}>
         <option key="disabled1" value="" disabled>Format</option>
 
         {detectedFileFormat && (
@@ -1252,145 +1252,137 @@ const App = memo(() => {
     );
   }
 
-  const renderSettings = () => (
-    <Fragment>
-      <tr>
-        <td>Output format (default autodetected)</td>
-        <td style={{ width: '50%' }}>{renderOutFmt()}</td>
-      </tr>
+  const renderSettings = () => {
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    const Row = (props) => <Table.Row height="auto" paddingY={12} {...props} />;
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    const KeyCell = (props) => <Table.TextCell textProps={{ whiteSpace: 'auto' }} {...props} />;
 
-      <tr>
-        <td>
-          Working directory<br />
-          This is where working files, exported files, project files (CSV) are stored.
-        </td>
-        <td>
-          <button
-            type="button"
-            onClick={setOutputDir}
-          >
-            {customOutDir ? 'Custom working directory' : 'Same directory as input file'}
-          </button>
-          <div>{customOutDir}</div>
-        </td>
-      </tr>
+    return (
+      <Fragment>
+        <Row>
+          <KeyCell textProps={{ whiteSpace: 'auto' }}>Output format (default autodetected)</KeyCell>
+          <Table.TextCell>{renderOutFmt({ width: '100%' })}</Table.TextCell>
+        </Row>
 
-      <tr>
-        <td>Auto merge segments to one file after export?</td>
-        <td>
-          <button
-            type="button"
-            onClick={toggleAutoMerge}
-          >
-            {autoMerge ? 'Auto merge segments to one file' : 'Export separate files'}
-          </button>
-        </td>
-      </tr>
+        <Row>
+          <KeyCell>
+            Working directory<br />
+            This is where working files, exported files, project files (CSV) are stored.
+          </KeyCell>
+          <Table.TextCell>
+            <button
+              type="button"
+              onClick={setOutputDir}
+            >
+              {customOutDir ? 'Custom working directory' : 'Same directory as input file'}
+            </button>
+            <div>{customOutDir}</div>
+          </Table.TextCell>
+        </Row>
 
-      <tr>
-        <td>keyframe cut mode</td>
-        <td>
-          <button
-            type="button"
-            onClick={toggleKeyframeCut}
-          >
-            {keyframeCut ? 'Nearest keyframe cut - will cut at the nearest keyframe' : 'Normal cut - cut accurate position but could leave an empty portion'}
-          </button>
-        </td>
-      </tr>
+        <Row>
+          <KeyCell>Auto merge segments to one file during export or export to separate files?</KeyCell>
+          <Table.TextCell>
+            <SegmentedControl
+              options={[{ label: 'Auto merge', value: 'automerge' }, { label: 'Separate', value: 'separate' }]}
+              value={autoMerge ? 'automerge' : 'separate'}
+              onChange={value => setAutoMerge(value === 'automerge')}
+            />
+          </Table.TextCell>
+        </Row>
 
-      <tr>
-        <td>
-          Discard (cut away) or keep selected segments from video when exporting
-        </td>
-        <td>
-          <button
-            type="button"
-            onClick={withBlur(() => setInvertCutSegments(v => !v))}
-          >
-            {invertCutSegments ? 'Discard' : 'Keep'}
-          </button>
-        </td>
-      </tr>
+        <Row>
+          <KeyCell>
+            Keyframe cut mode<br />
+            <b>Nearest keyframe</b>: Cut at the nearest keyframe (not accurate time.)<br />
+            <b>Normal cut</b>: Accurate time but could leave an empty portion at the beginning of the video.<br />
+          </KeyCell>
+          <Table.TextCell>
+            <SegmentedControl
+              options={[{ label: 'Nearest keyframe', value: 'keyframe' }, { label: 'Normal cut', value: 'normal' }]}
+              value={keyframeCut ? 'keyframe' : 'normal'}
+              onChange={value => setKeyframeCut(value === 'keyframe')}
+            />
+          </Table.TextCell>
+        </Row>
 
-      <tr>
-        <td>
-          Discard audio?
-        </td>
-        <td>
-          <button
-            type="button"
-            onClick={toggleStripAudio}
-          >
-            {copyAnyAudioTrack ? 'Keep audio tracks' : 'Discard all audio tracks'}
-          </button>
-        </td>
-      </tr>
+        <Row>
+          <KeyCell>
+            <span role="img" aria-label="Yin Yang">☯️</span> Choose cutting mode: Cut away or keep selected segments from video when exporting?<br />
+            When <b>Keep</b> is selected, the video inside segments will be kept, while the video outside will be discarded.<br />
+            When <b>Cut away</b> is selected, the video inside segments will be discarded, while the video surrounding them will be kept.
+          </KeyCell>
+          <Table.TextCell>
+            <SegmentedControl
+              options={[{ label: 'Cut away', value: 'discard' }, { label: 'Keep', value: 'keep' }]}
+              value={invertCutSegments ? 'discard' : 'keep'}
+              onChange={value => setInvertCutSegments(value === 'discard')}
+            />
+          </Table.TextCell>
+        </Row>
 
-      <tr>
-        <td>
-          Extract unprocessable tracks to separate files?<br />
-          (data tracks such as GoPro GPS, telemetry etc. are not copied over by default because ffmpeg cannot cut them, thus they will cause the media duration to stay the same after cutting video/audio)
-        </td>
-        <td>
-          <button
-            type="button"
-            onClick={() => setAutoExportExtraStreams(v => !v)}
-          >
-            {autoExportExtraStreams ? 'Extract unprocessable tracks' : 'Discard all unprocessable tracks'}
-          </button>
-        </td>
-      </tr>
+        <Row>
+          <KeyCell>
+            Extract unprocessable tracks to separate files or discard them?<br />
+            (data tracks such as GoPro GPS, telemetry etc. are not copied over by default because ffmpeg cannot cut them, thus they will cause the media duration to stay the same after cutting video/audio)
+          </KeyCell>
+          <Table.TextCell>
+            <SegmentedControl
+              options={[{ label: 'Extract', value: 'extract' }, { label: 'Discard', value: 'discard' }]}
+              value={autoExportExtraStreams ? 'extract' : 'discard'}
+              onChange={value => setAutoExportExtraStreams(value === 'extract')}
+            />
+          </Table.TextCell>
+        </Row>
 
-      <tr>
-        <td>
-          Auto save project?<br />
-          The project will be stored along with the output files as a CSV file
-        </td>
-        <td>
-          <button
-            type="button"
-            onClick={() => setAutoSaveProjectFile(v => !v)}
-          >
-            {autoSaveProjectFile ? 'Auto save project' : 'Don\'t save project file'}
-          </button>
-        </td>
-      </tr>
+        <Row>
+          <KeyCell>
+            Auto save project file?<br />
+            The project will be stored along with the output files as a CSV file
+          </KeyCell>
+          <Table.TextCell>
+            <Checkbox
+              label="Auto save project"
+              checked={autoSaveProjectFile}
+              onChange={e => setAutoSaveProjectFile(e.target.checked)}
+            />
+          </Table.TextCell>
+        </Row>
 
-      <tr>
-        <td>
-          Snapshot capture format
-        </td>
-        <td>
-          {renderCaptureFormatButton()}
-        </td>
-      </tr>
+        <Row>
+          <KeyCell>
+            Snapshot capture format
+          </KeyCell>
+          <Table.TextCell>
+            {renderCaptureFormatButton()}
+          </Table.TextCell>
+        </Row>
 
-      <tr>
-        <td>In timecode show</td>
-        <td>
-          <button
-            type="button"
-            onClick={() => setTimecodeShowFrames(v => !v)}
-          >
-            {timecodeShowFrames ? 'Frame numbers' : 'Millisecond fractions'}
-          </button>
-        </td>
-      </tr>
+        <Row>
+          <KeyCell>In timecode show</KeyCell>
+          <Table.TextCell>
+            <SegmentedControl
+              options={[{ label: 'Frame numbers', value: 'frames' }, { label: 'Millisecond fractions', value: 'ms' }]}
+              value={timecodeShowFrames ? 'frames' : 'ms'}
+              onChange={value => setTimecodeShowFrames(value === 'frames')}
+            />
+          </Table.TextCell>
+        </Row>
 
-      <tr>
-        <td>Ask for confirmation when closing app?</td>
-        <td>
-          <button
-            type="button"
-            onClick={() => setAskBeforeClose(v => !v)}
-          >
-            {askBeforeClose ? 'Ask before closing' : 'Don\'t ask before closing'}
-          </button>
-        </td>
-      </tr>
-    </Fragment>
-  );
+        <Row>
+          <KeyCell>Ask for confirmation when closing app?</KeyCell>
+          <Table.TextCell>
+            <Checkbox
+              label="Ask before closing"
+              checked={askBeforeClose}
+              onChange={e => setAskBeforeClose(e.target.checked)}
+            />
+          </Table.TextCell>
+        </Row>
+      </Fragment>
+    );
+  };
 
   useEffect(() => {
     loadMifiLink().then(setMifiLink);

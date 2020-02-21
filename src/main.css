@@ -63,8 +63,8 @@ input, button, textarea, :focus {
 }
 
 .help-sheet {
-  background: #525252;
-  color: white;
+  background: white;
+  color: black;
   padding: 1em 2em;
   position: fixed;
   left: 0;
@@ -87,7 +87,7 @@ input, button, textarea, :focus {
     line-height: 10px;
     color: #555;
     vertical-align: middle;
-    background-color: #fcfcfc;
+    background-color: rgba(0,0,0,0.03);
     border: solid 1px #ccc;
     border-bottom-color: #bbb;
     border-radius: 3px;
