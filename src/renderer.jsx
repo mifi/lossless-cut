@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useState, useCallback, useRef, Fragment, useMemo } from 'react';
 import { IoIosHelpCircle, IoIosCamera } from 'react-icons/io';
-import { FaPlus, FaMinus, FaHandPointRight, FaHandPointLeft, FaTrashAlt, FaVolumeMute, FaVolumeUp, FaYinYang, FaFileExport, FaTag } from 'react-icons/fa';
+import { FaHandPointRight, FaHandPointLeft, FaTrashAlt, FaVolumeMute, FaVolumeUp, FaYinYang, FaFileExport } from 'react-icons/fa';
 import { MdRotate90DegreesCcw, MdCallSplit, MdCallMerge } from 'react-icons/md';
 import { FiScissors } from 'react-icons/fi';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -570,26 +570,6 @@ const App = memo(() => {
 
     setCutSegments(cutSegmentsNew);
   }, [currentSegIndexSafe, cutSegments, setCutSegments]);
-
-  async function onReorderSegsPress() {
-    if (cutSegments.length < 2) return;
-    const { value } = await Swal.fire({
-      title: 'Change the order for the current segment',
-      text: `Please enter a number from 1 to ${cutSegments.length}`,
-      input: 'text',
-      inputValue: currentSegIndexSafe + 1,
-      showCancelButton: true,
-      inputValidator: (v) => {
-        const parsed = parseInt(v, 10);
-        return Number.isNaN(parsed) || parsed > cutSegments.length || parsed < 1 ? 'Invalid number entered' : undefined;
-      },
-    });
-
-    if (value) {
-      const newOrder = parseInt(value, 10);
-      updateCurrentSegOrder(newOrder - 1);
-    }
-  }
 
   const jumpCutStart = () => seekAbs(currentApparentCutSeg.start);
   const jumpCutEnd = () => seekAbs(currentApparentCutSeg.end);
@@ -1445,17 +1425,6 @@ const App = memo(() => {
     return () => window.removeEventListener('keydown', keyScrollPreventer);
   }, []);
 
-  async function onLabelSegmentPress() {
-    const { value } = await Swal.fire({
-      showCancelButton: true,
-      title: 'Label current segment',
-      inputValue: currentCutSeg.name,
-      input: 'text',
-    });
-
-    if (value != null) setCurrentSegmentName(value);
-  }
-
   function renderSetCutpointButton(side) {
     const start = side === 'start';
     const Icon = start ? FaHandPointLeft : FaHandPointRight;
@@ -1472,10 +1441,6 @@ const App = memo(() => {
   }
 
   const getSegButtonStyle = ({ segActiveBgColor, segBorderColor }) => ({ background: segActiveBgColor, border: `2px solid ${segBorderColor}`, borderRadius: 6, color: 'white', fontSize: 14, textAlign: 'center', lineHeight: '11px', fontWeight: 'bold' });
-  const curSegButtonStyle = getSegButtonStyle({
-    segActiveBgColor: currentSegActiveBgColor,
-    segBorderColor: currentSegBorderColor,
-  });
 
   function renderJumpCutpointButton(direction) {
     const newIndex = currentSegIndexSafe + direction;
@@ -1683,12 +1648,17 @@ const App = memo(() => {
           >
             <SegmentList
               currentSegIndex={currentSegIndexSafe}
-              onSegClick={setCurrentSegIndex}
-              formatTimecode={formatTimecode}
               cutSegments={outSegments}
               getFrameCount={getFrameCount}
               getSegColors={getSegColors}
+              formatTimecode={formatTimecode}
               invertCutSegments={invertCutSegments}
+              onSegClick={setCurrentSegIndex}
+              updateCurrentSegOrder={updateCurrentSegOrder}
+              setCurrentSegmentName={setCurrentSegmentName}
+              currentCutSeg={currentCutSeg}
+              addCutSegment={addCutSegment}
+              removeCutSegment={removeCutSegment}
             />
           </div>
         </Fragment>
@@ -1831,39 +1801,6 @@ const App = memo(() => {
 
       <div className="left-menu no-user-select" style={{ position: 'absolute', left: 0, bottom: 0, padding: '.3em', display: 'flex', alignItems: 'center' }}>
         {renderInvertCutButton()}
-
-        <FaPlus
-          size={30}
-          style={{ margin: '0 5px', color: 'white' }}
-          role="button"
-          title="Add segment"
-          onClick={addCutSegment}
-        />
-
-        <FaMinus
-          size={30}
-          style={{ margin: '0 5px', background: cutSegments.length < 2 ? undefined : currentSegActiveBgColor, borderRadius: 3, color: 'white' }}
-          role="button"
-          title={`Delete current segment ${currentSegIndexSafe + 1}`}
-          onClick={removeCutSegment}
-        />
-
-        <div
-          style={{ ...curSegButtonStyle, height: 10, padding: 4, margin: '0 5px' }}
-          role="button"
-          title="Change segment order"
-          onClick={onReorderSegsPress}
-        >
-          {currentSegIndexSafe + 1}
-        </div>
-
-        <FaTag
-          size={10}
-          title="Label segment"
-          role="button"
-          style={{ padding: 4, border: `2px solid ${currentSegBorderColor}`, background: currentSegActiveBgColor, borderRadius: 6 }}
-          onClick={onLabelSegmentPress}
-        />
 
         <select style={{ width: 80, margin: '0 10px' }} value={zoom.toString()} title="Zoom" onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
           {Array(10).fill().map((unused, z) => {
