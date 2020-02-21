@@ -22,7 +22,7 @@ import TimelineSeg from './TimelineSeg';
 import InverseCutSegment from './InverseCutSegment';
 import StreamsSelector from './StreamsSelector';
 import { loadMifiLink } from './mifi';
-import { primaryColor, controlsBackground } from './colors';
+import { primaryColor, controlsBackground, timelineBackground } from './colors';
 
 import loadingLottie from './7077-magic-flow.json';
 
@@ -1008,6 +1008,7 @@ const App = memo(() => {
       title: 'You opened a new file. What do you want to do?',
       icon: 'question',
       input: 'radio',
+      inputValue: 'open',
       showCancelButton: true,
       inputOptions: {
         open: 'Open the file instead of the current one. You will lose all work',
@@ -1677,7 +1678,7 @@ const App = memo(() => {
           </div>
 
           <div style={{
-            position: 'absolute', width: rightBarWidth, padding: '0 10px', right: 0, boxSizing: 'border-box', bottom: bottomBarHeight, top: topBarHeight, background: controlsBackground, color: 'rgba(255,255,255,0.7)', overflowY: 'scroll',
+            position: 'absolute', width: rightBarWidth, right: 0, bottom: bottomBarHeight, top: topBarHeight, background: controlsBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column',
           }}
           >
             <SegmentList
@@ -1708,7 +1709,7 @@ const App = memo(() => {
               ref={timelineScrollerRef}
             >
               <div
-                style={{ height: 36, width: `${zoom * 100}%`, position: 'relative', backgroundColor: '#444' }}
+                style={{ height: 36, width: `${zoom * 100}%`, position: 'relative', backgroundColor: timelineBackground }}
                 ref={timelineWrapperRef}
               >
                 {currentTimePos !== undefined && <motion.div transition={{ type: 'spring', damping: 70, stiffness: 800 }} animate={{ left: currentTimePos }} style={{ position: 'absolute', bottom: 0, top: 0, zIndex: 3, backgroundColor: 'black', width: currentTimeWidth, pointerEvents: 'none' }} />}
