@@ -336,6 +336,17 @@ const App = memo(() => {
     setCutSegments(cloned);
   };
 
+  const updateCurrentSegOrder = (newOrder) => {
+    const segAtNewIndex = cutSegments[newOrder];
+    const segAtOldIndex = cutSegments[currentSegIndexSafe];
+    const newSegments = [...cutSegments];
+    // Swap indexes:
+    newSegments[currentSegIndexSafe] = segAtNewIndex;
+    newSegments[newOrder] = segAtOldIndex;
+    setCutSegments(newSegments);
+    setCurrentSegIndex(newOrder);
+  };
+
   const formatTimecode = useCallback((sec) => formatDuration({
     seconds: sec, fps: timecodeShowFrames ? detectedFps : undefined,
   }), [detectedFps, timecodeShowFrames]);
@@ -552,6 +563,26 @@ const App = memo(() => {
 
     setCutSegments(cutSegmentsNew);
   }, [currentSegIndexSafe, cutSegments, setCutSegments]);
+
+  async function onReorderSegsPress() {
+    if (cutSegments.length < 2) return;
+    const { value } = await Swal.fire({
+      title: 'Change the order for the current segment',
+      text: `Please enter a number from 1 to ${cutSegments.length}`,
+      input: 'text',
+      inputValue: currentSegIndexSafe + 1,
+      showCancelButton: true,
+      inputValidator: (v) => {
+        const parsed = parseInt(v, 10);
+        return Number.isNaN(parsed) || parsed > cutSegments.length || parsed < 1 ? 'Invalid number entered' : undefined;
+      },
+    });
+
+    if (value) {
+      const newOrder = parseInt(value, 10);
+      updateCurrentSegOrder(newOrder - 1);
+    }
+  }
 
   const jumpCutStart = () => seekAbs(currentApparentCutSeg.start);
   const jumpCutEnd = () => seekAbs(currentApparentCutSeg.end);
@@ -1738,6 +1769,8 @@ const App = memo(() => {
       </div>
 
       <div className="left-menu" style={{ position: 'absolute', left: 0, bottom: 0, padding: '.3em', display: 'flex', alignItems: 'center' }}>
+        {renderInvertCutButton()}
+
         <FaPlus
           size={30}
           style={{ margin: '0 5px', color: 'white' }}
@@ -1748,13 +1781,28 @@ const App = memo(() => {
 
         <FaMinus
           size={30}
-          style={{ margin: '0 5px', background: cutSegments.length < 2 ? undefined : currentSegBgColor, borderRadius: 3, color: 'white' }}
+          style={{ margin: '0 5px', background: cutSegments.length < 2 ? undefined : currentSegActiveBgColor, borderRadius: 3, color: 'white' }}
           role="button"
           title={`Delete current segment ${currentSegIndexSafe + 1}`}
           onClick={removeCutSegment}
         />
 
-        {renderInvertCutButton()}
+        <div
+          style={{ width: 10, height: 10, padding: 4, margin: '0 5px', background: currentSegActiveBgColor, border: `2px solid ${currentSegBorderColor}`, borderRadius: 6, color: 'white', fontSize: 14, textAlign: 'center', lineHeight: '11px', fontWeight: 'bold' }}
+          role="button"
+          title="Change segment order"
+          onClick={onReorderSegsPress}
+        >
+          {currentSegIndexSafe + 1}
+        </div>
+
+        <FaTag
+          size={10}
+          title="Label segment"
+          role="button"
+          style={{ padding: 4, border: `2px solid ${currentSegBorderColor}`, background: currentSegActiveBgColor, borderRadius: 6 }}
+          onClick={onLabelSegmentPress}
+        />
 
         <select style={{ width: 80, margin: '0 10px' }} value={zoom.toString()} title="Zoom" onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
           {Array(10).fill().map((unused, z) => {
@@ -1764,14 +1812,6 @@ const App = memo(() => {
             );
           })}
         </select>
-
-        <FaTag
-          size={10}
-          title="Label segment"
-          role="button"
-          style={{ padding: 4, border: `2px solid ${currentSegBorderColor}`, background: currentSegActiveBgColor, borderRadius: 6 }}
-          onClick={onLabelSegmentPress}
-        />
       </div>
 
       <div className="right-menu" style={{ position: 'absolute', right: 0, bottom: 0, padding: '.3em', display: 'flex', alignItems: 'center' }}>
