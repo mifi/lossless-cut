@@ -10,13 +10,14 @@ body {
 }
 
 /* https://github.com/electron/electron/issues/2538 */
-:not(input):not(textarea),
+.no-user-select :not(input):not(textarea),
 :not(input):not(textarea)::after,
 :not(input):not(textarea)::before {
     -webkit-user-select: none;
     user-select: none;
     cursor: default;
 }
+
 input, button, textarea, :focus {
     outline: none;
 }
@@ -43,23 +44,6 @@ input, button, textarea, :focus {
 
 .controls-wrapper button:active, .right-menu button:active, .left-menu button:active  {
   background: #ccc;
-}
-
-
-.right-menu {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  padding: .3em;
-}
-
-.controls-wrapper {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: #6b6b6b;
-  text-align: center;
 }
 
 .help-sheet {

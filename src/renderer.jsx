@@ -1507,7 +1507,7 @@ const App = memo(() => {
 
   return (
     <div>
-      <div style={{ background: controlsBackground, height: topBarHeight, display: 'flex', alignItems: 'center', padding: '0 5px', justifyContent: 'space-between' }}>
+      <div className="no-user-select" style={{ background: controlsBackground, height: topBarHeight, display: 'flex', alignItems: 'center', padding: '0 5px', justifyContent: 'space-between' }}>
         {filePath && (
           <Fragment>
             <SideSheet
@@ -1547,7 +1547,6 @@ const App = memo(() => {
 
         {filePath && (
           <Fragment>
-
             <button
               type="button"
               onClick={withBlur(setOutputDir)}
@@ -1581,7 +1580,7 @@ const App = memo(() => {
       </div>
 
       {!filePath && (
-        <div style={{ position: 'fixed', left: 0, right: 0, top: topBarHeight, bottom: bottomBarHeight, border: '2vmin dashed #252525', color: '#505050', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}>
+        <div className="no-user-select" style={{ position: 'fixed', left: 0, right: 0, top: topBarHeight, bottom: bottomBarHeight, border: '2vmin dashed #252525', color: '#505050', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}>
           <div style={{ fontSize: '9vmin' }}>DROP VIDEO(S)</div>
 
           {mifiLink && mifiLink.loadUrl && (
@@ -1627,7 +1626,7 @@ const App = memo(() => {
         )}
       </AnimatePresence>
 
-      <div style={{ position: 'absolute', top: topBarHeight, left: 0, right: rightBarWidth, bottom: bottomBarHeight }}>
+      <div className="no-user-select" style={{ position: 'absolute', top: topBarHeight, left: 0, right: rightBarWidth, bottom: bottomBarHeight }}>
         {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <video
           muted={muted}
@@ -1642,6 +1641,7 @@ const App = memo(() => {
 
         {framePath && frameRenderEnabled && (
           <img
+            draggable={false}
             style={{
               width: '100%', height: '100%', objectFit: 'contain', left: 0, right: 0, top: 0, bottom: 0, position: 'absolute', background: 'black',
             }}
@@ -1662,9 +1662,11 @@ const App = memo(() => {
 
       {filePath && (
         <Fragment>
-          <div style={{
-            position: 'absolute', margin: '1em', right: rightBarWidth, bottom: bottomBarHeight, color: 'rgba(255,255,255,0.7)',
-          }}
+          <div
+            className="no-user-select"
+            style={{
+              position: 'absolute', margin: '1em', right: rightBarWidth, bottom: bottomBarHeight, color: 'rgba(255,255,255,0.7)',
+            }}
           >
             <VolumeIcon
               title="Mute preview? (will not affect output)"
@@ -1688,11 +1690,10 @@ const App = memo(() => {
               invertCutSegments={invertCutSegments}
             />
           </div>
-
         </Fragment>
       )}
 
-      <div className="controls-wrapper" style={{ height: bottomBarHeight, background: controlsBackground }}>
+      <div className="controls-wrapper no-user-select" style={{ height: bottomBarHeight, background: controlsBackground, position: 'absolute', left: 0, right: 0, bottom: 0, textAlign: 'center' }}>
         <Hammer
           onTap={handleTap}
           onPan={handleTap}
@@ -1827,7 +1828,7 @@ const App = memo(() => {
         </div>
       </div>
 
-      <div className="left-menu" style={{ position: 'absolute', left: 0, bottom: 0, padding: '.3em', display: 'flex', alignItems: 'center' }}>
+      <div className="left-menu no-user-select" style={{ position: 'absolute', left: 0, bottom: 0, padding: '.3em', display: 'flex', alignItems: 'center' }}>
         {renderInvertCutButton()}
 
         <FaPlus
@@ -1873,7 +1874,7 @@ const App = memo(() => {
         </select>
       </div>
 
-      <div className="right-menu" style={{ position: 'absolute', right: 0, bottom: 0, padding: '.3em', display: 'flex', alignItems: 'center' }}>
+      <div className="right-menu no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, padding: '.3em', display: 'flex', alignItems: 'center' }}>
         <div>
           <span style={{ width: 40, textAlign: 'right', display: 'inline-block' }}>{isRotationSet && rotationStr}</span>
           <MdRotate90DegreesCcw
