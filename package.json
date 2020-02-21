@@ -73,6 +73,7 @@
     "mousetrap": "^1.6.1",
     "p-map": "^3.0.0",
     "p-queue": "^6.2.0",
+    "pretty-ms": "^6.0.0",
     "prop-types": "^15.6.2",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",

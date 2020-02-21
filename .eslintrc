@@ -10,6 +10,7 @@
     "browser": true
   },
   "rules": {
+    "max-len": 0,
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "error",
 

@@ -4553,6 +4553,11 @@ parse-json@^5.0.0:
     json-parse-better-errors "^1.0.1"
     lines-and-columns "^1.1.6"
 
+parse-ms@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/parse-ms/-/parse-ms-2.1.0.tgz#348565a753d4391fa524029956b172cb7753097d"
+  integrity sha512-kHt7kzLoS9VBZfUsiKjv43mr91ea+U05EyKkEtqp7vNbHxmaVuEqN7XxeEVnGrMtYOAxGrDElSi96K7EgO1zCA==
+
 path-exists@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/path-exists/-/path-exists-2.1.0.tgz#0feb6c64f0fc518d9a754dd5efb62c7022761f4b"
@@ -4715,6 +4720,13 @@ preserve@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/preserve/-/preserve-0.2.0.tgz#815ed1f6ebc65926f865b310c0713bcb3315ce4b"
   integrity sha1-gV7R9uvGWSb4ZbMQwHE7yzMVzks=
+
+pretty-ms@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/pretty-ms/-/pretty-ms-6.0.0.tgz#39a0eb5f31d359bcee43c9579e6ddf4a02a82ff0"
+  integrity sha512-X5i1y9/8VuBMb9WU8zubTiLKnJG4lcKvL7eaCEVc/jpTe3aS74gCcBM6Yd1vvUDoTCXm4Y15obNS/16yB0FTaQ==
+  dependencies:
+    parse-ms "^2.1.0"
 
 private@^0.1.6, private@^0.1.7:
   version "0.1.8"

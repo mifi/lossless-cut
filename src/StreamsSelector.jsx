@@ -39,9 +39,11 @@ const Stream = memo(({ stream, onToggle, copyStream }) => {
     });
   }
 
+  const onClick = () => onToggle && onToggle(stream.index);
+
   return (
     <tr style={{ opacity: copyStream ? undefined : 0.4 }}>
-      <td><Icon size={20} style={{ padding: '0 5px', cursor: 'pointer' }} role="button" onClick={() => onToggle && onToggle(stream.index)} /></td>
+      <td><Icon size={20} style={{ padding: '0 5px', cursor: 'pointer' }} role="button" onClick={onClick} /></td>
       <td>{stream.index}</td>
       <td>{stream.codec_type}</td>
       <td>{stream.codec_tag !== '0x0000' && stream.codec_tag_string}</td>
@@ -50,7 +52,7 @@ const Stream = memo(({ stream, onToggle, copyStream }) => {
       <td>{stream.nb_frames}</td>
       <td>{!Number.isNaN(bitrate) && `${(bitrate / 1e6).toFixed(1)}MBit/s`}</td>
       <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(1)}fps`}</td>
-      <td><FaInfoCircle role="button" onClick={() => onInfoClick(stream)} size={30} /></td>
+      <td><FaInfoCircle role="button" onClick={() => onInfoClick(stream)} size={26} /></td>
     </tr>
   );
 });
@@ -78,7 +80,7 @@ const StreamsSelector = memo(({
       <table style={{ marginBottom: 10 }}>
         <thead style={{ background: 'rgba(0,0,0,0.1)' }}>
           <tr>
-            <th>?</th>
+            <th>Keep?</th>
             <th />
             <th>Type</th>
             <th>Tag</th>
@@ -104,8 +106,9 @@ const StreamsSelector = memo(({
           {Object.entries(externalFiles).map(([path, { streams }]) => (
             <Fragment key={path}>
               <tr>
+                <td><FaTrashAlt size={20} role="button" style={{ padding: '0 5px', cursor: 'pointer' }} onClick={() => removeFile(path)} /></td>
                 <td colSpan={9} style={{ paddingTop: 15 }}>
-                  {path} <FaTrashAlt role="button" onClick={() => removeFile(path)} />
+                  {path}
                 </td>
               </tr>
 

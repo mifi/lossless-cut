@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { IoIosCloseCircleOutline } from 'react-icons/io';
 import { FaClipboard } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,9 +9,8 @@ const { clipboard } = require('electron');
 
 const { toast } = require('./util');
 
-const HelpSheet = ({
-  visible, onTogglePress, renderSettings, ffmpegCommandLog, sortedCutSegments,
-  formatTimecode,
+const HelpSheet = memo(({
+  visible, onTogglePress, renderSettings, ffmpegCommandLog,
 }) => (
   <AnimatePresence>
     {visible && (
@@ -30,8 +29,8 @@ const HelpSheet = ({
         <div><kbd>L</kbd> Speed up video</div>
         <div><kbd>←</kbd> Seek backward 1 sec</div>
         <div><kbd>→</kbd> Seek forward 1 sec</div>
-        <div><kbd>.</kbd> (period) Tiny seek forward (1/60 sec)</div>
-        <div><kbd>,</kbd> (comma) Tiny seek backward (1/60 sec)</div>
+        <div><kbd>,</kbd> Seek backward 1 frame</div>
+        <div><kbd>.</kbd> Seek forward 1 frame</div>
         <div><kbd>I</kbd> Mark in / cut start point</div>
         <div><kbd>O</kbd> Mark out / cut end point</div>
         <div><kbd>E</kbd> Cut (export selection in the same directory)</div>
@@ -56,16 +55,6 @@ const HelpSheet = ({
           </Table.Body>
         </Table>
 
-        <h1 style={{ marginTop: 40 }}>Segment list</h1>
-
-        <div style={{ overflowY: 'scroll', height: 200 }}>
-          {sortedCutSegments.map((seg) => (
-            <div key={seg.uuid} style={{ margin: '5px 0' }}>
-              {formatTimecode(seg.start)} - {formatTimecode(seg.end)} {seg.name}
-            </div>
-          ))}
-        </div>
-
         <h1 style={{ marginTop: 40 }}>Last ffmpeg commands</h1>
         <div style={{ overflowY: 'scroll', height: 200 }}>
           {ffmpegCommandLog.reverse().map((log) => (
@@ -77,6 +66,6 @@ const HelpSheet = ({
       </motion.div>
     )}
   </AnimatePresence>
-);
+));
 
 export default HelpSheet;

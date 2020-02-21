@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState, useCallback, useRef, Fragment } from 'react';
+import React, { memo, useEffect, useState, useCallback, useRef, Fragment, useMemo } from 'react';
 import { IoIosHelpCircle, IoIosCamera } from 'react-icons/io';
 import { FaPlus, FaMinus, FaHandPointRight, FaHandPointLeft, FaTrashAlt, FaVolumeMute, FaVolumeUp, FaYinYang, FaFileExport, FaTag } from 'react-icons/fa';
 import { MdRotate90DegreesCcw, MdCallSplit, MdCallMerge } from 'react-icons/md';
@@ -17,10 +17,12 @@ import flatMap from 'lodash/flatMap';
 import isEqual from 'lodash/isEqual';
 
 import HelpSheet from './HelpSheet';
+import SegmentList from './SegmentList';
 import TimelineSeg from './TimelineSeg';
 import InverseCutSegment from './InverseCutSegment';
 import StreamsSelector from './StreamsSelector';
 import { loadMifiLink } from './mifi';
+import { primaryColor, controlsBackground } from './colors';
 
 import loadingLottie from './7077-magic-flow.json';
 
@@ -350,6 +352,11 @@ const App = memo(() => {
   const formatTimecode = useCallback((sec) => formatDuration({
     seconds: sec, fps: timecodeShowFrames ? detectedFps : undefined,
   }), [detectedFps, timecodeShowFrames]);
+
+  const getFrameCount = useCallback((sec) => {
+    if (detectedFps == null) return undefined;
+    return Math.floor(sec * detectedFps);
+  }, [detectedFps]);
 
   const getCurrentTime = useCallback(() => (
     playing ? playerTime : commandedTime), [commandedTime, playerTime, playing]);
@@ -683,6 +690,9 @@ const App = memo(() => {
     }
   }, [filePath, html5FriendlyPath, resetState, working]);
 
+  const outSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
+    [invertCutSegments, inverseCutSegments, apparentCutSegments]);
+
   const cutClick = useCallback(async () => {
     if (working) {
       errorToast('I\'m busy');
@@ -699,19 +709,17 @@ const App = memo(() => {
       return;
     }
 
-    const segments = invertCutSegments ? inverseCutSegments : apparentCutSegments;
-
-    if (!segments) {
+    if (!outSegments) {
       errorToast('No segments to export!');
       return;
     }
 
-    const ffmpegSegments = segments.map((seg) => ({
+    const ffmpegSegments = outSegments.map((seg) => ({
       cutFrom: seg.start,
       cutTo: seg.end,
     }));
 
-    if (segments.length < 1) {
+    if (outSegments.length < 1) {
       errorToast('No segments to export');
       return;
     }
@@ -768,7 +776,7 @@ const App = memo(() => {
       setWorking(false);
     }
   }, [
-    effectiveRotation, apparentCutSegments, invertCutSegments, inverseCutSegments,
+    effectiveRotation, outSegments,
     working, duration, filePath, keyframeCut, detectedFileFormat,
     autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyStreamIds, numStreamsToCopy,
     exportExtraStreams, nonCopiedExtraStreams, outputDir,
@@ -898,6 +906,8 @@ const App = memo(() => {
 
   const toggleHelp = () => setHelpVisible(val => !val);
 
+  const jumpSeg = useCallback((val) => setCurrentSegIndex((old) => Math.max(Math.min(old + val, cutSegments.length - 1), 0)), [cutSegments.length]);
+
   useEffect(() => {
     Mousetrap.bind('space', () => playCommand());
     Mousetrap.bind('k', () => playCommand());
@@ -905,6 +915,8 @@ const App = memo(() => {
     Mousetrap.bind('l', () => changePlaybackRate(1));
     Mousetrap.bind('left', () => seekRel(-1));
     Mousetrap.bind('right', () => seekRel(1));
+    Mousetrap.bind('up', () => jumpSeg(-1));
+    Mousetrap.bind('down', () => jumpSeg(1));
     Mousetrap.bind('.', () => shortStep(1));
     Mousetrap.bind(',', () => shortStep(-1));
     Mousetrap.bind('c', () => capture());
@@ -923,6 +935,8 @@ const App = memo(() => {
       Mousetrap.unbind('l');
       Mousetrap.unbind('left');
       Mousetrap.unbind('right');
+      Mousetrap.unbind('up');
+      Mousetrap.unbind('down');
       Mousetrap.unbind('.');
       Mousetrap.unbind(',');
       Mousetrap.unbind('c');
@@ -936,7 +950,7 @@ const App = memo(() => {
     };
   }, [
     addCutSegment, capture, changePlaybackRate, cutClick, playCommand, removeCutSegment,
-    setCutEnd, setCutStart, seekRel, shortStep, deleteSource,
+    setCutEnd, setCutStart, seekRel, shortStep, deleteSource, jumpSeg,
   ]);
 
   useEffect(() => {
@@ -1487,13 +1501,13 @@ const App = memo(() => {
     );
   }
 
-  const primaryColor = 'hsl(194, 78%, 47%)';
+  const rightBarWidth = 200; // TODO responsive
 
   const AutoMergeIcon = autoMerge ? MdCallMerge : MdCallSplit;
 
   return (
     <div>
-      <div style={{ background: '#6b6b6b', height: topBarHeight, display: 'flex', alignItems: 'center', padding: '0 5px', justifyContent: 'space-between' }}>
+      <div style={{ background: controlsBackground, height: topBarHeight, display: 'flex', alignItems: 'center', padding: '0 5px', justifyContent: 'space-between' }}>
         {filePath && (
           <Fragment>
             <SideSheet
@@ -1612,7 +1626,7 @@ const App = memo(() => {
         )}
       </AnimatePresence>
 
-      <div style={{ position: 'absolute', top: topBarHeight, left: 0, right: 0, bottom: bottomBarHeight }}>
+      <div style={{ position: 'absolute', top: topBarHeight, left: 0, right: rightBarWidth, bottom: bottomBarHeight }}>
         {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <video
           muted={muted}
@@ -1638,7 +1652,7 @@ const App = memo(() => {
 
       {rotationPreviewRequested && (
         <div style={{
-          position: 'absolute', top: topBarHeight, marginTop: '1em', marginRight: '1em', right: 0, color: 'white',
+          position: 'absolute', top: topBarHeight, marginTop: '1em', marginRight: '1em', right: rightBarWidth, color: 'white',
         }}
         >
           Lossless rotation preview
@@ -1646,20 +1660,38 @@ const App = memo(() => {
       )}
 
       {filePath && (
-        <div style={{
-          position: 'absolute', margin: '1em', right: 0, bottom: bottomBarHeight, color: 'rgba(255,255,255,0.7)',
-        }}
-        >
-          <VolumeIcon
-            title="Mute preview? (will not affect output)"
-            size={30}
-            role="button"
-            onClick={toggleMute}
-          />
-        </div>
+        <Fragment>
+          <div style={{
+            position: 'absolute', margin: '1em', right: rightBarWidth, bottom: bottomBarHeight, color: 'rgba(255,255,255,0.7)',
+          }}
+          >
+            <VolumeIcon
+              title="Mute preview? (will not affect output)"
+              size={30}
+              role="button"
+              onClick={toggleMute}
+            />
+          </div>
+
+          <div style={{
+            position: 'absolute', width: rightBarWidth, padding: '0 10px', right: 0, boxSizing: 'border-box', bottom: bottomBarHeight, top: topBarHeight, background: controlsBackground, color: 'rgba(255,255,255,0.7)', overflowY: 'scroll',
+          }}
+          >
+            <SegmentList
+              currentSegIndex={currentSegIndexSafe}
+              onSegClick={setCurrentSegIndex}
+              formatTimecode={formatTimecode}
+              cutSegments={outSegments}
+              getFrameCount={getFrameCount}
+              getSegColors={getSegColors}
+              invertCutSegments={invertCutSegments}
+            />
+          </div>
+
+        </Fragment>
       )}
 
-      <div className="controls-wrapper" style={{ height: bottomBarHeight }}>
+      <div className="controls-wrapper" style={{ height: bottomBarHeight, background: controlsBackground }}>
         <Hammer
           onTap={handleTap}
           onPan={handleTap}
@@ -1692,7 +1724,7 @@ const App = memo(() => {
                       segBgColor={segBgColor}
                       segActiveBgColor={segActiveBgColor}
                       segBorderColor={segBorderColor}
-                      onSegClick={currentSegIndexNew => setCurrentSegIndex(currentSegIndexNew)}
+                      onSegClick={setCurrentSegIndex}
                       isActive={i === currentSegIndexSafe}
                       duration={durationSafe}
                       name={seg.name}
@@ -1888,8 +1920,6 @@ const App = memo(() => {
         onTogglePress={toggleHelp}
         renderSettings={renderSettings}
         ffmpegCommandLog={ffmpegCommandLog}
-        sortedCutSegments={sortedCutSegments}
-        formatTimecode={formatTimecode}
       />
     </div>
   );

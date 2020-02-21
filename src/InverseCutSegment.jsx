@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FaTrashAlt, FaSave } from 'react-icons/fa';
 
 import { mySpring } from './animations';
+import { saveColor } from './colors';
 
 const InverseCutSegment = ({ seg, duration, invertCutSegments }) => (
   <motion.div
@@ -20,7 +21,7 @@ const InverseCutSegment = ({ seg, duration, invertCutSegments }) => (
   >
     <div style={{ flexGrow: 1, borderBottom: '1px dashed rgba(255, 255, 255, 0.3)', marginLeft: 5, marginRight: 5 }} />
     {invertCutSegments ? (
-      <FaSave style={{ color: 'hsl(158, 100%, 43%)' }} size={16} />
+      <FaSave style={{ color: saveColor }} size={16} />
     ) : (
       <FaTrashAlt style={{ color: 'rgba(255, 255, 255, 0.3)' }} size={16} />
     )}
