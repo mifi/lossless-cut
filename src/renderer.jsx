@@ -1207,7 +1207,6 @@ const App = memo(() => {
   }
 
   const {
-    segBgColor: currentSegBgColor,
     segActiveBgColor: currentSegActiveBgColor,
     segBorderColor: currentSegBorderColor,
   } = getSegColors(currentCutSeg);
@@ -1465,6 +1464,37 @@ const App = memo(() => {
     );
   }
 
+  const getSegButtonStyle = ({ segActiveBgColor, segBorderColor }) => ({ background: segActiveBgColor, border: `2px solid ${segBorderColor}`, borderRadius: 6, color: 'white', fontSize: 14, textAlign: 'center', lineHeight: '11px', fontWeight: 'bold' });
+  const curSegButtonStyle = getSegButtonStyle({
+    segActiveBgColor: currentSegActiveBgColor,
+    segBorderColor: currentSegBorderColor,
+  });
+
+  function renderJumpCutpointButton(direction) {
+    const newIndex = currentSegIndexSafe + direction;
+    const seg = cutSegments[newIndex];
+
+    let segButtonStyle;
+
+    if (seg) {
+      const { segActiveBgColor, segBorderColor } = getSegColors(seg);
+      segButtonStyle = getSegButtonStyle({ segActiveBgColor, segBorderColor });
+    } else {
+      segButtonStyle = getSegButtonStyle({ segActiveBgColor: 'rgba(255,255,255,0.3)', segBorderColor: 'rgba(255,255,255,0.5)' });
+    }
+
+    return (
+      <div
+        style={{ ...segButtonStyle, height: 10, padding: 4, margin: '0 5px' }}
+        role="button"
+        title={`Jump to ${direction > 0 ? 'next' : 'previous'} segment (${newIndex + 1})`}
+        onClick={() => seg && setCurrentSegIndex(newIndex)}
+      >
+        {newIndex + 1}
+      </div>
+    );
+  }
+
   const primaryColor = 'hsl(194, 78%, 47%)';
 
   const AutoMergeIcon = autoMerge ? MdCallMerge : MdCallSplit;
@@ -1711,6 +1741,8 @@ const App = memo(() => {
             onClick={() => seekAbs(0)}
           />
 
+          {renderJumpCutpointButton(-1)}
+
           {renderSetCutpointButton('start')}
 
           <div style={{ position: 'relative' }}>
@@ -1758,6 +1790,8 @@ const App = memo(() => {
 
           {renderSetCutpointButton('end')}
 
+          {renderJumpCutpointButton(1)}
+
           <i
             className="button fa fa-step-forward"
             role="button"
@@ -1788,7 +1822,7 @@ const App = memo(() => {
         />
 
         <div
-          style={{ width: 10, height: 10, padding: 4, margin: '0 5px', background: currentSegActiveBgColor, border: `2px solid ${currentSegBorderColor}`, borderRadius: 6, color: 'white', fontSize: 14, textAlign: 'center', lineHeight: '11px', fontWeight: 'bold' }}
+          style={{ ...curSegButtonStyle, height: 10, padding: 4, margin: '0 5px' }}
           role="button"
           title="Change segment order"
           onClick={onReorderSegsPress}

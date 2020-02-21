@@ -37,8 +37,8 @@ const HelpSheet = ({
           <li><kbd>E</kbd> Cut (export selection in the same directory)</li>
           <li><kbd>C</kbd> Capture snapshot (in the same directory)</li>
           <li><kbd>+</kbd> Add cut segment</li>
-          <li><kbd>D</kbd> Delete source file</li>
           <li><kbd>BACKSPACE</kbd> Remove current cut segment</li>
+          <li><kbd>D</kbd> Delete source file</li>
         </ul>
 
         <p style={{ fontWeight: 'bold' }}>Hover mouse over buttons to see which function they have.</p>
