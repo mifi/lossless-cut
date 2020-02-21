@@ -193,8 +193,8 @@ const App = memo(() => {
   }, []);
 
   const shortStep = useCallback((dir) => {
-    seekRel((1 / 60) * dir);
-  }, [seekRel]);
+    seekRel((1 / (detectedFps || 60)) * dir);
+  }, [seekRel, detectedFps]);
 
   const resetState = useCallback(() => {
     const video = videoRef.current;
