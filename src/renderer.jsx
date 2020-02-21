@@ -1531,6 +1531,15 @@ const App = memo(() => {
             <Button height={20} iconBefore="list" onClick={withBlur(() => setStreamsSelectorShown(true))}>
               Tracks ({numStreamsToCopy}/{numStreamsTotal})
             </Button>
+
+            <Button
+              iconBefore={copyAnyAudioTrack ? 'volume-up' : 'volume-off'}
+              height={20}
+              title={`Discard audio? Current: ${copyAnyAudioTrack ? 'keep audio tracks' : 'Discard audio tracks'}`}
+              onClick={withBlur(toggleStripAudio)}
+            >
+              {copyAnyAudioTrack ? 'Keep audio' : 'Discard audio'}
+            </Button>
           </Fragment>
         )}
 
@@ -1564,14 +1573,6 @@ const App = memo(() => {
               onClick={withBlur(toggleKeyframeCut)}
             >
               {keyframeCut ? 'Keyframe cut' : 'Normal cut'}
-            </button>
-
-            <button
-              type="button"
-              title={`Discard audio? Current: ${copyAnyAudioTrack ? 'keep audio tracks' : 'Discard audio tracks'}`}
-              onClick={withBlur(toggleStripAudio)}
-            >
-              {copyAnyAudioTrack ? 'Keep audio' : 'Discard audio'}
             </button>
           </Fragment>
         )}
