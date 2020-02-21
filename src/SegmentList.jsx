@@ -78,6 +78,8 @@ const SegmentList = memo(({
             return <b style={{ color: 'white', padding: '0 3px', marginRight: 5, background: segBgColor, border: `1px solid ${isActive ? segBorderColor : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
           }
 
+          const timeStr = `${formatTimecode(seg.start)} - ${formatTimecode(seg.end)}`;
+
           return (
             <motion.div
               role="button"
@@ -89,9 +91,9 @@ const SegmentList = memo(({
               animate={{ scaleY: 1 }}
               exit={{ scaleY: 0 }}
             >
-              <div style={{ fontSize: 13, whiteSpace: 'nowrap', color: 'white', marginBottom: 3 }}>
+              <div style={{ fontSize: 310 / timeStr.length, whiteSpace: 'nowrap', color: 'white', marginBottom: 3 }}>
                 {renderNumber()}
-                <span>{formatTimecode(seg.start)} - {formatTimecode(seg.end)}</span>
+                <span>{timeStr}</span>
               </div>
               <div style={{ fontSize: 12, color: 'white' }}>{seg.name}</div>
               <div style={{ fontSize: 13 }}>
