@@ -1092,6 +1092,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('set-start-offset', setStartOffset);
       electron.ipcRenderer.removeListener('extract-all-streams', extractAllStreams);
       electron.ipcRenderer.removeListener('undo', undo);
+      electron.ipcRenderer.removeListener('redo', redo);
       electron.ipcRenderer.removeListener('importEdlFile', importEdlFile);
       electron.ipcRenderer.removeListener('exportEdlFile', exportEdlFile);
     };
