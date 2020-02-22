@@ -1869,7 +1869,7 @@ const App = memo(() => {
         {renderInvertCutButton()}
 
         <Select height={20} style={{ width: 80, margin: '0 10px' }} value={zoom.toString()} title="Zoom" onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
-          {Array(10).fill().map((unused, z) => {
+          {Array(13).fill().map((unused, z) => {
             const val = 2 ** z;
             return (
               <option key={val} value={String(val)}>Zoom {val}x</option>
