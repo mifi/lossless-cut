@@ -1,6 +1,6 @@
 import React, { memo, Fragment } from 'react';
 import prettyMs from 'pretty-ms';
-import { FaSave, FaPlus, FaMinus, FaTag } from 'react-icons/fa';
+import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 
@@ -20,10 +20,7 @@ const SegmentList = memo(({
     return <div style={{ padding: '0 10px' }}>No segments to export.</div>;
   }
 
-  const {
-    segActiveBgColor: currentSegActiveBgColor,
-    segBorderColor: currentSegBorderColor,
-  } = getSegColors(currentCutSeg);
+  const { segActiveBgColor: currentSegActiveBgColor } = getSegColors(currentCutSeg);
 
   async function onLabelSegmentPress() {
     const { value } = await Swal.fire({
@@ -110,7 +107,7 @@ const SegmentList = memo(({
       <div style={{ display: 'flex', padding: '5px 0', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid grey' }}>
         <FaPlus
           size={30}
-          style={{ margin: '0 5px', color: 'white', cursor: 'pointer' }}
+          style={{ margin: '0 5px', borderRadius: 3, color: 'white', cursor: 'pointer', background: 'rgba(255, 255, 255, 0.2)' }}
           role="button"
           title="Add segment"
           onClick={addCutSegment}
@@ -118,20 +115,19 @@ const SegmentList = memo(({
 
         <FaMinus
           size={30}
-          style={{ margin: '0 5px', background: cutSegments.length < 2 ? undefined : currentSegActiveBgColor, borderRadius: 3, color: 'white', cursor: 'pointer' }}
+          style={{ margin: '0 5px', borderRadius: 3, color: 'white', cursor: 'pointer', background: cutSegments.length < 2 ? 'rgba(255, 255, 255, 0.2)' : currentSegActiveBgColor }}
           role="button"
           title={`Delete current segment ${currentSegIndex + 1}`}
           onClick={removeCutSegment}
         />
 
-        <div
-          style={{ background: currentSegActiveBgColor, border: `2px solid ${currentSegBorderColor}`, borderRadius: 5, color: 'white', fontSize: 23, textAlign: 'center', fontWeight: 'bold', boxSizing: 'border-box', height: 30, width: 30, margin: '0 5px', cursor: 'pointer' }}
-          role="button"
+        <FaSortNumericDown
+          size={20}
           title="Change segment order"
+          role="button"
+          style={{ padding: 4, margin: '0 5px', background: currentSegActiveBgColor, borderRadius: 3, color: 'white', cursor: 'pointer' }}
           onClick={onReorderSegsPress}
-        >
-          {currentSegIndex + 1}
-        </div>
+        />
 
         <FaTag
           size={20}

@@ -6,8 +6,9 @@ import { FiScissors } from 'react-icons/fi';
 import { AnimatePresence, motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import Lottie from 'react-lottie';
-import { SideSheet, Button, Position, Table, SegmentedControl, Checkbox } from 'evergreen-ui';
+import { SideSheet, Button, Position, Table, SegmentedControl, Checkbox, Select } from 'evergreen-ui';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
+import useDebounce from 'react-use/lib/useDebounce';
 
 import fromPairs from 'lodash/fromPairs';
 import clamp from 'lodash/clamp';
@@ -106,12 +107,15 @@ const App = memo(() => {
   const [filePath, setFilePath] = useState('');
   const [externalStreamFiles, setExternalStreamFiles] = useState([]);
   const [detectedFps, setDetectedFps] = useState();
-  const [mainStreams, setStreams] = useState([]);
+  const [mainStreams, setMainStreams] = useState([]);
+  const [mainVideoStream, setMainVideoStream] = useState();
   const [copyStreamIdsByFile, setCopyStreamIdsByFile] = useState({});
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [commandedTime, setCommandedTime] = useState(0);
+  const [debouncedCommandedTime, setDebouncedCommandedTime] = useState(0);
   const [ffmpegCommandLog, setFfmpegCommandLog] = useState([]);
+  const [neighbouringFrames, setNeighbouringFrames] = useState([]);
 
   // Segment related state
   const [currentSegIndex, setCurrentSegIndex] = useState(0);
@@ -121,6 +125,10 @@ const App = memo(() => {
     createInitialCutSegments(),
     100,
   );
+
+  const [, cancelCommandedTimeDebounce] = useDebounce(() => {
+    setDebouncedCommandedTime(commandedTime);
+  }, 300, [commandedTime]);
 
 
   // Preferences
@@ -154,10 +162,11 @@ const App = memo(() => {
   const timelineScrollerRef = useRef();
   const timelineScrollerSkipEventRef = useRef();
   const lastSavedCutSegmentsRef = useRef();
+  const readingKeyframesPromise = useRef();
 
 
   function appendFfmpegCommandLog(command) {
-    setFfmpegCommandLog(old => [...old, command]);
+    setFfmpegCommandLog(old => [...old, { command, time: new Date() }]);
   }
 
   function setCopyStreamIdsForPath(path, cb) {
@@ -178,21 +187,23 @@ const App = memo(() => {
     });
   }
 
-  function seekAbs(val) {
+  const seekAbs = useCallback((val) => {
     const video = videoRef.current;
     if (val == null || Number.isNaN(val)) return;
+    let valRounded = val;
+    if (detectedFps) valRounded = Math.round(detectedFps * val) / detectedFps; // Round to nearest frame
 
-    let outVal = val;
+    let outVal = valRounded;
     if (outVal < 0) outVal = 0;
     if (outVal > video.duration) outVal = video.duration;
 
     video.currentTime = outVal;
     setCommandedTime(outVal);
-  }
+  }, [detectedFps]);
 
   const seekRel = useCallback((val) => {
     seekAbs(videoRef.current.currentTime + val);
-  }, []);
+  }, [seekAbs]);
 
   const shortStep = useCallback((dir) => {
     seekRel((1 / (detectedFps || 60)) * dir);
@@ -200,6 +211,8 @@ const App = memo(() => {
 
   const resetState = useCallback(() => {
     const video = videoRef.current;
+    cancelCommandedTimeDebounce();
+    setDebouncedCommandedTime(0);
     setCommandedTime(0);
     video.currentTime = 0;
     video.playbackRate = 1;
@@ -224,11 +237,12 @@ const App = memo(() => {
     setFilePath(''); // Setting video src="" prevents memory leak in chromium
     setExternalStreamFiles([]);
     setDetectedFps();
-    setStreams([]);
+    setMainStreams([]);
     setCopyStreamIdsByFile({});
     setStreamsSelectorShown(false);
     setZoom(1);
-  }, [cutSegmentsHistory, setCutSegments]);
+    setNeighbouringFrames([]);
+  }, [cutSegmentsHistory, setCutSegments, cancelCommandedTimeDebounce]);
 
   useEffect(() => () => {
     if (dummyVideoPath) unlink(dummyVideoPath).catch(console.error);
@@ -361,39 +375,58 @@ const App = memo(() => {
   const getCurrentTime = useCallback(() => (
     playing ? playerTime : commandedTime), [commandedTime, playerTime, playing]);
 
+  // const getNextPrevKeyframe = useCallback((cutTime, next) => ffmpeg.getNextPrevKeyframe(neighbouringFrames, cutTime, next), [neighbouringFrames]);
+
   const addCutSegment = useCallback(() => {
-    const cutStartTime = currentCutSeg.start;
-    const cutEndTime = currentCutSeg.end;
+    try {
+      // Cannot add if prev seg is not finished
+      if (currentCutSeg.start === undefined && currentCutSeg.end === undefined) return;
 
-    if (cutStartTime === undefined && cutEndTime === undefined) return;
+      const suggestedStart = getCurrentTime();
+      /* if (keyframeCut) {
+        const keyframeAlignedStart = getNextPrevKeyframe(suggestedStart, true);
+        if (keyframeAlignedStart != null) suggestedStart = keyframeAlignedStart;
+      } */
 
-    const suggestedStart = getCurrentTime();
-    const suggestedEnd = suggestedStart + 10;
+      let suggestedEnd = suggestedStart + 10;
+      if (suggestedEnd >= duration) {
+        suggestedEnd = undefined;
+      } /* else if (keyframeCut) {
+        const keyframeAlignedEnd = getNextPrevKeyframe(suggestedEnd, false);
+        if (keyframeAlignedEnd != null) suggestedEnd = keyframeAlignedEnd;
+      } */
 
-    const cutSegmentsNew = [
-      ...cutSegments,
-      createSegment({
-        start: suggestedStart,
-        end: suggestedEnd <= duration ? suggestedEnd : undefined,
-      }),
-    ];
+      const cutSegmentsNew = [
+        ...cutSegments,
+        createSegment({
+          start: suggestedStart,
+          end: suggestedEnd,
+        }),
+      ];
 
-    setCutSegments(cutSegmentsNew);
-    setCurrentSegIndex(cutSegmentsNew.length - 1);
+      setCutSegments(cutSegmentsNew);
+      setCurrentSegIndex(cutSegmentsNew.length - 1);
+    } catch (err) {
+      console.error(err);
+    }
   }, [
-    currentCutSeg, cutSegments, getCurrentTime, duration, setCutSegments,
+    currentCutSeg.start, currentCutSeg.end, cutSegments, getCurrentTime, duration, setCutSegments,
   ]);
 
   const setCutStart = useCallback(() => {
     // https://github.com/mifi/lossless-cut/issues/168
     // If we are after the end of the last segment in the timeline,
     // add a new segment that starts at playerTime
-    if (currentCutSeg.end != null
-      && getCurrentTime() > currentCutSeg.end) {
+    if (currentCutSeg.end != null && getCurrentTime() > currentCutSeg.end) {
       addCutSegment();
     } else {
       try {
-        setCutTime('start', getCurrentTime());
+        const startTime = getCurrentTime();
+        /* if (keyframeCut) {
+          const keyframeAlignedCutTo = getNextPrevKeyframe(startTime, true);
+          if (keyframeAlignedCutTo != null) startTime = keyframeAlignedCutTo;
+        } */
+        setCutTime('start', startTime);
       } catch (err) {
         errorToast(err.message);
       }
@@ -402,7 +435,13 @@ const App = memo(() => {
 
   const setCutEnd = useCallback(() => {
     try {
-      setCutTime('end', getCurrentTime());
+      const endTime = getCurrentTime();
+
+      /* if (keyframeCut) {
+        const keyframeAlignedCutTo = getNextPrevKeyframe(endTime, false);
+        if (keyframeAlignedCutTo != null) endTime = keyframeAlignedCutTo;
+      } */
+      setCutTime('end', endTime);
     } catch (err) {
       errorToast(err.message);
     }
@@ -840,19 +879,17 @@ const App = memo(() => {
 
       const { streams } = await ffmpeg.getAllStreams(fp);
       // console.log('streams', streamsNew);
-      setStreams(streams);
+      setMainStreams(streams);
       setCopyStreamIdsForPath(fp, () => fromPairs(streams.map((stream) => [
         stream.index, defaultProcessedCodecTypes.includes(stream.codec_type),
       ])));
 
-      streams.find((stream) => {
-        const streamFps = getStreamFps(stream);
-        if (streamFps != null) {
-          setDetectedFps(streamFps);
-          return true;
-        }
-        return false;
-      });
+      const videoStream = streams.find(stream => stream.codec_type === 'video');
+      setMainVideoStream(videoStream);
+      if (videoStream) {
+        const streamFps = getStreamFps(videoStream);
+        if (streamFps != null) setDetectedFps(streamFps);
+      }
 
       setFileNameTitle(fp);
       setFilePath(fp);
@@ -1099,6 +1136,10 @@ const App = memo(() => {
       await loadEdlFile(filePaths[0]);
     }
 
+    function openHelp() {
+      toggleHelp();
+    }
+
     electron.ipcRenderer.on('file-opened', fileOpened);
     electron.ipcRenderer.on('close-file', closeFile);
     electron.ipcRenderer.on('html5ify', html5ify);
@@ -1109,6 +1150,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('redo', redo);
     electron.ipcRenderer.on('importEdlFile', importEdlFile);
     electron.ipcRenderer.on('exportEdlFile', exportEdlFile);
+    electron.ipcRenderer.on('openHelp', openHelp);
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
@@ -1121,6 +1163,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('redo', redo);
       electron.ipcRenderer.removeListener('importEdlFile', importEdlFile);
       electron.ipcRenderer.removeListener('exportEdlFile', exportEdlFile);
+      electron.ipcRenderer.removeListener('openHelp', openHelp);
     };
   }, [
     load, mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, getHtml5ifiedPath,
@@ -1215,9 +1258,10 @@ const App = memo(() => {
       <option key={f} value={f}>{f} - {name}</option>
     ));
   }
-  function renderOutFmt(style = {}) {
+  function renderOutFmt(props) {
     return (
-      <select style={style} defaultValue="" value={fileFormat} title="Output format" onChange={withBlur(e => setFileFormat(e.target.value))}>
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      <Select defaultValue="" value={fileFormat} title="Output format" onChange={withBlur(e => setFileFormat(e.target.value))} {...props}>
         <option key="disabled1" value="" disabled>Format</option>
 
         {detectedFileFormat && (
@@ -1231,19 +1275,20 @@ const App = memo(() => {
 
         <option key="disabled3" value="" disabled>--- All formats: ---</option>
         {renderFormatOptions(otherFormatsMap)}
-      </select>
+      </Select>
     );
   }
 
-  function renderCaptureFormatButton() {
+  function renderCaptureFormatButton(props) {
     return (
-      <button
-        type="button"
+      <Button
         title="Capture frame format"
         onClick={withBlur(toggleCaptureFormat)}
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        {...props}
       >
         {captureFormat}
-      </button>
+      </Button>
     );
   }
 
@@ -1266,12 +1311,9 @@ const App = memo(() => {
             This is where working files, exported files, project files (CSV) are stored.
           </KeyCell>
           <Table.TextCell>
-            <button
-              type="button"
-              onClick={setOutputDir}
-            >
+            <Button onClick={setOutputDir}>
               {customOutDir ? 'Custom working directory' : 'Same directory as input file'}
-            </button>
+            </Button>
             <div>{customOutDir}</div>
           </Table.TextCell>
         </Row>
@@ -1290,8 +1332,8 @@ const App = memo(() => {
         <Row>
           <KeyCell>
             Keyframe cut mode<br />
-            <b>Nearest keyframe</b>: Cut at the nearest keyframe (not accurate time.)<br />
-            <b>Normal cut</b>: Accurate time but could leave an empty portion at the beginning of the video.<br />
+            <b>Nearest keyframe</b>: Cut at the nearest keyframe (not accurate time.) Equiv to <i>ffmpeg -ss -i ...</i><br />
+            <b>Normal cut</b>: Accurate time but could leave an empty portion at the beginning of the video. Equiv to <i>ffmpeg -i -ss ...</i><br />
           </KeyCell>
           <Table.TextCell>
             <SegmentedControl
@@ -1388,6 +1430,24 @@ const App = memo(() => {
     if (isDev) load('/Users/mifi/Downloads/inp.MOV');
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    async function run() {
+      if (!filePath || debouncedCommandedTime == null || !mainVideoStream || readingKeyframesPromise.current) return;
+      try {
+        const promise = ffmpeg.readFrames({ filePath, aroundTime: debouncedCommandedTime, stream: mainVideoStream.index });
+        readingKeyframesPromise.current = promise;
+        const newFrames = await promise;
+        // console.log(newFrames);
+        setNeighbouringFrames(newFrames);
+      } catch (err) {
+        console.error('Failed to read keyframes', err);
+      } finally {
+        readingKeyframesPromise.current = undefined;
+      }
+    }
+    run();
+  }, [filePath, debouncedCommandedTime, mainVideoStream]);
 
   const topBarHeight = '2rem';
   const bottomBarHeight = '6rem';
@@ -1513,32 +1573,34 @@ const App = memo(() => {
 
         {filePath && (
           <Fragment>
-            <button
-              type="button"
+            <Button
+              iconBefore={customOutDir ? 'folder-open' : undefined}
+              height={20}
               onClick={withBlur(setOutputDir)}
               title={customOutDir}
             >
               {`Working dir ${customOutDir ? 'set' : 'unset'}`}
-            </button>
+            </Button>
 
-            {renderOutFmt({ width: 60 })}
+            <div style={{ width: 60 }}>{renderOutFmt({ height: 20 })}</div>
 
-            <button
-              style={{ opacity: cutSegments.length < 2 ? 0.4 : undefined }}
-              type="button"
+            <Button
+              height={20}
+              style={{ opacity: outSegments && outSegments.length < 2 ? 0.4 : undefined }}
               title={autoMerge ? 'Auto merge segments to one file after export' : 'Export to separate files'}
               onClick={withBlur(toggleAutoMerge)}
             >
               <AutoMergeIcon /> {autoMerge ? 'Merge cuts' : 'Separate files'}
-            </button>
+            </Button>
 
-            <button
-              type="button"
-              title={`Cut mode ${keyframeCut ? 'nearest keyframe cut' : 'normal cut'}`}
+            <Button
+              height={20}
+              iconBefore={keyframeCut ? 'key' : undefined}
+              title={`Cut mode is ${keyframeCut ? 'keyframe cut' : 'normal cut'}`}
               onClick={withBlur(toggleKeyframeCut)}
             >
               {keyframeCut ? 'Keyframe cut' : 'Normal cut'}
-            </button>
+            </Button>
           </Fragment>
         )}
 
@@ -1718,6 +1780,10 @@ const App = memo(() => {
                     invertCutSegments={invertCutSegments}
                   />
                 ))}
+
+                {mainVideoStream && neighbouringFrames.filter(f => f.keyframe).map((f) => (
+                  <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / duration) * 100}%`, marginLeft: -1, width: 1, background: 'rgba(0,0,0,1)' }} />
+                ))}
               </div>
             </div>
 
@@ -1802,14 +1868,14 @@ const App = memo(() => {
       <div className="left-menu no-user-select" style={{ position: 'absolute', left: 0, bottom: 0, padding: '.3em', display: 'flex', alignItems: 'center' }}>
         {renderInvertCutButton()}
 
-        <select style={{ width: 80, margin: '0 10px' }} value={zoom.toString()} title="Zoom" onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
+        <Select height={20} style={{ width: 80, margin: '0 10px' }} value={zoom.toString()} title="Zoom" onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
           {Array(10).fill().map((unused, z) => {
             const val = 2 ** z;
             return (
               <option key={val} value={String(val)}>Zoom {val}x</option>
             );
           })}
-        </select>
+        </Select>
       </div>
 
       <div className="right-menu no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, padding: '.3em', display: 'flex', alignItems: 'center' }}>
@@ -1832,7 +1898,7 @@ const App = memo(() => {
           role="button"
         />
 
-        {renderCaptureFormatButton()}
+        {renderCaptureFormatButton({ height: 20 })}
 
         <IoIosCamera
           style={{ paddingLeft: 5, paddingRight: 15 }}

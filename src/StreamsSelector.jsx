@@ -51,7 +51,7 @@ const Stream = memo(({ stream, onToggle, copyStream }) => {
       <td>{!Number.isNaN(duration) && `${formatDuration({ seconds: duration })}`}</td>
       <td>{stream.nb_frames}</td>
       <td>{!Number.isNaN(bitrate) && `${(bitrate / 1e6).toFixed(1)}MBit/s`}</td>
-      <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(1)}fps`}</td>
+      <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
       <td><FaInfoCircle role="button" onClick={() => onInfoClick(stream)} size={26} /></td>
     </tr>
   );

@@ -57,9 +57,9 @@ const HelpSheet = memo(({
 
         <h1 style={{ marginTop: 40 }}>Last ffmpeg commands</h1>
         <div style={{ overflowY: 'scroll', height: 200 }}>
-          {ffmpegCommandLog.reverse().map((log) => (
-            <div key={log} style={{ whiteSpace: 'pre', margin: '5px 0' }}>
-              <FaClipboard style={{ cursor: 'pointer' }} title="Copy to clipboard" onClick={() => { clipboard.writeText(log); toast.fire({ timer: 2000, icon: 'success', title: 'Copied to clipboard' }); }} /> {log}
+          {ffmpegCommandLog.reverse().map(({ command, time }) => (
+            <div key={time} style={{ whiteSpace: 'pre', margin: '5px 0' }}>
+              <FaClipboard style={{ cursor: 'pointer' }} title="Copy to clipboard" onClick={() => { clipboard.writeText(command); toast.fire({ timer: 2000, icon: 'success', title: 'Copied to clipboard' }); }} /> {command}
             </div>
           ))}
         </div>

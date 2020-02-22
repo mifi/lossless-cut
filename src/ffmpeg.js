@@ -16,6 +16,12 @@ const os = require('os');
 
 const { formatDuration, getOutPath, transferTimestamps } = require('./util');
 
+
+function getFfCommandLine(cmd, args) {
+  const mapArg = arg => (/[^0-9a-zA-Z-_]/.test(arg) ? `'${arg}'` : arg);
+  return `${cmd} ${args.map(mapArg).join(' ')}`;
+}
+
 function getPath(type) {
   const platform = os.platform();
 
@@ -36,11 +42,13 @@ function getPath(type) {
 
 async function runFfprobe(args) {
   const ffprobePath = await getPath('ffprobe');
+  console.log(getFfCommandLine('ffprobe', args));
   return execa(ffprobePath, args);
 }
 
 async function runFfmpeg(args) {
   const ffmpegPath = await getPath('ffmpeg');
+  console.log(getFfCommandLine('ffmpeg', args));
   return execa(ffmpegPath, args);
 }
 
@@ -80,22 +88,79 @@ function getExtensionForFormat(format) {
   return ext || format;
 }
 
+async function readFrames({ filePath, aroundTime, window = 30, stream }) {
+  const intervalsArgs = aroundTime != null ? ['-read_intervals', `${Math.max(aroundTime - window, 0)}%${aroundTime + window}`] : [];
+  const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', stream, '-show_entries', 'packet=pts_time,flags', '-of', 'json', filePath]);
+  return sortBy(JSON.parse(stdout).packets.map(p => ({ keyframe: p.flags[0] === 'K', time: parseFloat(p.pts_time, 10) })), 'time');
+}
+
+// https://stackoverflow.com/questions/14005110/how-to-split-a-video-using-ffmpeg-so-that-each-chunk-starts-with-a-key-frame
+// http://kicherer.org/joomla/index.php/de/blog/42-avcut-frame-accurate-video-cutting-with-only-small-quality-loss
+function getNextPrevKeyframe(frames, cutTime, nextMode) {
+  const sigma = 0.01;
+  const isCloseTo = (time1, time2) => Math.abs(time1 - time2) < sigma;
+
+  let index;
+
+  if (frames.length < 2) throw new Error('Less than 2 frames found');
+
+  if (nextMode) {
+    index = frames.findIndex(f => f.keyframe && f.time >= cutTime - sigma);
+    if (index === -1) throw new Error('Failed to find next keyframe');
+    if (index >= frames.length - 1) throw new Error('We are on the last frame');
+    const { time } = frames[index];
+    if (isCloseTo(time, cutTime)) {
+      return undefined; // Already on keyframe, no need to modify cut time
+    }
+    return time;
+  }
+
+  const findReverseIndex = (arr, cb) => {
+    const ret = [...arr].reverse().findIndex(cb);
+    if (ret === -1) return -1;
+    return arr.length - 1 - ret;
+  };
+
+  index = findReverseIndex(frames, f => f.time <= cutTime + sigma);
+  if (index === -1) throw new Error('Failed to find any prev frame');
+  if (index === 0) throw new Error('We are on the first frame');
+
+  if (index === frames.length - 1) {
+    // Last frame of video, no need to modify cut time
+    return undefined;
+  }
+  if (frames[index + 1].keyframe) {
+    // Already on frame before keyframe, no need to modify cut time
+    return undefined;
+  }
+
+  // We are not on a frame before keyframe, look for preceding keyframe instead
+  index = findReverseIndex(frames, f => f.keyframe && f.time <= cutTime + sigma);
+  if (index === -1) throw new Error('Failed to find any prev keyframe');
+  if (index === 0) throw new Error('We are on the first keyframe');
+
+  // Use frame before the found keyframe
+  return frames[index - 1].time;
+}
+
 async function cut({
   filePath, outFormat, cutFrom, cutTo, videoDuration, rotation,
   onProgress, copyStreamIds, keyframeCut, outPath, appendFfmpegCommandLog,
 }) {
   console.log('Cutting from', cutFrom, 'to', cutTo);
 
+  const ssBeforeInput = keyframeCut;
+
   const cutDuration = cutTo - cutFrom;
 
-  // https://github.com/mifi/lossless-cut/issues/50
-  const cutFromArgs = isCuttingStart(cutFrom) ? ['-ss', cutFrom] : [];
-  const cutToArgs = isCuttingEnd(cutTo, videoDuration) ? ['-t', cutDuration] : [];
+  // Don't cut if no need: https://github.com/mifi/lossless-cut/issues/50
+  const cutFromArgs = isCuttingStart(cutFrom) ? ['-ss', cutFrom.toFixed(5)] : [];
+  const cutToArgs = isCuttingEnd(cutTo, videoDuration) ? ['-t', cutDuration.toFixed(5)] : [];
 
   const copyStreamIdsFiltered = copyStreamIds.filter(({ streamIds }) => streamIds.length > 0);
 
   const inputArgs = flatMap(copyStreamIdsFiltered, ({ path }) => ['-i', path]);
-  const inputCutArgs = keyframeCut ? [
+  const inputCutArgs = ssBeforeInput ? [
     ...cutFromArgs,
     ...inputArgs,
     ...cutToArgs,
@@ -126,11 +191,10 @@ async function cut({
     '-f', outFormat, '-y', outPath,
   ];
 
-  const mapArg = arg => (/[^0-9a-zA-Z-_]/.test(arg) ? `'${arg}'` : arg);
-  const ffmpegCommand = `ffmpeg ${ffmpegArgs.map(mapArg).join(' ')}`;
+  const ffmpegCommandLine = getFfCommandLine('ffmpeg', ffmpegArgs);
 
-  console.log(ffmpegCommand);
-  appendFfmpegCommandLog(ffmpegCommand);
+  console.log(ffmpegCommandLine);
+  appendFfmpegCommandLog(ffmpegCommandLine);
 
   onProgress(0);
 
@@ -204,17 +268,15 @@ async function html5ify(filePath, outPath, encodeVideo, encodeAudio) {
     '-y', outPath,
   ];
 
-  console.log('ffmpeg', ffmpegArgs.join(' '));
-
   const { stdout } = await runFfmpeg(ffmpegArgs);
   console.log(stdout);
 
   await transferTimestamps(filePath, outPath);
 }
 
-async function getDuration(filePpath) {
+async function getDuration(filePath) {
   // https://superuser.com/questions/650291/how-to-get-video-duration-in-seconds
-  const { stdout } = await runFfprobe(['-i', filePpath, '-show_entries', 'format=duration', '-print_format', 'json']);
+  const { stdout } = await runFfprobe(['-i', filePath, '-show_entries', 'format=duration', '-print_format', 'json']);
   return parseFloat(JSON.parse(stdout).format.duration);
 }
 
@@ -233,8 +295,6 @@ async function html5ifyDummy(filePath, outPath) {
     '-acodec', 'flac',
     '-y', outPath,
   ];
-
-  console.log('ffmpeg', ffmpegArgs.join(' '));
 
   const { stdout } = await runFfmpeg(ffmpegArgs);
   console.log(stdout);
@@ -389,8 +449,6 @@ async function extractStreams({ filePath, customOutDir, streams }) {
     ...streamArgs,
   ];
 
-  console.log(ffmpegArgs);
-
   // TODO progress
   const { stdout } = await runFfmpeg(ffmpegArgs);
   console.log(stdout);
@@ -418,7 +476,7 @@ async function renderFrame(timestamp, filePath, rotation) {
   // console.time('ffmpeg');
   const ffmpegPath = await getPath('ffmpeg');
   // console.timeEnd('ffmpeg');
-  console.log('ffmpeg', args);
+  // console.log('ffmpeg', args);
   const { stdout } = await execa(ffmpegPath, args, { encoding: null });
 
   const blob = new Blob([stdout], { type: 'image/jpeg' });
@@ -458,4 +516,6 @@ module.exports = {
   getStreamFps,
   isCuttingStart,
   isCuttingEnd,
+  readFrames,
+  getNextPrevKeyframe,
 };

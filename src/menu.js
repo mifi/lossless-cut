@@ -124,11 +124,16 @@ module.exports = (app, mainWindow, newVersion) => {
       role: 'help',
       submenu: [
         {
+          label: 'Help and Settings',
+          click() {
+            mainWindow.webContents.send('openHelp');
+          },
+        },
+
+        {
           label: 'Learn More',
           click() { electron.shell.openExternal(homepage); },
         },
-
-        ...(process.platform === 'darwin' ? [] : [{ role: 'about' }]),
       ],
     });
   }
