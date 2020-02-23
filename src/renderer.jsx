@@ -130,10 +130,17 @@ const App = memo(() => {
     createInitialCutSegments(),
     100,
   );
+  const [debouncedCutSegments, setDebouncedCutSegments] = useState(
+    createInitialCutSegments(),
+  );
 
   const [, cancelCommandedTimeDebounce] = useDebounce(() => {
     setDebouncedCommandedTime(commandedTime);
   }, 300, [commandedTime]);
+
+  const [, cancelCutSegmentsDebounce] = useDebounce(() => {
+    setDebouncedCutSegments(cutSegments);
+  }, 500, [cutSegments]);
 
 
   // Preferences
@@ -230,6 +237,8 @@ const App = memo(() => {
     setPlaying(false);
     setDuration();
     cutSegmentsHistory.go(0);
+    cancelCutSegmentsDebounce(); // TODO auto save when loading new file/closing file
+    setDebouncedCutSegments(createInitialCutSegments());
     setCutSegments(createInitialCutSegments()); // TODO this will cause two history items
     setCutStartTimeManual();
     setCutEndTimeManual();
@@ -249,7 +258,7 @@ const App = memo(() => {
     setZoom(1);
     setNeighbouringFrames([]);
     setShortestFlag(false);
-  }, [cutSegmentsHistory, setCutSegments, cancelCommandedTimeDebounce]);
+  }, [cutSegmentsHistory, setCutSegments, cancelCommandedTimeDebounce, cancelCutSegmentsDebounce]);
 
   useEffect(() => () => {
     if (dummyVideoPath) unlink(dummyVideoPath).catch(console.error);
@@ -474,25 +483,25 @@ const App = memo(() => {
         if (!autoSaveProjectFile) return;
 
         // Initial state? don't save
-        if (isEqual(cleanCutSegments(cutSegments),
+        if (isEqual(cleanCutSegments(debouncedCutSegments),
           cleanCutSegments(createInitialCutSegments()))) return;
 
-        if (lastSavedCutSegmentsRef.current
+        /* if (lastSavedCutSegmentsRef.current
           && isEqual(cleanCutSegments(lastSavedCutSegmentsRef.current),
-            cleanCutSegments(cutSegments))) {
+            cleanCutSegments(debouncedCutSegments))) {
           // console.log('Seg state didn\'t change, skipping save');
           return;
-        }
+        } */
 
-        await edlStore.save(edlFilePath, cutSegments);
-        lastSavedCutSegmentsRef.current = cutSegments;
+        await edlStore.save(edlFilePath, debouncedCutSegments);
+        lastSavedCutSegmentsRef.current = debouncedCutSegments;
       } catch (err) {
         errorToast('Failed to save CSV');
         console.error('Failed to save CSV', err);
       }
     }
     save();
-  }, [cutSegments, edlFilePath, autoSaveProjectFile]);
+  }, [debouncedCutSegments, edlFilePath, autoSaveProjectFile]);
 
   // 360 means we don't modify rotation
   const isRotationSet = rotation !== 360;
