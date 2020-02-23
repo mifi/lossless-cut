@@ -145,7 +145,7 @@ function getNextPrevKeyframe(frames, cutTime, nextMode) {
 
 async function cut({
   filePath, outFormat, cutFrom, cutTo, videoDuration, rotation,
-  onProgress, copyStreamIds, keyframeCut, outPath, appendFfmpegCommandLog,
+  onProgress, copyStreamIds, keyframeCut, outPath, appendFfmpegCommandLog, shortestFlag,
 }) {
   console.log('Cutting from', cutFrom, 'to', cutTo);
 
@@ -177,6 +177,8 @@ async function cut({
     ...inputCutArgs,
 
     '-c', 'copy',
+
+    ...(shortestFlag ? ['-shortest'] : []),
 
     ...flatMapDeep(copyStreamIdsFiltered, ({ streamIds }, fileIndex) => streamIds.map(streamId => ['-map', `${fileIndex}:${streamId}`])),
     '-map_metadata', '0',
@@ -210,7 +212,7 @@ async function cut({
 async function cutMultiple({
   customOutDir, filePath, segments: segmentsUnsorted, videoDuration, rotation,
   onProgress, keyframeCut, copyStreamIds, outFormat, isOutFormatUserSelected,
-  appendFfmpegCommandLog,
+  appendFfmpegCommandLog, shortestFlag,
 }) {
   const segments = sortBy(segmentsUnsorted, 'cutFrom');
   const singleProgresses = {};
@@ -241,6 +243,7 @@ async function cutMultiple({
       keyframeCut,
       cutFrom,
       cutTo,
+      shortestFlag,
       // eslint-disable-next-line no-loop-func
       onProgress: progress => onSingleProgress(i, progress),
       appendFfmpegCommandLog,
@@ -372,13 +375,17 @@ function determineOutputFormat(ffprobeFormats, ft) {
   return ffprobeFormats[0] || undefined;
 }
 
-async function getFormat(filePath) {
-  console.log('getFormat', filePath);
+async function getFormatData(filePath) {
+  console.log('getFormatData', filePath);
 
   const { stdout } = await runFfprobe([
     '-of', 'json', '-show_format', '-i', filePath,
   ]);
-  const formatsStr = JSON.parse(stdout).format.format_name;
+  return JSON.parse(stdout).format;
+}
+
+async function getDefaultOutFormat(filePath, formatData) {
+  const formatsStr = formatData.format_name;
   console.log('formats', formatsStr);
   const formats = (formatsStr || '').split(',');
 
@@ -504,7 +511,8 @@ function getStreamFps(stream) {
 
 module.exports = {
   cutMultiple,
-  getFormat,
+  getFormatData,
+  getDefaultOutFormat,
   html5ify,
   html5ifyDummy,
   mergeAnyFiles,

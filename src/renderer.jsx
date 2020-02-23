@@ -47,7 +47,10 @@ const ffmpeg = require('./ffmpeg');
 const configStore = require('./store');
 const edlStore = require('./edlStore');
 
-const { defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd } = ffmpeg;
+const {
+  defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
+  getDefaultOutFormat, getFormatData,
+} = ffmpeg;
 
 
 const {
@@ -99,6 +102,7 @@ const App = memo(() => {
   const [playerTime, setPlayerTime] = useState();
   const [duration, setDuration] = useState();
   const [fileFormat, setFileFormat] = useState();
+  const [fileFormatData, setFileFormatData] = useState();
   const [detectedFileFormat, setDetectedFileFormat] = useState();
   const [rotation, setRotation] = useState(360);
   const [cutProgress, setCutProgress] = useState();
@@ -116,6 +120,7 @@ const App = memo(() => {
   const [debouncedCommandedTime, setDebouncedCommandedTime] = useState(0);
   const [ffmpegCommandLog, setFfmpegCommandLog] = useState([]);
   const [neighbouringFrames, setNeighbouringFrames] = useState([]);
+  const [shortestFlag, setShortestFlag] = useState(false);
 
   // Segment related state
   const [currentSegIndex, setCurrentSegIndex] = useState(0);
@@ -229,6 +234,7 @@ const App = memo(() => {
     setCutStartTimeManual();
     setCutEndTimeManual();
     setFileFormat();
+    setFileFormatData();
     setDetectedFileFormat();
     setRotation(360);
     setCutProgress();
@@ -242,6 +248,7 @@ const App = memo(() => {
     setStreamsSelectorShown(false);
     setZoom(1);
     setNeighbouringFrames([]);
+    setShortestFlag(false);
   }, [cutSegmentsHistory, setCutSegments, cancelCommandedTimeDebounce]);
 
   useEffect(() => () => {
@@ -758,6 +765,7 @@ const App = memo(() => {
         segments: ffmpegSegments,
         onProgress: setCutProgress,
         appendFfmpegCommandLog,
+        shortestFlag,
       });
 
       if (outFiles.length > 1 && autoMerge) {
@@ -798,7 +806,7 @@ const App = memo(() => {
     effectiveRotation, outSegments,
     working, duration, filePath, keyframeCut, detectedFileFormat,
     autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyStreamIds, numStreamsToCopy,
-    exportExtraStreams, nonCopiedExtraStreams, outputDir,
+    exportExtraStreams, nonCopiedExtraStreams, outputDir, shortestFlag,
   ]);
 
   // TODO use ffmpeg to capture frame
@@ -871,7 +879,9 @@ const App = memo(() => {
     setWorking(true);
 
     try {
-      const ff = await ffmpeg.getFormat(fp);
+      const fd = await getFormatData(fp);
+
+      const ff = await getDefaultOutFormat(fp, fd);
       if (!ff) {
         errorToast('Unsupported file');
         return;
@@ -895,6 +905,7 @@ const App = memo(() => {
       setFilePath(fp);
       setFileFormat(ff);
       setDetectedFileFormat(ff);
+      setFileFormatData(fd);
 
       if (html5FriendlyPathRequested) {
         setHtml5FriendlyPath(html5FriendlyPathRequested);
@@ -1003,8 +1014,9 @@ const App = memo(() => {
   const addStreamSourceFile = useCallback(async (path) => {
     if (externalStreamFiles[path]) return;
     const { streams } = await ffmpeg.getAllStreams(path);
+    const formatData = await getFormatData(path);
     // console.log('streams', streams);
-    setExternalStreamFiles(old => ({ ...old, [path]: { streams } }));
+    setExternalStreamFiles(old => ({ ...old, [path]: { streams, formatData } }));
     setCopyStreamIdsForPath(path, () => fromPairs(streams.map(({ index }) => [index, true])));
   }, [externalStreamFiles]);
 
@@ -1546,6 +1558,7 @@ const App = memo(() => {
             >
               <StreamsSelector
                 mainFilePath={filePath}
+                mainFileFormatData={fileFormatData}
                 externalFiles={externalStreamFiles}
                 setExternalFiles={setExternalStreamFiles}
                 showAddStreamSourceDialog={showAddStreamSourceDialog}
@@ -1554,6 +1567,9 @@ const App = memo(() => {
                 toggleCopyStreamId={toggleCopyStreamId}
                 setCopyStreamIdsForPath={setCopyStreamIdsForPath}
                 onExtractAllStreamsPress={onExtractAllStreamsPress}
+                shortestFlag={shortestFlag}
+                setShortestFlag={setShortestFlag}
+                exportExtraStreams={exportExtraStreams}
               />
             </SideSheet>
             <Button height={20} iconBefore="list" onClick={withBlur(() => setStreamsSelectorShown(true))}>
