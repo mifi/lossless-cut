@@ -138,8 +138,8 @@ const SegmentList = memo(({
         />
       </div>
 
-      <div style={{ padding: 10, boxSizing: 'border-box', borderBottom: '1px solid grey', display: 'flex', justifyContent: 'space-between' }}>
-        <div>Total time:</div>
+      <div style={{ padding: 10, boxSizing: 'border-box', borderBottom: '1px solid grey', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+        <div>Segments total:</div>
         <div>{formatTimecode(cutSegments.reduce((acc, { start, end }) => (end - start) + acc, 0))}</div>
       </div>
     </Fragment>
