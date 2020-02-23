@@ -780,7 +780,7 @@ const App = memo(() => {
         }
       }
 
-      toast.fire({ timer: 5000, icon: 'success', title: `Export completed! Output file(s) can be found at: ${outputDir}.${exportExtraStreams ? ' Extra unprocessable stream(s) exported as separate files.' : ''}` });
+      toast.fire({ timer: 5000, icon: 'success', title: `Export completed! Go to settings to view the ffmpeg commands that were executed. Output file(s) can be found at: ${outputDir}.${exportExtraStreams ? ' Extra unprocessable streams were exported to separate files.' : ''}` });
     } catch (err) {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
