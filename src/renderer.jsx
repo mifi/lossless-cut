@@ -1234,6 +1234,8 @@ const App = memo(() => {
   const otherFormatsMap = fromPairs(Object.entries(allOutFormats)
     .filter(([f]) => ![...commonFormats, detectedFileFormat].includes(f)));
 
+  const shouldShowKeyframes = neighbouringFrames.length >= 2 && (neighbouringFrames[neighbouringFrames.length - 1].time - neighbouringFrames[0].time) / durationSafe > (0.1 / zoom);
+
   function getSegColors(seg) {
     if (!seg) return {};
     const { color } = seg;
@@ -1781,7 +1783,7 @@ const App = memo(() => {
                   />
                 ))}
 
-                {mainVideoStream && neighbouringFrames.filter(f => f.keyframe).map((f) => (
+                {mainVideoStream && shouldShowKeyframes && neighbouringFrames.filter(f => f.keyframe).map((f) => (
                   <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / duration) * 100}%`, marginLeft: -1, width: 1, background: 'rgba(0,0,0,1)' }} />
                 ))}
               </div>
