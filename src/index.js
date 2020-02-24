@@ -27,6 +27,18 @@ function createWindow() {
   });
   mainWindow.loadFile(isDev ? 'index.html' : 'build/index.html');
 
+  if (isDev) {
+    const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies
+
+    installExtension(REACT_DEVELOPER_TOOLS)
+      .then(name => console.log(`Added Extension: ${name}`))
+      .catch(err => console.log('An error occurred: ', err));
+  }
+
+  // Open the DevTools.
+  // mainWindow.webContents.openDevTools()
+
+
   mainWindow.on('closed', () => {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
