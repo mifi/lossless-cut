@@ -217,6 +217,10 @@ const App = memo(() => {
     seekAbs(videoRef.current.currentTime + val);
   }, [seekAbs]);
 
+  const seekRelPercent = useCallback((val) => {
+    seekRel(val * (duration / zoom));
+  }, [seekRel, duration, zoom]);
+
   const shortStep = useCallback((dir) => {
     seekRel((1 / (detectedFps || 60)) * dir);
   }, [seekRel, detectedFps]);
@@ -945,8 +949,8 @@ const App = memo(() => {
     Mousetrap.bind('k', () => playCommand());
     Mousetrap.bind('j', () => changePlaybackRate(-1));
     Mousetrap.bind('l', () => changePlaybackRate(1));
-    Mousetrap.bind('left', () => seekRel(-1));
-    Mousetrap.bind('right', () => seekRel(1));
+    Mousetrap.bind('left', () => seekRelPercent(-0.05));
+    Mousetrap.bind('right', () => seekRelPercent(0.05));
     Mousetrap.bind('up', () => jumpSeg(-1));
     Mousetrap.bind('down', () => jumpSeg(1));
     Mousetrap.bind('.', () => shortStep(1));
@@ -982,7 +986,7 @@ const App = memo(() => {
     };
   }, [
     addCutSegment, capture, changePlaybackRate, cutClick, playCommand, removeCutSegment,
-    setCutEnd, setCutStart, seekRel, shortStep, deleteSource, jumpSeg,
+    setCutEnd, setCutStart, seekRelPercent, shortStep, deleteSource, jumpSeg,
   ]);
 
   useEffect(() => {
