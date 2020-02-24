@@ -1810,7 +1810,7 @@ const App = memo(() => {
                 ))}
 
                 {mainVideoStream && shouldShowKeyframes && neighbouringFrames.filter(f => f.keyframe).map((f) => (
-                  <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / duration) * 100}%`, marginLeft: -1, width: 1, background: 'rgba(0,0,0,1)' }} />
+                  <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / duration) * 100}%`, marginLeft: -1, width: 1, background: 'rgba(0,0,0,1)', pointerEvents: 'none' }} />
                 ))}
               </div>
             </div>
