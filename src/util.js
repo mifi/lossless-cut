@@ -133,4 +133,5 @@ module.exports = {
   setFileNameTitle,
   promptTimeOffset,
   generateColor,
+  filenamify,
 };
