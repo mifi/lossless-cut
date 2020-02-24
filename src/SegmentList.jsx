@@ -28,6 +28,10 @@ const SegmentList = memo(({
       title: 'Label current segment',
       inputValue: currentCutSeg.name,
       input: 'text',
+      inputValidator: (v) => {
+        const maxLength = 100;
+        return v.length > maxLength ? `Max length ${maxLength}` : undefined;
+      },
     });
 
     if (value != null) setCurrentSegmentName(value);

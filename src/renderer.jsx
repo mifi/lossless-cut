@@ -749,11 +749,6 @@ const App = memo(() => {
       return;
     }
 
-    const ffmpegSegments = outSegments.map((seg) => ({
-      cutFrom: seg.start,
-      cutTo: seg.end,
-    }));
-
     if (outSegments.length < 1) {
       errorToast('No segments to export');
       return;
@@ -771,7 +766,7 @@ const App = memo(() => {
         rotation: effectiveRotation,
         copyStreamIds,
         keyframeCut,
-        segments: ffmpegSegments,
+        segments: outSegments,
         onProgress: setCutProgress,
         appendFfmpegCommandLog,
         shortestFlag,
@@ -1315,6 +1310,14 @@ const App = memo(() => {
     );
   }
 
+  const AutoExportToggler = () => (
+    <SegmentedControl
+      options={[{ label: 'Extract', value: 'extract' }, { label: 'Discard', value: 'discard' }]}
+      value={autoExportExtraStreams ? 'extract' : 'discard'}
+      onChange={value => setAutoExportExtraStreams(value === 'extract')}
+    />
+  );
+
   const renderSettings = () => {
     // eslint-disable-next-line react/jsx-props-no-spreading
     const Row = (props) => <Table.Row height="auto" paddingY={12} {...props} />;
@@ -1388,11 +1391,7 @@ const App = memo(() => {
             (data tracks such as GoPro GPS, telemetry etc. are not copied over by default because ffmpeg cannot cut them, thus they will cause the media duration to stay the same after cutting video/audio)
           </KeyCell>
           <Table.TextCell>
-            <SegmentedControl
-              options={[{ label: 'Extract', value: 'extract' }, { label: 'Discard', value: 'discard' }]}
-              value={autoExportExtraStreams ? 'extract' : 'discard'}
-              onChange={value => setAutoExportExtraStreams(value === 'extract')}
-            />
+            <AutoExportToggler />
           </Table.TextCell>
         </Row>
 
@@ -1576,9 +1575,11 @@ const App = memo(() => {
                 toggleCopyStreamId={toggleCopyStreamId}
                 setCopyStreamIdsForPath={setCopyStreamIdsForPath}
                 onExtractAllStreamsPress={onExtractAllStreamsPress}
+                areWeCutting={areWeCutting}
                 shortestFlag={shortestFlag}
                 setShortestFlag={setShortestFlag}
-                exportExtraStreams={exportExtraStreams}
+                nonCopiedExtraStreams={nonCopiedExtraStreams}
+                AutoExportToggler={AutoExportToggler}
               />
             </SideSheet>
             <Button height={20} iconBefore="list" onClick={withBlur(() => setStreamsSelectorShown(true))}>

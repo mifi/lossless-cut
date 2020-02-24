@@ -70,7 +70,8 @@ function renderFileRow(path, formatData, onTrashClick) {
 const StreamsSelector = memo(({
   mainFilePath, mainFileFormatData, streams: existingStreams, isCopyingStreamId, toggleCopyStreamId,
   setCopyStreamIdsForPath, onExtractAllStreamsPress, externalFiles, setExternalFiles,
-  showAddStreamSourceDialog, shortestFlag, setShortestFlag, exportExtraStreams,
+  showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, areWeCutting,
+  AutoExportToggler,
 }) => {
   if (!existingStreams) return null;
 
@@ -144,8 +145,8 @@ const StreamsSelector = memo(({
         </tbody>
       </table>
 
-      {externalFilesEntries.length > 0 && (
-        <div>
+      {externalFilesEntries.length > 0 && !areWeCutting && (
+        <div style={{ margin: '10px 0' }}>
           <div>
             If the streams have different length, do you want to make the combined output file as long as the longest stream or the shortest stream?
           </div>
@@ -158,7 +159,12 @@ const StreamsSelector = memo(({
         </div>
       )}
 
-      {exportExtraStreams && <p>Unprocessable tracks will be extracted to separate files. This can be configured in settings.</p>}
+      {nonCopiedExtraStreams.length > 0 && (
+        <div style={{ margin: '10px 0' }}>
+          Discard or extract unprocessable tracks to separate files?
+          <AutoExportToggler />
+        </div>
+      )}
 
       <div style={{ cursor: 'pointer', padding: '10px 0' }} role="button" onClick={showAddStreamSourceDialog}>
         <FaFileImport size={30} style={{ verticalAlign: 'middle', marginRight: 5 }} /> Include more tracks from other file

@@ -14,7 +14,7 @@ const trash = require('trash');
 const isDev = require('electron-is-dev');
 const os = require('os');
 
-const { formatDuration, getOutPath, transferTimestamps } = require('./util');
+const { formatDuration, getOutPath, transferTimestamps, filenamify } = require('./util');
 
 
 function getFfCommandLine(cmd, args) {
@@ -147,15 +147,17 @@ async function cut({
   filePath, outFormat, cutFrom, cutTo, videoDuration, rotation,
   onProgress, copyStreamIds, keyframeCut, outPath, appendFfmpegCommandLog, shortestFlag,
 }) {
-  console.log('Cutting from', cutFrom, 'to', cutTo);
+  const cuttingStart = isCuttingStart(cutFrom);
+  const cuttingEnd = isCuttingEnd(cutTo, videoDuration);
+  console.log('Exporting from', cuttingStart ? cutFrom : 'start', 'to', cuttingEnd ? cutTo : 'end');
 
   const ssBeforeInput = keyframeCut;
 
   const cutDuration = cutTo - cutFrom;
 
   // Don't cut if no need: https://github.com/mifi/lossless-cut/issues/50
-  const cutFromArgs = isCuttingStart(cutFrom) ? ['-ss', cutFrom.toFixed(5)] : [];
-  const cutToArgs = isCuttingEnd(cutTo, videoDuration) ? ['-t', cutDuration.toFixed(5)] : [];
+  const cutFromArgs = cuttingStart ? ['-ss', cutFrom.toFixed(5)] : [];
+  const cutToArgs = cuttingEnd ? ['-t', cutDuration.toFixed(5)] : [];
 
   const copyStreamIdsFiltered = copyStreamIds.filter(({ streamIds }) => streamIds.length > 0);
 
@@ -225,11 +227,14 @@ async function cutMultiple({
 
   let i = 0;
   // eslint-disable-next-line no-restricted-syntax,no-unused-vars
-  for (const { cutFrom, cutTo } of segments) {
+  for (const { start, end, name } of segments) {
+    const cutFromStr = formatDuration({ seconds: start, fileNameFriendly: true });
+    const cutToStr = formatDuration({ seconds: end, fileNameFriendly: true });
+    const segNamePart = name ? `-${filenamify(name)}` : '';
+    const cutSpecification = `${cutFromStr}-${cutToStr}${segNamePart}`.substr(0, 200);
     const ext = isOutFormatUserSelected ? `.${getExtensionForFormat(outFormat)}` : extname(filePath);
-    const cutSpecification = `${formatDuration({ seconds: cutFrom, fileNameFriendly: true })}-${formatDuration({ seconds: cutTo, fileNameFriendly: true })}`;
-
-    const outPath = getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
+    const fileName = `${cutSpecification}${ext}`;
+    const outPath = getOutPath(customOutDir, filePath, fileName);
 
     // eslint-disable-next-line no-await-in-loop
     await cut({
@@ -241,8 +246,8 @@ async function cutMultiple({
       rotation,
       copyStreamIds,
       keyframeCut,
-      cutFrom,
-      cutTo,
+      cutFrom: start,
+      cutTo: end,
       shortestFlag,
       // eslint-disable-next-line no-loop-func
       onProgress: progress => onSingleProgress(i, progress),

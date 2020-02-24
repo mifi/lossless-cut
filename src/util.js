@@ -91,6 +91,10 @@ function setFileNameTitle(filePath) {
   document.title = filePath ? `${appName} - ${path.basename(filePath)}` : appName;
 }
 
+function filenamify(name) {
+  return name.replace(/[^0-9a-zA-Z_.]/g, '_');
+}
+
 async function promptTimeOffset(inputValue) {
   const { value } = await Swal.fire({
     title: 'Set custom start time offset',
