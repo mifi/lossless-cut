@@ -1044,7 +1044,7 @@ const App = memo(() => {
       inputValue: 'open',
       showCancelButton: true,
       inputOptions: {
-        open: 'Open the file instead of the current one. You will lose all work',
+        open: 'Open the file instead of the current one. You will lose all unsaved work',
         add: 'Include all tracks from the new file',
       },
       inputValidator: (v) => !v && 'You need to choose something!',
@@ -1077,7 +1077,7 @@ const App = memo(() => {
 
     function closeFile() {
       // eslint-disable-next-line no-alert
-      if (!window.confirm('Are you sure you want to close the current file? You will lose all work')) return;
+      if (askBeforeClose && !window.confirm('Are you sure you want to close the current file? You will lose all unsaved work')) return;
 
       resetState();
     }
@@ -1184,7 +1184,7 @@ const App = memo(() => {
   }, [
     load, mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, getHtml5ifiedPath,
     createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory,
-    loadEdlFile, cutSegments, edlFilePath,
+    loadEdlFile, cutSegments, edlFilePath, askBeforeClose,
   ]);
 
   async function showAddStreamSourceDialog() {
@@ -1430,7 +1430,7 @@ const App = memo(() => {
         </Row>
 
         <Row>
-          <KeyCell>Ask for confirmation when closing app?</KeyCell>
+          <KeyCell>Ask for confirmation when closing app or file?</KeyCell>
           <Table.TextCell>
             <Checkbox
               label="Ask before closing"

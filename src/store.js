@@ -9,7 +9,7 @@ const store = new Store({
     timecodeShowFrames: false,
     invertCutSegments: false,
     autoExportExtraStreams: true,
-    askBeforeClose: true,
+    askBeforeClose: false,
     muted: false,
     autoSaveProjectFile: true,
   },
