@@ -134,7 +134,7 @@
     },
     "linux": {
       "extraResources": [
-        "node_modules/ffmpeg-static/bin/ffmpeg",
+        "node_modules/ffmpeg-static/ffmpeg",
         "node_modules/ffprobe-static/bin/linux/x64/**"
       ],
       "icon": "icon-build/app-512.png",
