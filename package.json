@@ -61,7 +61,7 @@
     "electron-store": "^5.1.0",
     "evergreen-ui": "^4.23.0",
     "execa": "^0.5.0",
-    "ffmpeg-static": "3",
+    "ffmpeg-static": "^4.0.1",
     "ffprobe-static": "^3.0.0",
     "file-type": "^12.4.0",
     "framer-motion": "^1.8.4",
@@ -103,7 +103,7 @@
   "build": {
     "files": [
       "build/**/*",
-      "!node_modules/ffmpeg-static/bin/**/*",
+      "!node_modules/ffmpeg-static/ffmpeg",
       "!node_modules/ffprobe-static/bin/**/*"
     ],
     "asar": {
@@ -116,7 +116,7 @@
       "hardenedRuntime": true,
       "target": "dmg",
       "extraResources": [
-        "node_modules/ffmpeg-static/bin/darwin/**",
+        "node_modules/ffmpeg-static/ffmpeg",
         "node_modules/ffprobe-static/bin/darwin/**"
       ],
       "icon": "icon-build/app-512.png"
@@ -127,14 +127,14 @@
         "zip"
       ],
       "extraResources": [
-        "node_modules/ffmpeg-static/bin/win32/x64/**",
+        "node_modules/ffmpeg-static/ffmpeg.exe",
         "node_modules/ffprobe-static/bin/win32/x64/**"
       ],
       "icon": "icon-build/app-512.png"
     },
     "linux": {
       "extraResources": [
-        "node_modules/ffmpeg-static/bin/linux/x64/**",
+        "node_modules/ffmpeg-static/bin/ffmpeg",
         "node_modules/ffprobe-static/bin/linux/x64/**"
       ],
       "icon": "icon-build/app-512.png",

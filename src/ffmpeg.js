@@ -22,13 +22,22 @@ function getFfCommandLine(cmd, args) {
   return `${cmd} ${args.map(mapArg).join(' ')}`;
 }
 
-function getPath(type) {
+function getFfmpegPath() {
+  const platform = os.platform();
+
+  const exeName = platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg';
+  return isDev
+    ? `node_modules/ffmpeg-static/${exeName}`
+    : join(window.process.resourcesPath, `node_modules/ffmpeg-static/${exeName}`);
+}
+
+function getFfprobePath() {
   const platform = os.platform();
 
   const map = {
-    darwin: `darwin/x64/${type}`,
-    win32: `win32/x64/${type}.exe`,
-    linux: `linux/x64/${type}`,
+    darwin: 'darwin/x64/ffprobe',
+    win32: 'win32/x64/ffprobe.exe',
+    linux: 'linux/x64/ffprobe',
   };
 
   const subPath = map[platform];
@@ -36,18 +45,18 @@ function getPath(type) {
   if (!subPath) throw new Error(`Unsupported platform ${platform}`);
 
   return isDev
-    ? `node_modules/${type}-static/bin/${subPath}`
-    : join(window.process.resourcesPath, `node_modules/${type}-static/bin/${subPath}`);
+    ? `node_modules/ffprobe-static/bin/${subPath}`
+    : join(window.process.resourcesPath, `node_modules/ffprobe-static/bin/${subPath}`);
 }
 
 async function runFfprobe(args) {
-  const ffprobePath = await getPath('ffprobe');
+  const ffprobePath = getFfprobePath();
   console.log(getFfCommandLine('ffprobe', args));
   return execa(ffprobePath, args);
 }
 
 async function runFfmpeg(args) {
-  const ffmpegPath = await getPath('ffmpeg');
+  const ffmpegPath = getFfmpegPath();
   console.log(getFfCommandLine('ffmpeg', args));
   return execa(ffmpegPath, args);
 }
@@ -202,7 +211,7 @@ async function cut({
 
   onProgress(0);
 
-  const ffmpegPath = await getPath('ffmpeg');
+  const ffmpegPath = getFfmpegPath();
   const process = execa(ffmpegPath, ffmpegArgs);
   handleProgress(process, cutDuration, onProgress);
   const result = await process;
@@ -334,7 +343,7 @@ async function mergeFiles({ paths, outPath, allStreams }) {
 
   console.log(concatTxt);
 
-  const ffmpegPath = await getPath('ffmpeg');
+  const ffmpegPath = getFfmpegPath();
   const process = execa(ffmpegPath, ffmpegArgs);
 
   stringToStream(concatTxt).pipe(process.stdin);
@@ -486,7 +495,7 @@ async function renderFrame(timestamp, filePath, rotation) {
   ];
 
   // console.time('ffmpeg');
-  const ffmpegPath = await getPath('ffmpeg');
+  const ffmpegPath = getFfmpegPath();
   // console.timeEnd('ffmpeg');
   // console.log('ffmpeg', args);
   const { stdout } = await execa(ffmpegPath, args, { encoding: null });
