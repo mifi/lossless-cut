@@ -97,6 +97,7 @@ const TimelineControls = memo(({
       <input
         style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? '#dc1d1d' : undefined }}
         type="text"
+        title={`Manually input cut ${type === 'start' ? 'start' : 'end'} point`}
         onChange={e => handleCutTimeInput(e.target.value)}
         value={isCutTimeManualSet()
           ? cutTimeManual
