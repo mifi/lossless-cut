@@ -18,34 +18,6 @@ body {
     cursor: default;
 }
 
-input, button, textarea, :focus {
-    outline: none;
-}
-
-.button {
-  border-radius: 3px;
-  padding: .4em;
-  vertical-align: middle;
-}
-
-.controls-wrapper button, .right-menu button, .left-menu button, .controls-wrapper input {
-  background: white;
-  border-radius: .3em;
-  color: rgba(0, 0, 0, 0.7);
-  font-size: 13px;
-  vertical-align: middle;
-  padding: 0 .5em;
-  margin: 0 3px;
-  border: none;
-  height: 18px;
-  box-sizing: border-box;
-  font-family: inherit;
-}
-
-.controls-wrapper button:active, .right-menu button:active, .left-menu button:active  {
-  background: #ccc;
-}
-
 .help-sheet {
   background: white;
   color: black;

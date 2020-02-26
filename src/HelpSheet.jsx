@@ -27,8 +27,8 @@ const HelpSheet = memo(({
         <div><kbd>SPACE</kbd>, <kbd>k</kbd> Play/pause</div>
         <div><kbd>J</kbd> Slow down video</div>
         <div><kbd>L</kbd> Speed up video</div>
-        <div><kbd>←</kbd> Seek backward 5% of timeline</div>
-        <div><kbd>→</kbd> Seek forward 5% of timeline</div>
+        <div><kbd>←</kbd> Seek backward 5% of timeline (at current zoom)</div>
+        <div><kbd>→</kbd> Seek forward 5% of timeline (at current zoom)</div>
         <div><kbd>,</kbd> Seek backward 1 frame</div>
         <div><kbd>.</kbd> Seek forward 1 frame</div>
         <div><kbd>I</kbd> Mark in / cut start point</div>
@@ -38,6 +38,10 @@ const HelpSheet = memo(({
         <div><kbd>+</kbd> Add cut segment</div>
         <div><kbd>BACKSPACE</kbd> Remove current cut segment</div>
         <div><kbd>D</kbd> Delete source file</div>
+
+        <h1>Mouse actions</h1>
+        <div><i>Mouse scroll up/down/left/right</i> - Seek / pan timeline</div>
+        <div><kbd>CTRL</kbd><i>+Mouse scroll up/down</i> - Zoom in/out timeline</div>
 
         <p style={{ fontWeight: 'bold' }}>Hover mouse over buttons in the main interface to see which function they have.</p>
 

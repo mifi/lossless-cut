@@ -1,16 +1,17 @@
 import React, { memo, Fragment } from 'react';
 import prettyMs from 'pretty-ms';
-import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown } from 'react-icons/fa';
+import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 
 import { saveColor } from './colors';
+import { getSegColors } from './util';
 
 const SegmentList = memo(({
-  formatTimecode, cutSegments, getFrameCount, getSegColors, onSegClick,
+  formatTimecode, cutSegments, getFrameCount, onSegClick,
   currentSegIndex, invertCutSegments,
   updateCurrentSegOrder, addCutSegment, removeCutSegment,
-  setCurrentSegmentName, currentCutSeg,
+  setCurrentSegmentName, currentCutSeg, toggleSideBar,
 }) => {
   if (!cutSegments && invertCutSegments) {
     return <div style={{ padding: '0 10px' }}>Make sure you have no overlapping segments.</div>;
@@ -60,7 +61,17 @@ const SegmentList = memo(({
   return (
     <Fragment>
       <div style={{ padding: '0 10px', overflowY: 'scroll', flexGrow: 1 }}>
-        <div style={{ fontSize: 14, marginBottom: 10 }}>Segments to export:</div>
+        <div style={{ fontSize: 14, marginBottom: 10 }}>
+          <FaAngleRight
+            title="Close sidebar"
+            size={18}
+            style={{ verticalAlign: 'middle' }}
+            role="button"
+            onClick={toggleSideBar}
+          />
+
+          Segments to export:
+        </div>
 
         {cutSegments.map((seg, index) => {
           const duration = seg.end - seg.start;

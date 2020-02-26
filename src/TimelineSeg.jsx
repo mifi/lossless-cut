@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTrashAlt } from 'react-icons/fa';
 
@@ -7,7 +7,7 @@ import { mySpring } from './animations';
 const { formatDuration } = require('./util');
 
 
-const TimelineSeg = ({
+const TimelineSeg = memo(({
   duration, cutStart, cutEnd, isActive, segNum, name,
   onSegClick, invertCutSegments, segBgColor, segActiveBgColor, segBorderColor,
 }) => {
@@ -81,6 +81,6 @@ const TimelineSeg = ({
       <div style={{ flexGrow: 1 }} />
     </motion.div>
   );
-};
+});
 
 export default TimelineSeg;

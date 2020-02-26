@@ -120,6 +120,24 @@ function generateColor() {
   return randomColor(1, 0.95);
 }
 
+function withBlur(cb) {
+  return (e) => {
+    cb(e);
+    e.target.blur();
+  };
+}
+
+function getSegColors(seg) {
+  if (!seg) return {};
+  const { color } = seg;
+  return {
+    segBgColor: color.alpha(0.5).string(),
+    segActiveBgColor: color.lighten(0.5).alpha(0.5).string(),
+    segBorderColor: color.lighten(0.5).string(),
+  };
+}
+
+
 module.exports = {
   formatDuration,
   parseDuration,
@@ -134,4 +152,6 @@ module.exports = {
   promptTimeOffset,
   generateColor,
   filenamify,
+  withBlur,
+  getSegColors,
 };
