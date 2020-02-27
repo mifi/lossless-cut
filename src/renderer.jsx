@@ -147,10 +147,11 @@ const App = memo(() => {
   const [shortestFlag, setShortestFlag] = useState(false);
   const [debouncedWaveformData, setDebouncedWaveformData] = useState();
   const [debouncedReadKeyframesData, setDebouncedReadKeyframesData] = useState();
-  const [waveformEnabled, setWaveformEnabled] = useState(false);
-  const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
   const [zoomWindowStartTime, setZoomWindowStartTime] = useState(0);
 
+  const [keyframesEnabled, setKeyframesEnabled] = useState(false);
+  const [waveformEnabled, setWaveformEnabled] = useState(false);
+  const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
   const [showSideBar, setShowSideBar] = useState(true);
 
   // Segment related state
@@ -176,8 +177,8 @@ const App = memo(() => {
   }, 500, [filePath, commandedTime, duration, zoom, waveformEnabled, mainAudioStream]);
 
   const [, cancelReadKeyframeDataDebounce] = useDebounce(() => {
-    setDebouncedReadKeyframesData({ filePath, commandedTime, duration, zoom, mainVideoStream });
-  }, 500, [filePath, commandedTime, duration, zoom, mainVideoStream]);
+    setDebouncedReadKeyframesData({ keyframesEnabled, filePath, commandedTime, duration, zoom, mainVideoStream });
+  }, 500, [keyframesEnabled, filePath, commandedTime, duration, zoom, mainVideoStream]);
 
   // Preferences
   const [captureFormat, setCaptureFormat] = useState(configStore.get('captureFormat'));
@@ -681,7 +682,7 @@ const App = memo(() => {
     setCutSegments(cutSegmentsNew);
   }, [currentSegIndexSafe, cutSegments, setCutSegments]);
 
-  const shouldShowKeyframes = calcShouldShowKeyframes(duration, zoom);
+  const shouldShowKeyframes = keyframesEnabled && !!mainVideoStream && calcShouldShowKeyframes(duration, zoom);
 
   const thumnailsRef = useRef([]);
   const thumnailsRenderingPromiseRef = useRef();
@@ -722,7 +723,7 @@ const App = memo(() => {
   useEffect(() => {
     async function run() {
       const d = debouncedReadKeyframesData;
-      if (!d || !d.filePath || !d.mainVideoStream || d.commandedTime == null || !calcShouldShowKeyframes(d.duration, d.zoom) || readingKeyframesPromise.current) return;
+      if (!d || !d.keyframesEnabled || !d.filePath || !d.mainVideoStream || d.commandedTime == null || !calcShouldShowKeyframes(d.duration, d.zoom) || readingKeyframesPromise.current) return;
 
       try {
         const promise = ffmpeg.readFrames({ filePath: d.filePath, aroundTime: d.commandedTime, stream: d.mainVideoStream.index, window: ffmpegExtractWindow });
@@ -1650,6 +1651,8 @@ const App = memo(() => {
           timelineMode={timelineMode}
           hasAudio={hasAudio}
           hasVideo={hasVideo}
+          keyframesEnabled={keyframesEnabled}
+          setKeyframesEnabled={setKeyframesEnabled}
         />
 
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>

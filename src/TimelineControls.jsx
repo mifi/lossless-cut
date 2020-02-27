@@ -1,10 +1,10 @@
 import React, { memo } from 'react';
-import { FaHandPointLeft, FaHandPointRight, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages } from 'react-icons/fa';
+import { FaHandPointLeft, FaHandPointRight, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey } from 'react-icons/fa';
 import { GiSoundWaves } from 'react-icons/gi';
 // import useTraceUpdate from 'use-trace-update';
 
 import { getSegColors, parseDuration, formatDuration } from './util';
-import { primaryColor } from './colors';
+import { primaryTextColor } from './colors';
 
 
 const TimelineControls = memo(({
@@ -12,6 +12,7 @@ const TimelineControls = memo(({
   setCurrentSegIndex, cutStartTimeManual, setCutStartTimeManual, cutEndTimeManual, setCutEndTimeManual,
   duration, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
   playing, shortStep, playCommand, setTimelineMode, hasAudio, hasVideo, timelineMode,
+  keyframesEnabled, setKeyframesEnabled,
 }) => {
   const {
     segActiveBgColor: currentSegActiveBgColor,
@@ -118,7 +119,7 @@ const TimelineControls = memo(({
         {hasAudio && (
           <GiSoundWaves
             size={24}
-            style={{ padding: '0 5px', color: timelineMode === 'waveform' ? primaryColor : undefined }}
+            style={{ padding: '0 5px', color: timelineMode === 'waveform' ? primaryTextColor : undefined }}
             role="button"
             title="Show waveform"
             onClick={() => setTimelineMode('waveform')}
@@ -127,12 +128,20 @@ const TimelineControls = memo(({
         {hasVideo && (
           <FaImages
             size={20}
-            style={{ padding: '0 5px', color: timelineMode === 'thumbnails' ? primaryColor : undefined }}
+            style={{ padding: '0 5px', color: timelineMode === 'thumbnails' ? primaryTextColor : undefined }}
             role="button"
             title="Show thumbnails"
             onClick={() => setTimelineMode('thumbnails')}
           />
         )}
+
+        <FaKey
+          size={16}
+          style={{ padding: '0 5px', color: keyframesEnabled ? primaryTextColor : undefined }}
+          role="button"
+          title="Show keyframes"
+          onClick={() => setKeyframesEnabled(v => !v)}
+        />
       </div>
 
       <div style={{ flexGrow: 1 }} />
