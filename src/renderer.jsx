@@ -149,7 +149,7 @@ const App = memo(() => {
   const [debouncedReadKeyframesData, setDebouncedReadKeyframesData] = useState();
   const [zoomWindowStartTime, setZoomWindowStartTime] = useState(0);
 
-  const [keyframesEnabled, setKeyframesEnabled] = useState(false);
+  const [keyframesEnabled, setKeyframesEnabled] = useState(true);
   const [waveformEnabled, setWaveformEnabled] = useState(false);
   const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
   const [showSideBar, setShowSideBar] = useState(true);
