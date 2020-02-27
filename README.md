@@ -31,6 +31,7 @@ I made a tool for cross platform sharing of files between computer/phone over th
 - Undo/redo
 - Give labels to cut segments
 - View segment details, export/import cut segments as CSV
+- Thumbnails and audio waveform
 
 ## Example lossless use cases
 

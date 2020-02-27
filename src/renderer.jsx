@@ -143,10 +143,13 @@ const App = memo(() => {
   const [commandedTime, setCommandedTime] = useState(0);
   const [ffmpegCommandLog, setFfmpegCommandLog] = useState([]);
   const [neighbouringFrames, setNeighbouringFrames] = useState([]);
+  const [thumbnails, setThumbnails] = useState([]);
   const [shortestFlag, setShortestFlag] = useState(false);
   const [debouncedWaveformData, setDebouncedWaveformData] = useState();
   const [debouncedReadKeyframesData, setDebouncedReadKeyframesData] = useState();
-  const [timelineExpanded, setTimelineExpanded] = useState(false);
+  const [waveformEnabled, setWaveformEnabled] = useState(false);
+  const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
+  const [zoomWindowStartTime, setZoomWindowStartTime] = useState(0);
 
   const [showSideBar, setShowSideBar] = useState(true);
 
@@ -169,8 +172,8 @@ const App = memo(() => {
   const durationSafe = duration || 1;
 
   const [, cancelWaveformDataDebounce] = useDebounce(() => {
-    setDebouncedWaveformData({ filePath, commandedTime, duration, zoom, timelineExpanded, mainAudioStream });
-  }, 500, [filePath, commandedTime, duration, zoom, timelineExpanded, mainAudioStream]);
+    setDebouncedWaveformData({ filePath, commandedTime, duration, zoom, waveformEnabled, mainAudioStream });
+  }, 500, [filePath, commandedTime, duration, zoom, waveformEnabled, mainAudioStream]);
 
   const [, cancelReadKeyframeDataDebounce] = useDebounce(() => {
     setDebouncedReadKeyframesData({ filePath, commandedTime, duration, zoom, mainVideoStream });
@@ -244,6 +247,7 @@ const App = memo(() => {
     setStreamsSelectorShown(false);
     setZoom(1);
     setShortestFlag(false);
+    setZoomWindowStartTime(0);
 
     setWaveform();
     cancelWaveformDataDebounce();
@@ -252,7 +256,19 @@ const App = memo(() => {
     setNeighbouringFrames([]);
     cancelReadKeyframeDataDebounce();
     setDebouncedReadKeyframesData();
+
+    setThumbnails([]);
   }, [cutSegmentsHistory, cancelCutSegmentsDebounce, setCutSegments, cancelWaveformDataDebounce, cancelReadKeyframeDataDebounce]);
+
+  function setTimelineMode(newMode) {
+    if (newMode === 'waveform') {
+      setWaveformEnabled(v => !v);
+      setThumbnailsEnabled(false);
+    } else {
+      setThumbnailsEnabled(v => !v);
+      setWaveformEnabled(false);
+    }
+  }
 
   function appendFfmpegCommandLog(command) {
     setFfmpegCommandLog(old => [...old, { command, time: new Date() }]);
@@ -667,6 +683,42 @@ const App = memo(() => {
 
   const shouldShowKeyframes = calcShouldShowKeyframes(duration, zoom);
 
+  const thumnailsRef = useRef([]);
+  const thumnailsRenderingPromiseRef = useRef();
+
+  function addThumbnail(thumbnail) {
+    // console.log('Rendered thumbnail', thumbnail.url);
+    setThumbnails(v => [...v, thumbnail]);
+  }
+
+  useEffect(() => {
+    async function renderThumbnails() {
+      if (!thumbnailsEnabled || thumnailsRenderingPromiseRef.current) return;
+
+      try {
+        const numThumbs = 5;
+        setThumbnails([]);
+        const promise = ffmpeg.renderThumbnails({ filePath, numThumbs, from: zoomWindowStartTime, duration: duration / zoom, onThumbnail: addThumbnail });
+        thumnailsRenderingPromiseRef.current = promise;
+        await promise;
+      } catch (err) {
+        console.error('Failed to render thumbnail', err);
+      } finally {
+        thumnailsRenderingPromiseRef.current = undefined;
+      }
+    }
+
+    if (duration) renderThumbnails();
+  }, [duration, filePath, zoom, zoomWindowStartTime, thumbnailsEnabled]);
+
+  // Cleanup removed thumbnails
+  useEffect(() => {
+    thumnailsRef.current.forEach((thumbnail) => {
+      if (!thumbnails.some(t => t.url === thumbnail.url)) URL.revokeObjectURL(thumbnail.url);
+    });
+    thumnailsRef.current = thumbnails;
+  }, [thumbnails]);
+
   useEffect(() => {
     async function run() {
       const d = debouncedReadKeyframesData;
@@ -690,7 +742,7 @@ const App = memo(() => {
   useEffect(() => {
     async function run() {
       const d = debouncedWaveformData;
-      if (!d || !d.filePath || !d.mainAudioStream || d.commandedTime == null || !calcShouldShowWaveform(d.duration, d.zoom) || !d.timelineExpanded || creatingWaveformPromise.current) return;
+      if (!d || !d.filePath || !d.mainAudioStream || d.commandedTime == null || !calcShouldShowWaveform(d.duration, d.zoom) || !d.waveformEnabled || creatingWaveformPromise.current) return;
       try {
         const promise = ffmpeg.renderWaveformPng({ filePath: d.filePath, aroundTime: d.commandedTime, window: ffmpegExtractWindow, color: waveformColor });
         creatingWaveformPromise.current = promise;
@@ -943,7 +995,7 @@ const App = memo(() => {
         stream.index, defaultProcessedCodecTypes.includes(stream.codec_type),
       ])));
 
-      const videoStream = streams.find(stream => stream.codec_type === 'video');
+      const videoStream = streams.find(stream => stream.codec_type === 'video' && !['png'].includes(stream.codec_name));
       const audioStream = streams.find(stream => stream.codec_type === 'audio');
       setMainVideoStream(videoStream);
       setMainAudioStream(audioStream);
@@ -1347,8 +1399,13 @@ const App = memo(() => {
   const sideBarWidth = showSideBar ? 200 : 0;
 
   const hasAudio = !!mainAudioStream;
+  const hasVideo = !!mainVideoStream;
   const shouldShowWaveform = calcShouldShowWaveform(duration, zoom);
-  const bottomBarHeight = 96 + (hasAudio && timelineExpanded ? timelineHeight : 0);
+  const bottomBarHeight = 96 + ((hasAudio && waveformEnabled) || (hasVideo && thumbnailsEnabled) ? timelineHeight : 0);
+
+  let timelineMode;
+  if (thumbnailsEnabled) timelineMode = 'thumbnails';
+  if (waveformEnabled) timelineMode = 'waveform';
 
   return (
     <div>
@@ -1541,15 +1598,17 @@ const App = memo(() => {
       >
         <Timeline
           shouldShowKeyframes={shouldShowKeyframes}
-          shouldShowWaveform={shouldShowWaveform}
-          timelineExpanded={timelineExpanded}
           waveform={waveform}
+          shouldShowWaveform={shouldShowWaveform}
+          waveformEnabled={waveformEnabled}
+          thumbnailsEnabled={thumbnailsEnabled}
+          neighbouringFrames={neighbouringFrames}
+          thumbnails={thumbnails}
           getCurrentTime={getCurrentTime}
           startTimeOffset={startTimeOffset}
           playerTime={playerTime}
           commandedTime={commandedTime}
           zoom={zoom}
-          neighbouringFrames={neighbouringFrames}
           seekAbs={seekAbs}
           seekRel={seekRel}
           zoomRel={zoomRel}
@@ -1563,6 +1622,7 @@ const App = memo(() => {
           mainVideoStream={mainVideoStream}
           formatTimecode={formatTimecode}
           timelineHeight={timelineHeight}
+          onZoomWindowStartTimeChange={setZoomWindowStartTime}
         />
 
         <TimelineControls
@@ -1586,8 +1646,10 @@ const App = memo(() => {
           playing={playing}
           shortStep={shortStep}
           playCommand={playCommand}
-          setTimelineExpanded={setTimelineExpanded}
+          setTimelineMode={setTimelineMode}
+          timelineMode={timelineMode}
           hasAudio={hasAudio}
+          hasVideo={hasVideo}
         />
 
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>

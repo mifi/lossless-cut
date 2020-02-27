@@ -486,6 +486,34 @@ async function extractStreams({ filePath, customOutDir, streams }) {
   console.log(stdout);
 }
 
+async function renderThumbnail(filePath, timestamp) {
+  const args = [
+    '-ss', timestamp,
+    '-i', filePath,
+    '-vf', 'scale=-2:200',
+    '-f', 'image2',
+    '-vframes', '1',
+    '-q:v', '10',
+    '-',
+  ];
+
+  const ffmpegPath = await getFfmpegPath();
+  const { stdout } = await execa(ffmpegPath, args, { encoding: null });
+
+  const blob = new Blob([stdout], { type: 'image/jpeg' });
+  return URL.createObjectURL(blob);
+}
+
+async function renderThumbnails({ filePath, numThumbs, from, duration, onThumbnail }) {
+  const thumbTimes = Array(numThumbs).fill().map((unused, i) => (from + ((duration * i) / numThumbs)));
+
+  await pMap(thumbTimes, async (time) => {
+    const url = await renderThumbnail(filePath, time);
+    onThumbnail({ time, url });
+  }, { concurrency: 2 });
+}
+
+
 async function renderWaveformPng({ filePath, aroundTime, window, color }) {
   const { from, to } = getIntervalAroundTime(aroundTime, window);
 
@@ -602,4 +630,5 @@ module.exports = {
   readFrames,
   getNextPrevKeyframe,
   renderWaveformPng,
+  renderThumbnails,
 };

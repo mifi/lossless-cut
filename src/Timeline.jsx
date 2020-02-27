@@ -38,7 +38,8 @@ const Timeline = memo(({
   durationSafe, getCurrentTime, startTimeOffset, playerTime, commandedTime,
   zoom, neighbouringFrames, seekAbs, seekRel, duration, apparentCutSegments, zoomRel,
   setCurrentSegIndex, currentSegIndexSafe, invertCutSegments, inverseCutSegments, mainVideoStream, formatTimecode,
-  waveform, shouldShowWaveform, shouldShowKeyframes, timelineHeight, timelineExpanded,
+  waveform, shouldShowWaveform, shouldShowKeyframes, timelineHeight, thumbnails,
+  onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled,
 }) => {
   const timelineScrollerRef = useRef();
   const timelineScrollerSkipEventRef = useRef();
@@ -68,14 +69,22 @@ const Timeline = memo(({
   }, [zoom, durationSafe, getCurrentTime]);
 
   const onTimelineScroll = useCallback((e) => {
+    if (!zoomed) return;
+
+    const zoomWindowStartTime = timelineScrollerRef.current
+      ? (timelineScrollerRef.current.scrollLeft / (timelineScrollerRef.current.offsetWidth * zoom)) * duration
+      : 0;
+
+    onZoomWindowStartTimeChange(zoomWindowStartTime);
+
     if (timelineScrollerSkipEventRef.current) {
       timelineScrollerSkipEventRef.current = false;
       return;
     }
-    if (!zoomed) return;
+
     seekAbs((((e.target.scrollLeft + (timelineScrollerRef.current.offsetWidth * 0.5))
       / (timelineScrollerRef.current.offsetWidth * zoom)) * duration));
-  }, [duration, seekAbs, zoomed, zoom]);
+  }, [duration, seekAbs, zoomed, zoom, onZoomWindowStartTimeChange]);
 
   const handleTap = useCallback((e) => {
     const target = timelineWrapperRef.current;
@@ -105,7 +114,7 @@ const Timeline = memo(({
           onScroll={onTimelineScroll}
           ref={timelineScrollerRef}
         >
-          {timelineExpanded && shouldShowWaveform && waveform && (
+          {waveformEnabled && shouldShowWaveform && waveform && (
             <Waveform
               calculateTimelinePos={calculateTimelinePos}
               durationSafe={durationSafe}
@@ -113,6 +122,14 @@ const Timeline = memo(({
               zoom={zoom}
               timelineHeight={timelineHeight}
             />
+          )}
+
+          {thumbnailsEnabled && (
+            <div style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative' }}>
+              {thumbnails.map((thumbnail) => (
+                <img key={thumbnail.url} src={thumbnail.url} alt="" style={{ position: 'absolute', left: `${(thumbnail.time / durationSafe) * 100}%`, height: timelineHeight * 1.5, zIndex: 1, maxWidth: '13%', objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.5)', borderBottomRightRadius: 15, borderTopLeftRadius: 15, borderTopRightRadius: 15 }} />
+              ))}
+            </div>
           )}
 
           <div
@@ -163,11 +180,13 @@ const Timeline = memo(({
           </div>
         </div>
 
-        {timelineExpanded && !shouldShowWaveform && (
-          <div style={{ position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'rgba(255,255,255,0.6)' }}>Zoom in more to view waveform</div>
+        {(waveformEnabled && !thumbnailsEnabled && !shouldShowWaveform) && (
+          <div style={{ position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'rgba(255,255,255,0.6)' }}>
+            Zoom in more to view waveform
+          </div>
         )}
 
-        <div style={{ position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 2 }}>
           <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' }}>
             {formatTimecode(offsetCurrentTime)}
           </div>

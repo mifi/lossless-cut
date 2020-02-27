@@ -1,16 +1,17 @@
 import React, { memo } from 'react';
-import { FaHandPointLeft, FaHandPointRight, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay } from 'react-icons/fa';
+import { FaHandPointLeft, FaHandPointRight, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages } from 'react-icons/fa';
 import { GiSoundWaves } from 'react-icons/gi';
 // import useTraceUpdate from 'use-trace-update';
 
 import { getSegColors, parseDuration, formatDuration } from './util';
+import { primaryColor } from './colors';
 
 
 const TimelineControls = memo(({
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,
   setCurrentSegIndex, cutStartTimeManual, setCutStartTimeManual, cutEndTimeManual, setCutEndTimeManual,
   duration, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
-  playing, shortStep, playCommand, setTimelineExpanded, hasAudio,
+  playing, shortStep, playCommand, setTimelineMode, hasAudio, hasVideo, timelineMode,
 }) => {
   const {
     segActiveBgColor: currentSegActiveBgColor,
@@ -117,10 +118,19 @@ const TimelineControls = memo(({
         {hasAudio && (
           <GiSoundWaves
             size={24}
-            style={{ padding: '0 5px' }}
+            style={{ padding: '0 5px', color: timelineMode === 'waveform' ? primaryColor : undefined }}
             role="button"
-            title="Expand timeline"
-            onClick={() => setTimelineExpanded(v => !v)}
+            title="Show waveform"
+            onClick={() => setTimelineMode('waveform')}
+          />
+        )}
+        {hasVideo && (
+          <FaImages
+            size={20}
+            style={{ padding: '0 5px', color: timelineMode === 'thumbnails' ? primaryColor : undefined }}
+            role="button"
+            title="Show thumbnails"
+            onClick={() => setTimelineMode('thumbnails')}
           />
         )}
       </div>
