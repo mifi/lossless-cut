@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { Fragment, memo } from 'react';
 import { FaHandPointLeft, FaHandPointRight, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey } from 'react-icons/fa';
 import { GiSoundWaves } from 'react-icons/gi';
 // import useTraceUpdate from 'use-trace-update';
@@ -111,7 +111,7 @@ const TimelineControls = memo(({
 
   const PlayPause = playing ? FaPause : FaPlay;
 
-  const leftRightWidth = 50;
+  const leftRightWidth = 100;
 
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -126,22 +126,24 @@ const TimelineControls = memo(({
           />
         )}
         {hasVideo && (
-          <FaImages
-            size={20}
-            style={{ padding: '0 5px', color: timelineMode === 'thumbnails' ? primaryTextColor : undefined }}
-            role="button"
-            title="Show thumbnails"
-            onClick={() => setTimelineMode('thumbnails')}
-          />
-        )}
+          <Fragment>
+            <FaImages
+              size={20}
+              style={{ padding: '0 5px', color: timelineMode === 'thumbnails' ? primaryTextColor : undefined }}
+              role="button"
+              title="Show thumbnails"
+              onClick={() => setTimelineMode('thumbnails')}
+            />
 
-        <FaKey
-          size={16}
-          style={{ padding: '0 5px', color: keyframesEnabled ? primaryTextColor : undefined }}
-          role="button"
-          title="Show keyframes"
-          onClick={() => setKeyframesEnabled(v => !v)}
-        />
+            <FaKey
+              size={16}
+              style={{ padding: '0 5px', color: keyframesEnabled ? primaryTextColor : undefined }}
+              role="button"
+              title="Show keyframes"
+              onClick={() => setKeyframesEnabled(v => !v)}
+            />
+          </Fragment>
+        )}
       </div>
 
       <div style={{ flexGrow: 1 }} />
