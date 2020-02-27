@@ -61,7 +61,7 @@
     "electron-is-dev": "^0.1.2",
     "electron-store": "^5.1.0",
     "evergreen-ui": "^4.23.0",
-    "execa": "^0.5.0",
+    "execa": "^4.0.0",
     "ffmpeg-static": "^4.0.1",
     "ffprobe-static": "^3.0.0",
     "file-type": "^12.4.0",

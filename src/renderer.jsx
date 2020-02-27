@@ -24,7 +24,7 @@ import Timeline from './Timeline';
 import RightMenu from './RightMenu';
 import TimelineControls from './TimelineControls';
 import { loadMifiLink } from './mifi';
-import { primaryColor, controlsBackground } from './colors';
+import { primaryColor, controlsBackground, waveformColor } from './colors';
 
 import loadingLottie from './7077-magic-flow.json';
 
@@ -96,12 +96,20 @@ function doesPlayerSupportFile(streams) {
   // return true;
 }
 
+const ffmpegExtractWindow = 60;
+const calcShouldShowWaveform = (duration, zoom) => (duration != null && duration / zoom < ffmpegExtractWindow * 8);
+const calcShouldShowKeyframes = (duration, zoom) => (duration != null && duration / zoom < ffmpegExtractWindow * 8);
+
+
 const commonFormats = ['mov', 'mp4', 'matroska', 'mp3', 'ipod'];
 
 
-const topBarHeight = '2rem';
-const bottomBarHeight = '6rem';
+// TODO flex
+const topBarHeight = 32;
+const timelineHeight = 36;
 const zoomMax = 2 ** 14;
+
+const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
 
 
 const queue = new PQueue({ concurrency: 1 });
@@ -109,6 +117,7 @@ const queue = new PQueue({ concurrency: 1 });
 const App = memo(() => {
   // Per project state
   const [framePath, setFramePath] = useState();
+  const [waveform, setWaveform] = useState();
   const [html5FriendlyPath, setHtml5FriendlyPath] = useState();
   const [working, setWorking] = useState(false);
   const [dummyVideoPath, setDummyVideoPath] = useState(false);
@@ -127,14 +136,17 @@ const App = memo(() => {
   const [detectedFps, setDetectedFps] = useState();
   const [mainStreams, setMainStreams] = useState([]);
   const [mainVideoStream, setMainVideoStream] = useState();
+  const [mainAudioStream, setMainAudioStream] = useState();
   const [copyStreamIdsByFile, setCopyStreamIdsByFile] = useState({});
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [commandedTime, setCommandedTime] = useState(0);
-  const [debouncedCommandedTime, setDebouncedCommandedTime] = useState(0);
   const [ffmpegCommandLog, setFfmpegCommandLog] = useState([]);
   const [neighbouringFrames, setNeighbouringFrames] = useState([]);
   const [shortestFlag, setShortestFlag] = useState(false);
+  const [debouncedWaveformData, setDebouncedWaveformData] = useState();
+  const [debouncedReadKeyframesData, setDebouncedReadKeyframesData] = useState();
+  const [timelineExpanded, setTimelineExpanded] = useState(false);
 
   const [showSideBar, setShowSideBar] = useState(true);
 
@@ -150,14 +162,19 @@ const App = memo(() => {
     createInitialCutSegments(),
   );
 
-  const [, cancelCommandedTimeDebounce] = useDebounce(() => {
-    setDebouncedCommandedTime(commandedTime);
-  }, 300, [commandedTime]);
-
   const [, cancelCutSegmentsDebounce] = useDebounce(() => {
     setDebouncedCutSegments(cutSegments);
   }, 500, [cutSegments]);
 
+  const durationSafe = duration || 1;
+
+  const [, cancelWaveformDataDebounce] = useDebounce(() => {
+    setDebouncedWaveformData({ filePath, commandedTime, duration, zoom, timelineExpanded, mainAudioStream });
+  }, 500, [filePath, commandedTime, duration, zoom, timelineExpanded, mainAudioStream]);
+
+  const [, cancelReadKeyframeDataDebounce] = useDebounce(() => {
+    setDebouncedReadKeyframesData({ filePath, commandedTime, duration, zoom, mainVideoStream });
+  }, 500, [filePath, commandedTime, duration, zoom, mainVideoStream]);
 
   // Preferences
   const [captureFormat, setCaptureFormat] = useState(configStore.get('captureFormat'));
@@ -188,7 +205,54 @@ const App = memo(() => {
   const videoRef = useRef();
   const lastSavedCutSegmentsRef = useRef();
   const readingKeyframesPromise = useRef();
+  const creatingWaveformPromise = useRef();
   const currentTimeRef = useRef();
+
+  const resetState = useCallback(() => {
+    const video = videoRef.current;
+    setCommandedTime(0);
+    video.currentTime = 0;
+    video.playbackRate = 1;
+
+    setFileNameTitle();
+    setFramePath();
+    setHtml5FriendlyPath();
+    setDummyVideoPath();
+    setWorking(false);
+    setPlaying(false);
+    setDuration();
+    cutSegmentsHistory.go(0);
+    cancelCutSegmentsDebounce(); // TODO auto save when loading new file/closing file
+    setDebouncedCutSegments(createInitialCutSegments());
+    setCutSegments(createInitialCutSegments()); // TODO this will cause two history items
+    setCutStartTimeManual();
+    setCutEndTimeManual();
+    setFileFormat();
+    setFileFormatData();
+    setDetectedFileFormat();
+    setRotation(360);
+    setCutProgress();
+    setStartTimeOffset(0);
+    setRotationPreviewRequested(false);
+    setFilePath(''); // Setting video src="" prevents memory leak in chromium
+    setExternalStreamFiles([]);
+    setDetectedFps();
+    setMainStreams([]);
+    setMainVideoStream();
+    setMainAudioStream();
+    setCopyStreamIdsByFile({});
+    setStreamsSelectorShown(false);
+    setZoom(1);
+    setShortestFlag(false);
+
+    setWaveform();
+    cancelWaveformDataDebounce();
+    setDebouncedWaveformData();
+
+    setNeighbouringFrames([]);
+    cancelReadKeyframeDataDebounce();
+    setDebouncedReadKeyframesData();
+  }, [cutSegmentsHistory, cancelCutSegmentsDebounce, setCutSegments, cancelWaveformDataDebounce, cancelReadKeyframeDataDebounce]);
 
   function appendFfmpegCommandLog(command) {
     setFfmpegCommandLog(old => [...old, { command, time: new Date() }]);
@@ -241,45 +305,6 @@ const App = memo(() => {
   const shortStep = useCallback((dir) => {
     seekRel((1 / (detectedFps || 60)) * dir);
   }, [seekRel, detectedFps]);
-
-  const resetState = useCallback(() => {
-    const video = videoRef.current;
-    cancelCommandedTimeDebounce();
-    setDebouncedCommandedTime(0);
-    setCommandedTime(0);
-    video.currentTime = 0;
-    video.playbackRate = 1;
-
-    setFileNameTitle();
-    setFramePath();
-    setHtml5FriendlyPath();
-    setDummyVideoPath();
-    setWorking(false);
-    setPlaying(false);
-    setDuration();
-    cutSegmentsHistory.go(0);
-    cancelCutSegmentsDebounce(); // TODO auto save when loading new file/closing file
-    setDebouncedCutSegments(createInitialCutSegments());
-    setCutSegments(createInitialCutSegments()); // TODO this will cause two history items
-    setCutStartTimeManual();
-    setCutEndTimeManual();
-    setFileFormat();
-    setFileFormatData();
-    setDetectedFileFormat();
-    setRotation(360);
-    setCutProgress();
-    setStartTimeOffset(0);
-    setRotationPreviewRequested(false);
-    setFilePath(''); // Setting video src="" prevents memory leak in chromium
-    setExternalStreamFiles([]);
-    setDetectedFps();
-    setMainStreams([]);
-    setCopyStreamIdsByFile({});
-    setStreamsSelectorShown(false);
-    setZoom(1);
-    setNeighbouringFrames([]);
-    setShortestFlag(false);
-  }, [cutSegmentsHistory, setCutSegments, cancelCommandedTimeDebounce, cancelCutSegmentsDebounce]);
 
   useEffect(() => () => {
     if (dummyVideoPath) unlink(dummyVideoPath).catch(console.error);
@@ -545,7 +570,7 @@ const App = memo(() => {
     filePath, playerTime, frameRenderEnabled, effectiveRotation,
   ]);
 
-  // Cleanup old frames
+  // Cleanup old
   useEffect(() => () => URL.revokeObjectURL(framePath), [framePath]);
 
   function onPlayingChange(val) {
@@ -640,7 +665,49 @@ const App = memo(() => {
     setCutSegments(cutSegmentsNew);
   }, [currentSegIndexSafe, cutSegments, setCutSegments]);
 
-  const durationSafe = duration || 1;
+  const shouldShowKeyframes = calcShouldShowKeyframes(duration, zoom);
+
+  useEffect(() => {
+    async function run() {
+      const d = debouncedReadKeyframesData;
+      if (!d || !d.filePath || !d.mainVideoStream || d.commandedTime == null || !calcShouldShowKeyframes(d.duration, d.zoom) || readingKeyframesPromise.current) return;
+
+      try {
+        const promise = ffmpeg.readFrames({ filePath: d.filePath, aroundTime: d.commandedTime, stream: d.mainVideoStream.index, window: ffmpegExtractWindow });
+        readingKeyframesPromise.current = promise;
+        const newFrames = await promise;
+        // console.log(newFrames);
+        setNeighbouringFrames(newFrames);
+      } catch (err) {
+        console.error('Failed to read keyframes', err);
+      } finally {
+        readingKeyframesPromise.current = undefined;
+      }
+    }
+    run();
+  }, [debouncedReadKeyframesData]);
+
+  useEffect(() => {
+    async function run() {
+      const d = debouncedWaveformData;
+      if (!d || !d.filePath || !d.mainAudioStream || d.commandedTime == null || !calcShouldShowWaveform(d.duration, d.zoom) || !d.timelineExpanded || creatingWaveformPromise.current) return;
+      try {
+        const promise = ffmpeg.renderWaveformPng({ filePath: d.filePath, aroundTime: d.commandedTime, window: ffmpegExtractWindow, color: waveformColor });
+        creatingWaveformPromise.current = promise;
+        const wf = await promise;
+        setWaveform(wf);
+      } catch (err) {
+        console.error('Failed to render waveform', err);
+      } finally {
+        creatingWaveformPromise.current = undefined;
+      }
+    }
+
+    run();
+  }, [debouncedWaveformData]);
+
+  // Cleanup old
+  useEffect(() => () => waveform && URL.revokeObjectURL(waveform.url), [waveform]);
 
   function showUnsupportedFileMessage() {
     toast.fire({ timer: 10000, icon: 'warning', title: 'This video is not natively supported', text: 'This means that there is no audio in the preview and it has low quality. The final export operation will however be lossless and contains audio!' });
@@ -877,7 +944,9 @@ const App = memo(() => {
       ])));
 
       const videoStream = streams.find(stream => stream.codec_type === 'video');
+      const audioStream = streams.find(stream => stream.codec_type === 'audio');
       setMainVideoStream(videoStream);
+      setMainAudioStream(audioStream);
       if (videoStream) {
         const streamFps = getStreamFps(videoStream);
         if (streamFps != null) setDetectedFps(streamFps);
@@ -1261,24 +1330,6 @@ const App = memo(() => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    async function run() {
-      if (!filePath || debouncedCommandedTime == null || !mainVideoStream || readingKeyframesPromise.current) return;
-      try {
-        const promise = ffmpeg.readFrames({ filePath, aroundTime: debouncedCommandedTime, stream: mainVideoStream.index });
-        readingKeyframesPromise.current = promise;
-        const newFrames = await promise;
-        // console.log(newFrames);
-        setNeighbouringFrames(newFrames);
-      } catch (err) {
-        console.error('Failed to read keyframes', err);
-      } finally {
-        readingKeyframesPromise.current = undefined;
-      }
-    }
-    run();
-  }, [filePath, debouncedCommandedTime, mainVideoStream]);
-
   const VolumeIcon = muted || dummyVideoPath ? FaVolumeMute : FaVolumeUp;
 
   useEffect(() => {
@@ -1294,6 +1345,10 @@ const App = memo(() => {
   }, []);
 
   const sideBarWidth = showSideBar ? 200 : 0;
+
+  const hasAudio = !!mainAudioStream;
+  const shouldShowWaveform = calcShouldShowWaveform(duration, zoom);
+  const bottomBarHeight = 96 + (hasAudio && timelineExpanded ? timelineHeight : 0);
 
   return (
     <div>
@@ -1395,7 +1450,7 @@ const App = memo(() => {
         <video
           muted={muted}
           ref={videoRef}
-          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          style={videoStyle}
           src={fileUri}
           onPlay={onSartPlaying}
           onPause={onStopPlaying}
@@ -1479,8 +1534,16 @@ const App = memo(() => {
         </Fragment>
       )}
 
-      <div className="no-user-select" style={{ height: bottomBarHeight, background: controlsBackground, position: 'absolute', left: 0, right: 0, bottom: 0, textAlign: 'center' }}>
+      <motion.div
+        className="no-user-select"
+        style={{ background: controlsBackground, position: 'absolute', left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}
+        animate={{ height: bottomBarHeight }}
+      >
         <Timeline
+          shouldShowKeyframes={shouldShowKeyframes}
+          shouldShowWaveform={shouldShowWaveform}
+          timelineExpanded={timelineExpanded}
+          waveform={waveform}
           getCurrentTime={getCurrentTime}
           startTimeOffset={startTimeOffset}
           playerTime={playerTime}
@@ -1499,6 +1562,7 @@ const App = memo(() => {
           inverseCutSegments={inverseCutSegments}
           mainVideoStream={mainVideoStream}
           formatTimecode={formatTimecode}
+          timelineHeight={timelineHeight}
         />
 
         <TimelineControls
@@ -1522,27 +1586,31 @@ const App = memo(() => {
           playing={playing}
           shortStep={shortStep}
           playCommand={playCommand}
+          setTimelineExpanded={setTimelineExpanded}
+          hasAudio={hasAudio}
         />
-      </div>
 
-      <LeftMenu
-        zoom={zoom}
-        setZoom={setZoom}
-        invertCutSegments={invertCutSegments}
-        setInvertCutSegments={setInvertCutSegments}
-      />
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <LeftMenu
+            zoom={zoom}
+            setZoom={setZoom}
+            invertCutSegments={invertCutSegments}
+            setInvertCutSegments={setInvertCutSegments}
+          />
 
-      <RightMenu
-        isRotationSet={isRotationSet}
-        rotation={rotation}
-        areWeCutting={areWeCutting}
-        increaseRotation={increaseRotation}
-        deleteSource={deleteSource}
-        renderCaptureFormatButton={renderCaptureFormatButton}
-        capture={capture}
-        cutClick={cutClick}
-        multipleCutSegments={cutSegments.length > 1}
-      />
+          <RightMenu
+            isRotationSet={isRotationSet}
+            rotation={rotation}
+            areWeCutting={areWeCutting}
+            increaseRotation={increaseRotation}
+            deleteSource={deleteSource}
+            renderCaptureFormatButton={renderCaptureFormatButton}
+            capture={capture}
+            cutClick={cutClick}
+            multipleCutSegments={cutSegments.length > 1}
+          />
+        </div>
+      </motion.div>
 
       <HelpSheet
         visible={!!helpVisible}

@@ -15,7 +15,7 @@ const RightMenu = memo(({
   const CutIcon = areWeCutting ? FiScissors : FaFileExport;
 
   return (
-    <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, padding: '.3em', display: 'flex', alignItems: 'center' }}>
+    <div className="no-user-select" style={{ padding: '.3em', display: 'flex', alignItems: 'center' }}>
       <div>
         <span style={{ width: 40, textAlign: 'right', display: 'inline-block' }}>{isRotationSet && rotationStr}</span>
         <MdRotate90DegreesCcw

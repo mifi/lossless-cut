@@ -1,4 +1,4 @@
-import React, { memo, useRef, useMemo, useCallback, useEffect } from 'react';
+import React, { memo, useRef, useMemo, useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Hammer from 'react-hammerjs';
 
@@ -12,16 +12,40 @@ import { getSegColors } from './util';
 
 const hammerOptions = { recognizers: {} };
 
+const Waveform = memo(({ calculateTimelinePos, durationSafe, waveform, zoom, timelineHeight }) => {
+  const imgRef = useRef();
+  const [style, setStyle] = useState({ display: 'none' });
+
+  const leftPos = calculateTimelinePos(waveform.from);
+
+  const toTruncated = Math.min(waveform.to, durationSafe);
+
+  // Prevents flash
+  function onLoad() {
+    setStyle({
+      position: 'absolute', height: '100%', left: leftPos, width: `${((toTruncated - waveform.from) / durationSafe) * 100}%`,
+    });
+  }
+
+  return (
+    <div style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative' }}>
+      <img ref={imgRef} src={waveform.url} draggable={false} style={style} alt="" onLoad={onLoad} />
+    </div>
+  );
+});
+
 const Timeline = memo(({
   durationSafe, getCurrentTime, startTimeOffset, playerTime, commandedTime,
   zoom, neighbouringFrames, seekAbs, seekRel, duration, apparentCutSegments, zoomRel,
   setCurrentSegIndex, currentSegIndexSafe, invertCutSegments, inverseCutSegments, mainVideoStream, formatTimecode,
+  waveform, shouldShowWaveform, shouldShowKeyframes, timelineHeight, timelineExpanded,
 }) => {
   const timelineScrollerRef = useRef();
   const timelineScrollerSkipEventRef = useRef();
   const timelineWrapperRef = useRef();
 
   const offsetCurrentTime = (getCurrentTime() || 0) + startTimeOffset;
+
 
   const calculateTimelinePos = useCallback((time) => (time !== undefined && time < durationSafe ? `${(time / durationSafe) * 100}%` : undefined), [durationSafe]);
 
@@ -33,13 +57,13 @@ const Timeline = memo(({
   const currentTimeWidth = 1;
   // Prevent it from overflowing (and causing scroll) when end of timeline
 
-  const shouldShowKeyframes = neighbouringFrames.length >= 2 && (neighbouringFrames[neighbouringFrames.length - 1].time - neighbouringFrames[0].time) / durationSafe > (0.1 / zoom);
-
+  // Keep cursor in view while scrolling
   useEffect(() => {
     timelineScrollerSkipEventRef.current = true;
     if (zoom > 1) {
-      timelineScrollerRef.current.scrollLeft = (getCurrentTime() / durationSafe)
-        * (timelineWrapperRef.current.offsetWidth - timelineScrollerRef.current.offsetWidth);
+      const zoomedTargetWidth = timelineScrollerRef.current.offsetWidth * (zoom - 1);
+
+      timelineScrollerRef.current.scrollLeft = (getCurrentTime() / durationSafe) * zoomedTargetWidth;
     }
   }, [zoom, durationSafe, getCurrentTime]);
 
@@ -49,9 +73,9 @@ const Timeline = memo(({
       return;
     }
     if (!zoomed) return;
-    seekAbs((((e.target.scrollLeft + (timelineScrollerRef.current.offsetWidth / 2))
-      / timelineWrapperRef.current.offsetWidth) * duration));
-  }, [duration, seekAbs, zoomed]);
+    seekAbs((((e.target.scrollLeft + (timelineScrollerRef.current.offsetWidth * 0.5))
+      / (timelineScrollerRef.current.offsetWidth * zoom)) * duration));
+  }, [duration, seekAbs, zoomed, zoom]);
 
   const handleTap = useCallback((e) => {
     const target = timelineWrapperRef.current;
@@ -81,8 +105,18 @@ const Timeline = memo(({
           onScroll={onTimelineScroll}
           ref={timelineScrollerRef}
         >
+          {timelineExpanded && shouldShowWaveform && waveform && (
+            <Waveform
+              calculateTimelinePos={calculateTimelinePos}
+              durationSafe={durationSafe}
+              waveform={waveform}
+              zoom={zoom}
+              timelineHeight={timelineHeight}
+            />
+          )}
+
           <div
-            style={{ height: 36, width: `${zoom * 100}%`, position: 'relative', backgroundColor: timelineBackground }}
+            style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative', backgroundColor: timelineBackground }}
             ref={timelineWrapperRef}
           >
             {currentTimePos !== undefined && <motion.div transition={{ type: 'spring', damping: 70, stiffness: 800 }} animate={{ left: currentTimePos }} style={{ position: 'absolute', bottom: 0, top: 0, zIndex: 3, backgroundColor: 'black', width: currentTimeWidth, pointerEvents: 'none' }} />}
@@ -129,7 +163,11 @@ const Timeline = memo(({
           </div>
         </div>
 
-        <div style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+        {timelineExpanded && !shouldShowWaveform && (
+          <div style={{ position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'rgba(255,255,255,0.6)' }}>Zoom in more to view waveform</div>
+        )}
+
+        <div style={{ position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
           <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' }}>
             {formatTimecode(offsetCurrentTime)}
           </div>

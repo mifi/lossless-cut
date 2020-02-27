@@ -97,8 +97,19 @@ function getExtensionForFormat(format) {
   return ext || format;
 }
 
-async function readFrames({ filePath, aroundTime, window = 30, stream }) {
-  const intervalsArgs = aroundTime != null ? ['-read_intervals', `${Math.max(aroundTime - window, 0)}%${aroundTime + window}`] : [];
+function getIntervalAroundTime(time, window) {
+  return {
+    from: Math.max(time - window / 2, 0),
+    to: time + window / 2,
+  };
+}
+
+async function readFrames({ filePath, aroundTime, window, stream }) {
+  let intervalsArgs = [];
+  if (aroundTime != null) {
+    const { from, to } = getIntervalAroundTime(aroundTime, window);
+    intervalsArgs = ['-read_intervals', `${from}%${to}`];
+  }
   const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', stream, '-show_entries', 'packet=pts_time,flags', '-of', 'json', filePath]);
   return sortBy(JSON.parse(stdout).packets.map(p => ({ keyframe: p.flags[0] === 'K', time: parseFloat(p.pts_time, 10) })), 'time');
 }
@@ -475,6 +486,57 @@ async function extractStreams({ filePath, customOutDir, streams }) {
   console.log(stdout);
 }
 
+async function renderWaveformPng({ filePath, aroundTime, window, color }) {
+  const { from, to } = getIntervalAroundTime(aroundTime, window);
+
+  const args1 = [
+    '-i', filePath,
+    '-ss', from,
+    '-t', to - from,
+    '-c', 'copy',
+    '-vn',
+    '-map', 'a:0',
+    '-f', 'matroska', // mpegts doesn't support vorbis etc
+    '-',
+  ];
+
+  const args2 = [
+    '-i', '-',
+    '-filter_complex', `aformat=channel_layouts=mono,showwavespic=s=640x120:scale=sqrt:colors=${color}`,
+    '-frames:v', '1',
+    '-vcodec', 'png',
+    '-f', 'image2',
+    '-',
+  ];
+
+  console.log(getFfCommandLine('ffmpeg1', args1));
+  console.log(getFfCommandLine('ffmpeg2', args2));
+
+  let ps1;
+  let ps2;
+  try {
+    const ffmpegPath = getFfmpegPath();
+    ps1 = execa(ffmpegPath, args1, { encoding: null, buffer: false });
+    ps2 = execa(ffmpegPath, args2, { encoding: null });
+    ps1.stdout.pipe(ps2.stdin);
+
+    const { stdout } = await ps2;
+
+    const blob = new Blob([stdout], { type: 'image/png' });
+
+    return {
+      url: URL.createObjectURL(blob),
+      from,
+      aroundTime,
+      to,
+    };
+  } catch (err) {
+    if (ps1) ps1.kill();
+    if (ps2) ps2.kill();
+    throw err;
+  }
+}
+
 async function renderFrame(timestamp, filePath, rotation) {
   const transpose = {
     90: 'transpose=2',
@@ -501,8 +563,7 @@ async function renderFrame(timestamp, filePath, rotation) {
   const { stdout } = await execa(ffmpegPath, args, { encoding: null });
 
   const blob = new Blob([stdout], { type: 'image/jpeg' });
-  const url = URL.createObjectURL(blob);
-  return url;
+  return URL.createObjectURL(blob);
 }
 
 // https://www.ffmpeg.org/doxygen/3.2/libavutil_2utils_8c_source.html#l00079
@@ -540,4 +601,5 @@ module.exports = {
   isCuttingEnd,
   readFrames,
   getNextPrevKeyframe,
+  renderWaveformPng,
 };

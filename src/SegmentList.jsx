@@ -65,7 +65,7 @@ const SegmentList = memo(({
           <FaAngleRight
             title="Close sidebar"
             size={18}
-            style={{ verticalAlign: 'middle' }}
+            style={{ verticalAlign: 'middle', color: 'white' }}
             role="button"
             onClick={toggleSideBar}
           />

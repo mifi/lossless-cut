@@ -7,7 +7,7 @@ const { withBlur } = require('./util');
 
 
 const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments }) => (
-  <div className="no-user-select" style={{ position: 'absolute', left: 0, bottom: 0, padding: '.3em', display: 'flex', alignItems: 'center' }}>
+  <div className="no-user-select" style={{ padding: '.3em', display: 'flex', alignItems: 'center' }}>
     <div style={{ marginLeft: 5 }}>
       <motion.div
         animate={{ rotateX: invertCutSegments ? 0 : 180, width: 26, height: 26 }}

@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { FaHandPointLeft, FaHandPointRight, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay } from 'react-icons/fa';
+import { GiSoundWaves } from 'react-icons/gi';
 // import useTraceUpdate from 'use-trace-update';
 
 import { getSegColors, parseDuration, formatDuration } from './util';
@@ -9,7 +10,7 @@ const TimelineControls = memo(({
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,
   setCurrentSegIndex, cutStartTimeManual, setCutStartTimeManual, cutEndTimeManual, setCutEndTimeManual,
   duration, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
-  playing, shortStep, playCommand,
+  playing, shortStep, playCommand, setTimelineExpanded, hasAudio,
 }) => {
   const {
     segActiveBgColor: currentSegActiveBgColor,
@@ -108,8 +109,24 @@ const TimelineControls = memo(({
 
   const PlayPause = playing ? FaPause : FaPlay;
 
+  const leftRightWidth = 50;
+
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', alignItems: 'center', flexBasis: leftRightWidth }}>
+        {hasAudio && (
+          <GiSoundWaves
+            size={24}
+            style={{ padding: '0 5px' }}
+            role="button"
+            title="Expand timeline"
+            onClick={() => setTimelineExpanded(v => !v)}
+          />
+        )}
+      </div>
+
+      <div style={{ flexGrow: 1 }} />
+
       <FaStepBackward
         size={16}
         title="Jump to start of video"
@@ -157,6 +174,10 @@ const TimelineControls = memo(({
         role="button"
         onClick={() => seekAbs(duration)}
       />
+
+      <div style={{ flexGrow: 1 }} />
+
+      <div style={{ flexBasis: leftRightWidth }} />
     </div>
   );
 });
