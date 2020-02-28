@@ -1,13 +1,7 @@
 import React, { memo } from 'react';
 import { IoIosCloseCircleOutline } from 'react-icons/io';
-import { FaClipboard } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Table } from 'evergreen-ui';
-
-// eslint-disable-next-line import/no-extraneous-dependencies
-const { clipboard } = require('electron');
-
-const { toast } = require('./util');
 
 const SettingsSheet = memo(({
   visible, onTogglePress, renderSettings,
