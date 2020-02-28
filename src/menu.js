@@ -73,6 +73,13 @@ module.exports = (app, mainWindow, newVersion) => {
       },
       { type: 'separator' },
       {
+        label: 'Settings',
+        click() {
+          mainWindow.webContents.send('openSettings');
+        },
+      },
+      { type: 'separator' },
+      {
         label: 'Exit',
         click() {
           app.quit();
@@ -124,7 +131,7 @@ module.exports = (app, mainWindow, newVersion) => {
       role: 'help',
       submenu: [
         {
-          label: 'Help and Settings',
+          label: 'Help',
           click() {
             mainWindow.webContents.send('openHelp');
           },

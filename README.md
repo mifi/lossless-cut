@@ -88,7 +88,7 @@ Unsupported files can still be remuxed (fast) or encoded (slow) to a friendly fo
 ## Typical workflow
 - Drag drop a video file into player or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
 - Press <kbd>SPACE</kbd> to play/pause or <kbd>◀</kbd><kbd>▶</kbd>, <kbd>,</kbd><kbd>.</kbd> or mouse/trackpad wheel to seek back/forth
-- Select the cut segment's start and end time by moving the time marker and then pressing <kbd>I</kbd> to set start time, and <kbd>O</kbd> to set end time. *Note that the segments you select will be **preserved** and exported to a new file. You can change this behavior with the Yin Yang symbol ☯️, in which case it will instead **cut away** all selected segments and export the parts between.*
+- Select the cut segment's start and end time by moving the time marker and then pressing <kbd>I</kbd> to set start time, and <kbd>O</kbd> to set end time. *Note that the segments you select will be **preserved** and exported to a new file. You can change this behavior with the Yin Yang symbol ☯️, in which case it will instead **remove** all selected segments and export the parts between.*
 - *(optional)* If you want to add more than one segment, move to the desired start time and press <kbd>+</kbd>, then select the next segment start/end times with <kbd>I</kbd>/<kbd>O</kbd>.
 - *(optional)* If you want to re-merge all the selected segments to one file after cutting, toggle the button `Separate files` to `Merge cuts`.
 - *(optional)* If you want to export to a certain dir, press the `Working dir unset` button (default: Input file path)

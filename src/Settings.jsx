@@ -59,13 +59,13 @@ const Settings = memo(({
 
       <Row>
         <KeyCell>
-          <span role="img" aria-label="Yin Yang">☯️</span> Choose cutting mode: Cut away or keep selected segments from video when exporting?<br />
+          <span role="img" aria-label="Yin Yang">☯️</span> Choose cutting mode: Remove or keep selected segments from video when exporting?<br />
           When <b>Keep</b> is selected, the video inside segments will be kept, while the video outside will be discarded.<br />
-          When <b>Cut away</b> is selected, the video inside segments will be discarded, while the video surrounding them will be kept.
+          When <b>Remove</b> is selected, the video inside segments will be discarded, while the video surrounding them will be kept.
         </KeyCell>
         <Table.TextCell>
           <SegmentedControl
-            options={[{ label: 'Cut away', value: 'discard' }, { label: 'Keep', value: 'keep' }]}
+            options={[{ label: 'Remove', value: 'discard' }, { label: 'Keep', value: 'keep' }]}
             value={invertCutSegments ? 'discard' : 'keep'}
             onChange={value => setInvertCutSegments(value === 'discard')}
           />

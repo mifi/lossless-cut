@@ -1,5 +1,5 @@
 import React, { Fragment, memo } from 'react';
-import { IoIosHelpCircle } from 'react-icons/io';
+import { IoIosHelpCircle, IoIosSettings } from 'react-icons/io';
 import { Button } from 'evergreen-ui';
 import { MdCallSplit, MdCallMerge } from 'react-icons/md';
 
@@ -9,7 +9,7 @@ import { withBlur } from './util';
 const TopMenu = memo(({
   filePath, copyAnyAudioTrack, toggleStripAudio, customOutDir, setOutputDir,
   renderOutFmt, outSegments, autoMerge, toggleAutoMerge, keyframeCut, toggleKeyframeCut, toggleHelp,
-  numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown,
+  numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown, toggleSettings,
 }) => {
   const AutoMergeIcon = autoMerge ? MdCallMerge : MdCallSplit;
 
@@ -68,6 +68,7 @@ const TopMenu = memo(({
       )}
 
       <IoIosHelpCircle size={24} role="button" onClick={toggleHelp} style={{ verticalAlign: 'middle', marginLeft: 5 }} />
+      <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ verticalAlign: 'middle', marginLeft: 5 }} />
     </Fragment>
   );
 });

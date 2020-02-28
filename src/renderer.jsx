@@ -16,6 +16,7 @@ import isEqual from 'lodash/isEqual';
 
 import TopMenu from './TopMenu';
 import HelpSheet from './HelpSheet';
+import SettingsSheet from './SettingsSheet';
 import StreamsSelector from './StreamsSelector';
 import SegmentList from './SegmentList';
 import Settings from './Settings';
@@ -204,6 +205,7 @@ const App = memo(() => {
 
   // Global state
   const [helpVisible, setHelpVisible] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false);
   const [mifiLink, setMifiLink] = useState();
 
   const videoRef = useRef();
@@ -1040,6 +1042,7 @@ const App = memo(() => {
   ]);
 
   const toggleHelp = useCallback(() => setHelpVisible(val => !val), []);
+  const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
 
   const jumpSeg = useCallback((val) => setCurrentSegIndex((old) => Math.max(Math.min(old + val, cutSegments.length - 1), 0)), [cutSegments.length]);
 
@@ -1264,6 +1267,10 @@ const App = memo(() => {
       toggleHelp();
     }
 
+    function openSettings() {
+      toggleSettings();
+    }
+
     electron.ipcRenderer.on('file-opened', fileOpened);
     electron.ipcRenderer.on('close-file', closeFile);
     electron.ipcRenderer.on('html5ify', html5ify);
@@ -1275,6 +1282,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('importEdlFile', importEdlFile);
     electron.ipcRenderer.on('exportEdlFile', exportEdlFile);
     electron.ipcRenderer.on('openHelp', openHelp);
+    electron.ipcRenderer.on('openSettings', openSettings);
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
@@ -1288,11 +1296,12 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('importEdlFile', importEdlFile);
       electron.ipcRenderer.removeListener('exportEdlFile', exportEdlFile);
       electron.ipcRenderer.removeListener('openHelp', openHelp);
+      electron.ipcRenderer.removeListener('openSettings', openSettings);
     };
   }, [
     load, mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset, getHtml5ifiedPath,
     createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory,
-    loadEdlFile, cutSegments, edlFilePath, askBeforeClose, toggleHelp,
+    loadEdlFile, cutSegments, edlFilePath, askBeforeClose, toggleHelp, toggleSettings,
   ]);
 
   async function showAddStreamSourceDialog() {
@@ -1457,6 +1466,7 @@ const App = memo(() => {
           keyframeCut={keyframeCut}
           toggleKeyframeCut={toggleKeyframeCut}
           toggleHelp={toggleHelp}
+          toggleSettings={toggleSettings}
           numStreamsToCopy={numStreamsToCopy}
           numStreamsTotal={numStreamsTotal}
           setStreamsSelectorShown={setStreamsSelectorShown}
@@ -1685,10 +1695,15 @@ const App = memo(() => {
       </motion.div>
 
       <HelpSheet
-        visible={!!helpVisible}
+        visible={helpVisible}
         onTogglePress={toggleHelp}
-        renderSettings={renderSettings}
         ffmpegCommandLog={ffmpegCommandLog}
+      />
+
+      <SettingsSheet
+        visible={settingsVisible}
+        onTogglePress={toggleSettings}
+        renderSettings={renderSettings}
       />
     </div>
   );

@@ -2,7 +2,6 @@ import React, { memo } from 'react';
 import { IoIosCloseCircleOutline } from 'react-icons/io';
 import { FaClipboard } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Table } from 'evergreen-ui';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { clipboard } = require('electron');
@@ -10,7 +9,7 @@ const { clipboard } = require('electron');
 const { toast } = require('./util');
 
 const HelpSheet = memo(({
-  visible, onTogglePress, renderSettings, ffmpegCommandLog,
+  visible, onTogglePress, ffmpegCommandLog,
 }) => (
   <AnimatePresence>
     {visible && (
@@ -47,24 +46,11 @@ const HelpSheet = memo(({
 
         <p style={{ fontWeight: 'bold' }}>Hover mouse over buttons in the main interface to see which function they have.</p>
 
-        <Table style={{ marginTop: 40 }}>
-          <Table.Head>
-            <Table.TextHeaderCell>
-              Settings
-            </Table.TextHeaderCell>
-            <Table.TextHeaderCell>
-              Current setting
-            </Table.TextHeaderCell>
-          </Table.Head>
-          <Table.Body>
-            {renderSettings()}
-          </Table.Body>
-        </Table>
-
         <h1 style={{ marginTop: 40 }}>Last ffmpeg commands</h1>
         <div style={{ overflowY: 'scroll', height: 200 }}>
-          {ffmpegCommandLog.reverse().map(({ command, time }) => (
-            <div key={time} style={{ whiteSpace: 'pre', margin: '5px 0' }}>
+          {ffmpegCommandLog.reverse().map(({ command }, i) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <div key={i} style={{ whiteSpace: 'pre', margin: '5px 0' }}>
               <FaClipboard style={{ cursor: 'pointer' }} title="Copy to clipboard" onClick={() => { clipboard.writeText(command); toast.fire({ timer: 2000, icon: 'success', title: 'Copied to clipboard' }); }} /> {command}
             </div>
           ))}
