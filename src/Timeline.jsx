@@ -37,7 +37,7 @@ const Waveform = memo(({ calculateTimelinePos, durationSafe, waveform, zoom, tim
 const Timeline = memo(({
   durationSafe, getCurrentTime, startTimeOffset, playerTime, commandedTime,
   zoom, neighbouringFrames, seekAbs, seekRel, duration, apparentCutSegments, zoomRel,
-  setCurrentSegIndex, currentSegIndexSafe, invertCutSegments, inverseCutSegments, mainVideoStream, formatTimecode,
+  setCurrentSegIndex, currentSegIndexSafe, invertCutSegments, inverseCutSegments, formatTimecode,
   waveform, shouldShowWaveform, shouldShowKeyframes, timelineHeight, thumbnails,
   onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled,
 }) => {
