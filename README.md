@@ -128,6 +128,7 @@ The CSV export/import function takes csv files with one cut segment on each line
 ## Troubleshooting
 
 - If you get an error when cutting or opening any kind of file under Windows, please check your anti-virus. It might be blocking execution of ffmpeg, see [#18](https://github.com/mifi/lossless-cut/issues/18)
+- If you get an error on linux like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See #258
 - If any other problem, please file an issue here on github.
 
 ## Donate 🙈
