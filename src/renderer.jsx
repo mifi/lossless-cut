@@ -1048,8 +1048,10 @@ const App = memo(() => {
     Mousetrap.bind('k', () => playCommand());
     Mousetrap.bind('j', () => changePlaybackRate(-1));
     Mousetrap.bind('l', () => changePlaybackRate(1));
-    Mousetrap.bind('left', () => seekRelPercent(-0.05));
-    Mousetrap.bind('right', () => seekRelPercent(0.05));
+    Mousetrap.bind('left', () => seekRel(-1));
+    Mousetrap.bind('right', () => seekRel(1));
+    Mousetrap.bind(['ctrl+left', 'command+left'], () => { seekRelPercent(-0.01); return false; });
+    Mousetrap.bind(['ctrl+right', 'command+right'], () => { seekRelPercent(0.01); return false; });
     Mousetrap.bind('up', () => jumpSeg(-1));
     Mousetrap.bind('down', () => jumpSeg(1));
     Mousetrap.bind('.', () => shortStep(1));
@@ -1070,6 +1072,8 @@ const App = memo(() => {
       Mousetrap.unbind('l');
       Mousetrap.unbind('left');
       Mousetrap.unbind('right');
+      Mousetrap.unbind(['ctrl+left', 'command+left']);
+      Mousetrap.unbind(['ctrl+right', 'command+right']);
       Mousetrap.unbind('up');
       Mousetrap.unbind('down');
       Mousetrap.unbind('.');
@@ -1085,7 +1089,7 @@ const App = memo(() => {
     };
   }, [
     addCutSegment, capture, changePlaybackRate, cutClick, playCommand, removeCutSegment,
-    setCutEnd, setCutStart, seekRelPercent, shortStep, deleteSource, jumpSeg, toggleHelp,
+    setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, deleteSource, jumpSeg, toggleHelp,
   ]);
 
   useEffect(() => {

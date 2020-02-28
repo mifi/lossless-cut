@@ -27,8 +27,10 @@ const HelpSheet = memo(({
         <div><kbd>SPACE</kbd>, <kbd>k</kbd> Play/pause</div>
         <div><kbd>J</kbd> Slow down video</div>
         <div><kbd>L</kbd> Speed up video</div>
-        <div><kbd>←</kbd> Seek backward 5% of timeline (at current zoom)</div>
-        <div><kbd>→</kbd> Seek forward 5% of timeline (at current zoom)</div>
+        <div><kbd>←</kbd> Seek backward 1 sec</div>
+        <div><kbd>→</kbd> Seek forward 1 sec</div>
+        <div><kbd>CTRL</kbd>/<kbd>CMD</kbd>+<kbd>←</kbd> Seek backward 1% of timeline (at current zoom)</div>
+        <div><kbd>CTRL</kbd>/<kbd>CMD</kbd>+<kbd>→</kbd> Seek forward 1% of timeline (at current zoom)</div>
         <div><kbd>,</kbd> Seek backward 1 frame</div>
         <div><kbd>.</kbd> Seek forward 1 frame</div>
         <div><kbd>I</kbd> Mark in / cut start point</div>
