@@ -111,7 +111,11 @@ async function readFrames({ filePath, aroundTime, window, stream }) {
     intervalsArgs = ['-read_intervals', `${from}%${to}`];
   }
   const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', stream, '-show_entries', 'packet=pts_time,flags', '-of', 'json', filePath]);
-  return sortBy(JSON.parse(stdout).packets.map(p => ({ keyframe: p.flags[0] === 'K', time: parseFloat(p.pts_time, 10) })), 'time');
+  const packetsFiltered = JSON.parse(stdout).packets
+    .map(p => ({ keyframe: p.flags[0] === 'K', time: parseFloat(p.pts_time, 10) }))
+    .filter(p => !Number.isNaN(p.time));
+
+  return sortBy(packetsFiltered, 'time');
 }
 
 // https://stackoverflow.com/questions/14005110/how-to-split-a-video-using-ffmpeg-so-that-each-chunk-starts-with-a-key-frame
