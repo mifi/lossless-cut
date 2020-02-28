@@ -261,6 +261,8 @@ const App = memo(() => {
     setThumbnails([]);
   }, [cutSegmentsHistory, cancelCutSegmentsDebounce, setCutSegments, cancelWaveformDataDebounce, cancelReadKeyframeDataDebounce]);
 
+  const isFileOpened = !!filePath;
+
   function setTimelineMode(newMode) {
     if (newMode === 'waveform') {
       setWaveformEnabled(v => !v);
@@ -1094,8 +1096,8 @@ const App = memo(() => {
   }, []);
 
   useEffect(() => {
-    electron.ipcRenderer.send('setAskBeforeClose', askBeforeClose);
-  }, [askBeforeClose]);
+    electron.ipcRenderer.send('setAskBeforeClose', askBeforeClose && isFileOpened);
+  }, [askBeforeClose, isFileOpened]);
 
   const extractAllStreams = useCallback(async () => {
     if (!filePath) return;
@@ -1134,7 +1136,7 @@ const App = memo(() => {
 
     const firstFile = filePaths[0];
 
-    if (!filePath) {
+    if (!isFileOpened) {
       load(firstFile);
       return;
     }
@@ -1157,7 +1159,7 @@ const App = memo(() => {
       addStreamSourceFile(firstFile);
       setStreamsSelectorShown(true);
     }
-  }, [addStreamSourceFile, filePath, load, mergeFiles]);
+  }, [addStreamSourceFile, isFileOpened, load, mergeFiles]);
 
   const onDrop = useCallback(async (ev) => {
     ev.preventDefault();
@@ -1177,6 +1179,7 @@ const App = memo(() => {
     }
 
     function closeFile() {
+      if (!isFileOpened) return;
       // eslint-disable-next-line no-alert
       if (askBeforeClose && !window.confirm('Are you sure you want to close the current file? You will lose all unsaved work')) return;
 
@@ -1247,7 +1250,7 @@ const App = memo(() => {
     }
 
     async function importEdlFile() {
-      if (!filePath) return;
+      if (!isFileOpened) return;
       const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters: [{ name: 'CSV files', extensions: ['csv'] }] });
       if (canceled || filePaths.length < 1) return;
       await loadEdlFile(filePaths[0]);
@@ -1283,7 +1286,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('openHelp', openHelp);
     };
   }, [
-    load, mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, getHtml5ifiedPath,
+    load, mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset, getHtml5ifiedPath,
     createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory,
     loadEdlFile, cutSegments, edlFilePath, askBeforeClose, toggleHelp,
   ]);
@@ -1456,7 +1459,7 @@ const App = memo(() => {
         />
       </div>
 
-      {!filePath && (
+      {!isFileOpened && (
         <div className="no-user-select" style={{ position: 'fixed', left: 0, right: 0, top: topBarHeight, bottom: bottomBarHeight, border: '2vmin dashed #252525', color: '#505050', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}>
           <div style={{ fontSize: '9vmin' }}>DROP VIDEO(S)</div>
 
@@ -1537,7 +1540,7 @@ const App = memo(() => {
         </div>
       )}
 
-      {filePath && (
+      {isFileOpened && (
         <Fragment>
           <div
             className="no-user-select"
