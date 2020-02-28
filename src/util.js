@@ -45,9 +45,9 @@ function getOutDir(customOutDir, filePath) {
 
 function getOutPath(customOutDir, filePath, nameSuffix) {
   if (!filePath) return undefined;
-  const basename = path.basename(filePath);
+  const parsed = path.parse(filePath);
 
-  return path.join(getOutDir(customOutDir, filePath), `${basename}-${nameSuffix}`);
+  return path.join(getOutDir(customOutDir, filePath), `${parsed.name}-${nameSuffix}`);
 }
 
 async function transferTimestamps(inPath, outPath) {
