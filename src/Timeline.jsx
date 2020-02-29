@@ -126,9 +126,15 @@ const Timeline = memo(({
 
           {thumbnailsEnabled && (
             <div style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative' }}>
-              {thumbnails.map((thumbnail) => (
-                <img key={thumbnail.url} src={thumbnail.url} alt="" style={{ position: 'absolute', left: `${(thumbnail.time / durationSafe) * 100}%`, height: timelineHeight * 1.5, zIndex: 1, maxWidth: '13%', objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.5)', borderBottomRightRadius: 15, borderTopLeftRadius: 15, borderTopRightRadius: 15 }} />
-              ))}
+              {thumbnails.map((thumbnail, i) => {
+                const leftPercent = (thumbnail.time / durationSafe) * 100;
+                const nextThumbnail = thumbnails[i + 1];
+                const nextThumbTime = nextThumbnail ? nextThumbnail.time : durationSafe;
+                const maxWidthPercent = ((nextThumbTime - thumbnail.time) / durationSafe) * 100 * 0.9;
+                return (
+                  <img key={thumbnail.url} src={thumbnail.url} alt="" style={{ position: 'absolute', left: `${leftPercent}%`, height: timelineHeight * 1.5, zIndex: 1, maxWidth: `${maxWidthPercent}%`, objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.5)', borderBottomRightRadius: 15, borderTopLeftRadius: 15, borderTopRightRadius: 15 }} />
+                );
+              })}
             </div>
           )}
 

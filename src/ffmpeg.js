@@ -517,11 +517,22 @@ async function renderThumbnail(filePath, timestamp) {
   return URL.createObjectURL(blob);
 }
 
-async function renderThumbnails({ filePath, numThumbs, from, duration, onThumbnail }) {
-  const thumbTimes = Array(numThumbs).fill().map((unused, i) => (from + ((duration * i) / numThumbs)));
+async function renderThumbnails({ filePath, from, duration, onThumbnail }) {
+  // Time first render to determine how many to render
+  const startTime = new Date().getTime() / 1000;
+  let url = await renderThumbnail(filePath, from);
+  const endTime = new Date().getTime() / 1000;
+  onThumbnail({ time: from, url });
+
+  // Aim for max 3 sec to render all
+  const numThumbs = Math.floor(Math.min(Math.max(3 / (endTime - startTime), 3), 10));
+  console.log(numThumbs);
+
+  const thumbTimes = Array(numThumbs - 1).fill().map((unused, i) => (from + ((duration * (i + 1)) / (numThumbs))));
+  console.log(thumbTimes);
 
   await pMap(thumbTimes, async (time) => {
-    const url = await renderThumbnail(filePath, time);
+    url = await renderThumbnail(filePath, time);
     onThumbnail({ time, url });
   }, { concurrency: 2 });
 }
