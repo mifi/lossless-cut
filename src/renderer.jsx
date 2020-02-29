@@ -1675,6 +1675,7 @@ const App = memo(() => {
           currentApparentCutSeg={currentApparentCutSeg}
           playing={playing}
           shortStep={shortStep}
+          seekClosestKeyframe={seekClosestKeyframe}
           playCommand={playCommand}
           setTimelineMode={setTimelineMode}
           timelineMode={timelineMode}

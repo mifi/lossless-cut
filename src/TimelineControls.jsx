@@ -1,6 +1,7 @@
 import React, { Fragment, memo } from 'react';
 import { FaHandPointLeft, FaHandPointRight, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey } from 'react-icons/fa';
 import { GiSoundWaves } from 'react-icons/gi';
+import { IoMdKey } from 'react-icons/io';
 // import useTraceUpdate from 'use-trace-update';
 
 import { getSegColors, parseDuration, formatDuration } from './util';
@@ -12,7 +13,7 @@ const TimelineControls = memo(({
   setCurrentSegIndex, cutStartTimeManual, setCutStartTimeManual, cutEndTimeManual, setCutEndTimeManual,
   duration, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
   playing, shortStep, playCommand, setTimelineMode, hasAudio, hasVideo, timelineMode,
-  keyframesEnabled, setKeyframesEnabled,
+  keyframesEnabled, setKeyframesEnabled, seekClosestKeyframe,
 }) => {
   const {
     segActiveBgColor: currentSegActiveBgColor,
@@ -61,14 +62,15 @@ const TimelineControls = memo(({
   }
 
   function renderCutTimeInput(type) {
-    const cutTimeManual = type === 'start' ? cutStartTimeManual : cutEndTimeManual;
+    const isStart = type === 'start';
+    const cutTimeManual = type === isStart ? cutStartTimeManual : cutEndTimeManual;
     const cutTimeInputStyle = {
-      background: 'white', borderRadius: 5, color: 'rgba(0, 0, 0, 0.7)', fontSize: 13, padding: '3px 5px', margin: '0 3px', border: 'none', boxSizing: 'border-box', fontFamily: 'inherit', width: 90, textAlign: type === 'start' ? 'right' : 'left',
+      background: 'white', borderRadius: 5, color: 'rgba(0, 0, 0, 0.7)', fontSize: 13, textAlign: 'center', padding: '3px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 3 : 5, marginRight: isStart ? 5 : 3, border: 'none', boxSizing: 'border-box', fontFamily: 'inherit', width: 90,
     };
 
     const isCutTimeManualSet = () => cutTimeManual !== undefined;
 
-    const set = type === 'start' ? setCutStartTimeManual : setCutEndTimeManual;
+    const set = isStart ? setCutStartTimeManual : setCutEndTimeManual;
 
     const handleCutTimeInput = (text) => {
       // Allow the user to erase
@@ -94,13 +96,13 @@ const TimelineControls = memo(({
       seekAbs(rel);
     };
 
-    const cutTime = type === 'start' ? currentApparentCutSeg.start : currentApparentCutSeg.end;
+    const cutTime = isStart ? currentApparentCutSeg.start : currentApparentCutSeg.end;
 
     return (
       <input
         style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? '#dc1d1d' : undefined }}
         type="text"
-        title={`Manually input cut ${type === 'start' ? 'start' : 'end'} point`}
+        title={`Manually input cut ${isStart ? 'start' : 'end'} point`}
         onChange={e => handleCutTimeInput(e.target.value)}
         value={isCutTimeManualSet()
           ? cutTimeManual
@@ -163,6 +165,13 @@ const TimelineControls = memo(({
 
       {renderCutTimeInput('start')}
 
+      <IoMdKey
+        size={20}
+        role="button"
+        title="Seek previous keyframe"
+        style={{ transform: 'matrix(-1, 0, 0, 1, 0, 0)' }}
+        onClick={() => seekClosestKeyframe(-1)}
+      />
       <FaCaretLeft
         size={20}
         role="button"
@@ -179,6 +188,12 @@ const TimelineControls = memo(({
         role="button"
         title="One frame forward"
         onClick={() => shortStep(1)}
+      />
+      <IoMdKey
+        size={20}
+        role="button"
+        title="Seek next keyframe"
+        onClick={() => seekClosestKeyframe(1)}
       />
 
       {renderCutTimeInput('end')}
