@@ -1342,7 +1342,7 @@ const App = memo(() => {
 
   const renderOutFmt = useCallback((props) => (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <Select defaultValue="" value={fileFormat} title="Output format" onChange={withBlur(e => setFileFormat(e.target.value))} {...props}>
+    <Select value={fileFormat || ''} title="Output format" onChange={withBlur(e => setFileFormat(e.target.value))} {...props}>
       <option key="disabled1" value="" disabled>Format</option>
 
       {detectedFileFormat && (
