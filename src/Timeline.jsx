@@ -1,9 +1,11 @@
 import React, { memo, useRef, useMemo, useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Hammer from 'react-hammerjs';
+import debounce from 'lodash/debounce';
 
 import TimelineSeg from './TimelineSeg';
 import InverseCutSegment from './InverseCutSegment';
+
 
 import { timelineBackground } from './colors';
 
@@ -43,6 +45,7 @@ const Timeline = memo(({
 }) => {
   const timelineScrollerRef = useRef();
   const timelineScrollerSkipEventRef = useRef();
+  const timelineScrollerSkipEventDebounce = useRef();
   const timelineWrapperRef = useRef();
 
   const offsetCurrentTime = (getCurrentTime() || 0) + startTimeOffset;
@@ -58,16 +61,24 @@ const Timeline = memo(({
   const currentTimeWidth = 1;
   // Prevent it from overflowing (and causing scroll) when end of timeline
 
-  // Keep cursor in view while scrolling
+  useEffect(() => {
+    timelineScrollerSkipEventDebounce.current = debounce(() => {
+      timelineScrollerSkipEventRef.current = false;
+    }, 1000);
+  }, []);
+
+  // Keep cursor in view while zooming
   useEffect(() => {
     timelineScrollerSkipEventRef.current = true;
+    timelineScrollerSkipEventDebounce.current();
     if (zoom > 1) {
-      const zoomedTargetWidth = timelineScrollerRef.current.offsetWidth * (zoom - 1);
+      const zoomedTargetWidth = timelineScrollerRef.current.offsetWidth * zoom;
 
-      timelineScrollerRef.current.scrollLeft = (getCurrentTime() / durationSafe) * zoomedTargetWidth;
+      timelineScrollerRef.current.scrollLeft = Math.max((getCurrentTime() / durationSafe) * zoomedTargetWidth - timelineScrollerRef.current.offsetWidth / 2, 0);
     }
   }, [zoom, durationSafe, getCurrentTime]);
 
+  // Keep cursor in view while scrolling
   const onTimelineScroll = useCallback((e) => {
     if (!zoomed) return;
 
@@ -77,10 +88,7 @@ const Timeline = memo(({
 
     onZoomWindowStartTimeChange(zoomWindowStartTime);
 
-    if (timelineScrollerSkipEventRef.current) {
-      timelineScrollerSkipEventRef.current = false;
-      return;
-    }
+    if (timelineScrollerSkipEventRef.current) return;
 
     seekAbs((((e.target.scrollLeft + (timelineScrollerRef.current.offsetWidth * 0.5))
       / (timelineScrollerRef.current.offsetWidth * zoom)) * duration));
