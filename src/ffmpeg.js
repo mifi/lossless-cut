@@ -120,7 +120,7 @@ async function readFrames({ filePath, aroundTime, window, stream }) {
 
 // https://stackoverflow.com/questions/14005110/how-to-split-a-video-using-ffmpeg-so-that-each-chunk-starts-with-a-key-frame
 // http://kicherer.org/joomla/index.php/de/blog/42-avcut-frame-accurate-video-cutting-with-only-small-quality-loss
-function getNextPrevKeyframe(frames, cutTime, nextMode) {
+function getSafeCutTime(frames, cutTime, nextMode) {
   const sigma = 0.01;
   const isCloseTo = (time1, time2) => Math.abs(time1 - time2) < sigma;
 
@@ -165,6 +165,15 @@ function getNextPrevKeyframe(frames, cutTime, nextMode) {
 
   // Use frame before the found keyframe
   return frames[index - 1].time;
+}
+
+function findNearestKeyFrameTime({ frames, time, direction, fps }) {
+  const sigma = fps ? (1 / fps) : 0.1;
+  const keyframes = frames.filter(f => f.keyframe && (direction > 0 ? f.time > time + sigma : f.time < time - sigma));
+  if (keyframes.length === 0) return undefined;
+  const nearestFrame = sortBy(keyframes, keyframe => (direction > 0 ? keyframe.time - time : time - keyframe.time))[0];
+  if (!nearestFrame) return undefined;
+  return nearestFrame.time;
 }
 
 async function cut({
@@ -632,7 +641,8 @@ module.exports = {
   isCuttingStart,
   isCuttingEnd,
   readFrames,
-  getNextPrevKeyframe,
+  getSafeCutTime,
+  findNearestKeyFrameTime,
   renderWaveformPng,
   renderThumbnails,
 };

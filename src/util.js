@@ -137,7 +137,6 @@ function getSegColors(seg) {
   };
 }
 
-
 module.exports = {
   formatDuration,
   parseDuration,

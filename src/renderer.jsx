@@ -178,8 +178,8 @@ const App = memo(() => {
   }, 500, [filePath, commandedTime, duration, zoom, waveformEnabled, mainAudioStream]);
 
   const [, cancelReadKeyframeDataDebounce] = useDebounce(() => {
-    setDebouncedReadKeyframesData({ keyframesEnabled, filePath, commandedTime, duration, zoom, mainVideoStream });
-  }, 500, [keyframesEnabled, filePath, commandedTime, duration, zoom, mainVideoStream]);
+    setDebouncedReadKeyframesData({ keyframesEnabled, filePath, commandedTime, mainVideoStream });
+  }, 500, [keyframesEnabled, filePath, commandedTime, mainVideoStream]);
 
   // Preferences
   const [captureFormat, setCaptureFormat] = useState(configStore.get('captureFormat'));
@@ -450,7 +450,7 @@ const App = memo(() => {
     currentTimeRef.current = playing ? playerTime : commandedTime;
   }, [commandedTime, playerTime, playing]);
 
-  // const getNextPrevKeyframe = useCallback((cutTime, next) => ffmpeg.getNextPrevKeyframe(neighbouringFrames, cutTime, next), [neighbouringFrames]);
+  // const getSafeCutTime = useCallback((cutTime, next) => ffmpeg.getSafeCutTime(neighbouringFrames, cutTime, next), [neighbouringFrames]);
 
   const addCutSegment = useCallback(() => {
     try {
@@ -459,7 +459,7 @@ const App = memo(() => {
 
       const suggestedStart = currentTimeRef.current;
       /* if (keyframeCut) {
-        const keyframeAlignedStart = getNextPrevKeyframe(suggestedStart, true);
+        const keyframeAlignedStart = getSafeCutTime(suggestedStart, true);
         if (keyframeAlignedStart != null) suggestedStart = keyframeAlignedStart;
       } */
 
@@ -467,7 +467,7 @@ const App = memo(() => {
       if (suggestedEnd >= duration) {
         suggestedEnd = undefined;
       } /* else if (keyframeCut) {
-        const keyframeAlignedEnd = getNextPrevKeyframe(suggestedEnd, false);
+        const keyframeAlignedEnd = getSafeCutTime(suggestedEnd, false);
         if (keyframeAlignedEnd != null) suggestedEnd = keyframeAlignedEnd;
       } */
 
@@ -498,7 +498,7 @@ const App = memo(() => {
       try {
         const startTime = currentTimeRef.current;
         /* if (keyframeCut) {
-          const keyframeAlignedCutTo = getNextPrevKeyframe(startTime, true);
+          const keyframeAlignedCutTo = getSafeCutTime(startTime, true);
           if (keyframeAlignedCutTo != null) startTime = keyframeAlignedCutTo;
         } */
         setCutTime('start', startTime);
@@ -513,7 +513,7 @@ const App = memo(() => {
       const endTime = currentTimeRef.current;
 
       /* if (keyframeCut) {
-        const keyframeAlignedCutTo = getNextPrevKeyframe(endTime, false);
+        const keyframeAlignedCutTo = getSafeCutTime(endTime, false);
         if (keyframeAlignedCutTo != null) endTime = keyframeAlignedCutTo;
       } */
       setCutTime('end', endTime);
@@ -727,7 +727,8 @@ const App = memo(() => {
   useEffect(() => {
     async function run() {
       const d = debouncedReadKeyframesData;
-      if (!d || !d.keyframesEnabled || !d.filePath || !d.mainVideoStream || d.commandedTime == null || !calcShouldShowKeyframes(d.duration, d.zoom) || readingKeyframesPromise.current) return;
+      // We still want to calculate keyframes even if not shouldShowKeyframes because maybe we want to step to closest keyframe
+      if (!d || !d.keyframesEnabled || !d.filePath || !d.mainVideoStream || d.commandedTime == null || readingKeyframesPromise.current) return;
 
       try {
         const promise = ffmpeg.readFrames({ filePath: d.filePath, aroundTime: d.commandedTime, stream: d.mainVideoStream.index, window: ffmpegExtractWindow });
@@ -1046,6 +1047,12 @@ const App = memo(() => {
 
   const jumpSeg = useCallback((val) => setCurrentSegIndex((old) => Math.max(Math.min(old + val, cutSegments.length - 1), 0)), [cutSegments.length]);
 
+  const seekClosestKeyframe = useCallback((direction) => {
+    const time = ffmpeg.findNearestKeyFrameTime({ frames: neighbouringFrames, time: commandedTime, direction, fps: detectedFps });
+    if (time == null) return;
+    seekAbs(time);
+  }, [commandedTime, neighbouringFrames, seekAbs, detectedFps]);
+
   useEffect(() => {
     Mousetrap.bind('space', () => playCommand());
     Mousetrap.bind('k', () => playCommand());
@@ -1055,6 +1062,8 @@ const App = memo(() => {
     Mousetrap.bind('right', () => seekRel(1));
     Mousetrap.bind(['ctrl+left', 'command+left'], () => { seekRelPercent(-0.01); return false; });
     Mousetrap.bind(['ctrl+right', 'command+right'], () => { seekRelPercent(0.01); return false; });
+    Mousetrap.bind('alt+left', () => seekClosestKeyframe(-1));
+    Mousetrap.bind('alt+right', () => seekClosestKeyframe(1));
     Mousetrap.bind('up', () => jumpSeg(-1));
     Mousetrap.bind('down', () => jumpSeg(1));
     Mousetrap.bind('.', () => shortStep(1));
@@ -1077,6 +1086,8 @@ const App = memo(() => {
       Mousetrap.unbind('right');
       Mousetrap.unbind(['ctrl+left', 'command+left']);
       Mousetrap.unbind(['ctrl+right', 'command+right']);
+      Mousetrap.unbind('alt+left');
+      Mousetrap.unbind('alt+right');
       Mousetrap.unbind('up');
       Mousetrap.unbind('down');
       Mousetrap.unbind('.');
@@ -1093,6 +1104,7 @@ const App = memo(() => {
   }, [
     addCutSegment, capture, changePlaybackRate, cutClick, playCommand, removeCutSegment,
     setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, deleteSource, jumpSeg, toggleHelp,
+    seekClosestKeyframe,
   ]);
 
   useEffect(() => {

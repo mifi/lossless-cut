@@ -29,6 +29,7 @@ module.exports = (app, mainWindow, newVersion) => {
           mainWindow.webContents.send('close-file');
         },
       },
+      { type: 'separator' },
       {
         label: 'Import CSV cut file',
         click() {
@@ -41,6 +42,7 @@ module.exports = (app, mainWindow, newVersion) => {
           mainWindow.webContents.send('exportEdlFile');
         },
       },
+      { type: 'separator' },
       {
         label: 'Convert to friendly format (fastest)',
         click() {
@@ -65,6 +67,7 @@ module.exports = (app, mainWindow, newVersion) => {
           mainWindow.webContents.send('html5ify', 'slow-audio');
         },
       },
+      { type: 'separator' },
       {
         label: 'Extract all streams',
         click() {
