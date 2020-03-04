@@ -6,6 +6,10 @@ import Lottie from 'react-lottie';
 import { SideSheet, Button, Position, SegmentedControl, Select } from 'evergreen-ui';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import useDebounce from 'react-use/lib/useDebounce';
+import PQueue from 'p-queue';
+import filePathToUrl from 'file-url';
+import Mousetrap from 'mousetrap';
+import uuid from 'uuid';
 
 import fromPairs from 'lodash/fromPairs';
 import clamp from 'lodash/clamp';
@@ -26,37 +30,30 @@ import RightMenu from './RightMenu';
 import TimelineControls from './TimelineControls';
 import { loadMifiLink } from './mifi';
 import { primaryColor, controlsBackground, waveformColor } from './colors';
+import { showMergeDialog, showOpenAndMergeDialog } from './merge/merge';
+import allOutFormats from './outFormats';
+import captureFrame from './capture-frame';
+import {
+  defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
+  getDefaultOutFormat, getFormatData, renderFrame, mergeAnyFiles, renderThumbnails as ffmpegRenderThumbnails,
+  readFrames, renderWaveformPng, html5ifyDummy, cutMultiple, extractStreams, autoMergeSegments, getAllStreams,
+  findNearestKeyFrameTime, html5ify as ffmpegHtml5ify,
+} from './ffmpeg';
+import configStore from './store';
+import { save as edlStoreSave, load as edlStoreLoad } from './edlStore';
+import {
+  getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
+  promptTimeOffset, generateColor, getOutDir, withBlur,
+} from './util';
+
 
 import loadingLottie from './7077-magic-flow.json';
 
 
-const isDev = require('electron-is-dev');
-const electron = require('electron'); // eslint-disable-line
-const Mousetrap = require('mousetrap');
-const trash = require('trash');
-const uuid = require('uuid');
-
-const ReactDOM = require('react-dom');
-const { default: PQueue } = require('p-queue');
-const { unlink, exists } = require('fs-extra');
-
-
-const { showMergeDialog, showOpenAndMergeDialog } = require('./merge/merge');
-const allOutFormats = require('./outFormats');
-const captureFrame = require('./capture-frame');
-const ffmpeg = require('./ffmpeg');
-const configStore = require('./store');
-const edlStore = require('./edlStore');
-
-const {
-  defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
-  getDefaultOutFormat, getFormatData,
-} = ffmpeg;
-
-const {
-  getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
-  promptTimeOffset, generateColor, getOutDir, withBlur,
-} = require('./util');
+// const isDev = window.require('electron-is-dev');
+const electron = window.require('electron'); // eslint-disable-line
+const trash = window.require('trash');
+const { unlink, exists } = window.require('fs-extra');
 
 
 const { dialog } = electron.remote;
@@ -528,7 +525,9 @@ const App = memo(() => {
     setCustomOutDir((filePaths && filePaths.length === 1) ? filePaths[0] : undefined);
   }, []);
 
-  const fileUri = (dummyVideoPath || html5FriendlyPath || filePath || '').replace(/#/g, '%23');
+  const effectiveFilePath = dummyVideoPath || html5FriendlyPath || filePath;
+  const fileUri = effectiveFilePath ? filePathToUrl(effectiveFilePath) : '';
+
 
   const outputDir = getOutDir(customOutDir, filePath);
 
@@ -553,7 +552,7 @@ const App = memo(() => {
           return;
         } */
 
-        await edlStore.save(edlFilePath, debouncedCutSegments);
+        await edlStoreSave(edlFilePath, debouncedCutSegments);
         lastSavedCutSegmentsRef.current = debouncedCutSegments;
       } catch (err) {
         errorToast('Failed to save CSV');
@@ -576,7 +575,7 @@ const App = memo(() => {
           if (playerTime == null || !filePath) return;
 
           try {
-            const framePathNew = await ffmpeg.renderFrame(playerTime, filePath, effectiveRotation);
+            const framePathNew = await renderFrame(playerTime, filePath, effectiveRotation);
             setFramePath(framePathNew);
           } catch (err) {
             console.error(err);
@@ -624,7 +623,7 @@ const App = memo(() => {
       setWorking(true);
 
       // console.log('merge', paths);
-      await ffmpeg.mergeAnyFiles({
+      await mergeAnyFiles({
         customOutDir, paths, allStreams,
       });
     } catch (err) {
@@ -701,7 +700,7 @@ const App = memo(() => {
 
       try {
         setThumbnails([]);
-        const promise = ffmpeg.renderThumbnails({ filePath, from: zoomWindowStartTime, duration: zoomedDuration, onThumbnail: addThumbnail });
+        const promise = ffmpegRenderThumbnails({ filePath, from: zoomWindowStartTime, duration: zoomedDuration, onThumbnail: addThumbnail });
         thumnailsRenderingPromiseRef.current = promise;
         await promise;
       } catch (err) {
@@ -729,7 +728,7 @@ const App = memo(() => {
       if (!d || !d.keyframesEnabled || !d.filePath || !d.mainVideoStream || d.commandedTime == null || readingKeyframesPromise.current) return;
 
       try {
-        const promise = ffmpeg.readFrames({ filePath: d.filePath, aroundTime: d.commandedTime, stream: d.mainVideoStream.index, window: ffmpegExtractWindow });
+        const promise = readFrames({ filePath: d.filePath, aroundTime: d.commandedTime, stream: d.mainVideoStream.index, window: ffmpegExtractWindow });
         readingKeyframesPromise.current = promise;
         const newFrames = await promise;
         // console.log(newFrames);
@@ -748,7 +747,7 @@ const App = memo(() => {
       const d = debouncedWaveformData;
       if (!d || !d.filePath || !d.mainAudioStream || d.commandedTime == null || !calcShouldShowWaveform(d.zoomedDuration) || !d.waveformEnabled || creatingWaveformPromise.current) return;
       try {
-        const promise = ffmpeg.renderWaveformPng({ filePath: d.filePath, aroundTime: d.commandedTime, window: ffmpegExtractWindow, color: waveformColor });
+        const promise = renderWaveformPng({ filePath: d.filePath, aroundTime: d.commandedTime, window: ffmpegExtractWindow, color: waveformColor });
         creatingWaveformPromise.current = promise;
         const wf = await promise;
         setWaveform(wf);
@@ -771,7 +770,7 @@ const App = memo(() => {
 
   const createDummyVideo = useCallback(async (fp) => {
     const html5ifiedDummyPathDummy = getOutPath(customOutDir, fp, 'html5ified-dummy.mkv');
-    await ffmpeg.html5ifyDummy(fp, html5ifiedDummyPathDummy);
+    await html5ifyDummy(fp, html5ifiedDummyPathDummy);
     setDummyVideoPath(html5ifiedDummyPathDummy);
     setHtml5FriendlyPath();
     showUnsupportedFileMessage();
@@ -858,7 +857,7 @@ const App = memo(() => {
     try {
       setWorking(true);
 
-      const outFiles = await ffmpeg.cutMultiple({
+      const outFiles = await cutMultiple({
         customOutDir,
         filePath,
         outFormat: fileFormat,
@@ -876,7 +875,7 @@ const App = memo(() => {
       if (outFiles.length > 1 && autoMerge) {
         setCutProgress(0); // TODO implement progress
 
-        await ffmpeg.autoMergeSegments({
+        await autoMergeSegments({
           customOutDir,
           sourceFile: filePath,
           segmentPaths: outFiles,
@@ -885,7 +884,7 @@ const App = memo(() => {
 
       if (exportExtraStreams) {
         try {
-          await ffmpeg.extractStreams({
+          await extractStreams({
             filePath, customOutDir, streams: nonCopiedExtraStreams,
           });
         } catch (err) {
@@ -954,7 +953,7 @@ const App = memo(() => {
 
   const loadEdlFile = useCallback(async (edlPath) => {
     try {
-      const storedEdl = await edlStore.load(edlPath);
+      const storedEdl = await edlStoreLoad(edlPath);
       const allRowsValid = storedEdl
         .every(row => row.start === undefined || row.end === undefined || row.start < row.end);
 
@@ -992,7 +991,7 @@ const App = memo(() => {
         return;
       }
 
-      const { streams } = await ffmpeg.getAllStreams(fp);
+      const { streams } = await getAllStreams(fp);
       // console.log('streams', streamsNew);
       setMainStreams(streams);
       setCopyStreamIdsForPath(fp, () => fromPairs(streams.map((stream) => [
@@ -1046,7 +1045,7 @@ const App = memo(() => {
   const jumpSeg = useCallback((val) => setCurrentSegIndex((old) => Math.max(Math.min(old + val, cutSegments.length - 1), 0)), [cutSegments.length]);
 
   const seekClosestKeyframe = useCallback((direction) => {
-    const time = ffmpeg.findNearestKeyFrameTime({ frames: neighbouringFrames, time: commandedTime, direction, fps: detectedFps });
+    const time = findNearestKeyFrameTime({ frames: neighbouringFrames, time: commandedTime, direction, fps: detectedFps });
     if (time == null) return;
     seekAbs(time);
   }, [commandedTime, neighbouringFrames, seekAbs, detectedFps]);
@@ -1121,7 +1120,7 @@ const App = memo(() => {
 
     try {
       setWorking(true);
-      await ffmpeg.extractStreams({ customOutDir, filePath, streams: mainStreams });
+      await extractStreams({ customOutDir, filePath, streams: mainStreams });
       toast.fire({ icon: 'success', title: `All streams can be found as separate files at: ${outputDir}` });
     } catch (err) {
       errorToast('Failed to extract all streams');
@@ -1137,7 +1136,7 @@ const App = memo(() => {
 
   const addStreamSourceFile = useCallback(async (path) => {
     if (externalStreamFiles[path]) return;
-    const { streams } = await ffmpeg.getAllStreams(path);
+    const { streams } = await getAllStreams(path);
     const formatData = await getFormatData(path);
     // console.log('streams', streams);
     setExternalStreamFiles(old => ({ ...old, [path]: { streams, formatData } }));
@@ -1212,7 +1211,7 @@ const App = memo(() => {
           const html5FriendlyPathNew = getHtml5ifiedPath(filePath, speed);
           const encodeVideo = ['slow', 'slow-audio'].includes(speed);
           const encodeAudio = speed === 'slow-audio';
-          await ffmpeg.html5ify(filePath, html5FriendlyPathNew, encodeVideo, encodeAudio);
+          await ffmpegHtml5ify(filePath, html5FriendlyPathNew, encodeVideo, encodeAudio);
           load(filePath, html5FriendlyPathNew);
         } else {
           await createDummyVideo(filePath);
@@ -1259,7 +1258,7 @@ const App = memo(() => {
           errorToast('File exists, bailing');
           return;
         }
-        await edlStore.save(fp, cutSegments);
+        await edlStoreSave(fp, cutSegments);
       } catch (err) {
         errorToast('Failed to export CSV');
         console.error('Failed to export CSV', err);
@@ -1723,6 +1722,4 @@ const App = memo(() => {
   );
 });
 
-ReactDOM.render(<App />, document.getElementById('app'));
-
-console.log('Version', electron.remote.app.getVersion());
+export default App;

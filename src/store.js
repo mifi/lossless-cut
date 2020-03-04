@@ -1,6 +1,6 @@
-const Store = require('electron-store');
+const Store = window.require('electron-store');
 
-const store = new Store({
+export default new Store({
   defaults: {
     captureFormat: 'jpeg',
     customOutDir: undefined,
@@ -14,5 +14,3 @@ const store = new Store({
     autoSaveProjectFile: true,
   },
 });
-
-module.exports = store;

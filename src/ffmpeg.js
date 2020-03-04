@@ -1,20 +1,22 @@
-const execa = require('execa');
-const pMap = require('p-map');
-const { join, extname } = require('path');
-const fileType = require('file-type');
-const readChunk = require('read-chunk');
-const flatMap = require('lodash/flatMap');
-const flatMapDeep = require('lodash/flatMapDeep');
-const sum = require('lodash/sum');
-const sortBy = require('lodash/sortBy');
-const readline = require('readline');
-const moment = require('moment');
-const stringToStream = require('string-to-stream');
-const trash = require('trash');
-const isDev = require('electron-is-dev');
-const os = require('os');
+import pMap from 'p-map';
+import flatMap from 'lodash/flatMap';
+import flatMapDeep from 'lodash/flatMapDeep';
+import sum from 'lodash/sum';
+import sortBy from 'lodash/sortBy';
+import moment from 'moment';
 
-const { formatDuration, getOutPath, transferTimestamps, filenamify } = require('./util');
+import { formatDuration, getOutPath, transferTimestamps, filenamify } from './util';
+
+const execa = window.require('execa');
+const { join, extname } = window.require('path');
+const fileType = window.require('file-type');
+const readChunk = window.require('read-chunk');
+const readline = window.require('readline');
+const stringToStream = window.require('string-to-stream');
+const trash = window.require('trash');
+const isDev = window.require('electron-is-dev');
+const os = window.require('os');
+
 
 
 function getFfCommandLine(cmd, args) {
@@ -80,11 +82,11 @@ function handleProgress(process, cutDuration, onProgress) {
   });
 }
 
-function isCuttingStart(cutFrom) {
+export function isCuttingStart(cutFrom) {
   return cutFrom > 0;
 }
 
-function isCuttingEnd(cutTo, duration) {
+export function isCuttingEnd(cutTo, duration) {
   return cutTo < duration;
 }
 
@@ -104,7 +106,7 @@ function getIntervalAroundTime(time, window) {
   };
 }
 
-async function readFrames({ filePath, aroundTime, window, stream }) {
+export async function readFrames({ filePath, aroundTime, window, stream }) {
   let intervalsArgs = [];
   if (aroundTime != null) {
     const { from, to } = getIntervalAroundTime(aroundTime, window);
@@ -120,7 +122,7 @@ async function readFrames({ filePath, aroundTime, window, stream }) {
 
 // https://stackoverflow.com/questions/14005110/how-to-split-a-video-using-ffmpeg-so-that-each-chunk-starts-with-a-key-frame
 // http://kicherer.org/joomla/index.php/de/blog/42-avcut-frame-accurate-video-cutting-with-only-small-quality-loss
-function getSafeCutTime(frames, cutTime, nextMode) {
+export function getSafeCutTime(frames, cutTime, nextMode) {
   const sigma = 0.01;
   const isCloseTo = (time1, time2) => Math.abs(time1 - time2) < sigma;
 
@@ -167,7 +169,7 @@ function getSafeCutTime(frames, cutTime, nextMode) {
   return frames[index - 1].time;
 }
 
-function findNearestKeyFrameTime({ frames, time, direction, fps }) {
+export function findNearestKeyFrameTime({ frames, time, direction, fps }) {
   const sigma = fps ? (1 / fps) : 0.1;
   const keyframes = frames.filter(f => f.keyframe && (direction > 0 ? f.time > time + sigma : f.time < time - sigma));
   if (keyframes.length === 0) return undefined;
@@ -244,7 +246,7 @@ async function cut({
   await transferTimestamps(filePath, outPath);
 }
 
-async function cutMultiple({
+export async function cutMultiple({
   customOutDir, filePath, segments: segmentsUnsorted, videoDuration, rotation,
   onProgress, keyframeCut, copyStreamIds, outFormat, isOutFormatUserSelected,
   appendFfmpegCommandLog, shortestFlag,
@@ -295,7 +297,7 @@ async function cutMultiple({
   return outFiles;
 }
 
-async function html5ify(filePath, outPath, encodeVideo, encodeAudio) {
+export async function html5ify(filePath, outPath, encodeVideo, encodeAudio) {
   console.log('Making HTML5 friendly version', { filePath, outPath, encodeVideo });
 
   const videoArgs = encodeVideo
@@ -315,7 +317,7 @@ async function html5ify(filePath, outPath, encodeVideo, encodeAudio) {
   await transferTimestamps(filePath, outPath);
 }
 
-async function getDuration(filePath) {
+export async function getDuration(filePath) {
   // https://superuser.com/questions/650291/how-to-get-video-duration-in-seconds
   const { stdout } = await runFfprobe(['-i', filePath, '-show_entries', 'format=duration', '-print_format', 'json']);
   return parseFloat(JSON.parse(stdout).format.duration);
@@ -323,7 +325,7 @@ async function getDuration(filePath) {
 
 // This is just used to load something into the player with correct length,
 // so user can seek and then we render frames using ffmpeg
-async function html5ifyDummy(filePath, outPath) {
+export async function html5ifyDummy(filePath, outPath) {
   console.log('Making HTML5 friendly dummy', { filePath, outPath });
 
   const duration = await getDuration(filePath);
@@ -376,14 +378,14 @@ async function mergeFiles({ paths, outPath, allStreams }) {
   console.log(result.stdout);
 }
 
-async function mergeAnyFiles({ customOutDir, paths, allStreams }) {
+export async function mergeAnyFiles({ customOutDir, paths, allStreams }) {
   const firstPath = paths[0];
   const ext = extname(firstPath);
   const outPath = getOutPath(customOutDir, firstPath, `merged${ext}`);
   return mergeFiles({ paths, outPath, allStreams });
 }
 
-async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths }) {
+export async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths }) {
   const ext = extname(sourceFile);
   const outPath = getOutPath(customOutDir, sourceFile, `cut-merged-${new Date().getTime()}${ext}`);
   await mergeFiles({ paths: segmentPaths, outPath });
@@ -413,7 +415,7 @@ function determineOutputFormat(ffprobeFormats, ft) {
   return ffprobeFormats[0] || undefined;
 }
 
-async function getFormatData(filePath) {
+export async function getFormatData(filePath) {
   console.log('getFormatData', filePath);
 
   const { stdout } = await runFfprobe([
@@ -422,7 +424,7 @@ async function getFormatData(filePath) {
   return JSON.parse(stdout).format;
 }
 
-async function getDefaultOutFormat(filePath, formatData) {
+export async function getDefaultOutFormat(filePath, formatData) {
   const formatsStr = formatData.format_name;
   console.log('formats', formatsStr);
   const formats = (formatsStr || '').split(',');
@@ -435,7 +437,7 @@ async function getDefaultOutFormat(filePath, formatData) {
   return mapFormat(assumedFormat);
 }
 
-async function getAllStreams(filePath) {
+export async function getAllStreams(filePath) {
   const { stdout } = await runFfprobe([
     '-of', 'json', '-show_entries', 'stream', '-i', filePath,
   ]);
@@ -472,7 +474,7 @@ function getPreferredCodecFormat(codec, type) {
 }
 
 // https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
-async function extractStreams({ filePath, customOutDir, streams }) {
+export async function extractStreams({ filePath, customOutDir, streams }) {
   const outStreams = streams.map((s) => ({
     index: s.index,
     codec: s.codec_name || s.codec_tag_string || s.codec_type,
@@ -517,7 +519,7 @@ async function renderThumbnail(filePath, timestamp) {
   return URL.createObjectURL(blob);
 }
 
-async function renderThumbnails({ filePath, from, duration, onThumbnail }) {
+export async function renderThumbnails({ filePath, from, duration, onThumbnail }) {
   // Time first render to determine how many to render
   const startTime = new Date().getTime() / 1000;
   let url = await renderThumbnail(filePath, from);
@@ -538,7 +540,7 @@ async function renderThumbnails({ filePath, from, duration, onThumbnail }) {
 }
 
 
-async function renderWaveformPng({ filePath, aroundTime, window, color }) {
+export async function renderWaveformPng({ filePath, aroundTime, window, color }) {
   const { from, to } = getIntervalAroundTime(aroundTime, window);
 
   const args1 = [
@@ -589,7 +591,7 @@ async function renderWaveformPng({ filePath, aroundTime, window, color }) {
   }
 }
 
-async function renderFrame(timestamp, filePath, rotation) {
+export async function renderFrame(timestamp, filePath, rotation) {
   const transpose = {
     90: 'transpose=2',
     180: 'transpose=1,transpose=1',
@@ -619,13 +621,13 @@ async function renderFrame(timestamp, filePath, rotation) {
 }
 
 // https://www.ffmpeg.org/doxygen/3.2/libavutil_2utils_8c_source.html#l00079
-const defaultProcessedCodecTypes = [
+export const defaultProcessedCodecTypes = [
   'video',
   'audio',
   'subtitle',
 ];
 
-function getStreamFps(stream) {
+export function getStreamFps(stream) {
   const match = typeof stream.avg_frame_rate === 'string' && stream.avg_frame_rate.match(/^([0-9]+)\/([0-9]+)$/);
   if (stream.codec_type === 'video' && match) {
     const num = parseInt(match[1], 10);
@@ -634,26 +636,3 @@ function getStreamFps(stream) {
   }
   return undefined;
 }
-
-
-module.exports = {
-  cutMultiple,
-  getFormatData,
-  getDefaultOutFormat,
-  html5ify,
-  html5ifyDummy,
-  mergeAnyFiles,
-  autoMergeSegments,
-  extractStreams,
-  renderFrame,
-  getAllStreams,
-  defaultProcessedCodecTypes,
-  getStreamFps,
-  isCuttingStart,
-  isCuttingEnd,
-  readFrames,
-  getSafeCutTime,
-  findNearestKeyFrameTime,
-  renderWaveformPng,
-  renderThumbnails,
-};

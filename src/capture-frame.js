@@ -1,8 +1,9 @@
-const fs = require('fs-extra');
-const mime = require('mime-types');
-const strongDataUri = require('strong-data-uri');
+import strongDataUri from 'strong-data-uri';
 
-const { formatDuration, getOutPath, transferTimestampsWithOffset } = require('./util');
+import { formatDuration, getOutPath, transferTimestampsWithOffset } from './util';
+
+const fs = window.require('fs-extra');
+const mime = window.require('mime-types');
 
 function getFrameFromVideo(video, format) {
   const canvas = document.createElement('canvas');
@@ -16,7 +17,7 @@ function getFrameFromVideo(video, format) {
   return strongDataUri.decode(dataUri);
 }
 
-async function captureFrame(customOutDir, filePath, video, currentTime, captureFormat) {
+export default async function captureFrame(customOutDir, filePath, video, currentTime, captureFormat) {
   const buf = getFrameFromVideo(video, captureFormat);
 
   const ext = mime.extension(buf.mimetype);
@@ -27,5 +28,3 @@ async function captureFrame(customOutDir, filePath, video, currentTime, captureF
   const offset = -video.duration + currentTime;
   return transferTimestampsWithOffset(filePath, outPath, offset);
 }
-
-module.exports = captureFrame;

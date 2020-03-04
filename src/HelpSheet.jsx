@@ -3,10 +3,10 @@ import { IoIosCloseCircleOutline } from 'react-icons/io';
 import { FaClipboard } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// eslint-disable-next-line import/no-extraneous-dependencies
-const { clipboard } = require('electron');
+import { toast } from './util';
 
-const { toast } = require('./util');
+const { clipboard } = window.require('electron');
+
 
 const HelpSheet = memo(({
   visible, onTogglePress, ffmpegCommandLog,

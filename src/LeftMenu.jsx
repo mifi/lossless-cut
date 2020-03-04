@@ -3,7 +3,7 @@ import { Select } from 'evergreen-ui';
 import { motion } from 'framer-motion';
 import { FaYinYang } from 'react-icons/fa';
 
-const { withBlur, toast } = require('./util');
+import { withBlur, toast } from './util';
 
 
 const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments }) => {

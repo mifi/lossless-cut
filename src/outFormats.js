@@ -1,5 +1,5 @@
 // Extracted from "ffmpeg -formats"
-module.exports = {
+export default {
   '3g2': '3GP2 (3GPP2 file format)',
   '3gp': '3GP (3GPP file format)',
   a64: 'a64 - video for Commodore 64',

@@ -1,30 +1,31 @@
-const _ = require('lodash');
-const path = require('path');
-const fs = require('fs-extra');
-const Swal = require('sweetalert2');
+import padStart from 'lodash/padStart';
+import Swal from 'sweetalert2';
 
-const randomColor = require('./random-color');
+import randomColor from './random-color';
+
+const path = window.require('path');
+const fs = window.require('fs-extra');
 
 
-function formatDuration({ seconds: _seconds, fileNameFriendly, fps }) {
+export function formatDuration({ seconds: _seconds, fileNameFriendly, fps }) {
   const seconds = _seconds || 0;
   const minutes = seconds / 60;
   const hours = minutes / 60;
 
-  const hoursPadded = _.padStart(Math.floor(hours), 2, '0');
-  const minutesPadded = _.padStart(Math.floor(minutes % 60), 2, '0');
-  const secondsPadded = _.padStart(Math.floor(seconds) % 60, 2, '0');
+  const hoursPadded = padStart(Math.floor(hours), 2, '0');
+  const minutesPadded = padStart(Math.floor(minutes % 60), 2, '0');
+  const secondsPadded = padStart(Math.floor(seconds) % 60, 2, '0');
   const ms = seconds - Math.floor(seconds);
   const msPadded = fps != null
-    ? _.padStart(Math.floor(ms * fps), 2, '0')
-    : _.padStart(Math.floor(ms * 1000), 3, '0');
+    ? padStart(Math.floor(ms * fps), 2, '0')
+    : padStart(Math.floor(ms * 1000), 3, '0');
 
   // Be nice to filenames and use .
   const delim = fileNameFriendly ? '.' : ':';
   return `${hoursPadded}${delim}${minutesPadded}${delim}${secondsPadded}.${msPadded}`;
 }
 
-function parseDuration(str) {
+export function parseDuration(str) {
   if (!str) return undefined;
   const match = str.trim().match(/^(\d{2}):(\d{2}):(\d{2})\.(\d{3})$/);
   if (!match) return undefined;
@@ -37,20 +38,20 @@ function parseDuration(str) {
   return ((((hours * 60) + minutes) * 60) + seconds) + (ms / 1000);
 }
 
-function getOutDir(customOutDir, filePath) {
+export function getOutDir(customOutDir, filePath) {
   if (customOutDir) return customOutDir;
   if (filePath) return path.dirname(filePath);
   return undefined;
 }
 
-function getOutPath(customOutDir, filePath, nameSuffix) {
+export function getOutPath(customOutDir, filePath, nameSuffix) {
   if (!filePath) return undefined;
   const parsed = path.parse(filePath);
 
   return path.join(getOutDir(customOutDir, filePath), `${parsed.name}-${nameSuffix}`);
 }
 
-async function transferTimestamps(inPath, outPath) {
+export async function transferTimestamps(inPath, outPath) {
   try {
     const stat = await fs.stat(inPath);
     await fs.utimes(outPath, stat.atime.getTime() / 1000, stat.mtime.getTime() / 1000);
@@ -59,7 +60,7 @@ async function transferTimestamps(inPath, outPath) {
   }
 }
 
-async function transferTimestampsWithOffset(inPath, outPath, offset) {
+export async function transferTimestampsWithOffset(inPath, outPath, offset) {
   try {
     const stat = await fs.stat(inPath);
     const time = (stat.mtime.getTime() / 1000) + offset;
@@ -69,33 +70,33 @@ async function transferTimestampsWithOffset(inPath, outPath, offset) {
   }
 }
 
-const toast = Swal.mixin({
+export const toast = Swal.mixin({
   toast: true,
   position: 'top',
   showConfirmButton: false,
   timer: 5000,
 });
 
-const errorToast = (title) => toast.fire({
+export const errorToast = (title) => toast.fire({
   icon: 'error',
   title,
 });
 
-async function showFfmpegFail(err) {
+export async function showFfmpegFail(err) {
   console.error(err);
   return errorToast(`Failed to run ffmpeg: ${err.stack}`);
 }
 
-function setFileNameTitle(filePath) {
+export function setFileNameTitle(filePath) {
   const appName = 'LosslessCut';
   document.title = filePath ? `${appName} - ${path.basename(filePath)}` : appName;
 }
 
-function filenamify(name) {
+export function filenamify(name) {
   return name.replace(/[^0-9a-zA-Z_.]/g, '_');
 }
 
-async function promptTimeOffset(inputValue) {
+export async function promptTimeOffset(inputValue) {
   const { value } = await Swal.fire({
     title: 'Set custom start time offset',
     text: 'Instead of video apparently starting at 0, you can offset by a specified value (useful for viewing/cutting videos according to timecodes)',
@@ -116,18 +117,18 @@ async function promptTimeOffset(inputValue) {
   return duration;
 }
 
-function generateColor() {
+export function generateColor() {
   return randomColor(1, 0.95);
 }
 
-function withBlur(cb) {
+export function withBlur(cb) {
   return (e) => {
     cb(e);
     e.target.blur();
   };
 }
 
-function getSegColors(seg) {
+export function getSegColors(seg) {
   if (!seg) return {};
   const { color } = seg;
   return {
@@ -136,21 +137,3 @@ function getSegColors(seg) {
     segBorderColor: color.lighten(0.5).string(),
   };
 }
-
-module.exports = {
-  formatDuration,
-  parseDuration,
-  getOutPath,
-  getOutDir,
-  transferTimestamps,
-  transferTimestampsWithOffset,
-  toast,
-  errorToast,
-  showFfmpegFail,
-  setFileNameTitle,
-  promptTimeOffset,
-  generateColor,
-  filenamify,
-  withBlur,
-  getSegColors,
-};

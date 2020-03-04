@@ -1,5 +1,6 @@
 const electron = require('electron'); // eslint-disable-line
 const isDev = require('electron-is-dev');
+const path = require('path');
 
 const menu = require('./menu');
 
@@ -9,8 +10,6 @@ const { app } = electron;
 const { BrowserWindow } = electron;
 
 app.name = 'LosslessCut';
-
-if (!isDev) process.env.NODE_ENV = 'production';
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -23,9 +22,12 @@ function createWindow() {
     darkTheme: true,
     webPreferences: {
       nodeIntegration: true,
+      // https://github.com/electron/electron/issues/5107
+      webSecurity: !isDev,
     },
   });
-  mainWindow.loadFile(isDev ? 'index.html' : 'build/index.html');
+
+  mainWindow.loadURL(isDev ? 'http://localhost:3001' : `file://${path.join(__dirname, '../build/index.html')}`);
 
   if (isDev) {
     const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies
@@ -38,7 +40,7 @@ function createWindow() {
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
 
-
+  // Emitted when the window is closed.
   mainWindow.on('closed', () => {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time

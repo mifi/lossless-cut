@@ -1,14 +1,16 @@
-const React = require('react');
-const swal = require('sweetalert2');
-const withReactContent = require('sweetalert2-react-content');
+import React from 'react';
+import swal from 'sweetalert2';
 
-const SortableFiles = require('./SortableFiles').default;
+import withReactContent from 'sweetalert2-react-content';
 
-const { errorToast } = require('../util');
+import SortableFiles from './SortableFiles';
+
+
+import { errorToast } from '../util';
 
 const MySwal = withReactContent(swal);
 
-async function showMergeDialog(paths, onMergeClick) {
+export async function showMergeDialog(paths, onMergeClick) {
   if (!paths) return;
   if (paths.length < 2) {
     errorToast('More than one file must be selected');
@@ -36,7 +38,7 @@ async function showMergeDialog(paths, onMergeClick) {
   }
 }
 
-async function showOpenAndMergeDialog({ dialog, defaultPath, onMergeClick }) {
+export async function showOpenAndMergeDialog({ dialog, defaultPath, onMergeClick }) {
   const title = 'Please select files to be merged';
   const message = 'Please select files to be merged. The files need to be of the exact same format and codecs';
   const { canceled, filePaths } = await dialog.showOpenDialog({
@@ -48,8 +50,3 @@ async function showOpenAndMergeDialog({ dialog, defaultPath, onMergeClick }) {
   if (canceled) return;
   showMergeDialog(filePaths, onMergeClick);
 }
-
-module.exports = {
-  showMergeDialog,
-  showOpenAndMergeDialog,
-};

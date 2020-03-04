@@ -1,12 +1,13 @@
-const fs = require('fs-extra');
-const parse = require('csv-parse');
-const stringify = require('csv-stringify');
-const { promisify } = require('util');
+import parse from 'csv-parse';
+import stringify from 'csv-stringify';
+
+const fs = window.require('fs-extra');
+const { promisify } = window.require('util');
 
 const stringifyAsync = promisify(stringify);
 const parseAsync = promisify(parse);
 
-async function load(path) {
+export async function load(path) {
   const str = await fs.readFile(path, 'utf-8');
   const rows = await parseAsync(str, {});
   if (rows.length === 0) throw new Error('No rows found');
@@ -30,14 +31,9 @@ async function load(path) {
   return mapped;
 }
 
-async function save(path, cutSegments) {
+export async function save(path, cutSegments) {
   console.log('Saving', path);
   const rows = cutSegments.map(({ start, end, name }) => [start, end, name]);
   const str = await stringifyAsync(rows);
   await fs.writeFile(path, str);
 }
-
-module.exports = {
-  load,
-  save,
-};

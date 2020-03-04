@@ -1,26 +1,25 @@
 {
   "name": "lossless-cut",
   "productName": "LosslessCut",
-  "description": "Lossless video editor",
-  "copyright": "Copyright © 2019 ${author}",
+  "description": "The swiss army knife of lossless video/audio editing",
+  "copyright": "Copyright © 2020 ${author}",
   "version": "3.13.0",
-  "main": "build/index.js",
+  "main": "public/electron.js",
+  "homepage": "./",
   "scripts": {
-    "start": "electron watch-build",
-    "watch": "babel src -d watch-build --copy-files -w",
+    "start": "concurrently -k \"BROWSER=none PORT=3001 react-scripts start\" \"wait-on http://localhost:3001 && electron .\"",
     "icon-gen": "mkdir -p icon-build && svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512",
-    "build": "yarn icon-gen && rm -rf build && babel src -d build --copy-files",
-    "postinstall": "electron-builder install-app-deps",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "eslint --ext .jsx --ext .js .",
     "pack-mac": "electron-builder --mac",
     "prepack-mac": "yarn build",
     "pack-win": "electron-builder --win",
     "prepack-win": "yarn build",
+    "postinstall": "electron-builder install-app-deps",
     "pack-linux": "electron-builder --linux",
-    "prepack-linux": "yarn build",
-    "release": "electron-builder",
-    "prerelease": "yarn build",
-    "gifify": "gifify -p 405:299 -r 5@3 Untitled.mov-00.00.00.971-00.00.19.780.mp4",
-    "lint": "eslint --ext .jsx --ext .js ."
+    "prepack-linux": "yarn build"
   },
   "author": {
     "name": "Mikael Finstad",
@@ -33,12 +32,7 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-eslint": "^10.0.3",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-react": "^6.24.1",
+    "concurrently": "^5.1.0",
     "electron": "^8.0.0",
     "electron-builder": "^22.3.2",
     "electron-builder-notarize": "^1.1.2",
@@ -49,8 +43,10 @@
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.14.3",
     "eslint-plugin-react-hooks": "^1.7.0",
+    "react-scripts": "^3.4.0",
     "svg2png": "^4.1.1",
-    "use-trace-update": "^1.3.0"
+    "use-trace-update": "^1.3.0",
+    "wait-on": "^4.0.1"
   },
   "dependencies": {
     "axios": "^0.19.2",
@@ -65,6 +61,7 @@
     "ffmpeg-static": "^4.0.1",
     "ffprobe-static": "^3.0.0",
     "file-type": "^12.4.0",
+    "file-url": "^3.0.0",
     "framer-motion": "^1.8.4",
     "fs-extra": "^8.1.0",
     "github-api": "^3.2.2",
@@ -92,6 +89,9 @@
     "trash": "^6.1.1",
     "uuid": "^3.3.2",
     "which": "^1.2.11"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
   },
   "browserslist": {
     "production": [

@@ -1,4 +1,2 @@
-dist
-package
-build
-watch-build
+/dist
+/build

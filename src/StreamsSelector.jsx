@@ -5,13 +5,13 @@ import { GoFileBinary } from 'react-icons/go';
 import { MdSubtitles } from 'react-icons/md';
 import Swal from 'sweetalert2';
 import { SegmentedControl } from 'evergreen-ui';
-
 import withReactContent from 'sweetalert2-react-content';
+
+import { formatDuration } from './util';
+import { getStreamFps } from './ffmpeg';
 
 const ReactSwal = withReactContent(Swal);
 
-const { formatDuration } = require('./util');
-const { getStreamFps } = require('./ffmpeg');
 
 function onInfoClick(s, title) {
   ReactSwal.fire({
