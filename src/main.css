@@ -62,6 +62,6 @@ body {
   color: rgba(0,0,0,0.5);
 }
 
-#timeline-scroller::-webkit-scrollbar {
+.hide-scrollbar::-webkit-scrollbar {
   display: none;
 }

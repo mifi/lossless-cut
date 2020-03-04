@@ -117,7 +117,7 @@ const Timeline = memo(({
       <div style={{ position: 'relative' }}>
         <div
           style={{ overflowX: 'scroll' }}
-          id="timeline-scroller"
+          className="hide-scrollbar"
           onWheel={onWheel}
           onScroll={onTimelineScroll}
           ref={timelineScrollerRef}

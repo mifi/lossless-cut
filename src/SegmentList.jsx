@@ -60,7 +60,7 @@ const SegmentList = memo(({
 
   return (
     <Fragment>
-      <div style={{ padding: '0 10px', overflowY: 'scroll', flexGrow: 1 }}>
+      <div style={{ padding: '0 10px', overflowY: 'scroll', flexGrow: 1 }} className="hide-scrollbar">
         <div style={{ fontSize: 14, marginBottom: 10 }}>
           <FaAngleRight
             title="Close sidebar"

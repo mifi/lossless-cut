@@ -18,7 +18,6 @@ const isDev = window.require('electron-is-dev');
 const os = window.require('os');
 
 
-
 function getFfCommandLine(cmd, args) {
   const mapArg = arg => (/[^0-9a-zA-Z-_]/.test(arg) ? `'${arg}'` : arg);
   return `${cmd} ${args.map(mapArg).join(' ')}`;

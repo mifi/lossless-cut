@@ -17,7 +17,7 @@ function onInfoClick(s, title) {
   ReactSwal.fire({
     showCloseButton: true,
     title,
-    html: <div style={{ whiteSpace: 'pre', textAlign: 'left', overflow: 'auto', maxHeight: 300, overflowY: 'scroll' }}>{JSON.stringify(s, null, 2)}</div>,
+    html: <div style={{ whiteSpace: 'pre', textAlign: 'left', overflow: 'auto', maxHeight: 300, overflowY: 'auto' }}>{JSON.stringify(s, null, 2)}</div>,
   });
 }
 
