@@ -921,7 +921,8 @@ const App = memo(() => {
       return;
     }
     try {
-      await captureFrame(customOutDir, filePath, videoRef.current, currentTimeRef.current, captureFormat);
+      const outPath = await captureFrame(customOutDir, filePath, videoRef.current, currentTimeRef.current, captureFormat);
+      toast.fire({ icon: 'success', title: `Screenshot captured to: ${outPath}` });
     } catch (err) {
       console.error(err);
       errorToast('Failed to capture frame');

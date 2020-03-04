@@ -26,5 +26,6 @@ export default async function captureFrame(customOutDir, filePath, video, curren
   const outPath = getOutPath(customOutDir, filePath, `${time}.${ext}`);
   await fs.writeFile(outPath, buf);
   const offset = -video.duration + currentTime;
-  return transferTimestampsWithOffset(filePath, outPath, offset);
+  await transferTimestampsWithOffset(filePath, outPath, offset);
+  return outPath;
 }
