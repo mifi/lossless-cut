@@ -1,4 +1,4 @@
-# LosslessCut 🎥 [![Travis](https://img.shields.io/travis/mifi/lossless-cut.svg)](https://travis-ci.org/mifi/lossless-cut) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/mifino)
+# LosslessCut 🎥 ![Build/release](https://github.com/mifi/lossless-cut/workflows/Build/release/badge.svg) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/mifino)
 
 **The swiss army knife of lossless video/audio editing**
 
