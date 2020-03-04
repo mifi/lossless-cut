@@ -9,7 +9,7 @@
   "scripts": {
     "start": "concurrently -k \"BROWSER=none PORT=3001 react-scripts start\" \"wait-on http://localhost:3001 && electron .\"",
     "icon-gen": "mkdir -p icon-build && svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512",
-    "build": "react-scripts build",
+    "build": "yarn icon-gen && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint --ext .jsx --ext .js .",
