@@ -461,20 +461,9 @@ const App = memo(() => {
         if (keyframeAlignedStart != null) suggestedStart = keyframeAlignedStart;
       } */
 
-      let suggestedEnd = suggestedStart + 10;
-      if (suggestedEnd >= duration) {
-        suggestedEnd = undefined;
-      } /* else if (keyframeCut) {
-        const keyframeAlignedEnd = getSafeCutTime(suggestedEnd, false);
-        if (keyframeAlignedEnd != null) suggestedEnd = keyframeAlignedEnd;
-      } */
-
       const cutSegmentsNew = [
         ...cutSegments,
-        createSegment({
-          start: suggestedStart,
-          end: suggestedEnd,
-        }),
+        createSegment({ start: suggestedStart }),
       ];
 
       setCutSegments(cutSegmentsNew);
@@ -483,7 +472,7 @@ const App = memo(() => {
       console.error(err);
     }
   }, [
-    currentCutSeg.start, currentCutSeg.end, cutSegments, duration, setCutSegments,
+    currentCutSeg.start, currentCutSeg.end, cutSegments, setCutSegments,
   ]);
 
   const setCutStart = useCallback(() => {
