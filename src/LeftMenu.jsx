@@ -16,6 +16,8 @@ const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments 
     });
   }
 
+  const zoomOptions = Array(13).fill().map((unused, z) => 2 ** z);
+
   return (
     <div className="no-user-select" style={{ padding: '.3em', display: 'flex', alignItems: 'center' }}>
       <div style={{ marginLeft: 5 }}>
@@ -33,13 +35,11 @@ const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments 
       </div>
 
       <div style={{ marginRight: 5, marginLeft: 10 }} title="Zoom">{Math.floor(zoom)}x</div>
-      <Select height={20} style={{ width: 20 }} value={zoom.toString()} title="Zoom" onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
-        {Array(13).fill().map((unused, z) => {
-          const val = 2 ** z;
-          return (
-            <option key={val} value={String(val)}>Zoom {val}x</option>
-          );
-        })}
+      <Select height={20} style={{ width: 20 }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title="Zoom" onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
+        <option key="" value="" disabled>Zoom</option>
+        {zoomOptions.map(val => (
+          <option key={val} value={String(val)}>Zoom {val}x</option>
+        ))}
       </Select>
     </div>
   );

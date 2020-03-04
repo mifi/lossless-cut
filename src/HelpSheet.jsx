@@ -39,20 +39,25 @@ const HelpSheet = memo(({
         <div><kbd>CTRL</kbd> / <kbd>CMD</kbd> + <kbd>←</kbd> Seek backward 1% of timeline at current zoom</div>
         <div><kbd>CTRL</kbd> / <kbd>CMD</kbd> + <kbd>→</kbd> Seek forward 1% of timeline at current zoom</div>
 
+        <h2>Timeline/zoom operations</h2>
+        <div><kbd>Z</kbd> Toggle zoom between 1x and a calculated comfortable zoom level</div>
+        <div><kbd>CTRL</kbd> / <kbd>CMD</kbd> + <kbd>↑</kbd> Zoom in timeline</div>
+        <div><kbd>CTRL</kbd> / <kbd>CMD</kbd> + <kbd>↓</kbd> Zoom out timeline</div>
+        <div><i>Mouse scroll up/down/left/right</i> - Pan timeline</div>
+        <div><kbd>CTRL</kbd><i> + Mouse scroll up/down</i> - Zoom in/out timeline</div>
+
         <h2>Segments and cut points</h2>
         <div><kbd>I</kbd> Mark in / cut start point for current segment</div>
         <div><kbd>O</kbd> Mark out / cut end point for current segment</div>
         <div><kbd>+</kbd> Add cut segment</div>
         <div><kbd>BACKSPACE</kbd> Remove current segment</div>
+        <div><kbd>↑</kbd> Select previous segment</div>
+        <div><kbd>↓</kbd> Select next segment</div>
 
         <h2>File system actions</h2>
         <div><kbd>E</kbd> Export segment(s)</div>
         <div><kbd>C</kbd> Capture snapshot</div>
         <div><kbd>D</kbd> Delete source file</div>
-
-        <h1>Mouse actions</h1>
-        <div><i>Mouse scroll up/down/left/right</i> - Seek / pan timeline</div>
-        <div><kbd>CTRL</kbd><i> + Mouse scroll up/down</i> - Zoom in/out timeline</div>
 
         <p style={{ fontWeight: 'bold' }}>Hover mouse over buttons in the main interface to see which function they have.</p>
 

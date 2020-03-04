@@ -332,6 +332,16 @@ const App = memo(() => {
   const zoomRel = useCallback((rel) => setZoom(z => Math.min(Math.max(z + rel, 1), zoomMax)), []);
   const frameRenderEnabled = !!(rotationPreviewRequested || dummyVideoPath);
 
+  const comfortZoom = duration ? (duration / 100) : undefined;
+  const toggleComfortZoom = useCallback(() => {
+    if (!comfortZoom) return;
+
+    setZoom((prevZoom) => {
+      if (prevZoom === 1) return comfortZoom;
+      return 1;
+    });
+  }, [comfortZoom]);
+
   const getSegApparentEnd = useCallback((seg) => {
     const time = seg.end;
     if (time !== undefined) return time;
@@ -1053,6 +1063,9 @@ const App = memo(() => {
     Mousetrap.bind('alt+right', () => seekClosestKeyframe(1));
     Mousetrap.bind('up', () => jumpSeg(-1));
     Mousetrap.bind('down', () => jumpSeg(1));
+    Mousetrap.bind(['ctrl+up', 'command+up'], () => { zoomRel(1); return false; });
+    Mousetrap.bind(['ctrl+down', 'command+down'], () => { zoomRel(-1); return false; });
+    Mousetrap.bind('z', () => toggleComfortZoom());
     Mousetrap.bind('.', () => shortStep(1));
     Mousetrap.bind(',', () => shortStep(-1));
     Mousetrap.bind('c', () => capture());
@@ -1077,6 +1090,9 @@ const App = memo(() => {
       Mousetrap.unbind('alt+right');
       Mousetrap.unbind('up');
       Mousetrap.unbind('down');
+      Mousetrap.unbind(['ctrl+up', 'command+up']);
+      Mousetrap.unbind(['ctrl+down', 'command+down']);
+      Mousetrap.unbind('z');
       Mousetrap.unbind('.');
       Mousetrap.unbind(',');
       Mousetrap.unbind('c');
@@ -1091,7 +1107,7 @@ const App = memo(() => {
   }, [
     addCutSegment, capture, changePlaybackRate, cutClick, playCommand, removeCutSegment,
     setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, deleteSource, jumpSeg, toggleHelp,
-    seekClosestKeyframe,
+    seekClosestKeyframe, zoomRel, toggleComfortZoom,
   ]);
 
   useEffect(() => {
