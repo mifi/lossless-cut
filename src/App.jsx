@@ -332,7 +332,7 @@ const App = memo(() => {
   const zoomRel = useCallback((rel) => setZoom(z => Math.min(Math.max(z + rel, 1), zoomMax)), []);
   const frameRenderEnabled = !!(rotationPreviewRequested || dummyVideoPath);
 
-  const comfortZoom = duration ? (duration / 100) : undefined;
+  const comfortZoom = duration ? Math.max(duration / 100, 1) : undefined;
   const toggleComfortZoom = useCallback(() => {
     if (!comfortZoom) return;
 
