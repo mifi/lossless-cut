@@ -13,6 +13,10 @@
     "max-len": 0,
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "error",
+    "import/no-extraneous-dependencies": ["error", {
+      "devDependencies": true,
+      "optionalDependencies": false
+    }],
 
     "react/jsx-fragments": 0,
     "no-console": 0,
