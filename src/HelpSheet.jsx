@@ -43,8 +43,9 @@ const HelpSheet = memo(({
         <div><kbd>Z</kbd> Toggle zoom between 1x and a calculated comfortable zoom level</div>
         <div><kbd>CTRL</kbd> / <kbd>CMD</kbd> + <kbd>↑</kbd> Zoom in timeline</div>
         <div><kbd>CTRL</kbd> / <kbd>CMD</kbd> + <kbd>↓</kbd> Zoom out timeline</div>
-        <div><i>Mouse scroll up/down/left/right</i> - Pan timeline</div>
-        <div><kbd>CTRL</kbd><i> + Mouse scroll up/down</i> - Zoom in/out timeline</div>
+        <div><kbd>CTRL</kbd> <i>+ Mouse scroll/wheel up/down</i> - Zoom in/out timeline</div>
+        <div><i>Mouse scroll/wheel left/right</i> - Pan timeline</div>
+        <div style={{ marginLeft: 20 }}>(For Windows or computers without 2D track pad or left/right mouse wheel scrolling function, use <kbd>SHIFT</kbd> <i>+ Mouse scroll/wheel up/down</i>)</div>
 
         <h2>Segments and cut points</h2>
         <div><kbd>I</kbd> Mark in / cut start point for current segment</div>
