@@ -168,7 +168,7 @@ const Timeline = memo(({
         >
           {waveformEnabled && shouldShowWaveform && waveform && (
             <Waveform
-              calculateTimelinePosPercent={calculateTimelinePercent}
+              calculateTimelinePercent={calculateTimelinePercent}
               durationSafe={durationSafe}
               waveform={waveform}
               zoom={zoom}
