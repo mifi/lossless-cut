@@ -634,7 +634,7 @@ const App = memo(() => {
     setThumbnails(v => [...v, thumbnail]);
   }
 
-  useEffect(() => {
+  const [, cancelRenderThumbnails] = useDebounce(() => {
     async function renderThumbnails() {
       if (!thumbnailsEnabled || thumnailsRenderingPromiseRef.current) return;
 
@@ -651,7 +651,7 @@ const App = memo(() => {
     }
 
     if (duration) renderThumbnails();
-  }, [zoomedDuration, duration, filePath, zoomWindowStartTime, thumbnailsEnabled]);
+  }, 500, [zoomedDuration, duration, filePath, zoomWindowStartTime, thumbnailsEnabled]);
 
   // Cleanup removed thumbnails
   useEffect(() => {
@@ -750,7 +750,8 @@ const App = memo(() => {
     cancelReadKeyframeDataDebounce();
 
     setThumbnails([]);
-  }, [cutSegmentsHistory, cancelCutSegmentsDebounce, setCutSegments, cancelWaveformDataDebounce, cancelReadKeyframeDataDebounce]);
+    cancelRenderThumbnails();
+  }, [cutSegmentsHistory, cancelCutSegmentsDebounce, setCutSegments, cancelWaveformDataDebounce, cancelReadKeyframeDataDebounce, cancelRenderThumbnails]);
 
 
   // Cleanup old

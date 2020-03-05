@@ -67,9 +67,11 @@ const Timeline = memo(({
     return undefined;
   }, [calculateTimelinePos, playerTime, zoom]);
 
-  const zoomWindowStartTime = timelineScrollerRef.current
+  const calcZoomWindowStartTime = useCallback(() => (timelineScrollerRef.current
     ? (timelineScrollerRef.current.scrollLeft / (timelineScrollerRef.current.offsetWidth * zoom)) * duration
-    : 0;
+    : 0), [duration, zoom]);
+
+  // const zoomWindowStartTime = calcZoomWindowStartTime(duration, zoom);
 
   useEffect(() => {
     timelineScrollerSkipEventDebounce.current = debounce(() => {
@@ -93,7 +95,7 @@ const Timeline = memo(({
       suppressScrollerEvents();
       timelineScrollerRef.current.scrollLeft -= timelineScrollerRef.current.offsetWidth * 0.9;
     }
-  }, [currentTimePosPixels, zoomWindowStartTime]);
+  }, [currentTimePosPixels]);
 
   const currentTimeWidth = 1;
 
@@ -121,8 +123,8 @@ const Timeline = memo(({
   }, []);
 
   const onTimelineScroll = useCallback(() => {
-    onZoomWindowStartTimeChange(zoomWindowStartTime);
-  }, [zoomWindowStartTime, onZoomWindowStartTimeChange]);
+    onZoomWindowStartTimeChange(calcZoomWindowStartTime());
+  }, [calcZoomWindowStartTime, onZoomWindowStartTimeChange]);
 
   // Keep cursor in middle while scrolling
   /* const onTimelineScroll = useCallback((e) => {
