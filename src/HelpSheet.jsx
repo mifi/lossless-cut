@@ -73,7 +73,7 @@ const HelpSheet = memo(({
             ))}
           </div>
         ) : (
-          <p>Here the last run ffmpeg commands will show up after you ran an operation. You can copy them to clipboard and modify them to your needs before running on your command line.</p>
+          <p>The last executed ffmpeg commands will show up here after you run operations. You can copy them to clipboard and modify them to your needs before running on your command line.</p>
         )}
       </motion.div>
     )}
