@@ -527,10 +527,10 @@ export async function renderThumbnails({ filePath, from, duration, onThumbnail }
 
   // Aim for max 3 sec to render all
   const numThumbs = Math.floor(Math.min(Math.max(3 / (endTime - startTime), 3), 10));
-  console.log(numThumbs);
+  // console.log(numThumbs);
 
   const thumbTimes = Array(numThumbs - 1).fill().map((unused, i) => (from + ((duration * (i + 1)) / (numThumbs))));
-  console.log(thumbTimes);
+  // console.log(thumbTimes);
 
   await pMap(thumbTimes, async (time) => {
     url = await renderThumbnail(filePath, time);

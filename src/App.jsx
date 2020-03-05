@@ -143,8 +143,6 @@ const App = memo(() => {
   const [neighbouringFrames, setNeighbouringFrames] = useState([]);
   const [thumbnails, setThumbnails] = useState([]);
   const [shortestFlag, setShortestFlag] = useState(false);
-  const [debouncedWaveformData, setDebouncedWaveformData] = useState();
-  const [debouncedReadKeyframesData, setDebouncedReadKeyframesData] = useState();
   const [zoomWindowStartTime, setZoomWindowStartTime] = useState(0);
 
   const [keyframesEnabled, setKeyframesEnabled] = useState(true);
@@ -170,14 +168,6 @@ const App = memo(() => {
 
   const durationSafe = duration || 1;
   const zoomedDuration = duration != null ? duration / zoom : undefined;
-
-  const [, cancelWaveformDataDebounce] = useDebounce(() => {
-    setDebouncedWaveformData({ filePath, commandedTime, zoomedDuration, waveformEnabled, mainAudioStream });
-  }, 500, [filePath, commandedTime, zoomedDuration, waveformEnabled, mainAudioStream]);
-
-  const [, cancelReadKeyframeDataDebounce] = useDebounce(() => {
-    setDebouncedReadKeyframesData({ keyframesEnabled, filePath, commandedTime, mainVideoStream });
-  }, 500, [keyframesEnabled, filePath, commandedTime, mainVideoStream]);
 
   // Preferences
   const [captureFormat, setCaptureFormat] = useState(configStore.get('captureFormat'));
@@ -211,55 +201,6 @@ const App = memo(() => {
   const readingKeyframesPromise = useRef();
   const creatingWaveformPromise = useRef();
   const currentTimeRef = useRef();
-
-  const resetState = useCallback(() => {
-    const video = videoRef.current;
-    setCommandedTime(0);
-    video.currentTime = 0;
-    video.playbackRate = 1;
-
-    setFileNameTitle();
-    setFramePath();
-    setHtml5FriendlyPath();
-    setDummyVideoPath();
-    setWorking(false);
-    setPlaying(false);
-    setDuration();
-    cutSegmentsHistory.go(0);
-    cancelCutSegmentsDebounce(); // TODO auto save when loading new file/closing file
-    setDebouncedCutSegments(createInitialCutSegments());
-    setCutSegments(createInitialCutSegments()); // TODO this will cause two history items
-    setCutStartTimeManual();
-    setCutEndTimeManual();
-    setFileFormat();
-    setFileFormatData();
-    setDetectedFileFormat();
-    setRotation(360);
-    setCutProgress();
-    setStartTimeOffset(0);
-    setRotationPreviewRequested(false);
-    setFilePath(''); // Setting video src="" prevents memory leak in chromium
-    setExternalStreamFiles([]);
-    setDetectedFps();
-    setMainStreams([]);
-    setMainVideoStream();
-    setMainAudioStream();
-    setCopyStreamIdsByFile({});
-    setStreamsSelectorShown(false);
-    setZoom(1);
-    setShortestFlag(false);
-    setZoomWindowStartTime(0);
-
-    setWaveform();
-    cancelWaveformDataDebounce();
-    setDebouncedWaveformData();
-
-    setNeighbouringFrames([]);
-    cancelReadKeyframeDataDebounce();
-    setDebouncedReadKeyframesData();
-
-    setThumbnails([]);
-  }, [cutSegmentsHistory, cancelCutSegmentsDebounce, setCutSegments, cancelWaveformDataDebounce, cancelReadKeyframeDataDebounce]);
 
   const isFileOpened = !!filePath;
 
@@ -720,14 +661,13 @@ const App = memo(() => {
     thumnailsRef.current = thumbnails;
   }, [thumbnails]);
 
-  useEffect(() => {
+  const [, cancelReadKeyframeDataDebounce] = useDebounce(() => {
     async function run() {
-      const d = debouncedReadKeyframesData;
       // We still want to calculate keyframes even if not shouldShowKeyframes because maybe we want to step to closest keyframe
-      if (!d || !d.keyframesEnabled || !d.filePath || !d.mainVideoStream || d.commandedTime == null || readingKeyframesPromise.current) return;
+      if (!keyframesEnabled || !filePath || !mainVideoStream || commandedTime == null || readingKeyframesPromise.current) return;
 
       try {
-        const promise = readFrames({ filePath: d.filePath, aroundTime: d.commandedTime, stream: d.mainVideoStream.index, window: ffmpegExtractWindow });
+        const promise = readFrames({ filePath, aroundTime: commandedTime, stream: mainVideoStream.index, window: ffmpegExtractWindow });
         readingKeyframesPromise.current = promise;
         const newFrames = await promise;
         // console.log(newFrames);
@@ -739,14 +679,18 @@ const App = memo(() => {
       }
     }
     run();
-  }, [debouncedReadKeyframesData]);
+  }, 500, [keyframesEnabled, filePath, commandedTime, mainVideoStream]);
 
-  useEffect(() => {
+  const hasAudio = !!mainAudioStream;
+  const hasVideo = !!mainVideoStream;
+  const shouldShowKeyframes = keyframesEnabled && !!mainVideoStream && calcShouldShowKeyframes(zoomedDuration);
+  const shouldShowWaveform = calcShouldShowWaveform(zoomedDuration);
+
+  const [, cancelWaveformDataDebounce] = useDebounce(() => {
     async function run() {
-      const d = debouncedWaveformData;
-      if (!d || !d.filePath || !d.mainAudioStream || d.commandedTime == null || !calcShouldShowWaveform(d.zoomedDuration) || !d.waveformEnabled || creatingWaveformPromise.current) return;
+      if (!filePath || !mainAudioStream || commandedTime == null || !shouldShowWaveform || !waveformEnabled || creatingWaveformPromise.current) return;
       try {
-        const promise = renderWaveformPng({ filePath: d.filePath, aroundTime: d.commandedTime, window: ffmpegExtractWindow, color: waveformColor });
+        const promise = renderWaveformPng({ filePath, aroundTime: commandedTime, window: ffmpegExtractWindow, color: waveformColor });
         creatingWaveformPromise.current = promise;
         const wf = await promise;
         setWaveform(wf);
@@ -758,7 +702,56 @@ const App = memo(() => {
     }
 
     run();
-  }, [debouncedWaveformData]);
+  }, 500, [filePath, commandedTime, zoomedDuration, waveformEnabled, mainAudioStream, shouldShowWaveform]);
+
+
+  const resetState = useCallback(() => {
+    const video = videoRef.current;
+    setCommandedTime(0);
+    video.currentTime = 0;
+    video.playbackRate = 1;
+
+    setFileNameTitle();
+    setFramePath();
+    setHtml5FriendlyPath();
+    setDummyVideoPath();
+    setWorking(false);
+    setPlaying(false);
+    setDuration();
+    cutSegmentsHistory.go(0);
+    cancelCutSegmentsDebounce(); // TODO auto save when loading new file/closing file
+    setDebouncedCutSegments(createInitialCutSegments());
+    setCutSegments(createInitialCutSegments()); // TODO this will cause two history items
+    setCutStartTimeManual();
+    setCutEndTimeManual();
+    setFileFormat();
+    setFileFormatData();
+    setDetectedFileFormat();
+    setRotation(360);
+    setCutProgress();
+    setStartTimeOffset(0);
+    setRotationPreviewRequested(false);
+    setFilePath(''); // Setting video src="" prevents memory leak in chromium
+    setExternalStreamFiles([]);
+    setDetectedFps();
+    setMainStreams([]);
+    setMainVideoStream();
+    setMainAudioStream();
+    setCopyStreamIdsByFile({});
+    setStreamsSelectorShown(false);
+    setZoom(1);
+    setShortestFlag(false);
+    setZoomWindowStartTime(0);
+
+    setWaveform();
+    cancelWaveformDataDebounce();
+
+    setNeighbouringFrames([]);
+    cancelReadKeyframeDataDebounce();
+
+    setThumbnails([]);
+  }, [cutSegmentsHistory, cancelCutSegmentsDebounce, setCutSegments, cancelWaveformDataDebounce, cancelReadKeyframeDataDebounce]);
+
 
   // Cleanup old
   useEffect(() => () => waveform && URL.revokeObjectURL(waveform.url), [waveform]);
@@ -1430,10 +1423,6 @@ const App = memo(() => {
 
   const sideBarWidth = showSideBar ? 200 : 0;
 
-  const hasAudio = !!mainAudioStream;
-  const hasVideo = !!mainVideoStream;
-  const shouldShowKeyframes = keyframesEnabled && !!mainVideoStream && calcShouldShowKeyframes(zoomedDuration);
-  const shouldShowWaveform = calcShouldShowWaveform(zoomedDuration);
   const bottomBarHeight = 96 + ((hasAudio && waveformEnabled) || (hasVideo && thumbnailsEnabled) ? timelineHeight : 0);
 
   const thumbnailsSorted = useMemo(() => sortBy(thumbnails, thumbnail => thumbnail.time), [thumbnails]);
