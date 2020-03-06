@@ -121,22 +121,13 @@
       "icon": "icon-build/app-512.png"
     },
     "win": {
-      "artifactName": "${productName}-${os}-${arch}.${ext}",
       "target": [
-        {
-          "target": "portable",
-          "arch": [
-            "x64",
-            "ia32"
-          ]
-        },
-        {
-          "target": "zip"
-        }
+        "portable",
+        "zip"
       ],
       "extraResources": [
         "node_modules/ffmpeg-static/ffmpeg.exe",
-        "node_modules/ffprobe-static/bin/win32/${arch}/**"
+        "node_modules/ffprobe-static/bin/win32/x64/**"
       ],
       "icon": "icon-build/app-512.png"
     },
