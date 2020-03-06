@@ -6,7 +6,7 @@ import { FaYinYang } from 'react-icons/fa';
 import { withBlur, toast } from './util';
 
 
-const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments }) => {
+const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments, toggleComfortZoom }) => {
   function onYinYangClick() {
     setInvertCutSegments(v => {
       const newVal = !v;
@@ -34,7 +34,8 @@ const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments 
         </motion.div>
       </div>
 
-      <div style={{ marginRight: 5, marginLeft: 10 }} title="Zoom">{Math.floor(zoom)}x</div>
+      <div role="button" style={{ marginRight: 5, marginLeft: 10 }} title="Zoom" onClick={toggleComfortZoom}>{Math.floor(zoom)}x</div>
+
       <Select height={20} style={{ width: 20 }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title="Zoom" onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
         <option key="" value="" disabled>Zoom</option>
         {zoomOptions.map(val => (
