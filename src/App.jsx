@@ -190,10 +190,13 @@ const App = memo(() => {
   useEffect(() => configStore.set('muted', muted), [muted]);
   const [autoSaveProjectFile, setAutoSaveProjectFile] = useState(configStore.get('autoSaveProjectFile'));
   useEffect(() => configStore.set('autoSaveProjectFile', autoSaveProjectFile), [autoSaveProjectFile]);
+  const [wheelSensitivity, setWheelSensitivity] = useState(configStore.get('wheelSensitivity'));
+  useEffect(() => configStore.set('wheelSensitivity', wheelSensitivity), [wheelSensitivity]);
 
   // Global state
   const [helpVisible, setHelpVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [wheelTunerVisible, setWheelTunerVisible] = useState(false);
   const [mifiLink, setMifiLink] = useState();
 
   const videoRef = useRef();
@@ -1375,6 +1378,12 @@ const App = memo(() => {
     />
   ), [autoExportExtraStreams]);
 
+  const onWheelTunerRequested = useCallback(() => {
+    console.log('wat');
+    setSettingsVisible(false);
+    setWheelTunerVisible(true);
+  }, []);
+
   const renderSettings = useCallback(() => (
     <Settings
       setOutputDir={setOutputDir}
@@ -1395,8 +1404,9 @@ const App = memo(() => {
       renderOutFmt={renderOutFmt}
       AutoExportToggler={AutoExportToggler}
       renderCaptureFormatButton={renderCaptureFormatButton}
+      onWheelTunerRequested={onWheelTunerRequested}
     />
-  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, renderOutFmt, timecodeShowFrames, setOutputDir]);
+  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, renderOutFmt, timecodeShowFrames, setOutputDir, onWheelTunerRequested]);
 
   useEffect(() => {
     loadMifiLink().then(setMifiLink);
@@ -1649,6 +1659,7 @@ const App = memo(() => {
           formatTimecode={formatTimecode}
           timelineHeight={timelineHeight}
           onZoomWindowStartTimeChange={setZoomWindowStartTime}
+          wheelSensitivity={wheelSensitivity}
         />
 
         <TimelineControls
@@ -1687,6 +1698,7 @@ const App = memo(() => {
             setZoom={setZoom}
             invertCutSegments={invertCutSegments}
             setInvertCutSegments={setInvertCutSegments}
+            toggleComfortZoom={toggleComfortZoom}
           />
 
           <RightMenu
@@ -1714,6 +1726,14 @@ const App = memo(() => {
         onTogglePress={toggleSettings}
         renderSettings={renderSettings}
       />
+
+      {wheelTunerVisible && (
+        <div style={{ display: 'flex', alignItems: 'center', background: 'white', color: 'black', padding: 10, margin: 10, borderRadius: 10, width: '100%', maxWidth: 500, position: 'fixed', left: 0, bottom: bottomBarHeight, zIndex: 10 }}>
+          Scroll sensitivity
+          <input style={{ flexGrow: 1 }} type="range" min="0" max="1000" step="1" value={wheelSensitivity * 1000} onChange={e => setWheelSensitivity(e.target.value / 1000)} />
+          <Button height={20} intent="success" onClick={() => setWheelTunerVisible(false)}>Done</Button>
+        </div>
+      )}
     </div>
   );
 });

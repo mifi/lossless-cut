@@ -42,7 +42,7 @@ const Timeline = memo(({
   zoom, neighbouringFrames, seekAbs, seekRel, duration, apparentCutSegments, zoomRel,
   setCurrentSegIndex, currentSegIndexSafe, invertCutSegments, inverseCutSegments, formatTimecode,
   waveform, shouldShowWaveform, shouldShowKeyframes, timelineHeight, thumbnails,
-  onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled,
+  onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled, wheelSensitivity,
 }) => {
   const timelineScrollerRef = useRef();
   const timelineScrollerSkipEventRef = useRef();
@@ -148,11 +148,11 @@ const Timeline = memo(({
     const { pixelX, pixelY } = normalizeWheel(e);
     // console.log({ spinX, spinY, pixelX, pixelY });
     if (e.ctrlKey) {
-      zoomRel(-pixelY / 10);
+      zoomRel(-pixelY * wheelSensitivity * 0.4);
     } else {
-      seekRel((pixelX + pixelY) / 15);
+      seekRel((pixelX + pixelY) * wheelSensitivity * 0.2);
     }
-  }, [seekRel, zoomRel]);
+  }, [seekRel, zoomRel, wheelSensitivity]);
 
   return (
     <Hammer

@@ -12,5 +12,6 @@ export default new Store({
     askBeforeClose: false,
     muted: false,
     autoSaveProjectFile: true,
+    wheelSensitivity: 0.2,
   },
 });

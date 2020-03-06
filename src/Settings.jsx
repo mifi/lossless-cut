@@ -4,7 +4,7 @@ import { Button, Table, SegmentedControl, Checkbox } from 'evergreen-ui';
 const Settings = memo(({
   setOutputDir, customOutDir, autoMerge, setAutoMerge, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments,
   autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose,
-  renderOutFmt, AutoExportToggler, renderCaptureFormatButton,
+  renderOutFmt, AutoExportToggler, renderCaptureFormatButton, onWheelTunerRequested,
 }) => {
   // eslint-disable-next-line react/jsx-props-no-spreading
   const Row = (props) => <Table.Row height="auto" paddingY={12} {...props} />;
@@ -113,6 +113,13 @@ const Settings = memo(({
             value={timecodeShowFrames ? 'frames' : 'ms'}
             onChange={value => setTimecodeShowFrames(value === 'frames')}
           />
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>Scroll/wheel sensitivity</KeyCell>
+        <Table.TextCell>
+          <Button onClick={onWheelTunerRequested}>Change sensitivity</Button>
         </Table.TextCell>
       </Row>
 
