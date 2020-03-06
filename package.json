@@ -124,14 +124,14 @@
       "artifactName": "${productName}-${os}-${arch}.${ext}",
       "target": [
         {
-          "target": "portable",
+          "target": "portable"
+        },
+        {
+          "target": "zip",
           "arch": [
             "x64",
             "ia32"
           ]
-        },
-        {
-          "target": "zip"
         }
       ],
       "extraResources": [
