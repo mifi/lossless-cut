@@ -893,7 +893,7 @@ const App = memo(() => {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
 
-      if (err.code === 1 || err.code === 'ENOENT') {
+      if (err.exitCode === 1 || err.code === 'ENOENT') {
         toast.fire({ icon: 'error', title: `Whoops! ffmpeg was unable to export this video. Try one of the following before exporting again:\n1. Select a different output format from the ${fileFormat} button (matroska takes almost everything).\n2. Exclude unnecessary tracks\n3. Try "Normal cut" and "Keyframe cut"`, timer: 10000 });
         return;
       }
@@ -984,7 +984,7 @@ const App = memo(() => {
 
       const ff = await getDefaultOutFormat(fp, fd);
       if (!ff) {
-        errorToast('Unsupported file');
+        errorToast('Unable to determine file format');
         return;
       }
 
@@ -1022,9 +1022,9 @@ const App = memo(() => {
 
       await loadEdlFile(getEdlFilePath(fp));
     } catch (err) {
-      if (err.code === 1 || err.code === 'ENOENT') {
-        console.error('ENOENT', err);
+      if (err.exitCode === 1 || err.code === 'ENOENT') {
         errorToast('Unsupported file');
+        console.error(err);
         return;
       }
       showFfmpegFail(err);
