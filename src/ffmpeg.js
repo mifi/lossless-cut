@@ -34,14 +34,12 @@ function getFfmpegPath() {
 
 function getFfprobePath() {
   const platform = os.platform();
+  const arch = os.arch();
 
-  const map = {
-    darwin: 'darwin/x64/ffprobe',
-    win32: 'win32/x64/ffprobe.exe',
-    linux: 'linux/x64/ffprobe',
-  };
-
-  const subPath = map[platform];
+  let subPath;
+  if (platform === 'darwin') subPath = 'darwin/x64/ffprobe';
+  else if (platform === 'linux') subPath = 'linux/x64/ffprobe';
+  else if (platform === 'win32') subPath = `win32/${arch}/ffprobe.exe`;
 
   if (!subPath) throw new Error(`Unsupported platform ${platform}`);
 
