@@ -888,7 +888,7 @@ const App = memo(() => {
         }
       }
 
-      toast.fire({ timer: 5000, icon: 'success', title: `Export completed! Go to settings to view the ffmpeg commands that were executed. Output file(s) can be found at: ${outputDir}.${exportExtraStreams ? ' Extra unprocessable streams were exported to separate files.' : ''}` });
+      toast.fire({ timer: 10000, icon: 'success', title: `Export completed! Go to settings to view the ffmpeg commands that were executed. If output does not look right, try to toggle "Keyframe cut" or try a different output format (e.g. matroska). Output file(s) can be found at: ${outputDir}.${exportExtraStreams ? ' Extra unprocessable streams were exported to separate files.' : ''}` });
     } catch (err) {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
