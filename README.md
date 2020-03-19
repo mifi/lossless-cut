@@ -5,7 +5,7 @@
 LosslessCut aims to be the ultimate cross platform ffmpeg GUI for extremely fast and lossless operations on video, audio, subtitle and other related files.
 The main feature is lossless trimming and cutting of video and audio files, great for saving space by rough cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. Or you can add a music or subtitle track to your video without needing to encode. Everything is extremely fast because it does an almost direct data copy, fueled by the awesome ffmpeg which does all the grunt work.
 
-![Demo](https://github.com/mifi/gifs/raw/master/2019-01-28-lossless-cut.gif)
+![Demo](https://github.com/mifi/lossless-cut/raw/master/main_screenshot.jpg)
 
 **Shameless Plugs**
 
