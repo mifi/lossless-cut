@@ -2,6 +2,7 @@ import React, { Fragment, memo } from 'react';
 import { FaHandPointLeft, FaHandPointRight, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey } from 'react-icons/fa';
 import { GiSoundWaves } from 'react-icons/gi';
 import { IoMdKey } from 'react-icons/io';
+import { useTranslation } from 'react-i18next';
 // import useTraceUpdate from 'use-trace-update';
 
 import { getSegColors, parseDuration, formatDuration } from './util';
@@ -15,6 +16,8 @@ const TimelineControls = memo(({
   playing, shortStep, playCommand, setTimelineMode, hasAudio, hasVideo, timelineMode,
   keyframesEnabled, setKeyframesEnabled, seekClosestKeyframe,
 }) => {
+  const { t } = useTranslation();
+
   const {
     segActiveBgColor: currentSegActiveBgColor,
     segBorderColor: currentSegBorderColor,
@@ -53,7 +56,7 @@ const TimelineControls = memo(({
       <div
         style={{ ...segButtonStyle, height: 10, padding: 4, margin: '0 5px' }}
         role="button"
-        title={`Select ${direction > 0 ? 'next' : 'previous'} segment (${newIndex + 1})`}
+        title={`${direction > 0 ? t('Select next segment') : t('Select previous segment')} (${newIndex + 1})`}
         onClick={() => seg && setCurrentSegIndex(newIndex)}
       >
         {newIndex + 1}
@@ -102,7 +105,7 @@ const TimelineControls = memo(({
       <input
         style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? '#dc1d1d' : undefined }}
         type="text"
-        title={`Manually input cut ${isStart ? 'start' : 'end'} point`}
+        title={isStart ? t('Manually input cut start point') : t('Manually input cut end point')}
         onChange={e => handleCutTimeInput(e.target.value)}
         value={isCutTimeManualSet()
           ? cutTimeManual
@@ -123,7 +126,7 @@ const TimelineControls = memo(({
             size={24}
             style={{ padding: '0 5px', color: timelineMode === 'waveform' ? primaryTextColor : undefined }}
             role="button"
-            title="Show waveform"
+            title={t('Show waveform')}
             onClick={() => setTimelineMode('waveform')}
           />
         )}
@@ -133,7 +136,7 @@ const TimelineControls = memo(({
               size={20}
               style={{ padding: '0 5px', color: timelineMode === 'thumbnails' ? primaryTextColor : undefined }}
               role="button"
-              title="Show thumbnails"
+              title={t('Show thumbnails')}
               onClick={() => setTimelineMode('thumbnails')}
             />
 
@@ -141,7 +144,7 @@ const TimelineControls = memo(({
               size={16}
               style={{ padding: '0 5px', color: keyframesEnabled ? primaryTextColor : undefined }}
               role="button"
-              title="Show keyframes"
+              title={t('Show keyframes')}
               onClick={() => setKeyframesEnabled(v => !v)}
             />
           </Fragment>
@@ -152,30 +155,30 @@ const TimelineControls = memo(({
 
       <FaStepBackward
         size={16}
-        title="Jump to start of video"
+        title={t('Jump to start of video')}
         role="button"
         onClick={() => seekAbs(0)}
       />
 
       {renderJumpCutpointButton(-1)}
 
-      {renderSetCutpointButton({ side: 'start', Icon: FaStepBackward, onClick: jumpCutStart, title: 'Jump to cut start', style: { marginRight: 5 } })}
+      {renderSetCutpointButton({ side: 'start', Icon: FaStepBackward, onClick: jumpCutStart, title: t('Jump to cut start'), style: { marginRight: 5 } })}
 
-      {renderSetCutpointButton({ side: 'start', Icon: FaHandPointLeft, onClick: setCutStart, title: 'Set cut start to current position' })}
+      {renderSetCutpointButton({ side: 'start', Icon: FaHandPointLeft, onClick: setCutStart, title: t('Set cut start to current position') })}
 
       {renderCutTimeInput('start')}
 
       <IoMdKey
         size={20}
         role="button"
-        title="Seek previous keyframe"
+        title={t('Seek previous keyframe')}
         style={{ transform: 'matrix(-1, 0, 0, 1, 0, 0)' }}
         onClick={() => seekClosestKeyframe(-1)}
       />
       <FaCaretLeft
         size={20}
         role="button"
-        title="One frame back"
+        title={t('One frame back')}
         onClick={() => shortStep(-1)}
       />
       <PlayPause
@@ -186,27 +189,27 @@ const TimelineControls = memo(({
       <FaCaretRight
         size={20}
         role="button"
-        title="One frame forward"
+        title={t('One frame forward')}
         onClick={() => shortStep(1)}
       />
       <IoMdKey
         size={20}
         role="button"
-        title="Seek next keyframe"
+        title={t('Seek next keyframe')}
         onClick={() => seekClosestKeyframe(1)}
       />
 
       {renderCutTimeInput('end')}
 
-      {renderSetCutpointButton({ side: 'end', Icon: FaHandPointRight, onClick: setCutEnd, title: 'Set cut end to current position' })}
+      {renderSetCutpointButton({ side: 'end', Icon: FaHandPointRight, onClick: setCutEnd, title: t('Set cut end to current position') })}
 
-      {renderSetCutpointButton({ side: 'end', Icon: FaStepForward, onClick: jumpCutEnd, title: 'Jump to cut end', style: { marginLeft: 5 } })}
+      {renderSetCutpointButton({ side: 'end', Icon: FaStepForward, onClick: jumpCutEnd, title: t('Jump to cut end'), style: { marginLeft: 5 } })}
 
       {renderJumpCutpointButton(1)}
 
       <FaStepForward
         size={16}
-        title="Jump to end of video"
+        title={t('Jump to end of video')}
         role="button"
         onClick={() => seekAbs(duration)}
       />

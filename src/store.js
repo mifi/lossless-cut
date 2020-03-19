@@ -13,5 +13,6 @@ export default new Store({
     muted: false,
     autoSaveProjectFile: true,
     wheelSensitivity: 0.2,
+    language: undefined,
   },
 });

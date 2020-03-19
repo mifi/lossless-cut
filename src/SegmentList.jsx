@@ -3,6 +3,7 @@ import prettyMs from 'pretty-ms';
 import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
 
 import { saveColor } from './colors';
 import { getSegColors } from './util';
@@ -13,12 +14,14 @@ const SegmentList = memo(({
   updateCurrentSegOrder, addCutSegment, removeCutSegment,
   setCurrentSegmentName, currentCutSeg, toggleSideBar,
 }) => {
+  const { t } = useTranslation();
+
   if (!cutSegments && invertCutSegments) {
-    return <div style={{ padding: '0 10px' }}>Make sure you have no overlapping segments.</div>;
+    return <div style={{ padding: '0 10px' }}>{t('Make sure you have no overlapping segments.')}</div>;
   }
 
   if (!cutSegments || cutSegments.length === 0) {
-    return <div style={{ padding: '0 10px' }}>No segments to export.</div>;
+    return <div style={{ padding: '0 10px' }}>{t('No segments to export.')}</div>;
   }
 
   const { segActiveBgColor: currentSegActiveBgColor } = getSegColors(currentCutSeg);
@@ -26,12 +29,12 @@ const SegmentList = memo(({
   async function onLabelSegmentPress() {
     const { value } = await Swal.fire({
       showCancelButton: true,
-      title: 'Label current segment',
+      title: t('Label current segment'),
       inputValue: currentCutSeg.name,
       input: 'text',
       inputValidator: (v) => {
         const maxLength = 100;
-        return v.length > maxLength ? `Max length ${maxLength}` : undefined;
+        return v.length > maxLength ? `${t('Max length')} ${maxLength}` : undefined;
       },
     });
 
@@ -41,14 +44,14 @@ const SegmentList = memo(({
   async function onReorderSegsPress() {
     if (cutSegments.length < 2) return;
     const { value } = await Swal.fire({
-      title: `Change order of segment ${currentSegIndex + 1}`,
+      title: `${t('Change order of segment')} ${currentSegIndex + 1}`,
       text: `Please enter a number from 1 to ${cutSegments.length} to be the new order for the current segment`,
       input: 'text',
       inputValue: currentSegIndex + 1,
       showCancelButton: true,
       inputValidator: (v) => {
         const parsed = parseInt(v, 10);
-        return Number.isNaN(parsed) || parsed > cutSegments.length || parsed < 1 ? 'Invalid number entered' : undefined;
+        return Number.isNaN(parsed) || parsed > cutSegments.length || parsed < 1 ? t('Invalid number entered') : undefined;
       },
     });
 
@@ -63,14 +66,14 @@ const SegmentList = memo(({
       <div style={{ padding: '0 10px', overflowY: 'scroll', flexGrow: 1 }} className="hide-scrollbar">
         <div style={{ fontSize: 14, marginBottom: 10 }}>
           <FaAngleRight
-            title="Close sidebar"
+            title={t('Close sidebar')}
             size={18}
             style={{ verticalAlign: 'middle', color: 'white' }}
             role="button"
             onClick={toggleSideBar}
           />
 
-          Segments to export:
+          {t('Segments to export:')}
         </div>
 
         {cutSegments.map((seg, index) => {
@@ -109,7 +112,7 @@ const SegmentList = memo(({
               </div>
               <div style={{ fontSize: 12, color: 'white' }}>{seg.name}</div>
               <div style={{ fontSize: 13 }}>
-                Duration {prettyMs(durationMs)}
+                {t('Duration')} {prettyMs(durationMs)}
               </div>
               <div style={{ fontSize: 12 }}>
                 ({Math.floor(durationMs)} ms, {getFrameCount(duration)} frames)
@@ -124,7 +127,7 @@ const SegmentList = memo(({
           size={30}
           style={{ margin: '0 5px', borderRadius: 3, color: 'white', cursor: 'pointer', background: 'rgba(255, 255, 255, 0.2)' }}
           role="button"
-          title="Add segment"
+          title={t('Add segment')}
           onClick={addCutSegment}
         />
 
@@ -132,13 +135,13 @@ const SegmentList = memo(({
           size={30}
           style={{ margin: '0 5px', borderRadius: 3, color: 'white', cursor: 'pointer', background: cutSegments.length < 2 ? 'rgba(255, 255, 255, 0.2)' : currentSegActiveBgColor }}
           role="button"
-          title={`Delete current segment ${currentSegIndex + 1}`}
+          title={`${t('Delete current segment')} ${currentSegIndex + 1}`}
           onClick={removeCutSegment}
         />
 
         <FaSortNumericDown
           size={20}
-          title="Change segment order"
+          title={t('Change segment order')}
           role="button"
           style={{ padding: 4, margin: '0 5px', background: currentSegActiveBgColor, borderRadius: 3, color: 'white', cursor: 'pointer' }}
           onClick={onReorderSegsPress}
@@ -146,7 +149,7 @@ const SegmentList = memo(({
 
         <FaTag
           size={20}
-          title="Label segment"
+          title={t('Label segment')}
           role="button"
           style={{ padding: 4, margin: '0 5px', background: currentSegActiveBgColor, borderRadius: 3, color: 'white', cursor: 'pointer' }}
           onClick={onLabelSegmentPress}
@@ -154,7 +157,7 @@ const SegmentList = memo(({
       </div>
 
       <div style={{ padding: 10, boxSizing: 'border-box', borderBottom: '1px solid grey', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-        <div>Segments total:</div>
+        <div>{t('Segments total:')}</div>
         <div>{formatTimecode(cutSegments.reduce((acc, { start, end }) => (end - start) + acc, 0))}</div>
       </div>
     </Fragment>

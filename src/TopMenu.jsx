@@ -2,6 +2,7 @@ import React, { Fragment, memo } from 'react';
 import { IoIosHelpCircle, IoIosSettings } from 'react-icons/io';
 import { Button } from 'evergreen-ui';
 import { MdCallSplit, MdCallMerge } from 'react-icons/md';
+import { useTranslation } from 'react-i18next';
 
 import { withBlur } from './util';
 
@@ -11,6 +12,8 @@ const TopMenu = memo(({
   renderOutFmt, outSegments, autoMerge, toggleAutoMerge, keyframeCut, toggleKeyframeCut, toggleHelp,
   numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown, toggleSettings,
 }) => {
+  const { t } = useTranslation();
+
   const AutoMergeIcon = autoMerge ? MdCallMerge : MdCallSplit;
 
   return (
@@ -18,16 +21,16 @@ const TopMenu = memo(({
       {filePath && (
         <Fragment>
           <Button height={20} iconBefore="list" onClick={withBlur(() => setStreamsSelectorShown(true))}>
-            Tracks ({numStreamsToCopy}/{numStreamsTotal})
+            {t('Tracks')} ({numStreamsToCopy}/{numStreamsTotal})
           </Button>
 
           <Button
             iconBefore={copyAnyAudioTrack ? 'volume-up' : 'volume-off'}
             height={20}
-            title={`Discard audio? Current: ${copyAnyAudioTrack ? 'keep audio tracks' : 'Discard audio tracks'}`}
+            title={`${t('Discard audio? Current:')} ${copyAnyAudioTrack ? t('Keep audio tracks') : t('Discard audio tracks')}`}
             onClick={withBlur(toggleStripAudio)}
           >
-            {copyAnyAudioTrack ? 'Keep audio' : 'Discard audio'}
+            {copyAnyAudioTrack ? t('Keep audio') : t('Discard audio')}
           </Button>
         </Fragment>
       )}
@@ -42,7 +45,7 @@ const TopMenu = memo(({
             onClick={withBlur(setOutputDir)}
             title={customOutDir}
           >
-            {`Working dir ${customOutDir ? 'set' : 'unset'}`}
+            {customOutDir ? t('Working dir set') : t('Working dir unset')}
           </Button>
 
           <div style={{ width: 60 }}>{renderOutFmt({ height: 20 })}</div>
@@ -50,19 +53,19 @@ const TopMenu = memo(({
           <Button
             height={20}
             style={{ opacity: outSegments && outSegments.length < 2 ? 0.4 : undefined }}
-            title={autoMerge ? 'Auto merge segments to one file after export' : 'Export to separate files'}
+            title={autoMerge ? t('Auto merge segments to one file after export') : t('Export to separate files')}
             onClick={withBlur(toggleAutoMerge)}
           >
-            <AutoMergeIcon /> {autoMerge ? 'Merge cuts' : 'Separate files'}
+            <AutoMergeIcon /> {autoMerge ? t('Merge cuts') : t('Separate files')}
           </Button>
 
           <Button
             height={20}
             iconBefore={keyframeCut ? 'key' : undefined}
-            title={`Cut mode is ${keyframeCut ? 'keyframe cut' : 'normal cut'}`}
+            title={`${t('Cut mode is:')} ${keyframeCut ? t('Keyframe cut') : t('Normal cut')}`}
             onClick={withBlur(toggleKeyframeCut)}
           >
-            {keyframeCut ? 'Keyframe cut' : 'Normal cut'}
+            {keyframeCut ? t('Keyframe cut') : t('Normal cut')}
           </Button>
         </Fragment>
       )}

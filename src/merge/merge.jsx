@@ -1,6 +1,6 @@
 import React from 'react';
 import swal from 'sweetalert2';
-
+import i18n from 'i18next';
 import withReactContent from 'sweetalert2-react-content';
 
 import SortableFiles from './SortableFiles';
@@ -13,7 +13,7 @@ const MySwal = withReactContent(swal);
 export async function showMergeDialog(paths, onMergeClick) {
   if (!paths) return;
   if (paths.length < 2) {
-    errorToast('More than one file must be selected');
+    errorToast(i18n.t('More than one file must be selected'));
     return;
   }
 
@@ -23,7 +23,7 @@ export async function showMergeDialog(paths, onMergeClick) {
   const { dismiss } = await MySwal.fire({
     width: '90%',
     showCancelButton: true,
-    confirmButtonText: 'Merge!',
+    confirmButtonText: i18n.t('Merge!'),
     onBeforeOpen: (el) => { swalElem = el; },
     html: (<SortableFiles
       items={outPaths}
@@ -39,8 +39,8 @@ export async function showMergeDialog(paths, onMergeClick) {
 }
 
 export async function showOpenAndMergeDialog({ dialog, defaultPath, onMergeClick }) {
-  const title = 'Please select files to be merged';
-  const message = 'Please select files to be merged. The files need to be of the exact same format and codecs';
+  const title = i18n.t('Please select files to be merged');
+  const message = i18n.t('Please select files to be merged. The files need to be of the exact same format and codecs');
   const { canceled, filePaths } = await dialog.showOpenDialog({
     title,
     defaultPath,

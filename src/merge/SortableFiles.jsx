@@ -6,6 +6,7 @@ import {
 } from 'react-sortable-hoc';
 import { basename } from 'path';
 import { Checkbox } from 'evergreen-ui';
+import { useTranslation } from 'react-i18next';
 
 const rowStyle = {
   padding: 5, fontSize: 14, margin: '7px 0', boxShadow: '0 0 5px 0px rgba(0,0,0,0.3)', overflowY: 'auto', whiteSpace: 'nowrap',
@@ -41,9 +42,12 @@ const SortableFiles = memo(({
     setItems(newItems);
   }, [items]);
 
+  const { t } = useTranslation();
+
+
   return (
     <div>
-      <div><b>Sort your files for merge</b></div>
+      <div><b>{t('Sort your files for merge')}</b></div>
       <SortableContainer
         items={items}
         onSortEnd={onSortEnd}
@@ -53,7 +57,7 @@ const SortableFiles = memo(({
       />
 
       <div style={{ marginTop: 10 }}>
-        <Checkbox checked={allStreams} onChange={e => setAllStreams(e.target.checked)} label="Include all streams?" />
+        <Checkbox checked={allStreams} onChange={e => setAllStreams(e.target.checked)} label={t('Include all streams?')} />
       </div>
     </div>
   );

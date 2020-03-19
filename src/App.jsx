@@ -10,6 +10,8 @@ import PQueue from 'p-queue';
 import filePathToUrl from 'file-url';
 import Mousetrap from 'mousetrap';
 import uuid from 'uuid';
+import i18n from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 import fromPairs from 'lodash/fromPairs';
 import clamp from 'lodash/clamp';
@@ -17,6 +19,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
 import flatMap from 'lodash/flatMap';
 import isEqual from 'lodash/isEqual';
+
 
 import TopMenu from './TopMenu';
 import HelpSheet from './HelpSheet';
@@ -192,6 +195,12 @@ const App = memo(() => {
   useEffect(() => configStore.set('autoSaveProjectFile', autoSaveProjectFile), [autoSaveProjectFile]);
   const [wheelSensitivity, setWheelSensitivity] = useState(configStore.get('wheelSensitivity'));
   useEffect(() => configStore.set('wheelSensitivity', wheelSensitivity), [wheelSensitivity]);
+  const [language, setLanguage] = useState(configStore.get('language'));
+  useEffect(() => (language === undefined ? configStore.delete('language') : configStore.set('language', language)), [language]);
+
+  useEffect(() => {
+    if (language != null) i18n.changeLanguage(language).catch(console.error);
+  }, [language]);
 
   // Global state
   const [helpVisible, setHelpVisible] = useState(false);
@@ -238,7 +247,7 @@ const App = memo(() => {
 
   function toggleMute() {
     setMuted((v) => {
-      if (!v) toast.fire({ title: 'Muted preview (note that exported file will not be affected)' });
+      if (!v) toast.fire({ title: i18n.t('Muted preview (note that exported file will not be affected)') });
       return !v;
     });
   }
@@ -498,7 +507,7 @@ const App = memo(() => {
         await edlStoreSave(edlFilePath, debouncedCutSegments);
         lastSavedCutSegmentsRef.current = debouncedCutSegments;
       } catch (err) {
-        errorToast('Failed to save CSV');
+        errorToast(i18n.t('Failed to save CSV'));
         console.error('Failed to save CSV', err);
       }
     }
@@ -570,7 +579,7 @@ const App = memo(() => {
         customOutDir, paths, allStreams,
       });
     } catch (err) {
-      errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
+      errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same format and codecs'));
       console.error('Failed to merge files', err);
     } finally {
       setWorking(false);
@@ -761,7 +770,7 @@ const App = memo(() => {
   useEffect(() => () => waveform && URL.revokeObjectURL(waveform.url), [waveform]);
 
   function showUnsupportedFileMessage() {
-    toast.fire({ timer: 10000, icon: 'warning', title: 'This video is not natively supported', text: 'This means that there is no audio in the preview and it has low quality. The final export operation will however be lossless and contains audio!' });
+    toast.fire({ timer: 10000, icon: 'warning', title: i18n.t('This video is not natively supported'), text: i18n.t('This means that there is no audio in the preview and it has low quality. The final export operation will however be lossless and contains audio!') });
   }
 
   const createDummyVideo = useCallback(async (fp) => {
@@ -779,7 +788,7 @@ const App = memo(() => {
       await createDummyVideo(filePath);
     } catch (err) {
       console.error(err);
-      errorToast('Failed to playback this file. Try to convert to friendly format from the menu');
+      errorToast(i18n.t('Failed to playback this file. Try to convert to friendly format from the menu'));
     } finally {
       setWorking(false);
     }
@@ -807,7 +816,7 @@ const App = memo(() => {
     if (!filePath) return;
 
     // eslint-disable-next-line no-alert
-    if (working || !window.confirm(`Are you sure you want to move the source file to trash? ${filePath}`)) return;
+    if (working || !window.confirm(`${i18n.t('Are you sure you want to move the source file to trash?')} ${filePath}`)) return;
 
     try {
       setWorking(true);
@@ -815,7 +824,7 @@ const App = memo(() => {
       await trash(filePath);
       if (html5FriendlyPath) await trash(html5FriendlyPath);
     } catch (err) {
-      toast.fire({ icon: 'error', title: `Failed to trash source file: ${err.message}` });
+      toast.fire({ icon: 'error', title: `${i18n.t('Failed to trash source file:')} ${err.message}` });
     } finally {
       resetState();
     }
@@ -826,27 +835,27 @@ const App = memo(() => {
 
   const cutClick = useCallback(async () => {
     if (working) {
-      errorToast('I\'m busy');
+      errorToast(i18n.t('I\'m busy'));
       return;
     }
 
     if (haveInvalidSegs) {
-      errorToast('Start time must be before end time');
+      errorToast(i18n.t('Start time must be before end time'));
       return;
     }
 
     if (numStreamsToCopy === 0) {
-      errorToast('No tracks to export!');
+      errorToast(i18n.t('No tracks to export!'));
       return;
     }
 
     if (!outSegments) {
-      errorToast('No segments to export!');
+      errorToast(i18n.t('No segments to export!'));
       return;
     }
 
     if (outSegments.length < 1) {
-      errorToast('No segments to export');
+      errorToast(i18n.t('No segments to export'));
       return;
     }
 
@@ -888,7 +897,8 @@ const App = memo(() => {
         }
       }
 
-      toast.fire({ timer: 10000, icon: 'success', title: `Export completed! Go to settings to view the ffmpeg commands that were executed. If output does not look right, try to toggle "Keyframe cut" or try a different output format (e.g. matroska). Output file(s) can be found at: ${outputDir}.${exportExtraStreams ? ' Extra unprocessable streams were exported to separate files.' : ''}` });
+      const extraStreamsMsg = exportExtraStreams ? ` ${i18n.t('Extra unprocessable streams were exported to separate files.')}` : '';
+      toast.fire({ timer: 10000, icon: 'success', title: `${i18n.t('Export completed! Go to settings to view the ffmpeg commands that were executed. If output does not look right, try to toggle "Keyframe cut" or try a different output format (e.g. matroska). Output file(s) can be found at:')} ${outputDir}.${extraStreamsMsg}` });
     } catch (err) {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
@@ -913,15 +923,15 @@ const App = memo(() => {
   const capture = useCallback(async () => {
     if (!filePath) return;
     if (html5FriendlyPath || dummyVideoPath) {
-      errorToast('Capture frame from this video not yet implemented');
+      errorToast(i18n.t('Capture frame from this video not yet implemented'));
       return;
     }
     try {
       const outPath = await captureFrame(customOutDir, filePath, videoRef.current, currentTimeRef.current, captureFormat);
-      toast.fire({ icon: 'success', title: `Screenshot captured to: ${outPath}` });
+      toast.fire({ icon: 'success', title: `${i18n.t('Screenshot captured to:')} ${outPath}` });
     } catch (err) {
       console.error(err);
-      errorToast('Failed to capture frame');
+      errorToast(i18n.t('Failed to capture frame'));
     }
   }, [filePath, captureFormat, customOutDir, html5FriendlyPath, dummyVideoPath]);
 
@@ -955,7 +965,7 @@ const App = memo(() => {
         .every(row => row.start === undefined || row.end === undefined || row.start < row.end);
 
       if (!allRowsValid) {
-        throw new Error('Invalid start or end values for one or more segments');
+        throw new Error(i18n.t('Invalid start or end values for one or more segments'));
       }
 
       cutSegmentsHistory.go(0);
@@ -963,7 +973,7 @@ const App = memo(() => {
     } catch (err) {
       if (err.code !== 'ENOENT') {
         console.error('EDL load failed', err);
-        errorToast(`Failed to load EDL file (${err.message})`);
+        errorToast(`${i18n.t('Failed to load EDL file')} (${err.message})`);
       }
     }
   }, [cutSegmentsHistory, setCutSegments]);
@@ -971,7 +981,7 @@ const App = memo(() => {
   const load = useCallback(async (fp, html5FriendlyPathRequested) => {
     console.log('Load', { fp, html5FriendlyPathRequested });
     if (working) {
-      errorToast('Tried to load file while busy');
+      errorToast(i18n.t('Tried to load file while busy'));
       return;
     }
 
@@ -984,7 +994,7 @@ const App = memo(() => {
 
       const ff = await getDefaultOutFormat(fp, fd);
       if (!ff) {
-        errorToast('Unable to determine file format');
+        errorToast(i18n.t('Unable to determine file format'));
         return;
       }
 
@@ -1023,7 +1033,7 @@ const App = memo(() => {
       await loadEdlFile(getEdlFilePath(fp));
     } catch (err) {
       if (err.exitCode === 1 || err.code === 'ENOENT') {
-        errorToast('Unsupported file');
+        errorToast(i18n.t('Unsupported file'));
         console.error(err);
         return;
       }
@@ -1124,9 +1134,9 @@ const App = memo(() => {
     try {
       setWorking(true);
       await extractStreams({ customOutDir, filePath, streams: mainStreams });
-      toast.fire({ icon: 'success', title: `All streams can be found as separate files at: ${outputDir}` });
+      toast.fire({ icon: 'success', title: `${i18n.t('All streams can be found as separate files at:')} ${outputDir}` });
     } catch (err) {
-      errorToast('Failed to extract all streams');
+      errorToast(i18n.t('Failed to extract all streams'));
       console.error('Failed to extract all streams', err);
     } finally {
       setWorking(false);
@@ -1160,16 +1170,16 @@ const App = memo(() => {
       return;
     }
     const { value } = await Swal.fire({
-      title: 'You opened a new file. What do you want to do?',
+      title: i18n.t('You opened a new file. What do you want to do?'),
       icon: 'question',
       input: 'radio',
       inputValue: 'open',
       showCancelButton: true,
       inputOptions: {
-        open: 'Open the file instead of the current one. You will lose all unsaved work',
-        add: 'Include all tracks from the new file',
+        open: i18n.t('Open the file instead of the current one. You will lose all unsaved work'),
+        add: i18n.t('Include all tracks from the new file'),
       },
-      inputValidator: (v) => !v && 'You need to choose something!',
+      inputValidator: (v) => !v && i18n.t('You need to choose something!'),
     });
 
     if (value === 'open') {
@@ -1200,7 +1210,7 @@ const App = memo(() => {
     function closeFile() {
       if (!isFileOpened) return;
       // eslint-disable-next-line no-alert
-      if (askBeforeClose && !window.confirm('Are you sure you want to close the current file? You will lose all unsaved work')) return;
+      if (askBeforeClose && !window.confirm(i18n.t('Are you sure you want to close the current file? You will lose all unsaved work'))) return;
 
       resetState();
     }
@@ -1220,7 +1230,7 @@ const App = memo(() => {
           await createDummyVideo(filePath);
         }
       } catch (err) {
-        errorToast('Failed to html5ify file');
+        errorToast(i18n.t('Failed to html5ify file'));
         console.error('Failed to html5ify file', err);
       } finally {
         setWorking(false);
@@ -1255,22 +1265,22 @@ const App = memo(() => {
 
     async function exportEdlFile() {
       try {
-        const { canceled, filePath: fp } = await dialog.showSaveDialog({ defaultPath: `${new Date().getTime()}.csv`, filters: [{ name: 'CSV files', extensions: ['csv'] }] });
+        const { canceled, filePath: fp } = await dialog.showSaveDialog({ defaultPath: `${new Date().getTime()}.csv`, filters: [{ name: i18n.t('CSV files'), extensions: ['csv'] }] });
         if (canceled || !fp) return;
         if (await exists(fp)) {
-          errorToast('File exists, bailing');
+          errorToast(i18n.t('File exists, bailing'));
           return;
         }
         await edlStoreSave(fp, cutSegments);
       } catch (err) {
-        errorToast('Failed to export CSV');
+        errorToast(i18n.t('Failed to export CSV'));
         console.error('Failed to export CSV', err);
       }
     }
 
     async function importEdlFile() {
       if (!isFileOpened) return;
-      const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters: [{ name: 'CSV files', extensions: ['csv'] }] });
+      const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters: [{ name: i18n.t('CSV files'), extensions: ['csv'] }] });
       if (canceled || filePaths.length < 1) return;
       await loadEdlFile(filePaths[0]);
     }
@@ -1342,26 +1352,26 @@ const App = memo(() => {
 
   const renderOutFmt = useCallback((props) => (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <Select value={fileFormat || ''} title="Output format" onChange={withBlur(e => setFileFormat(e.target.value))} {...props}>
-      <option key="disabled1" value="" disabled>Format</option>
+    <Select value={fileFormat || ''} title={i18n.t('Output format')} onChange={withBlur(e => setFileFormat(e.target.value))} {...props}>
+      <option key="disabled1" value="" disabled>{i18n.t('Format')}</option>
 
       {detectedFileFormat && (
         <option key={detectedFileFormat} value={detectedFileFormat}>
-          {detectedFileFormat} - {allOutFormats[detectedFileFormat]} (detected)
+          {detectedFileFormat} - {allOutFormats[detectedFileFormat]} {i18n.t('(detected)')}
         </option>
       )}
 
-      <option key="disabled2" value="" disabled>--- Common formats: ---</option>
+      <option key="disabled2" value="" disabled>--- {i18n.t('Common formats:')} ---</option>
       {renderFormatOptions(commonFormatsMap)}
 
-      <option key="disabled3" value="" disabled>--- All formats: ---</option>
+      <option key="disabled3" value="" disabled>--- {i18n.t('All formats:')} ---</option>
       {renderFormatOptions(otherFormatsMap)}
     </Select>
   ), [commonFormatsMap, detectedFileFormat, fileFormat, otherFormatsMap]);
 
   const renderCaptureFormatButton = useCallback((props) => (
     <Button
-      title="Capture frame format"
+      title={i18n.t('Capture frame format')}
       onClick={withBlur(toggleCaptureFormat)}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
@@ -1372,14 +1382,13 @@ const App = memo(() => {
 
   const AutoExportToggler = useCallback(() => (
     <SegmentedControl
-      options={[{ label: 'Extract', value: 'extract' }, { label: 'Discard', value: 'discard' }]}
+      options={[{ label: i18n.t('Extract'), value: 'extract' }, { label: i18n.t('Discard'), value: 'discard' }]}
       value={autoExportExtraStreams ? 'extract' : 'discard'}
       onChange={value => setAutoExportExtraStreams(value === 'extract')}
     />
   ), [autoExportExtraStreams]);
 
   const onWheelTunerRequested = useCallback(() => {
-    console.log('wat');
     setSettingsVisible(false);
     setWheelTunerVisible(true);
   }, []);
@@ -1400,13 +1409,15 @@ const App = memo(() => {
       setTimecodeShowFrames={setTimecodeShowFrames}
       askBeforeClose={askBeforeClose}
       setAskBeforeClose={setAskBeforeClose}
+      language={language}
+      setLanguage={setLanguage}
 
       renderOutFmt={renderOutFmt}
       AutoExportToggler={AutoExportToggler}
       renderCaptureFormatButton={renderCaptureFormatButton}
       onWheelTunerRequested={onWheelTunerRequested}
     />
-  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, renderOutFmt, timecodeShowFrames, setOutputDir, onWheelTunerRequested]);
+  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, renderOutFmt, timecodeShowFrames, setOutputDir, onWheelTunerRequested, language]);
 
   useEffect(() => {
     loadMifiLink().then(setMifiLink);
@@ -1441,6 +1452,8 @@ const App = memo(() => {
   let timelineMode;
   if (thumbnailsEnabled) timelineMode = 'thumbnails';
   if (waveformEnabled) timelineMode = 'waveform';
+
+  const { t } = useTranslation();
 
   return (
     <div>
@@ -1493,7 +1506,7 @@ const App = memo(() => {
 
       {!isFileOpened && (
         <div className="no-user-select" style={{ position: 'fixed', left: 0, right: 0, top: topBarHeight, bottom: bottomBarHeight, border: '2vmin dashed #252525', color: '#505050', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}>
-          <div style={{ fontSize: '9vmin' }}>DROP VIDEO(S)</div>
+          <div style={{ fontSize: '9vmin', textTransform: 'uppercase' }}>{t('DROP FILE(S)')}</div>
 
           {mifiLink && mifiLink.loadUrl && (
             <div style={{ position: 'relative', margin: '3vmin', width: '60vmin', height: '20vmin' }}>
@@ -1525,7 +1538,7 @@ const App = memo(() => {
               </div>
 
               <div style={{ marginTop: 10 }}>
-                WORKING
+                {t('WORKING')}
               </div>
 
               {(cutProgress != null) && (
@@ -1568,7 +1581,7 @@ const App = memo(() => {
           position: 'absolute', top: topBarHeight, marginTop: '1em', marginRight: '1em', right: sideBarWidth, color: 'white',
         }}
         >
-          Lossless rotation preview
+          {t('Lossless rotation preview')}
         </div>
       )}
 
@@ -1581,7 +1594,7 @@ const App = memo(() => {
             }}
           >
             <VolumeIcon
-              title="Mute preview? (will not affect output)"
+              title={t('Mute preview? (will not affect output)')}
               size={30}
               role="button"
               style={{ margin: '0 10px 10px 10px' }}
@@ -1590,7 +1603,7 @@ const App = memo(() => {
 
             {!showSideBar && (
               <FaAngleLeft
-                title="Show sidebar"
+                title={t('Show sidebar')}
                 size={30}
                 role="button"
                 style={{ margin: '0 10px 10px 10px' }}
@@ -1729,9 +1742,9 @@ const App = memo(() => {
 
       {wheelTunerVisible && (
         <div style={{ display: 'flex', alignItems: 'center', background: 'white', color: 'black', padding: 10, margin: 10, borderRadius: 10, width: '100%', maxWidth: 500, position: 'fixed', left: 0, bottom: bottomBarHeight, zIndex: 10 }}>
-          Scroll sensitivity
+          {t('Scroll sensitivity')}
           <input style={{ flexGrow: 1 }} type="range" min="0" max="1000" step="1" value={wheelSensitivity * 1000} onChange={e => setWheelSensitivity(e.target.value / 1000)} />
-          <Button height={20} intent="success" onClick={() => setWheelTunerVisible(false)}>Done</Button>
+          <Button height={20} intent="success" onClick={() => setWheelTunerVisible(false)}>{t('Done')}</Button>
         </div>
       )}
     </div>

@@ -6,6 +6,7 @@ import { MdSubtitles } from 'react-icons/md';
 import Swal from 'sweetalert2';
 import { SegmentedControl } from 'evergreen-ui';
 import withReactContent from 'sweetalert2-react-content';
+import { useTranslation } from 'react-i18next';
 
 import { formatDuration } from './util';
 import { getStreamFps } from './ffmpeg';
@@ -22,6 +23,8 @@ function onInfoClick(s, title) {
 }
 
 const Stream = memo(({ stream, onToggle, copyStream, fileDuration }) => {
+  const { t } = useTranslation();
+
   const bitrate = parseInt(stream.bit_rate, 10);
   const streamDuration = parseInt(stream.duration, 10);
   const duration = !Number.isNaN(streamDuration) ? streamDuration : fileDuration;
@@ -52,20 +55,22 @@ const Stream = memo(({ stream, onToggle, copyStream, fileDuration }) => {
       <td>{stream.nb_frames}</td>
       <td>{!Number.isNaN(bitrate) && `${(bitrate / 1e6).toFixed(1)}MBit/s`}</td>
       <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
-      <td><FaInfoCircle role="button" onClick={() => onInfoClick(stream, 'Stream info')} size={26} /></td>
+      <td><FaInfoCircle role="button" onClick={() => onInfoClick(stream, t('Stream info'))} size={26} /></td>
     </tr>
   );
 });
 
-function renderFileRow(path, formatData, onTrashClick) {
+const FileRow = ({ path, formatData, onTrashClick }) => {
+  const { t } = useTranslation();
+
   return (
     <tr>
       <td>{onTrashClick && <FaTrashAlt size={20} role="button" style={{ padding: '0 5px', cursor: 'pointer' }} onClick={onTrashClick} />}</td>
       <td colSpan={8} title={path} style={{ wordBreak: 'break-all', fontWeight: 'bold' }}>{path.replace(/.*\/([^/]+)$/, '$1')}</td>
-      <td><FaInfoCircle role="button" onClick={() => onInfoClick(formatData, 'File info')} size={26} /></td>
+      <td><FaInfoCircle role="button" onClick={() => onInfoClick(formatData, t('File info'))} size={26} /></td>
     </tr>
   );
-}
+};
 
 const StreamsSelector = memo(({
   mainFilePath, mainFileFormatData, streams: existingStreams, isCopyingStreamId, toggleCopyStreamId,
@@ -73,6 +78,8 @@ const StreamsSelector = memo(({
   showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, areWeCutting,
   AutoExportToggler,
 }) => {
+  const { t } = useTranslation();
+
   if (!existingStreams) return null;
 
   function getFormatDuration(formatData) {
@@ -94,26 +101,26 @@ const StreamsSelector = memo(({
 
   return (
     <div style={{ color: 'black', padding: 10 }}>
-      <p>Click to select which tracks to keep when exporting:</p>
+      <p>{t('Click to select which tracks to keep when exporting:')}</p>
 
       <table style={{ marginBottom: 10 }}>
         <thead style={{ background: 'rgba(0,0,0,0.1)' }}>
           <tr>
-            <th>Keep?</th>
+            <th>{t('Keep?')}</th>
             <th />
-            <th>Type</th>
-            <th>Tag</th>
-            <th>Codec</th>
-            <th>Duration</th>
-            <th>Frames</th>
-            <th>Bitrate</th>
-            <th>Data</th>
+            <th>{t('Type')}</th>
+            <th>{t('Tag')}</th>
+            <th>{t('Codec')}</th>
+            <th>{t('Duration')}</th>
+            <th>{t('Frames')}</th>
+            <th>{t('Bitrate')}</th>
+            <th>{t('Data')}</th>
             <th />
           </tr>
         </thead>
 
         <tbody>
-          {renderFileRow(mainFilePath, mainFileFormatData)}
+          <FileRow path={mainFilePath} formatData={mainFileFormatData} />
 
           {existingStreams.map((stream) => (
             <Stream
@@ -129,7 +136,7 @@ const StreamsSelector = memo(({
             <Fragment key={path}>
               <tr><td colSpan={10} /></tr>
 
-              {renderFileRow(path, formatData, () => removeFile(path))}
+              <FileRow path={path} formatData={formatData} onTrashClick={() => removeFile(path)} />
 
               {streams.map((stream) => (
                 <Stream
@@ -148,10 +155,10 @@ const StreamsSelector = memo(({
       {externalFilesEntries.length > 0 && !areWeCutting && (
         <div style={{ margin: '10px 0' }}>
           <div>
-            If the streams have different length, do you want to make the combined output file as long as the longest stream or the shortest stream?
+            {t('If the streams have different length, do you want to make the combined output file as long as the longest stream or the shortest stream?')}
           </div>
           <SegmentedControl
-            options={[{ label: 'Longest', value: 'longest' }, { label: 'Shortest', value: 'shortest' }]}
+            options={[{ label: t('Longest'), value: 'longest' }, { label: t('Shortest'), value: 'shortest' }]}
             value={shortestFlag ? 'shortest' : 'longest'}
             onChange={value => setShortestFlag(value === 'shortest')}
           />
@@ -161,18 +168,18 @@ const StreamsSelector = memo(({
 
       {nonCopiedExtraStreams.length > 0 && (
         <div style={{ margin: '10px 0' }}>
-          Discard or extract unprocessable tracks to separate files?
+          {t('Discard or extract unprocessable tracks to separate files?')}
           <AutoExportToggler />
         </div>
       )}
 
       <div style={{ cursor: 'pointer', padding: '10px 0' }} role="button" onClick={showAddStreamSourceDialog}>
-        <FaFileImport size={30} style={{ verticalAlign: 'middle', marginRight: 5 }} /> Include more tracks from other file
+        <FaFileImport size={30} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {t('Include more tracks from other file')}
       </div>
 
       {externalFilesEntries.length === 0 && (
         <div style={{ cursor: 'pointer', padding: '10px 0' }} role="button" onClick={onExtractAllStreamsPress}>
-          <FaFileExport size={30} style={{ verticalAlign: 'middle', marginRight: 5 }} /> Export each track as individual files
+          <FaFileExport size={30} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {t('Export each track as individual files')}
         </div>
       )}
     </div>

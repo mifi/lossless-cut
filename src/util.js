@@ -1,5 +1,6 @@
 import padStart from 'lodash/padStart';
 import Swal from 'sweetalert2';
+import i18n from 'i18next';
 
 import randomColor from './random-color';
 
@@ -84,7 +85,7 @@ export const errorToast = (title) => toast.fire({
 
 export async function showFfmpegFail(err) {
   console.error(err);
-  return errorToast(`Failed to run ffmpeg: ${err.stack}`);
+  return errorToast(`${i18n.t('Failed to run ffmpeg:')} ${err.stack}`);
 }
 
 export function setFileNameTitle(filePath) {
@@ -98,8 +99,8 @@ export function filenamify(name) {
 
 export async function promptTimeOffset(inputValue) {
   const { value } = await Swal.fire({
-    title: 'Set custom start time offset',
-    text: 'Instead of video apparently starting at 0, you can offset by a specified value (useful for viewing/cutting videos according to timecodes)',
+    title: i18n.t('Set custom start time offset'),
+    text: i18n.t('Instead of video apparently starting at 0, you can offset by a specified value (useful for viewing/cutting videos according to timecodes)'),
     input: 'text',
     inputValue: inputValue || '',
     showCancelButton: true,

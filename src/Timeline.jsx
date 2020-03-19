@@ -2,6 +2,7 @@ import React, { memo, useRef, useMemo, useCallback, useEffect, useState } from '
 import { motion } from 'framer-motion';
 import Hammer from 'react-hammerjs';
 import debounce from 'lodash/debounce';
+import { useTranslation } from 'react-i18next';
 
 import TimelineSeg from './TimelineSeg';
 import InverseCutSegment from './InverseCutSegment';
@@ -44,6 +45,8 @@ const Timeline = memo(({
   waveform, shouldShowWaveform, shouldShowKeyframes, timelineHeight, thumbnails,
   onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled, wheelSensitivity,
 }) => {
+  const { t } = useTranslation();
+
   const timelineScrollerRef = useRef();
   const timelineScrollerSkipEventRef = useRef();
   const timelineScrollerSkipEventDebounce = useRef();
@@ -241,7 +244,7 @@ const Timeline = memo(({
 
         {(waveformEnabled && !thumbnailsEnabled && !shouldShowWaveform) && (
           <div style={{ position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'rgba(255,255,255,0.6)' }}>
-            Zoom in more to view waveform
+            {t('Zoom in more to view waveform')}
           </div>
         )}
 

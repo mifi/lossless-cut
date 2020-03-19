@@ -4,6 +4,7 @@ import flatMapDeep from 'lodash/flatMapDeep';
 import sum from 'lodash/sum';
 import sortBy from 'lodash/sortBy';
 import moment from 'moment';
+import i18n from 'i18next';
 
 import { formatDuration, getOutPath, transferTimestamps, filenamify } from './util';
 
@@ -43,7 +44,7 @@ function getFfprobePath() {
 
   const subPath = map[platform];
 
-  if (!subPath) throw new Error(`Unsupported platform ${platform}`);
+  if (!subPath) throw new Error(`${i18n.t('Unsupported platform')} ${platform}`);
 
   return isDev
     ? `node_modules/ffprobe-static/bin/${subPath}`
@@ -127,12 +128,12 @@ export function getSafeCutTime(frames, cutTime, nextMode) {
 
   let index;
 
-  if (frames.length < 2) throw new Error('Less than 2 frames found');
+  if (frames.length < 2) throw new Error(i18n.t('Less than 2 frames found'));
 
   if (nextMode) {
     index = frames.findIndex(f => f.keyframe && f.time >= cutTime - sigma);
-    if (index === -1) throw new Error('Failed to find next keyframe');
-    if (index >= frames.length - 1) throw new Error('We are on the last frame');
+    if (index === -1) throw new Error(i18n.t('Failed to find next keyframe'));
+    if (index >= frames.length - 1) throw new Error(i18n.t('We are on the last frame'));
     const { time } = frames[index];
     if (isCloseTo(time, cutTime)) {
       return undefined; // Already on keyframe, no need to modify cut time
@@ -147,8 +148,8 @@ export function getSafeCutTime(frames, cutTime, nextMode) {
   };
 
   index = findReverseIndex(frames, f => f.time <= cutTime + sigma);
-  if (index === -1) throw new Error('Failed to find any prev frame');
-  if (index === 0) throw new Error('We are on the first frame');
+  if (index === -1) throw new Error(i18n.t('Failed to find any prev frame'));
+  if (index === 0) throw new Error(i18n.t('We are on the first frame'));
 
   if (index === frames.length - 1) {
     // Last frame of video, no need to modify cut time
@@ -161,8 +162,8 @@ export function getSafeCutTime(frames, cutTime, nextMode) {
 
   // We are not on a frame before keyframe, look for preceding keyframe instead
   index = findReverseIndex(frames, f => f.keyframe && f.time <= cutTime + sigma);
-  if (index === -1) throw new Error('Failed to find any prev keyframe');
-  if (index === 0) throw new Error('We are on the first keyframe');
+  if (index === -1) throw new Error(i18n.t('Failed to find any prev keyframe'));
+  if (index === 0) throw new Error(i18n.t('We are on the first keyframe'));
 
   // Use frame before the found keyframe
   return frames[index - 1].time;
