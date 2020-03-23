@@ -13,7 +13,7 @@ const TimelineControls = memo(({
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,
   setCurrentSegIndex, cutStartTimeManual, setCutStartTimeManual, cutEndTimeManual, setCutEndTimeManual,
   duration, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
-  playing, shortStep, playCommand, setTimelineMode, hasAudio, hasVideo, timelineMode,
+  playing, shortStep, togglePlay, setTimelineMode, hasAudio, hasVideo, timelineMode,
   keyframesEnabled, setKeyframesEnabled, seekClosestKeyframe,
 }) => {
   const { t } = useTranslation();
@@ -184,7 +184,7 @@ const TimelineControls = memo(({
       <PlayPause
         size={16}
         role="button"
-        onClick={playCommand}
+        onClick={togglePlay}
       />
       <FaCaretRight
         size={20}

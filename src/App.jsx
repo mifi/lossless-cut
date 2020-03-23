@@ -549,7 +549,6 @@ const App = memo(() => {
   function onPlayingChange(val) {
     setPlaying(val);
     if (!val) {
-      videoRef.current.playbackRate = 1;
       setCommandedTime(videoRef.current.currentTime);
     }
   }
@@ -794,7 +793,7 @@ const App = memo(() => {
     }
   }, [createDummyVideo, filePath, working]);
 
-  const playCommand = useCallback(() => {
+  const togglePlay = useCallback((resetPlaybackRate) => {
     if (!filePath) return;
 
     const video = videoRef.current;
@@ -802,6 +801,8 @@ const App = memo(() => {
       video.pause();
       return;
     }
+
+    if (resetPlaybackRate) video.playbackRate = 1;
 
     video.play().catch((err) => {
       console.error(err);
@@ -938,11 +939,11 @@ const App = memo(() => {
   const changePlaybackRate = useCallback((dir) => {
     const video = videoRef.current;
     if (!playing) {
-      video.playbackRate = 0.5; // dir * 0.5;
       video.play();
     } else {
-      const newRate = video.playbackRate + (dir * 0.15);
-      video.playbackRate = clamp(newRate, 0.05, 16);
+      const newRate = clamp(video.playbackRate + (dir * 0.15), 0.1, 16);
+      toast.fire({ title: `${i18n.t('Playback rate:')} ${Math.floor(newRate * 100)}%`, timer: 1000 });
+      video.playbackRate = newRate;
     }
   }, [playing]);
 
@@ -1058,8 +1059,8 @@ const App = memo(() => {
   }, [commandedTime, neighbouringFrames, seekAbs, detectedFps]);
 
   useEffect(() => {
-    Mousetrap.bind('space', () => playCommand());
-    Mousetrap.bind('k', () => playCommand());
+    Mousetrap.bind('space', () => togglePlay(true));
+    Mousetrap.bind('k', () => togglePlay());
     Mousetrap.bind('j', () => changePlaybackRate(-1));
     Mousetrap.bind('l', () => changePlaybackRate(1));
     Mousetrap.bind('left', () => seekRel(-1));
@@ -1112,7 +1113,7 @@ const App = memo(() => {
       Mousetrap.unbind('d');
     };
   }, [
-    addCutSegment, capture, changePlaybackRate, cutClick, playCommand, removeCutSegment,
+    addCutSegment, capture, changePlaybackRate, cutClick, togglePlay, removeCutSegment,
     setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, deleteSource, jumpSeg, toggleHelp,
     seekClosestKeyframe, zoomRel, toggleComfortZoom,
   ]);
@@ -1696,7 +1697,7 @@ const App = memo(() => {
           playing={playing}
           shortStep={shortStep}
           seekClosestKeyframe={seekClosestKeyframe}
-          playCommand={playCommand}
+          togglePlay={togglePlay}
           setTimelineMode={setTimelineMode}
           timelineMode={timelineMode}
           hasAudio={hasAudio}
