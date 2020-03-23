@@ -66,40 +66,42 @@ const TimelineControls = memo(({
 
   function renderCutTimeInput(type) {
     const isStart = type === 'start';
-    const cutTimeManual = type === isStart ? cutStartTimeManual : cutEndTimeManual;
+
+    const cutTimeManual = isStart ? cutStartTimeManual : cutEndTimeManual;
+    const cutTime = isStart ? currentApparentCutSeg.start : currentApparentCutSeg.end;
+    const setCutTimeManual = isStart ? setCutStartTimeManual : setCutEndTimeManual;
+
+    const isCutTimeManualSet = () => cutTimeManual !== undefined;
+
     const cutTimeInputStyle = {
       background: 'white', borderRadius: 5, color: 'rgba(0, 0, 0, 0.7)', fontSize: 13, textAlign: 'center', padding: '3px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 3 : 5, marginRight: isStart ? 5 : 3, border: 'none', boxSizing: 'border-box', fontFamily: 'inherit', width: 90,
     };
 
-    const isCutTimeManualSet = () => cutTimeManual !== undefined;
-
-    const set = isStart ? setCutStartTimeManual : setCutEndTimeManual;
 
     const handleCutTimeInput = (text) => {
       // Allow the user to erase
       if (text.length === 0) {
-        set();
+        setCutTimeManual();
         return;
       }
 
+      // Not a valid duration? Only set manual
       const time = parseDuration(text);
       if (time === undefined) {
-        set(text);
+        setCutTimeManual(text);
         return;
       }
 
-      set();
+      setCutTimeManual();
 
-      const rel = time - startTimeOffset;
+      const timeWithoutOffset = time - startTimeOffset;
       try {
-        setCutTime(type, rel);
+        setCutTime(type, timeWithoutOffset);
+        seekAbs(timeWithoutOffset);
       } catch (err) {
         console.error('Cannot set cut time', err);
       }
-      seekAbs(rel);
     };
-
-    const cutTime = isStart ? currentApparentCutSeg.start : currentApparentCutSeg.end;
 
     return (
       <input
