@@ -211,6 +211,8 @@ async function cut({
   const rotationArgs = rotation !== undefined ? ['-metadata:s:v:0', `rotate=${rotation}`] : [];
 
   const ffmpegArgs = [
+    '-hide_banner',
+
     ...inputCutArgs,
 
     '-c', 'copy',
@@ -307,6 +309,8 @@ export async function html5ify(filePath, outPath, encodeVideo, encodeAudio) {
   const audioArgs = encodeAudio ? ['-acodec', 'aac', '-b:a', '96k'] : ['-an'];
 
   const ffmpegArgs = [
+    '-hide_banner',
+
     '-i', filePath, ...videoArgs, ...audioArgs,
     '-y', outPath,
   ];
@@ -331,6 +335,8 @@ export async function html5ifyDummy(filePath, outPath) {
   const duration = await getDuration(filePath);
 
   const ffmpegArgs = [
+    '-hide_banner',
+
     // This is just a fast way of generating an empty dummy file
     // TODO use existing audio track file if it has one
     '-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',
@@ -350,6 +356,8 @@ async function mergeFiles({ paths, outPath, allStreams }) {
 
   // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
   const ffmpegArgs = [
+    '-hide_banner',
+
     '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe', '-i', '-',
     '-c', 'copy',
 
@@ -492,6 +500,8 @@ export async function extractStreams({ filePath, customOutDir, streams }) {
   ]);
 
   const ffmpegArgs = [
+    '-hide_banner',
+
     '-i', filePath,
     ...streamArgs,
   ];
