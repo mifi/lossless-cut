@@ -2,8 +2,8 @@
 
 **The swiss army knife of lossless video/audio editing**
 
-LosslessCut aims to be the ultimate cross platform ffmpeg GUI for extremely fast and lossless operations on video, audio, subtitle and other related files.
-The main feature is lossless trimming and cutting of video and audio files, great for saving space by rough cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. Or you can add a music or subtitle track to your video without needing to encode. Everything is extremely fast because it does an almost direct data copy, fueled by the awesome ffmpeg which does all the grunt work.
+LosslessCut aims to be the ultimate cross platform ffmpeg GUI for extremely fast and lossless operations on video, audio, subtitle and other related media files.
+The main feature is lossless trimming and cutting of video and audio files, which is great for saving space by rough-cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. Or you can add a music or subtitle track to your video without needing to encode. Everything is extremely fast because it does an almost direct data copy, fueled by the awesome ffmpeg which does all the grunt work.
 
 ![Demo](https://github.com/mifi/lossless-cut/raw/master/main_screenshot.jpg)
 
@@ -21,8 +21,8 @@ I made a tool for cross platform sharing of files between computer/phone over th
 - Losslessly extract all tracks from a file (extract video, audio, subtitle and other tracks from one file into separate files)
 - Remux into any compatible output format
 - Take full-resolution snapshots from videos in JPEG/PNG format
-- Manual input range of cutpoints
-- Apply a timecode offset
+- Manual input of cutpoint times
+- Apply a per-file timecode offset
 - Change rotation/orientation metadata in videos
 - View technical data about all streams
 - Timeline zoom and frame/keyframe jumping for accurate cutting around keyframes
@@ -31,7 +31,7 @@ I made a tool for cross platform sharing of files between computer/phone over th
 - Undo/redo
 - Give labels to cut segments
 - View segment details, export/import cut segments as CSV
-- Thumbnails and audio waveform
+- Video thumbnails and audio waveform
 
 ## Example lossless use cases
 
@@ -74,7 +74,7 @@ Great for rotating phone videos that come out the wrong way without actually re-
 - [Linux snap](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux.snap)
 - [Linux tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux.tar.bz2)
 
-NOTE: After installing you may need to right click the application icon and then "Open" in order to bypass "Untrusted app" dialogs. This is because Microsoft requires a $300/year certificate just to remove this block (I'm not going to pay for that.) Alternatively try to google `windows how to run untrusted app`.
+NOTE: After installing you may need to right click the application icon and then "Open" in order to bypass "Untrusted app" dialogs. This is because Microsoft requires a $300/year EV certificate just to remove this block (I'm not going to pay for that.) Alternatively try to google `windows how to run untrusted app`.
 
 ## Supported formats
 
@@ -82,7 +82,7 @@ Since LosslessCut is based on Chromium and uses the HTML5 video player, not all 
 The following formats/codecs should generally work: MP4, MOV, WebM, MKV, OGG, WAV, MP3, AAC, H264, Theora, VP8, VP9
 For more information about supported formats / codecs, see https://www.chromium.org/audio-video.
 
-Unsupported files can still be remuxed (fast) or encoded (slow) to a friendly format/codec from the `File` menu. A low quality version of the file (without audio) will then be created and opened in the player. The cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that ffmpeg is able to decode.
+Unsupported files can still be converted to a friendly format/codec from the `File` menu. (Try fastest variant first.) A low quality version of the file (without audio) will then be created and opened in the player. The cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that ffmpeg is able to decode.
 
 
 ## Typical workflow
@@ -100,7 +100,9 @@ Unsupported files can still be remuxed (fast) or encoded (slow) to a friendly fo
 - If you want to move the original file to trash, press the trash button
 - For best results you may need to trial and error with another output format (matroska takes nearly everything), change keyframe cut mode or disable some tracks, see known issues below.
 
-Note: The original video file will not be modified. Instead it creates a lossless export in the same directory as the original file with from/to timestamps. Note that the cut is currently not precise around the cutpoints, so video before/after the nearest keyframe will be discarded. EXIF metadata is preserved.
+Note: The original video file will not be modified. Instead it creates a lossless export to a new file in the same directory as the original file with from/to timestamps.
+
+Note also that the cut is currently not precise around the cutpoints, so video before/after the nearest keyframe will be discarded. EXIF metadata is preserved.
 
 ## Keyboard shortcuts
 Press <kbd>H</kbd> To show/hide list of shortcuts
@@ -109,7 +111,9 @@ Press <kbd>H</kbd> To show/hide list of shortcuts
 
 The CSV export/import function takes csv files with one cut segment on each line. Each line contains three columns: `segment start`, `segment end`, `label`.
 
-`segment start` and `segment end` are expressed in seconds or left empty. Empty `segment end` means segment ends at the duration of the video
+`segment start` and `segment end` are expressed in seconds or left empty. Empty `segment end` means segment ends at the duration of the video.
+
+Note that you must use comma `,` (not semicolon `;`)
 
 ### example.csv
 ```csv
@@ -120,7 +124,7 @@ The CSV export/import function takes csv files with one cut segment on each line
 
 ## Known issues & limitations
 
-- **Cutting times are not accurate and will be "rounded" to the nearest keyframe.** In the future I plan on showing keyframes in the timecale, and eventually implement a "smart cut" feature that re-encodes only the part before the keyframe. See [#126](https://github.com/mifi/lossless-cut/issues/126)
+- **Cutting times are not accurate and will be "rounded" to the nearest keyframe.** There are wishes to implement a "smart cut" feature that re-encodes only the part before the keyframe, see [#126](https://github.com/mifi/lossless-cut/issues/126)
 - Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. See [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
 - When exporting you may lose some proprietary data tracks (like `tmcd`, `fdsc` and `gpmd` added by GoPro). These can be exported to separate files however
 - H265 is not supported natively. There is partial support with very low FPS and no audio preview. Alternatively convert to friendly codec (slow) from the menu, see [#88](https://github.com/mifi/lossless-cut/issues/88)
@@ -128,8 +132,8 @@ The CSV export/import function takes csv files with one cut segment on each line
 ## Troubleshooting
 
 - If you get an error when cutting or opening any kind of file under Windows, please check your anti-virus. It might be blocking execution of ffmpeg, see [#18](https://github.com/mifi/lossless-cut/issues/18)
-- If you get an error on linux like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See #258
-- If any other problem, please file an issue here on github.
+- If you get an error on Linux like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See #258
+- If any other problem, please read existing issues or file an issue here on github.
 
 ## Donate 🙈
 
