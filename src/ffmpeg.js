@@ -473,11 +473,12 @@ function getPreferredCodecFormat(codec, type) {
   };
 
   const format = map[codec];
-  if (format) return { format, ext: getExtensionForFormat(format) };
+  if (format) return { ext: getExtensionForFormat(format), format };
   if (type === 'video') return { ext: 'mkv', format: 'matroska' };
   if (type === 'audio') return { ext: 'mka', format: 'matroska' };
   if (type === 'subtitle') return { ext: 'mks', format: 'matroska' };
   if (type === 'data') return { ext: 'bin', format: 'data' }; // https://superuser.com/questions/1243257/save-data-stream
+
   return undefined;
 }
 
@@ -635,6 +636,7 @@ export const defaultProcessedCodecTypes = [
   'video',
   'audio',
   'subtitle',
+  'attachment',
 ];
 
 export function getStreamFps(stream) {
