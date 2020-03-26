@@ -59,7 +59,7 @@ const trash = window.require('trash');
 const { unlink, exists } = window.require('fs-extra');
 
 
-const { dialog } = electron.remote;
+const { dialog, app } = electron.remote;
 
 
 function createSegment({ start, end, name } = {}) {
@@ -1290,6 +1290,14 @@ const App = memo(() => {
       toggleHelp();
     }
 
+    function openAbout() {
+      Swal.fire({
+        icon: 'info',
+        title: 'About LosslessCut',
+        text: `You are running version ${app.getVersion()}`,
+      });
+    }
+
     function openSettings() {
       toggleSettings();
     }
@@ -1306,6 +1314,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('exportEdlFile', exportEdlFile);
     electron.ipcRenderer.on('openHelp', openHelp);
     electron.ipcRenderer.on('openSettings', openSettings);
+    electron.ipcRenderer.on('openAbout', openAbout);
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
@@ -1320,6 +1329,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('exportEdlFile', exportEdlFile);
       electron.ipcRenderer.removeListener('openHelp', openHelp);
       electron.ipcRenderer.removeListener('openSettings', openSettings);
+      electron.ipcRenderer.removeListener('openAbout', openAbout);
     };
   }, [
     load, mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset, getHtml5ifiedPath,

@@ -4436,11 +4436,6 @@ electron-builder@^22.3.2:
     update-notifier "^4.0.0"
     yargs "^15.1.0"
 
-electron-default-menu@^1.0.0:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/electron-default-menu/-/electron-default-menu-1.0.1.tgz#3173c5018eb507404fec63bdf3b78c38eedba808"
-  integrity sha1-MXPFAY61B0BP7GO987eMOO7bqAg=
-
 electron-devtools-installer@^2.2.4:
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/electron-devtools-installer/-/electron-devtools-installer-2.2.4.tgz#261a50337e37121d338b966f07922eb4939a8763"
@@ -11240,6 +11235,11 @@ semver@^7.1.1:
   version "7.1.2"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.1.2.tgz#847bae5bce68c5d08889824f02667199b70e3d87"
   integrity sha512-BJs9T/H8sEVHbeigqzIEo57Iu/3DG6c4QoqTfbQB3BPA4zgzAomh/Fk9E7QtjWQ8mx2dgA9YCfSF4y9k9bHNpQ==
+
+semver@^7.1.3:
+  version "7.1.3"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-7.1.3.tgz#e4345ce73071c53f336445cfc19efb1c311df2a6"
+  integrity sha512-ekM0zfiA9SCBlsKa2X1hxyxiI4L3B6EbVJkkdgQXnSEEaHlGdvyodMruTiulSRWMMB4NeIuYNMC9rTKTz97GxA==
 
 send@0.17.1:
   version "0.17.1"

@@ -5,9 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
 import { toast } from './util';
+import { primaryColor } from './colors';
 
-const { clipboard } = window.require('electron');
+const electron = window.require('electron');
+const { clipboard } = electron;
 
+const { homepage } = electron.remote.require('./constants');
 
 const HelpSheet = memo(({
   visible, onTogglePress, ffmpegCommandLog,
@@ -25,7 +28,11 @@ const HelpSheet = memo(({
         >
           <IoIosCloseCircleOutline role="button" onClick={onTogglePress} size={30} style={{ position: 'fixed', right: 0, top: 0, padding: 20 }} />
 
-          <h1>{t('Keyboard shortcuts')}</h1>
+          <p style={{ fontWeight: 'bold' }}>
+            For usage help and issues, go to<br />
+            <span style={{ color: primaryColor, cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal(homepage)}>{homepage}</span>
+          </p>
+          <h1>{t('Keyboard & mouse shortcuts')}</h1>
           <div><kbd>H</kbd> {t('Show/hide this screen')}</div>
 
           <h2>{t('Playback')}</h2>

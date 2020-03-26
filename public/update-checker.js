@@ -1,6 +1,8 @@
 const GitHub = require('github-api');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const electron = require('electron');
+const semver = require('semver');
+
 
 const { app } = electron;
 
@@ -13,15 +15,15 @@ async function checkNewVersion() {
     // View the latest published full release for the repository.
     // Draft releases and prereleases are not returned by this endpoint.
     const res = (await repo.getRelease('latest')).data;
-    const tagName = res.tag_name;
+    const newestVersion = res.tag_name.replace(/^v?/, '');
 
     const currentVersion = app.getVersion();
-    // const currentVersion = '1.8.0';
+    // const currentVersion = '3.17.2';
 
     console.log('Current version', currentVersion);
-    console.log('Newest version', tagName);
+    console.log('Newest version', newestVersion);
 
-    if (tagName !== `v${currentVersion}`) return tagName;
+    if (semver.lt(currentVersion, newestVersion)) return newestVersion;
     return undefined;
   } catch (e) {
     console.error('Failed to check github version');
