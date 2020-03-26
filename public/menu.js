@@ -122,7 +122,14 @@ module.exports = (app, mainWindow, newVersion) => {
       ],
     },
 
-    { role: 'windowMenu' },
+    // On Windows the windowMenu has a close Ctrl+W which clashes with File->Close shortcut
+    ...(process.platform === 'darwin'
+      ? [{ role: 'windowMenu' }]
+      : [{
+        label: 'Window',
+        submenu: [{ role: 'minimize' }],
+      }]
+    ),
 
     {
       label: 'Tools',
