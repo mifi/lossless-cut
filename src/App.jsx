@@ -35,7 +35,7 @@ import { loadMifiLink } from './mifi';
 import { primaryColor, controlsBackground, waveformColor } from './colors';
 import { showMergeDialog, showOpenAndMergeDialog } from './merge/merge';
 import allOutFormats from './outFormats';
-import captureFrame from './capture-frame';
+import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
   getDefaultOutFormat, getFormatData, renderFrame, mergeAnyFiles, renderThumbnails as ffmpegRenderThumbnails,
@@ -920,15 +920,16 @@ const App = memo(() => {
     exportExtraStreams, nonCopiedExtraStreams, outputDir, shortestFlag,
   ]);
 
-  // TODO use ffmpeg to capture frame
   const capture = useCallback(async () => {
     if (!filePath) return;
-    if (html5FriendlyPath || dummyVideoPath) {
-      errorToast(i18n.t('Capture frame from this video not yet implemented'));
-      return;
-    }
     try {
-      const outPath = await captureFrame(customOutDir, filePath, videoRef.current, currentTimeRef.current, captureFormat);
+      const mustCaptureFfmpeg = html5FriendlyPath || dummyVideoPath;
+      const currentTime = currentTimeRef.current;
+      const video = videoRef.current;
+      const outPath = mustCaptureFfmpeg
+        ? await captureFrameFfmpeg({ customOutDir, videoPath: filePath, currentTime, captureFormat, duration: video.duration })
+        : await captureFrameFromTag({ customOutDir, filePath, video, currentTime, captureFormat });
+
       toast.fire({ icon: 'success', title: `${i18n.t('Screenshot captured to:')} ${outPath}` });
     } catch (err) {
       console.error(err);

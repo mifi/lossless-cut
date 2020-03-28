@@ -631,6 +631,20 @@ export async function renderFrame(timestamp, filePath, rotation) {
   return URL.createObjectURL(blob);
 }
 
+// see capture-frame.js
+export async function captureFrame({ timestamp, videoPath, outPath }) {
+  const args = [
+    '-ss', timestamp,
+    '-i', videoPath,
+    '-vframes', '1',
+    '-q:v', '3',
+    '-y', outPath,
+  ];
+
+  const ffmpegPath = getFfmpegPath();
+  await execa(ffmpegPath, args, { encoding: null });
+}
+
 // https://www.ffmpeg.org/doxygen/3.2/libavutil_2utils_8c_source.html#l00079
 export const defaultProcessedCodecTypes = [
   'video',
