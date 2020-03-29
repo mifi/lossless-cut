@@ -26,6 +26,12 @@ jobs:
           mkdir -p ~/private_keys/
           echo '${{ secrets.api_key }}' > ~/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
 
+
+        - name: Install Snapcraft
+          uses: samuelmeuli/action-snapcraft@v1
+          with:
+            snapcraft_token: ${{ secrets.snapcraft_token }}
+
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:

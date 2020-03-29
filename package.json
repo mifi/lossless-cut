@@ -146,11 +146,6 @@
         "AppImage",
         "snap"
       ]
-    },
-    "snap": {
-      "publish": [
-        "github"
-      ]
     }
   }
 }
