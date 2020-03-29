@@ -3,7 +3,7 @@
   "productName": "LosslessCut",
   "description": "The swiss army knife of lossless video/audio editing",
   "copyright": "Copyright © 2020 ${author}",
-  "version": "3.17.12",
+  "version": "3.17.13",
   "main": "public/electron.js",
   "homepage": "./",
   "scripts": {
@@ -139,8 +139,8 @@
     "appx": {
       "applicationId": "LosslessCut",
       "identityName": "LosslessCut",
-      "publisher" : "CN=mifi.no",
-      "publisherDisplayName" : "mifi.no"
+      "publisher": "CN=mifi.no",
+      "publisherDisplayName": "mifi.no"
     },
     "linux": {
       "executableName": "losslesscut",
