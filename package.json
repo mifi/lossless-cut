@@ -126,8 +126,6 @@
     },
     "win": {
       "target": [
-        "portable",
-        "zip",
         "appx"
       ],
       "extraResources": [
