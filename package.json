@@ -127,7 +127,8 @@
     "win": {
       "target": [
         "portable",
-        "zip"
+        "zip",
+        "appx"
       ],
       "extraResources": [
         "node_modules/ffmpeg-static/ffmpeg.exe",
