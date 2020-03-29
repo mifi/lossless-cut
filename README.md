@@ -71,8 +71,9 @@ Great for rotating phone videos that come out the wrong way without actually re-
 - [Mac OS X](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac.dmg)
 - [Windows](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win.exe)
 - [Linux AppImage](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux.AppImage)
-- [Linux snap](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux.snap)
 - [Linux tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux.tar.bz2)
+
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/losslesscut)
 
 NOTE: After installing you may need to right click the application icon and then "Open" in order to bypass "Untrusted app" dialogs. This is because Microsoft requires a $300/year EV certificate just to remove this block (I'm not going to pay for that.) Alternatively try to google `windows how to run untrusted app`.
 
