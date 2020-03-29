@@ -138,7 +138,9 @@
     },
     "appx": {
       "applicationId": "LosslessCut",
-      "identityName": "LosslessCut"
+      "identityName": "LosslessCut",
+      "publisher" : "CN=mifi.no",
+      "publisherDisplayName" : "mifi.no"
     },
     "linux": {
       "executableName": "losslesscut",
