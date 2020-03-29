@@ -136,6 +136,10 @@
       ],
       "icon": "icon-build/app-512.png"
     },
+    "appx": {
+      "applicationId": "LosslessCut",
+      "identityName": "LosslessCut"
+    },
     "linux": {
       "executableName": "losslesscut",
       "extraResources": [
