@@ -57,6 +57,8 @@ Great for rotating phone videos that come out the wrong way without actually re-
 
 ### Export a list of cut times as a CSV EDL and run these in another tool
 
+### Loop a video / audio clip X times quickly without re-encoding
+See [#284](https://github.com/mifi/lossless-cut/issues/284)
 
 ### Advanced multi-step workflows
 
