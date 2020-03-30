@@ -631,6 +631,33 @@ export async function renderFrame(timestamp, filePath, rotation) {
   return URL.createObjectURL(blob);
 }
 
+export async function extractWaveform({ filePath, outPath }) {
+  const numSegs = 10;
+  const duration = 60 * 60;
+  const maxLen = 0.1;
+  const segments = Array(numSegs).fill().map((unused, i) => [i * (duration / numSegs), Math.min(duration / numSegs, maxLen)]);
+
+  // https://superuser.com/questions/681885/how-can-i-remove-multiple-segments-from-a-video-using-ffmpeg
+  let filter = segments.map(([from, len], i) => `[0:a]atrim=start=${from}:end=${from + len},asetpts=PTS-STARTPTS[a${i}]`).join(';');
+  filter += ';';
+  filter += segments.map((arr, i) => `[a${i}]`).join('');
+  filter += `concat=n=${segments.length}:v=0:a=1[out]`;
+
+  console.time('ffmpeg');
+  await runFfmpeg([
+    '-i',
+    filePath,
+    '-filter_complex',
+    filter,
+    '-map',
+    '[out]',
+    '-f', 'wav',
+    '-y',
+    outPath,
+  ]);
+  console.timeEnd('ffmpeg');
+}
+
 // see capture-frame.js
 export async function captureFrame({ timestamp, videoPath, outPath }) {
   const args = [
