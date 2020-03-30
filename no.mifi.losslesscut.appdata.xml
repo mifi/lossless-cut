@@ -11,13 +11,15 @@
   <launchable type="desktop-id">com.github.mifi.loslesscut.desktop</launchable>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/mifi/lossless-cut/master/screenshot.jpg</image>
+      <image>https://raw.githubusercontent.com/mifi/lossless-cut/master/main_screenshot.jpg</image>
     </screenshot>
   </screenshots>
   <url type="homepage">https://github.com/mifi/lossless-cut/</url>
   <url type="bugtracker">https://github.com/mifi/lossless-cut/issues</url>
   <url type="donation">https://paypal.me/mifino</url>
   <releases>
+    <release version="3.17.14" date="2020-03-30" />
+    <release version="3.17.9" date="2020-03-29" />
     <release version="2.6.2" date="2019-11-05" />
   </releases>
   <content_rating type="oars-1.0">
