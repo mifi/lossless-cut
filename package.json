@@ -3,12 +3,12 @@
   "productName": "LosslessCut",
   "description": "The swiss army knife of lossless video/audio editing",
   "copyright": "Copyright © 2020 ${author}",
-  "version": "3.17.14",
+  "version": "3.17.15",
   "main": "public/electron.js",
   "homepage": "./",
   "scripts": {
     "start": "concurrently -k \"BROWSER=none PORT=3001 react-scripts start\" \"wait-on http://localhost:3001 && electron .\"",
-    "icon-gen": "mkdir -p icon-build && svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512",
+    "icon-gen": "mkdir -p icon-build && svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512 && mkdir -p icns-build && icon-gen -i src/icon.svg -o ./icns-build --icns --icns-sizes 512,1024",
     "build": "yarn icon-gen && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -52,6 +52,7 @@
     "framer-motion": "^1.8.4",
     "hammerjs": "^2.0.8",
     "i18next": "^19.3.2",
+    "icon-gen": "^2.0.0",
     "lodash": "^4.17.13",
     "moment": "^2.18.1",
     "mousetrap": "^1.6.1",
@@ -117,15 +118,32 @@
     "afterSign": "electron-builder-notarize",
     "mac": {
       "hardenedRuntime": true,
-      "target": "dmg",
+      "appId": "no.mifi.losslesscut-mac",
+      "category": "public.app-category.productivity",
+      "target": [
+        "mas",
+        "dmg"
+      ],
       "extraResources": [
         "node_modules/ffmpeg-static/ffmpeg",
         "node_modules/ffprobe-static/bin/darwin/**"
       ],
-      "icon": "icon-build/app-512.png"
+      "icon": "icns-build/app.icns"
+    },
+    "mas": {
+      "hardenedRuntime": false,
+      "entitlements": "entitlements.mas.plist",
+      "entitlementsInherit": "entitlements.mas.inherit.plist",
+      "provisioningProfile": "LosslessCut_Mac_App_Store_provisioning_profile.provisionprofile",
+      "binaries": [
+        "dist/mas/LosslessCut.app/Contents/Resources/node_modules/ffmpeg-static/ffmpeg",
+        "dist/mas/LosslessCut.app/Contents/Resources/node_modules/ffprobe-static/bin/darwin/x64/ffprobe"
+      ]
     },
     "win": {
       "target": [
+        "portable",
+        "zip",
         "appx"
       ],
       "extraResources": [

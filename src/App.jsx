@@ -46,7 +46,7 @@ import configStore from './store';
 import { save as edlStoreSave, load as edlStoreLoad } from './edlStore';
 import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
-  promptTimeOffset, generateColor, getOutDir, withBlur,
+  promptTimeOffset, generateColor, getOutDir, withBlur, checkDirWriteAccess,
 } from './util';
 
 
@@ -1166,6 +1166,30 @@ const App = memo(() => {
     }
 
     const firstFile = filePaths[0];
+
+    const outDirPath = getOutDir(customOutDir, firstFile);
+    const hasDirWriteAccess = await checkDirWriteAccess(outDirPath);
+    if (!hasDirWriteAccess) {
+      if (window.process.mas) {
+        await Swal.fire({
+          title: i18n.t('Mac OS file security'),
+          icon: 'info',
+          text: i18n.t('Mac OS requires you to  choose the folder where the output files should be saved. This is only required the first time for each folder. Simply press "Open" in the next dialog to allow access to the default folder.'),
+        });
+
+        // TODO check that correct dir is selected
+        // TODO also when customoutdir changes
+        // eslint-disable-next-line no-unused-vars
+        const { canceled, filePaths: filePaths2 } = await dialog.showOpenDialog({
+          title: 'Select file to open',
+          defaultPath: outDirPath,
+          properties: ['openDirectory'],
+        });
+        if (canceled) return;
+      } else {
+        errorToast(i18n.t('You have no write access to the directory of this file, please select a custom working dir'));
+      }
+    }
 
     if (!isFileOpened) {
       load(firstFile);

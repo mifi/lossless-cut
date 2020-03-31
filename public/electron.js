@@ -71,9 +71,11 @@ app.on('ready', async () => {
   createWindow();
   menu(app, mainWindow);
 
-  const newVersion = await checkNewVersion();
-  if (newVersion) {
-    menu(app, mainWindow, newVersion);
+  if (!process.windowsStore && !process.mas) {
+    const newVersion = await checkNewVersion();
+    if (newVersion) {
+      menu(app, mainWindow, newVersion);
+    }
   }
 });
 

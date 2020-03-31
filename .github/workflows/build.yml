@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
 #        os: [macos-latest, ubuntu-latest, windows-latest]
-        os: [windows-latest]
+        os: [macos-latest]
 
     steps:
       - name: Check out Git repository
@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 12
 
-      - name: Install Snapcraft
+      - name: Install and login to Snapcraft
         uses: samuelmeuli/action-snapcraft@v1
         if: startsWith(matrix.os, 'ubuntu')
         with:
@@ -48,9 +48,16 @@ jobs:
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
 
-#          windows_certs: ${{ secrets.windows_certs }}
-#          windows_certs_password: ${{ secrets.windows_certs_password }}
+          windows_certs: ${{ secrets.windows_certs }}
+          windows_certs_password: ${{ secrets.windows_certs_password }}
         env:
           # macOS notarization API key
           API_KEY_ID: ${{ secrets.api_key_id }}
           API_KEY_ISSUER_ID: ${{ secrets.api_key_issuer_id }}
+
+      - name: Upload to Mac App Store
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys/
+          echo '${{ secrets.api_key }}' > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
+          xcrun altool --upload-app -f dist/mas/LosslessCut-mac.pkg --apiKey ${{ secrets.api_key_id }} --apiIssuer ${{ secrets.api_key_issuer_id }}

@@ -52,6 +52,17 @@ export function getOutPath(customOutDir, filePath, nameSuffix) {
   return path.join(getOutDir(customOutDir, filePath), `${parsed.name}-${nameSuffix}`);
 }
 
+export async function checkDirWriteAccess(dirPath) {
+  try {
+    await fs.access(dirPath, fs.constants.W_OK);
+  } catch (err) {
+    if (err.code === 'EPERM') return false;
+    // if (err.code === 'EACCES') return false;
+    console.error(err);
+  }
+  return true;
+}
+
 export async function transferTimestamps(inPath, outPath) {
   try {
     const stat = await fs.stat(inPath);

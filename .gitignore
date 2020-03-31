@@ -2,5 +2,5 @@ node_modules
 .DS_Store
 dist
 build
-watch-build
 icon-build
+icns-build
