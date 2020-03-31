@@ -1,6 +1,6 @@
 const electron = require('electron'); // eslint-disable-line
 const isDev = require('electron-is-dev');
-const path = require('path');
+const { join } = require('path');
 
 const menu = require('./menu');
 
@@ -16,6 +16,11 @@ app.name = 'LosslessCut';
 let mainWindow;
 
 let askBeforeClose = false;
+let rendererReady = false;
+
+function openFile(path) {
+  mainWindow.webContents.send('file-opened', [path]);
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -27,7 +32,7 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadURL(isDev ? 'http://localhost:3001' : `file://${path.join(__dirname, '../build/index.html')}`);
+  mainWindow.loadURL(isDev ? 'http://localhost:3001' : `file://${join(__dirname, '../build/index.html')}`);
 
   if (isDev) {
     const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies
@@ -92,12 +97,21 @@ app.on('activate', () => {
   }
 });
 
+let openFileInitial;
+
 electron.ipcMain.on('renderer-ready', () => {
+  rendererReady = true;
   if (!isDev) {
     const fileToOpen = process.argv[1];
     // https://github.com/electron/electron/issues/3657
-    if (fileToOpen && !fileToOpen.startsWith('-psn_')) mainWindow.webContents.send('file-opened', [fileToOpen]);
+    if (fileToOpen && !fileToOpen.startsWith('-psn_')) openFile(fileToOpen);
   }
+  if (openFileInitial) openFile(openFileInitial);
+});
+
+app.on('open-file', (event, path) => {
+  if (rendererReady) openFile(path);
+  else openFileInitial = path;
 });
 
 electron.ipcMain.on('setAskBeforeClose', (e, val) => {
