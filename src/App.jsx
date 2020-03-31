@@ -1214,7 +1214,7 @@ const App = memo(() => {
       addStreamSourceFile(firstFile);
       setStreamsSelectorShown(true);
     }
-  }, [addStreamSourceFile, isFileOpened, load, mergeFiles]);
+  }, [addStreamSourceFile, isFileOpened, load, mergeFiles, customOutDir]);
 
   const onDrop = useCallback(async (ev) => {
     ev.preventDefault();
