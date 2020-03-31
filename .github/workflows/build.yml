@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
 #        os: [macos-latest, ubuntu-latest, windows-latest]
-        os: [macos-latest]
+        os: [windows-latest]
 
     steps:
       - name: Check out Git repository
@@ -48,8 +48,9 @@ jobs:
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
 
-          windows_certs: ${{ secrets.windows_certs }}
-          windows_certs_password: ${{ secrets.windows_certs_password }}
+# Temporary 30 day certificate, not needed for Microsoft Store
+#          windows_certs: ${{ secrets.windows_certs }}
+#          windows_certs_password: ${{ secrets.windows_certs_password }}
         env:
           # macOS notarization API key
           API_KEY_ID: ${{ secrets.api_key_id }}
