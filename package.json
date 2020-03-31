@@ -3,7 +3,7 @@
   "productName": "LosslessCut",
   "description": "The swiss army knife of lossless video/audio editing",
   "copyright": "Copyright © 2020 ${author}",
-  "version": "3.17.20",
+  "version": "3.17.21",
   "main": "public/electron.js",
   "homepage": "./",
   "scripts": {
@@ -130,8 +130,14 @@
         "dmg"
       ],
       "extraResources": [
-        { "from": "ffmpeg-mac/ffmpeg", "to": "node_modules/ffmpeg-static/ffmpeg" },
-        { "from": "ffmpeg-mac/ffprobe", "to": "node_modules/ffmpeg-static/ffprobe" }
+        {
+          "from": "ffmpeg-mac/ffmpeg",
+          "to": "node_modules/ffmpeg-static/ffmpeg"
+        },
+        {
+          "from": "ffmpeg-mac/ffprobe",
+          "to": "node_modules/ffmpeg-static/ffprobe"
+        }
       ],
       "icon": "icns-build/app.icns"
     },
