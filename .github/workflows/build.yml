@@ -39,7 +39,7 @@ jobs:
 
       - name: Download custom ffmpeg for Mac
         if: startsWith(matrix.os, 'macos')
-        run: npm run download-ffmpeg
+        run: yarn download-ffmpeg
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
