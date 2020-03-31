@@ -6,9 +6,8 @@ jobs:
   release:
     runs-on: ${{ matrix.os }}
 
-# TODO
-#    env:
-#      is_tag: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    env:
+      is_tag: ${{ startsWith(github.ref, 'refs/tags/v') }}
 
     strategy:
       matrix:
@@ -38,6 +37,10 @@ jobs:
           mkdir -p ~/private_keys/
           echo '${{ secrets.api_key }}' > ~/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
 
+      - name: Download custom ffmpeg for Mac
+        if: startsWith(matrix.os, 'macos')
+        run: npm run download-ffmpeg
+
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
@@ -47,7 +50,7 @@ jobs:
 
           # If the commit is tagged with a version (e.g. "v1.0.0"),
           # release the app after building
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          release: ${{ env.is_tag == 'true' }}
 
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
@@ -61,7 +64,7 @@ jobs:
           API_KEY_ISSUER_ID: ${{ secrets.api_key_issuer_id }}
 
       - name: Upload to Mac App Store
-        if: startsWith(matrix.os, 'macos') && startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(matrix.os, 'macos') && env.is_tag == 'true'
         run: |
           mkdir -p ~/.appstoreconnect/private_keys/
           echo '${{ secrets.api_key }}' > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
