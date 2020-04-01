@@ -104,6 +104,7 @@ const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && z
 
 const commonFormats = ['mov', 'mp4', 'matroska', 'mp3', 'ipod'];
 
+const isMasBuild = window.process.mas;
 
 // TODO flex
 const topBarHeight = 32;
@@ -1170,7 +1171,7 @@ const App = memo(() => {
     const outDirPath = getOutDir(customOutDir, firstFile);
     const hasDirWriteAccess = await checkDirWriteAccess(outDirPath);
     if (!hasDirWriteAccess) {
-      if (window.process.mas) {
+      if (isMasBuild) {
         await Swal.fire({
           title: i18n.t('Mac OS file security'),
           icon: 'info',
@@ -1456,7 +1457,7 @@ const App = memo(() => {
   ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, renderOutFmt, timecodeShowFrames, setOutputDir, onWheelTunerRequested, language]);
 
   useEffect(() => {
-    loadMifiLink().then(setMifiLink);
+    if (!isMasBuild) loadMifiLink().then(setMifiLink);
   }, []);
 
   useEffect(() => {
