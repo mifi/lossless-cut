@@ -7,9 +7,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 
 ![Demo](https://github.com/mifi/lossless-cut/raw/master/main_screenshot.jpg)
 
-**Shameless Plugs**
-
-I made an easy to use Instagram bot with a GUI: [SimpleInstaBot](https://github.com/mifi/SimpleInstaBot/)
+**Shameless Plug**
 
 I made a tool for cross platform sharing of files between computer/phone over the local network: [ezshare](https://github.com/mifi/ezshare)
 
@@ -67,17 +65,20 @@ See [#284](https://github.com/mifi/lossless-cut/issues/284)
 2. Open the exported track files independently and cut them as desired
 3. Add the track back to the video and combine them to one output video
 
-
 ## Download
+
+If you want to support my continued work on LosslessCut, and want the advantage of a secure and simple installation process with automatic updates, consider getting it from your favorite store:
+
+<a href="https://apps.apple.com/app/id1505323402"><img src="mac-app-store-badge.svg" alt="Mac App Store" style="height: 50px"/></a> <a href="https://www.microsoft.com/store/apps/9P30LSR4705L?cid=storebadge&ocid=badge"><img src="ms-store-badge.svg" alt="MS badge" style="height: 50px"/></a> <a href="https://snapcraft.io/losslesscut"><img src="https://snapcraft.io/static/images/badges/en/snap-store-black.svg" alt="Snapcraft" style="height: 50px"/></a>
+
+If you prefer to download the executables manually, this will of course always be free:
 
 - [Mac OS X](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac.dmg)
 - [Windows](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win.exe)
-- [Linux AppImage](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux.AppImage)
 - [Linux tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux.tar.bz2)
+- [More releases](https://github.com/mifi/lossless-cut/releases)
 
-[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/losslesscut)
-
-NOTE: After installing you may need to right click the application icon and then "Open" in order to bypass "Untrusted app" dialogs. This is because Microsoft requires a $300/year EV certificate just to remove this block (I'm not going to pay for that.) Alternatively try to google `windows how to run untrusted app`.
+If you find LosslessCut useful, I'm very thankful for [donations](https://github.com/mifi/lossless-cut#donate-).
 
 ## Supported formats
 
@@ -86,7 +87,6 @@ The following formats/codecs should generally work: MP4, MOV, WebM, MKV, OGG, WA
 For more information about supported formats / codecs, see https://www.chromium.org/audio-video.
 
 Unsupported files can still be converted to a friendly format/codec from the `File` menu. (Try fastest variant first.) A low quality version of the file (without audio) will then be created and opened in the player. The cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that ffmpeg is able to decode.
-
 
 ## Typical workflow
 - Drag drop a video file into player or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
@@ -110,7 +110,20 @@ Note also that the cut is currently not precise around the cutpoints, so video b
 ## Keyboard shortcuts
 Press <kbd>H</kbd> To show/hide list of shortcuts
 
-## CSV format
+## Known issues & limitations
+
+- **Cutting times are not accurate and will be "rounded" to the nearest keyframe.** There are wishes to implement a "smart cut" feature that re-encodes only the part before the keyframe, see [#126](https://github.com/mifi/lossless-cut/issues/126)
+- Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. See [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
+- When exporting you may lose some proprietary data tracks (like `tmcd`, `fdsc` and `gpmd` added by GoPro). These can be exported to separate files however
+- H265 is not supported natively. There is partial support with very low FPS and no audio preview. Alternatively convert to friendly codec (slow) from the menu, see [#88](https://github.com/mifi/lossless-cut/issues/88)
+
+## Troubleshooting
+
+- If you get an error when cutting or opening any kind of file under Windows, please check your anti-virus. It might be blocking execution of ffmpeg, see [#18](https://github.com/mifi/lossless-cut/issues/18)
+- If you get an error on Linux like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See #258
+- If any other problem, please read existing issues or file an issue here on github.
+
+## CSV import/export
 
 The CSV export/import function takes csv files with one cut segment on each line. Each line contains three columns: `segment start`, `segment end`, `label`.
 
@@ -124,19 +137,6 @@ Note that you must use comma `,` (not semicolon `;`)
 70,842.33,"Another quoted label"
 1234,,Last segment
 ```
-
-## Known issues & limitations
-
-- **Cutting times are not accurate and will be "rounded" to the nearest keyframe.** There are wishes to implement a "smart cut" feature that re-encodes only the part before the keyframe, see [#126](https://github.com/mifi/lossless-cut/issues/126)
-- Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. See [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
-- When exporting you may lose some proprietary data tracks (like `tmcd`, `fdsc` and `gpmd` added by GoPro). These can be exported to separate files however
-- H265 is not supported natively. There is partial support with very low FPS and no audio preview. Alternatively convert to friendly codec (slow) from the menu, see [#88](https://github.com/mifi/lossless-cut/issues/88)
-
-## Troubleshooting
-
-- If you get an error when cutting or opening any kind of file under Windows, please check your anti-virus. It might be blocking execution of ffmpeg, see [#18](https://github.com/mifi/lossless-cut/issues/18)
-- If you get an error on Linux like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See #258
-- If any other problem, please read existing issues or file an issue here on github.
 
 ## Donate 🙈
 
