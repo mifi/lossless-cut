@@ -18,7 +18,7 @@
     "prepack-mac": "yarn build",
     "pack-win": "electron-builder --win",
     "prepack-win": "yarn build",
-    "postinstall": "electron-builder install-app-deps",
+    "postinstall": "patch-package && electron-builder install-app-deps",
     "pack-linux": "electron-builder --linux",
     "prepack-linux": "yarn build"
   },
@@ -60,6 +60,7 @@
     "mousetrap": "^1.6.1",
     "p-map": "^3.0.0",
     "p-queue": "^6.2.0",
+    "patch-package": "^6.2.1",
     "pretty-ms": "^6.0.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
