@@ -27,6 +27,10 @@ function getFfCommandLine(cmd, args) {
 function getFfmpegPath() {
   const platform = os.platform();
 
+  if (platform === 'darwin') {
+    return isDev ? 'ffmpeg-mac/ffmpeg' : join(window.process.resourcesPath, 'ffmpeg');
+  }
+
   const exeName = platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg';
   return isDev
     ? `node_modules/ffmpeg-static/${exeName}`
@@ -36,8 +40,11 @@ function getFfmpegPath() {
 function getFfprobePath() {
   const platform = os.platform();
 
+  if (platform === 'darwin') {
+    return isDev ? 'ffmpeg-mac/ffprobe' : join(window.process.resourcesPath, 'ffprobe');
+  }
+
   const map = {
-    darwin: 'darwin/x64/ffprobe',
     win32: 'win32/x64/ffprobe.exe',
     linux: 'linux/x64/ffprobe',
   };
