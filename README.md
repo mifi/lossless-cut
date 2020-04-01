@@ -129,7 +129,7 @@ The CSV export/import function takes csv files with one cut segment on each line
 
 `segment start` and `segment end` are expressed in seconds or left empty. Empty `segment end` means segment ends at the duration of the video.
 
-Note that you must use comma `,` (not semicolon `;`)
+Note that you must use comma `,` to separate the fields (not semicolon `;`)
 
 ### example.csv
 ```csv
@@ -151,3 +151,5 @@ This project is maintained by me alone. The project will always remain free and 
 ---
 
 Made with ❤️ in 🇳🇴
+
+More apps by [mifi.no](https://mifi.no/)
