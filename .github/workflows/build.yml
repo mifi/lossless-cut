@@ -23,11 +23,15 @@ jobs:
         with:
           node-version: 12
 
-      # Because of timeout issue https://github.com/yarnpkg/yarn/issues/4890
+      # Because of timeout issue https://github.com/yarnpkg/yarn/issues/5259#issuecomment-379769451
       - name: Fix connection issue
         run: |
-          npm config rm proxy
+          set http_proxy=
+          set https_proxy=
+          yarn config delete proxy
           npm config rm https-proxy
+          npm config rm proxy
+          npm config set registry "https://registry.npmjs.org"
 
       - name: Install and login to Snapcraft
         uses: samuelmeuli/action-snapcraft@v1
