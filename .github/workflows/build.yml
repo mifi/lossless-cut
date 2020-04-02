@@ -23,6 +23,10 @@ jobs:
         with:
           node-version: 12
 
+      # Because of timeout issue https://github.com/yarnpkg/yarn/issues/4890
+      - name: Fix yarn
+        run: rm ~/.yarnrc
+
       - name: Install and login to Snapcraft
         uses: samuelmeuli/action-snapcraft@v1
         if: startsWith(matrix.os, 'ubuntu')
