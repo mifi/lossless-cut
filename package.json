@@ -186,6 +186,7 @@
             "f4a",
             "f4b"
           ],
+          "name": "Video",
           "description": "Video files",
           "role": "Viewer"
         },
@@ -237,6 +238,7 @@
             "8svx",
             "cda"
           ],
+          "name": "Audio",
           "description": "Audio files",
           "role": "Viewer"
         }
