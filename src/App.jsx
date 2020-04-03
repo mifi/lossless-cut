@@ -105,6 +105,7 @@ const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && z
 const commonFormats = ['mov', 'mp4', 'matroska', 'mp3', 'ipod'];
 
 const isMasBuild = window.process.mas;
+const isStoreBuild = isMasBuild || window.process.windowsStore;
 
 // TODO flex
 const topBarHeight = 32;
@@ -1457,7 +1458,7 @@ const App = memo(() => {
   ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, renderOutFmt, timecodeShowFrames, setOutputDir, onWheelTunerRequested, language]);
 
   useEffect(() => {
-    if (!isMasBuild) loadMifiLink().then(setMifiLink);
+    if (!isStoreBuild) loadMifiLink().then(setMifiLink);
   }, []);
 
   useEffect(() => {
