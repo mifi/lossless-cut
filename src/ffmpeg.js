@@ -14,9 +14,9 @@ const fileType = window.require('file-type');
 const readChunk = window.require('read-chunk');
 const readline = window.require('readline');
 const stringToStream = window.require('string-to-stream');
-const trash = window.require('trash');
 const isDev = window.require('electron-is-dev');
 const os = window.require('os');
+const fs = window.require('fs-extra');
 
 
 function getFfCommandLine(cmd, args) {
@@ -404,7 +404,7 @@ export async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths
   const ext = extname(sourceFile);
   const outPath = getOutPath(customOutDir, sourceFile, `cut-merged-${new Date().getTime()}${ext}`);
   await mergeFiles({ paths: segmentPaths, outPath });
-  await pMap(segmentPaths, trash, { concurrency: 5 });
+  await pMap(segmentPaths, path => fs.unlink(path), { concurrency: 5 });
 }
 
 /**
