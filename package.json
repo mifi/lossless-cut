@@ -81,7 +81,7 @@
   },
   "dependencies": {
     "electron-is-dev": "^0.1.2",
-    "electron-store": "^5.1.0",
+    "electron-store": "^5.1.1",
     "execa": "^4.0.0",
     "ffmpeg-static": "^4.0.1",
     "ffprobe-static": "^3.0.0",
