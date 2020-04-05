@@ -10,7 +10,7 @@ import { primaryColor } from './colors';
 const electron = window.require('electron');
 const { clipboard } = electron;
 
-const { homepage } = electron.remote.require('./constants');
+const { githubLink } = electron.remote.require('./constants');
 
 const HelpSheet = memo(({
   visible, onTogglePress, ffmpegCommandLog,
@@ -30,7 +30,7 @@ const HelpSheet = memo(({
 
           <p style={{ fontWeight: 'bold' }}>
             For usage help and issues, go to<br />
-            <span style={{ color: primaryColor, cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal(homepage)}>{homepage}</span>
+            <span style={{ color: primaryColor, cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal(githubLink)}>{githubLink}</span>
           </p>
           <h1>{t('Keyboard & mouse shortcuts')}</h1>
           <div><kbd>H</kbd> {t('Show/hide this screen')}</div>
