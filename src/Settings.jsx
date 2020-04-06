@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 
 const Settings = memo(({
-  setOutputDir, customOutDir, autoMerge, setAutoMerge, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments,
+  changeOutDir, customOutDir, autoMerge, setAutoMerge, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments,
   autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose,
   renderOutFmt, AutoExportToggler, renderCaptureFormatButton, onWheelTunerRequested, language, setLanguage,
 }) => {
@@ -44,7 +44,7 @@ const Settings = memo(({
           {t('This is where working files, exported files, project files (CSV) are stored.')}
         </KeyCell>
         <Table.TextCell>
-          <Button onClick={setOutputDir}>
+          <Button onClick={changeOutDir}>
             {customOutDir ? t('Custom working directory') : t('Same directory as input file')}
           </Button>
           <div>{customOutDir}</div>

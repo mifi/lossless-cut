@@ -23,7 +23,8 @@ i18n
   // for all options read: https://www.i18next.com/overview/configuration-options
   .init({
     fallbackLng: 'en',
-    debug: isDev,
+    // debug: isDev,
+    debug: false,
     // saveMissing: isDev,
     // updateMissing: isDev,
     // saveMissingTo: 'all',

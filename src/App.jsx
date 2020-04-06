@@ -46,7 +46,7 @@ import configStore from './store';
 import { save as edlStoreSave, load as edlStoreLoad } from './edlStore';
 import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
-  promptTimeOffset, generateColor, getOutDir, withBlur, checkDirWriteAccess,
+  promptTimeOffset, generateColor, getOutDir, withBlur, checkDirWriteAccess, dirExists,
 } from './util';
 
 
@@ -474,16 +474,30 @@ const App = memo(() => {
     }
   }, [setCutTime]);
 
-  const setOutputDir = useCallback(async () => {
-    const { filePaths } = await dialog.showOpenDialog({ properties: ['openDirectory'] });
-    setCustomOutDir((filePaths && filePaths.length === 1) ? filePaths[0] : undefined);
+  const outputDir = getOutDir(customOutDir, filePath);
+
+  const askForOutDir = useCallback(async (defaultPath) => {
+    const { filePaths } = await dialog.showOpenDialog({
+      properties: ['openDirectory'],
+      title: i18n.t('Where do you want to save output files?'),
+      message: i18n.t('Where do you want to save output files? Make sure there is enough free space in this folder'),
+      defaultPath,
+      buttonLabel: i18n.t('Select output folder'),
+    });
+    return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
   }, []);
+
+  const changeOutDir = useCallback(async () => {
+    const newOutDir = await askForOutDir(outputDir);
+    // We cannot allow exporting to a directory which has not yet been confirmed by an open dialog
+    // because of sandox restrictions
+    if (isMasBuild && !newOutDir) return;
+    // Else it's OK, we allow clearing the dir too
+    setCustomOutDir(newOutDir);
+  }, [askForOutDir, outputDir]);
 
   const effectiveFilePath = dummyVideoPath || html5FriendlyPath || filePath;
   const fileUri = effectiveFilePath ? filePathToUrl(effectiveFilePath) : '';
-
-
-  const outputDir = getOutDir(customOutDir, filePath);
 
   const getEdlFilePath = useCallback((fp) => getOutPath(customOutDir, fp, 'llc-edl.csv'), [customOutDir]);
   const edlFilePath = getEdlFilePath(filePath);
@@ -774,26 +788,26 @@ const App = memo(() => {
     toast.fire({ timer: 10000, icon: 'warning', title: i18n.t('This video is not natively supported'), text: i18n.t('This means that there is no audio in the preview and it has low quality. The final export operation will however be lossless and contains audio!') });
   }
 
-  const createDummyVideo = useCallback(async (fp) => {
-    const html5ifiedDummyPathDummy = getOutPath(customOutDir, fp, 'html5ified-dummy.mkv');
+  const createDummyVideo = useCallback(async (cod, fp) => {
+    const html5ifiedDummyPathDummy = getOutPath(cod, fp, 'html5ified-dummy.mkv');
     await html5ifyDummy(fp, html5ifiedDummyPathDummy);
     setDummyVideoPath(html5ifiedDummyPathDummy);
     setHtml5FriendlyPath();
     showUnsupportedFileMessage();
-  }, [customOutDir]);
+  }, []);
 
   const tryCreateDummyVideo = useCallback(async () => {
     try {
       if (working) return;
       setWorking(true);
-      await createDummyVideo(filePath);
+      await createDummyVideo(customOutDir, filePath);
     } catch (err) {
       console.error(err);
       errorToast(i18n.t('Failed to playback this file. Try to convert to friendly format from the menu'));
     } finally {
       setWorking(false);
     }
-  }, [createDummyVideo, filePath, working]);
+  }, [createDummyVideo, filePath, working, customOutDir]);
 
   const togglePlay = useCallback((resetPlaybackRate) => {
     if (!filePath) return;
@@ -950,17 +964,7 @@ const App = memo(() => {
     }
   }, [playing]);
 
-  const getHtml5ifiedPath = useCallback((fp, type) => getOutPath(customOutDir, fp, `html5ified-${type}.mp4`), [customOutDir]);
-
-  const checkExistingHtml5FriendlyFile = useCallback(async (fp, speed) => {
-    const existing = getHtml5ifiedPath(fp, speed);
-    const ret = existing && await exists(existing);
-    if (ret) {
-      setHtml5FriendlyPath(existing);
-      showUnsupportedFileMessage();
-    }
-    return ret;
-  }, [getHtml5ifiedPath]);
+  const getHtml5ifiedPath = useCallback((cod, fp, type) => getOutPath(cod, fp, `html5ified-${type}.mp4`), []);
 
   const loadEdlFile = useCallback(async (edlPath) => {
     try {
@@ -982,8 +986,8 @@ const App = memo(() => {
     }
   }, [cutSegmentsHistory, setCutSegments]);
 
-  const load = useCallback(async (fp, html5FriendlyPathRequested) => {
-    console.log('Load', { fp, html5FriendlyPathRequested });
+  const load = useCallback(async ({ filePath: fp, customOutDir: cod, html5FriendlyPathRequested }) => {
+    console.log('Load', { fp, cod, html5FriendlyPathRequested });
     if (working) {
       errorToast(i18n.t('Tried to load file while busy'));
       return;
@@ -992,6 +996,16 @@ const App = memo(() => {
     resetState();
 
     setWorking(true);
+
+    async function checkExistingHtml5FriendlyFile(speed) {
+      const existing = getHtml5ifiedPath(cod, fp, speed);
+      const ret = existing && await exists(existing);
+      if (ret) {
+        setHtml5FriendlyPath(existing);
+        showUnsupportedFileMessage();
+      }
+      return ret;
+    }
 
     try {
       const fd = await getFormatData(fp);
@@ -1028,10 +1042,10 @@ const App = memo(() => {
         setHtml5FriendlyPath(html5FriendlyPathRequested);
         showUnsupportedFileMessage();
       } else if (
-        !(await checkExistingHtml5FriendlyFile(fp, 'slow-audio') || await checkExistingHtml5FriendlyFile(fp, 'slow') || await checkExistingHtml5FriendlyFile(fp, 'fast'))
+        !(await checkExistingHtml5FriendlyFile('slow-audio') || await checkExistingHtml5FriendlyFile('slow') || await checkExistingHtml5FriendlyFile('fast'))
         && !doesPlayerSupportFile(streams)
       ) {
-        await createDummyVideo(fp);
+        await createDummyVideo(cod, fp);
       }
 
       await loadEdlFile(getEdlFilePath(fp));
@@ -1045,10 +1059,7 @@ const App = memo(() => {
     } finally {
       setWorking(false);
     }
-  }, [
-    resetState, working, createDummyVideo, checkExistingHtml5FriendlyFile, loadEdlFile,
-    getEdlFilePath,
-  ]);
+  }, [resetState, working, createDummyVideo, loadEdlFile, getEdlFilePath, getHtml5ifiedPath]);
 
   const toggleHelp = useCallback(() => setHelpVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1169,34 +1180,28 @@ const App = memo(() => {
 
     const firstFile = filePaths[0];
 
-    const outDirPath = getOutDir(customOutDir, firstFile);
+    const customOutDirExists = await dirExists(customOutDir);
+    if (!customOutDirExists) setCustomOutDir(undefined);
+    const newCustomOutDir = customOutDirExists ? customOutDir : undefined;
+
+    const outDirPath = getOutDir(newCustomOutDir, firstFile);
     const hasDirWriteAccess = await checkDirWriteAccess(outDirPath);
     if (!hasDirWriteAccess) {
       if (isMasBuild) {
-        await Swal.fire({
-          title: i18n.t('Mac OS file security'),
-          icon: 'info',
-          text: i18n.t('Mac OS requires you to  choose the folder where the output files should be saved. This is only required the first time for each folder. Simply press "Open" in the next dialog to allow access to the default folder.'),
-        });
-
-        // TODO check that correct dir is selected
-        // TODO also when customoutdir changes
-        // eslint-disable-next-line no-unused-vars
-        const { canceled, filePaths: filePaths2 } = await dialog.showOpenDialog({
-          title: 'Select file to open',
-          defaultPath: outDirPath,
-          properties: ['openDirectory'],
-        });
-        if (canceled) return;
+        const newOutDir = await askForOutDir(outDirPath);
+        // User cancelled open dialog, refuse to open file, because we will get permission denied from sandbox
+        if (!newOutDir) return;
+        setCustomOutDir(newOutDir);
       } else {
         errorToast(i18n.t('You have no write access to the directory of this file, please select a custom working dir'));
       }
     }
 
     if (!isFileOpened) {
-      load(firstFile);
+      load({ filePath: firstFile, customOutDir: newCustomOutDir });
       return;
     }
+
     const { value } = await Swal.fire({
       title: i18n.t('You opened a new file. What do you want to do?'),
       icon: 'question',
@@ -1211,12 +1216,12 @@ const App = memo(() => {
     });
 
     if (value === 'open') {
-      load(firstFile);
+      load({ filePath: firstFile, customOutDir: newCustomOutDir });
     } else if (value === 'add') {
       addStreamSourceFile(firstFile);
       setStreamsSelectorShown(true);
     }
-  }, [addStreamSourceFile, isFileOpened, load, mergeFiles, customOutDir]);
+  }, [addStreamSourceFile, isFileOpened, load, mergeFiles, customOutDir, askForOutDir]);
 
   const onDrop = useCallback(async (ev) => {
     ev.preventDefault();
@@ -1249,13 +1254,13 @@ const App = memo(() => {
       try {
         setWorking(true);
         if (['fast', 'slow', 'slow-audio'].includes(speed)) {
-          const html5FriendlyPathNew = getHtml5ifiedPath(filePath, speed);
+          const html5FriendlyPathRequested = getHtml5ifiedPath(customOutDir, filePath, speed);
           const encodeVideo = ['slow', 'slow-audio'].includes(speed);
           const encodeAudio = speed === 'slow-audio';
-          await ffmpegHtml5ify(filePath, html5FriendlyPathNew, encodeVideo, encodeAudio);
-          load(filePath, html5FriendlyPathNew);
+          await ffmpegHtml5ify(filePath, html5FriendlyPathRequested, encodeVideo, encodeAudio);
+          load({ filePath, html5FriendlyPathRequested, customOutDir });
         } else {
-          await createDummyVideo(filePath);
+          await createDummyVideo(customOutDir, filePath);
         }
       } catch (err) {
         errorToast(i18n.t('Failed to html5ify file'));
@@ -1373,7 +1378,7 @@ const App = memo(() => {
   useEffect(() => {
     document.body.addEventListener('drop', onDrop);
     return () => document.body.removeEventListener('drop', onDrop);
-  }, [load, mergeFiles, onDrop]);
+  }, [onDrop]);
 
 
   const commonFormatsMap = useMemo(() => fromPairs(commonFormats.map(format => [format, allOutFormats[format]])
@@ -1433,7 +1438,7 @@ const App = memo(() => {
 
   const renderSettings = useCallback(() => (
     <Settings
-      setOutputDir={setOutputDir}
+      changeOutDir={changeOutDir}
       customOutDir={customOutDir}
       autoMerge={autoMerge}
       setAutoMerge={setAutoMerge}
@@ -1455,7 +1460,7 @@ const App = memo(() => {
       renderCaptureFormatButton={renderCaptureFormatButton}
       onWheelTunerRequested={onWheelTunerRequested}
     />
-  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, renderOutFmt, timecodeShowFrames, setOutputDir, onWheelTunerRequested, language]);
+  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, renderOutFmt, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language]);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);
@@ -1463,7 +1468,7 @@ const App = memo(() => {
 
   useEffect(() => {
     // Testing:
-    // if (isDev) load('/Users/mifi/Downloads/inp.MOV');
+    // if (isDev) load({ filePath: '/Users/mifi/Downloads/inp.MOV', customOutDir });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -1527,7 +1532,7 @@ const App = memo(() => {
           copyAnyAudioTrack={copyAnyAudioTrack}
           toggleStripAudio={toggleStripAudio}
           customOutDir={customOutDir}
-          setOutputDir={setOutputDir}
+          changeOutDir={changeOutDir}
           renderOutFmt={renderOutFmt}
           outSegments={outSegments}
           autoMerge={autoMerge}

@@ -8,7 +8,7 @@ import { withBlur } from './util';
 
 
 const TopMenu = memo(({
-  filePath, copyAnyAudioTrack, toggleStripAudio, customOutDir, setOutputDir,
+  filePath, copyAnyAudioTrack, toggleStripAudio, customOutDir, changeOutDir,
   renderOutFmt, outSegments, autoMerge, toggleAutoMerge, keyframeCut, toggleKeyframeCut, toggleHelp,
   numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown, toggleSettings,
 }) => {
@@ -42,7 +42,7 @@ const TopMenu = memo(({
           <Button
             iconBefore={customOutDir ? 'folder-open' : undefined}
             height={20}
-            onClick={withBlur(setOutputDir)}
+            onClick={withBlur(changeOutDir)}
             title={customOutDir}
           >
             {customOutDir ? t('Working dir set') : t('Working dir unset')}

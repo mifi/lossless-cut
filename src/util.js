@@ -63,6 +63,10 @@ export async function checkDirWriteAccess(dirPath) {
   return true;
 }
 
+export async function dirExists(dirPath) {
+  return (await fs.exists(dirPath)) && (await fs.lstat(dirPath)).isDirectory();
+}
+
 export async function transferTimestamps(inPath, outPath) {
   try {
     const stat = await fs.stat(inPath);
