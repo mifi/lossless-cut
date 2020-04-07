@@ -34,7 +34,7 @@ export async function showMergeDialog(paths, onMergeClick) {
   });
 
   if (!dismiss) {
-    onMergeClick({ paths: outPaths, allStreams });
+    await onMergeClick({ paths: outPaths, allStreams });
   }
 }
 

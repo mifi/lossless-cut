@@ -364,7 +364,7 @@ export async function html5ifyDummy(filePath, outPath) {
   await transferTimestamps(filePath, outPath);
 }
 
-async function mergeFiles({ paths, outPath, allStreams }) {
+export async function mergeFiles({ paths, outPath, allStreams }) {
   console.log('Merging files', { paths }, 'to', outPath);
 
   // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
@@ -397,13 +397,6 @@ async function mergeFiles({ paths, outPath, allStreams }) {
 
   const result = await process;
   console.log(result.stdout);
-}
-
-export async function mergeAnyFiles({ customOutDir, paths, allStreams }) {
-  const firstPath = paths[0];
-  const ext = extname(firstPath);
-  const outPath = getOutPath(customOutDir, firstPath, `merged${ext}`);
-  return mergeFiles({ paths, outPath, allStreams });
 }
 
 export async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths }) {

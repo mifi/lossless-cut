@@ -37,17 +37,17 @@ const TopMenu = memo(({
 
       <div style={{ flexGrow: 1 }} />
 
+      <Button
+        iconBefore={customOutDir ? 'folder-open' : undefined}
+        height={20}
+        onClick={withBlur(changeOutDir)}
+        title={customOutDir}
+      >
+        {customOutDir ? t('Working dir set') : t('Working dir unset')}
+      </Button>
+
       {filePath && (
         <Fragment>
-          <Button
-            iconBefore={customOutDir ? 'folder-open' : undefined}
-            height={20}
-            onClick={withBlur(changeOutDir)}
-            title={customOutDir}
-          >
-            {customOutDir ? t('Working dir set') : t('Working dir unset')}
-          </Button>
-
           <div style={{ width: 60 }}>{renderOutFmt({ height: 20 })}</div>
 
           <Button

@@ -38,7 +38,7 @@ import allOutFormats from './outFormats';
 import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
-  getDefaultOutFormat, getFormatData, renderFrame, mergeAnyFiles, renderThumbnails as ffmpegRenderThumbnails,
+  getDefaultOutFormat, getFormatData, renderFrame, mergeFiles as ffmpegMergeFiles, renderThumbnails as ffmpegRenderThumbnails,
   readFrames, renderWaveformPng, html5ifyDummy, cutMultiple, extractStreams, autoMergeSegments, getAllStreams,
   findNearestKeyFrameTime, html5ify as ffmpegHtml5ify,
 } from './ffmpeg';
@@ -57,6 +57,7 @@ import loadingLottie from './7077-magic-flow.json';
 const electron = window.require('electron'); // eslint-disable-line
 const trash = window.require('trash');
 const { unlink, exists } = window.require('fs-extra');
+const { extname } = window.require('path');
 
 
 const { dialog, app } = electron.remote;
@@ -585,21 +586,47 @@ const App = memo(() => {
     setRotationPreviewRequested(true);
   }, []);
 
+  const assureOutDirAccess = useCallback(async (outFilePath) => {
+    const customOutDirExists = await dirExists(customOutDir);
+    if (!customOutDirExists) setCustomOutDir(undefined);
+    const newCustomOutDir = customOutDirExists ? customOutDir : undefined;
+
+    const outDirPath = getOutDir(newCustomOutDir, outFilePath);
+    const hasDirWriteAccess = await checkDirWriteAccess(outDirPath);
+    if (!hasDirWriteAccess) {
+      if (isMasBuild) {
+        const newOutDir = await askForOutDir(outDirPath);
+        // User cancelled open dialog. Refuse to continue, because we will get permission denied error from MAS sandbox
+        if (!newOutDir) return { cancel: true };
+        setCustomOutDir(newOutDir);
+      } else {
+        errorToast(i18n.t('You have no write access to the directory of this file, please select a custom working dir'));
+      }
+    }
+
+    return { cancel: false, newCustomOutDir };
+  }, [askForOutDir, customOutDir]);
+
   const mergeFiles = useCallback(async ({ paths, allStreams }) => {
     try {
       setWorking(true);
 
+      const firstPath = paths[0];
+      const { newCustomOutDir, cancel } = await assureOutDirAccess(firstPath);
+      if (cancel) return;
+
+      const ext = extname(firstPath);
+      const outPath = getOutPath(newCustomOutDir, firstPath, `merged${ext}`);
+
       // console.log('merge', paths);
-      await mergeAnyFiles({
-        customOutDir, paths, allStreams,
-      });
+      await ffmpegMergeFiles({ paths, outPath, allStreams });
     } catch (err) {
       errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same format and codecs'));
       console.error('Failed to merge files', err);
     } finally {
       setWorking(false);
     }
-  }, [customOutDir]);
+  }, [assureOutDirAccess]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), []);
   const toggleKeyframeCut = useCallback(() => setKeyframeCut(val => !val), []);
@@ -1180,22 +1207,8 @@ const App = memo(() => {
 
     const firstFile = filePaths[0];
 
-    const customOutDirExists = await dirExists(customOutDir);
-    if (!customOutDirExists) setCustomOutDir(undefined);
-    const newCustomOutDir = customOutDirExists ? customOutDir : undefined;
-
-    const outDirPath = getOutDir(newCustomOutDir, firstFile);
-    const hasDirWriteAccess = await checkDirWriteAccess(outDirPath);
-    if (!hasDirWriteAccess) {
-      if (isMasBuild) {
-        const newOutDir = await askForOutDir(outDirPath);
-        // User cancelled open dialog, refuse to open file, because we will get permission denied from sandbox
-        if (!newOutDir) return;
-        setCustomOutDir(newOutDir);
-      } else {
-        errorToast(i18n.t('You have no write access to the directory of this file, please select a custom working dir'));
-      }
-    }
+    const { newCustomOutDir, cancel } = await assureOutDirAccess(firstFile);
+    if (cancel) return;
 
     if (!isFileOpened) {
       load({ filePath: firstFile, customOutDir: newCustomOutDir });
@@ -1221,7 +1234,7 @@ const App = memo(() => {
       addStreamSourceFile(firstFile);
       setStreamsSelectorShown(true);
     }
-  }, [addStreamSourceFile, isFileOpened, load, mergeFiles, customOutDir, askForOutDir]);
+  }, [addStreamSourceFile, isFileOpened, load, mergeFiles, assureOutDirAccess]);
 
   const onDrop = useCallback(async (ev) => {
     ev.preventDefault();
