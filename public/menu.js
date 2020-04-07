@@ -43,27 +43,9 @@ module.exports = (app, mainWindow, newVersion) => {
         },
         { type: 'separator' },
         {
-          label: 'Convert to friendly format (fastest)',
+          label: 'Convert to friendly format',
           click() {
-            mainWindow.webContents.send('html5ify', 'fastest');
-          },
-        },
-        {
-          label: 'Convert to friendly format (fast)',
-          click() {
-            mainWindow.webContents.send('html5ify', 'fast');
-          },
-        },
-        {
-          label: 'Convert to friendly codec (slow)',
-          click() {
-            mainWindow.webContents.send('html5ify', 'slow');
-          },
-        },
-        {
-          label: 'Convert to friendly codec (slowest, audio)',
-          click() {
-            mainWindow.webContents.send('html5ify', 'slow-audio');
+            mainWindow.webContents.send('html5ify');
           },
         },
         { type: 'separator' },
@@ -138,6 +120,12 @@ module.exports = (app, mainWindow, newVersion) => {
           label: 'Merge files',
           click() {
             mainWindow.webContents.send('show-merge-dialog', true);
+          },
+        },
+        {
+          label: 'Batch convert to friendly format',
+          click() {
+            mainWindow.webContents.send('batchConvertFriendlyFormat');
           },
         },
         {

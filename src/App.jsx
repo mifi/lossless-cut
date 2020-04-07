@@ -1261,19 +1261,53 @@ const App = memo(() => {
       resetState();
     }
 
-    async function html5ify(event, speed) {
+    async function askForHtml5ifySpeed(allowedOptions) {
+      const availOptions = {
+        fastest: i18n.t('Fastest: Low playback speed (no audio)'),
+        fast: i18n.t('Fast: Full quality remux, unlikely to work'),
+        slow: i18n.t('Slow: Low video quality encode (no audio)'),
+        'slow-audio': i18n.t('Slowest: Low video/audio quality encode'),
+      };
+      const inputOptions = {};
+      allowedOptions.forEach((allowedOption) => {
+        inputOptions[allowedOption] = availOptions[allowedOption];
+      });
+
+      const { value } = await Swal.fire({
+        title: i18n.t('Convert to supported format'),
+        input: 'radio',
+        inputValue: 'fastest',
+        text: i18n.t('These options will let you convert files to a format that is supported by the player. You can try different options and see which works with your file. Note that this is for preview only. When you run cut operations, they will still be lossless with full quality'),
+        showCancelButton: true,
+        inputOptions,
+        inputValidator: (v) => !v && i18n.t('You need to choose something!'),
+      });
+
+      return value;
+    }
+
+    async function html5ifyInternal({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: hv }) {
+      const path = getHtml5ifiedPath(cod, fp, speed);
+      const encodeVideo = ['slow', 'slow-audio'].includes(speed) && hv;
+      const encodeAudio = speed === 'slow-audio' && ha;
+      await ffmpegHtml5ify(fp, path, encodeVideo, encodeAudio);
+      return path;
+    }
+
+    async function html5ify() {
       if (!filePath) return;
 
       try {
         setWorking(true);
-        if (['fast', 'slow', 'slow-audio'].includes(speed)) {
-          const html5FriendlyPathRequested = getHtml5ifiedPath(customOutDir, filePath, speed);
-          const encodeVideo = ['slow', 'slow-audio'].includes(speed);
-          const encodeAudio = speed === 'slow-audio';
-          await ffmpegHtml5ify(filePath, html5FriendlyPathRequested, encodeVideo, encodeAudio);
-          load({ filePath, html5FriendlyPathRequested, customOutDir });
-        } else {
+
+        const speed = await askForHtml5ifySpeed(['fastest', 'fast', 'slow', 'slow-audio']);
+        if (!speed) return;
+
+        if (speed === 'fastest') {
           await createDummyVideo(customOutDir, filePath);
+        } else if (['fast', 'slow', 'slow-audio'].includes(speed)) {
+          const path = await html5ifyInternal({ customOutDir, filePath, speed, hasAudio, hasVideo });
+          load({ filePath, html5FriendlyPathRequested: path, customOutDir });
         }
       } catch (err) {
         errorToast(i18n.t('Failed to html5ify file'));
@@ -1347,6 +1381,52 @@ const App = memo(() => {
       toggleSettings();
     }
 
+    async function batchConvertFriendlyFormat() {
+      const title = i18n.t('Select files to batch convert to friendly format');
+      const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'], title, message: title });
+      if (canceled || filePaths.length < 1) return;
+
+      const failedFiles = [];
+      let i = 0;
+
+      const speed = await askForHtml5ifySpeed(['fast', 'slow', 'slow-audio']);
+      if (!speed) return;
+
+      try {
+        setWorking(true);
+        setCutProgress(0);
+
+        // eslint-disable-next-line no-restricted-syntax
+        for (const path of filePaths) {
+          try {
+            // eslint-disable-next-line no-await-in-loop
+            const { newCustomOutDir, cancel } = await assureOutDirAccess(path);
+            if (cancel) {
+              toast.fire({ title: i18n.t('Aborted') });
+              return;
+            }
+
+            // eslint-disable-next-line no-await-in-loop
+            await html5ifyInternal({ customOutDir: newCustomOutDir, filePath: path, speed, hasAudio: true, hasVideo: true });
+          } catch (err2) {
+            console.error('Failed to html5ify', path, err2);
+            failedFiles.push(path);
+          }
+
+          i += 1;
+          setCutProgress(i / filePaths.length);
+        }
+
+        if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}` });
+      } catch (err) {
+        errorToast(i18n.t('Failed to html5ify'));
+        console.error('Failed to html5ify', err);
+      } finally {
+        setWorking(false);
+        setCutProgress();
+      }
+    }
+
     electron.ipcRenderer.on('file-opened', fileOpened);
     electron.ipcRenderer.on('close-file', closeFile);
     electron.ipcRenderer.on('html5ify', html5ify);
@@ -1360,6 +1440,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('openHelp', openHelp);
     electron.ipcRenderer.on('openSettings', openSettings);
     electron.ipcRenderer.on('openAbout', openAbout);
+    electron.ipcRenderer.on('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
@@ -1375,11 +1456,12 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('openHelp', openHelp);
       electron.ipcRenderer.removeListener('openSettings', openSettings);
       electron.ipcRenderer.removeListener('openAbout', openAbout);
+      electron.ipcRenderer.removeListener('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
     };
   }, [
     load, mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset, getHtml5ifiedPath,
     createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory,
-    loadEdlFile, cutSegments, edlFilePath, askBeforeClose, toggleHelp, toggleSettings,
+    loadEdlFile, cutSegments, edlFilePath, askBeforeClose, toggleHelp, toggleSettings, assureOutDirAccess, hasAudio, hasVideo,
   ]);
 
   async function showAddStreamSourceDialog() {

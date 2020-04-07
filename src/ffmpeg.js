@@ -312,12 +312,12 @@ export async function html5ify(filePath, outPath, encodeVideo, encodeAudio) {
   let videoArgs;
   if (!encodeVideo) videoArgs = ['-vcodec', 'copy'];
   else if (os.platform() === 'darwin') {
-    videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
+    videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
   } else {
     videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libx264', '-profile:v', 'baseline', '-x264opts', 'level=3.0', '-preset:v', 'ultrafast', '-crf', '28'];
   }
 
-  const audioArgs = encodeAudio ? ['-acodec', 'aac', '-b:a', '96k'] : ['-an'];
+  const audioArgs = encodeAudio ? ['-acodec', 'aac', '-ar', '44100', '-ac', '2', '-b:a', '96k'] : ['-an'];
 
   const ffmpegArgs = [
     '-hide_banner',
