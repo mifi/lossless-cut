@@ -849,12 +849,22 @@ const App = memo(() => {
 
     video.play().catch((err) => {
       console.error(err);
-      if (err.name === 'NotSupportedError') {
-        console.log('NotSupportedError, trying to create dummy');
-        tryCreateDummyVideo(filePath);
-      }
     });
-  }, [playing, filePath, tryCreateDummyVideo]);
+  }, [playing, filePath]);
+
+  const onVideoError = useCallback(() => {
+    const { error } = videoRef.current;
+    if (!error) return;
+    if (!fileUri) return; // Probably MEDIA_ELEMENT_ERROR: Empty src attribute
+
+    console.error(error.message);
+
+    const MEDIA_ERR_SRC_NOT_SUPPORTED = 4;
+    if (error.code === MEDIA_ERR_SRC_NOT_SUPPORTED && !dummyVideoPath) {
+      console.log('MEDIA_ERR_SRC_NOT_SUPPORTED - trying to create dummy');
+      tryCreateDummyVideo();
+    }
+  }, [tryCreateDummyVideo, fileUri, dummyVideoPath]);
 
   const deleteSource = useCallback(async () => {
     if (!filePath) return;
@@ -1024,7 +1034,7 @@ const App = memo(() => {
 
     setWorking(true);
 
-    async function checkExistingHtml5FriendlyFile(speed) {
+    async function checkAndSetExistingHtml5FriendlyFile(speed) {
       const existing = getHtml5ifiedPath(cod, fp, speed);
       const ret = existing && await exists(existing);
       if (ret) {
@@ -1069,7 +1079,7 @@ const App = memo(() => {
         setHtml5FriendlyPath(html5FriendlyPathRequested);
         showUnsupportedFileMessage();
       } else if (
-        !(await checkExistingHtml5FriendlyFile('slow-audio') || await checkExistingHtml5FriendlyFile('slow') || await checkExistingHtml5FriendlyFile('fast'))
+        !(await checkAndSetExistingHtml5FriendlyFile('slow-audio') || await checkAndSetExistingHtml5FriendlyFile('slow') || await checkAndSetExistingHtml5FriendlyFile('fast'))
         && !doesPlayerSupportFile(streams)
       ) {
         await createDummyVideo(cod, fp);
@@ -1700,6 +1710,7 @@ const App = memo(() => {
           onPause={onStopPlaying}
           onDurationChange={onDurationChange}
           onTimeUpdate={onTimeUpdate}
+          onError={onVideoError}
         />
 
         {framePath && frameRenderEnabled && (
