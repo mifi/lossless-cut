@@ -18,9 +18,7 @@ body {
     cursor: default;
 }
 
-.help-sheet {
-  background: white;
-  color: black;
+.help-sheet, .settings-sheet {
   padding: 1em 2em;
   position: fixed;
   left: 0;
@@ -31,27 +29,37 @@ body {
   overflow-y: scroll;
 }
 
-.help-sheet h1 {
+.help-sheet {
+  background: #6b6b6b;
+  color: white;
+}
+
+.settings-sheet {
+  background: white;
+  color: black;
+}
+
+.help-sheet h1, .settings-sheet h1 {
   font-size: 1.2em;
   margin-bottom: .5em;
   margin-top: 1.3em;
   text-transform: uppercase;
 }
 
-.help-sheet h2 {
+.help-sheet h2, .settings-sheet h2 {
   font-size: 1em;
   margin-bottom: .5em;
   text-transform: uppercase;
 }
 
-.help-sheet kbd {
+kbd {
     display: inline-block;
     padding: 3px 5px;
     font-size: 11px;
     line-height: 10px;
     color: #555;
     vertical-align: middle;
-    background-color: rgba(0,0,0,0.03);
+    background-color: #fdfdfd;
     border: solid 1px #ccc;
     border-bottom-color: #bbb;
     border-radius: 3px;

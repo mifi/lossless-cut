@@ -1,11 +1,12 @@
 import React, { memo } from 'react';
 import { IoIosCloseCircleOutline } from 'react-icons/io';
-import { FaClipboard } from 'react-icons/fa';
+import { FaClipboard, FaHandPointRight, FaHandPointLeft, FaStepBackward, FaStepForward } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
+import SetCutpointButton from './SetCutpointButton';
 import { toast } from './util';
-import { primaryColor } from './colors';
+import { primaryTextColor } from './colors';
 
 const electron = window.require('electron');
 const { clipboard } = electron;
@@ -13,7 +14,7 @@ const { clipboard } = electron;
 const { githubLink } = electron.remote.require('./constants');
 
 const HelpSheet = memo(({
-  visible, onTogglePress, ffmpegCommandLog,
+  visible, onTogglePress, ffmpegCommandLog, currentCutSeg,
 }) => {
   const { t } = useTranslation();
 
@@ -29,11 +30,13 @@ const HelpSheet = memo(({
           <IoIosCloseCircleOutline role="button" onClick={onTogglePress} size={30} style={{ position: 'fixed', right: 0, top: 0, padding: 20 }} />
 
           <p style={{ fontWeight: 'bold' }}>
-            For usage help and issues, go to<br />
-            <span style={{ color: primaryColor, cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal(githubLink)}>{githubLink}</span>
+            {t('For usage help and issues, please go to:')}<br />
+            <span style={{ color: primaryTextColor, cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal(githubLink)}>{githubLink}</span>
           </p>
+
           <h1>{t('Keyboard & mouse shortcuts')}</h1>
-          <div><kbd>H</kbd> {t('Show/hide this screen')}</div>
+
+          <div><kbd>H</kbd> {t('Show/hide help screen')}</div>
 
           <h2>{t('Playback')}</h2>
 
@@ -51,6 +54,17 @@ const HelpSheet = memo(({
           <div><kbd>→</kbd> {t('Seek forward 1 sec')}</div>
           <div><kbd>CTRL</kbd> / <kbd>CMD</kbd> + <kbd>←</kbd> {t('Seek backward 1% of timeline at current zoom')}</div>
           <div><kbd>CTRL</kbd> / <kbd>CMD</kbd> + <kbd>→</kbd> {t('Seek forward 1% of timeline at current zoom')}</div>
+          <div style={{ lineHeight: 1.7 }}><SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} style={{ verticalAlign: 'middle' }} /> {t('Jump to cut end')}</div>
+          <div style={{ lineHeight: 1.7 }}><SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} style={{ verticalAlign: 'middle' }} /> {t('Jump to cut end')}</div>
+
+          <h2>{t('Segments and cut points')}</h2>
+
+          <div style={{ lineHeight: 1.7 }}><SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaHandPointLeft} style={{ verticalAlign: 'middle' }} />, <kbd>I</kbd> {t('Mark in / cut start point for current segment')}</div>
+          <div style={{ lineHeight: 1.7 }}><SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaHandPointRight} style={{ verticalAlign: 'middle' }} />, <kbd>O</kbd> {t('Mark out / cut end point for current segment')}</div>
+          <div><kbd>+</kbd> {t('Add cut segment')}</div>
+          <div><kbd>BACKSPACE</kbd> {t('Remove current segment')}</div>
+          <div><kbd>↑</kbd> {t('Select previous segment')}</div>
+          <div><kbd>↓</kbd> {t('Select next segment')}</div>
 
           <h2>{t('Timeline/zoom operations')}</h2>
           <div><kbd>Z</kbd> {t('Toggle zoom between 1x and a calculated comfortable zoom level')}</div>
@@ -59,15 +73,7 @@ const HelpSheet = memo(({
           <div><kbd>CTRL</kbd> <i>+ {t('Mouse scroll/wheel up/down')}</i> - {t('Zoom in/out timeline')}</div>
           <div><i>{t('Mouse scroll/wheel left/right')}</i> - {t('Pan timeline')}</div>
 
-          <h2>{t('Segments and cut points')}</h2>
-          <div><kbd>I</kbd> {t('Mark in / cut start point for current segment')}</div>
-          <div><kbd>O</kbd> {t('Mark out / cut end point for current segment')}</div>
-          <div><kbd>+</kbd> {t('Add cut segment')}</div>
-          <div><kbd>BACKSPACE</kbd> {t('Remove current segment')}</div>
-          <div><kbd>↑</kbd> {t('Select previous segment')}</div>
-          <div><kbd>↓</kbd> {t('Select next segment')}</div>
-
-          <h2>{t('File system actions')}</h2>
+          <h2>{t('Output actions')}</h2>
           <div><kbd>E</kbd> {t('Export segment(s)')}</div>
           <div><kbd>C</kbd> {t('Capture snapshot')}</div>
           <div><kbd>D</kbd> {t('Delete source file')}</div>

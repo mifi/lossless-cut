@@ -1656,6 +1656,10 @@ const App = memo(() => {
         <div className="no-user-select" style={{ position: 'fixed', left: 0, right: 0, top: topBarHeight, bottom: bottomBarHeight, border: '2vmin dashed #252525', color: '#505050', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}>
           <div style={{ fontSize: '9vmin', textTransform: 'uppercase' }}>{t('DROP FILE(S)')}</div>
 
+          <div style={{ fontSize: '4vmin', color: '#777', cursor: 'pointer' }} role="button" onClick={toggleHelp}>
+            Press <kbd>H</kbd> for help
+          </div>
+
           {mifiLink && mifiLink.loadUrl && (
             <div style={{ position: 'relative', margin: '3vmin', width: '60vmin', height: '20vmin' }}>
               <iframe src={mifiLink.loadUrl} title="iframe" style={{ background: 'rgba(0,0,0,0)', border: 'none', pointerEvents: 'none', width: '100%', height: '100%', position: 'absolute' }} />
@@ -1699,7 +1703,7 @@ const App = memo(() => {
         )}
       </AnimatePresence>
 
-      <div className="no-user-select" style={{ position: 'absolute', top: topBarHeight, left: 0, right: sideBarWidth, bottom: bottomBarHeight }}>
+      <div className="no-user-select" style={{ position: 'absolute', top: topBarHeight, left: 0, right: sideBarWidth, bottom: bottomBarHeight, pointerEvents: 'none' }}>
         {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <video
           muted={muted}
@@ -1881,6 +1885,7 @@ const App = memo(() => {
         visible={helpVisible}
         onTogglePress={toggleHelp}
         ffmpegCommandLog={ffmpegCommandLog}
+        currentCutSeg={currentCutSeg}
       />
 
       <SettingsSheet

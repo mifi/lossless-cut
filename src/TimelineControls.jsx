@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { getSegColors, parseDuration, formatDuration } from './util';
 import { primaryTextColor } from './colors';
-
+import SetCutpointButton from './SetCutpointButton';
 
 const TimelineControls = memo(({
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,
@@ -18,30 +18,12 @@ const TimelineControls = memo(({
 }) => {
   const { t } = useTranslation();
 
-  const {
-    segActiveBgColor: currentSegActiveBgColor,
-    segBorderColor: currentSegBorderColor,
-  } = getSegColors(currentCutSeg);
-
-  const getSegButtonStyle = ({ segActiveBgColor, segBorderColor }) => ({ background: segActiveBgColor, border: `2px solid ${segBorderColor}`, borderRadius: 6, color: 'white', fontSize: 14, textAlign: 'center', lineHeight: '11px', fontWeight: 'bold' });
-
-  function renderSetCutpointButton({ side, Icon, onClick, title, style }) {
-    const start = side === 'start';
-    const border = `4px solid ${currentSegBorderColor}`;
-    return (
-      <Icon
-        size={13}
-        title={title}
-        role="button"
-        style={{ padding: start ? '4px 4px 4px 2px' : '4px 2px 4px 4px', borderLeft: start && border, borderRight: !start && border, background: currentSegActiveBgColor, borderRadius: 6, ...style }}
-        onClick={onClick}
-      />
-    );
-  }
 
   function renderJumpCutpointButton(direction) {
     const newIndex = currentSegIndexSafe + direction;
     const seg = cutSegments[newIndex];
+
+    const getSegButtonStyle = ({ segActiveBgColor, segBorderColor }) => ({ background: segActiveBgColor, border: `2px solid ${segBorderColor}`, borderRadius: 6, color: 'white', fontSize: 14, textAlign: 'center', lineHeight: '11px', fontWeight: 'bold' });
 
     let segButtonStyle;
 
@@ -164,9 +146,8 @@ const TimelineControls = memo(({
 
       {renderJumpCutpointButton(-1)}
 
-      {renderSetCutpointButton({ side: 'start', Icon: FaStepBackward, onClick: jumpCutStart, title: t('Jump to cut start'), style: { marginRight: 5 } })}
-
-      {renderSetCutpointButton({ side: 'start', Icon: FaHandPointLeft, onClick: setCutStart, title: t('Set cut start to current position') })}
+      <SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} onClick={jumpCutStart} title={t('Jump to cut start')} style={{ marginRight: 5 }} />
+      <SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaHandPointLeft} onClick={setCutStart} title={t('Set cut start to current position')} />
 
       {renderCutTimeInput('start')}
 
@@ -203,9 +184,8 @@ const TimelineControls = memo(({
 
       {renderCutTimeInput('end')}
 
-      {renderSetCutpointButton({ side: 'end', Icon: FaHandPointRight, onClick: setCutEnd, title: t('Set cut end to current position') })}
-
-      {renderSetCutpointButton({ side: 'end', Icon: FaStepForward, onClick: jumpCutEnd, title: t('Jump to cut end'), style: { marginLeft: 5 } })}
+      <SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaHandPointRight} onClick={setCutEnd} title={t('Set cut end to current position')} />
+      <SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} onClick={jumpCutEnd} title={t('Jump to cut end')} style={{ marginLeft: 5 }} />
 
       {renderJumpCutpointButton(1)}
 
