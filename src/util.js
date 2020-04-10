@@ -159,3 +159,31 @@ export function getSegColors(seg) {
     segBorderColor: color.lighten(0.5).string(),
   };
 }
+
+export async function askForHtml5ifySpeed(allowedOptions) {
+  const availOptions = {
+    fastest: i18n.t('Fastest: Low playback speed (no audio)'),
+    fast: i18n.t('Fast: Full quality remux (no audio), likely to fail'),
+    'fast-audio': i18n.t('Fast: Full quality remux, likely to fail'),
+    slow: i18n.t('Slow: Low quality encode (no audio)'),
+    'slow-audio': i18n.t('Slow: Low quality encode'),
+    slowest: i18n.t('Slowest: High quality encode'),
+  };
+  const inputOptions = {};
+  allowedOptions.forEach((allowedOption) => {
+    inputOptions[allowedOption] = availOptions[allowedOption];
+  });
+
+  const { value } = await Swal.fire({
+    title: i18n.t('Convert to supported format'),
+    input: 'radio',
+    inputValue: 'fastest',
+    text: i18n.t('These options will let you convert files to a format that is supported by the player. You can try different options and see which works with your file. Note that the conversion is for preview only. When you run an export, the output will still be lossless with full quality'),
+    showCancelButton: true,
+    customClass: { input: 'swal2-losslesscut-radio' },
+    inputOptions,
+    inputValidator: (v) => !v && i18n.t('You need to choose something!'),
+  });
+
+  return value;
+}

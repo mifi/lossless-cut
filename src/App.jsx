@@ -48,7 +48,7 @@ import { save as edlStoreSave, load as edlStoreLoad } from './edlStore';
 import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
   promptTimeOffset, generateColor, getOutDir, withBlur, checkDirWriteAccess, dirExists,
-  openDirToast,
+  openDirToast, askForHtml5ifySpeed,
 } from './util';
 
 
@@ -816,7 +816,7 @@ const App = memo(() => {
   useEffect(() => () => waveform && URL.revokeObjectURL(waveform.url), [waveform]);
 
   function showUnsupportedFileMessage() {
-    toast.fire({ timer: 10000, icon: 'info', title: i18n.t('This file is not natively supported'), text: i18n.t('This means that there is no audio in the preview and playback has low quality. The final export will however be lossless and contains audio') });
+    toast.fire({ timer: 10000, icon: 'info', title: i18n.t('File not natively supported'), text: i18n.t('There will be no audio and a low quality preview. The final export will however be lossless and contains audio. You may convert it from the menu for a better preview') });
   }
 
   const createDummyVideo = useCallback(async (cod, fp) => {
@@ -877,7 +877,7 @@ const App = memo(() => {
       const { value } = await Swal.fire({
         icon: 'warning',
         text: i18n.t('Unable to move source file to trash. Do you want to permanently delete it?'),
-        confirmButtonText: 'Permanently delete',
+        confirmButtonText: i18n.t('Permanently delete'),
         showCancelButton: true,
       });
       if (value) {
@@ -899,7 +899,7 @@ const App = memo(() => {
 
     ReactSwal.fire({
       showCloseButton: true,
-      title: 'Send report',
+      title: i18n.t('Send problem report'),
       html: (
         <div style={{ textAlign: 'left', overflow: 'auto', maxHeight: 300, overflowY: 'auto' }}>
           {reportInstructions}
@@ -907,7 +907,7 @@ const App = memo(() => {
           <p>Include the following text:</p>
 
           <div style={{ fontWeight: 600, fontSize: 12, whiteSpace: 'pre-wrap' }} contentEditable suppressContentEditableWarning>
-            {`${JSON.stringify({
+            {`${err ? err.message : ''}\n\n${JSON.stringify({
               err: err && {
                 code: err.code,
                 killed: err.killed,
@@ -930,7 +930,7 @@ const App = memo(() => {
                 rotation,
                 shortestFlag,
               },
-            }, null, 2)}\n\n${err ? err.message : ''}`}
+            }, null, 2)}`}
           </div>
         </div>
       ),
@@ -942,15 +942,17 @@ const App = memo(() => {
       <div style={{ textAlign: 'left' }}>
         Try one of the following before exporting again:
         <ol>
-          <li>Select a different output format (<b>matroska</b> takes almost everything).</li>
-          <li>Exclude unnecessary <b>tracks</b></li>
+          <li>Select a different output <b>Format</b> (matroska takes almost everything)</li>
+          <li>Exclude unnecessary <b>Tracks</b></li>
           <li>Try both <b>Normal cut</b> and <b>Keyframe cut</b></li>
           <li>Set a different <b>Working directory</b></li>
+          <li>Try a <b>Different file</b></li>
+          <li>If nothing helps, you can send an <b>Error report</b></li>
         </ol>
       </div>
     );
 
-    const { value } = await ReactSwal.fire({ title: 'Unable to export this file', html, timer: null, showConfirmButton: true, showCancelButton: true, confirmButtonText: i18n.t('OK'), cancelButtonText: i18n.t('Report') });
+    const { value } = await ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, timer: null, showConfirmButton: true, showCancelButton: true, confirmButtonText: i18n.t('OK'), cancelButtonText: i18n.t('Report') });
 
     if (!value) {
       openSendReportDialog(err);
@@ -1339,6 +1341,28 @@ const App = memo(() => {
     load({ filePath, html5FriendlyPathRequested: path, customOutDir });
   }, [hasAudio, hasVideo, customOutDir, filePath, html5ifyInternal, load]);
 
+  const html5ifyCurrentFile = useCallback(async () => {
+    if (!filePath) return;
+
+    try {
+      setWorking(true);
+
+      const speed = await askForHtml5ifySpeed(['fastest', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest']);
+      if (!speed) return;
+
+      if (speed === 'fastest') {
+        await createDummyVideo(customOutDir, filePath);
+      } else if (['fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'].includes(speed)) {
+        await html5ifyAndLoad(speed);
+      }
+    } catch (err) {
+      errorToast(i18n.t('Failed to convert file. Try a different conversion'));
+      console.error('Failed to html5ify file', err);
+    } finally {
+      setWorking(false);
+    }
+  }, [createDummyVideo, customOutDir, filePath, html5ifyAndLoad]);
+
   const onVideoError = useCallback(async () => {
     const { error } = videoRef.current;
     if (!error) return;
@@ -1369,56 +1393,6 @@ const App = memo(() => {
       if (askBeforeClose && !window.confirm(i18n.t('Are you sure you want to close the current file?'))) return;
 
       resetState();
-    }
-
-    async function askForHtml5ifySpeed(allowedOptions) {
-      const availOptions = {
-        fastest: i18n.t('Fastest: Low playback speed (no audio)'),
-        fast: i18n.t('Fast: Full quality remux (no audio), likely to fail'),
-        'fast-audio': i18n.t('Fast: Full quality remux, likely to fail'),
-        slow: i18n.t('Slow: Low quality encode (no audio)'),
-        'slow-audio': i18n.t('Slow: Low quality encode'),
-        slowest: i18n.t('Slowest: High quality encode'),
-      };
-      const inputOptions = {};
-      allowedOptions.forEach((allowedOption) => {
-        inputOptions[allowedOption] = availOptions[allowedOption];
-      });
-
-      const { value } = await Swal.fire({
-        title: i18n.t('Convert to supported format'),
-        input: 'radio',
-        inputValue: 'fastest',
-        text: i18n.t('These options will let you convert files to a format that is supported by the player. You can try different options and see which works with your file. Note that the conversion is for preview only. When you run an export, the output will still be lossless with full quality'),
-        showCancelButton: true,
-        customClass: { input: 'swal2-losslesscut-radio' },
-        inputOptions,
-        inputValidator: (v) => !v && i18n.t('You need to choose something!'),
-      });
-
-      return value;
-    }
-
-    async function html5ify() {
-      if (!filePath) return;
-
-      try {
-        setWorking(true);
-
-        const speed = await askForHtml5ifySpeed(['fastest', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest']);
-        if (!speed) return;
-
-        if (speed === 'fastest') {
-          await createDummyVideo(customOutDir, filePath);
-        } else if (['fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'].includes(speed)) {
-          await html5ifyAndLoad(speed);
-        }
-      } catch (err) {
-        errorToast(i18n.t('Failed to html5ify file'));
-        console.error('Failed to html5ify file', err);
-      } finally {
-        setWorking(false);
-      }
     }
 
     function showOpenAndMergeDialog2() {
@@ -1533,7 +1507,7 @@ const App = memo(() => {
 
     electron.ipcRenderer.on('file-opened', fileOpened);
     electron.ipcRenderer.on('close-file', closeFile);
-    electron.ipcRenderer.on('html5ify', html5ify);
+    electron.ipcRenderer.on('html5ify', html5ifyCurrentFile);
     electron.ipcRenderer.on('show-merge-dialog', showOpenAndMergeDialog2);
     electron.ipcRenderer.on('set-start-offset', setStartOffset);
     electron.ipcRenderer.on('extract-all-streams', extractAllStreams);
@@ -1550,7 +1524,7 @@ const App = memo(() => {
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
       electron.ipcRenderer.removeListener('close-file', closeFile);
-      electron.ipcRenderer.removeListener('html5ify', html5ify);
+      electron.ipcRenderer.removeListener('html5ify', html5ifyCurrentFile);
       electron.ipcRenderer.removeListener('show-merge-dialog', showOpenAndMergeDialog2);
       electron.ipcRenderer.removeListener('set-start-offset', setStartOffset);
       electron.ipcRenderer.removeListener('extract-all-streams', extractAllStreams);
@@ -1565,7 +1539,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog);
     };
   }, [
-    mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset,
+    mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset, html5ifyCurrentFile,
     createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory, openSendReportDialog,
     loadEdlFile, cutSegments, edlFilePath, askBeforeClose, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
   ]);
