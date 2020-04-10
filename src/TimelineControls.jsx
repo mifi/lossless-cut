@@ -59,31 +59,45 @@ const TimelineControls = memo(({
       background: 'white', borderRadius: 5, color: 'rgba(0, 0, 0, 0.7)', fontSize: 13, textAlign: 'center', padding: '1px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 3 : 5, marginRight: isStart ? 5 : 3, border: 'none', boxSizing: 'border-box', fontFamily: 'inherit', width: 90, outline: 'none',
     };
 
-
-    const handleCutTimeInput = (text) => {
-      // Allow the user to erase
-      if (text.length === 0) {
-        setCutTimeManual();
-        return;
-      }
-
+    function parseAndSetCutTime(text) {
       // Not a valid duration? Only set manual
-      const time = parseDuration(text);
-      if (time === undefined) {
+      const timeWithOffset = parseDuration(text);
+      if (timeWithOffset === undefined) {
         setCutTimeManual(text);
         return;
       }
 
       setCutTimeManual();
 
-      const timeWithoutOffset = time - startTimeOffset;
+      const timeWithoutOffset = timeWithOffset - startTimeOffset;
       try {
         setCutTime(type, timeWithoutOffset);
         seekAbs(timeWithoutOffset);
       } catch (err) {
         console.error('Cannot set cut time', err);
       }
-    };
+    }
+
+    function handleCutTimeInput(text) {
+      // Allow the user to erase to reset
+      if (text.length === 0) {
+        setCutTimeManual();
+        return;
+      }
+
+      parseAndSetCutTime(text);
+    }
+
+    async function handleCutTimePaste(e) {
+      e.preventDefault();
+
+      try {
+        const clipboardData = e.clipboardData.getData('Text');
+        parseAndSetCutTime(clipboardData);
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
     return (
       <input
@@ -91,6 +105,7 @@ const TimelineControls = memo(({
         type="text"
         title={isStart ? t('Manually input cut start point') : t('Manually input cut end point')}
         onChange={e => handleCutTimeInput(e.target.value)}
+        onPaste={handleCutTimePaste}
         value={isCutTimeManualSet()
           ? cutTimeManual
           : formatDuration({ seconds: cutTime + startTimeOffset })}
