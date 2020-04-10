@@ -22,7 +22,7 @@ const HelpSheet = memo(({
     <AnimatePresence>
       {visible && (
         <motion.div
-          initial={{ scale: 0, opacity: 0 }}
+          initial={{ scale: 0, opacity: 0.5 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
           className="help-sheet"
