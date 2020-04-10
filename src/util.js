@@ -6,6 +6,7 @@ import randomColor from './random-color';
 
 const path = window.require('path');
 const fs = window.require('fs-extra');
+const open = window.require('open');
 
 
 export function formatDuration({ seconds: _seconds, fileNameFriendly, fps }) {
@@ -97,6 +98,11 @@ export const errorToast = (title) => toast.fire({
   icon: 'error',
   title,
 });
+
+export const openDirToast = async ({ dirPath, ...props }) => {
+  const { value } = await toast.fire({ icon: 'success', ...props, timer: 10000, showConfirmButton: true, confirmButtonText: 'Show', showCancelButton: true, cancelButtonText: 'Close' });
+  if (value) open(dirPath);
+};
 
 export async function showFfmpegFail(err) {
   console.error(err);

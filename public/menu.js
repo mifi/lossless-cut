@@ -156,6 +156,10 @@ module.exports = (app, mainWindow, newVersion) => {
           label: 'Learn More',
           click() { electron.shell.openExternal(homepage); },
         },
+        {
+          label: 'Report an error',
+          click() { mainWindow.webContents.send('openSendReportDialog'); },
+        },
       ],
     },
   ];

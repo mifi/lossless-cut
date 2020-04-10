@@ -12,6 +12,7 @@ import Mousetrap from 'mousetrap';
 import uuid from 'uuid';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
+import withReactContent from 'sweetalert2-react-content';
 
 import fromPairs from 'lodash/fromPairs';
 import clamp from 'lodash/clamp';
@@ -47,6 +48,7 @@ import { save as edlStoreSave, load as edlStoreLoad } from './edlStore';
 import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
   promptTimeOffset, generateColor, getOutDir, withBlur, checkDirWriteAccess, dirExists,
+  openDirToast,
 } from './util';
 
 
@@ -61,6 +63,8 @@ const { extname } = window.require('path');
 
 
 const { dialog, app } = electron.remote;
+
+const ReactSwal = withReactContent(Swal);
 
 
 function createSegment({ start, end, name } = {}) {
@@ -250,7 +254,7 @@ const App = memo(() => {
 
   function toggleMute() {
     setMuted((v) => {
-      if (!v) toast.fire({ title: i18n.t('Muted preview (note that exported file will not be affected)') });
+      if (!v) toast.fire({ icon: 'info', title: i18n.t('Muted preview (exported file will not be affected)') });
       return !v;
     });
   }
@@ -524,7 +528,7 @@ const App = memo(() => {
         await edlStoreSave(edlFilePath, debouncedCutSegments);
         lastSavedCutSegmentsRef.current = debouncedCutSegments;
       } catch (err) {
-        errorToast(i18n.t('Failed to save CSV'));
+        errorToast(i18n.t('Failed to save project file'));
         console.error('Failed to save CSV', err);
       }
     }
@@ -621,7 +625,7 @@ const App = memo(() => {
       // console.log('merge', paths);
       await ffmpegMergeFiles({ paths, outPath, allStreams });
     } catch (err) {
-      errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same format and codecs'));
+      errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same codecs'));
       console.error('Failed to merge files', err);
     } finally {
       setWorking(false);
@@ -888,11 +892,73 @@ const App = memo(() => {
   const outSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
     [invertCutSegments, inverseCutSegments, apparentCutSegments]);
 
-  const cutClick = useCallback(async () => {
-    if (working) {
-      errorToast(i18n.t('I\'m busy'));
-      return;
+  const openSendReportDialog = useCallback(async (err) => {
+    const reportInstructions = isStoreBuild
+      ? <p>Please send an email to <span style={{ fontWeight: 'bold' }} role="button" onClick={() => electron.shell.openExternal('mailto:losslesscut@yankee.no')}>losslesscut@yankee.no</span> where you describe what you were doing.</p>
+      : <p>Please create an issue at <span style={{ fontWeight: 'bold' }} role="button" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/issues')}>https://github.com/mifi/lossless-cut/issues</span> where you describe what you were doing.</p>;
+
+    ReactSwal.fire({
+      showCloseButton: true,
+      title: 'Send report',
+      html: (
+        <div style={{ textAlign: 'left', overflow: 'auto', maxHeight: 300, overflowY: 'auto' }}>
+          {reportInstructions}
+
+          <p>Include the following text:</p>
+
+          <div style={{ fontWeight: 600, fontSize: 12, whiteSpace: 'pre-wrap' }} contentEditable suppressContentEditableWarning>
+            {`${JSON.stringify({
+              err: err && {
+                code: err.code,
+                killed: err.killed,
+                failed: err.failed,
+                timedOut: err.timedOut,
+                isCanceled: err.isCanceled,
+                exitCode: err.exitCode,
+                signal: err.signal,
+                signalDescription: err.signalDescription,
+              },
+
+              state: {
+                filePath,
+                fileFormat,
+                externalStreamFiles,
+                mainStreams,
+                copyStreamIdsByFile,
+                cutSegments,
+                fileFormatData,
+                rotation,
+                shortestFlag,
+              },
+            }, null, 2)}\n\n${err ? err.message : ''}`}
+          </div>
+        </div>
+      ),
+    });
+  }, [copyStreamIdsByFile, cutSegments, externalStreamFiles, fileFormat, fileFormatData, filePath, mainStreams, rotation, shortestFlag]);
+
+  const handleCutFailed = useCallback(async (err) => {
+    const html = (
+      <div style={{ textAlign: 'left' }}>
+        Try one of the following before exporting again:
+        <ol>
+          <li>Select a different output format (<b>matroska</b> takes almost everything).</li>
+          <li>Exclude unnecessary <b>tracks</b></li>
+          <li>Try both <b>Normal cut</b> and <b>Keyframe cut</b></li>
+          <li>Set a different <b>Working directory</b></li>
+        </ol>
+      </div>
+    );
+
+    const { value } = await ReactSwal.fire({ title: 'Unable to export this file', html, timer: null, showConfirmButton: true, showCancelButton: true, confirmButtonText: i18n.t('OK'), cancelButtonText: i18n.t('Report') });
+
+    if (!value) {
+      openSendReportDialog(err);
     }
+  }, [openSendReportDialog]);
+
+  const cutClick = useCallback(async () => {
+    if (working) return;
 
     if (haveInvalidSegs) {
       errorToast(i18n.t('Start time must be before end time'));
@@ -900,16 +966,11 @@ const App = memo(() => {
     }
 
     if (numStreamsToCopy === 0) {
-      errorToast(i18n.t('No tracks to export!'));
+      errorToast(i18n.t('No tracks selected for export'));
       return;
     }
 
-    if (!outSegments) {
-      errorToast(i18n.t('No segments to export!'));
-      return;
-    }
-
-    if (outSegments.length < 1) {
+    if (!outSegments || outSegments.length < 1) {
       errorToast(i18n.t('No segments to export'));
       return;
     }
@@ -917,6 +978,7 @@ const App = memo(() => {
     try {
       setWorking(true);
 
+      // throw (() => { const err = new Error('test'); err.code = 'ENOENT'; return err; })();
       const outFiles = await cutMultiple({
         customOutDir,
         filePath,
@@ -952,14 +1014,14 @@ const App = memo(() => {
         }
       }
 
-      const extraStreamsMsg = exportExtraStreams ? ` ${i18n.t('Extra unprocessable streams were exported to separate files.')}` : '';
-      toast.fire({ timer: 10000, icon: 'success', title: `${i18n.t('Export completed! Go to settings to view the ffmpeg commands that were executed. If output does not look right, try to toggle "Keyframe cut" or try a different output format (e.g. matroska). Output file(s) can be found at:')} ${outputDir}.${extraStreamsMsg}` });
+      const extraStreamsMsg = exportExtraStreams ? ` ${i18n.t('Unprocessable streams were exported as separate files.')}` : '';
+      openDirToast({ dirPath: outputDir, text: `${i18n.t('Export completed! If output does not look right, try to toggle "Keyframe cut" or try a different output format (e.g. matroska). Output file(s) can be found at:')} ${outputDir}.${extraStreamsMsg}` });
     } catch (err) {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
 
       if (err.exitCode === 1 || err.code === 'ENOENT') {
-        toast.fire({ icon: 'error', title: `Whoops! ffmpeg was unable to export this video. Try one of the following before exporting again:\n1. Select a different output format from the ${fileFormat} button (matroska takes almost everything).\n2. Exclude unnecessary tracks\n3. Try "Normal cut" and "Keyframe cut"`, timer: 10000 });
+        handleCutFailed(err);
         return;
       }
 
@@ -968,7 +1030,7 @@ const App = memo(() => {
       setWorking(false);
     }
   }, [
-    effectiveRotation, outSegments,
+    effectiveRotation, outSegments, handleCutFailed,
     working, duration, filePath, keyframeCut, detectedFileFormat,
     autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyStreamIds, numStreamsToCopy,
     exportExtraStreams, nonCopiedExtraStreams, outputDir, shortestFlag,
@@ -984,12 +1046,12 @@ const App = memo(() => {
         ? await captureFrameFfmpeg({ customOutDir, videoPath: filePath, currentTime, captureFormat, duration: video.duration })
         : await captureFrameFromTag({ customOutDir, filePath, video, currentTime, captureFormat });
 
-      toast.fire({ icon: 'success', title: `${i18n.t('Screenshot captured to:')} ${outPath}` });
+      openDirToast({ dirPath: outputDir, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
     } catch (err) {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [filePath, captureFormat, customOutDir, html5FriendlyPath, dummyVideoPath]);
+  }, [filePath, captureFormat, customOutDir, html5FriendlyPath, dummyVideoPath, outputDir]);
 
   const changePlaybackRate = useCallback((dir) => {
     const video = videoRef.current;
@@ -1019,17 +1081,15 @@ const App = memo(() => {
     } catch (err) {
       if (err.code !== 'ENOENT') {
         console.error('EDL load failed', err);
-        errorToast(`${i18n.t('Failed to load EDL file')} (${err.message})`);
+        errorToast(`${i18n.t('Failed to load project file')} (${err.message})`);
       }
     }
   }, [cutSegmentsHistory, setCutSegments]);
 
   const load = useCallback(async ({ filePath: fp, customOutDir: cod, html5FriendlyPathRequested }) => {
     console.log('Load', { fp, cod, html5FriendlyPathRequested });
-    if (working) {
-      errorToast(i18n.t('Tried to load file while busy'));
-      return;
-    }
+
+    if (working) return;
 
     resetState();
 
@@ -1187,7 +1247,7 @@ const App = memo(() => {
     try {
       setWorking(true);
       await extractStreams({ customOutDir, filePath, streams: mainStreams });
-      toast.fire({ icon: 'success', title: `${i18n.t('All streams can be found as separate files at:')} ${outputDir}` });
+      openDirToast({ dirPath: outputDir, text: `${i18n.t('All streams can be found as separate files at:')} ${outputDir}` });
     } catch (err) {
       errorToast(i18n.t('Failed to extract all streams'));
       console.error('Failed to extract all streams', err);
@@ -1292,7 +1352,7 @@ const App = memo(() => {
 
       if (hasVideo) tryCreateDummyVideo();
       else {
-        toast.fire({ icon: 'info', text: 'This file does not have any supported. Encoding a preview file...' });
+        toast.fire({ icon: 'info', text: 'This file is not natively supported. Encoding a preview file...' });
         await html5ifyAndLoad('slow-audio');
       }
     }
@@ -1461,9 +1521,9 @@ const App = memo(() => {
           setCutProgress(i / filePaths.length);
         }
 
-        if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}` });
+        if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}`, timer: null, showConfirmButton: true });
       } catch (err) {
-        errorToast(i18n.t('Failed to html5ify'));
+        errorToast(i18n.t('Failed to batch convert to friendly format'));
         console.error('Failed to html5ify', err);
       } finally {
         setWorking(false);
@@ -1485,6 +1545,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('openSettings', openSettings);
     electron.ipcRenderer.on('openAbout', openAbout);
     electron.ipcRenderer.on('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
+    electron.ipcRenderer.on('openSendReportDialog', openSendReportDialog);
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
@@ -1501,10 +1562,11 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('openSettings', openSettings);
       electron.ipcRenderer.removeListener('openAbout', openAbout);
       electron.ipcRenderer.removeListener('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
+      electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog);
     };
   }, [
     mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset,
-    createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory,
+    createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory, openSendReportDialog,
     loadEdlFile, cutSegments, edlFilePath, askBeforeClose, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
   ]);
 
