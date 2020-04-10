@@ -187,3 +187,6 @@ export async function askForHtml5ifySpeed(allowedOptions) {
 
   return value;
 }
+
+export const isMasBuild = window.process.mas;
+export const isStoreBuild = isMasBuild || window.process.windowsStore;

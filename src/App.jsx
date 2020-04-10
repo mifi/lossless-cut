@@ -48,8 +48,9 @@ import { save as edlStoreSave, load as edlStoreLoad } from './edlStore';
 import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
   promptTimeOffset, generateColor, getOutDir, withBlur, checkDirWriteAccess, dirExists,
-  openDirToast, askForHtml5ifySpeed,
+  openDirToast, askForHtml5ifySpeed, isMasBuild, isStoreBuild,
 } from './util';
+import { openSendReportDialog } from './reporting';
 
 
 import loadingLottie from './7077-magic-flow.json';
@@ -60,7 +61,6 @@ const electron = window.require('electron'); // eslint-disable-line
 const trash = window.require('trash');
 const { unlink, exists } = window.require('fs-extra');
 const { extname } = window.require('path');
-
 
 const { dialog, app } = electron.remote;
 
@@ -108,9 +108,6 @@ const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && z
 
 
 const commonFormats = ['mov', 'mp4', 'matroska', 'mp3', 'ipod'];
-
-const isMasBuild = window.process.mas;
-const isStoreBuild = isMasBuild || window.process.windowsStore;
 
 // TODO flex
 const topBarHeight = 32;
@@ -892,49 +889,20 @@ const App = memo(() => {
   const outSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
     [invertCutSegments, inverseCutSegments, apparentCutSegments]);
 
-  const openSendReportDialog = useCallback(async (err) => {
-    const reportInstructions = isStoreBuild
-      ? <p>Please send an email to <span style={{ fontWeight: 'bold' }} role="button" onClick={() => electron.shell.openExternal('mailto:losslesscut@yankee.no')}>losslesscut@yankee.no</span> where you describe what you were doing.</p>
-      : <p>Please create an issue at <span style={{ fontWeight: 'bold' }} role="button" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/issues')}>https://github.com/mifi/lossless-cut/issues</span> where you describe what you were doing.</p>;
+  const openSendReportDialogWithState = useCallback(async (err) => {
+    const state = {
+      filePath,
+      fileFormat,
+      externalStreamFiles,
+      mainStreams,
+      copyStreamIdsByFile,
+      cutSegments,
+      fileFormatData,
+      rotation,
+      shortestFlag,
+    };
 
-    ReactSwal.fire({
-      showCloseButton: true,
-      title: i18n.t('Send problem report'),
-      html: (
-        <div style={{ textAlign: 'left', overflow: 'auto', maxHeight: 300, overflowY: 'auto' }}>
-          {reportInstructions}
-
-          <p>Include the following text:</p>
-
-          <div style={{ fontWeight: 600, fontSize: 12, whiteSpace: 'pre-wrap' }} contentEditable suppressContentEditableWarning>
-            {`${err ? err.message : ''}\n\n${JSON.stringify({
-              err: err && {
-                code: err.code,
-                killed: err.killed,
-                failed: err.failed,
-                timedOut: err.timedOut,
-                isCanceled: err.isCanceled,
-                exitCode: err.exitCode,
-                signal: err.signal,
-                signalDescription: err.signalDescription,
-              },
-
-              state: {
-                filePath,
-                fileFormat,
-                externalStreamFiles,
-                mainStreams,
-                copyStreamIdsByFile,
-                cutSegments,
-                fileFormatData,
-                rotation,
-                shortestFlag,
-              },
-            }, null, 2)}`}
-          </div>
-        </div>
-      ),
-    });
+    openSendReportDialog(err, state);
   }, [copyStreamIdsByFile, cutSegments, externalStreamFiles, fileFormat, fileFormatData, filePath, mainStreams, rotation, shortestFlag]);
 
   const handleCutFailed = useCallback(async (err) => {
@@ -955,9 +923,9 @@ const App = memo(() => {
     const { value } = await ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, timer: null, showConfirmButton: true, showCancelButton: true, confirmButtonText: i18n.t('OK'), cancelButtonText: i18n.t('Report') });
 
     if (!value) {
-      openSendReportDialog(err);
+      openSendReportDialogWithState(err);
     }
-  }, [openSendReportDialog]);
+  }, [openSendReportDialogWithState]);
 
   const cutClick = useCallback(async () => {
     if (working) return;
@@ -1519,7 +1487,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('openSettings', openSettings);
     electron.ipcRenderer.on('openAbout', openAbout);
     electron.ipcRenderer.on('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
-    electron.ipcRenderer.on('openSendReportDialog', openSendReportDialog);
+    electron.ipcRenderer.on('openSendReportDialog', openSendReportDialogWithState);
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
@@ -1536,11 +1504,11 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('openSettings', openSettings);
       electron.ipcRenderer.removeListener('openAbout', openAbout);
       electron.ipcRenderer.removeListener('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
-      electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog);
+      electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialogWithState);
     };
   }, [
     mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset, html5ifyCurrentFile,
-    createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory, openSendReportDialog,
+    createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory, openSendReportDialogWithState,
     loadEdlFile, cutSegments, edlFilePath, askBeforeClose, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
   ]);
 
@@ -1672,6 +1640,8 @@ const App = memo(() => {
   if (waveformEnabled) timelineMode = 'waveform';
 
   const { t } = useTranslation();
+
+  // throw new Error('Test');
 
   return (
     <div>
