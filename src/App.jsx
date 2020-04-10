@@ -872,15 +872,29 @@ const App = memo(() => {
     // eslint-disable-next-line no-alert
     if (working || !window.confirm(`${i18n.t('Are you sure you want to move the source file to trash?')} ${filePath}`)) return;
 
+    // We can use variables like filePath and html5FriendlyPath, even after they are reset because react setState is async
+    resetState();
+
     try {
       setWorking(true);
 
       await trash(filePath);
+      // throw new Error('test');
       if (html5FriendlyPath) await trash(html5FriendlyPath);
     } catch (err) {
-      toast.fire({ icon: 'error', title: `${i18n.t('Failed to trash source file:')} ${err.message}` });
+      console.warn('Failed to trash', err);
+      const { value } = await Swal.fire({
+        icon: 'warning',
+        text: i18n.t('Unable to move source file to trash. Do you want to permanently delete it?'),
+        confirmButtonText: 'Permanently delete',
+        showCancelButton: true,
+      });
+      if (value) {
+        await unlink(filePath).catch(console.warn);
+        if (html5FriendlyPath) await unlink(html5FriendlyPath).catch(console.warn);
+      }
     } finally {
-      resetState();
+      setWorking(false);
     }
   }, [filePath, html5FriendlyPath, resetState, working]);
 
