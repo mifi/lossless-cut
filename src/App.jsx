@@ -1605,7 +1605,7 @@ const App = memo(() => {
     return () => window.removeEventListener('keydown', keyScrollPreventer);
   }, []);
 
-  const sideBarWidth = showSideBar ? 200 : 0;
+  const sideBarWidth = showSideBar && isFileOpened ? 200 : 0;
 
   const bottomBarHeight = 96 + ((hasAudio && waveformEnabled) || (hasVideo && thumbnailsEnabled) ? timelineHeight : 0);
 
@@ -1717,7 +1717,7 @@ const App = memo(() => {
         )}
       </AnimatePresence>
 
-      <div className="no-user-select" style={{ position: 'absolute', top: topBarHeight, left: 0, right: sideBarWidth, bottom: bottomBarHeight, pointerEvents: 'none' }}>
+      <div className="no-user-select" style={{ position: 'absolute', top: topBarHeight, left: 0, right: sideBarWidth, bottom: bottomBarHeight, visibility: !isFileOpened ? 'hidden' : undefined }}>
         {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <video
           muted={muted}
