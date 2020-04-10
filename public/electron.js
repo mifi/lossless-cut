@@ -62,7 +62,7 @@ function createWindow() {
       type: 'question',
       buttons: ['Yes', 'No'],
       title: 'Confirm quit',
-      message: 'Are you sure you want to quit? You will lose all unsaved work',
+      message: 'Are you sure you want to quit?',
     });
     if (choice === 1) {
       e.preventDefault();

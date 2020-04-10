@@ -812,7 +812,7 @@ const App = memo(() => {
   useEffect(() => () => waveform && URL.revokeObjectURL(waveform.url), [waveform]);
 
   function showUnsupportedFileMessage() {
-    toast.fire({ timer: 10000, icon: 'warning', title: i18n.t('This video is not natively supported'), text: i18n.t('This means that there is no audio in the preview and it has low quality. The final export operation will however be lossless and contains audio!') });
+    toast.fire({ timer: 10000, icon: 'info', title: i18n.t('This file is not natively supported'), text: i18n.t('This means that there is no audio in the preview and playback has low quality. The final export will however be lossless and contains audio') });
   }
 
   const createDummyVideo = useCallback(async (cod, fp) => {
@@ -848,6 +848,7 @@ const App = memo(() => {
     if (resetPlaybackRate) video.playbackRate = 1;
 
     video.play().catch((err) => {
+      toast.fire({ icon: 'error', text: 'Unable to play this file. Try to convert to friendly format first' });
       console.error(err);
     });
   }, [playing, filePath]);
@@ -1245,8 +1246,9 @@ const App = memo(() => {
       input: 'radio',
       inputValue: 'open',
       showCancelButton: true,
+      customClass: { input: 'swal2-losslesscut-radio' },
       inputOptions: {
-        open: i18n.t('Open the file instead of the current one. You will lose all unsaved work'),
+        open: i18n.t('Open the file instead of the current one'),
         add: i18n.t('Include all tracks from the new file'),
       },
       inputValidator: (v) => !v && i18n.t('You need to choose something!'),
@@ -1280,7 +1282,7 @@ const App = memo(() => {
     function closeFile() {
       if (!isFileOpened) return;
       // eslint-disable-next-line no-alert
-      if (askBeforeClose && !window.confirm(i18n.t('Are you sure you want to close the current file? You will lose all unsaved work'))) return;
+      if (askBeforeClose && !window.confirm(i18n.t('Are you sure you want to close the current file?'))) return;
 
       resetState();
     }
@@ -1301,8 +1303,9 @@ const App = memo(() => {
         title: i18n.t('Convert to supported format'),
         input: 'radio',
         inputValue: 'fastest',
-        text: i18n.t('These options will let you convert files to a format that is supported by the player. You can try different options and see which works with your file. Note that this is for preview only. When you run cut operations, they will still be lossless with full quality'),
+        text: i18n.t('These options will let you convert files to a format that is supported by the player. You can try different options and see which works with your file. Note that the conversion is for preview only. When you run an export, the output will still be lossless with full quality'),
         showCancelButton: true,
+        customClass: { input: 'swal2-losslesscut-radio' },
         inputOptions,
         inputValidator: (v) => !v && i18n.t('You need to choose something!'),
       });

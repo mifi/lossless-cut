@@ -74,3 +74,10 @@ kbd {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+.swal2-losslesscut-radio {
+  font-size: 0.8em;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
