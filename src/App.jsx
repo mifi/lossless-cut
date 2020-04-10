@@ -853,20 +853,6 @@ const App = memo(() => {
     });
   }, [playing, filePath]);
 
-  const onVideoError = useCallback(() => {
-    const { error } = videoRef.current;
-    if (!error) return;
-    if (!fileUri) return; // Probably MEDIA_ELEMENT_ERROR: Empty src attribute
-
-    console.error(error.message);
-
-    const MEDIA_ERR_SRC_NOT_SUPPORTED = 4;
-    if (error.code === MEDIA_ERR_SRC_NOT_SUPPORTED && !dummyVideoPath) {
-      console.log('MEDIA_ERR_SRC_NOT_SUPPORTED - trying to create dummy');
-      tryCreateDummyVideo();
-    }
-  }, [tryCreateDummyVideo, fileUri, dummyVideoPath]);
-
   const deleteSource = useCallback(async () => {
     if (!filePath) return;
 
@@ -1094,7 +1080,7 @@ const App = memo(() => {
         setHtml5FriendlyPath(html5FriendlyPathRequested);
         showUnsupportedFileMessage();
       } else if (
-        !(await checkAndSetExistingHtml5FriendlyFile('slow-audio') || await checkAndSetExistingHtml5FriendlyFile('slow') || await checkAndSetExistingHtml5FriendlyFile('fast'))
+        !(await checkAndSetExistingHtml5FriendlyFile('slowest') || await checkAndSetExistingHtml5FriendlyFile('slow-audio') || await checkAndSetExistingHtml5FriendlyFile('slow') || await checkAndSetExistingHtml5FriendlyFile('fast-audio') || await checkAndSetExistingHtml5FriendlyFile('fast'))
         && !doesPlayerSupportFile(streams)
       ) {
         await createDummyVideo(cod, fp);
@@ -1274,6 +1260,40 @@ const App = memo(() => {
     userOpenFiles(filePaths);
   }, [userOpenFiles, loadEdlFile]);
 
+  const html5ifyInternal = useCallback(async ({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: hv }) => {
+    const path = getHtml5ifiedPath(cod, fp, speed);
+    const includeVideo = hv;
+    const includeAudio = ['fast-audio', 'slow-audio', 'slowest'].includes(speed) && ha;
+    const encode = ['slow-audio', 'slow', 'slowest'].includes(speed);
+    const highQuality = speed === 'slowest';
+    await ffmpegHtml5ify({ filePath: fp, outPath: path, encode, includeVideo, includeAudio, highQuality });
+    return path;
+  }, [getHtml5ifiedPath]);
+
+  const html5ifyAndLoad = useCallback(async (speed) => {
+    const path = await html5ifyInternal({ customOutDir, filePath, speed, hasAudio, hasVideo });
+    load({ filePath, html5FriendlyPathRequested: path, customOutDir });
+  }, [hasAudio, hasVideo, customOutDir, filePath, html5ifyInternal, load]);
+
+  const onVideoError = useCallback(async () => {
+    const { error } = videoRef.current;
+    if (!error) return;
+    if (!fileUri) return; // Probably MEDIA_ELEMENT_ERROR: Empty src attribute
+
+    console.error(error.message);
+
+    const MEDIA_ERR_SRC_NOT_SUPPORTED = 4;
+    if (error.code === MEDIA_ERR_SRC_NOT_SUPPORTED && !dummyVideoPath) {
+      console.log('MEDIA_ERR_SRC_NOT_SUPPORTED - trying to create dummy');
+
+      if (hasVideo) tryCreateDummyVideo();
+      else {
+        toast.fire({ icon: 'info', text: 'This file does not have any supported. Encoding a preview file...' });
+        await html5ifyAndLoad('slow-audio');
+      }
+    }
+  }, [tryCreateDummyVideo, fileUri, dummyVideoPath, hasVideo, html5ifyAndLoad]);
+
   useEffect(() => {
     function fileOpened(event, filePaths) {
       userOpenFiles(filePaths);
@@ -1290,9 +1310,11 @@ const App = memo(() => {
     async function askForHtml5ifySpeed(allowedOptions) {
       const availOptions = {
         fastest: i18n.t('Fastest: Low playback speed (no audio)'),
-        fast: i18n.t('Fast: Full quality remux, unlikely to work'),
-        slow: i18n.t('Slow: Low video quality encode (no audio)'),
-        'slow-audio': i18n.t('Slowest: Low video/audio quality encode'),
+        fast: i18n.t('Fast: Full quality remux (no audio), likely to fail'),
+        'fast-audio': i18n.t('Fast: Full quality remux, likely to fail'),
+        slow: i18n.t('Slow: Low quality encode (no audio)'),
+        'slow-audio': i18n.t('Slow: Low quality encode'),
+        slowest: i18n.t('Slowest: High quality encode'),
       };
       const inputOptions = {};
       allowedOptions.forEach((allowedOption) => {
@@ -1313,28 +1335,19 @@ const App = memo(() => {
       return value;
     }
 
-    async function html5ifyInternal({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: hv }) {
-      const path = getHtml5ifiedPath(cod, fp, speed);
-      const encodeVideo = ['slow', 'slow-audio'].includes(speed) && hv;
-      const encodeAudio = speed === 'slow-audio' && ha;
-      await ffmpegHtml5ify(fp, path, encodeVideo, encodeAudio);
-      return path;
-    }
-
     async function html5ify() {
       if (!filePath) return;
 
       try {
         setWorking(true);
 
-        const speed = await askForHtml5ifySpeed(['fastest', 'fast', 'slow', 'slow-audio']);
+        const speed = await askForHtml5ifySpeed(['fastest', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest']);
         if (!speed) return;
 
         if (speed === 'fastest') {
           await createDummyVideo(customOutDir, filePath);
-        } else if (['fast', 'slow', 'slow-audio'].includes(speed)) {
-          const path = await html5ifyInternal({ customOutDir, filePath, speed, hasAudio, hasVideo });
-          load({ filePath, html5FriendlyPathRequested: path, customOutDir });
+        } else if (['fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'].includes(speed)) {
+          await html5ifyAndLoad(speed);
         }
       } catch (err) {
         errorToast(i18n.t('Failed to html5ify file'));
@@ -1416,7 +1429,7 @@ const App = memo(() => {
       const failedFiles = [];
       let i = 0;
 
-      const speed = await askForHtml5ifySpeed(['fast', 'slow', 'slow-audio']);
+      const speed = await askForHtml5ifySpeed(['fast-audio', 'fast', 'slow', 'slow-audio', 'slowest']);
       if (!speed) return;
 
       try {
@@ -1486,9 +1499,9 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
     };
   }, [
-    load, mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset, getHtml5ifiedPath,
+    mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset,
     createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory,
-    loadEdlFile, cutSegments, edlFilePath, askBeforeClose, toggleHelp, toggleSettings, assureOutDirAccess, hasAudio, hasVideo,
+    loadEdlFile, cutSegments, edlFilePath, askBeforeClose, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
   ]);
 
   async function showAddStreamSourceDialog() {

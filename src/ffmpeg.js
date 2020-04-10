@@ -306,18 +306,43 @@ export async function cutMultiple({
   return outFiles;
 }
 
-export async function html5ify(filePath, outPath, encodeVideo, encodeAudio) {
-  console.log('Making HTML5 friendly version', { filePath, outPath, encodeVideo });
+export async function html5ify({ filePath, outPath, encode, includeVideo, includeAudio, highQuality }) {
+  console.log('Making HTML5 friendly version', { filePath, outPath, encode, includeVideo, includeAudio, highQuality });
 
   let videoArgs;
-  if (!encodeVideo) videoArgs = ['-vcodec', 'copy'];
-  else if (os.platform() === 'darwin') {
-    videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
+  let audioArgs;
+
+  if (includeVideo) {
+    if (!encode) {
+      videoArgs = ['-vcodec', 'copy'];
+    } else if (os.platform() === 'darwin') {
+      if (highQuality) {
+        videoArgs = ['-vf', 'format=yuv420p', '-allow_sw', '1', '-vcodec', 'h264', '-b:v', '15M'];
+      } else {
+        videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
+      }
+    } else if (highQuality) {
+      videoArgs = ['-vf', 'format=yuv420p', '-vcodec', 'libx264', '-profile:v', 'high', '-preset:v', 'slow', '-crf', '17'];
+    } else {
+      videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libx264', '-profile:v', 'baseline', '-x264opts', 'level=3.0', '-preset:v', 'ultrafast', '-crf', '28'];
+    }
   } else {
-    videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libx264', '-profile:v', 'baseline', '-x264opts', 'level=3.0', '-preset:v', 'ultrafast', '-crf', '28'];
+    videoArgs = ['-vn'];
   }
 
-  const audioArgs = encodeAudio ? ['-acodec', 'aac', '-ar', '44100', '-ac', '2', '-b:a', '96k'] : ['-an'];
+  if (includeAudio) {
+    if (encode) {
+      if (highQuality) {
+        audioArgs = ['-acodec', 'aac', '-b:a', '192k'];
+      } else {
+        audioArgs = ['-acodec', 'aac', '-ar', '44100', '-ac', '2', '-b:a', '96k'];
+      }
+    } else {
+      audioArgs = ['-acodec', 'copy'];
+    }
+  } else {
+    audioArgs = ['-an'];
+  }
 
   const ffmpegArgs = [
     '-hide_banner',
