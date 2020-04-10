@@ -48,7 +48,7 @@ const TopMenu = memo(({
 
       {filePath && (
         <Fragment>
-          <div style={{ width: 60 }}>{renderOutFmt({ height: 20 })}</div>
+          {renderOutFmt({ height: 20, maxWidth: 100 })}
 
           <Button
             height={20}
