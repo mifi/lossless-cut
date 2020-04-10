@@ -64,7 +64,7 @@ async function runFfprobe(args) {
   return execa(ffprobePath, args);
 }
 
-async function runFfmpeg(args) {
+function runFfmpeg(args) {
   const ffmpegPath = getFfmpegPath();
   console.log(getFfCommandLine('ffmpeg', args));
   return execa(ffmpegPath, args);
@@ -72,6 +72,8 @@ async function runFfmpeg(args) {
 
 
 function handleProgress(process, cutDuration, onProgress) {
+  onProgress(0);
+
   const rl = readline.createInterface({ input: process.stderr });
   rl.on('line', (line) => {
     try {
@@ -244,8 +246,6 @@ async function cut({
   console.log(ffmpegCommandLine);
   appendFfmpegCommandLog(ffmpegCommandLine);
 
-  onProgress(0);
-
   const ffmpegPath = getFfmpegPath();
   const process = execa(ffmpegPath, ffmpegArgs);
   handleProgress(process, cutDuration, onProgress);
@@ -306,7 +306,13 @@ export async function cutMultiple({
   return outFiles;
 }
 
-export async function html5ify({ filePath, outPath, encode, includeVideo, includeAudio, highQuality }) {
+export async function getDuration(filePath) {
+  // https://superuser.com/questions/650291/how-to-get-video-duration-in-seconds
+  const { stdout } = await runFfprobe(['-i', filePath, '-show_entries', 'format=duration', '-print_format', 'json']);
+  return parseFloat(JSON.parse(stdout).format.duration);
+}
+
+export async function html5ify({ filePath, outPath, encode, includeVideo, includeAudio, highQuality, onProgress }) {
   console.log('Making HTML5 friendly version', { filePath, outPath, encode, includeVideo, includeAudio, highQuality });
 
   let videoArgs;
@@ -353,16 +359,14 @@ export async function html5ify({ filePath, outPath, encode, includeVideo, includ
     '-y', outPath,
   ];
 
-  const { stdout } = await runFfmpeg(ffmpegArgs);
+  const duration = await getDuration(filePath);
+  const process = runFfmpeg(ffmpegArgs);
+  if (duration) handleProgress(process, duration, onProgress);
+
+  const { stdout } = await process;
   console.log(stdout);
 
   await transferTimestamps(filePath, outPath);
-}
-
-export async function getDuration(filePath) {
-  // https://superuser.com/questions/650291/how-to-get-video-duration-in-seconds
-  const { stdout } = await runFfprobe(['-i', filePath, '-show_entries', 'format=duration', '-print_format', 'json']);
-  return parseFloat(JSON.parse(stdout).format.duration);
 }
 
 // This is just used to load something into the player with correct length,

@@ -1266,7 +1266,11 @@ const App = memo(() => {
     const includeAudio = ['fast-audio', 'slow-audio', 'slowest'].includes(speed) && ha;
     const encode = ['slow-audio', 'slow', 'slowest'].includes(speed);
     const highQuality = speed === 'slowest';
-    await ffmpegHtml5ify({ filePath: fp, outPath: path, encode, includeVideo, includeAudio, highQuality });
+    try {
+      await ffmpegHtml5ify({ filePath: fp, outPath: path, encode, includeVideo, includeAudio, highQuality, onProgress: setCutProgress });
+    } finally {
+      setCutProgress();
+    }
     return path;
   }, [getHtml5ifiedPath]);
 
@@ -1725,7 +1729,7 @@ const App = memo(() => {
 
               {(cutProgress != null) && (
                 <div style={{ marginTop: 10 }}>
-                  {`${Math.floor(cutProgress * 100)} %`}
+                  {`${(cutProgress * 100).toFixed(1)} %`}
                 </div>
               )}
             </motion.div>
