@@ -47,7 +47,7 @@ import configStore from './store';
 import { save as edlStoreSave, load as edlStoreLoad } from './edlStore';
 import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
-  promptTimeOffset, generateColor, getOutDir, withBlur, checkDirWriteAccess, dirExists,
+  promptTimeOffset, generateColor, getOutDir, withBlur, checkDirWriteAccess, dirExists, askForOutDir,
   openDirToast, askForHtml5ifySpeed, isMasBuild, isStoreBuild,
 } from './util';
 import { openSendReportDialog } from './reporting';
@@ -118,6 +118,7 @@ const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
 
 
 const queue = new PQueue({ concurrency: 1 });
+
 
 const App = memo(() => {
   // Per project state
@@ -478,17 +479,6 @@ const App = memo(() => {
 
   const outputDir = getOutDir(customOutDir, filePath);
 
-  const askForOutDir = useCallback(async (defaultPath) => {
-    const { filePaths } = await dialog.showOpenDialog({
-      properties: ['openDirectory'],
-      title: i18n.t('Where do you want to save output files?'),
-      message: i18n.t('Where do you want to save output files? Make sure there is enough free space in this folder'),
-      defaultPath,
-      buttonLabel: i18n.t('Select output folder'),
-    });
-    return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
-  }, []);
-
   const changeOutDir = useCallback(async () => {
     const newOutDir = await askForOutDir(outputDir);
     // We cannot allow exporting to a directory which has not yet been confirmed by an open dialog
@@ -496,7 +486,7 @@ const App = memo(() => {
     if (isMasBuild && !newOutDir) return;
     // Else it's OK, we allow clearing the dir too
     setCustomOutDir(newOutDir);
-  }, [askForOutDir, outputDir]);
+  }, [outputDir]);
 
   const effectiveFilePath = dummyVideoPath || html5FriendlyPath || filePath;
   const fileUri = effectiveFilePath ? filePathToUrl(effectiveFilePath) : '';
@@ -588,6 +578,7 @@ const App = memo(() => {
   }, []);
 
   const assureOutDirAccess = useCallback(async (outFilePath) => {
+    // Reset if doesn't exist anymore
     const customOutDirExists = await dirExists(customOutDir);
     if (!customOutDirExists) setCustomOutDir(undefined);
     const newCustomOutDir = customOutDirExists ? customOutDir : undefined;
@@ -606,7 +597,7 @@ const App = memo(() => {
     }
 
     return { cancel: false, newCustomOutDir };
-  }, [askForOutDir, customOutDir]);
+  }, [customOutDir]);
 
   const mergeFiles = useCallback(async ({ paths, allStreams }) => {
     try {
@@ -855,10 +846,15 @@ const App = memo(() => {
   }, [playing, filePath]);
 
   const deleteSource = useCallback(async () => {
-    if (!filePath) return;
+    if (!filePath || working) return;
 
-    // eslint-disable-next-line no-alert
-    if (working || !window.confirm(`${i18n.t('Are you sure you want to move the source file to trash?')} ${filePath}`)) return;
+    const { value: trashConfirmed } = await Swal.fire({
+      icon: 'warning',
+      text: i18n.t('Are you sure you want to move the source file to trash?'),
+      confirmButtonText: i18n.t('Trash it'),
+      showCancelButton: true,
+    });
+    if (!trashConfirmed) return;
 
     // We can use variables like filePath and html5FriendlyPath, even after they are reset because react setState is async
     resetState();
@@ -866,20 +862,29 @@ const App = memo(() => {
     try {
       setWorking(true);
 
-      await trash(filePath);
+      if (html5FriendlyPath) await trash(html5FriendlyPath).catch(console.error);
       // throw new Error('test');
-      if (html5FriendlyPath) await trash(html5FriendlyPath);
+      await trash(filePath);
+      toast.fire({ icon: 'info', title: i18n.t('File has been moved to trash') });
     } catch (err) {
-      console.warn('Failed to trash', err);
-      const { value } = await Swal.fire({
-        icon: 'warning',
-        text: i18n.t('Unable to move source file to trash. Do you want to permanently delete it?'),
-        confirmButtonText: i18n.t('Permanently delete'),
-        showCancelButton: true,
-      });
-      if (value) {
-        await unlink(filePath).catch(console.warn);
-        if (html5FriendlyPath) await unlink(html5FriendlyPath).catch(console.warn);
+      try {
+        console.warn('Failed to trash', err);
+
+        const { value } = await Swal.fire({
+          icon: 'warning',
+          text: i18n.t('Unable to move source file to trash. Do you want to permanently delete it?'),
+          confirmButtonText: i18n.t('Permanently delete'),
+          showCancelButton: true,
+        });
+
+        if (value) {
+          if (html5FriendlyPath) await unlink(html5FriendlyPath).catch(console.error);
+          await unlink(filePath);
+          toast.fire({ icon: 'info', title: i18n.t('File has been permanently deleted') });
+        }
+      } catch (err2) {
+        errorToast(`Unable to delete file: ${err2.message}`);
+        console.error(err2);
       }
     } finally {
       setWorking(false);

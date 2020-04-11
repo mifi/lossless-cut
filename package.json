@@ -131,6 +131,9 @@
         "mas",
         "dmg"
       ],
+      "asarUnpack": [
+        "node_modules/trash/**"
+      ],
       "extraResources": [
         {
           "from": "ffmpeg-mac/ffmpeg",
@@ -252,7 +255,8 @@
       "provisioningProfile": "LosslessCut_Mac_App_Store_provisioning_profile.provisionprofile",
       "binaries": [
         "dist/mas/LosslessCut.app/Contents/Resources/ffmpeg",
-        "dist/mas/LosslessCut.app/Contents/Resources/ffprobe"
+        "dist/mas/LosslessCut.app/Contents/Resources/ffprobe",
+        "dist/mas/LosslessCut.app/Contents/Resources/app.asar.unpacked/node_modules/trash/lib/macos-trash"
       ]
     },
     "win": {

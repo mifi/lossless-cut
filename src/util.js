@@ -7,6 +7,9 @@ import randomColor from './random-color';
 const path = window.require('path');
 const fs = window.require('fs-extra');
 const open = window.require('open');
+const electron = window.require('electron'); // eslint-disable-line
+
+const { dialog } = electron.remote;
 
 
 export function formatDuration({ seconds: _seconds, fileNameFriendly, fps }) {
@@ -190,3 +193,14 @@ export async function askForHtml5ifySpeed(allowedOptions) {
 
 export const isMasBuild = window.process.mas;
 export const isStoreBuild = isMasBuild || window.process.windowsStore;
+
+export async function askForOutDir(defaultPath) {
+  const { filePaths } = await dialog.showOpenDialog({
+    properties: ['openDirectory'],
+    defaultPath,
+    title: i18n.t('Where do you want to save output files?'),
+    message: i18n.t('Where do you want to save output files? Make sure there is enough free space in this folder'),
+    buttonLabel: i18n.t('Select output folder'),
+  });
+  return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
+}
