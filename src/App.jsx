@@ -915,7 +915,8 @@ const App = memo(() => {
       <div style={{ textAlign: 'left' }}>
         Try one of the following before exporting again:
         <ol>
-          <li>Select a different output <b>Format</b> (matroska takes almost everything)</li>
+          {detectedFileFormat === 'mp4' && <li>Change output <b>Format</b> from <b>MP4</b> to <b>MOV</b></li>}
+          <li>Select a different output <b>Format</b> (<b>matroska</b> takes almost everything)</li>
           <li>Exclude unnecessary <b>Tracks</b></li>
           <li>Try both <b>Normal cut</b> and <b>Keyframe cut</b></li>
           <li>Set a different <b>Working directory</b></li>
@@ -930,7 +931,7 @@ const App = memo(() => {
     if (!value) {
       openSendReportDialogWithState(err);
     }
-  }, [openSendReportDialogWithState]);
+  }, [openSendReportDialogWithState, detectedFileFormat]);
 
   const cutClick = useCallback(async () => {
     if (working) return;
