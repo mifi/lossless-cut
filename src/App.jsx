@@ -643,7 +643,12 @@ const App = memo(() => {
   }, [assureOutDirAccess]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), []);
-  const toggleKeyframeCut = useCallback(() => setKeyframeCut(val => !val), []);
+  const toggleKeyframeCut = useCallback(() => setKeyframeCut((val) => {
+    const newVal = !val;
+    if (newVal) toast.fire({ title: i18n.t('Keyframe cut enabled'), text: i18n.t('Will now cut at the nearest keyframe before the desired cutpoint. This is recommended for most files.') });
+    else toast.fire({ title: i18n.t('Keyframe cut disabled'), text: i18n.t('Will now cut at the exact position, but may leave an empty portion at the beginning of the file.') });
+    return newVal;
+  }), []);
   const toggleAutoMerge = useCallback(() => setAutoMerge(val => !val), []);
 
   const isCopyingStreamId = useCallback((path, streamId) => (
@@ -1013,7 +1018,7 @@ const App = memo(() => {
       }
 
       const extraStreamsMsg = exportExtraStreams ? ` ${i18n.t('Unprocessable streams were exported as separate files.')}` : '';
-      openDirToast({ dirPath: outputDir, text: `${i18n.t('Export completed! If output does not look right, try to toggle "Keyframe cut" or try a different output format (e.g. matroska). Output file(s) can be found at:')} ${outputDir}.${extraStreamsMsg}` });
+      openDirToast({ dirPath: outputDir, text: `${i18n.t('Export completed! Make sure you test the output files in your desired player/editor before you delete the source files. If output does not look right, try to toggle "Keyframe cut" or try a different output format (e.g. matroska). Output file(s) can be found at:')} ${outputDir}.${extraStreamsMsg}` });
     } catch (err) {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
