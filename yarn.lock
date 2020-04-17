@@ -3147,7 +3147,7 @@ clean-css@^4.2.3:
   dependencies:
     source-map "~0.6.0"
 
-clean-stack@^2.0.0:
+clean-stack@^2.0.0, clean-stack@^2.1.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/clean-stack/-/clean-stack-2.2.0.tgz#ee8472dbb129e727b31e8a10a427dee9dfe4008b"
   integrity sha512-4diC9HaTE+KRAMWhDhrGOECgWZxoevMc5TlkObMqNSsVU62PYzXZ/SMTjzyGAFF1YusgxGcSWTEXBhp0CPwQ1A==
@@ -4437,6 +4437,11 @@ electron-is-dev@^0.1.2:
   resolved "https://registry.npmjs.org/electron-is-dev/-/electron-is-dev-0.1.2.tgz#8a1043e32b3a1da1c3f553dce28ce764246167e3"
   integrity sha1-ihBD4ys6HaHD9VPc4oznZCRhZ+M=
 
+electron-is-dev@^1.0.1:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/electron-is-dev/-/electron-is-dev-1.2.0.tgz#2e5cea0a1b3ccf1c86f577cee77363ef55deb05e"
+  integrity sha512-R1oD5gMBPS7PVU8gJwH6CtT0e6VSoD0+SzSnYpNm+dBkcijgA+K7VAMHDfnRq/lkKPZArpzplTW6jfiMYosdzw==
+
 electron-notarize@^0.2.0:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/electron-notarize/-/electron-notarize-0.2.1.tgz#759e8006decae19134f82996ed910db26d9192cc"
@@ -4471,6 +4476,16 @@ electron-to-chromium@^1.3.341, electron-to-chromium@^1.3.363:
   version "1.3.367"
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.367.tgz#48abffcaa6591051b612ae70ddc657763ede2662"
   integrity sha512-GCHQreWs4zhKA48FNXCjvpV4kTnKoLu2PSAfKX394g34NPvTs2pPh1+jzWitNwhmOYI8zIqt36ulRVRZUgqlfA==
+
+electron-unhandled@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/electron-unhandled/-/electron-unhandled-3.0.2.tgz#e14a19c830ccf7b6e755191c8e78d23094d25112"
+  integrity sha512-IIqXnM5eNgV7k5sDA/GZ39ygJbpfF3WTArNGQ1TB4AI6ajQuuVztA0M6Mq9uEpmTh5gz4nR+YsTNWYsHLoM5rw==
+  dependencies:
+    clean-stack "^2.1.0"
+    electron-is-dev "^1.0.1"
+    ensure-error "^2.0.0"
+    lodash.debounce "^4.0.8"
 
 electron@^8.0.0:
   version "8.2.0"
@@ -4541,6 +4556,11 @@ enhanced-resolve@^4.1.0:
     graceful-fs "^4.1.2"
     memory-fs "^0.5.0"
     tapable "^1.0.0"
+
+ensure-error@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/ensure-error/-/ensure-error-2.0.0.tgz#b8359a992601601b3541af9472f6a49d9dca1458"
+  integrity sha512-1ela4oR5A+TdtFpfiQrZKFUbsOi4JuIYmz2qSGFar6pEdRa54E15mKHVVYrAq1OQhd6b6nVrCaQxQlo6kYwhaw==
 
 entities@^1.1.1:
   version "1.1.2"
