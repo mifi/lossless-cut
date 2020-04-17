@@ -152,10 +152,10 @@ const StreamsSelector = memo(({
         </tbody>
       </table>
 
-      {externalFilesEntries.length > 0 && !areWeCutting && (
+      {externalFilesEntries.length > 0 && (
         <div style={{ margin: '10px 0' }}>
           <div>
-            {t('If the streams have different length, do you want to make the combined output file as long as the longest stream or the shortest stream?')}
+            {t('When tracks have different lengths, do you want to make the output file as long as the longest or the shortest track?')}
           </div>
           <SegmentedControl
             options={[{ label: t('Longest'), value: 'longest' }, { label: t('Shortest'), value: 'shortest' }]}

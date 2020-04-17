@@ -178,6 +178,8 @@ const App = memo(() => {
   const durationSafe = duration || 1;
   const zoomedDuration = duration != null ? duration / zoom : undefined;
 
+  const isCustomFormatSelected = fileFormat !== detectedFileFormat;
+
   const firstUpdateRef = useRef(true);
 
   function safeSetConfig(key, value) {
@@ -946,7 +948,7 @@ const App = memo(() => {
         Try one of the following before exporting again:
         <ol>
           {detectedFileFormat === 'mp4' && <li>Change output <b>Format</b> from <b>MP4</b> to <b>MOV</b></li>}
-          <li>Select a different output <b>Format</b> (<b>matroska</b> takes almost everything)</li>
+          <li>Select a different output <b>Format</b> (<b>matroska</b> and <b>mp4</b> support most codecs)</li>
           <li>Exclude unnecessary <b>Tracks</b></li>
           <li>Try both <b>Normal cut</b> and <b>Keyframe cut</b></li>
           <li>Set a different <b>Working directory</b></li>
@@ -956,9 +958,9 @@ const App = memo(() => {
       </div>
     );
 
-    const { value } = await ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, timer: null, showConfirmButton: true, showCancelButton: true, confirmButtonText: i18n.t('OK'), cancelButtonText: i18n.t('Report') });
+    const { value } = await ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, timer: null, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
 
-    if (!value) {
+    if (value) {
       openSendReportDialogWithState(err);
     }
   }, [openSendReportDialogWithState, detectedFileFormat]);
@@ -989,7 +991,7 @@ const App = memo(() => {
         customOutDir,
         filePath,
         outFormat: fileFormat,
-        isOutFormatUserSelected: fileFormat !== detectedFileFormat,
+        isCustomFormatSelected,
         videoDuration: duration,
         rotation: effectiveRotation,
         copyStreamIds,
@@ -1006,6 +1008,8 @@ const App = memo(() => {
         await autoMergeSegments({
           customOutDir,
           sourceFile: filePath,
+          outFormat: fileFormat,
+          isCustomFormatSelected,
           segmentPaths: outFiles,
         });
       }
@@ -1037,9 +1041,9 @@ const App = memo(() => {
     }
   }, [
     effectiveRotation, outSegments, handleCutFailed,
-    working, duration, filePath, keyframeCut, detectedFileFormat,
+    working, duration, filePath, keyframeCut,
     autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyStreamIds, numStreamsToCopy,
-    exportExtraStreams, nonCopiedExtraStreams, outputDir, shortestFlag,
+    exportExtraStreams, nonCopiedExtraStreams, outputDir, shortestFlag, isCustomFormatSelected,
   ]);
 
   const capture = useCallback(async () => {

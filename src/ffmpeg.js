@@ -255,9 +255,13 @@ async function cut({
   await transferTimestamps(filePath, outPath);
 }
 
+function getOutFileExtension({ isCustomFormatSelected, outFormat, filePath }) {
+  return isCustomFormatSelected ? `.${getExtensionForFormat(outFormat)}` : extname(filePath);
+}
+
 export async function cutMultiple({
   customOutDir, filePath, segments: segmentsUnsorted, videoDuration, rotation,
-  onProgress, keyframeCut, copyStreamIds, outFormat, isOutFormatUserSelected,
+  onProgress, keyframeCut, copyStreamIds, outFormat, isCustomFormatSelected,
   appendFfmpegCommandLog, shortestFlag,
 }) {
   const segments = sortBy(segmentsUnsorted, 'cutFrom');
@@ -276,7 +280,7 @@ export async function cutMultiple({
     const cutToStr = formatDuration({ seconds: end, fileNameFriendly: true });
     const segNamePart = name ? `-${filenamify(name)}` : '';
     const cutSpecification = `${cutFromStr}-${cutToStr}${segNamePart}`.substr(0, 200);
-    const ext = isOutFormatUserSelected ? `.${getExtensionForFormat(outFormat)}` : extname(filePath);
+    const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath });
     const fileName = `${cutSpecification}${ext}`;
     const outPath = getOutPath(customOutDir, filePath, fileName);
 
@@ -393,22 +397,27 @@ export async function html5ifyDummy(filePath, outPath) {
   await transferTimestamps(filePath, outPath);
 }
 
-export async function mergeFiles({ paths, outPath, allStreams }) {
+export async function mergeFiles({ paths, outPath, allStreams, outFormat }) {
   console.log('Merging files', { paths }, 'to', outPath);
 
-  // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
+  // Keep this similar to cut()
   const ffmpegArgs = [
     '-hide_banner',
 
+    // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
     '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe', '-i', '-',
+
     '-c', 'copy',
 
     ...(allStreams ? ['-map', '0'] : []),
     '-map_metadata', '0',
+    // https://video.stackexchange.com/questions/23741/how-to-prevent-ffmpeg-from-dropping-metadata
+    '-movflags', 'use_metadata_tags',
 
     // See https://github.com/mifi/lossless-cut/issues/170
     '-ignore_unknown',
 
+    ...(outFormat ? ['-f', outFormat] : []),
     '-y', outPath,
   ];
 
@@ -428,10 +437,12 @@ export async function mergeFiles({ paths, outPath, allStreams }) {
   console.log(result.stdout);
 }
 
-export async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths }) {
-  const ext = extname(sourceFile);
-  const outPath = getOutPath(customOutDir, sourceFile, `cut-merged-${new Date().getTime()}${ext}`);
-  await mergeFiles({ paths: segmentPaths, outPath });
+export async function autoMergeSegments({ customOutDir, sourceFile, isCustomFormatSelected, outFormat, segmentPaths }) {
+  const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath: sourceFile });
+  const fileName = `cut-merged-${new Date().getTime()}${ext}`;
+  const outPath = getOutPath(customOutDir, sourceFile, fileName);
+
+  await mergeFiles({ paths: segmentPaths, outPath, outFormat, allStreams: true });
   await pMap(segmentPaths, path => fs.unlink(path), { concurrency: 5 });
 }
 
