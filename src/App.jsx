@@ -43,7 +43,6 @@ import {
   readFrames, renderWaveformPng, html5ifyDummy, cutMultiple, extractStreams, autoMergeSegments, getAllStreams,
   findNearestKeyFrameTime, html5ify as ffmpegHtml5ify,
 } from './ffmpeg';
-import configStore from './store';
 import { save as edlStoreSave, load as edlStoreLoad } from './edlStore';
 import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
@@ -63,6 +62,8 @@ const { unlink, exists } = window.require('fs-extra');
 const { extname } = window.require('path');
 
 const { dialog, app } = electron.remote;
+
+const configStore = electron.remote.require('./configStore');
 
 const ReactSwal = withReactContent(Swal);
 
@@ -177,35 +178,56 @@ const App = memo(() => {
   const durationSafe = duration || 1;
   const zoomedDuration = duration != null ? duration / zoom : undefined;
 
+  const firstUpdateRef = useRef(true);
+
+  function safeSetConfig(key, value) {
+    // Prevent flood-saving all config when mounting
+    if (firstUpdateRef.current) return;
+
+    // console.log(key);
+    try {
+      configStore.set(key, value);
+    } catch (err) {
+      console.error('Failed to set config', key, err);
+      errorToast(i18n.t('Unable to save your preferences. Try to disable any anti-virus'));
+    }
+  }
+
   // Preferences
   const [captureFormat, setCaptureFormat] = useState(configStore.get('captureFormat'));
-  useEffect(() => configStore.set('captureFormat', captureFormat), [captureFormat]);
+  useEffect(() => safeSetConfig('captureFormat', captureFormat), [captureFormat]);
   const [customOutDir, setCustomOutDir] = useState(configStore.get('customOutDir'));
-  useEffect(() => (customOutDir === undefined ? configStore.delete('customOutDir') : configStore.set('customOutDir', customOutDir)), [customOutDir]);
+  useEffect(() => safeSetConfig('customOutDir', customOutDir), [customOutDir]);
   const [keyframeCut, setKeyframeCut] = useState(configStore.get('keyframeCut'));
-  useEffect(() => configStore.set('keyframeCut', keyframeCut), [keyframeCut]);
+  useEffect(() => safeSetConfig('keyframeCut', keyframeCut), [keyframeCut]);
   const [autoMerge, setAutoMerge] = useState(configStore.get('autoMerge'));
-  useEffect(() => configStore.set('autoMerge', autoMerge), [autoMerge]);
+  useEffect(() => safeSetConfig('autoMerge', autoMerge), [autoMerge]);
   const [timecodeShowFrames, setTimecodeShowFrames] = useState(configStore.get('timecodeShowFrames'));
-  useEffect(() => configStore.set('timecodeShowFrames', timecodeShowFrames), [timecodeShowFrames]);
+  useEffect(() => safeSetConfig('timecodeShowFrames', timecodeShowFrames), [timecodeShowFrames]);
   const [invertCutSegments, setInvertCutSegments] = useState(configStore.get('invertCutSegments'));
-  useEffect(() => configStore.set('invertCutSegments', invertCutSegments), [invertCutSegments]);
+  useEffect(() => safeSetConfig('invertCutSegments', invertCutSegments), [invertCutSegments]);
   const [autoExportExtraStreams, setAutoExportExtraStreams] = useState(configStore.get('autoExportExtraStreams'));
-  useEffect(() => configStore.set('autoExportExtraStreams', autoExportExtraStreams), [autoExportExtraStreams]);
+  useEffect(() => safeSetConfig('autoExportExtraStreams', autoExportExtraStreams), [autoExportExtraStreams]);
   const [askBeforeClose, setAskBeforeClose] = useState(configStore.get('askBeforeClose'));
-  useEffect(() => configStore.set('askBeforeClose', askBeforeClose), [askBeforeClose]);
+  useEffect(() => safeSetConfig('askBeforeClose', askBeforeClose), [askBeforeClose]);
   const [muted, setMuted] = useState(configStore.get('muted'));
-  useEffect(() => configStore.set('muted', muted), [muted]);
+  useEffect(() => safeSetConfig('muted', muted), [muted]);
   const [autoSaveProjectFile, setAutoSaveProjectFile] = useState(configStore.get('autoSaveProjectFile'));
-  useEffect(() => configStore.set('autoSaveProjectFile', autoSaveProjectFile), [autoSaveProjectFile]);
+  useEffect(() => safeSetConfig('autoSaveProjectFile', autoSaveProjectFile), [autoSaveProjectFile]);
   const [wheelSensitivity, setWheelSensitivity] = useState(configStore.get('wheelSensitivity'));
-  useEffect(() => configStore.set('wheelSensitivity', wheelSensitivity), [wheelSensitivity]);
+  useEffect(() => safeSetConfig('wheelSensitivity', wheelSensitivity), [wheelSensitivity]);
   const [language, setLanguage] = useState(configStore.get('language'));
-  useEffect(() => (language === undefined ? configStore.delete('language') : configStore.set('language', language)), [language]);
+  useEffect(() => safeSetConfig('language', language), [language]);
 
   useEffect(() => {
     if (language != null) i18n.changeLanguage(language).catch(console.error);
   }, [language]);
+
+  // This useEffect must be placed after all usages of firstUpdateRef.current
+  useEffect(() => {
+    firstUpdateRef.current = false;
+  }, []);
+
 
   // Global state
   const [helpVisible, setHelpVisible] = useState(false);
@@ -515,7 +537,7 @@ const App = memo(() => {
         await edlStoreSave(edlFilePath, debouncedCutSegments);
         lastSavedCutSegmentsRef.current = debouncedCutSegments;
       } catch (err) {
-        errorToast(i18n.t('Failed to save project file'));
+        errorToast(i18n.t('Unable to save project file'));
         console.error('Failed to save CSV', err);
       }
     }

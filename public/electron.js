@@ -4,6 +4,7 @@ const { join } = require('path');
 const os = require('os');
 
 const menu = require('./menu');
+const configStore = require('./configStore');
 
 const { checkNewVersion } = require('./update-checker');
 
@@ -74,6 +75,8 @@ function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
+  await configStore.init();
+
   createWindow();
   menu(app, mainWindow);
 
@@ -120,3 +123,5 @@ app.on('open-file', (event, path) => {
 electron.ipcMain.on('setAskBeforeClose', (e, val) => {
   askBeforeClose = val;
 });
+
+module.exports = { configStore };
