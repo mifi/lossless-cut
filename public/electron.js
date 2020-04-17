@@ -2,6 +2,7 @@ const electron = require('electron'); // eslint-disable-line
 const isDev = require('electron-is-dev');
 const { join } = require('path');
 const os = require('os');
+const unhandled = require('electron-unhandled');
 
 const menu = require('./menu');
 const configStore = require('./configStore');
@@ -10,6 +11,11 @@ const { checkNewVersion } = require('./update-checker');
 
 const { app } = electron;
 const { BrowserWindow } = electron;
+
+
+unhandled({
+  showDialog: true,
+});
 
 app.name = 'LosslessCut';
 
