@@ -585,7 +585,10 @@ const App = memo(() => {
 
   const onStopPlaying = useCallback(() => onPlayingChange(false), []);
   const onSartPlaying = useCallback(() => onPlayingChange(true), []);
-  const onDurationChange = useCallback(e => setDuration(e.target.duration), []);
+  const onDurationChange = useCallback((e) => {
+    // Some files report duration infinity first, then proper duration later
+    if (e.target.duration !== Infinity) setDuration(e.target.duration);
+  }, []);
 
   const onTimeUpdate = useCallback((e) => {
     const { currentTime } = e.target;
