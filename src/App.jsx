@@ -97,10 +97,13 @@ const dragPreventer = ev => {
   ev.preventDefault();
 };
 
+// With these codecs, the player will not give a playback error, but instead only play audio
 function doesPlayerSupportFile(streams) {
-  // TODO improve, whitelist supported codecs instead
-  return !streams.find(s => ['hevc', 'prores'].includes(s.codec_name));
-  // return true;
+  const videoStreams = streams.filter(s => s.codec_type === 'video');
+  // Don't check audio formats, assume all is OK
+  if (videoStreams.length === 0) return true;
+  // If we have at least one video that is NOT of the unsupported formats, assume the player will be able to play it natively
+  return videoStreams.some(s => !['hevc', 'prores'].includes(s.codec_name));
 }
 
 const ffmpegExtractWindow = 60;
@@ -1121,6 +1124,7 @@ const App = memo(() => {
       const existing = getHtml5ifiedPath(cod, fp, speed);
       const ret = existing && await exists(existing);
       if (ret) {
+        console.log('Found existing friendly file', existing);
         setHtml5FriendlyPath(existing);
         showUnsupportedFileMessage();
       }
