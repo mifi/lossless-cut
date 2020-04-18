@@ -55,6 +55,10 @@ const Timeline = memo(({
 
   const offsetCurrentTime = (getCurrentTime() || 0) + startTimeOffset;
 
+  const keyframes = neighbouringFrames ? neighbouringFrames.filter(f => f.keyframe) : [];
+  // Don't show keyframes if too packed together (at current zoom)
+  // See https://github.com/mifi/lossless-cut/issues/259
+  const areKeyframesTooClose = keyframes.length > zoom * 200;
 
   const calculateTimelinePos = useCallback((time) => (time !== undefined && time < durationSafe ? time / durationSafe : undefined), [durationSafe]);
   const calculateTimelinePercent = useCallback((time) => {
@@ -240,7 +244,7 @@ const Timeline = memo(({
               />
             ))}
 
-            {shouldShowKeyframes && neighbouringFrames.filter(f => f.keyframe).map((f) => (
+            {shouldShowKeyframes && !areKeyframesTooClose && keyframes.map((f) => (
               <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / duration) * 100}%`, marginLeft: -1, width: 1, background: 'rgba(0,0,0,1)', pointerEvents: 'none' }} />
             ))}
           </div>
