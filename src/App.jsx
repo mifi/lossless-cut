@@ -1760,6 +1760,9 @@ const App = memo(() => {
           <div style={{ fontSize: '4vmin', color: '#777', cursor: 'pointer' }} role="button" onClick={toggleHelp}>
             Press <kbd>H</kbd> for help
           </div>
+          <div style={{ fontSize: '2vmin', color: '#ccc' }}>
+            <kbd>I</kbd> <kbd>O</kbd> to set cutpoints
+          </div>
 
           {mifiLink && mifiLink.loadUrl && (
             <div style={{ position: 'relative', margin: '3vmin', width: '60vmin', height: '20vmin' }}>
