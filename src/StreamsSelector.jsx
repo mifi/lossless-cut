@@ -75,7 +75,7 @@ const FileRow = ({ path, formatData, onTrashClick }) => {
 const StreamsSelector = memo(({
   mainFilePath, mainFileFormatData, streams: existingStreams, isCopyingStreamId, toggleCopyStreamId,
   setCopyStreamIdsForPath, onExtractAllStreamsPress, externalFiles, setExternalFiles,
-  showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, areWeCutting,
+  showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams,
   AutoExportToggler,
 }) => {
   const { t } = useTranslation();
