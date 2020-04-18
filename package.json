@@ -3,7 +3,7 @@
   "productName": "LosslessCut",
   "description": "The swiss army knife of lossless video/audio editing",
   "copyright": "Copyright © 2020 ${author}",
-  "version": "3.19.0",
+  "version": "3.20.0",
   "main": "public/electron.js",
   "homepage": "./",
   "scripts": {
