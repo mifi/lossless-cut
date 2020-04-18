@@ -10,12 +10,23 @@ import { primaryColor } from './colors';
 
 const RightMenu = memo(({
   isRotationSet, rotation, areWeCutting, increaseRotation, deleteSource, renderCaptureFormatButton,
-  capture, cutClick, multipleCutSegments, hasVideo,
+  capture, cutClick, outSegments, hasVideo, autoMerge,
 }) => {
   const rotationStr = `${rotation}°`;
   const CutIcon = areWeCutting ? FiScissors : FaFileExport;
 
   const { t } = useTranslation();
+
+  let exportButtonTitle = t('Export');
+  if (outSegments) {
+    if (outSegments.length === 1) {
+      exportButtonTitle = t('Export selection');
+    } else if (outSegments.length > 1) {
+      exportButtonTitle = t('Export {{ num }} segments', { num: outSegments.length });
+    }
+  }
+
+  const exportButtonText = autoMerge && outSegments && outSegments.length > 1 ? t('Export+merge') : t('Export');
 
   return (
     <div className="no-user-select" style={{ padding: '.3em', display: 'flex', alignItems: 'center' }}>
@@ -54,16 +65,16 @@ const RightMenu = memo(({
       )}
 
       <span
-        style={{ background: primaryColor, borderRadius: 5, padding: '3px 7px', fontSize: 14 }}
+        style={{ background: primaryColor, borderRadius: 5, padding: '3px 7px', fontSize: 13 }}
         onClick={cutClick}
-        title={multipleCutSegments ? t('Export all segments') : t('Export selection')}
+        title={exportButtonTitle}
         role="button"
       >
         <CutIcon
-          style={{ verticalAlign: 'middle', marginRight: 3 }}
-          size={16}
+          style={{ verticalAlign: 'middle', marginRight: 4 }}
+          size={15}
         />
-        {t('Export')}
+        {exportButtonText}
       </span>
     </div>
   );

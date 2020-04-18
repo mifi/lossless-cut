@@ -1971,12 +1971,13 @@ const App = memo(() => {
             isRotationSet={isRotationSet}
             rotation={rotation}
             areWeCutting={areWeCutting}
+            autoMerge={autoMerge}
             increaseRotation={increaseRotation}
             deleteSource={deleteSource}
             renderCaptureFormatButton={renderCaptureFormatButton}
             capture={capture}
             cutClick={cutClick}
-            multipleCutSegments={cutSegments.length > 1}
+            outSegments={outSegments}
           />
         </div>
       </motion.div>
