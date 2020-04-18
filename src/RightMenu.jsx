@@ -10,7 +10,7 @@ import { primaryColor } from './colors';
 
 const RightMenu = memo(({
   isRotationSet, rotation, areWeCutting, increaseRotation, deleteSource, renderCaptureFormatButton,
-  capture, cutClick, multipleCutSegments,
+  capture, cutClick, multipleCutSegments, hasVideo,
 }) => {
   const rotationStr = `${rotation}°`;
   const CutIcon = areWeCutting ? FiScissors : FaFileExport;
@@ -19,16 +19,18 @@ const RightMenu = memo(({
 
   return (
     <div className="no-user-select" style={{ padding: '.3em', display: 'flex', alignItems: 'center' }}>
-      <div>
-        <span style={{ width: 40, textAlign: 'right', display: 'inline-block' }}>{isRotationSet && rotationStr}</span>
-        <MdRotate90DegreesCcw
-          size={26}
-          style={{ margin: '0 5px', verticalAlign: 'middle' }}
-          title={`${t('Set output rotation. Current: ')} ${isRotationSet ? rotationStr : t('Don\'t modify')}`}
-          onClick={increaseRotation}
-          role="button"
-        />
-      </div>
+      {hasVideo && (
+        <div>
+          <span style={{ width: 40, textAlign: 'right', display: 'inline-block' }}>{isRotationSet && rotationStr}</span>
+          <MdRotate90DegreesCcw
+            size={26}
+            style={{ margin: '0 5px', verticalAlign: 'middle' }}
+            title={`${t('Set output rotation. Current: ')} ${isRotationSet ? rotationStr : t('Don\'t modify')}`}
+            onClick={increaseRotation}
+            role="button"
+          />
+        </div>
+      )}
 
       <FaTrashAlt
         title={t('Delete source file')}
@@ -38,14 +40,18 @@ const RightMenu = memo(({
         role="button"
       />
 
-      {renderCaptureFormatButton({ height: 20 })}
+      {hasVideo && (
+        <>
+          {renderCaptureFormatButton({ height: 20 })}
 
-      <IoIosCamera
-        style={{ paddingLeft: 5, paddingRight: 15 }}
-        size={25}
-        title={t('Capture frame')}
-        onClick={capture}
-      />
+          <IoIosCamera
+            style={{ paddingLeft: 5, paddingRight: 15 }}
+            size={25}
+            title={t('Capture frame')}
+            onClick={capture}
+          />
+        </>
+      )}
 
       <span
         style={{ background: primaryColor, borderRadius: 5, padding: '3px 7px', fontSize: 14 }}
