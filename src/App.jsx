@@ -1873,7 +1873,8 @@ const App = memo(() => {
               >
                 <SegmentList
                   currentSegIndex={currentSegIndexSafe}
-                  cutSegments={outSegments}
+                  outSegments={outSegments}
+                  cutSegments={apparentCutSegments}
                   getFrameCount={getFrameCount}
                   formatTimecode={formatTimecode}
                   invertCutSegments={invertCutSegments}

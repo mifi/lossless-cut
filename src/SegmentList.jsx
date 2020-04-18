@@ -1,4 +1,4 @@
-import React, { memo, Fragment } from 'react';
+import React, { memo } from 'react';
 import prettyMs from 'pretty-ms';
 import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight } from 'react-icons/fa';
 import { motion } from 'framer-motion';
@@ -9,22 +9,17 @@ import { saveColor } from './colors';
 import { getSegColors } from './util';
 
 const SegmentList = memo(({
-  formatTimecode, cutSegments, getFrameCount, onSegClick,
+  formatTimecode, cutSegments, outSegments, getFrameCount, onSegClick,
   currentSegIndex, invertCutSegments,
   updateCurrentSegOrder, addCutSegment, removeCutSegment,
   setCurrentSegmentName, currentCutSeg, toggleSideBar,
 }) => {
   const { t } = useTranslation();
 
-  if (!cutSegments && invertCutSegments) {
-    return <div style={{ padding: '0 10px' }}>{t('Make sure you have no overlapping segments.')}</div>;
-  }
+  let headerText = t('Segments to export:');
 
-  if (!cutSegments || cutSegments.length === 0) {
-    return <div style={{ padding: '0 10px' }}>{t('No segments to export.')}</div>;
-  }
-
-  const { segActiveBgColor: currentSegActiveBgColor } = getSegColors(currentCutSeg);
+  if (!outSegments && invertCutSegments) headerText = t('Make sure you have no overlapping segments.');
+  else if (!outSegments || outSegments.length === 0) headerText = t('No segments to export.');
 
   async function onLabelSegmentPress() {
     const { value } = await Swal.fire({
@@ -61,8 +56,100 @@ const SegmentList = memo(({
     }
   }
 
+  const Segments = () => outSegments.map((seg, index) => {
+    const duration = seg.end - seg.start;
+    const durationMs = duration * 1000;
+
+    const isActive = !invertCutSegments && currentSegIndex === index;
+    const uuid = seg.uuid || `${seg.start}`;
+
+    function renderNumber() {
+      if (invertCutSegments) return <FaSave style={{ color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
+
+      const {
+        segBgColor, segBorderColor,
+      } = getSegColors(seg);
+
+      return <b style={{ color: 'white', padding: '0 3px', marginRight: 5, background: segBgColor, border: `1px solid ${isActive ? segBorderColor : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
+    }
+
+    const timeStr = `${formatTimecode(seg.start)} - ${formatTimecode(seg.end)}`;
+
+    return (
+      <motion.div
+        role="button"
+        onClick={() => !invertCutSegments && onSegClick(index)}
+        key={uuid}
+        positionTransition
+        style={{ originY: 0, margin: '5px 0', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5 }}
+        initial={{ scaleY: 0 }}
+        animate={{ scaleY: 1 }}
+        exit={{ scaleY: 0 }}
+      >
+        <div style={{ fontSize: 310 / timeStr.length, whiteSpace: 'nowrap', color: 'white', marginBottom: 3 }}>
+          {renderNumber()}
+          <span>{timeStr}</span>
+        </div>
+        <div style={{ fontSize: 12, color: 'white' }}>{seg.name}</div>
+        <div style={{ fontSize: 13 }}>
+          {t('Duration')} {prettyMs(durationMs)}
+        </div>
+        <div style={{ fontSize: 12 }}>
+          ({Math.floor(durationMs)} ms, {getFrameCount(duration)} frames)
+        </div>
+      </motion.div>
+    );
+  });
+
+  const Footer = () => {
+    const { segActiveBgColor: currentSegActiveBgColor } = getSegColors(currentCutSeg);
+
+    return (
+      <>
+        <div style={{ display: 'flex', padding: '5px 0', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid grey' }}>
+          <FaPlus
+            size={30}
+            style={{ margin: '0 5px', borderRadius: 3, color: 'white', cursor: 'pointer', background: 'rgba(255, 255, 255, 0.2)' }}
+            role="button"
+            title={t('Add segment')}
+            onClick={addCutSegment}
+          />
+
+          <FaMinus
+            size={30}
+            style={{ margin: '0 5px', borderRadius: 3, color: 'white', cursor: 'pointer', background: cutSegments.length < 2 ? 'rgba(255, 255, 255, 0.2)' : currentSegActiveBgColor }}
+            role="button"
+            title={`${t('Delete current segment')} ${currentSegIndex + 1}`}
+            onClick={removeCutSegment}
+          />
+
+          <FaSortNumericDown
+            size={20}
+            title={t('Change segment order')}
+            role="button"
+            style={{ padding: 4, margin: '0 5px', background: currentSegActiveBgColor, borderRadius: 3, color: 'white', cursor: 'pointer' }}
+            onClick={onReorderSegsPress}
+          />
+
+          <FaTag
+            size={20}
+            title={t('Label segment')}
+            role="button"
+            style={{ padding: 4, margin: '0 5px', background: currentSegActiveBgColor, borderRadius: 3, color: 'white', cursor: 'pointer' }}
+            onClick={onLabelSegmentPress}
+          />
+        </div>
+
+        <div style={{ padding: 10, boxSizing: 'border-box', borderBottom: '1px solid grey', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+          <div>{t('Segments total:')}</div>
+          <div>{formatTimecode(outSegments.reduce((acc, { start, end }) => (end - start) + acc, 0))}</div>
+        </div>
+      </>
+    );
+  };
+
   return (
-    <Fragment>
+    <>
       <div style={{ padding: '0 10px', overflowY: 'scroll', flexGrow: 1 }} className="hide-scrollbar">
         <div style={{ fontSize: 14, marginBottom: 10 }}>
           <FaAngleRight
@@ -73,94 +160,14 @@ const SegmentList = memo(({
             onClick={toggleSideBar}
           />
 
-          {t('Segments to export:')}
+          {headerText}
         </div>
 
-        {cutSegments.map((seg, index) => {
-          const duration = seg.end - seg.start;
-          const durationMs = duration * 1000;
-
-          const isActive = !invertCutSegments && currentSegIndex === index;
-          const uuid = seg.uuid || `${seg.start}`;
-
-          function renderNumber() {
-            if (invertCutSegments) return <FaSave style={{ color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
-
-            const {
-              segBgColor, segBorderColor,
-            } = getSegColors(seg);
-
-            return <b style={{ color: 'white', padding: '0 3px', marginRight: 5, background: segBgColor, border: `1px solid ${isActive ? segBorderColor : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
-          }
-
-          const timeStr = `${formatTimecode(seg.start)} - ${formatTimecode(seg.end)}`;
-
-          return (
-            <motion.div
-              role="button"
-              onClick={() => !invertCutSegments && onSegClick(index)}
-              key={uuid}
-              positionTransition
-              style={{ originY: 0, margin: '5px 0', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5 }}
-              initial={{ scaleY: 0 }}
-              animate={{ scaleY: 1 }}
-              exit={{ scaleY: 0 }}
-            >
-              <div style={{ fontSize: 310 / timeStr.length, whiteSpace: 'nowrap', color: 'white', marginBottom: 3 }}>
-                {renderNumber()}
-                <span>{timeStr}</span>
-              </div>
-              <div style={{ fontSize: 12, color: 'white' }}>{seg.name}</div>
-              <div style={{ fontSize: 13 }}>
-                {t('Duration')} {prettyMs(durationMs)}
-              </div>
-              <div style={{ fontSize: 12 }}>
-                ({Math.floor(durationMs)} ms, {getFrameCount(duration)} frames)
-              </div>
-            </motion.div>
-          );
-        })}
+        {outSegments && <Segments />}
       </div>
 
-      <div style={{ display: 'flex', padding: '5px 0', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid grey' }}>
-        <FaPlus
-          size={30}
-          style={{ margin: '0 5px', borderRadius: 3, color: 'white', cursor: 'pointer', background: 'rgba(255, 255, 255, 0.2)' }}
-          role="button"
-          title={t('Add segment')}
-          onClick={addCutSegment}
-        />
-
-        <FaMinus
-          size={30}
-          style={{ margin: '0 5px', borderRadius: 3, color: 'white', cursor: 'pointer', background: cutSegments.length < 2 ? 'rgba(255, 255, 255, 0.2)' : currentSegActiveBgColor }}
-          role="button"
-          title={`${t('Delete current segment')} ${currentSegIndex + 1}`}
-          onClick={removeCutSegment}
-        />
-
-        <FaSortNumericDown
-          size={20}
-          title={t('Change segment order')}
-          role="button"
-          style={{ padding: 4, margin: '0 5px', background: currentSegActiveBgColor, borderRadius: 3, color: 'white', cursor: 'pointer' }}
-          onClick={onReorderSegsPress}
-        />
-
-        <FaTag
-          size={20}
-          title={t('Label segment')}
-          role="button"
-          style={{ padding: 4, margin: '0 5px', background: currentSegActiveBgColor, borderRadius: 3, color: 'white', cursor: 'pointer' }}
-          onClick={onLabelSegmentPress}
-        />
-      </div>
-
-      <div style={{ padding: 10, boxSizing: 'border-box', borderBottom: '1px solid grey', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-        <div>{t('Segments total:')}</div>
-        <div>{formatTimecode(cutSegments.reduce((acc, { start, end }) => (end - start) + acc, 0))}</div>
-      </div>
-    </Fragment>
+      {outSegments && <Footer />}
+    </>
   );
 });
 
