@@ -483,6 +483,8 @@ const App = memo(() => {
   ]);
 
   const setCutStart = useCallback(() => {
+    if (!filePath) return;
+
     // https://github.com/mifi/lossless-cut/issues/168
     // If we are after the end of the last segment in the timeline,
     // add a new segment that starts at playerTime
@@ -500,9 +502,11 @@ const App = memo(() => {
         errorToast(err.message);
       }
     }
-  }, [setCutTime, currentCutSeg, addCutSegment]);
+  }, [setCutTime, currentCutSeg, addCutSegment, filePath]);
 
   const setCutEnd = useCallback(() => {
+    if (!filePath) return;
+
     try {
       const endTime = currentTimeRef.current;
 
@@ -514,7 +518,7 @@ const App = memo(() => {
     } catch (err) {
       errorToast(err.message);
     }
-  }, [setCutTime]);
+  }, [setCutTime, filePath]);
 
   const outputDir = getOutDir(customOutDir, filePath);
 
