@@ -1194,10 +1194,10 @@ const App = memo(() => {
   const jumpSeg = useCallback((val) => setCurrentSegIndex((old) => Math.max(Math.min(old + val, cutSegments.length - 1), 0)), [cutSegments.length]);
 
   const seekClosestKeyframe = useCallback((direction) => {
-    const time = findNearestKeyFrameTime({ frames: neighbouringFrames, time: commandedTime, direction, fps: detectedFps });
+    const time = findNearestKeyFrameTime({ frames: neighbouringFrames, time: currentTimeRef.current, direction, fps: detectedFps });
     if (time == null) return;
     seekAbs(time);
-  }, [commandedTime, neighbouringFrames, seekAbs, detectedFps]);
+  }, [neighbouringFrames, seekAbs, detectedFps]);
 
   useEffect(() => {
     Mousetrap.bind('space', () => togglePlay(true));
