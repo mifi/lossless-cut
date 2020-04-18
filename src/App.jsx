@@ -684,12 +684,12 @@ const App = memo(() => {
 
   const exportExtraStreams = autoExportExtraStreams && nonCopiedExtraStreams.length > 0;
 
-  const copyStreamIds = useMemo(() => Object.entries(copyStreamIdsByFile).map(([path, streamIdsMap]) => ({
+  const copyFileStreams = useMemo(() => Object.entries(copyStreamIdsByFile).map(([path, streamIdsMap]) => ({
     path,
     streamIds: Object.keys(streamIdsMap).filter(index => streamIdsMap[index]),
   })), [copyStreamIdsByFile]);
 
-  const numStreamsToCopy = copyStreamIds
+  const numStreamsToCopy = copyFileStreams
     .reduce((acc, { streamIds }) => acc + streamIds.length, 0);
 
   const numStreamsTotal = [
@@ -1006,7 +1006,7 @@ const App = memo(() => {
         isCustomFormatSelected,
         videoDuration: duration,
         rotation: effectiveRotation,
-        copyStreamIds,
+        copyFileStreams,
         keyframeCut,
         segments: outSegments,
         onProgress: setCutProgress,
@@ -1054,7 +1054,7 @@ const App = memo(() => {
   }, [
     effectiveRotation, outSegments, handleCutFailed,
     working, duration, filePath, keyframeCut,
-    autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyStreamIds, numStreamsToCopy,
+    autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyFileStreams, numStreamsToCopy,
     exportExtraStreams, nonCopiedExtraStreams, outputDir, shortestFlag, isCustomFormatSelected,
   ]);
 

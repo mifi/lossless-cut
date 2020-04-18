@@ -189,7 +189,7 @@ export function findNearestKeyFrameTime({ frames, time, direction, fps }) {
 
 async function cut({
   filePath, outFormat, cutFrom, cutTo, videoDuration, rotation,
-  onProgress, copyStreamIds, keyframeCut, outPath, appendFfmpegCommandLog, shortestFlag,
+  onProgress, copyFileStreams, keyframeCut, outPath, appendFfmpegCommandLog, shortestFlag,
 }) {
   const cuttingStart = isCuttingStart(cutFrom);
   const cuttingEnd = isCuttingEnd(cutTo, videoDuration);
@@ -203,9 +203,9 @@ async function cut({
   const cutFromArgs = cuttingStart ? ['-ss', cutFrom.toFixed(5)] : [];
   const cutToArgs = cuttingEnd ? ['-t', cutDuration.toFixed(5)] : [];
 
-  const copyStreamIdsFiltered = copyStreamIds.filter(({ streamIds }) => streamIds.length > 0);
+  const copyFileStreamsFiltered = copyFileStreams.filter(({ streamIds }) => streamIds.length > 0);
 
-  const inputArgs = flatMap(copyStreamIdsFiltered, ({ path }) => ['-i', path]);
+  const inputArgs = flatMap(copyFileStreamsFiltered, ({ path }) => ['-i', path]);
   const inputCutArgs = ssBeforeInput ? [
     ...cutFromArgs,
     ...inputArgs,
@@ -228,7 +228,7 @@ async function cut({
 
     ...(shortestFlag ? ['-shortest'] : []),
 
-    ...flatMapDeep(copyStreamIdsFiltered, ({ streamIds }, fileIndex) => streamIds.map(streamId => ['-map', `${fileIndex}:${streamId}`])),
+    ...flatMapDeep(copyFileStreamsFiltered, ({ streamIds }, fileIndex) => streamIds.map(streamId => ['-map', `${fileIndex}:${streamId}`])),
     '-map_metadata', '0',
     // https://video.stackexchange.com/questions/23741/how-to-prevent-ffmpeg-from-dropping-metadata
     '-movflags', 'use_metadata_tags',
@@ -261,7 +261,7 @@ function getOutFileExtension({ isCustomFormatSelected, outFormat, filePath }) {
 
 export async function cutMultiple({
   customOutDir, filePath, segments: segmentsUnsorted, videoDuration, rotation,
-  onProgress, keyframeCut, copyStreamIds, outFormat, isCustomFormatSelected,
+  onProgress, keyframeCut, copyFileStreams, outFormat, isCustomFormatSelected,
   appendFfmpegCommandLog, shortestFlag,
 }) {
   const segments = sortBy(segmentsUnsorted, 'cutFrom');
@@ -292,7 +292,7 @@ export async function cutMultiple({
       outFormat,
       videoDuration,
       rotation,
-      copyStreamIds,
+      copyFileStreams,
       keyframeCut,
       cutFrom: start,
       cutTo: end,
@@ -704,7 +704,7 @@ export async function extractWaveform({ filePath, outPath }) {
   console.timeEnd('ffmpeg');
 }
 
-// see capture-frame.js
+// See also capture-frame.js
 export async function captureFrame({ timestamp, videoPath, outPath }) {
   const args = [
     '-ss', timestamp,
