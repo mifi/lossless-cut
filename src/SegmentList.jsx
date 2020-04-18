@@ -56,7 +56,7 @@ const SegmentList = memo(({
     }
   }
 
-  const Segments = () => outSegments.map((seg, index) => {
+  const renderSegments = () => outSegments.map((seg, index) => {
     const duration = seg.end - seg.start;
     const durationMs = duration * 1000;
 
@@ -101,7 +101,7 @@ const SegmentList = memo(({
     );
   });
 
-  const Footer = () => {
+  const renderFooter = () => {
     const { segActiveBgColor: currentSegActiveBgColor } = getSegColors(currentCutSeg);
 
     return (
@@ -163,10 +163,10 @@ const SegmentList = memo(({
           {headerText}
         </div>
 
-        {outSegments && <Segments />}
+        {outSegments && renderSegments()}
       </div>
 
-      {outSegments && <Footer />}
+      {outSegments && renderFooter()}
     </>
   );
 });
