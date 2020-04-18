@@ -726,6 +726,10 @@ export const defaultProcessedCodecTypes = [
   'attachment',
 ];
 
+export function isStreamThumbnail(stream) {
+  return stream && stream.disposition && stream.disposition.attached_pic === 1;
+}
+
 export function getStreamFps(stream) {
   const match = typeof stream.avg_frame_rate === 'string' && stream.avg_frame_rate.match(/^([0-9]+)\/([0-9]+)$/);
   if (stream.codec_type === 'video' && match) {

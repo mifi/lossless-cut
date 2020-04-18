@@ -41,7 +41,7 @@ import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
   getDefaultOutFormat, getFormatData, renderFrame, mergeFiles as ffmpegMergeFiles, renderThumbnails as ffmpegRenderThumbnails,
   readFrames, renderWaveformPng, html5ifyDummy, cutMultiple, extractStreams, autoMergeSegments, getAllStreams,
-  findNearestKeyFrameTime, html5ify as ffmpegHtml5ify,
+  findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail,
 } from './ffmpeg';
 import { save as edlStoreSave, load as edlStoreLoad } from './edlStore';
 import {
@@ -1143,7 +1143,7 @@ const App = memo(() => {
         stream.index, defaultProcessedCodecTypes.includes(stream.codec_type),
       ])));
 
-      const videoStream = streams.find(stream => stream.codec_type === 'video' && !['png'].includes(stream.codec_name));
+      const videoStream = streams.find(stream => stream.codec_type === 'video' && !isStreamThumbnail(stream));
       const audioStream = streams.find(stream => stream.codec_type === 'audio');
       setMainVideoStream(videoStream);
       setMainAudioStream(audioStream);
@@ -1915,7 +1915,6 @@ const App = memo(() => {
           currentSegIndexSafe={currentSegIndexSafe}
           invertCutSegments={invertCutSegments}
           inverseCutSegments={inverseCutSegments}
-          mainVideoStream={mainVideoStream}
           formatTimecode={formatTimecode}
           timelineHeight={timelineHeight}
           onZoomWindowStartTimeChange={setZoomWindowStartTime}
@@ -1963,6 +1962,7 @@ const App = memo(() => {
           />
 
           <RightMenu
+            hasVideo={hasVideo}
             isRotationSet={isRotationSet}
             rotation={rotation}
             areWeCutting={areWeCutting}
