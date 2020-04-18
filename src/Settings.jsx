@@ -7,6 +7,7 @@ const Settings = memo(({
   changeOutDir, customOutDir, autoMerge, setAutoMerge, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments,
   autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose,
   renderOutFmt, AutoExportToggler, renderCaptureFormatButton, onWheelTunerRequested, language, setLanguage,
+  invertTimelineScroll, setInvertTimelineScroll,
 }) => {
   const { t } = useTranslation();
 
@@ -137,9 +138,20 @@ const Settings = memo(({
       </Row>
 
       <Row>
-        <KeyCell>{t('Scroll/wheel sensitivity')}</KeyCell>
+        <KeyCell>{t('Timeline trackpad/wheel sensitivity')}</KeyCell>
         <Table.TextCell>
           <Button onClick={onWheelTunerRequested}>{t('Change sensitivity')}</Button>
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Invert timeline trackpad/wheel direction?')}</KeyCell>
+        <Table.TextCell>
+          <Checkbox
+            label={t('Invert direction')}
+            checked={invertTimelineScroll}
+            onChange={e => setInvertTimelineScroll(e.target.checked)}
+          />
         </Table.TextCell>
       </Row>
 

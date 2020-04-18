@@ -218,6 +218,8 @@ const App = memo(() => {
   useEffect(() => safeSetConfig('autoSaveProjectFile', autoSaveProjectFile), [autoSaveProjectFile]);
   const [wheelSensitivity, setWheelSensitivity] = useState(configStore.get('wheelSensitivity'));
   useEffect(() => safeSetConfig('wheelSensitivity', wheelSensitivity), [wheelSensitivity]);
+  const [invertTimelineScroll, setInvertTimelineScroll] = useState(configStore.get('invertTimelineScroll'));
+  useEffect(() => safeSetConfig('invertTimelineScroll', invertTimelineScroll), [invertTimelineScroll]);
   const [language, setLanguage] = useState(configStore.get('language'));
   useEffect(() => safeSetConfig('language', language), [language]);
 
@@ -1645,6 +1647,8 @@ const App = memo(() => {
       setTimecodeShowFrames={setTimecodeShowFrames}
       askBeforeClose={askBeforeClose}
       setAskBeforeClose={setAskBeforeClose}
+      invertTimelineScroll={invertTimelineScroll}
+      setInvertTimelineScroll={setInvertTimelineScroll}
       language={language}
       setLanguage={setLanguage}
 
@@ -1653,7 +1657,7 @@ const App = memo(() => {
       renderCaptureFormatButton={renderCaptureFormatButton}
       onWheelTunerRequested={onWheelTunerRequested}
     />
-  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, renderOutFmt, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language]);
+  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, renderOutFmt, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language, invertTimelineScroll]);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);
@@ -1916,6 +1920,7 @@ const App = memo(() => {
           timelineHeight={timelineHeight}
           onZoomWindowStartTimeChange={setZoomWindowStartTime}
           wheelSensitivity={wheelSensitivity}
+          invertTimelineScroll={invertTimelineScroll}
         />
 
         <TimelineControls
@@ -1986,7 +1991,7 @@ const App = memo(() => {
 
       {wheelTunerVisible && (
         <div style={{ display: 'flex', alignItems: 'center', background: 'white', color: 'black', padding: 10, margin: 10, borderRadius: 10, width: '100%', maxWidth: 500, position: 'fixed', left: 0, bottom: bottomBarHeight, zIndex: 10 }}>
-          {t('Scroll sensitivity')}
+          {t('Timeline trackpad/wheel sensitivity')}
           <input style={{ flexGrow: 1 }} type="range" min="0" max="1000" step="1" value={wheelSensitivity * 1000} onChange={e => setWheelSensitivity(e.target.value / 1000)} />
           <Button height={20} intent="success" onClick={() => setWheelTunerVisible(false)}>{t('Done')}</Button>
         </div>

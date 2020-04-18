@@ -44,6 +44,7 @@ const Timeline = memo(({
   setCurrentSegIndex, currentSegIndexSafe, invertCutSegments, inverseCutSegments, formatTimecode,
   waveform, shouldShowWaveform, shouldShowKeyframes, timelineHeight, thumbnails,
   onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled, wheelSensitivity,
+  invertTimelineScroll,
 }) => {
   const { t } = useTranslation();
 
@@ -150,12 +151,16 @@ const Timeline = memo(({
   const onWheel = useCallback((e) => {
     const { pixelX, pixelY } = normalizeWheel(e);
     // console.log({ spinX, spinY, pixelX, pixelY });
+
+    const seekDirection = invertTimelineScroll ? 1 : -1;
+    const zoomDirection = invertTimelineScroll ? -1 : 1;
+
     if (e.ctrlKey) {
-      zoomRel(-pixelY * wheelSensitivity * 0.4);
+      zoomRel(zoomDirection * (pixelY) * wheelSensitivity * 0.4);
     } else {
-      seekRel((pixelX + pixelY) * wheelSensitivity * 0.2);
+      seekRel(seekDirection * (pixelX + pixelY) * wheelSensitivity * 0.2);
     }
-  }, [seekRel, zoomRel, wheelSensitivity]);
+  }, [seekRel, zoomRel, wheelSensitivity, invertTimelineScroll]);
 
   return (
     <Hammer
