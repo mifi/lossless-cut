@@ -14,7 +14,7 @@ const TimelineControls = memo(({
   setCurrentSegIndex, cutStartTimeManual, setCutStartTimeManual, cutEndTimeManual, setCutEndTimeManual,
   duration, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
   playing, shortStep, togglePlay, setTimelineMode, hasAudio, hasVideo, timelineMode,
-  keyframesEnabled, setKeyframesEnabled, seekClosestKeyframe,
+  keyframesEnabled, toggleKeyframesEnabled, seekClosestKeyframe,
 }) => {
   const { t } = useTranslation();
 
@@ -144,7 +144,7 @@ const TimelineControls = memo(({
               style={{ padding: '0 5px', color: keyframesEnabled ? primaryTextColor : undefined }}
               role="button"
               title={t('Show keyframes')}
-              onClick={() => setKeyframesEnabled(v => !v)}
+              onClick={toggleKeyframesEnabled}
             />
           </Fragment>
         )}

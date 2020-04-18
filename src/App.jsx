@@ -255,6 +255,16 @@ const App = memo(() => {
     }
   }
 
+  const toggleKeyframesEnabled = useCallback(() => {
+    setKeyframesEnabled((old) => {
+      const enabled = !old;
+      if (enabled && !calcShouldShowKeyframes(zoomedDuration)) {
+        toast.fire({ text: i18n.t('Key frames will now show on the timeline. You need to zoom in to view them') });
+      }
+      return enabled;
+    });
+  }, [zoomedDuration]);
+
   function appendFfmpegCommandLog(command) {
     setFfmpegCommandLog(old => [...old, { command, time: new Date() }]);
   }
@@ -1935,7 +1945,7 @@ const App = memo(() => {
           hasAudio={hasAudio}
           hasVideo={hasVideo}
           keyframesEnabled={keyframesEnabled}
-          setKeyframesEnabled={setKeyframesEnabled}
+          toggleKeyframesEnabled={toggleKeyframesEnabled}
         />
 
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
