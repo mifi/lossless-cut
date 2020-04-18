@@ -152,13 +152,12 @@ const Timeline = memo(({
     const { pixelX, pixelY } = normalizeWheel(e);
     // console.log({ spinX, spinY, pixelX, pixelY });
 
-    const seekDirection = invertTimelineScroll ? 1 : -1;
-    const zoomDirection = invertTimelineScroll ? -1 : 1;
+    const direction = invertTimelineScroll ? 1 : -1;
 
     if (e.ctrlKey) {
-      zoomRel(zoomDirection * (pixelY) * wheelSensitivity * 0.4);
+      zoomRel(direction * (pixelY) * wheelSensitivity * 0.4);
     } else {
-      seekRel(seekDirection * (pixelX + pixelY) * wheelSensitivity * 0.2);
+      seekRel(direction * (pixelX + pixelY) * wheelSensitivity * 0.2);
     }
   }, [seekRel, zoomRel, wheelSensitivity, invertTimelineScroll]);
 
