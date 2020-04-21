@@ -7,9 +7,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 
 ![Demo](https://github.com/mifi/lossless-cut/raw/master/main_screenshot.jpg)
 
-**Shameless Plug**
-
-I made a tool for cross platform sharing of files between computer/phone over the local network: [ezshare](https://github.com/mifi/ezshare)
+[LosslessCut app introduction](https://mifi.no/losslesscut)
 
 ## Features
 - Lossless cutting of most video and audio formats
@@ -88,7 +86,12 @@ For more information about supported formats / codecs, see https://www.chromium.
 
 Unsupported files can still be converted to a friendly format/codec from the `File` menu. (Try fastest variant first.) A low quality version of the file (without audio) will then be created and opened in the player. The cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that ffmpeg is able to decode.
 
-## Typical workflow
+## How to use
+
+[Watch tutorial video](https://www.youtube.com/watch?v=pYHMxXy05Jg)
+
+### Typical workflow
+
 - Drag drop a video file into player or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
 - Press <kbd>SPACE</kbd> to play/pause or <kbd>◀</kbd><kbd>▶</kbd>, <kbd>,</kbd><kbd>.</kbd> or mouse/trackpad wheel to seek back/forth
 - Select the cut segment's start and end time by moving the time marker and then pressing <kbd>I</kbd> to set start time, and <kbd>O</kbd> to set end time. *Note that the segments you select will be **preserved** and exported to a new file. You can change this behavior with the Yin Yang symbol ☯️, in which case it will instead **remove** all selected segments and export the parts between.*
@@ -106,9 +109,6 @@ Unsupported files can still be converted to a friendly format/codec from the `Fi
 Note: The original video file will not be modified. Instead it creates a lossless export to a new file in the same directory as the original file with from/to timestamps.
 
 Note also that the cut is currently not precise around the cutpoints, so video before/after the nearest keyframe will be discarded. EXIF metadata is preserved.
-
-## Keyboard shortcuts
-Press <kbd>H</kbd> To show/hide list of shortcuts
 
 ## Known issues & limitations
 
@@ -138,15 +138,22 @@ Note that you must use comma `,` to separate the fields (not semicolon `;`)
 1234,,Last segment
 ```
 
+## Shameless Plug
+
+- I made a command line video editor with slick transitions and lots of colors! [editly](https://github.com/mifi/editly)
+- I made a tool for cross platform sharing of files between computer/phone over the local network: [ezshare](https://github.com/mifi/ezshare)
+
 ## Donate 🙈
 
 This project is maintained by me alone. The project will always remain free and open source, but if it's useful for you, consider supporting me. :) It will give me extra motivation to improve it. Or even better [donate to ffmpeg](https://www.ffmpeg.org/donations.html) because they are doing the world a big favor 🙏
 
 [Paypal](https://paypal.me/mifino)
 
-## Credits
+## Attributions
 - App icon made by [Dimi Kazak](http://www.flaticon.com/authors/dimi-kazak "Dimi Kazak") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0")
+- [Lottie animation](https://lottiefiles.com/7077-magic-flow)
 - Thanks to Adi Abinun for his UI sketch work, inspiration and guidance
+- Thanks to everyone who support my continued open source work 🙌
 
 ---
 
