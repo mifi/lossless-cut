@@ -6,7 +6,6 @@ import Lottie from 'react-lottie';
 import { SideSheet, Button, Position, SegmentedControl, Select } from 'evergreen-ui';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import useDebounce from 'react-use/lib/useDebounce';
-import PQueue from 'p-queue';
 import filePathToUrl from 'file-url';
 import Mousetrap from 'mousetrap';
 import uuid from 'uuid';
@@ -22,6 +21,7 @@ import flatMap from 'lodash/flatMap';
 import isEqual from 'lodash/isEqual';
 
 
+import Canvas from './Canvas';
 import TopMenu from './TopMenu';
 import HelpSheet from './HelpSheet';
 import SettingsSheet from './SettingsSheet';
@@ -39,7 +39,7 @@ import allOutFormats from './outFormats';
 import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
-  getDefaultOutFormat, getFormatData, renderFrame, mergeFiles as ffmpegMergeFiles, renderThumbnails as ffmpegRenderThumbnails,
+  getDefaultOutFormat, getFormatData, mergeFiles as ffmpegMergeFiles, renderThumbnails as ffmpegRenderThumbnails,
   readFrames, renderWaveformPng, html5ifyDummy, cutMultiple, extractStreams, autoMergeSegments, getAllStreams,
   findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail,
 } from './ffmpeg';
@@ -121,12 +121,8 @@ const zoomMax = 2 ** 14;
 const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
 
 
-const queue = new PQueue({ concurrency: 1 });
-
-
 const App = memo(() => {
   // Per project state
-  const [framePath, setFramePath] = useState();
   const [waveform, setWaveform] = useState();
   const [html5FriendlyPath, setHtml5FriendlyPath] = useState();
   const [working, setWorking] = useState(false);
@@ -140,7 +136,6 @@ const App = memo(() => {
   const [rotation, setRotation] = useState(360);
   const [cutProgress, setCutProgress] = useState();
   const [startTimeOffset, setStartTimeOffset] = useState(0);
-  const [rotationPreviewRequested, setRotationPreviewRequested] = useState(false);
   const [filePath, setFilePath] = useState('');
   const [externalStreamFiles, setExternalStreamFiles] = useState([]);
   const [detectedFps, setDetectedFps] = useState();
@@ -235,7 +230,6 @@ const App = memo(() => {
     firstUpdateRef.current = false;
   }, []);
 
-
   // Global state
   const [helpVisible, setHelpVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
@@ -326,8 +320,12 @@ const App = memo(() => {
     if (dummyVideoPath) unlink(dummyVideoPath).catch(console.error);
   }, [dummyVideoPath]);
 
+  // 360 means we don't modify rotation
+  const isRotationSet = rotation !== 360;
+  const effectiveRotation = isRotationSet ? rotation : (mainVideoStream && mainVideoStream.tags && mainVideoStream.tags.rotate && parseInt(mainVideoStream.tags.rotate, 10));
+
   const zoomRel = useCallback((rel) => setZoom(z => Math.min(Math.max(z + rel, 1), zoomMax)), []);
-  const frameRenderEnabled = !!(rotationPreviewRequested || dummyVideoPath);
+  const canvasPlayerEnabled = !!(mainVideoStream && (isRotationSet || dummyVideoPath));
 
   const comfortZoom = duration ? Math.max(duration / 100, 1) : undefined;
   const toggleComfortZoom = useCallback(() => {
@@ -565,38 +563,6 @@ const App = memo(() => {
     save();
   }, [debouncedCutSegments, edlFilePath, autoSaveProjectFile]);
 
-  // 360 means we don't modify rotation
-  const isRotationSet = rotation !== 360;
-  const effectiveRotation = isRotationSet ? rotation : undefined;
-
-  useEffect(() => {
-    async function throttledRender() {
-      if (queue.size < 2) {
-        queue.add(async () => {
-          if (!frameRenderEnabled) return;
-
-          if (playerTime == null || !filePath) return;
-
-          try {
-            const framePathNew = await renderFrame(playerTime, filePath, effectiveRotation);
-            setFramePath(framePathNew);
-          } catch (err) {
-            console.error(err);
-          }
-        });
-      }
-
-      await queue.onIdle();
-    }
-
-    throttledRender();
-  }, [
-    filePath, playerTime, frameRenderEnabled, effectiveRotation,
-  ]);
-
-  // Cleanup old
-  useEffect(() => () => URL.revokeObjectURL(framePath), [framePath]);
-
   function onPlayingChange(val) {
     setPlaying(val);
     if (!val) {
@@ -614,13 +580,11 @@ const App = memo(() => {
   const onTimeUpdate = useCallback((e) => {
     const { currentTime } = e.target;
     if (playerTime === currentTime) return;
-    setRotationPreviewRequested(false); // Reset this
     setPlayerTime(currentTime);
   }, [playerTime]);
 
   const increaseRotation = useCallback(() => {
     setRotation((r) => (r + 90) % 450);
-    setRotationPreviewRequested(true);
   }, []);
 
   const assureOutDirAccess = useCallback(async (outFilePath) => {
@@ -812,7 +776,6 @@ const App = memo(() => {
     video.playbackRate = 1;
 
     setFileNameTitle();
-    setFramePath();
     setHtml5FriendlyPath();
     setDummyVideoPath();
     setWorking(false);
@@ -830,7 +793,6 @@ const App = memo(() => {
     setRotation(360);
     setCutProgress();
     setStartTimeOffset(0);
-    setRotationPreviewRequested(false);
     setFilePath(''); // Setting video src="" prevents memory leak in chromium
     setExternalStreamFiles([]);
     setDetectedFps();
@@ -1015,7 +977,7 @@ const App = memo(() => {
         outFormat: fileFormat,
         isCustomFormatSelected,
         videoDuration: duration,
-        rotation: effectiveRotation,
+        rotation: isRotationSet ? effectiveRotation : undefined,
         copyFileStreams,
         keyframeCut,
         segments: outSegments,
@@ -1062,7 +1024,7 @@ const App = memo(() => {
       setWorking(false);
     }
   }, [
-    effectiveRotation, outSegments, handleCutFailed,
+    effectiveRotation, outSegments, handleCutFailed, isRotationSet,
     working, duration, filePath, keyframeCut,
     autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyFileStreams, numStreamsToCopy,
     exportExtraStreams, nonCopiedExtraStreams, outputDir, shortestFlag, isCustomFormatSelected,
@@ -1075,7 +1037,7 @@ const App = memo(() => {
       const currentTime = currentTimeRef.current;
       const video = videoRef.current;
       const outPath = mustCaptureFfmpeg
-        ? await captureFrameFfmpeg({ customOutDir, videoPath: filePath, currentTime, captureFormat, duration: video.duration })
+        ? await captureFrameFfmpeg({ customOutDir, videoPath: filePath, currentTime, captureFormat, duration })
         : await captureFrameFromTag({ customOutDir, filePath, video, currentTime, captureFormat });
 
       openDirToast({ dirPath: outputDir, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
@@ -1083,7 +1045,7 @@ const App = memo(() => {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [filePath, captureFormat, customOutDir, html5FriendlyPath, dummyVideoPath, outputDir]);
+  }, [filePath, captureFormat, customOutDir, html5FriendlyPath, dummyVideoPath, outputDir, duration]);
 
   const changePlaybackRate = useCallback((dir) => {
     const video = videoRef.current;
@@ -1825,24 +1787,15 @@ const App = memo(() => {
           onError={onVideoError}
         />
 
-        {framePath && frameRenderEnabled && (
-          <img
-            draggable={false}
-            style={{
-              width: '100%', height: '100%', objectFit: 'contain', left: 0, right: 0, top: 0, bottom: 0, position: 'absolute', background: 'black',
-            }}
-            src={framePath}
-            alt=""
-          />
-        )}
+        {canvasPlayerEnabled && <Canvas rotate={effectiveRotation} filePath={filePath} width={mainVideoStream.width} height={mainVideoStream.height} playerTime={playerTime} commandedTime={commandedTime} playing={playing} />}
       </div>
 
-      {rotationPreviewRequested && (
+      {isRotationSet && (
         <div style={{
           position: 'absolute', top: topBarHeight, marginTop: '1em', marginRight: '1em', right: sideBarWidth, color: 'white',
         }}
         >
-          {t('Lossless rotation preview')}
+          {t('Rotation preview')}
         </div>
       )}
 

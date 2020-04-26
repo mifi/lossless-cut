@@ -217,7 +217,7 @@ async function cut({
     ...cutToArgs,
   ];
 
-  const rotationArgs = rotation !== undefined ? ['-metadata:s:v:0', `rotate=${rotation}`] : [];
+  const rotationArgs = rotation !== undefined ? ['-metadata:s:v:0', `rotate=${360 - rotation}`] : [];
 
   const ffmpegArgs = [
     '-hide_banner',
@@ -310,6 +310,7 @@ export async function cutMultiple({
   return outFiles;
 }
 
+// TODO merge with getFormatData
 export async function getDuration(filePath) {
   // https://superuser.com/questions/650291/how-to-get-video-duration-in-seconds
   const { stdout } = await runFfprobe(['-i', filePath, '-show_entries', 'format=duration', '-print_format', 'json']);
@@ -648,35 +649,6 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
   }
 }
 
-export async function renderFrame(timestamp, filePath, rotation) {
-  const transpose = {
-    90: 'transpose=2',
-    180: 'transpose=1,transpose=1',
-    270: 'transpose=1',
-  };
-  const args = [
-    '-ss', timestamp,
-    ...(rotation !== undefined ? ['-noautorotate'] : []),
-    '-i', filePath,
-    // ...(rotation !== undefined ? ['-metadata:s:v:0', 'rotate=0'] : []), // Reset the rotation metadata first
-    ...(rotation !== undefined && rotation > 0 ? ['-vf', `${transpose[rotation]}`] : []),
-    '-f', 'image2',
-    '-vframes', '1',
-    '-q:v', '10',
-    '-',
-    // '-y', outPath,
-  ];
-
-  // console.time('ffmpeg');
-  const ffmpegPath = getFfmpegPath();
-  // console.timeEnd('ffmpeg');
-  // console.log('ffmpeg', args);
-  const { stdout } = await execa(ffmpegPath, args, { encoding: null });
-
-  const blob = new Blob([stdout], { type: 'image/jpeg' });
-  return URL.createObjectURL(blob);
-}
-
 export async function extractWaveform({ filePath, outPath }) {
   const numSegs = 10;
   const duration = 60 * 60;
@@ -738,4 +710,67 @@ export function getStreamFps(stream) {
     if (den > 0) return num / den;
   }
   return undefined;
+}
+
+function createRawFfmpeg({ fps = 25, path, inWidth, inHeight, seekTo, oneFrameOnly, execaOpts }) {
+  // const fps = 25; // TODO
+
+  const aspectRatio = inWidth / inHeight;
+
+  let newWidth;
+  let newHeight;
+  if (inWidth > inHeight) {
+    newWidth = 320;
+    newHeight = Math.floor(newWidth / aspectRatio);
+  } else {
+    newHeight = 320;
+    newWidth = Math.floor(newHeight * aspectRatio);
+  }
+
+  const args = [
+    '-hide_banner', '-loglevel', 'panic',
+
+    '-re',
+
+    '-ss', seekTo,
+
+    '-noautorotate',
+
+    '-i', path,
+
+    '-vf', `fps=${fps},scale=${newWidth}:${newHeight}:flags=lanczos`,
+    '-map', 'v:0',
+    '-vcodec', 'rawvideo',
+    '-pix_fmt', 'rgba',
+
+    ...(oneFrameOnly ? ['-frames:v', '1'] : []),
+
+    '-f', 'image2pipe',
+    '-',
+  ];
+
+  // console.log(args);
+
+  return {
+    process: execa(getFfmpegPath(), args, execaOpts),
+    width: newWidth,
+    height: newHeight,
+    channels: 4,
+  };
+}
+
+export function getOneRawFrame({ path, inWidth, inHeight, seekTo }) {
+  const { process, width, height, channels } = createRawFfmpeg({ path, inWidth, inHeight, seekTo, oneFrameOnly: true, execaOpts: { encoding: null } });
+  return { process, width, height, channels };
+}
+
+export function encodeLiveRawStream({ path, inWidth, inHeight, seekTo }) {
+  const { process, width, height, channels } = createRawFfmpeg({ path, inWidth, inHeight, seekTo, execaOpts: { encoding: null, buffer: false } });
+
+  return {
+    process,
+    width,
+    height,
+    channels,
+  };
 }
