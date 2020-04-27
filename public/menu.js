@@ -43,7 +43,7 @@ module.exports = (app, mainWindow, newVersion) => {
         },
         { type: 'separator' },
         {
-          label: 'Convert to friendly format',
+          label: 'Convert to supported format',
           click() {
             mainWindow.webContents.send('html5ify');
           },
@@ -123,7 +123,7 @@ module.exports = (app, mainWindow, newVersion) => {
           },
         },
         {
-          label: 'Batch convert to friendly format',
+          label: 'Batch convert to supported format',
           click() {
             mainWindow.webContents.send('batchConvertFriendlyFormat');
           },

@@ -41,7 +41,7 @@ import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
   getDefaultOutFormat, getFormatData, mergeFiles as ffmpegMergeFiles, renderThumbnails as ffmpegRenderThumbnails,
   readFrames, renderWaveformPng, html5ifyDummy, cutMultiple, extractStreams, autoMergeSegments, getAllStreams,
-  findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail,
+  findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail, isAudioSupported,
 } from './ffmpeg';
 import { save as edlStoreSave, load as edlStoreLoad } from './edlStore';
 import {
@@ -843,7 +843,7 @@ const App = memo(() => {
       await createDummyVideo(customOutDir, filePath);
     } catch (err) {
       console.error(err);
-      errorToast(i18n.t('Failed to playback this file. Try to convert to friendly format from the menu'));
+      errorToast(i18n.t('Failed to playback this file. Try to convert to supported format from the menu'));
     } finally {
       setWorking();
     }
@@ -861,7 +861,7 @@ const App = memo(() => {
     if (resetPlaybackRate) video.playbackRate = 1;
 
     video.play().catch((err) => {
-      toast.fire({ icon: 'error', text: 'Unable to play this file. Try to convert to friendly format first' });
+      toast.fire({ icon: 'error', text: 'Unable to play this file. Try to convert to supported format first' });
       console.error(err);
     });
   }, [playing, filePath]);
@@ -1109,7 +1109,7 @@ const App = memo(() => {
       const existing = getHtml5ifiedPath(cod, fp, speed);
       const ret = existing && await exists(existing);
       if (ret) {
-        console.log('Found existing friendly file', existing);
+        console.log('Found existing supported file', existing);
         if (speed === 'fastest-audio') {
           setDummyVideoPath(existing);
           setHtml5FriendlyPath();
@@ -1162,6 +1162,10 @@ const App = memo(() => {
       setFileFormat(ff);
       setDetectedFileFormat(ff);
       setFileFormatData(fd);
+
+      if (!isAudioSupported(streams)) {
+        toast.fire({ icon: 'info', text: 'The audio track is not supported. You can convert to a supported format from the menu' });
+      }
 
       if (html5FriendlyPathRequested) {
         setHtml5FriendlyPath(html5FriendlyPathRequested);
@@ -1507,7 +1511,7 @@ const App = memo(() => {
     }
 
     async function batchConvertFriendlyFormat() {
-      const title = i18n.t('Select files to batch convert to friendly format');
+      const title = i18n.t('Select files to batch convert to supported format');
       const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'], title, message: title });
       if (canceled || filePaths.length < 1) return;
 
@@ -1544,7 +1548,7 @@ const App = memo(() => {
 
         if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}`, timer: null, showConfirmButton: true });
       } catch (err) {
-        errorToast(i18n.t('Failed to batch convert to friendly format'));
+        errorToast(i18n.t('Failed to batch convert to supported format'));
         console.error('Failed to html5ify', err);
       } finally {
         setWorking();

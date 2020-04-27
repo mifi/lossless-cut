@@ -726,6 +726,13 @@ export function isStreamThumbnail(stream) {
   return stream && stream.disposition && stream.disposition.attached_pic === 1;
 }
 
+export function isAudioSupported(streams) {
+  const audioStreams = streams.filter(stream => stream.codec_type === 'audio');
+  if (audioStreams.length === 0) return true;
+  // TODO this could be improved
+  return audioStreams.some(stream => !['ac3'].includes(stream.codec_name));
+}
+
 export function getStreamFps(stream) {
   const match = typeof stream.avg_frame_rate === 'string' && stream.avg_frame_rate.match(/^([0-9]+)\/([0-9]+)$/);
   if (stream.codec_type === 'video' && match) {

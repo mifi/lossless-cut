@@ -86,7 +86,7 @@ Since LosslessCut is based on Chromium and uses the HTML5 video player, not all 
 The following formats/codecs should generally work: MP4, MOV, WebM, MKV, OGG, WAV, MP3, AAC, H264, Theora, VP8, VP9
 For more information about supported formats / codecs, see https://www.chromium.org/audio-video.
 
-Unsupported files can still be converted to a friendly format/codec from the `File` menu. (Try fastest variant first.) A low quality version of the file (without audio) will then be created and opened in the player. The cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that ffmpeg is able to decode.
+Unsupported files can still be converted to a supported format/codec from the `File` menu. (Try fastest variant first.) A low quality version of the file (without audio) will then be created and opened in the player. The cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that ffmpeg is able to decode.
 
 ## How to use
 
@@ -117,7 +117,7 @@ Note also that the cut is currently not precise around the cutpoints, so video b
 - **Cutting times are not accurate and will be "rounded" to the nearest keyframe.** There are wishes to implement a "smart cut" feature that re-encodes only the part before the keyframe, see [#126](https://github.com/mifi/lossless-cut/issues/126)
 - Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. See [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
 - When exporting you may lose some proprietary data tracks (like `tmcd`, `fdsc` and `gpmd` added by GoPro). These can be exported to separate files however
-- H265 is not supported natively. There is partial support with very low FPS and no audio preview. Alternatively convert to friendly codec (slow) from the menu, see [#88](https://github.com/mifi/lossless-cut/issues/88)
+- H265 is not supported natively. There is partial support with very low FPS and no audio preview. Alternatively convert to supported codec (slow) from the menu, see [#88](https://github.com/mifi/lossless-cut/issues/88)
 
 ## Troubleshooting
 
