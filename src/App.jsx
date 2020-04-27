@@ -316,9 +316,9 @@ const App = memo(() => {
     seekRel((1 / (detectedFps || 60)) * dir);
   }, [seekRel, detectedFps]);
 
-  useEffect(() => () => {
+  /* useEffect(() => () => {
     if (dummyVideoPath) unlink(dummyVideoPath).catch(console.error);
-  }, [dummyVideoPath]);
+  }, [dummyVideoPath]); */
 
   // 360 means we don't modify rotation
   const isRotationSet = rotation !== 360;
@@ -820,12 +820,17 @@ const App = memo(() => {
   useEffect(() => () => waveform && URL.revokeObjectURL(waveform.url), [waveform]);
 
   function showUnsupportedFileMessage() {
-    toast.fire({ timer: 10000, icon: 'info', title: i18n.t('File not natively supported'), text: i18n.t('Preview will have no audio and low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview.') });
+    toast.fire({ timer: 10000, icon: 'info', title: i18n.t('File not natively supported'), text: i18n.t('Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview.') });
   }
 
   const createDummyVideo = useCallback(async (cod, fp) => {
     const html5ifiedDummyPathDummy = getOutPath(cod, fp, 'html5ified-dummy.mkv');
-    await html5ifyDummy(fp, html5ifiedDummyPathDummy);
+    try {
+      setCutProgress(0);
+      await html5ifyDummy(fp, html5ifiedDummyPathDummy, setCutProgress);
+    } finally {
+      setCutProgress();
+    }
     setDummyVideoPath(html5ifiedDummyPathDummy);
     setHtml5FriendlyPath();
     showUnsupportedFileMessage();
@@ -834,7 +839,7 @@ const App = memo(() => {
   const tryCreateDummyVideo = useCallback(async () => {
     try {
       if (working) return;
-      setWorking(i18n.t('Loading file'));
+      setWorking(i18n.t('Converting to supported format'));
       await createDummyVideo(customOutDir, filePath);
     } catch (err) {
       console.error(err);
@@ -879,6 +884,8 @@ const App = memo(() => {
       setWorking(i18n.t('Deleting source'));
 
       if (html5FriendlyPath) await trash(html5FriendlyPath).catch(console.error);
+      if (dummyVideoPath) await trash(dummyVideoPath).catch(console.error);
+
       // throw new Error('test');
       await trash(filePath);
       toast.fire({ icon: 'info', title: i18n.t('File has been moved to trash') });
@@ -895,6 +902,7 @@ const App = memo(() => {
 
         if (value) {
           if (html5FriendlyPath) await unlink(html5FriendlyPath).catch(console.error);
+          if (dummyVideoPath) await unlink(dummyVideoPath).catch(console.error);
           await unlink(filePath);
           toast.fire({ icon: 'info', title: i18n.t('File has been permanently deleted') });
         }
@@ -1063,7 +1071,10 @@ const App = memo(() => {
     }
   }, [playing, canvasPlayerEnabled]);
 
-  const getHtml5ifiedPath = useCallback((cod, fp, type) => getOutPath(cod, fp, `html5ified-${type}.mp4`), []);
+  const getHtml5ifiedPath = useCallback((cod, fp, type) => {
+    const ext = type === 'fastest-audio' ? 'mkv' : 'mp4';
+    return getOutPath(cod, fp, `html5ified-${type}.${ext}`);
+  }, []);
 
   const loadEdlFile = useCallback(async (edlPath) => {
     try {
@@ -1085,8 +1096,8 @@ const App = memo(() => {
     }
   }, [cutSegmentsHistory, setCutSegments]);
 
-  const load = useCallback(async ({ filePath: fp, customOutDir: cod, html5FriendlyPathRequested }) => {
-    console.log('Load', { fp, cod, html5FriendlyPathRequested });
+  const load = useCallback(async ({ filePath: fp, customOutDir: cod, html5FriendlyPathRequested, dummyVideoPathRequested }) => {
+    console.log('Load', { fp, cod, html5FriendlyPathRequested, dummyVideoPathRequested });
 
     if (working) return;
 
@@ -1099,7 +1110,13 @@ const App = memo(() => {
       const ret = existing && await exists(existing);
       if (ret) {
         console.log('Found existing friendly file', existing);
-        setHtml5FriendlyPath(existing);
+        if (speed === 'fastest-audio') {
+          setDummyVideoPath(existing);
+          setHtml5FriendlyPath();
+        } else {
+          setHtml5FriendlyPath(existing);
+        }
+
         showUnsupportedFileMessage();
       }
       return ret;
@@ -1149,8 +1166,12 @@ const App = memo(() => {
       if (html5FriendlyPathRequested) {
         setHtml5FriendlyPath(html5FriendlyPathRequested);
         showUnsupportedFileMessage();
+      } else if (dummyVideoPathRequested) {
+        setDummyVideoPath(dummyVideoPathRequested);
+        setHtml5FriendlyPath();
+        showUnsupportedFileMessage();
       } else if (
-        !(await checkAndSetExistingHtml5FriendlyFile('slowest') || await checkAndSetExistingHtml5FriendlyFile('slow-audio') || await checkAndSetExistingHtml5FriendlyFile('slow') || await checkAndSetExistingHtml5FriendlyFile('fast-audio') || await checkAndSetExistingHtml5FriendlyFile('fast'))
+        !(await checkAndSetExistingHtml5FriendlyFile('slowest') || await checkAndSetExistingHtml5FriendlyFile('slow-audio') || await checkAndSetExistingHtml5FriendlyFile('slow') || await checkAndSetExistingHtml5FriendlyFile('fast-audio') || await checkAndSetExistingHtml5FriendlyFile('fast') || await checkAndSetExistingHtml5FriendlyFile('fastest-audio'))
         && !doesPlayerSupportFile(streams)
       ) {
         await createDummyVideo(cod, fp);
@@ -1332,12 +1353,24 @@ const App = memo(() => {
 
   const html5ifyInternal = useCallback(async ({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: hv }) => {
     const path = getHtml5ifiedPath(cod, fp, speed);
-    const includeVideo = hv;
-    const includeAudio = ['fast-audio', 'slow-audio', 'slowest'].includes(speed) && ha;
-    const encode = ['slow-audio', 'slow', 'slowest'].includes(speed);
-    const highQuality = speed === 'slowest';
+
+    let audio;
+    if (ha) {
+      if (speed === 'slowest') audio = 'hq';
+      else if (speed === 'slow-audio') audio = 'lq-aac';
+      else if (speed === 'fast-audio') audio = 'copy';
+      else if (speed === 'fastest-audio') audio = 'lq-flac';
+    }
+
+    let video;
+    if (hv) {
+      if (speed === 'slowest') video = 'hq';
+      else if (['slow-audio', 'slow'].includes(speed)) video = 'lq';
+      else video = 'copy';
+    }
+
     try {
-      await ffmpegHtml5ify({ filePath: fp, outPath: path, encode, includeVideo, includeAudio, highQuality, onProgress: setCutProgress });
+      await ffmpegHtml5ify({ filePath: fp, outPath: path, video, audio, onProgress: setCutProgress });
     } finally {
       setCutProgress();
     }
@@ -1345,8 +1378,13 @@ const App = memo(() => {
   }, [getHtml5ifiedPath]);
 
   const html5ifyAndLoad = useCallback(async (speed) => {
-    const path = await html5ifyInternal({ customOutDir, filePath, speed, hasAudio, hasVideo });
-    load({ filePath, html5FriendlyPathRequested: path, customOutDir });
+    if (speed === 'fastest-audio') {
+      const path = await html5ifyInternal({ customOutDir, filePath, speed, hasAudio, hasVideo: false });
+      load({ filePath, dummyVideoPathRequested: path, customOutDir });
+    } else {
+      const path = await html5ifyInternal({ customOutDir, filePath, speed, hasAudio, hasVideo });
+      load({ filePath, html5FriendlyPathRequested: path, customOutDir });
+    }
   }, [hasAudio, hasVideo, customOutDir, filePath, html5ifyInternal, load]);
 
   const html5ifyCurrentFile = useCallback(async () => {
@@ -1355,12 +1393,12 @@ const App = memo(() => {
     try {
       setWorking(i18n.t('Converting to supported format'));
 
-      const speed = await askForHtml5ifySpeed(['fastest', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest']);
+      const speed = await askForHtml5ifySpeed(['fastest', 'fastest-audio', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest']);
       if (!speed) return;
 
       if (speed === 'fastest') {
         await createDummyVideo(customOutDir, filePath);
-      } else if (['fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'].includes(speed)) {
+      } else if (['fastest-audio', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'].includes(speed)) {
         await html5ifyAndLoad(speed);
       }
     } catch (err) {
@@ -1382,13 +1420,14 @@ const App = memo(() => {
     if (error.code === MEDIA_ERR_SRC_NOT_SUPPORTED && !dummyVideoPath) {
       console.log('MEDIA_ERR_SRC_NOT_SUPPORTED - trying to create dummy');
 
-      if (hasVideo) tryCreateDummyVideo();
-      else {
-        toast.fire({ icon: 'info', text: 'This file is not natively supported. Encoding a preview file...' });
-        await html5ifyAndLoad('slow-audio');
+      if (hasVideo) {
+        tryCreateDummyVideo();
+      } else if (hasAudio) {
+        toast.fire({ icon: 'info', text: 'This file is not natively supported. Creating a preview file...' });
+        await html5ifyAndLoad('fastest-audio');
       }
     }
-  }, [tryCreateDummyVideo, fileUri, dummyVideoPath, hasVideo, html5ifyAndLoad]);
+  }, [tryCreateDummyVideo, fileUri, dummyVideoPath, hasVideo, hasAudio, html5ifyAndLoad]);
 
   useEffect(() => {
     function fileOpened(event, filePaths) {
@@ -1475,7 +1514,7 @@ const App = memo(() => {
       const failedFiles = [];
       let i = 0;
 
-      const speed = await askForHtml5ifySpeed(['fast-audio', 'fast', 'slow', 'slow-audio', 'slowest']);
+      const speed = await askForHtml5ifySpeed(['fastest-audio', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest']);
       if (!speed) return;
 
       try {

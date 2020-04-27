@@ -321,42 +321,60 @@ export async function getDuration(filePath) {
   return parseFloat(JSON.parse(stdout).format.duration);
 }
 
-export async function html5ify({ filePath, outPath, encode, includeVideo, includeAudio, highQuality, onProgress }) {
-  console.log('Making HTML5 friendly version', { filePath, outPath, encode, includeVideo, includeAudio, highQuality });
+export async function html5ify({ filePath, outPath, video, audio, onProgress }) {
+  console.log('Making HTML5 friendly version', { filePath, outPath, video, audio });
 
   let videoArgs;
   let audioArgs;
 
-  if (includeVideo) {
-    if (!encode) {
-      videoArgs = ['-vcodec', 'copy'];
-    } else if (os.platform() === 'darwin') {
-      if (highQuality) {
+  const isMac = os.platform() === 'darwin';
+
+  switch (video) {
+    case 'hq': {
+      if (isMac) {
         videoArgs = ['-vf', 'format=yuv420p', '-allow_sw', '1', '-vcodec', 'h264', '-b:v', '15M'];
       } else {
-        videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
+        videoArgs = ['-vf', 'format=yuv420p', '-vcodec', 'libx264', '-profile:v', 'high', '-preset:v', 'slow', '-crf', '17'];
       }
-    } else if (highQuality) {
-      videoArgs = ['-vf', 'format=yuv420p', '-vcodec', 'libx264', '-profile:v', 'high', '-preset:v', 'slow', '-crf', '17'];
-    } else {
-      videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libx264', '-profile:v', 'baseline', '-x264opts', 'level=3.0', '-preset:v', 'ultrafast', '-crf', '28'];
+      break;
     }
-  } else {
-    videoArgs = ['-vn'];
+    case 'lq': {
+      if (isMac) {
+        videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
+      } else {
+        videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libx264', '-profile:v', 'baseline', '-x264opts', 'level=3.0', '-preset:v', 'ultrafast', '-crf', '28'];
+      }
+      break;
+    }
+    case 'copy': {
+      videoArgs = ['-vcodec', 'copy'];
+      break;
+    }
+    default: {
+      videoArgs = ['-vn'];
+    }
   }
 
-  if (includeAudio) {
-    if (encode) {
-      if (highQuality) {
-        audioArgs = ['-acodec', 'aac', '-b:a', '192k'];
-      } else {
-        audioArgs = ['-acodec', 'aac', '-ar', '44100', '-ac', '2', '-b:a', '96k'];
-      }
-    } else {
-      audioArgs = ['-acodec', 'copy'];
+  switch (audio) {
+    case 'hq': {
+      audioArgs = ['-acodec', 'aac', '-b:a', '192k'];
+      break;
     }
-  } else {
-    audioArgs = ['-an'];
+    case 'lq-flac': {
+      audioArgs = ['-acodec', 'flac', '-ar', '11025', '-ac', '2'];
+      break;
+    }
+    case 'lq-aac': {
+      audioArgs = ['-acodec', 'aac', '-ar', '44100', '-ac', '2', '-b:a', '96k'];
+      break;
+    }
+    case 'copy': {
+      audioArgs = ['-acodec', 'copy'];
+      break;
+    }
+    default: {
+      audioArgs = ['-an'];
+    }
   }
 
   const ffmpegArgs = [
@@ -380,7 +398,7 @@ export async function html5ify({ filePath, outPath, encode, includeVideo, includ
 
 // This is just used to load something into the player with correct length,
 // so user can seek and then we render frames using ffmpeg
-export async function html5ifyDummy(filePath, outPath) {
+export async function html5ifyDummy(filePath, outPath, onProgress) {
   console.log('Making HTML5 friendly dummy', { filePath, outPath });
 
   const duration = await getDuration(filePath);
@@ -389,14 +407,16 @@ export async function html5ifyDummy(filePath, outPath) {
     '-hide_banner',
 
     // This is just a fast way of generating an empty dummy file
-    // TODO use existing audio track file if it has one
     '-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',
     '-t', duration,
     '-acodec', 'flac',
     '-y', outPath,
   ];
 
-  const { stdout } = await runFfmpeg(ffmpegArgs);
+  const process = runFfmpeg(ffmpegArgs);
+  handleProgress(process, duration, onProgress);
+
+  const { stdout } = await process;
   console.log(stdout);
 
   await transferTimestamps(filePath, outPath);

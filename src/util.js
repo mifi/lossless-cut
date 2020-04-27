@@ -166,6 +166,7 @@ export function getSegColors(seg) {
 export async function askForHtml5ifySpeed(allowedOptions) {
   const availOptions = {
     fastest: i18n.t('Fastest: Low playback speed (no audio)'),
+    'fastest-audio': i18n.t('Fastest: Low playback speed'),
     fast: i18n.t('Fast: Full quality remux (no audio), likely to fail'),
     'fast-audio': i18n.t('Fast: Full quality remux, likely to fail'),
     slow: i18n.t('Slow: Low quality encode (no audio)'),
