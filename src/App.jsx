@@ -1111,10 +1111,6 @@ const App = memo(() => {
 
       const { streams } = await getAllStreams(fp);
       // console.log('streams', streamsNew);
-      setMainStreams(streams);
-      setCopyStreamIdsForPath(fp, () => fromPairs(streams.map((stream) => [
-        stream.index, defaultProcessedCodecTypes.includes(stream.codec_type),
-      ])));
 
       const videoStream = streams.find(stream => stream.codec_type === 'video' && !isStreamThumbnail(stream));
       const audioStream = streams.find(stream => stream.codec_type === 'audio');
@@ -1124,6 +1120,20 @@ const App = memo(() => {
         const streamFps = getStreamFps(videoStream);
         if (streamFps != null) setDetectedFps(streamFps);
       }
+
+      const shouldDefaultCopyStream = (stream) => {
+        if (!defaultProcessedCodecTypes.includes(stream.codec_type)) return false;
+        // Don't enable thumbnail stream by default if we have a main video stream
+        // It's been known to cause issues: https://github.com/mifi/lossless-cut/issues/308
+        if (isStreamThumbnail(stream) && videoStream) return false;
+        return true;
+      };
+
+      setMainStreams(streams);
+      setCopyStreamIdsForPath(fp, () => fromPairs(streams.map((stream) => [
+        stream.index, shouldDefaultCopyStream(stream),
+      ])));
+
 
       setFileNameTitle(fp);
       setFilePath(fp);
