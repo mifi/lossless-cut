@@ -733,6 +733,13 @@ export function isAudioSupported(streams) {
   return audioStreams.some(stream => !['ac3'].includes(stream.codec_name));
 }
 
+export function isIphoneHevc(format, streams) {
+  if (!streams.some((s) => s.codec_name === 'hevc')) return false;
+  const makeTag = format.tags && format.tags['com.apple.quicktime.make'];
+  const modelTag = format.tags && format.tags['com.apple.quicktime.model'];
+  return (makeTag === 'Apple' && modelTag.startsWith('iPhone'));
+}
+
 export function getStreamFps(stream) {
   const match = typeof stream.avg_frame_rate === 'string' && stream.avg_frame_rate.match(/^([0-9]+)\/([0-9]+)$/);
   if (stream.codec_type === 'video' && match) {

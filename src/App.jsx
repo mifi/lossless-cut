@@ -41,7 +41,7 @@ import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
   getDefaultOutFormat, getFormatData, mergeFiles as ffmpegMergeFiles, renderThumbnails as ffmpegRenderThumbnails,
   readFrames, renderWaveformPng, html5ifyDummy, cutMultiple, extractStreams, autoMergeSegments, getAllStreams,
-  findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail, isAudioSupported,
+  findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail, isAudioSupported, isIphoneHevc,
 } from './ffmpeg';
 import { save as edlStoreSave, load as edlStoreLoad } from './edlStore';
 import {
@@ -258,7 +258,7 @@ const App = memo(() => {
     setKeyframesEnabled((old) => {
       const enabled = !old;
       if (enabled && !calcShouldShowKeyframes(zoomedDuration)) {
-        toast.fire({ text: i18n.t('Key frames will now show on the timeline. You need to zoom in to view them') });
+        toast.fire({ text: i18n.t('Key frames will show on the timeline. You need to zoom in to view them') });
       }
       return enabled;
     });
@@ -820,7 +820,7 @@ const App = memo(() => {
   useEffect(() => () => waveform && URL.revokeObjectURL(waveform.url), [waveform]);
 
   function showUnsupportedFileMessage() {
-    toast.fire({ timer: 10000, text: i18n.t('File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview.') });
+    toast.fire({ timer: 13000, text: i18n.t('File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview.') });
   }
 
   const createDummyVideo = useCallback(async (cod, fp) => {
@@ -836,6 +836,8 @@ const App = memo(() => {
     showUnsupportedFileMessage();
   }, []);
 
+  const showPlaybackFailedMessage = () => errorToast(i18n.t('Unable to playback this file. Try to convert to supported format from the menu'));
+
   const tryCreateDummyVideo = useCallback(async () => {
     try {
       if (working) return;
@@ -843,7 +845,7 @@ const App = memo(() => {
       await createDummyVideo(customOutDir, filePath);
     } catch (err) {
       console.error(err);
-      errorToast(i18n.t('Failed to playback this file. Try to convert to supported format from the menu'));
+      showPlaybackFailedMessage();
     } finally {
       setWorking();
     }
@@ -861,7 +863,7 @@ const App = memo(() => {
     if (resetPlaybackRate) video.playbackRate = 1;
 
     video.play().catch((err) => {
-      toast.fire({ icon: 'error', text: 'Unable to play this file. Try to convert to supported format first' });
+      showPlaybackFailedMessage();
       console.error(err);
     });
   }, [playing, filePath]);
@@ -1016,8 +1018,11 @@ const App = memo(() => {
         }
       }
 
+      // https://github.com/mifi/lossless-cut/issues/329
+      const extraIphoneMsg = isIphoneHevc(fileFormatData, mainStreams) ? ` ${i18n.t('There is a known issue with cutting iPhone HEVC videos. The output file may not work in all players.')}` : '';
       const extraStreamsMsg = exportExtraStreams ? ` ${i18n.t('Unprocessable streams were exported as separate files.')}` : '';
-      openDirToast({ dirPath: outputDir, text: `${i18n.t('Done! Start-cutpoints may not be accurate. Make sure you test the output files in your desired player/editor before you delete the source files. If output does not look right, try to toggle "Keyframe cut" or try a different format. Output file(s) can be found at:')} ${outputDir}.${extraStreamsMsg}` });
+
+      openDirToast({ dirPath: outputDir, text: `${i18n.t('Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, try to toggle "Keyframe cut" or try a different format.')}${extraIphoneMsg}${extraStreamsMsg}`, timer: 15000 });
     } catch (err) {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
@@ -1036,6 +1041,7 @@ const App = memo(() => {
     working, duration, filePath, keyframeCut,
     autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyFileStreams, numStreamsToCopy,
     exportExtraStreams, nonCopiedExtraStreams, outputDir, shortestFlag, isCustomFormatSelected,
+    fileFormatData, mainStreams,
   ]);
 
   const capture = useCallback(async () => {
@@ -1156,7 +1162,6 @@ const App = memo(() => {
         stream.index, shouldDefaultCopyStream(stream),
       ])));
 
-
       setFileNameTitle(fp);
       setFilePath(fp);
       setFileFormat(ff);
@@ -1164,7 +1169,7 @@ const App = memo(() => {
       setFileFormatData(fd);
 
       if (!isAudioSupported(streams)) {
-        toast.fire({ icon: 'info', text: 'The audio track is not supported. You can convert to a supported format from the menu' });
+        toast.fire({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
       }
 
       if (html5FriendlyPathRequested) {
@@ -1282,7 +1287,7 @@ const App = memo(() => {
     try {
       setWorking(i18n.t('Extracting all streams'));
       await extractStreams({ customOutDir, filePath, streams: mainStreams });
-      openDirToast({ dirPath: outputDir, text: `${i18n.t('All streams can be found as separate files at:')} ${outputDir}` });
+      openDirToast({ dirPath: outputDir, text: i18n.t('All streams have been extracted as separate files') });
     } catch (err) {
       errorToast(i18n.t('Failed to extract all streams'));
       console.error('Failed to extract all streams', err);
