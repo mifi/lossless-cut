@@ -820,7 +820,7 @@ const App = memo(() => {
   useEffect(() => () => waveform && URL.revokeObjectURL(waveform.url), [waveform]);
 
   function showUnsupportedFileMessage() {
-    toast.fire({ timer: 10000, icon: 'info', title: i18n.t('File not natively supported'), text: i18n.t('There will be no audio and a low quality preview. The final export will however be lossless and contains audio. You may convert it from the menu for a better preview') });
+    toast.fire({ timer: 10000, icon: 'info', title: i18n.t('File not natively supported'), text: i18n.t('Preview will have no audio and low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview.') });
   }
 
   const createDummyVideo = useCallback(async (cod, fp) => {
@@ -1797,7 +1797,7 @@ const App = memo(() => {
           onError={onVideoError}
         />
 
-        {canvasPlayerEnabled && <Canvas rotate={effectiveRotation} filePath={filePath} width={mainVideoStream.width} height={mainVideoStream.height} playerTime={playerTime} commandedTime={commandedTime} playing={playing} />}
+        {canvasPlayerEnabled && <Canvas rotate={effectiveRotation} filePath={filePath} width={mainVideoStream.width} height={mainVideoStream.height} streamIndex={mainVideoStream.index} playerTime={playerTime} commandedTime={commandedTime} playing={playing} />}
       </div>
 
       {isRotationSet && (

@@ -712,7 +712,7 @@ export function getStreamFps(stream) {
   return undefined;
 }
 
-function createRawFfmpeg({ fps = 25, path, inWidth, inHeight, seekTo, oneFrameOnly, execaOpts }) {
+function createRawFfmpeg({ fps = 25, path, inWidth, inHeight, seekTo, oneFrameOnly, execaOpts, streamIndex }) {
   // const fps = 25; // TODO
 
   const aspectRatio = inWidth / inHeight;
@@ -739,7 +739,7 @@ function createRawFfmpeg({ fps = 25, path, inWidth, inHeight, seekTo, oneFrameOn
     '-i', path,
 
     '-vf', `fps=${fps},scale=${newWidth}:${newHeight}:flags=lanczos`,
-    '-map', 'v:0',
+    '-map', `0:${streamIndex}`,
     '-vcodec', 'rawvideo',
     '-pix_fmt', 'rgba',
 
@@ -759,13 +759,13 @@ function createRawFfmpeg({ fps = 25, path, inWidth, inHeight, seekTo, oneFrameOn
   };
 }
 
-export function getOneRawFrame({ path, inWidth, inHeight, seekTo }) {
-  const { process, width, height, channels } = createRawFfmpeg({ path, inWidth, inHeight, seekTo, oneFrameOnly: true, execaOpts: { encoding: null } });
+export function getOneRawFrame({ path, inWidth, inHeight, seekTo, streamIndex }) {
+  const { process, width, height, channels } = createRawFfmpeg({ path, inWidth, inHeight, seekTo, streamIndex, oneFrameOnly: true, execaOpts: { encoding: null } });
   return { process, width, height, channels };
 }
 
-export function encodeLiveRawStream({ path, inWidth, inHeight, seekTo }) {
-  const { process, width, height, channels } = createRawFfmpeg({ path, inWidth, inHeight, seekTo, execaOpts: { encoding: null, buffer: false } });
+export function encodeLiveRawStream({ path, inWidth, inHeight, seekTo, streamIndex }) {
+  const { process, width, height, channels } = createRawFfmpeg({ path, inWidth, inHeight, seekTo, streamIndex, execaOpts: { encoding: null, buffer: false } });
 
   return {
     process,

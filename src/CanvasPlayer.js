@@ -3,7 +3,7 @@ import { encodeLiveRawStream, getOneRawFrame } from './ffmpeg';
 // TODO keep everything in electron land?
 const strtok3 = window.require('strtok3');
 
-export default ({ path, width: inWidth, height: inHeight }) => {
+export default ({ path, width: inWidth, height: inHeight, streamIndex }) => {
   let canvas;
 
   let terminated;
@@ -35,7 +35,7 @@ export default ({ path, width: inWidth, height: inHeight }) => {
 
     if (playing) {
       try {
-        const { process: processIn, channels, width, height } = encodeLiveRawStream({ path, inWidth, inHeight, seekTo: commandedTime });
+        const { process: processIn, channels, width, height } = encodeLiveRawStream({ path, inWidth, inHeight, streamIndex, seekTo: commandedTime });
         process = processIn;
 
         // process.stderr.on('data', data => console.log(data.toString('utf-8')));
@@ -55,7 +55,7 @@ export default ({ path, width: inWidth, height: inHeight }) => {
       }
     } else {
       try {
-        const { process: processIn, width, height } = getOneRawFrame({ path, inWidth, inHeight, seekTo: commandedTime });
+        const { process: processIn, width, height } = getOneRawFrame({ path, inWidth, inHeight, streamIndex, seekTo: commandedTime });
         process = processIn;
         const { stdout: rgbaImage } = await process;
 
