@@ -820,7 +820,7 @@ const App = memo(() => {
   useEffect(() => () => waveform && URL.revokeObjectURL(waveform.url), [waveform]);
 
   function showUnsupportedFileMessage() {
-    toast.fire({ timer: 10000, icon: 'info', title: i18n.t('File not natively supported'), text: i18n.t('Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview.') });
+    toast.fire({ timer: 10000, text: i18n.t('File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview.') });
   }
 
   const createDummyVideo = useCallback(async (cod, fp) => {
@@ -1420,10 +1420,10 @@ const App = memo(() => {
     if (error.code === MEDIA_ERR_SRC_NOT_SUPPORTED && !dummyVideoPath) {
       console.log('MEDIA_ERR_SRC_NOT_SUPPORTED - trying to create dummy');
 
+      toast.fire({ icon: 'info', text: 'This file is not natively supported. Creating a preview file...' });
       if (hasVideo) {
-        tryCreateDummyVideo();
+        await tryCreateDummyVideo();
       } else if (hasAudio) {
-        toast.fire({ icon: 'info', text: 'This file is not natively supported. Creating a preview file...' });
         await html5ifyAndLoad('fastest-audio');
       }
     }
