@@ -913,7 +913,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [filePath, html5FriendlyPath, resetState, working]);
+  }, [filePath, html5FriendlyPath, resetState, working, dummyVideoPath]);
 
   const outSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
     [invertCutSegments, inverseCutSegments, apparentCutSegments]);
