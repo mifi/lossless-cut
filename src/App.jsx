@@ -1048,6 +1048,11 @@ const App = memo(() => {
   }, [filePath, captureFormat, customOutDir, html5FriendlyPath, dummyVideoPath, outputDir, duration]);
 
   const changePlaybackRate = useCallback((dir) => {
+    if (canvasPlayerEnabled) {
+      toast.fire({ title: i18n.t('Unable to playback rate right now'), timer: 1000 });
+      return;
+    }
+
     const video = videoRef.current;
     if (!playing) {
       video.play();
@@ -1056,7 +1061,7 @@ const App = memo(() => {
       toast.fire({ title: `${i18n.t('Playback rate:')} ${Math.floor(newRate * 100)}%`, timer: 1000 });
       video.playbackRate = newRate;
     }
-  }, [playing]);
+  }, [playing, canvasPlayerEnabled]);
 
   const getHtml5ifiedPath = useCallback((cod, fp, type) => getOutPath(cod, fp, `html5ified-${type}.mp4`), []);
 
