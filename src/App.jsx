@@ -125,7 +125,7 @@ const App = memo(() => {
   // Per project state
   const [waveform, setWaveform] = useState();
   const [html5FriendlyPath, setHtml5FriendlyPath] = useState();
-  const [working, setWorking] = useState(false);
+  const [working, setWorking] = useState();
   const [dummyVideoPath, setDummyVideoPath] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [playerTime, setPlayerTime] = useState();
@@ -611,7 +611,7 @@ const App = memo(() => {
 
   const mergeFiles = useCallback(async ({ paths, allStreams }) => {
     try {
-      setWorking(true);
+      setWorking(i18n.t('Merging'));
 
       const firstPath = paths[0];
       const { newCustomOutDir, cancel } = await assureOutDirAccess(firstPath);
@@ -626,7 +626,7 @@ const App = memo(() => {
       errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same codecs'));
       console.error('Failed to merge files', err);
     } finally {
-      setWorking(false);
+      setWorking();
     }
   }, [assureOutDirAccess]);
 
@@ -778,7 +778,7 @@ const App = memo(() => {
     setFileNameTitle();
     setHtml5FriendlyPath();
     setDummyVideoPath();
-    setWorking(false);
+    setWorking();
     setPlaying(false);
     setDuration();
     cutSegmentsHistory.go(0);
@@ -834,13 +834,13 @@ const App = memo(() => {
   const tryCreateDummyVideo = useCallback(async () => {
     try {
       if (working) return;
-      setWorking(true);
+      setWorking(i18n.t('Loading file'));
       await createDummyVideo(customOutDir, filePath);
     } catch (err) {
       console.error(err);
       errorToast(i18n.t('Failed to playback this file. Try to convert to friendly format from the menu'));
     } finally {
-      setWorking(false);
+      setWorking();
     }
   }, [createDummyVideo, filePath, working, customOutDir]);
 
@@ -876,7 +876,7 @@ const App = memo(() => {
     resetState();
 
     try {
-      setWorking(true);
+      setWorking(i18n.t('Deleting source'));
 
       if (html5FriendlyPath) await trash(html5FriendlyPath).catch(console.error);
       // throw new Error('test');
@@ -903,7 +903,7 @@ const App = memo(() => {
         console.error(err2);
       }
     } finally {
-      setWorking(false);
+      setWorking();
     }
   }, [filePath, html5FriendlyPath, resetState, working]);
 
@@ -968,7 +968,7 @@ const App = memo(() => {
     }
 
     try {
-      setWorking(true);
+      setWorking(i18n.t('Exporting'));
 
       // throw (() => { const err = new Error('test'); err.code = 'ENOENT'; return err; })();
       const outFiles = await cutMultiple({
@@ -1021,7 +1021,7 @@ const App = memo(() => {
 
       showFfmpegFail(err);
     } finally {
-      setWorking(false);
+      setWorking();
     }
   }, [
     effectiveRotation, outSegments, handleCutFailed, isRotationSet,
@@ -1092,7 +1092,7 @@ const App = memo(() => {
 
     resetState();
 
-    setWorking(true);
+    setWorking(i18n.t('Loading file'));
 
     async function checkAndSetExistingHtml5FriendlyFile(speed) {
       const existing = getHtml5ifiedPath(cod, fp, speed);
@@ -1165,7 +1165,7 @@ const App = memo(() => {
       }
       showFfmpegFail(err);
     } finally {
-      setWorking(false);
+      setWorking();
     }
   }, [resetState, working, createDummyVideo, loadEdlFile, getEdlFilePath, getHtml5ifiedPath]);
 
@@ -1255,14 +1255,14 @@ const App = memo(() => {
     if (!filePath) return;
 
     try {
-      setWorking(true);
+      setWorking(i18n.t('Extracting all streams'));
       await extractStreams({ customOutDir, filePath, streams: mainStreams });
       openDirToast({ dirPath: outputDir, text: `${i18n.t('All streams can be found as separate files at:')} ${outputDir}` });
     } catch (err) {
       errorToast(i18n.t('Failed to extract all streams'));
       console.error('Failed to extract all streams', err);
     } finally {
-      setWorking(false);
+      setWorking();
     }
   }, [customOutDir, filePath, mainStreams, outputDir]);
 
@@ -1353,7 +1353,7 @@ const App = memo(() => {
     if (!filePath) return;
 
     try {
-      setWorking(true);
+      setWorking(i18n.t('Converting to supported format'));
 
       const speed = await askForHtml5ifySpeed(['fastest', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest']);
       if (!speed) return;
@@ -1367,7 +1367,7 @@ const App = memo(() => {
       errorToast(i18n.t('Failed to convert file. Try a different conversion'));
       console.error('Failed to html5ify file', err);
     } finally {
-      setWorking(false);
+      setWorking();
     }
   }, [createDummyVideo, customOutDir, filePath, html5ifyAndLoad]);
 
@@ -1479,7 +1479,7 @@ const App = memo(() => {
       if (!speed) return;
 
       try {
-        setWorking(true);
+        setWorking(i18n.t('Batch converting to supported format'));
         setCutProgress(0);
 
         // eslint-disable-next-line no-restricted-syntax
@@ -1508,7 +1508,7 @@ const App = memo(() => {
         errorToast(i18n.t('Failed to batch convert to friendly format'));
         console.error('Failed to html5ify', err);
       } finally {
-        setWorking(false);
+        setWorking();
         setCutProgress();
       }
     }
@@ -1758,7 +1758,7 @@ const App = memo(() => {
       <AnimatePresence>
         {working && (
           <div style={{
-            position: 'absolute', zIndex: 1, bottom: bottomBarHeight, top: topBarHeight, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', pointerEvents: 'none',
+            position: 'absolute', zIndex: 1, bottom: bottomBarHeight, top: topBarHeight, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center',
           }}
           >
             <motion.div
@@ -1770,12 +1770,12 @@ const App = memo(() => {
               <div style={{ width: 150, height: 150 }}>
                 <Lottie
                   options={{ loop: true, autoplay: true, animationData: loadingLottie }}
-                  style={{ width: '170%', height: '130%', marginLeft: '-35%', marginTop: '-29%' }}
+                  style={{ width: '170%', height: '130%', marginLeft: '-35%', marginTop: '-29%', pointerEvents: 'none' }}
                 />
               </div>
 
-              <div style={{ marginTop: 10 }}>
-                {t('WORKING')}
+              <div style={{ marginTop: 10, width: 150 }}>
+                {working}...
               </div>
 
               {(cutProgress != null) && (
