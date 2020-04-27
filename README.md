@@ -35,6 +35,8 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 
 ### Add music to a video (or replace existing audio track)
 
+### Link audio and video tracks from separate recordings
+
 ### Include a subtitle into a video
 
 ### Extract music track from a video and cut it to your needs
