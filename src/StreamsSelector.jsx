@@ -7,6 +7,9 @@ import Swal from 'sweetalert2';
 import { SegmentedControl } from 'evergreen-ui';
 import withReactContent from 'sweetalert2-react-content';
 import { useTranslation } from 'react-i18next';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { tomorrow as style } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import JSON5 from 'json5';
 
 import { formatDuration } from './util';
 import { getStreamFps } from './ffmpeg';
@@ -15,10 +18,16 @@ const ReactSwal = withReactContent(Swal);
 
 
 function onInfoClick(s, title) {
+  const html = (
+    <SyntaxHighlighter language="javascript" style={style} customStyle={{ textAlign: 'left', maxHeight: 300, overflowY: 'auto', fontSize: 14 }}>
+      {JSON5.stringify(s, null, 2)}
+    </SyntaxHighlighter>
+  );
+
   ReactSwal.fire({
     showCloseButton: true,
     title,
-    html: <div style={{ whiteSpace: 'pre', textAlign: 'left', overflow: 'auto', maxHeight: 300, overflowY: 'auto' }}>{JSON.stringify(s, null, 2)}</div>,
+    html,
   });
 }
 
