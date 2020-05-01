@@ -621,12 +621,14 @@ const App = memo(() => {
       const outPath = getOutPath(newCustomOutDir, firstPath, `merged${ext}`);
 
       // console.log('merge', paths);
-      await ffmpegMergeFiles({ paths, outPath, allStreams });
+      await ffmpegMergeFiles({ paths, outPath, allStreams, onProgress: setCutProgress });
+      openDirToast({ icon: 'success', dirPath: outputDir, text: i18n.t('Files merged!') });
     } catch (err) {
       errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same codecs'));
       console.error('Failed to merge files', err);
     } finally {
       setWorking();
+      setCutProgress();
     }
   }, [assureOutDirAccess]);
 
@@ -997,7 +999,8 @@ const App = memo(() => {
       });
 
       if (outFiles.length > 1 && autoMerge) {
-        setCutProgress(0); // TODO implement progress
+        setCutProgress(0);
+        setWorking(i18n.t('Merging'));
 
         await autoMergeSegments({
           customOutDir,
@@ -1005,6 +1008,7 @@ const App = memo(() => {
           outFormat: fileFormat,
           isCustomFormatSelected,
           segmentPaths: outFiles,
+          onProgress: setCutProgress,
         });
       }
 
@@ -1035,6 +1039,7 @@ const App = memo(() => {
       showFfmpegFail(err);
     } finally {
       setWorking();
+      setCutProgress();
     }
   }, [
     effectiveRotation, outSegments, handleCutFailed, isRotationSet,

@@ -422,8 +422,11 @@ export async function html5ifyDummy(filePath, outPath, onProgress) {
   await transferTimestamps(filePath, outPath);
 }
 
-export async function mergeFiles({ paths, outPath, allStreams, outFormat }) {
+export async function mergeFiles({ paths, outPath, allStreams, outFormat, onProgress = () => {} }) {
   console.log('Merging files', { paths }, 'to', outPath);
+
+  const durations = await pMap(paths, getDuration, { concurrency: 1 });
+  const totalDuration = sum(durations);
 
   // Keep this similar to cut()
   const ffmpegArgs = [
@@ -456,18 +459,20 @@ export async function mergeFiles({ paths, outPath, allStreams, outFormat }) {
   const ffmpegPath = getFfmpegPath();
   const process = execa(ffmpegPath, ffmpegArgs);
 
+  handleProgress(process, totalDuration, onProgress);
+
   stringToStream(concatTxt).pipe(process.stdin);
 
   const result = await process;
   console.log(result.stdout);
 }
 
-export async function autoMergeSegments({ customOutDir, sourceFile, isCustomFormatSelected, outFormat, segmentPaths }) {
+export async function autoMergeSegments({ customOutDir, sourceFile, isCustomFormatSelected, outFormat, segmentPaths, onProgress }) {
   const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath: sourceFile });
   const fileName = `cut-merged-${new Date().getTime()}${ext}`;
   const outPath = getOutPath(customOutDir, sourceFile, fileName);
 
-  await mergeFiles({ paths: segmentPaths, outPath, outFormat, allStreams: true });
+  await mergeFiles({ paths: segmentPaths, outPath, outFormat, allStreams: true, onProgress });
   await pMap(segmentPaths, path => fs.unlink(path), { concurrency: 5 });
 }
 
