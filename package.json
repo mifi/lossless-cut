@@ -20,7 +20,8 @@
     "prepack-win": "yarn build",
     "postinstall": "patch-package && electron-builder install-app-deps",
     "pack-linux": "electron-builder --linux",
-    "prepack-linux": "yarn build"
+    "prepack-linux": "yarn build",
+    "scan-i18n": "i18next-scanner --config i18next-scanner.config.js"
   },
   "author": {
     "name": "Mikael Finstad",
@@ -53,6 +54,7 @@
     "framer-motion": "^1.8.4",
     "hammerjs": "^2.0.8",
     "i18next": "^19.3.2",
+    "i18next-scanner": "^2.11.0",
     "icon-gen": "^2.0.0",
     "lodash": "^4.17.13",
     "mkdirp": "^1.0.3",
@@ -89,7 +91,7 @@
     "fs-extra": "^8.1.0",
     "github-api": "^3.2.2",
     "i18next-electron-language-detector": "^0.0.10",
-    "i18next-node-fs-backend": "^2.1.3",
+    "i18next-fs-backend": "^1.0.1",
     "json5": "^2.1.3",
     "mime-types": "^2.1.14",
     "open": "^7.0.3",

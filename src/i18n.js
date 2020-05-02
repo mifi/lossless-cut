@@ -2,7 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 const LanguageDetector = window.require('i18next-electron-language-detector');
-const Backend = window.require('i18next-node-fs-backend');
+const Backend = window.require('i18next-fs-backend');
 const isDev = window.require('electron-is-dev');
 
 const { app } = window.require('electron').remote;
@@ -21,15 +21,17 @@ i18n
   .use(initReactI18next)
   // init i18next
   // for all options read: https://www.i18next.com/overview/configuration-options
+  // See also i18next-scanner.config.js
   .init({
     fallbackLng: 'en',
     // debug: isDev,
-    debug: false,
     // saveMissing: isDev,
     // updateMissing: isDev,
     // saveMissingTo: 'all',
 
     // TODO improve keys?
+    // Maybe do something like this: https://stackoverflow.com/a/19405314/6519037
+    // https://www.i18next.com/translation-function/context
     keySeparator: false,
     nsSeparator: false,
     pluralSeparator: false,
