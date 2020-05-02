@@ -22,6 +22,11 @@ const Settings = memo(({
     setLanguage(l);
   }
 
+  const langNames = {
+    en: 'English',
+    nb: 'Norsk',
+  };
+
   return (
     <Fragment>
       <Row>
@@ -29,7 +34,7 @@ const Settings = memo(({
         <Table.TextCell>
           <Select value={language || ''} onChange={onLangChange}>
             <option key="" value="">{t('System language')}</option>
-            {['en'].map(lang => <option key={lang} value={lang}>{lang}</option>)}
+            {Object.keys(langNames).map((lang) => <option key={lang} value={lang}>{langNames[lang]}</option>)}
           </Select>
         </Table.TextCell>
       </Row>
