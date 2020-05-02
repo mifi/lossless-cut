@@ -631,7 +631,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [assureOutDirAccess]);
+  }, [assureOutDirAccess, outputDir]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), []);
   const toggleKeyframeCut = useCallback(() => setKeyframeCut((val) => {
