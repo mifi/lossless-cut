@@ -22,6 +22,7 @@ const Settings = memo(({
     setLanguage(l);
   }
 
+  // https://www.electronjs.org/docs/api/locales
   const langNames = {
     en: 'English',
     nb: 'Norsk',

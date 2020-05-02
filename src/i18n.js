@@ -11,6 +11,23 @@ const { join } = require('path');
 
 const getLangPath = (subPath) => (isDev ? join('public', subPath) : join(app.getAppPath(), 'build', subPath));
 
+// Weblate hardcodes different lang codes than electron
+// https://www.electronjs.org/docs/api/locales
+const mapLang = (lng) => ({
+  nb: 'nb_NO',
+  no: 'nb_NO',
+  nn: 'nb_NO',
+  zh: 'zh_Hans',
+  'zh-CN': 'zh_Hans',
+  'zh-TW': 'zh_Hans',
+  fr: 'fr',
+  'fr-CA': 'fr',
+  'fr-CH': 'fr',
+  'fr-FR': 'fr',
+}[lng] || lng);
+
+export const fallbackLng = 'en';
+
 // https://github.com/i18next/i18next/issues/869
 i18n
   .use(Backend)
@@ -23,7 +40,7 @@ i18n
   // for all options read: https://www.i18next.com/overview/configuration-options
   // See also i18next-scanner.config.js
   .init({
-    fallbackLng: 'en',
+    fallbackLng,
     // debug: isDev,
     // saveMissing: isDev,
     // updateMissing: isDev,
@@ -38,8 +55,8 @@ i18n
     contextSeparator: false,
 
     backend: {
-      loadPath: getLangPath('locales/{{lng}}/{{ns}}.json'),
-      addPath: getLangPath('locales/{{lng}}/{{ns}}.missing.json'),
+      loadPath: (lng, ns) => getLangPath(`locales/${mapLang(lng)}/${ns}.json`),
+      addPath: (lng, ns) => getLangPath(`locales/${mapLang(lng)}/${ns}.missing.json`),
     },
 
     interpolation: {

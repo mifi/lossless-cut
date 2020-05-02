@@ -50,6 +50,7 @@ import {
   openDirToast, askForHtml5ifySpeed, isMasBuild, isStoreBuild,
 } from './util';
 import { openSendReportDialog } from './reporting';
+import { fallbackLng } from './i18n';
 
 
 import loadingLottie from './7077-magic-flow.json';
@@ -222,7 +223,7 @@ const App = memo(() => {
   useEffect(() => safeSetConfig('language', language), [language]);
 
   useEffect(() => {
-    if (language != null) i18n.changeLanguage(language).catch(console.error);
+    i18n.changeLanguage(language || fallbackLng).catch(console.error);
   }, [language]);
 
   // This useEffect must be placed after all usages of firstUpdateRef.current
