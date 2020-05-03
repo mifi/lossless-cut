@@ -61,5 +61,6 @@
     "Failed to load project file": "Klarte ikke å laste inn prosjektfil",
     "Invalid start or end values for one or more segments": "Ugyldig start- eller sluttverdier for ett eller flere segmenter",
     "Playback rate:": "Avspillingstakt:",
-    "Unable to export this file": "Kunne ikke eksportere denne filen"
+    "Unable to export this file": "Kunne ikke eksportere denne filen",
+    "Where do you want to save output files? Make sure there is enough free space in this folder": "Hvor vil du lagre de produserte filene? Påse at det er nok ledig lagringsplass i mappen"
 }
