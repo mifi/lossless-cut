@@ -40,7 +40,7 @@ const Canvas = memo(({ rotate, filePath, width, height, playerTime, streamIndex,
     else canvasPlayer.pause(debouncedPlayerTime);
   }, [canvasPlayer, debouncedCommandedTime, debouncedPlayerTime, playing]);
 
-  const canvasStyle = useMemo(() => ({ display: 'block', width: '100%', height: '100%', objectFit: 'contain', transform: `rotate(${rotate}deg)` }), [rotate]);
+  const canvasStyle = useMemo(() => ({ display: 'block', width: '100%', height: '100%', objectFit: 'contain', transform: rotate ? `rotate(${rotate}deg)` : undefined }), [rotate]);
 
   return (
     <div style={{ width: '100%', height: '100%', left: 0, right: 0, top: 0, bottom: 0, position: 'absolute', overflow: 'hidden', background: 'black' }}>
