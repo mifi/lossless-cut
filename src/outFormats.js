@@ -1,5 +1,5 @@
 // Extracted from "ffmpeg -formats"
-export default {
+const ffmpegFormats = {
   '3g2': '3GP2 (3GPP2 file format)',
   '3gp': '3GP (3GPP file format)',
   a64: 'a64 - video for Commodore 64',
@@ -163,3 +163,11 @@ export default {
   wv: 'raw WavPack',
   yuv4mpegpipe: 'YUV4MPEG pipe',
 };
+
+const modifiedFormats = {
+  ...ffmpegFormats,
+};
+
+modifiedFormats.ipod = 'M4A';
+
+export default modifiedFormats;
