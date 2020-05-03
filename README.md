@@ -159,6 +159,7 @@ This project is maintained by me alone. The project will always remain free and 
 - [Lottie animation](https://lottiefiles.com/7077-magic-flow)
 - Thanks to Adi Abinun for his UI sketch work, inspiration and guidance
 - Thanks to everyone who support my continued open source work 🙌
+- Thanks to translators who helped translate the app. [You can too!](https://hosted.weblate.org/projects/losslesscut/losslesscut/)
 
 ---
 
