@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useState, useCallback, useRef, Fragment, useMemo } from 'react';
-import { FaVolumeMute, FaVolumeUp, FaAngleLeft } from 'react-icons/fa';
+import { FaVolumeMute, FaVolumeUp, FaAngleLeft, FaWindowClose } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import Lottie from 'react-lottie';
@@ -157,6 +157,7 @@ const App = memo(() => {
   const [waveformEnabled, setWaveformEnabled] = useState(false);
   const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
   const [showSideBar, setShowSideBar] = useState(true);
+  const [hideCanvasPreview, setHideCanvasPreview] = useState(false);
 
   // Segment related state
   const [currentSegIndex, setCurrentSegIndex] = useState(0);
@@ -326,7 +327,15 @@ const App = memo(() => {
   const effectiveRotation = isRotationSet ? rotation : (mainVideoStream && mainVideoStream.tags && mainVideoStream.tags.rotate && parseInt(mainVideoStream.tags.rotate, 10));
 
   const zoomRel = useCallback((rel) => setZoom(z => Math.min(Math.max(z + rel, 1), zoomMax)), []);
-  const canvasPlayerEnabled = !!(mainVideoStream && (isRotationSet || dummyVideoPath));
+  const canvasPlayerRequired = !!(mainVideoStream && dummyVideoPath);
+  const canvasPlayerWanted = !!(mainVideoStream && isRotationSet && !hideCanvasPreview);
+  // Allow user to disable it
+  const canvasPlayerEnabled = (canvasPlayerRequired || canvasPlayerWanted);
+
+  useEffect(() => {
+    // Reset the user preference when the state changes to true
+    if (canvasPlayerEnabled) setHideCanvasPreview(false);
+  }, [canvasPlayerEnabled]);
 
   const comfortZoom = duration ? Math.max(duration / 100, 1) : undefined;
   const toggleComfortZoom = useCallback(() => {
@@ -586,6 +595,7 @@ const App = memo(() => {
 
   const increaseRotation = useCallback(() => {
     setRotation((r) => (r + 90) % 450);
+    setHideCanvasPreview(false);
   }, []);
 
   const assureOutDirAccess = useCallback(async (outFilePath) => {
@@ -807,6 +817,7 @@ const App = memo(() => {
     setZoom(1);
     setShortestFlag(false);
     setZoomWindowStartTime(0);
+    setHideCanvasPreview(false);
 
     setWaveform();
     cancelWaveformDataDebounce();
@@ -1859,12 +1870,13 @@ const App = memo(() => {
         {canvasPlayerEnabled && <Canvas rotate={effectiveRotation} filePath={filePath} width={mainVideoStream.width} height={mainVideoStream.height} streamIndex={mainVideoStream.index} playerTime={playerTime} commandedTime={commandedTime} playing={playing} />}
       </div>
 
-      {isRotationSet && (
+      {isRotationSet && !hideCanvasPreview && (
         <div style={{
           position: 'absolute', top: topBarHeight, marginTop: '1em', marginRight: '1em', right: sideBarWidth, color: 'white',
         }}
         >
           {t('Rotation preview')}
+          {!canvasPlayerRequired && <FaWindowClose role="button" style={{ cursor: 'pointer', verticalAlign: 'middle', padding: 10 }} onClick={() => setHideCanvasPreview(true)} />}
         </div>
       )}
 
