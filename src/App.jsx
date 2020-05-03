@@ -65,7 +65,7 @@ const { extname } = window.require('path');
 const { dialog, app } = electron.remote;
 
 const configStore = electron.remote.require('./configStore');
-// const { focusWindow } = electron.remote.require('./electron');
+const { focusWindow } = electron.remote.require('./electron');
 
 const ReactSwal = withReactContent(Swal);
 
@@ -1371,8 +1371,7 @@ const App = memo(() => {
     const { files } = ev.dataTransfer;
     const filePaths = Array.from(files).map(f => f.path);
 
-    // TODO https://github.com/electron/electron/issues/19920
-    // focusWindow();
+    focusWindow();
 
     if (filePaths.length === 1 && filePaths[0].toLowerCase().endsWith('.csv')) {
       loadEdlFile(filePaths[0]);

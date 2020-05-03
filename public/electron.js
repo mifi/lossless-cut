@@ -132,7 +132,7 @@ electron.ipcMain.on('setAskBeforeClose', (e, val) => {
 
 function focusWindow() {
   try {
-    if (mainWindow) mainWindow.webContents.focus();
+    app.focus({ steal: true });
   } catch (err) {
     console.error('Failed to focus window', err);
   }
