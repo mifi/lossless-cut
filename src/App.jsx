@@ -835,7 +835,7 @@ const App = memo(() => {
   useEffect(() => () => waveform && URL.revokeObjectURL(waveform.url), [waveform]);
 
   function showUnsupportedFileMessage() {
-    toast.fire({ timer: 13000, text: i18n.t('File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview.') });
+    toast.fire({ timer: 13000, text: i18n.t('File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview with audio.') });
   }
 
   const createDummyVideo = useCallback(async (cod, fp) => {
