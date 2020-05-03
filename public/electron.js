@@ -130,4 +130,12 @@ electron.ipcMain.on('setAskBeforeClose', (e, val) => {
   askBeforeClose = val;
 });
 
-module.exports = { configStore };
+function focusWindow() {
+  try {
+    if (mainWindow) mainWindow.webContents.focus();
+  } catch (err) {
+    console.error('Failed to focus window', err);
+  }
+}
+
+module.exports = { focusWindow };
