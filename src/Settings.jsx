@@ -23,9 +23,11 @@ const Settings = memo(({
   }
 
   // https://www.electronjs.org/docs/api/locales
+  // See i18n.js
   const langNames = {
     en: 'English',
     nb: 'Norsk',
+    zh: '中文',
   };
 
   return (
