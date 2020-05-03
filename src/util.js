@@ -124,7 +124,7 @@ export function filenamify(name) {
 export async function promptTimeOffset(inputValue) {
   const { value } = await Swal.fire({
     title: i18n.t('Set custom start time offset'),
-    text: i18n.t('Instead of video apparently starting at 0, you can offset by a specified value (useful for viewing/cutting videos according to timecodes)'),
+    text: i18n.t('Instead of video apparently starting at 0, you can offset by a specified value. This only applies to the preview inside LosslessCut and does not modify the file in any way. Useful for viewing/cutting videos according to timecodes)'),
     input: 'text',
     inputValue: inputValue || '',
     showCancelButton: true,
