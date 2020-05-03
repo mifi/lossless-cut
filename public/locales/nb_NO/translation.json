@@ -56,5 +56,10 @@
     "Files merged!": "Filer flettet.",
     "Merging": "Fletter",
     "Unable to save project file": "Kunne ikke lagre prosjektfil",
-    "Unable to save your preferences. Try to disable any anti-virus": "Kunne ikke lagre innstillingene. Prøv å skru av antivirus."
+    "Unable to save your preferences. Try to disable any anti-virus": "Kunne ikke lagre innstillingene. Prøv å skru av antivirus.",
+    "Failed to export CSV": "Klarte ikke å eksportere CSV",
+    "Failed to load project file": "Klarte ikke å laste inn prosjektfil",
+    "Invalid start or end values for one or more segments": "Ugyldig start- eller sluttverdier for ett eller flere segmenter",
+    "Playback rate:": "Avspillingstakt:",
+    "Unable to export this file": "Kunne ikke eksportere denne filen"
 }
