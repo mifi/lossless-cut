@@ -96,16 +96,18 @@ Unsupported files can still be converted to a supported format/codec from the `F
 
 - Drag drop a video file into player or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
 - Press <kbd>SPACE</kbd> to play/pause or <kbd>◀</kbd><kbd>▶</kbd>, <kbd>,</kbd><kbd>.</kbd> or mouse/trackpad wheel to seek back/forth
-- Select the cut segment's start and end time by moving the time marker and then pressing <kbd>I</kbd> to set start time, and <kbd>O</kbd> to set end time. *Note that the segments you select will be **preserved** and exported to a new file. You can change this behavior with the Yin Yang symbol ☯️, in which case it will instead **remove** all selected segments and export the parts between.*
+- Select the cut segment's start and end time by moving the time marker and then pressing <kbd>I</kbd> to set start time, and <kbd>O</kbd> to set end time.
+  - Note that the segments you select will be **preserved** and exported to a new file. You can change this behavior with the **Yin Yang** symbol ☯️, in which case it will instead **remove** all selected segments and export the parts between.
+  - Note also that start time will not be accurate, see [Known issues](#known-issues--limitations)
 - *(optional)* If you want to add more than one segment, move to the desired start time and press <kbd>+</kbd>, then select the next segment start/end times with <kbd>I</kbd>/<kbd>O</kbd>.
-- *(optional)* If you want to re-merge all the selected segments to one file after cutting, toggle the button `Separate files` to `Merge cuts`.
-- *(optional)* If you want to export to a certain dir, press the `Working dir unset` button (default: Input file path)
-- *(optional)* If you want to change orientation, press the rotation button
+- *(optional)* If you want to re-merge all the selected segments into one file after cutting, toggle the button `Separate files` to `Merge cuts`.
+- *(optional)* If you want to export to a certain output folder, press the `Working dir unset` button (default: Input file folder)
+- *(optional)* If you want to change orientation, press the **rotation** button
 - *(optional)* By default, audio, video and subtitle tracks from the input file will be cut and exported. Press the `Tracks` button to customise and/or add new tracks from other files.
 - *(optional)* select a new output format
 - Press the `Export` button (or <kbd>E</kbd>) to run the export
-- Press the camera button (or <kbd>C</kbd>) if you want to take a JPEG/PNG snapshot from the current time
-- If you want to move the original file to trash, press the trash button
+- Press the **Camera** button (or <kbd>C</kbd>) if you want to take a JPEG/PNG snapshot from the current time
+- If you want to move the original file to trash, press the **trash** button
 - For best results you may need to trial and error with another output format (matroska takes nearly everything), change keyframe cut mode or disable some tracks, see known issues below.
 
 Note: The original video file will not be modified. Instead it creates a lossless export to a new file in the same directory as the original file with from/to timestamps.
@@ -114,16 +116,17 @@ Note also that the cut is currently not precise around the cutpoints, so video b
 
 ## Known issues & limitations
 
-- **Cutting times are not accurate and will be "rounded" to the nearest keyframe.** There are wishes to implement a "smart cut" feature that re-encodes only the part before the keyframe, see [#126](https://github.com/mifi/lossless-cut/issues/126)
-- Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. See [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
+- **Cutting times are not accurate!** Start cut time will be "rounded" to the nearest **previous** keyframe.
+  - Lossless cutting is not an exact science. For some codecs it just works. For others you may need to trial and error depending on the codec, keyframes etc to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
+  - Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
 - When exporting you may lose some proprietary data tracks (like `tmcd`, `fdsc` and `gpmd` added by GoPro). These can be exported to separate files however
-- H265 is not supported natively. There is partial support with very low FPS and no audio preview. Alternatively convert to supported codec (slow) from the menu, see [#88](https://github.com/mifi/lossless-cut/issues/88)
+- Some codecs are not supported natively. There is partial support with low quality. You can convert to supported codec from the menu, see [#88](https://github.com/mifi/lossless-cut/issues/88)
 
 ## Troubleshooting
 
-- If you get an error when cutting or opening any kind of file under Windows, please check your anti-virus. It might be blocking execution of ffmpeg, see [#18](https://github.com/mifi/lossless-cut/issues/18)
+- If you get an error when cutting or opening any kind of file under Windows, try to disable your anti-virus. See [#18](https://github.com/mifi/lossless-cut/issues/18)
 - If you get an error on Linux like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See #258
-- If any other problem, please read existing issues or file an issue here on github.
+- If any other problem, check [Known issues](#known-issues--limitations), or please search for existing issues before you file an issue here on GitHub.
 
 ## CSV import/export
 
