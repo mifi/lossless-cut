@@ -14,6 +14,7 @@ module.exports = {
     resource: {
       loadPath: 'locales/{{lng}}/{{ns}}.json',
       savePath: 'locales/{{lng}}/{{ns}}.json',
+      jsonIndent: 4,
     },
     nsSeparator: false,
     keySeparator: false,
