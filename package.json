@@ -139,6 +139,9 @@
       "asarUnpack": [
         "node_modules/trash/**"
       ],
+      "electronLanguages": [
+        "en"
+      ],
       "extraResources": [
         {
           "from": "ffmpeg-mac/ffmpeg",
