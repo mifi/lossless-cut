@@ -1,6 +1,6 @@
 {
-    "Key frames will show on the timeline. You need to zoom in to view them": "放大来观察在时间轴上的关键帧。",
-    "File has been moved to trash": "文件已移动至回收站",
+    "Key frames will show on the timeline. You need to zoom in to view them": "关键帧将显示在时间轴上。需要放大才能查看它们",
+    "File has been moved to trash": "文件已被移动至回收站",
     "Separate files": "单独的文件",
     "Working dir set": "工作目录设置",
     "Type": "类型",
@@ -251,5 +251,7 @@
     "You have no write access to the directory of this file, please select a custom working dir": "您没有对该文件目录的写入权限，请重新选择其它目录",
     "Unable to save project file": "无法保存项目文件",
     "Muted preview (exported file will not be affected)": "预览时静音（不会影响导出的文件）",
-    "Unable to save your preferences. Try to disable any anti-virus": "无法保存您的偏好设置。尝试关闭反病毒软件"
+    "Unable to save your preferences. Try to disable any anti-virus": "无法保存您的偏好设置。尝试关闭反病毒软件",
+    "Instead of video apparently starting at 0, you can offset by a specified value. This only applies to the preview inside LosslessCut and does not modify the file in any way. Useful for viewing/cutting videos according to timecodes)": "您可以用指定的值来偏移，而不是视频从0开始。这仅适用于LosslessCut内部的预览，不会以任何方式修改文件。对于根据时间码观看/剪辑视频很有用）",
+    "File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview with audio.": "不支持该文件。预览可能没有音频或质量低劣。但是最终导出的文件将不会丢失音频。您可以从菜单进行转换，以获得更好的音频预览。"
 }
