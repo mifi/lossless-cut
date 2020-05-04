@@ -191,6 +191,19 @@ export function findNearestKeyFrameTime({ frames, time, direction, fps }) {
   return nearestFrame.time;
 }
 
+function getMovFlags(outFormat) {
+  let flags = [];
+
+  // https://github.com/mifi/lossless-cut/issues/331
+  if (outFormat && ['ipod'].includes(outFormat)) {
+    flags = ['+faststart'];
+  } else {
+    flags = ['use_metadata_tags'];
+  }
+
+  return flatMap(flags, flag => ['-movflags', flag]);
+}
+
 async function cut({
   filePath, outFormat, cutFrom, cutTo, videoDuration, rotation,
   onProgress, copyFileStreams, keyframeCut, outPath, appendFfmpegCommandLog, shortestFlag,
@@ -235,7 +248,7 @@ async function cut({
     ...flatMapDeep(copyFileStreamsFiltered, ({ streamIds }, fileIndex) => streamIds.map(streamId => ['-map', `${fileIndex}:${streamId}`])),
     '-map_metadata', '0',
     // https://video.stackexchange.com/questions/23741/how-to-prevent-ffmpeg-from-dropping-metadata
-    '-movflags', 'use_metadata_tags',
+    ...getMovFlags(outFormat),
 
     // See https://github.com/mifi/lossless-cut/issues/170
     '-ignore_unknown',
@@ -440,7 +453,7 @@ export async function mergeFiles({ paths, outPath, allStreams, outFormat, onProg
     ...(allStreams ? ['-map', '0'] : []),
     '-map_metadata', '0',
     // https://video.stackexchange.com/questions/23741/how-to-prevent-ffmpeg-from-dropping-metadata
-    '-movflags', 'use_metadata_tags',
+    ...getMovFlags(outFormat),
 
     // See https://github.com/mifi/lossless-cut/issues/170
     '-ignore_unknown',
