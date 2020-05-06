@@ -28,6 +28,7 @@ const Settings = memo(({
     en: 'English',
     nb: 'Norsk',
     zh: '中文',
+    it: 'Italiano',
   };
 
   return (

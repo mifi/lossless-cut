@@ -24,6 +24,9 @@ const mapLang = (lng) => ({
   'fr-CA': 'fr',
   'fr-CH': 'fr',
   'fr-FR': 'fr',
+  it: 'it',
+  'it-CH': 'it',
+  'it-IT': 'it',
 }[lng] || lng);
 
 export const fallbackLng = 'en';
