@@ -1,7 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-const LanguageDetector = window.require('i18next-electron-language-detector');
+// const LanguageDetector = window.require('i18next-electron-language-detector');
 const Backend = window.require('i18next-fs-backend');
 const isDev = window.require('electron-is-dev');
 
@@ -36,7 +36,8 @@ i18n
   .use(Backend)
   // detect user language
   // learn more: https://github.com/i18next/i18next-browser-languageDetector
-  .use(LanguageDetector)
+  // TODO disabled for now because translations need more reviewing https://github.com/mifi/lossless-cut/issues/346
+  // .use(LanguageDetector)
   // pass the i18n instance to react-i18next.
   .use(initReactI18next)
   // init i18next
