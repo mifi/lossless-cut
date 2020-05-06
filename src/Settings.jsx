@@ -29,6 +29,7 @@ const Settings = memo(({
     nb: 'Norsk',
     zh: '中文',
     it: 'Italiano',
+    fr: 'Français',
   };
 
   return (
