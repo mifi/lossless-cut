@@ -8,7 +8,7 @@
   <description>
     <p>Simple and ultra fast cross platform tool for lossless trimming/cutting of video and audio files. Great for saving space by rough cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. It extremely fast because it does an almost direct data copy. It is fueled by the awesome ffmpeg (included) for doing the grunt work. It also features some other lossless operations on videos.</p>
   </description>
-  <launchable type="desktop-id">com.github.mifi.loslesscut.desktop</launchable>
+  <launchable type="desktop-id">no.mifi.losslesscut.desktop</launchable>
   <screenshots>
     <screenshot type="default">
       <image>https://raw.githubusercontent.com/mifi/lossless-cut/master/main_screenshot.jpg</image>
