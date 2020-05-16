@@ -26,7 +26,7 @@ export function openSendReportDialog(err, state) {
         <p>Include the following text:</p>
 
         <div style={{ fontWeight: 600, fontSize: 12, whiteSpace: 'pre-wrap' }} contentEditable suppressContentEditableWarning>
-          {`${err ? err.stack : ''}\n\n${JSON.stringify({
+          {`${err ? err.stack : 'No error'}\n\n${JSON.stringify({
             err: err && {
               code: err.code,
               killed: err.killed,

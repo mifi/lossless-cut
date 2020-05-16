@@ -1581,6 +1581,10 @@ const App = memo(() => {
       }
     }
 
+    function openSendReportDialog2() {
+      openSendReportDialogWithState();
+    }
+
     electron.ipcRenderer.on('file-opened', fileOpened);
     electron.ipcRenderer.on('close-file', closeFile);
     electron.ipcRenderer.on('html5ify', html5ifyCurrentFile);
@@ -1595,7 +1599,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('openSettings', openSettings);
     electron.ipcRenderer.on('openAbout', openAbout);
     electron.ipcRenderer.on('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
-    electron.ipcRenderer.on('openSendReportDialog', openSendReportDialogWithState);
+    electron.ipcRenderer.on('openSendReportDialog', openSendReportDialog2);
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
@@ -1612,7 +1616,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('openSettings', openSettings);
       electron.ipcRenderer.removeListener('openAbout', openAbout);
       electron.ipcRenderer.removeListener('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
-      electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialogWithState);
+      electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog2);
     };
   }, [
     mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset, html5ifyCurrentFile,
