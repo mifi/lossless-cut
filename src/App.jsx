@@ -1239,6 +1239,8 @@ const App = memo(() => {
     Mousetrap.bind(['ctrl+right', 'command+right'], () => { seekRelPercent(0.01); return false; });
     Mousetrap.bind('alt+left', () => seekClosestKeyframe(-1));
     Mousetrap.bind('alt+right', () => seekClosestKeyframe(1));
+    Mousetrap.bind('shift+left', () => jumpCutStart());
+    Mousetrap.bind('shift+right', () => jumpCutEnd());
     Mousetrap.bind('up', () => jumpSeg(-1));
     Mousetrap.bind('down', () => jumpSeg(1));
     Mousetrap.bind(['ctrl+up', 'command+up'], () => { zoomRel(1); return false; });
@@ -1266,6 +1268,8 @@ const App = memo(() => {
       Mousetrap.unbind(['ctrl+right', 'command+right']);
       Mousetrap.unbind('alt+left');
       Mousetrap.unbind('alt+right');
+      Mousetrap.unbind('shift+left');
+      Mousetrap.unbind('shift+right');
       Mousetrap.unbind('up');
       Mousetrap.unbind('down');
       Mousetrap.unbind(['ctrl+up', 'command+up']);
@@ -1285,7 +1289,7 @@ const App = memo(() => {
   }, [
     addCutSegment, capture, changePlaybackRate, cutClick, togglePlay, removeCutSegment,
     setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, deleteSource, jumpSeg, toggleHelp,
-    seekClosestKeyframe, zoomRel, toggleComfortZoom,
+    seekClosestKeyframe, zoomRel, toggleComfortZoom, jumpCutStart, jumpCutEnd,
   ]);
 
   useEffect(() => {
