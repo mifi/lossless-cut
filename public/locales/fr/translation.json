@@ -251,5 +251,10 @@
     "Pan timeline": "Panoramique de la ligne temporelle",
     "Mouse scroll/wheel up/down": "Défilement de la souris/roulette haut/bas",
     "Mouse scroll/wheel left/right": "Défilement de la souris/roulette gauche/droite",
-    "Zoom in/out timeline": "Zoom avant/arrière de la ligne temporelle"
+    "Zoom in/out timeline": "Zoom avant/arrière de la ligne temporelle",
+    "For more help and issues, please go to:": "Pour plus d'aide et de questions, veuillez consulter :",
+    "Lossless cutting is not an exact science. For some codecs and files it just works. For others you may need to trial and error depending on the codec, keyframes etc to get the best cut.": "Le découpage sans perte n'est pas une science exacte. Pour certains codecs et fichiers, cela fonctionne tout simplement. Pour d'autres, vous devrez peut-être faire des essais et des erreurs en fonction du codec, des images clés, etc. pour obtenir la meilleure coupe.",
+    "Common problems": "Problèmes communs",
+    "You need to open a media file first": "Vous devez d'abord ouvrir un fichier média",
+    "Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, see the HELP page.": "Fini ! Note : les points de coupure peuvent être inexacts. Assurez-vous de tester les fichiers de sortie dans le lecteur/éditeur de votre choix avant de supprimer la source. Si la sortie ne semble pas correcte, consultez la page AIDE."
 }
