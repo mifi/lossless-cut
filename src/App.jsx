@@ -1499,6 +1499,7 @@ const App = memo(() => {
 
     async function exportEdlFile() {
       try {
+        if (!isFileOpened) return;
         const { canceled, filePath: fp } = await dialog.showSaveDialog({ defaultPath: `${new Date().getTime()}.csv`, filters: [{ name: i18n.t('CSV files'), extensions: ['csv'] }] });
         if (canceled || !fp) return;
         if (await exists(fp)) {
@@ -1513,7 +1514,10 @@ const App = memo(() => {
     }
 
     async function importEdlFile() {
-      if (!isFileOpened) return;
+      if (!isFileOpened) {
+        toast.fire({ icon: 'info', title: i18n.t('You need to open a media file first') });
+        return;
+      }
       const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters: [{ name: i18n.t('CSV files'), extensions: ['csv'] }] });
       if (canceled || filePaths.length < 1) return;
       await loadEdlFile(filePaths[0]);

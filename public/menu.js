@@ -30,13 +30,13 @@ module.exports = (app, mainWindow, newVersion) => {
         },
         { type: 'separator' },
         {
-          label: 'Import CSV cut file',
+          label: 'Load project (CSV)',
           click() {
             mainWindow.webContents.send('importEdlFile');
           },
         },
         {
-          label: 'Export CSV cut file',
+          label: 'Save project (CSV)',
           click() {
             mainWindow.webContents.send('exportEdlFile');
           },
