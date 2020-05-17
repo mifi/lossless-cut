@@ -114,9 +114,10 @@ let openFileInitial;
 electron.ipcMain.on('renderer-ready', () => {
   rendererReady = true;
   if (!isDev) {
-    const fileToOpen = process.argv[1];
+    const fileToOpen = process.argv[process.argv.length - 1];
     // https://github.com/electron/electron/issues/3657
-    if (fileToOpen && !fileToOpen.startsWith('-psn_')) openFile(fileToOpen);
+    // https://github.com/mifi/lossless-cut/issues/357
+    if (fileToOpen && !fileToOpen.startsWith('-')) openFile(fileToOpen);
   }
   if (openFileInitial) openFile(openFileInitial);
 });
