@@ -253,5 +253,10 @@
     "Muted preview (exported file will not be affected)": "静音预览（不会影响导出的文件）",
     "Unable to save your preferences. Try to disable any anti-virus": "无法保存您的偏好设置。尝试关闭反病毒软件",
     "Instead of video apparently starting at 0, you can offset by a specified value. This only applies to the preview inside LosslessCut and does not modify the file in any way. Useful for viewing/cutting videos according to timecodes)": "您可以用指定的值来偏移，而不是视频从0开始。这仅适用于LosslessCut内部的预览，不会以任何方式修改文件。对于根据时间码观看/剪辑视频很有用）",
-    "File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview with audio.": "不支持该文件。预览可能没有音频或质量低劣。但是最终导出的文件将不会丢失音频。您可以从菜单进行转换，以获得更好的音频预览。"
+    "File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview with audio.": "不支持该文件。预览可能没有音频或质量低劣。但是最终导出的文件将不会丢失音频。您可以从菜单进行转换，以获得更好的音频预览。",
+    "For more help and issues, please go to:": "有关更多帮助和问题，请转到：",
+    "Lossless cutting is not an exact science. For some codecs and files it just works. For others you may need to trial and error depending on the codec, keyframes etc to get the best cut.": "无损切割并不是一门精确的科学。对于某些编解码器和文件，它就可以正常运行。对于其它，则可能需要根据编解码器，关键帧等进行反复试验，以获取最佳效果。",
+    "Common problems": "常见问题",
+    "You need to open a media file first": "你需要先打开媒体文件",
+    "Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, see the HELP page.": "已完成！注意：切割点可能不准确。在删除源文件之前，请确保在所需的播放器/编辑器中测试输出文件。如果输出不正确，请参阅“帮助”页。"
 }
