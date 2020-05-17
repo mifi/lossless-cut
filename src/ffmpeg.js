@@ -85,10 +85,11 @@ function handleProgress(process, cutDuration, onProgress) {
       if (!match) return;
 
       const str = match[1];
-      console.log(str);
-      const progressTime = moment.duration(str).asSeconds();
-      console.log(progressTime);
-      onProgress(progressTime / cutDuration);
+      // console.log(str);
+      const progressTime = Math.max(0, moment.duration(str).asSeconds());
+      // console.log(progressTime);
+      const progress = cutDuration ? progressTime / cutDuration : 0;
+      onProgress(progress);
     } catch (err) {
       console.log('Failed to parse ffmpeg progress line', err);
     }
@@ -238,6 +239,8 @@ async function cut({
 
   const ffmpegArgs = [
     '-hide_banner',
+    // No progress if we set loglevel warning :(
+    // '-loglevel', 'warning',
 
     ...inputCutArgs,
 
@@ -448,6 +451,8 @@ export async function mergeFiles({ paths, outPath, allStreams, outFormat, ffmpeg
   // Keep this similar to cut()
   const ffmpegArgs = [
     '-hide_banner',
+    // No progress if we set loglevel warning :(
+    // '-loglevel', 'warning',
 
     // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
     '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe', '-i', '-',
