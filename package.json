@@ -204,7 +204,6 @@
           "flv",
           "vob",
           "ogv",
-          "ogg",
           "drc",
           "gif",
           "gifv",
@@ -247,7 +246,6 @@
       },
       {
         "ext": [
-          "3gp",
           "aa",
           "aac",
           "aax",
@@ -279,8 +277,6 @@
           "mogg",
           "opus",
           "ra",
-          "rm",
-          "raw",
           "rf64",
           "sln",
           "tta",
@@ -289,7 +285,6 @@
           "wav",
           "wma",
           "wv",
-          "webm",
           "8svx",
           "cda"
         ],
