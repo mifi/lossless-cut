@@ -1336,6 +1336,13 @@ const App = memo(() => {
 
     const firstFile = filePaths[0];
 
+    // Because Apple is being nazi about the ability to open "copy protected DVD files"
+    const disallowVob = isMasBuild;
+    if (disallowVob && /\.vob$/i.test(firstFile)) {
+      toast.fire({ icon: 'error', text: 'Unfortunately .vob files are not supported in the App Store version of LosslessCut due to Apple restrictions' });
+      return;
+    }
+
     const { newCustomOutDir, cancel } = await assureOutDirAccess(firstFile);
     if (cancel) return;
 
