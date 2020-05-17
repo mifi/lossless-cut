@@ -114,7 +114,8 @@ let openFileInitial;
 electron.ipcMain.on('renderer-ready', () => {
   rendererReady = true;
   if (!isDev) {
-    const fileToOpen = process.argv[process.argv.length - 1];
+    // Take the last argument, but ONLY if there is more than one argv (first one is the LosslessCut executable)
+    const fileToOpen = process.argv.length > 1 && process.argv[process.argv.length - 1];
     // https://github.com/electron/electron/issues/3657
     // https://github.com/mifi/lossless-cut/issues/357
     if (fileToOpen && !fileToOpen.startsWith('-')) openFile(fileToOpen);
