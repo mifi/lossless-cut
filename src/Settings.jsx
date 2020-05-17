@@ -7,7 +7,7 @@ const Settings = memo(({
   changeOutDir, customOutDir, autoMerge, setAutoMerge, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments,
   autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose,
   renderOutFmt, AutoExportToggler, renderCaptureFormatButton, onWheelTunerRequested, language, setLanguage,
-  invertTimelineScroll, setInvertTimelineScroll,
+  invertTimelineScroll, setInvertTimelineScroll, ffmpegExperimental, setFfmpegExperimental,
 }) => {
   const { t } = useTranslation();
 
@@ -110,6 +110,17 @@ const Settings = memo(({
         </KeyCell>
         <Table.TextCell>
           <AutoExportToggler />
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Enable experimental ffmpeg features flag?')}</KeyCell>
+        <Table.TextCell>
+          <Checkbox
+            label={t('Experimental flag')}
+            checked={ffmpegExperimental}
+            onChange={e => setFfmpegExperimental(e.target.checked)}
+          />
         </Table.TextCell>
       </Row>
 

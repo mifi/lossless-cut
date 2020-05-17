@@ -205,7 +205,7 @@ function getMovFlags(outFormat) {
 }
 
 async function cut({
-  filePath, outFormat, cutFrom, cutTo, videoDuration, rotation,
+  filePath, outFormat, cutFrom, cutTo, videoDuration, rotation, ffmpegExperimental,
   onProgress, copyFileStreams, keyframeCut, outPath, appendFfmpegCommandLog, shortestFlag,
 }) {
   const cuttingStart = isCuttingStart(cutFrom);
@@ -253,6 +253,9 @@ async function cut({
     // See https://github.com/mifi/lossless-cut/issues/170
     '-ignore_unknown',
 
+    // https://superuser.com/questions/543589/information-about-ffmpeg-command-line-options
+    ...(ffmpegExperimental ? ['-strict', 'experimental'] : []),
+
     ...rotationArgs,
 
     '-f', outFormat, '-y', outPath,
@@ -279,7 +282,7 @@ function getOutFileExtension({ isCustomFormatSelected, outFormat, filePath }) {
 export async function cutMultiple({
   customOutDir, filePath, segments: segmentsUnsorted, videoDuration, rotation,
   onProgress, keyframeCut, copyFileStreams, outFormat, isCustomFormatSelected,
-  appendFfmpegCommandLog, shortestFlag,
+  appendFfmpegCommandLog, shortestFlag, ffmpegExperimental,
 }) {
   const segments = sortBy(segmentsUnsorted, 'cutFrom');
   const singleProgresses = {};
@@ -317,6 +320,7 @@ export async function cutMultiple({
       // eslint-disable-next-line no-loop-func
       onProgress: progress => onSingleProgress(i, progress),
       appendFfmpegCommandLog,
+      ffmpegExperimental,
     });
 
     outFiles.push(outPath);
@@ -435,7 +439,7 @@ export async function html5ifyDummy(filePath, outPath, onProgress) {
   await transferTimestamps(filePath, outPath);
 }
 
-export async function mergeFiles({ paths, outPath, allStreams, outFormat, onProgress = () => {} }) {
+export async function mergeFiles({ paths, outPath, allStreams, outFormat, ffmpegExperimental, onProgress = () => {} }) {
   console.log('Merging files', { paths }, 'to', outPath);
 
   const durations = await pMap(paths, getDuration, { concurrency: 1 });
@@ -457,6 +461,9 @@ export async function mergeFiles({ paths, outPath, allStreams, outFormat, onProg
 
     // See https://github.com/mifi/lossless-cut/issues/170
     '-ignore_unknown',
+
+    // https://superuser.com/questions/543589/information-about-ffmpeg-command-line-options
+    ...(ffmpegExperimental ? ['-strict', 'experimental'] : []),
 
     ...(outFormat ? ['-f', outFormat] : []),
     '-y', outPath,
@@ -480,12 +487,12 @@ export async function mergeFiles({ paths, outPath, allStreams, outFormat, onProg
   console.log(result.stdout);
 }
 
-export async function autoMergeSegments({ customOutDir, sourceFile, isCustomFormatSelected, outFormat, segmentPaths, onProgress }) {
+export async function autoMergeSegments({ customOutDir, sourceFile, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress }) {
   const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath: sourceFile });
   const fileName = `cut-merged-${new Date().getTime()}${ext}`;
   const outPath = getOutPath(customOutDir, sourceFile, fileName);
 
-  await mergeFiles({ paths: segmentPaths, outPath, outFormat, allStreams: true, onProgress });
+  await mergeFiles({ paths: segmentPaths, outPath, outFormat, allStreams: true, ffmpegExperimental, onProgress });
   await pMap(segmentPaths, path => fs.unlink(path), { concurrency: 5 });
 }
 

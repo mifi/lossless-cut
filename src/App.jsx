@@ -223,6 +223,8 @@ const App = memo(() => {
   useEffect(() => safeSetConfig('invertTimelineScroll', invertTimelineScroll), [invertTimelineScroll]);
   const [language, setLanguage] = useState(configStore.get('language'));
   useEffect(() => safeSetConfig('language', language), [language]);
+  const [ffmpegExperimental, setFfmpegExperimental] = useState(configStore.get('ffmpegExperimental'));
+  useEffect(() => safeSetConfig('ffmpegExperimental', ffmpegExperimental), [ffmpegExperimental]);
 
   useEffect(() => {
     i18n.changeLanguage(language || fallbackLng).catch(console.error);
@@ -633,7 +635,7 @@ const App = memo(() => {
       const outPath = getOutPath(newCustomOutDir, firstPath, `merged${ext}`);
 
       // console.log('merge', paths);
-      await ffmpegMergeFiles({ paths, outPath, allStreams, onProgress: setCutProgress });
+      await ffmpegMergeFiles({ paths, outPath, allStreams, ffmpegExperimental, onProgress: setCutProgress });
       openDirToast({ icon: 'success', dirPath: outputDir, text: i18n.t('Files merged!') });
     } catch (err) {
       errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same codecs'));
@@ -642,7 +644,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [assureOutDirAccess, outputDir]);
+  }, [assureOutDirAccess, outputDir, ffmpegExperimental]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), []);
   const toggleKeyframeCut = useCallback(() => setKeyframeCut((val) => {
@@ -1009,6 +1011,7 @@ const App = memo(() => {
         onProgress: setCutProgress,
         appendFfmpegCommandLog,
         shortestFlag,
+        ffmpegExperimental,
       });
 
       if (outFiles.length > 1 && autoMerge) {
@@ -1021,6 +1024,7 @@ const App = memo(() => {
           outFormat: fileFormat,
           isCustomFormatSelected,
           segmentPaths: outFiles,
+          ffmpegExperimental,
           onProgress: setCutProgress,
         });
       }
@@ -1059,7 +1063,7 @@ const App = memo(() => {
     working, duration, filePath, keyframeCut,
     autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyFileStreams, numStreamsToCopy,
     exportExtraStreams, nonCopiedExtraStreams, outputDir, shortestFlag, isCustomFormatSelected,
-    fileFormatData, mainStreams,
+    fileFormatData, mainStreams, ffmpegExperimental,
   ]);
 
   const capture = useCallback(async () => {
@@ -1718,6 +1722,8 @@ const App = memo(() => {
       setTimecodeShowFrames={setTimecodeShowFrames}
       askBeforeClose={askBeforeClose}
       setAskBeforeClose={setAskBeforeClose}
+      ffmpegExperimental={ffmpegExperimental}
+      setFfmpegExperimental={setFfmpegExperimental}
       invertTimelineScroll={invertTimelineScroll}
       setInvertTimelineScroll={setInvertTimelineScroll}
       language={language}
@@ -1728,7 +1734,7 @@ const App = memo(() => {
       renderCaptureFormatButton={renderCaptureFormatButton}
       onWheelTunerRequested={onWheelTunerRequested}
     />
-  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, renderOutFmt, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language, invertTimelineScroll]);
+  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, renderOutFmt, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language, invertTimelineScroll, ffmpegExperimental, setFfmpegExperimental]);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);

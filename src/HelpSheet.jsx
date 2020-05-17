@@ -37,7 +37,8 @@ const HelpSheet = memo(({
             <li>Try both <b>Keyframe cut</b> and <b>Normal cut</b> modes</li>
             <li>Try to set the <b>start-</b>cutpoint a <b>few frames before or after</b> the nearest keyframe (may also solve audio sync issues)</li>
             <li>Try to disable some <b>Tracks</b></li>
-            <li>Try a different <b>output format</b></li>
+            <li>Try a different <b>Output format</b></li>
+            <li>Try to enable the <b>Experimental Flag</b> in Settings</li>
           </ol>
 
           <p style={{ fontWeight: 'bold' }}>

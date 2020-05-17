@@ -14,6 +14,7 @@ const defaults = {
     autoSaveProjectFile: true,
     wheelSensitivity: 0.2,
     language: undefined,
+    ffmpegExperimental: false,
   },
 };
 
