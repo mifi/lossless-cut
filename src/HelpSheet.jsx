@@ -29,8 +29,19 @@ const HelpSheet = memo(({
         >
           <IoIosCloseCircleOutline role="button" onClick={onTogglePress} size={30} style={{ position: 'fixed', right: 0, top: 0, padding: 20 }} />
 
+          <h1>{t('Common problems')}</h1>
+          <p>
+            {t('Lossless cutting is not an exact science. For some codecs and files it just works. For others you may need to trial and error depending on the codec, keyframes etc to get the best cut.')}
+          </p>
+          <ol>
+            <li>Try both <b>Keyframe cut</b> and <b>Normal cut</b> modes</li>
+            <li>Try to set the <b>start-</b>cutpoint a <b>few frames before or after</b> the nearest keyframe (may also solve audio sync issues)</li>
+            <li>Try to disable some <b>Tracks</b></li>
+            <li>Try a different <b>output format</b></li>
+          </ol>
+
           <p style={{ fontWeight: 'bold' }}>
-            {t('For usage help and issues, please go to:')}<br />
+            {t('For more help and issues, please go to:')}<br />
             <span style={{ color: primaryTextColor, cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal(githubLink)}>{githubLink}</span>
           </p>
 
