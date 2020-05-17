@@ -960,10 +960,11 @@ const App = memo(() => {
         <ol>
           {detectedFileFormat === 'mp4' && <li>Change output <b>Format</b> from <b>MP4</b> to <b>MOV</b></li>}
           <li>Select a different output <b>Format</b> (<b>matroska</b> and <b>mp4</b> support most codecs)</li>
-          <li>Exclude unnecessary <b>Tracks</b></li>
+          <li>Disable unnecessary <b>Tracks</b></li>
           <li>Try both <b>Normal cut</b> and <b>Keyframe cut</b></li>
           <li>Set a different <b>Working directory</b></li>
-          <li>Try a <b>Different file</b></li>
+          <li>Try with a <b>Different file</b></li>
+          <li>See <b>Help</b></li>
           <li>If nothing helps, you can send an <b>Error report</b></li>
         </ol>
       </div>
