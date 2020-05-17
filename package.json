@@ -192,8 +192,7 @@
       "icon": "icon-build/app-512.png",
       "target": [
         "tar.bz2",
-        "AppImage",
-        "snap"
+        "AppImage"
       ]
     },
     "fileAssociations": [
