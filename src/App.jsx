@@ -944,7 +944,7 @@ const App = memo(() => {
       externalStreamFiles,
       mainStreams,
       copyStreamIdsByFile,
-      cutSegments,
+      cutSegments: cutSegments.map(s => ({ start: s.start, end: s.end })),
       fileFormatData,
       rotation,
       shortestFlag,
