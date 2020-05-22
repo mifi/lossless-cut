@@ -132,5 +132,6 @@
     "Failed to load project file": "Projektdatei konnte nicht geladen werden",
     "Invalid start or end values for one or more segments": "Ungültige Start- oder Endwerte für ein oder mehrere Segmente",
     "Unable to playback rate right now": "Wiedergaberate derzeit nicht möglich",
-    "Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, see the HELP page.": "Das war's! Hinweis: Schnittpunkte können ungenau sein. Stellen Sie sicher, dass die Ausgabedateien in Ihrem gewünschten Player / Editor getestet werden, bevor die Quelle gelöscht wird. Wenn die Ausgabe nicht richtig aussieht, die HILFE Seite zu Rate ziehen."
+    "Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, see the HELP page.": "Das war's! Hinweis: Schnittpunkte können ungenau sein. Stellen Sie sicher, dass die Ausgabedateien in Ihrem gewünschten Player / Editor getestet werden, bevor die Quelle gelöscht wird. Wenn die Ausgabe nicht richtig aussieht, die HILFE Seite zu Rate ziehen.",
+    "Failed to capture frame": "Bildaufnahme gescheitert"
 }
