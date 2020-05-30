@@ -153,5 +153,6 @@
     "Keyboard & mouse shortcuts": "Tastatur og musesnarveier",
     "Invalid start or end value. Must contain a number of seconds": "Ugyldig start- eller sluttdato. Må inneholde antall sekunder",
     "One or more rows does not have 3 columns": "Én eller flere rader har ikke 3 kolonner",
-    "No rows found": "Fant ingen rader"
+    "No rows found": "Fant ingen rader",
+    "Common problems": "Vanlige problemer"
 }
