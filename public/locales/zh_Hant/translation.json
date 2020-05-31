@@ -1,1 +1,12 @@
-{}
+{
+    "Will now cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files.": "現在,將在所需的起始切割點之前,在最接近的關鍵幀處切割。對於大多數文件,建議這樣做。",
+    "Keyframe cut enabled": "關鍵幀剪輯已啟用",
+    "Failed to merge files. Make sure they are all of the exact same codecs": "無法合併檔案。請確定它們都是全都使用相同的編碼器",
+    "Files merged!": "檔案已合併！",
+    "Merging": "合併中",
+    "You have no write access to the directory of this file, please select a custom working dir": "您無法將檔案寫入此目錄，請選擇自訂工作目錄",
+    "Unable to save project file": "無法儲存專案檔",
+    "Muted preview (exported file will not be affected)": "靜音預覽（匯出的檔案不會受到影響）",
+    "Key frames will show on the timeline. You need to zoom in to view them": "關鍵幀將在時間軸上顯示。您需要放大才能檢視它們",
+    "Unable to save your preferences. Try to disable any anti-virus": "無法儲存您的喜好選項。嘗試停用任何防毒軟體"
+}
