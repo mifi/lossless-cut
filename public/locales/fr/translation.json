@@ -181,7 +181,7 @@
     "Change sensitivity": "Changer la sensibilité",
     "Millisecond fractions": "Fractions de millisecondes",
     "Frame numbers": "Nombre d'images",
-    "In timecode show": "Afficher le code temporel d'entrée",
+    "In timecode show": "Dans le code temporel afficher",
     "Snapshot capture format": "Format de capture d’instantané",
     "Auto save project": "Sauvegarde automatique du projet",
     "The project will be stored along with the output files as a CSV file": "Le projet sera stocké avec les fichiers de sortie sous forme de fichier CSV",
