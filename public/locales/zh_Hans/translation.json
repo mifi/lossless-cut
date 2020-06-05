@@ -224,7 +224,7 @@
     "Screenshot captured to:": "截图保存路径:",
     "Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, try to toggle \"Keyframe cut\" or try a different format.": "完成！注意：切割点可能不准确。在删除源文件之前，请确保在所需的播放器/编辑器中测试输出文件。如果输出不正确，请尝试切换“关键帧剪切”或尝试其他格式。",
     "Unprocessable streams were exported as separate files.": "无法处理的视频/音频流已被导出为单独的文件",
-    "There is a known issue with cutting iPhone HEVC videos. The output file may not work in all players.": "剪辑 iPhone 的 HEVC 视频格式存在一个已知问题，输出的文件可能不适用于所有播放器",
+    "There is a known issue with cutting iPhone HEVC videos. The output file may not work in all players.": "剪辑 iPhone 的 HEVC 视频格式存在一个已知问题，输出的文件可能不适用于所有播放器。",
     "Exporting": "正在导出",
     "No segments to export": "没有要导出的片段",
     "No tracks selected for export": "未选择要导出的轨道",
