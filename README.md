@@ -128,6 +128,13 @@ Note also that the cut is currently not precise around the cutpoints, so video b
 - If you get an error on Linux like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See #258
 - If any other problem, check [Known issues](#known-issues--limitations), or please search for existing issues before you file an issue here on GitHub.
 
+### Developer tools
+
+If you have an issue you can check the developer tools
+- Windows: <kbd>F12</kbd> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd>
+- Mac: <kbd>Cmd</kbd>+<kbd>Opt</kbd>+<kbd>I</kbd>
+
+
 ## CSV import/export
 
 The CSV export/import function takes csv files with one cut segment on each line. Each line contains three columns: `segment start`, `segment end`, `label`.
