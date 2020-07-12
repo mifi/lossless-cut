@@ -30,6 +30,7 @@ const Settings = memo(({
     zh: '中文',
     it: 'Italiano',
     fr: 'Français',
+    de: 'Deutsch',
   };
 
   return (
