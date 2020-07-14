@@ -1,1 +1,27 @@
-{}
+{
+    "Start time must be before end time": "Timpul de început trebuie să fie înainte de cel de sfârșit",
+    "Report": "Raport",
+    "OK": "OK",
+    "Unable to export this file": "Nu se poate exporta acest fișier",
+    "File has been permanently deleted": "Fișierul a fost șters definitiv",
+    "Permanently delete": "Șterge definitiv",
+    "Unable to move source file to trash. Do you want to permanently delete it?": "Nu se poate muta sursa fișierului în coșul de gunoi. Vrei să-l ștergi definitiv?",
+    "File has been moved to trash": "Fișierul a fost mutat în coșul de gunoi",
+    "Deleting source": "Se șterge sursa",
+    "Trash it": "Șterge-l",
+    "Are you sure you want to move the source file to trash?": "Ești sigur(ă) că vrei să muți sursa fișierului în coșul de gunoi?",
+    "Converting to supported format": "Se convertește la formatul suportat",
+    "Unable to playback this file. Try to convert to supported format from the menu": "Nu se poate rula acest fișier. Încercați să-l convertiți din meniu, la formatul suportat",
+    "File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview with audio.": "Fișierul nu este suportat nativ. Previzualizarea s-ar putea sa aibă sonor de calitate joasă sau deloc. Cu toate acestea, exportul final va fi cu sonor, fără pierderi. Pentru o previzualizare mai bună, cu sonor, s-ar putea converti din meniu.",
+    "Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut": "Va tăia acum, exact la poziție, dar poate lăsa o porțiune goală la începutul fișierului. Pentru a realiza o tăiere precisă, va trebui selectat locul de tăiere, cu câteva cadre înainte de următorul keyframe",
+    "Keyframe cut disabled": "Modul de tăiere Keyframe, dezactivat",
+    "Will now cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files.": "Se va tăia la cel mai apropiat cadru cu imagine completă(Keyframe), înainte de locul de tăiere de la început dorit. Această metodă e recomandată pentru majoritatea fișierelor.",
+    "Keyframe cut enabled": "Modul de tăiere Keyframe, activat",
+    "Failed to merge files. Make sure they are all of the exact same codecs": "Nu s-au putut uni fișierele. Asigurațivă că sunt toate cu exact aceleași codecuri",
+    "Files merged!": "Fișierele s-au unit!",
+    "Merging": "Unire",
+    "You have no write access to the directory of this file, please select a custom working dir": "Nu aveți drept de scriere în directorul acestui fișier, vă rog selectați un director în care puteți crea și edita",
+    "Unable to save project file": "Nu se poate salva fișierul proiectului",
+    "Muted preview (exported file will not be affected)": "Previzualizare fără sonor (fișierul exportat nu va fi afectat)",
+    "Unable to save your preferences. Try to disable any anti-virus": "Nu se pot salva setările efectuate. Încercați să dezactivați programele anti-virus"
+}
