@@ -236,5 +236,10 @@
     "Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut": "Teraz tnie w dokładnym miejscu, ale może pozostawić pustą część na początku pliku. Aby uzyskać precyzyjne cięcie, konieczne może być ustawienie punktu cięcia kilka klatek przed następną klatką kluczową",
     "Keyframe cut disabled": "Wycięcie klatki kluczowej wyłączone",
     "Will now cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files.": "Będzie teraz wycinać w najbliższej klatce kluczowej przed żądanym punktem cięcia początkowego. Jest to zalecane w przypadku większości plików.",
-    "Keyframe cut enabled": "Włączono wycinanie klatki kluczowej"
+    "Keyframe cut enabled": "Włączono wycinanie klatki kluczowej",
+    "Auto save project": "Automatycznie zapisuj projekt",
+    "Auto save project file?": "Zapisuj automatycznie plik projektu?",
+    "Export {{ num }} segments": "Eksportuj segmenty {{num}}",
+    "Capture snapshot": "Przechwyć klatkę",
+    "Seeking": "Przewijanie"
 }
