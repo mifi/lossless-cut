@@ -57,7 +57,8 @@ const SortableFiles = memo(({
       />
 
       <div style={{ marginTop: 10 }}>
-        <Checkbox checked={allStreams} onChange={e => setAllStreams(e.target.checked)} label={t('Include all streams?')} />
+        <Checkbox checked={allStreams} onChange={e => setAllStreams(e.target.checked)} label={t('Include all tracks?')} />
+        <div style={{ fontSize: 12, textAlign: 'left' }}>{t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}</div>
       </div>
     </div>
   );
