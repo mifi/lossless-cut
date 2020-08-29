@@ -223,12 +223,15 @@ async function cut({
 
   const copyFileStreamsFiltered = copyFileStreams.filter(({ streamIds }) => streamIds.length > 0);
 
+  // remove -avoid_negative_ts make_zero when not cutting start (no -ss), or else some videos get blank first frame in QuickLook
+  const avoidNegativeTsArgs = cuttingStart ? ['-avoid_negative_ts', 'make_zero'] : [];
+
   const inputArgs = flatMap(copyFileStreamsFiltered, ({ path }) => ['-i', path]);
   const inputCutArgs = ssBeforeInput ? [
     ...cutFromArgs,
     ...inputArgs,
     ...cutToArgs,
-    '-avoid_negative_ts', 'make_zero',
+    ...avoidNegativeTsArgs,
   ] : [
     ...inputArgs,
     ...cutFromArgs,
