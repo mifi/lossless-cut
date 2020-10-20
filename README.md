@@ -58,6 +58,10 @@ Great for rotating phone videos that come out the wrong way without actually re-
 ### Loop a video / audio clip X times quickly without re-encoding
 See [#284](https://github.com/mifi/lossless-cut/issues/284)
 
+### Re-encode only the audio track, leaving the video track
+
+First export each track as individual files. Then use Handbrake or similar to re-encode the audio file. Then use the `Tools->Merge` in LosslessCut to merge the original video stream with your Handbrake output (or drag it into your original LosslessCut video to include it as a new track.)
+
 ### Advanced multi-step workflows
 
 **Tip:** you can use LosslessCut in multiple passes in order to achieve separate trimming of individual tracks:
