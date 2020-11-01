@@ -251,5 +251,10 @@
     "Unable to save project file": "Impossibile salvare file progetto",
     "Muted preview (exported file will not be affected)": "Anteprima disattivata (il file esportato non sarà interessato)",
     "Key frames will show on the timeline. You need to zoom in to view them": "I fotogrammi chiave verranno visualizzati nella sequenza temporale. È necessario ingrandire per visualizzarli",
-    "Unable to save your preferences. Try to disable any anti-virus": "Impossibile salvare preferenze. Prova a disabilitare qualsiasi antivirus"
+    "Unable to save your preferences. Try to disable any anti-virus": "Impossibile salvare preferenze. Prova a disabilitare qualsiasi antivirus",
+    "You need to open a media file first": "Devi prima aprire un file multimediale",
+    "For more help and issues, please go to:": "Per ulteriori informazioni e problemi, visita:",
+    "Lossless cutting is not an exact science. For some codecs and files it just works. For others you may need to trial and error depending on the codec, keyframes etc to get the best cut.": "Il taglio senza perdita non è una scienza esatta. Per alcuni codec e file funziona e basta. Per altri potresti aver bisogno di tentativi ed errori a seconda del codec, dei fotogrammi chiave ecc. Per ottenere il taglio migliore.",
+    "Common problems": "Problemi comuni",
+    "Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, see the HELP page.": "Fatto! Nota: i punti di taglio potrebbero essere imprecisi. Assicurati di testare i file di output nel lettore / editor desiderato prima di eliminare l'origine. Se l'output non sembra corretto, vedere la pagina HELP."
 }
