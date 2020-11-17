@@ -42,5 +42,6 @@
     "Converting to supported format": "Конвертация в поддерживаемый формат",
     "Merging": "Объединение",
     "Files merged!": "Файлы объединены!",
-    "Unable to save project file": "Невозможно сохранить файл проекта"
+    "Unable to save project file": "Невозможно сохранить файл проекта",
+    "Unable to save your preferences. Try to disable any anti-virus": "Невозможно сохранить ваши настройки. Попробуйте отключить антивирус"
 }
