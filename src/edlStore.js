@@ -1,6 +1,7 @@
 import parse from 'csv-parse';
 import stringify from 'csv-stringify';
 import i18n from 'i18next';
+import fastXmlParser from 'fast-xml-parser';
 
 const fs = window.require('fs-extra');
 const { promisify } = window.require('util');
@@ -30,6 +31,13 @@ export async function load(path) {
   }
 
   return mapped;
+}
+
+// https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/FinalCutPro_XML/VersionsoftheInterchangeFormat/VersionsoftheInterchangeFormat.html
+export async function loadXmeml(path) {
+  const xml = fastXmlParser.parse(await fs.readFile(path, 'utf-8'));
+  // TODO maybe support media.audio also?
+  return xml.xmeml.project.children.sequence.media.video.track.clipitem.map((item) => ({ start: item.start / item.rate.timebase, end: item.end / item.rate.timebase }));
 }
 
 export async function save(path, cutSegments) {

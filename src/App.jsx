@@ -43,7 +43,7 @@ import {
   readFrames, renderWaveformPng, html5ifyDummy, cutMultiple, extractStreams, autoMergeSegments, getAllStreams,
   findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail, isAudioSupported, isIphoneHevc,
 } from './ffmpeg';
-import { save as edlStoreSave, load as edlStoreLoad } from './edlStore';
+import { save as edlStoreSave, load as edlStoreLoad, loadXmeml } from './edlStore';
 import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
   promptTimeOffset, generateColor, getOutDir, withBlur, checkDirWriteAccess, dirExists, askForOutDir,
@@ -1105,25 +1105,32 @@ const App = memo(() => {
     return getOutPath(cod, fp, `html5ified-${type}.${ext}`);
   }, []);
 
-  const loadEdlFile = useCallback(async (edlPath) => {
+  const loadCutSegments = useCallback((edl) => {
+    const allRowsValid = edl
+      .every(row => row.start === undefined || row.end === undefined || row.start < row.end);
+
+    if (!allRowsValid) {
+      throw new Error(i18n.t('Invalid start or end values for one or more segments'));
+    }
+
+    cutSegmentsHistory.go(0);
+    setCutSegments(edl.map(createSegment));
+  }, [cutSegmentsHistory, setCutSegments]);
+
+  const loadEdlFile = useCallback(async (edlPath, type = 'csv') => {
     try {
-      const storedEdl = await edlStoreLoad(edlPath);
-      const allRowsValid = storedEdl
-        .every(row => row.start === undefined || row.end === undefined || row.start < row.end);
+      let storedEdl;
+      if (type === 'csv') storedEdl = await edlStoreLoad(edlPath);
+      else if (type === 'xmeml') storedEdl = await loadXmeml(edlPath);
 
-      if (!allRowsValid) {
-        throw new Error(i18n.t('Invalid start or end values for one or more segments'));
-      }
-
-      cutSegmentsHistory.go(0);
-      setCutSegments(storedEdl.map(createSegment));
+      loadCutSegments(storedEdl);
     } catch (err) {
       if (err.code !== 'ENOENT') {
         console.error('EDL load failed', err);
         errorToast(`${i18n.t('Failed to load project file')} (${err.message})`);
       }
     }
-  }, [cutSegmentsHistory, setCutSegments]);
+  }, [loadCutSegments]);
 
   const load = useCallback(async ({ filePath: fp, customOutDir: cod, html5FriendlyPathRequested, dummyVideoPathRequested }) => {
     console.log('Load', { fp, cod, html5FriendlyPathRequested, dummyVideoPathRequested });
@@ -1525,14 +1532,19 @@ const App = memo(() => {
       }
     }
 
-    async function importEdlFile() {
+    async function importEdlFile(e, type) {
       if (!isFileOpened) {
         toast.fire({ icon: 'info', title: i18n.t('You need to open a media file first') });
         return;
       }
-      const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters: [{ name: i18n.t('CSV files'), extensions: ['csv'] }] });
+
+      let filters;
+      if (type === 'csv') filters = [{ name: i18n.t('CSV files'), extensions: ['csv'] }];
+      else if (type === 'xmeml') filters = [{ name: i18n.t('XML files'), extensions: ['xml'] }];
+
+      const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters });
       if (canceled || filePaths.length < 1) return;
-      await loadEdlFile(filePaths[0]);
+      await loadEdlFile(filePaths[0], type);
     }
 
     function openHelp() {

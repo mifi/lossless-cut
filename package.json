@@ -85,6 +85,7 @@
     "electron-store": "^5.1.1",
     "electron-unhandled": "^3.0.2",
     "execa": "^4.0.0",
+    "fast-xml-parser": "^3.17.4",
     "ffmpeg-static": "^4.2.1",
     "ffprobe-static": "^3.0.0",
     "file-type": "^12.4.0",

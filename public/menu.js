@@ -32,8 +32,19 @@ module.exports = (app, mainWindow, newVersion) => {
         {
           label: 'Load project (CSV)',
           click() {
-            mainWindow.webContents.send('importEdlFile');
+            mainWindow.webContents.send('importEdlFile', 'csv');
           },
+        },
+        {
+          label: 'Import project',
+          submenu: [
+            {
+              label: 'DaVinci Resolve / Final Cut Pro XML',
+              click() {
+                mainWindow.webContents.send('importEdlFile', 'xmeml');
+              },
+            },
+          ],
         },
         {
           label: 'Save project (CSV)',
