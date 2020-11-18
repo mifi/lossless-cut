@@ -19,35 +19,14 @@ body {
     cursor: default;
 }
 
-.help-sheet, .settings-sheet {
-  padding: 1em 2em;
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  z-index: 10;
-  overflow-y: scroll;
-}
-
-.help-sheet {
-  background: #6b6b6b;
-  color: white;
-}
-
-.settings-sheet {
-  background: white;
-  color: black;
-}
-
-.help-sheet h1, .settings-sheet h1 {
+.help-sheet h1 {
   font-size: 1.2em;
   margin-bottom: .5em;
   margin-top: 1.3em;
   text-transform: uppercase;
 }
 
-.help-sheet h2, .settings-sheet h2 {
+.help-sheet h2 {
   font-size: 1em;
   margin-bottom: .5em;
   text-transform: uppercase;
