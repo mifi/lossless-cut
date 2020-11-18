@@ -69,7 +69,7 @@ const TimelineControls = memo(({
 
       setCutTimeManual();
 
-      const timeWithoutOffset = timeWithOffset - startTimeOffset;
+      const timeWithoutOffset = Math.max(timeWithOffset - startTimeOffset, 0);
       try {
         setCutTime(type, timeWithoutOffset);
         seekAbs(timeWithoutOffset);

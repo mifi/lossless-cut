@@ -12,35 +12,40 @@ const electron = window.require('electron'); // eslint-disable-line
 const { dialog } = electron.remote;
 
 
-export function formatDuration({ seconds: _seconds, fileNameFriendly, fps }) {
-  const seconds = _seconds || 0;
-  const minutes = seconds / 60;
+export function formatDuration({ seconds: secondsIn, fileNameFriendly, fps }) {
+  const seconds = secondsIn || 0;
+  const secondsAbs = Math.abs(seconds);
+  const minutes = secondsAbs / 60;
   const hours = minutes / 60;
 
   const hoursPadded = padStart(Math.floor(hours), 2, '0');
   const minutesPadded = padStart(Math.floor(minutes % 60), 2, '0');
-  const secondsPadded = padStart(Math.floor(seconds) % 60, 2, '0');
-  const ms = seconds - Math.floor(seconds);
+  const secondsPadded = padStart(Math.floor(secondsAbs) % 60, 2, '0');
+  const ms = secondsAbs - Math.floor(secondsAbs);
   const msPadded = fps != null
     ? padStart(Math.floor(ms * fps), 2, '0')
     : padStart(Math.floor(ms * 1000), 3, '0');
 
   // Be nice to filenames and use .
   const delim = fileNameFriendly ? '.' : ':';
-  return `${hoursPadded}${delim}${minutesPadded}${delim}${secondsPadded}.${msPadded}`;
+  const sign = secondsIn < 0 ? '-' : '';
+  return `${sign}${hoursPadded}${delim}${minutesPadded}${delim}${secondsPadded}.${msPadded}`;
 }
 
 export function parseDuration(str) {
   if (!str) return undefined;
-  const match = str.trim().match(/^(\d{2}):(\d{2}):(\d{2})\.(\d{3})$/);
+  const match = str.trim().match(/^(-?)(\d{2}):(\d{2}):(\d{2})\.(\d{3})$/);
   if (!match) return undefined;
-  const hours = parseInt(match[1], 10);
-  const minutes = parseInt(match[2], 10);
-  const seconds = parseInt(match[3], 10);
-  const ms = parseInt(match[4], 10);
+  const isNegatve = match[1] === '-';
+  const hours = parseInt(match[2], 10);
+  const minutes = parseInt(match[3], 10);
+  const seconds = parseInt(match[4], 10);
+  const ms = parseInt(match[5], 10);
   if (hours > 59 || minutes > 59 || seconds > 59) return undefined;
 
-  return ((((hours * 60) + minutes) * 60) + seconds) + (ms / 1000);
+  let ret = (((((hours * 60) + minutes) * 60) + seconds) + (ms / 1000));
+  if (isNegatve) ret *= -1;
+  return ret;
 }
 
 export function getOutDir(customOutDir, filePath) {
