@@ -39,7 +39,7 @@
     "concurrently": "^5.1.0",
     "csv-parse": "^4.8.5",
     "csv-stringify": "^5.3.6",
-    "electron": "^8.0.0",
+    "electron": "^8.5.2",
     "electron-builder": "^22.6.0",
     "electron-builder-notarize": "^1.1.2",
     "electron-devtools-installer": "^2.2.4",
