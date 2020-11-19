@@ -8,6 +8,7 @@ const Settings = memo(({
   autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose,
   renderOutFmt, AutoExportToggler, renderCaptureFormatButton, onWheelTunerRequested, language, setLanguage,
   invertTimelineScroll, setInvertTimelineScroll, ffmpegExperimental, setFfmpegExperimental,
+  enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction,
 }) => {
   const { t } = useTranslation();
 
@@ -184,6 +185,28 @@ const Settings = memo(({
             label={t('Ask before closing')}
             checked={askBeforeClose}
             onChange={e => setAskBeforeClose(e.target.checked)}
+          />
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Ask about importing chapters from opened file?')}</KeyCell>
+        <Table.TextCell>
+          <Checkbox
+            label={t('Ask about chapters')}
+            checked={enableAskForImportChapters}
+            onChange={e => setEnableAskForImportChapters(e.target.checked)}
+          />
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Ask about what to do when opening a new file when another file is already already open?')}</KeyCell>
+        <Table.TextCell>
+          <Checkbox
+            label={t('Ask on file open')}
+            checked={enableAskForFileOpenAction}
+            onChange={e => setEnableAskForFileOpenAction(e.target.checked)}
           />
         </Table.TextCell>
       </Row>

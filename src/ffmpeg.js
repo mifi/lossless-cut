@@ -344,6 +344,28 @@ export async function getDuration(filePath) {
   return parseFloat(JSON.parse(stdout).format.duration);
 }
 
+export async function tryReadChaptersToEdl(filePath) {
+  try {
+    const { stdout } = await runFfprobe(['-i', filePath, '-show_chapters', '-print_format', 'json']);
+    return JSON.parse(stdout).chapters.map((chapter) => {
+      const start = parseInt(chapter.start_time, 10);
+      const end = parseInt(chapter.end_time, 10);
+      if (Number.isNaN(start) || Number.isNaN(end)) return undefined;
+
+      const name = chapter.tags && typeof chapter.tags.title === 'string' ? chapter.tags.title : undefined;
+
+      return {
+        start,
+        end,
+        name,
+      };
+    }).filter((it) => it);
+  } catch (err) {
+    console.error('Failed to read chapters from file', err);
+    return [];
+  }
+}
+
 export async function html5ify({ filePath, outPath, video, audio, onProgress }) {
   console.log('Making HTML5 friendly version', { filePath, outPath, video, audio });
 

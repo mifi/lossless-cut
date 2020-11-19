@@ -10,6 +10,8 @@ const defaults = {
     invertCutSegments: false,
     autoExportExtraStreams: true,
     askBeforeClose: false,
+    enableAskForImportChapters: true,
+    enableAskForFileOpenAction: true,
     muted: false,
     autoSaveProjectFile: true,
     wheelSensitivity: 0.2,

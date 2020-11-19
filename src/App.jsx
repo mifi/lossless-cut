@@ -41,13 +41,14 @@ import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
   getDefaultOutFormat, getFormatData, mergeFiles as ffmpegMergeFiles, renderThumbnails as ffmpegRenderThumbnails,
   readFrames, renderWaveformPng, html5ifyDummy, cutMultiple, extractStreams, autoMergeSegments, getAllStreams,
-  findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail, isAudioSupported, isIphoneHevc,
+  findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
 } from './ffmpeg';
-import { save as edlStoreSave, load as edlStoreLoad, loadXmeml } from './edlStore';
+import { saveCsv, loadCsv, loadXmeml, loadCue } from './edlStore';
 import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
   promptTimeOffset, generateColor, getOutDir, withBlur, checkDirWriteAccess, dirExists, askForOutDir,
-  openDirToast, askForHtml5ifySpeed, isMasBuild, isStoreBuild,
+  openDirToast, askForHtml5ifySpeed, askForYouTubeInput, isMasBuild, isStoreBuild, askForFileOpenAction,
+  askForImportChapters,
 } from './util';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
@@ -213,6 +214,10 @@ const App = memo(() => {
   useEffect(() => safeSetConfig('autoExportExtraStreams', autoExportExtraStreams), [autoExportExtraStreams]);
   const [askBeforeClose, setAskBeforeClose] = useState(configStore.get('askBeforeClose'));
   useEffect(() => safeSetConfig('askBeforeClose', askBeforeClose), [askBeforeClose]);
+  const [enableAskForImportChapters, setEnableAskForImportChapters] = useState(configStore.get('enableAskForImportChapters'));
+  useEffect(() => safeSetConfig('enableAskForImportChapters', enableAskForImportChapters), [enableAskForImportChapters]);
+  const [enableAskForFileOpenAction, setEnableAskForFileOpenAction] = useState(configStore.get('enableAskForFileOpenAction'));
+  useEffect(() => safeSetConfig('enableAskForFileOpenAction', enableAskForFileOpenAction), [enableAskForFileOpenAction]);
   const [muted, setMuted] = useState(configStore.get('muted'));
   useEffect(() => safeSetConfig('muted', muted), [muted]);
   const [autoSaveProjectFile, setAutoSaveProjectFile] = useState(configStore.get('autoSaveProjectFile'));
@@ -566,7 +571,7 @@ const App = memo(() => {
           return;
         } */
 
-        await edlStoreSave(edlFilePath, debouncedCutSegments);
+        await saveCsv(edlFilePath, debouncedCutSegments);
         lastSavedCutSegmentsRef.current = debouncedCutSegments;
       } catch (err) {
         errorToast(i18n.t('Unable to save project file'));
@@ -1106,29 +1111,26 @@ const App = memo(() => {
   }, []);
 
   const loadCutSegments = useCallback((edl) => {
-    const allRowsValid = edl
-      .every(row => row.start === undefined || row.end === undefined || row.start < row.end);
+    if (edl.length === 0) throw new Error();
+    const allRowsValid = edl.every(row => row.start === undefined || row.end === undefined || row.start < row.end);
 
-    if (!allRowsValid) {
-      throw new Error(i18n.t('Invalid start or end values for one or more segments'));
-    }
+    if (!allRowsValid) throw new Error(i18n.t('Invalid start or end values for one or more segments'));
 
     cutSegmentsHistory.go(0);
     setCutSegments(edl.map(createSegment));
   }, [cutSegmentsHistory, setCutSegments]);
 
-  const loadEdlFile = useCallback(async (edlPath, type = 'csv') => {
+  const loadEdlFile = useCallback(async (path, type = 'csv') => {
     try {
-      let storedEdl;
-      if (type === 'csv') storedEdl = await edlStoreLoad(edlPath);
-      else if (type === 'xmeml') storedEdl = await loadXmeml(edlPath);
+      let edl;
+      if (type === 'csv') edl = await loadCsv(path);
+      else if (type === 'xmeml') edl = await loadXmeml(path);
+      else if (type === 'cue') edl = await loadCue(path);
 
-      loadCutSegments(storedEdl);
+      loadCutSegments(edl);
     } catch (err) {
-      if (err.code !== 'ENOENT') {
-        console.error('EDL load failed', err);
-        errorToast(`${i18n.t('Failed to load project file')} (${err.message})`);
-      }
+      console.error('EDL load failed', err);
+      errorToast(`${i18n.t('Failed to load project')} (${err.message})`);
     }
   }, [loadCutSegments]);
 
@@ -1216,7 +1218,17 @@ const App = memo(() => {
         await createDummyVideo(cod, fp);
       }
 
-      await loadEdlFile(getEdlFilePath(fp));
+      const openedFileEdlPath = getEdlFilePath(fp);
+
+      if (await exists(openedFileEdlPath)) {
+        await loadEdlFile(openedFileEdlPath);
+      } else {
+        const edl = await tryReadChaptersToEdl(fp);
+        if (edl.length > 0 && enableAskForImportChapters && (await askForImportChapters())) {
+          console.log('Read chapters', edl);
+          loadCutSegments(edl);
+        }
+      }
     } catch (err) {
       if (err.exitCode === 1 || err.code === 'ENOENT') {
         errorToast(i18n.t('Unsupported file'));
@@ -1227,7 +1239,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [resetState, working, createDummyVideo, loadEdlFile, getEdlFilePath, getHtml5ifiedPath]);
+  }, [resetState, working, createDummyVideo, loadEdlFile, getEdlFilePath, getHtml5ifiedPath, loadCutSegments, enableAskForImportChapters]);
 
   const toggleHelp = useCallback(() => setHelpVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1363,27 +1375,15 @@ const App = memo(() => {
       return;
     }
 
-    const { value } = await Swal.fire({
-      title: i18n.t('You opened a new file. What do you want to do?'),
-      icon: 'question',
-      input: 'radio',
-      inputValue: 'open',
-      showCancelButton: true,
-      customClass: { input: 'swal2-losslesscut-radio' },
-      inputOptions: {
-        open: i18n.t('Open the file instead of the current one'),
-        add: i18n.t('Include all tracks from the new file'),
-      },
-      inputValidator: (v) => !v && i18n.t('You need to choose something!'),
-    });
+    const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction() : 'open';
 
-    if (value === 'open') {
+    if (openFileResponse === 'open') {
       load({ filePath: firstFile, customOutDir: newCustomOutDir });
-    } else if (value === 'add') {
+    } else if (openFileResponse === 'add') {
       addStreamSourceFile(firstFile);
       setStreamsSelectorShown(true);
     }
-  }, [addStreamSourceFile, isFileOpened, load, mergeFiles, assureOutDirAccess]);
+  }, [addStreamSourceFile, isFileOpened, load, mergeFiles, assureOutDirAccess, enableAskForFileOpenAction]);
 
   const onDrop = useCallback(async (ev) => {
     ev.preventDefault();
@@ -1525,7 +1525,7 @@ const App = memo(() => {
           errorToast(i18n.t('File exists, bailing'));
           return;
         }
-        await edlStoreSave(fp, cutSegments);
+        await saveCsv(fp, cutSegments);
       } catch (err) {
         errorToast(i18n.t('Failed to export CSV'));
         console.error('Failed to export CSV', err);
@@ -1538,9 +1538,16 @@ const App = memo(() => {
         return;
       }
 
+      if (type === 'youtube') {
+        const edl = await askForYouTubeInput();
+        if (edl.length > 0) loadCutSegments(edl);
+        return;
+      }
+
       let filters;
       if (type === 'csv') filters = [{ name: i18n.t('CSV files'), extensions: ['csv'] }];
       else if (type === 'xmeml') filters = [{ name: i18n.t('XML files'), extensions: ['xml'] }];
+      else if (type === 'cue') filters = [{ name: i18n.t('CUE files'), extensions: ['cue'] }];
 
       const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters });
       if (canceled || filePaths.length < 1) return;
@@ -1650,6 +1657,7 @@ const App = memo(() => {
     mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset, html5ifyCurrentFile,
     createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory, openSendReportDialogWithState,
     loadEdlFile, cutSegments, edlFilePath, askBeforeClose, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
+    loadCutSegments,
   ]);
 
   async function showAddStreamSourceDialog() {
@@ -1735,6 +1743,10 @@ const App = memo(() => {
       setTimecodeShowFrames={setTimecodeShowFrames}
       askBeforeClose={askBeforeClose}
       setAskBeforeClose={setAskBeforeClose}
+      enableAskForImportChapters={enableAskForImportChapters}
+      setEnableAskForImportChapters={setEnableAskForImportChapters}
+      enableAskForFileOpenAction={enableAskForFileOpenAction}
+      setEnableAskForFileOpenAction={setEnableAskForFileOpenAction}
       ffmpegExperimental={ffmpegExperimental}
       setFfmpegExperimental={setFfmpegExperimental}
       invertTimelineScroll={invertTimelineScroll}
@@ -1747,7 +1759,7 @@ const App = memo(() => {
       renderCaptureFormatButton={renderCaptureFormatButton}
       onWheelTunerRequested={onWheelTunerRequested}
     />
-  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, renderOutFmt, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language, invertTimelineScroll, ffmpegExperimental, setFfmpegExperimental]);
+  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, renderOutFmt, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language, invertTimelineScroll, ffmpegExperimental, setFfmpegExperimental, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction]);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);

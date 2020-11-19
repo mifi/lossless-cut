@@ -39,9 +39,21 @@ module.exports = (app, mainWindow, newVersion) => {
           label: 'Import project',
           submenu: [
             {
+              label: 'Text chapters / YouTube',
+              click() {
+                mainWindow.webContents.send('importEdlFile', 'youtube');
+              },
+            },
+            {
               label: 'DaVinci Resolve / Final Cut Pro XML',
               click() {
                 mainWindow.webContents.send('importEdlFile', 'xmeml');
+              },
+            },
+            {
+              label: 'CUE sheet file',
+              click() {
+                mainWindow.webContents.send('importEdlFile', 'cue');
               },
             },
           ],

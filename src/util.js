@@ -4,6 +4,8 @@ import i18n from 'i18next';
 
 import randomColor from './random-color';
 
+import { parseYouTube } from './edlFormats';
+
 const path = window.require('path');
 const fs = window.require('fs-extra');
 const open = window.require('open');
@@ -197,6 +199,26 @@ export async function askForHtml5ifySpeed(allowedOptions) {
   return value;
 }
 
+export async function askForYouTubeInput() {
+  const example = i18n.t('YouTube video description\n00:00 Intro\n00:01 Chapter 2\n00:00:02.123 Chapter 3');
+  const { value } = await Swal.fire({
+    title: i18n.t('Import text chapters / YouTube'),
+    input: 'textarea',
+    inputPlaceholder: example,
+    text: i18n.t('Paste or type a YouTube chapters description or textual chapter description'),
+    showCancelButton: true,
+    inputValidator: (v) => {
+      if (v) {
+        const edl = parseYouTube(v);
+        if (edl.length > 0) return undefined;
+      }
+      return i18n.t('Please input a valid format.');
+    },
+  });
+
+  return parseYouTube(value);
+}
+
 export const isMasBuild = window.process.mas;
 export const isStoreBuild = isMasBuild || window.process.windowsStore;
 
@@ -209,4 +231,34 @@ export async function askForOutDir(defaultPath) {
     buttonLabel: i18n.t('Select output folder'),
   });
   return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
+}
+
+export async function askForFileOpenAction() {
+  const { value } = await Swal.fire({
+    title: i18n.t('You opened a new file. What do you want to do?'),
+    icon: 'question',
+    input: 'radio',
+    inputValue: 'open',
+    showCancelButton: true,
+    customClass: { input: 'swal2-losslesscut-radio' },
+    inputOptions: {
+      open: i18n.t('Open the file instead of the current one'),
+      add: i18n.t('Include all tracks from the new file'),
+    },
+    inputValidator: (v) => !v && i18n.t('You need to choose something!'),
+  });
+
+  return value;
+}
+
+export async function askForImportChapters() {
+  const { value } = await Swal.fire({
+    icon: 'question',
+    text: i18n.t('This file has embedded chapters. Do you want to import the chapters as cut-segments?'),
+    showCancelButton: true,
+    cancelButtonText: i18n.t('Ignore chapters'),
+    confirmButtonText: i18n.t('Import chapters'),
+  });
+
+  return value;
 }
