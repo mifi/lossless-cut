@@ -262,3 +262,40 @@ export async function askForImportChapters() {
 
   return value;
 }
+
+async function askForNumSegments() {
+  const maxSegments = 1000;
+
+  const { value } = await Swal.fire({
+    input: 'number',
+    inputAttributes: {
+      min: 0,
+      max: maxSegments,
+    },
+    showCancelButton: true,
+    inputValue: '2',
+    text: i18n.t('Divide timeline into a number of equal length segments'),
+    inputValidator: (v) => {
+      const parsed = parseInt(v, 10);
+      if (!Number.isNaN(parsed) && parsed >= 2 && parsed <= maxSegments) {
+        return undefined;
+      }
+      return i18n.t('Please input a valid number of segments');
+    },
+  });
+
+  if (value == null) return undefined;
+
+  return parseInt(value, 10);
+}
+
+export async function createNumSegments(fileDuration) {
+  const numSegments = await askForNumSegments();
+  if (numSegments == null) return undefined;
+  const edl = [];
+  const segDuration = fileDuration / numSegments;
+  for (let i = 0; i < numSegments; i += 1) {
+    edl.push({ start: i * segDuration, end: i === numSegments - 1 ? undefined : (i + 1) * segDuration });
+  }
+  return edl;
+}

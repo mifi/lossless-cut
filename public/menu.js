@@ -117,6 +117,18 @@ module.exports = (app, mainWindow, newVersion) => {
         { role: 'copy' },
         { role: 'paste' },
         { role: 'selectall' },
+        { type: 'separator' },
+        {
+          label: 'Segments',
+          submenu: [
+            {
+              label: 'Create num segments',
+              click() {
+                mainWindow.webContents.send('createNumSegments');
+              },
+            },
+          ],
+        },
       ],
     },
 

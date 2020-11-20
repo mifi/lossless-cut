@@ -48,7 +48,7 @@ import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
   promptTimeOffset, generateColor, getOutDir, withBlur, checkDirWriteAccess, dirExists, askForOutDir,
   openDirToast, askForHtml5ifySpeed, askForYouTubeInput, isMasBuild, isStoreBuild, askForFileOpenAction,
-  askForImportChapters,
+  askForImportChapters, createNumSegments,
 } from './util';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
@@ -1386,6 +1386,12 @@ const App = memo(() => {
     }
   }, [addStreamSourceFile, isFileOpened, load, mergeFiles, assureOutDirAccess, enableAskForFileOpenAction]);
 
+  const checkFileOpened = useCallback(() => {
+    if (isFileOpened) return true;
+    toast.fire({ icon: 'info', title: i18n.t('You need to open a media file first') });
+    return false;
+  }, [isFileOpened]);
+
   const onDrop = useCallback(async (ev) => {
     ev.preventDefault();
     const { files } = ev.dataTransfer;
@@ -1394,11 +1400,12 @@ const App = memo(() => {
     focusWindow();
 
     if (filePaths.length === 1 && filePaths[0].toLowerCase().endsWith('.csv')) {
+      if (!checkFileOpened()) return;
       loadEdlFile(filePaths[0]);
       return;
     }
     userOpenFiles(filePaths);
-  }, [userOpenFiles, loadEdlFile]);
+  }, [userOpenFiles, loadEdlFile, checkFileOpened]);
 
   const html5ifyInternal = useCallback(async ({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: hv }) => {
     const path = getHtml5ifiedPath(cod, fp, speed);
@@ -1519,7 +1526,7 @@ const App = memo(() => {
 
     async function exportEdlFile() {
       try {
-        if (!isFileOpened) return;
+        if (!checkFileOpened()) return;
         const { canceled, filePath: fp } = await dialog.showSaveDialog({ defaultPath: `${new Date().getTime()}.csv`, filters: [{ name: i18n.t('CSV files'), extensions: ['csv'] }] });
         if (canceled || !fp) return;
         if (await exists(fp)) {
@@ -1534,10 +1541,7 @@ const App = memo(() => {
     }
 
     async function importEdlFile(e, type) {
-      if (!isFileOpened) {
-        toast.fire({ icon: 'info', title: i18n.t('You need to open a media file first') });
-        return;
-      }
+      if (!checkFileOpened()) return;
 
       if (type === 'youtube') {
         const edl = await askForYouTubeInput();
@@ -1621,6 +1625,12 @@ const App = memo(() => {
       openSendReportDialogWithState();
     }
 
+    async function createNumSegments2() {
+      if (!checkFileOpened()) return;
+      const segments = await createNumSegments(duration);
+      if (segments) loadCutSegments(segments);
+    }
+
     electron.ipcRenderer.on('file-opened', fileOpened);
     electron.ipcRenderer.on('close-file', closeFile);
     electron.ipcRenderer.on('html5ify', html5ifyCurrentFile);
@@ -1636,6 +1646,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('openAbout', openAbout);
     electron.ipcRenderer.on('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
     electron.ipcRenderer.on('openSendReportDialog', openSendReportDialog2);
+    electron.ipcRenderer.on('createNumSegments', createNumSegments2);
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
@@ -1653,12 +1664,13 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('openAbout', openAbout);
       electron.ipcRenderer.removeListener('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
       electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog2);
+      electron.ipcRenderer.removeListener('createNumSegments', createNumSegments2);
     };
   }, [
     mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset, html5ifyCurrentFile,
     createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory, openSendReportDialogWithState,
     loadEdlFile, cutSegments, edlFilePath, askBeforeClose, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
-    loadCutSegments,
+    loadCutSegments, duration, checkFileOpened,
   ]);
 
   async function showAddStreamSourceDialog() {
