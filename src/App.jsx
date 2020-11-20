@@ -48,7 +48,7 @@ import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
   promptTimeOffset, generateColor, getOutDir, withBlur, checkDirWriteAccess, dirExists, askForOutDir,
   openDirToast, askForHtml5ifySpeed, askForYouTubeInput, isMasBuild, isStoreBuild, askForFileOpenAction,
-  askForImportChapters, createNumSegments,
+  askForImportChapters, createNumSegments, createFixedDurationSegments,
 } from './util';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
@@ -1631,6 +1631,12 @@ const App = memo(() => {
       if (segments) loadCutSegments(segments);
     }
 
+    async function createFixedDurationSegments2() {
+      if (!checkFileOpened()) return;
+      const segments = await createFixedDurationSegments(duration);
+      if (segments) loadCutSegments(segments);
+    }
+
     electron.ipcRenderer.on('file-opened', fileOpened);
     electron.ipcRenderer.on('close-file', closeFile);
     electron.ipcRenderer.on('html5ify', html5ifyCurrentFile);
@@ -1647,6 +1653,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
     electron.ipcRenderer.on('openSendReportDialog', openSendReportDialog2);
     electron.ipcRenderer.on('createNumSegments', createNumSegments2);
+    electron.ipcRenderer.on('createFixedDurationSegments', createFixedDurationSegments2);
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
@@ -1664,7 +1671,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('openAbout', openAbout);
       electron.ipcRenderer.removeListener('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
       electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog2);
-      electron.ipcRenderer.removeListener('createNumSegments', createNumSegments2);
+      electron.ipcRenderer.removeListener('createFixedDurationSegments', createFixedDurationSegments2);
     };
   }, [
     mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset, html5ifyCurrentFile,

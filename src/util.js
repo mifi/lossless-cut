@@ -263,9 +263,9 @@ export async function askForImportChapters() {
   return value;
 }
 
-async function askForNumSegments() {
-  const maxSegments = 1000;
+const maxSegments = 300;
 
+async function askForNumSegments() {
   const { value } = await Swal.fire({
     input: 'number',
     inputAttributes: {
@@ -277,9 +277,7 @@ async function askForNumSegments() {
     text: i18n.t('Divide timeline into a number of equal length segments'),
     inputValidator: (v) => {
       const parsed = parseInt(v, 10);
-      if (!Number.isNaN(parsed) && parsed >= 2 && parsed <= maxSegments) {
-        return undefined;
-      }
+      if (!Number.isNaN(parsed) && parsed >= 2 && parsed <= maxSegments) return undefined;
       return i18n.t('Please input a valid number of segments');
     },
   });
@@ -296,6 +294,39 @@ export async function createNumSegments(fileDuration) {
   const segDuration = fileDuration / numSegments;
   for (let i = 0; i < numSegments; i += 1) {
     edl.push({ start: i * segDuration, end: i === numSegments - 1 ? undefined : (i + 1) * segDuration });
+  }
+  return edl;
+}
+
+async function askForSegmentDuration(fileDuration) {
+  const example = '00:00:05.123';
+  const { value } = await Swal.fire({
+    input: 'text',
+    showCancelButton: true,
+    inputValue: '00:00:00.000',
+    text: i18n.t('Divide timeline into a number of segments with the specified length'),
+    inputValidator: (v) => {
+      const duration = parseDuration(v);
+      if (duration != null) {
+        const numSegments = Math.ceil(fileDuration / duration);
+        if (duration > 0 && duration < fileDuration && numSegments <= maxSegments) return undefined;
+      }
+      return i18n.t('Please input a valid duration. Example: {{example}}', { example });
+    },
+  });
+
+  if (value == null) return undefined;
+
+  return parseDuration(value);
+}
+
+export async function createFixedDurationSegments(fileDuration) {
+  const segmentDuration = await askForSegmentDuration(fileDuration);
+  if (segmentDuration == null) return undefined;
+  const edl = [];
+  for (let start = 0; start < fileDuration; start += segmentDuration) {
+    const end = start + segmentDuration;
+    edl.push({ start, end: end >= fileDuration ? undefined : end });
   }
   return edl;
 }

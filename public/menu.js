@@ -127,6 +127,12 @@ module.exports = (app, mainWindow, newVersion) => {
                 mainWindow.webContents.send('createNumSegments');
               },
             },
+            {
+              label: 'Create fixed duration segments',
+              click() {
+                mainWindow.webContents.send('createFixedDurationSegments');
+              },
+            },
           ],
         },
       ],
