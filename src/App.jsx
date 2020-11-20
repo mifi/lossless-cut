@@ -1110,11 +1110,6 @@ const App = memo(() => {
     return getOutPath(cod, fp, `html5ified-${type}.${ext}`);
   }, []);
 
-  const resetCutSegments = useCallback((edl) => {
-    cutSegmentsHistory.go(0);
-    setCutSegments(edl);
-  }, [cutSegmentsHistory, setCutSegments]);
-
   const loadCutSegments = useCallback((edl) => {
     const validEdl = edl.filter((row) => (
       (row.start === undefined || row.end === undefined || row.start < row.end)
@@ -1123,8 +1118,8 @@ const App = memo(() => {
 
     if (validEdl.length === 0) throw new Error(i18n.t('No valid segments found'));
 
-    resetCutSegments(validEdl.map(createSegment));
-  }, [resetCutSegments]);
+    setCutSegments(validEdl.map(createSegment));
+  }, [setCutSegments]);
 
   const loadEdlFile = useCallback(async (path, type = 'csv') => {
     try {
@@ -1136,7 +1131,7 @@ const App = memo(() => {
       loadCutSegments(edl);
     } catch (err) {
       console.error('EDL load failed', err);
-      errorToast(`${i18n.t('Failed to load project')} (${err.message})`);
+      errorToast(`${i18n.t('Failed to load segments')} (${err.message})`);
     }
   }, [loadCutSegments]);
 
