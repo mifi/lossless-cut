@@ -1110,15 +1110,21 @@ const App = memo(() => {
     return getOutPath(cod, fp, `html5ified-${type}.${ext}`);
   }, []);
 
-  const loadCutSegments = useCallback((edl) => {
-    if (edl.length === 0) throw new Error();
-    const allRowsValid = edl.every(row => row.start === undefined || row.end === undefined || row.start < row.end);
-
-    if (!allRowsValid) throw new Error(i18n.t('Invalid start or end values for one or more segments'));
-
+  const resetCutSegments = useCallback((edl) => {
     cutSegmentsHistory.go(0);
-    setCutSegments(edl.map(createSegment));
+    setCutSegments(edl);
   }, [cutSegmentsHistory, setCutSegments]);
+
+  const loadCutSegments = useCallback((edl) => {
+    const validEdl = edl.filter((row) => (
+      (row.start === undefined || row.end === undefined || row.start < row.end)
+      && (row.start === undefined || row.start >= 0)
+    ));
+
+    if (validEdl.length === 0) throw new Error(i18n.t('No valid segments found'));
+
+    resetCutSegments(validEdl.map(createSegment));
+  }, [resetCutSegments]);
 
   const loadEdlFile = useCallback(async (path, type = 'csv') => {
     try {
