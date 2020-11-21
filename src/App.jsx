@@ -44,11 +44,10 @@ import {
 } from './ffmpeg';
 import { saveCsv, loadCsv, loadXmeml, loadCue } from './edlStore';
 import {
-  getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
-  promptTimeOffset, getOutDir, withBlur, checkDirWriteAccess, dirExists, askForOutDir,
-  openDirToast, askForHtml5ifySpeed, askForYouTubeInput, isMasBuild, isStoreBuild, askForFileOpenAction,
-  askForImportChapters, createNumSegments, createFixedDurationSegments, dragPreventer, doesPlayerSupportFile,
+  getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
+  checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
 } from './util';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart } from './segments';
