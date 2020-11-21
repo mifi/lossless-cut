@@ -1,0 +1,13 @@
+{
+    "Keyframe cut disabled": "Corte de quadro-chave desabilitado",
+    "Will now cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files.": "O corte será feito no quadro-chave mais próximo antes do ponto de corte inicial desejado. Isto é recomendado para a maioria dos arquivos.",
+    "Keyframe cut enabled": "Corte de quadro-chave habilitado",
+    "Failed to merge files. Make sure they are all of the exact same codecs": "Falha ao mesclar arquivos. Certifique-se de que eles possuem os mesmos codecs",
+    "Files merged!": "Arquivos mesclados!",
+    "Merging": "Mesclar",
+    "You have no write access to the directory of this file, please select a custom working dir": "Você não tem permissão de escrita à pasta deste arquivo. Por favor, selecione outra pasta de trabalho",
+    "Unable to save project file": "Não foi possível salvar o arquivo de projeto",
+    "Muted preview (exported file will not be affected)": "Visualização sem som (o arquivo exportado não será afetado)",
+    "Key frames will show on the timeline. You need to zoom in to view them": "Os quadros-chave serão exibidos na linha do tempo. Você precisa aumentar o zoom para visualizá-los",
+    "Unable to save your preferences. Try to disable any anti-virus": "Não foi possível salvar as suas preferências. Tente desabilitar o seu antivírus"
+}
