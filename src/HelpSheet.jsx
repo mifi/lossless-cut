@@ -66,6 +66,7 @@ const HelpSheet = memo(({ visible, onTogglePress, ffmpegCommandLog, currentCutSe
         <div><kbd>BACKSPACE</kbd> {t('Remove current segment')}</div>
         <div><kbd>↑</kbd> {t('Select previous segment')}</div>
         <div><kbd>↓</kbd> {t('Select next segment')}</div>
+        <div><kbd>B</kbd> {t('Split segment at cursor')}</div>
 
         <h2>{t('Timeline/zoom operations')}</h2>
         <div><kbd>Z</kbd> {t('Toggle zoom between 1x and a calculated comfortable zoom level')}</div>

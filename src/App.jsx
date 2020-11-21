@@ -50,7 +50,7 @@ import {
 import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
-import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart } from './segments';
+import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor } from './segments';
 
 
 import loadingLottie from './7077-magic-flow.json';
@@ -1061,6 +1061,36 @@ const App = memo(() => {
     return getOutPath(cod, fp, `html5ified-${type}.${ext}`);
   }, []);
 
+  const firstSegmentAtCursorIndex = useMemo(() => {
+    const segmentsAtCursorIndexes = findSegmentsAtCursor(apparentCutSegments, commandedTime);
+    return segmentsAtCursorIndexes[0];
+  }, [apparentCutSegments, commandedTime]);
+
+  const segmentAtCursorRef = useRef();
+
+  const segmentAtCursor = useMemo(() => {
+    const segment = cutSegments[firstSegmentAtCursorIndex];
+    segmentAtCursorRef.current = segment;
+    return segment;
+  }, [cutSegments, firstSegmentAtCursorIndex]);
+
+  const splitCurrentSegment = useCallback(() => {
+    const segmentAtCursor2 = segmentAtCursorRef.current;
+    if (!segmentAtCursor2) {
+      errorToast(i18n.t('No segment to split. Please move cursor over the segment you want to split'));
+      return;
+    }
+
+    const getNewName = (oldName, suffix) => oldName && `${segmentAtCursor2.name} ${suffix}`;
+
+    const firstPart = createSegment({ name: getNewName(segmentAtCursor2.name, '1'), start: segmentAtCursor2.start, end: currentTimeRef.current });
+    const secondPart = createSegment({ name: getNewName(segmentAtCursor2.name, '2'), start: currentTimeRef.current, end: segmentAtCursor2.end });
+
+    const newSegments = [...cutSegments];
+    newSegments.splice(firstSegmentAtCursorIndex, 1, firstPart, secondPart);
+    setCutSegments(newSegments);
+  }, [cutSegments, firstSegmentAtCursorIndex, setCutSegments]);
+
   const loadCutSegments = useCallback((edl) => {
     const validEdl = edl.filter((row) => (
       (row.start === undefined || row.end === undefined || row.start < row.end)
@@ -1230,6 +1260,7 @@ const App = memo(() => {
     Mousetrap.bind('+', () => addCutSegment());
     Mousetrap.bind('backspace', () => removeCutSegment());
     Mousetrap.bind('d', () => deleteSource());
+    Mousetrap.bind('b', () => splitCurrentSegment());
 
     return () => {
       Mousetrap.unbind('space');
@@ -1257,11 +1288,12 @@ const App = memo(() => {
       Mousetrap.unbind('+');
       Mousetrap.unbind('backspace');
       Mousetrap.unbind('d');
+      Mousetrap.unbind('b');
     };
   }, [
     addCutSegment, capture, changePlaybackRate, cutClick, togglePlay, removeCutSegment,
     setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, deleteSource, jumpSeg, toggleHelp,
-    seekClosestKeyframe, zoomRel, toggleComfortZoom,
+    seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment,
   ]);
 
   useEffect(() => {
@@ -1946,9 +1978,11 @@ const App = memo(() => {
                   updateCurrentSegOrder={updateCurrentSegOrder}
                   setCurrentSegmentName={setCurrentSegmentName}
                   currentCutSeg={currentCutSeg}
+                  segmentAtCursor={segmentAtCursor}
                   addCutSegment={addCutSegment}
                   removeCutSegment={removeCutSegment}
                   toggleSideBar={toggleSideBar}
+                  splitCurrentSegment={splitCurrentSegment}
                 />
               </motion.div>
             )}

@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import prettyMs from 'pretty-ms';
 import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight } from 'react-icons/fa';
+import { AiOutlineSplitCells } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import { useTranslation } from 'react-i18next';
@@ -8,11 +9,17 @@ import { useTranslation } from 'react-i18next';
 import { saveColor } from './colors';
 import { getSegColors } from './util';
 
+const buttonBaseStyle = {
+  margin: '0 3px', borderRadius: 3, color: 'white', cursor: 'pointer',
+};
+
+const neutralButtonColor = 'rgba(255, 255, 255, 0.2)';
+
 const SegmentList = memo(({
   formatTimecode, cutSegments, outSegments, getFrameCount, onSegClick,
   currentSegIndex, invertCutSegments,
   updateCurrentSegOrder, addCutSegment, removeCutSegment,
-  setCurrentSegmentName, currentCutSeg, toggleSideBar,
+  setCurrentSegmentName, currentCutSeg, segmentAtCursor, toggleSideBar, splitCurrentSegment,
 }) => {
   const { t } = useTranslation();
 
@@ -103,13 +110,14 @@ const SegmentList = memo(({
 
   const renderFooter = () => {
     const { segActiveBgColor: currentSegActiveBgColor } = getSegColors(currentCutSeg);
+    const { segActiveBgColor: segmentAtCursorActiveBgColor } = getSegColors(segmentAtCursor);
 
     return (
       <>
         <div style={{ display: 'flex', padding: '5px 0', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid grey' }}>
           <FaPlus
             size={30}
-            style={{ margin: '0 5px', borderRadius: 3, color: 'white', cursor: 'pointer', background: 'rgba(255, 255, 255, 0.2)' }}
+            style={{ ...buttonBaseStyle, background: neutralButtonColor }}
             role="button"
             title={t('Add segment')}
             onClick={addCutSegment}
@@ -117,7 +125,7 @@ const SegmentList = memo(({
 
           <FaMinus
             size={30}
-            style={{ margin: '0 5px', borderRadius: 3, color: 'white', cursor: 'pointer', background: cutSegments.length < 2 ? 'rgba(255, 255, 255, 0.2)' : currentSegActiveBgColor }}
+            style={{ ...buttonBaseStyle, background: cutSegments.length >= 2 ? currentSegActiveBgColor : neutralButtonColor }}
             role="button"
             title={`${t('Delete current segment')} ${currentSegIndex + 1}`}
             onClick={removeCutSegment}
@@ -127,7 +135,7 @@ const SegmentList = memo(({
             size={20}
             title={t('Change segment order')}
             role="button"
-            style={{ padding: 4, margin: '0 5px', background: currentSegActiveBgColor, borderRadius: 3, color: 'white', cursor: 'pointer' }}
+            style={{ ...buttonBaseStyle, padding: 4, background: currentSegActiveBgColor }}
             onClick={onReorderSegsPress}
           />
 
@@ -135,8 +143,16 @@ const SegmentList = memo(({
             size={20}
             title={t('Label segment')}
             role="button"
-            style={{ padding: 4, margin: '0 5px', background: currentSegActiveBgColor, borderRadius: 3, color: 'white', cursor: 'pointer' }}
+            style={{ ...buttonBaseStyle, padding: 4, background: currentSegActiveBgColor }}
             onClick={onLabelSegmentPress}
+          />
+
+          <AiOutlineSplitCells
+            size={20}
+            title={t('Split segment at cursor')}
+            role="button"
+            style={{ ...buttonBaseStyle, padding: 4, background: segmentAtCursor ? segmentAtCursorActiveBgColor : neutralButtonColor }}
+            onClick={splitCurrentSegment}
           />
         </div>
 

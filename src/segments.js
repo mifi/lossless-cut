@@ -24,3 +24,11 @@ export const getCleanCutSegments = (cs) => cs.map((seg) => ({
   end: seg.end,
   name: seg.name,
 }));
+
+export function findSegmentsAtCursor(apparentSegments, currentTime) {
+  const indexes = [];
+  apparentSegments.forEach((segment, index) => {
+    if (segment.start < currentTime && segment.end > currentTime) indexes.push(index);
+  });
+  return indexes;
+}
