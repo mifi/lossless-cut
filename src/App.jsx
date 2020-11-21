@@ -5,7 +5,8 @@ import Swal from 'sweetalert2';
 import Lottie from 'react-lottie';
 import { SideSheet, Button, Position, SegmentedControl, Select } from 'evergreen-ui';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
-import useDebounce from 'react-use/lib/useDebounce';
+import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
+import { useDebounce } from 'use-debounce';
 import filePathToUrl from 'file-url';
 import Mousetrap from 'mousetrap';
 import i18n from 'i18next';
@@ -18,7 +19,6 @@ import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
 import flatMap from 'lodash/flatMap';
 import isEqual from 'lodash/isEqual';
-
 
 import Canvas from './Canvas';
 import TopMenu from './TopMenu';
@@ -130,13 +130,8 @@ const App = memo(() => {
     createInitialCutSegments(),
     100,
   );
-  const [debouncedCutSegments, setDebouncedCutSegments] = useState(
-    createInitialCutSegments(),
-  );
 
-  const [, cancelCutSegmentsDebounce] = useDebounce(() => {
-    setDebouncedCutSegments(cutSegments);
-  }, 500, [cutSegments]);
+  const [debouncedCutSegments] = useDebounce(cutSegments, 500);
 
   const durationSafe = duration || 1;
   const zoomedDuration = duration != null ? duration / zoom : undefined;
@@ -512,6 +507,7 @@ const App = memo(() => {
 
   useEffect(() => {
     async function save() {
+      // TODO I think there is a potential race condition here if switching files too fast
       if (!edlFilePath) return;
 
       try {
@@ -676,7 +672,7 @@ const App = memo(() => {
     setThumbnails(v => [...v, thumbnail]);
   }
 
-  const [, cancelRenderThumbnails] = useDebounce(() => {
+  const [, cancelRenderThumbnails] = useDebounceOld(() => {
     async function renderThumbnails() {
       if (!thumbnailsEnabled || thumnailsRenderingPromiseRef.current) return;
 
@@ -703,7 +699,7 @@ const App = memo(() => {
     thumnailsRef.current = thumbnails;
   }, [thumbnails]);
 
-  const [, cancelReadKeyframeDataDebounce] = useDebounce(() => {
+  const [, cancelReadKeyframeDataDebounce] = useDebounceOld(() => {
     async function run() {
       // We still want to calculate keyframes even if not shouldShowKeyframes because maybe we want to step to closest keyframe
       if (!keyframesEnabled || !filePath || !mainVideoStream || commandedTime == null || readingKeyframesPromise.current) return;
@@ -728,7 +724,7 @@ const App = memo(() => {
   const shouldShowKeyframes = keyframesEnabled && !!mainVideoStream && calcShouldShowKeyframes(zoomedDuration);
   const shouldShowWaveform = calcShouldShowWaveform(zoomedDuration);
 
-  const [, cancelWaveformDataDebounce] = useDebounce(() => {
+  const [, cancelWaveformDataDebounce] = useDebounceOld(() => {
     async function run() {
       if (!filePath || !mainAudioStream || commandedTime == null || !shouldShowWaveform || !waveformEnabled || creatingWaveformPromise.current) return;
       try {
@@ -760,8 +756,6 @@ const App = memo(() => {
     setPlaying(false);
     setDuration();
     cutSegmentsHistory.go(0);
-    cancelCutSegmentsDebounce(); // TODO auto save when loading new file/closing file
-    setDebouncedCutSegments(createInitialCutSegments());
     setCutSegments(createInitialCutSegments()); // TODO this will cause two history items
     setCutStartTimeManual();
     setCutEndTimeManual();
@@ -792,7 +786,7 @@ const App = memo(() => {
 
     setThumbnails([]);
     cancelRenderThumbnails();
-  }, [cutSegmentsHistory, cancelCutSegmentsDebounce, setCutSegments, cancelWaveformDataDebounce, cancelReadKeyframeDataDebounce, cancelRenderThumbnails]);
+  }, [cutSegmentsHistory, setCutSegments, cancelWaveformDataDebounce, cancelReadKeyframeDataDebounce, cancelRenderThumbnails]);
 
 
   // Cleanup old
