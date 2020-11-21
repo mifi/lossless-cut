@@ -27,36 +27,26 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Undo/redo
 - Give labels to cut segments
 - View segment details, export/import cut segments as CSV
+- Import segments from: MP4/MKV chapters, Text file, YouTube, CSV, CUE, XML (DaVinci, Final Cut Pro)
 - Video thumbnails and audio waveform
 
 ## Example lossless use cases
 
-### Remove audio tracks from a file
-
-### Add music to a video (or replace existing audio track)
-
-### Link audio and video tracks from separate recordings
-
-### Include a subtitle into a video
-
-### Extract music track from a video and cut it to your needs
-
-### Cut out commercials from a recorded TV show
-
-Without having to re-encode. You can also change format from TS to MP4 at the same time.
-
-### Fix rotation of a video that has the wrong orientation flag set
-
-Great for rotating phone videos that come out the wrong way without actually re-encoding the video.
-
-### Quickly change a H264 MKV video to MOV or MP4 for playback on iPhone
-
-### Import a list of cut times from other tool as a EDL (edit decision list, CSV) and run these cuts with LosslessCut
-
-### Export a list of cut times as a CSV EDL and run these in another tool
-
-### Loop a video / audio clip X times quickly without re-encoding
-See [#284](https://github.com/mifi/lossless-cut/issues/284)
+- Cut out commercials from a recorded TV show
+- Remove audio tracks from a file
+- Extract music track from a video and cut it to your needs
+- Add music to a video (or replace existing audio track)
+- Combine audio and video tracks from separate recordings
+- Include a subtitle into a video
+- Quickly change a H264 MKV video to MOV or MP4 for playback on iPhone
+- Import a list of cut times from other tool as a EDL (edit decision list, CSV) and run these cuts with LosslessCut
+- Quickly cut a file by MP4/MKV chapters
+- Export a list of cut times as a CSV EDL and process these in another tool
+  - Without having to re-encode. You can also change format from TS to MP4 at the same time.
+- Fix rotation of a video that has the wrong orientation flag set
+  - Great for rotating phone videos that come out the wrong way without actually re-encoding the video.
+- Loop a video / audio clip X times quickly without re-encoding
+  - See [#284](https://github.com/mifi/lossless-cut/issues/284)
 
 ### Re-encode only the audio track, leaving the video track
 
@@ -71,7 +61,7 @@ First export each track as individual files. Then use Handbrake or similar to re
 
 ## Download
 
-If you want to support my continued work on LosslessCut, and want the advantage of a secure and simple installation process with automatic updates, consider getting it from your favorite store:
+If you want to support my continued work on LosslessCut, and you want the advantage of a secure and simple installation process with automatic updates, consider getting it from your favorite store:
 
 <a href="https://apps.apple.com/app/id1505323402"><img src="mac-app-store-badge.svg" alt="Mac App Store" height="50"/></a> <a href="https://www.microsoft.com/store/apps/9P30LSR4705L?cid=storebadge&ocid=badge"><img src="ms-store-badge.svg" alt="MS badge" height="50"/></a> <a href="https://snapcraft.io/losslesscut"><img src="https://snapcraft.io/static/images/badges/en/snap-store-black.svg" alt="Snapcraft" height="50"/></a>
 
@@ -83,6 +73,10 @@ If you prefer to download the executables manually, this will of course always b
 - [More releases](https://github.com/mifi/lossless-cut/releases)
 
 If you find LosslessCut useful, I'm very thankful for [donations](https://github.com/mifi/lossless-cut#donate-).
+
+### Difference between App Stores and Github download
+
+They have exactly the same in-app features, except a few platform limitations. Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps need to prompt for output directory. LosslessCut version in the App Stores lags a few versions behind the GitHub version, because I want to be sure that the new features work perfectly before releasing in the App Stores. GitHub version can contain new, untested features and may contain some bugs. I consider the newest GitHub versions to be a "beta" test.
 
 ## Supported formats
 
@@ -116,7 +110,7 @@ Unsupported files can still be converted to a supported format/codec from the `F
 
 Note: The original video file will not be modified. Instead it creates a lossless export to a new file in the same directory as the original file with from/to timestamps.
 
-Note also that the cut is currently not precise around the cutpoints, so video before/after the nearest keyframe will be discarded. EXIF metadata is preserved.
+Note also that the cut is not precise around the cutpoints, so video before/after the nearest keyframe will be discarded. EXIF metadata is preserved.
 
 ## Known issues & limitations
 
@@ -138,14 +132,13 @@ If you have an issue you can check the developer tools
 - Windows: <kbd>F12</kbd> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd>
 - Mac: <kbd>Cmd</kbd>+<kbd>Opt</kbd>+<kbd>I</kbd>
 
-
 ## CSV import/export
 
 The CSV export/import function takes csv files with one cut segment on each line. Each line contains three columns: `segment start`, `segment end`, `label`.
 
 `segment start` and `segment end` are expressed in seconds or left empty. Empty `segment end` means segment ends at the duration of the video.
 
-Note that you must use comma `,` to separate the fields (not semicolon `;`)
+Note that you must use comma `,` to separate the fields (**not** semicolon `;`)
 
 ### example.csv
 ```csv
@@ -153,11 +146,6 @@ Note that you must use comma `,` to separate the fields (not semicolon `;`)
 70,842.33,"Another quoted label"
 1234,,Last segment
 ```
-
-## Shameless Plug
-
-- I made a command line video editor with slick transitions and lots of colors! [editly](https://github.com/mifi/editly)
-- I made a tool for cross platform sharing of files between computer/phone over the local network: [ezshare](https://github.com/mifi/ezshare)
 
 ## Donate 🙈
 
@@ -169,8 +157,14 @@ This project is maintained by me alone. The project will always remain free and 
 - App icon made by [Dimi Kazak](http://www.flaticon.com/authors/dimi-kazak "Dimi Kazak") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0")
 - [Lottie animation](https://lottiefiles.com/7077-magic-flow)
 - Thanks to Adi Abinun for his UI sketch work, inspiration and guidance
-- Thanks to everyone who support my continued open source work 🙌
+- [Thanks to everyone for supporting](https://mifi.no/thanks/) my open source work 🙌
 - Thanks to translators who helped translate the app. [You can too!](https://hosted.weblate.org/projects/losslesscut/losslesscut/)
+
+## More software
+
+- I made a command line video editor with slick transitions and lots of colors! [editly](https://github.com/mifi/editly)
+- I made a tool for cross platform sharing of files between computer/phone over the local network: [ezshare](https://github.com/mifi/ezshare)
+- I created a super simple Instagram bot for getting more followers [SimpleInstaBot](https://github.com/mifi/SimpleInstaBot)
 
 ---
 
