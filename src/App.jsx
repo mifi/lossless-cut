@@ -8,7 +8,6 @@ import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import useDebounce from 'react-use/lib/useDebounce';
 import filePathToUrl from 'file-url';
 import Mousetrap from 'mousetrap';
-import uuid from 'uuid';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import withReactContent from 'sweetalert2-react-content';
@@ -46,12 +45,13 @@ import {
 import { saveCsv, loadCsv, loadXmeml, loadCue } from './edlStore';
 import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
-  promptTimeOffset, generateColor, getOutDir, withBlur, checkDirWriteAccess, dirExists, askForOutDir,
+  promptTimeOffset, getOutDir, withBlur, checkDirWriteAccess, dirExists, askForOutDir,
   openDirToast, askForHtml5ifySpeed, askForYouTubeInput, isMasBuild, isStoreBuild, askForFileOpenAction,
-  askForImportChapters, createNumSegments, createFixedDurationSegments,
+  askForImportChapters, createNumSegments, createFixedDurationSegments, dragPreventer, doesPlayerSupportFile,
 } from './util';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
+import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart } from './segments';
 
 
 import loadingLottie from './7077-magic-flow.json';
@@ -70,44 +70,6 @@ const { focusWindow } = electron.remote.require('./electron');
 
 const ReactSwal = withReactContent(Swal);
 
-
-function createSegment({ start, end, name } = {}) {
-  return {
-    start,
-    end,
-    name: name || '',
-    color: generateColor(),
-    uuid: uuid.v4(),
-  };
-}
-
-const createInitialCutSegments = () => [createSegment()];
-
-// Because segments could have undefined start / end
-// (meaning extend to start of timeline or end duration)
-function getSegApparentStart(seg) {
-  const time = seg.start;
-  return time !== undefined ? time : 0;
-}
-
-const cleanCutSegments = (cs) => cs.map((seg) => ({
-  start: seg.start,
-  end: seg.end,
-  name: seg.name,
-}));
-
-const dragPreventer = ev => {
-  ev.preventDefault();
-};
-
-// With these codecs, the player will not give a playback error, but instead only play audio
-function doesPlayerSupportFile(streams) {
-  const videoStreams = streams.filter(s => s.codec_type === 'video');
-  // Don't check audio formats, assume all is OK
-  if (videoStreams.length === 0) return true;
-  // If we have at least one video that is NOT of the unsupported formats, assume the player will be able to play it natively
-  return videoStreams.some(s => !['hevc', 'prores'].includes(s.codec_name));
-}
 
 const ffmpegExtractWindow = 60;
 const calcShouldShowWaveform = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
@@ -561,12 +523,12 @@ const App = memo(() => {
         if (!autoSaveProjectFile) return;
 
         // Initial state? don't save
-        if (isEqual(cleanCutSegments(debouncedCutSegments),
-          cleanCutSegments(createInitialCutSegments()))) return;
+        if (isEqual(getCleanCutSegments(debouncedCutSegments),
+          getCleanCutSegments(createInitialCutSegments()))) return;
 
         /* if (lastSavedCutSegmentsRef.current
-          && isEqual(cleanCutSegments(lastSavedCutSegmentsRef.current),
-            cleanCutSegments(debouncedCutSegments))) {
+          && isEqual(getCleanCutSegments(lastSavedCutSegmentsRef.current),
+            getCleanCutSegments(debouncedCutSegments))) {
           // console.log('Seg state didn\'t change, skipping save');
           return;
         } */
