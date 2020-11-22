@@ -1038,8 +1038,8 @@ const App = memo(() => {
       const currentTime = currentTimeRef.current;
       const video = videoRef.current;
       const outPath = mustCaptureFfmpeg
-        ? await captureFrameFfmpeg({ customOutDir, videoPath: filePath, currentTime, captureFormat, duration })
-        : await captureFrameFromTag({ customOutDir, filePath, video, currentTime, captureFormat });
+        ? await captureFrameFfmpeg({ customOutDir, filePath, currentTime, captureFormat, duration })
+        : await captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, duration, video });
 
       openDirToast({ dirPath: outputDir, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
     } catch (err) {
