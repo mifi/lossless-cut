@@ -513,8 +513,10 @@ export async function mergeFiles({ paths, outPath, allStreams, outFormat, ffmpeg
 
   stringToStream(concatTxt).pipe(process.stdin);
 
-  const result = await process;
-  console.log(result.stdout);
+  const { stdout } = await process;
+  console.log(stdout);
+
+  await transferTimestamps(paths[0], outPath);
 }
 
 export async function autoMergeSegments({ customOutDir, sourceFile, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress }) {
