@@ -337,13 +337,6 @@ export async function cutMultiple({
   return outFiles;
 }
 
-// TODO merge with getFormatData
-export async function getDuration(filePath) {
-  // https://superuser.com/questions/650291/how-to-get-video-duration-in-seconds
-  const { stdout } = await runFfprobe(['-i', filePath, '-show_entries', 'format=duration', '-print_format', 'json']);
-  return parseFloat(JSON.parse(stdout).format.duration);
-}
-
 export async function tryReadChaptersToEdl(filePath) {
   try {
     const { stdout } = await runFfprobe(['-i', filePath, '-show_chapters', '-print_format', 'json']);
@@ -364,6 +357,20 @@ export async function tryReadChaptersToEdl(filePath) {
     console.error('Failed to read chapters from file', err);
     return [];
   }
+}
+
+export async function getFormatData(filePath) {
+  console.log('getFormatData', filePath);
+
+  const { stdout } = await runFfprobe([
+    '-of', 'json', '-show_format', '-i', filePath,
+  ]);
+  return JSON.parse(stdout).format;
+}
+
+
+export async function getDuration(filePath) {
+  return parseFloat((await getFormatData(filePath)).duration);
 }
 
 export async function html5ify({ filePath, outPath, video, audio, onProgress }) {
