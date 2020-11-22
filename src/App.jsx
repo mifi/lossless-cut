@@ -46,6 +46,7 @@ import { saveCsv, loadCsv, loadXmeml, loadCue } from './edlStore';
 import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
+  isDurationValid,
 } from './util';
 import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction } from './dialogs';
 import { openSendReportDialog } from './reporting';
@@ -133,8 +134,8 @@ const App = memo(() => {
 
   const [debouncedCutSegments] = useDebounce(cutSegments, 500);
 
-  const durationSafe = duration || 1;
-  const zoomedDuration = duration != null ? duration / zoom : undefined;
+  const durationSafe = isDurationValid(duration) ? duration : 1;
+  const zoomedDuration = isDurationValid(duration) ? duration / zoom : undefined;
 
   const isCustomFormatSelected = fileFormat !== detectedFileFormat;
 
@@ -275,6 +276,7 @@ const App = memo(() => {
   }, [seekAbs]);
 
   const seekRelPercent = useCallback((val) => {
+    if (!isDurationValid(zoomedDuration)) return;
     seekRel(val * zoomedDuration);
   }, [seekRel, zoomedDuration]);
 
@@ -301,7 +303,7 @@ const App = memo(() => {
     if (canvasPlayerEnabled) setHideCanvasPreview(false);
   }, [canvasPlayerEnabled]);
 
-  const comfortZoom = duration ? Math.max(duration / 100, 1) : undefined;
+  const comfortZoom = isDurationValid(duration) ? Math.max(duration / 100, 1) : undefined;
   const toggleComfortZoom = useCallback(() => {
     if (!comfortZoom) return;
 
@@ -314,7 +316,7 @@ const App = memo(() => {
   const getSegApparentEnd = useCallback((seg) => {
     const time = seg.end;
     if (time !== undefined) return time;
-    if (duration !== undefined) return duration;
+    if (isDurationValid(duration)) return duration;
     return 0; // Haven't gotten duration yet
   }, [duration]);
 
@@ -348,7 +350,7 @@ const App = memo(() => {
     });
 
     if (foundOverlap) return undefined;
-    if (duration == null) return undefined;
+    if (!isDurationValid(duration)) return undefined;
 
     const ret = [];
 
@@ -379,6 +381,8 @@ const App = memo(() => {
   }, [duration, haveInvalidSegs, sortedCutSegments]);
 
   const setCutTime = useCallback((type, time) => {
+    if (!isDurationValid(duration)) return;
+
     const currentSeg = currentCutSeg;
     if (type === 'start' && time >= getSegApparentEnd(currentSeg)) {
       throw new Error('Start time must precede end time');
@@ -545,7 +549,10 @@ const App = memo(() => {
   const onSartPlaying = useCallback(() => onPlayingChange(true), []);
   const onDurationChange = useCallback((e) => {
     // Some files report duration infinity first, then proper duration later
-    if (e.target.duration !== Infinity) setDuration(e.target.duration);
+    // Sometimes after seeking to end of file, duration might change
+    const { duration: durationNew } = e.target;
+    console.log('onDurationChange', durationNew);
+    if (isDurationValid(durationNew)) setDuration(durationNew);
   }, []);
 
   const onTimeUpdate = useCallback((e) => {
@@ -688,8 +695,8 @@ const App = memo(() => {
       }
     }
 
-    if (duration) renderThumbnails();
-  }, 500, [zoomedDuration, duration, filePath, zoomWindowStartTime, thumbnailsEnabled]);
+    if (isDurationValid(zoomedDuration)) renderThumbnails();
+  }, 500, [zoomedDuration, filePath, zoomWindowStartTime, thumbnailsEnabled]);
 
   // Cleanup removed thumbnails
   useEffect(() => {
@@ -1024,7 +1031,8 @@ const App = memo(() => {
   ]);
 
   const capture = useCallback(async () => {
-    if (!filePath) return;
+    if (!filePath || !isDurationValid(duration)) return;
+
     try {
       const mustCaptureFfmpeg = html5FriendlyPath || dummyVideoPath;
       const currentTime = currentTimeRef.current;
@@ -1609,13 +1617,13 @@ const App = memo(() => {
     }
 
     async function createNumSegments2() {
-      if (!checkFileOpened()) return;
+      if (!checkFileOpened() || !isDurationValid(duration)) return;
       const segments = await createNumSegments(duration);
       if (segments) loadCutSegments(segments);
     }
 
     async function createFixedDurationSegments2() {
-      if (!checkFileOpened()) return;
+      if (!checkFileOpened() || !isDurationValid(duration)) return;
       const segments = await createFixedDurationSegments(duration);
       if (segments) loadCutSegments(segments);
     }
@@ -2011,7 +2019,6 @@ const App = memo(() => {
           seekAbs={seekAbs}
           seekRel={seekRel}
           zoomRel={zoomRel}
-          duration={duration}
           durationSafe={durationSafe}
           apparentCutSegments={apparentCutSegments}
           setCurrentSegIndex={setCurrentSegIndex}

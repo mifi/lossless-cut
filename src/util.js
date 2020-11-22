@@ -159,3 +159,5 @@ export function doesPlayerSupportFile(streams) {
 
 export const isMasBuild = window.process.mas;
 export const isStoreBuild = isMasBuild || window.process.windowsStore;
+
+export const isDurationValid = (duration) => Number.isFinite(duration) && duration > 0;

@@ -40,7 +40,7 @@ const Waveform = memo(({ calculateTimelinePercent, durationSafe, waveform, zoom,
 
 const Timeline = memo(({
   durationSafe, getCurrentTime, startTimeOffset, playerTime, commandedTime,
-  zoom, neighbouringFrames, seekAbs, seekRel, duration, apparentCutSegments, zoomRel,
+  zoom, neighbouringFrames, seekAbs, seekRel, apparentCutSegments, zoomRel,
   setCurrentSegIndex, currentSegIndexSafe, invertCutSegments, inverseCutSegments, formatTimecode,
   waveform, shouldShowWaveform, shouldShowKeyframes, timelineHeight, thumbnails,
   onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled, wheelSensitivity,
@@ -76,8 +76,8 @@ const Timeline = memo(({
   }, [calculateTimelinePos, playerTime, zoom]);
 
   const calcZoomWindowStartTime = useCallback(() => (timelineScrollerRef.current
-    ? (timelineScrollerRef.current.scrollLeft / (timelineScrollerRef.current.offsetWidth * zoom)) * duration
-    : 0), [duration, zoom]);
+    ? (timelineScrollerRef.current.scrollLeft / (timelineScrollerRef.current.offsetWidth * zoom)) * durationSafe
+    : 0), [durationSafe, zoom]);
 
   // const zoomWindowStartTime = calcZoomWindowStartTime(duration, zoom);
 
@@ -149,8 +149,8 @@ const Timeline = memo(({
     const target = timelineWrapperRef.current;
     const rect = target.getBoundingClientRect();
     const relX = e.srcEvent.pageX - (rect.left + document.body.scrollLeft);
-    if (duration) seekAbs((relX / target.offsetWidth) * duration);
-  }, [duration, seekAbs]);
+    seekAbs((relX / target.offsetWidth) * durationSafe);
+  }, [durationSafe, seekAbs]);
 
   const onWheel = useCallback((e) => {
     const { pixelX, pixelY } = normalizeWheel(e);
@@ -245,7 +245,7 @@ const Timeline = memo(({
             ))}
 
             {shouldShowKeyframes && !areKeyframesTooClose && keyframes.map((f) => (
-              <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / duration) * 100}%`, marginLeft: -1, width: 1, background: 'rgba(0,0,0,0.4)', pointerEvents: 'none' }} />
+              <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / durationSafe) * 100}%`, marginLeft: -1, width: 1, background: 'rgba(0,0,0,0.4)', pointerEvents: 'none' }} />
             ))}
           </div>
         </div>

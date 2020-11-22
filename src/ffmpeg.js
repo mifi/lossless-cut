@@ -6,7 +6,7 @@ import sortBy from 'lodash/sortBy';
 import moment from 'moment';
 import i18n from 'i18next';
 
-import { formatDuration, getOutPath, transferTimestamps, filenamify } from './util';
+import { formatDuration, getOutPath, transferTimestamps, filenamify, isDurationValid } from './util';
 
 const execa = window.require('execa');
 const { join, extname } = window.require('path');
@@ -101,6 +101,7 @@ export function isCuttingStart(cutFrom) {
 }
 
 export function isCuttingEnd(cutTo, duration) {
+  if (!isDurationValid(duration)) return true;
   return cutTo < duration;
 }
 
