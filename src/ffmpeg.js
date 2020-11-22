@@ -868,3 +868,27 @@ export function encodeLiveRawStream({ path, inWidth, inHeight, seekTo, streamInd
     channels,
   };
 }
+
+// https://stackoverflow.com/questions/34118013/how-to-determine-webm-duration-using-ffprobe
+export async function fixInvalidDuration({ filePath, fileFormat, customOutDir }) {
+  const ext = getOutFileExtension({ outFormat: fileFormat, filePath });
+  const fileName = `reformatted${ext}`;
+  const outPath = getOutPath(customOutDir, filePath, fileName);
+
+  const ffmpegArgs = [
+    '-hide_banner',
+
+    '-i', filePath,
+
+    '-c', 'copy',
+    '-y', outPath,
+  ];
+
+  // TODO progress
+  const { stdout } = await runFfmpeg(ffmpegArgs);
+  console.log(stdout);
+
+  await transferTimestamps(filePath, outPath);
+
+  return outPath;
+}

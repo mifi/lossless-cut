@@ -41,6 +41,7 @@ import {
   getDefaultOutFormat, getFormatData, mergeFiles as ffmpegMergeFiles, renderThumbnails as ffmpegRenderThumbnails,
   readFrames, renderWaveformPng, html5ifyDummy, cutMultiple, extractStreams, autoMergeSegments, getAllStreams,
   findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
+  fixInvalidDuration,
 } from './ffmpeg';
 import { saveCsv, loadCsv, loadXmeml, loadCue } from './edlStore';
 import {
@@ -1219,6 +1220,8 @@ const App = memo(() => {
           loadCutSegments(edl);
         }
       }
+
+      if (!isDurationValid(parseFloat(fd.duration))) toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
     } catch (err) {
       if (err.exitCode === 1 || err.code === 'ENOENT') {
         errorToast(i18n.t('Unsupported file'));
@@ -1628,6 +1631,20 @@ const App = memo(() => {
       if (segments) loadCutSegments(segments);
     }
 
+    async function fixInvalidDuration2() {
+      try {
+        setWorking(i18n.t('Fixing file duration'));
+        const path = await fixInvalidDuration({ filePath, fileFormat, customOutDir });
+        load({ filePath: path, customOutDir });
+        toast.fire({ icon: 'info', text: i18n.t('Duration has been fixed') });
+      } catch (err) {
+        errorToast(i18n.t('Failed to fix file duration'));
+        console.error('Failed to fix file duration', err);
+      } finally {
+        setWorking();
+      }
+    }
+
     electron.ipcRenderer.on('file-opened', fileOpened);
     electron.ipcRenderer.on('close-file', closeFile);
     electron.ipcRenderer.on('html5ify', html5ifyCurrentFile);
@@ -1645,6 +1662,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('openSendReportDialog', openSendReportDialog2);
     electron.ipcRenderer.on('createNumSegments', createNumSegments2);
     electron.ipcRenderer.on('createFixedDurationSegments', createFixedDurationSegments2);
+    electron.ipcRenderer.on('fixInvalidDuration', fixInvalidDuration2);
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
@@ -1663,12 +1681,13 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
       electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog2);
       electron.ipcRenderer.removeListener('createFixedDurationSegments', createFixedDurationSegments2);
+      electron.ipcRenderer.removeListener('fixInvalidDuration', fixInvalidDuration2);
     };
   }, [
     mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset, html5ifyCurrentFile,
     createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory, openSendReportDialogWithState,
     loadEdlFile, cutSegments, edlFilePath, askBeforeClose, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
-    loadCutSegments, duration, checkFileOpened,
+    loadCutSegments, duration, checkFileOpened, load, fileFormat,
   ]);
 
   async function showAddStreamSourceDialog() {

@@ -71,6 +71,12 @@ module.exports = (app, mainWindow, newVersion) => {
             mainWindow.webContents.send('html5ify');
           },
         },
+        {
+          label: 'Fix incorrect duration',
+          click() {
+            mainWindow.webContents.send('fixInvalidDuration');
+          },
+        },
         { type: 'separator' },
         {
           label: 'Extract all streams',
