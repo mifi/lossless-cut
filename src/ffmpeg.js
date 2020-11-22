@@ -558,15 +558,6 @@ function determineOutputFormat(ffprobeFormats, ft) {
   return ffprobeFormats[0] || undefined;
 }
 
-export async function getFormatData(filePath) {
-  console.log('getFormatData', filePath);
-
-  const { stdout } = await runFfprobe([
-    '-of', 'json', '-show_format', '-i', filePath,
-  ]);
-  return JSON.parse(stdout).format;
-}
-
 export async function getDefaultOutFormat(filePath, formatData) {
   const formatsStr = formatData.format_name;
   console.log('formats', formatsStr);
