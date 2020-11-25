@@ -27,6 +27,7 @@ const mapLang = (lng) => ({
   it: 'it',
   'it-CH': 'it',
   'it-IT': 'it',
+  'ru-RU': 'ru',
 }[lng] || lng);
 
 export const fallbackLng = 'en';

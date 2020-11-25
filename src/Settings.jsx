@@ -32,6 +32,7 @@ const Settings = memo(({
     it: 'Italiano',
     fr: 'Français',
     de: 'Deutsch',
+    ru: 'русский',
   };
 
   return (
