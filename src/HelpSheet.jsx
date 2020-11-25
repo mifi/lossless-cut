@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { FaClipboard, FaHandPointRight, FaHandPointLeft, FaStepBackward, FaStepForward } from 'react-icons/fa';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 
 import SetCutpointButton from './SetCutpointButton';
 import { toast } from './util';
@@ -18,6 +18,7 @@ const HelpSheet = memo(({ visible, onTogglePress, ffmpegCommandLog, currentCutSe
   return (
     <Sheet visible={visible} onClosePress={onTogglePress} style={{ background: '#6b6b6b', color: 'white' }}>
       <div className="help-sheet">
+        <p><Trans><b>Note:</b> Keyframe cut and Merge cuts buttons have been moved to the export panel (press Export to see it.)</Trans></p>
         <h1>{t('Common problems')}</h1>
         <p>
           {t('Lossless cutting is not an exact science. For some codecs and files it just works. For others you may need to trial and error depending on the codec, keyframes etc to get the best cut.')}

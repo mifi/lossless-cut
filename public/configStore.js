@@ -17,6 +17,8 @@ const defaults = {
     wheelSensitivity: 0.2,
     language: undefined,
     ffmpegExperimental: false,
+    preserveMovData: false,
+    avoidNegativeTs: 'make_zero',
   },
 };
 

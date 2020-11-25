@@ -1,7 +1,6 @@
 import React, { Fragment, memo } from 'react';
 import { IoIosHelpCircle, IoIosSettings } from 'react-icons/io';
 import { Button } from 'evergreen-ui';
-import { MdCallSplit, MdCallMerge } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 
 import { withBlur } from './util';
@@ -9,12 +8,9 @@ import { withBlur } from './util';
 
 const TopMenu = memo(({
   filePath, copyAnyAudioTrack, toggleStripAudio, customOutDir, changeOutDir,
-  renderOutFmt, outSegments, autoMerge, toggleAutoMerge, keyframeCut, toggleKeyframeCut, toggleHelp,
-  numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown, toggleSettings,
+  renderOutFmt, toggleHelp, numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown, toggleSettings,
 }) => {
   const { t } = useTranslation();
-
-  const AutoMergeIcon = autoMerge ? MdCallMerge : MdCallSplit;
 
   return (
     <Fragment>
@@ -49,24 +45,6 @@ const TopMenu = memo(({
       {filePath && (
         <Fragment>
           {renderOutFmt({ height: 20, maxWidth: 100 })}
-
-          <Button
-            height={20}
-            style={{ opacity: outSegments && outSegments.length < 2 ? 0.4 : undefined }}
-            title={autoMerge ? t('Auto merge segments to one file after export') : t('Export to separate files')}
-            onClick={withBlur(toggleAutoMerge)}
-          >
-            <AutoMergeIcon /> {autoMerge ? t('Merge cuts') : t('Separate files')}
-          </Button>
-
-          <Button
-            height={20}
-            iconBefore={keyframeCut ? 'key' : undefined}
-            title={`${t('Cut mode is:')} ${keyframeCut ? t('Keyframe cut') : t('Normal cut')}`}
-            onClick={withBlur(toggleKeyframeCut)}
-          >
-            {keyframeCut ? t('Keyframe cut') : t('Normal cut')}
-          </Button>
         </Fragment>
       )}
 

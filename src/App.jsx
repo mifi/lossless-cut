@@ -8,7 +8,7 @@ import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
 import filePathToUrl from 'file-url';
-import Mousetrap from 'mousetrap';
+import hotkeys from 'hotkeys-js';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import withReactContent from 'sweetalert2-react-content';
@@ -31,6 +31,7 @@ import LeftMenu from './LeftMenu';
 import Timeline from './Timeline';
 import RightMenu from './RightMenu';
 import TimelineControls from './TimelineControls';
+import ExportConfirm from './ExportConfirm';
 import { loadMifiLink } from './mifi';
 import { primaryColor, controlsBackground, waveformColor } from './colors';
 import { showMergeDialog, showOpenAndMergeDialog } from './merge/merge';
@@ -162,6 +163,10 @@ const App = memo(() => {
   useEffect(() => safeSetConfig('customOutDir', customOutDir), [customOutDir]);
   const [keyframeCut, setKeyframeCut] = useState(configStore.get('keyframeCut'));
   useEffect(() => safeSetConfig('keyframeCut', keyframeCut), [keyframeCut]);
+  const [preserveMovData, setPreserveMovData] = useState(configStore.get('preserveMovData'));
+  useEffect(() => safeSetConfig('preserveMovData', preserveMovData), [preserveMovData]);
+  const [avoidNegativeTs, setAvoidNegativeTs] = useState(configStore.get('avoidNegativeTs'));
+  useEffect(() => safeSetConfig('avoidNegativeTs', avoidNegativeTs), [avoidNegativeTs]);
   const [autoMerge, setAutoMerge] = useState(configStore.get('autoMerge'));
   useEffect(() => safeSetConfig('autoMerge', autoMerge), [autoMerge]);
   const [timecodeShowFrames, setTimecodeShowFrames] = useState(configStore.get('timecodeShowFrames'));
@@ -202,6 +207,7 @@ const App = memo(() => {
   const [helpVisible, setHelpVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [wheelTunerVisible, setWheelTunerVisible] = useState(false);
+  const [exportConfirmVisible, setExportConfirmVisible] = useState(false);
   const [mifiLink, setMifiLink] = useState();
 
   const videoRef = useRef();
@@ -601,7 +607,7 @@ const App = memo(() => {
       const outPath = getOutPath(newCustomOutDir, firstPath, `merged${ext}`);
 
       // console.log('merge', paths);
-      await ffmpegMergeFiles({ paths, outPath, allStreams, ffmpegExperimental, onProgress: setCutProgress });
+      await ffmpegMergeFiles({ paths, outPath, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData });
       openDirToast({ icon: 'success', dirPath: outputDir, text: i18n.t('Files merged!') });
     } catch (err) {
       errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same codecs'));
@@ -610,16 +616,20 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [assureOutDirAccess, outputDir, ffmpegExperimental]);
+  }, [assureOutDirAccess, outputDir, ffmpegExperimental, preserveMovData]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), []);
-  const toggleKeyframeCut = useCallback(() => setKeyframeCut((val) => {
+  const toggleKeyframeCut = useCallback((showMessage) => setKeyframeCut((val) => {
     const newVal = !val;
-    if (newVal) toast.fire({ title: i18n.t('Keyframe cut enabled'), text: i18n.t('Will now cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files.') });
-    else toast.fire({ title: i18n.t('Keyframe cut disabled'), text: i18n.t('Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut'), timer: 7000 });
+    if (showMessage) {
+      if (newVal) toast.fire({ title: i18n.t('Keyframe cut enabled'), text: i18n.t('Will now cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files.') });
+      else toast.fire({ title: i18n.t('Keyframe cut disabled'), text: i18n.t('Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut'), timer: 7000 });
+    }
     return newVal;
   }), []);
   const toggleAutoMerge = useCallback(() => setAutoMerge(val => !val), []);
+
+  const togglePreserveMovData = useCallback(() => setPreserveMovData((val) => !val), []);
 
   const isCopyingStreamId = useCallback((path, streamId) => (
     !!(copyStreamIdsByFile[path] || {})[streamId]
@@ -786,6 +796,8 @@ const App = memo(() => {
     setZoomWindowStartTime(0);
     setHideCanvasPreview(false);
 
+    setExportConfirmVisible(false);
+
     setWaveform();
     cancelWaveformDataDebounce();
 
@@ -941,21 +953,29 @@ const App = memo(() => {
     }
   }, [openSendReportDialogWithState, detectedFileFormat]);
 
-  const cutClick = useCallback(async () => {
-    if (working) return;
+  const onExportPress = useCallback(async () => {
+    if (working || !filePath) return;
 
     if (haveInvalidSegs) {
       errorToast(i18n.t('Start time must be before end time'));
       return;
     }
 
-    if (numStreamsToCopy === 0) {
-      errorToast(i18n.t('No tracks selected for export'));
+    if (!outSegments || outSegments.length < 1) {
+      errorToast(i18n.t('No segments to export'));
       return;
     }
 
-    if (!outSegments || outSegments.length < 1) {
-      errorToast(i18n.t('No segments to export'));
+    setExportConfirmVisible(true);
+  }, [working, filePath, haveInvalidSegs, outSegments]);
+
+  const closeExportConfirm = useCallback(() => setExportConfirmVisible(false), []);
+
+  const onExportConfirmPress = useCallback(async () => {
+    if (working) return;
+
+    if (numStreamsToCopy === 0) {
+      errorToast(i18n.t('No tracks selected for export'));
       return;
     }
 
@@ -977,6 +997,8 @@ const App = memo(() => {
         appendFfmpegCommandLog,
         shortestFlag,
         ffmpegExperimental,
+        preserveMovData,
+        avoidNegativeTs,
       });
 
       if (outFiles.length > 1 && autoMerge) {
@@ -990,6 +1012,7 @@ const App = memo(() => {
           isCustomFormatSelected,
           segmentPaths: outFiles,
           ffmpegExperimental,
+          preserveMovData,
           onProgress: setCutProgress,
         });
       }
@@ -1022,14 +1045,9 @@ const App = memo(() => {
     } finally {
       setWorking();
       setCutProgress();
+      setExportConfirmVisible(false);
     }
-  }, [
-    effectiveRotation, outSegments, handleCutFailed, isRotationSet,
-    working, duration, filePath, keyframeCut,
-    autoMerge, customOutDir, fileFormat, haveInvalidSegs, copyFileStreams, numStreamsToCopy,
-    exportExtraStreams, nonCopiedExtraStreams, outputDir, shortestFlag, isCustomFormatSelected,
-    fileFormatData, mainStreams, ffmpegExperimental,
-  ]);
+  }, [autoMerge, copyFileStreams, customOutDir, duration, effectiveRotation, exportExtraStreams, ffmpegExperimental, fileFormat, fileFormatData, filePath, handleCutFailed, isCustomFormatSelected, isRotationSet, keyframeCut, mainStreams, nonCopiedExtraStreams, outSegments, outputDir, shortestFlag, working, preserveMovData, avoidNegativeTs, numStreamsToCopy]);
 
   const capture = useCallback(async () => {
     if (!filePath || !isDurationValid(duration)) return;
@@ -1245,67 +1263,115 @@ const App = memo(() => {
     seekAbs(time);
   }, [neighbouringFrames, seekAbs, detectedFps]);
 
+  // TODO split up?
   useEffect(() => {
-    Mousetrap.bind('space', () => togglePlay(true));
-    Mousetrap.bind('k', () => togglePlay());
-    Mousetrap.bind('j', () => changePlaybackRate(-1));
-    Mousetrap.bind('l', () => changePlaybackRate(1));
-    Mousetrap.bind('left', () => seekRel(-1));
-    Mousetrap.bind('right', () => seekRel(1));
-    Mousetrap.bind(['ctrl+left', 'command+left'], () => { seekRelPercent(-0.01); return false; });
-    Mousetrap.bind(['ctrl+right', 'command+right'], () => { seekRelPercent(0.01); return false; });
-    Mousetrap.bind('alt+left', () => seekClosestKeyframe(-1));
-    Mousetrap.bind('alt+right', () => seekClosestKeyframe(1));
-    Mousetrap.bind('up', () => jumpSeg(-1));
-    Mousetrap.bind('down', () => jumpSeg(1));
-    Mousetrap.bind(['ctrl+up', 'command+up'], () => { zoomRel(1); return false; });
-    Mousetrap.bind(['ctrl+down', 'command+down'], () => { zoomRel(-1); return false; });
-    Mousetrap.bind('z', () => toggleComfortZoom());
-    Mousetrap.bind('.', () => shortStep(1));
-    Mousetrap.bind(',', () => shortStep(-1));
-    Mousetrap.bind('c', () => capture());
-    Mousetrap.bind('e', () => cutClick());
-    Mousetrap.bind('i', () => setCutStart());
-    Mousetrap.bind('o', () => setCutEnd());
-    Mousetrap.bind('h', () => toggleHelp());
-    Mousetrap.bind('+', () => addCutSegment());
-    Mousetrap.bind('backspace', () => removeCutSegment());
-    Mousetrap.bind('d', () => deleteSource());
-    Mousetrap.bind('b', () => splitCurrentSegment());
+    if (exportConfirmVisible) return () => {};
+
+    const togglePlayNoReset = () => togglePlay();
+    const togglePlayReset = () => togglePlay(true);
+    const reducePlaybackRate = () => changePlaybackRate(-1);
+    const increasePlaybackRate = () => changePlaybackRate(1);
+    const seekBackwards = () => seekRel(-1);
+    const seekForwards = () => seekRel(1);
+    const seekBackwardsPercent = () => { seekRelPercent(-0.01); return false; };
+    const seekForwardsPercent = () => { seekRelPercent(0.01); return false; };
+    const seekBackwardsKeyframe = () => seekClosestKeyframe(-1);
+    const seekForwardsKeyframe = () => seekClosestKeyframe(1);
+    const seekBackwardsShort = () => shortStep(-1);
+    const seekForwardsShort = () => shortStep(1);
+    const jumpPrevSegment = () => jumpSeg(-1);
+    const jumpNextSegment = () => jumpSeg(1);
+    const zoomIn = () => { zoomRel(1); return false; };
+    const zoomOut = () => { zoomRel(-1); return false; };
+
+    function onKeyPress(e) {
+      // https://github.com/jaywcjlove/hotkeys/issues/104
+      if (e.key === '+') addCutSegment();
+    }
+
+    hotkeys('*', onKeyPress);
+    hotkeys('space', togglePlayReset);
+    hotkeys('k', togglePlayNoReset);
+    hotkeys('j', reducePlaybackRate);
+    hotkeys('l', increasePlaybackRate);
+    hotkeys('left', seekBackwards);
+    hotkeys('right', seekForwards);
+    hotkeys('ctrl+left, command+left', seekBackwardsPercent);
+    hotkeys('ctrl+right, command+right', seekForwardsPercent);
+    hotkeys('alt+left', seekBackwardsKeyframe);
+    hotkeys('alt+right', seekForwardsKeyframe);
+    hotkeys('up', jumpPrevSegment);
+    hotkeys('down', jumpNextSegment);
+    hotkeys('ctrl+up, command+up', zoomIn);
+    hotkeys('ctrl+down, command+down', zoomOut);
+    hotkeys('z', toggleComfortZoom);
+    hotkeys(',', seekBackwardsShort);
+    hotkeys('.', seekForwardsShort);
+    hotkeys('c', capture);
+    hotkeys('i', setCutStart);
+    hotkeys('o', setCutEnd);
+    hotkeys('backspace', removeCutSegment);
+    hotkeys('d', deleteSource);
+    hotkeys('b', splitCurrentSegment);
 
     return () => {
-      Mousetrap.unbind('space');
-      Mousetrap.unbind('k');
-      Mousetrap.unbind('j');
-      Mousetrap.unbind('l');
-      Mousetrap.unbind('left');
-      Mousetrap.unbind('right');
-      Mousetrap.unbind(['ctrl+left', 'command+left']);
-      Mousetrap.unbind(['ctrl+right', 'command+right']);
-      Mousetrap.unbind('alt+left');
-      Mousetrap.unbind('alt+right');
-      Mousetrap.unbind('up');
-      Mousetrap.unbind('down');
-      Mousetrap.unbind(['ctrl+up', 'command+up']);
-      Mousetrap.unbind(['ctrl+down', 'command+down']);
-      Mousetrap.unbind('z');
-      Mousetrap.unbind('.');
-      Mousetrap.unbind(',');
-      Mousetrap.unbind('c');
-      Mousetrap.unbind('e');
-      Mousetrap.unbind('i');
-      Mousetrap.unbind('o');
-      Mousetrap.unbind('h');
-      Mousetrap.unbind('+');
-      Mousetrap.unbind('backspace');
-      Mousetrap.unbind('d');
-      Mousetrap.unbind('b');
+      hotkeys.unbind('*', onKeyPress);
+      hotkeys.unbind('space', togglePlayReset);
+      hotkeys.unbind('k', togglePlayNoReset);
+      hotkeys.unbind('j', reducePlaybackRate);
+      hotkeys.unbind('l', increasePlaybackRate);
+      hotkeys.unbind('left', seekBackwards);
+      hotkeys.unbind('right', seekForwards);
+      hotkeys.unbind('ctrl+left, command+left', seekBackwardsPercent);
+      hotkeys.unbind('ctrl+right, command+right', seekForwardsPercent);
+      hotkeys.unbind('alt+left', seekBackwardsKeyframe);
+      hotkeys.unbind('alt+right', seekForwardsKeyframe);
+      hotkeys.unbind('up', jumpPrevSegment);
+      hotkeys.unbind('down', jumpNextSegment);
+      hotkeys.unbind('ctrl+up, command+up', zoomIn);
+      hotkeys.unbind('ctrl+down, command+down', zoomOut);
+      hotkeys.unbind('z', toggleComfortZoom);
+      hotkeys.unbind(',', seekBackwardsShort);
+      hotkeys.unbind('.', seekForwardsShort);
+      hotkeys.unbind('c', capture);
+      hotkeys.unbind('i', setCutStart);
+      hotkeys.unbind('o', setCutEnd);
+      hotkeys.unbind('backspace', removeCutSegment);
+      hotkeys.unbind('d', deleteSource);
+      hotkeys.unbind('b', splitCurrentSegment);
     };
   }, [
-    addCutSegment, capture, changePlaybackRate, cutClick, togglePlay, removeCutSegment,
-    setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, deleteSource, jumpSeg, toggleHelp,
-    seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment,
+    addCutSegment, capture, changePlaybackRate, togglePlay, removeCutSegment,
+    setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, deleteSource, jumpSeg,
+    seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment, exportConfirmVisible,
   ]);
+
+  useEffect(() => {
+    function onExportPress2() {
+      if (exportConfirmVisible) onExportConfirmPress();
+      else onExportPress();
+    }
+
+    hotkeys('e', onExportPress2);
+
+    return () => {
+      hotkeys.unbind('e', onExportPress2);
+    };
+  }, [exportConfirmVisible, onExportConfirmPress, onExportPress]);
+
+  useEffect(() => {
+    function onEscPress() {
+      closeExportConfirm();
+      setHelpVisible(false);
+      setSettingsVisible(false);
+    }
+    hotkeys('esc', onEscPress);
+    hotkeys('h', toggleHelp);
+    return () => {
+      hotkeys.unbind('h', toggleHelp);
+      hotkeys.unbind('esc', onEscPress);
+    };
+  }, [closeExportConfirm, toggleHelp]);
 
   useEffect(() => {
     document.ondragover = dragPreventer;
@@ -1553,10 +1619,6 @@ const App = memo(() => {
       await loadEdlFile(filePaths[0], type);
     }
 
-    function openHelp() {
-      toggleHelp();
-    }
-
     function openAbout() {
       Swal.fire({
         icon: 'info',
@@ -1655,7 +1717,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('redo', redo);
     electron.ipcRenderer.on('importEdlFile', importEdlFile);
     electron.ipcRenderer.on('exportEdlFile', exportEdlFile);
-    electron.ipcRenderer.on('openHelp', openHelp);
+    electron.ipcRenderer.on('openHelp', toggleHelp);
     electron.ipcRenderer.on('openSettings', openSettings);
     electron.ipcRenderer.on('openAbout', openAbout);
     electron.ipcRenderer.on('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
@@ -1675,7 +1737,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('redo', redo);
       electron.ipcRenderer.removeListener('importEdlFile', importEdlFile);
       electron.ipcRenderer.removeListener('exportEdlFile', exportEdlFile);
-      electron.ipcRenderer.removeListener('openHelp', openHelp);
+      electron.ipcRenderer.removeListener('openHelp', toggleHelp);
       electron.ipcRenderer.removeListener('openSettings', openSettings);
       electron.ipcRenderer.removeListener('openAbout', openAbout);
       electron.ipcRenderer.removeListener('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
@@ -1784,12 +1846,11 @@ const App = memo(() => {
       language={language}
       setLanguage={setLanguage}
 
-      renderOutFmt={renderOutFmt}
       AutoExportToggler={AutoExportToggler}
       renderCaptureFormatButton={renderCaptureFormatButton}
       onWheelTunerRequested={onWheelTunerRequested}
     />
-  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, renderOutFmt, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language, invertTimelineScroll, ffmpegExperimental, setFfmpegExperimental, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction]);
+  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language, invertTimelineScroll, ffmpegExperimental, setFfmpegExperimental, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction]);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);
@@ -1865,11 +1926,6 @@ const App = memo(() => {
           customOutDir={customOutDir}
           changeOutDir={changeOutDir}
           renderOutFmt={renderOutFmt}
-          outSegments={outSegments}
-          autoMerge={autoMerge}
-          toggleAutoMerge={toggleAutoMerge}
-          keyframeCut={keyframeCut}
-          toggleKeyframeCut={toggleKeyframeCut}
           toggleHelp={toggleHelp}
           toggleSettings={toggleSettings}
           numStreamsToCopy={numStreamsToCopy}
@@ -2100,11 +2156,13 @@ const App = memo(() => {
             deleteSource={deleteSource}
             renderCaptureFormatButton={renderCaptureFormatButton}
             capture={capture}
-            cutClick={cutClick}
+            onExportPress={onExportPress}
             outSegments={outSegments}
           />
         </div>
       </motion.div>
+
+      <ExportConfirm autoMerge={autoMerge} toggleAutoMerge={toggleAutoMerge} areWeCutting={areWeCutting} outSegments={outSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onCutPress={onExportConfirmPress} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} />
 
       <HelpSheet
         visible={helpVisible}

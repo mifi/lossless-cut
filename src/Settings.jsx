@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 const Settings = memo(({
   changeOutDir, customOutDir, autoMerge, setAutoMerge, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments,
   autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose,
-  renderOutFmt, AutoExportToggler, renderCaptureFormatButton, onWheelTunerRequested, language, setLanguage,
+  AutoExportToggler, renderCaptureFormatButton, onWheelTunerRequested, language, setLanguage,
   invertTimelineScroll, setInvertTimelineScroll, ffmpegExperimental, setFfmpegExperimental,
   enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction,
 }) => {
@@ -44,11 +44,6 @@ const Settings = memo(({
             {Object.keys(langNames).map((lang) => <option key={lang} value={lang}>{langNames[lang]}</option>)}
           </Select>
         </Table.TextCell>
-      </Row>
-
-      <Row>
-        <KeyCell>{t('Output format (default autodetected)')}</KeyCell>
-        <Table.TextCell>{renderOutFmt({ width: '100%' })}</Table.TextCell>
       </Row>
 
       <Row>
