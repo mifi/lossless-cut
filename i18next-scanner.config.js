@@ -20,5 +20,9 @@ module.exports = {
     keySeparator: false,
     pluralSeparator: false,
     contextSeparator: false,
+
+    trans: {
+      fallbackKey: (ns, value) => value,
+    },
   },
 };
