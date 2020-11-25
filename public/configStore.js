@@ -19,6 +19,7 @@ const defaults = {
     ffmpegExperimental: false,
     preserveMovData: false,
     avoidNegativeTs: 'make_zero',
+    hideNotifications: undefined,
   },
 };
 

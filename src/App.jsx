@@ -192,6 +192,8 @@ const App = memo(() => {
   useEffect(() => safeSetConfig('language', language), [language]);
   const [ffmpegExperimental, setFfmpegExperimental] = useState(configStore.get('ffmpegExperimental'));
   useEffect(() => safeSetConfig('ffmpegExperimental', ffmpegExperimental), [ffmpegExperimental]);
+  const [hideNotifications, setHideNotifications] = useState(configStore.get('hideNotifications'));
+  useEffect(() => safeSetConfig('hideNotifications', hideNotifications), [hideNotifications]);
 
   useEffect(() => {
     i18n.changeLanguage(language || fallbackLng).catch(console.error);
@@ -255,12 +257,14 @@ const App = memo(() => {
     setCopyStreamIdsForPath(path, (old) => ({ ...old, [index]: !old[index] }));
   }, []);
 
-  function toggleMute() {
+  const hideAllNotifications = hideNotifications === 'all';
+
+  const toggleMute = useCallback(() => {
     setMuted((v) => {
-      if (!v) toast.fire({ icon: 'info', title: i18n.t('Muted preview (exported file will not be affected)') });
+      if (!v && !hideAllNotifications) toast.fire({ icon: 'info', title: i18n.t('Muted preview (exported file will not be affected)') });
       return !v;
     });
-  }
+  }, [hideAllNotifications]);
 
   const seekAbs = useCallback((val) => {
     const video = videoRef.current;
@@ -626,14 +630,16 @@ const App = memo(() => {
   }, [assureOutDirAccess, outputDir, ffmpegExperimental, preserveMovData]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), []);
+
   const toggleKeyframeCut = useCallback((showMessage) => setKeyframeCut((val) => {
     const newVal = !val;
-    if (showMessage) {
+    if (showMessage && !hideAllNotifications) {
       if (newVal) toast.fire({ title: i18n.t('Keyframe cut enabled'), text: i18n.t('Will now cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files.') });
       else toast.fire({ title: i18n.t('Keyframe cut disabled'), text: i18n.t('Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut'), timer: 7000 });
     }
     return newVal;
-  }), []);
+  }), [hideAllNotifications]);
+
   const toggleAutoMerge = useCallback(() => setAutoMerge(val => !val), []);
 
   const togglePreserveMovData = useCallback(() => setPreserveMovData((val) => !val), []);
@@ -819,9 +825,9 @@ const App = memo(() => {
   // Cleanup old
   useEffect(() => () => waveform && URL.revokeObjectURL(waveform.url), [waveform]);
 
-  function showUnsupportedFileMessage() {
-    toast.fire({ timer: 13000, text: i18n.t('File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview with audio.') });
-  }
+  const showUnsupportedFileMessage = useCallback(() => {
+    if (!hideAllNotifications) toast.fire({ timer: 13000, text: i18n.t('File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview with audio.') });
+  }, [hideAllNotifications]);
 
   const createDummyVideo = useCallback(async (cod, fp) => {
     const html5ifiedDummyPathDummy = getOutPath(cod, fp, 'html5ified-dummy.mkv');
@@ -834,7 +840,7 @@ const App = memo(() => {
     setDummyVideoPath(html5ifiedDummyPathDummy);
     setHtml5FriendlyPath();
     showUnsupportedFileMessage();
-  }, []);
+  }, [showUnsupportedFileMessage]);
 
   const showPlaybackFailedMessage = () => errorToast(i18n.t('Unable to playback this file. Try to convert to supported format from the menu'));
 
@@ -1077,7 +1083,7 @@ const App = memo(() => {
 
   const changePlaybackRate = useCallback((dir) => {
     if (canvasPlayerEnabled) {
-      toast.fire({ title: i18n.t('Unable to playback rate right now'), timer: 1000 });
+      toast.fire({ title: i18n.t('Unable to change playback rate right now'), timer: 1000 });
       return;
     }
 
@@ -1258,7 +1264,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [resetState, working, createDummyVideo, loadEdlFile, getEdlFilePath, getHtml5ifiedPath, loadCutSegments, enableAskForImportChapters]);
+  }, [resetState, working, createDummyVideo, loadEdlFile, getEdlFilePath, getHtml5ifiedPath, loadCutSegments, enableAskForImportChapters, showUnsupportedFileMessage]);
 
   const toggleHelp = useCallback(() => setHelpVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1544,14 +1550,14 @@ const App = memo(() => {
     if (error.code === MEDIA_ERR_SRC_NOT_SUPPORTED && !dummyVideoPath) {
       console.log('MEDIA_ERR_SRC_NOT_SUPPORTED - trying to create dummy');
 
-      toast.fire({ icon: 'info', text: 'This file is not natively supported. Creating a preview file...' });
+      if (!hideAllNotifications) toast.fire({ icon: 'info', text: 'This file is not natively supported. Creating a preview file...' });
       if (hasVideo) {
         await tryCreateDummyVideo();
       } else if (hasAudio) {
         await html5ifyAndLoad('fastest-audio');
       }
     }
-  }, [tryCreateDummyVideo, fileUri, dummyVideoPath, hasVideo, hasAudio, html5ifyAndLoad]);
+  }, [tryCreateDummyVideo, fileUri, dummyVideoPath, hasVideo, hasAudio, html5ifyAndLoad, hideAllNotifications]);
 
   useEffect(() => {
     function fileOpened(event, filePaths) {
@@ -1855,12 +1861,14 @@ const App = memo(() => {
       setInvertTimelineScroll={setInvertTimelineScroll}
       language={language}
       setLanguage={setLanguage}
+      hideNotifications={hideNotifications}
+      setHideNotifications={setHideNotifications}
 
       AutoExportToggler={AutoExportToggler}
       renderCaptureFormatButton={renderCaptureFormatButton}
       onWheelTunerRequested={onWheelTunerRequested}
     />
-  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language, invertTimelineScroll, ffmpegExperimental, setFfmpegExperimental, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction]);
+  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language, invertTimelineScroll, ffmpegExperimental, setFfmpegExperimental, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, hideNotifications, setHideNotifications]);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);

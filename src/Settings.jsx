@@ -9,6 +9,7 @@ const Settings = memo(({
   AutoExportToggler, renderCaptureFormatButton, onWheelTunerRequested, language, setLanguage,
   invertTimelineScroll, setInvertTimelineScroll, ffmpegExperimental, setFfmpegExperimental,
   enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction,
+  hideNotifications, setHideNotifications,
 }) => {
   const { t } = useTranslation();
 
@@ -192,6 +193,17 @@ const Settings = memo(({
             label={t('Ask about chapters')}
             checked={enableAskForImportChapters}
             onChange={e => setEnableAskForImportChapters(e.target.checked)}
+          />
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Hide informational notifications?')}</KeyCell>
+        <Table.TextCell>
+          <Checkbox
+            label={t('Check to hide notifications')}
+            checked={!!hideNotifications}
+            onChange={e => setHideNotifications(e.target.checked ? 'all' : undefined)}
           />
         </Table.TextCell>
       </Row>
