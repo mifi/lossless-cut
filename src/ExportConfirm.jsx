@@ -20,9 +20,11 @@ const sheetStyle = {
   bottom: 0,
   zIndex: 10,
   overflowY: 'scroll',
-  background: 'rgba(105, 105, 105, 0.8)',
-  backdropFilter: 'blur(14px)',
+  background: 'rgba(105, 105, 105, 0.7)',
+  backdropFilter: 'blur(10px)',
 };
+
+const boxStyle = { margin: 15, background: 'rgba(25, 25, 25, 0.6)', borderRadius: 10, padding: '10px 20px' };
 
 const outDirStyle = { background: 'rgb(193, 98, 0)', borderRadius: '.4em', padding: '0 .3em', wordBreak: 'break-all', cursor: 'pointer' };
 
@@ -70,75 +72,84 @@ const ExportConfirm = memo(({
   return (
     <AnimatePresence>
       {visible && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          style={sheetStyle}
-          transition={{ duration: 0.2, easings: ['easeOut'] }}
-        >
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ margin: 15 }}>
-              <h2>{t('Export summary')}</h2>
-              <ul>
-                {outSegments.length > 1 && <li>{t('Merge {{segments}} cut segment to one file?', { segments: outSegments.length })} <MergeExportButton autoMerge={autoMerge} outSegments={outSegments} toggleAutoMerge={toggleAutoMerge} /></li>}
-                <li>
-                  <Trans>Input has {{ numStreamsTotal }} tracks - <Highlight style={{ cursor: 'pointer' }} onClick={() => setStreamsSelectorShown(true)}>Keeping {{ numStreamsToCopy }} tracks</Highlight></Trans>
-                  <HelpIcon onClick={withBlur(onTracksHelpPress)} />
-                </li>
-                <li>
-                  {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
-                  <HelpIcon onClick={withBlur(onOutFmtHelpPress)} />
-                </li>
-                <li>
-                  {t('Save output to path:')} <span role="button" onClick={changeOutDir} style={outDirStyle}>{outputDir}</span>
-                </li>
-              </ul>
-
-              <h3>{t('Advanced options')}</h3>
-              <p>{t('Depending on your specific file, you may have to try different options for best results.')}</p>
-              <ul>
-                <li>
-                  {t('Cut mode:')} <KeyframeCutButton keyframeCut={keyframeCut} onClick={withBlur(() => toggleKeyframeCut(false))} />
-                  <HelpIcon onClick={withBlur(onKeyframeCutHelpPress)} />
-                </li>
-
-                {isMov && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={sheetStyle}
+            transition={{ duration: 0.3, easings: ['easeOut'] }}
+          >
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={boxStyle}>
+                <h2>{t('Export summary')}</h2>
+                <ul>
+                  {outSegments.length > 1 && <li>{t('Merge {{segments}} cut segment to one file?', { segments: outSegments.length })} <MergeExportButton autoMerge={autoMerge} outSegments={outSegments} toggleAutoMerge={toggleAutoMerge} /></li>}
                   <li>
-                    {t('Preserve all MP4/MOV metadata?')} <PreserveMovDataButton preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} />
-                    <HelpIcon onClick={withBlur(onPreserveMovDataHelpPress)} />
+                    <Trans>Input has {{ numStreamsTotal }} tracks - <Highlight style={{ cursor: 'pointer' }} onClick={() => setStreamsSelectorShown(true)}>Keeping {{ numStreamsToCopy }} tracks</Highlight></Trans>
+                    <HelpIcon onClick={withBlur(onTracksHelpPress)} />
                   </li>
-                )}
-                <li>
-                  {t('Shift timestamps (avoid_negative_ts)')}
-                  <Select height={20} value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value)} style={{ marginLeft: 5 }}>
-                    <option value="make_zero">make_zero</option>
-                    <option value="make_non_negative">make_non_negative</option>
-                    <option value="auto">auto</option>
-                    <option value="disabled">disabled</option>
-                  </Select>
-                  <HelpIcon onClick={withBlur(onAvoidNegativeTsHelpPress)} />
-                </li>
-              </ul>
-            </div>
+                  <li>
+                    {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
+                    <HelpIcon onClick={withBlur(onOutFmtHelpPress)} />
+                  </li>
+                  <li>
+                    {t('Save output to path:')} <span role="button" onClick={changeOutDir} style={outDirStyle}>{outputDir}</span>
+                  </li>
+                </ul>
 
-            <div style={{ position: 'absolute', right: 0, bottom: 0, display: 'flex', alignItems: 'center', margin: 5 }}>
+                <h3>{t('Advanced options')}</h3>
+                <p>{t('Depending on your specific file, you may have to try different options for best results.')}</p>
+                <ul>
+                  <li>
+                    {t('Cut mode:')} <KeyframeCutButton keyframeCut={keyframeCut} onClick={withBlur(() => toggleKeyframeCut(false))} />
+                    <HelpIcon onClick={withBlur(onKeyframeCutHelpPress)} />
+                  </li>
+
+                  {isMov && (
+                    <li>
+                      {t('Preserve all MP4/MOV metadata?')} <PreserveMovDataButton preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} />
+                      <HelpIcon onClick={withBlur(onPreserveMovDataHelpPress)} />
+                    </li>
+                  )}
+                  <li>
+                    {t('Shift timestamps (avoid_negative_ts)')}
+                    <Select height={20} value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value)} style={{ marginLeft: 5 }}>
+                      <option value="make_zero">make_zero</option>
+                      <option value="make_non_negative">make_non_negative</option>
+                      <option value="auto">auto</option>
+                      <option value="disabled">disabled</option>
+                    </Select>
+                    <HelpIcon onClick={withBlur(onAvoidNegativeTsHelpPress)} />
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </motion.div>
+
+          <div style={{ zIndex: 11, position: 'fixed', right: 0, bottom: 0, display: 'flex', alignItems: 'center', margin: 5 }}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4, easings: ['easeOut'] }}
+            >
               <Button iconBefore="arrow-left" height={30} onClick={onClosePress} style={{ marginRight: 10 }}>
                 {i18n.t('Back')}
               </Button>
+            </motion.div>
 
-              <motion.div
-                style={{ transformOrigin: 'bottom right' }}
-                initial={{ scale: 0.5 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.5 }}
-                transition={{ duration: 0.4, easings: ['easeOut'] }}
-              >
-                <ExportButton outSegments={outSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={onCutPress} size={1.8} />
-              </motion.div>
-            </div>
+            <motion.div
+              style={{ transformOrigin: 'bottom right' }}
+              initial={{ scale: 0.5, opacity: 1 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.5, opacity: 0 }}
+              transition={{ duration: 0.4, easings: ['easeOut'] }}
+            >
+              <ExportButton outSegments={outSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={onCutPress} size={1.8} />
+            </motion.div>
           </div>
-        </motion.div>
+        </>
       )}
     </AnimatePresence>
   );

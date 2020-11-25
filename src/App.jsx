@@ -986,6 +986,8 @@ const App = memo(() => {
       return;
     }
 
+    setExportConfirmVisible(false);
+
     try {
       setWorking(i18n.t('Exporting'));
 
@@ -1052,7 +1054,6 @@ const App = memo(() => {
     } finally {
       setWorking();
       setCutProgress();
-      setExportConfirmVisible(false);
     }
   }, [autoMerge, copyFileStreams, customOutDir, duration, effectiveRotation, exportExtraStreams, ffmpegExperimental, fileFormat, fileFormatData, filePath, handleCutFailed, isCustomFormatSelected, isRotationSet, keyframeCut, mainStreams, nonCopiedExtraStreams, outSegments, outputDir, shortestFlag, working, preserveMovData, avoidNegativeTs, numStreamsToCopy]);
 
