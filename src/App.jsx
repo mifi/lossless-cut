@@ -59,7 +59,7 @@ import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApp
 import loadingLottie from './7077-magic-flow.json';
 
 
-// const isDev = window.require('electron-is-dev');
+const isDev = window.require('electron-is-dev');
 const electron = window.require('electron'); // eslint-disable-line
 const trash = window.require('trash');
 const { unlink, exists } = window.require('fs-extra');
@@ -134,7 +134,6 @@ const App = memo(() => {
     100,
   );
 
-  const [debouncedCutSegments] = useDebounce(cutSegments, 500);
 
   const durationSafe = isDurationValid(duration) ? duration : 1;
   const zoomedDuration = isDurationValid(duration) ? duration / zoom : undefined;
@@ -211,7 +210,6 @@ const App = memo(() => {
   const [mifiLink, setMifiLink] = useState();
 
   const videoRef = useRef();
-  const lastSavedCutSegmentsRef = useRef();
   const readingKeyframesPromise = useRef();
   const creatingWaveformPromise = useRef();
   const currentTimeRef = useRef();
@@ -520,34 +518,39 @@ const App = memo(() => {
   const getEdlFilePath = useCallback((fp) => getOutPath(customOutDir, fp, 'llc-edl.csv'), [customOutDir]);
   const edlFilePath = getEdlFilePath(filePath);
 
+  const currentSaveOperation = useMemo(() => {
+    if (!edlFilePath) return undefined;
+    return { cutSegments, edlFilePath };
+  }, [cutSegments, edlFilePath]);
+
+  const [debouncedSaveOperation] = useDebounce(currentSaveOperation, isDev ? 2000 : 500);
+
+  const lastSaveOperation = useRef();
   useEffect(() => {
     async function save() {
-      // TODO I think there is a potential race condition here if switching files too fast
-      if (!edlFilePath) return;
+      // NOTE: Could lose a save if user closes too fast, but not a big issue I think
+      if (!autoSaveProjectFile || !debouncedSaveOperation) return;
+
+      const { cutSegments: saveOperationCutSegments, edlFilePath: saveOperationEdlFilePath } = debouncedSaveOperation;
 
       try {
-        if (!autoSaveProjectFile) return;
+        // Initial state? Don't save
+        if (isEqual(getCleanCutSegments(saveOperationCutSegments), getCleanCutSegments(createInitialCutSegments()))) return;
 
-        // Initial state? don't save
-        if (isEqual(getCleanCutSegments(debouncedCutSegments),
-          getCleanCutSegments(createInitialCutSegments()))) return;
-
-        /* if (lastSavedCutSegmentsRef.current
-          && isEqual(getCleanCutSegments(lastSavedCutSegmentsRef.current),
-            getCleanCutSegments(debouncedCutSegments))) {
-          // console.log('Seg state didn\'t change, skipping save');
+        if (lastSaveOperation.current && lastSaveOperation.current.edlFilePath === saveOperationEdlFilePath && isEqual(getCleanCutSegments(lastSaveOperation.current.cutSegments), getCleanCutSegments(saveOperationCutSegments))) {
+          console.log('Segments unchanged, skipping save');
           return;
-        } */
+        }
 
-        await saveCsv(edlFilePath, debouncedCutSegments);
-        lastSavedCutSegmentsRef.current = debouncedCutSegments;
+        await saveCsv(saveOperationEdlFilePath, saveOperationCutSegments);
+        lastSaveOperation.current = debouncedSaveOperation;
       } catch (err) {
         errorToast(i18n.t('Unable to save project file'));
         console.error('Failed to save CSV', err);
       }
     }
     save();
-  }, [debouncedCutSegments, edlFilePath, autoSaveProjectFile]);
+  }, [debouncedSaveOperation, autoSaveProjectFile]);
 
   function onPlayingChange(val) {
     setPlaying(val);
