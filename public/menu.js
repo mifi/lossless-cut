@@ -128,6 +128,12 @@ module.exports = (app, mainWindow, newVersion) => {
           label: 'Segments',
           submenu: [
             {
+              label: 'Reorder segments by start time',
+              click() {
+                mainWindow.webContents.send('reorderSegsByStartTime');
+              },
+            },
+            {
               label: 'Create num segments',
               click() {
                 mainWindow.webContents.send('createNumSegments');

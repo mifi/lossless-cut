@@ -421,6 +421,10 @@ const App = memo(() => {
     setCurrentSegIndex(newOrder);
   }, [currentSegIndexSafe, cutSegments, setCutSegments]);
 
+  const reorderSegsByStartTime = useCallback(() => {
+    setCutSegments(sortBy(cutSegments, getSegApparentStart));
+  }, [cutSegments, setCutSegments]);
+
   const formatTimecode = useCallback((sec) => formatDuration({
     seconds: sec, fps: timecodeShowFrames ? detectedFps : undefined,
   }), [detectedFps, timecodeShowFrames]);
@@ -1725,6 +1729,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('createNumSegments', createNumSegments2);
     electron.ipcRenderer.on('createFixedDurationSegments', createFixedDurationSegments2);
     electron.ipcRenderer.on('fixInvalidDuration', fixInvalidDuration2);
+    electron.ipcRenderer.on('reorderSegsByStartTime', reorderSegsByStartTime);
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
@@ -1744,12 +1749,13 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog2);
       electron.ipcRenderer.removeListener('createFixedDurationSegments', createFixedDurationSegments2);
       electron.ipcRenderer.removeListener('fixInvalidDuration', fixInvalidDuration2);
+      electron.ipcRenderer.removeListener('reorderSegsByStartTime', reorderSegsByStartTime);
     };
   }, [
     mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset, html5ifyCurrentFile,
     createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory, openSendReportDialogWithState,
     loadEdlFile, cutSegments, edlFilePath, askBeforeClose, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
-    loadCutSegments, duration, checkFileOpened, load, fileFormat,
+    loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime,
   ]);
 
   async function showAddStreamSourceDialog() {
