@@ -1315,7 +1315,9 @@ const App = memo(() => {
     hotkeys('ctrl+right, command+right', seekForwardsPercent);
     hotkeys('alt+left', seekBackwardsKeyframe);
     hotkeys('alt+right', seekForwardsKeyframe);
-    hotkeys('up', jumpPrevSegment);
+    hotkeys('shift+left', jumpCutStart);
+    hotkeys('shift+right', jumpCutEnd);
+  hotkeys('up', jumpPrevSegment);
     hotkeys('down', jumpNextSegment);
     hotkeys('ctrl+up, command+up', zoomIn);
     hotkeys('ctrl+down, command+down', zoomOut);
@@ -1342,6 +1344,8 @@ const App = memo(() => {
       hotkeys.unbind('ctrl+right, command+right', seekForwardsPercent);
       hotkeys.unbind('alt+left', seekBackwardsKeyframe);
       hotkeys.unbind('alt+right', seekForwardsKeyframe);
+      hotkeys.unbind('shift+left', jumpCutStart);
+      hotkeys.unbind('shift+right', jumpCutEnd);
       hotkeys.unbind('up', jumpPrevSegment);
       hotkeys.unbind('down', jumpNextSegment);
       hotkeys.unbind('ctrl+up, command+up', zoomIn);
@@ -1361,7 +1365,7 @@ const App = memo(() => {
     addCutSegment, capture, changePlaybackRate, togglePlay, removeCutSegment,
     setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, deleteSource, jumpSeg,
     seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment, exportConfirmVisible,
-    increaseRotation,
+    increaseRotation, jumpCutStart, jumpCutEnd,
   ]);
 
   useEffect(() => {
