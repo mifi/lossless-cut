@@ -84,7 +84,7 @@ const ExportConfirm = memo(({
               <div style={boxStyle}>
                 <h2>{t('Export summary')}</h2>
                 <ul>
-                  {outSegments.length > 1 && <li>{t('Merge {{segments}} cut segment to one file?', { segments: outSegments.length })} <MergeExportButton autoMerge={autoMerge} outSegments={outSegments} toggleAutoMerge={toggleAutoMerge} /></li>}
+                  {outSegments.length > 1 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: outSegments.length })} <MergeExportButton autoMerge={autoMerge} outSegments={outSegments} toggleAutoMerge={toggleAutoMerge} /></li>}
                   <li>
                     <Trans>Input has {{ numStreamsTotal }} tracks - <Highlight style={{ cursor: 'pointer' }} onClick={() => setStreamsSelectorShown(true)}>Keeping {{ numStreamsToCopy }} tracks</Highlight></Trans>
                     <HelpIcon onClick={withBlur(onTracksHelpPress)} />
