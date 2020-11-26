@@ -44,7 +44,7 @@ const Timeline = memo(({
   setCurrentSegIndex, currentSegIndexSafe, invertCutSegments, inverseCutSegments, formatTimecode,
   waveform, shouldShowWaveform, shouldShowKeyframes, timelineHeight, thumbnails,
   onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled, wheelSensitivity,
-  invertTimelineScroll,
+  invertTimelineScroll, playing, isFileOpened,
 }) => {
   const { t } = useTranslation();
 
@@ -53,7 +53,10 @@ const Timeline = memo(({
   const timelineScrollerSkipEventDebounce = useRef();
   const timelineWrapperRef = useRef();
 
-  const offsetCurrentTime = (getCurrentTime() || 0) + startTimeOffset;
+  const [hoveringTime, setHoveringTime] = useState();
+
+  const currentTime = getCurrentTime() || 0;
+  const displayTime = (hoveringTime != null && isFileOpened && !playing ? hoveringTime : currentTime) + startTimeOffset;
 
   const keyframes = neighbouringFrames ? neighbouringFrames.filter(f => f.keyframe) : [];
   // Don't show keyframes if too packed together (at current zoom)
@@ -144,13 +147,16 @@ const Timeline = memo(({
       / (timelineScrollerRef.current.offsetWidth * zoom)) * duration));
   }, [duration, seekAbs, zoomed, zoom, zoomWindowStartTime, onZoomWindowStartTimeChange]); */
 
-
-  const handleTap = useCallback((e) => {
+  const getMouseTimelinePos = useCallback((e) => {
     const target = timelineWrapperRef.current;
     const rect = target.getBoundingClientRect();
-    const relX = e.srcEvent.pageX - (rect.left + document.body.scrollLeft);
-    seekAbs((relX / target.offsetWidth) * durationSafe);
-  }, [durationSafe, seekAbs]);
+    const relX = e.pageX - (rect.left + document.body.scrollLeft);
+    return (relX / target.offsetWidth) * durationSafe;
+  }, [durationSafe]);
+
+  const handleTap = useCallback((e) => {
+    seekAbs((getMouseTimelinePos(e.srcEvent)));
+  }, [seekAbs, getMouseTimelinePos]);
 
   const onWheel = useCallback((e) => {
     const { pixelX, pixelY } = normalizeWheel(e);
@@ -165,10 +171,20 @@ const Timeline = memo(({
     }
   }, [seekRel, zoomRel, wheelSensitivity, invertTimelineScroll]);
 
+  useEffect(() => {
+    setHoveringTime();
+  }, [playerTime, commandedTime]);
+
+  const onMouseMove = useCallback((e) => setHoveringTime(getMouseTimelinePos(e.nativeEvent)), [getMouseTimelinePos]);
+  const onMouseOut = useCallback(() => setHoveringTime(), []);
+
   return (
+    // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
     <Hammer
       onTap={handleTap}
       onPan={handleTap}
+      onMouseMove={onMouseMove}
+      onMouseOut={onMouseOut}
       options={hammerOptions}
     >
       <div style={{ position: 'relative' }}>
@@ -258,7 +274,7 @@ const Timeline = memo(({
 
         <div style={{ position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 2 }}>
           <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' }}>
-            {formatTimecode(offsetCurrentTime)}
+            {formatTimecode(displayTime)}
           </div>
         </div>
       </div>

@@ -2132,6 +2132,8 @@ const App = memo(() => {
           onZoomWindowStartTimeChange={setZoomWindowStartTime}
           wheelSensitivity={wheelSensitivity}
           invertTimelineScroll={invertTimelineScroll}
+          playing={playing}
+          isFileOpened={isFileOpened}
         />
 
         <TimelineControls

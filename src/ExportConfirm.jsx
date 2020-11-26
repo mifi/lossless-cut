@@ -84,7 +84,7 @@ const ExportConfirm = memo(({
           >
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={boxStyle}>
-                <h2>{t('Export summary')}</h2>
+                <h2 style={{ marginTop: 0 }}>{t('Export summary')}</h2>
                 <ul>
                   {outSegments.length > 1 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: outSegments.length })} <MergeExportButton autoMerge={autoMerge} outSegments={outSegments} toggleAutoMerge={toggleAutoMerge} /></li>}
                   <li>
