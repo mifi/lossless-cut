@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import prettyMs from 'pretty-ms';
-import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight } from 'react-icons/fa';
+import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaArrowCircleUp, FaArrowCircleDown } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
@@ -63,6 +63,15 @@ const SegmentList = memo(({
     }
   }
 
+  function segOrderDecrease(e) {
+    updateCurrentSegOrder(currentSegIndex - 1);
+    e.stopPropagation();
+  }
+  function segOrderIncrease(e) {
+    updateCurrentSegOrder(currentSegIndex + 1);
+    e.stopPropagation();
+  }
+
   const renderSegments = () => outSegments.map((seg, index) => {
     const duration = seg.end - seg.start;
     const durationMs = duration * 1000;
@@ -88,7 +97,7 @@ const SegmentList = memo(({
         onClick={() => !invertCutSegments && onSegClick(index)}
         key={uuid}
         positionTransition
-        style={{ originY: 0, margin: '5px 0', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5 }}
+        style={{ originY: 0, margin: '5px 0', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5, position: 'relative' }}
         initial={{ scaleY: 0 }}
         animate={{ scaleY: 1 }}
         exit={{ scaleY: 0 }}
@@ -104,6 +113,13 @@ const SegmentList = memo(({
         <div style={{ fontSize: 12 }}>
           ({Math.floor(durationMs)} ms, {getFrameCount(duration)} frames)
         </div>
+
+        {isActive && (
+          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} style={{ position: 'absolute', right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}>
+            <FaArrowCircleUp size={20} role="button" onClick={segOrderDecrease} />
+            <FaArrowCircleDown size={20} role="button" onClick={segOrderIncrease} />
+          </motion.div>
+        )}
       </motion.div>
     );
   });
