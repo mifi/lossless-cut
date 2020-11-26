@@ -1219,7 +1219,6 @@ const App = memo(() => {
       ])));
 
       setFileNameTitle(fp);
-      setFilePath(fp);
       setFileFormat(ff);
       setDetectedFileFormat(ff);
       setFileFormatData(fd);
@@ -1255,6 +1254,11 @@ const App = memo(() => {
       }
 
       if (!isDurationValid(parseFloat(fd.duration))) toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
+
+      // This needs to be last, because it triggers <video> to load the video
+      // If not, onVideoError might be triggered before setWorking() has been cleared.
+      // https://github.com/mifi/lossless-cut/issues/515
+      setFilePath(fp);
     } catch (err) {
       // Windows will throw error with code ENOENT if format detection fails.
       if (err.exitCode === 1 || (isWindows && err.code === 'ENOENT')) {
