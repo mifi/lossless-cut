@@ -292,11 +292,10 @@ function getOutFileExtension({ isCustomFormatSelected, outFormat, filePath }) {
 }
 
 export async function cutMultiple({
-  customOutDir, filePath, segments: segmentsUnsorted, videoDuration, rotation,
+  customOutDir, filePath, segments, videoDuration, rotation,
   onProgress, keyframeCut, copyFileStreams, outFormat, isCustomFormatSelected,
   appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, avoidNegativeTs,
 }) {
-  const segments = sortBy(segmentsUnsorted, 'cutFrom');
   const singleProgresses = {};
   function onSingleProgress(id, singleProgress) {
     singleProgresses[id] = singleProgress;
