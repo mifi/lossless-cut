@@ -50,6 +50,7 @@ const Stream = memo(({ stream, onToggle, copyStream, fileDuration }) => {
   }
 
   const streamFps = getStreamFps(stream);
+  const language = stream.tags && stream.tags.language;
 
   const onClick = () => onToggle && onToggle(stream.index);
 
@@ -63,6 +64,7 @@ const Stream = memo(({ stream, onToggle, copyStream, fileDuration }) => {
       <td>{!Number.isNaN(duration) && `${formatDuration({ seconds: duration })}`}</td>
       <td>{stream.nb_frames}</td>
       <td>{!Number.isNaN(bitrate) && `${(bitrate / 1e6).toFixed(1)}MBit/s`}</td>
+      <td style={{ maxWidth: '2.5em', overflow: 'hidden' }}>{language}</td>
       <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
       <td><FaInfoCircle role="button" onClick={() => onInfoClick(stream, t('Stream info'))} size={26} /></td>
     </tr>
@@ -75,7 +77,7 @@ const FileRow = ({ path, formatData, onTrashClick }) => {
   return (
     <tr>
       <td>{onTrashClick && <FaTrashAlt size={20} role="button" style={{ padding: '0 5px', cursor: 'pointer' }} onClick={onTrashClick} />}</td>
-      <td colSpan={8} title={path} style={{ wordBreak: 'break-all', fontWeight: 'bold' }}>{path.replace(/.*\/([^/]+)$/, '$1')}</td>
+      <td colSpan={9} title={path} style={{ wordBreak: 'break-all', fontWeight: 'bold' }}>{path.replace(/.*\/([^/]+)$/, '$1')}</td>
       <td><FaInfoCircle role="button" onClick={() => onInfoClick(formatData, t('File info'))} size={26} /></td>
     </tr>
   );
@@ -123,6 +125,7 @@ const StreamsSelector = memo(({
             <th>{t('Duration')}</th>
             <th>{t('Frames')}</th>
             <th>{t('Bitrate')}</th>
+            <th>{t('Lang')}</th>
             <th>{t('Data')}</th>
             <th />
           </tr>
@@ -143,7 +146,7 @@ const StreamsSelector = memo(({
 
           {externalFilesEntries.map(([path, { streams, formatData }]) => (
             <Fragment key={path}>
-              <tr><td colSpan={10} /></tr>
+              <tr><td colSpan={11} /></tr>
 
               <FileRow path={path} formatData={formatData} onTrashClick={() => removeFile(path)} />
 
