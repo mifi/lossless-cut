@@ -985,7 +985,7 @@ const App = memo(() => {
 
   const closeExportConfirm = useCallback(() => setExportConfirmVisible(false), []);
 
-  const onExportConfirmPress = useCallback(async () => {
+  const onExportConfirm = useCallback(async ({ exportSingle } = {}) => {
     if (working) return;
 
     if (numStreamsToCopy === 0) {
@@ -994,6 +994,8 @@ const App = memo(() => {
     }
 
     setExportConfirmVisible(false);
+
+    const filteredOutSegments = exportSingle ? [outSegments[currentSegIndexSafe]] : outSegments;
 
     try {
       setWorking(i18n.t('Exporting'));
@@ -1008,7 +1010,7 @@ const App = memo(() => {
         rotation: isRotationSet ? effectiveRotation : undefined,
         copyFileStreams,
         keyframeCut,
-        segments: outSegments,
+        segments: filteredOutSegments,
         onProgress: setCutProgress,
         appendFfmpegCommandLog,
         shortestFlag,
@@ -1033,11 +1035,9 @@ const App = memo(() => {
         });
       }
 
-      if (exportExtraStreams) {
+      if (exportExtraStreams && !exportSingle) {
         try {
-          await extractStreams({
-            filePath, customOutDir, streams: nonCopiedExtraStreams,
-          });
+          await extractStreams({ filePath, customOutDir, streams: nonCopiedExtraStreams });
         } catch (err) {
           console.error('Extra stream export failed', err);
         }
@@ -1062,7 +1062,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [autoMerge, copyFileStreams, customOutDir, duration, effectiveRotation, exportExtraStreams, ffmpegExperimental, fileFormat, fileFormatData, filePath, handleCutFailed, isCustomFormatSelected, isRotationSet, keyframeCut, mainStreams, nonCopiedExtraStreams, outSegments, outputDir, shortestFlag, working, preserveMovData, avoidNegativeTs, numStreamsToCopy, hideAllNotifications]);
+  }, [autoMerge, copyFileStreams, customOutDir, duration, effectiveRotation, exportExtraStreams, ffmpegExperimental, fileFormat, fileFormatData, filePath, handleCutFailed, isCustomFormatSelected, isRotationSet, keyframeCut, mainStreams, nonCopiedExtraStreams, outSegments, outputDir, shortestFlag, working, preserveMovData, avoidNegativeTs, numStreamsToCopy, hideAllNotifications, currentSegIndexSafe]);
 
   const capture = useCallback(async () => {
     if (!filePath || !isDurationValid(duration)) return;
@@ -1371,7 +1371,7 @@ const App = memo(() => {
 
   useEffect(() => {
     function onExportPress2() {
-      if (exportConfirmVisible) onExportConfirmPress();
+      if (exportConfirmVisible) onExportConfirm();
       else onExportPress();
     }
 
@@ -1380,7 +1380,7 @@ const App = memo(() => {
     return () => {
       hotkeys.unbind('e', onExportPress2);
     };
-  }, [exportConfirmVisible, onExportConfirmPress, onExportPress]);
+  }, [exportConfirmVisible, onExportConfirm, onExportPress]);
 
   useEffect(() => {
     function onEscPress() {
@@ -2189,7 +2189,7 @@ const App = memo(() => {
         </div>
       </motion.div>
 
-      <ExportConfirm autoMerge={autoMerge} toggleAutoMerge={toggleAutoMerge} areWeCutting={areWeCutting} outSegments={outSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onCutPress={onExportConfirmPress} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} />
+      <ExportConfirm autoMerge={autoMerge} toggleAutoMerge={toggleAutoMerge} areWeCutting={areWeCutting} outSegments={outSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} currentSegIndex={currentSegIndexSafe} invertCutSegments={invertCutSegments} />
 
       <HelpSheet
         visible={helpVisible}

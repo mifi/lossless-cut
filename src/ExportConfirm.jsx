@@ -4,6 +4,7 @@ import { Button, Select } from 'evergreen-ui';
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
 import { IoIosHelpCircle } from 'react-icons/io';
+import { FiScissors } from 'react-icons/fi';
 
 import KeyframeCutButton from './components/KeyframeCutButton';
 import ExportButton from './components/ExportButton';
@@ -11,6 +12,7 @@ import MergeExportButton from './components/MergeExportButton';
 import PreserveMovDataButton from './components/PreserveMovDataButton';
 
 import { withBlur, toast } from './util';
+import { primaryColor } from './colors';
 
 const sheetStyle = {
   position: 'fixed',
@@ -34,9 +36,9 @@ const Highlight = ({ children, style, ...props }) => <span {...props} style={{ b
 const HelpIcon = ({ onClick }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ verticalAlign: 'middle', marginLeft: 5 }} />;
 
 const ExportConfirm = memo(({
-  autoMerge, areWeCutting, outSegments, visible, onClosePress, onCutPress, keyframeCut, toggleKeyframeCut,
+  autoMerge, areWeCutting, outSegments, visible, onClosePress, onExportConfirm, keyframeCut, toggleKeyframeCut,
   toggleAutoMerge, renderOutFmt, preserveMovData, togglePreserveMovData, avoidNegativeTs, setAvoidNegativeTs,
-  changeOutDir, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown,
+  changeOutDir, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, currentSegIndex, invertCutSegments,
 }) => {
   const { t } = useTranslation();
 
@@ -133,10 +135,18 @@ const ExportConfirm = memo(({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4, easings: ['easeOut'] }}
+              style={{ display: 'flex', alignItems: 'center' }}
             >
-              <Button iconBefore="arrow-left" height={30} onClick={onClosePress} style={{ marginRight: 10 }}>
+              <Button iconBefore="arrow-left" height={24} onClick={onClosePress} style={{ marginRight: 10 }}>
                 {i18n.t('Back')}
               </Button>
+
+              {outSegments.length > 1 && !invertCutSegments && (
+                <div role="button" title={t('Export only the currently selected segment ({{segNum}})', { segNum: currentSegIndex + 1 })} onClick={() => onExportConfirm({ exportSingle: true })} style={{ cursor: 'pointer', background: primaryColor, borderRadius: 5, padding: '3px 10px', fontSize: 13, marginRight: 10 }}>
+                  <FiScissors style={{ verticalAlign: 'middle', marginRight: 6 }} size={16} />
+                  {t('Export single')}
+                </div>
+              )}
             </motion.div>
 
             <motion.div
@@ -146,7 +156,7 @@ const ExportConfirm = memo(({
               exit={{ scale: 0.5, opacity: 0 }}
               transition={{ duration: 0.4, easings: ['easeOut'] }}
             >
-              <ExportButton outSegments={outSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={onCutPress} size={1.8} />
+              <ExportButton outSegments={outSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={() => onExportConfirm()} size={1.8} />
             </motion.div>
           </div>
         </>
