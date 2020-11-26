@@ -1925,6 +1925,7 @@ const App = memo(() => {
     <div>
       <div className="no-user-select" style={{ background: controlsBackground, height: topBarHeight, display: 'flex', alignItems: 'center', padding: '0 5px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
         <SideSheet
+          width={700}
           containerProps={{ style: { maxWidth: '100%' } }}
           position={Position.LEFT}
           isShown={streamsSelectorShown}
