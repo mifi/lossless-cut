@@ -7,7 +7,7 @@ import randomColor from './random-color';
 const path = window.require('path');
 const fs = window.require('fs-extra');
 const open = window.require('open');
-
+const os = window.require('os');
 
 export function formatDuration({ seconds: secondsIn, fileNameFriendly, fps }) {
   const seconds = secondsIn || 0;
@@ -161,3 +161,7 @@ export const isMasBuild = window.process.mas;
 export const isStoreBuild = isMasBuild || window.process.windowsStore;
 
 export const isDurationValid = (duration) => Number.isFinite(duration) && duration > 0;
+
+const platform = os.platform();
+
+export const isWindows = platform === 'win32';

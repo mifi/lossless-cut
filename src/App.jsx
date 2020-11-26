@@ -48,7 +48,7 @@ import { saveCsv, loadCsv, loadXmeml, loadCue } from './edlStore';
 import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
-  isDurationValid,
+  isDurationValid, isWindows,
 } from './util';
 import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction } from './dialogs';
 import { openSendReportDialog } from './reporting';
@@ -1255,7 +1255,8 @@ const App = memo(() => {
 
       if (!isDurationValid(parseFloat(fd.duration))) toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
     } catch (err) {
-      if (err.exitCode === 1 || err.code === 'ENOENT') {
+      // Windows will throw error with code ENOENT if format detection fails.
+      if (err.exitCode === 1 || (isWindows && err.code === 'ENOENT')) {
         errorToast(i18n.t('Unsupported file'));
         console.error(err);
         return;
