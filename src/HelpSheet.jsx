@@ -76,6 +76,9 @@ const HelpSheet = memo(({ visible, onTogglePress, ffmpegCommandLog, currentCutSe
         <div><kbd>CTRL</kbd> <i>+ {t('Mouse scroll/wheel up/down')}</i> - {t('Zoom in/out timeline')}</div>
         <div><i>{t('Mouse scroll/wheel left/right')}</i> - {t('Pan timeline')}</div>
 
+        <h2>{t('Other operations')}</h2>
+        <div><kbd>R</kbd> {t('Change rotation')}</div>
+
         <h2>{t('Output actions')}</h2>
         <div><kbd>E</kbd> {t('Export segment(s)')}</div>
         <div><kbd>C</kbd> {t('Capture snapshot')}</div>

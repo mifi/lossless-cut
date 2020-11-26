@@ -1328,6 +1328,7 @@ const App = memo(() => {
     hotkeys('backspace', removeCutSegment);
     hotkeys('d', deleteSource);
     hotkeys('b', splitCurrentSegment);
+    hotkeys('r', increaseRotation);
 
     return () => {
       hotkeys.unbind('*', onKeyPress);
@@ -1354,11 +1355,13 @@ const App = memo(() => {
       hotkeys.unbind('backspace', removeCutSegment);
       hotkeys.unbind('d', deleteSource);
       hotkeys.unbind('b', splitCurrentSegment);
+      hotkeys.unbind('r', increaseRotation);
     };
   }, [
     addCutSegment, capture, changePlaybackRate, togglePlay, removeCutSegment,
     setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, deleteSource, jumpSeg,
     seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment, exportConfirmVisible,
+    increaseRotation,
   ]);
 
   useEffect(() => {
