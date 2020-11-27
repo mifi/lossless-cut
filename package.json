@@ -73,6 +73,7 @@
     "react-scripts": "^3.4.0",
     "react-sortable-hoc": "^1.5.3",
     "react-use": "^13.26.1",
+    "smpte-timecode": "^1.2.3",
     "strong-data-uri": "^1.0.5",
     "svg2png": "^4.1.1",
     "sweetalert2": "^9.10.10",

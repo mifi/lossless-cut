@@ -42,7 +42,7 @@ import {
   getDefaultOutFormat, getFormatData, mergeFiles as ffmpegMergeFiles, renderThumbnails as ffmpegRenderThumbnails,
   readFrames, renderWaveformPng, html5ifyDummy, cutMultiple, extractStreams, autoMergeSegments, getAllStreams,
   findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
-  fixInvalidDuration, getDuration,
+  fixInvalidDuration, getDuration, getTimecodeFromStreams,
 } from './ffmpeg';
 import { saveCsv, loadCsv, loadXmeml, loadCue } from './edlStore';
 import {
@@ -194,6 +194,8 @@ const App = memo(() => {
   useEffect(() => safeSetConfig('ffmpegExperimental', ffmpegExperimental), [ffmpegExperimental]);
   const [hideNotifications, setHideNotifications] = useState(configStore.get('hideNotifications'));
   useEffect(() => safeSetConfig('hideNotifications', hideNotifications), [hideNotifications]);
+  const [autoLoadTimecode, setAutoLoadTimecode] = useState(configStore.get('autoLoadTimecode'));
+  useEffect(() => safeSetConfig('autoLoadTimecode', autoLoadTimecode), [autoLoadTimecode]);
 
   useEffect(() => {
     i18n.changeLanguage(language || fallbackLng).catch(console.error);
@@ -1193,6 +1195,11 @@ const App = memo(() => {
       const { streams } = await getAllStreams(fp);
       // console.log('streams', streamsNew);
 
+      if (autoLoadTimecode) {
+        const timecode = getTimecodeFromStreams(streams);
+        if (timecode) setStartTimeOffset(timecode);
+      }
+
       const videoStream = streams.find(stream => stream.codec_type === 'video' && !isStreamThumbnail(stream));
       const audioStream = streams.find(stream => stream.codec_type === 'audio');
       setMainVideoStream(videoStream);
@@ -1270,7 +1277,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [resetState, working, createDummyVideo, loadEdlFile, getEdlFilePath, getHtml5ifiedPath, loadCutSegments, enableAskForImportChapters, showUnsupportedFileMessage]);
+  }, [resetState, working, createDummyVideo, loadEdlFile, getEdlFilePath, getHtml5ifiedPath, loadCutSegments, enableAskForImportChapters, showUnsupportedFileMessage, autoLoadTimecode]);
 
   const toggleHelp = useCallback(() => setHelpVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1883,12 +1890,14 @@ const App = memo(() => {
       setLanguage={setLanguage}
       hideNotifications={hideNotifications}
       setHideNotifications={setHideNotifications}
+      autoLoadTimecode={autoLoadTimecode}
+      setAutoLoadTimecode={setAutoLoadTimecode}
 
       AutoExportToggler={AutoExportToggler}
       renderCaptureFormatButton={renderCaptureFormatButton}
       onWheelTunerRequested={onWheelTunerRequested}
     />
-  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language, invertTimelineScroll, ffmpegExperimental, setFfmpegExperimental, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, hideNotifications, setHideNotifications]);
+  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language, invertTimelineScroll, ffmpegExperimental, setFfmpegExperimental, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode]);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);

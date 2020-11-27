@@ -20,6 +20,7 @@ const defaults = {
     preserveMovData: false,
     avoidNegativeTs: 'make_zero',
     hideNotifications: undefined,
+    autoLoadTimecode: false,
   },
 };
 

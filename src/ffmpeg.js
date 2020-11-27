@@ -5,6 +5,7 @@ import sum from 'lodash/sum';
 import sortBy from 'lodash/sortBy';
 import moment from 'moment';
 import i18n from 'i18next';
+import Timecode from 'smpte-timecode';
 
 import { formatDuration, getOutPath, transferTimestamps, filenamify, isDurationValid } from './util';
 
@@ -896,4 +897,32 @@ export async function fixInvalidDuration({ filePath, fileFormat, customOutDir })
   await transferTimestamps(filePath, outPath);
 
   return outPath;
+}
+
+function parseTimecode(str, frameRate) {
+  // console.log(str, frameRate);
+  const t = Timecode(str, frameRate ? parseFloat(frameRate.toFixed(3)) : undefined);
+  if (!t) return undefined;
+  const seconds = ((t.hours * 60) + t.minutes) * 60 + t.seconds + (t.frames / t.frameRate);
+  return Number.isFinite(seconds) ? seconds : undefined;
+}
+
+export function getTimecodeFromStreams(streams) {
+  console.log('Trying to load timecode');
+  let foundTimecode;
+  streams.find((stream) => {
+    try {
+      if (stream.tags && stream.tags.timecode) {
+        const fps = getStreamFps(stream);
+        foundTimecode = parseTimecode(stream.tags.timecode, fps);
+        console.log('Loaded timecode', stream.tags.timecode, 'from stream', stream.index);
+        return true;
+      }
+      return undefined;
+    } catch (err) {
+      // console.warn('Failed to parse timecode from file streams', err);
+      return undefined;
+    }
+  });
+  return foundTimecode;
 }

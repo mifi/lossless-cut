@@ -9,7 +9,7 @@ const Settings = memo(({
   AutoExportToggler, renderCaptureFormatButton, onWheelTunerRequested, language, setLanguage,
   invertTimelineScroll, setInvertTimelineScroll, ffmpegExperimental, setFfmpegExperimental,
   enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction,
-  hideNotifications, setHideNotifications,
+  hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode
 }) => {
   const { t } = useTranslation();
 
@@ -193,6 +193,17 @@ const Settings = memo(({
             label={t('Ask about chapters')}
             checked={enableAskForImportChapters}
             onChange={e => setEnableAskForImportChapters(e.target.checked)}
+          />
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Auto load timecode from file as an offset in the timeline?')}</KeyCell>
+        <Table.TextCell>
+          <Checkbox
+            label={t('Auto load timecode')}
+            checked={autoLoadTimecode}
+            onChange={e => setAutoLoadTimecode(e.target.checked)}
           />
         </Table.TextCell>
       </Row>
