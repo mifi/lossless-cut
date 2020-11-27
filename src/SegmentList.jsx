@@ -15,6 +15,59 @@ const buttonBaseStyle = {
 
 const neutralButtonColor = 'rgba(255, 255, 255, 0.2)';
 
+
+const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, segOrderDecrease, segOrderIncrease, invertCutSegments, onClick }) => {
+  const { t } = useTranslation();
+
+  const duration = seg.end - seg.start;
+  const durationMs = duration * 1000;
+
+  const isActive = !invertCutSegments && currentSegIndex === index;
+
+  function renderNumber() {
+    if (invertCutSegments) return <FaSave style={{ color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
+
+    const {
+      segBgColor, segBorderColor,
+    } = getSegColors(seg);
+
+    return <b style={{ color: 'white', padding: '0 3px', marginRight: 5, background: segBgColor, border: `1px solid ${isActive ? segBorderColor : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
+  }
+
+  const timeStr = `${formatTimecode(seg.start)} - ${formatTimecode(seg.end)}`;
+
+  return (
+    <motion.div
+      role="button"
+      onClick={() => !invertCutSegments && onClick(index)}
+      positionTransition
+      style={{ originY: 0, margin: '5px 0', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5, position: 'relative' }}
+      initial={{ scaleY: 0 }}
+      animate={{ scaleY: 1 }}
+      exit={{ scaleY: 0 }}
+    >
+      <div style={{ fontSize: 310 / timeStr.length, whiteSpace: 'nowrap', color: 'white', marginBottom: 3 }}>
+        {renderNumber()}
+        <span>{timeStr}</span>
+      </div>
+      <div style={{ fontSize: 12, color: 'white' }}>{seg.name}</div>
+      <div style={{ fontSize: 13 }}>
+        {t('Duration')} {prettyMs(durationMs)}
+      </div>
+      <div style={{ fontSize: 12 }}>
+        ({Math.floor(durationMs)} ms, {getFrameCount(duration)} frames)
+      </div>
+
+      {isActive && (
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} style={{ position: 'absolute', right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}>
+          <FaArrowCircleUp size={20} role="button" onClick={segOrderDecrease} />
+          <FaArrowCircleDown size={20} role="button" onClick={segOrderIncrease} />
+        </motion.div>
+      )}
+    </motion.div>
+  );
+});
+
 const SegmentList = memo(({
   formatTimecode, cutSegments, outSegments, getFrameCount, onSegClick,
   currentSegIndex, invertCutSegments,
@@ -71,58 +124,6 @@ const SegmentList = memo(({
     updateCurrentSegOrder(currentSegIndex + 1);
     e.stopPropagation();
   }
-
-  const renderSegments = () => outSegments.map((seg, index) => {
-    const duration = seg.end - seg.start;
-    const durationMs = duration * 1000;
-
-    const isActive = !invertCutSegments && currentSegIndex === index;
-    const uuid = seg.uuid || `${seg.start}`;
-
-    function renderNumber() {
-      if (invertCutSegments) return <FaSave style={{ color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
-
-      const {
-        segBgColor, segBorderColor,
-      } = getSegColors(seg);
-
-      return <b style={{ color: 'white', padding: '0 3px', marginRight: 5, background: segBgColor, border: `1px solid ${isActive ? segBorderColor : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
-    }
-
-    const timeStr = `${formatTimecode(seg.start)} - ${formatTimecode(seg.end)}`;
-
-    return (
-      <motion.div
-        role="button"
-        onClick={() => !invertCutSegments && onSegClick(index)}
-        key={uuid}
-        positionTransition
-        style={{ originY: 0, margin: '5px 0', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5, position: 'relative' }}
-        initial={{ scaleY: 0 }}
-        animate={{ scaleY: 1 }}
-        exit={{ scaleY: 0 }}
-      >
-        <div style={{ fontSize: 310 / timeStr.length, whiteSpace: 'nowrap', color: 'white', marginBottom: 3 }}>
-          {renderNumber()}
-          <span>{timeStr}</span>
-        </div>
-        <div style={{ fontSize: 12, color: 'white' }}>{seg.name}</div>
-        <div style={{ fontSize: 13 }}>
-          {t('Duration')} {prettyMs(durationMs)}
-        </div>
-        <div style={{ fontSize: 12 }}>
-          ({Math.floor(durationMs)} ms, {getFrameCount(duration)} frames)
-        </div>
-
-        {isActive && (
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} style={{ position: 'absolute', right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}>
-            <FaArrowCircleUp size={20} role="button" onClick={segOrderDecrease} />
-            <FaArrowCircleDown size={20} role="button" onClick={segOrderIncrease} />
-          </motion.div>
-        )}
-      </motion.div>
-    );
-  });
 
   const renderFooter = () => {
     const { segActiveBgColor: currentSegActiveBgColor } = getSegColors(currentCutSeg);
@@ -195,7 +196,10 @@ const SegmentList = memo(({
           {headerText}
         </div>
 
-        {outSegments && renderSegments()}
+        {outSegments && outSegments.map((seg, index) => {
+          const id = seg.uuid || `${seg.start}`;
+          return <Segment key={id} seg={seg} index={index} onClick={onSegClick} getFrameCount={getFrameCount} formatTimecode={formatTimecode} currentSegIndex={currentSegIndex} segOrderDecrease={segOrderDecrease} segOrderIncrease={segOrderIncrease} invertCutSegments={invertCutSegments} />;
+        })}
       </div>
 
       {outSegments && renderFooter()}
