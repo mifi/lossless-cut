@@ -6,6 +6,7 @@ const defaults = {
     customOutDir: undefined,
     keyframeCut: true,
     autoMerge: false,
+    autoDeleteMergedSegments: true,
     timecodeShowFrames: false,
     invertCutSegments: false,
     autoExportExtraStreams: true,

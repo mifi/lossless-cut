@@ -533,13 +533,13 @@ export async function mergeFiles({ paths, outPath, allStreams, outFormat, ffmpeg
   await transferTimestamps(paths[0], outPath);
 }
 
-export async function autoMergeSegments({ customOutDir, sourceFile, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData }) {
+export async function autoMergeSegments({ customOutDir, sourceFile, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, autoDeleteMergedSegments }) {
   const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath: sourceFile });
   const fileName = `cut-merged-${new Date().getTime()}${ext}`;
   const outPath = getOutPath(customOutDir, sourceFile, fileName);
 
   await mergeFiles({ paths: segmentPaths, outPath, outFormat, allStreams: true, ffmpegExperimental, onProgress, preserveMovData });
-  await pMap(segmentPaths, path => fs.unlink(path), { concurrency: 5 });
+  if (autoDeleteMergedSegments) await pMap(segmentPaths, path => fs.unlink(path), { concurrency: 5 });
 }
 
 /**

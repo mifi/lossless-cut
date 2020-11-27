@@ -196,6 +196,8 @@ const App = memo(() => {
   useEffect(() => safeSetConfig('hideNotifications', hideNotifications), [hideNotifications]);
   const [autoLoadTimecode, setAutoLoadTimecode] = useState(configStore.get('autoLoadTimecode'));
   useEffect(() => safeSetConfig('autoLoadTimecode', autoLoadTimecode), [autoLoadTimecode]);
+  const [autoDeleteMergedSegments, setAutoDeleteMergedSegments] = useState(configStore.get('autoDeleteMergedSegments'));
+  useEffect(() => safeSetConfig('autoDeleteMergedSegments', autoDeleteMergedSegments), [autoDeleteMergedSegments]);
 
   useEffect(() => {
     i18n.changeLanguage(language || fallbackLng).catch(console.error);
@@ -1031,6 +1033,7 @@ const App = memo(() => {
           ffmpegExperimental,
           preserveMovData,
           onProgress: setCutProgress,
+          autoDeleteMergedSegments,
         });
       }
 
@@ -1061,7 +1064,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [autoMerge, copyFileStreams, customOutDir, duration, effectiveRotation, exportExtraStreams, ffmpegExperimental, fileFormat, fileFormatData, filePath, handleCutFailed, isCustomFormatSelected, isRotationSet, keyframeCut, mainStreams, nonCopiedExtraStreams, outSegments, outputDir, shortestFlag, working, preserveMovData, avoidNegativeTs, numStreamsToCopy, hideAllNotifications, currentSegIndexSafe]);
+  }, [autoMerge, copyFileStreams, customOutDir, duration, effectiveRotation, exportExtraStreams, ffmpegExperimental, fileFormat, fileFormatData, filePath, handleCutFailed, isCustomFormatSelected, isRotationSet, keyframeCut, mainStreams, nonCopiedExtraStreams, outSegments, outputDir, shortestFlag, working, preserveMovData, avoidNegativeTs, numStreamsToCopy, hideAllNotifications, currentSegIndexSafe, autoDeleteMergedSegments]);
 
   const capture = useCallback(async () => {
     if (!filePath || !isDurationValid(duration)) return;
@@ -1892,12 +1895,14 @@ const App = memo(() => {
       setHideNotifications={setHideNotifications}
       autoLoadTimecode={autoLoadTimecode}
       setAutoLoadTimecode={setAutoLoadTimecode}
+      autoDeleteMergedSegments={autoDeleteMergedSegments}
+      setAutoDeleteMergedSegments={setAutoDeleteMergedSegments}
 
       AutoExportToggler={AutoExportToggler}
       renderCaptureFormatButton={renderCaptureFormatButton}
       onWheelTunerRequested={onWheelTunerRequested}
     />
-  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language, invertTimelineScroll, ffmpegExperimental, setFfmpegExperimental, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode]);
+  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language, invertTimelineScroll, ffmpegExperimental, setFfmpegExperimental, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments]);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);

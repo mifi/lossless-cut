@@ -9,7 +9,7 @@ const Settings = memo(({
   AutoExportToggler, renderCaptureFormatButton, onWheelTunerRequested, language, setLanguage,
   invertTimelineScroll, setInvertTimelineScroll, ffmpegExperimental, setFfmpegExperimental,
   enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction,
-  hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode
+  hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments,
 }) => {
   const { t } = useTranslation();
 
@@ -68,6 +68,17 @@ const Settings = memo(({
             options={[{ label: t('Auto merge'), value: 'automerge' }, { label: t('Separate'), value: 'separate' }]}
             value={autoMerge ? 'automerge' : 'separate'}
             onChange={value => setAutoMerge(value === 'automerge')}
+          />
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Auto delete segment files after merge?')}</KeyCell>
+        <Table.TextCell>
+          <Checkbox
+            label={t('Auto delete segments')}
+            checked={autoDeleteMergedSegments}
+            onChange={e => setAutoDeleteMergedSegments(e.target.checked)}
           />
         </Table.TextCell>
       </Row>
