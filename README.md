@@ -18,7 +18,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Remux into any compatible output format
 - Take full-resolution snapshots from videos in JPEG/PNG format
 - Manual input of cutpoint times
-- Apply a per-file timecode offset
+- Apply a per-file timecode offset (and auto load timecode from file)
 - Change rotation/orientation metadata in videos
 - View technical data about all streams
 - Timeline zoom and frame/keyframe jumping for accurate cutting around keyframes
