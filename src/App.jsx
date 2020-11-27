@@ -42,7 +42,7 @@ import {
   getDefaultOutFormat, getFormatData, mergeFiles as ffmpegMergeFiles, renderThumbnails as ffmpegRenderThumbnails,
   readFrames, renderWaveformPng, html5ifyDummy, cutMultiple, extractStreams, autoMergeSegments, getAllStreams,
   findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
-  fixInvalidDuration,
+  fixInvalidDuration, getDuration,
 } from './ffmpeg';
 import { saveCsv, loadCsv, loadXmeml, loadCue } from './edlStore';
 import {
@@ -1227,6 +1227,8 @@ const App = memo(() => {
         toast.fire({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
       }
 
+      const validDuration = isDurationValid(parseFloat(fd.duration));
+
       if (html5FriendlyPathRequested) {
         setHtml5FriendlyPath(html5FriendlyPathRequested);
         showUnsupportedFileMessage();
@@ -1237,6 +1239,7 @@ const App = memo(() => {
       } else if (
         !(await checkAndSetExistingHtml5FriendlyFile('slowest') || await checkAndSetExistingHtml5FriendlyFile('slow-audio') || await checkAndSetExistingHtml5FriendlyFile('slow') || await checkAndSetExistingHtml5FriendlyFile('fast-audio') || await checkAndSetExistingHtml5FriendlyFile('fast') || await checkAndSetExistingHtml5FriendlyFile('fastest-audio'))
         && !doesPlayerSupportFile(streams)
+        && validDuration
       ) {
         await createDummyVideo(cod, fp);
       }
@@ -1253,7 +1256,7 @@ const App = memo(() => {
         }
       }
 
-      if (!isDurationValid(parseFloat(fd.duration))) toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
+      if (!validDuration) toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
 
       // This needs to be last, because it triggers <video> to load the video
       // If not, onVideoError might be triggered before setWorking() has been cleared.
@@ -1559,18 +1562,25 @@ const App = memo(() => {
 
     console.error(error.message);
 
+    function showToast() {
+      console.log('Trying to create dummy');
+      if (!hideAllNotifications) toast.fire({ icon: 'info', text: 'This file is not natively supported. Creating a preview file...' });
+    }
+
     const MEDIA_ERR_SRC_NOT_SUPPORTED = 4;
     if (error.code === MEDIA_ERR_SRC_NOT_SUPPORTED && !dummyVideoPath) {
-      console.log('MEDIA_ERR_SRC_NOT_SUPPORTED - trying to create dummy');
-
-      if (!hideAllNotifications) toast.fire({ icon: 'info', text: 'This file is not natively supported. Creating a preview file...' });
+      console.error('MEDIA_ERR_SRC_NOT_SUPPORTED');
       if (hasVideo) {
+        if (isDurationValid(await getDuration(filePath))) {
+          showToast();
         await tryCreateDummyVideo();
+        }
       } else if (hasAudio) {
+        showToast();
         await html5ifyAndLoad('fastest-audio');
       }
     }
-  }, [tryCreateDummyVideo, fileUri, dummyVideoPath, hasVideo, hasAudio, html5ifyAndLoad, hideAllNotifications]);
+  }, [tryCreateDummyVideo, fileUri, dummyVideoPath, hasVideo, hasAudio, html5ifyAndLoad, hideAllNotifications, filePath]);
 
   useEffect(() => {
     function fileOpened(event, filePaths) {
