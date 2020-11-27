@@ -414,12 +414,9 @@ const App = memo(() => {
 
   const updateCurrentSegOrder = useCallback((newOrder) => {
     if (newOrder > cutSegments.length - 1 || newOrder < 0) return;
-    const segAtNewIndex = cutSegments[newOrder];
-    const segAtOldIndex = cutSegments[currentSegIndexSafe];
     const newSegments = [...cutSegments];
-    // Swap indexes:
-    newSegments[currentSegIndexSafe] = segAtNewIndex;
-    newSegments[newOrder] = segAtOldIndex;
+    const removedSeg = newSegments.splice(currentSegIndexSafe, 1)[0];
+    newSegments.splice(newOrder, 0, removedSeg);
     setCutSegments(newSegments);
     setCurrentSegIndex(newOrder);
   }, [currentSegIndexSafe, cutSegments, setCutSegments]);
