@@ -10,6 +10,7 @@ import KeyframeCutButton from './components/KeyframeCutButton';
 import ExportButton from './components/ExportButton';
 import MergeExportButton from './components/MergeExportButton';
 import PreserveMovDataButton from './components/PreserveMovDataButton';
+import ToggleExportConfirm from './components/ToggleExportConfirm';
 
 import { withBlur, toast } from './util';
 import { primaryColor } from './colors';
@@ -39,6 +40,7 @@ const ExportConfirm = memo(({
   autoMerge, areWeCutting, outSegments, visible, onClosePress, onExportConfirm, keyframeCut, toggleKeyframeCut,
   toggleAutoMerge, renderOutFmt, preserveMovData, togglePreserveMovData, avoidNegativeTs, setAvoidNegativeTs,
   changeOutDir, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, currentSegIndex, invertCutSegments,
+  exportConfirmEnabled, toggleExportConfirmEnabled,
 }) => {
   const { t } = useTranslation();
 
@@ -131,15 +133,18 @@ const ExportConfirm = memo(({
 
           <div style={{ zIndex: 11, position: 'fixed', right: 0, bottom: 0, display: 'flex', alignItems: 'center', margin: 5 }}>
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, translateX: 50 }}
+              animate={{ opacity: 1, translateX: 0 }}
+              exit={{ opacity: 0, translateX: 50 }}
               transition={{ duration: 0.4, easings: ['easeOut'] }}
-              style={{ display: 'flex', alignItems: 'center' }}
+              style={{ display: 'flex', alignItems: 'flex-end' }}
             >
               <Button iconBefore="arrow-left" height={24} onClick={onClosePress} style={{ marginRight: 10 }}>
                 {i18n.t('Back')}
               </Button>
+
+              <ToggleExportConfirm exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />
+              <div style={{ fontSize: 13, marginLeft: 3, marginRight: 7, maxWidth: 120, lineHeight: '100%', color: exportConfirmEnabled ? 'white' : 'rgba(255,255,255,0.3)', cursor: 'pointer' }} role="button" onClick={toggleExportConfirmEnabled}>{t('Show summary before exporting?')}</div>
 
               {outSegments.length > 1 && !invertCutSegments && (
                 <div role="button" title={t('Export only the currently selected segment ({{segNum}})', { segNum: currentSegIndex + 1 })} onClick={() => onExportConfirm({ exportSingle: true })} style={{ cursor: 'pointer', background: primaryColor, borderRadius: 5, padding: '3px 10px', fontSize: 13, marginRight: 10 }}>

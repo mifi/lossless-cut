@@ -10,6 +10,7 @@ const defaults = {
     timecodeShowFrames: false,
     invertCutSegments: false,
     autoExportExtraStreams: true,
+    exportConfirmEnabled: true,
     askBeforeClose: false,
     enableAskForImportChapters: true,
     enableAskForFileOpenAction: true,

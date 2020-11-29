@@ -198,6 +198,8 @@ const App = memo(() => {
   useEffect(() => safeSetConfig('autoLoadTimecode', autoLoadTimecode), [autoLoadTimecode]);
   const [autoDeleteMergedSegments, setAutoDeleteMergedSegments] = useState(configStore.get('autoDeleteMergedSegments'));
   useEffect(() => safeSetConfig('autoDeleteMergedSegments', autoDeleteMergedSegments), [autoDeleteMergedSegments]);
+  const [exportConfirmEnabled, setExportConfirmEnabled] = useState(configStore.get('exportConfirmEnabled'));
+  useEffect(() => safeSetConfig('exportConfirmEnabled', exportConfirmEnabled), [exportConfirmEnabled]);
 
   useEffect(() => {
     i18n.changeLanguage(language || fallbackLng).catch(console.error);
@@ -231,6 +233,8 @@ const App = memo(() => {
       setWaveformEnabled(false);
     }
   }
+
+  const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => !v), []);
 
   const toggleKeyframesEnabled = useCallback(() => {
     setKeyframesEnabled((old) => {
@@ -968,22 +972,6 @@ const App = memo(() => {
     }
   }, [openSendReportDialogWithState, detectedFileFormat]);
 
-  const onExportPress = useCallback(async () => {
-    if (working || !filePath) return;
-
-    if (haveInvalidSegs) {
-      errorToast(i18n.t('Start time must be before end time'));
-      return;
-    }
-
-    if (!outSegments || outSegments.length < 1) {
-      errorToast(i18n.t('No segments to export'));
-      return;
-    }
-
-    setExportConfirmVisible(true);
-  }, [working, filePath, haveInvalidSegs, outSegments]);
-
   const closeExportConfirm = useCallback(() => setExportConfirmVisible(false), []);
 
   const onExportConfirm = useCallback(async ({ exportSingle } = {}) => {
@@ -1065,6 +1053,23 @@ const App = memo(() => {
       setCutProgress();
     }
   }, [autoMerge, copyFileStreams, customOutDir, duration, effectiveRotation, exportExtraStreams, ffmpegExperimental, fileFormat, fileFormatData, filePath, handleCutFailed, isCustomFormatSelected, isRotationSet, keyframeCut, mainStreams, nonCopiedExtraStreams, outSegments, outputDir, shortestFlag, working, preserveMovData, avoidNegativeTs, numStreamsToCopy, hideAllNotifications, currentSegIndexSafe, autoDeleteMergedSegments]);
+
+  const onExportPress = useCallback(async () => {
+    if (working || !filePath) return;
+
+    if (haveInvalidSegs) {
+      errorToast(i18n.t('Start time must be before end time'));
+      return;
+    }
+
+    if (!outSegments || outSegments.length < 1) {
+      errorToast(i18n.t('No segments to export'));
+      return;
+    }
+
+    if (exportConfirmEnabled) setExportConfirmVisible(true);
+    else await onExportConfirm();
+  }, [working, filePath, haveInvalidSegs, outSegments, exportConfirmEnabled, onExportConfirm]);
 
   const capture = useCallback(async () => {
     if (!filePath || !isDurationValid(duration)) return;
@@ -2213,11 +2218,13 @@ const App = memo(() => {
             capture={capture}
             onExportPress={onExportPress}
             outSegments={outSegments}
+            exportConfirmEnabled={exportConfirmEnabled}
+            toggleExportConfirmEnabled={toggleExportConfirmEnabled}
           />
         </div>
       </motion.div>
 
-      <ExportConfirm autoMerge={autoMerge} toggleAutoMerge={toggleAutoMerge} areWeCutting={areWeCutting} outSegments={outSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} currentSegIndex={currentSegIndexSafe} invertCutSegments={invertCutSegments} />
+      <ExportConfirm autoMerge={autoMerge} toggleAutoMerge={toggleAutoMerge} areWeCutting={areWeCutting} outSegments={outSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} currentSegIndex={currentSegIndexSafe} invertCutSegments={invertCutSegments} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />
 
       <HelpSheet
         visible={helpVisible}

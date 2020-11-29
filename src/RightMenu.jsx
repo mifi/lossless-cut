@@ -4,12 +4,15 @@ import { FaTrashAlt } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 
+import { primaryTextColor } from './colors';
+
 import ExportButton from './components/ExportButton';
+import ToggleExportConfirm from './components/ToggleExportConfirm';
 
 
 const RightMenu = memo(({
   isRotationSet, rotation, areWeCutting, increaseRotation, deleteSource, renderCaptureFormatButton,
-  capture, onExportPress, outSegments, hasVideo, autoMerge,
+  capture, onExportPress, outSegments, hasVideo, autoMerge, exportConfirmEnabled, toggleExportConfirmEnabled,
 }) => {
   const rotationStr = `${rotation}°`;
 
@@ -22,7 +25,7 @@ const RightMenu = memo(({
           <span style={{ width: 40, textAlign: 'right', display: 'inline-block' }}>{isRotationSet && rotationStr}</span>
           <MdRotate90DegreesCcw
             size={26}
-            style={{ margin: '0 5px', verticalAlign: 'middle' }}
+            style={{ margin: '0 5px', verticalAlign: 'middle', color: isRotationSet ? primaryTextColor : undefined }}
             title={`${t('Set output rotation. Current: ')} ${isRotationSet ? rotationStr : t('Don\'t modify')}`}
             onClick={increaseRotation}
             role="button"
@@ -50,6 +53,8 @@ const RightMenu = memo(({
           />
         </>
       )}
+
+      <ToggleExportConfirm style={{ marginRight: 5 }} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />
 
       <ExportButton outSegments={outSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={onExportPress} />
     </div>
