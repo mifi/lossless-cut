@@ -56,7 +56,7 @@ const HelpSheet = memo(({ visible, onTogglePress, ffmpegCommandLog, currentCutSe
         <div><kbd>→</kbd> {t('Seek forward 1 sec')}</div>
         <div><kbd>CTRL</kbd> / <kbd>CMD</kbd> + <kbd>←</kbd> {t('Seek backward 1% of timeline at current zoom')}</div>
         <div><kbd>CTRL</kbd> / <kbd>CMD</kbd> + <kbd>→</kbd> {t('Seek forward 1% of timeline at current zoom')}</div>
-        <div style={{ lineHeight: 1.7 }}><SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} style={{ verticalAlign: 'middle' }} />, <kbd>SHIFT</kbd> + <kbd>←</kbd> {t('Jump to cut end')}</div>
+        <div style={{ lineHeight: 1.7 }}><SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} style={{ verticalAlign: 'middle' }} />, <kbd>SHIFT</kbd> + <kbd>←</kbd> {t('Jump to cut start')}</div>
         <div style={{ lineHeight: 1.7 }}><SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} style={{ verticalAlign: 'middle' }} />, <kbd>SHIFT</kbd> + <kbd>→</kbd> {t('Jump to cut end')}</div>
 
         <h2>{t('Segments and cut points')}</h2>
