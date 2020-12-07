@@ -8,7 +8,6 @@ import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
 import filePathToUrl from 'file-url';
-import hotkeys from 'hotkeys-js';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import withReactContent from 'sweetalert2-react-content';
@@ -1319,68 +1318,49 @@ const App = memo(() => {
     const zoomIn = () => { zoomRel(1); return false; };
     const zoomOut = () => { zoomRel(-1); return false; };
 
-    function onKeyPress(e) {
-      // https://github.com/jaywcjlove/hotkeys/issues/104
-      if (e.key === '+') addCutSegment();
+    function onKeyDown(e) {
+      // console.log(e.key);
+      switch (e.key) {
+        case '+': return addCutSegment();
+        case ' ': return togglePlayReset();
+        case 'k': case 'K': return togglePlayNoReset();
+        case 'j': case 'J': return reducePlaybackRate();
+        case 'l': case 'L': return increasePlaybackRate();
+        case 'ArrowLeft': {
+          if (e.ctrlKey || e.metaKey) return seekBackwardsPercent();
+          if (e.altKey) return seekBackwardsKeyframe();
+          if (e.shiftKey) return jumpCutStart();
+          return seekBackwards();
+        }
+        case 'ArrowRight': {
+          if (e.ctrlKey || e.metaKey) return seekForwardsPercent();
+          if (e.altKey) return seekForwardsKeyframe();
+          if (e.shiftKey) return jumpCutEnd();
+          return seekForwards();
+        }
+        case 'ArrowUp': {
+          if (e.ctrlKey || e.metaKey) return zoomIn();
+          return jumpPrevSegment();
+        }
+        case 'ArrowDown': {
+          if (e.ctrlKey || e.metaKey) return zoomOut();
+          return jumpNextSegment();
+        }
+        case 'z': case 'Z': return toggleComfortZoom();
+        case ',': return seekBackwardsShort();
+        case '.': return seekForwardsShort();
+        case 'c': case 'C': return capture();
+        case 'i': case 'I': return setCutStart();
+        case 'o': case 'O': return setCutEnd();
+        case 'Backspace': return removeCutSegment();
+        case 'd': case 'D': return deleteSource();
+        case 'b': case 'B': return splitCurrentSegment();
+        case 'r': case 'R': return increaseRotation();
+        default: return undefined;
+      }
     }
-
-    hotkeys('*', onKeyPress);
-    hotkeys('space', togglePlayReset);
-    hotkeys('k', togglePlayNoReset);
-    hotkeys('j', reducePlaybackRate);
-    hotkeys('l', increasePlaybackRate);
-    hotkeys('left', seekBackwards);
-    hotkeys('right', seekForwards);
-    hotkeys('ctrl+left, command+left', seekBackwardsPercent);
-    hotkeys('ctrl+right, command+right', seekForwardsPercent);
-    hotkeys('alt+left', seekBackwardsKeyframe);
-    hotkeys('alt+right', seekForwardsKeyframe);
-    hotkeys('shift+left', jumpCutStart);
-    hotkeys('shift+right', jumpCutEnd);
-  hotkeys('up', jumpPrevSegment);
-    hotkeys('down', jumpNextSegment);
-    hotkeys('ctrl+up, command+up', zoomIn);
-    hotkeys('ctrl+down, command+down', zoomOut);
-    hotkeys('z', toggleComfortZoom);
-    hotkeys(',', seekBackwardsShort);
-    hotkeys('.', seekForwardsShort);
-    hotkeys('c', capture);
-    hotkeys('i', setCutStart);
-    hotkeys('o', setCutEnd);
-    hotkeys('backspace', removeCutSegment);
-    hotkeys('d', deleteSource);
-    hotkeys('b', splitCurrentSegment);
-    hotkeys('r', increaseRotation);
-
-    return () => {
-      hotkeys.unbind('*', onKeyPress);
-      hotkeys.unbind('space', togglePlayReset);
-      hotkeys.unbind('k', togglePlayNoReset);
-      hotkeys.unbind('j', reducePlaybackRate);
-      hotkeys.unbind('l', increasePlaybackRate);
-      hotkeys.unbind('left', seekBackwards);
-      hotkeys.unbind('right', seekForwards);
-      hotkeys.unbind('ctrl+left, command+left', seekBackwardsPercent);
-      hotkeys.unbind('ctrl+right, command+right', seekForwardsPercent);
-      hotkeys.unbind('alt+left', seekBackwardsKeyframe);
-      hotkeys.unbind('alt+right', seekForwardsKeyframe);
-      hotkeys.unbind('shift+left', jumpCutStart);
-      hotkeys.unbind('shift+right', jumpCutEnd);
-      hotkeys.unbind('up', jumpPrevSegment);
-      hotkeys.unbind('down', jumpNextSegment);
-      hotkeys.unbind('ctrl+up, command+up', zoomIn);
-      hotkeys.unbind('ctrl+down, command+down', zoomOut);
-      hotkeys.unbind('z', toggleComfortZoom);
-      hotkeys.unbind(',', seekBackwardsShort);
-      hotkeys.unbind('.', seekForwardsShort);
-      hotkeys.unbind('c', capture);
-      hotkeys.unbind('i', setCutStart);
-      hotkeys.unbind('o', setCutEnd);
-      hotkeys.unbind('backspace', removeCutSegment);
-      hotkeys.unbind('d', deleteSource);
-      hotkeys.unbind('b', splitCurrentSegment);
-      hotkeys.unbind('r', increaseRotation);
-    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
   }, [
     addCutSegment, capture, changePlaybackRate, togglePlay, removeCutSegment,
     setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, deleteSource, jumpSeg,
@@ -1389,16 +1369,14 @@ const App = memo(() => {
   ]);
 
   useEffect(() => {
-    function onExportPress2() {
+    function onKeyDown(e) {
+      if (!['e', 'E'].includes(e.key)) return;
       if (exportConfirmVisible) onExportConfirm();
       else onExportPress();
     }
 
-    hotkeys('e', onExportPress2);
-
-    return () => {
-      hotkeys.unbind('e', onExportPress2);
-    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
   }, [exportConfirmVisible, onExportConfirm, onExportPress]);
 
   useEffect(() => {
@@ -1407,12 +1385,17 @@ const App = memo(() => {
       setHelpVisible(false);
       setSettingsVisible(false);
     }
-    hotkeys('esc', onEscPress);
-    hotkeys('h', toggleHelp);
-    return () => {
-      hotkeys.unbind('h', toggleHelp);
-      hotkeys.unbind('esc', onEscPress);
-    };
+
+    function onKeyDown(e) {
+      switch (e.key) {
+        case 'h': case 'H': return toggleHelp();
+        case 'Escape': return onEscPress();
+        default: return undefined;
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
   }, [closeExportConfirm, toggleHelp]);
 
   useEffect(() => {
