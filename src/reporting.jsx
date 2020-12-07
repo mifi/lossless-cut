@@ -3,9 +3,10 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import i18n from 'i18next';
 
-import { isStoreBuild } from './util';
+import { isStoreBuild, isMasBuild, isWindowsStoreBuild } from './util';
 
 const electron = window.require('electron'); // eslint-disable-line
+const os = window.require('os');
 
 
 const ReactSwal = withReactContent(Swal);
@@ -15,6 +16,9 @@ export function openSendReportDialog(err, state) {
   const reportInstructions = isStoreBuild
     ? <p>Please send an email to <span style={{ fontWeight: 'bold' }} role="button" onClick={() => electron.shell.openExternal('mailto:losslesscut@yankee.no')}>losslesscut@yankee.no</span> where you describe what you were doing.</p>
     : <p>Please create an issue at <span style={{ fontWeight: 'bold' }} role="button" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/issues')}>https://github.com/mifi/lossless-cut/issues</span> where you describe what you were doing.</p>;
+
+  const platform = os.platform();
+  const version = electron.remote.app.getVersion();
 
   ReactSwal.fire({
     showCloseButton: true,
@@ -39,6 +43,11 @@ export function openSendReportDialog(err, state) {
             },
 
             state,
+
+            platform,
+            version,
+            isWindowsStoreBuild,
+            isMasBuild,
           }, null, 2)}`}
         </div>
       </div>
