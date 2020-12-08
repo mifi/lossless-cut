@@ -22,12 +22,13 @@ const sheetStyle = {
   top: 0,
   bottom: 0,
   zIndex: 10,
-  overflowY: 'scroll',
   background: 'rgba(105, 105, 105, 0.7)',
   backdropFilter: 'blur(10px)',
+  overflowY: 'scroll',
+  display: 'flex',
 };
 
-const boxStyle = { margin: 15, background: 'rgba(25, 25, 25, 0.6)', borderRadius: 10, padding: '10px 20px' };
+const boxStyle = { margin: '15px 15px 50px 15px', background: 'rgba(25, 25, 25, 0.6)', borderRadius: 10, padding: '10px 20px' };
 
 const outDirStyle = { background: 'rgb(193, 98, 0)', borderRadius: '.4em', padding: '0 .3em', wordBreak: 'break-all', cursor: 'pointer' };
 
@@ -73,6 +74,7 @@ const ExportConfirm = memo(({
     toast.fire({ icon: 'info', timer: 10000, text: `${avoidNegativeTs}: ${texts[avoidNegativeTs]}` });
   }
 
+  // https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container
   return (
     <AnimatePresence>
       {visible && (
@@ -84,7 +86,7 @@ const ExportConfirm = memo(({
             style={sheetStyle}
             transition={{ duration: 0.3, easings: ['easeOut'] }}
           >
-            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ margin: 'auto' }}>
               <div style={boxStyle}>
                 <h2 style={{ marginTop: 0 }}>{t('Export summary')}</h2>
                 <ul>
@@ -167,7 +169,7 @@ const ExportConfirm = memo(({
               exit={{ scale: 0.5, opacity: 0 }}
               transition={{ duration: 0.4, easings: ['easeOut'] }}
             >
-              <ExportButton outSegments={outSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={() => onExportConfirm()} size={1.8} />
+              <ExportButton outSegments={outSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={() => onExportConfirm()} size={1.7} />
             </motion.div>
           </div>
         </>
