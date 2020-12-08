@@ -54,6 +54,22 @@ export function parseCuesheet(cuesheet) {
   });
 }
 
+
+export function parsePbf(text) {
+  const chapters = text.split('\n').map((line) => {
+    const match = line.match(/^[0-9]+=([0-9]+)\*([^*]+)*/);
+    if (match) return { time: parseInt(match[1], 10) / 1000, name: match[2] };
+    return undefined;
+  }).filter((it) => it);
+
+  const out = [];
+  chapters.forEach((chapter, i) => {
+    const nextChapter = chapters[i + 1];
+    out.push({ start: chapter.time, end: nextChapter && nextChapter.time, name: chapter.name });
+  });
+  return out;
+}
+
 // https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/FinalCutPro_XML/VersionsoftheInterchangeFormat/VersionsoftheInterchangeFormat.html
 export function parseXmeml(xmlStr) {
   const xml = fastXmlParser.parse(xmlStr);

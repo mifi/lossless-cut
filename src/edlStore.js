@@ -1,7 +1,7 @@
 import csvStringify from 'csv-stringify';
 import pify from 'pify';
 
-import { parseCuesheet, parseXmeml, parseCsv } from './edlFormats';
+import { parseCuesheet, parseXmeml, parseCsv, parsePbf } from './edlFormats';
 
 const fs = window.require('fs-extra');
 const cueParser = window.require('cue-parser');
@@ -14,6 +14,10 @@ export async function loadCsv(path) {
 
 export async function loadXmeml(path) {
   return parseXmeml(await fs.readFile(path, 'utf-8'));
+}
+
+export async function loadPbf(path) {
+  return parsePbf(await fs.readFile(path, 'utf-8'));
 }
 
 export async function loadCue(path) {

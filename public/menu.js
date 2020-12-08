@@ -56,6 +56,12 @@ module.exports = (app, mainWindow, newVersion) => {
                 mainWindow.webContents.send('importEdlFile', 'cue');
               },
             },
+            {
+              label: 'PotPlayer Bookmarks (.pbf)',
+              click() {
+                mainWindow.webContents.send('importEdlFile', 'pbf');
+              },
+            },
           ],
         },
         {

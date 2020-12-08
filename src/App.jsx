@@ -43,7 +43,7 @@ import {
   findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
   fixInvalidDuration, getDuration, getTimecodeFromStreams,
 } from './ffmpeg';
-import { saveCsv, loadCsv, loadXmeml, loadCue } from './edlStore';
+import { saveCsv, loadCsv, loadXmeml, loadCue, loadPbf } from './edlStore';
 import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
@@ -1156,6 +1156,7 @@ const App = memo(() => {
       if (type === 'csv') edl = await loadCsv(path);
       else if (type === 'xmeml') edl = await loadXmeml(path);
       else if (type === 'cue') edl = await loadCue(path);
+      else if (type === 'pbf') edl = await loadPbf(path);
 
       loadCutSegments(edl);
     } catch (err) {
@@ -1645,6 +1646,7 @@ const App = memo(() => {
       if (type === 'csv') filters = [{ name: i18n.t('CSV files'), extensions: ['csv'] }];
       else if (type === 'xmeml') filters = [{ name: i18n.t('XML files'), extensions: ['xml'] }];
       else if (type === 'cue') filters = [{ name: i18n.t('CUE files'), extensions: ['cue'] }];
+      else if (type === 'pbf') filters = [{ name: i18n.t('PBF files'), extensions: ['pbf'] }];
 
       const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters });
       if (canceled || filePaths.length < 1) return;
