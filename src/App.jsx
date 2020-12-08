@@ -199,6 +199,8 @@ const App = memo(() => {
   useEffect(() => safeSetConfig('autoDeleteMergedSegments', autoDeleteMergedSegments), [autoDeleteMergedSegments]);
   const [exportConfirmEnabled, setExportConfirmEnabled] = useState(configStore.get('exportConfirmEnabled'));
   useEffect(() => safeSetConfig('exportConfirmEnabled', exportConfirmEnabled), [exportConfirmEnabled]);
+  const [segmentsToChapters, setSegmentsToChapters] = useState(configStore.get('segmentsToChapters'));
+  useEffect(() => safeSetConfig('segmentsToChapters', segmentsToChapters), [segmentsToChapters]);
 
   useEffect(() => {
     i18n.changeLanguage(language || fallbackLng).catch(console.error);
@@ -234,6 +236,8 @@ const App = memo(() => {
   }
 
   const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => !v), []);
+
+  const toggleSegmentsToChapters = useCallback(() => setSegmentsToChapters((v) => !v), []);
 
   const toggleKeyframesEnabled = useCallback(() => {
     setKeyframesEnabled((old) => {
@@ -1011,6 +1015,8 @@ const App = memo(() => {
         setCutProgress(0);
         setWorking(i18n.t('Merging'));
 
+        const chapterNames = segmentsToChapters && !invertCutSegments && outSegments ? outSegments.map((s) => s.name) : undefined;
+
         await autoMergeSegments({
           customOutDir,
           sourceFile: filePath,
@@ -1020,6 +1026,7 @@ const App = memo(() => {
           ffmpegExperimental,
           preserveMovData,
           onProgress: setCutProgress,
+          chapterNames,
           autoDeleteMergedSegments,
         });
       }
@@ -1051,7 +1058,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [autoMerge, copyFileStreams, customOutDir, duration, effectiveRotation, exportExtraStreams, ffmpegExperimental, fileFormat, fileFormatData, filePath, handleCutFailed, isCustomFormatSelected, isRotationSet, keyframeCut, mainStreams, nonCopiedExtraStreams, outSegments, outputDir, shortestFlag, working, preserveMovData, avoidNegativeTs, numStreamsToCopy, hideAllNotifications, currentSegIndexSafe, autoDeleteMergedSegments]);
+  }, [autoMerge, copyFileStreams, customOutDir, duration, effectiveRotation, exportExtraStreams, ffmpegExperimental, fileFormat, fileFormatData, filePath, handleCutFailed, isCustomFormatSelected, isRotationSet, keyframeCut, mainStreams, nonCopiedExtraStreams, outSegments, outputDir, shortestFlag, working, preserveMovData, avoidNegativeTs, numStreamsToCopy, hideAllNotifications, currentSegIndexSafe, invertCutSegments, autoDeleteMergedSegments, segmentsToChapters]);
 
   const onExportPress = useCallback(async () => {
     if (working || !filePath) return;
@@ -2209,7 +2216,7 @@ const App = memo(() => {
         </div>
       </motion.div>
 
-      <ExportConfirm autoMerge={autoMerge} toggleAutoMerge={toggleAutoMerge} areWeCutting={areWeCutting} outSegments={outSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} currentSegIndex={currentSegIndexSafe} invertCutSegments={invertCutSegments} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />
+      <ExportConfirm autoMerge={autoMerge} toggleAutoMerge={toggleAutoMerge} areWeCutting={areWeCutting} outSegments={outSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} currentSegIndex={currentSegIndexSafe} invertCutSegments={invertCutSegments} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} segmentsToChapters={segmentsToChapters} toggleSegmentsToChapters={toggleSegmentsToChapters} />
 
       <HelpSheet
         visible={helpVisible}

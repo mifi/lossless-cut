@@ -40,7 +40,7 @@ const ExportConfirm = memo(({
   autoMerge, areWeCutting, outSegments, visible, onClosePress, onExportConfirm, keyframeCut, toggleKeyframeCut,
   toggleAutoMerge, renderOutFmt, preserveMovData, togglePreserveMovData, avoidNegativeTs, setAvoidNegativeTs,
   changeOutDir, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, currentSegIndex, invertCutSegments,
-  exportConfirmEnabled, toggleExportConfirmEnabled,
+  exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters,
 }) => {
   const { t } = useTranslation();
 
@@ -103,7 +103,13 @@ const ExportConfirm = memo(({
                 </ul>
 
                 <h3>{t('Advanced options')}</h3>
+
+                <ul>
+                  {autoMerge && <li>{t('Create chapters from segments?')} <Button height={20} onClick={toggleSegmentsToChapters}>{segmentsToChapters ? t('Yes') : t('No')}</Button></li>}
+                </ul>
+
                 <p>{t('Depending on your specific file, you may have to try different options for best results.')}</p>
+
                 <ul>
                   <li>
                     {t('Cut mode:')} <KeyframeCutButton keyframeCut={keyframeCut} onClick={withBlur(() => toggleKeyframeCut(false))} />

@@ -23,6 +23,7 @@ const defaults = {
     avoidNegativeTs: 'make_zero',
     hideNotifications: undefined,
     autoLoadTimecode: false,
+    segmentsToChapters: false,
   },
 };
 

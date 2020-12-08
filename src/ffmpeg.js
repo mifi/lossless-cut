@@ -7,7 +7,7 @@ import moment from 'moment';
 import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
-import { formatDuration, getOutPath, transferTimestamps, filenamify, isDurationValid } from './util';
+import { formatDuration, getOutPath, getOutDir, transferTimestamps, filenamify, isDurationValid } from './util';
 
 const execa = window.require('execa');
 const { join, extname } = window.require('path');
@@ -482,64 +482,108 @@ export async function html5ifyDummy(filePath, outPath, onProgress) {
   await transferTimestamps(filePath, outPath);
 }
 
-export async function mergeFiles({ paths, outPath, allStreams, outFormat, ffmpegExperimental, onProgress = () => {}, preserveMovData }) {
+async function writeChaptersFfmetadata(outDir, chapters) {
+  if (!chapters) return undefined;
+
+  const path = join(outDir, `ffmetadata-${new Date().getTime()}.txt`);
+
+  const ffmetadata = chapters.map(({ start, end, name }, i) => {
+    const nameOut = name || `Chapter ${i + 1}`;
+    return `[CHAPTER]\nTIMEBASE=1/1000\nSTART=${Math.floor(start * 1000)}\nEND=${Math.floor(end * 1000)}\ntitle=${nameOut}`;
+  }).join('\n\n');
+  // console.log(ffmetadata);
+  await fs.writeFile(path, ffmetadata);
+  return path;
+}
+
+export async function mergeFiles({ paths, outDir, outPath, allStreams, outFormat, ffmpegExperimental, onProgress = () => {}, preserveMovData, chapters }) {
   console.log('Merging files', { paths }, 'to', outPath);
 
   const durations = await pMap(paths, getDuration, { concurrency: 1 });
   const totalDuration = sum(durations);
 
-  // Keep this similar to cut()
-  const ffmpegArgs = [
-    '-hide_banner',
-    // No progress if we set loglevel warning :(
-    // '-loglevel', 'warning',
+  const ffmetadataPath = await writeChaptersFfmetadata(outDir, chapters);
 
-    // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
-    '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe', '-i', '-',
+  try {
+    // Keep this similar to cut()
+    const ffmpegArgs = [
+      '-hide_banner',
+      // No progress if we set loglevel warning :(
+      // '-loglevel', 'warning',
 
-    '-c', 'copy',
+      // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
+      '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe', '-i', '-',
 
-    ...(allStreams ? ['-map', '0'] : []),
-    '-map_metadata', '0',
-    // https://video.stackexchange.com/questions/23741/how-to-prevent-ffmpeg-from-dropping-metadata
-    ...getMovFlags(outFormat, preserveMovData),
+      ...(ffmetadataPath ? ['-f', 'ffmetadata', '-i', ffmetadataPath] : []),
 
-    // See https://github.com/mifi/lossless-cut/issues/170
-    '-ignore_unknown',
+      '-c', 'copy',
 
-    // https://superuser.com/questions/543589/information-about-ffmpeg-command-line-options
-    ...(ffmpegExperimental ? ['-strict', 'experimental'] : []),
+      ...(allStreams ? ['-map', '0'] : []),
 
-    ...(outFormat ? ['-f', outFormat] : []),
-    '-y', outPath,
-  ];
+      '-map_metadata', '0',
 
-  console.log('ffmpeg', ffmpegArgs.join(' '));
+      // https://video.stackexchange.com/questions/23741/how-to-prevent-ffmpeg-from-dropping-metadata
+      ...getMovFlags(outFormat, preserveMovData),
 
-  // https://superuser.com/questions/787064/filename-quoting-in-ffmpeg-concat
-  const concatTxt = paths.map(file => `file '${join(file).replace(/'/g, "'\\''")}'`).join('\n');
+      // See https://github.com/mifi/lossless-cut/issues/170
+      '-ignore_unknown',
 
-  console.log(concatTxt);
+      // https://superuser.com/questions/543589/information-about-ffmpeg-command-line-options
+      ...(ffmpegExperimental ? ['-strict', 'experimental'] : []),
 
-  const ffmpegPath = getFfmpegPath();
-  const process = execa(ffmpegPath, ffmpegArgs);
+      ...(outFormat ? ['-f', outFormat] : []),
+      '-y', outPath,
+    ];
 
-  handleProgress(process, totalDuration, onProgress);
+    console.log('ffmpeg', ffmpegArgs.join(' '));
 
-  stringToStream(concatTxt).pipe(process.stdin);
+    // https://superuser.com/questions/787064/filename-quoting-in-ffmpeg-concat
+    const concatTxt = paths.map(file => `file '${join(file).replace(/'/g, "'\\''")}'`).join('\n');
 
-  const { stdout } = await process;
-  console.log(stdout);
+    console.log(concatTxt);
+
+    const ffmpegPath = getFfmpegPath();
+    const process = execa(ffmpegPath, ffmpegArgs);
+
+    handleProgress(process, totalDuration, onProgress);
+
+    stringToStream(concatTxt).pipe(process.stdin);
+
+    const { stdout } = await process;
+    console.log(stdout);
+  } finally {
+    if (ffmetadataPath) await fs.unlink(ffmetadataPath).catch((err) => console.error('Failed to delete', ffmetadataPath, err));
+  }
 
   await transferTimestamps(paths[0], outPath);
 }
 
-export async function autoMergeSegments({ customOutDir, sourceFile, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, autoDeleteMergedSegments }) {
+async function createChaptersFromSegments({ segmentPaths, chapterNames }) {
+  if (chapterNames) {
+    try {
+      const durations = await pMap(segmentPaths, (segmentPath) => getDuration(segmentPath), { concurrency: 3 });
+      let timeAt = 0;
+      return durations.map((duration, i) => {
+        const ret = { start: timeAt, end: timeAt + duration, name: chapterNames[i] };
+        timeAt += duration;
+        return ret;
+      });
+    } catch (err) {
+      console.error('Failed to create chapters from segments', err);
+    }
+  }
+  return undefined;
+}
+
+export async function autoMergeSegments({ customOutDir, sourceFile, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, autoDeleteMergedSegments, chapterNames }) {
   const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath: sourceFile });
   const fileName = `cut-merged-${new Date().getTime()}${ext}`;
   const outPath = getOutPath(customOutDir, sourceFile, fileName);
+  const outDir = getOutDir(customOutDir, sourceFile);
 
-  await mergeFiles({ paths: segmentPaths, outPath, outFormat, allStreams: true, ffmpegExperimental, onProgress, preserveMovData });
+  const chapters = await createChaptersFromSegments({ segmentPaths, chapterNames });
+
+  await mergeFiles({ paths: segmentPaths, outDir, outPath, outFormat, allStreams: true, ffmpegExperimental, onProgress, preserveMovData, chapters });
   if (autoDeleteMergedSegments) await pMap(segmentPaths, path => fs.unlink(path), { concurrency: 5 });
 }
 
