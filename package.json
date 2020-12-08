@@ -94,7 +94,6 @@
     "file-type": "^12.4.0",
     "fs-extra": "^8.1.0",
     "github-api": "^3.2.2",
-    "hotkeys-js": "^3.8.1",
     "i18next-electron-language-detector": "^0.0.10",
     "i18next-fs-backend": "^1.0.1",
     "json5": "^2.1.3",
