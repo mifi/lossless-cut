@@ -349,8 +349,8 @@ export async function tryReadChaptersToEdl(filePath) {
   try {
     const { stdout } = await runFfprobe(['-i', filePath, '-show_chapters', '-print_format', 'json']);
     return JSON.parse(stdout).chapters.map((chapter) => {
-      const start = parseInt(chapter.start_time, 10);
-      const end = parseInt(chapter.end_time, 10);
+      const start = parseFloat(chapter.start_time);
+      const end = parseFloat(chapter.end_time);
       if (Number.isNaN(start) || Number.isNaN(end)) return undefined;
 
       const name = chapter.tags && typeof chapter.tags.title === 'string' ? chapter.tags.title : undefined;
