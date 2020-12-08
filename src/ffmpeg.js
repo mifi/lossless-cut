@@ -201,6 +201,7 @@ function getMovFlags(outFormat, preserveMovData) {
   if (outFormat && ['ipod'].includes(outFormat)) {
     flags = ['+faststart'];
   } else if (preserveMovData) {
+    // https://video.stackexchange.com/a/26084/29486
     flags = ['use_metadata_tags'];
   } else {
     flags = [];
