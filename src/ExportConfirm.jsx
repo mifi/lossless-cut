@@ -63,6 +63,10 @@ const ExportConfirm = memo(({
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Not all formats support all track types, and LosslessCut is unable to properly cut some track types, so you may have to sacrifice some tracks by disabling them in order to get correct result.') });
   }
 
+  function onSegmentsToChaptersHelpPress() {
+    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('When merging, do you want to create chapters in the merged file, according to the cut segments?') });
+  }
+
   function onAvoidNegativeTsHelpPress() {
     // https://ffmpeg.org/ffmpeg-all.html#Format-Options
     const texts = {
@@ -93,11 +97,11 @@ const ExportConfirm = memo(({
                   {outSegments.length > 1 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: outSegments.length })} <MergeExportButton autoMerge={autoMerge} outSegments={outSegments} toggleAutoMerge={toggleAutoMerge} /></li>}
                   <li>
                     <Trans>Input has {{ numStreamsTotal }} tracks - <Highlight style={{ cursor: 'pointer' }} onClick={() => setStreamsSelectorShown(true)}>Keeping {{ numStreamsToCopy }} tracks</Highlight></Trans>
-                    <HelpIcon onClick={withBlur(onTracksHelpPress)} />
+                    <HelpIcon onClick={onTracksHelpPress} />
                   </li>
                   <li>
                     {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
-                    <HelpIcon onClick={withBlur(onOutFmtHelpPress)} />
+                    <HelpIcon onClick={onOutFmtHelpPress} />
                   </li>
                   <li>
                     {t('Save output to path:')} <span role="button" onClick={changeOutDir} style={outDirStyle}>{outputDir}</span>
@@ -107,7 +111,12 @@ const ExportConfirm = memo(({
                 <h3>{t('Advanced options')}</h3>
 
                 <ul>
-                  {autoMerge && <li>{t('Create chapters from segments?')} <Button height={20} onClick={toggleSegmentsToChapters}>{segmentsToChapters ? t('Yes') : t('No')}</Button></li>}
+                  {autoMerge && (
+                    <li>
+                      {t('Create chapters from segments?')} <Button height={20} onClick={toggleSegmentsToChapters}>{segmentsToChapters ? t('Yes') : t('No')}</Button>
+                      <HelpIcon onClick={onSegmentsToChaptersHelpPress} />
+                    </li>
+                  )}
                 </ul>
 
                 <p>{t('Depending on your specific file, you may have to try different options for best results.')}</p>
@@ -115,13 +124,13 @@ const ExportConfirm = memo(({
                 <ul>
                   <li>
                     {t('Cut mode:')} <KeyframeCutButton keyframeCut={keyframeCut} onClick={withBlur(() => toggleKeyframeCut(false))} />
-                    <HelpIcon onClick={withBlur(onKeyframeCutHelpPress)} />
+                    <HelpIcon onClick={onKeyframeCutHelpPress} />
                   </li>
 
                   {isMov && (
                     <li>
                       {t('Preserve all MP4/MOV metadata?')} <PreserveMovDataButton preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} />
-                      <HelpIcon onClick={withBlur(onPreserveMovDataHelpPress)} />
+                      <HelpIcon onClick={onPreserveMovDataHelpPress} />
                     </li>
                   )}
                   <li>
@@ -132,7 +141,7 @@ const ExportConfirm = memo(({
                       <option value="auto">auto</option>
                       <option value="disabled">disabled</option>
                     </Select>
-                    <HelpIcon onClick={withBlur(onAvoidNegativeTsHelpPress)} />
+                    <HelpIcon onClick={onAvoidNegativeTsHelpPress} />
                   </li>
                 </ul>
               </div>
