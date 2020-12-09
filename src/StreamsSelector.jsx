@@ -1,4 +1,4 @@
-import React, { memo, Fragment } from 'react';
+import React, { memo } from 'react';
 
 import { FaVideo, FaVideoSlash, FaFileExport, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaTrashAlt, FaInfoCircle } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
@@ -56,8 +56,10 @@ const Stream = memo(({ stream, onToggle, copyStream, fileDuration }) => {
 
   return (
     <tr style={{ opacity: copyStream ? undefined : 0.4 }}>
-      <td><Icon size={20} style={{ padding: '0 5px', cursor: 'pointer' }} role="button" onClick={onClick} /></td>
-      <td>{stream.index}</td>
+      <td>
+        {stream.index}
+        <Icon size={20} style={{ padding: '0px 5px 0px 10px', cursor: 'pointer', verticalAlign: 'bottom' }} role="button" onClick={onClick} />
+      </td>
       <td>{stream.codec_type}</td>
       <td>{stream.codec_tag !== '0x0000' && stream.codec_tag_string}</td>
       <td>{stream.codec_name}</td>
@@ -66,22 +68,45 @@ const Stream = memo(({ stream, onToggle, copyStream, fileDuration }) => {
       <td>{!Number.isNaN(bitrate) && `${(bitrate / 1e6).toFixed(1)}MBit/s`}</td>
       <td style={{ maxWidth: '2.5em', overflow: 'hidden' }}>{language}</td>
       <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
-      <td><FaInfoCircle role="button" onClick={() => onInfoClick(stream, t('Stream info'))} size={26} /></td>
+      <td><FaInfoCircle role="button" onClick={() => onInfoClick(stream, t('Stream info'))} size={22} /></td>
     </tr>
   );
 });
 
-const FileRow = ({ path, formatData, onTrashClick }) => {
+const FileHeading = ({ path, formatData, onTrashClick }) => {
   const { t } = useTranslation();
 
   return (
-    <tr>
-      <td>{onTrashClick && <FaTrashAlt size={20} role="button" style={{ padding: '0 5px', cursor: 'pointer' }} onClick={onTrashClick} />}</td>
-      <td colSpan={9} title={path} style={{ wordBreak: 'break-all', fontWeight: 'bold' }}>{path.replace(/.*\/([^/]+)$/, '$1')}</td>
-      <td><FaInfoCircle role="button" onClick={() => onInfoClick(formatData, t('File info'))} size={26} /></td>
-    </tr>
+    <div style={{ display: 'flex', marginBottom: 10, alignItems: 'center' }}>
+      <div title={path} style={{ wordBreak: 'break-all', fontWeight: 'bold' }}>{path.replace(/.*\/([^/]+)$/, '$1')}</div>
+      <FaInfoCircle role="button" onClick={() => onInfoClick(formatData, t('File info'))} size={20} style={{ padding: '0 5px 0 10px' }} />
+      {onTrashClick && <FaTrashAlt size={20} role="button" style={{ padding: '0 5px', cursor: 'pointer' }} onClick={onTrashClick} />}
+    </div>
   );
 };
+
+const Thead = () => {
+  const { t } = useTranslation();
+  return (
+    <thead>
+      <tr>
+        <th>{t('Keep?')}</th>
+        <th>{t('Type')}</th>
+        <th>{t('Tag')}</th>
+        <th>{t('Codec')}</th>
+        <th>{t('Duration')}</th>
+        <th>{t('Frames')}</th>
+        <th>{t('Bitrate')}</th>
+        <th>{t('Lang')}</th>
+        <th>{t('Data')}</th>
+        <th />
+      </tr>
+    </thead>
+  );
+};
+
+const tableStyle = { fontSize: 14, width: '100%' };
+const fileStyle = { marginBottom: 10, backgroundColor: 'rgba(0,0,0,0.04)', padding: 5, borderRadius: 7 };
 
 const StreamsSelector = memo(({
   mainFilePath, mainFileFormatData, streams: existingStreams, isCopyingStreamId, toggleCopyStreamId,
@@ -114,42 +139,30 @@ const StreamsSelector = memo(({
     <div style={{ color: 'black', padding: 10 }}>
       <p>{t('Click to select which tracks to keep when exporting:')}</p>
 
-      <table style={{ marginBottom: 10 }}>
-        <thead style={{ background: 'rgba(0,0,0,0.1)' }}>
-          <tr>
-            <th>{t('Keep?')}</th>
-            <th />
-            <th>{t('Type')}</th>
-            <th>{t('Tag')}</th>
-            <th>{t('Codec')}</th>
-            <th>{t('Duration')}</th>
-            <th>{t('Frames')}</th>
-            <th>{t('Bitrate')}</th>
-            <th>{t('Lang')}</th>
-            <th>{t('Data')}</th>
-            <th />
-          </tr>
-        </thead>
+      <div style={fileStyle}>
+        <FileHeading path={mainFilePath} formatData={mainFileFormatData} />
+        <table style={tableStyle}>
+          <Thead />
+          <tbody>
+            {existingStreams.map((stream) => (
+              <Stream
+                key={stream.index}
+                stream={stream}
+                copyStream={isCopyingStreamId(mainFilePath, stream.index)}
+                onToggle={(streamId) => toggleCopyStreamId(mainFilePath, streamId)}
+                fileDuration={getFormatDuration(mainFileFormatData)}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-        <tbody>
-          <FileRow path={mainFilePath} formatData={mainFileFormatData} />
-
-          {existingStreams.map((stream) => (
-            <Stream
-              key={stream.index}
-              stream={stream}
-              copyStream={isCopyingStreamId(mainFilePath, stream.index)}
-              onToggle={(streamId) => toggleCopyStreamId(mainFilePath, streamId)}
-              fileDuration={getFormatDuration(mainFileFormatData)}
-            />
-          ))}
-
-          {externalFilesEntries.map(([path, { streams, formatData }]) => (
-            <Fragment key={path}>
-              <tr><td colSpan={11} /></tr>
-
-              <FileRow path={path} formatData={formatData} onTrashClick={() => removeFile(path)} />
-
+      {externalFilesEntries.map(([path, { streams, formatData }]) => (
+        <div key={path} style={fileStyle}>
+          <FileHeading path={path} formatData={formatData} onTrashClick={() => removeFile(path)} />
+          <table style={tableStyle}>
+            <Thead />
+            <tbody>
               {streams.map((stream) => (
                 <Stream
                   key={stream.index}
@@ -159,10 +172,10 @@ const StreamsSelector = memo(({
                   fileDuration={getFormatDuration(formatData)}
                 />
               ))}
-            </Fragment>
-          ))}
-        </tbody>
-      </table>
+            </tbody>
+          </table>
+        </div>
+      ))}
 
       {externalFilesEntries.length > 0 && (
         <div style={{ margin: '10px 0' }}>
@@ -178,16 +191,16 @@ const StreamsSelector = memo(({
         </div>
       )}
 
+      <div style={{ cursor: 'pointer', padding: '10px 0' }} role="button" onClick={showAddStreamSourceDialog}>
+        <FaFileImport size={30} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {t('Include more tracks from other file')}
+      </div>
+
       {nonCopiedExtraStreams.length > 0 && (
         <div style={{ margin: '10px 0' }}>
           {t('Discard or extract unprocessable tracks to separate files?')}
           <AutoExportToggler />
         </div>
       )}
-
-      <div style={{ cursor: 'pointer', padding: '10px 0' }} role="button" onClick={showAddStreamSourceDialog}>
-        <FaFileImport size={30} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {t('Include more tracks from other file')}
-      </div>
 
       {externalFilesEntries.length === 0 && (
         <div style={{ cursor: 'pointer', padding: '10px 0' }} role="button" onClick={onExtractAllStreamsPress}>
