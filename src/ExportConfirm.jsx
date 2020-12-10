@@ -13,6 +13,7 @@ import PreserveMovDataButton from './components/PreserveMovDataButton';
 import ToggleExportConfirm from './components/ToggleExportConfirm';
 
 import { withBlur, toast, getSegColors } from './util';
+import { isMov as ffmpegIsMov } from './ffmpeg';
 
 const sheetStyle = {
   position: 'fixed',
@@ -40,11 +41,11 @@ const ExportConfirm = memo(({
   autoMerge, areWeCutting, outSegments, visible, onClosePress, onExportConfirm, keyframeCut, toggleKeyframeCut,
   toggleAutoMerge, renderOutFmt, preserveMovData, togglePreserveMovData, avoidNegativeTs, setAvoidNegativeTs,
   changeOutDir, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, currentSegIndex, invertCutSegments,
-  exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters,
+  exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, outFormat,
 }) => {
   const { t } = useTranslation();
 
-  const isMov = true; // todo
+  const isMov = ffmpegIsMov(outFormat);
 
   function onPreserveMovDataHelpPress() {
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Preserve all MOV/MP4 metadata (e.g. EXIF, GPS position etc.) from source file? Note that some players have trouble playing back files where all metadata is preserved.') });

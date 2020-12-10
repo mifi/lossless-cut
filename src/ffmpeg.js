@@ -871,6 +871,8 @@ export const defaultProcessedCodecTypes = [
   'attachment',
 ];
 
+export const isMov = (format) => ['ismv', 'ipod', 'mp4', 'mov'].includes(format);
+
 export function isStreamThumbnail(stream) {
   return stream && stream.disposition && stream.disposition.attached_pic === 1;
 }
