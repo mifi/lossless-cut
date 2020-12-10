@@ -105,6 +105,8 @@ const App = memo(() => {
   const [startTimeOffset, setStartTimeOffset] = useState(0);
   const [filePath, setFilePath] = useState('');
   const [externalStreamFiles, setExternalStreamFiles] = useState([]);
+  const [customTagsByFile, setCustomTagsByFile] = useState({});
+  const [customTagsByStreamId, setCustomTagsByStreamId] = useState({});
   const [detectedFps, setDetectedFps] = useState();
   const [mainStreams, setMainStreams] = useState([]);
   const [mainVideoStream, setMainVideoStream] = useState();
@@ -808,6 +810,8 @@ const App = memo(() => {
     setStartTimeOffset(0);
     setFilePath(''); // Setting video src="" prevents memory leak in chromium
     setExternalStreamFiles([]);
+    setCustomTagsByFile({});
+    setCustomTagsByStreamId({});
     setDetectedFps();
     setMainStreams([]);
     setMainVideoStream();
@@ -1010,6 +1014,8 @@ const App = memo(() => {
         ffmpegExperimental,
         preserveMovData,
         avoidNegativeTs,
+        customTagsByFile,
+        customTagsByStreamId,
       });
 
       if (outFiles.length > 1 && autoMerge) {
@@ -1059,7 +1065,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [autoMerge, copyFileStreams, customOutDir, duration, effectiveRotation, exportExtraStreams, ffmpegExperimental, fileFormat, fileFormatData, filePath, handleCutFailed, isCustomFormatSelected, isRotationSet, keyframeCut, mainStreams, nonCopiedExtraStreams, outSegments, outputDir, shortestFlag, working, preserveMovData, avoidNegativeTs, numStreamsToCopy, hideAllNotifications, currentSegIndexSafe, invertCutSegments, autoDeleteMergedSegments, segmentsToChapters]);
+  }, [autoMerge, copyFileStreams, customOutDir, duration, effectiveRotation, exportExtraStreams, ffmpegExperimental, fileFormat, fileFormatData, filePath, handleCutFailed, isCustomFormatSelected, isRotationSet, keyframeCut, mainStreams, nonCopiedExtraStreams, outSegments, outputDir, shortestFlag, working, preserveMovData, avoidNegativeTs, numStreamsToCopy, hideAllNotifications, currentSegIndexSafe, invertCutSegments, autoDeleteMergedSegments, segmentsToChapters, customTagsByFile, customTagsByStreamId]);
 
   const onExportPress = useCallback(async () => {
     if (working || !filePath) return;
@@ -1954,6 +1960,10 @@ const App = memo(() => {
             setShortestFlag={setShortestFlag}
             nonCopiedExtraStreams={nonCopiedExtraStreams}
             AutoExportToggler={AutoExportToggler}
+            customTagsByFile={customTagsByFile}
+            setCustomTagsByFile={setCustomTagsByFile}
+            customTagsByStreamId={customTagsByStreamId}
+            setCustomTagsByStreamId={setCustomTagsByStreamId}
           />
         </SideSheet>
 

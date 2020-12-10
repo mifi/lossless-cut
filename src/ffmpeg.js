@@ -215,7 +215,7 @@ function getMovFlags(outFormat, preserveMovData) {
 async function cut({
   filePath, outFormat, cutFrom, cutTo, videoDuration, rotation, ffmpegExperimental,
   onProgress, copyFileStreams, keyframeCut, outPath, appendFfmpegCommandLog, shortestFlag, preserveMovData,
-  avoidNegativeTs,
+  avoidNegativeTs, customTagsByFile, customTagsByStreamId,
 }) {
   const cuttingStart = isCuttingStart(cutFrom);
   const cuttingEnd = isCuttingEnd(cutTo, videoDuration);
@@ -248,6 +248,33 @@ async function cut({
 
   const rotationArgs = rotation !== undefined ? ['-metadata:s:v:0', `rotate=${360 - rotation}`] : [];
 
+  function mapInputStreamIndexToOutputIndex(inputFilePath, inputFileStreamIndex) {
+    let streamCount = 0;
+    const found = copyFileStreamsFiltered.find(({ path: path2, streamIds }) => {
+      if (path2 === inputFilePath) return true;
+      streamCount += streamIds.length;
+      return false;
+    });
+    if (!found) return undefined; // Could happen if a tag has been edited on an external file, then the file was removed
+    return streamCount + inputFileStreamIndex;
+  }
+
+  const customTagsArgs = [
+    // We only support editing main file metadata for now
+    ...flatMap(Object.entries(customTagsByFile[filePath] || []), ([key, value]) => ['-metadata', `${key}=${value}`]),
+
+    // The structure is deep! Example: { 'file.mp4': { 0: { tag_name: 'Tag Value' } } }
+    ...flatMapDeep(
+      Object.entries(customTagsByStreamId), ([path, streamsMap]) => (
+        Object.entries(streamsMap).map(([streamId, tagsMap]) => (
+          Object.entries(tagsMap).map(([key, value]) => {
+            const outputIndex = mapInputStreamIndexToOutputIndex(path, parseInt(streamId, 10));
+            if (outputIndex == null) return [];
+            return [`-metadata:s:${outputIndex}`, `${key}=${value}`];
+          })))),
+    ),
+  ];
+
   const ffmpegArgs = [
     '-hide_banner',
     // No progress if we set loglevel warning :(
@@ -263,6 +290,8 @@ async function cut({
     '-map_metadata', '0',
     // https://video.stackexchange.com/questions/23741/how-to-prevent-ffmpeg-from-dropping-metadata
     ...getMovFlags(outFormat, preserveMovData),
+
+    ...customTagsArgs,
 
     // See https://github.com/mifi/lossless-cut/issues/170
     '-ignore_unknown',
@@ -297,7 +326,11 @@ export async function cutMultiple({
   customOutDir, filePath, segments, videoDuration, rotation,
   onProgress, keyframeCut, copyFileStreams, outFormat, isCustomFormatSelected,
   appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, avoidNegativeTs,
+  customTagsByFile, customTagsByStreamId,
 }) {
+  console.log('customTagsByFile', customTagsByFile);
+  console.log('customTagsByStreamId', customTagsByStreamId);
+
   const singleProgresses = {};
   function onSingleProgress(id, singleProgress) {
     singleProgresses[id] = singleProgress;
@@ -335,6 +368,8 @@ export async function cutMultiple({
       ffmpegExperimental,
       preserveMovData,
       avoidNegativeTs,
+      customTagsByFile,
+      customTagsByStreamId,
     });
 
     outFiles.push(outPath);
@@ -514,13 +549,20 @@ export async function mergeFiles({ paths, outDir, outPath, allStreams, outFormat
       // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
       '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe', '-i', '-',
 
+      // Use the first file for metadata. Can only do this if allStreams (-map 0) is set, or else ffmpeg might output this input instead of the concat
+      ...(allStreams ? ['-i', paths[0]] : []),
+
+      // Chapters?
       ...(ffmetadataPath ? ['-f', 'ffmetadata', '-i', ffmetadataPath] : []),
 
       '-c', 'copy',
 
       ...(allStreams ? ['-map', '0'] : []),
 
-      '-map_metadata', '0',
+      // Use the file index 1 for metadata
+      // -map_metadata 0 with concat demuxer doesn't seem to preserve metadata when merging.
+      // Can only do this if allStreams (-map 0) is set
+      ...(allStreams ? ['-map_metadata', '1'] : []),
 
       // https://video.stackexchange.com/questions/23741/how-to-prevent-ffmpeg-from-dropping-metadata
       ...getMovFlags(outFormat, preserveMovData),

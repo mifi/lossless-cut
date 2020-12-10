@@ -177,6 +177,19 @@ async function askForSegmentDuration(fileDuration) {
   return parseDuration(value);
 }
 
+export async function askForMetadataKey() {
+  const { value } = await Swal.fire({
+    title: i18n.t('Add metadata'),
+    text: i18n.t('Enter metadata key'),
+    input: 'text',
+    showCancelButton: true,
+    inputPlaceholder: 'metadata_key',
+    inputValidator: (v) => v.includes('=') && i18n.t('Invalid character(s) found in key'),
+  });
+  return value;
+}
+
+
 export async function createFixedDurationSegments(fileDuration) {
   const segmentDuration = await askForSegmentDuration(fileDuration);
   if (segmentDuration == null) return undefined;

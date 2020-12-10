@@ -29,6 +29,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - View segment details, export/import cut segments as CSV
 - Import segments from: MP4/MKV chapters, Text file, YouTube, CSV, CUE, XML (DaVinci, Final Cut Pro)
 - Video thumbnails and audio waveform
+- Edit file metadata and per-stream metadata
 
 ## Example lossless use cases
 
