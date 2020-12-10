@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button, Select } from 'evergreen-ui';
 import i18n from 'i18next';
@@ -12,8 +12,7 @@ import MergeExportButton from './components/MergeExportButton';
 import PreserveMovDataButton from './components/PreserveMovDataButton';
 import ToggleExportConfirm from './components/ToggleExportConfirm';
 
-import { withBlur, toast } from './util';
-import { primaryColor } from './colors';
+import { withBlur, toast, getSegColors } from './util';
 
 const sheetStyle = {
   position: 'fixed',
@@ -78,6 +77,9 @@ const ExportConfirm = memo(({
     toast.fire({ icon: 'info', timer: 10000, text: `${avoidNegativeTs}: ${texts[avoidNegativeTs]}` });
   }
 
+  const { segBgColor } = useMemo(() => getSegColors(outSegments[currentSegIndex]), [outSegments, currentSegIndex]);
+
+
   // https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container
   return (
     <AnimatePresence>
@@ -92,16 +94,16 @@ const ExportConfirm = memo(({
           >
             <div style={{ margin: 'auto' }}>
               <div style={boxStyle}>
-                <h2 style={{ marginTop: 0 }}>{t('Export summary')}</h2>
+                <h2 style={{ marginTop: 0 }}>{t('Export options')}</h2>
                 <ul>
                   {outSegments.length > 1 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: outSegments.length })} <MergeExportButton autoMerge={autoMerge} outSegments={outSegments} toggleAutoMerge={toggleAutoMerge} /></li>}
                   <li>
-                    <Trans>Input has {{ numStreamsTotal }} tracks - <Highlight style={{ cursor: 'pointer' }} onClick={() => setStreamsSelectorShown(true)}>Keeping {{ numStreamsToCopy }} tracks</Highlight></Trans>
-                    <HelpIcon onClick={onTracksHelpPress} />
-                  </li>
-                  <li>
                     {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
                     <HelpIcon onClick={onOutFmtHelpPress} />
+                  </li>
+                  <li>
+                    <Trans>Input has {{ numStreamsTotal }} tracks - <Highlight style={{ cursor: 'pointer' }} onClick={() => setStreamsSelectorShown(true)}>Keeping {{ numStreamsToCopy }} tracks</Highlight></Trans>
+                    <HelpIcon onClick={onTracksHelpPress} />
                   </li>
                   <li>
                     {t('Save output to path:')} <span role="button" onClick={changeOutDir} style={outDirStyle}>{outputDir}</span>
@@ -161,12 +163,12 @@ const ExportConfirm = memo(({
               </Button>
 
               <ToggleExportConfirm exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />
-              <div style={{ fontSize: 13, marginLeft: 3, marginRight: 7, maxWidth: 120, lineHeight: '100%', color: exportConfirmEnabled ? 'white' : 'rgba(255,255,255,0.3)', cursor: 'pointer' }} role="button" onClick={toggleExportConfirmEnabled}>{t('Show summary before exporting?')}</div>
+              <div style={{ fontSize: 13, marginLeft: 3, marginRight: 7, maxWidth: 120, lineHeight: '100%', color: exportConfirmEnabled ? 'white' : 'rgba(255,255,255,0.3)', cursor: 'pointer' }} role="button" onClick={toggleExportConfirmEnabled}>{t('Show this page before exporting?')}</div>
 
               {outSegments.length > 1 && !invertCutSegments && (
-                <div role="button" title={t('Export only the currently selected segment ({{segNum}})', { segNum: currentSegIndex + 1 })} onClick={() => onExportConfirm({ exportSingle: true })} style={{ cursor: 'pointer', background: primaryColor, borderRadius: 5, padding: '3px 10px', fontSize: 13, marginRight: 10 }}>
+                <div role="button" title={t('Export only the currently selected segment ({{segNum}})', { segNum: currentSegIndex + 1 })} onClick={() => onExportConfirm({ exportSingle: true })} style={{ cursor: 'pointer', background: segBgColor, borderRadius: 5, padding: '3px 10px', fontSize: 13, marginRight: 10 }}>
                   <FiScissors style={{ verticalAlign: 'middle', marginRight: 6 }} size={16} />
-                  {t('Export single')}
+                  {t('Export seg {{segNum}}', { segNum: currentSegIndex + 1 })}
                 </div>
               )}
             </motion.div>

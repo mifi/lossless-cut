@@ -10,7 +10,7 @@ const ToggleExportConfirm = memo(({ exportConfirmEnabled, toggleExportConfirmEna
   const { t } = useTranslation();
 
   return (
-    <MdEventNote style={{ color: exportConfirmEnabled ? primaryTextColor : 'rgba(255,255,255,0.3)', ...style }} size={size} title={t('Show summary before exporting?')} role="button" onClick={toggleExportConfirmEnabled} />
+    <MdEventNote style={{ color: exportConfirmEnabled ? primaryTextColor : 'rgba(255,255,255,0.3)', ...style }} size={size} title={t('Show export options screen before exporting?')} role="button" onClick={toggleExportConfirmEnabled} />
   );
 });
 
