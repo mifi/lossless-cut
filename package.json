@@ -89,8 +89,7 @@
     "electron-store": "^5.1.1",
     "electron-unhandled": "^3.0.2",
     "execa": "^4.0.0",
-    "ffmpeg-static": "^4.2.1",
-    "ffprobe-static": "^3.0.0",
+    "ffmpeg-ffprobe-static": "^4.3.1-rc.2",
     "file-type": "^12.4.0",
     "fs-extra": "^8.1.0",
     "github-api": "^3.2.2",
@@ -124,8 +123,8 @@
     },
     "files": [
       "build/**/*",
-      "!node_modules/ffmpeg-static/ffmpeg",
-      "!node_modules/ffprobe-static/bin/**/*"
+      "!node_modules/ffmpeg-ffprobe-static/ffmpeg",
+      "!node_modules/ffmpeg-ffprobe-static/ffprobe"
     ],
     "asar": {
       "smartUnpack": false
@@ -273,8 +272,8 @@
         "appx"
       ],
       "extraResources": [
-        "node_modules/ffmpeg-static/ffmpeg.exe",
-        "node_modules/ffprobe-static/bin/win32/x64/**"
+        "node_modules/ffmpeg-ffprobe-static/ffmpeg.exe",
+        "node_modules/ffmpeg-ffprobe-static/ffprobe.exe"
       ],
       "icon": "icon-build/app-512.png",
       "fileAssociations": [
@@ -383,8 +382,8 @@
     "linux": {
       "executableName": "losslesscut",
       "extraResources": [
-        "node_modules/ffmpeg-static/ffmpeg",
-        "node_modules/ffprobe-static/bin/linux/x64/**"
+        "node_modules/ffmpeg-ffprobe-static/ffmpeg",
+        "node_modules/ffmpeg-ffprobe-static/ffprobe"
       ],
       "icon": "icon-build/app-512.png",
       "target": [

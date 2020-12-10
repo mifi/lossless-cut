@@ -25,39 +25,21 @@ function getFfCommandLine(cmd, args) {
   return `${cmd} ${args.map(mapArg).join(' ')}`;
 }
 
-function getFfmpegPath() {
+function getFfPath(cmd) {
   const platform = os.platform();
 
   if (platform === 'darwin') {
-    return isDev ? 'ffmpeg-mac/ffmpeg' : join(window.process.resourcesPath, 'ffmpeg');
+    return isDev ? `ffmpeg-mac/${cmd}` : join(window.process.resourcesPath, cmd);
   }
 
-  const exeName = platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg';
+  const exeName = platform === 'win32' ? `${cmd}.exe` : cmd;
   return isDev
-    ? `node_modules/ffmpeg-static/${exeName}`
-    : join(window.process.resourcesPath, `node_modules/ffmpeg-static/${exeName}`);
+    ? `node_modules/ffmpeg-ffprobe-static/${exeName}`
+    : join(window.process.resourcesPath, `node_modules/ffmpeg-ffprobe-static/${exeName}`);
 }
 
-function getFfprobePath() {
-  const platform = os.platform();
-
-  if (platform === 'darwin') {
-    return isDev ? 'ffmpeg-mac/ffprobe' : join(window.process.resourcesPath, 'ffprobe');
-  }
-
-  const map = {
-    win32: 'win32/x64/ffprobe.exe',
-    linux: 'linux/x64/ffprobe',
-  };
-
-  const subPath = map[platform];
-
-  if (!subPath) throw new Error(`${i18n.t('Unsupported platform')} ${platform}`);
-
-  return isDev
-    ? `node_modules/ffprobe-static/bin/${subPath}`
-    : join(window.process.resourcesPath, `node_modules/ffprobe-static/bin/${subPath}`);
-}
+const getFfmpegPath = () => getFfPath('ffmpeg');
+const getFfprobePath = () => getFfPath('ffprobe');
 
 async function runFfprobe(args) {
   const ffprobePath = getFfprobePath();
