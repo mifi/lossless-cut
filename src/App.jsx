@@ -11,6 +11,7 @@ import filePathToUrl from 'file-url';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import withReactContent from 'sweetalert2-react-content';
+import Mousetrap from 'mousetrap';
 
 import fromPairs from 'lodash/fromPairs';
 import clamp from 'lodash/clamp';
@@ -1326,49 +1327,43 @@ const App = memo(() => {
     const zoomIn = () => { zoomRel(1); return false; };
     const zoomOut = () => { zoomRel(-1); return false; };
 
-    function onKeyDown(e) {
-      // console.log(e.key);
-      switch (e.key) {
-        case '+': return addCutSegment();
-        case ' ': return togglePlayReset();
-        case 'k': case 'K': return togglePlayNoReset();
-        case 'j': case 'J': return reducePlaybackRate();
-        case 'l': case 'L': return increasePlaybackRate();
-        case 'ArrowLeft': {
-          if (e.ctrlKey || e.metaKey) return seekBackwardsPercent();
-          if (e.altKey) return seekBackwardsKeyframe();
-          if (e.shiftKey) return jumpCutStart();
-          return seekBackwards();
-        }
-        case 'ArrowRight': {
-          if (e.ctrlKey || e.metaKey) return seekForwardsPercent();
-          if (e.altKey) return seekForwardsKeyframe();
-          if (e.shiftKey) return jumpCutEnd();
-          return seekForwards();
-        }
-        case 'ArrowUp': {
-          if (e.ctrlKey || e.metaKey) return zoomIn();
-          return jumpPrevSegment();
-        }
-        case 'ArrowDown': {
-          if (e.ctrlKey || e.metaKey) return zoomOut();
-          return jumpNextSegment();
-        }
-        case 'z': case 'Z': return toggleComfortZoom();
-        case ',': return seekBackwardsShort();
-        case '.': return seekForwardsShort();
-        case 'c': case 'C': return capture();
-        case 'i': case 'I': return setCutStart();
-        case 'o': case 'O': return setCutEnd();
-        case 'Backspace': return removeCutSegment();
-        case 'd': case 'D': return deleteSource();
-        case 'b': case 'B': return splitCurrentSegment();
-        case 'r': case 'R': return increaseRotation();
-        default: return undefined;
-      }
-    }
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    // mousetrap seems to be the only lib properly handling layouts that require shift to be pressed to get a particular key #520
+    // Also document.addEventListener needs custom handling of modifier keys or C will be triggered by CTRL+C, etc
+    const mousetrap = new Mousetrap();
+    // mousetrap.bind(':', () => console.log('test'));
+    mousetrap.bind('plus', () => addCutSegment());
+    mousetrap.bind('space', () => togglePlayReset());
+    mousetrap.bind('k', () => togglePlayNoReset());
+    mousetrap.bind('j', () => reducePlaybackRate());
+    mousetrap.bind('l', () => increasePlaybackRate());
+    mousetrap.bind('z', () => toggleComfortZoom());
+    mousetrap.bind(',', () => seekBackwardsShort());
+    mousetrap.bind('.', () => seekForwardsShort());
+    mousetrap.bind('c', () => capture());
+    mousetrap.bind('i', () => setCutStart());
+    mousetrap.bind('o', () => setCutEnd());
+    mousetrap.bind('backspace', () => removeCutSegment());
+    mousetrap.bind('d', () => deleteSource());
+    mousetrap.bind('b', () => splitCurrentSegment());
+    mousetrap.bind('r', () => increaseRotation());
+
+    mousetrap.bind('left', () => seekBackwards());
+    mousetrap.bind(['ctrl+left', 'command+left'], () => seekBackwardsPercent());
+    mousetrap.bind('alt+left', () => seekBackwardsKeyframe());
+    mousetrap.bind('shift+left', () => jumpCutStart());
+
+    mousetrap.bind('right', () => seekForwards());
+    mousetrap.bind(['ctrl+right', 'command+right'], () => seekForwardsPercent());
+    mousetrap.bind('alt+right', () => seekForwardsKeyframe());
+    mousetrap.bind('shift+right', () => jumpCutEnd());
+
+    mousetrap.bind('up', () => jumpPrevSegment());
+    mousetrap.bind(['ctrl+up', 'command+up'], () => zoomIn());
+
+    mousetrap.bind('down', () => jumpNextSegment());
+    mousetrap.bind(['ctrl+down', 'command+down'], () => zoomOut());
+
+    return () => mousetrap.reset();
   }, [
     addCutSegment, capture, changePlaybackRate, togglePlay, removeCutSegment,
     setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, deleteSource, jumpSeg,
@@ -1377,14 +1372,14 @@ const App = memo(() => {
   ]);
 
   useEffect(() => {
-    function onKeyDown(e) {
-      if (!['e', 'E'].includes(e.key)) return;
+    function onKeyPress() {
       if (exportConfirmVisible) onExportConfirm();
       else onExportPress();
     }
 
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    const mousetrap = new Mousetrap();
+    mousetrap.bind('e', onKeyPress);
+    return () => mousetrap.reset();
   }, [exportConfirmVisible, onExportConfirm, onExportPress]);
 
   useEffect(() => {
@@ -1394,16 +1389,10 @@ const App = memo(() => {
       setSettingsVisible(false);
     }
 
-    function onKeyDown(e) {
-      switch (e.key) {
-        case 'h': case 'H': return toggleHelp();
-        case 'Escape': return onEscPress();
-        default: return undefined;
-      }
-    }
-
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    const mousetrap = new Mousetrap();
+    mousetrap.bind('h', toggleHelp);
+    mousetrap.bind('escape', onEscPress);
+    return () => mousetrap.reset();
   }, [closeExportConfirm, toggleHelp]);
 
   useEffect(() => {
