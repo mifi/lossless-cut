@@ -30,6 +30,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Import segments from: MP4/MKV chapters, Text file, YouTube, CSV, CUE, XML (DaVinci, Final Cut Pro)
 - Video thumbnails and audio waveform
 - Edit file metadata and per-stream metadata
+- Cut with chapter marks
 
 ## Example lossless use cases
 
@@ -42,6 +43,8 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Quickly change a H264 MKV video to MOV or MP4 for playback on iPhone
 - Import a list of cut times from other tool as a EDL (edit decision list, CSV) and run these cuts with LosslessCut
 - Quickly cut a file by MP4/MKV chapters
+- Change the language of a file's audio/subtitle tracks
+- Change author, title, GPS position, recording time of a video
 - Export a list of cut times as a CSV EDL and process these in another tool
   - Without having to re-encode. You can also change format from TS to MP4 at the same time.
 - Fix rotation of a video that has the wrong orientation flag set
