@@ -55,7 +55,7 @@ export default ({ path, width: inWidth, height: inHeight, streamIndex }) => {
       }
     } else {
       try {
-        const { process: processIn, width, height } = getOneRawFrame({ path, inWidth, inHeight, streamIndex, seekTo: commandedTime });
+        const { process: processIn, width, height } = getOneRawFrame({ path, inWidth, inHeight, streamIndex, seekTo: commandedTime, outSize: 1000 });
         process = processIn;
         const { stdout: rgbaImage } = await process;
 

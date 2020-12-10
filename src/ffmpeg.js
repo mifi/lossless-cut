@@ -901,7 +901,7 @@ export function getStreamFps(stream) {
   return undefined;
 }
 
-function createRawFfmpeg({ fps = 25, path, inWidth, inHeight, seekTo, oneFrameOnly, execaOpts, streamIndex }) {
+function createRawFfmpeg({ fps = 25, path, inWidth, inHeight, seekTo, oneFrameOnly, execaOpts, streamIndex, outSize = 320 }) {
   // const fps = 25; // TODO
 
   const aspectRatio = inWidth / inHeight;
@@ -909,10 +909,10 @@ function createRawFfmpeg({ fps = 25, path, inWidth, inHeight, seekTo, oneFrameOn
   let newWidth;
   let newHeight;
   if (inWidth > inHeight) {
-    newWidth = 320;
+    newWidth = outSize;
     newHeight = Math.floor(newWidth / aspectRatio);
   } else {
-    newHeight = 320;
+    newHeight = outSize;
     newWidth = Math.floor(newHeight * aspectRatio);
   }
 
@@ -948,8 +948,8 @@ function createRawFfmpeg({ fps = 25, path, inWidth, inHeight, seekTo, oneFrameOn
   };
 }
 
-export function getOneRawFrame({ path, inWidth, inHeight, seekTo, streamIndex }) {
-  const { process, width, height, channels } = createRawFfmpeg({ path, inWidth, inHeight, seekTo, streamIndex, oneFrameOnly: true, execaOpts: { encoding: null } });
+export function getOneRawFrame({ path, inWidth, inHeight, seekTo, streamIndex, outSize }) {
+  const { process, width, height, channels } = createRawFfmpeg({ path, inWidth, inHeight, seekTo, streamIndex, oneFrameOnly: true, execaOpts: { encoding: null }, outSize });
   return { process, width, height, channels };
 }
 
