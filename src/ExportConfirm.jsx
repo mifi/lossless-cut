@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button, Select } from 'evergreen-ui';
 import i18n from 'i18next';
@@ -78,8 +78,10 @@ const ExportConfirm = memo(({
     toast.fire({ icon: 'info', timer: 10000, text: `${avoidNegativeTs}: ${texts[avoidNegativeTs]}` });
   }
 
-  const { segBgColor } = useMemo(() => getSegColors(outSegments[currentSegIndex]), [outSegments, currentSegIndex]);
-
+  function getCurrentSegColor() {
+    const { segBgColor } = getSegColors(outSegments[currentSegIndex]);
+    return segBgColor;
+  }
 
   // https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container
   return (
@@ -167,7 +169,7 @@ const ExportConfirm = memo(({
               <div style={{ fontSize: 13, marginLeft: 3, marginRight: 7, maxWidth: 120, lineHeight: '100%', color: exportConfirmEnabled ? 'white' : 'rgba(255,255,255,0.3)', cursor: 'pointer' }} role="button" onClick={toggleExportConfirmEnabled}>{t('Show this page before exporting?')}</div>
 
               {outSegments.length > 1 && !invertCutSegments && (
-                <div role="button" title={t('Export only the currently selected segment ({{segNum}})', { segNum: currentSegIndex + 1 })} onClick={() => onExportConfirm({ exportSingle: true })} style={{ cursor: 'pointer', background: segBgColor, borderRadius: 5, padding: '3px 10px', fontSize: 13, marginRight: 10 }}>
+                <div role="button" title={t('Export only the currently selected segment ({{segNum}})', { segNum: currentSegIndex + 1 })} onClick={() => onExportConfirm({ exportSingle: true })} style={{ cursor: 'pointer', background: getCurrentSegColor(), borderRadius: 5, padding: '3px 10px', fontSize: 13, marginRight: 10 }}>
                   <FiScissors style={{ verticalAlign: 'middle', marginRight: 6 }} size={16} />
                   {t('Export seg {{segNum}}', { segNum: currentSegIndex + 1 })}
                 </div>
