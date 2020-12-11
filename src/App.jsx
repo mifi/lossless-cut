@@ -50,7 +50,7 @@ import {
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows,
 } from './util';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction } from './dialogs';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor } from './segments';
@@ -994,6 +994,7 @@ const App = memo(() => {
       return;
     }
 
+    setStreamsSelectorShown(false);
     setExportConfirmVisible(false);
 
     const outSegmentsWithOrder = outSegments.map((s, order) => ({ ...s, order }));
@@ -1423,6 +1424,7 @@ const App = memo(() => {
     if (!filePath) return;
 
     try {
+      setStreamsSelectorShown(false);
       setWorking(i18n.t('Extracting all streams'));
       await extractStreams({ customOutDir, filePath, streams: mainStreams });
       openDirToast({ dirPath: outputDir, text: i18n.t('All streams have been extracted as separate files') });
@@ -1434,7 +1436,8 @@ const App = memo(() => {
     }
   }, [customOutDir, filePath, mainStreams, outputDir]);
 
-  function onExtractAllStreamsPress() {
+  async function onExtractAllStreamsPress() {
+    if (!(await confirmExtractAllStreamsDialog())) return;
     extractAllStreams();
   }
 

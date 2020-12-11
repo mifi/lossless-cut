@@ -189,6 +189,15 @@ export async function askForMetadataKey() {
   return value;
 }
 
+export async function confirmExtractAllStreamsDialog() {
+  const { value } = await Swal.fire({
+    text: i18n.t('Please confirm that you want to extract all tracks as separate files'),
+    showCancelButton: true,
+    confirmButtonText: i18n.t('Extract all tracks'),
+  });
+  return !!value;
+}
+
 
 export async function createFixedDurationSegments(fileDuration) {
   const segmentDuration = await askForSegmentDuration(fileDuration);
