@@ -227,9 +227,9 @@ const Timeline = memo(({
             {commandedTimePercent !== undefined && <div style={{ left: commandedTimePercent, position: 'absolute', bottom: 0, top: 0, zIndex: 4, backgroundColor: 'white', width: currentTimeWidth, pointerEvents: 'none' }} />}
 
             {apparentCutSegments.map((seg, i) => {
-              const {
-                segBgColor, segActiveBgColor, segBorderColor,
-              } = getSegColors(seg);
+              const { segBgColor, segActiveBgColor, segBorderColor } = getSegColors(seg);
+
+              if (seg.start === 0 && seg.end === 0) return null; // No video loaded
 
               return (
                 <TimelineSeg
