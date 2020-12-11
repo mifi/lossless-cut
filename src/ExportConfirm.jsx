@@ -133,7 +133,7 @@ const ExportConfirm = memo(({
                   </ul>
                 )}
 
-                <p>{t('Depending on your specific file, you may have to try different options for best results.')}</p>
+                <p>{t('Depending on your specific file/player, you may have to try different options for best results.')}</p>
 
                 <ul>
                   <li>
