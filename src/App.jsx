@@ -204,6 +204,8 @@ const App = memo(() => {
   useEffect(() => safeSetConfig('exportConfirmEnabled', exportConfirmEnabled), [exportConfirmEnabled]);
   const [segmentsToChapters, setSegmentsToChapters] = useState(configStore.get('segmentsToChapters'));
   useEffect(() => safeSetConfig('segmentsToChapters', segmentsToChapters), [segmentsToChapters]);
+  const [preserveMetadataOnMerge, setPreserveMetadataOnMerge] = useState(configStore.get('preserveMetadataOnMerge'));
+  useEffect(() => safeSetConfig('preserveMetadataOnMerge', preserveMetadataOnMerge), [preserveMetadataOnMerge]);
 
   useEffect(() => {
     i18n.changeLanguage(language || fallbackLng).catch(console.error);
@@ -241,6 +243,8 @@ const App = memo(() => {
   const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => !v), []);
 
   const toggleSegmentsToChapters = useCallback(() => setSegmentsToChapters((v) => !v), []);
+
+  const togglePreserveMetadataOnMerge = useCallback(() => setPreserveMetadataOnMerge((v) => !v), []);
 
   const toggleKeyframesEnabled = useCallback(() => {
     setKeyframesEnabled((old) => {
@@ -630,7 +634,7 @@ const App = memo(() => {
       const outPath = getOutPath(newCustomOutDir, firstPath, `merged${ext}`);
 
       // console.log('merge', paths);
-      await ffmpegMergeFiles({ paths, outPath, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData });
+      await ffmpegMergeFiles({ paths, outPath, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, preserveMetadataOnMerge });
       openDirToast({ icon: 'success', dirPath: outputDir, text: i18n.t('Files merged!') });
     } catch (err) {
       errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same codecs'));
@@ -639,7 +643,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [assureOutDirAccess, outputDir, ffmpegExperimental, preserveMovData]);
+  }, [assureOutDirAccess, outputDir, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), []);
 
@@ -1035,6 +1039,7 @@ const App = memo(() => {
           onProgress: setCutProgress,
           chapterNames,
           autoDeleteMergedSegments,
+          preserveMetadataOnMerge,
         });
       }
 
@@ -1065,7 +1070,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [autoMerge, copyFileStreams, customOutDir, duration, effectiveRotation, exportExtraStreams, ffmpegExperimental, fileFormat, fileFormatData, filePath, handleCutFailed, isCustomFormatSelected, isRotationSet, keyframeCut, mainStreams, nonCopiedExtraStreams, outSegments, outputDir, shortestFlag, working, preserveMovData, avoidNegativeTs, numStreamsToCopy, hideAllNotifications, currentSegIndexSafe, invertCutSegments, autoDeleteMergedSegments, segmentsToChapters, customTagsByFile, customTagsByStreamId]);
+  }, [autoMerge, copyFileStreams, customOutDir, duration, effectiveRotation, exportExtraStreams, ffmpegExperimental, fileFormat, fileFormatData, filePath, handleCutFailed, isCustomFormatSelected, isRotationSet, keyframeCut, mainStreams, nonCopiedExtraStreams, outSegments, outputDir, shortestFlag, working, preserveMovData, avoidNegativeTs, numStreamsToCopy, hideAllNotifications, currentSegIndexSafe, invertCutSegments, autoDeleteMergedSegments, segmentsToChapters, customTagsByFile, customTagsByStreamId, preserveMetadataOnMerge]);
 
   const onExportPress = useCallback(async () => {
     if (working || !filePath) return;
@@ -2215,7 +2220,7 @@ const App = memo(() => {
         </div>
       </motion.div>
 
-      <ExportConfirm autoMerge={autoMerge} toggleAutoMerge={toggleAutoMerge} areWeCutting={areWeCutting} outSegments={outSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} currentSegIndex={currentSegIndexSafe} invertCutSegments={invertCutSegments} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} segmentsToChapters={segmentsToChapters} toggleSegmentsToChapters={toggleSegmentsToChapters} outFormat={fileFormat} />
+      <ExportConfirm autoMerge={autoMerge} toggleAutoMerge={toggleAutoMerge} areWeCutting={areWeCutting} outSegments={outSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} currentSegIndex={currentSegIndexSafe} invertCutSegments={invertCutSegments} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} segmentsToChapters={segmentsToChapters} toggleSegmentsToChapters={toggleSegmentsToChapters} outFormat={fileFormat} preserveMetadataOnMerge={preserveMetadataOnMerge} togglePreserveMetadataOnMerge={togglePreserveMetadataOnMerge} />
 
       <HelpSheet
         visible={helpVisible}

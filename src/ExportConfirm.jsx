@@ -42,6 +42,7 @@ const ExportConfirm = memo(({
   toggleAutoMerge, renderOutFmt, preserveMovData, togglePreserveMovData, avoidNegativeTs, setAvoidNegativeTs,
   changeOutDir, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, currentSegIndex, invertCutSegments,
   exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, outFormat,
+  preserveMetadataOnMerge, togglePreserveMetadataOnMerge,
 }) => {
   const { t } = useTranslation();
 
@@ -64,7 +65,11 @@ const ExportConfirm = memo(({
   }
 
   function onSegmentsToChaptersHelpPress() {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('When merging, do you want to create chapters in the merged file, according to the cut segments?') });
+    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('When merging, do you want to create chapters in the merged file, according to the cut segments? NOTE: This may dramatically increase processing time') });
+  }
+
+  function onPreserveMetadataOnMergeHelpPress() {
+    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('When merging, do you want to preserve metadata from your original file? NOTE: This may dramatically increase processing time') });
   }
 
   function onAvoidNegativeTsHelpPress() {
@@ -99,7 +104,7 @@ const ExportConfirm = memo(({
               <div style={boxStyle}>
                 <h2 style={{ marginTop: 0 }}>{t('Export options')}</h2>
                 <ul>
-                  {outSegments.length > 1 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: outSegments.length })} <MergeExportButton autoMerge={autoMerge} outSegments={outSegments} toggleAutoMerge={toggleAutoMerge} /></li>}
+                  {outSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: outSegments.length })} <MergeExportButton autoMerge={autoMerge} outSegments={outSegments} toggleAutoMerge={toggleAutoMerge} /></li>}
                   <li>
                     {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
                     <HelpIcon onClick={onOutFmtHelpPress} />
@@ -115,14 +120,18 @@ const ExportConfirm = memo(({
 
                 <h3>{t('Advanced options')}</h3>
 
-                <ul>
-                  {autoMerge && (
+                {autoMerge && outSegments.length >= 2 && (
+                  <ul>
                     <li>
-                      {t('Create chapters from segments?')} <Button height={20} onClick={toggleSegmentsToChapters}>{segmentsToChapters ? t('Yes') : t('No')}</Button>
+                      {t('Create chapters from merged segments? (slow)')} <Button height={20} onClick={toggleSegmentsToChapters}>{segmentsToChapters ? t('Yes') : t('No')}</Button>
                       <HelpIcon onClick={onSegmentsToChaptersHelpPress} />
                     </li>
-                  )}
-                </ul>
+                    <li>
+                      {t('Preserve original metadata when merging? (slow)')} <Button height={20} onClick={togglePreserveMetadataOnMerge}>{preserveMetadataOnMerge ? t('Yes') : t('No')}</Button>
+                      <HelpIcon onClick={onPreserveMetadataOnMergeHelpPress} />
+                    </li>
+                  </ul>
+                )}
 
                 <p>{t('Depending on your specific file, you may have to try different options for best results.')}</p>
 

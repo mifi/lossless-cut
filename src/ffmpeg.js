@@ -513,7 +513,7 @@ async function writeChaptersFfmetadata(outDir, chapters) {
   return path;
 }
 
-export async function mergeFiles({ paths, outDir, outPath, allStreams, outFormat, ffmpegExperimental, onProgress = () => {}, preserveMovData, chapters }) {
+export async function mergeFiles({ paths, outDir, outPath, allStreams, outFormat, ffmpegExperimental, onProgress = () => {}, preserveMovData, chapters, preserveMetadataOnMerge }) {
   console.log('Merging files', { paths }, 'to', outPath);
 
   const durations = await pMap(paths, getDuration, { concurrency: 1 });
@@ -531,8 +531,8 @@ export async function mergeFiles({ paths, outDir, outPath, allStreams, outFormat
       // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
       '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe', '-i', '-',
 
-      // Use the first file for metadata. Can only do this if allStreams (-map 0) is set, or else ffmpeg might output this input instead of the concat
-      ...(allStreams ? ['-i', paths[0]] : []),
+      // Add the first file for using its metadata. Can only do this if allStreams (-map 0) is set, or else ffmpeg might output this input instead of the concat
+      ...(preserveMetadataOnMerge && allStreams ? ['-i', paths[0]] : []),
 
       // Chapters?
       ...(ffmetadataPath ? ['-f', 'ffmetadata', '-i', ffmetadataPath] : []),
@@ -544,7 +544,7 @@ export async function mergeFiles({ paths, outDir, outPath, allStreams, outFormat
       // Use the file index 1 for metadata
       // -map_metadata 0 with concat demuxer doesn't seem to preserve metadata when merging.
       // Can only do this if allStreams (-map 0) is set
-      ...(allStreams ? ['-map_metadata', '1'] : []),
+      ...(preserveMetadataOnMerge && allStreams ? ['-map_metadata', '1'] : []),
 
       // https://video.stackexchange.com/questions/23741/how-to-prevent-ffmpeg-from-dropping-metadata
       ...getMovFlags(outFormat, preserveMovData),
@@ -599,7 +599,7 @@ async function createChaptersFromSegments({ segmentPaths, chapterNames }) {
   return undefined;
 }
 
-export async function autoMergeSegments({ customOutDir, sourceFile, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, autoDeleteMergedSegments, chapterNames }) {
+export async function autoMergeSegments({ customOutDir, sourceFile, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge }) {
   const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath: sourceFile });
   const fileName = `cut-merged-${new Date().getTime()}${ext}`;
   const outPath = getOutPath(customOutDir, sourceFile, fileName);
@@ -607,7 +607,7 @@ export async function autoMergeSegments({ customOutDir, sourceFile, isCustomForm
 
   const chapters = await createChaptersFromSegments({ segmentPaths, chapterNames });
 
-  await mergeFiles({ paths: segmentPaths, outDir, outPath, outFormat, allStreams: true, ffmpegExperimental, onProgress, preserveMovData, chapters });
+  await mergeFiles({ paths: segmentPaths, outDir, outPath, outFormat, allStreams: true, ffmpegExperimental, onProgress, preserveMovData, chapters, preserveMetadataOnMerge });
   if (autoDeleteMergedSegments) await pMap(segmentPaths, path => fs.unlink(path), { concurrency: 5 });
 }
 

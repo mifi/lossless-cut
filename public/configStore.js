@@ -24,6 +24,7 @@ const defaults = {
     hideNotifications: undefined,
     autoLoadTimecode: false,
     segmentsToChapters: false,
+    preserveMetadataOnMerge: false,
   },
 };
 
