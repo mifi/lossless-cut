@@ -168,6 +168,6 @@ const modifiedFormats = {
   ...ffmpegFormats,
 };
 
-modifiedFormats.ipod = 'M4A';
+modifiedFormats.ipod = 'M4A - Audio for iTunes';
 
 export default modifiedFormats;
