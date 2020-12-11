@@ -632,10 +632,11 @@ const App = memo(() => {
 
       const ext = extname(firstPath);
       const outPath = getOutPath(newCustomOutDir, firstPath, `merged${ext}`);
+      const outDir = getOutDir(customOutDir, firstPath);
 
       // console.log('merge', paths);
       await ffmpegMergeFiles({ paths, outPath, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, preserveMetadataOnMerge });
-      openDirToast({ icon: 'success', dirPath: outputDir, text: i18n.t('Files merged!') });
+      openDirToast({ icon: 'success', dirPath: outDir, text: i18n.t('Files merged!') });
     } catch (err) {
       errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same codecs'));
       console.error('Failed to merge files', err);
