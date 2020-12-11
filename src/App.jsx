@@ -1423,6 +1423,8 @@ const App = memo(() => {
   const extractAllStreams = useCallback(async () => {
     if (!filePath) return;
 
+    if (!(await confirmExtractAllStreamsDialog())) return;
+
     try {
       setStreamsSelectorShown(false);
       setWorking(i18n.t('Extracting all streams'));
@@ -1436,8 +1438,7 @@ const App = memo(() => {
     }
   }, [customOutDir, filePath, mainStreams, outputDir]);
 
-  async function onExtractAllStreamsPress() {
-    if (!(await confirmExtractAllStreamsDialog())) return;
+  function onExtractAllStreamsPress() {
     extractAllStreams();
   }
 
@@ -1753,12 +1754,17 @@ const App = memo(() => {
       }
     }
 
+    function showStreamsSelector() {
+      setStreamsSelectorShown(true);
+    }
+
     electron.ipcRenderer.on('file-opened', fileOpened);
     electron.ipcRenderer.on('close-file', closeFile);
     electron.ipcRenderer.on('html5ify', html5ifyCurrentFile);
     electron.ipcRenderer.on('show-merge-dialog', showOpenAndMergeDialog2);
     electron.ipcRenderer.on('set-start-offset', setStartOffset);
     electron.ipcRenderer.on('extract-all-streams', extractAllStreams);
+    electron.ipcRenderer.on('showStreamsSelector', showStreamsSelector);
     electron.ipcRenderer.on('undo', undo);
     electron.ipcRenderer.on('redo', redo);
     electron.ipcRenderer.on('importEdlFile', importEdlFile);
@@ -1780,6 +1786,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('show-merge-dialog', showOpenAndMergeDialog2);
       electron.ipcRenderer.removeListener('set-start-offset', setStartOffset);
       electron.ipcRenderer.removeListener('extract-all-streams', extractAllStreams);
+      electron.ipcRenderer.removeListener('showStreamsSelector', showStreamsSelector);
       electron.ipcRenderer.removeListener('undo', undo);
       electron.ipcRenderer.removeListener('redo', redo);
       electron.ipcRenderer.removeListener('importEdlFile', importEdlFile);

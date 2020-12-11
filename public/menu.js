@@ -28,11 +28,24 @@ module.exports = (app, mainWindow, newVersion) => {
             mainWindow.webContents.send('close-file');
           },
         },
+        {
+          label: 'Save project (CSV)',
+          click() {
+            mainWindow.webContents.send('exportEdlFile');
+          },
+        },
+
         { type: 'separator' },
         {
           label: 'Load project (CSV)',
           click() {
             mainWindow.webContents.send('importEdlFile', 'csv');
+          },
+        },
+        {
+          label: 'Save project (CSV)',
+          click() {
+            mainWindow.webContents.send('exportEdlFile');
           },
         },
         {
@@ -64,12 +77,6 @@ module.exports = (app, mainWindow, newVersion) => {
             },
           ],
         },
-        {
-          label: 'Save project (CSV)',
-          click() {
-            mainWindow.webContents.send('exportEdlFile');
-          },
-        },
         { type: 'separator' },
         {
           label: 'Convert to supported format',
@@ -84,12 +91,7 @@ module.exports = (app, mainWindow, newVersion) => {
           },
         },
         { type: 'separator' },
-        {
-          label: 'Extract all streams',
-          click() {
-            mainWindow.webContents.send('extract-all-streams', false);
-          },
-        },
+
         { type: 'separator' },
         {
           label: 'Settings',
@@ -149,6 +151,23 @@ module.exports = (app, mainWindow, newVersion) => {
               label: 'Create fixed duration segments',
               click() {
                 mainWindow.webContents.send('createFixedDurationSegments');
+              },
+            },
+          ],
+        },
+        {
+          label: 'Tracks',
+          submenu: [
+            {
+              label: 'Extract all tracks',
+              click() {
+                mainWindow.webContents.send('extract-all-streams');
+              },
+            },
+            {
+              label: 'Edit tracks / metadata tags',
+              click() {
+                mainWindow.webContents.send('showStreamsSelector');
               },
             },
           ],
