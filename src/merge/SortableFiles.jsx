@@ -29,12 +29,14 @@ const SortableContainer = sortableContainer(({ items }) => (
 ));
 
 const SortableFiles = memo(({
-  items: itemsProp, onChange, helperContainer, onAllStreamsChange,
+  items: itemsProp, onChange, helperContainer, onAllStreamsChange, onSegmentsToChaptersChange,
 }) => {
   const [items, setItems] = useState(itemsProp);
   const [allStreams, setAllStreams] = useState(false);
+  const [segmentsToChapters, setSegmentsToChapters] = useState(false);
 
   useEffect(() => onAllStreamsChange(allStreams), [allStreams, onAllStreamsChange]);
+  useEffect(() => onSegmentsToChaptersChange(segmentsToChapters), [segmentsToChapters, onSegmentsToChaptersChange]);
   useEffect(() => onChange(items), [items, onChange]);
 
   const onSortEnd = useCallback(({ oldIndex, newIndex }) => {
@@ -57,8 +59,14 @@ const SortableFiles = memo(({
       />
 
       <div style={{ marginTop: 10 }}>
-        <Checkbox checked={allStreams} onChange={e => setAllStreams(e.target.checked)} label={t('Include all tracks?')} />
-        <div style={{ fontSize: 12, textAlign: 'left' }}>{t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}</div>
+        <div>
+          <Checkbox checked={allStreams} onChange={e => setAllStreams(e.target.checked)} label={t('Include all tracks?')} />
+          <div style={{ fontSize: 12, textAlign: 'left' }}>{t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}</div>
+        </div>
+
+        <div>
+          <Checkbox checked={segmentsToChapters} onChange={e => setSegmentsToChapters(e.target.checked)} label={t('Create chapters from merged segments? (slow)')} />
+        </div>
       </div>
     </div>
   );

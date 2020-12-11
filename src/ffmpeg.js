@@ -586,7 +586,7 @@ export async function mergeFiles({ paths, outDir, outPath, allStreams, outFormat
   await transferTimestamps(paths[0], outPath);
 }
 
-async function createChaptersFromSegments({ segmentPaths, chapterNames }) {
+export async function createChaptersFromSegments({ segmentPaths, chapterNames }) {
   if (chapterNames) {
     try {
       const durations = await pMap(segmentPaths, (segmentPath) => getDuration(segmentPath), { concurrency: 3 });

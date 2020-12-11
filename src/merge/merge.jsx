@@ -20,6 +20,7 @@ export async function showMergeDialog(paths, onMergeClick) {
   let swalElem;
   let outPaths = paths;
   let allStreams = false;
+  let segmentsToChapters = false;
   const { dismiss } = await MySwal.fire({
     width: '90%',
     showCancelButton: true,
@@ -29,12 +30,13 @@ export async function showMergeDialog(paths, onMergeClick) {
       items={outPaths}
       onChange={(val) => { outPaths = val; }}
       onAllStreamsChange={(val) => { allStreams = val; }}
+      onSegmentsToChaptersChange={(val) => { segmentsToChapters = val; }}
       helperContainer={() => swalElem}
     />),
   });
 
   if (!dismiss) {
-    await onMergeClick({ paths: outPaths, allStreams });
+    await onMergeClick({ paths: outPaths, allStreams, segmentsToChapters });
   }
 }
 

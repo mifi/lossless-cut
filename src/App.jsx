@@ -42,7 +42,7 @@ import {
   getDefaultOutFormat, getFormatData, mergeFiles as ffmpegMergeFiles, renderThumbnails as ffmpegRenderThumbnails,
   readFrames, renderWaveformPng, html5ifyDummy, cutMultiple, extractStreams, autoMergeSegments, getAllStreams,
   findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
-  fixInvalidDuration, getDuration, getTimecodeFromStreams,
+  fixInvalidDuration, getDuration, getTimecodeFromStreams, createChaptersFromSegments,
 } from './ffmpeg';
 import { saveCsv, loadCsv, loadXmeml, loadCue, loadPbf } from './edlStore';
 import {
@@ -63,7 +63,7 @@ const isDev = window.require('electron-is-dev');
 const electron = window.require('electron'); // eslint-disable-line
 const trash = window.require('trash');
 const { unlink, exists } = window.require('fs-extra');
-const { extname } = window.require('path');
+const { extname, parse: parsePath } = window.require('path');
 
 const { dialog, app } = electron.remote;
 
@@ -622,7 +622,7 @@ const App = memo(() => {
     return { cancel: false, newCustomOutDir };
   }, [customOutDir]);
 
-  const mergeFiles = useCallback(async ({ paths, allStreams }) => {
+  const mergeFiles = useCallback(async ({ paths, allStreams, segmentsToChapters: segmentsToChapters2 }) => {
     try {
       setWorking(i18n.t('Merging'));
 
@@ -634,8 +634,14 @@ const App = memo(() => {
       const outPath = getOutPath(newCustomOutDir, firstPath, `merged${ext}`);
       const outDir = getOutDir(customOutDir, firstPath);
 
+      let chapters;
+      if (segmentsToChapters2) {
+        const chapterNames = paths.map((path) => parsePath(path).name);
+        chapters = await createChaptersFromSegments({ segmentPaths: paths, chapterNames });
+      }
+
       // console.log('merge', paths);
-      await ffmpegMergeFiles({ paths, outPath, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, preserveMetadataOnMerge });
+      await ffmpegMergeFiles({ paths, outPath, outDir, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, preserveMetadataOnMerge, chapters });
       openDirToast({ icon: 'success', dirPath: outDir, text: i18n.t('Files merged!') });
     } catch (err) {
       errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same codecs'));
@@ -644,7 +650,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [assureOutDirAccess, outputDir, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge]);
+  }, [assureOutDirAccess, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, customOutDir]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), []);
 
