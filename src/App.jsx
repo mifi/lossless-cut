@@ -719,6 +719,8 @@ const App = memo(() => {
   }, [copyAnyAudioTrack, filePath, mainStreams]);
 
   const removeCutSegment = useCallback(() => {
+    if (cutSegments.length === 1 && cutSegments[0].start == null && cutSegments[0].end == null) return; // Initial segment
+
     if (cutSegments.length <= 1) {
       setCutSegments(createInitialCutSegments());
       return;
