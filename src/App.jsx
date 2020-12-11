@@ -207,6 +207,8 @@ const App = memo(() => {
   useEffect(() => safeSetConfig('segmentsToChapters', segmentsToChapters), [segmentsToChapters]);
   const [preserveMetadataOnMerge, setPreserveMetadataOnMerge] = useState(configStore.get('preserveMetadataOnMerge'));
   useEffect(() => safeSetConfig('preserveMetadataOnMerge', preserveMetadataOnMerge), [preserveMetadataOnMerge]);
+  const [simpleMode, setSimpleMode] = useState(configStore.get('simpleMode'));
+  useEffect(() => safeSetConfig('simpleMode', simpleMode), [simpleMode]);
 
   useEffect(() => {
     i18n.changeLanguage(language || fallbackLng).catch(console.error);
@@ -667,6 +669,11 @@ const App = memo(() => {
   const toggleAutoMerge = useCallback(() => setAutoMerge(val => !val), []);
 
   const togglePreserveMovData = useCallback(() => setPreserveMovData((val) => !val), []);
+
+  const toggleSimpleMode = useCallback(() => setSimpleMode((v) => {
+    if (!hideAllNotifications) toast.fire({ text: v ? i18n.t('Simple mode has been disabled. You will now see also non-essential buttons') : i18n.t('Simple mode enabled. You will now see only the most essential buttons') });
+    return !v;
+  }), [hideAllNotifications]);
 
   const isCopyingStreamId = useCallback((path, streamId) => (
     !!(copyStreamIdsByFile[path] || {})[streamId]
@@ -2008,7 +2015,7 @@ const App = memo(() => {
         />
       </div>
 
-      {!isFileOpened && <NoFileLoaded topBarHeight={topBarHeight} bottomBarHeight={bottomBarHeight} mifiLink={mifiLink} toggleHelp={toggleHelp} currentCutSeg={currentCutSeg} />}
+      {!isFileOpened && <NoFileLoaded topBarHeight={topBarHeight} bottomBarHeight={bottomBarHeight} mifiLink={mifiLink} toggleHelp={toggleHelp} currentCutSeg={currentCutSeg} simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} />}
 
       <AnimatePresence>
         {working && (
@@ -2192,6 +2199,7 @@ const App = memo(() => {
           hasVideo={hasVideo}
           keyframesEnabled={keyframesEnabled}
           toggleKeyframesEnabled={toggleKeyframesEnabled}
+          simpleMode={simpleMode}
         />
 
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -2201,6 +2209,8 @@ const App = memo(() => {
             invertCutSegments={invertCutSegments}
             setInvertCutSegments={setInvertCutSegments}
             toggleComfortZoom={toggleComfortZoom}
+            simpleMode={simpleMode}
+            toggleSimpleMode={toggleSimpleMode}
           />
 
           <RightMenu
@@ -2217,6 +2227,7 @@ const App = memo(() => {
             outSegments={outSegments}
             exportConfirmEnabled={exportConfirmEnabled}
             toggleExportConfirmEnabled={toggleExportConfirmEnabled}
+            simpleMode={simpleMode}
           />
         </div>
       </motion.div>

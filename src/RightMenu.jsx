@@ -13,6 +13,7 @@ import ToggleExportConfirm from './components/ToggleExportConfirm';
 const RightMenu = memo(({
   isRotationSet, rotation, areWeCutting, increaseRotation, deleteSource, renderCaptureFormatButton,
   capture, onExportPress, outSegments, hasVideo, autoMerge, exportConfirmEnabled, toggleExportConfirmEnabled,
+  simpleMode,
 }) => {
   const rotationStr = `${rotation}°`;
 
@@ -33,17 +34,19 @@ const RightMenu = memo(({
         </div>
       )}
 
-      <FaTrashAlt
-        title={t('Delete source file')}
-        style={{ padding: '5px 10px' }}
-        size={16}
-        onClick={deleteSource}
-        role="button"
-      />
+      {!simpleMode && (
+        <FaTrashAlt
+          title={t('Delete source file')}
+          style={{ padding: '5px 10px' }}
+          size={16}
+          onClick={deleteSource}
+          role="button"
+        />
+      )}
 
       {hasVideo && (
         <>
-          {renderCaptureFormatButton({ height: 20 })}
+          {!simpleMode && renderCaptureFormatButton({ height: 20 })}
 
           <IoIosCamera
             style={{ paddingLeft: 5, paddingRight: 15 }}
@@ -54,7 +57,7 @@ const RightMenu = memo(({
         </>
       )}
 
-      <ToggleExportConfirm style={{ marginRight: 5 }} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />
+      {!simpleMode && <ToggleExportConfirm style={{ marginRight: 5 }} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />}
 
       <ExportButton outSegments={outSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={onExportPress} />
     </div>

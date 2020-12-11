@@ -14,7 +14,7 @@ const TimelineControls = memo(({
   setCurrentSegIndex, cutStartTimeManual, setCutStartTimeManual, cutEndTimeManual, setCutEndTimeManual,
   duration, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
   playing, shortStep, togglePlay, setTimelineMode, hasAudio, hasVideo, timelineMode,
-  keyframesEnabled, toggleKeyframesEnabled, seekClosestKeyframe,
+  keyframesEnabled, toggleKeyframesEnabled, seekClosestKeyframe, simpleMode,
 }) => {
   const { t } = useTranslation();
 
@@ -56,7 +56,7 @@ const TimelineControls = memo(({
     const isCutTimeManualSet = () => cutTimeManual !== undefined;
 
     const cutTimeInputStyle = {
-      background: 'white', borderRadius: 5, color: 'rgba(0, 0, 0, 0.7)', fontSize: 13, textAlign: 'center', padding: '1px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 3 : 5, marginRight: isStart ? 5 : 3, border: 'none', boxSizing: 'border-box', fontFamily: 'inherit', width: 90, outline: 'none',
+      background: 'white', borderRadius: 5, color: 'rgba(0, 0, 0, 0.7)', fontSize: 13, textAlign: 'center', padding: '1px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 0 : 5, marginRight: isStart ? 5 : 0, border: 'none', boxSizing: 'border-box', fontFamily: 'inherit', width: 90, outline: 'none',
     };
 
     function parseAndSetCutTime(text) {
@@ -116,11 +116,12 @@ const TimelineControls = memo(({
   const PlayPause = playing ? FaPause : FaPlay;
 
   const leftRightWidth = 100;
+  const toolbarHeight = 24;
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: toolbarHeight }}>
       <div style={{ display: 'flex', alignItems: 'center', flexBasis: leftRightWidth }}>
-        {hasAudio && (
+        {hasAudio && !simpleMode && (
           <GiSoundWaves
             size={24}
             style={{ padding: '0 5px', color: timelineMode === 'waveform' ? primaryTextColor : undefined }}
@@ -129,7 +130,7 @@ const TimelineControls = memo(({
             onClick={() => setTimelineMode('waveform')}
           />
         )}
-        {hasVideo && (
+        {hasVideo && !simpleMode && (
           <Fragment>
             <FaImages
               size={20}
@@ -152,64 +153,78 @@ const TimelineControls = memo(({
 
       <div style={{ flexGrow: 1 }} />
 
-      <FaStepBackward
-        size={16}
-        title={t('Jump to start of video')}
-        role="button"
-        onClick={() => seekAbs(0)}
-      />
+      {!simpleMode && (
+        <FaStepBackward
+          size={16}
+          title={t('Jump to start of video')}
+          role="button"
+          onClick={() => seekAbs(0)}
+        />
+      )}
 
-      {renderJumpCutpointButton(-1)}
+      {!simpleMode && renderJumpCutpointButton(-1)}
 
-      <SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} onClick={jumpCutStart} title={t('Jump to cut start')} style={{ marginRight: 5 }} />
-      <SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaHandPointLeft} onClick={setCutStart} title={t('Set cut start to current position')} />
+      {!simpleMode && <SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} onClick={jumpCutStart} title={t('Jump to cut start')} style={{ marginRight: 5 }} />}
+      <SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaHandPointLeft} onClick={setCutStart} title={t('Set cut start to current position')} style={{ marginRight: 5 }} />
 
-      {renderCutTimeInput('start')}
+      {!simpleMode && renderCutTimeInput('start')}
 
-      <IoMdKey
-        size={20}
-        role="button"
-        title={t('Seek previous keyframe')}
-        style={{ transform: 'matrix(-1, 0, 0, 1, 0, 0)' }}
-        onClick={() => seekClosestKeyframe(-1)}
-      />
-      <FaCaretLeft
-        size={20}
-        role="button"
-        title={t('One frame back')}
-        onClick={() => shortStep(-1)}
-      />
+      {!simpleMode && (
+        <>
+          <IoMdKey
+            size={20}
+            role="button"
+            title={t('Seek previous keyframe')}
+            style={{ transform: 'matrix(-1, 0, 0, 1, 0, 0)' }}
+            onClick={() => seekClosestKeyframe(-1)}
+          />
+          <FaCaretLeft
+            size={20}
+            role="button"
+            title={t('One frame back')}
+            onClick={() => shortStep(-1)}
+          />
+        </>
+      )}
+
       <PlayPause
         size={16}
         role="button"
         onClick={togglePlay}
       />
-      <FaCaretRight
-        size={20}
-        role="button"
-        title={t('One frame forward')}
-        onClick={() => shortStep(1)}
-      />
-      <IoMdKey
-        size={20}
-        role="button"
-        title={t('Seek next keyframe')}
-        onClick={() => seekClosestKeyframe(1)}
-      />
 
-      {renderCutTimeInput('end')}
+      {!simpleMode && (
+        <>
+          <FaCaretRight
+            size={20}
+            role="button"
+            title={t('One frame forward')}
+            onClick={() => shortStep(1)}
+          />
+          <IoMdKey
+            size={20}
+            role="button"
+            title={t('Seek next keyframe')}
+            onClick={() => seekClosestKeyframe(1)}
+          />
+        </>
+      )}
 
-      <SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaHandPointRight} onClick={setCutEnd} title={t('Set cut end to current position')} />
-      <SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} onClick={jumpCutEnd} title={t('Jump to cut end')} style={{ marginLeft: 5 }} />
+      {!simpleMode && renderCutTimeInput('end')}
 
-      {renderJumpCutpointButton(1)}
+      <SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaHandPointRight} onClick={setCutEnd} title={t('Set cut end to current position')} style={{ marginLeft: 5 }} />
+      {!simpleMode && <SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} onClick={jumpCutEnd} title={t('Jump to cut end')} style={{ marginLeft: 5 }} />}
 
-      <FaStepForward
-        size={16}
-        title={t('Jump to end of video')}
-        role="button"
-        onClick={() => seekAbs(duration)}
-      />
+      {!simpleMode && renderJumpCutpointButton(1)}
+
+      {!simpleMode && (
+        <FaStepForward
+          size={16}
+          title={t('Jump to end of video')}
+          role="button"
+          onClick={() => seekAbs(duration)}
+        />
+      )}
 
       <div style={{ flexGrow: 1 }} />
 

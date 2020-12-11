@@ -4,10 +4,11 @@ import { FaHandPointRight, FaHandPointLeft } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
 import SetCutpointButton from './components/SetCutpointButton';
+import SimpleModeButton from './components/SimpleModeButton';
 
 const electron = window.require('electron');
 
-const NoFileLoaded = memo(({ topBarHeight, bottomBarHeight, mifiLink, toggleHelp, currentCutSeg }) => {
+const NoFileLoaded = memo(({ topBarHeight, bottomBarHeight, mifiLink, toggleHelp, currentCutSeg, simpleMode, toggleSimpleMode }) => {
   const { t } = useTranslation();
 
   return (
@@ -21,6 +22,11 @@ const NoFileLoaded = memo(({ topBarHeight, bottomBarHeight, mifiLink, toggleHelp
       <div style={{ fontSize: '3vmin', color: '#ccc' }}>
         <SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaHandPointLeft} style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaHandPointRight} style={{ verticalAlign: 'middle' }} /> or <kbd>I</kbd> <kbd>O</kbd> to set cutpoints
       </div>
+
+      <div style={{ fontSize: '3vmin', color: '#ccc' }}>
+        <SimpleModeButton simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} style={{ verticalAlign: 'middle' }} size={16} /> to toggle simple mode
+      </div>
+
 
       {mifiLink && mifiLink.loadUrl && (
         <div style={{ position: 'relative', margin: '3vmin', width: '60vmin', height: '20vmin' }}>

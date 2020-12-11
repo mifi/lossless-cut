@@ -25,6 +25,7 @@ const defaults = {
     autoLoadTimecode: false,
     segmentsToChapters: false,
     preserveMetadataOnMerge: false,
+    simpleMode: true,
   },
 };
 
