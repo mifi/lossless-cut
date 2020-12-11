@@ -9,5 +9,6 @@ If you have an issue cutting a particular file, please also share the file, if p
 Also provide the error report if you got one (or `Help`->`Report an error`)
 
 How to open developer tools:
+- Any: Tools > Toggle Developer Tools
 - Windows: <kbd>F12</kbd> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd>
 - Mac: <kbd>Cmd</kbd>+<kbd>Opt</kbd>+<kbd>I</kbd>
