@@ -996,7 +996,8 @@ const App = memo(() => {
 
     setExportConfirmVisible(false);
 
-    const filteredOutSegments = exportSingle ? [outSegments[currentSegIndexSafe]] : outSegments;
+    const outSegmentsWithOrder = outSegments.map((s, order) => ({ ...s, order }));
+    const filteredOutSegments = exportSingle ? [outSegmentsWithOrder[currentSegIndexSafe]] : outSegmentsWithOrder;
 
     try {
       setWorking(i18n.t('Exporting'));
@@ -1011,6 +1012,7 @@ const App = memo(() => {
         rotation: isRotationSet ? effectiveRotation : undefined,
         copyFileStreams,
         keyframeCut,
+        invertCutSegments,
         segments: filteredOutSegments,
         onProgress: setCutProgress,
         appendFfmpegCommandLog,
@@ -1576,7 +1578,7 @@ const App = memo(() => {
       if (hasVideo) {
         if (isDurationValid(await getDuration(filePath))) {
           showToast();
-        await tryCreateDummyVideo();
+          await tryCreateDummyVideo();
         }
       } else if (hasAudio) {
         showToast();

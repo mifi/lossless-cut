@@ -308,7 +308,7 @@ export async function cutMultiple({
   customOutDir, filePath, segments, videoDuration, rotation,
   onProgress, keyframeCut, copyFileStreams, outFormat, isCustomFormatSelected,
   appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, avoidNegativeTs,
-  customTagsByFile, customTagsByStreamId,
+  customTagsByFile, customTagsByStreamId, invertCutSegments,
 }) {
   console.log('customTagsByFile', customTagsByFile);
   console.log('customTagsByStreamId', customTagsByStreamId);
@@ -323,10 +323,14 @@ export async function cutMultiple({
 
   let i = 0;
   // eslint-disable-next-line no-restricted-syntax,no-unused-vars
-  for (const { start, end, name } of segments) {
+  for (const { start, end, name, order } of segments) {
     const cutFromStr = formatDuration({ seconds: start, fileNameFriendly: true });
     const cutToStr = formatDuration({ seconds: end, fileNameFriendly: true });
-    const segNamePart = name ? `-${filenamify(name)}` : '';
+    let segNamePart = '';
+    if (!invertCutSegments) {
+      if (name) segNamePart = `-${filenamify(name)}`;
+      else segNamePart = `-seg${order + 1}`;
+    }
     const cutSpecification = `${cutFromStr}-${cutToStr}${segNamePart}`.substr(0, 200);
     const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath });
     const fileName = `${cutSpecification}${ext}`;
