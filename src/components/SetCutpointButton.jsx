@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { getSegColors } from './util';
+import { getSegColors } from '../util';
 
 const SetCutpointButton = ({ currentCutSeg, side, Icon, onClick, title, style }) => {
   const {

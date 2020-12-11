@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { getSegColors, parseDuration, formatDuration } from './util';
 import { primaryTextColor } from './colors';
-import SetCutpointButton from './SetCutpointButton';
+import SetCutpointButton from './components/SetCutpointButton';
 
 const TimelineControls = memo(({
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,

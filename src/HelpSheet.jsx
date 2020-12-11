@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { FaClipboard, FaHandPointRight, FaHandPointLeft, FaStepBackward, FaStepForward } from 'react-icons/fa';
 import { useTranslation, Trans } from 'react-i18next';
 
-import SetCutpointButton from './SetCutpointButton';
+import SetCutpointButton from './components/SetCutpointButton';
 import { toast } from './util';
 import { primaryTextColor } from './colors';
 import Sheet from './Sheet';
