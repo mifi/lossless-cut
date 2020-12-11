@@ -9,10 +9,7 @@ const PreserveMovDataButton = memo(({ preserveMovData, togglePreserveMovData }) 
   const { t } = useTranslation();
 
   return (
-    <Button
-      height={20}
-      onClick={withBlur(togglePreserveMovData)}
-    >
+    <Button height={20} onClick={withBlur(togglePreserveMovData)}>
       {preserveMovData ? t('Yes') : t('No')}
     </Button>
   );

@@ -176,27 +176,23 @@ export function findNearestKeyFrameTime({ frames, time, direction, fps }) {
   return nearestFrame.time;
 }
 
-function getMovFlags(outFormat, preserveMovData) {
-  let flags = [];
+function getMovFlags({ preserveMovData, movFastStart }) {
+  const flags = [];
 
-  // https://github.com/mifi/lossless-cut/issues/331
-  if (outFormat && ['ipod'].includes(outFormat)) {
-    flags = ['+faststart'];
-  } else if (preserveMovData) {
-    // https://video.stackexchange.com/a/26084/29486
-    flags = ['use_metadata_tags'];
-  } else {
-    flags = [];
-  }
+  // https://video.stackexchange.com/questions/23741/how-to-prevent-ffmpeg-from-dropping-metadata
+  // https://video.stackexchange.com/a/26084/29486
+  if (preserveMovData) flags.push('use_metadata_tags');
+
+  // https://github.com/mifi/lossless-cut/issues/347
+  if (movFastStart) flags.push('+faststart');
 
   if (flags.length === 0) return [];
-
   return flatMap(flags, flag => ['-movflags', flag]);
 }
 
 async function cut({
   filePath, outFormat, cutFrom, cutTo, videoDuration, rotation, ffmpegExperimental,
-  onProgress, copyFileStreams, keyframeCut, outPath, appendFfmpegCommandLog, shortestFlag, preserveMovData,
+  onProgress, copyFileStreams, keyframeCut, outPath, appendFfmpegCommandLog, shortestFlag, preserveMovData, movFastStart,
   avoidNegativeTs, customTagsByFile, customTagsByStreamId,
 }) {
   const cuttingStart = isCuttingStart(cutFrom);
@@ -270,8 +266,8 @@ async function cut({
 
     ...flatMapDeep(copyFileStreamsFiltered, ({ streamIds }, fileIndex) => streamIds.map(streamId => ['-map', `${fileIndex}:${streamId}`])),
     '-map_metadata', '0',
-    // https://video.stackexchange.com/questions/23741/how-to-prevent-ffmpeg-from-dropping-metadata
-    ...getMovFlags(outFormat, preserveMovData),
+
+    ...getMovFlags({ preserveMovData, movFastStart }),
 
     ...customTagsArgs,
 
@@ -307,7 +303,7 @@ function getOutFileExtension({ isCustomFormatSelected, outFormat, filePath }) {
 export async function cutMultiple({
   customOutDir, filePath, segments, videoDuration, rotation,
   onProgress, keyframeCut, copyFileStreams, outFormat, isCustomFormatSelected,
-  appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, avoidNegativeTs,
+  appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs,
   customTagsByFile, customTagsByStreamId, invertCutSegments,
 }) {
   console.log('customTagsByFile', customTagsByFile);
@@ -353,6 +349,7 @@ export async function cutMultiple({
       appendFfmpegCommandLog,
       ffmpegExperimental,
       preserveMovData,
+      movFastStart,
       avoidNegativeTs,
       customTagsByFile,
       customTagsByStreamId,
@@ -517,7 +514,7 @@ async function writeChaptersFfmetadata(outDir, chapters) {
   return path;
 }
 
-export async function mergeFiles({ paths, outDir, outPath, allStreams, outFormat, ffmpegExperimental, onProgress = () => {}, preserveMovData, chapters, preserveMetadataOnMerge }) {
+export async function mergeFiles({ paths, outDir, outPath, allStreams, outFormat, ffmpegExperimental, onProgress = () => {}, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge }) {
   console.log('Merging files', { paths }, 'to', outPath);
 
   const durations = await pMap(paths, getDuration, { concurrency: 1 });
@@ -550,8 +547,7 @@ export async function mergeFiles({ paths, outDir, outPath, allStreams, outFormat
       // Can only do this if allStreams (-map 0) is set
       ...(preserveMetadataOnMerge && allStreams ? ['-map_metadata', '1'] : []),
 
-      // https://video.stackexchange.com/questions/23741/how-to-prevent-ffmpeg-from-dropping-metadata
-      ...getMovFlags(outFormat, preserveMovData),
+      ...getMovFlags({ preserveMovData, movFastStart }),
 
       // See https://github.com/mifi/lossless-cut/issues/170
       '-ignore_unknown',
@@ -603,7 +599,7 @@ export async function createChaptersFromSegments({ segmentPaths, chapterNames })
   return undefined;
 }
 
-export async function autoMergeSegments({ customOutDir, sourceFile, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge }) {
+export async function autoMergeSegments({ customOutDir, sourceFile, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge }) {
   const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath: sourceFile });
   const fileName = `cut-merged-${new Date().getTime()}${ext}`;
   const outPath = getOutPath(customOutDir, sourceFile, fileName);
@@ -611,7 +607,7 @@ export async function autoMergeSegments({ customOutDir, sourceFile, isCustomForm
 
   const chapters = await createChaptersFromSegments({ segmentPaths, chapterNames });
 
-  await mergeFiles({ paths: segmentPaths, outDir, outPath, outFormat, allStreams: true, ffmpegExperimental, onProgress, preserveMovData, chapters, preserveMetadataOnMerge });
+  await mergeFiles({ paths: segmentPaths, outDir, outPath, outFormat, allStreams: true, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge });
   if (autoDeleteMergedSegments) await pMap(segmentPaths, path => fs.unlink(path), { concurrency: 5 });
 }
 

@@ -20,6 +20,7 @@ const defaults = {
     language: undefined,
     ffmpegExperimental: false,
     preserveMovData: false,
+    movFastStart: true,
     avoidNegativeTs: 'make_zero',
     hideNotifications: undefined,
     autoLoadTimecode: false,

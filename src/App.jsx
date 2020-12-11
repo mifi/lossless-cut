@@ -167,6 +167,8 @@ const App = memo(() => {
   useEffect(() => safeSetConfig('keyframeCut', keyframeCut), [keyframeCut]);
   const [preserveMovData, setPreserveMovData] = useState(configStore.get('preserveMovData'));
   useEffect(() => safeSetConfig('preserveMovData', preserveMovData), [preserveMovData]);
+  const [movFastStart, setMovFastStart] = useState(configStore.get('movFastStart'));
+  useEffect(() => safeSetConfig('movFastStart', movFastStart), [movFastStart]);
   const [avoidNegativeTs, setAvoidNegativeTs] = useState(configStore.get('avoidNegativeTs'));
   useEffect(() => safeSetConfig('avoidNegativeTs', avoidNegativeTs), [avoidNegativeTs]);
   const [autoMerge, setAutoMerge] = useState(configStore.get('autoMerge'));
@@ -644,7 +646,7 @@ const App = memo(() => {
       }
 
       // console.log('merge', paths);
-      await ffmpegMergeFiles({ paths, outPath, outDir, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, preserveMetadataOnMerge, chapters });
+      await ffmpegMergeFiles({ paths, outPath, outDir, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters });
       openDirToast({ icon: 'success', dirPath: outDir, text: i18n.t('Files merged!') });
     } catch (err) {
       errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same codecs'));
@@ -653,7 +655,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [assureOutDirAccess, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, customOutDir]);
+  }, [assureOutDirAccess, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, customOutDir]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), []);
 
@@ -669,6 +671,8 @@ const App = memo(() => {
   const toggleAutoMerge = useCallback(() => setAutoMerge(val => !val), []);
 
   const togglePreserveMovData = useCallback(() => setPreserveMovData((val) => !val), []);
+
+  const toggleMovFastStart = useCallback(() => setMovFastStart((val) => !val), []);
 
   const toggleSimpleMode = useCallback(() => setSimpleMode((v) => {
     if (!hideAllNotifications) toast.fire({ text: v ? i18n.t('Simple mode has been disabled. You will now see also non-essential buttons') : i18n.t('Simple mode enabled. You will now see only the most essential buttons') });
@@ -1038,6 +1042,7 @@ const App = memo(() => {
         shortestFlag,
         ffmpegExperimental,
         preserveMovData,
+        movFastStart,
         avoidNegativeTs,
         customTagsByFile,
         customTagsByStreamId,
@@ -1057,6 +1062,7 @@ const App = memo(() => {
           segmentPaths: outFiles,
           ffmpegExperimental,
           preserveMovData,
+          movFastStart,
           onProgress: setCutProgress,
           chapterNames,
           autoDeleteMergedSegments,
@@ -1091,7 +1097,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [autoMerge, copyFileStreams, customOutDir, duration, effectiveRotation, exportExtraStreams, ffmpegExperimental, fileFormat, fileFormatData, filePath, handleCutFailed, isCustomFormatSelected, isRotationSet, keyframeCut, mainStreams, nonCopiedExtraStreams, outSegments, outputDir, shortestFlag, working, preserveMovData, avoidNegativeTs, numStreamsToCopy, hideAllNotifications, currentSegIndexSafe, invertCutSegments, autoDeleteMergedSegments, segmentsToChapters, customTagsByFile, customTagsByStreamId, preserveMetadataOnMerge]);
+  }, [autoMerge, copyFileStreams, customOutDir, duration, effectiveRotation, exportExtraStreams, ffmpegExperimental, fileFormat, fileFormatData, filePath, handleCutFailed, isCustomFormatSelected, isRotationSet, keyframeCut, mainStreams, nonCopiedExtraStreams, outSegments, outputDir, shortestFlag, working, preserveMovData, movFastStart, avoidNegativeTs, numStreamsToCopy, hideAllNotifications, currentSegIndexSafe, invertCutSegments, autoDeleteMergedSegments, segmentsToChapters, customTagsByFile, customTagsByStreamId, preserveMetadataOnMerge]);
 
   const onExportPress = useCallback(async () => {
     if (working || !filePath) return;
@@ -2210,7 +2216,7 @@ const App = memo(() => {
         </div>
       </motion.div>
 
-      <ExportConfirm autoMerge={autoMerge} toggleAutoMerge={toggleAutoMerge} areWeCutting={areWeCutting} outSegments={outSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} currentSegIndex={currentSegIndexSafe} invertCutSegments={invertCutSegments} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} segmentsToChapters={segmentsToChapters} toggleSegmentsToChapters={toggleSegmentsToChapters} outFormat={fileFormat} preserveMetadataOnMerge={preserveMetadataOnMerge} togglePreserveMetadataOnMerge={togglePreserveMetadataOnMerge} />
+      <ExportConfirm autoMerge={autoMerge} toggleAutoMerge={toggleAutoMerge} areWeCutting={areWeCutting} outSegments={outSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} movFastStart={movFastStart} toggleMovFastStart={toggleMovFastStart} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} currentSegIndex={currentSegIndexSafe} invertCutSegments={invertCutSegments} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} segmentsToChapters={segmentsToChapters} toggleSegmentsToChapters={toggleSegmentsToChapters} outFormat={fileFormat} preserveMetadataOnMerge={preserveMetadataOnMerge} togglePreserveMetadataOnMerge={togglePreserveMetadataOnMerge} />
 
       <HelpSheet
         visible={helpVisible}

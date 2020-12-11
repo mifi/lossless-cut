@@ -10,6 +10,7 @@ import KeyframeCutButton from './components/KeyframeCutButton';
 import ExportButton from './components/ExportButton';
 import MergeExportButton from './components/MergeExportButton';
 import PreserveMovDataButton from './components/PreserveMovDataButton';
+import MovFastStartButton from './components/MovFastStartButton';
 import ToggleExportConfirm from './components/ToggleExportConfirm';
 
 import { withBlur, toast, getSegColors } from './util';
@@ -32,6 +33,8 @@ const boxStyle = { margin: '15px 15px 50px 15px', background: 'rgba(25, 25, 25, 
 
 const outDirStyle = { background: 'rgb(193, 98, 0)', borderRadius: '.4em', padding: '0 .3em', wordBreak: 'break-all', cursor: 'pointer' };
 
+const warningStyle = { color: '#faa', fontSize: '80%' };
+
 // eslint-disable-next-line react/jsx-props-no-spreading
 const Highlight = ({ children, style, ...props }) => <span {...props} style={{ background: 'rgb(193, 98, 0)', borderRadius: '.4em', padding: '0 .3em', ...style }}>{children}</span>;
 
@@ -39,7 +42,7 @@ const HelpIcon = ({ onClick }) => <IoIosHelpCircle size={20} role="button" onCli
 
 const ExportConfirm = memo(({
   autoMerge, areWeCutting, outSegments, visible, onClosePress, onExportConfirm, keyframeCut, toggleKeyframeCut,
-  toggleAutoMerge, renderOutFmt, preserveMovData, togglePreserveMovData, avoidNegativeTs, setAvoidNegativeTs,
+  toggleAutoMerge, renderOutFmt, preserveMovData, togglePreserveMovData, movFastStart, toggleMovFastStart, avoidNegativeTs, setAvoidNegativeTs,
   changeOutDir, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, currentSegIndex, invertCutSegments,
   exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, outFormat,
   preserveMetadataOnMerge, togglePreserveMetadataOnMerge,
@@ -47,9 +50,14 @@ const ExportConfirm = memo(({
   const { t } = useTranslation();
 
   const isMov = ffmpegIsMov(outFormat);
+  const isIpod = outFormat === 'ipod';
 
   function onPreserveMovDataHelpPress() {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Preserve all MOV/MP4 metadata (e.g. EXIF, GPS position etc.) from source file? Note that some players have trouble playing back files where all metadata is preserved.') });
+    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Preserve all MOV/MP4 metadata tags (e.g. EXIF, GPS position etc.) from source file? Note that some players have trouble playing back files where all metadata is preserved, like iTunes and other Apple software') });
+  }
+
+  function onMovFastStartHelpPress() {
+    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Enable this to allow faster playback of the resulting file. This may cause processing to take a little longer') });
   }
 
   function onOutFmtHelpPress() {
@@ -142,10 +150,16 @@ const ExportConfirm = memo(({
                   </li>
 
                   {isMov && (
-                    <li>
-                      {t('Preserve all MP4/MOV metadata?')} <PreserveMovDataButton preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} />
-                      <HelpIcon onClick={onPreserveMovDataHelpPress} />
-                    </li>
+                    <>
+                      <li>
+                        {t('Enable MOV Faststart?')} <MovFastStartButton movFastStart={movFastStart} toggleMovFastStart={toggleMovFastStart} />
+                        <HelpIcon onClick={onMovFastStartHelpPress} /> {isIpod && !movFastStart && <span style={warningStyle}>{t('For the ipod format, it is recommended to activate this option')}</span>}
+                      </li>
+                      <li>
+                        {t('Preserve all MP4/MOV metadata?')} <PreserveMovDataButton preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} />
+                        <HelpIcon onClick={onPreserveMovDataHelpPress} /> {isIpod && preserveMovData && <span style={warningStyle}>{t('For the ipod format, it is recommended to deactivate this option')}</span>}
+                      </li>
+                    </>
                   )}
                   <li>
                     {t('Shift timestamps (avoid_negative_ts)')}
