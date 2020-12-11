@@ -1610,10 +1610,6 @@ const App = memo(() => {
   }, [tryCreateDummyVideo, fileUri, dummyVideoPath, hasVideo, hasAudio, html5ifyAndLoad, hideAllNotifications, filePath]);
 
   useEffect(() => {
-    function fileOpened(event, filePaths) {
-      userOpenFiles(filePaths);
-    }
-
     function showOpenAndMergeDialog2() {
       showOpenAndMergeDialog({
         dialog,
@@ -1630,14 +1626,6 @@ const App = memo(() => {
       if (newStartTimeOffset === undefined) return;
 
       setStartTimeOffset(newStartTimeOffset);
-    }
-
-    function undo() {
-      cutSegmentsHistory.back();
-    }
-
-    function redo() {
-      cutSegmentsHistory.forward();
     }
 
     async function exportEdlFile() {
@@ -1682,10 +1670,6 @@ const App = memo(() => {
         title: 'About LosslessCut',
         text: `You are running version ${app.getVersion()}`,
       });
-    }
-
-    function openSettings() {
-      toggleSettings();
     }
 
     async function batchConvertFriendlyFormat() {
@@ -1734,10 +1718,6 @@ const App = memo(() => {
       }
     }
 
-    function openSendReportDialog2() {
-      openSendReportDialogWithState();
-    }
-
     async function createNumSegments2() {
       if (!checkFileOpened() || !isDurationValid(duration)) return;
       const segments = await createNumSegments(duration);
@@ -1764,13 +1744,12 @@ const App = memo(() => {
       }
     }
 
-    function showStreamsSelector() {
-      setStreamsSelectorShown(true);
-    }
-
-    function closeFile2() {
-      closeFile();
-    }
+    const fileOpened = (event, filePaths) => { userOpenFiles(filePaths); };
+    const undo = () => { cutSegmentsHistory.back(); };
+    const redo = () => { cutSegmentsHistory.forward(); };
+    const showStreamsSelector = () => setStreamsSelectorShown(true);
+    const openSendReportDialog2 = () => { openSendReportDialogWithState(); };
+    const closeFile2 = () => { closeFile(); };
 
     electron.ipcRenderer.on('file-opened', fileOpened);
     electron.ipcRenderer.on('close-file', closeFile2);
@@ -1784,7 +1763,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('importEdlFile', importEdlFile);
     electron.ipcRenderer.on('exportEdlFile', exportEdlFile);
     electron.ipcRenderer.on('openHelp', toggleHelp);
-    electron.ipcRenderer.on('openSettings', openSettings);
+    electron.ipcRenderer.on('openSettings', toggleSettings);
     electron.ipcRenderer.on('openAbout', openAbout);
     electron.ipcRenderer.on('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
     electron.ipcRenderer.on('openSendReportDialog', openSendReportDialog2);
@@ -1806,7 +1785,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('importEdlFile', importEdlFile);
       electron.ipcRenderer.removeListener('exportEdlFile', exportEdlFile);
       electron.ipcRenderer.removeListener('openHelp', toggleHelp);
-      electron.ipcRenderer.removeListener('openSettings', openSettings);
+      electron.ipcRenderer.removeListener('openSettings', toggleSettings);
       electron.ipcRenderer.removeListener('openAbout', openAbout);
       electron.ipcRenderer.removeListener('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
       electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog2);
