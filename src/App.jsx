@@ -20,6 +20,7 @@ import sortBy from 'lodash/sortBy';
 import flatMap from 'lodash/flatMap';
 import isEqual from 'lodash/isEqual';
 
+import NoFileLoaded from './NoFileLoaded';
 import Canvas from './Canvas';
 import TopMenu from './TopMenu';
 import HelpSheet from './HelpSheet';
@@ -2007,26 +2008,7 @@ const App = memo(() => {
         />
       </div>
 
-      {!isFileOpened && (
-        <div className="no-user-select" style={{ position: 'fixed', left: 0, right: 0, top: topBarHeight, bottom: bottomBarHeight, border: '2vmin dashed #252525', color: '#505050', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}>
-          <div style={{ fontSize: '9vmin', textTransform: 'uppercase' }}>{t('DROP FILE(S)')}</div>
-
-          <div style={{ fontSize: '4vmin', color: '#777', cursor: 'pointer' }} role="button" onClick={toggleHelp}>
-            Press <kbd>H</kbd> for help
-          </div>
-          <div style={{ fontSize: '2vmin', color: '#ccc' }}>
-            <kbd>I</kbd> <kbd>O</kbd> to set cutpoints
-          </div>
-
-          {mifiLink && mifiLink.loadUrl && (
-            <div style={{ position: 'relative', margin: '3vmin', width: '60vmin', height: '20vmin' }}>
-              <iframe src={mifiLink.loadUrl} title="iframe" style={{ background: 'rgba(0,0,0,0)', border: 'none', pointerEvents: 'none', width: '100%', height: '100%', position: 'absolute' }} />
-              {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus */}
-              <div style={{ width: '100%', height: '100%', position: 'absolute', cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal(mifiLink.targetUrl)} />
-            </div>
-          )}
-        </div>
-      )}
+      {!isFileOpened && <NoFileLoaded topBarHeight={topBarHeight} bottomBarHeight={bottomBarHeight} mifiLink={mifiLink} toggleHelp={toggleHelp} currentCutSeg={currentCutSeg} />}
 
       <AnimatePresence>
         {working && (
