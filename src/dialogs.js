@@ -198,6 +198,19 @@ export async function confirmExtractAllStreamsDialog() {
   return !!value;
 }
 
+export async function confirmTrashSourceDialog() {
+  const { value } = await Swal.fire({
+    icon: 'warning',
+    text: i18n.t('Do you want to move the source file to trash?'),
+    confirmButtonText: i18n.t('Trash/delete original file'),
+    confirmButtonColor: '#d33',
+    showCancelButton: true,
+    cancelButtonText: i18n.t('Do not delete'),
+    focusCancel: true,
+  });
+  return value;
+}
+
 
 export async function createFixedDurationSegments(fileDuration) {
   const segmentDuration = await askForSegmentDuration(fileDuration);

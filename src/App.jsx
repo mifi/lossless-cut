@@ -51,7 +51,7 @@ import {
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows,
 } from './util';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog } from './dialogs';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, confirmTrashSourceDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor } from './segments';
@@ -907,28 +907,31 @@ const App = memo(() => {
     });
   }, [playing, filePath]);
 
-  const deleteSource = useCallback(async () => {
-    if (!filePath || working) return;
+  const closeFile = useCallback(() => {
+    if (!isFileOpened || working) return false;
+    // eslint-disable-next-line no-alert
+    if (askBeforeClose && !window.confirm(i18n.t('Are you sure you want to close the current file?'))) return false;
 
-    const { value: trashConfirmed } = await Swal.fire({
-      icon: 'warning',
-      text: i18n.t('Are you sure you want to move the source file to trash?'),
-      confirmButtonText: i18n.t('Trash it'),
-      showCancelButton: true,
-    });
-    if (!trashConfirmed) return;
-
-    // We can use variables like filePath and html5FriendlyPath, even after they are reset because react setState is async
     resetState();
+    return true;
+  }, [askBeforeClose, isFileOpened, resetState, working]);
+
+  const deleteSource = useCallback(async () => {
+    // Because we will reset state before deleting files
+    const saved = { html5FriendlyPath, dummyVideoPath, filePath };
+
+    if (!closeFile()) return;
+
+    if (!(await confirmTrashSourceDialog())) return;
 
     try {
       setWorking(i18n.t('Deleting source'));
 
-      if (html5FriendlyPath) await trash(html5FriendlyPath).catch(console.error);
-      if (dummyVideoPath) await trash(dummyVideoPath).catch(console.error);
+      if (saved.html5FriendlyPath) await trash(saved.html5FriendlyPath).catch(console.error);
+      if (saved.dummyVideoPath) await trash(saved.dummyVideoPath).catch(console.error);
 
       // throw new Error('test');
-      await trash(filePath);
+      await trash(saved.filePath);
       toast.fire({ icon: 'info', title: i18n.t('File has been moved to trash') });
     } catch (err) {
       try {
@@ -942,9 +945,9 @@ const App = memo(() => {
         });
 
         if (value) {
-          if (html5FriendlyPath) await unlink(html5FriendlyPath).catch(console.error);
-          if (dummyVideoPath) await unlink(dummyVideoPath).catch(console.error);
-          await unlink(filePath);
+          if (saved.html5FriendlyPath) await unlink(saved.html5FriendlyPath).catch(console.error);
+          if (saved.dummyVideoPath) await unlink(saved.dummyVideoPath).catch(console.error);
+          await unlink(saved.filePath);
           toast.fire({ icon: 'info', title: i18n.t('File has been permanently deleted') });
         }
       } catch (err2) {
@@ -954,7 +957,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [filePath, html5FriendlyPath, resetState, working, dummyVideoPath]);
+  }, [filePath, html5FriendlyPath, dummyVideoPath, closeFile]);
 
   const outSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
     [invertCutSegments, inverseCutSegments, apparentCutSegments]);
@@ -1611,14 +1614,6 @@ const App = memo(() => {
       userOpenFiles(filePaths);
     }
 
-    function closeFile() {
-      if (!isFileOpened) return;
-      // eslint-disable-next-line no-alert
-      if (askBeforeClose && !window.confirm(i18n.t('Are you sure you want to close the current file?'))) return;
-
-      resetState();
-    }
-
     function showOpenAndMergeDialog2() {
       showOpenAndMergeDialog({
         dialog,
@@ -1773,8 +1768,12 @@ const App = memo(() => {
       setStreamsSelectorShown(true);
     }
 
+    function closeFile2() {
+      closeFile();
+    }
+
     electron.ipcRenderer.on('file-opened', fileOpened);
-    electron.ipcRenderer.on('close-file', closeFile);
+    electron.ipcRenderer.on('close-file', closeFile2);
     electron.ipcRenderer.on('html5ify', html5ifyCurrentFile);
     electron.ipcRenderer.on('show-merge-dialog', showOpenAndMergeDialog2);
     electron.ipcRenderer.on('set-start-offset', setStartOffset);
@@ -1796,7 +1795,7 @@ const App = memo(() => {
 
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
-      electron.ipcRenderer.removeListener('close-file', closeFile);
+      electron.ipcRenderer.removeListener('close-file', closeFile2);
       electron.ipcRenderer.removeListener('html5ify', html5ifyCurrentFile);
       electron.ipcRenderer.removeListener('show-merge-dialog', showOpenAndMergeDialog2);
       electron.ipcRenderer.removeListener('set-start-offset', setStartOffset);
@@ -1816,10 +1815,10 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('reorderSegsByStartTime', reorderSegsByStartTime);
     };
   }, [
-    mergeFiles, outputDir, filePath, isFileOpened, customOutDir, startTimeOffset, html5ifyCurrentFile,
-    createDummyVideo, resetState, extractAllStreams, userOpenFiles, cutSegmentsHistory, openSendReportDialogWithState,
-    loadEdlFile, cutSegments, edlFilePath, askBeforeClose, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
-    loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime,
+    mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, html5ifyCurrentFile,
+    createDummyVideo, extractAllStreams, userOpenFiles, cutSegmentsHistory, openSendReportDialogWithState,
+    loadEdlFile, cutSegments, edlFilePath, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
+    loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime, closeFile,
   ]);
 
   async function showAddStreamSourceDialog() {
