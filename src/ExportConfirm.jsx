@@ -146,7 +146,7 @@ const ExportConfirm = memo(({
                 <ul>
                   <li>
                     {t('Cut mode:')} <KeyframeCutButton keyframeCut={keyframeCut} onClick={withBlur(() => toggleKeyframeCut(false))} />
-                    <HelpIcon onClick={onKeyframeCutHelpPress} />
+                    <HelpIcon onClick={onKeyframeCutHelpPress} /> {!keyframeCut && <span style={warningStyle}>{t('Note: Keyframe cut is recommended for most common files')}</span>}
                   </li>
 
                   {isMov && (
