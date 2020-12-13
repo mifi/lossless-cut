@@ -1,6 +1,5 @@
 const electron = require('electron'); // eslint-disable-line
 const isDev = require('electron-is-dev');
-const { join } = require('path');
 const os = require('os');
 const unhandled = require('electron-unhandled');
 
@@ -40,7 +39,9 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadURL(isDev ? 'http://localhost:3001' : `file://${join(__dirname, '../build/index.html')}`);
+  if (isDev) mainWindow.loadURL('http://localhost:3001');
+  // Need to useloadFile for special characters https://github.com/mifi/lossless-cut/issues/40
+  else mainWindow.loadFile('build/index.html');
 
   if (isDev) {
     const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies
