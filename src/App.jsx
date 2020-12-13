@@ -675,7 +675,7 @@ const App = memo(() => {
   const toggleMovFastStart = useCallback(() => setMovFastStart((val) => !val), []);
 
   const toggleSimpleMode = useCallback(() => setSimpleMode((v) => {
-    if (!hideAllNotifications) toast.fire({ text: v ? i18n.t('Simple mode has been disabled. You will now see also non-essential buttons') : i18n.t('Simple mode enabled. You will now see only the most essential buttons') });
+    if (!hideAllNotifications) toast.fire({ text: v ? i18n.t('Advanced view has been enabled. You will now also see non-essential buttons and functions') : i18n.t('Advanced view disabled. You will now see only the most essential buttons and functions') });
     return !v;
   }), [hideAllNotifications]);
 

@@ -10,7 +10,7 @@ const SimpleModeButton = memo(({ simpleMode, toggleSimpleMode, size = 20, style 
 
   return (
     <FaBaby
-      title={t('Simple mode')}
+      title={t('Toggle advanced view')}
       size={size}
       style={{ color: simpleMode ? primaryTextColor : 'white', ...style }}
       onClick={toggleSimpleMode}

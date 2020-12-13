@@ -19,14 +19,12 @@ const NoFileLoaded = memo(({ topBarHeight, bottomBarHeight, mifiLink, toggleHelp
         Press <kbd>H</kbd> for help
       </div>
 
-      <div style={{ fontSize: '3vmin', color: '#ccc' }}><kbd>←</kbd> <kbd>→</kbd> to seek timeline</div>
-
-      <div style={{ fontSize: '3vmin', color: '#ccc' }}>
+      <div style={{ fontSize: '3vmin', color: '#ccc', cursor: 'pointer' }}>
         <SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaHandPointLeft} style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaHandPointRight} style={{ verticalAlign: 'middle' }} /> or <kbd>I</kbd> <kbd>O</kbd> to set cutpoints
       </div>
 
-      <div style={{ fontSize: '3vmin', color: '#ccc' }}>
-        <SimpleModeButton simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} style={{ verticalAlign: 'middle' }} size={16} /> to toggle simple mode
+      <div style={{ fontSize: '3vmin', color: '#ccc', cursor: 'pointer' }} role="button" onClick={toggleSimpleMode}>
+        <SimpleModeButton simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} style={{ verticalAlign: 'middle' }} size={16} /> {simpleMode ? 'to show advanced view' : 'to show simple view'}
       </div>
 
 
