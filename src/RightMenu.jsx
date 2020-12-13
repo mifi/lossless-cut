@@ -22,16 +22,16 @@ const RightMenu = memo(({
   return (
     <div className="no-user-select" style={{ padding: '.3em', display: 'flex', alignItems: 'center' }}>
       {hasVideo && (
-        <div>
-          <span style={{ width: 40, textAlign: 'right', display: 'inline-block' }}>{isRotationSet && rotationStr}</span>
+        <>
+          <span style={{ textAlign: 'right', display: 'inline-block' }}>{isRotationSet && rotationStr}</span>
           <MdRotate90DegreesCcw
             size={26}
-            style={{ margin: '0 5px', verticalAlign: 'middle', color: isRotationSet ? primaryTextColor : undefined }}
+            style={{ margin: '0px 5px 0 2px', verticalAlign: 'middle', color: isRotationSet ? primaryTextColor : undefined }}
             title={`${t('Set output rotation. Current: ')} ${isRotationSet ? rotationStr : t('Don\'t modify')}`}
             onClick={increaseRotation}
             role="button"
           />
-        </div>
+        </>
       )}
 
       {!simpleMode && (
