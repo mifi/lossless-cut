@@ -19,7 +19,7 @@ const NoFileLoaded = memo(({ topBarHeight, bottomBarHeight, mifiLink, toggleHelp
         Press <kbd>H</kbd> for help
       </div>
 
-      <div style={{ fontSize: '3vmin', color: '#ccc', cursor: 'pointer' }}>
+      <div style={{ fontSize: '3vmin', color: '#ccc' }}>
         <SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaHandPointLeft} style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaHandPointRight} style={{ verticalAlign: 'middle' }} /> or <kbd>I</kbd> <kbd>O</kbd> to set cutpoints
       </div>
 
