@@ -1797,6 +1797,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('openAbout', openAbout);
       electron.ipcRenderer.removeListener('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
       electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog2);
+      electron.ipcRenderer.removeListener('createNumSegments', createNumSegments2);
       electron.ipcRenderer.removeListener('createFixedDurationSegments', createFixedDurationSegments2);
       electron.ipcRenderer.removeListener('fixInvalidDuration', fixInvalidDuration2);
       electron.ipcRenderer.removeListener('reorderSegsByStartTime', reorderSegsByStartTime);
