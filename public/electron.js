@@ -87,9 +87,7 @@ app.on('ready', async () => {
   createWindow();
   menu(app, mainWindow);
 
-  // process.windowsStore is not working. Waiting for fix: https://github.com/electron/electron/issues/18161
-  // if (!process.windowsStore && !process.mas) {
-  if (os.platform() !== 'win32' && !process.mas) {
+  if (!process.windowsStore && !process.mas) {
     const newVersion = await checkNewVersion();
     if (newVersion) {
       menu(app, mainWindow, newVersion);
