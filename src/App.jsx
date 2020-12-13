@@ -2188,7 +2188,7 @@ const App = memo(() => {
           simpleMode={simpleMode}
         />
 
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', height: 36 }}>
           <LeftMenu
             zoom={zoom}
             setZoom={setZoom}

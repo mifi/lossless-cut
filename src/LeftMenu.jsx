@@ -24,21 +24,23 @@ const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments,
 
   return (
     <div className="no-user-select" style={{ padding: '.3em', display: 'flex', alignItems: 'center' }}>
-      <div style={{ marginLeft: 5 }}>
-        <motion.div
-          animate={{ rotateX: invertCutSegments ? 0 : 180, width: 26, height: 26 }}
-          transition={{ duration: 0.3 }}
-        >
-          <FaYinYang
-            size={26}
-            role="button"
-            title={invertCutSegments ? t('Discard selected segments') : t('Keep selected segments')}
-            onClick={onYinYangClick}
-          />
-        </motion.div>
-      </div>
+      <SimpleModeButton simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} />
 
-      <SimpleModeButton simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} style={{ padding: '0 10px' }} />
+      {!simpleMode && (
+        <div style={{ marginLeft: 5 }}>
+          <motion.div
+            animate={{ rotateX: invertCutSegments ? 0 : 180, width: 26, height: 26 }}
+            transition={{ duration: 0.3 }}
+          >
+            <FaYinYang
+              size={26}
+              role="button"
+              title={invertCutSegments ? t('Discard selected segments') : t('Keep selected segments')}
+              onClick={onYinYangClick}
+            />
+          </motion.div>
+        </div>
+      )}
 
       {!simpleMode && (
         <>

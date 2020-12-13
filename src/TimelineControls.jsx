@@ -169,22 +169,22 @@ const TimelineControls = memo(({
 
       {!simpleMode && renderCutTimeInput('start')}
 
+      <IoMdKey
+        size={20}
+        role="button"
+        title={t('Seek previous keyframe')}
+        style={{ marginRight: 5, transform: 'matrix(-1, 0, 0, 1, 0, 0)' }}
+        onClick={() => seekClosestKeyframe(-1)}
+      />
+
       {!simpleMode && (
-        <>
-          <IoMdKey
-            size={20}
-            role="button"
-            title={t('Seek previous keyframe')}
-            style={{ transform: 'matrix(-1, 0, 0, 1, 0, 0)' }}
-            onClick={() => seekClosestKeyframe(-1)}
-          />
-          <FaCaretLeft
-            size={20}
-            role="button"
-            title={t('One frame back')}
-            onClick={() => shortStep(-1)}
-          />
-        </>
+        <FaCaretLeft
+          style={{ marginLeft: -5 }}
+          size={20}
+          role="button"
+          title={t('One frame back')}
+          onClick={() => shortStep(-1)}
+        />
       )}
 
       <PlayPause
@@ -194,21 +194,22 @@ const TimelineControls = memo(({
       />
 
       {!simpleMode && (
-        <>
-          <FaCaretRight
-            size={20}
-            role="button"
-            title={t('One frame forward')}
-            onClick={() => shortStep(1)}
-          />
-          <IoMdKey
-            size={20}
-            role="button"
-            title={t('Seek next keyframe')}
-            onClick={() => seekClosestKeyframe(1)}
-          />
-        </>
+        <FaCaretRight
+          style={{ marginRight: -5, marginLeft: -2 }}
+          size={20}
+          role="button"
+          title={t('One frame forward')}
+          onClick={() => shortStep(1)}
+        />
       )}
+
+      <IoMdKey
+        style={{ marginLeft: 5 }}
+        size={20}
+        role="button"
+        title={t('Seek next keyframe')}
+        onClick={() => seekClosestKeyframe(1)}
+      />
 
       {!simpleMode && renderCutTimeInput('end')}
 

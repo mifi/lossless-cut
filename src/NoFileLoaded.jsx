@@ -13,11 +13,13 @@ const NoFileLoaded = memo(({ topBarHeight, bottomBarHeight, mifiLink, toggleHelp
 
   return (
     <div className="no-user-select" style={{ position: 'fixed', left: 0, right: 0, top: topBarHeight, bottom: bottomBarHeight, border: '2vmin dashed #252525', color: '#505050', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}>
-      <div style={{ fontSize: '8vmin', textTransform: 'uppercase' }}>{t('DROP FILE(S)')}</div>
+      <div style={{ fontSize: '6vmin', textTransform: 'uppercase' }}>{t('DROP FILE(S)')}</div>
 
       <div style={{ fontSize: '4vmin', color: '#777', cursor: 'pointer' }} role="button" onClick={toggleHelp}>
         Press <kbd>H</kbd> for help
       </div>
+
+      <div style={{ fontSize: '3vmin', color: '#ccc' }}><kbd>←</kbd> <kbd>→</kbd> to seek timeline</div>
 
       <div style={{ fontSize: '3vmin', color: '#ccc' }}>
         <SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaHandPointLeft} style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaHandPointRight} style={{ verticalAlign: 'middle' }} /> or <kbd>I</kbd> <kbd>O</kbd> to set cutpoints
