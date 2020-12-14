@@ -11,7 +11,7 @@ import ToggleExportConfirm from './components/ToggleExportConfirm';
 
 
 const RightMenu = memo(({
-  isRotationSet, rotation, areWeCutting, increaseRotation, deleteSource, renderCaptureFormatButton,
+  isRotationSet, rotation, areWeCutting, increaseRotation, cleanupFiles, renderCaptureFormatButton,
   capture, onExportPress, outSegments, hasVideo, autoMerge, exportConfirmEnabled, toggleExportConfirmEnabled,
   simpleMode,
 }) => {
@@ -36,10 +36,10 @@ const RightMenu = memo(({
 
       {!simpleMode && (
         <FaTrashAlt
-          title={t('Delete source file')}
+          title={t('Close file and clean up')}
           style={{ padding: '5px 10px' }}
           size={16}
-          onClick={deleteSource}
+          onClick={cleanupFiles}
           role="button"
         />
       )}

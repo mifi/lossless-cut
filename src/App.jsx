@@ -51,7 +51,7 @@ import {
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows,
 } from './util';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, confirmTrashSourceDialog } from './dialogs';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor } from './segments';
@@ -926,39 +926,47 @@ const App = memo(() => {
     return true;
   }, [askBeforeClose, isFileOpened, resetState, working]);
 
-  const deleteSource = useCallback(async () => {
+  const cleanupFiles = useCallback(async () => {
     // Because we will reset state before deleting files
-    const saved = { html5FriendlyPath, dummyVideoPath, filePath };
+    const saved = { html5FriendlyPath, dummyVideoPath, filePath, edlFilePath };
 
     if (!closeFile()) return;
 
-    if (!(await confirmTrashSourceDialog())) return;
+    const trashResponse = await cleanupFilesDialog();
+    console.log('trashResponse', trashResponse);
+    if (!trashResponse) return;
+
+    const deleteTmpFiles = ['all', 'projectAndTmpFiles', 'tmpFiles'].includes(trashResponse);
+    const deleteProjectFile = ['all', 'projectAndTmpFiles'].includes(trashResponse);
+    const deleteOriginal = ['all'].includes(trashResponse);
 
     try {
-      setWorking(i18n.t('Deleting source'));
+      setWorking(i18n.t('Cleaning up'));
 
-      if (saved.html5FriendlyPath) await trash(saved.html5FriendlyPath).catch(console.error);
-      if (saved.dummyVideoPath) await trash(saved.dummyVideoPath).catch(console.error);
+      if (deleteTmpFiles && saved.html5FriendlyPath) await trash(saved.html5FriendlyPath).catch(console.error);
+      if (deleteTmpFiles && saved.dummyVideoPath) await trash(saved.dummyVideoPath).catch(console.error);
+      if (deleteProjectFile && saved.edlFilePath) await trash(saved.edlFilePath).catch(console.error);
 
       // throw new Error('test');
-      await trash(saved.filePath);
-      toast.fire({ icon: 'info', title: i18n.t('File has been moved to trash') });
+      if (deleteOriginal) await trash(saved.filePath);
+      toast.fire({ icon: 'info', title: i18n.t('Cleanup successful') });
     } catch (err) {
       try {
         console.warn('Failed to trash', err);
 
         const { value } = await Swal.fire({
           icon: 'warning',
-          text: i18n.t('Unable to move source file to trash. Do you want to permanently delete it?'),
+          text: i18n.t('Unable to move file to trash. Do you want to permanently delete it?'),
           confirmButtonText: i18n.t('Permanently delete'),
           showCancelButton: true,
         });
 
         if (value) {
-          if (saved.html5FriendlyPath) await unlink(saved.html5FriendlyPath).catch(console.error);
-          if (saved.dummyVideoPath) await unlink(saved.dummyVideoPath).catch(console.error);
-          await unlink(saved.filePath);
-          toast.fire({ icon: 'info', title: i18n.t('File has been permanently deleted') });
+          if (deleteTmpFiles && saved.html5FriendlyPath) await unlink(saved.html5FriendlyPath).catch(console.error);
+          if (deleteTmpFiles && saved.dummyVideoPath) await unlink(saved.dummyVideoPath).catch(console.error);
+          if (deleteProjectFile && saved.edlFilePath) await unlink(saved.edlFilePath).catch(console.error);
+          if (deleteOriginal) await unlink(saved.filePath);
+          toast.fire({ icon: 'info', title: i18n.t('Cleanup successful') });
         }
       } catch (err2) {
         errorToast(`Unable to delete file: ${err2.message}`);
@@ -967,7 +975,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [filePath, html5FriendlyPath, dummyVideoPath, closeFile]);
+  }, [filePath, html5FriendlyPath, dummyVideoPath, closeFile, edlFilePath]);
 
   const outSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
     [invertCutSegments, inverseCutSegments, apparentCutSegments]);
@@ -1387,7 +1395,7 @@ const App = memo(() => {
     mousetrap.bind('i', () => setCutStart());
     mousetrap.bind('o', () => setCutEnd());
     mousetrap.bind('backspace', () => removeCutSegment());
-    mousetrap.bind('d', () => deleteSource());
+    mousetrap.bind('d', () => cleanupFiles());
     mousetrap.bind('b', () => splitCurrentSegment());
     mousetrap.bind('r', () => increaseRotation());
 
@@ -1410,7 +1418,7 @@ const App = memo(() => {
     return () => mousetrap.reset();
   }, [
     addCutSegment, capture, changePlaybackRate, togglePlay, removeCutSegment,
-    setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, deleteSource, jumpSeg,
+    setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, cleanupFiles, jumpSeg,
     seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment, exportConfirmVisible,
     increaseRotation, jumpCutStart, jumpCutEnd,
   ]);
@@ -2213,7 +2221,7 @@ const App = memo(() => {
             areWeCutting={areWeCutting}
             autoMerge={autoMerge}
             increaseRotation={increaseRotation}
-            deleteSource={deleteSource}
+            cleanupFiles={cleanupFiles}
             renderCaptureFormatButton={renderCaptureFormatButton}
             capture={capture}
             onExportPress={onExportPress}
