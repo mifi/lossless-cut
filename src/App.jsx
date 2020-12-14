@@ -42,7 +42,7 @@ import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
   getDefaultOutFormat, getFormatData, mergeFiles as ffmpegMergeFiles, renderThumbnails as ffmpegRenderThumbnails,
   readFrames, renderWaveformPng, html5ifyDummy, cutMultiple, extractStreams, autoMergeSegments, getAllStreams,
-  findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
+  findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
   fixInvalidDuration, getDuration, getTimecodeFromStreams, createChaptersFromSegments,
 } from './ffmpeg';
 import { saveCsv, saveTsv, loadCsv, loadXmeml, loadCue, loadPbf, saveCsvHuman } from './edlStore';
@@ -492,7 +492,7 @@ const App = memo(() => {
     if (!filePath) return;
 
     // https://github.com/mifi/lossless-cut/issues/168
-    // If we are after the end of the last segment in the timeline,
+    // If current time is after the end of the current segment in the timeline,
     // add a new segment that starts at playerTime
     if (currentCutSeg.end != null && currentTimeRef.current > currentCutSeg.end) {
       addCutSegment();
@@ -1352,11 +1352,13 @@ const App = memo(() => {
 
   const jumpSeg = useCallback((val) => setCurrentSegIndex((old) => Math.max(Math.min(old + val, cutSegments.length - 1), 0)), [cutSegments.length]);
 
+  const findNearestKeyFrameTime = useCallback(({ time, direction }) => ffmpegFindNearestKeyFrameTime({ frames: neighbouringFrames, time, direction, fps: detectedFps }), [neighbouringFrames, detectedFps]);
+
   const seekClosestKeyframe = useCallback((direction) => {
-    const time = findNearestKeyFrameTime({ frames: neighbouringFrames, time: currentTimeRef.current, direction, fps: detectedFps });
+    const time = findNearestKeyFrameTime({ time: currentTimeRef.current, direction });
     if (time == null) return;
     seekAbs(time);
-  }, [neighbouringFrames, seekAbs, detectedFps]);
+  }, [findNearestKeyFrameTime, seekAbs]);
 
   // TODO split up?
   useEffect(() => {
