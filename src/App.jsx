@@ -15,7 +15,6 @@ import Mousetrap from 'mousetrap';
 
 import fromPairs from 'lodash/fromPairs';
 import clamp from 'lodash/clamp';
-import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
 import flatMap from 'lodash/flatMap';
 import isEqual from 'lodash/isEqual';
@@ -412,6 +411,12 @@ const App = memo(() => {
     return ret;
   }, [duration, haveInvalidSegs, sortedCutSegments]);
 
+  const updateSegAtIndex = useCallback((index, newProps) => {
+    const cutSegmentsNew = [...cutSegments];
+    cutSegmentsNew.splice(index, 1, { ...cutSegments[index], ...newProps });
+    setCutSegments(cutSegmentsNew);
+  }, [setCutSegments, cutSegments]);
+
   const setCutTime = useCallback((type, time) => {
     if (!isDurationValid(duration)) return;
 
@@ -422,18 +427,12 @@ const App = memo(() => {
     if (type === 'end' && time <= getSegApparentStart(currentSeg)) {
       throw new Error('Start time must precede end time');
     }
-    const cloned = cloneDeep(cutSegments);
-    cloned[currentSegIndexSafe][type] = Math.min(Math.max(time, 0), duration);
-    setCutSegments(cloned);
-  }, [
-    currentSegIndexSafe, getSegApparentEnd, cutSegments, currentCutSeg, setCutSegments, duration,
-  ]);
+    updateSegAtIndex(currentSegIndexSafe, { [type]: Math.min(Math.max(time, 0), duration) });
+  }, [currentSegIndexSafe, getSegApparentEnd, currentCutSeg, duration, updateSegAtIndex]);
 
   const setCurrentSegmentName = useCallback((name) => {
-    const cloned = cloneDeep(cutSegments);
-    cloned[currentSegIndexSafe].name = name;
-    setCutSegments(cloned);
-  }, [currentSegIndexSafe, cutSegments, setCutSegments]);
+    updateSegAtIndex(currentSegIndexSafe, { name });
+  }, [currentSegIndexSafe, updateSegAtIndex]);
 
   const updateCurrentSegOrder = useCallback((newOrder) => {
     if (newOrder > cutSegments.length - 1 || newOrder < 0) return;
