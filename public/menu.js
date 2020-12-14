@@ -136,6 +136,12 @@ module.exports = (app, mainWindow, newVersion) => {
           label: 'Segments',
           submenu: [
             {
+              label: 'Clear all segments',
+              click() {
+                mainWindow.webContents.send('clearSegments');
+              },
+            },
+            {
               label: 'Reorder segments by start time',
               click() {
                 mainWindow.webContents.send('reorderSegsByStartTime');

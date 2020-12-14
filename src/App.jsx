@@ -732,6 +732,10 @@ const App = memo(() => {
     setCutSegments(cutSegmentsNew);
   }, [currentSegIndexSafe, cutSegments, setCutSegments]);
 
+  const clearSegments = useCallback(() => {
+    setCutSegments(createInitialCutSegments());
+  }, [setCutSegments]);
+
   const thumnailsRef = useRef([]);
   const thumnailsRenderingPromiseRef = useRef();
 
@@ -1775,6 +1779,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('openAbout', openAbout);
     electron.ipcRenderer.on('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
     electron.ipcRenderer.on('openSendReportDialog', openSendReportDialog2);
+    electron.ipcRenderer.on('clearSegments', clearSegments);
     electron.ipcRenderer.on('createNumSegments', createNumSegments2);
     electron.ipcRenderer.on('createFixedDurationSegments', createFixedDurationSegments2);
     electron.ipcRenderer.on('fixInvalidDuration', fixInvalidDuration2);
@@ -1797,6 +1802,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('openAbout', openAbout);
       electron.ipcRenderer.removeListener('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
       electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog2);
+      electron.ipcRenderer.removeListener('clearSegments', clearSegments);
       electron.ipcRenderer.removeListener('createNumSegments', createNumSegments2);
       electron.ipcRenderer.removeListener('createFixedDurationSegments', createFixedDurationSegments2);
       electron.ipcRenderer.removeListener('fixInvalidDuration', fixInvalidDuration2);
@@ -1806,7 +1812,7 @@ const App = memo(() => {
     mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, html5ifyCurrentFile,
     createDummyVideo, extractAllStreams, userOpenFiles, cutSegmentsHistory, openSendReportDialogWithState,
     loadEdlFile, cutSegments, edlFilePath, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
-    loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime, closeFile,
+    loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime, closeFile, clearSegments,
   ]);
 
   async function showAddStreamSourceDialog() {
