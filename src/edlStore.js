@@ -2,6 +2,7 @@ import csvStringify from 'csv-stringify';
 import pify from 'pify';
 
 import { parseCuesheet, parseXmeml, parseCsv, parsePbf } from './edlFormats';
+import { formatDuration } from './util';
 
 const fs = window.require('fs-extra');
 const cueParser = window.require('cue-parser');
@@ -25,8 +26,13 @@ export async function loadCue(path) {
 }
 
 export async function saveCsv(path, cutSegments) {
-  console.log('Saving', path);
   const rows = cutSegments.map(({ start, end, name }) => [start, end, name]);
   const str = await csvStringifyAsync(rows);
   await fs.writeFile(path, str);
+}
+
+export async function saveTsv(path, cutSegments) {
+  // TODO escape tab, how?
+  const rows = cutSegments.map(({ start, end, name }) => `${start != null ? formatDuration({ seconds: start }) : ''}\t${end != null ? formatDuration({ seconds: end }) : ''}\t${name}`);
+  await fs.writeFile(path, rows.join('\n'));
 }

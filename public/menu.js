@@ -38,7 +38,7 @@ module.exports = (app, mainWindow, newVersion) => {
         {
           label: 'Save project (CSV)',
           click() {
-            mainWindow.webContents.send('exportEdlFile');
+            mainWindow.webContents.send('exportEdlFile', 'csv');
           },
         },
         {
@@ -66,6 +66,17 @@ module.exports = (app, mainWindow, newVersion) => {
               label: 'PotPlayer Bookmarks (.pbf)',
               click() {
                 mainWindow.webContents.send('importEdlFile', 'pbf');
+              },
+            },
+          ],
+        },
+        {
+          label: 'Export project',
+          submenu: [
+            {
+              label: 'Human readable (TSV)',
+              click() {
+                mainWindow.webContents.send('exportEdlFile', 'tsv');
               },
             },
           ],
