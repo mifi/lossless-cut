@@ -74,9 +74,15 @@ module.exports = (app, mainWindow, newVersion) => {
           label: 'Export project',
           submenu: [
             {
-              label: 'Human readable (TSV)',
+              label: 'Timestamps (CSV)',
               click() {
-                mainWindow.webContents.send('exportEdlFile', 'tsv');
+                mainWindow.webContents.send('exportEdlFile', 'csv-human');
+              },
+            },
+            {
+              label: 'Timestamps (TSV/TXT)',
+              click() {
+                mainWindow.webContents.send('exportEdlFile', 'tsv-human');
               },
             },
           ],

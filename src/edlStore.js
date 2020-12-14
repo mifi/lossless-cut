@@ -31,8 +31,16 @@ export async function saveCsv(path, cutSegments) {
   await fs.writeFile(path, str);
 }
 
+const formatDurationStr = (duration) => (duration != null ? formatDuration({ seconds: duration }) : '');
+
+const mapSegments = (segments) => segments.map(({ start, end, name }) => [formatDurationStr(start), formatDurationStr(end), name])
+
+export async function saveCsvHuman(path, cutSegments) {
+  const str = await csvStringifyAsync(mapSegments(cutSegments));
+  await fs.writeFile(path, str);
+}
+
 export async function saveTsv(path, cutSegments) {
-  // TODO escape tab, how?
-  const rows = cutSegments.map(({ start, end, name }) => `${start != null ? formatDuration({ seconds: start }) : ''}\t${end != null ? formatDuration({ seconds: end }) : ''}\t${name}`);
-  await fs.writeFile(path, rows.join('\n'));
+  const str = await csvStringifyAsync(mapSegments(cutSegments), { delimiter: '\t' });
+  await fs.writeFile(path, str);
 }

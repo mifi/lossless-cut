@@ -45,7 +45,7 @@ import {
   findNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
   fixInvalidDuration, getDuration, getTimecodeFromStreams, createChaptersFromSegments,
 } from './ffmpeg';
-import { saveCsv, saveTsv, loadCsv, loadXmeml, loadCue, loadPbf } from './edlStore';
+import { saveCsv, saveTsv, loadCsv, loadXmeml, loadCue, loadPbf, saveCsvHuman } from './edlStore';
 import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
@@ -1656,17 +1656,21 @@ const App = memo(() => {
         let ext;
         if (type === 'csv') {
           ext = 'csv';
-          filters = [{ name: i18n.t('CSV files'), extensions: [ext] }];
-        } else if (type === 'tsv') {
-          ext = 'txt';
-          filters = [{ name: i18n.t('TXT files'), extensions: [ext] }];
+          filters = [{ name: i18n.t('CSV files'), extensions: [ext, 'txt'] }];
+        } else if (type === 'tsv-human') {
+          ext = 'tsv';
+          filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
+        } else if (type === 'csv-human') {
+          ext = 'csv';
+          filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
         }
 
         const { canceled, filePath: fp } = await dialog.showSaveDialog({ defaultPath: `${new Date().getTime()}.${ext}`, filters });
         if (canceled || !fp) return;
         console.log('Saving', type, fp);
         if (type === 'csv') await saveCsv(fp, cutSegments);
-        else if (type === 'tsv') await saveTsv(fp, cutSegments);
+        else if (type === 'tsv-human') await saveTsv(fp, cutSegments);
+        else if (type === 'csv-human') await saveCsvHuman(fp, cutSegments);
       } catch (err) {
         errorToast(i18n.t('Failed to export project'));
         console.error('Failed to export project', type, err);
