@@ -28,13 +28,6 @@ module.exports = (app, mainWindow, newVersion) => {
             mainWindow.webContents.send('close-file');
           },
         },
-        {
-          label: 'Save project (CSV)',
-          click() {
-            mainWindow.webContents.send('exportEdlFile');
-          },
-        },
-
         { type: 'separator' },
         {
           label: 'Load project (CSV)',
