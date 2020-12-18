@@ -7,7 +7,7 @@
   "main": "public/electron.js",
   "homepage": "./",
   "scripts": {
-    "start": "concurrently -k \"BROWSER=none PORT=3001 react-scripts start\" \"wait-on http://localhost:3001 && electron .\"",
+    "start": "concurrently -k \"cross-env BROWSER=none PORT=3001 react-scripts start\" \"wait-on http://localhost:3001 && electron .\"",
     "icon-gen": "mkdirp icon-build && svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512 && mkdirp icns-build && icon-gen -i src/icon.svg -o ./icns-build --icns --icns-sizes 512,1024 && mkdirp build-resources/appx && npx svg2png src/icon.svg --output=build-resources/appx/StoreLogo.png --width=50 --height=50 && npx svg2png src/icon.svg --output=build-resources/appx/Square150x150Logo.png --width=300 --height=300 && npx svg2png src/icon.svg --output=build-resources/appx/Square44x44Logo.png --width=44 --height=44 && npx svg2png src/icon.svg --output=build-resources/appx/Wide310x150Logo.png --width=620 --height=300",
     "download-ffmpeg": "mkdir -p ffmpeg-mac && wget https://github.com/mifi/ffmpeg-build-script/releases/download/n4.3.1/ffmpeg -O ffmpeg-mac/ffmpeg && wget https://github.com/mifi/ffmpeg-build-script/releases/download/n4.3.1/ffprobe -O ffmpeg-mac/ffprobe && chmod +x ffmpeg-mac/ffmpeg && chmod +x ffmpeg-mac/ffprobe",
     "build": "yarn icon-gen && react-scripts build",
@@ -37,6 +37,7 @@
     "axios": "^0.21.1",
     "color": "^3.1.0",
     "concurrently": "^5.1.0",
+    "cross-env": "^7.0.3",
     "csv-parse": "^4.8.5",
     "csv-stringify": "^5.3.6",
     "electron": "8",
