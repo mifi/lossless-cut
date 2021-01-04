@@ -1005,6 +1005,7 @@ const App = memo(() => {
           <li>Disable unnecessary <b>Tracks</b></li>
           <li>Try both <b>Normal cut</b> and <b>Keyframe cut</b></li>
           <li>Set a different <b>Working directory</b></li>
+          <li>Check if the disk is full</li>
           <li>Try with a <b>Different file</b></li>
           <li>See <b>Help</b></li>
           <li>If nothing helps, you can send an <b>Error report</b></li>
