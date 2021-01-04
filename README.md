@@ -2,8 +2,8 @@
 
 **The swiss army knife of lossless video/audio editing**
 
-LosslessCut aims to be the ultimate cross platform ffmpeg GUI for extremely fast and lossless operations on video, audio, subtitle and other related media files.
-The main feature is lossless trimming and cutting of video and audio files, which is great for saving space by rough-cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. Or you can add a music or subtitle track to your video without needing to encode. Everything is extremely fast because it does an almost direct data copy, fueled by the awesome ffmpeg which does all the grunt work.
+LosslessCut aims to be the ultimate cross platform FFmpeg GUI for extremely fast and lossless operations on video, audio, subtitle and other related media files.
+The main feature is lossless trimming and cutting of video and audio files, which is great for saving space by rough-cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. Or you can add a music or subtitle track to your video without needing to encode. Everything is extremely fast because it does an almost direct data copy, fueled by the awesome FFmpeg which does all the grunt work.
 
 ![Demo](https://github.com/mifi/lossless-cut/raw/master/main_screenshot.jpg)
 
@@ -12,7 +12,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 ## Features
 - Lossless cutting of most video and audio formats
 - Losslessly cut out parts of video/audio (for cutting away commercials etc.)
-- Lossless merge/concatenation of arbitrary files (with identical codecs parameters, e.g. from same camera)
+- Lossless merge/concatenation of arbitrary files (with identical codecs parameters, e.g. from the same camera)
 - Lossless stream editing: Combine arbitrary tracks from multiple files (ex. add music or subtitle track to a video file)
 - Losslessly extract all tracks from a file (extract video, audio, subtitle and other tracks from one file into separate files)
 - Remux into any compatible output format
@@ -23,7 +23,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - View technical data about all streams
 - Timeline zoom and frame/keyframe jumping for accurate cutting around keyframes
 - Saves per project cut segments to project file
-- View ffmpeg last command log so you can modify and re-run recent commands on the command line
+- View FFmpeg last command log so you can modify and re-run recent commands on the command line
 - Undo/redo
 - Give labels to cut segments
 - View segment details, export/import cut segments as CSV
@@ -46,7 +46,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Change the language of a file's audio/subtitle tracks
 - Change author, title, GPS position, recording time of a video
 - Export a list of cut times as a CSV EDL and process these in another tool
-  - Without having to re-encode. You can also change format from TS to MP4 at the same time.
+  - Without having to re-encode. You can also change the format from TS to MP4 at the same time.
 - Fix rotation of a video that has the wrong orientation flag set
   - Great for rotating phone videos that come out the wrong way without actually re-encoding the video.
 - Loop a video / audio clip X times quickly without re-encoding
@@ -84,11 +84,11 @@ They have exactly the same in-app features, except a few platform limitations. A
 
 ## Supported formats
 
-Since LosslessCut is based on Chromium and uses the HTML5 video player, not all ffmpeg supported formats will be supported smoothly.
+Since LosslessCut is based on Chromium and uses the HTML5 video player, not all FFmpeg supported formats will be supported smoothly.
 The following formats/codecs should generally work: MP4, MOV, WebM, MKV, OGG, WAV, MP3, AAC, H264, Theora, VP8, VP9
 For more information about supported formats / codecs, see https://www.chromium.org/audio-video.
 
-Unsupported files can still be converted to a supported format/codec from the `File` menu. (Try fastest variant first.) A low quality version of the file (without audio) will then be created and opened in the player. The cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that ffmpeg is able to decode.
+Unsupported files can still be converted to a supported format/codec from the `File` menu. (Try the fastest variant first.) A low quality version of the file (without audio) will then be created and opened in the player. The cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that FFmpeg is able to decode.
 
 ## How to use
 
@@ -110,16 +110,16 @@ Unsupported files can still be converted to a supported format/codec from the `F
 - Press the `Export` button (or <kbd>E</kbd>) to run the export
 - Press the **Camera** button (or <kbd>C</kbd>) if you want to take a JPEG/PNG snapshot from the current time
 - If you want to move the original file to trash, press the **trash** button
-- For best results you may need to trial and error with another output format (matroska takes nearly everything), change keyframe cut mode or disable some tracks, see known issues below.
+- For best results you may need to trial and error with another output format (Matroska takes nearly everything), change keyframe cut mode or disable some tracks, see known issues below.
 
-Note: The original video file will not be modified. Instead it creates a lossless export to a new file in the same directory as the original file with from/to timestamps.
+Note: The original video file will not be modified. Instead, it creates a lossless export to a new file in the same directory as the original file with from/to timestamps.
 
 Note also that the cut is not precise around the cutpoints, so video before/after the nearest keyframe will be discarded. EXIF metadata is preserved.
 
 ## Known issues & limitations
 
 - **Cutting times are not accurate!** Start cut time will be "rounded" to the nearest **previous** keyframe.
-  - Lossless cutting is not an exact science. For some codecs it just works. For others you may need to trial and error depending on the codec, keyframes etc to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
+  - Lossless cutting is not an exact science. For some codecs, it just works. For others, you may need to trial and error depending on the codec, keyframes etc to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
   - Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
 - When exporting you may lose some proprietary data tracks (like `tmcd`, `fdsc` and `gpmd` added by GoPro). These can be exported to separate files however
 - Some codecs are not supported natively. There is partial support with low quality. You can convert to supported codec from the menu, see [#88](https://github.com/mifi/lossless-cut/issues/88)
@@ -138,11 +138,11 @@ If you have an issue you can check the developer tools
 
 ## CSV import/export
 
-The CSV export/import function takes csv files with one cut segment on each line. Each line contains three columns: `segment start`, `segment end`, `label`.
+The CSV export/import function takes CSV files with one cut segment on each line. Each line contains three columns: `segment start`, `segment end`, `label`.
 
 `segment start` and `segment end` are expressed in seconds or left empty. Empty `segment end` means segment ends at the duration of the video.
 
-Note that you must use comma `,` to separate the fields (**not** semicolon `;`)
+Note that you must use a comma `,` to separate the fields (**not** semicolon `;`)
 
 ### example.csv
 ```csv
