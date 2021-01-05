@@ -203,7 +203,7 @@ export async function cleanupFilesDialog() {
     icon: 'warning',
     title: i18n.t('Cleanup files?'),
     input: 'radio',
-    inputValue: 'all',
+    inputValue: 'tmpFiles',
     text: i18n.t('Do you want to move the original file and/or any generated files to trash?'),
     confirmButtonText: i18n.t('Trash selected file(s)'),
     confirmButtonColor: '#d33',
