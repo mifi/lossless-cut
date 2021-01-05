@@ -6,6 +6,7 @@ git clone https://github.com/mifi/lossless-cut.git
 cd lossless-cut
 yarn
 ```
+The last command may take some time to complete. In case you need to install `yarn`, use `npm install -g yarn` command.
 
 ### Running
 
