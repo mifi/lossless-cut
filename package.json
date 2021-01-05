@@ -34,7 +34,7 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "color": "^3.1.0",
     "concurrently": "^5.1.0",
     "csv-parse": "^4.8.5",
