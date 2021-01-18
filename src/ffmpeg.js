@@ -325,7 +325,8 @@ export async function cutMultiple({
     let segNamePart = '';
     if (!invertCutSegments) {
       if (name) segNamePart = `-${filenamify(name)}`;
-      else segNamePart = `-seg${order + 1}`;
+      // https://github.com/mifi/lossless-cut/issues/583
+      else if (segments.length > 1) segNamePart = `-seg${order + 1}`;
     }
     const cutSpecification = `${cutFromStr}-${cutToStr}${segNamePart}`.substr(0, 200);
     const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath });
