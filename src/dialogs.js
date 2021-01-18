@@ -108,6 +108,13 @@ export async function askForFileOpenAction() {
   return value;
 }
 
+export async function showDiskFull() {
+  await Swal.fire({
+    icon: 'error',
+    text: i18n.t('You ran out of space'),
+  });
+}
+
 export async function askForImportChapters() {
   const { value } = await Swal.fire({
     icon: 'question',
