@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 
 import TimelineSeg from './TimelineSeg';
 import InverseCutSegment from './InverseCutSegment';
-import normalizeWheel from './normalizeWheel';
 
 
 import { timelineBackground } from './colors';
@@ -40,11 +39,11 @@ const Waveform = memo(({ calculateTimelinePercent, durationSafe, waveform, zoom,
 
 const Timeline = memo(({
   durationSafe, getCurrentTime, startTimeOffset, playerTime, commandedTime,
-  zoom, neighbouringFrames, seekAbs, seekRel, apparentCutSegments, zoomRel,
+  zoom, neighbouringFrames, seekAbs, apparentCutSegments,
   setCurrentSegIndex, currentSegIndexSafe, invertCutSegments, inverseCutSegments, formatTimecode,
   waveform, shouldShowWaveform, shouldShowKeyframes, timelineHeight, thumbnails,
-  onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled, wheelSensitivity,
-  invertTimelineScroll, playing, isFileOpened,
+  onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled,
+  playing, isFileOpened, onWheel,
 }) => {
   const { t } = useTranslation();
 
@@ -157,19 +156,6 @@ const Timeline = memo(({
   const handleTap = useCallback((e) => {
     seekAbs((getMouseTimelinePos(e.srcEvent)));
   }, [seekAbs, getMouseTimelinePos]);
-
-  const onWheel = useCallback((e) => {
-    const { pixelX, pixelY } = normalizeWheel(e);
-    // console.log({ spinX, spinY, pixelX, pixelY });
-
-    const direction = invertTimelineScroll ? 1 : -1;
-
-    if (e.ctrlKey) {
-      zoomRel(direction * (pixelY) * wheelSensitivity * 0.4);
-    } else {
-      seekRel(direction * (pixelX + pixelY) * wheelSensitivity * 0.2);
-    }
-  }, [seekRel, zoomRel, wheelSensitivity, invertTimelineScroll]);
 
   useEffect(() => {
     setHoveringTime();
