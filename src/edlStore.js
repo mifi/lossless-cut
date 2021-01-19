@@ -33,7 +33,7 @@ export async function saveCsv(path, cutSegments) {
 
 const formatDurationStr = (duration) => (duration != null ? formatDuration({ seconds: duration }) : '');
 
-const mapSegments = (segments) => segments.map(({ start, end, name }) => [formatDurationStr(start), formatDurationStr(end), name])
+const mapSegments = (segments) => segments.map(({ start, end, name }) => [formatDurationStr(start), formatDurationStr(end), name]);
 
 export async function saveCsvHuman(path, cutSegments) {
   const str = await csvStringifyAsync(mapSegments(cutSegments));
