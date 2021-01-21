@@ -49,7 +49,9 @@ const SortableFiles = memo(({
 
   return (
     <div>
-      <div><b>{t('Sort your files for merge')}</b></div>
+      <div><b>{t('Merge/concatenate files')}</b></div>
+
+      <div style={{ whiteSpace: 'pre-wrap', textAlign: 'left', fontSize: 14 }}>{t('This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).\n\nDrag and drop to change the order of your files here:')}</div>
       <SortableContainer
         items={items}
         onSortEnd={onSortEnd}

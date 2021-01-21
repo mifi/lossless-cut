@@ -46,10 +46,10 @@ const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments,
         <>
           <div role="button" style={{ marginRight: 5, marginLeft: 10 }} title={t('Zoom')} onClick={toggleComfortZoom}>{Math.floor(zoom)}x</div>
 
-          <Select height={20} style={{ width: 70 }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
+          <Select height={20} style={{ width: 65 }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
             <option key="" value="" disabled>{t('Zoom')}</option>
             {zoomOptions.map(val => (
-              <option key={val} value={String(val)}>{t('Zoom')}</option>
+              <option key={val} value={String(val)}>{t('Zoom')} {val}x</option>
             ))}
           </Select>
         </>

@@ -19,6 +19,7 @@ import sortBy from 'lodash/sortBy';
 import flatMap from 'lodash/flatMap';
 import isEqual from 'lodash/isEqual';
 
+import useTimelineScroll from './hooks/useTimelineScroll';
 import NoFileLoaded from './NoFileLoaded';
 import Canvas from './Canvas';
 import TopMenu from './TopMenu';
@@ -50,7 +51,7 @@ import {
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows,
 } from './util';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog } from './dialogs';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor } from './segments';
@@ -343,6 +344,8 @@ const App = memo(() => {
       return 1;
     });
   }, [comfortZoom]);
+
+  const onTimelineWheel = useTimelineScroll({ wheelSensitivity, invertTimelineScroll, zoomRel, seekRel });
 
   const getSegApparentEnd = useCallback((seg) => {
     const time = seg.end;
@@ -1101,6 +1104,11 @@ const App = memo(() => {
       console.error('stderr:', err.stderr);
 
       if (err.exitCode === 1 || err.code === 'ENOENT') {
+        // A bit hacky but it works, unless someone has a file called "No space left on device" ( ͡° ͜ʖ ͡°)
+        if (typeof err.stderr === 'string' && err.stderr.includes('No space left on device')) {
+          showDiskFull();
+          return;
+        }
         handleCutFailed(err);
         return;
       }
@@ -2065,7 +2073,7 @@ const App = memo(() => {
         )}
       </AnimatePresence>
 
-      <div className="no-user-select" style={{ position: 'absolute', top: topBarHeight, left: 0, right: sideBarWidth, bottom: bottomBarHeight, visibility: !isFileOpened ? 'hidden' : undefined }}>
+      <div className="no-user-select" style={{ position: 'absolute', top: topBarHeight, left: 0, right: sideBarWidth, bottom: bottomBarHeight, visibility: !isFileOpened ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
         {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <video
           muted={muted}
@@ -2169,8 +2177,6 @@ const App = memo(() => {
           commandedTime={commandedTime}
           zoom={zoom}
           seekAbs={seekAbs}
-          seekRel={seekRel}
-          zoomRel={zoomRel}
           durationSafe={durationSafe}
           apparentCutSegments={apparentCutSegments}
           setCurrentSegIndex={setCurrentSegIndex}
@@ -2180,10 +2186,9 @@ const App = memo(() => {
           formatTimecode={formatTimecode}
           timelineHeight={timelineHeight}
           onZoomWindowStartTimeChange={setZoomWindowStartTime}
-          wheelSensitivity={wheelSensitivity}
-          invertTimelineScroll={invertTimelineScroll}
           playing={playing}
           isFileOpened={isFileOpened}
+          onWheel={onTimelineWheel}
         />
 
         <TimelineControls

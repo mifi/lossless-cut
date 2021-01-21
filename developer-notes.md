@@ -1,11 +1,18 @@
 ## Development building / running
 
-This app is built using Electron. Make sure you have at least node v12 and yarn installed. The app uses ffmpeg from PATH when developing.
+This app is built using Electron.
+Make sure you have at least Node v12. The app uses ffmpeg from PATH when developing.
+
+```bash
+npm install -g yarn
 ```
+
+```bash
 git clone https://github.com/mifi/lossless-cut.git
 cd lossless-cut
 yarn
 ```
+Note: `yarn` may take some time to complete.
 
 ### Running
 

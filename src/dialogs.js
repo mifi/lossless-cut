@@ -108,6 +108,13 @@ export async function askForFileOpenAction() {
   return value;
 }
 
+export async function showDiskFull() {
+  await Swal.fire({
+    icon: 'error',
+    text: i18n.t('You ran out of space'),
+  });
+}
+
 export async function askForImportChapters() {
   const { value } = await Swal.fire({
     icon: 'question',
@@ -205,10 +212,10 @@ export async function cleanupFilesDialog() {
     input: 'radio',
     inputValue: 'tmpFiles',
     text: i18n.t('Do you want to move the original file and/or any generated files to trash?'),
-    confirmButtonText: i18n.t('Trash selected file(s)'),
+    confirmButtonText: i18n.t('Trash'),
     confirmButtonColor: '#d33',
     showCancelButton: true,
-    cancelButtonText: i18n.t('Do not delete'),
+    cancelButtonText: i18n.t('Cancel'),
     customClass: { input: 'swal2-losslesscut-radio' },
     inputOptions: {
       tmpFiles: i18n.t('Trash auto-generated files'),
