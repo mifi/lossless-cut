@@ -209,7 +209,6 @@ export async function cleanupFilesDialog() {
     confirmButtonColor: '#d33',
     showCancelButton: true,
     cancelButtonText: i18n.t('Do not delete'),
-    focusCancel: true,
     customClass: { input: 'swal2-losslesscut-radio' },
     inputOptions: {
       tmpFiles: i18n.t('Trash auto-generated files'),
