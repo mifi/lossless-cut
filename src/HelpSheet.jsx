@@ -1,14 +1,13 @@
 import React, { memo } from 'react';
-import { FaClipboard, FaHandPointRight, FaHandPointLeft, FaStepBackward, FaStepForward } from 'react-icons/fa';
+import { FaHandPointRight, FaHandPointLeft, FaStepBackward, FaStepForward } from 'react-icons/fa';
 import { useTranslation, Trans } from 'react-i18next';
 
 import SetCutpointButton from './components/SetCutpointButton';
-import { toast } from './util';
+import CopyClipboardButton from './components/CopyClipboardButton';
 import { primaryTextColor } from './colors';
 import Sheet from './Sheet';
 
 const electron = window.require('electron');
-const { clipboard } = electron;
 
 const { githubLink } = electron.remote.require('./constants');
 
@@ -92,7 +91,7 @@ const HelpSheet = memo(({ visible, onTogglePress, ffmpegCommandLog, currentCutSe
             {ffmpegCommandLog.reverse().map(({ command }, i) => (
               // eslint-disable-next-line react/no-array-index-key
               <div key={i} style={{ whiteSpace: 'pre', margin: '5px 0' }}>
-                <FaClipboard style={{ cursor: 'pointer' }} title={t('Copy to clipboard')} onClick={() => { clipboard.writeText(command); toast.fire({ timer: 2000, icon: 'success', title: t('Copied to clipboard') }); }} /> {command}
+                <CopyClipboardButton text={command} /> {command}
               </div>
             ))}
           </div>

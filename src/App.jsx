@@ -10,7 +10,6 @@ import { useDebounce } from 'use-debounce';
 import filePathToUrl from 'file-url';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
-import withReactContent from 'sweetalert2-react-content';
 import Mousetrap from 'mousetrap';
 
 import fromPairs from 'lodash/fromPairs';
@@ -71,8 +70,6 @@ const { extname, parse: parsePath, sep: pathSep, join: pathJoin, normalize: path
 const { dialog, app } = electron.remote;
 
 const { focusWindow } = electron.remote.require('./electron');
-
-const ReactSwal = withReactContent(Swal);
 
 
 const ffmpegExtractWindow = 60;
