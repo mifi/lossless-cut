@@ -69,7 +69,7 @@
     "react-dom": "^16.12.0",
     "react-hammerjs": "^1.0.1",
     "react-i18next": "^11.3.3",
-    "react-icons": "^3.11.0",
+    "react-icons": "^4.1.0",
     "react-lottie": "^1.2.3",
     "react-scripts": "^3.4.0",
     "react-sortable-hoc": "^1.5.3",
