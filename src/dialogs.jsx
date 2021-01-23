@@ -1,5 +1,7 @@
+import React from 'react';
 import Swal from 'sweetalert2';
 import i18n from 'i18next';
+import withReactContent from 'sweetalert2-react-content';
 
 import { parseDuration } from './util';
 import { parseYouTube } from './edlFormats';
@@ -7,6 +9,8 @@ import { parseYouTube } from './edlFormats';
 const electron = window.require('electron'); // eslint-disable-line
 
 const { dialog } = electron.remote;
+
+const ReactSwal = withReactContent(Swal);
 
 export async function promptTimeOffset(inputValue) {
   const { value } = await Swal.fire({
@@ -237,4 +241,25 @@ export async function createFixedDurationSegments(fileDuration) {
     edl.push({ start, end: end >= fileDuration ? undefined : end });
   }
   return edl;
+}
+
+export async function showCutFailedDialog({ detectedFileFormat }) {
+  const html = (
+    <div style={{ textAlign: 'left' }}>
+      Try one of the following before exporting again:
+      <ol>
+        {detectedFileFormat === 'mp4' && <li>Change output <b>Format</b> from <b>MP4</b> to <b>MOV</b></li>}
+        <li>Select a different output <b>Format</b> (<b>matroska</b> and <b>mp4</b> support most codecs)</li>
+        <li>Disable unnecessary <b>Tracks</b></li>
+        <li>Try both <b>Normal cut</b> and <b>Keyframe cut</b></li>
+        <li>Set a different <b>Working directory</b></li>
+        <li>Try with a <b>Different file</b></li>
+        <li>See <b>Help</b></li>
+        <li>If nothing helps, you can send an <b>Error report</b></li>
+      </ol>
+    </div>
+  );
+
+  const { value } = await ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, timer: null, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
+  return value;
 }

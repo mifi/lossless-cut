@@ -53,7 +53,7 @@ import {
   isDurationValid, isWindows, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   hasDuplicates,
 } from './util';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull } from './dialogs';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor } from './segments';
@@ -959,27 +959,8 @@ const App = memo(() => {
   }, [copyStreamIdsByFile, cutSegments, externalStreamFiles, fileFormat, fileFormatData, filePath, mainStreams, rotation, shortestFlag]);
 
   const handleCutFailed = useCallback(async (err) => {
-    const html = (
-      <div style={{ textAlign: 'left' }}>
-        Try one of the following before exporting again:
-        <ol>
-          {detectedFileFormat === 'mp4' && <li>Change output <b>Format</b> from <b>MP4</b> to <b>MOV</b></li>}
-          <li>Select a different output <b>Format</b> (<b>matroska</b> and <b>mp4</b> support most codecs)</li>
-          <li>Disable unnecessary <b>Tracks</b></li>
-          <li>Try both <b>Normal cut</b> and <b>Keyframe cut</b></li>
-          <li>Set a different <b>Working directory</b></li>
-          <li>Try with a <b>Different file</b></li>
-          <li>See <b>Help</b></li>
-          <li>If nothing helps, you can send an <b>Error report</b></li>
-        </ol>
-      </div>
-    );
-
-    const { value } = await ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, timer: null, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
-
-    if (value) {
-      openSendReportDialogWithState(err);
-    }
+    const sendErrorReport = await showCutFailedDialog({ detectedFileFormat });
+    if (sendErrorReport) openSendReportDialogWithState(err);
   }, [openSendReportDialogWithState, detectedFileFormat]);
 
   const closeExportConfirm = useCallback(() => setExportConfirmVisible(false), []);
