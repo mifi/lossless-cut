@@ -122,20 +122,8 @@ module.exports = (app, mainWindow, newVersion) => {
     {
       label: 'Edit',
       submenu: [
-        {
-          label: 'Undo',
-          accelerator: 'CmdOrCtrl+Z',
-          click() {
-            mainWindow.webContents.send('undo');
-          },
-        },
-        {
-          label: 'Redo',
-          accelerator: 'Shift+CmdOrCtrl+Z',
-          click() {
-            mainWindow.webContents.send('redo');
-          },
-        },
+        { role: 'undo' },
+        { role: 'redo' },
         { type: 'separator' },
         { role: 'cut' },
         { role: 'copy' },

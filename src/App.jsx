@@ -1368,12 +1368,22 @@ const App = memo(() => {
     mousetrap.bind('down', () => jumpNextSegment());
     mousetrap.bind(['ctrl+down', 'command+down'], () => zoomOut());
 
+    // https://github.com/mifi/lossless-cut/issues/610
+    Mousetrap.bind(['ctrl+z', 'command+z'], (e) => {
+      e.preventDefault();
+      cutSegmentsHistory.back();
+    });
+    Mousetrap.bind(['ctrl+shift+z', 'command+shift+z'], (e) => {
+      e.preventDefault();
+      cutSegmentsHistory.forward();
+    });
+
     return () => mousetrap.reset();
   }, [
     addCutSegment, capture, changePlaybackRate, togglePlay, removeCutSegment,
     setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, cleanupFiles, jumpSeg,
     seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment, exportConfirmVisible,
-    increaseRotation, jumpCutStart, jumpCutEnd,
+    increaseRotation, jumpCutStart, jumpCutEnd, cutSegmentsHistory,
   ]);
 
   useEffect(() => {
@@ -1731,8 +1741,6 @@ const App = memo(() => {
     }
 
     const fileOpened = (event, filePaths) => { userOpenFiles(filePaths); };
-    const undo = () => { cutSegmentsHistory.back(); };
-    const redo = () => { cutSegmentsHistory.forward(); };
     const showStreamsSelector = () => setStreamsSelectorShown(true);
     const openSendReportDialog2 = () => { openSendReportDialogWithState(); };
     const closeFile2 = () => { closeFile(); };
@@ -1744,8 +1752,6 @@ const App = memo(() => {
     electron.ipcRenderer.on('set-start-offset', setStartOffset);
     electron.ipcRenderer.on('extract-all-streams', extractAllStreams);
     electron.ipcRenderer.on('showStreamsSelector', showStreamsSelector);
-    electron.ipcRenderer.on('undo', undo);
-    electron.ipcRenderer.on('redo', redo);
     electron.ipcRenderer.on('importEdlFile', importEdlFile);
     electron.ipcRenderer.on('exportEdlFile', exportEdlFile);
     electron.ipcRenderer.on('openHelp', toggleHelp);
@@ -1767,8 +1773,6 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('set-start-offset', setStartOffset);
       electron.ipcRenderer.removeListener('extract-all-streams', extractAllStreams);
       electron.ipcRenderer.removeListener('showStreamsSelector', showStreamsSelector);
-      electron.ipcRenderer.removeListener('undo', undo);
-      electron.ipcRenderer.removeListener('redo', redo);
       electron.ipcRenderer.removeListener('importEdlFile', importEdlFile);
       electron.ipcRenderer.removeListener('exportEdlFile', exportEdlFile);
       electron.ipcRenderer.removeListener('openHelp', toggleHelp);
@@ -1784,7 +1788,7 @@ const App = memo(() => {
     };
   }, [
     mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, html5ifyCurrentFile,
-    createDummyVideo, extractAllStreams, userOpenFiles, cutSegmentsHistory, openSendReportDialogWithState,
+    createDummyVideo, extractAllStreams, userOpenFiles, openSendReportDialogWithState,
     loadEdlFile, cutSegments, edlFilePath, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
     loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime, closeFile, clearSegments,
   ]);
