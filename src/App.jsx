@@ -20,6 +20,7 @@ import flatMap from 'lodash/flatMap';
 import isEqual from 'lodash/isEqual';
 
 import useTimelineScroll from './hooks/useTimelineScroll';
+import useUserPreferences from './hooks/useUserPreferences';
 import NoFileLoaded from './NoFileLoaded';
 import Canvas from './Canvas';
 import TopMenu from './TopMenu';
@@ -69,7 +70,6 @@ const { extname, parse: parsePath, sep: pathSep, join: pathJoin, normalize: path
 
 const { dialog, app } = electron.remote;
 
-const configStore = electron.remote.require('./configStore');
 const { focusWindow } = electron.remote.require('./electron');
 
 const ReactSwal = withReactContent(Swal);
@@ -144,87 +144,15 @@ const App = memo(() => {
 
   const isCustomFormatSelected = fileFormat !== detectedFileFormat;
 
-  const firstUpdateRef = useRef(true);
-
-  function safeSetConfig(key, value) {
-    // Prevent flood-saving all config when mounting
-    if (firstUpdateRef.current) return;
-
-    // console.log(key);
-    try {
-      configStore.set(key, value);
-    } catch (err) {
-      console.error('Failed to set config', key, err);
-      errorToast(i18n.t('Unable to save your preferences. Try to disable any anti-virus'));
-    }
-  }
-
-  // Preferences
-  const [captureFormat, setCaptureFormat] = useState(configStore.get('captureFormat'));
-  useEffect(() => safeSetConfig('captureFormat', captureFormat), [captureFormat]);
-  const [customOutDir, setCustomOutDir] = useState(configStore.get('customOutDir'));
-  useEffect(() => safeSetConfig('customOutDir', customOutDir), [customOutDir]);
-  const [keyframeCut, setKeyframeCut] = useState(configStore.get('keyframeCut'));
-  useEffect(() => safeSetConfig('keyframeCut', keyframeCut), [keyframeCut]);
-  const [preserveMovData, setPreserveMovData] = useState(configStore.get('preserveMovData'));
-  useEffect(() => safeSetConfig('preserveMovData', preserveMovData), [preserveMovData]);
-  const [movFastStart, setMovFastStart] = useState(configStore.get('movFastStart'));
-  useEffect(() => safeSetConfig('movFastStart', movFastStart), [movFastStart]);
-  const [avoidNegativeTs, setAvoidNegativeTs] = useState(configStore.get('avoidNegativeTs'));
-  useEffect(() => safeSetConfig('avoidNegativeTs', avoidNegativeTs), [avoidNegativeTs]);
-  const [autoMerge, setAutoMerge] = useState(configStore.get('autoMerge'));
-  useEffect(() => safeSetConfig('autoMerge', autoMerge), [autoMerge]);
-  const [timecodeShowFrames, setTimecodeShowFrames] = useState(configStore.get('timecodeShowFrames'));
-  useEffect(() => safeSetConfig('timecodeShowFrames', timecodeShowFrames), [timecodeShowFrames]);
-  const [invertCutSegments, setInvertCutSegments] = useState(configStore.get('invertCutSegments'));
-  useEffect(() => safeSetConfig('invertCutSegments', invertCutSegments), [invertCutSegments]);
-  const [autoExportExtraStreams, setAutoExportExtraStreams] = useState(configStore.get('autoExportExtraStreams'));
-  useEffect(() => safeSetConfig('autoExportExtraStreams', autoExportExtraStreams), [autoExportExtraStreams]);
-  const [askBeforeClose, setAskBeforeClose] = useState(configStore.get('askBeforeClose'));
-  useEffect(() => safeSetConfig('askBeforeClose', askBeforeClose), [askBeforeClose]);
-  const [enableAskForImportChapters, setEnableAskForImportChapters] = useState(configStore.get('enableAskForImportChapters'));
-  useEffect(() => safeSetConfig('enableAskForImportChapters', enableAskForImportChapters), [enableAskForImportChapters]);
-  const [enableAskForFileOpenAction, setEnableAskForFileOpenAction] = useState(configStore.get('enableAskForFileOpenAction'));
-  useEffect(() => safeSetConfig('enableAskForFileOpenAction', enableAskForFileOpenAction), [enableAskForFileOpenAction]);
-  const [muted, setMuted] = useState(configStore.get('muted'));
-  useEffect(() => safeSetConfig('muted', muted), [muted]);
-  const [autoSaveProjectFile, setAutoSaveProjectFile] = useState(configStore.get('autoSaveProjectFile'));
-  useEffect(() => safeSetConfig('autoSaveProjectFile', autoSaveProjectFile), [autoSaveProjectFile]);
-  const [wheelSensitivity, setWheelSensitivity] = useState(configStore.get('wheelSensitivity'));
-  useEffect(() => safeSetConfig('wheelSensitivity', wheelSensitivity), [wheelSensitivity]);
-  const [invertTimelineScroll, setInvertTimelineScroll] = useState(configStore.get('invertTimelineScroll'));
-  useEffect(() => safeSetConfig('invertTimelineScroll', invertTimelineScroll), [invertTimelineScroll]);
-  const [language, setLanguage] = useState(configStore.get('language'));
-  useEffect(() => safeSetConfig('language', language), [language]);
-  const [ffmpegExperimental, setFfmpegExperimental] = useState(configStore.get('ffmpegExperimental'));
-  useEffect(() => safeSetConfig('ffmpegExperimental', ffmpegExperimental), [ffmpegExperimental]);
-  const [hideNotifications, setHideNotifications] = useState(configStore.get('hideNotifications'));
-  useEffect(() => safeSetConfig('hideNotifications', hideNotifications), [hideNotifications]);
-  const [autoLoadTimecode, setAutoLoadTimecode] = useState(configStore.get('autoLoadTimecode'));
-  useEffect(() => safeSetConfig('autoLoadTimecode', autoLoadTimecode), [autoLoadTimecode]);
-  const [autoDeleteMergedSegments, setAutoDeleteMergedSegments] = useState(configStore.get('autoDeleteMergedSegments'));
-  useEffect(() => safeSetConfig('autoDeleteMergedSegments', autoDeleteMergedSegments), [autoDeleteMergedSegments]);
-  const [exportConfirmEnabled, setExportConfirmEnabled] = useState(configStore.get('exportConfirmEnabled'));
-  useEffect(() => safeSetConfig('exportConfirmEnabled', exportConfirmEnabled), [exportConfirmEnabled]);
-  const [segmentsToChapters, setSegmentsToChapters] = useState(configStore.get('segmentsToChapters'));
-  useEffect(() => safeSetConfig('segmentsToChapters', segmentsToChapters), [segmentsToChapters]);
-  const [preserveMetadataOnMerge, setPreserveMetadataOnMerge] = useState(configStore.get('preserveMetadataOnMerge'));
-  useEffect(() => safeSetConfig('preserveMetadataOnMerge', preserveMetadataOnMerge), [preserveMetadataOnMerge]);
-  const [simpleMode, setSimpleMode] = useState(configStore.get('simpleMode'));
-  useEffect(() => safeSetConfig('simpleMode', simpleMode), [simpleMode]);
-  const [outSegTemplate, setOutSegTemplate] = useState(configStore.get('outSegTemplate'));
-  useEffect(() => safeSetConfig('outSegTemplate', outSegTemplate), [outSegTemplate]);
+  const {
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, muted, setMuted, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate,
+  } = useUserPreferences();
 
   const outSegTemplateOrDefault = outSegTemplate || defaultOutSegTemplate;
 
   useEffect(() => {
     i18n.changeLanguage(language || fallbackLng).catch(console.error);
   }, [language]);
-
-  // This useEffect must be placed after all usages of firstUpdateRef.current
-  useEffect(() => {
-    firstUpdateRef.current = false;
-  }, []);
 
   // Global state
   const [helpVisible, setHelpVisible] = useState(false);
@@ -250,11 +178,11 @@ const App = memo(() => {
     }
   }
 
-  const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => !v), []);
+  const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => !v), [setExportConfirmEnabled]);
 
-  const toggleSegmentsToChapters = useCallback(() => setSegmentsToChapters((v) => !v), []);
+  const toggleSegmentsToChapters = useCallback(() => setSegmentsToChapters((v) => !v), [setSegmentsToChapters]);
 
-  const togglePreserveMetadataOnMerge = useCallback(() => setPreserveMetadataOnMerge((v) => !v), []);
+  const togglePreserveMetadataOnMerge = useCallback(() => setPreserveMetadataOnMerge((v) => !v), [setPreserveMetadataOnMerge]);
 
   const toggleKeyframesEnabled = useCallback(() => {
     setKeyframesEnabled((old) => {
@@ -292,7 +220,7 @@ const App = memo(() => {
       if (!v && !hideAllNotifications) toast.fire({ icon: 'info', title: i18n.t('Muted preview (exported file will not be affected)') });
       return !v;
     });
-  }, [hideAllNotifications]);
+  }, [hideAllNotifications, setMuted]);
 
   const seekAbs = useCallback((val) => {
     const video = videoRef.current;
@@ -542,7 +470,7 @@ const App = memo(() => {
     if (isMasBuild && !newOutDir) return;
     // Else it's OK, we allow clearing the dir too
     setCustomOutDir(newOutDir);
-  }, [outputDir]);
+  }, [outputDir, setCustomOutDir]);
 
   const effectiveFilePath = dummyVideoPath || html5FriendlyPath || filePath;
   const fileUri = effectiveFilePath ? filePathToUrl(effectiveFilePath) : '';
@@ -632,7 +560,7 @@ const App = memo(() => {
     }
 
     return { cancel: false, newCustomOutDir };
-  }, [customOutDir]);
+  }, [customOutDir, setCustomOutDir]);
 
   const mergeFiles = useCallback(async ({ paths, allStreams, segmentsToChapters: segmentsToChapters2 }) => {
     try {
@@ -664,7 +592,7 @@ const App = memo(() => {
     }
   }, [assureOutDirAccess, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, customOutDir]);
 
-  const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), []);
+  const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
 
   const toggleKeyframeCut = useCallback((showMessage) => setKeyframeCut((val) => {
     const newVal = !val;
@@ -673,18 +601,18 @@ const App = memo(() => {
       else toast.fire({ title: i18n.t('Keyframe cut disabled'), text: i18n.t('Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut'), timer: 7000 });
     }
     return newVal;
-  }), [hideAllNotifications]);
+  }), [hideAllNotifications, setKeyframeCut]);
 
-  const toggleAutoMerge = useCallback(() => setAutoMerge(val => !val), []);
+  const toggleAutoMerge = useCallback(() => setAutoMerge(val => !val), [setAutoMerge]);
 
-  const togglePreserveMovData = useCallback(() => setPreserveMovData((val) => !val), []);
+  const togglePreserveMovData = useCallback(() => setPreserveMovData((val) => !val), [setPreserveMovData]);
 
-  const toggleMovFastStart = useCallback(() => setMovFastStart((val) => !val), []);
+  const toggleMovFastStart = useCallback(() => setMovFastStart((val) => !val), [setMovFastStart]);
 
   const toggleSimpleMode = useCallback(() => setSimpleMode((v) => {
     if (!hideAllNotifications) toast.fire({ text: v ? i18n.t('Advanced view has been enabled. You will now also see non-essential buttons and functions') : i18n.t('Advanced view disabled. You will now see only the most essential buttons and functions') });
     return !v;
-  }), [hideAllNotifications]);
+  }), [hideAllNotifications, setSimpleMode]);
 
   const isCopyingStreamId = useCallback((path, streamId) => (
     !!(copyStreamIdsByFile[path] || {})[streamId]
@@ -1943,7 +1871,7 @@ const App = memo(() => {
       value={autoExportExtraStreams ? 'extract' : 'discard'}
       onChange={value => setAutoExportExtraStreams(value === 'extract')}
     />
-  ), [autoExportExtraStreams]);
+  ), [autoExportExtraStreams, setAutoExportExtraStreams]);
 
   const onWheelTunerRequested = useCallback(() => {
     setSettingsVisible(false);
@@ -1987,7 +1915,7 @@ const App = memo(() => {
       renderCaptureFormatButton={renderCaptureFormatButton}
       onWheelTunerRequested={onWheelTunerRequested}
     />
-  ), [AutoExportToggler, askBeforeClose, autoMerge, autoSaveProjectFile, customOutDir, invertCutSegments, keyframeCut, renderCaptureFormatButton, timecodeShowFrames, changeOutDir, onWheelTunerRequested, language, invertTimelineScroll, ffmpegExperimental, setFfmpegExperimental, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments]);
+  ), [changeOutDir, customOutDir, autoMerge, setAutoMerge, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments, autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, ffmpegExperimental, setFfmpegExperimental, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, AutoExportToggler, renderCaptureFormatButton, onWheelTunerRequested]);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);
