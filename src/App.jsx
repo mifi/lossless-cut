@@ -33,6 +33,7 @@ import Timeline from './Timeline';
 import RightMenu from './RightMenu';
 import TimelineControls from './TimelineControls';
 import ExportConfirm from './ExportConfirm';
+import ValueTuner from './components/ValueTuner';
 import { loadMifiLink } from './mifi';
 import { primaryColor, controlsBackground, waveformColor } from './colors';
 import { showMergeDialog, showOpenAndMergeDialog } from './merge/merge';
@@ -142,7 +143,7 @@ const App = memo(() => {
   const isCustomFormatSelected = fileFormat !== detectedFileFormat;
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, muted, setMuted, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, muted, setMuted, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed,
   } = useUserPreferences();
 
   const outSegTemplateOrDefault = outSegTemplate || defaultOutSegTemplate;
@@ -154,7 +155,7 @@ const App = memo(() => {
   // Global state
   const [helpVisible, setHelpVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
-  const [wheelTunerVisible, setWheelTunerVisible] = useState(false);
+  const [tunerVisible, setTunerVisible] = useState();
   const [exportConfirmVisible, setExportConfirmVisible] = useState(false);
   const [mifiLink, setMifiLink] = useState();
 
@@ -1322,11 +1323,11 @@ const App = memo(() => {
     const reducePlaybackRate = () => changePlaybackRate(-1);
     const increasePlaybackRate = () => changePlaybackRate(1);
     function seekBackwards() {
-      seekRel(-1 * seekAccelerationRef.current);
+      seekRel(keyboardNormalSeekSpeed * seekAccelerationRef.current * -1);
       seekAccelerationRef.current *= keyboardSeekAccFactor;
     }
     function seekForwards() {
-      seekRel(seekAccelerationRef.current);
+      seekRel(keyboardNormalSeekSpeed * seekAccelerationRef.current);
       seekAccelerationRef.current *= keyboardSeekAccFactor;
     }
     const seekReset = () => {
@@ -1397,6 +1398,7 @@ const App = memo(() => {
     setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, cleanupFiles, jumpSeg,
     seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment, exportConfirmVisible,
     increaseRotation, jumpCutStart, jumpCutEnd, cutSegmentsHistory, keyboardSeekAccFactor,
+    keyboardNormalSeekSpeed,
   ]);
 
   useEffect(() => {
@@ -1868,9 +1870,9 @@ const App = memo(() => {
     />
   ), [autoExportExtraStreams, setAutoExportExtraStreams]);
 
-  const onWheelTunerRequested = useCallback(() => {
+  const onTunerRequested = useCallback((type) => {
     setSettingsVisible(false);
-    setWheelTunerVisible(true);
+    setTunerVisible(type);
   }, []);
 
   const renderSettings = useCallback(() => (
@@ -1908,9 +1910,9 @@ const App = memo(() => {
 
       AutoExportToggler={AutoExportToggler}
       renderCaptureFormatButton={renderCaptureFormatButton}
-      onWheelTunerRequested={onWheelTunerRequested}
+      onTunerRequested={onTunerRequested}
     />
-  ), [changeOutDir, customOutDir, autoMerge, setAutoMerge, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments, autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, ffmpegExperimental, setFfmpegExperimental, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, AutoExportToggler, renderCaptureFormatButton, onWheelTunerRequested]);
+  ), [changeOutDir, customOutDir, autoMerge, setAutoMerge, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments, autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, ffmpegExperimental, setFfmpegExperimental, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, AutoExportToggler, renderCaptureFormatButton, onTunerRequested]);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);
@@ -1947,6 +1949,33 @@ const App = memo(() => {
   if (waveformEnabled) timelineMode = 'waveform';
 
   const { t } = useTranslation();
+
+  function renderTuner(type) {
+    const types = {
+      wheelSensitivity: {
+        title: t('Timeline trackpad/wheel sensitivity'),
+        value: wheelSensitivity,
+        setValue: setWheelSensitivity,
+      },
+      keyboardNormalSeekSpeed: {
+        title: t('Timeline keyboard seek speed'),
+        value: keyboardNormalSeekSpeed,
+        setValue: setKeyboardNormalSeekSpeed,
+        min: 0,
+        max: 100,
+      },
+      keyboardSeekAccFactor: {
+        title: t('Timeline keyboard seek acceleration'),
+        value: keyboardSeekAccFactor,
+        setValue: setKeyboardSeekAccFactor,
+        min: 1,
+        max: 2,
+      },
+    };
+    const { title, value, setValue, min, max } = types[type];
+
+    return <ValueTuner title={title} style={{ bottom: bottomBarHeight }} value={value} setValue={setValue} onFinished={() => setTunerVisible()} max={max} min={min} />;
+  }
 
   // throw new Error('Test');
 
@@ -2228,13 +2257,7 @@ const App = memo(() => {
         renderSettings={renderSettings}
       />
 
-      {wheelTunerVisible && (
-        <div style={{ display: 'flex', alignItems: 'center', background: 'white', color: 'black', padding: 10, margin: 10, borderRadius: 10, width: '100%', maxWidth: 500, position: 'fixed', left: 0, bottom: bottomBarHeight, zIndex: 10 }}>
-          {t('Timeline trackpad/wheel sensitivity')}
-          <input style={{ flexGrow: 1 }} type="range" min="0" max="1000" step="1" value={wheelSensitivity * 1000} onChange={e => setWheelSensitivity(e.target.value / 1000)} />
-          <Button height={20} intent="success" onClick={() => setWheelTunerVisible(false)}>{t('Done')}</Button>
-        </div>
-      )}
+      {tunerVisible && renderTuner(tunerVisible)}
     </div>
   );
 });

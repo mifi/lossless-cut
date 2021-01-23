@@ -29,6 +29,7 @@ const defaults = {
     simpleMode: true,
     outSegTemplate: undefined,
     keyboardSeekAccFactor: 1.03,
+    keyboardNormalSeekSpeed: 1,
   },
 };
 

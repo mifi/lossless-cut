@@ -80,6 +80,8 @@ export default () => {
   useEffect(() => safeSetConfig('outSegTemplate', outSegTemplate), [outSegTemplate]);
   const [keyboardSeekAccFactor, setKeyboardSeekAccFactor] = useState(configStore.get('keyboardSeekAccFactor'));
   useEffect(() => safeSetConfig('keyboardSeekAccFactor', keyboardSeekAccFactor), [keyboardSeekAccFactor]);
+  const [keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed] = useState(configStore.get('keyboardNormalSeekSpeed'));
+  useEffect(() => safeSetConfig('keyboardNormalSeekSpeed', keyboardNormalSeekSpeed), [keyboardNormalSeekSpeed]);
 
 
   // NOTE! This useEffect must be placed after all usages of firstUpdateRef.current (safeSetConfig)
@@ -144,5 +146,7 @@ export default () => {
     setOutSegTemplate,
     keyboardSeekAccFactor,
     setKeyboardSeekAccFactor,
+    keyboardNormalSeekSpeed,
+    setKeyboardNormalSeekSpeed,
   };
 };

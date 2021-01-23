@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 const Settings = memo(({
   changeOutDir, customOutDir, autoMerge, setAutoMerge, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments,
   autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose,
-  AutoExportToggler, renderCaptureFormatButton, onWheelTunerRequested, language, setLanguage,
+  AutoExportToggler, renderCaptureFormatButton, onTunerRequested, language, setLanguage,
   invertTimelineScroll, setInvertTimelineScroll, ffmpegExperimental, setFfmpegExperimental,
   enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction,
   hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments,
@@ -171,7 +171,21 @@ const Settings = memo(({
       <Row>
         <KeyCell>{t('Timeline trackpad/wheel sensitivity')}</KeyCell>
         <Table.TextCell>
-          <Button onClick={onWheelTunerRequested}>{t('Change sensitivity')}</Button>
+          <Button onClick={() => onTunerRequested('wheelSensitivity')}>{t('Change value')}</Button>
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Timeline keyboard seek speed')}</KeyCell>
+        <Table.TextCell>
+          <Button onClick={() => onTunerRequested('keyboardNormalSeekSpeed')}>{t('Change value')}</Button>
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Timeline keyboard seek acceleration')}</KeyCell>
+        <Table.TextCell>
+          <Button onClick={() => onTunerRequested('keyboardSeekAccFactor')}>{t('Change value')}</Button>
         </Table.TextCell>
       </Row>
 
