@@ -57,6 +57,7 @@ kbd {
 .swal2-losslesscut-radio {
   font-size: 0.8em;
   flex-direction: column;
-  align-items: flex-start;
+  /* !important is important: https://github.com/mifi/lossless-cut/issues/541#issuecomment-750003650 */
+  align-items: flex-start !important;
   text-align: left;
 }
