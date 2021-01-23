@@ -142,7 +142,7 @@ const App = memo(() => {
   const isCustomFormatSelected = fileFormat !== detectedFileFormat;
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, muted, setMuted, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, muted, setMuted, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor,
   } = useUserPreferences();
 
   const outSegTemplateOrDefault = outSegTemplate || defaultOutSegTemplate;
@@ -1311,6 +1311,8 @@ const App = memo(() => {
     seekAbs(time);
   }, [findNearestKeyFrameTime, seekAbs]);
 
+  const seekAccelerationRef = useRef(1);
+
   // TODO split up?
   useEffect(() => {
     if (exportConfirmVisible) return () => {};
@@ -1319,8 +1321,17 @@ const App = memo(() => {
     const togglePlayReset = () => togglePlay(true);
     const reducePlaybackRate = () => changePlaybackRate(-1);
     const increasePlaybackRate = () => changePlaybackRate(1);
-    const seekBackwards = () => seekRel(-1);
-    const seekForwards = () => seekRel(1);
+    function seekBackwards() {
+      seekRel(-1 * seekAccelerationRef.current);
+      seekAccelerationRef.current *= keyboardSeekAccFactor;
+    }
+    function seekForwards() {
+      seekRel(seekAccelerationRef.current);
+      seekAccelerationRef.current *= keyboardSeekAccFactor;
+    }
+    const seekReset = () => {
+      seekAccelerationRef.current = 1;
+    };
     const seekBackwardsPercent = () => { seekRelPercent(-0.01); return false; };
     const seekForwardsPercent = () => { seekRelPercent(0.01); return false; };
     const seekBackwardsKeyframe = () => seekClosestKeyframe(-1);
@@ -1353,11 +1364,13 @@ const App = memo(() => {
     mousetrap.bind('r', () => increaseRotation());
 
     mousetrap.bind('left', () => seekBackwards());
+    mousetrap.bind('left', () => seekReset(), 'keyup');
     mousetrap.bind(['ctrl+left', 'command+left'], () => seekBackwardsPercent());
     mousetrap.bind('alt+left', () => seekBackwardsKeyframe());
     mousetrap.bind('shift+left', () => jumpCutStart());
 
     mousetrap.bind('right', () => seekForwards());
+    mousetrap.bind('right', () => seekReset(), 'keyup');
     mousetrap.bind(['ctrl+right', 'command+right'], () => seekForwardsPercent());
     mousetrap.bind('alt+right', () => seekForwardsKeyframe());
     mousetrap.bind('shift+right', () => jumpCutEnd());
@@ -1383,7 +1396,7 @@ const App = memo(() => {
     addCutSegment, capture, changePlaybackRate, togglePlay, removeCutSegment,
     setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, cleanupFiles, jumpSeg,
     seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment, exportConfirmVisible,
-    increaseRotation, jumpCutStart, jumpCutEnd, cutSegmentsHistory,
+    increaseRotation, jumpCutStart, jumpCutEnd, cutSegmentsHistory, keyboardSeekAccFactor,
   ]);
 
   useEffect(() => {

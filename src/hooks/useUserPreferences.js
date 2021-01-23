@@ -78,6 +78,9 @@ export default () => {
   useEffect(() => safeSetConfig('simpleMode', simpleMode), [simpleMode]);
   const [outSegTemplate, setOutSegTemplate] = useState(configStore.get('outSegTemplate'));
   useEffect(() => safeSetConfig('outSegTemplate', outSegTemplate), [outSegTemplate]);
+  const [keyboardSeekAccFactor, setKeyboardSeekAccFactor] = useState(configStore.get('keyboardSeekAccFactor'));
+  useEffect(() => safeSetConfig('keyboardSeekAccFactor', keyboardSeekAccFactor), [keyboardSeekAccFactor]);
+
 
   // NOTE! This useEffect must be placed after all usages of firstUpdateRef.current (safeSetConfig)
   useEffect(() => {
@@ -139,5 +142,7 @@ export default () => {
     setSimpleMode,
     outSegTemplate,
     setOutSegTemplate,
+    keyboardSeekAccFactor,
+    setKeyboardSeekAccFactor,
   };
 };

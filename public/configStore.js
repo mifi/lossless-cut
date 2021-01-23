@@ -28,6 +28,7 @@ const defaults = {
     preserveMetadataOnMerge: false,
     simpleMode: true,
     outSegTemplate: undefined,
+    keyboardSeekAccFactor: 1.03,
   },
 };
 
