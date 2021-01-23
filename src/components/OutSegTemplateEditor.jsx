@@ -1,0 +1,90 @@
+import React, { memo, useState, useEffect } from 'react';
+import { useDebounce } from 'use-debounce';
+import { useTranslation } from 'react-i18next';
+import { Button, Alert } from 'evergreen-ui';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+import HighlightedText from './HighlightedText';
+import { defaultOutSegTemplate } from '../util';
+
+const ReactSwal = withReactContent(Swal);
+
+
+const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe, isOutSegFileNamesValid }) => {
+  const [text, setText] = useState(outSegTemplate);
+  const [debouncedText] = useDebounce(text, 500);
+  const [validText, setValidText] = useState();
+  const [error, setError] = useState();
+  const [outSegFileNames, setOutSegFileNames] = useState();
+  const [shown, setShown] = useState();
+
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    if (debouncedText == null) return;
+
+    try {
+      const generatedOutSegFileNames = generateOutSegFileNames({ template: debouncedText });
+      setOutSegFileNames(generatedOutSegFileNames);
+      const isOutSegTemplateValid = isOutSegFileNamesValid(generatedOutSegFileNames);
+      if (!isOutSegTemplateValid) {
+        setError(t('This template will result in invalid file names'));
+        setValidText();
+        return;
+      }
+
+      setValidText(debouncedText);
+      setError();
+    } catch (err) {
+      console.error(err);
+      setValidText();
+      setError(err.message);
+    }
+  }, [debouncedText, generateOutSegFileNames, isOutSegFileNamesValid, t]);
+
+  const onAllSegmentsPreviewPress = () => ReactSwal.fire({ title: t('Resulting segment file names'), html: <div style={{ textAlign: 'left', overflowY: 'auto', maxHeight: 400 }}>{outSegFileNames.map((f) => <div key={f} style={{ marginBottom: 7 }}>{f}</div>)}</div> });
+
+  useEffect(() => {
+    if (validText != null) setOutSegTemplate(validText);
+  }, [validText, setOutSegTemplate]);
+
+  function reset() {
+    setOutSegTemplate(defaultOutSegTemplate);
+    setText(defaultOutSegTemplate);
+  }
+
+  function onToggleClick() {
+    if (!shown) setShown(true);
+    else if (error == null) setShown(false);
+  }
+
+  return (
+    <>
+      <div>
+        <span role="button" onClick={onToggleClick} style={{ cursor: 'pointer' }}>
+          {t('Output name(s):')} {outSegFileNames != null && <HighlightedText style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{outSegFileNames[currentSegIndexSafe]}</HighlightedText>}
+        </span>
+        {helpIcon}
+      </div>
+
+      {shown && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 5, marginTop: 5 }}>
+            <input type="text" style={{ flexGrow: 1, fontFamily: 'inherit', fontSize: '.8em' }} onChange={(e) => setText(e.target.value)} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
+            {outSegFileNames && <Button height={20} onClick={onAllSegmentsPreviewPress} style={{ marginLeft: 5 }}>{t('Preview')}</Button>}
+            <Button height={20} onClick={reset} style={{ marginLeft: 5 }} intent="danger">{t('Reset')}</Button>
+            <Button height={20} onClick={onToggleClick} style={{ marginLeft: 5 }} intent="success">{t('Close')}</Button>
+          </div>
+          <div>
+            {error != null && <Alert intent="danger" appearance="card">{`There is an error in the file name template: ${error}`}</Alert>}
+            {/* eslint-disable-next-line no-template-curly-in-string */}
+            <div style={{ fontSize: '.8em', color: 'rgba(255,255,255,0.7)' }}>{'Variables: ${FILENAME} ${CUT_FROM} ${CUT_TO} ${SEG_NUM} ${SEG_LABEL} ${SEG_SUFFIX} ${EXT}'}</div>
+          </div>
+        </>
+      )}
+    </>
+  );
+});
+
+export default OutSegTemplateEditor;

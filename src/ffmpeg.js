@@ -7,10 +7,10 @@ import moment from 'moment';
 import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
-import { formatDuration, getOutPath, getOutDir, transferTimestamps, filenamify, isDurationValid } from './util';
+import { getOutPath, getOutDir, transferTimestamps, isDurationValid, getExtensionForFormat, getOutFileExtension } from './util';
 
 const execa = window.require('execa');
-const { join, extname } = window.require('path');
+const { join } = window.require('path');
 const fileType = window.require('file-type');
 const readChunk = window.require('read-chunk');
 const readline = window.require('readline');
@@ -86,15 +86,6 @@ export function isCuttingStart(cutFrom) {
 export function isCuttingEnd(cutTo, duration) {
   if (!isDurationValid(duration)) return true;
   return cutTo < duration;
-}
-
-function getExtensionForFormat(format) {
-  const ext = {
-    matroska: 'mkv',
-    ipod: 'm4a',
-  }[format];
-
-  return ext || format;
 }
 
 function getIntervalAroundTime(time, window) {
@@ -296,15 +287,11 @@ async function cut({
   await transferTimestamps(filePath, outPath);
 }
 
-function getOutFileExtension({ isCustomFormatSelected, outFormat, filePath }) {
-  return isCustomFormatSelected ? `.${getExtensionForFormat(outFormat)}` : extname(filePath);
-}
-
 export async function cutMultiple({
-  customOutDir, filePath, segments, videoDuration, rotation,
-  onProgress, keyframeCut, copyFileStreams, outFormat, isCustomFormatSelected,
+  outputDir, filePath, segments, segmentsFileNames, videoDuration, rotation,
+  onProgress, keyframeCut, copyFileStreams, outFormat,
   appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs,
-  customTagsByFile, customTagsByStreamId, invertCutSegments,
+  customTagsByFile, customTagsByStreamId,
 }) {
   console.log('customTagsByFile', customTagsByFile);
   console.log('customTagsByStreamId', customTagsByStreamId);
@@ -317,21 +304,11 @@ export async function cutMultiple({
 
   const outFiles = [];
 
-  let i = 0;
   // eslint-disable-next-line no-restricted-syntax,no-unused-vars
-  for (const { start, end, name, order } of segments) {
-    const cutFromStr = formatDuration({ seconds: start, fileNameFriendly: true });
-    const cutToStr = formatDuration({ seconds: end, fileNameFriendly: true });
-    let segNamePart = '';
-    if (!invertCutSegments) {
-      if (name) segNamePart = `-${filenamify(name)}`;
-      // https://github.com/mifi/lossless-cut/issues/583
-      else if (segments.length > 1) segNamePart = `-seg${order + 1}`;
-    }
-    const cutSpecification = `${cutFromStr}-${cutToStr}${segNamePart}`.substr(0, 200);
-    const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath });
-    const fileName = `${cutSpecification}${ext}`;
-    const outPath = getOutPath(customOutDir, filePath, fileName);
+  for (const [i, { start, end }] of segments.entries()) {
+    const fileName = segmentsFileNames[i];
+
+    const outPath = join(outputDir, fileName);
 
     // eslint-disable-next-line no-await-in-loop
     await cut({
@@ -357,8 +334,6 @@ export async function cutMultiple({
     });
 
     outFiles.push(outPath);
-
-    i += 1;
   }
 
   return outFiles;

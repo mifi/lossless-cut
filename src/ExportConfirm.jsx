@@ -12,6 +12,8 @@ import MergeExportButton from './components/MergeExportButton';
 import PreserveMovDataButton from './components/PreserveMovDataButton';
 import MovFastStartButton from './components/MovFastStartButton';
 import ToggleExportConfirm from './components/ToggleExportConfirm';
+import OutSegTemplateEditor from './components/OutSegTemplateEditor';
+import HighlightedText from './components/HighlightedText';
 
 import { withBlur, toast, getSegColors } from './util';
 import { isMov as ffmpegIsMov } from './ffmpeg';
@@ -35,17 +37,15 @@ const outDirStyle = { background: 'rgb(193, 98, 0)', borderRadius: '.4em', paddi
 
 const warningStyle = { color: '#faa', fontSize: '80%' };
 
-// eslint-disable-next-line react/jsx-props-no-spreading
-const Highlight = ({ children, style, ...props }) => <span {...props} style={{ background: 'rgb(193, 98, 0)', borderRadius: '.4em', padding: '0 .3em', ...style }}>{children}</span>;
-
-const HelpIcon = ({ onClick }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ verticalAlign: 'middle', marginLeft: 5 }} />;
+const HelpIcon = ({ onClick }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', verticalAlign: 'middle', marginLeft: 5 }} />;
 
 const ExportConfirm = memo(({
   autoMerge, areWeCutting, outSegments, visible, onClosePress, onExportConfirm, keyframeCut, toggleKeyframeCut,
   toggleAutoMerge, renderOutFmt, preserveMovData, togglePreserveMovData, movFastStart, toggleMovFastStart, avoidNegativeTs, setAvoidNegativeTs,
   changeOutDir, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, currentSegIndex, invertCutSegments,
   exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, outFormat,
-  preserveMetadataOnMerge, togglePreserveMetadataOnMerge,
+  preserveMetadataOnMerge, togglePreserveMetadataOnMerge, outSegTemplate, setOutSegTemplate, generateOutSegFileNames,
+  filePath, currentSegIndexSafe, isOutSegFileNamesValid,
 }) => {
   const { t } = useTranslation();
 
@@ -80,6 +80,10 @@ const ExportConfirm = memo(({
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('When merging, do you want to preserve metadata from your original file? NOTE: This may dramatically increase processing time') });
   }
 
+  function onOutSegTemplateHelpPress() {
+    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('You can customize the file name of the output segment(s) using special variables.') });
+  }
+
   function onAvoidNegativeTsHelpPress() {
     // https://ffmpeg.org/ffmpeg-all.html#Format-Options
     const texts = {
@@ -95,6 +99,8 @@ const ExportConfirm = memo(({
     const { segBgColor } = getSegColors(outSegments[currentSegIndex]);
     return segBgColor;
   }
+
+  const outSegTemplateHelpIcon = <HelpIcon onClick={onOutSegTemplateHelpPress} />;
 
   // https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container
   return (
@@ -118,12 +124,17 @@ const ExportConfirm = memo(({
                     <HelpIcon onClick={onOutFmtHelpPress} />
                   </li>
                   <li>
-                    <Trans>Input has {{ numStreamsTotal }} tracks - <Highlight style={{ cursor: 'pointer' }} onClick={() => setStreamsSelectorShown(true)}>Keeping {{ numStreamsToCopy }} tracks</Highlight></Trans>
+                    <Trans>Input has {{ numStreamsTotal }} tracks - <HighlightedText style={{ cursor: 'pointer' }} onClick={() => setStreamsSelectorShown(true)}>Keeping {{ numStreamsToCopy }} tracks</HighlightedText></Trans>
                     <HelpIcon onClick={onTracksHelpPress} />
                   </li>
                   <li>
                     {t('Save output to path:')} <span role="button" onClick={changeOutDir} style={outDirStyle}>{outputDir}</span>
                   </li>
+                  {(outSegments.length === 1 || !autoMerge) && (
+                    <li>
+                      <OutSegTemplateEditor filePath={filePath} helpIcon={outSegTemplateHelpIcon} outSegTemplate={outSegTemplate} setOutSegTemplate={setOutSegTemplate} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} isOutSegFileNamesValid={isOutSegFileNamesValid} />
+                    </li>
+                  )}
                 </ul>
 
                 <h3>{t('Advanced options')}</h3>

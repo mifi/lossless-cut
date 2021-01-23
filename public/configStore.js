@@ -27,6 +27,7 @@ const defaults = {
     segmentsToChapters: false,
     preserveMetadataOnMerge: false,
     simpleMode: true,
+    outSegTemplate: undefined,
   },
 };
 

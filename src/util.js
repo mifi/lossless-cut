@@ -1,6 +1,7 @@
 import padStart from 'lodash/padStart';
 import Swal from 'sweetalert2';
 import i18n from 'i18next';
+import lodashTemplate from 'lodash/template';
 
 import randomColor from './random-color';
 
@@ -166,3 +167,26 @@ export const isDurationValid = (duration) => Number.isFinite(duration) && durati
 const platform = os.platform();
 
 export const isWindows = platform === 'win32';
+
+export function getExtensionForFormat(format) {
+  const ext = {
+    matroska: 'mkv',
+    ipod: 'm4a',
+  }[format];
+
+  return ext || format;
+}
+
+export function getOutFileExtension({ isCustomFormatSelected, outFormat, filePath }) {
+  return isCustomFormatSelected ? `.${getExtensionForFormat(outFormat)}` : path.extname(filePath);
+}
+
+// eslint-disable-next-line no-template-curly-in-string
+export const defaultOutSegTemplate = '${FILENAME}-${CUT_FROM}-${CUT_TO}${SEG_SUFFIX}${EXT}';
+
+export function generateSegFileName({ template, inputFileNameWithoutExt, segSuffix, ext, segNum, segLabel, cutFrom, cutTo }) {
+  const compiled = lodashTemplate(template);
+  return compiled({ FILENAME: inputFileNameWithoutExt, SEG_SUFFIX: segSuffix, EXT: ext, SEG_NUM: segNum, SEG_LABEL: segLabel, CUT_FROM: cutFrom, CUT_TO: cutTo });
+}
+
+export const hasDuplicates = (arr) => new Set(arr).size !== arr.length;
