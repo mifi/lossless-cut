@@ -151,6 +151,10 @@ Note that you must use a comma `,` to separate the fields (**not** semicolon `;`
 1234,,Last segment
 ```
 
+## Developing
+
+See the [developer notes](developer-notes.md).
+
 ## Donate 🙈
 
 This project is maintained by me alone. The project will always remain free and open source, but if it's useful for you, consider supporting me. :) It will give me extra motivation to improve it. Or even better [donate to ffmpeg](https://www.ffmpeg.org/donations.html) because they are doing the world a big favor 🙏
