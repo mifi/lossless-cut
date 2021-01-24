@@ -1110,8 +1110,9 @@ const App = memo(() => {
     if (!playing) {
       video.play();
     } else {
-      const newRate = clamp(video.playbackRate + (dir * 0.15), 0.1, 16);
-      toast.fire({ title: `${i18n.t('Playback rate:')} ${Math.floor(newRate * 100)}%`, timer: 1000 });
+      // https://github.com/mifi/lossless-cut/issues/447#issuecomment-766339083
+      const newRate = clamp(Math.round((video.playbackRate + (dir * 0.15)) * 100) / 100, 0.1, 16);
+      toast.fire({ title: `${i18n.t('Playback rate:')} ${Math.round(newRate * 100)}%`, timer: 1000 });
       video.playbackRate = newRate;
     }
   }, [playing, canvasPlayerEnabled]);
