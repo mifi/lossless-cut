@@ -155,7 +155,8 @@ export function doesPlayerSupportFile(streams) {
   // Don't check audio formats, assume all is OK
   if (videoStreams.length === 0) return true;
   // If we have at least one video that is NOT of the unsupported formats, assume the player will be able to play it natively
-  return videoStreams.some(s => !['hevc', 'prores'].includes(s.codec_name));
+  // https://github.com/mifi/lossless-cut/issues/595
+  return videoStreams.some(s => !['hevc', 'prores', 'mpeg4'].includes(s.codec_name));
 }
 
 export const isMasBuild = window.process.mas;
