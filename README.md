@@ -176,7 +176,7 @@ This project is maintained by me alone. The project will always remain free and 
 
 ---
 
-Made with ❤️ in 🇳🇴
+Made with ❤️ in [🇳🇴](https://www.youtube.com/watch?v=uQIv8Vo9_Jc)
 
 [More apps by mifi.no](https://mifi.no/)
 
