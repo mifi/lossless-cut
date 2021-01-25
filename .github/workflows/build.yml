@@ -69,6 +69,8 @@ jobs:
 
       - name: Upload to Mac App Store
         if: startsWith(matrix.os, 'macos') && env.is_tag == 'true'
+        # In case of ERROR ITMS-90189: Redundant Binary Upload
+        continue-on-error: true
         run: |
           mkdir -p ~/.appstoreconnect/private_keys/
           echo '${{ secrets.api_key }}' > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
