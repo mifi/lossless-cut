@@ -25,6 +25,7 @@ export default () => {
   }
 
   const [captureFormat, setCaptureFormat] = useState(configStore.get('captureFormat'));
+  const [cleanupOption, setCleanupOption] = useState(configStore.get('cleanupOption'));
   useEffect(() => safeSetConfig('captureFormat', captureFormat), [captureFormat]);
   const [customOutDir, setCustomOutDir] = useState(configStore.get('customOutDir'));
   useEffect(() => safeSetConfig('customOutDir', customOutDir), [customOutDir]);
@@ -92,6 +93,8 @@ export default () => {
   return {
     captureFormat,
     setCaptureFormat,
+    cleanupOption,
+    setCleanupOption,
     customOutDir,
     setCustomOutDir,
     keyframeCut,

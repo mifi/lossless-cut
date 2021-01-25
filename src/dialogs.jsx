@@ -209,12 +209,12 @@ export async function confirmExtractAllStreamsDialog() {
   return !!value;
 }
 
-export async function cleanupFilesDialog() {
+export async function cleanupFilesDialog(cleanupOption) {
   const { value } = await Swal.fire({
     icon: 'warning',
     title: i18n.t('Cleanup files?'),
     input: 'radio',
-    inputValue: 'tmpFiles',
+    inputValue: cleanupOption,
     text: i18n.t('Do you want to move the original file and/or any generated files to trash?'),
     confirmButtonText: i18n.t('Trash'),
     confirmButtonColor: '#d33',
@@ -222,9 +222,9 @@ export async function cleanupFilesDialog() {
     cancelButtonText: i18n.t('Cancel'),
     customClass: { input: 'swal2-losslesscut-radio' },
     inputOptions: {
+      all: i18n.t('Trash original source file, project CSV and auto-generated files'),
       tmpFiles: i18n.t('Trash auto-generated files'),
       projectAndTmpFiles: i18n.t('Trash project CSV and auto-generated files'),
-      all: i18n.t('Trash original source file, project CSV and auto-generated files'),
     },
   });
 

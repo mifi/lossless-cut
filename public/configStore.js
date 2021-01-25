@@ -3,6 +3,7 @@ const Store = require('electron-store');
 const defaults = {
   defaults: {
     captureFormat: 'jpeg',
+    cleanupOption: 'all',
     customOutDir: undefined,
     keyframeCut: true,
     autoMerge: false,

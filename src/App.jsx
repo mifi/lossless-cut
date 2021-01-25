@@ -143,7 +143,7 @@ const App = memo(() => {
   const isCustomFormatSelected = fileFormat !== detectedFileFormat;
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, muted, setMuted, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed,
+    captureFormat, setCaptureFormat, cleanupOption, setCleanupOption, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, muted, setMuted, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed,
   } = useUserPreferences();
 
   const outSegTemplateOrDefault = outSegTemplate || defaultOutSegTemplate;
@@ -596,6 +596,12 @@ const App = memo(() => {
   }, [assureOutDirAccess, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, customOutDir]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
+  
+  const toggleCleanupOption = useCallback((cleanupOptionChosen) => 
+    setCleanupOption(f => 
+      (cleanupOptionChosen ? cleanupOptionChosen : f
+    )), [setCleanupOption]);
+
 
   const toggleKeyframeCut = useCallback((showMessage) => setKeyframeCut((val) => {
     const newVal = !val;
@@ -868,11 +874,14 @@ const App = memo(() => {
     // Because we will reset state before deleting files
     const saved = { html5FriendlyPath, dummyVideoPath, filePath, edlFilePath };
 
-    if (!closeFile()) return;
-
-    const trashResponse = await cleanupFilesDialog();
-    console.log('trashResponse', trashResponse);
+    const trashResponse = await cleanupFilesDialog(cleanupOption);
     if (!trashResponse) return;
+
+    if(trashResponse !== cleanupOption){
+      toggleCleanupOption(trashResponse);
+    }
+
+    if (!closeFile()) return;
 
     const deleteTmpFiles = ['all', 'projectAndTmpFiles', 'tmpFiles'].includes(trashResponse);
     const deleteProjectFile = ['all', 'projectAndTmpFiles'].includes(trashResponse);
@@ -913,7 +922,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [filePath, html5FriendlyPath, dummyVideoPath, closeFile, edlFilePath]);
+  }, [filePath, html5FriendlyPath, dummyVideoPath, closeFile, edlFilePath, cleanupOption, toggleCleanupOption]);
 
   const outSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
     [invertCutSegments, inverseCutSegments, apparentCutSegments]);
