@@ -1,5 +1,5 @@
 import React, { memo, useRef, useMemo, useCallback, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 import Hammer from 'react-hammerjs';
 import debounce from 'lodash/debounce';
 import { useTranslation } from 'react-i18next';
@@ -43,7 +43,7 @@ const Timeline = memo(({
   setCurrentSegIndex, currentSegIndexSafe, invertCutSegments, inverseCutSegments, formatTimecode,
   waveform, shouldShowWaveform, shouldShowKeyframes, timelineHeight, thumbnails,
   onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled,
-  playing, isFileOpened, onWheel,
+  playing, isFileOpened, onWheel, commandedTimeRef,
 }) => {
   const { t } = useTranslation();
 
@@ -71,11 +71,11 @@ const Timeline = memo(({
   const currentTimePercent = useMemo(() => calculateTimelinePercent(playerTime), [calculateTimelinePercent, playerTime]);
   const commandedTimePercent = useMemo(() => calculateTimelinePercent(commandedTime), [calculateTimelinePercent, commandedTime]);
 
-  const currentTimePosPixels = useMemo(() => {
-    const pos = calculateTimelinePos(playerTime);
-    if (pos != null) return pos * zoom * timelineScrollerRef.current.offsetWidth;
+  const commandedTimePosPixels = useMemo(() => {
+    const pos = calculateTimelinePos(commandedTime);
+    if (pos != null && timelineScrollerRef.current) return pos * zoom * timelineScrollerRef.current.offsetWidth;
     return undefined;
-  }, [calculateTimelinePos, playerTime, zoom]);
+  }, [calculateTimelinePos, commandedTime, zoom]);
 
   const calcZoomWindowStartTime = useCallback(() => (timelineScrollerRef.current
     ? (timelineScrollerRef.current.scrollLeft / (timelineScrollerRef.current.offsetWidth * zoom)) * durationSafe
@@ -94,18 +94,30 @@ const Timeline = memo(({
     timelineScrollerSkipEventDebounce.current();
   }
 
+  const scrollLeftMotion = useMotionValue(0);
+
+  const spring = useSpring(scrollLeftMotion, { damping: 100, stiffness: 1000 });
+
+  useEffect(() => {
+    spring.onChange(value => {
+      if (timelineScrollerSkipEventRef.current) return; // Don't animate while zooming
+      timelineScrollerRef.current.scrollLeft = value;
+    });
+  }, [spring]);
+
   // Pan timeline when cursor moves out of timeline window
   useEffect(() => {
-    if (currentTimePosPixels == null || timelineScrollerSkipEventRef.current) return;
+    if (commandedTimePosPixels == null || timelineScrollerSkipEventRef.current) return;
 
-    if (currentTimePosPixels > timelineScrollerRef.current.scrollLeft + timelineScrollerRef.current.offsetWidth) {
-      suppressScrollerEvents();
-      timelineScrollerRef.current.scrollLeft += timelineScrollerRef.current.offsetWidth * 0.9;
-    } else if (currentTimePosPixels < timelineScrollerRef.current.scrollLeft) {
-      suppressScrollerEvents();
-      timelineScrollerRef.current.scrollLeft -= timelineScrollerRef.current.offsetWidth * 0.9;
+    if (commandedTimePosPixels > timelineScrollerRef.current.scrollLeft + timelineScrollerRef.current.offsetWidth) {
+      const timelineWidth = timelineWrapperRef.current.offsetWidth;
+      const scrollLeft = commandedTimePosPixels - (timelineScrollerRef.current.offsetWidth * 0.1);
+      scrollLeftMotion.set(Math.min(scrollLeft, timelineWidth - timelineScrollerRef.current.offsetWidth));
+    } else if (commandedTimePosPixels < timelineScrollerRef.current.scrollLeft) {
+      const scrollLeft = commandedTimePosPixels - (timelineScrollerRef.current.offsetWidth * 0.9);
+      scrollLeftMotion.set(Math.max(scrollLeft, 0));
     }
-  }, [currentTimePosPixels]);
+  }, [commandedTimePosPixels, scrollLeftMotion]);
 
   const currentTimeWidth = 1;
 
@@ -116,9 +128,11 @@ const Timeline = memo(({
     if (zoom > 1) {
       const zoomedTargetWidth = timelineScrollerRef.current.offsetWidth * zoom;
 
-      timelineScrollerRef.current.scrollLeft = Math.max((getCurrentTime() / durationSafe) * zoomedTargetWidth - timelineScrollerRef.current.offsetWidth / 2, 0);
+      const scrollLeft = Math.max((commandedTimeRef.current / durationSafe) * zoomedTargetWidth - timelineScrollerRef.current.offsetWidth / 2, 0);
+      scrollLeftMotion.set(scrollLeft);
+      timelineScrollerRef.current.scrollLeft = scrollLeft;
     }
-  }, [zoom, durationSafe, getCurrentTime]);
+  }, [zoom, durationSafe, commandedTimeRef, scrollLeftMotion]);
 
 
   useEffect(() => {

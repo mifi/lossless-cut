@@ -234,6 +234,11 @@ const App = memo(() => {
     setCommandedTime(outVal);
   }, [detectedFps]);
 
+  const commandedTimeRef = useRef(commandedTime);
+  useEffect(() => {
+    commandedTimeRef.current = commandedTime;
+  }, [commandedTime]);
+
   const seekRel = useCallback((val) => {
     seekAbs(videoRef.current.currentTime + val);
   }, [seekAbs]);
@@ -2163,6 +2168,7 @@ const App = memo(() => {
           neighbouringFrames={neighbouringFrames}
           thumbnails={thumbnailsSorted}
           getCurrentTime={getCurrentTime}
+          commandedTimeRef={commandedTimeRef}
           startTimeOffset={startTimeOffset}
           playerTime={playerTime}
           commandedTime={commandedTime}
