@@ -1,13 +1,23 @@
-# LosslessCut 🎥 ![Build/release](https://github.com/mifi/lossless-cut/workflows/Build/release/badge.svg) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/mifino)
+<div align="center">
+	<br>
+	<br>
+  <p><a href="https://mifi.no/losslesscut/"><img src="src/icon.svg" width="130" alt="LosslessCut" /></a></p>
+  <p><b>LosslessCut</b></p>
+  The swiss army knife of lossless video/audio editing
+	<br>
+<img src="https://github.com/mifi/lossless-cut/workflows/Build/release/badge.svg" />
+<a href="https://paypal.me/mifino"><img src="https://img.shields.io/badge/Donate-PayPal-green.svg" /></a>
+	<br>
+	<br>
+	<br>
+  <p align="center"><img src="https://github.com/mifi/lossless-cut/raw/master/main_screenshot.jpg" width="600" alt="screenshot" /></p>
+	<br>
+	<br>
+</div>
 
-**The swiss army knife of lossless video/audio editing**
 
 LosslessCut aims to be the ultimate cross platform FFmpeg GUI for extremely fast and lossless operations on video, audio, subtitle and other related media files.
 The main feature is lossless trimming and cutting of video and audio files, which is great for saving space by rough-cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. Or you can add a music or subtitle track to your video without needing to encode. Everything is extremely fast because it does an almost direct data copy, fueled by the awesome FFmpeg which does all the grunt work.
-
-![Demo](https://github.com/mifi/lossless-cut/raw/master/main_screenshot.jpg)
-
-[LosslessCut app introduction](https://mifi.no/losslesscut)
 
 ## Features
 - Lossless cutting of most video and audio formats
@@ -35,19 +45,19 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 
 ## Example lossless use cases
 
-- Cut out commercials from a recorded TV show
+- Cut out commercials from a recorded TV show (and re-format from TS to MP4)
 - Remove audio tracks from a file
 - Extract music track from a video and cut it to your needs
 - Add music to a video (or replace existing audio track)
 - Combine audio and video tracks from separate recordings
-- Include a subtitle into a video
-- Quickly change a H264 MKV video to MOV or MP4 for playback on iPhone
+- Include an external subtitle into a video
+- Quickly change a H264/H265 MKV video to MOV or MP4 for playback on iPhone
 - Import a list of cut times from other tool as a EDL (edit decision list, CSV) and run these cuts with LosslessCut
-- Quickly cut a file by MP4/MKV chapters
+- Export a list of cut times as a CSV EDL and process these in another tool
+- Quickly cut a file by its MP4/MKV chapters
+- Quickly cut a YouTube video by its chapters (or music times from a comment)
 - Change the language of a file's audio/subtitle tracks
 - Change author, title, GPS position, recording time of a video
-- Export a list of cut times as a CSV EDL and process these in another tool
-  - Without having to re-encode. You can also change the format from TS to MP4 at the same time.
 - Fix rotation of a video that has the wrong orientation flag set
   - Great for rotating phone videos that come out the wrong way without actually re-encoding the video.
 - Loop a video / audio clip X times quickly without re-encoding
@@ -60,7 +70,7 @@ First export each track as individual files. Then use Handbrake or similar to re
 ### Advanced multi-step workflows
 
 **Tip:** you can use LosslessCut in multiple passes in order to achieve separate trimming of individual tracks:
-1. Open a file an export all tracks
+1. Open a file an export all tracks as individual files
 2. Open the exported track files independently and cut them as desired
 3. Add the track back to the video and combine them to one output video
 
@@ -81,7 +91,7 @@ If you find LosslessCut useful, I'm very thankful for [donations](https://github
 
 ### Difference between App Stores and Github download
 
-They have exactly the same in-app features, except a few platform limitations. Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps need to prompt for output directory. LosslessCut version in the App Stores lags a few versions behind the GitHub version, because I want to be sure that the new features work perfectly before releasing in the App Stores. GitHub version can contain new, untested features and may contain some bugs. I consider the newest GitHub versions to be a "beta" test.
+They have exactly the same in-app features, except a few platform limitations. Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps need to prompt for output directory. LosslessCut version in the App Stores lags a few versions behind the GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. GitHub version can contain new, untested features and may contain some bugs. I consider the newest GitHub versions to be a "beta" test.
 
 ## Supported formats
 
@@ -93,14 +103,14 @@ Unsupported files can still be converted to a supported format/codec from the `F
 
 ## How to use
 
-[Watch tutorial video](https://www.youtube.com/watch?v=pYHMxXy05Jg)
+[Watch tutorial video](https://www.youtube.com/watch?v=pYHMxXy05Jg) - **Your video here?** If you would like to make a video showing off LosslessCut use cases, let me know and I can link it here!
 
 ### Typical workflow
 
 - Drag drop a video file into player or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
 - Press <kbd>SPACE</kbd> to play/pause or <kbd>◀</kbd><kbd>▶</kbd>, <kbd>,</kbd><kbd>.</kbd> or mouse/trackpad wheel to seek back/forth
 - Select the cut segment's start and end time by moving the time marker and then pressing <kbd>I</kbd> to set start time, and <kbd>O</kbd> to set end time.
-  - Note that the segments you select will be **preserved** and exported to a new file. You can change this behavior with the **Yin Yang** symbol ☯️, in which case it will instead **remove** all selected segments and export the parts between.
+  - Note that all segments you create will be **preserved** and exported to new files. You can change this behavior with the **Yin Yang** symbol ☯️, in which case it will instead **remove** all selected segments and export the parts between.
   - Note also that start time will not be accurate, see [Known issues](#known-issues--limitations)
 - *(optional)* If you want to add more than one segment, move to the desired start time and press <kbd>+</kbd>, then select the next segment start/end times with <kbd>I</kbd>/<kbd>O</kbd>.
 - *(optional)* If you want to re-merge all the selected segments into one file after cutting, toggle the button `Separate files` to `Merge cuts`.
@@ -108,14 +118,14 @@ Unsupported files can still be converted to a supported format/codec from the `F
 - *(optional)* If you want to change orientation, press the **rotation** button
 - *(optional)* By default, audio, video and subtitle tracks from the input file will be cut and exported. Press the `Tracks` button to customise and/or add new tracks from other files.
 - *(optional)* select a new output format
-- Press the `Export` button (or <kbd>E</kbd>) to run the export
+- **When done, press the `Export` button (or <kbd>E</kbd>) to run the export**
 - Press the **Camera** button (or <kbd>C</kbd>) if you want to take a JPEG/PNG snapshot from the current time
 - If you want to move the original file to trash, press the **trash** button
 - For best results you may need to trial and error with another output format (Matroska takes nearly everything), change keyframe cut mode or disable some tracks, see known issues below.
 
 Note: The original video file will not be modified. Instead, it creates a lossless export to a new file in the same directory as the original file with from/to timestamps.
 
-Note also that the cut is not precise around the cutpoints, so video before/after the nearest keyframe will be discarded. EXIF metadata is preserved.
+Note also that the cut is not precise around the cutpoints, so video before/after the nearest keyframe will be discarded. EXIF/metadata can be preserved (see Export Options dialog).
 
 ## Known issues & limitations
 
@@ -123,7 +133,7 @@ Note also that the cut is not precise around the cutpoints, so video before/afte
   - Lossless cutting is not an exact science. For some codecs, it just works. For others, you may need to trial and error depending on the codec, keyframes etc to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
   - Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
 - When exporting you may lose some proprietary data tracks (like `tmcd`, `fdsc` and `gpmd` added by GoPro). These can be exported to separate files however
-- Some codecs are not supported natively. There is partial support with low quality. You can convert to supported codec from the menu, see [#88](https://github.com/mifi/lossless-cut/issues/88)
+- Some codecs are not supported natively. There is partial support with low quality playback and no audio. You can convert to a supported codec from the menu, see [#88](https://github.com/mifi/lossless-cut/issues/88)
 
 ## Troubleshooting
 
@@ -131,19 +141,13 @@ Note also that the cut is not precise around the cutpoints, so video before/afte
 - If you get an error on Linux like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See #258
 - If any other problem, check [Known issues](#known-issues--limitations), or please search for existing issues before you file an issue here on GitHub.
 
-### Developer tools
-
-If you have an issue you can check the developer tools
-- Windows: <kbd>F12</kbd> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd>
-- Mac: <kbd>Cmd</kbd>+<kbd>Opt</kbd>+<kbd>I</kbd>
+If you have an issue you can check the developer tools for any errors or clues. Menu: `Tools` -> `Toggle Developer Tools`
 
 ## CSV import/export
 
-The CSV export/import function takes CSV files with one cut segment on each line. Each line contains three columns: `segment start`, `segment end`, `label`.
-
-`segment start` and `segment end` are expressed in seconds or left empty. Empty `segment end` means segment ends at the duration of the video.
-
-Note that you must use a comma `,` to separate the fields (**not** semicolon `;`)
+- The CSV export/import function takes CSV files with one cut segment on each line. Each line contains three columns: `segment start`, `segment end`, `label`.
+- `segment start` and `segment end` are expressed in seconds or left empty. Empty `segment end` means segment ends at the duration of the video.
+- Use comma `,` to separate the fields (**not** semicolon `;`)
 
 ### example.csv
 ```csv
