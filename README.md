@@ -55,7 +55,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Import a list of cut times from other tool as a EDL (edit decision list, CSV) and run these cuts with LosslessCut
 - Export a list of cut times as a CSV EDL and process these in another tool
 - Quickly cut a file by its MP4/MKV chapters
-- Quickly cut a YouTube video by its chapters (or music times from a comment)
+- Quickly cut a [YouTube video](https://youtube-dl.org/) by its chapters (or music times from a comment)
 - Change the language of a file's audio/subtitle tracks
 - Change author, title, GPS position, recording time of a video
 - Fix rotation of a video that has the wrong orientation flag set
