@@ -1959,7 +1959,7 @@ const App = memo(() => {
   function renderTuner(type) {
     const types = {
       wheelSensitivity: {
-        title: t('Timeline trackpad/wheel sensitivity'),
+        title: t('Timeline trackpad/wheel sensitivity (default: 0.20)'),
         value: wheelSensitivity,
         setValue: setWheelSensitivity,
       },
@@ -1971,7 +1971,7 @@ const App = memo(() => {
         max: 100,
       },
       keyboardSeekAccFactor: {
-        title: t('Timeline keyboard seek acceleration'),
+        title: t('Timeline keyboard seek acceleration (default: 1.03)'),
         value: keyboardSeekAccFactor,
         setValue: setKeyboardSeekAccFactor,
         min: 1,
