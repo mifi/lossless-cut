@@ -41,11 +41,11 @@ const HelpIcon = ({ onClick }) => <IoIosHelpCircle size={20} role="button" onCli
 
 const ExportConfirm = memo(({
   autoMerge, areWeCutting, outSegments, visible, onClosePress, onExportConfirm, keyframeCut, toggleKeyframeCut,
-  toggleAutoMerge, renderOutFmt, preserveMovData, togglePreserveMovData, movFastStart, toggleMovFastStart, avoidNegativeTs, setAvoidNegativeTs,
+  setAutoMerge, renderOutFmt, preserveMovData, togglePreserveMovData, movFastStart, toggleMovFastStart, avoidNegativeTs, setAvoidNegativeTs,
   changeOutDir, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, currentSegIndex, invertCutSegments,
   exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, outFormat,
   preserveMetadataOnMerge, togglePreserveMetadataOnMerge, outSegTemplate, setOutSegTemplate, generateOutSegFileNames,
-  filePath, currentSegIndexSafe, isOutSegFileNamesValid,
+  filePath, currentSegIndexSafe, isOutSegFileNamesValid, autoDeleteMergedSegments, setAutoDeleteMergedSegments,
 }) => {
   const { t } = useTranslation();
 
@@ -118,7 +118,7 @@ const ExportConfirm = memo(({
               <div style={boxStyle}>
                 <h2 style={{ marginTop: 0 }}>{t('Export options')}</h2>
                 <ul>
-                  {outSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: outSegments.length })} <MergeExportButton autoMerge={autoMerge} outSegments={outSegments} toggleAutoMerge={toggleAutoMerge} /></li>}
+                  {outSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: outSegments.length })} <MergeExportButton autoMerge={autoMerge} outSegments={outSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} /></li>}
                   <li>
                     {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
                     <HelpIcon onClick={onOutFmtHelpPress} />
