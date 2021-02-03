@@ -920,29 +920,34 @@ const App = memo(() => {
 
   const generateOutSegFileNames = useCallback(({ segments = outSegments, template }) => (
     segments.map(({ start, end, name = '' }, i) => {
-    const cutFromStr = formatDuration({ seconds: start, fileNameFriendly: true });
-    const cutToStr = formatDuration({ seconds: end, fileNameFriendly: true });
-    const segNum = i + 1;
+      const cutFromStr = formatDuration({ seconds: start, fileNameFriendly: true });
+      const cutToStr = formatDuration({ seconds: end, fileNameFriendly: true });
+      const segNum = i + 1;
 
-    // https://github.com/mifi/lossless-cut/issues/583
-    let segSuffix = '';
-    if (name) segSuffix = `-${filenamify(name)}`;
-    else if (segments.length > 1) segSuffix = `-seg${segNum}`;
+      // https://github.com/mifi/lossless-cut/issues/583
+      let segSuffix = '';
+      if (name) segSuffix = `-${filenamify(name)}`;
+      else if (segments.length > 1) segSuffix = `-seg${segNum}`;
 
-    const ext = getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath });
+      const ext = getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath });
 
-    const { name: fileNameWithoutExt } = parsePath(filePath);
+      const { name: fileNameWithoutExt } = parsePath(filePath);
 
-    const generated = generateSegFileName({ template, segSuffix, inputFileNameWithoutExt: fileNameWithoutExt, ext, segNum, segLabel: filenamify(name), cutFrom: cutFromStr, cutTo: cutToStr });
-    return generated.substr(0, 200); // Just to be sure
+      const generated = generateSegFileName({ template, segSuffix, inputFileNameWithoutExt: fileNameWithoutExt, ext, segNum, segLabel: filenamify(name), cutFrom: cutFromStr, cutTo: cutToStr });
+      return generated.substr(0, 200); // Just to be sure
     })
   ), [fileFormat, filePath, isCustomFormatSelected, outSegments]);
 
   // TODO improve user feedback
   const isOutSegFileNamesValid = useCallback((fileNames) => fileNames.every((fileName) => {
     if (!filePath) return false;
+
+    const invalidChars = [
+      pathSep,
+      ':', // https://github.com/mifi/lossless-cut/issues/631
+    ];
     const sameAsInputPath = pathNormalize(pathJoin(outputDir, fileName)) === pathNormalize(filePath);
-    return fileName.length > 0 && !fileName.includes(pathSep) && !sameAsInputPath;
+    return fileName.length > 0 && !invalidChars.some((c) => fileName.includes(c)) && !sameAsInputPath;
   }), [outputDir, filePath]);
 
   const openSendReportDialogWithState = useCallback(async (err) => {
