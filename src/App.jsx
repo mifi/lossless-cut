@@ -1957,11 +1957,13 @@ const App = memo(() => {
   const { t } = useTranslation();
 
   function renderTuner(type) {
+    // NOTE default values are duplicated in public/configStore.js
     const types = {
       wheelSensitivity: {
         title: t('Timeline trackpad/wheel sensitivity'),
         value: wheelSensitivity,
         setValue: setWheelSensitivity,
+        default: 0.2,
       },
       keyboardNormalSeekSpeed: {
         title: t('Timeline keyboard seek speed'),
@@ -1969,6 +1971,7 @@ const App = memo(() => {
         setValue: setKeyboardNormalSeekSpeed,
         min: 0,
         max: 100,
+        default: 1,
       },
       keyboardSeekAccFactor: {
         title: t('Timeline keyboard seek acceleration'),
@@ -1976,11 +1979,14 @@ const App = memo(() => {
         setValue: setKeyboardSeekAccFactor,
         min: 1,
         max: 2,
+        default: 1.03,
       },
     };
-    const { title, value, setValue, min, max } = types[type];
+    const { title, value, setValue, min, max, default: defaultValue } = types[type];
 
-    return <ValueTuner title={title} style={{ bottom: bottomBarHeight }} value={value} setValue={setValue} onFinished={() => setTunerVisible()} max={max} min={min} />;
+    const resetToDefault = () => setValue(defaultValue);
+
+    return <ValueTuner title={title} style={{ bottom: bottomBarHeight }} value={value} setValue={setValue} onFinished={() => setTunerVisible()} max={max} min={min} resetToDefault={resetToDefault} />;
   }
 
   // throw new Error('Test');

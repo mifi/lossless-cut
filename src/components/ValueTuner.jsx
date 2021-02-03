@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { Button } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
-const ValueTuner = memo(({ style, title, value, setValue, onFinished, resolution = 1000, min = 0, max = 1 }) => {
+const ValueTuner = memo(({ style, title, value, setValue, onFinished, resolution = 1000, min = 0, max = 1, resetToDefault }) => {
   const { t } = useTranslation();
 
   function onChange(e) {
@@ -15,10 +15,12 @@ const ValueTuner = memo(({ style, title, value, setValue, onFinished, resolution
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <div>{title}</div>
         <div style={{ marginLeft: 10, fontWeight: 'bold' }}>{value.toFixed(2)}</div>
+        <div style={{ flexGrow: 1 }} />
+        <Button height={20} onClick={resetToDefault}>{t('Default')}</Button>
+        <Button height={20} intent="success" onClick={onFinished}>{t('Done')}</Button>
       </div>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <input style={{ flexGrow: 1 }} type="range" min="0" max="1000" step="1" value={((value - min) / (max - min)) * resolution} onChange={onChange} />
-        <Button height={20} intent="success" onClick={onFinished}>{t('Done')}</Button>
       </div>
     </div>
   );
