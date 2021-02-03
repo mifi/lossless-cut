@@ -596,8 +596,7 @@ const App = memo(() => {
   }, [assureOutDirAccess, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, customOutDir]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
-  
-  const toggleCleanupOption = useCallback((cleanupOptionChosen) => setCleanupOption(f => (cleanupOptionChosen ? cleanupOptionChosen : f)), [setCleanupOption]);
+  const toggleCleanupOption = useCallback((cleanupOptionChosen) => setCleanupOption(f => cleanupOptionChosen || f), [setCleanupOption]);
 
   const toggleKeyframeCut = useCallback((showMessage) => setKeyframeCut((val) => {
     const newVal = !val;
