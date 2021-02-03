@@ -597,11 +597,7 @@ const App = memo(() => {
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
   
-  const toggleCleanupOption = useCallback((cleanupOptionChosen) => 
-    setCleanupOption(f => 
-      (cleanupOptionChosen ? cleanupOptionChosen : f
-    )), [setCleanupOption]);
-
+  const toggleCleanupOption = useCallback((cleanupOptionChosen) => setCleanupOption(f => (cleanupOptionChosen ? cleanupOptionChosen : f)), [setCleanupOption]);
 
   const toggleKeyframeCut = useCallback((showMessage) => setKeyframeCut((val) => {
     const newVal = !val;
@@ -877,7 +873,7 @@ const App = memo(() => {
     const trashResponse = await cleanupFilesDialog(cleanupOption);
     if (!trashResponse) return;
 
-    if(trashResponse !== cleanupOption){
+    if (trashResponse !== cleanupOption) {
       toggleCleanupOption(trashResponse);
     }
 
