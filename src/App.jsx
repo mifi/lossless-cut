@@ -66,7 +66,7 @@ const isDev = window.require('electron-is-dev');
 const electron = window.require('electron'); // eslint-disable-line
 const trash = window.require('trash');
 const { unlink, exists } = window.require('fs-extra');
-const { extname, parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize } = window.require('path');
+const { extname, parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, resolve: pathResolve, isAbsolute: pathIsAbsolute } = window.require('path');
 
 const { dialog, app } = electron.remote;
 
@@ -1476,7 +1476,13 @@ const App = memo(() => {
     setCopyStreamIdsForPath(path, () => fromPairs(streams.map(({ index }) => [index, true])));
   }, [externalStreamFiles]);
 
-  const userOpenFiles = useCallback(async (filePaths) => {
+  const userOpenFiles = useCallback(async (filePathsRaw) => {
+    console.log('userOpenFiles');
+    console.log(filePathsRaw.join('\n'));
+
+    // Need to resolve relative paths https://github.com/mifi/lossless-cut/issues/639
+    const filePaths = filePathsRaw.map((path) => (pathIsAbsolute(path) ? path : pathResolve(path)));
+
     if (filePaths.length < 1) return;
     if (filePaths.length > 1) {
       showMergeDialog(filePaths, mergeFiles);

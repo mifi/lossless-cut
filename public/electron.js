@@ -24,9 +24,8 @@ let mainWindow;
 let askBeforeClose = false;
 let rendererReady = false;
 
-function openFile(path) {
-  mainWindow.webContents.send('file-opened', [path]);
-}
+const openFiles = (paths) => mainWindow.webContents.send('file-opened', paths);
+const openFile = (path) => openFile([path]);
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -111,16 +110,23 @@ let openFileInitial;
 
 electron.ipcMain.on('renderer-ready', () => {
   rendererReady = true;
-  if (!isDev) {
-    // Take the last argument, but ONLY if there is more than one argv (first one is the LosslessCut executable)
-    const fileToOpen = process.argv.length > 1 && process.argv[process.argv.length - 1];
-    // https://github.com/electron/electron/issues/3657
-    // https://github.com/mifi/lossless-cut/issues/357
-    if (fileToOpen && !fileToOpen.startsWith('-')) openFile(fileToOpen);
-  }
-  if (openFileInitial) openFile(openFileInitial);
+  const ignoreFirstArgs = isDev ? 2 : 1;
+  // production: First arg is the LosslessCut executable
+  // dev: First 2 args are electron and the electron.js
+
+  // https://github.com/electron/electron/issues/3657
+  // https://github.com/mifi/lossless-cut/issues/357
+  // https://github.com/mifi/lossless-cut/issues/639
+  // https://github.com/mifi/lossless-cut/issues/591
+  const filesToOpen = process.argv.length > ignoreFirstArgs
+    ? process.argv.slice(ignoreFirstArgs).filter((arg) => arg && !arg.startsWith('-'))
+    : [];
+
+  if (filesToOpen.length > 0) openFiles(filesToOpen);
+  else if (openFileInitial) openFile(openFileInitial);
 });
 
+// Mac OS open with LosslessCut
 app.on('open-file', (event, path) => {
   if (rendererReady) openFile(path);
   else openFileInitial = path;
