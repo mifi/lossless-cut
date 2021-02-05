@@ -11,7 +11,7 @@
 	<br>
 	<br>
   <p>Special thanks to:</p>
-  <p align="center"><a href="https://www.winxdvd.com/video-converter/?ttref=lossless2102&utm_campaign=delxvendo2"><img src="https://mifi.no/winxdvd.png" width="400" alt="screenshot" /></a></p>
+  <p align="center"><a href="https://www.winxdvd.com/video-converter/?ttref=lossless2102&utm_campaign=delxvendo2"><img src="https://mifi.no/winxdvd.png" width="600" alt="screenshot" /></a></p>
 	<br>
 	<br>
 	<br>
