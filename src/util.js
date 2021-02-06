@@ -78,8 +78,8 @@ export async function checkDirWriteAccess(dirPath) {
   try {
     await fs.access(dirPath, fs.constants.W_OK);
   } catch (err) {
-    if (err.code === 'EPERM') return false;
-    // if (err.code === 'EACCES') return false;
+    if (err.code === 'EPERM') return false; // Thrown on Mac (MAS build) when user has not yet allowed access
+    if (err.code === 'EACCES') return false; // Thrown on Linux when user doesn't have access to output dir
     console.error(err);
   }
   return true;
