@@ -51,7 +51,7 @@ import {
   getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
-  hasDuplicates,
+  hasDuplicates, havePermissionToReadFile,
 } from './util';
 import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
@@ -1495,6 +1495,11 @@ const App = memo(() => {
     const disallowVob = isMasBuild;
     if (disallowVob && /\.vob$/i.test(firstFile)) {
       toast.fire({ icon: 'error', text: 'Unfortunately .vob files are not supported in the App Store version of LosslessCut due to Apple restrictions' });
+      return;
+    }
+
+    if (!(await havePermissionToReadFile(firstFile))) {
+      errorToast(i18n.t('You do not have permission to access this file'));
       return;
     }
 

@@ -59,6 +59,21 @@ export function getOutPath(customOutDir, filePath, nameSuffix) {
   return path.join(getOutDir(customOutDir, filePath), `${parsed.name}-${nameSuffix}`);
 }
 
+export async function havePermissionToReadFile(filePath) {
+  try {
+    const fd = await fs.open(filePath, 'r');
+    try {
+      await fs.close(fd);
+    } catch (err) {
+      console.error('Failed to close fd', err);
+    }
+  } catch (err) {
+    if (['EPERM', 'EACCES'].includes(err.code)) return false;
+    console.error(err);
+  }
+  return true;
+}
+
 export async function checkDirWriteAccess(dirPath) {
   try {
     await fs.access(dirPath, fs.constants.W_OK);
