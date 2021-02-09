@@ -5,9 +5,11 @@
   <p><b>LosslessCut</b></p>
   The swiss army knife of lossless video/audio editing
 	<br>
-<img src="https://github.com/mifi/lossless-cut/workflows/Build/release/badge.svg" />
-<a href="https://paypal.me/mifino"><img src="https://img.shields.io/badge/Donate-PayPal-green.svg" /></a>
+  <img src="https://github.com/mifi/lossless-cut/workflows/Build/release/badge.svg" />
+  <a href="https://paypal.me/mifino"><img src="https://img.shields.io/badge/Donate-PayPal-green.svg" /></a>
 	<br>
+	<br>
+  <a href="https://mifi.no/thanks/">Thanks to all my supporters</a>
 	<br>
 	<br>
   <p>Special thanks to:</p>
