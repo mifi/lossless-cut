@@ -25,7 +25,7 @@ let askBeforeClose = false;
 let rendererReady = false;
 
 const openFiles = (paths) => mainWindow.webContents.send('file-opened', paths);
-const openFile = (path) => openFile([path]);
+const openFile = (path) => openFiles([path]);
 
 function createWindow() {
   mainWindow = new BrowserWindow({
