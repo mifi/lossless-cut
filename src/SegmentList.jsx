@@ -72,7 +72,7 @@ const SegmentList = memo(({
   formatTimecode, cutSegments, outSegments, getFrameCount, onSegClick,
   currentSegIndex, invertCutSegments,
   updateCurrentSegOrder, addCutSegment, removeCutSegment,
-  setCurrentSegmentName, currentCutSeg, segmentAtCursor, toggleSideBar, splitCurrentSegment,
+  onLabelSegmentPress, currentCutSeg, segmentAtCursor, toggleSideBar, splitCurrentSegment,
 }) => {
   const { t } = useTranslation();
 
@@ -80,21 +80,6 @@ const SegmentList = memo(({
 
   if (!outSegments && invertCutSegments) headerText = t('Make sure you have no overlapping segments.');
   else if (!outSegments || outSegments.length === 0) headerText = t('No segments to export.');
-
-  async function onLabelSegmentPress() {
-    const { value } = await Swal.fire({
-      showCancelButton: true,
-      title: t('Label current segment'),
-      inputValue: currentCutSeg.name,
-      input: 'text',
-      inputValidator: (v) => {
-        const maxLength = 100;
-        return v.length > maxLength ? `${t('Max length')} ${maxLength}` : undefined;
-      },
-    });
-
-    if (value != null) setCurrentSegmentName(value);
-  }
 
   async function onReorderSegsPress() {
     if (cutSegments.length < 2) return;

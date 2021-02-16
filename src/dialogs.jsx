@@ -263,3 +263,17 @@ export async function showCutFailedDialog({ detectedFileFormat }) {
   const { value } = await ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, timer: null, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
   return value;
 }
+
+export async function labelSegmentDialog(currentName) {
+  const { value } = await Swal.fire({
+    showCancelButton: true,
+    title: i18n.t('Label current segment'),
+    inputValue: currentName,
+    input: 'text',
+    inputValidator: (v) => {
+      const maxLength = 100;
+      return v.length > maxLength ? `${i18n.t('Max length')} ${maxLength}` : undefined;
+    },
+  });
+  return value;
+}

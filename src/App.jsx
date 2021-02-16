@@ -53,7 +53,7 @@ import {
   isDurationValid, isWindows, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   hasDuplicates, havePermissionToReadFile,
 } from './util';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog } from './dialogs';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor } from './segments';
@@ -372,6 +372,11 @@ const App = memo(() => {
   const setCurrentSegmentName = useCallback((name) => {
     updateSegAtIndex(currentSegIndexSafe, { name });
   }, [currentSegIndexSafe, updateSegAtIndex]);
+
+  const onLabelSegmentPress = useCallback(async () => {
+    const value = await labelSegmentDialog(currentCutSeg.name);
+    if (value != null) setCurrentSegmentName(value);
+  }, [currentCutSeg, setCurrentSegmentName]);
 
   const updateCurrentSegOrder = useCallback((newOrder) => {
     if (newOrder > cutSegments.length - 1 || newOrder < 0) return;
@@ -1401,13 +1406,18 @@ const App = memo(() => {
       cutSegmentsHistory.forward();
     });
 
+    mousetrap.bind(['enter'], () => {
+      onLabelSegmentPress();
+      return false;
+    });
+
     return () => mousetrap.reset();
   }, [
     addCutSegment, capture, changePlaybackRate, togglePlay, removeCutSegment,
     setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, cleanupFiles, jumpSeg,
     seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment, exportConfirmVisible,
     increaseRotation, jumpCutStart, jumpCutEnd, cutSegmentsHistory, keyboardSeekAccFactor,
-    keyboardNormalSeekSpeed,
+    keyboardNormalSeekSpeed, onLabelSegmentPress,
   ]);
 
   useEffect(() => {
@@ -2163,7 +2173,7 @@ const App = memo(() => {
                   invertCutSegments={invertCutSegments}
                   onSegClick={setCurrentSegIndex}
                   updateCurrentSegOrder={updateCurrentSegOrder}
-                  setCurrentSegmentName={setCurrentSegmentName}
+                  onLabelSegmentPress={onLabelSegmentPress}
                   currentCutSeg={currentCutSeg}
                   segmentAtCursor={segmentAtCursor}
                   addCutSegment={addCutSegment}

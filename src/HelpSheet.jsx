@@ -64,6 +64,7 @@ const HelpSheet = memo(({ visible, onTogglePress, ffmpegCommandLog, currentCutSe
         <div style={{ lineHeight: 1.7 }}><SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaHandPointRight} style={{ verticalAlign: 'middle' }} />, <kbd>O</kbd> {t('Mark out / cut end point for current segment')}</div>
         <div><kbd>+</kbd> {t('Add cut segment')}</div>
         <div><kbd>BACKSPACE</kbd> {t('Remove current segment')}</div>
+        <div><kbd>ENTER</kbd> {t('Label current segment')}</div>
         <div><kbd>↑</kbd> {t('Select previous segment')}</div>
         <div><kbd>↓</kbd> {t('Select next segment')}</div>
         <div><kbd>B</kbd> {t('Split segment at cursor')}</div>
