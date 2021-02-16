@@ -2,7 +2,7 @@ import React, { memo, useEffect, useState, useCallback, useRef, Fragment, useMem
 import { FaVolumeMute, FaVolumeUp, FaAngleLeft, FaWindowClose } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
 import Swal from 'sweetalert2';
-import Lottie from 'react-lottie';
+import Lottie from 'react-lottie-player';
 import { SideSheet, Button, Position, SegmentedControl, Select } from 'evergreen-ui';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
@@ -2071,6 +2071,9 @@ const App = memo(() => {
               <div style={{ width: 150, height: 150 }}>
                 <Lottie
                   options={{ loop: true, autoplay: true, animationData: loadingLottie }}
+                  loop
+                  animationData={loadingLottie}
+                  play
                   style={{ width: '170%', height: '130%', marginLeft: '-35%', marginTop: '-29%', pointerEvents: 'none' }}
                 />
               </div>
