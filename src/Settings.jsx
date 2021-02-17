@@ -28,12 +28,17 @@ const Settings = memo(({
   // See i18n.js
   const langNames = {
     en: 'English',
-    nb: 'Norsk',
-    zh: '中文',
-    it: 'Italiano',
-    fr: 'Français',
+    cs: 'Čeština',
     de: 'Deutsch',
+    es: 'Español',
+    fr: 'Français',
+    it: 'Italiano',
+    nb: 'Norsk',
+    pl: 'Polski',
     ru: 'русский',
+    // sr: 'Cрпски',
+    tr: 'Türkçe',
+    zh: '中文',
   };
 
   return (
