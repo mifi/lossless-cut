@@ -89,20 +89,10 @@ export async function dirExists(dirPath) {
   return (await fs.exists(dirPath)) && (await fs.lstat(dirPath)).isDirectory();
 }
 
-export async function transferTimestamps(inPath, outPath) {
+export async function transferTimestamps(inPath, outPath, offset = 0) {
   try {
-    const stat = await fs.stat(inPath);
-    await fs.utimes(outPath, stat.atime.getTime() / 1000, stat.mtime.getTime() / 1000);
-  } catch (err) {
-    console.error('Failed to set output file modified time', err);
-  }
-}
-
-export async function transferTimestampsWithOffset(inPath, outPath, offset) {
-  try {
-    const stat = await fs.stat(inPath);
-    const time = (stat.mtime.getTime() / 1000) + offset;
-    await fs.utimes(outPath, time, time);
+    const { atime, mtime } = await fs.stat(inPath);
+    await fs.utimes(outPath, (atime.getTime() / 1000) + offset, (mtime.getTime() / 1000) + offset);
   } catch (err) {
     console.error('Failed to set output file modified time', err);
   }
