@@ -3,12 +3,15 @@ import { IoIosHelpCircle, IoIosSettings } from 'react-icons/io';
 import { Button } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
+import MergeExportButton from './components/MergeExportButton';
+
 import { withBlur } from './util';
 
 
 const TopMenu = memo(({
   filePath, copyAnyAudioTrack, toggleStripAudio, customOutDir, changeOutDir,
   renderOutFmt, toggleHelp, numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown, toggleSettings,
+  outSegments, autoMerge, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments,
 }) => {
   const { t } = useTranslation();
 
@@ -42,11 +45,9 @@ const TopMenu = memo(({
         {customOutDir ? t('Working dir set') : t('Working dir unset')}
       </Button>
 
-      {filePath && (
-        <Fragment>
-          {renderOutFmt({ height: 20, maxWidth: 100 })}
-        </Fragment>
-      )}
+      {filePath && renderOutFmt({ height: 20, maxWidth: 100 })}
+
+      {filePath && <MergeExportButton autoMerge={autoMerge} outSegments={outSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} />}
 
       <IoIosHelpCircle size={24} role="button" onClick={toggleHelp} style={{ verticalAlign: 'middle', marginLeft: 5 }} />
       <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ verticalAlign: 'middle', marginLeft: 5 }} />

@@ -2066,6 +2066,11 @@ const App = memo(() => {
           numStreamsToCopy={numStreamsToCopy}
           numStreamsTotal={numStreamsTotal}
           setStreamsSelectorShown={setStreamsSelectorShown}
+          outSegments={outSegments}
+          autoMerge={autoMerge}
+          setAutoMerge={setAutoMerge}
+          autoDeleteMergedSegments={autoDeleteMergedSegments}
+          setAutoDeleteMergedSegments={setAutoDeleteMergedSegments}
         />
       </div>
 

@@ -9,13 +9,14 @@ import { withBlur } from '../util';
 const MergeExportButton = memo(({ autoMerge, outSegments, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments }) => {
   const { t } = useTranslation();
 
-  const AutoMergeIcon = autoMerge ? MdCallMerge : MdCallSplit;
+  let AutoMergeIcon;
 
   let effectiveMode;
   let title;
   let description;
   if (autoMerge && autoDeleteMergedSegments) {
     effectiveMode = 'merge';
+    AutoMergeIcon = MdCallMerge;
     title = t('Merge cuts');
     description = t('Auto merge segments to one file after export');
   } else if (autoMerge) {
@@ -24,6 +25,7 @@ const MergeExportButton = memo(({ autoMerge, outSegments, setAutoMerge, autoDele
     description = t('Auto merge segments to one file after export, but keep segments too');
   } else {
     effectiveMode = 'separate';
+    AutoMergeIcon = MdCallSplit;
     title = t('Separate files');
     description = t('Export to separate files');
   }
@@ -54,7 +56,7 @@ const MergeExportButton = memo(({ autoMerge, outSegments, setAutoMerge, autoDele
       title={description}
       onClick={withBlur(onClick)}
     >
-      <AutoMergeIcon /> {title}
+      {AutoMergeIcon && <AutoMergeIcon />} {title}
     </Button>
   );
 });
