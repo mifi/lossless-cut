@@ -20,6 +20,7 @@ import isEqual from 'lodash/isEqual';
 
 import useTimelineScroll from './hooks/useTimelineScroll';
 import useUserPreferences from './hooks/useUserPreferences';
+import useFfmpegOperations from './hooks/useFfmpegOperations';
 import NoFileLoaded from './NoFileLoaded';
 import Canvas from './Canvas';
 import TopMenu from './TopMenu';
@@ -41,10 +42,10 @@ import allOutFormats from './outFormats';
 import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
-  getDefaultOutFormat, getFormatData, mergeFiles as ffmpegMergeFiles, renderThumbnails as ffmpegRenderThumbnails,
-  readFrames, renderWaveformPng, html5ifyDummy, cutMultiple, extractStreams, autoMergeSegments, getAllStreams,
-  findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime, html5ify as ffmpegHtml5ify, isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
-  fixInvalidDuration, getDuration, getTimecodeFromStreams, createChaptersFromSegments,
+  getDefaultOutFormat, getFormatData, renderThumbnails as ffmpegRenderThumbnails,
+  readFrames, renderWaveformPng, extractStreams, getAllStreams,
+  findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime, isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
+  getDuration, getTimecodeFromStreams, createChaptersFromSegments,
 } from './ffmpeg';
 import { saveCsv, saveTsv, loadCsv, loadXmeml, loadCue, loadPbf, saveCsvHuman } from './edlStore';
 import {
@@ -143,8 +144,12 @@ const App = memo(() => {
   const isCustomFormatSelected = fileFormat !== detectedFileFormat;
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, muted, setMuted, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, muted, setMuted, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps,
   } = useUserPreferences();
+
+  const {
+    mergeFiles: ffmpegMergeFiles, html5ifyDummy, cutMultiple, autoMergeSegments, html5ify: ffmpegHtml5ify, fixInvalidDuration,
+  } = useFfmpegOperations({ filePath, enableTransferTimestamps });
 
   const outSegTemplateOrDefault = outSegTemplate || defaultOutSegTemplate;
 
@@ -598,7 +603,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [assureOutDirAccess, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, customOutDir]);
+  }, [assureOutDirAccess, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, customOutDir, ffmpegMergeFiles]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
 
@@ -817,14 +822,14 @@ const App = memo(() => {
     const html5ifiedDummyPathDummy = getOutPath(cod, fp, 'html5ified-dummy.mkv');
     try {
       setCutProgress(0);
-      await html5ifyDummy(fp, html5ifiedDummyPathDummy, setCutProgress);
+      await html5ifyDummy({ filePath: fp, outPath: html5ifiedDummyPathDummy, onProgress: setCutProgress });
     } finally {
       setCutProgress();
     }
     setDummyVideoPath(html5ifiedDummyPathDummy);
     setHtml5FriendlyPath();
     showUnsupportedFileMessage();
-  }, [showUnsupportedFileMessage]);
+  }, [html5ifyDummy, showUnsupportedFileMessage]);
 
   const showPlaybackFailedMessage = () => errorToast(i18n.t('Unable to playback this file. Try to convert to supported format from the menu'));
 
@@ -1003,7 +1008,6 @@ const App = memo(() => {
       // throw (() => { const err = new Error('test'); err.code = 'ENOENT'; return err; })();
       const outFiles = await cutMultiple({
         outputDir,
-        filePath,
         outFormat: fileFormat,
         videoDuration: duration,
         rotation: isRotationSet ? effectiveRotation : undefined,
@@ -1030,7 +1034,6 @@ const App = memo(() => {
 
         await autoMergeSegments({
           customOutDir,
-          sourceFile: filePath,
           outFormat: fileFormat,
           isCustomFormatSelected,
           segmentPaths: outFiles,
@@ -1076,7 +1079,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [working, numStreamsToCopy, outSegments, currentSegIndexSafe, outSegTemplateOrDefault, generateOutSegFileNames, customOutDir, filePath, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, autoMerge, exportExtraStreams, fileFormatData, mainStreams, hideAllNotifications, outputDir, segmentsToChapters, invertCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, preserveMetadataOnMerge, nonCopiedExtraStreams, handleCutFailed, isOutSegFileNamesValid]);
+  }, [working, numStreamsToCopy, outSegments, currentSegIndexSafe, outSegTemplateOrDefault, generateOutSegFileNames, customOutDir, filePath, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, autoMerge, exportExtraStreams, fileFormatData, mainStreams, hideAllNotifications, outputDir, segmentsToChapters, invertCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, preserveMetadataOnMerge, nonCopiedExtraStreams, handleCutFailed, isOutSegFileNamesValid, cutMultiple, autoMergeSegments]);
 
   const onExportPress = useCallback(async () => {
     if (working || !filePath) return;
@@ -1103,15 +1106,15 @@ const App = memo(() => {
       const currentTime = currentTimeRef.current;
       const video = videoRef.current;
       const outPath = mustCaptureFfmpeg
-        ? await captureFrameFfmpeg({ customOutDir, filePath, currentTime, captureFormat })
-        : await captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video });
+        ? await captureFrameFfmpeg({ customOutDir, filePath, currentTime, captureFormat, enableTransferTimestamps })
+        : await captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, enableTransferTimestamps });
 
       openDirToast({ dirPath: outputDir, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
     } catch (err) {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [filePath, captureFormat, customOutDir, html5FriendlyPath, dummyVideoPath, outputDir]);
+  }, [filePath, captureFormat, customOutDir, html5FriendlyPath, dummyVideoPath, outputDir, enableTransferTimestamps]);
 
   const changePlaybackRate = useCallback((dir) => {
     if (canvasPlayerEnabled) {
@@ -1576,7 +1579,7 @@ const App = memo(() => {
       setCutProgress();
     }
     return path;
-  }, [getHtml5ifiedPath]);
+  }, [ffmpegHtml5ify, getHtml5ifiedPath]);
 
   const html5ifyAndLoad = useCallback(async (speed) => {
     if (speed === 'fastest-audio') {
@@ -1774,7 +1777,7 @@ const App = memo(() => {
     async function fixInvalidDuration2() {
       try {
         setWorking(i18n.t('Fixing file duration'));
-        const path = await fixInvalidDuration({ filePath, fileFormat, customOutDir });
+        const path = await fixInvalidDuration({ fileFormat, customOutDir });
         load({ filePath: path, customOutDir });
         toast.fire({ icon: 'info', text: i18n.t('Duration has been fixed') });
       } catch (err) {
@@ -1835,7 +1838,7 @@ const App = memo(() => {
     mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, html5ifyCurrentFile,
     createDummyVideo, extractAllStreams, userOpenFiles, openSendReportDialogWithState,
     loadEdlFile, cutSegments, edlFilePath, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
-    loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime, closeFile, clearSegments,
+    loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime, closeFile, clearSegments, fixInvalidDuration,
   ]);
 
   async function showAddStreamSourceDialog() {
@@ -1937,12 +1940,14 @@ const App = memo(() => {
       setAutoLoadTimecode={setAutoLoadTimecode}
       autoDeleteMergedSegments={autoDeleteMergedSegments}
       setAutoDeleteMergedSegments={setAutoDeleteMergedSegments}
+      enableTransferTimestamps={enableTransferTimestamps}
+      setEnableTransferTimestamps={setEnableTransferTimestamps}
 
       AutoExportToggler={AutoExportToggler}
       renderCaptureFormatButton={renderCaptureFormatButton}
       onTunerRequested={onTunerRequested}
     />
-  ), [changeOutDir, customOutDir, autoMerge, setAutoMerge, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments, autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, ffmpegExperimental, setFfmpegExperimental, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, AutoExportToggler, renderCaptureFormatButton, onTunerRequested]);
+  ), [changeOutDir, customOutDir, autoMerge, setAutoMerge, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments, autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, ffmpegExperimental, setFfmpegExperimental, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, AutoExportToggler, renderCaptureFormatButton, onTunerRequested, enableTransferTimestamps, setEnableTransferTimestamps]);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);

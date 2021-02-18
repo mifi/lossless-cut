@@ -10,6 +10,7 @@ const Settings = memo(({
   invertTimelineScroll, setInvertTimelineScroll, ffmpegExperimental, setFfmpegExperimental,
   enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction,
   hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments,
+  enableTransferTimestamps, setEnableTransferTimestamps,
 }) => {
   const { t } = useTranslation();
 
@@ -84,6 +85,17 @@ const Settings = memo(({
             label={t('Auto delete segments')}
             checked={autoDeleteMergedSegments}
             onChange={e => setAutoDeleteMergedSegments(e.target.checked)}
+          />
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Set file modification date/time of output files to:')}</KeyCell>
+        <Table.TextCell>
+          <SegmentedControl
+            options={[{ label: t('Source file\'s time'), value: 'true' }, { label: t('Current time'), value: 'false' }]}
+            value={enableTransferTimestamps ? 'true' : 'false'}
+            onChange={value => setEnableTransferTimestamps(value === 'true')}
           />
         </Table.TextCell>
       </Row>

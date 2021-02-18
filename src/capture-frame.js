@@ -19,16 +19,17 @@ function getFrameFromVideo(video, format) {
   return strongDataUri.decode(dataUri);
 }
 
-export async function captureFrameFfmpeg({ customOutDir, filePath, currentTime, captureFormat }) {
+export async function captureFrameFfmpeg({ customOutDir, filePath, currentTime, captureFormat, enableTransferTimestamps }) {
   const time = formatDuration({ seconds: currentTime, fileNameFriendly: true });
 
   const outPath = getOutPath(customOutDir, filePath, `${time}.${captureFormat}`);
   await ffmpegCaptureFrame({ timestamp: currentTime, videoPath: filePath, outPath });
-  await transferTimestamps(filePath, outPath, currentTime);
+
+  if (enableTransferTimestamps) await transferTimestamps(filePath, outPath, currentTime);
   return outPath;
 }
 
-export async function captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video }) {
+export async function captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, enableTransferTimestamps }) {
   const buf = getFrameFromVideo(video, captureFormat);
 
   const ext = mime.extension(buf.mimetype);
@@ -37,6 +38,6 @@ export async function captureFrameFromTag({ customOutDir, filePath, currentTime,
   const outPath = getOutPath(customOutDir, filePath, `${time}.${ext}`);
   await fs.writeFile(outPath, buf);
 
-  await transferTimestamps(filePath, outPath, currentTime);
+  if (enableTransferTimestamps) await transferTimestamps(filePath, outPath, currentTime);
   return outPath;
 }

@@ -82,6 +82,8 @@ export default () => {
   useEffect(() => safeSetConfig('keyboardSeekAccFactor', keyboardSeekAccFactor), [keyboardSeekAccFactor]);
   const [keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed] = useState(configStore.get('keyboardNormalSeekSpeed'));
   useEffect(() => safeSetConfig('keyboardNormalSeekSpeed', keyboardNormalSeekSpeed), [keyboardNormalSeekSpeed]);
+  const [enableTransferTimestamps, setEnableTransferTimestamps] = useState(configStore.get('enableTransferTimestamps'));
+  useEffect(() => safeSetConfig('enableTransferTimestamps', enableTransferTimestamps), [enableTransferTimestamps]);
 
 
   // NOTE! This useEffect must be placed after all usages of firstUpdateRef.current (safeSetConfig)
@@ -148,5 +150,7 @@ export default () => {
     setKeyboardSeekAccFactor,
     keyboardNormalSeekSpeed,
     setKeyboardNormalSeekSpeed,
+    enableTransferTimestamps,
+    setEnableTransferTimestamps,
   };
 };
