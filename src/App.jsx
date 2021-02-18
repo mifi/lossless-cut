@@ -1096,22 +1096,22 @@ const App = memo(() => {
   }, [working, filePath, haveInvalidSegs, outSegments, exportConfirmEnabled, onExportConfirm]);
 
   const capture = useCallback(async () => {
-    if (!filePath || !isDurationValid(duration)) return;
+    if (!filePath) return;
 
     try {
       const mustCaptureFfmpeg = html5FriendlyPath || dummyVideoPath;
       const currentTime = currentTimeRef.current;
       const video = videoRef.current;
       const outPath = mustCaptureFfmpeg
-        ? await captureFrameFfmpeg({ customOutDir, filePath, currentTime, captureFormat, duration })
-        : await captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, duration, video });
+        ? await captureFrameFfmpeg({ customOutDir, filePath, currentTime, captureFormat })
+        : await captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video });
 
       openDirToast({ dirPath: outputDir, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
     } catch (err) {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [filePath, captureFormat, customOutDir, html5FriendlyPath, dummyVideoPath, outputDir, duration]);
+  }, [filePath, captureFormat, customOutDir, html5FriendlyPath, dummyVideoPath, outputDir]);
 
   const changePlaybackRate = useCallback((dir) => {
     if (canvasPlayerEnabled) {
