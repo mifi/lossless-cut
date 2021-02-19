@@ -85,7 +85,7 @@ export async function askForYouTubeInput() {
 
 export async function askForOutDir(defaultPath) {
   const { filePaths } = await dialog.showOpenDialog({
-    properties: ['openDirectory'],
+    properties: ['openDirectory', 'createDirectory'],
     defaultPath,
     title: i18n.t('Where do you want to save output files?'),
     message: i18n.t('Where do you want to save output files? Make sure there is enough free space in this folder'),
