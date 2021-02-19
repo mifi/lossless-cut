@@ -2,8 +2,11 @@ name: Build/release
 
 on:
   push:
-    branches:
-      - master
+    tags:
+      - 'v*'
+  schedule:
+    - cron: '0 10 * * 0'
+
 
 jobs:
   release:
