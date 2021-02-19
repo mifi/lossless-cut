@@ -3,8 +3,9 @@ import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import withReactContent from 'sweetalert2-react-content';
 
-import { parseDuration } from './util';
+import { parseDuration } from './util/duration';
 import { parseYouTube } from './edlFormats';
+import CopyClipboardButton from './components/CopyClipboardButton';
 
 const electron = window.require('electron'); // eslint-disable-line
 
@@ -262,6 +263,23 @@ export async function showCutFailedDialog({ detectedFileFormat }) {
 
   const { value } = await ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, timer: null, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
   return value;
+}
+
+export function openYouTubeChaptersDialog(text) {
+  ReactSwal.fire({
+    showCloseButton: true,
+    title: i18n.t('YouTube Chapters'),
+    html: (
+      <div style={{ textAlign: 'left', overflow: 'auto', maxHeight: 300, overflowY: 'auto' }}>
+
+        <p>{i18n.t('Copy to YouTube description/comment:')} <CopyClipboardButton text={text} /></p>
+
+        <div style={{ fontWeight: 600, fontSize: 12, whiteSpace: 'pre-wrap' }} contentEditable suppressContentEditableWarning>
+          {text}
+        </div>
+      </div>
+    ),
+  });
 }
 
 export async function labelSegmentDialog(currentName) {

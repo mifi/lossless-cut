@@ -85,6 +85,12 @@ module.exports = (app, mainWindow, newVersion) => {
                 mainWindow.webContents.send('exportEdlFile', 'tsv-human');
               },
             },
+            {
+              label: 'Start times as YouTube Chapters',
+              click() {
+                mainWindow.webContents.send('exportEdlYouTube');
+              },
+            },
           ],
         },
         { type: 'separator' },

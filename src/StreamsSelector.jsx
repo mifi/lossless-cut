@@ -13,7 +13,7 @@ import { tomorrow as style } from 'react-syntax-highlighter/dist/esm/styles/hljs
 import JSON5 from 'json5';
 
 import { askForMetadataKey } from './dialogs';
-import { formatDuration } from './util';
+import { formatDuration } from './util/duration';
 import { getStreamFps } from './ffmpeg';
 
 const ReactSwal = withReactContent(Swal);

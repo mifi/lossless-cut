@@ -1,6 +1,7 @@
 import strongDataUri from 'strong-data-uri';
 
-import { formatDuration, getOutPath, transferTimestamps } from './util';
+import { getOutPath, transferTimestamps } from './util';
+import { formatDuration } from './util/duration';
 
 import { captureFrame as ffmpegCaptureFrame } from './ffmpeg';
 

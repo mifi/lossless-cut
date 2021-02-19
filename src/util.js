@@ -1,4 +1,3 @@
-import padStart from 'lodash/padStart';
 import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import lodashTemplate from 'lodash/template';
@@ -9,42 +8,6 @@ const path = window.require('path');
 const fs = window.require('fs-extra');
 const open = window.require('open');
 const os = window.require('os');
-
-export function formatDuration({ seconds: secondsIn, fileNameFriendly, fps }) {
-  const seconds = secondsIn || 0;
-  const secondsAbs = Math.abs(seconds);
-  const minutes = secondsAbs / 60;
-  const hours = minutes / 60;
-
-  const hoursPadded = padStart(Math.floor(hours), 2, '0');
-  const minutesPadded = padStart(Math.floor(minutes % 60), 2, '0');
-  const secondsPadded = padStart(Math.floor(secondsAbs) % 60, 2, '0');
-  const ms = secondsAbs - Math.floor(secondsAbs);
-  const msPadded = fps != null
-    ? padStart(Math.floor(ms * fps), 2, '0')
-    : padStart(Math.floor(ms * 1000), 3, '0');
-
-  // Be nice to filenames and use .
-  const delim = fileNameFriendly ? '.' : ':';
-  const sign = secondsIn < 0 ? '-' : '';
-  return `${sign}${hoursPadded}${delim}${minutesPadded}${delim}${secondsPadded}.${msPadded}`;
-}
-
-export function parseDuration(str) {
-  if (!str) return undefined;
-  const match = str.trim().match(/^(-?)(\d{2}):(\d{2}):(\d{2})\.(\d{3})$/);
-  if (!match) return undefined;
-  const isNegatve = match[1] === '-';
-  const hours = parseInt(match[2], 10);
-  const minutes = parseInt(match[3], 10);
-  const seconds = parseInt(match[4], 10);
-  const ms = parseInt(match[5], 10);
-  if (hours > 59 || minutes > 59 || seconds > 59) return undefined;
-
-  let ret = (((((hours * 60) + minutes) * 60) + seconds) + (ms / 1000));
-  if (isNegatve) ret *= -1;
-  return ret;
-}
 
 export function getOutDir(customOutDir, filePath) {
   if (customOutDir) return customOutDir;

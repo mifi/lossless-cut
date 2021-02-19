@@ -5,6 +5,8 @@ import csvParse from 'csv-parse';
 import pify from 'pify';
 import sortBy from 'lodash/sortBy';
 
+import { formatDuration } from './util/duration';
+
 const csvParseAsync = pify(csvParse);
 
 export async function parseCsv(str) {
@@ -78,7 +80,7 @@ export function parseXmeml(xmlStr) {
 }
 
 export function parseYouTube(str) {
-  const regex = /(?:([0-9]{2,}):)?([0-9]{2}):([0-9]{2})(?:\.([0-9]{3}))?[^\S\n]+([^\n]*)\n/g;
+  const regex = /(?:([0-9]{2,}):)?([0-9]{1,2}):([0-9]{1,2})(?:\.([0-9]{3}))?[^\S\n]+([^\n]*)\n/g;
 
   const lines = [];
 
@@ -109,4 +111,12 @@ export function parseYouTube(str) {
   });
 
   return edl.filter((ed) => ed.start !== ed.end);
+}
+
+export function formatYouTube(segments) {
+  return segments.map((segment) => {
+    const timeStr = formatDuration({ seconds: segment.start, showMs: false, shorten: true });
+    const namePart = segment.name ? ` ${segment.name}` : '';
+    return `${timeStr}${namePart}`;
+  }).join('\n');
 }

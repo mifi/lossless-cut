@@ -48,13 +48,15 @@ import {
   getDuration, getTimecodeFromStreams, createChaptersFromSegments,
 } from './ffmpeg';
 import { saveCsv, saveTsv, loadCsv, loadXmeml, loadCue, loadPbf, saveCsvHuman } from './edlStore';
+import { formatYouTube } from './edlFormats';
 import {
-  getOutPath, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
+  getOutPath, toast, errorToast, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   hasDuplicates, havePermissionToReadFile,
 } from './util';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog } from './dialogs';
+import { formatDuration } from './util/duration';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor } from './segments';
@@ -1688,6 +1690,12 @@ const App = memo(() => {
       }
     }
 
+    async function exportEdlYouTube() {
+      if (!checkFileOpened()) return;
+
+      await openYouTubeChaptersDialog(formatYouTube(apparentCutSegments));
+    }
+
     async function importEdlFile(e, type) {
       if (!checkFileOpened()) return;
 
@@ -1802,6 +1810,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('showStreamsSelector', showStreamsSelector);
     electron.ipcRenderer.on('importEdlFile', importEdlFile);
     electron.ipcRenderer.on('exportEdlFile', exportEdlFile);
+    electron.ipcRenderer.on('exportEdlYouTube', exportEdlYouTube);
     electron.ipcRenderer.on('openHelp', toggleHelp);
     electron.ipcRenderer.on('openSettings', toggleSettings);
     electron.ipcRenderer.on('openAbout', openAbout);
@@ -1823,6 +1832,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('showStreamsSelector', showStreamsSelector);
       electron.ipcRenderer.removeListener('importEdlFile', importEdlFile);
       electron.ipcRenderer.removeListener('exportEdlFile', exportEdlFile);
+      electron.ipcRenderer.removeListener('exportEdlYouTube', exportEdlYouTube);
       electron.ipcRenderer.removeListener('openHelp', toggleHelp);
       electron.ipcRenderer.removeListener('openSettings', toggleSettings);
       electron.ipcRenderer.removeListener('openAbout', openAbout);
@@ -1837,7 +1847,7 @@ const App = memo(() => {
   }, [
     mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, html5ifyCurrentFile,
     createDummyVideo, extractAllStreams, userOpenFiles, openSendReportDialogWithState,
-    loadEdlFile, cutSegments, edlFilePath, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
+    loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
     loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime, closeFile, clearSegments, fixInvalidDuration,
   ]);
 

@@ -5,7 +5,8 @@ import { IoMdKey } from 'react-icons/io';
 import { useTranslation } from 'react-i18next';
 // import useTraceUpdate from 'use-trace-update';
 
-import { getSegColors, parseDuration, formatDuration } from './util';
+import { getSegColors } from './util';
+import { formatDuration, parseDuration } from './util/duration';
 import { primaryTextColor } from './colors';
 import SetCutpointButton from './components/SetCutpointButton';
 

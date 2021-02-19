@@ -61,6 +61,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Quickly change a H264/H265 MKV video to MOV or MP4 for playback on iPhone
 - Import a list of cut times from other tool as a EDL (edit decision list, CSV) and run these cuts with LosslessCut
 - Export a list of cut times as a CSV EDL and process these in another tool
+- Export cut times as YouTube Chapters
 - Quickly cut a file by its MP4/MKV chapters
 - Quickly cut a [YouTube video](https://youtube-dl.org/) by its chapters (or music times from a comment)
 - Change the language of a file's audio/subtitle tracks

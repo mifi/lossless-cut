@@ -2,7 +2,7 @@ import csvStringify from 'csv-stringify';
 import pify from 'pify';
 
 import { parseCuesheet, parseXmeml, parseCsv, parsePbf } from './edlFormats';
-import { formatDuration } from './util';
+import { formatDuration } from './util/duration';
 
 const fs = window.require('fs-extra');
 const cueParser = window.require('cue-parser');

@@ -4,7 +4,7 @@ import { FaTrashAlt } from 'react-icons/fa';
 
 import { mySpring } from './animations';
 
-import { formatDuration } from './util';
+import { formatDuration } from './util/duration';
 
 
 const TimelineSeg = memo(({
