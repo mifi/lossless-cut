@@ -34,6 +34,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@types/jest": "^26.0.20",
     "axios": "^0.21.1",
     "color": "^3.1.0",
     "concurrently": "^5.1.0",

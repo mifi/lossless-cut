@@ -27,8 +27,9 @@ jobs:
           node-version: 12
 
        # Because of timeout issue https://github.com/yarnpkg/yarn/issues/4890
-      - name: yarn install
-        run: yarn install --network-timeout 1000000
+      - run: yarn install --network-timeout 1000000
+      - run: npm run lint
+      - run: npm test
 
       - name: Install and login to Snapcraft
         uses: samuelmeuli/action-snapcraft@v1
