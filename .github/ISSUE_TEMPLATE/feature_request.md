@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+Please first search for your feature request under Issues or Discussions, maybe someone else already suggested it.
+
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
