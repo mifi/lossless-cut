@@ -42,7 +42,7 @@ const TimelineSeg = memo(({
 
   const onThisSegClick = () => onSegClick(segNum);
 
-  const durationStr = cutEnd > cutStart ? `${formatDuration({ seconds: cutEnd - cutStart })} ` : '';
+  const durationStr = cutEnd > cutStart ? `${formatDuration({ seconds: cutEnd - cutStart, shorten: true })} ` : '';
   const title = `${durationStr}${name}`;
 
   return (

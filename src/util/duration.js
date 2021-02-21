@@ -20,7 +20,7 @@ export function formatDuration({ seconds: secondsIn, fileNameFriendly, showMs = 
   const secondsPadded = padStart(Math.floor(secondsAbs) % 60, 2, '0');
   const ms = secondsAbs - Math.floor(secondsAbs);
   let msPart = '';
-  if (showMs) {
+  if (showMs && !(shorten && ms === 0)) {
     const msPadded = fps != null
       ? padStart(Math.floor(ms * fps), 2, '0')
       : padStart(Math.floor(ms * 1000), 3, '0');
