@@ -10,7 +10,7 @@ import InverseCutSegment from './InverseCutSegment';
 
 import { timelineBackground } from './colors';
 
-import { getSegColors } from './util';
+import { getSegColors } from './util/colors';
 
 
 const hammerOptions = { recognizers: {} };

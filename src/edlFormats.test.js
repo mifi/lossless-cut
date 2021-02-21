@@ -1,4 +1,4 @@
-import { parseYouTube, formatYouTube } from './edlFormats';
+import { parseYouTube, formatYouTube, parseMplayerEdl } from './edlFormats';
 
 it('parseYoutube', () => {
   const str = `
@@ -57,4 +57,42 @@ it('formatYouTube', () => {
   ]).split('\n')).toEqual([
     '0:00',
   ]);
+});
+
+// https://kodi.wiki/view/Edit_decision_list
+// http://www.mplayerhq.hu/DOCS/HTML/en/edl.html
+it('parseMplayerEdl', async () => {
+  // TODO support more durations:
+  /*
+  const str = `\
+5.3     7.1     0
+15      16.7    1
+7:00    13:42   3
+1       4:15.3  2
+12:00.1         2
+`;
+  const str = `\
+#127   #170    0
+#360   #400    1
+#10080 #19728  3
+#1     #6127   2
+#17282         2
+`;
+*/
+
+  const str = `\
+5.3   7.1    0
+15    16.7   1
+420   822    3
+1     255.3  2
+720.1        2  
+`;
+
+  expect(await parseMplayerEdl(str)).toEqual([{ start: 0, end: 5.3 }, { start: 7.1, end: undefined }]);
+
+  const str2 = `\
+  0   1.1    0
+`;
+
+  expect(await parseMplayerEdl(str2)).toEqual([{ start: 1.1, end: undefined }]);
 });

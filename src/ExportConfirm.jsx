@@ -15,7 +15,8 @@ import ToggleExportConfirm from './components/ToggleExportConfirm';
 import OutSegTemplateEditor from './components/OutSegTemplateEditor';
 import HighlightedText from './components/HighlightedText';
 
-import { withBlur, toast, getSegColors } from './util';
+import { withBlur, toast } from './util';
+import { getSegColors } from './util/colors';
 import { isMov as ffmpegIsMov } from './ffmpeg';
 
 const sheetStyle = {

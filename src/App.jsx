@@ -47,7 +47,7 @@ import {
   findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime, isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments,
 } from './ffmpeg';
-import { saveCsv, saveTsv, loadCsv, loadXmeml, loadCue, loadPbf, saveCsvHuman } from './edlStore';
+import { saveCsv, saveTsv, loadCsv, loadXmeml, loadCue, loadPbf, loadMplayerEdl, saveCsvHuman } from './edlStore';
 import { formatYouTube } from './edlFormats';
 import {
   getOutPath, toast, errorToast, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
@@ -59,7 +59,7 @@ import { formatDuration } from './util/duration';
 import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
-import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor } from './segments';
+import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments } from './segments';
 
 
 import loadingLottie from './7077-magic-flow.json';
@@ -315,46 +315,13 @@ const App = memo(() => {
   const jumpCutStart = useCallback(() => seekAbs(currentApparentCutSeg.start), [currentApparentCutSeg.start, seekAbs]);
   const jumpCutEnd = useCallback(() => seekAbs(currentApparentCutSeg.end), [currentApparentCutSeg.end, seekAbs]);
 
-  const sortedCutSegments = useMemo(() => sortBy(apparentCutSegments, 'start'), [apparentCutSegments]);
+  const sortedCutSegments = useMemo(() => sortSegments(apparentCutSegments), [apparentCutSegments]);
 
   const inverseCutSegments = useMemo(() => {
     if (haveInvalidSegs) return undefined;
-    if (sortedCutSegments.length < 1) return undefined;
-
-    const foundOverlap = sortedCutSegments.some((cutSegment, i) => {
-      if (i === 0) return false;
-      return sortedCutSegments[i - 1].end > cutSegment.start;
-    });
-
-    if (foundOverlap) return undefined;
     if (!isDurationValid(duration)) return undefined;
 
-    const ret = [];
-
-    if (sortedCutSegments[0].start > 0) {
-      ret.push({
-        start: 0,
-        end: sortedCutSegments[0].start,
-      });
-    }
-
-    sortedCutSegments.forEach((cutSegment, i) => {
-      if (i === 0) return;
-      ret.push({
-        start: sortedCutSegments[i - 1].end,
-        end: cutSegment.start,
-      });
-    });
-
-    const last = sortedCutSegments[sortedCutSegments.length - 1];
-    if (last.end < duration) {
-      ret.push({
-        start: last.end,
-        end: duration,
-      });
-    }
-
-    return ret;
+    return invertSegments(sortedCutSegments, duration);
   }, [duration, haveInvalidSegs, sortedCutSegments]);
 
   const updateSegAtIndex = useCallback((index, newProps) => {
@@ -1191,6 +1158,7 @@ const App = memo(() => {
       else if (type === 'xmeml') edl = await loadXmeml(path);
       else if (type === 'cue') edl = await loadCue(path);
       else if (type === 'pbf') edl = await loadPbf(path);
+      else if (type === 'mplayer') edl = await loadMplayerEdl(path);
 
       loadCutSegments(edl);
     } catch (err) {
@@ -1713,6 +1681,7 @@ const App = memo(() => {
       else if (type === 'xmeml') filters = [{ name: i18n.t('XML files'), extensions: ['xml'] }];
       else if (type === 'cue') filters = [{ name: i18n.t('CUE files'), extensions: ['cue'] }];
       else if (type === 'pbf') filters = [{ name: i18n.t('PBF files'), extensions: ['pbf'] }];
+      else if (type === 'mplayer') filters = [{ name: i18n.t('MPlayer EDL'), extensions: ['*'] }];
 
       const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters });
       if (canceled || filePaths.length < 1) return;

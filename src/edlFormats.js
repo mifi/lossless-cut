@@ -6,6 +6,7 @@ import pify from 'pify';
 import sortBy from 'lodash/sortBy';
 
 import { formatDuration } from './util/duration';
+import { invertSegments, sortSegments } from './segments';
 
 const csvParseAsync = pify(csvParse);
 
@@ -30,6 +31,23 @@ export async function parseCsv(str) {
   }
 
   return mapped;
+}
+
+export async function parseMplayerEdl(text) {
+  const cutAwaySegments = text.split('\n').map((line) => {
+    // We only support "Cut" (0)
+    const match = line.match(/^\s*([^\s]+)\s+([^\s]+)\s+0\s*$/);
+    if (!match) return undefined;
+    const start = parseFloat(match[1]);
+    const end = parseFloat(match[2]);
+    if (start < 0 || end < 0 || start >= end) throw new Error(i18n.t('Invalid start or end value. Must contain a number of seconds'));
+    return { start, end };
+  }).filter((it) => it);
+
+  if (cutAwaySegments.length === 0) throw new Error(i18n.t('Invalid EDL data found'));
+  const inverted = invertSegments(sortSegments(cutAwaySegments));
+  if (!inverted) throw new Error(i18n.t('Invalid EDL data found'));
+  return inverted;
 }
 
 export function parseCuesheet(cuesheet) {

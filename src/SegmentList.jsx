@@ -7,7 +7,7 @@ import Swal from 'sweetalert2';
 import { useTranslation } from 'react-i18next';
 
 import { saveColor } from './colors';
-import { getSegColors } from './util';
+import { getSegColors } from './util/colors';
 
 const buttonBaseStyle = {
   margin: '0 3px', borderRadius: 3, color: 'white', cursor: 'pointer',

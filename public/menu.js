@@ -45,6 +45,12 @@ module.exports = (app, mainWindow, newVersion) => {
           label: 'Import project',
           submenu: [
             {
+              label: 'EDL (MPlayer)',
+              click() {
+                mainWindow.webContents.send('importEdlFile', 'mplayer');
+              },
+            },
+            {
               label: 'Text chapters / YouTube',
               click() {
                 mainWindow.webContents.send('importEdlFile', 'youtube');
