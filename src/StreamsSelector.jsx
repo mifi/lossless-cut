@@ -198,17 +198,17 @@ const Stream = memo(({ filePath, stream, onToggle, copyStream, fileDuration, set
 
   return (
     <tr style={{ opacity: copyStream ? undefined : 0.4 }}>
-      <td>
+      <td style={{ whiteSpace: 'nowrap' }} title={t('Click to toggle track inclusion when exporting')}>
         {stream.index}
         <Icon size={20} style={{ padding: '0px 5px 0px 10px', cursor: 'pointer', verticalAlign: 'bottom' }} role="button" onClick={onClick} />
       </td>
       <td>{stream.codec_type}</td>
       <td>{stream.codec_tag !== '0x0000' && stream.codec_tag_string}</td>
-      <td>{stream.codec_name}</td>
-      <td>{!Number.isNaN(duration) && `${formatDuration({ seconds: duration })}`}</td>
+      <td style={{ maxWidth: '3em', overflow: 'hidden' }} title={stream.codec_name}>{stream.codec_name}</td>
+      <td>{!Number.isNaN(duration) && `${formatDuration({ seconds: duration, shorten: true })}`}</td>
       <td>{stream.nb_frames}</td>
-      <td>{!Number.isNaN(bitrate) && `${(bitrate / 1e6).toFixed(1)}MBit/s`}</td>
-      <td style={{ maxWidth: '2.5em', overflow: 'hidden' }}>{language}</td>
+      <td>{!Number.isNaN(bitrate) && `${(bitrate / 1e6).toFixed(1)}MBit`}</td>
+      <td style={{ maxWidth: '2.5em', overflow: 'hidden' }} title={language}>{language}</td>
       <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
       <td>
         <FaInfoCircle role="button" onClick={() => onInfoClick(stream, t('Track info'))} size={22} />
