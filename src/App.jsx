@@ -553,7 +553,10 @@ const App = memo(() => {
   const increaseRotation = useCallback(() => {
     setRotation((r) => (r + 90) % 450);
     setHideCanvasPreview(false);
-  }, []);
+    // Matroska is known not to work, so we warn user. See https://github.com/mifi/lossless-cut/discussions/661
+    const supportsRotation = !['matroska', 'webm'].includes(fileFormat);
+    if (!supportsRotation && !hideAllNotifications) toast.fire({ text: i18n.t('Lossless rotation might not work with this file format. You may try changing to MP4') });
+  }, [hideAllNotifications, fileFormat]);
 
   const assureOutDirAccess = useCallback(async (outFilePath) => {
     // Reset if doesn't exist anymore
