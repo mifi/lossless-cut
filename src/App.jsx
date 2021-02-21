@@ -1144,6 +1144,9 @@ const App = memo(() => {
     const validEdl = edl.filter((row) => (
       (row.start === undefined || row.end === undefined || row.start < row.end)
       && (row.start === undefined || row.start >= 0)
+      // TODO: Cannot do this because duration is not yet set when loading a file
+      // && (row.start === undefined || (row.start >= 0 && row.start < duration))
+      // && (row.end === undefined || row.end < duration)
     ));
 
     if (validEdl.length === 0) throw new Error(i18n.t('No valid segments found'));
@@ -1431,6 +1434,22 @@ const App = memo(() => {
     electron.ipcRenderer.send('setAskBeforeClose', askBeforeClose && isFileOpened);
   }, [askBeforeClose, isFileOpened]);
 
+  const extractSingleStream = useCallback(async (index) => {
+    if (!filePath || working) return;
+
+    try {
+      // setStreamsSelectorShown(false);
+      setWorking(i18n.t('Extracting track'));
+      await extractStreams({ customOutDir, filePath, streams: mainStreams.filter((s) => s.index === index) });
+      openDirToast({ dirPath: outputDir, text: i18n.t('Track has been extracted') });
+    } catch (err) {
+      errorToast(i18n.t('Failed to extract track'));
+      console.error('Failed to extract track', err);
+    } finally {
+      setWorking();
+    }
+  }, [customOutDir, filePath, mainStreams, outputDir, working]);
+
   const extractAllStreams = useCallback(async () => {
     if (!filePath) return;
 
@@ -1448,10 +1467,6 @@ const App = memo(() => {
       setWorking();
     }
   }, [customOutDir, filePath, mainStreams, outputDir]);
-
-  function onExtractAllStreamsPress() {
-    extractAllStreams();
-  }
 
   const addStreamSourceFile = useCallback(async (path) => {
     if (externalStreamFiles[path]) return;
@@ -2022,7 +2037,8 @@ const App = memo(() => {
             isCopyingStreamId={isCopyingStreamId}
             toggleCopyStreamId={toggleCopyStreamId}
             setCopyStreamIdsForPath={setCopyStreamIdsForPath}
-            onExtractAllStreamsPress={onExtractAllStreamsPress}
+            onExtractAllStreamsPress={extractAllStreams}
+            onExtractStreamPress={extractSingleStream}
             areWeCutting={areWeCutting}
             shortestFlag={shortestFlag}
             setShortestFlag={setShortestFlag}

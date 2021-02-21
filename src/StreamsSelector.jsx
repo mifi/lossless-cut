@@ -173,7 +173,7 @@ function onInfoClick(s, title) {
   });
 }
 
-const Stream = memo(({ filePath, stream, onToggle, copyStream, fileDuration, setEditingStream }) => {
+const Stream = memo(({ filePath, stream, onToggle, copyStream, fileDuration, setEditingStream, onExtractStreamPress }) => {
   const { t } = useTranslation();
 
   const bitrate = parseInt(stream.bit_rate, 10);
@@ -213,6 +213,7 @@ const Stream = memo(({ filePath, stream, onToggle, copyStream, fileDuration, set
       <td>
         <FaInfoCircle role="button" onClick={() => onInfoClick(stream, t('Track info'))} size={22} />
         <FiEdit title={t('Edit track metadata')} role="button" size={20} style={{ padding: '0 5px' }} onClick={() => setEditingStream({ streamId: stream.index, path: filePath })} />
+        <FaFileExport title={t('Extract this track as file')} role="button" onClick={onExtractStreamPress} size={18} />
       </td>
     </tr>
   );
@@ -256,7 +257,7 @@ const fileStyle = { marginBottom: 10, backgroundColor: 'rgba(0,0,0,0.04)', paddi
 
 const StreamsSelector = memo(({
   mainFilePath, mainFileFormatData, streams: mainFileStreams, isCopyingStreamId, toggleCopyStreamId,
-  setCopyStreamIdsForPath, onExtractAllStreamsPress, externalFiles, setExternalFiles,
+  setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, externalFiles, setExternalFiles,
   showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams,
   AutoExportToggler, customTagsByFile, setCustomTagsByFile, customTagsByStreamId, setCustomTagsByStreamId,
 }) => {
@@ -303,6 +304,7 @@ const StreamsSelector = memo(({
                   onToggle={(streamId) => toggleCopyStreamId(mainFilePath, streamId)}
                   setEditingStream={setEditingStream}
                   fileDuration={getFormatDuration(mainFileFormatData)}
+                  onExtractStreamPress={() => onExtractStreamPress(stream.index)}
                 />
               ))}
             </tbody>
