@@ -40,6 +40,7 @@ const Settings = memo(({
     // sr: 'Cрпски',
     tr: 'Türkçe',
     zh: '中文',
+    ko: '한국어',
   };
 
   return (
