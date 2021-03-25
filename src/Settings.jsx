@@ -4,12 +4,12 @@ import { useTranslation } from 'react-i18next';
 
 
 const Settings = memo(({
-  changeOutDir, customOutDir, autoMerge, setAutoMerge, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments,
+  changeOutDir, customOutDir, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments,
   autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose,
   AutoExportToggler, renderCaptureFormatButton, onTunerRequested, language, setLanguage,
   invertTimelineScroll, setInvertTimelineScroll, ffmpegExperimental, setFfmpegExperimental,
   enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction,
-  hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments,
+  hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode,
   enableTransferTimestamps, setEnableTransferTimestamps,
 }) => {
   const { t } = useTranslation();
@@ -64,28 +64,6 @@ const Settings = memo(({
             {customOutDir ? t('Custom working directory') : t('Same directory as input file')}
           </Button>
           <div>{customOutDir}</div>
-        </Table.TextCell>
-      </Row>
-
-      <Row>
-        <KeyCell>{t('Auto merge segments to one file during export or export to separate files?')}</KeyCell>
-        <Table.TextCell>
-          <SegmentedControl
-            options={[{ label: t('Auto merge'), value: 'automerge' }, { label: t('Separate'), value: 'separate' }]}
-            value={autoMerge ? 'automerge' : 'separate'}
-            onChange={value => setAutoMerge(value === 'automerge')}
-          />
-        </Table.TextCell>
-      </Row>
-
-      <Row>
-        <KeyCell>{t('Auto delete segment files after merge?')}</KeyCell>
-        <Table.TextCell>
-          <Checkbox
-            label={t('Auto delete segments')}
-            checked={autoDeleteMergedSegments}
-            onChange={e => setAutoDeleteMergedSegments(e.target.checked)}
-          />
         </Table.TextCell>
       </Row>
 

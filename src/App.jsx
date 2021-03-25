@@ -1909,8 +1909,6 @@ const App = memo(() => {
     <Settings
       changeOutDir={changeOutDir}
       customOutDir={customOutDir}
-      autoMerge={autoMerge}
-      setAutoMerge={setAutoMerge}
       keyframeCut={keyframeCut}
       setKeyframeCut={setKeyframeCut}
       invertCutSegments={invertCutSegments}
@@ -1935,8 +1933,6 @@ const App = memo(() => {
       setHideNotifications={setHideNotifications}
       autoLoadTimecode={autoLoadTimecode}
       setAutoLoadTimecode={setAutoLoadTimecode}
-      autoDeleteMergedSegments={autoDeleteMergedSegments}
-      setAutoDeleteMergedSegments={setAutoDeleteMergedSegments}
       enableTransferTimestamps={enableTransferTimestamps}
       setEnableTransferTimestamps={setEnableTransferTimestamps}
 
@@ -1944,7 +1940,7 @@ const App = memo(() => {
       renderCaptureFormatButton={renderCaptureFormatButton}
       onTunerRequested={onTunerRequested}
     />
-  ), [changeOutDir, customOutDir, autoMerge, setAutoMerge, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments, autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, ffmpegExperimental, setFfmpegExperimental, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, AutoExportToggler, renderCaptureFormatButton, onTunerRequested, enableTransferTimestamps, setEnableTransferTimestamps]);
+  ), [changeOutDir, customOutDir, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments, autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, ffmpegExperimental, setFfmpegExperimental, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, AutoExportToggler, renderCaptureFormatButton, onTunerRequested, enableTransferTimestamps, setEnableTransferTimestamps]);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);
