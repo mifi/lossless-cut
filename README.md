@@ -6,7 +6,7 @@
   The swiss army knife of lossless video/audio editing
 	<br>
   <img src="https://github.com/mifi/lossless-cut/workflows/Build/release/badge.svg" />
-  <a href="https://paypal.me/mifino"><img src="https://img.shields.io/badge/Donate-PayPal-green.svg" /></a>
+  <a href="https://paypal.me/mifino/usd"><img src="https://img.shields.io/badge/Donate-PayPal-green.svg" /></a>
 	<br>
 	<br>
   <a href="https://mifi.no/thanks/">Thanks to all my supporters</a>
@@ -171,7 +171,7 @@ See the [developer notes](developer-notes.md).
 
 This project is maintained by me alone. The project will always remain free and open source, but if it's useful for you, consider supporting me. :) It will give me extra motivation to improve it. Or even better [donate to ffmpeg](https://www.ffmpeg.org/donations.html) because they are doing the world a big favor 🙏
 
-[Paypal](https://paypal.me/mifino)
+[Paypal](https://paypal.me/mifino/usd)
 
 ## Attributions
 - App icon made by [Dimi Kazak](http://www.flaticon.com/authors/dimi-kazak "Dimi Kazak") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0")
