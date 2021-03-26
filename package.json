@@ -16,6 +16,8 @@
     "lint": "eslint --ext .jsx --ext .js .",
     "pack-mac": "electron-builder --mac",
     "prepack-mac": "yarn build",
+    "pack-mas-dev": "electron-builder --mac -m mas-dev -c.mas.provisioningProfile=LosslessCut_Dev.provisionprofile",
+    "prepack-mas-dev": "yarn build",
     "pack-win": "electron-builder --win",
     "prepack-win": "yarn build",
     "postinstall": "patch-package && electron-builder install-app-deps",
