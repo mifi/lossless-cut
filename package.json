@@ -14,7 +14,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint --ext .jsx --ext .js .",
-    "pack-mac": "electron-builder --mac",
+    "pack-mac": "electron-builder --mac -m dmg",
     "prepack-mac": "yarn build",
     "pack-mas-dev": "electron-builder --mac -m mas-dev -c.mas.provisioningProfile=LosslessCut_Dev.provisionprofile",
     "prepack-mas-dev": "yarn build",
@@ -44,7 +44,7 @@
     "csv-parse": "^4.8.5",
     "csv-stringify": "^5.3.6",
     "electron": "8",
-    "electron-builder": "^22.9.1",
+    "electron-builder": "^22.10.5",
     "electron-builder-notarize": "^1.1.2",
     "electron-devtools-installer": "^2.2.4",
     "eslint": "^5.16.0 || ^6.1.0",
@@ -264,9 +264,9 @@
       "entitlementsInherit": "entitlements.mas.inherit.plist",
       "provisioningProfile": "LosslessCut_Mac_App_Store_provisioning_profile.provisionprofile",
       "binaries": [
-        "dist/mas/LosslessCut.app/Contents/Resources/ffmpeg",
-        "dist/mas/LosslessCut.app/Contents/Resources/ffprobe",
-        "dist/mas/LosslessCut.app/Contents/Resources/app.asar.unpacked/node_modules/trash/lib/macos-trash"
+        "Resources/ffmpeg",
+        "Resources/ffprobe",
+        "Resources/app.asar.unpacked/node_modules/trash/lib/macos-trash"
       ]
     },
     "win": {
