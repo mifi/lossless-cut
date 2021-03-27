@@ -11,7 +11,7 @@ import { withBlur } from './util';
 const TopMenu = memo(({
   filePath, copyAnyAudioTrack, toggleStripAudio, customOutDir, changeOutDir,
   renderOutFmt, toggleHelp, numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown, toggleSettings,
-  outSegments, autoMerge, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments,
+  enabledOutSegments, autoMerge, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments,
 }) => {
   const { t } = useTranslation();
 
@@ -47,7 +47,7 @@ const TopMenu = memo(({
 
       {filePath && renderOutFmt({ height: 20, maxWidth: 100 })}
 
-      {filePath && <MergeExportButton autoMerge={autoMerge} outSegments={outSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} />}
+      {filePath && <MergeExportButton autoMerge={autoMerge} enabledOutSegments={enabledOutSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} />}
 
       <IoIosHelpCircle size={24} role="button" onClick={toggleHelp} style={{ verticalAlign: 'middle', marginLeft: 5 }} />
       <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ verticalAlign: 'middle', marginLeft: 5 }} />

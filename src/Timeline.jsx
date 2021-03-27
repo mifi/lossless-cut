@@ -249,7 +249,7 @@ const Timeline = memo(({
               );
             })}
 
-            {inverseCutSegments && inverseCutSegments.map((seg) => (
+            {inverseCutSegments.map((seg) => (
               <InverseCutSegment
                 // eslint-disable-next-line react/no-array-index-key
                 key={`${seg.start},${seg.end}`}

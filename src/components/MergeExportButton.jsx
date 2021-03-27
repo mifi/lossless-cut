@@ -6,7 +6,7 @@ import { MdCallSplit, MdCallMerge } from 'react-icons/md';
 import { withBlur } from '../util';
 
 
-const MergeExportButton = memo(({ autoMerge, outSegments, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments }) => {
+const MergeExportButton = memo(({ autoMerge, enabledOutSegments, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments }) => {
   const { t } = useTranslation();
 
   let AutoMergeIcon;
@@ -52,7 +52,7 @@ const MergeExportButton = memo(({ autoMerge, outSegments, setAutoMerge, autoDele
   return (
     <Button
       height={20}
-      style={{ opacity: outSegments && outSegments.length < 2 ? 0.4 : undefined }}
+      style={{ opacity: enabledOutSegments && enabledOutSegments.length < 2 ? 0.4 : undefined }}
       title={description}
       onClick={withBlur(onClick)}
     >

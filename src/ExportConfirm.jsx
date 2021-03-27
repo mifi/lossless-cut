@@ -4,7 +4,6 @@ import { Button, Select } from 'evergreen-ui';
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
 import { IoIosHelpCircle } from 'react-icons/io';
-import { FiScissors } from 'react-icons/fi';
 
 import KeyframeCutButton from './components/KeyframeCutButton';
 import ExportButton from './components/ExportButton';
@@ -16,7 +15,6 @@ import OutSegTemplateEditor from './components/OutSegTemplateEditor';
 import HighlightedText from './components/HighlightedText';
 
 import { withBlur, toast } from './util';
-import { getSegColors } from './util/colors';
 import { isMov as ffmpegIsMov } from './ffmpeg';
 
 const sheetStyle = {
@@ -41,9 +39,9 @@ const warningStyle = { color: '#faa', fontSize: '80%' };
 const HelpIcon = ({ onClick }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', verticalAlign: 'middle', marginLeft: 5 }} />;
 
 const ExportConfirm = memo(({
-  autoMerge, areWeCutting, outSegments, visible, onClosePress, onExportConfirm, keyframeCut, toggleKeyframeCut,
+  autoMerge, areWeCutting, enabledOutSegments, visible, onClosePress, onExportConfirm, keyframeCut, toggleKeyframeCut,
   setAutoMerge, renderOutFmt, preserveMovData, togglePreserveMovData, movFastStart, toggleMovFastStart, avoidNegativeTs, setAvoidNegativeTs,
-  changeOutDir, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, currentSegIndex, invertCutSegments,
+  changeOutDir, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown,
   exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, outFormat,
   preserveMetadataOnMerge, togglePreserveMetadataOnMerge, outSegTemplate, setOutSegTemplate, generateOutSegFileNames,
   filePath, currentSegIndexSafe, isOutSegFileNamesValid, autoDeleteMergedSegments, setAutoDeleteMergedSegments,
@@ -96,11 +94,6 @@ const ExportConfirm = memo(({
     toast.fire({ icon: 'info', timer: 10000, text: `${avoidNegativeTs}: ${texts[avoidNegativeTs]}` });
   }
 
-  function getCurrentSegColor() {
-    const { segBgColor } = getSegColors(outSegments[currentSegIndex]);
-    return segBgColor;
-  }
-
   const outSegTemplateHelpIcon = <HelpIcon onClick={onOutSegTemplateHelpPress} />;
 
   // https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container
@@ -119,7 +112,7 @@ const ExportConfirm = memo(({
               <div style={boxStyle}>
                 <h2 style={{ marginTop: 0 }}>{t('Export options')}</h2>
                 <ul>
-                  {outSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: outSegments.length })} <MergeExportButton autoMerge={autoMerge} outSegments={outSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} /></li>}
+                  {enabledOutSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: enabledOutSegments.length })} <MergeExportButton autoMerge={autoMerge} enabledOutSegments={enabledOutSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} /></li>}
                   <li>
                     {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
                     <HelpIcon onClick={onOutFmtHelpPress} />
@@ -131,7 +124,7 @@ const ExportConfirm = memo(({
                   <li>
                     {t('Save output to path:')} <span role="button" onClick={changeOutDir} style={outDirStyle}>{outputDir}</span>
                   </li>
-                  {(outSegments.length === 1 || !autoMerge) && (
+                  {(enabledOutSegments.length === 1 || !autoMerge) && (
                     <li>
                       <OutSegTemplateEditor filePath={filePath} helpIcon={outSegTemplateHelpIcon} outSegTemplate={outSegTemplate} setOutSegTemplate={setOutSegTemplate} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} isOutSegFileNamesValid={isOutSegFileNamesValid} />
                     </li>
@@ -140,7 +133,7 @@ const ExportConfirm = memo(({
 
                 <h3>{t('Advanced options')}</h3>
 
-                {autoMerge && outSegments.length >= 2 && (
+                {autoMerge && enabledOutSegments.length >= 2 && (
                   <ul>
                     <li>
                       {t('Create chapters from merged segments? (slow)')} <Button height={20} onClick={toggleSegmentsToChapters}>{segmentsToChapters ? t('Yes') : t('No')}</Button>
@@ -196,19 +189,12 @@ const ExportConfirm = memo(({
               transition={{ duration: 0.4, easings: ['easeOut'] }}
               style={{ display: 'flex', alignItems: 'flex-end' }}
             >
-              <Button iconBefore="arrow-left" height={24} onClick={onClosePress} style={{ marginRight: 10 }}>
+              <Button appearance="minimal" iconBefore="arrow-left" height={24} onClick={onClosePress} style={{ marginRight: 10, color: 'white' }}>
                 {i18n.t('Back')}
               </Button>
 
               <ToggleExportConfirm exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />
               <div style={{ fontSize: 13, marginLeft: 3, marginRight: 7, maxWidth: 120, lineHeight: '100%', color: exportConfirmEnabled ? 'white' : 'rgba(255,255,255,0.3)', cursor: 'pointer' }} role="button" onClick={toggleExportConfirmEnabled}>{t('Show this page before exporting?')}</div>
-
-              {outSegments.length > 1 && !invertCutSegments && (
-                <div role="button" title={t('Export only the currently selected segment ({{segNum}})', { segNum: currentSegIndex + 1 })} onClick={() => onExportConfirm({ exportSingle: true })} style={{ cursor: 'pointer', background: getCurrentSegColor(), borderRadius: 5, padding: '3px 10px', fontSize: 13, marginRight: 10 }}>
-                  <FiScissors style={{ verticalAlign: 'middle', marginRight: 6 }} size={16} />
-                  {t('Export seg {{segNum}}', { segNum: currentSegIndex + 1 })}
-                </div>
-              )}
             </motion.div>
 
             <motion.div
@@ -218,7 +204,7 @@ const ExportConfirm = memo(({
               exit={{ scale: 0.5, opacity: 0 }}
               transition={{ duration: 0.4, easings: ['easeOut'] }}
             >
-              <ExportButton outSegments={outSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={() => onExportConfirm()} size={1.7} />
+              <ExportButton enabledOutSegments={enabledOutSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={() => onExportConfirm()} size={1.7} />
             </motion.div>
           </div>
         </>

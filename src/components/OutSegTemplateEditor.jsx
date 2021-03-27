@@ -63,7 +63,7 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
     <>
       <div>
         <span role="button" onClick={onToggleClick} style={{ cursor: 'pointer' }}>
-          {t('Output name(s):')} {outSegFileNames != null && <HighlightedText style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{outSegFileNames[currentSegIndexSafe]}</HighlightedText>}
+          {t('Output name(s):')} {outSegFileNames != null && <HighlightedText style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{outSegFileNames[currentSegIndexSafe] || outSegFileNames[0]}</HighlightedText>}
         </span>
         {helpIcon}
       </div>

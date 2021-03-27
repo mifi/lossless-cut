@@ -12,7 +12,7 @@ import ToggleExportConfirm from './components/ToggleExportConfirm';
 
 const RightMenu = memo(({
   isRotationSet, rotation, areWeCutting, increaseRotation, cleanupFiles, renderCaptureFormatButton,
-  capture, onExportPress, outSegments, hasVideo, autoMerge, exportConfirmEnabled, toggleExportConfirmEnabled,
+  capture, onExportPress, enabledOutSegments, hasVideo, autoMerge, exportConfirmEnabled, toggleExportConfirmEnabled,
   simpleMode,
 }) => {
   const rotationStr = `${rotation}°`;
@@ -59,7 +59,7 @@ const RightMenu = memo(({
 
       {!simpleMode && <ToggleExportConfirm style={{ marginRight: 5 }} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />}
 
-      <ExportButton outSegments={outSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={onExportPress} />
+      <ExportButton enabledOutSegments={enabledOutSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={onExportPress} />
     </div>
   );
 });

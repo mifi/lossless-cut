@@ -1,10 +1,11 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo, useRef } from 'react';
 import prettyMs from 'pretty-ms';
-import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaArrowCircleUp, FaArrowCircleDown } from 'react-icons/fa';
+import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaArrowCircleUp, FaArrowCircleDown, FaCheck, FaTimes } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import { useTranslation } from 'react-i18next';
+import useContextMenu from './hooks/useContextMenu';
 
 import { saveColor } from './colors';
 import { getSegColors } from './util/colors';
@@ -16,8 +17,34 @@ const buttonBaseStyle = {
 const neutralButtonColor = 'rgba(255, 255, 255, 0.2)';
 
 
-const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, segOrderDecrease, segOrderIncrease, invertCutSegments, onClick }) => {
+const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onReorderPress, onLabelPress, enabled, onExportSingleSegmentClick, onExportSegmentEnabledToggle, onExportSegmentDisableAll, onExportSegmentEnableAll, jumpSegStart, jumpSegEnd, addCutSegment }) => {
   const { t } = useTranslation();
+
+  const ref = useRef();
+
+  useContextMenu(ref, invertCutSegments ? [] : [
+    { label: t('Jump to cut start'), click: jumpSegStart },
+    { label: t('Jump to cut end'), click: jumpSegEnd },
+
+    { type: 'separator' },
+
+    { label: t('Add segment'), click: addCutSegment },
+    { label: t('Label segment'), click: onLabelPress },
+    { label: t('Remove segment'), click: onRemovePress },
+
+    { type: 'separator' },
+
+    { label: t('Change segment order'), click: onReorderPress },
+    { label: t('Increase segment order'), click: () => updateOrder(1) },
+    { label: t('Decrease segment order'), click: () => updateOrder(-1) },
+
+    { type: 'separator' },
+
+    { label: t('Include ONLY this segment in export'), click: () => onExportSingleSegmentClick(seg) },
+    { label: enabled ? t('Exclude this segment from export') : t('Include this segment in export'), click: () => onExportSegmentEnabledToggle(seg) },
+    { label: t('Include all segments in export'), click: () => onExportSegmentEnableAll(seg) },
+    { label: t('Exclude all segments from export'), click: () => onExportSegmentDisableAll(seg) },
+  ]);
 
   const duration = seg.end - seg.start;
   const durationMs = duration * 1000;
@@ -27,28 +54,46 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
   function renderNumber() {
     if (invertCutSegments) return <FaSave style={{ color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
 
-    const {
-      segBgColor, segBorderColor,
-    } = getSegColors(seg);
+    const { segBgColor, segBorderColor } = getSegColors(seg);
 
-    return <b style={{ color: 'white', padding: '0 3px', marginRight: 5, background: segBgColor, border: `1px solid ${isActive ? segBorderColor : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
+    return <b style={{ color: 'white', padding: '0 4px', marginRight: 3, background: segBgColor, border: `1px solid ${isActive ? segBorderColor : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
   }
 
-  const timeStr = `${formatTimecode(seg.start)} - ${formatTimecode(seg.end)}`;
+  const timeStr = useMemo(() => `${formatTimecode(seg.start)} - ${formatTimecode(seg.end)}`, [seg.start, seg.end, formatTimecode]);
+
+  function onSegOrderDecreasePress(e) {
+    updateOrder(-1);
+    e.stopPropagation();
+  }
+  function onSegOrderIncreasePress(e) {
+    updateOrder(1);
+    e.stopPropagation();
+  }
+
+  function onDoubleClick() {
+    if (invertCutSegments) return;
+    if (!enabled) {
+      onExportSegmentEnabledToggle(seg);
+      return;
+    }
+    jumpSegStart();
+  }
 
   return (
     <motion.div
+      ref={ref}
       role="button"
       onClick={() => !invertCutSegments && onClick(index)}
+      onDoubleClick={onDoubleClick}
       positionTransition
-      style={{ originY: 0, margin: '5px 0', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5, position: 'relative' }}
+      style={{ originY: 0, margin: '5px 0', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5, position: 'relative', opacity: !enabled && !invertCutSegments ? 0.5 : undefined }}
       initial={{ scaleY: 0 }}
       animate={{ scaleY: 1 }}
       exit={{ scaleY: 0 }}
     >
-      <div style={{ fontSize: 310 / timeStr.length, whiteSpace: 'nowrap', color: 'white', marginBottom: 3 }}>
+      <div style={{ color: 'white', marginBottom: 3, display: 'flex', alignItems: 'center', height: 16 }}>
         {renderNumber()}
-        <span>{timeStr}</span>
+        <span style={{ fontSize: 310 / timeStr.length, whiteSpace: 'nowrap' }}>{timeStr}</span>
       </div>
       <div style={{ fontSize: 12, color: 'white' }}>{seg.name}</div>
       <div style={{ fontSize: 13 }}>
@@ -60,9 +105,14 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 
       {isActive && (
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} style={{ position: 'absolute', right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}>
-          <FaArrowCircleUp size={20} role="button" onClick={segOrderDecrease} />
-          <FaArrowCircleDown size={20} role="button" onClick={segOrderIncrease} />
+          <FaArrowCircleUp size={20} role="button" onClick={onSegOrderDecreasePress} />
+          <FaArrowCircleDown size={20} role="button" onClick={onSegOrderIncreasePress} />
         </motion.div>
+      )}
+      {!enabled && !invertCutSegments && (
+        <div style={{ position: 'absolute', pointerEvents: 'none', top: 0, right: 0, bottom: 0, left: 0, overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <FaTimes style={{ fontSize: 100, color: 'rgba(255,0,0,0.8)' }} />
+        </div>
       )}
     </motion.div>
   );
@@ -71,23 +121,26 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 const SegmentList = memo(({
   formatTimecode, cutSegments, outSegments, getFrameCount, onSegClick,
   currentSegIndex, invertCutSegments,
-  updateCurrentSegOrder, addCutSegment, removeCutSegment,
+  updateSegOrder, addCutSegment, removeCutSegment,
   onLabelSegmentPress, currentCutSeg, segmentAtCursor, toggleSideBar, splitCurrentSegment,
+  enabledOutSegments, enabledOutSegmentsRaw, onExportSingleSegmentClick, onExportSegmentEnabledToggle, onExportSegmentDisableAll, onExportSegmentEnableAll,
+  jumpSegStart, jumpSegEnd, simpleMode,
 }) => {
   const { t } = useTranslation();
 
   let headerText = t('Segments to export:');
+  if (outSegments.length === 0) {
+    if (invertCutSegments) headerText = t('Make sure you have no overlapping segments.');
+    else headerText = t('No segments to export.');
+  }
 
-  if (!outSegments && invertCutSegments) headerText = t('Make sure you have no overlapping segments.');
-  else if (!outSegments || outSegments.length === 0) headerText = t('No segments to export.');
-
-  async function onReorderSegsPress() {
+  async function onReorderSegsPress(index) {
     if (cutSegments.length < 2) return;
     const { value } = await Swal.fire({
-      title: `${t('Change order of segment')} ${currentSegIndex + 1}`,
+      title: `${t('Change order of segment')} ${index + 1}`,
       text: `Please enter a number from 1 to ${cutSegments.length} to be the new order for the current segment`,
       input: 'text',
-      inputValue: currentSegIndex + 1,
+      inputValue: index + 1,
       showCancelButton: true,
       inputValidator: (v) => {
         const parsed = parseInt(v, 10);
@@ -97,28 +150,26 @@ const SegmentList = memo(({
 
     if (value) {
       const newOrder = parseInt(value, 10);
-      updateCurrentSegOrder(newOrder - 1);
+      updateSegOrder(index, newOrder - 1);
     }
-  }
-
-  function segOrderDecrease(e) {
-    updateCurrentSegOrder(currentSegIndex - 1);
-    e.stopPropagation();
-  }
-  function segOrderIncrease(e) {
-    updateCurrentSegOrder(currentSegIndex + 1);
-    e.stopPropagation();
   }
 
   const renderFooter = () => {
     const { segActiveBgColor: currentSegActiveBgColor } = getSegColors(currentCutSeg);
     const { segActiveBgColor: segmentAtCursorActiveBgColor } = getSegColors(segmentAtCursor);
 
+    function renderExportEnabledCheckBox() {
+      const segmentExportEnabled = currentCutSeg && enabledOutSegmentsRaw.some((s) => s.uuid === currentCutSeg.uuid);
+      const Icon = segmentExportEnabled ? FaCheck : FaTimes;
+
+      return <Icon size={24} title={segmentExportEnabled ? t('Include this segment in export') : t('Exclude this segment from export')} style={{ ...buttonBaseStyle, backgroundColor: currentSegActiveBgColor }} role="button" onClick={() => onExportSegmentEnabledToggle(currentCutSeg)} />;
+    }
+
     return (
       <>
         <div style={{ display: 'flex', padding: '5px 0', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid grey' }}>
           <FaPlus
-            size={30}
+            size={24}
             style={{ ...buttonBaseStyle, background: neutralButtonColor }}
             role="button"
             title={t('Add segment')}
@@ -126,31 +177,37 @@ const SegmentList = memo(({
           />
 
           <FaMinus
-            size={30}
+            size={24}
             style={{ ...buttonBaseStyle, background: cutSegments.length >= 2 ? currentSegActiveBgColor : neutralButtonColor }}
             role="button"
-            title={`${t('Delete current segment')} ${currentSegIndex + 1}`}
-            onClick={removeCutSegment}
+            title={`${t('Remove segment')} ${currentSegIndex + 1}`}
+            onClick={() => removeCutSegment(currentSegIndex)}
           />
 
-          <FaSortNumericDown
-            size={20}
-            title={t('Change segment order')}
-            role="button"
-            style={{ ...buttonBaseStyle, padding: 4, background: currentSegActiveBgColor }}
-            onClick={onReorderSegsPress}
-          />
+          {!invertCutSegments && !simpleMode && (
+            <>
+              <FaSortNumericDown
+                size={16}
+                title={t('Change segment order')}
+                role="button"
+                style={{ ...buttonBaseStyle, padding: 4, background: currentSegActiveBgColor }}
+                onClick={() => onReorderSegsPress(currentSegIndex)}
+              />
 
-          <FaTag
-            size={20}
-            title={t('Label segment')}
-            role="button"
-            style={{ ...buttonBaseStyle, padding: 4, background: currentSegActiveBgColor }}
-            onClick={onLabelSegmentPress}
-          />
+              <FaTag
+                size={16}
+                title={t('Label segment')}
+                role="button"
+                style={{ ...buttonBaseStyle, padding: 4, background: currentSegActiveBgColor }}
+                onClick={() => onLabelSegmentPress(currentSegIndex)}
+              />
+
+              {renderExportEnabledCheckBox()}
+            </>
+          )}
 
           <AiOutlineSplitCells
-            size={20}
+            size={16}
             title={t('Split segment at cursor')}
             role="button"
             style={{ ...buttonBaseStyle, padding: 4, background: segmentAtCursor ? segmentAtCursorActiveBgColor : neutralButtonColor }}
@@ -158,9 +215,9 @@ const SegmentList = memo(({
           />
         </div>
 
-        <div style={{ padding: 10, boxSizing: 'border-box', borderBottom: '1px solid grey', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+        <div style={{ padding: '5px 10px', boxSizing: 'border-box', borderBottom: '1px solid grey', borderTop: '1px solid grey', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
           <div>{t('Segments total:')}</div>
-          <div>{formatTimecode(outSegments.reduce((acc, { start, end }) => (end - start) + acc, 0))}</div>
+          <div>{formatTimecode(enabledOutSegments.reduce((acc, { start, end }) => (end - start) + acc, 0))}</div>
         </div>
       </>
     );
@@ -181,13 +238,37 @@ const SegmentList = memo(({
           {headerText}
         </div>
 
-        {outSegments && outSegments.map((seg, index) => {
+        {outSegments.map((seg, index) => {
           const id = seg.uuid || `${seg.start}`;
-          return <Segment key={id} seg={seg} index={index} onClick={onSegClick} getFrameCount={getFrameCount} formatTimecode={formatTimecode} currentSegIndex={currentSegIndex} segOrderDecrease={segOrderDecrease} segOrderIncrease={segOrderIncrease} invertCutSegments={invertCutSegments} />;
+          const enabled = !invertCutSegments && enabledOutSegmentsRaw.includes(seg);
+          return (
+            <Segment
+              key={id}
+              seg={seg}
+              index={index}
+              enabled={enabled}
+              onClick={onSegClick}
+              addCutSegment={addCutSegment}
+              onRemovePress={() => removeCutSegment(index)}
+              onReorderPress={() => onReorderSegsPress(index)}
+              onLabelPress={() => onLabelSegmentPress(index)}
+              jumpSegStart={() => jumpSegStart(index)}
+              jumpSegEnd={() => jumpSegEnd(index)}
+              updateOrder={(dir) => updateSegOrder(index, index + dir)}
+              getFrameCount={getFrameCount}
+              formatTimecode={formatTimecode}
+              currentSegIndex={currentSegIndex}
+              invertCutSegments={invertCutSegments}
+              onExportSingleSegmentClick={onExportSingleSegmentClick}
+              onExportSegmentEnabledToggle={onExportSegmentEnabledToggle}
+              onExportSegmentDisableAll={onExportSegmentDisableAll}
+              onExportSegmentEnableAll={onExportSegmentEnableAll}
+            />
+          );
         })}
       </div>
 
-      {outSegments && renderFooter()}
+      {outSegments.length > 0 && renderFooter()}
     </>
   );
 });
