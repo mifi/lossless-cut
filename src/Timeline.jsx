@@ -233,7 +233,7 @@ const Timeline = memo(({
 
               return (
                 <TimelineSeg
-                  key={seg.uuid}
+                  key={seg.segId}
                   segNum={i}
                   segBgColor={segBgColor}
                   segActiveBgColor={segActiveBgColor}

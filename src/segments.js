@@ -8,7 +8,7 @@ export const createSegment = ({ start, end, name } = {}) => ({
   end,
   name: name || '',
   color: generateColor(),
-  uuid: uuid.v4(),
+  segId: uuid.v4(),
 });
 
 export const createInitialCutSegments = () => [createSegment()];

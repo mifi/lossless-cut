@@ -1,12 +1,16 @@
 import React, { memo, useMemo, useRef } from 'react';
 import prettyMs from 'pretty-ms';
-import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaArrowCircleUp, FaArrowCircleDown, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaCheck, FaTimes } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import { useTranslation } from 'react-i18next';
-import useContextMenu from './hooks/useContextMenu';
+import { ReactSortable } from 'react-sortablejs';
+import isEqual from 'lodash/isEqual';
+import useDebounce from 'react-use/lib/useDebounce';
+import scrollIntoView from 'scroll-into-view-if-needed';
 
+import useContextMenu from './hooks/useContextMenu';
 import { saveColor } from './colors';
 import { getSegColors } from './util/colors';
 
@@ -51,6 +55,10 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 
   const isActive = !invertCutSegments && currentSegIndex === index;
 
+  useDebounce(() => {
+    if (isActive && ref.current) scrollIntoView(ref.current, { behavior: 'smooth', scrollMode: 'if-needed' });
+  }, 300, [isActive]);
+
   function renderNumber() {
     if (invertCutSegments) return <FaSave style={{ color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
 
@@ -60,15 +68,6 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
   }
 
   const timeStr = useMemo(() => `${formatTimecode(seg.start)} - ${formatTimecode(seg.end)}`, [seg.start, seg.end, formatTimecode]);
-
-  function onSegOrderDecreasePress(e) {
-    updateOrder(-1);
-    e.stopPropagation();
-  }
-  function onSegOrderIncreasePress(e) {
-    updateOrder(1);
-    e.stopPropagation();
-  }
 
   function onDoubleClick() {
     if (invertCutSegments) return;
@@ -103,12 +102,6 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
         ({Math.floor(durationMs)} ms, {getFrameCount(duration)} frames)
       </div>
 
-      {isActive && (
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} style={{ position: 'absolute', right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}>
-          <FaArrowCircleUp size={20} role="button" onClick={onSegOrderDecreasePress} />
-          <FaArrowCircleDown size={20} role="button" onClick={onSegOrderIncreasePress} />
-        </motion.div>
-      )}
       {!enabled && !invertCutSegments && (
         <div style={{ position: 'absolute', pointerEvents: 'none', top: 0, right: 0, bottom: 0, left: 0, overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <FaTimes style={{ fontSize: 100, color: 'rgba(255,0,0,0.8)' }} />
@@ -121,12 +114,19 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 const SegmentList = memo(({
   formatTimecode, cutSegments, outSegments, getFrameCount, onSegClick,
   currentSegIndex, invertCutSegments,
-  updateSegOrder, addCutSegment, removeCutSegment,
+  updateSegOrder, updateSegOrders, addCutSegment, removeCutSegment,
   onLabelSegmentPress, currentCutSeg, segmentAtCursor, toggleSideBar, splitCurrentSegment,
   enabledOutSegments, enabledOutSegmentsRaw, onExportSingleSegmentClick, onExportSegmentEnabledToggle, onExportSegmentDisableAll, onExportSegmentEnableAll,
   jumpSegStart, jumpSegEnd, simpleMode,
 }) => {
   const { t } = useTranslation();
+
+  const sortableList = outSegments.map((seg) => ({ id: seg.segId, seg }));
+
+  function setSortableList(newList) {
+    if (isEqual(outSegments.map((s) => s.segId), newList.map((l) => l.id))) return; // No change
+    updateSegOrders(newList.map((list) => list.id));
+  }
 
   let headerText = t('Segments to export:');
   if (outSegments.length === 0) {
@@ -154,12 +154,12 @@ const SegmentList = memo(({
     }
   }
 
-  const renderFooter = () => {
+  function renderFooter() {
     const { segActiveBgColor: currentSegActiveBgColor } = getSegColors(currentCutSeg);
     const { segActiveBgColor: segmentAtCursorActiveBgColor } = getSegColors(segmentAtCursor);
 
     function renderExportEnabledCheckBox() {
-      const segmentExportEnabled = currentCutSeg && enabledOutSegmentsRaw.some((s) => s.uuid === currentCutSeg.uuid);
+      const segmentExportEnabled = currentCutSeg && enabledOutSegmentsRaw.some((s) => s.segId === currentCutSeg.segId);
       const Icon = segmentExportEnabled ? FaCheck : FaTimes;
 
       return <Icon size={24} title={segmentExportEnabled ? t('Include this segment in export') : t('Exclude this segment from export')} style={{ ...buttonBaseStyle, backgroundColor: currentSegActiveBgColor }} role="button" onClick={() => onExportSegmentEnabledToggle(currentCutSeg)} />;
@@ -221,7 +221,7 @@ const SegmentList = memo(({
         </div>
       </>
     );
-  };
+  }
 
   return (
     <>
@@ -238,34 +238,35 @@ const SegmentList = memo(({
           {headerText}
         </div>
 
-        {outSegments.map((seg, index) => {
-          const id = seg.uuid || `${seg.start}`;
-          const enabled = !invertCutSegments && enabledOutSegmentsRaw.includes(seg);
-          return (
-            <Segment
-              key={id}
-              seg={seg}
-              index={index}
-              enabled={enabled}
-              onClick={onSegClick}
-              addCutSegment={addCutSegment}
-              onRemovePress={() => removeCutSegment(index)}
-              onReorderPress={() => onReorderSegsPress(index)}
-              onLabelPress={() => onLabelSegmentPress(index)}
-              jumpSegStart={() => jumpSegStart(index)}
-              jumpSegEnd={() => jumpSegEnd(index)}
-              updateOrder={(dir) => updateSegOrder(index, index + dir)}
-              getFrameCount={getFrameCount}
-              formatTimecode={formatTimecode}
-              currentSegIndex={currentSegIndex}
-              invertCutSegments={invertCutSegments}
-              onExportSingleSegmentClick={onExportSingleSegmentClick}
-              onExportSegmentEnabledToggle={onExportSegmentEnabledToggle}
-              onExportSegmentDisableAll={onExportSegmentDisableAll}
-              onExportSegmentEnableAll={onExportSegmentEnableAll}
-            />
-          );
-        })}
+        <ReactSortable list={sortableList} setList={setSortableList} sort={!invertCutSegments}>
+          {sortableList.map(({ id, seg }, index) => {
+            const enabled = !invertCutSegments && enabledOutSegmentsRaw.includes(seg);
+            return (
+              <Segment
+                key={id}
+                seg={seg}
+                index={index}
+                enabled={enabled}
+                onClick={onSegClick}
+                addCutSegment={addCutSegment}
+                onRemovePress={() => removeCutSegment(index)}
+                onReorderPress={() => onReorderSegsPress(index)}
+                onLabelPress={() => onLabelSegmentPress(index)}
+                jumpSegStart={() => jumpSegStart(index)}
+                jumpSegEnd={() => jumpSegEnd(index)}
+                updateOrder={(dir) => updateSegOrder(index, index + dir)}
+                getFrameCount={getFrameCount}
+                formatTimecode={formatTimecode}
+                currentSegIndex={currentSegIndex}
+                invertCutSegments={invertCutSegments}
+                onExportSingleSegmentClick={onExportSingleSegmentClick}
+                onExportSegmentEnabledToggle={onExportSegmentEnabledToggle}
+                onExportSegmentDisableAll={onExportSegmentDisableAll}
+                onExportSegmentEnableAll={onExportSegmentEnableAll}
+              />
+            );
+          })}
+        </ReactSortable>
       </div>
 
       {outSegments.length > 0 && renderFooter()}

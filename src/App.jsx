@@ -123,7 +123,7 @@ const App = memo(() => {
   const [thumbnails, setThumbnails] = useState([]);
   const [shortestFlag, setShortestFlag] = useState(false);
   const [zoomWindowStartTime, setZoomWindowStartTime] = useState(0);
-  const [enabledSegmentUuids, setSegmentsExportEnabled] = useState();
+  const [enabledSegmentIds, setSegmentIdsEnabled] = useState();
 
   const [keyframesEnabled, setKeyframesEnabled] = useState(true);
   const [waveformEnabled, setWaveformEnabled] = useState(false);
@@ -324,7 +324,8 @@ const App = memo(() => {
     function invertSegmentsSafe() {
       if (haveInvalidSegs || !isDurationValid(duration)) return undefined;
       if (!isDurationValid(duration)) return undefined;
-      return invertSegments(sortedCutSegments, duration);
+      const inverted = invertSegments(sortedCutSegments, duration);
+      return inverted.map((seg) => ({ ...seg, segId: `${seg.start}-${seg.end}` }));
     }
     return invertSegmentsSafe() || [];
   }, [duration, haveInvalidSegs, sortedCutSegments]);
@@ -362,6 +363,13 @@ const App = memo(() => {
     setCutSegments(newSegments);
     setCurrentSegIndex(newOrder);
   }, [cutSegments, setCutSegments]);
+
+  const updateSegOrders = useCallback((newOrders) => {
+    const newSegments = sortBy(cutSegments, (seg) => newOrders.indexOf(seg.segId));
+    const newCurrentSegIndex = newOrders.indexOf(currentCutSeg.segId);
+    setCutSegments(newSegments);
+    if (newCurrentSegIndex >= 0 && newCurrentSegIndex < newSegments.length) setCurrentSegIndex(newCurrentSegIndex);
+  }, [cutSegments, setCutSegments, currentCutSeg]);
 
   const reorderSegsByStartTime = useCallback(() => {
     setCutSegments(sortBy(cutSegments, getSegApparentStart));
@@ -770,7 +778,7 @@ const App = memo(() => {
     setZoom(1);
     setShortestFlag(false);
     setZoomWindowStartTime(0);
-    setSegmentsExportEnabled();
+    setSegmentIdsEnabled();
     setHideCanvasPreview(false);
 
     setExportConfirmVisible(false);
@@ -901,17 +909,17 @@ const App = memo(() => {
   const outSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
     [invertCutSegments, inverseCutSegments, apparentCutSegments]);
 
-  // enabledSegmentUuids undefined means all are enabled
-  const enabledSegmentUuidsEffective = enabledSegmentUuids || Object.fromEntries(cutSegments.map((s) => [s.uuid, true]));
+  // enabledSegmentIds undefined means all are enabled
+  const enabledSegmentIdsEffective = enabledSegmentIds || Object.fromEntries(cutSegments.map((s) => [s.segId, true]));
   // For invertCutSegments we do not support filtering
-  const enabledOutSegmentsRaw = useMemo(() => (invertCutSegments ? outSegments : outSegments.filter((s) => enabledSegmentUuidsEffective[s.uuid])), [outSegments, invertCutSegments, enabledSegmentUuidsEffective]);
+  const enabledOutSegmentsRaw = useMemo(() => (invertCutSegments ? outSegments : outSegments.filter((s) => enabledSegmentIdsEffective[s.segId])), [outSegments, invertCutSegments, enabledSegmentIdsEffective]);
   // If user has selected none to export, it makes no sense, so export all instead
   const enabledOutSegments = enabledOutSegmentsRaw.length > 0 ? enabledOutSegmentsRaw : outSegments;
 
-  const onExportSingleSegmentClick = useCallback((seg) => setSegmentsExportEnabled({ [seg.uuid]: true }), []);
-  const onExportSegmentEnabledToggle = useCallback((seg) => setSegmentsExportEnabled({ ...enabledSegmentUuidsEffective, [seg.uuid]: !enabledSegmentUuidsEffective[seg.uuid] }), [enabledSegmentUuidsEffective]);
-  const onExportSegmentDisableAll = useCallback(() => setSegmentsExportEnabled({}), []);
-  const onExportSegmentEnableAll = useCallback(() => setSegmentsExportEnabled(), []);
+  const onExportSingleSegmentClick = useCallback((seg) => setSegmentIdsEnabled({ [seg.segId]: true }), []);
+  const onExportSegmentEnabledToggle = useCallback((seg) => setSegmentIdsEnabled({ ...enabledSegmentIdsEffective, [seg.segId]: !enabledSegmentIdsEffective[seg.segId] }), [enabledSegmentIdsEffective]);
+  const onExportSegmentDisableAll = useCallback(() => setSegmentIdsEnabled({}), []);
+  const onExportSegmentEnableAll = useCallback(() => setSegmentIdsEnabled(), []);
 
   const generateOutSegFileNames = useCallback(({ segments = enabledOutSegments, template }) => (
     segments.map(({ start, end, name = '' }, i) => {
@@ -2191,6 +2199,7 @@ const App = memo(() => {
                   invertCutSegments={invertCutSegments}
                   onSegClick={setCurrentSegIndex}
                   updateSegOrder={updateSegOrder}
+                  updateSegOrders={updateSegOrders}
                   onLabelSegmentPress={onLabelSegmentPress}
                   currentCutSeg={currentCutSeg}
                   segmentAtCursor={segmentAtCursor}
