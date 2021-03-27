@@ -39,12 +39,14 @@ jobs:
           # Log in to Snap Store
           snapcraft_token: ${{ secrets.snapcraft_token }}
 
-      - name: Prepare for app notarization
+      - name: Prepare Apple API key
+        # Import Apple API key for app notarization on macOS and for uploading to Mac App Store
+        # 'altool --help': '--apiKey' will search the following directories in sequence for a private key file with the name of:
+        # 'AuthKey_<api_key>.p8': './private_keys', '~/private_keys', '~/.private_keys', and '~/.appstoreconnect/private_keys'.
         if: startsWith(matrix.os, 'macos')
-        # Import Apple API key for app notarization on macOS
         run: |
-          mkdir -p ~/private_keys/
-          echo '${{ secrets.api_key }}' > ~/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
+          mkdir -p ~/.appstoreconnect/private_keys/
+          echo '${{ secrets.api_key }}' > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
 
       - name: Download custom ffmpeg for Mac
         if: startsWith(matrix.os, 'macos')
@@ -79,6 +81,4 @@ jobs:
         # In case of ERROR ITMS-90189: Redundant Binary Upload
         continue-on-error: true
         run: |
-          mkdir -p ~/.appstoreconnect/private_keys/
-          echo '${{ secrets.api_key }}' > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
           xcrun altool --upload-app -f dist/mas/LosslessCut-mac.pkg --apiKey ${{ secrets.api_key_id }} --apiIssuer ${{ secrets.api_key_issuer_id }}
