@@ -46,7 +46,7 @@ const Settings = memo(({
   return (
     <Fragment>
       <Row>
-        <KeyCell>{t('App language')}</KeyCell>
+        <KeyCell>App language</KeyCell>
         <Table.TextCell>
           <Select value={language || ''} onChange={onLangChange}>
             <option key="" value="">{t('System language')}</option>
