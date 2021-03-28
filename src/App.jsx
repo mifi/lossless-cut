@@ -321,13 +321,13 @@ const App = memo(() => {
   const sortedCutSegments = useMemo(() => sortSegments(apparentCutSegments), [apparentCutSegments]);
 
   const inverseCutSegments = useMemo(() => {
-    function invertSegmentsSafe() {
+    function invertSegmentsInternal() {
       if (haveInvalidSegs || !isDurationValid(duration)) return undefined;
       if (!isDurationValid(duration)) return undefined;
-      const inverted = invertSegments(sortedCutSegments, duration);
-      return inverted.map((seg) => ({ ...seg, segId: `${seg.start}-${seg.end}` }));
+      return invertSegments(sortedCutSegments, duration);
     }
-    return invertSegmentsSafe() || [];
+    const inverted = invertSegmentsInternal() || [];
+    return inverted.map((seg) => ({ ...seg, segId: `${seg.start}-${seg.end}` }));
   }, [duration, haveInvalidSegs, sortedCutSegments]);
 
   const updateSegAtIndex = useCallback((index, newProps) => {
