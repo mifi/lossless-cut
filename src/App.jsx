@@ -157,7 +157,9 @@ const App = memo(() => {
   const outSegTemplateOrDefault = outSegTemplate || defaultOutSegTemplate;
 
   useEffect(() => {
-    i18n.changeLanguage(language || fallbackLng).catch(console.error);
+    const l = language || fallbackLng;
+    i18n.changeLanguage(l).catch(console.error);
+    electron.ipcRenderer.send('setLanguage', l);
   }, [language]);
 
   // Global state

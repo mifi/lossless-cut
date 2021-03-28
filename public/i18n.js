@@ -1,13 +1,9 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
+const i18n = require('i18next');
+const Backend = require('i18next-fs-backend');
 
-const Backend = window.require('i18next-fs-backend');
+const { commonI18nOptions, loadPath, addPath } = require('./i18n-common');
 
-const electron = window.require('electron'); // eslint-disable-line
-
-const { commonI18nOptions, fallbackLng, loadPath, addPath } = electron.remote.require('./i18n-common');
-
-export { fallbackLng };
+// See also renderer
 
 // https://github.com/i18next/i18next/issues/869
 i18n
@@ -16,8 +12,6 @@ i18n
   // learn more: https://github.com/i18next/i18next-browser-languageDetector
   // TODO disabled for now because translations need more reviewing https://github.com/mifi/lossless-cut/issues/346
   // .use(LanguageDetector)
-  // pass the i18n instance to react-i18next.
-  .use(initReactI18next)
   // init i18next
   // for all options read: https://www.i18next.com/overview/configuration-options
   // See also i18next-scanner.config.js
@@ -28,10 +22,6 @@ i18n
       loadPath,
       addPath,
     },
-
-    interpolation: {
-      escapeValue: false, // not needed for react as it escapes by default
-    },
   });
 
-export default i18n;
+module.exports = i18n;

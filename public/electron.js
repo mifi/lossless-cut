@@ -1,11 +1,14 @@
 const electron = require('electron'); // eslint-disable-line
 const isDev = require('electron-is-dev');
 const unhandled = require('electron-unhandled');
+const i18n = require('i18next');
 
 const menu = require('./menu');
 const configStore = require('./configStore');
 
 const { checkNewVersion } = require('./update-checker');
+
+require('./i18n');
 
 const { app } = electron;
 const { BrowserWindow } = electron;
@@ -23,6 +26,7 @@ let mainWindow;
 
 let askBeforeClose = false;
 let rendererReady = false;
+let newVersion;
 
 const openFiles = (paths) => mainWindow.webContents.send('file-opened', paths);
 const openFile = (path) => openFiles([path]);
@@ -67,13 +71,17 @@ function createWindow() {
     const choice = electron.dialog.showMessageBoxSync(mainWindow, {
       type: 'question',
       buttons: ['Yes', 'No'],
-      title: 'Confirm quit',
-      message: 'Are you sure you want to quit?',
+      title: i18n.t('Confirm quit'),
+      message: i18n.t('Are you sure you want to quit?'),
     });
     if (choice === 1) {
       e.preventDefault();
     }
   });
+}
+
+function updateMenu() {
+  menu(app, mainWindow, newVersion);
 }
 
 // This method will be called when Electron has finished
@@ -83,13 +91,12 @@ app.on('ready', async () => {
   await configStore.init();
 
   createWindow();
-  menu(app, mainWindow);
+  updateMenu();
 
   if (!process.windowsStore && !process.mas) {
-    const newVersion = await checkNewVersion();
-    if (newVersion) {
-      menu(app, mainWindow, newVersion);
-    }
+    newVersion = await checkNewVersion();
+    // newVersion = '1.2.3';
+    if (newVersion) updateMenu();
   }
 });
 
@@ -134,6 +141,10 @@ app.on('open-file', (event, path) => {
 
 electron.ipcMain.on('setAskBeforeClose', (e, val) => {
   askBeforeClose = val;
+});
+
+electron.ipcMain.on('setLanguage', (e, language) => {
+  i18n.changeLanguage(language).then(() => updateMenu()).catch(console.error);
 });
 
 function focusWindow() {

@@ -1,4 +1,5 @@
 const electron = require('electron'); // eslint-disable-line
+const i18n = require('i18next');
 
 const { Menu } = electron;
 const { dialog } = electron;
@@ -10,10 +11,10 @@ module.exports = (app, mainWindow, newVersion) => {
     ...(process.platform === 'darwin' ? [{ role: 'appMenu' }] : []),
 
     {
-      label: 'File',
+      label: i18n.t('File'),
       submenu: [
         {
-          label: 'Open',
+          label: i18n.t('Open'),
           accelerator: 'CmdOrCtrl+O',
           async click() {
             const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'] });
@@ -22,7 +23,7 @@ module.exports = (app, mainWindow, newVersion) => {
           },
         },
         {
-          label: 'Close',
+          label: i18n.t('Close'),
           accelerator: 'CmdOrCtrl+W',
           async click() {
             mainWindow.webContents.send('close-file');
@@ -30,46 +31,46 @@ module.exports = (app, mainWindow, newVersion) => {
         },
         { type: 'separator' },
         {
-          label: 'Load project (CSV)',
+          label: i18n.t('Load project (CSV)'),
           click() {
             mainWindow.webContents.send('importEdlFile', 'csv');
           },
         },
         {
-          label: 'Save project (CSV)',
+          label: i18n.t('Save project (CSV)'),
           click() {
             mainWindow.webContents.send('exportEdlFile', 'csv');
           },
         },
         {
-          label: 'Import project',
+          label: i18n.t('Import project'),
           submenu: [
             {
-              label: 'EDL (MPlayer)',
+              label: i18n.t('EDL (MPlayer)'),
               click() {
                 mainWindow.webContents.send('importEdlFile', 'mplayer');
               },
             },
             {
-              label: 'Text chapters / YouTube',
+              label: i18n.t('Text chapters / YouTube'),
               click() {
                 mainWindow.webContents.send('importEdlFile', 'youtube');
               },
             },
             {
-              label: 'DaVinci Resolve / Final Cut Pro XML',
+              label: i18n.t('DaVinci Resolve / Final Cut Pro XML'),
               click() {
                 mainWindow.webContents.send('importEdlFile', 'xmeml');
               },
             },
             {
-              label: 'CUE sheet file',
+              label: i18n.t('CUE sheet file'),
               click() {
                 mainWindow.webContents.send('importEdlFile', 'cue');
               },
             },
             {
-              label: 'PotPlayer Bookmarks (.pbf)',
+              label: i18n.t('PotPlayer Bookmarks (.pbf)'),
               click() {
                 mainWindow.webContents.send('importEdlFile', 'pbf');
               },
@@ -77,22 +78,22 @@ module.exports = (app, mainWindow, newVersion) => {
           ],
         },
         {
-          label: 'Export project',
+          label: i18n.t('Export project'),
           submenu: [
             {
-              label: 'Timestamps (CSV)',
+              label: i18n.t('Timestamps (CSV)'),
               click() {
                 mainWindow.webContents.send('exportEdlFile', 'csv-human');
               },
             },
             {
-              label: 'Timestamps (TSV/TXT)',
+              label: i18n.t('Timestamps (TSV/TXT)'),
               click() {
                 mainWindow.webContents.send('exportEdlFile', 'tsv-human');
               },
             },
             {
-              label: 'Start times as YouTube Chapters',
+              label: i18n.t('Start times as YouTube Chapters'),
               click() {
                 mainWindow.webContents.send('exportEdlYouTube');
               },
@@ -101,13 +102,13 @@ module.exports = (app, mainWindow, newVersion) => {
         },
         { type: 'separator' },
         {
-          label: 'Convert to supported format',
+          label: i18n.t('Convert to supported format'),
           click() {
             mainWindow.webContents.send('html5ify');
           },
         },
         {
-          label: 'Fix incorrect duration',
+          label: i18n.t('Fix incorrect duration'),
           click() {
             mainWindow.webContents.send('fixInvalidDuration');
           },
@@ -116,14 +117,14 @@ module.exports = (app, mainWindow, newVersion) => {
 
         { type: 'separator' },
         {
-          label: 'Settings',
+          label: i18n.t('Settings'),
           click() {
             mainWindow.webContents.send('openSettings');
           },
         },
         { type: 'separator' },
         {
-          label: 'Exit',
+          label: i18n.t('Exit'),
           click() {
             app.quit();
           },
@@ -132,7 +133,7 @@ module.exports = (app, mainWindow, newVersion) => {
     },
 
     {
-      label: 'Edit',
+      label: i18n.t('Edit'),
       submenu: [
         { role: 'undo' },
         { role: 'redo' },
@@ -143,28 +144,28 @@ module.exports = (app, mainWindow, newVersion) => {
         { role: 'selectall' },
         { type: 'separator' },
         {
-          label: 'Segments',
+          label: i18n.t('Segments'),
           submenu: [
             {
-              label: 'Clear all segments',
+              label: i18n.t('Clear all segments'),
               click() {
                 mainWindow.webContents.send('clearSegments');
               },
             },
             {
-              label: 'Reorder segments by start time',
+              label: i18n.t('Reorder segments by start time'),
               click() {
                 mainWindow.webContents.send('reorderSegsByStartTime');
               },
             },
             {
-              label: 'Create num segments',
+              label: i18n.t('Create num segments'),
               click() {
                 mainWindow.webContents.send('createNumSegments');
               },
             },
             {
-              label: 'Create fixed duration segments',
+              label: i18n.t('Create fixed duration segments'),
               click() {
                 mainWindow.webContents.send('createFixedDurationSegments');
               },
@@ -172,16 +173,16 @@ module.exports = (app, mainWindow, newVersion) => {
           ],
         },
         {
-          label: 'Tracks',
+          label: i18n.t('Tracks'),
           submenu: [
             {
-              label: 'Extract all tracks',
+              label: i18n.t('Extract all tracks'),
               click() {
                 mainWindow.webContents.send('extract-all-streams');
               },
             },
             {
-              label: 'Edit tracks / metadata tags',
+              label: i18n.t('Edit tracks / metadata tags'),
               click() {
                 mainWindow.webContents.send('showStreamsSelector');
               },
@@ -192,7 +193,7 @@ module.exports = (app, mainWindow, newVersion) => {
     },
 
     {
-      label: 'View',
+      label: i18n.t('View'),
       submenu: [
         { role: 'togglefullscreen' },
       ],
@@ -202,28 +203,28 @@ module.exports = (app, mainWindow, newVersion) => {
     ...(process.platform === 'darwin'
       ? [{ role: 'windowMenu' }]
       : [{
-        label: 'Window',
+        label: i18n.t('Window'),
         submenu: [{ role: 'minimize' }],
       }]
     ),
 
     {
-      label: 'Tools',
+      label: i18n.t('Tools'),
       submenu: [
         {
-          label: 'Merge files',
+          label: i18n.t('Merge files'),
           click() {
             mainWindow.webContents.send('show-merge-dialog', true);
           },
         },
         {
-          label: 'Batch convert to supported format',
+          label: i18n.t('Batch convert to supported format'),
           click() {
             mainWindow.webContents.send('batchConvertFriendlyFormat');
           },
         },
         {
-          label: 'Set custom start offset/timecode',
+          label: i18n.t('Set custom start offset/timecode'),
           click() {
             mainWindow.webContents.send('set-start-offset', true);
           },
@@ -235,23 +236,23 @@ module.exports = (app, mainWindow, newVersion) => {
       role: 'help',
       submenu: [
         {
-          label: 'Help and shortcuts',
+          label: i18n.t('Help and shortcuts'),
           click() {
             mainWindow.webContents.send('openHelp');
           },
         },
         {
-          label: 'About',
+          label: i18n.t('About'),
           click() {
             mainWindow.webContents.send('openAbout');
           },
         },
         {
-          label: 'Learn More',
+          label: i18n.t('Learn More'),
           click() { electron.shell.openExternal(homepage); },
         },
         {
-          label: 'Report an error',
+          label: i18n.t('Report an error'),
           click() { mainWindow.webContents.send('openSendReportDialog'); },
         },
       ],
@@ -260,10 +261,10 @@ module.exports = (app, mainWindow, newVersion) => {
 
   if (newVersion) {
     menu.push({
-      label: 'New version!',
+      label: i18n.t('New version!'),
       submenu: [
         {
-          label: `Download ${newVersion}`,
+          label: i18n.t('Download {{version}}', { version: newVersion }),
           click() { electron.shell.openExternal(releasesPage); },
         },
       ],
