@@ -172,7 +172,7 @@ See the [developer notes](developer-notes.md).
 
 This project is maintained by me alone. The project will always remain free and open source, but if it's useful for you, consider supporting me. :) It will give me extra motivation to improve it. Or even better [donate to ffmpeg](https://www.ffmpeg.org/donations.html) because they are doing the world a big favor 🙏
 
-[Paypal](https://paypal.me/mifino/usd)
+[Paypal](https://paypal.me/mifino/usd) | [crypto](https://mifi.no/thanks)
 
 ## Attributions
 - App icon made by [Dimi Kazak](http://www.flaticon.com/authors/dimi-kazak "Dimi Kazak") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0")
