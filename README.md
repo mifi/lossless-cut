@@ -6,7 +6,7 @@
   The swiss army knife of lossless video/audio editing
 	<br>
   <img src="https://github.com/mifi/lossless-cut/workflows/Build/release/badge.svg" />
-  <a href="https://paypal.me/mifino/usd"><img src="https://img.shields.io/badge/Donate-PayPal-green.svg" /></a>
+  <a href="https://paypal.me/mifino/usd"><img src="https://img.shields.io/badge/Donate-PayPal-green.svg" /></a> <a href="https://github.com/mifi/lossless-cut#download"><img src="https://img.shields.io/github/v/release/mifi/lossless-cut" /></a>
 	<br>
 	<br>
   <a href="https://mifi.no/thanks/">Thanks to all my supporters</a>
@@ -98,7 +98,7 @@ If you find LosslessCut useful, I'm very thankful for [donations](https://github
 
 ### Difference between App Stores and Github download
 
-They have exactly the same in-app features, except a few platform limitations. Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps need to prompt for output directory. LosslessCut version in the App Stores lags a few versions behind the GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. GitHub version can contain new, untested features and may contain some bugs. I consider the newest GitHub versions to be a "beta" test.
+They have exactly the same in-app features, except a few platform limitations. Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps need to prompt for output directory. LosslessCut version in the App Stores lags a few versions behind the GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. GitHub version can contain new, untested features and may contain some bugs. I consider the newest GitHub versions to be a public "beta" test.
 
 ## Supported formats
 
@@ -115,39 +115,42 @@ Unsupported files can still be converted to a supported format/codec from the `F
 ### Typical workflow
 
 - Drag drop a video file into player or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
-- Press <kbd>SPACE</kbd> to play/pause or <kbd>◀</kbd><kbd>▶</kbd>, <kbd>,</kbd><kbd>.</kbd> or mouse/trackpad wheel to seek back/forth
+- Press <kbd>SPACE</kbd> to play/pause or <kbd>◀</kbd><kbd>▶</kbd>, <kbd>,</kbd><kbd>.</kbd> or mouse/trackpad wheel to seek back/forth.
 - Select the cut segment's start and end time by moving the time marker and then pressing <kbd>I</kbd> to set start time, and <kbd>O</kbd> to set end time.
-  - Note that all segments you create will be **preserved** and exported to new files. You can change this behavior with the **Yin Yang** symbol ☯️, in which case it will instead **remove** all selected segments and export the parts between.
-  - Note also that start time will not be accurate, see [Known issues](#known-issues--limitations)
+  - Note that all segments you create will be **preserved** and exported as new files. You can change this behavior with the **Yin Yang** symbol ☯️, in which case it will instead **remove** all selected segments and export the parts **between** segments.
+  - Note also that start times will not be accurate, see [Known issues](#known-issues--limitations)
 - *(optional)* If you want to add more than one segment, move to the desired start time and press <kbd>+</kbd>, then select the next segment start/end times with <kbd>I</kbd>/<kbd>O</kbd>.
 - *(optional)* If you want to re-merge all the selected segments into one file after cutting, toggle the button `Separate files` to `Merge cuts`.
 - *(optional)* If you want to export to a certain output folder, press the `Working dir unset` button (default: Input file folder)
 - *(optional)* If you want to change orientation, press the **rotation** button
 - *(optional)* By default, audio, video and subtitle tracks from the input file will be cut and exported. Press the `Tracks` button to customise and/or add new tracks from other files.
 - *(optional)* select a new output format
-- **When done, press the `Export` button (or <kbd>E</kbd>) to run the export**
+- *(optional)* In the right-hand segments panel, right click a segment for options, or drag-drop to reorder. Segments will appear in this order in the merged output.
+- **When done, press the `Export` button (or <kbd>E</kbd>) to show an overview with export options.**
+- *(optional)* adjust any export options
+- **Then press `Export` again to confirm the export**
 - Press the **Camera** button (or <kbd>C</kbd>) if you want to take a JPEG/PNG snapshot from the current time
 - If you want to move the original file to trash, press the **trash** button
-- For best results you may need to trial and error with another output format (Matroska takes nearly everything), change keyframe cut mode or disable some tracks, see known issues below.
-
-Note: The original video file will not be modified. Instead, it creates a lossless export to a new file in the same directory as the original file with from/to timestamps.
-
-Note also that the cut is not precise around the cutpoints, so video before/after the nearest keyframe will be discarded. EXIF/metadata can be preserved (see Export Options dialog).
+- For best results you may need to trial and error with another output format (Matroska takes nearly everything), change keyframe cut mode or disable some tracks (see known issues below).
+- Press <kbd>H</kbd> to view help and all keyboard shortcuts.
+- **Note:** The original video file will not be modified. Instead, a file is created file in the same directory as the original file with from/to timestamps in the file name.
 
 ## Known issues & limitations
 
 - **Cutting times are not accurate!** Start cut time will be "rounded" to the nearest **previous** keyframe.
   - Lossless cutting is not an exact science. For some codecs, it just works. For others, you may need to trial and error depending on the codec, keyframes etc to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
   - Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
-- When exporting you may lose some proprietary data tracks (like `tmcd`, `fdsc` and `gpmd` added by GoPro). These can be exported to separate files however
-- Some codecs are not supported natively. There is partial support with low quality playback and no audio. You can convert to a supported codec from the menu, see [#88](https://github.com/mifi/lossless-cut/issues/88)
+- When exporting you may lose some proprietary data tracks (like `tmcd`, `fdsc` and `gpmd` added by GoPro). These can however be losslessly exported to separate files.
+- EXIF/metadata can be preserved (see Export Options dialog), but it doesn't always output compliant files, so use it carefully.
+- Some codecs are not supported natively. There is partial support with low quality playback and no audio. You can convert to a supported codec from the File menu, see [#88](https://github.com/mifi/lossless-cut/issues/88), however it may take some time.
 
-## Troubleshooting
+## Troubleshooting / FAQ
 
 - If you get an error when cutting or opening any kind of file under Windows, try to disable your anti-virus. See [#18](https://github.com/mifi/lossless-cut/issues/18)
 - If you get an error on Linux like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See [#258](https://github.com/mifi/lossless-cut/issues/258)
 - If any other problem, check [Known issues](#known-issues--limitations), or please search for existing issues before you file an issue here on GitHub.
-- If the app crashes immediately upon startup, check the permissions of your User and Temp folders, see [](https://github.com/mifi/lossless-cut/issues/61)
+- If the app crashes immediately upon startup, check the permissions of your User and Temp folders, see [61](https://github.com/mifi/lossless-cut/issues/61).
+- How to uninstall LosslessCut on Windows? There is no installer. Just delete the EXE file or containing folder. User files will be stored in your [appData](https://www.electronjs.org/docs/api/app#appgetpathname) folder.
 
 If you have an issue you can check the developer tools for any errors or clues. Menu: `Tools` -> `Toggle Developer Tools`
 
