@@ -1,6 +1,6 @@
 // See also i18n.js
 module.exports = {
-  input: ['src/**/*.{js,jsx}'],
+  input: ['src/**/*.{js,jsx}', 'public/*.js'],
   output: './public',
 
   options: {
