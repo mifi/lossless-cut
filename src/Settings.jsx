@@ -82,8 +82,8 @@ const Settings = memo(({
       <Row>
         <KeyCell>
           {t('Keyframe cut mode')}<br />
-          <b>{t('Keyframe cut')}</b>: Cut at the nearest keyframe (not accurate time.) Equiv to <i>ffmpeg -ss -i ...</i><br />
-          <b>{t('Normal cut')}</b>: Accurate time but could leave an empty portion at the beginning of the video. Equiv to <i>ffmpeg -i -ss ...</i><br />
+          <b>{t('Keyframe cut')}</b>: {t('Cut at the nearest keyframe (not accurate time.) Equiv to')} <i>ffmpeg -ss -i ...</i><br />
+          <b>{t('Normal cut')}</b>: {t('Accurate time but could leave an empty portion at the beginning of the video. Equiv to')} <i>ffmpeg -i -ss ...</i><br />
         </KeyCell>
         <Table.TextCell>
           <SegmentedControl

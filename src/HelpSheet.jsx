@@ -23,11 +23,11 @@ const HelpSheet = memo(({ visible, onTogglePress, ffmpegCommandLog, currentCutSe
           {t('Lossless cutting is not an exact science. For some codecs and files it just works. For others you may need to trial and error depending on the codec, keyframes etc to get the best cut.')}
         </p>
         <ol>
-          <li>Try both <b>Keyframe cut</b> and <b>Normal cut</b> modes</li>
-          <li>Try to set the <b>start-</b>cutpoint a <b>few frames before or after</b> the nearest keyframe (may also solve audio sync issues)</li>
-          <li>Try to disable some <b>Tracks</b></li>
-          <li>Try a different <b>Output format</b></li>
-          <li>Try to enable the <b>Experimental Flag</b> in Settings</li>
+          <li><Trans>Try both <b>Normal cut</b> and <b>Keyframe cut</b></Trans></li>
+          <li><Trans>Try to set the <b>start-</b>cutpoint a <b>few frames before or after</b> the nearest keyframe (may also solve audio sync issues)</Trans></li>
+          <li><Trans>Disable unnecessary <b>Tracks</b></Trans></li>
+          <li><Trans>Select a different output <b>Format</b> (<b>matroska</b> and <b>mp4</b> support most codecs)</Trans></li>
+          <li><Trans>Try to enable the <b>Experimental Flag</b> in Settings</Trans></li>
         </ol>
 
         <p style={{ fontWeight: 'bold' }}>

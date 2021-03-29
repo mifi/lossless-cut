@@ -2,6 +2,7 @@ import React from 'react';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import i18n from 'i18next';
+import { Trans } from 'react-i18next';
 
 import CopyClipboardButton from './components/CopyClipboardButton';
 import { isStoreBuild, isMasBuild, isWindowsStoreBuild } from './util';
@@ -15,8 +16,8 @@ const ReactSwal = withReactContent(Swal);
 // eslint-disable-next-line import/prefer-default-export
 export function openSendReportDialog(err, state) {
   const reportInstructions = isStoreBuild
-    ? <p>Please send an email to <span style={{ fontWeight: 'bold' }} role="button" onClick={() => electron.shell.openExternal('mailto:losslesscut@yankee.no')}>losslesscut@yankee.no</span> where you describe what you were doing.</p>
-    : <p>Please create an issue at <span style={{ fontWeight: 'bold' }} role="button" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/issues')}>https://github.com/mifi/lossless-cut/issues</span> where you describe what you were doing.</p>;
+    ? <p><Trans>Please send an email to <span style={{ fontWeight: 'bold' }} role="button" onClick={() => electron.shell.openExternal('mailto:losslesscut@yankee.no')}>losslesscut@yankee.no</span> where you describe what you were doing.</Trans></p>
+    : <p><Trans>Please create an issue at <span style={{ fontWeight: 'bold' }} role="button" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/issues')}>https://github.com/mifi/lossless-cut/issues</span> where you describe what you were doing.</Trans></p>;
 
   const platform = os.platform();
   const version = electron.remote.app.getVersion();
@@ -48,7 +49,7 @@ export function openSendReportDialog(err, state) {
       <div style={{ textAlign: 'left', overflow: 'auto', maxHeight: 300, overflowY: 'auto' }}>
         {reportInstructions}
 
-        <p>Include the following text: <CopyClipboardButton text={text} /></p>
+        <p><Trans>Include the following text:</Trans> <CopyClipboardButton text={text} /></p>
 
         <div style={{ fontWeight: 600, fontSize: 12, whiteSpace: 'pre-wrap' }} contentEditable suppressContentEditableWarning>
           {text}

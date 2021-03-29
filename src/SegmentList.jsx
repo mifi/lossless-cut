@@ -4,7 +4,7 @@ import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaChec
 import { AiOutlineSplitCells } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import { ReactSortable } from 'react-sortablejs';
 import isEqual from 'lodash/isEqual';
 import useDebounce from 'react-use/lib/useDebounce';
@@ -78,6 +78,9 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
     jumpSegStart();
   }
 
+  const durationMsFormatted = Math.floor(durationMs);
+  const frameCount = getFrameCount(duration);
+
   return (
     <motion.div
       ref={ref}
@@ -99,7 +102,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
         {t('Duration')} {prettyMs(durationMs)}
       </div>
       <div style={{ fontSize: 12 }}>
-        ({Math.floor(durationMs)} ms, {getFrameCount(duration)} frames)
+        <Trans>{{ durationMsFormatted }} ms, {{ frameCount }} frames</Trans>
       </div>
 
       {!enabled && !invertCutSegments && (

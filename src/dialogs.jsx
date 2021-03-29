@@ -1,6 +1,7 @@
 import React from 'react';
 import Swal from 'sweetalert2';
 import i18n from 'i18next';
+import { Trans } from 'react-i18next';
 import withReactContent from 'sweetalert2-react-content';
 
 import { parseDuration } from './util/duration';
@@ -16,7 +17,7 @@ const ReactSwal = withReactContent(Swal);
 export async function promptTimeOffset(inputValue) {
   const { value } = await Swal.fire({
     title: i18n.t('Set custom start time offset'),
-    text: i18n.t('Instead of video apparently starting at 0, you can offset by a specified value. This only applies to the preview inside LosslessCut and does not modify the file in any way. Useful for viewing/cutting videos according to timecodes)'),
+    text: i18n.t('Instead of video apparently starting at 0, you can offset by a specified value. This only applies to the preview inside LosslessCut and does not modify the file in any way. (Useful for viewing/cutting videos according to timecodes)'),
     input: 'text',
     inputValue: inputValue || '',
     showCancelButton: true,
@@ -247,16 +248,16 @@ export async function createFixedDurationSegments(fileDuration) {
 export async function showCutFailedDialog({ detectedFileFormat }) {
   const html = (
     <div style={{ textAlign: 'left' }}>
-      Try one of the following before exporting again:
+      <Trans>Try one of the following before exporting again:</Trans>
       <ol>
-        {detectedFileFormat === 'mp4' && <li>Change output <b>Format</b> from <b>MP4</b> to <b>MOV</b></li>}
-        <li>Select a different output <b>Format</b> (<b>matroska</b> and <b>mp4</b> support most codecs)</li>
-        <li>Disable unnecessary <b>Tracks</b></li>
-        <li>Try both <b>Normal cut</b> and <b>Keyframe cut</b></li>
-        <li>Set a different <b>Working directory</b></li>
-        <li>Try with a <b>Different file</b></li>
-        <li>See <b>Help</b></li>
-        <li>If nothing helps, you can send an <b>Error report</b></li>
+        {detectedFileFormat === 'mp4' && <li><Trans>Change output <b>Format</b> from <b>MP4</b> to <b>MOV</b></Trans></li>}
+        <li><Trans>Select a different output <b>Format</b> (<b>matroska</b> and <b>mp4</b> support most codecs)</Trans></li>
+        <li><Trans>Disable unnecessary <b>Tracks</b></Trans></li>
+        <li><Trans>Try both <b>Normal cut</b> and <b>Keyframe cut</b></Trans></li>
+        <li><Trans>Set a different <b>Working directory</b></Trans></li>
+        <li><Trans>Try with a <b>Different file</b></Trans></li>
+        <li><Trans>See <b>Help</b></Trans></li>
+        <li><Trans>If nothing helps, you can send an <b>Error report</b></Trans></li>
       </ol>
     </div>
   );

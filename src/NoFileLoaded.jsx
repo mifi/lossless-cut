@@ -1,7 +1,8 @@
 import React, { memo } from 'react';
 import { FaHandPointRight, FaHandPointLeft } from 'react-icons/fa';
 
-import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
+import { useTranslation, Trans } from 'react-i18next';
 
 import SetCutpointButton from './components/SetCutpointButton';
 import SimpleModeButton from './components/SimpleModeButton';
@@ -16,15 +17,15 @@ const NoFileLoaded = memo(({ topBarHeight, bottomBarHeight, mifiLink, toggleHelp
       <div style={{ fontSize: '6vmin', textTransform: 'uppercase' }}>{t('DROP FILE(S)')}</div>
 
       <div style={{ fontSize: '4vmin', color: '#777', cursor: 'pointer' }} role="button" onClick={toggleHelp}>
-        Press <kbd>H</kbd> for help
+        <Trans>Press <kbd>H</kbd> for help</Trans>
       </div>
 
       <div style={{ fontSize: '3vmin', color: '#ccc' }}>
-        <SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaHandPointLeft} style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaHandPointRight} style={{ verticalAlign: 'middle' }} /> or <kbd>I</kbd> <kbd>O</kbd> to set cutpoints
+        <Trans><SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaHandPointLeft} style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaHandPointRight} style={{ verticalAlign: 'middle' }} /> or <kbd>I</kbd> <kbd>O</kbd> to set cutpoints</Trans>
       </div>
 
       <div style={{ fontSize: '3vmin', color: '#ccc', cursor: 'pointer' }} role="button" onClick={toggleSimpleMode}>
-        <SimpleModeButton simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} style={{ verticalAlign: 'middle' }} size={16} /> {simpleMode ? 'to show advanced view' : 'to show simple view'}
+        <SimpleModeButton simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} style={{ verticalAlign: 'middle' }} size={16} /> {simpleMode ? i18n.t('to show advanced view') : i18n.t('to show simple view')}
       </div>
 
 

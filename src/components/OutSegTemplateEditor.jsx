@@ -1,5 +1,6 @@
 import React, { memo, useState, useEffect } from 'react';
 import { useDebounce } from 'use-debounce';
+import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { Button, Alert } from 'evergreen-ui';
 import Swal from 'sweetalert2';
@@ -77,9 +78,9 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
             <Button height={20} onClick={onToggleClick} style={{ marginLeft: 5 }} intent="success">{t('Close')}</Button>
           </div>
           <div>
-            {error != null && <Alert intent="danger" appearance="card">{`There is an error in the file name template: ${error}`}</Alert>}
+            {error != null && <Alert intent="danger" appearance="card">{`${i18n.t('There is an error in the file name template:')} ${error}`}</Alert>}
             {/* eslint-disable-next-line no-template-curly-in-string */}
-            <div style={{ fontSize: '.8em', color: 'rgba(255,255,255,0.7)' }}>{'Variables: ${FILENAME} ${CUT_FROM} ${CUT_TO} ${SEG_NUM} ${SEG_LABEL} ${SEG_SUFFIX} ${EXT}'}</div>
+            <div style={{ fontSize: '.8em', color: 'rgba(255,255,255,0.7)' }}>{`${i18n.t('Variables')}`} {'${FILENAME} ${CUT_FROM} ${CUT_TO} ${SEG_NUM} ${SEG_LABEL} ${SEG_SUFFIX} ${EXT}'}</div>
           </div>
         </>
       )}
