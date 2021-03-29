@@ -151,5 +151,13 @@
     "All streams have been extracted as separate files": "Todas as faixas foram extraídas como arquivos separados",
     "Change order of segment": "Alterar ordem do segmento",
     "Shortest": "Mais curto",
-    "Mouse scroll/wheel left/right": "Rolagem/roda do mouse esquerdo/direito"
+    "Mouse scroll/wheel left/right": "Rolagem/roda do mouse esquerdo/direito",
+    "EDL (MPlayer)": "EDL (MPlayer)",
+    "Import project": "Importar projeto",
+    "Save project (CSV)": "Salvar projeto (CSV)",
+    "Load project (CSV)": "Carregar projeto (CSV)",
+    "Open": "Abrir",
+    "File": "Arquivo",
+    "Are you sure you want to quit?": "Deseja realmente fechar?",
+    "Confirm quit": "Confirmar fechar"
 }
