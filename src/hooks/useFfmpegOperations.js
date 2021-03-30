@@ -4,14 +4,15 @@ import flatMapDeep from 'lodash/flatMapDeep';
 import sum from 'lodash/sum';
 import pMap from 'p-map';
 
-import { getOutPath, transferTimestamps, getOutFileExtension, getOutDir } from '../util';
-import { isCuttingStart, isCuttingEnd, handleProgress, getFfCommandLine, getFfmpegPath, getDuration, runFfmpeg, createChaptersFromSegments } from '../ffmpeg';
+import { getOutPath, transferTimestamps, getOutFileExtension, getOutDir, isCuttingStart, isCuttingEnd } from '../util';
+import { handleProgress, getFfCommandLine, getFfmpegPath, getDuration, runFfmpeg, createChaptersFromSegments } from '../ffmpeg';
 
-const execa = window.require('execa');
-const os = window.require('os');
-const { join } = window.require('path');
-const fs = window.require('fs-extra');
-const stringToStream = window.require('string-to-stream');
+const { join } = window.path;
+const { writeFile, unlink } = window.path;
+
+// TODO improve
+const { execa } = window.execa;
+const { stringToStream } = window.util;
 
 async function writeChaptersFfmetadata(outDir, chapters) {
   if (!chapters) return undefined;
@@ -23,7 +24,7 @@ async function writeChaptersFfmetadata(outDir, chapters) {
     return `[CHAPTER]\nTIMEBASE=1/1000\nSTART=${Math.floor(start * 1000)}\nEND=${Math.floor(end * 1000)}\ntitle=${nameOut}`;
   }).join('\n\n');
   // console.log(ffmetadata);
-  await fs.writeFile(path, ffmetadata);
+  await writeFile(path, ffmetadata);
   return path;
 }
 
@@ -244,7 +245,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       const { stdout } = await process;
       console.log(stdout);
     } finally {
-      if (ffmetadataPath) await fs.unlink(ffmetadataPath).catch((err) => console.error('Failed to delete', ffmetadataPath, err));
+      if (ffmetadataPath) await unlink(ffmetadataPath).catch((err) => console.error('Failed to delete', ffmetadataPath, err));
     }
 
     await optionalTransferTimestamps(paths[0], outPath);
@@ -259,7 +260,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     const chapters = await createChaptersFromSegments({ segmentPaths, chapterNames });
 
     await mergeFiles({ paths: segmentPaths, outDir, outPath, outFormat, allStreams: true, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge });
-    if (autoDeleteMergedSegments) await pMap(segmentPaths, path => fs.unlink(path), { concurrency: 5 });
+    if (autoDeleteMergedSegments) await pMap(segmentPaths, path => unlink(path), { concurrency: 5 });
   }, [filePath, mergeFiles]);
 
   const html5ify = useCallback(async ({ filePath: specificFilePath, outPath, video, audio, onProgress }) => {
@@ -268,7 +269,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     let videoArgs;
     let audioArgs;
 
-    const isMac = os.platform() === 'darwin';
+    const isMac = window.util.platform === 'darwin';
 
     switch (video) {
       case 'hq': {

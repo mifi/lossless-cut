@@ -1,18 +1,17 @@
-const electron = require('electron'); // eslint-disable-line
-const isDev = require('electron-is-dev');
+const electron = require('electron');
 const unhandled = require('electron-unhandled');
 const i18n = require('i18next');
+const { join } = require('path');
 
 const menu = require('./menu');
-const configStore = require('./configStore');
 
 const { checkNewVersion } = require('./update-checker');
 
+const { isDev } = require('./util');
+
 require('./i18n');
 
-const { app } = electron;
-const { BrowserWindow } = electron;
-
+const { app, BrowserWindow } = electron;
 
 unhandled({
   showDialog: true,
@@ -38,6 +37,8 @@ function createWindow() {
       nodeIntegration: true,
       // https://github.com/electron/electron/issues/5107
       webSecurity: !isDev,
+      contextIsolation: true,
+      preload: isDev ? join(__dirname, 'preload.js') : join(app.getAppPath(), 'preload.js'), // todo test production
     },
   });
 
@@ -88,8 +89,6 @@ function updateMenu() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
-  await configStore.init();
-
   createWindow();
   updateMenu();
 
@@ -146,13 +145,3 @@ electron.ipcMain.on('setAskBeforeClose', (e, val) => {
 electron.ipcMain.on('setLanguage', (e, language) => {
   i18n.changeLanguage(language).then(() => updateMenu()).catch(console.error);
 });
-
-function focusWindow() {
-  try {
-    app.focus({ steal: true });
-  } catch (err) {
-    console.error('Failed to focus window', err);
-  }
-}
-
-module.exports = { focusWindow };

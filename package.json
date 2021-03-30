@@ -92,9 +92,9 @@
   },
   "dependencies": {
     "cue-parser": "^0.3.0",
-    "electron-is-dev": "^0.1.2",
     "electron-store": "^5.1.1",
     "electron-unhandled": "^3.0.2",
+    "eventemitter3": "^4.0.7",
     "execa": "^4.0.0",
     "ffmpeg-ffprobe-static": "^4.3.1-rc.2",
     "file-type": "^12.4.0",

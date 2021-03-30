@@ -5,9 +5,6 @@ import { formatDuration } from './util/duration';
 
 import { captureFrame as ffmpegCaptureFrame } from './ffmpeg';
 
-const fs = window.require('fs-extra');
-const mime = window.require('mime-types');
-
 function getFrameFromVideo(video, format) {
   const canvas = document.createElement('canvas');
   canvas.width = video.videoWidth;
@@ -33,11 +30,11 @@ export async function captureFrameFfmpeg({ customOutDir, filePath, currentTime, 
 export async function captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, enableTransferTimestamps }) {
   const buf = getFrameFromVideo(video, captureFormat);
 
-  const ext = mime.extension(buf.mimetype);
+  const ext = window.util.getExtensionFromMime(buf.mimetype);
   const time = formatDuration({ seconds: currentTime, fileNameFriendly: true });
 
   const outPath = getOutPath(customOutDir, filePath, `${time}.${ext}`);
-  await fs.writeFile(outPath, buf);
+  await window.fs.writeFile(outPath, buf);
 
   if (enableTransferTimestamps) await transferTimestamps(filePath, outPath, currentTime);
   return outPath;

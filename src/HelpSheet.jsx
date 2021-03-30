@@ -7,9 +7,7 @@ import CopyClipboardButton from './components/CopyClipboardButton';
 import { primaryTextColor } from './colors';
 import Sheet from './Sheet';
 
-const electron = window.require('electron');
-
-const { githubLink } = electron.remote.require('./constants');
+const { githubLink } = window.constants;
 
 const HelpSheet = memo(({ visible, onTogglePress, ffmpegCommandLog, currentCutSeg }) => {
   const { t } = useTranslation();
@@ -32,7 +30,7 @@ const HelpSheet = memo(({ visible, onTogglePress, ffmpegCommandLog, currentCutSe
 
         <p style={{ fontWeight: 'bold' }}>
           {t('For more help and issues, please go to:')}<br />
-          <span style={{ color: primaryTextColor, cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal(githubLink)}>{githubLink}</span>
+          <span style={{ color: primaryTextColor, cursor: 'pointer' }} role="button" onClick={() => window.util.openExternal(githubLink)}>{githubLink}</span>
         </p>
 
         <h1>{t('Keyboard & mouse shortcuts')}</h1>

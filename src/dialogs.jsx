@@ -8,10 +8,6 @@ import { parseDuration } from './util/duration';
 import { parseYouTube } from './edlFormats';
 import CopyClipboardButton from './components/CopyClipboardButton';
 
-const electron = window.require('electron'); // eslint-disable-line
-
-const { dialog } = electron.remote;
-
 const ReactSwal = withReactContent(Swal);
 
 export async function promptTimeOffset(inputValue) {
@@ -86,7 +82,7 @@ export async function askForYouTubeInput() {
 }
 
 export async function askForOutDir(defaultPath) {
-  const { filePaths } = await dialog.showOpenDialog({
+  const { filePaths } = await window.dialog.showOpenDialog({
     properties: ['openDirectory', 'createDirectory'],
     defaultPath,
     title: i18n.t('Where do you want to save output files?'),

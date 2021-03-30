@@ -1,17 +1,14 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-const Backend = window.require('i18next-fs-backend');
-
-const electron = window.require('electron'); // eslint-disable-line
-
-const { commonI18nOptions, fallbackLng, loadPath, addPath } = electron.remote.require('./i18n-common');
+const { commonI18nOptions, fallbackLng, loadPath, addPath, Backend } = window.i18n;
 
 export { fallbackLng };
 
 // https://github.com/i18next/i18next/issues/869
 i18n
-  .use(Backend)
+  // TODO
+  // .use(Backend)
   // detect user language
   // learn more: https://github.com/i18next/i18next-browser-languageDetector
   // TODO disabled for now because translations need more reviewing https://github.com/mifi/lossless-cut/issues/346

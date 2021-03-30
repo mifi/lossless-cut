@@ -17,6 +17,7 @@ import clamp from 'lodash/clamp';
 import sortBy from 'lodash/sortBy';
 import flatMap from 'lodash/flatMap';
 import isEqual from 'lodash/isEqual';
+import EventEmitter from 'eventemitter3';
 
 import useTimelineScroll from './hooks/useTimelineScroll';
 import useUserPreferences from './hooks/useUserPreferences';
@@ -41,7 +42,7 @@ import { showMergeDialog, showOpenAndMergeDialog } from './merge/merge';
 import allOutFormats from './outFormats';
 import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
-  defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
+  defaultProcessedCodecTypes, getStreamFps,
   getDefaultOutFormat, getFormatData, renderThumbnails as ffmpegRenderThumbnails,
   readFrames, renderWaveformPng, extractStreams, getAllStreams,
   findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime, isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
@@ -53,7 +54,7 @@ import {
   getOutPath, toast, errorToast, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
-  hasDuplicates, havePermissionToReadFile,
+  hasDuplicates, havePermissionToReadFile, openAbout, isCuttingStart, isCuttingEnd,
 } from './util';
 import { formatDuration } from './util/duration';
 import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog } from './dialogs';
@@ -61,19 +62,37 @@ import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments } from './segments';
 
-
 import loadingLottie from './7077-magic-flow.json';
 
+const { extname, parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, resolve: pathResolve, isAbsolute: pathIsAbsolute } = window.path;
 
-const isDev = window.require('electron-is-dev');
-const electron = window.require('electron'); // eslint-disable-line
-const trash = window.require('trash');
-const { unlink, exists } = window.require('fs-extra');
-const { extname, parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, resolve: pathResolve, isAbsolute: pathIsAbsolute } = window.require('path');
+const { isDev } = window.constants;
 
-const { dialog, app } = electron.remote;
+const ipcEmitter = new EventEmitter();
+const reEmitEvent = (event, opts) => ipcEmitter.emit('from-main', { event, opts });
 
-const { focusWindow } = electron.remote.require('./electron');
+[
+  'file-opened',
+  'close-file',
+  'html5ify',
+  'show-merge-dialog',
+  'set-start-offset',
+  'extract-all-streams',
+  'showStreamsSelector',
+  'importEdlFile',
+  'exportEdlFile',
+  'exportEdlYouTube',
+  'openHelp',
+  'openSettings',
+  'openAbout',
+  'batchConvertFriendlyFormat',
+  'openSendReportDialog',
+  'clearSegments',
+  'createNumSegments',
+  'createFixedDurationSegments',
+  'fixInvalidDuration',
+  'reorderSegsByStartTime',
+].map((ev) => window.ipc.onMessage(ev, (opts) => reEmitEvent(ev, opts)));
 
 
 const ffmpegExtractWindow = 60;
@@ -159,7 +178,7 @@ const App = memo(() => {
   useEffect(() => {
     const l = language || fallbackLng;
     i18n.changeLanguage(l).catch(console.error);
-    electron.ipcRenderer.send('setLanguage', l);
+    window.ipc.send('setLanguage', l);
   }, [language]);
 
   // Global state
@@ -263,7 +282,7 @@ const App = memo(() => {
   }, [seekRel, detectedFps]);
 
   /* useEffect(() => () => {
-    if (dummyVideoPath) unlink(dummyVideoPath).catch(console.error);
+    if (dummyVideoPath) window.fs.unlink(dummyVideoPath).catch(console.error);
   }, [dummyVideoPath]); */
 
   // 360 means we don't modify rotation
@@ -874,12 +893,12 @@ const App = memo(() => {
     try {
       setWorking(i18n.t('Cleaning up'));
 
-      if (deleteTmpFiles && saved.html5FriendlyPath) await trash(saved.html5FriendlyPath).catch(console.error);
-      if (deleteTmpFiles && saved.dummyVideoPath) await trash(saved.dummyVideoPath).catch(console.error);
-      if (deleteProjectFile && saved.edlFilePath) await trash(saved.edlFilePath).catch(console.error);
+      if (deleteTmpFiles && saved.html5FriendlyPath) await window.util.trash(saved.html5FriendlyPath).catch(console.error);
+      if (deleteTmpFiles && saved.dummyVideoPath) await window.util.trash(saved.dummyVideoPath).catch(console.error);
+      if (deleteProjectFile && saved.edlFilePath) await window.util.trash(saved.edlFilePath).catch(console.error);
 
       // throw new Error('test');
-      if (deleteOriginal) await trash(saved.filePath);
+      if (deleteOriginal) await window.util.trash(saved.filePath);
       toast.fire({ icon: 'info', title: i18n.t('Cleanup successful') });
     } catch (err) {
       try {
@@ -893,10 +912,10 @@ const App = memo(() => {
         });
 
         if (value) {
-          if (deleteTmpFiles && saved.html5FriendlyPath) await unlink(saved.html5FriendlyPath).catch(console.error);
-          if (deleteTmpFiles && saved.dummyVideoPath) await unlink(saved.dummyVideoPath).catch(console.error);
-          if (deleteProjectFile && saved.edlFilePath) await unlink(saved.edlFilePath).catch(console.error);
-          if (deleteOriginal) await unlink(saved.filePath);
+          if (deleteTmpFiles && saved.html5FriendlyPath) await window.fs.unlink(saved.html5FriendlyPath).catch(console.error);
+          if (deleteTmpFiles && saved.dummyVideoPath) await window.fs.unlink(saved.dummyVideoPath).catch(console.error);
+          if (deleteProjectFile && saved.edlFilePath) await window.fs.unlink(saved.edlFilePath).catch(console.error);
+          if (deleteOriginal) await window.fs.unlink(saved.filePath);
           toast.fire({ icon: 'info', title: i18n.t('Cleanup successful') });
         }
       } catch (err2) {
@@ -1202,7 +1221,7 @@ const App = memo(() => {
 
     async function checkAndSetExistingHtml5FriendlyFile(speed) {
       const existing = getHtml5ifiedPath(cod, fp, speed);
-      const ret = existing && await exists(existing);
+      const ret = existing && await window.fs.exists(existing);
       if (ret) {
         console.log('Found existing supported file', existing);
         if (speed === 'fastest-audio') {
@@ -1284,7 +1303,7 @@ const App = memo(() => {
 
       const openedFileEdlPath = getEdlFilePath(fp);
 
-      if (await exists(openedFileEdlPath)) {
+      if (await window.fs.exists(openedFileEdlPath)) {
         await loadEdlFile(openedFileEdlPath);
       } else {
         const edl = await tryReadChaptersToEdl(fp);
@@ -1448,11 +1467,11 @@ const App = memo(() => {
     document.ondragover = dragPreventer;
     document.ondragend = dragPreventer;
 
-    electron.ipcRenderer.send('renderer-ready');
+    window.ipc.send('renderer-ready');
   }, []);
 
   useEffect(() => {
-    electron.ipcRenderer.send('setAskBeforeClose', askBeforeClose && isFileOpened);
+    window.ipc.send('setAskBeforeClose', askBeforeClose && isFileOpened);
   }, [askBeforeClose, isFileOpened]);
 
   const extractSingleStream = useCallback(async (index) => {
@@ -1554,7 +1573,7 @@ const App = memo(() => {
     const { files } = ev.dataTransfer;
     const filePaths = Array.from(files).map(f => f.path);
 
-    focusWindow();
+    window.util.focusWindow();
 
     if (filePaths.length === 1 && filePaths[0].toLowerCase().endsWith('.csv')) {
       if (!checkFileOpened()) return;
@@ -1652,7 +1671,7 @@ const App = memo(() => {
   useEffect(() => {
     function showOpenAndMergeDialog2() {
       showOpenAndMergeDialog({
-        dialog,
+        dialog: window.util.dialog,
         defaultPath: outputDir,
         onMergeClick: mergeFiles,
       });
@@ -1685,7 +1704,7 @@ const App = memo(() => {
           filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
         }
 
-        const { canceled, filePath: fp } = await dialog.showSaveDialog({ defaultPath: `${new Date().getTime()}.${ext}`, filters });
+        const { canceled, filePath: fp } = await window.util.dialog.showSaveDialog({ defaultPath: `${new Date().getTime()}.${ext}`, filters });
         if (canceled || !fp) return;
         console.log('Saving', type, fp);
         if (type === 'csv') await saveCsv(fp, cutSegments);
@@ -1719,22 +1738,14 @@ const App = memo(() => {
       else if (type === 'pbf') filters = [{ name: i18n.t('PBF files'), extensions: ['pbf'] }];
       else if (type === 'mplayer') filters = [{ name: i18n.t('MPlayer EDL'), extensions: ['*'] }];
 
-      const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters });
+      const { canceled, filePaths } = await window.util.dialog.showOpenDialog({ properties: ['openFile'], filters });
       if (canceled || filePaths.length < 1) return;
       await loadEdlFile(filePaths[0], type);
     }
 
-    function openAbout() {
-      Swal.fire({
-        icon: 'info',
-        title: 'About LosslessCut',
-        text: `You are running version ${app.getVersion()}`,
-      });
-    }
-
     async function batchConvertFriendlyFormat() {
       const title = i18n.t('Select files to batch convert to supported format');
-      const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'], title, message: title });
+      const { canceled, filePaths } = await window.util.dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'], title, message: title });
       if (canceled || filePaths.length < 1) return;
 
       const failedFiles = [];
@@ -1809,49 +1820,34 @@ const App = memo(() => {
     const openSendReportDialog2 = () => { openSendReportDialogWithState(); };
     const closeFile2 = () => { closeFile(); };
 
-    electron.ipcRenderer.on('file-opened', fileOpened);
-    electron.ipcRenderer.on('close-file', closeFile2);
-    electron.ipcRenderer.on('html5ify', html5ifyCurrentFile);
-    electron.ipcRenderer.on('show-merge-dialog', showOpenAndMergeDialog2);
-    electron.ipcRenderer.on('set-start-offset', setStartOffset);
-    electron.ipcRenderer.on('extract-all-streams', extractAllStreams);
-    electron.ipcRenderer.on('showStreamsSelector', showStreamsSelector);
-    electron.ipcRenderer.on('importEdlFile', importEdlFile);
-    electron.ipcRenderer.on('exportEdlFile', exportEdlFile);
-    electron.ipcRenderer.on('exportEdlYouTube', exportEdlYouTube);
-    electron.ipcRenderer.on('openHelp', toggleHelp);
-    electron.ipcRenderer.on('openSettings', toggleSettings);
-    electron.ipcRenderer.on('openAbout', openAbout);
-    electron.ipcRenderer.on('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
-    electron.ipcRenderer.on('openSendReportDialog', openSendReportDialog2);
-    electron.ipcRenderer.on('clearSegments', clearSegments);
-    electron.ipcRenderer.on('createNumSegments', createNumSegments2);
-    electron.ipcRenderer.on('createFixedDurationSegments', createFixedDurationSegments2);
-    electron.ipcRenderer.on('fixInvalidDuration', fixInvalidDuration2);
-    electron.ipcRenderer.on('reorderSegsByStartTime', reorderSegsByStartTime);
+    function fromMain({ event, opts }) {
+      switch (event) {
+        case 'file-opened': fileOpened(undefined, opts); break;
+        case 'close-file': closeFile2(undefined, opts); break;
+        case 'html5ify': html5ifyCurrentFile(undefined, opts); break;
+        case 'show-merge-dialog': showOpenAndMergeDialog2(undefined, opts); break;
+        case 'set-start-offset': setStartOffset(undefined, opts); break;
+        case 'extract-all-streams': extractAllStreams(undefined, opts); break;
+        case 'showStreamsSelector': showStreamsSelector(undefined, opts); break;
+        case 'importEdlFile': importEdlFile(undefined, opts); break;
+        case 'exportEdlFile': exportEdlFile(undefined, opts); break;
+        case 'exportEdlYouTube': exportEdlYouTube(undefined, opts); break;
+        case 'openHelp': toggleHelp(undefined, opts); break;
+        case 'openSettings': toggleSettings(undefined, opts); break;
+        case 'openAbout': openAbout(undefined, opts); break;
+        case 'batchConvertFriendlyFormat': batchConvertFriendlyFormat(undefined, opts); break;
+        case 'openSendReportDialog': openSendReportDialog2(undefined, opts); break;
+        case 'clearSegments': clearSegments(undefined, opts); break;
+        case 'createNumSegments': createNumSegments2(undefined, opts); break;
+        case 'createFixedDurationSegments': createFixedDurationSegments2(undefined, opts); break;
+        case 'fixInvalidDuration': fixInvalidDuration2(undefined, opts); break;
+        case 'reorderSegsByStartTime': reorderSegsByStartTime(undefined, opts); break;
+        default: console.error('Unknown event', event);
+      }
+    }
+    ipcEmitter.on('from-main', fromMain);
 
-    return () => {
-      electron.ipcRenderer.removeListener('file-opened', fileOpened);
-      electron.ipcRenderer.removeListener('close-file', closeFile2);
-      electron.ipcRenderer.removeListener('html5ify', html5ifyCurrentFile);
-      electron.ipcRenderer.removeListener('show-merge-dialog', showOpenAndMergeDialog2);
-      electron.ipcRenderer.removeListener('set-start-offset', setStartOffset);
-      electron.ipcRenderer.removeListener('extract-all-streams', extractAllStreams);
-      electron.ipcRenderer.removeListener('showStreamsSelector', showStreamsSelector);
-      electron.ipcRenderer.removeListener('importEdlFile', importEdlFile);
-      electron.ipcRenderer.removeListener('exportEdlFile', exportEdlFile);
-      electron.ipcRenderer.removeListener('exportEdlYouTube', exportEdlYouTube);
-      electron.ipcRenderer.removeListener('openHelp', toggleHelp);
-      electron.ipcRenderer.removeListener('openSettings', toggleSettings);
-      electron.ipcRenderer.removeListener('openAbout', openAbout);
-      electron.ipcRenderer.removeListener('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
-      electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog2);
-      electron.ipcRenderer.removeListener('clearSegments', clearSegments);
-      electron.ipcRenderer.removeListener('createNumSegments', createNumSegments2);
-      electron.ipcRenderer.removeListener('createFixedDurationSegments', createFixedDurationSegments2);
-      electron.ipcRenderer.removeListener('fixInvalidDuration', fixInvalidDuration2);
-      electron.ipcRenderer.removeListener('reorderSegsByStartTime', reorderSegsByStartTime);
-    };
+    return () => ipcEmitter.removeListener('from-main', fromMain);
   }, [
     mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, html5ifyCurrentFile,
     createDummyVideo, extractAllStreams, userOpenFiles, openSendReportDialogWithState,
@@ -1860,7 +1856,7 @@ const App = memo(() => {
   ]);
 
   async function showAddStreamSourceDialog() {
-    const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'] });
+    const { canceled, filePaths } = await window.util.dialog.showOpenDialog({ properties: ['openFile'] });
     if (canceled || filePaths.length < 1) return;
     await addStreamSourceFile(filePaths[0]);
   }
@@ -1969,7 +1965,7 @@ const App = memo(() => {
 
   useEffect(() => {
     // Testing:
-    // if (isDev) load({ filePath: '/Users/mifi/Downloads/inp.MOV', customOutDir });
+    if (isDev) load({ filePath: '/Users/mifi/Downloads/lofoten.mp4', customOutDir });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -8,8 +8,8 @@ import './fonts.css';
 import './main.css';
 
 
-const electron = window.require('electron');
+console.log('Version', window.util.getAppVersion());
 
-console.log('Version', electron.remote.app.getVersion());
-
-ReactDOM.render(<ErrorBoundary><Suspense fallback={<div />}><App /></Suspense></ErrorBoundary>, document.getElementById('root'));
+window.init.preload().then(() => {
+  ReactDOM.render(<ErrorBoundary><Suspense fallback={<div />}><App /></Suspense></ErrorBoundary>, document.getElementById('root'));
+}).catch(console.error);

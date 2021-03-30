@@ -1,24 +1,22 @@
 import { useCallback, useEffect, useMemo } from 'react';
 
-// TODO pull out?
-const { remote } = window.require('electron');
-const { Menu } = remote;
-
 // https://github.com/transflow/use-electron-context-menu
+
+// TODO pull out?
+const { buildMenuFromTemplate } = window.util;
 
 export default function useContextMenu(
   ref,
   template,
   options = {},
 ) {
-  const menu = useMemo(() => Menu.buildFromTemplate(template), [template]);
+  const menu = useMemo(() => buildMenuFromTemplate(template), [template]);
 
   const { x, y, onContext, onClose } = options;
 
   useEffect(() => {
     function handleContext(e) {
       menu.popup({
-        window: remote.getCurrentWindow(),
         x,
         y,
         callback: onClose,

@@ -1,9 +1,8 @@
-// const LanguageDetector = window.require('i18next-electron-language-detector');
-const isDev = require('electron-is-dev');
-
+// const LanguageDetector = require('i18next-electron-language-detector');
 const { app } = require('electron');
-
 const { join } = require('path');
+
+const { isDev } = require('./util');
 
 const getLangPath = (subPath) => (isDev ? join('public', subPath) : join(app.getAppPath(), 'build', subPath));
 

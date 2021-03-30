@@ -3,10 +3,8 @@ import i18n from 'i18next';
 
 import { errorToast } from '../util';
 
-const electron = window.require('electron'); // eslint-disable-line
-const isDev = window.require('electron-is-dev');
-
-const configStore = electron.remote.require('./configStore');
+const { isDev } = window.constants;
+const { configStore } = window;
 
 export default () => {
   const firstUpdateRef = useRef(true);

@@ -1,7 +1,5 @@
 import { encodeLiveRawStream, getOneRawFrame } from './ffmpeg';
 
-// TODO keep everything in electron land?
-const strtok3 = window.require('strtok3');
 
 export default ({ path, width: inWidth, height: inHeight, streamIndex }) => {
   let canvas;
@@ -40,7 +38,8 @@ export default ({ path, width: inWidth, height: inHeight, streamIndex }) => {
 
         // process.stderr.on('data', data => console.log(data.toString('utf-8')));
 
-        const tokenizer = await strtok3.fromStream(process.stdout);
+        // TODO keep everything in electron land?
+        const tokenizer = await window.strtok3.fromStream(process.stdout);
 
         const size = width * height * channels;
         const buf = Buffer.allocUnsafe(size);

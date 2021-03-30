@@ -7,20 +7,17 @@ import { Trans } from 'react-i18next';
 import CopyClipboardButton from './components/CopyClipboardButton';
 import { isStoreBuild, isMasBuild, isWindowsStoreBuild } from './util';
 
-const electron = window.require('electron'); // eslint-disable-line
-const os = window.require('os');
-
 
 const ReactSwal = withReactContent(Swal);
 
 // eslint-disable-next-line import/prefer-default-export
 export function openSendReportDialog(err, state) {
   const reportInstructions = isStoreBuild
-    ? <p><Trans>Please send an email to <span style={{ fontWeight: 'bold' }} role="button" onClick={() => electron.shell.openExternal('mailto:losslesscut@yankee.no')}>losslesscut@yankee.no</span> where you describe what you were doing.</Trans></p>
-    : <p><Trans>Please create an issue at <span style={{ fontWeight: 'bold' }} role="button" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/issues')}>https://github.com/mifi/lossless-cut/issues</span> where you describe what you were doing.</Trans></p>;
+    ? <p><Trans>Please send an email to <span style={{ fontWeight: 'bold' }} role="button" onClick={() => window.util.openExternal('mailto:losslesscut@yankee.no')}>losslesscut@yankee.no</span> where you describe what you were doing.</Trans></p>
+    : <p><Trans>Please create an issue at <span style={{ fontWeight: 'bold' }} role="button" onClick={() => window.util.openExternal('https://github.com/mifi/lossless-cut/issues')}>https://github.com/mifi/lossless-cut/issues</span> where you describe what you were doing.</Trans></p>;
 
-  const platform = os.platform();
-  const version = electron.remote.app.getVersion();
+  const { platform } = window.util;
+  const version = window.util.getAppVersion();
 
   const text = `${err ? err.stack : 'No error'}\n\n${JSON.stringify({
     err: err && {

@@ -7,7 +7,6 @@ import { useTranslation, Trans } from 'react-i18next';
 import SetCutpointButton from './components/SetCutpointButton';
 import SimpleModeButton from './components/SimpleModeButton';
 
-const electron = window.require('electron');
 
 const NoFileLoaded = memo(({ topBarHeight, bottomBarHeight, mifiLink, toggleHelp, currentCutSeg, simpleMode, toggleSimpleMode }) => {
   const { t } = useTranslation();
@@ -33,7 +32,7 @@ const NoFileLoaded = memo(({ topBarHeight, bottomBarHeight, mifiLink, toggleHelp
         <div style={{ position: 'relative', margin: '3vmin', width: '60vmin', height: '20vmin' }}>
           <iframe src={mifiLink.loadUrl} title="iframe" style={{ background: 'rgba(0,0,0,0)', border: 'none', pointerEvents: 'none', width: '100%', height: '100%', position: 'absolute' }} />
           {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus */}
-          <div style={{ width: '100%', height: '100%', position: 'absolute', cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal(mifiLink.targetUrl)} />
+          <div style={{ width: '100%', height: '100%', position: 'absolute', cursor: 'pointer' }} role="button" onClick={() => window.util.openExternal(mifiLink.targetUrl)} />
         </div>
       )}
     </div>
