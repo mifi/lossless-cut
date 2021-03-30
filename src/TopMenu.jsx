@@ -16,9 +16,9 @@ const TopMenu = memo(({
   const { t } = useTranslation();
 
   return (
-    <Fragment>
+    <>
       {filePath && (
-        <Fragment>
+        <>
           <Button height={20} iconBefore="list" onClick={withBlur(() => setStreamsSelectorShown(true))}>
             {t('Tracks')} ({numStreamsToCopy}/{numStreamsTotal})
           </Button>
@@ -31,7 +31,7 @@ const TopMenu = memo(({
           >
             {copyAnyAudioTrack ? t('Keep audio') : t('Discard audio')}
           </Button>
-        </Fragment>
+        </>
       )}
 
       <div style={{ flexGrow: 1 }} />
@@ -51,7 +51,7 @@ const TopMenu = memo(({
 
       <IoIosHelpCircle size={24} role="button" onClick={toggleHelp} style={{ verticalAlign: 'middle', marginLeft: 5 }} />
       <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ verticalAlign: 'middle', marginLeft: 5 }} />
-    </Fragment>
+    </>
   );
 });
 

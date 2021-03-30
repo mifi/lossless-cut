@@ -1946,7 +1946,6 @@ const App = memo(() => {
       setAutoLoadTimecode={setAutoLoadTimecode}
       enableTransferTimestamps={enableTransferTimestamps}
       setEnableTransferTimestamps={setEnableTransferTimestamps}
-
       AutoExportToggler={AutoExportToggler}
       renderCaptureFormatButton={renderCaptureFormatButton}
       onTunerRequested={onTunerRequested}
@@ -1960,7 +1959,6 @@ const App = memo(() => {
   useEffect(() => {
     // Testing:
     // if (isDev) load({ filePath: '/Users/mifi/Downloads/inp.MOV', customOutDir });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const VolumeIcon = muted || dummyVideoPath ? FaVolumeMute : FaVolumeUp;
@@ -2145,7 +2143,7 @@ const App = memo(() => {
       )}
 
       {isFileOpened && (
-        <Fragment>
+        <>
           <div
             className="no-user-select"
             style={{
@@ -2209,7 +2207,7 @@ const App = memo(() => {
               </motion.div>
             )}
           </AnimatePresence>
-        </Fragment>
+        </>
       )}
 
       <motion.div

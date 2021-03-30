@@ -44,7 +44,7 @@ const Settings = memo(({
   };
 
   return (
-    <Fragment>
+    <>
       <Row>
         <KeyCell>App language</KeyCell>
         <Table.TextCell>
@@ -250,7 +250,7 @@ const Settings = memo(({
           />
         </Table.TextCell>
       </Row>
-    </Fragment>
+    </>
   );
 });
 

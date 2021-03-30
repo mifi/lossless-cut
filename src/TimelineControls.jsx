@@ -132,7 +132,7 @@ const TimelineControls = memo(({
           />
         )}
         {hasVideo && !simpleMode && (
-          <Fragment>
+          <>
             <FaImages
               size={20}
               style={{ padding: '0 5px', color: timelineMode === 'thumbnails' ? primaryTextColor : undefined }}
@@ -148,7 +148,7 @@ const TimelineControls = memo(({
               title={t('Show keyframes')}
               onClick={toggleKeyframesEnabled}
             />
-          </Fragment>
+          </>
         )}
       </div>
 
