@@ -87,7 +87,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
       role="button"
       onClick={() => !invertCutSegments && onClick(index)}
       onDoubleClick={onDoubleClick}
-      positionTransition
+      layout
       style={{ originY: 0, margin: '5px 0', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5, position: 'relative', opacity: !enabled && !invertCutSegments ? 0.5 : undefined }}
       initial={{ scaleY: 0 }}
       animate={{ scaleY: 1 }}

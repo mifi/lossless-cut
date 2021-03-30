@@ -17,7 +17,8 @@ const InverseCutSegment = memo(({ start, end, duration, invertCutSegments }) => 
       alignItems: 'center',
       pointerEvents: 'none',
     }}
-    layoutTransition={mySpring}
+    layout
+    transition={mySpring}
   >
     <div style={{ flexGrow: 1, borderBottom: '1px dashed rgba(255, 255, 255, 0.3)', marginLeft: 5, marginRight: 5 }} />
     {invertCutSegments ? (
