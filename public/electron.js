@@ -13,6 +13,8 @@ require('./i18n');
 const { app } = electron;
 const { BrowserWindow } = electron;
 
+// https://github.com/electron/electron/issues/18397
+app.allowRendererProcessReuse = true;
 
 unhandled({
   showDialog: true,
