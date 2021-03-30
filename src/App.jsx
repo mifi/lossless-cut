@@ -37,7 +37,6 @@ import ExportConfirm from './ExportConfirm';
 import ValueTuner from './components/ValueTuner';
 import { loadMifiLink } from './mifi';
 import { primaryColor, controlsBackground, waveformColor } from './colors';
-import { showMergeDialog, showOpenAndMergeDialog } from './merge/merge';
 import allOutFormats from './outFormats';
 import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
@@ -56,7 +55,7 @@ import {
   hasDuplicates, havePermissionToReadFile,
 } from './util';
 import { formatDuration } from './util/duration';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog } from './dialogs';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMergeDialog, showOpenAndMergeDialog, openAbout } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments } from './segments';
@@ -71,7 +70,7 @@ const trash = window.require('trash');
 const { unlink, exists } = window.require('fs-extra');
 const { extname, parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, resolve: pathResolve, isAbsolute: pathIsAbsolute } = window.require('path');
 
-const { dialog, app } = electron.remote;
+const { dialog } = electron.remote;
 
 const { focusWindow } = electron.remote.require('./electron');
 
@@ -1652,7 +1651,6 @@ const App = memo(() => {
   useEffect(() => {
     function showOpenAndMergeDialog2() {
       showOpenAndMergeDialog({
-        dialog,
         defaultPath: outputDir,
         onMergeClick: mergeFiles,
       });
@@ -1722,14 +1720,6 @@ const App = memo(() => {
       const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters });
       if (canceled || filePaths.length < 1) return;
       await loadEdlFile(filePaths[0], type);
-    }
-
-    function openAbout() {
-      Swal.fire({
-        icon: 'info',
-        title: 'About LosslessCut',
-        text: `You are running version ${app.getVersion()}`,
-      });
     }
 
     async function batchConvertFriendlyFormat() {

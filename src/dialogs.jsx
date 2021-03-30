@@ -7,10 +7,13 @@ import withReactContent from 'sweetalert2-react-content';
 import { parseDuration } from './util/duration';
 import { parseYouTube } from './edlFormats';
 import CopyClipboardButton from './components/CopyClipboardButton';
+import { errorToast } from './util';
+
+import SortableFiles from './SortableFiles';
 
 const electron = window.require('electron'); // eslint-disable-line
 
-const { dialog } = electron.remote;
+const { dialog, app } = electron.remote;
 
 const ReactSwal = withReactContent(Swal);
 
@@ -295,4 +298,55 @@ export async function labelSegmentDialog(currentName) {
     },
   });
   return value;
+}
+
+export function openAbout() {
+  Swal.fire({
+    icon: 'info',
+    title: 'About LosslessCut',
+    text: `You are running version ${app.getVersion()}`,
+  });
+}
+
+export async function showMergeDialog(paths, onMergeClick) {
+  if (!paths) return;
+  if (paths.length < 2) {
+    errorToast(i18n.t('More than one file must be selected'));
+    return;
+  }
+
+  let swalElem;
+  let outPaths = paths;
+  let allStreams = false;
+  let segmentsToChapters = false;
+  const { dismiss } = await ReactSwal.fire({
+    width: '90%',
+    showCancelButton: true,
+    confirmButtonText: i18n.t('Merge!'),
+    onBeforeOpen: (el) => { swalElem = el; },
+    html: (<SortableFiles
+      items={outPaths}
+      onChange={(val) => { outPaths = val; }}
+      onAllStreamsChange={(val) => { allStreams = val; }}
+      onSegmentsToChaptersChange={(val) => { segmentsToChapters = val; }}
+      helperContainer={() => swalElem}
+    />),
+  });
+
+  if (!dismiss) {
+    await onMergeClick({ paths: outPaths, allStreams, segmentsToChapters });
+  }
+}
+
+export async function showOpenAndMergeDialog({ defaultPath, onMergeClick }) {
+  const title = i18n.t('Please select files to be merged');
+  const message = i18n.t('Please select files to be merged. The files need to be of the exact same format and codecs');
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    title,
+    defaultPath,
+    properties: ['openFile', 'multiSelections'],
+    message,
+  });
+  if (canceled) return;
+  showMergeDialog(filePaths, onMergeClick);
 }
