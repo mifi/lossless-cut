@@ -5,7 +5,7 @@ import debounce from 'lodash/debounce';
 import { useTranslation } from 'react-i18next';
 
 import TimelineSeg from './TimelineSeg';
-import InverseCutSegment from './InverseCutSegment';
+import BetweenSegments from './BetweenSegments';
 
 
 import { timelineBackground } from './colors';
@@ -250,7 +250,7 @@ const Timeline = memo(({
             })}
 
             {inverseCutSegments.map((seg) => (
-              <InverseCutSegment
+              <BetweenSegments
                 // eslint-disable-next-line react/no-array-index-key
                 key={`${seg.start},${seg.end}`}
                 start={seg.start}

@@ -5,7 +5,7 @@ import { FaTrashAlt, FaSave } from 'react-icons/fa';
 import { mySpring } from './animations';
 import { saveColor } from './colors';
 
-const InverseCutSegment = memo(({ start, end, duration, invertCutSegments }) => (
+const BetweenSegments = memo(({ start, end, duration, invertCutSegments }) => (
   <motion.div
     style={{
       position: 'absolute',
@@ -30,4 +30,4 @@ const InverseCutSegment = memo(({ start, end, duration, invertCutSegments }) => 
   </motion.div>
 ));
 
-export default InverseCutSegment;
+export default BetweenSegments;
