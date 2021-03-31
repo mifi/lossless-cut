@@ -1,4 +1,4 @@
-import React, { Fragment, memo } from 'react';
+import React, { memo } from 'react';
 import { Button, Table, SegmentedControl, Checkbox, Select } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 

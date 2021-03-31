@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState, useCallback, useRef, Fragment, useMemo } from 'react';
+import React, { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { FaVolumeMute, FaVolumeUp, FaAngleLeft, FaWindowClose } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
 import Swal from 'sweetalert2';
