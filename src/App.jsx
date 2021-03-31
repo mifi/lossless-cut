@@ -52,7 +52,7 @@ import {
   getOutPath, toast, errorToast, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
-  hasDuplicates, havePermissionToReadFile,
+  hasDuplicates, havePermissionToReadFile, isMac,
 } from './util';
 import { formatDuration } from './util/duration';
 import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMergeDialog, showOpenAndMergeDialog, openAbout } from './dialogs';
@@ -1126,7 +1126,8 @@ const App = memo(() => {
   }, [playing, canvasPlayerEnabled]);
 
   const getHtml5ifiedPath = useCallback((cod, fp, type) => {
-    const ext = type === 'fastest-audio' ? 'mkv' : 'mp4';
+    // See also inside ffmpegHtml5ify
+    const ext = (isMac && ['slowest', 'slow', 'slow-audio'].includes(type)) ? 'mp4' : 'mkv';
     return getOutPath(cod, fp, `html5ified-${type}.${ext}`);
   }, []);
 
@@ -1569,9 +1570,9 @@ const App = memo(() => {
     let audio;
     if (ha) {
       if (speed === 'slowest') audio = 'hq';
-      else if (speed === 'slow-audio') audio = 'lq-aac';
+      else if (speed === 'slow-audio') audio = 'lq';
       else if (speed === 'fast-audio') audio = 'copy';
-      else if (speed === 'fastest-audio') audio = 'lq-flac';
+      else if (speed === 'fastest-audio') audio = 'silent-audio';
     }
 
     let video;
@@ -1961,6 +1962,7 @@ const App = memo(() => {
     // if (isDev) load({ filePath: '/Users/mifi/Downloads/inp.MOV', customOutDir });
   }, []);
 
+  // TODO fastest-audio shows muted
   const VolumeIcon = muted || dummyVideoPath ? FaVolumeMute : FaVolumeUp;
 
   useEffect(() => {

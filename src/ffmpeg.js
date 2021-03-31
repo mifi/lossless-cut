@@ -5,7 +5,7 @@ import moment from 'moment';
 import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
-import { getOutPath, isDurationValid, getExtensionForFormat } from './util';
+import { getOutPath, isDurationValid, getExtensionForFormat, isMac, isWindows } from './util';
 
 const execa = window.require('execa');
 const { join } = window.require('path');
@@ -13,7 +13,6 @@ const fileType = window.require('file-type');
 const readChunk = window.require('read-chunk');
 const readline = window.require('readline');
 const isDev = window.require('electron-is-dev');
-const os = window.require('os');
 
 
 export function getFfCommandLine(cmd, args) {
@@ -22,13 +21,14 @@ export function getFfCommandLine(cmd, args) {
 }
 
 function getFfPath(cmd) {
-  const platform = os.platform();
+  // Testing non-mac setup on mac:
+  // return `node_modules/ffmpeg-ffprobe-static/${cmd}`;
 
-  if (platform === 'darwin') {
+  if (isMac) {
     return isDev ? `ffmpeg-mac/${cmd}` : join(window.process.resourcesPath, cmd);
   }
 
-  const exeName = platform === 'win32' ? `${cmd}.exe` : cmd;
+  const exeName = isWindows ? `${cmd}.exe` : cmd;
   return isDev
     ? `node_modules/ffmpeg-ffprobe-static/${exeName}`
     : join(window.process.resourcesPath, `node_modules/ffmpeg-ffprobe-static/${exeName}`);

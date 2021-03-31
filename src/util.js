@@ -120,6 +120,7 @@ export const isDurationValid = (duration) => Number.isFinite(duration) && durati
 const platform = os.platform();
 
 export const isWindows = platform === 'win32';
+export const isMac = platform === 'darwin';
 
 export function getExtensionForFormat(format) {
   const ext = {

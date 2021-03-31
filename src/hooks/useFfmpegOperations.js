@@ -4,11 +4,10 @@ import flatMapDeep from 'lodash/flatMapDeep';
 import sum from 'lodash/sum';
 import pMap from 'p-map';
 
-import { getOutPath, transferTimestamps, getOutFileExtension, getOutDir } from '../util';
+import { getOutPath, transferTimestamps, getOutFileExtension, getOutDir, isMac } from '../util';
 import { isCuttingStart, isCuttingEnd, handleProgress, getFfCommandLine, getFfmpegPath, getDuration, runFfmpeg, createChaptersFromSegments } from '../ffmpeg';
 
 const execa = window.require('execa');
-const os = window.require('os');
 const { join } = window.require('path');
 const fs = window.require('fs-extra');
 const stringToStream = window.require('string-to-stream');
@@ -268,14 +267,19 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     let videoArgs;
     let audioArgs;
 
-    const isMac = os.platform() === 'darwin';
+    // h264/aac_at: No licensing when using HW encoder (Video/Audio Toolbox on Mac)
+    // https://github.com/mifi/lossless-cut/issues/372#issuecomment-810766512
 
     switch (video) {
       case 'hq': {
         if (isMac) {
           videoArgs = ['-vf', 'format=yuv420p', '-allow_sw', '1', '-vcodec', 'h264', '-b:v', '15M'];
         } else {
-          videoArgs = ['-vf', 'format=yuv420p', '-vcodec', 'libx264', '-profile:v', 'high', '-preset:v', 'slow', '-crf', '17'];
+          // AV1 is very slow
+          // videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libaom-av1', '-crf', '30', '-cpu-used', '8'];
+          // Theora is a bit faster but not that much
+          // videoArgs = ['-vf', '-c:v', 'libtheora', '-qscale:v', '1'];
+          videoArgs = ['-vf', 'format=yuv420p', '-c:v', 'libvpx-vp9', '-crf', '30', '-b:v', '0', '-row-mt', '1'];
         }
         break;
       }
@@ -283,7 +287,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         if (isMac) {
           videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
         } else {
-          videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libx264', '-profile:v', 'baseline', '-x264opts', 'level=3.0', '-preset:v', 'ultrafast', '-crf', '28'];
+          videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-sws_flags', 'neighbor', '-c:v', 'libtheora', '-qscale:v', '1'];
         }
         break;
       }
@@ -298,15 +302,23 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
     switch (audio) {
       case 'hq': {
-        audioArgs = ['-acodec', 'aac', '-b:a', '192k'];
+        if (isMac) {
+          audioArgs = ['-acodec', 'aac_at', '-b:a', '192k'];
+        } else {
+          audioArgs = ['-acodec', 'flac'];
+        }
         break;
       }
-      case 'lq-flac': {
+      case 'silent-audio': {
         audioArgs = ['-acodec', 'flac', '-ar', '11025', '-ac', '2'];
         break;
       }
-      case 'lq-aac': {
-        audioArgs = ['-acodec', 'aac', '-ar', '44100', '-ac', '2', '-b:a', '96k'];
+      case 'lq': {
+        if (isMac) {
+          audioArgs = ['-acodec', 'aac_at', '-ar', '44100', '-ac', '2', '-b:a', '96k'];
+        } else {
+          audioArgs = ['-acodec', 'flac', '-ar', '11025', '-ac', '2'];
+        }
         break;
       }
       case 'copy': {
