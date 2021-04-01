@@ -37,6 +37,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     darkTheme: true,
     webPreferences: {
+      enableRemoteModule: true,
+      contextIsolation: false,
       nodeIntegration: true,
       // https://github.com/electron/electron/issues/5107
       webSecurity: !isDev,
@@ -46,14 +48,6 @@ function createWindow() {
   if (isDev) mainWindow.loadURL('http://localhost:3001');
   // Need to useloadFile for special characters https://github.com/mifi/lossless-cut/issues/40
   else mainWindow.loadFile('build/index.html');
-
-  if (isDev) {
-    const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies
-
-    installExtension(REACT_DEVELOPER_TOOLS)
-      .then(name => console.log(`Added Extension: ${name}`))
-      .catch(err => console.log('An error occurred: ', err));
-  }
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
@@ -91,6 +85,15 @@ function updateMenu() {
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
   await configStore.init();
+
+  if (isDev) {
+    const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies
+
+    installExtension(REACT_DEVELOPER_TOOLS)
+      .then(name => console.log(`Added Extension: ${name}`))
+      .catch(err => console.log('An error occurred: ', err));
+  }
+
 
   createWindow();
   updateMenu();
