@@ -2,11 +2,11 @@ import React, { memo, useState, useCallback, useEffect } from 'react';
 import {
   sortableContainer,
   sortableElement,
-  arrayMove,
 } from 'react-sortable-hoc';
 import { basename } from 'path';
 import { Checkbox } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
+import arrayMove from 'array-move';
 
 const rowStyle = {
   padding: 5, fontSize: 14, margin: '7px 0', boxShadow: '0 0 5px 0px rgba(0,0,0,0.3)', overflowY: 'auto', whiteSpace: 'nowrap',

@@ -1,4 +1,4 @@
-import uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import sortBy from 'lodash/sortBy';
 
 import { generateColor } from './util/colors';
@@ -8,7 +8,7 @@ export const createSegment = ({ start, end, name } = {}) => ({
   end,
   name: name || '',
   color: generateColor(),
-  segId: uuid.v4(),
+  segId: uuidv4(),
 });
 
 export const createInitialCutSegments = () => [createSegment()];

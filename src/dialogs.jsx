@@ -323,7 +323,7 @@ export async function showMergeDialog(paths, onMergeClick) {
     width: '90%',
     showCancelButton: true,
     confirmButtonText: i18n.t('Merge!'),
-    onBeforeOpen: (el) => { swalElem = el; },
+    willOpen: (el) => { swalElem = el; },
     html: (<SortableFiles
       items={outPaths}
       onChange={(val) => { outPaths = val; }}
