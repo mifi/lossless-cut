@@ -52,7 +52,7 @@ import {
   getOutPath, toast, errorToast, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
-  hasDuplicates, havePermissionToReadFile, isMac,
+  hasDuplicates, havePermissionToReadFile, isMac, getFileBaseName,
 } from './util';
 import { formatDuration } from './util/duration';
 import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMergeDialog, showOpenAndMergeDialog, openAbout } from './dialogs';
@@ -67,8 +67,8 @@ import loadingLottie from './7077-magic-flow.json';
 const isDev = window.require('electron-is-dev');
 const electron = window.require('electron'); // eslint-disable-line
 const trash = window.require('trash');
-const { unlink, exists } = window.require('fs-extra');
-const { extname, parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, resolve: pathResolve, isAbsolute: pathIsAbsolute } = window.require('path');
+const { unlink, exists, readdir } = window.require('fs-extra');
+const { extname, parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, resolve: pathResolve, isAbsolute: pathIsAbsolute, basename } = window.require('path');
 
 const { dialog } = electron.remote;
 
@@ -802,6 +802,10 @@ const App = memo(() => {
     if (!hideAllNotifications) toast.fire({ timer: 13000, text: i18n.t('File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview with audio.') });
   }, [hideAllNotifications]);
 
+  const showPreviewFileLoadedMessage = useCallback((fileName) => {
+    if (!hideAllNotifications) toast.fire({ text: i18n.t('Loaded existing preview file: {{ fileName }}', { fileName }) });
+  }, [hideAllNotifications]);
+
   const createDummyVideo = useCallback(async (cod, fp) => {
     const html5ifiedDummyPathDummy = getOutPath(cod, fp, 'html5ified-dummy.mkv');
     try {
@@ -1125,10 +1129,12 @@ const App = memo(() => {
     }
   }, [playing, canvasPlayerEnabled]);
 
+  const html5ifiedPrefix = 'html5ified-';
+
   const getHtml5ifiedPath = useCallback((cod, fp, type) => {
     // See also inside ffmpegHtml5ify
     const ext = (isMac && ['slowest', 'slow', 'slow-audio'].includes(type)) ? 'mp4' : 'mkv';
-    return getOutPath(cod, fp, `html5ified-${type}.${ext}`);
+    return getOutPath(cod, fp, `${html5ifiedPrefix}${type}.${ext}`);
   }, []);
 
   const firstSegmentAtCursorIndex = useMemo(() => {
@@ -1200,21 +1206,39 @@ const App = memo(() => {
 
     setWorking(i18n.t('Loading file'));
 
-    async function checkAndSetExistingHtml5FriendlyFile(speed) {
-      const existing = getHtml5ifiedPath(cod, fp, speed);
-      const ret = existing && await exists(existing);
-      if (ret) {
-        console.log('Found existing supported file', existing);
-        if (speed === 'fastest-audio') {
-          setDummyVideoPath(existing);
-          setHtml5FriendlyPath();
-        } else {
-          setHtml5FriendlyPath(existing);
-        }
+    async function checkAndSetExistingHtml5FriendlyFile() {
+      const speeds = ['slowest', 'slow-audio', 'slow', 'fast-audio', 'fast', 'fastest-audio'];
+      const prefix = `${getFileBaseName(fp)}-${html5ifiedPrefix}`;
 
-        showUnsupportedFileMessage();
+      const outDir = getOutDir(cod, fp);
+      const dirEntries = await readdir(outDir);
+      let speed;
+      let path;
+      // eslint-disable-next-line no-restricted-syntax
+      for (const entry of dirEntries) {
+        const html5Match = entry.startsWith(prefix);
+        if (html5Match) {
+          path = pathJoin(outDir, entry);
+          const speedMatch = speeds.find((s) => new RegExp(`${s}\\..*$`).test(entry.replace(prefix, '')));
+          if (speedMatch) {
+            speed = speedMatch;
+          }
+          break;
+        }
       }
-      return ret;
+
+      if (!path) return false;
+
+      console.log('Found existing supported file', path, speed);
+      if (speed === 'fastest-audio') {
+        setDummyVideoPath(path);
+        setHtml5FriendlyPath();
+      } else {
+        setHtml5FriendlyPath(path);
+      }
+
+      showPreviewFileLoadedMessage(basename(path));
+      return true;
     }
 
     try {
@@ -1275,7 +1299,7 @@ const App = memo(() => {
         setHtml5FriendlyPath();
         showUnsupportedFileMessage();
       } else if (
-        !(await checkAndSetExistingHtml5FriendlyFile('slowest') || await checkAndSetExistingHtml5FriendlyFile('slow-audio') || await checkAndSetExistingHtml5FriendlyFile('slow') || await checkAndSetExistingHtml5FriendlyFile('fast-audio') || await checkAndSetExistingHtml5FriendlyFile('fast') || await checkAndSetExistingHtml5FriendlyFile('fastest-audio'))
+        !(await checkAndSetExistingHtml5FriendlyFile())
         && !doesPlayerSupportFile(streams)
         && validDuration
       ) {

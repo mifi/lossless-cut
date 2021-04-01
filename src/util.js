@@ -13,11 +13,15 @@ export function getOutDir(customOutDir, filePath) {
   return undefined;
 }
 
-export function getOutPath(customOutDir, filePath, nameSuffix) {
+export function getFileBaseName(filePath) {
   if (!filePath) return undefined;
   const parsed = path.parse(filePath);
+  return parsed.name;
+}
 
-  return path.join(getOutDir(customOutDir, filePath), `${parsed.name}-${nameSuffix}`);
+export function getOutPath(customOutDir, filePath, nameSuffix) {
+  if (!filePath) return undefined;
+  return path.join(getOutDir(customOutDir, filePath), `${getFileBaseName(filePath)}-${nameSuffix}`);
 }
 
 export async function havePermissionToReadFile(filePath) {
