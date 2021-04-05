@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Checkbox } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
@@ -214,26 +215,45 @@ export async function confirmExtractAllStreamsDialog() {
   return !!value;
 }
 
-export async function cleanupFilesDialog() {
-  const { value } = await Swal.fire({
-    icon: 'warning',
+const CleanupChoices = ({ cleanupChoicesInitial, onChange: onChangeProp }) => {
+  const [choices, setChoices] = useState(cleanupChoicesInitial);
+
+  const getVal = (key) => !!choices[key];
+  const onChange = (key, val) => setChoices((c) => {
+    const newChoices = { ...c, [key]: val };
+    onChangeProp(newChoices);
+    return newChoices;
+  });
+
+  return (
+    <div style={{ textAlign: 'left' }}>
+      <p>{i18n.t('Do you want to move the original file and/or any generated files to trash?')}</p>
+
+      <Checkbox label={i18n.t('Trash auto-generated files')} checked={getVal('tmpFiles')} onChange={(e) => onChange('tmpFiles', e.target.checked)} />
+      <Checkbox label={i18n.t('Trash project CSV')} checked={getVal('projectFile')} onChange={(e) => onChange('projectFile', e.target.checked)} />
+      <Checkbox label={i18n.t('Trash original source file')} checked={getVal('sourceFile')} onChange={(e) => onChange('sourceFile', e.target.checked)} />
+
+      <div style={{ marginTop: 25 }}>
+        <Checkbox label={i18n.t('Don\'t show dialog again until restarting app')} checked={getVal('dontShowAgain')} onChange={(e) => onChange('dontShowAgain', e.target.checked)} />
+      </div>
+    </div>
+  );
+};
+
+export async function cleanupFilesDialog(cleanupChoicesIn = {}) {
+  let cleanupChoices = cleanupChoicesIn;
+
+  const { value } = await ReactSwal.fire({
     title: i18n.t('Cleanup files?'),
-    input: 'radio',
-    inputValue: 'tmpFiles',
-    text: i18n.t('Do you want to move the original file and/or any generated files to trash?'),
-    confirmButtonText: i18n.t('Trash'),
+    html: <CleanupChoices cleanupChoicesInitial={cleanupChoices} onChange={(newChoices) => { cleanupChoices = newChoices; }} />,
+    confirmButtonText: i18n.t('Confirm'),
     confirmButtonColor: '#d33',
     showCancelButton: true,
     cancelButtonText: i18n.t('Cancel'),
-    customClass: { input: 'swal2-losslesscut-radio' },
-    inputOptions: {
-      tmpFiles: i18n.t('Trash auto-generated files'),
-      projectAndTmpFiles: i18n.t('Trash project CSV and auto-generated files'),
-      all: i18n.t('Trash original source file, project CSV and auto-generated files'),
-    },
   });
 
-  return value;
+  if (value) return cleanupChoices;
+  return undefined;
 }
 
 

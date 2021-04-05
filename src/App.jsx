@@ -124,11 +124,13 @@ const App = memo(() => {
   const [zoomWindowStartTime, setZoomWindowStartTime] = useState(0);
   const [disabledSegmentIds, setDisabledSegmentIds] = useState({});
 
+  // State per application launch
   const [keyframesEnabled, setKeyframesEnabled] = useState(true);
   const [waveformEnabled, setWaveformEnabled] = useState(false);
   const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
   const [showSideBar, setShowSideBar] = useState(true);
   const [hideCanvasPreview, setHideCanvasPreview] = useState(false);
+  const [cleanupChoices, setCleanupChoices] = useState({});
 
   // Segment related state
   const [currentSegIndex, setCurrentSegIndex] = useState(0);
@@ -866,13 +868,16 @@ const App = memo(() => {
 
     if (!closeFile()) return;
 
-    const trashResponse = await cleanupFilesDialog();
-    console.log('trashResponse', trashResponse);
-    if (!trashResponse) return;
+    let trashResponse = cleanupChoices;
+    if (!cleanupChoices.dontShowAgain) {
+      trashResponse = await cleanupFilesDialog(cleanupChoices);
+      console.log('trashResponse', trashResponse);
+      if (!trashResponse) return; // Cancelled
+      setCleanupChoices(trashResponse); // Store for next time
+    }
 
-    const deleteTmpFiles = ['all', 'projectAndTmpFiles', 'tmpFiles'].includes(trashResponse);
-    const deleteProjectFile = ['all', 'projectAndTmpFiles'].includes(trashResponse);
-    const deleteOriginal = ['all'].includes(trashResponse);
+    const { tmpFiles: deleteTmpFiles, projectFile: deleteProjectFile, sourceFile: deleteOriginal } = trashResponse;
+    if (!deleteTmpFiles && !deleteProjectFile && !deleteOriginal) return;
 
     try {
       setWorking(i18n.t('Cleaning up'));
