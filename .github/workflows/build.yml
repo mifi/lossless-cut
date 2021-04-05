@@ -21,6 +21,9 @@ jobs:
 #        os: [windows-latest]
 
     steps:
+      # Windows fix. See https://github.com/actions/checkout/issues/226
+      - run: git config --global core.autocrlf false
+
       - name: Check out Git repository
         uses: actions/checkout@v2
 
