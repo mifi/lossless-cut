@@ -71,11 +71,12 @@ const Timeline = memo(({
   const currentTimePercent = useMemo(() => calculateTimelinePercent(playerTime), [calculateTimelinePercent, playerTime]);
   const commandedTimePercent = useMemo(() => calculateTimelinePercent(commandedTime), [calculateTimelinePercent, commandedTime]);
 
-  const commandedTimePosPixels = useMemo(() => {
-    const pos = calculateTimelinePos(commandedTime);
+  const timeOfInterestPosPixels = useMemo(() => {
+    // https://github.com/mifi/lossless-cut/issues/676
+    const pos = calculateTimelinePos(playerTime);
     if (pos != null && timelineScrollerRef.current) return pos * zoom * timelineScrollerRef.current.offsetWidth;
     return undefined;
-  }, [calculateTimelinePos, commandedTime, zoom]);
+  }, [calculateTimelinePos, playerTime, zoom]);
 
   const calcZoomWindowStartTime = useCallback(() => (timelineScrollerRef.current
     ? (timelineScrollerRef.current.scrollLeft / (timelineScrollerRef.current.offsetWidth * zoom)) * durationSafe
@@ -107,17 +108,17 @@ const Timeline = memo(({
 
   // Pan timeline when cursor moves out of timeline window
   useEffect(() => {
-    if (commandedTimePosPixels == null || timelineScrollerSkipEventRef.current) return;
+    if (timeOfInterestPosPixels == null || timelineScrollerSkipEventRef.current) return;
 
-    if (commandedTimePosPixels > timelineScrollerRef.current.scrollLeft + timelineScrollerRef.current.offsetWidth) {
+    if (timeOfInterestPosPixels > timelineScrollerRef.current.scrollLeft + timelineScrollerRef.current.offsetWidth) {
       const timelineWidth = timelineWrapperRef.current.offsetWidth;
-      const scrollLeft = commandedTimePosPixels - (timelineScrollerRef.current.offsetWidth * 0.1);
+      const scrollLeft = timeOfInterestPosPixels - (timelineScrollerRef.current.offsetWidth * 0.1);
       scrollLeftMotion.set(Math.min(scrollLeft, timelineWidth - timelineScrollerRef.current.offsetWidth));
-    } else if (commandedTimePosPixels < timelineScrollerRef.current.scrollLeft) {
-      const scrollLeft = commandedTimePosPixels - (timelineScrollerRef.current.offsetWidth * 0.9);
+    } else if (timeOfInterestPosPixels < timelineScrollerRef.current.scrollLeft) {
+      const scrollLeft = timeOfInterestPosPixels - (timelineScrollerRef.current.offsetWidth * 0.9);
       scrollLeftMotion.set(Math.max(scrollLeft, 0));
     }
-  }, [commandedTimePosPixels, scrollLeftMotion]);
+  }, [timeOfInterestPosPixels, scrollLeftMotion]);
 
   const currentTimeWidth = 1;
 
