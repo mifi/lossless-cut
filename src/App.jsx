@@ -130,7 +130,7 @@ const App = memo(() => {
   const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
   const [showSideBar, setShowSideBar] = useState(true);
   const [hideCanvasPreview, setHideCanvasPreview] = useState(false);
-  const [cleanupChoices, setCleanupChoices] = useState({});
+  const [cleanupChoices, setCleanupChoices] = useState({ tmpFiles: true });
 
   // Segment related state
   const [currentSegIndex, setCurrentSegIndex] = useState(0);
