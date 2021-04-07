@@ -148,7 +148,7 @@ const App = memo(() => {
   const isCustomFormatSelected = fileFormat !== detectedFileFormat;
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, muted, setMuted, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, muted, setMuted, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked,
   } = useUserPreferences();
 
   const {
@@ -176,6 +176,15 @@ const App = memo(() => {
   const currentTimeRef = useRef();
 
   const isFileOpened = !!filePath;
+
+  const onOutFormatLockedClick = () => setOutFormatLocked((v) => (v ? undefined : fileFormat));
+
+  function onOutputFormatUserChange(newFormat) {
+    setFileFormat(newFormat);
+    if (outFormatLocked) {
+      setOutFormatLocked(newFormat === detectedFileFormat ? undefined : newFormat);
+    }
+  }
 
   function setTimelineMode(newMode) {
     if (newMode === 'waveform') {
@@ -1286,7 +1295,7 @@ const App = memo(() => {
       ])));
 
       setFileNameTitle(fp);
-      setFileFormat(ff);
+      setFileFormat(outFormatLocked || ff);
       setDetectedFileFormat(ff);
       setFileFormatData(fd);
 
@@ -1340,7 +1349,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [resetState, working, createDummyVideo, loadEdlFile, getEdlFilePath, getHtml5ifiedPath, loadCutSegments, enableAskForImportChapters, showUnsupportedFileMessage, autoLoadTimecode]);
+  }, [resetState, working, createDummyVideo, loadEdlFile, getEdlFilePath, getHtml5ifiedPath, loadCutSegments, enableAskForImportChapters, showUnsupportedFileMessage, autoLoadTimecode, outFormatLocked]);
 
   const toggleHelp = useCallback(() => setHelpVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1905,7 +1914,7 @@ const App = memo(() => {
 
   const renderOutFmt = useCallback((props) => (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <Select value={fileFormat || ''} title={i18n.t('Output format')} onChange={withBlur(e => setFileFormat(e.target.value))} {...props}>
+    <Select value={fileFormat || ''} title={i18n.t('Output format')} onChange={withBlur(e => onOutputFormatUserChange(e.target.value))} {...props}>
       <option key="disabled1" value="" disabled>{i18n.t('Format')}</option>
 
       {detectedFileFormat && (
@@ -2094,6 +2103,7 @@ const App = memo(() => {
           toggleStripAudio={toggleStripAudio}
           customOutDir={customOutDir}
           changeOutDir={changeOutDir}
+          isCustomFormatSelected={isCustomFormatSelected}
           renderOutFmt={renderOutFmt}
           toggleHelp={toggleHelp}
           toggleSettings={toggleSettings}
@@ -2105,6 +2115,9 @@ const App = memo(() => {
           setAutoMerge={setAutoMerge}
           autoDeleteMergedSegments={autoDeleteMergedSegments}
           setAutoDeleteMergedSegments={setAutoDeleteMergedSegments}
+          outFormatLocked={outFormatLocked}
+          onOutFormatLockedClick={onOutFormatLockedClick}
+          simpleMode={simpleMode}
         />
       </div>
 

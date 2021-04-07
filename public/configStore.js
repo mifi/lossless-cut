@@ -37,6 +37,7 @@ const defaults = {
   keyboardSeekAccFactor: 1.03,
   keyboardNormalSeekSpeed: 1,
   enableTransferTimestamps: true,
+  outFormatLocked: undefined,
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645

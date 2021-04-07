@@ -1,19 +1,26 @@
 import React, { memo } from 'react';
 import { IoIosHelpCircle, IoIosSettings } from 'react-icons/io';
+import { FaLock, FaUnlock } from 'react-icons/fa';
 import { Button } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
 import MergeExportButton from './components/MergeExportButton';
 
 import { withBlur } from './util';
+import { primaryTextColor } from './colors';
 
 
 const TopMenu = memo(({
   filePath, copyAnyAudioTrack, toggleStripAudio, customOutDir, changeOutDir,
   renderOutFmt, toggleHelp, numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown, toggleSettings,
-  enabledOutSegments, autoMerge, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments,
+  enabledOutSegments, autoMerge, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments, isCustomFormatSelected, onOutFormatLockedClick, simpleMode, outFormatLocked,
 }) => {
   const { t } = useTranslation();
+
+  function renderFormatLock() {
+    const Icon = outFormatLocked ? FaLock : FaUnlock;
+    return <Icon onClick={onOutFormatLockedClick} title={t('Lock/unlock output format')} size={14} style={{ marginRight: 7, marginLeft: 2, color: outFormatLocked ? primaryTextColor : undefined }} />;
+  }
 
   return (
     <>
@@ -45,9 +52,15 @@ const TopMenu = memo(({
         {customOutDir ? t('Working dir set') : t('Working dir unset')}
       </Button>
 
-      {filePath && renderOutFmt({ height: 20, maxWidth: 100 })}
+      {filePath && (
+        <>
+          {renderOutFmt({ height: 20, maxWidth: 100 })}
 
-      {filePath && <MergeExportButton autoMerge={autoMerge} enabledOutSegments={enabledOutSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} />}
+          {!simpleMode && (isCustomFormatSelected || outFormatLocked) && renderFormatLock()}
+
+          <MergeExportButton autoMerge={autoMerge} enabledOutSegments={enabledOutSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} />
+        </>
+      )}
 
       <IoIosHelpCircle size={24} role="button" onClick={toggleHelp} style={{ verticalAlign: 'middle', marginLeft: 5 }} />
       <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ verticalAlign: 'middle', marginLeft: 5 }} />

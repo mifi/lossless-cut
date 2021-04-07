@@ -84,11 +84,16 @@ export default () => {
   useEffect(() => safeSetConfig('keyboardNormalSeekSpeed', keyboardNormalSeekSpeed), [keyboardNormalSeekSpeed]);
   const [enableTransferTimestamps, setEnableTransferTimestamps] = useState(configStore.get('enableTransferTimestamps'));
   useEffect(() => safeSetConfig('enableTransferTimestamps', enableTransferTimestamps), [enableTransferTimestamps]);
+  const [outFormatLocked, setOutFormatLocked] = useState(configStore.get('outFormatLocked'));
+  useEffect(() => safeSetConfig('outFormatLocked', outFormatLocked), [outFormatLocked]);
 
 
   // NOTE! This useEffect must be placed after all usages of firstUpdateRef.current (safeSetConfig)
   useEffect(() => {
     firstUpdateRef.current = false;
+    return () => {
+      firstUpdateRef.current = true;
+    };
   }, []);
 
   return {
@@ -152,5 +157,7 @@ export default () => {
     setKeyboardNormalSeekSpeed,
     enableTransferTimestamps,
     setEnableTransferTimestamps,
+    outFormatLocked,
+    setOutFormatLocked,
   };
 };
