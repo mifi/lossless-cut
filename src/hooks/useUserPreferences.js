@@ -15,7 +15,7 @@ export default () => {
     // Prevent flood-saving all config during mount
     if (firstUpdateRef.current) return;
 
-    if (isDev) console.log('save', key);
+    if (isDev) console.log('save', key, value);
     try {
       configStore.set(key, value);
     } catch (err) {
