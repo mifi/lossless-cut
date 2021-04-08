@@ -85,8 +85,13 @@ function set(key, val) {
   else store.set(key, val);
 }
 
+function reset(key) {
+  set(key, defaults[key]);
+}
+
 module.exports = {
   init,
   get,
   set,
+  reset,
 };
