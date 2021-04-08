@@ -1547,7 +1547,7 @@ const App = memo(() => {
     userOpenFiles(filePaths);
   }, [userOpenFiles, loadEdlFile, checkFileOpened]);
 
-  const html5ifyInternal = useCallback(async ({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: hv }) => {
+  const html5ify = useCallback(async ({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: hv }) => {
     const path = getHtml5ifiedPath(cod, fp, speed);
 
     let audio;
@@ -1574,13 +1574,13 @@ const App = memo(() => {
 
   const html5ifyAndLoad = useCallback(async (speed) => {
     if (speed === 'fastest-audio') {
-      const path = await html5ifyInternal({ customOutDir, filePath, speed, hasAudio, hasVideo: false });
+      const path = await html5ify({ customOutDir, filePath, speed, hasAudio, hasVideo: false });
       load({ filePath, dummyVideoPathRequested: path, customOutDir });
     } else {
-      const path = await html5ifyInternal({ customOutDir, filePath, speed, hasAudio, hasVideo });
+      const path = await html5ify({ customOutDir, filePath, speed, hasAudio, hasVideo });
       load({ filePath, html5FriendlyPathRequested: path, customOutDir });
     }
-  }, [hasAudio, hasVideo, customOutDir, filePath, html5ifyInternal, load]);
+  }, [hasAudio, hasVideo, customOutDir, filePath, html5ify, load]);
 
   const html5ifyCurrentFile = useCallback(async () => {
     if (!filePath) return;
@@ -1731,7 +1731,7 @@ const App = memo(() => {
             }
 
             // eslint-disable-next-line no-await-in-loop
-            await html5ifyInternal({ customOutDir: newCustomOutDir, filePath: path, speed, hasAudio: true, hasVideo: true });
+            await html5ify({ customOutDir: newCustomOutDir, filePath: path, speed, hasAudio: true, hasVideo: true });
           } catch (err2) {
             console.error('Failed to html5ify', path, err2);
             failedFiles.push(path);
@@ -1828,7 +1828,7 @@ const App = memo(() => {
   }, [
     mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, html5ifyCurrentFile,
     createDummyVideo, extractAllStreams, userOpenFiles, openSendReportDialogWithState,
-    loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ifyInternal,
+    loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ify,
     loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime, closeFile, clearSegments, fixInvalidDuration,
   ]);
 
@@ -1944,7 +1944,7 @@ const App = memo(() => {
     // if (isDev) load({ filePath: '/Users/mifi/Downloads/inp.MOV', customOutDir });
   }, []);
 
-  // TODO fastest-audio shows muted
+  // TODO fastest-audio shows as muted
   const VolumeIcon = muted || usingDummyVideo ? FaVolumeMute : FaVolumeUp;
 
   useEffect(() => {
