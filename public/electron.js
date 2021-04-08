@@ -84,6 +84,16 @@ function updateMenu() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
+  // https://github.com/electron/electron/issues/23757
+  // https://github.com/electron/electron/pull/28489
+  // TODO I think this can be removed when we are on electron 12 or 14
+  if (isDev) {
+    electron.protocol.registerFileProtocol('file', (request, callback) => {
+      const pathname = decodeURIComponent(request.url.replace('file:///', ''));
+      callback(pathname);
+    });
+  }
+
   await configStore.init();
 
   if (isDev) {
