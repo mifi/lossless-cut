@@ -21,6 +21,8 @@ import isEqual from 'lodash/isEqual';
 import useTimelineScroll from './hooks/useTimelineScroll';
 import useUserPreferences from './hooks/useUserPreferences';
 import useFfmpegOperations from './hooks/useFfmpegOperations';
+import useKeyframes from './hooks/useKeyframes';
+import useWaveform from './hooks/useWaveform';
 import NoFileLoaded from './NoFileLoaded';
 import Canvas from './Canvas';
 import TopMenu from './TopMenu';
@@ -36,14 +38,14 @@ import TimelineControls from './TimelineControls';
 import ExportConfirm from './ExportConfirm';
 import ValueTuner from './components/ValueTuner';
 import { loadMifiLink } from './mifi';
-import { primaryColor, controlsBackground, waveformColor } from './colors';
+import { primaryColor, controlsBackground } from './colors';
 import allOutFormats from './outFormats';
 import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
   getDefaultOutFormat, getFormatData, renderThumbnails as ffmpegRenderThumbnails,
-  readFrames, renderWaveformPng, extractStreams, getAllStreams,
-  findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime, isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
+  extractStreams, getAllStreams,
+  isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments,
 } from './ffmpeg';
 import { saveCsv, saveTsv, loadCsv, loadXmeml, loadCue, loadPbf, loadMplayerEdl, saveCsvHuman } from './edlStore';
@@ -92,7 +94,6 @@ const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
 
 const App = memo(() => {
   // Per project state
-  const [waveform, setWaveform] = useState();
   const [html5FriendlyPath, setHtml5FriendlyPath] = useState();
   const [working, setWorking] = useState();
   const [dummyVideoPath, setDummyVideoPath] = useState(false);
@@ -118,7 +119,6 @@ const App = memo(() => {
   const [zoom, setZoom] = useState(1);
   const [commandedTime, setCommandedTime] = useState(0);
   const [ffmpegCommandLog, setFfmpegCommandLog] = useState([]);
-  const [neighbouringFrames, setNeighbouringFrames] = useState([]);
   const [thumbnails, setThumbnails] = useState([]);
   const [shortestFlag, setShortestFlag] = useState(false);
   const [zoomWindowStartTime, setZoomWindowStartTime] = useState(0);
@@ -171,8 +171,6 @@ const App = memo(() => {
   const [mifiLink, setMifiLink] = useState();
 
   const videoRef = useRef();
-  const readingKeyframesPromise = useRef();
-  const creatingWaveformPromise = useRef();
   const currentTimeRef = useRef();
 
   const isFileOpened = !!filePath;
@@ -711,49 +709,13 @@ const App = memo(() => {
     thumnailsRef.current = thumbnails;
   }, [thumbnails]);
 
-  const [, cancelReadKeyframeDataDebounce] = useDebounceOld(() => {
-    async function run() {
-      // We still want to calculate keyframes even if not shouldShowKeyframes because maybe we want to step to closest keyframe
-      if (!keyframesEnabled || !filePath || !mainVideoStream || commandedTime == null || readingKeyframesPromise.current) return;
-
-      try {
-        const promise = readFrames({ filePath, aroundTime: commandedTime, stream: mainVideoStream.index, window: ffmpegExtractWindow });
-        readingKeyframesPromise.current = promise;
-        const newFrames = await promise;
-        // console.log(newFrames);
-        setNeighbouringFrames(newFrames);
-      } catch (err) {
-        console.error('Failed to read keyframes', err);
-      } finally {
-        readingKeyframesPromise.current = undefined;
-      }
-    }
-    run();
-  }, 500, [keyframesEnabled, filePath, commandedTime, mainVideoStream]);
-
   const hasAudio = !!mainAudioStream;
   const hasVideo = !!mainVideoStream;
   const shouldShowKeyframes = keyframesEnabled && !!mainVideoStream && calcShouldShowKeyframes(zoomedDuration);
   const shouldShowWaveform = calcShouldShowWaveform(zoomedDuration);
 
-  const [, cancelWaveformDataDebounce] = useDebounceOld(() => {
-    async function run() {
-      if (!filePath || !mainAudioStream || commandedTime == null || !shouldShowWaveform || !waveformEnabled || creatingWaveformPromise.current) return;
-      try {
-        const promise = renderWaveformPng({ filePath, aroundTime: commandedTime, window: ffmpegExtractWindow, color: waveformColor });
-        creatingWaveformPromise.current = promise;
-        const wf = await promise;
-        setWaveform(wf);
-      } catch (err) {
-        console.error('Failed to render waveform', err);
-      } finally {
-        creatingWaveformPromise.current = undefined;
-      }
-    }
-
-    run();
-  }, 500, [filePath, commandedTime, zoomedDuration, waveformEnabled, mainAudioStream, shouldShowWaveform]);
-
+  const { neighbouringFrames, findNearestKeyFrameTime } = useKeyframes({ keyframesEnabled, filePath, commandedTime, mainVideoStream, detectedFps, ffmpegExtractWindow });
+  const { waveform } = useWaveform({ filePath, commandedTime, zoomedDuration, waveformEnabled, mainAudioStream, shouldShowWaveform, ffmpegExtractWindow });
 
   const resetState = useCallback(() => {
     const video = videoRef.current;
@@ -795,19 +757,10 @@ const App = memo(() => {
 
     setExportConfirmVisible(false);
 
-    setWaveform();
-    cancelWaveformDataDebounce();
-
-    setNeighbouringFrames([]);
-    cancelReadKeyframeDataDebounce();
-
     setThumbnails([]);
     cancelRenderThumbnails();
-  }, [cutSegmentsHistory, setCutSegments, cancelWaveformDataDebounce, cancelReadKeyframeDataDebounce, cancelRenderThumbnails]);
+  }, [cutSegmentsHistory, setCutSegments, cancelRenderThumbnails]);
 
-
-  // Cleanup old
-  useEffect(() => () => waveform && URL.revokeObjectURL(waveform.url), [waveform]);
 
   const showUnsupportedFileMessage = useCallback(() => {
     if (!hideAllNotifications) toast.fire({ timer: 13000, text: i18n.t('File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview with audio.') });
@@ -1355,8 +1308,6 @@ const App = memo(() => {
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
 
   const jumpSeg = useCallback((val) => setCurrentSegIndex((old) => Math.max(Math.min(old + val, cutSegments.length - 1), 0)), [cutSegments.length]);
-
-  const findNearestKeyFrameTime = useCallback(({ time, direction }) => ffmpegFindNearestKeyFrameTime({ frames: neighbouringFrames, time, direction, fps: detectedFps }), [neighbouringFrames, detectedFps]);
 
   const seekClosestKeyframe = useCallback((direction) => {
     const time = findNearestKeyFrameTime({ time: currentTimeRef.current, direction });
