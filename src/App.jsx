@@ -177,12 +177,12 @@ const App = memo(() => {
 
   const onOutFormatLockedClick = () => setOutFormatLocked((v) => (v ? undefined : fileFormat));
 
-  function onOutputFormatUserChange(newFormat) {
+  const onOutputFormatUserChange = useCallback((newFormat) => {
     setFileFormat(newFormat);
     if (outFormatLocked) {
       setOutFormatLocked(newFormat === detectedFileFormat ? undefined : newFormat);
     }
-  }
+  }, [detectedFileFormat, outFormatLocked, setOutFormatLocked]);
 
   function setTimelineMode(newMode) {
     if (newMode === 'waveform') {
@@ -876,7 +876,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [filePath, previewFilePath, closeFile, edlFilePath]);
+  }, [filePath, previewFilePath, closeFile, edlFilePath, cleanupChoices]);
 
   const outSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
     [invertCutSegments, inverseCutSegments, apparentCutSegments]);
@@ -1296,7 +1296,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [resetState, working, createDummyVideo, loadEdlFile, getEdlFilePath, getHtml5ifiedPath, loadCutSegments, enableAskForImportChapters, showUnsupportedFileMessage, autoLoadTimecode, outFormatLocked]);
+  }, [resetState, working, createDummyVideo, loadEdlFile, getEdlFilePath, loadCutSegments, enableAskForImportChapters, showUnsupportedFileMessage, autoLoadTimecode, outFormatLocked, showPreviewFileLoadedMessage]);
 
   const toggleHelp = useCallback(() => setHelpVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1873,7 +1873,7 @@ const App = memo(() => {
       <option key="disabled3" value="" disabled>--- {i18n.t('All formats:')} ---</option>
       {renderFormatOptions(otherFormatsMap)}
     </Select>
-  ), [commonFormatsMap, detectedFileFormat, fileFormat, otherFormatsMap]);
+  ), [commonFormatsMap, detectedFileFormat, fileFormat, otherFormatsMap, onOutputFormatUserChange]);
 
   const renderCaptureFormatButton = useCallback((props) => (
     <Button
