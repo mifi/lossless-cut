@@ -94,9 +94,9 @@ const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
 
 const App = memo(() => {
   // Per project state
-  const [html5FriendlyPath, setHtml5FriendlyPath] = useState();
+  const [previewFilePath, setPreviewFilePath] = useState();
   const [working, setWorking] = useState();
-  const [dummyVideoPath, setDummyVideoPath] = useState(false);
+  const [usingDummyVideo, setUsingDummyVideo] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [playerTime, setPlayerTime] = useState();
   const [duration, setDuration] = useState();
@@ -271,15 +271,15 @@ const App = memo(() => {
   }, [seekRel, detectedFps]);
 
   /* useEffect(() => () => {
-    if (dummyVideoPath) unlink(dummyVideoPath).catch(console.error);
-  }, [dummyVideoPath]); */
+    if (usingDummyVideo && previewFilePath) unlink(previewFilePath).catch(console.error);
+  }, [usingDummyVideo, previewFilePath]); */
 
   // 360 means we don't modify rotation
   const isRotationSet = rotation !== 360;
   const effectiveRotation = isRotationSet ? rotation : (mainVideoStream && mainVideoStream.tags && mainVideoStream.tags.rotate && parseInt(mainVideoStream.tags.rotate, 10));
 
   const zoomRel = useCallback((rel) => setZoom(z => Math.min(Math.max(z + rel, 1), zoomMax)), []);
-  const canvasPlayerRequired = !!(mainVideoStream && dummyVideoPath);
+  const canvasPlayerRequired = !!(mainVideoStream && usingDummyVideo);
   const canvasPlayerWanted = !!(mainVideoStream && isRotationSet && !hideCanvasPreview);
   // Allow user to disable it
   const canvasPlayerEnabled = (canvasPlayerRequired || canvasPlayerWanted);
@@ -474,7 +474,7 @@ const App = memo(() => {
     setCustomOutDir(newOutDir);
   }, [outputDir, setCustomOutDir]);
 
-  const effectiveFilePath = dummyVideoPath || html5FriendlyPath || filePath;
+  const effectiveFilePath = previewFilePath || filePath;
   const fileUri = effectiveFilePath ? filePathToUrl(effectiveFilePath) : '';
 
   const getEdlFilePath = useCallback((fp) => getOutPath(customOutDir, fp, 'llc-edl.csv'), [customOutDir]);
@@ -724,8 +724,8 @@ const App = memo(() => {
     video.playbackRate = 1;
 
     setFileNameTitle();
-    setHtml5FriendlyPath();
-    setDummyVideoPath();
+    setPreviewFilePath();
+    setUsingDummyVideo(false);
     setWorking();
     setPlaying(false);
     setDuration();
@@ -770,16 +770,19 @@ const App = memo(() => {
     if (!hideAllNotifications) toast.fire({ text: i18n.t('Loaded existing preview file: {{ fileName }}', { fileName }) });
   }, [hideAllNotifications]);
 
+  const html5ifiedPrefix = 'html5ified-';
+  const html5dummySuffix = 'dummy';
+
   const createDummyVideo = useCallback(async (cod, fp) => {
-    const html5ifiedDummyPathDummy = getOutPath(cod, fp, 'html5ified-dummy.mkv');
+    const html5ifiedDummyPath = getOutPath(cod, fp, `${html5ifiedPrefix}${html5dummySuffix}.mkv`);
     try {
       setCutProgress(0);
-      await html5ifyDummy({ filePath: fp, outPath: html5ifiedDummyPathDummy, onProgress: setCutProgress });
+      await html5ifyDummy({ filePath: fp, outPath: html5ifiedDummyPath, onProgress: setCutProgress });
     } finally {
       setCutProgress();
     }
-    setDummyVideoPath(html5ifiedDummyPathDummy);
-    setHtml5FriendlyPath();
+    setUsingDummyVideo(true);
+    setPreviewFilePath(html5ifiedDummyPath);
     showUnsupportedFileMessage();
   }, [html5ifyDummy, showUnsupportedFileMessage]);
 
@@ -826,7 +829,7 @@ const App = memo(() => {
 
   const cleanupFiles = useCallback(async () => {
     // Because we will reset state before deleting files
-    const saved = { html5FriendlyPath, dummyVideoPath, filePath, edlFilePath };
+    const saved = { previewFilePath, filePath, edlFilePath };
 
     if (!closeFile()) return;
 
@@ -844,10 +847,8 @@ const App = memo(() => {
     try {
       setWorking(i18n.t('Cleaning up'));
 
-      if (deleteTmpFiles && saved.html5FriendlyPath) await trash(saved.html5FriendlyPath).catch(console.error);
-      if (deleteTmpFiles && saved.dummyVideoPath) await trash(saved.dummyVideoPath).catch(console.error);
+      if (deleteTmpFiles && saved.previewFilePath) await trash(saved.previewFilePath).catch(console.error);
       if (deleteProjectFile && saved.edlFilePath) await trash(saved.edlFilePath).catch(console.error);
-
       // throw new Error('test');
       if (deleteOriginal) await trash(saved.filePath);
       toast.fire({ icon: 'info', title: i18n.t('Cleanup successful') });
@@ -863,8 +864,7 @@ const App = memo(() => {
         });
 
         if (value) {
-          if (deleteTmpFiles && saved.html5FriendlyPath) await unlink(saved.html5FriendlyPath).catch(console.error);
-          if (deleteTmpFiles && saved.dummyVideoPath) await unlink(saved.dummyVideoPath).catch(console.error);
+          if (deleteTmpFiles && saved.previewFilePath) await unlink(saved.previewFilePath).catch(console.error);
           if (deleteProjectFile && saved.edlFilePath) await unlink(saved.edlFilePath).catch(console.error);
           if (deleteOriginal) await unlink(saved.filePath);
           toast.fire({ icon: 'info', title: i18n.t('Cleanup successful') });
@@ -876,7 +876,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [filePath, html5FriendlyPath, dummyVideoPath, closeFile, edlFilePath]);
+  }, [filePath, previewFilePath, closeFile, edlFilePath]);
 
   const outSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
     [invertCutSegments, inverseCutSegments, apparentCutSegments]);
@@ -1065,10 +1065,9 @@ const App = memo(() => {
     if (!filePath) return;
 
     try {
-      const mustCaptureFfmpeg = html5FriendlyPath || dummyVideoPath;
       const currentTime = currentTimeRef.current;
       const video = videoRef.current;
-      const outPath = mustCaptureFfmpeg
+      const outPath = previewFilePath
         ? await captureFrameFfmpeg({ customOutDir, filePath, currentTime, captureFormat, enableTransferTimestamps })
         : await captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, enableTransferTimestamps });
 
@@ -1077,7 +1076,7 @@ const App = memo(() => {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [filePath, captureFormat, customOutDir, html5FriendlyPath, dummyVideoPath, outputDir, enableTransferTimestamps]);
+  }, [filePath, captureFormat, customOutDir, previewFilePath, outputDir, enableTransferTimestamps]);
 
   const changePlaybackRate = useCallback((dir) => {
     if (canvasPlayerEnabled) {
@@ -1095,8 +1094,6 @@ const App = memo(() => {
       video.playbackRate = newRate;
     }
   }, [playing, canvasPlayerEnabled]);
-
-  const html5ifiedPrefix = 'html5ified-';
 
   const getHtml5ifiedPath = useCallback((cod, fp, type) => {
     // See also inside ffmpegHtml5ify
@@ -1174,7 +1171,7 @@ const App = memo(() => {
     setWorking(i18n.t('Loading file'));
 
     async function checkAndSetExistingHtml5FriendlyFile() {
-      const speeds = ['slowest', 'slow-audio', 'slow', 'fast-audio', 'fast', 'fastest-audio'];
+      const speeds = ['slowest', 'slow-audio', 'slow', 'fast-audio', 'fast', 'fastest-audio', html5dummySuffix];
       const prefix = `${getFileBaseName(fp)}-${html5ifiedPrefix}`;
 
       const outDir = getOutDir(cod, fp);
@@ -1183,26 +1180,22 @@ const App = memo(() => {
       let path;
       // eslint-disable-next-line no-restricted-syntax
       for (const entry of dirEntries) {
-        const html5Match = entry.startsWith(prefix);
-        if (html5Match) {
-          path = pathJoin(outDir, entry);
+        const prefixMatch = entry.startsWith(prefix);
+        if (prefixMatch) {
           const speedMatch = speeds.find((s) => new RegExp(`${s}\\..*$`).test(entry.replace(prefix, '')));
-          if (speedMatch) {
-            speed = speedMatch;
+          if (!speedMatch || speedMatch !== html5dummySuffix) { // skip dummy, as it's not very useful
+            path = pathJoin(outDir, entry);
+            if (speedMatch) speed = speedMatch; // We want to also capture any custom user suffix (but NOT dummy)
+            break;
           }
-          break;
         }
       }
 
       if (!path) return false;
 
       console.log('Found existing supported file', path, speed);
-      if (speed === 'fastest-audio') {
-        setDummyVideoPath(path);
-        setHtml5FriendlyPath();
-      } else {
-        setHtml5FriendlyPath(path);
-      }
+      setUsingDummyVideo(speed === 'fastest-audio');
+      setPreviewFilePath(path);
 
       showPreviewFileLoadedMessage(basename(path));
       return true;
@@ -1234,7 +1227,7 @@ const App = memo(() => {
         if (streamFps != null) setDetectedFps(streamFps);
       }
 
-      const shouldDefaultCopyStream = (stream) => {
+      const shouldCopyStreamByDefault = (stream) => {
         if (!defaultProcessedCodecTypes.includes(stream.codec_type)) return false;
         // Don't enable thumbnail stream by default if we have a main video stream
         // It's been known to cause issues: https://github.com/mifi/lossless-cut/issues/308
@@ -1244,7 +1237,7 @@ const App = memo(() => {
 
       setMainStreams(streams);
       setCopyStreamIdsForPath(fp, () => fromPairs(streams.map((stream) => [
-        stream.index, shouldDefaultCopyStream(stream),
+        stream.index, shouldCopyStreamByDefault(stream),
       ])));
 
       setFileNameTitle(fp);
@@ -1259,11 +1252,12 @@ const App = memo(() => {
       const validDuration = isDurationValid(parseFloat(fd.duration));
 
       if (html5FriendlyPathRequested) {
-        setHtml5FriendlyPath(html5FriendlyPathRequested);
+        setUsingDummyVideo(false);
+        setPreviewFilePath(html5FriendlyPathRequested);
         showUnsupportedFileMessage();
       } else if (dummyVideoPathRequested) {
-        setDummyVideoPath(dummyVideoPathRequested);
-        setHtml5FriendlyPath();
+        setUsingDummyVideo(true);
+        setPreviewFilePath(dummyVideoPathRequested);
         showUnsupportedFileMessage();
       } else if (
         !(await checkAndSetExistingHtml5FriendlyFile())
@@ -1559,9 +1553,8 @@ const App = memo(() => {
     let audio;
     if (ha) {
       if (speed === 'slowest') audio = 'hq';
-      else if (speed === 'slow-audio') audio = 'lq';
+      else if (speed === 'slow-audio' || speed === 'fastest-audio') audio = 'lq';
       else if (speed === 'fast-audio') audio = 'copy';
-      else if (speed === 'fastest-audio') audio = 'silent-audio';
     }
 
     let video;
@@ -1624,7 +1617,7 @@ const App = memo(() => {
     }
 
     const MEDIA_ERR_SRC_NOT_SUPPORTED = 4;
-    if (error.code === MEDIA_ERR_SRC_NOT_SUPPORTED && !dummyVideoPath) {
+    if (error.code === MEDIA_ERR_SRC_NOT_SUPPORTED && !usingDummyVideo) {
       console.error('MEDIA_ERR_SRC_NOT_SUPPORTED');
       if (hasVideo) {
         if (isDurationValid(await getDuration(filePath))) {
@@ -1636,7 +1629,7 @@ const App = memo(() => {
         await html5ifyAndLoad('fastest-audio');
       }
     }
-  }, [tryCreateDummyVideo, fileUri, dummyVideoPath, hasVideo, hasAudio, html5ifyAndLoad, hideAllNotifications, filePath]);
+  }, [tryCreateDummyVideo, fileUri, usingDummyVideo, hasVideo, hasAudio, html5ifyAndLoad, hideAllNotifications, filePath]);
 
   useEffect(() => {
     function showOpenAndMergeDialog2() {
@@ -1952,7 +1945,7 @@ const App = memo(() => {
   }, []);
 
   // TODO fastest-audio shows muted
-  const VolumeIcon = muted || dummyVideoPath ? FaVolumeMute : FaVolumeUp;
+  const VolumeIcon = muted || usingDummyVideo ? FaVolumeMute : FaVolumeUp;
 
   useEffect(() => {
     const keyScrollPreventer = (e) => {

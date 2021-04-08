@@ -309,10 +309,6 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         }
         break;
       }
-      case 'silent-audio': {
-        audioArgs = ['-acodec', 'flac', '-ar', '11025', '-ac', '2'];
-        break;
-      }
       case 'lq': {
         if (isMac) {
           audioArgs = ['-acodec', 'aac_at', '-ar', '44100', '-ac', '2', '-b:a', '96k'];
