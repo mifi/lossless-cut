@@ -10,7 +10,7 @@ const Settings = memo(({
   invertTimelineScroll, setInvertTimelineScroll, ffmpegExperimental, setFfmpegExperimental,
   enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction,
   hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode,
-  enableTransferTimestamps, setEnableTransferTimestamps,
+  enableTransferTimestamps, setEnableTransferTimestamps, speedMultiplier, setSpeedMultiplier,
 }) => {
   const { t } = useTranslation();
 
@@ -182,6 +182,21 @@ const Settings = memo(({
         <KeyCell>{t('Timeline keyboard seek acceleration')}</KeyCell>
         <Table.TextCell>
           <Button onClick={() => onTunerRequested('keyboardSeekAccFactor')}>{t('Change value')}</Button>
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>
+          {t('Playback speed multiplier')}<br />
+          {t('The rate at which playback speed increases or decreases with these key combinations:')}
+          <kbd>SHIFT</kbd> + <kbd>L</kbd>, <kbd>SHIFT</kbd> + <kbd>J</kbd>
+        </KeyCell>
+        <Table.TextCell>
+          <SegmentedControl
+            options={[{ label: '2x / 0.5x', value: '2x' }, { label: '1.1x / 0.9091x', value: '1.1x' }]}
+            value={speedMultiplier}
+            onChange={value => setSpeedMultiplier(value)}
+          />
         </Table.TextCell>
       </Row>
 

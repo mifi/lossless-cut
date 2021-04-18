@@ -44,6 +44,8 @@ const HelpSheet = memo(({ visible, onTogglePress, ffmpegCommandLog, currentCutSe
         <div><kbd>SPACE</kbd>, <kbd>k</kbd> {t('Play/pause')}</div>
         <div><kbd>J</kbd> {t('Slow down playback')}</div>
         <div><kbd>L</kbd> {t('Speed up playback')}</div>
+        <div><kbd>SHIFT</kbd> + <kbd>J</kbd> {t('Slow down playback by a multiplier')}</div>
+        <div><kbd>SHIFT</kbd> + <kbd>L</kbd> {t('Speed up playback by a multiplier')}</div>
 
         <h2>{t('Seeking')}</h2>
 

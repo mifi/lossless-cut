@@ -86,6 +86,8 @@ export default () => {
   useEffect(() => safeSetConfig('enableTransferTimestamps', enableTransferTimestamps), [enableTransferTimestamps]);
   const [outFormatLocked, setOutFormatLocked] = useState(configStore.get('outFormatLocked'));
   useEffect(() => safeSetConfig('outFormatLocked', outFormatLocked), [outFormatLocked]);
+  const [speedMultiplier, setSpeedMultiplier] = useState(configStore.get('speedMultiplier'));
+  useEffect(() => safeSetConfig('speedMultiplier', speedMultiplier), [speedMultiplier]);
 
 
   // NOTE! This useEffect must be placed after all usages of firstUpdateRef.current (safeSetConfig)
@@ -159,5 +161,7 @@ export default () => {
     setEnableTransferTimestamps,
     outFormatLocked,
     setOutFormatLocked,
+    speedMultiplier,
+    setSpeedMultiplier,
   };
 };

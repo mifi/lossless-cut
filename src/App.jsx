@@ -148,7 +148,7 @@ const App = memo(() => {
   const isCustomFormatSelected = fileFormat !== detectedFileFormat;
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, muted, setMuted, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, muted, setMuted, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, speedMultiplier, setSpeedMultiplier,
   } = useUserPreferences();
 
   const {
@@ -1078,7 +1078,7 @@ const App = memo(() => {
     }
   }, [filePath, captureFormat, customOutDir, previewFilePath, outputDir, enableTransferTimestamps]);
 
-  const changePlaybackRate = useCallback((dir) => {
+  const changePlaybackRate = useCallback((dir, useMultiplier) => {
     if (canvasPlayerEnabled) {
       toast.fire({ title: i18n.t('Unable to change playback rate right now'), timer: 1000 });
       return;
@@ -1088,12 +1088,38 @@ const App = memo(() => {
     if (!playing) {
       video.play();
     } else {
+      let calculatedRate;
+      if (useMultiplier) {
+        switch (true) {
+          case speedMultiplier === '2x' && dir > 0:
+            calculatedRate = video.playbackRate * 2.0;
+            break;
+          case speedMultiplier === '2x' && dir < 0:
+            calculatedRate = video.playbackRate * 0.5;
+            break;
+          case speedMultiplier === '1.1x' && dir > 0:
+            calculatedRate = video.playbackRate * 1.1;
+            break;
+          case speedMultiplier === '1.1x' && dir < 0:
+            calculatedRate = video.playbackRate * 0.9091;
+            break;
+          default:
+            calculatedRate = 1.0;
+            break;
+        }
+      } else {
+        calculatedRate = video.playbackRate + (dir * 0.15);
+      }
+      // if the multiplier causes us to go faster than real time or slower than real time, stop along the way at 1.0
+      if ((calculatedRate > 1.0 && video.playbackRate < 1.0) || (calculatedRate < 1.0 && video.playbackRate > 1.0)) {
+        calculatedRate = 1.0;
+      }
       // https://github.com/mifi/lossless-cut/issues/447#issuecomment-766339083
-      const newRate = clamp(Math.round((video.playbackRate + (dir * 0.15)) * 100) / 100, 0.1, 16);
+      const newRate = clamp(Math.round(calculatedRate * 100) / 100, 0.1, 16);
       toast.fire({ title: `${i18n.t('Playback rate:')} ${Math.round(newRate * 100)}%`, timer: 1000 });
       video.playbackRate = newRate;
     }
-  }, [playing, canvasPlayerEnabled]);
+  }, [playing, canvasPlayerEnabled, speedMultiplier]);
 
   const getHtml5ifiedPath = useCallback((cod, fp, type) => {
     // See also inside ffmpegHtml5ify
@@ -1318,7 +1344,9 @@ const App = memo(() => {
     const togglePlayNoReset = () => togglePlay();
     const togglePlayReset = () => togglePlay(true);
     const reducePlaybackRate = () => changePlaybackRate(-1);
+    const reducePlaybackRateExponentially = () => changePlaybackRate(-1, true);
     const increasePlaybackRate = () => changePlaybackRate(1);
+    const increasePlaybackRateExponentially = () => changePlaybackRate(1, true);
     function seekBackwards() {
       seekRel(keyboardNormalSeekSpeed * seekAccelerationRef.current * -1);
       seekAccelerationRef.current *= keyboardSeekAccFactor;
@@ -1349,7 +1377,9 @@ const App = memo(() => {
     mousetrap.bind('space', () => togglePlayReset());
     mousetrap.bind('k', () => togglePlayNoReset());
     mousetrap.bind('j', () => reducePlaybackRate());
+    mousetrap.bind('shift+j', () => reducePlaybackRateExponentially());
     mousetrap.bind('l', () => increasePlaybackRate());
+    mousetrap.bind('shift+l', () => increasePlaybackRateExponentially());
     mousetrap.bind('z', () => toggleComfortZoom());
     mousetrap.bind(',', () => seekBackwardsShort());
     mousetrap.bind('.', () => seekForwardsShort());
@@ -1932,8 +1962,10 @@ const App = memo(() => {
       AutoExportToggler={AutoExportToggler}
       renderCaptureFormatButton={renderCaptureFormatButton}
       onTunerRequested={onTunerRequested}
+      speedMultiplier={speedMultiplier}
+      setSpeedMultiplier={setSpeedMultiplier}
     />
-  ), [changeOutDir, customOutDir, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments, autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, ffmpegExperimental, setFfmpegExperimental, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, AutoExportToggler, renderCaptureFormatButton, onTunerRequested, enableTransferTimestamps, setEnableTransferTimestamps]);
+  ), [changeOutDir, customOutDir, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments, autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, ffmpegExperimental, setFfmpegExperimental, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, AutoExportToggler, renderCaptureFormatButton, onTunerRequested, enableTransferTimestamps, setEnableTransferTimestamps, speedMultiplier, setSpeedMultiplier]);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);
