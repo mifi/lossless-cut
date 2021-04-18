@@ -118,6 +118,7 @@ module.exports = (app, mainWindow, newVersion) => {
         { type: 'separator' },
         {
           label: i18n.t('Settings'),
+          accelerator: 'CmdOrCtrl+,',
           click() {
             mainWindow.webContents.send('openSettings');
           },
