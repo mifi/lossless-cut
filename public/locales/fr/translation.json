@@ -300,7 +300,7 @@
     "Reorder segments by start time": "Réordonner les segments par temps de démarrage",
     "Clear all segments": "Effacer tous les segments",
     "Segments": "Segments",
-    "Edit": "Éditer",
+    "Edit": "Modifier",
     "Exit": "Quitter",
     "Fix incorrect duration": "Corriger durée incorrecte",
     "Export project": "Exporter le projet",
@@ -310,6 +310,10 @@
     "Load project (CSV)": "Charger un projet (CSV)",
     "Open": "Ouvrir",
     "File": "Fichier",
-    "Are you sure you want to quit?": "Êtes vous sûr de vouloir quitter ?",
-    "Confirm quit": "Confirmer la sortie"
+    "Are you sure you want to quit?": "Êtes-vous sûr(e) de vouloir quitter ?",
+    "Confirm quit": "Confirmer la sortie",
+    "Change value": "Changer la valeur",
+    "Edit track {{trackNum}} metadata": "Modifier les métadonnées de la piste {{trackNum}}",
+    "Please send an email to <1>losslesscut@yankee.no</1> where you describe what you were doing.": "Veuillez envoyer un courriel à <1>losslesscut@yankee.no</1> où vous décrivez ce que vous faisiez.",
+    "Timestamps (TSV/TXT)": "Horodatage (TSV/TXT)"
 }
