@@ -314,6 +314,6 @@
     "Confirm quit": "Confirmer la sortie",
     "Change value": "Changer la valeur",
     "Edit track {{trackNum}} metadata": "Modifier les métadonnées de la piste {{trackNum}}",
-    "Please send an email to <1>losslesscut@yankee.no</1> where you describe what you were doing.": "Veuillez envoyer un courriel à <1>losslesscut@yankee.no</1> où vous décrivez ce que vous faisiez.",
+    "Please send an email to <1>losslesscut@yankee.no</1> where you describe what you were doing.": "Veuillez envoyer un courriel à <1>losslesscut@yankee.no</1> dans lequel vous décrivez ce que vous faisiez.",
     "Timestamps (TSV/TXT)": "Horodatage (TSV/TXT)"
 }
