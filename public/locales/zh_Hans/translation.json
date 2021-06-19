@@ -347,7 +347,7 @@
     "For the ipod format, it is recommended to activate this option": "对于ipod格式，建议激活此选项",
     "Note: Keyframe cut is recommended for most common files": "注意：推荐关键帧切割适用于大多数常见文件",
     "Depending on your specific file/player, you may have to try different options for best results.": "根据你的特定文件/播放器，你可能需要尝试不同的选项来达到最佳结果。",
-    "Preserve original metadata when merging? (slow)": "合并时保留源的元數據？（慢）",
+    "Preserve original metadata when merging? (slow)": "合并时保留源的元数据？（慢）",
     "Create chapters from merged segments? (slow)": "从合并的片段创建章节？（慢）",
     "Merge {{segments}} cut segments to one file?": "合并 {{segments}} 剪切片段到一个文件？",
     "Export options": "导出选项",
