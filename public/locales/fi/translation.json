@@ -426,6 +426,6 @@
     "Keep": "Säilytä",
     "Choose cutting mode: Remove or keep selected segments from video when exporting?": "Valitse leikkaustapa: poista tai säilytä video-osiot tiedostoa viedessä?",
     "Accurate time but could leave an empty portion at the beginning of the video. Equiv to": "Aika on täsmällinen mutta leikkaukseen voi siltikin jäädä tyhjä osanen aivan videon alkuun. Vertainen",
-    "Cut at the nearest keyframe (not accurate time.) Equiv to": "Leikkaa lähimpään avainkuvaruutuun (ei täsmällistä aikaa.) Vertainen:",
+    "Cut at the nearest keyframe (not accurate time.) Equiv to": "Leikkaa lähimpään avainkuvaan (ei täsmällistä aikaa). Vastaava kuin",
     "Keyframe cut mode": "Avainkuva leikkaustila"
 }
