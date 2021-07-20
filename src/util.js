@@ -68,6 +68,11 @@ export const toast = Swal.mixin({
   position: 'top',
   showConfirmButton: false,
   timer: 5000,
+  timerProgressBar: true,
+  didOpen: (self) => {
+    self.addEventListener('mouseenter', Swal.stopTimer);
+    self.addEventListener('mouseleave', Swal.resumeTimer);
+  },
 });
 
 export const errorToast = (title) => toast.fire({
