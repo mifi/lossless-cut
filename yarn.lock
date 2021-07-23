@@ -12950,9 +12950,9 @@ sweetalert2-react-content@^4.0.0:
   integrity sha512-aZo1XmKDLXKDiSAMiNtg7YrVFqZ6GizbZoIct+sf5LuIPuA1fkA1t7KnFE7596aJmZHrcKi+BXhwDZVo0NJiCQ==
 
 sweetalert2@^11.0.0:
-  version "11.0.19"
-  resolved "https://registry.yarnpkg.com/sweetalert2/-/sweetalert2-11.0.19.tgz#b1c50b87b4f3227dcd62b7396bca36f7bbce5041"
-  integrity sha512-fJkiIhvOjDux8Ns08uWNdWPcLql5tpMpiuc78sYLjY9zTBvkj7rvmPHHckdkAZLKVGUmOfy8ckDZ1ElS0lLpjw==
+  version "11.0.20"
+  resolved "https://registry.yarnpkg.com/sweetalert2/-/sweetalert2-11.0.20.tgz#c0bbd379f6fc929025fc66c08cc8b8f1af76aa9c"
+  integrity sha512-htNVn/7IDNfqSLo8m50s0Y7FkgAjng7NnQbvi5p1e4ydxByjiiNgpWhSThgiCRFYMzIaSEuOam2d4Sq9FbVyfA==
 
 symbol-tree@^3.2.4:
   version "3.2.4"
