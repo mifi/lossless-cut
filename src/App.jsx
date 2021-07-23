@@ -2081,7 +2081,6 @@ const App = memo(() => {
             >
               <div style={{ width: 150, height: 150 }}>
                 <Lottie
-                  options={{ loop: true, autoplay: true, animationData: loadingLottie }}
                   loop
                   animationData={loadingLottie}
                   play

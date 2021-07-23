@@ -11172,12 +11172,13 @@ react-lifecycles-compat@^3.0.4:
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
 
-react-lottie-player@^1.3.1:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/react-lottie-player/-/react-lottie-player-1.3.1.tgz#5be263cf56fc7ed99af11c8e11fa4356baaac6aa"
-  integrity sha512-mYygNOb9y2vTwtWGTfvC/zTTv6Uh5DUrnAPZ3pH3PCa+yFva2h3Kx9cCuwKhrs3lA4rndPpqH5CQ4jst9+VDEg==
+react-lottie-player@^1.3.3:
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/react-lottie-player/-/react-lottie-player-1.3.3.tgz#e44c635718d5cde973d4720fe8359523f0e832ba"
+  integrity sha512-VeTqTbmVZGyn0SYPtcGS+pyxhZxocBn7z56RdlcaRxjF6o02NFeZ50f0TANOYfHK2g0jtjG+o85caxpHeikucA==
   dependencies:
     fast-deep-equal "^3.1.3"
+    lodash.clonedeep "^4.5.0"
     lottie-web "^5.7.6"
 
 react-refresh@^0.8.3:
