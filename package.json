@@ -56,7 +56,7 @@
     "evergreen-ui": "^4.23.0",
     "fast-xml-parser": "^3.17.4",
     "file-url": "^3.0.0",
-    "framer-motion": "^4.1.2",
+    "framer-motion": "3",
     "hammerjs": "^2.0.8",
     "i18next-scanner": "^3.0.0",
     "icon-gen": "^2.0.0",
