@@ -14,8 +14,9 @@ const mapLang = (lng) => ({
   no: 'nb_NO',
   nn: 'nb_NO',
   zh: 'zh_Hans',
-  'zh-CN': 'zh_Hans',
-  'zh-TW': 'zh_Hans',
+  // https://source.chromium.org/chromium/chromium/src/+/master:ui/base/l10n/l10n_util.cc;l=354
+  'zh-CN': 'zh_Hans', // Chinese simplified (mainland China)
+  'zh-TW': 'zh_Hant', // Chinese traditional (Taiwan)
   fr: 'fr',
   'fr-CA': 'fr',
   'fr-CH': 'fr',
