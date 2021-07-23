@@ -102,7 +102,7 @@ export async function askForOutDir(defaultPath) {
 
 export async function askForFileOpenAction() {
   const { value } = await Swal.fire({
-    title: i18n.t('You opened a new file. What do you want to do?'),
+    text: i18n.t('You opened a new file. What do you want to do?'),
     icon: 'question',
     input: 'radio',
     inputValue: 'open',
