@@ -40,6 +40,8 @@ const Settings = memo(({
     // sr: 'Cрпски',
     tr: 'Türkçe',
     zh: '中文',
+    'zh_Hant': '繁體中文',
+    'zh_Hans': '简体中文',
     ko: '한국어',
   };
 
