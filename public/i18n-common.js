@@ -8,7 +8,8 @@ const { join } = require('path');
 const getLangPath = (subPath) => (isDev ? join('public', subPath) : join(app.getAppPath(), 'build', subPath));
 
 // Weblate hardcodes different lang codes than electron
-// https://www.electronjs.org/docs/api/locales
+// https://www.electronjs.org/docs/api/app#appgetlocale
+// https://source.chromium.org/chromium/chromium/src/+/master:ui/base/l10n/l10n_util.cc
 const mapLang = (lng) => ({
   nb: 'nb_NO',
   no: 'nb_NO',
