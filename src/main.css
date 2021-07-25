@@ -61,8 +61,3 @@ kbd {
   align-items: flex-start !important;
   text-align: left;
 }
-
-.swal2-container {
-  /* because body is set to white */
-  color: black;
-}
