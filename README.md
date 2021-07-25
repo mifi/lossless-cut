@@ -151,6 +151,7 @@ Unsupported files can still be converted to a supported format/codec from the `F
 - If any other problem, check [Known issues](#known-issues--limitations), or please search for existing issues before you file an issue here on GitHub.
 - If the app crashes immediately upon startup, check the permissions of your User and Temp folders, see [61](https://github.com/mifi/lossless-cut/issues/61).
 - How to uninstall LosslessCut on Windows? There is no installer. Just delete the EXE file or containing folder. User files will be stored in your [appData](https://www.electronjs.org/docs/api/app#appgetpathname) folder.
+- Completely white window when starting up? Try to run with `--disable-gpu` - See [781](https://github.com/mifi/lossless-cut/issues/781).
 
 If you have an issue you can check the developer tools for any errors or clues. Menu: `Tools` -> `Toggle Developer Tools`
 
