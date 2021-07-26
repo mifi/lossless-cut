@@ -1490,7 +1490,7 @@ const App = memo(() => {
 
     if (filePaths.length < 1) return;
     if (filePaths.length > 1) {
-      showMergeDialog(filePaths, mergeFiles);
+      showMergeDialog(sortBy(filePaths), mergeFiles);
       return;
     }
 
