@@ -136,13 +136,13 @@ module.exports = (app, mainWindow, newVersion) => {
     {
       label: i18n.t('Edit'),
       submenu: [
-        { role: 'undo' },
-        { role: 'redo' },
+        { role: 'undo', label: i18n.t('Undo') },
+        { role: 'redo', label: i18n.t('Redo') },
         { type: 'separator' },
-        { role: 'cut' },
-        { role: 'copy' },
-        { role: 'paste' },
-        { role: 'selectall' },
+        { role: 'cut', label: i18n.t('Cut') },
+        { role: 'copy', label: i18n.t('Copy') },
+        { role: 'paste', label: i18n.t('Paste') },
+        { role: 'selectall', label: i18n.t('Select All') },
         { type: 'separator' },
         {
           label: i18n.t('Segments'),
@@ -196,16 +196,16 @@ module.exports = (app, mainWindow, newVersion) => {
     {
       label: i18n.t('View'),
       submenu: [
-        { role: 'togglefullscreen' },
+        { role: 'togglefullscreen', label: i18n.t('Toggle Full Screen') },
       ],
     },
 
     // On Windows the windowMenu has a close Ctrl+W which clashes with File->Close shortcut
     ...(process.platform === 'darwin'
-      ? [{ role: 'windowMenu' }]
+      ? [{ role: 'windowMenu', label: i18n.t('Window') }]
       : [{
         label: i18n.t('Window'),
-        submenu: [{ role: 'minimize' }],
+        submenu: [{ role: 'minimize', label: i18n.t('Minimize') }],
       }]
     ),
 
@@ -230,11 +230,12 @@ module.exports = (app, mainWindow, newVersion) => {
             mainWindow.webContents.send('set-start-offset', true);
           },
         },
-        { role: 'toggleDevTools' },
+        { role: 'toggleDevTools', label: i18n.t('Toggle Developer Tools') },
       ],
     },
     {
       role: 'help',
+      label: i18n.t('Help'),
       submenu: [
         {
           label: i18n.t('Help and shortcuts'),
