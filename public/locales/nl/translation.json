@@ -427,5 +427,21 @@
     "Tag": "Label",
     "Type": "Type",
     "Keep?": "Behouden?",
-    "Edit file metadata": "Metadata van bestand bewerken"
+    "Edit file metadata": "Metadata van bestand bewerken",
+    "Lock/unlock output format": "Uitvoerformaat vergrendelen/ontgrendelen",
+    "Confirm": "Bevestigen",
+    "Don't show dialog again until restarting app": "Dialoogvenster niet meer weergeven totdat de app opnieuw gestart wordt",
+    "Trash original source file": "Origineel bronbestand naar prullenbak verplaatsen",
+    "Trash project CSV": "Project-CSV naar prullenbak verplaatsen",
+    "Loaded existing preview file: {{ fileName }}": "Bestaand voorbeeldbestand geladen: {{ fileName }}",
+    "Help": "Help",
+    "Toggle Developer Tools": "Ontwikkelaarshulpmiddelen aan/uit",
+    "Minimize": "Minimaliseren",
+    "Toggle Full Screen": "Volledig scherm aan/uit",
+    "Select All": "Alles selecteren",
+    "Paste": "Plakken",
+    "Copy": "Kopiëren",
+    "Cut": "Knippen",
+    "Redo": "Opnieuw uitvoeren",
+    "Undo": "Ongedaan maken"
 }
