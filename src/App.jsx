@@ -786,7 +786,7 @@ const App = memo(() => {
     showUnsupportedFileMessage();
   }, [html5ifyDummy, showUnsupportedFileMessage]);
 
-  const showPlaybackFailedMessage = () => errorToast(i18n.t('Unable to playback this file. Try to convert to supported format from the menu'));
+  const showPlaybackFailedMessage = () => errorToast(i18n.t('Unable to playback this file. Try to convert to supported format from the menu. Read <a href="https://github.com/mifi/lossless-cut#supported-formats">documentation</a> for more.'));
 
   const tryCreateDummyVideo = useCallback(async () => {
     try {
