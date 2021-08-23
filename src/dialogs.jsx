@@ -309,16 +309,13 @@ export function openYouTubeChaptersDialog(text) {
   });
 }
 
-export async function labelSegmentDialog(currentName) {
+export async function labelSegmentDialog({ currentName, maxLength }) {
   const { value } = await Swal.fire({
     showCancelButton: true,
     title: i18n.t('Label current segment'),
     inputValue: currentName,
     input: 'text',
-    inputValidator: (v) => {
-      const maxLength = 100;
-      return v.length > maxLength ? `${i18n.t('Max length')} ${maxLength}` : undefined;
-    },
+    inputValidator: (v) => (v.length > maxLength ? `${i18n.t('Max length')} ${maxLength}` : undefined),
   });
   return value;
 }

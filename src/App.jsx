@@ -364,11 +364,13 @@ const App = memo(() => {
     updateSegAtIndex(currentSegIndexSafe, { [type]: Math.min(Math.max(time, 0), duration) });
   }, [currentSegIndexSafe, getSegApparentEnd, currentCutSeg, duration, updateSegAtIndex]);
 
+  const maxLabelLength = safeOutputFileName ? 100 : 500;
+
   const onLabelSegmentPress = useCallback(async (index) => {
     const { name } = cutSegments[index];
-    const value = await labelSegmentDialog(name);
+    const value = await labelSegmentDialog({ currentName: name, maxLength: maxLabelLength });
     if (value != null) updateSegAtIndex(index, { name: value });
-  }, [cutSegments, updateSegAtIndex]);
+  }, [cutSegments, updateSegAtIndex, maxLabelLength]);
 
   const onViewSegmentTagsPress = useCallback((segment) => {
     showJson5Dialog({ title: 'Segment tags', json: getSegmentTags(segment) });
@@ -900,7 +902,7 @@ const App = memo(() => {
   const onExportSegmentDisableAll = useCallback(() => setDisabledSegmentIds(Object.fromEntries(cutSegments.map((s) => [s.segId, true]))), [cutSegments]);
   const onExportSegmentEnableAll = useCallback(() => setDisabledSegmentIds({}), []);
 
-  const filenamifyOrNot = useCallback((name) => (safeOutputFileName ? filenamify(name) : name), [safeOutputFileName]);
+  const filenamifyOrNot = useCallback((name) => (safeOutputFileName ? filenamify(name) : name).substr(0, maxLabelLength), [safeOutputFileName, maxLabelLength]);
 
   const generateOutSegFileNames = useCallback(({ segments = enabledOutSegments, template }) => (
     segments.map((segment, i) => {
