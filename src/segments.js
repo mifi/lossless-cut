@@ -3,12 +3,13 @@ import sortBy from 'lodash/sortBy';
 
 import { generateColor } from './util/colors';
 
-export const createSegment = ({ start, end, name } = {}) => ({
+export const createSegment = ({ start, end, name, tags } = {}) => ({
   start,
   end,
   name: name || '',
   color: generateColor(),
   segId: uuidv4(),
+  tags, // tags is an optional object (key-value)
 });
 
 export const createInitialCutSegments = () => [createSegment()];
@@ -24,6 +25,7 @@ export const getCleanCutSegments = (cs) => cs.map((seg) => ({
   start: seg.start,
   end: seg.end,
   name: seg.name,
+  tags: seg.tags,
 }));
 
 export function findSegmentsAtCursor(apparentSegments, currentTime) {
@@ -33,6 +35,8 @@ export function findSegmentsAtCursor(apparentSegments, currentTime) {
   });
   return indexes;
 }
+
+export const getSegmentTags = (segment) => (segment.tags || {});
 
 export const sortSegments = (segments) => sortBy(segments, 'start');
 

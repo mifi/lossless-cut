@@ -148,9 +148,19 @@ export function getOutFileExtension({ isCustomFormatSelected, outFormat, filePat
 // eslint-disable-next-line no-template-curly-in-string
 export const defaultOutSegTemplate = '${FILENAME}-${CUT_FROM}-${CUT_TO}${SEG_SUFFIX}${EXT}';
 
-export function generateSegFileName({ template, inputFileNameWithoutExt, segSuffix, ext, segNum, segLabel, cutFrom, cutTo }) {
+export function generateSegFileName({ template, inputFileNameWithoutExt, segSuffix, ext, segNum, segLabel, cutFrom, cutTo, tags }) {
   const compiled = lodashTemplate(template);
-  return compiled({ FILENAME: inputFileNameWithoutExt, SEG_SUFFIX: segSuffix, EXT: ext, SEG_NUM: segNum, SEG_LABEL: segLabel, CUT_FROM: cutFrom, CUT_TO: cutTo });
+  const data = {
+    FILENAME: inputFileNameWithoutExt,
+    SEG_SUFFIX: segSuffix,
+    EXT: ext,
+    SEG_NUM: segNum,
+    SEG_LABEL: segLabel,
+    CUT_FROM: cutFrom,
+    CUT_TO: cutTo,
+    SEG_TAGS: Object.fromEntries(Object.entries(tags).map(([key, value]) => [`${key.toLocaleUpperCase('en-US')}`, value])),
+  };
+  return compiled(data);
 }
 
 export const hasDuplicates = (arr) => new Set(arr).size !== arr.length;

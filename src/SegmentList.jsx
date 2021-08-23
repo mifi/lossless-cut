@@ -10,6 +10,7 @@ import isEqual from 'lodash/isEqual';
 import useDebounce from 'react-use/lib/useDebounce';
 import scrollIntoView from 'scroll-into-view-if-needed';
 
+import { getSegmentTags } from './segments';
 import useContextMenu from './hooks/useContextMenu';
 import { saveColor } from './colors';
 import { getSegColors } from './util/colors';
@@ -21,7 +22,7 @@ const buttonBaseStyle = {
 const neutralButtonColor = 'rgba(255, 255, 255, 0.2)';
 
 
-const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onReorderPress, onLabelPress, enabled, onExportSingleSegmentClick, onExportSegmentEnabledToggle, onExportSegmentDisableAll, onExportSegmentEnableAll, jumpSegStart, jumpSegEnd, addCutSegment }) => {
+const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onReorderPress, onLabelPress, enabled, onExportSingleSegmentClick, onExportSegmentEnabledToggle, onExportSegmentDisableAll, onExportSegmentEnableAll, jumpSegStart, jumpSegEnd, addCutSegment, onViewSegmentTagsPress }) => {
   const { t } = useTranslation();
 
   const ref = useRef();
@@ -48,6 +49,10 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
     { label: enabled ? t('Exclude this segment from export') : t('Include this segment in export'), click: () => onExportSegmentEnabledToggle(seg) },
     { label: t('Include all segments in export'), click: () => onExportSegmentEnableAll(seg) },
     { label: t('Exclude all segments from export'), click: () => onExportSegmentDisableAll(seg) },
+
+    { type: 'separator' },
+
+    { label: t('View tags'), enabled: Object.keys(getSegmentTags(seg)).length > 0, click: () => onViewSegmentTagsPress(seg) },
   ]);
 
   const duration = seg.end - seg.start;
@@ -120,7 +125,7 @@ const SegmentList = memo(({
   updateSegOrder, updateSegOrders, addCutSegment, removeCutSegment,
   onLabelSegmentPress, currentCutSeg, segmentAtCursor, toggleSideBar, splitCurrentSegment,
   enabledOutSegments, enabledOutSegmentsRaw, onExportSingleSegmentClick, onExportSegmentEnabledToggle, onExportSegmentDisableAll, onExportSegmentEnableAll,
-  jumpSegStart, jumpSegEnd, simpleMode,
+  jumpSegStart, jumpSegEnd, simpleMode, onViewSegmentTagsPress,
 }) => {
   const { t } = useTranslation();
 
@@ -266,6 +271,7 @@ const SegmentList = memo(({
                 onExportSegmentEnabledToggle={onExportSegmentEnabledToggle}
                 onExportSegmentDisableAll={onExportSegmentDisableAll}
                 onExportSegmentEnableAll={onExportSegmentEnableAll}
+                onViewSegmentTagsPress={onViewSegmentTagsPress}
               />
             );
           })}

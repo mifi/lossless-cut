@@ -4,19 +4,12 @@ import { FaVideo, FaVideoSlash, FaFileExport, FaFileImport, FaVolumeUp, FaVolume
 import { GoFileBinary } from 'react-icons/go';
 import { FiEdit, FiCheck, FiTrash } from 'react-icons/fi';
 import { MdSubtitles } from 'react-icons/md';
-import Swal from 'sweetalert2';
 import { SegmentedControl, Dialog, Button } from 'evergreen-ui';
-import withReactContent from 'sweetalert2-react-content';
 import { useTranslation } from 'react-i18next';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { tomorrow as style } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import JSON5 from 'json5';
 
-import { askForMetadataKey } from './dialogs';
+import { askForMetadataKey, showJson5Dialog } from './dialogs';
 import { formatDuration } from './util/duration';
 import { getStreamFps } from './ffmpeg';
-
-const ReactSwal = withReactContent(Swal);
 
 
 const activeColor = '#9f5f80';
@@ -159,18 +152,8 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
   return <TagEditor existingTags={existingTags} customTags={customTags} onTagChange={onTagChange} onTagReset={onTagReset} />;
 });
 
-function onInfoClick(s, title) {
-  const html = (
-    <SyntaxHighlighter language="javascript" style={style} customStyle={{ textAlign: 'left', maxHeight: 300, overflowY: 'auto', fontSize: 14 }}>
-      {JSON5.stringify(s, null, 2)}
-    </SyntaxHighlighter>
-  );
-
-  ReactSwal.fire({
-    showCloseButton: true,
-    title,
-    html,
-  });
+function onInfoClick(json, title) {
+  showJson5Dialog({ title, json });
 }
 
 const Stream = memo(({ filePath, stream, onToggle, copyStream, fileDuration, setEditingStream, onExtractStreamPress }) => {

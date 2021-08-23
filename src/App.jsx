@@ -57,10 +57,10 @@ import {
   hasDuplicates, havePermissionToReadFile, isMac, getFileBaseName,
 } from './util';
 import { formatDuration } from './util/duration';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMergeDialog, showOpenAndMergeDialog, openAbout } from './dialogs';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMergeDialog, showOpenAndMergeDialog, openAbout, showJson5Dialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
-import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments } from './segments';
+import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags } from './segments';
 
 
 import loadingLottie from './7077-magic-flow.json';
@@ -369,6 +369,10 @@ const App = memo(() => {
     const value = await labelSegmentDialog(name);
     if (value != null) updateSegAtIndex(index, { name: value });
   }, [cutSegments, updateSegAtIndex]);
+
+  const onViewSegmentTagsPress = useCallback((segment) => {
+    showJson5Dialog({ title: 'Segment tags', json: getSegmentTags(segment) });
+  }, []);
 
   const updateSegOrder = useCallback((index, newOrder) => {
     if (newOrder > cutSegments.length - 1 || newOrder < 0) return;
@@ -899,10 +903,12 @@ const App = memo(() => {
   const filenamifyOrNot = useCallback((name) => (safeOutputFileName ? filenamify(name) : name), [safeOutputFileName]);
 
   const generateOutSegFileNames = useCallback(({ segments = enabledOutSegments, template }) => (
-    segments.map(({ start, end, name = '' }, i) => {
+    segments.map((segment, i) => {
+      const { start, end, name = '' } = segment;
       const cutFromStr = formatDuration({ seconds: start, fileNameFriendly: true });
       const cutToStr = formatDuration({ seconds: end, fileNameFriendly: true });
       const segNum = i + 1;
+      const tags = getSegmentTags(segment);
 
       // https://github.com/mifi/lossless-cut/issues/583
       let segSuffix = '';
@@ -913,8 +919,8 @@ const App = memo(() => {
 
       const { name: fileNameWithoutExt } = parsePath(filePath);
 
-      const generated = generateSegFileName({ template, segSuffix, inputFileNameWithoutExt: fileNameWithoutExt, ext, segNum, segLabel: filenamifyOrNot(name), cutFrom: cutFromStr, cutTo: cutToStr });
       return generated.substr(0, 200); // Just to be sure
+      const generated = generateSegFileName({ template, segSuffix, inputFileNameWithoutExt: fileNameWithoutExt, ext, segNum, segLabel: filenamifyOrNot(name), cutFrom: cutFromStr, cutTo: cutToStr, tags });
     })
   ), [fileFormat, filePath, isCustomFormatSelected, enabledOutSegments, filenamifyOrNot]);
 
@@ -2198,6 +2204,7 @@ const App = memo(() => {
                   onExportSegmentEnableAll={onExportSegmentEnableAll}
                   jumpSegStart={jumpSegStart}
                   jumpSegEnd={jumpSegEnd}
+                  onViewSegmentTagsPress={onViewSegmentTagsPress}
                 />
               </motion.div>
             )}

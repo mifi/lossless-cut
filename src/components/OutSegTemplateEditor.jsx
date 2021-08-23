@@ -81,7 +81,7 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
           <div>
             {error != null && <Alert intent="danger" appearance="card">{`${i18n.t('There is an error in the file name template:')} ${error}`}</Alert>}
             {/* eslint-disable-next-line no-template-curly-in-string */}
-            <div style={{ fontSize: '.8em', color: 'rgba(255,255,255,0.7)' }}>{`${i18n.t('Variables')}`} {'${FILENAME} ${CUT_FROM} ${CUT_TO} ${SEG_NUM} ${SEG_LABEL} ${SEG_SUFFIX} ${EXT}'}</div>
+            <div style={{ fontSize: '.8em', color: 'rgba(255,255,255,0.7)' }}>{`${i18n.t('Variables')}`} {'${FILENAME} ${CUT_FROM} ${CUT_TO} ${SEG_NUM} ${SEG_LABEL} ${SEG_SUFFIX} ${EXT} ${SEG_TAGS.XX}'}</div>
           </div>
         </>
       )}

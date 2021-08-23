@@ -4,6 +4,9 @@ import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
 import withReactContent from 'sweetalert2-react-content';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { tomorrow as style } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import JSON5 from 'json5';
 
 import { parseDuration } from './util/duration';
 import { parseYouTube } from './edlFormats';
@@ -369,4 +372,18 @@ export async function showOpenAndMergeDialog({ defaultPath, onMergeClick }) {
   });
   if (canceled) return;
   showMergeDialog(filePaths, onMergeClick);
+}
+
+export function showJson5Dialog({ title, json }) {
+  const html = (
+    <SyntaxHighlighter language="javascript" style={style} customStyle={{ textAlign: 'left', maxHeight: 300, overflowY: 'auto', fontSize: 14 }}>
+      {JSON5.stringify(json, null, 2)}
+    </SyntaxHighlighter>
+  );
+
+  ReactSwal.fire({
+    showCloseButton: true,
+    title,
+    html,
+  });
 }
