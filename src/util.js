@@ -95,8 +95,10 @@ export function setFileNameTitle(filePath) {
   const appName = 'LosslessCut';
   document.title = filePath ? `${appName} - ${path.basename(filePath)}` : appName;
 }
-
 export function filenamify(name) {
+  if (i18n.language.startsWith('zh')) {
+    return name.replace(/[^0-9a-zA-Z\u4e00-\u9fa5_.]/g, '_');
+  }
   return name.replace(/[^0-9a-zA-Z_.]/g, '_');
 }
 
