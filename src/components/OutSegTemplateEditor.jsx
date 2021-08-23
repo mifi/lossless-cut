@@ -2,7 +2,7 @@ import React, { memo, useState, useEffect } from 'react';
 import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { Button, Alert, IconButton, CrossIcon, ResetIcon } from 'evergreen-ui';
+import { Button, Alert, IconButton, TickIcon, ResetIcon } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
@@ -76,7 +76,7 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
             {outSegFileNames && <Button height={20} onClick={onAllSegmentsPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
             <Button title={t('Whether or not to sanitize output file names (sanitizing removes special characters)')} marginLeft={5} height={20} onClick={toggleSafeOutputFileName} intent={safeOutputFileName ? 'success' : 'danger'}>{safeOutputFileName ? t('Sanitize') : t('No sanitize')}</Button>
             <IconButton title={t('Reset')} icon={ResetIcon} height={20} onClick={reset} marginLeft={5} intent="danger" />
-            <IconButton title={t('Close')} icon={CrossIcon} height={20} onClick={onToggleClick} marginLeft={5} intent="success" />
+            <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onToggleClick} marginLeft={5} intent="success" />
           </div>
           <div>
             {error != null && <Alert intent="danger" appearance="card">{`${i18n.t('There is an error in the file name template:')} ${error}`}</Alert>}
