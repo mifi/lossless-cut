@@ -74,7 +74,7 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 5, marginTop: 5 }}>
             <input type="text" style={{ flexGrow: 1, fontFamily: 'inherit', fontSize: '.8em' }} onChange={(e) => setText(e.target.value)} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
             {outSegFileNames && <Button height={20} onClick={onAllSegmentsPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
-            <Button title={t('Whether to sanitize file name or not (sanitizing removes special characters)')} marginLeft={5} height={20} onClick={toggleSafeOutputFileName} intent={safeOutputFileName ? 'success' : 'danger'}>{safeOutputFileName ? t('Sanitize') : t('No sanitize')}</Button>
+            <Button title={t('Whether or not to sanitize output file names (sanitizing removes special characters)')} marginLeft={5} height={20} onClick={toggleSafeOutputFileName} intent={safeOutputFileName ? 'success' : 'danger'}>{safeOutputFileName ? t('Sanitize') : t('No sanitize')}</Button>
             <IconButton title={t('Reset')} icon={ResetIcon} height={20} onClick={reset} marginLeft={5} intent="danger" />
             <IconButton title={t('Close')} icon={CrossIcon} height={20} onClick={onToggleClick} marginLeft={5} intent="success" />
           </div>
