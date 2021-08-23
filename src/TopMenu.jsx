@@ -1,21 +1,24 @@
 import React, { memo } from 'react';
 import { IoIosHelpCircle, IoIosSettings } from 'react-icons/io';
 import { FaLock, FaUnlock } from 'react-icons/fa';
-import { Button } from 'evergreen-ui';
+import { IconButton, Button, CrossIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
 import MergeExportButton from './components/MergeExportButton';
 
-import { withBlur } from './util';
+import { withBlur, isMasBuild } from './util';
 import { primaryTextColor } from './colors';
 
 
 const TopMenu = memo(({
   filePath, copyAnyAudioTrack, toggleStripAudio, customOutDir, changeOutDir,
   renderOutFmt, toggleHelp, numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown, toggleSettings,
-  enabledOutSegments, autoMerge, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments, isCustomFormatSelected, onOutFormatLockedClick, simpleMode, outFormatLocked,
+  enabledOutSegments, autoMerge, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments, isCustomFormatSelected, onOutFormatLockedClick, simpleMode, outFormatLocked, clearOutDir,
 }) => {
   const { t } = useTranslation();
+
+  // We cannot allow exporting to a directory which has not yet been confirmed by an open dialog because of sandox restrictions
+  const showClearWorkingDirButton = customOutDir && !isMasBuild;
 
   function renderFormatLock() {
     const Icon = outFormatLocked ? FaLock : FaUnlock;
@@ -43,11 +46,21 @@ const TopMenu = memo(({
 
       <div style={{ flexGrow: 1 }} />
 
+      {showClearWorkingDirButton && (
+        <IconButton
+          intent="danger"
+          icon={CrossIcon}
+          height={20}
+          onClick={withBlur(clearOutDir)}
+          title={t('Clear working directory')}
+        />
+      )}
+
       <Button
-        iconBefore={customOutDir ? 'folder-open' : undefined}
         height={20}
         onClick={withBlur(changeOutDir)}
         title={customOutDir}
+        paddingLeft={showClearWorkingDirButton ? 4 : undefined}
       >
         {customOutDir ? t('Working dir set') : t('Working dir unset')}
       </Button>

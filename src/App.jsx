@@ -467,12 +467,12 @@ const App = memo(() => {
 
   const changeOutDir = useCallback(async () => {
     const newOutDir = await askForOutDir(outputDir);
-    // We cannot allow exporting to a directory which has not yet been confirmed by an open dialog
-    // because of sandox restrictions
-    if (isMasBuild && !newOutDir) return;
-    // Else it's OK, we allow clearing the dir too
-    setCustomOutDir(newOutDir);
+    if (newOutDir) setCustomOutDir(newOutDir);
   }, [outputDir, setCustomOutDir]);
+
+  const clearOutDir = useCallback(() => {
+    setCustomOutDir();
+  }, [setCustomOutDir]);
 
   const effectiveFilePath = previewFilePath || filePath;
   const fileUri = effectiveFilePath ? filePathToUrl(effectiveFilePath) : '';
@@ -2047,6 +2047,7 @@ const App = memo(() => {
           toggleStripAudio={toggleStripAudio}
           customOutDir={customOutDir}
           changeOutDir={changeOutDir}
+          clearOutDir={clearOutDir}
           isCustomFormatSelected={isCustomFormatSelected}
           renderOutFmt={renderOutFmt}
           toggleHelp={toggleHelp}
