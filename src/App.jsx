@@ -919,10 +919,10 @@ const App = memo(() => {
 
       const { name: fileNameWithoutExt } = parsePath(filePath);
 
-      return generated.substr(0, 200); // Just to be sure
       const generated = generateSegFileName({ template, segSuffix, inputFileNameWithoutExt: fileNameWithoutExt, ext, segNum, segLabel: filenamifyOrNot(name), cutFrom: cutFromStr, cutTo: cutToStr, tags });
+      return safeOutputFileName ? generated.substr(0, 200) : generated; // If sanitation is enabled, make sure filename is not too long
     })
-  ), [fileFormat, filePath, isCustomFormatSelected, enabledOutSegments, filenamifyOrNot]);
+  ), [enabledOutSegments, filenamifyOrNot, isCustomFormatSelected, fileFormat, filePath, safeOutputFileName]);
 
   // TODO improve user feedback
   const isOutSegFileNamesValid = useCallback((fileNames) => fileNames.every((fileName) => {
