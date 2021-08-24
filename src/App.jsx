@@ -1523,15 +1523,19 @@ const App = memo(() => {
     setCopyStreamIdsForPath(path, () => fromPairs(streams.map(({ index }) => [index, true])));
   }, [externalStreamFiles]);
 
-  const userOpenSingleFile = useCallback(async ({ path: pathIn, projectPath }) => {
+  const userOpenSingleFile = useCallback(async ({ path: pathIn, isLlcProject }) => {
     let path = pathIn;
-    if (projectPath) {
-      console.log('Loading LLC project', projectPath);
-      const project = await loadLlcProject(projectPath);
+    let projectPath;
+
+    // Open .llc AND media referenced within
+    if (isLlcProject) {
+      console.log('Loading LLC project', path);
+      const project = await loadLlcProject(path);
       const { mediaFileName } = project;
       console.log({ mediaFileName });
       if (!mediaFileName) return;
-      path = pathJoin(dirname(projectPath), mediaFileName);
+      projectPath = path;
+      path = pathJoin(dirname(path), mediaFileName);
     }
 
     // Because Apple is being nazi about the ability to open "copy protected DVD files"
@@ -1554,42 +1558,72 @@ const App = memo(() => {
     const { newCustomOutDir, cancel } = await assureOutDirAccess(path);
     if (cancel) return;
 
-    const doLoad = () => load({ filePath: path, customOutDir: newCustomOutDir, projectPath });
-
-    // If no file is already opened, just load the new file
-    if (!isFileOpened) {
-      doLoad();
-      return;
-    }
-
-    const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction() : 'open';
-
-    if (openFileResponse === 'open') {
-      doLoad();
-    } else if (openFileResponse === 'add') {
-      addStreamSourceFile(path);
-      setStreamsSelectorShown(true);
-    }
-  }, [addStreamSourceFile, assureOutDirAccess, enableAskForFileOpenAction, isFileOpened, load]);
-
-  const userOpenFiles = useCallback(async (filePaths) => {
-    console.log('userOpenFiles');
-    console.log(filePaths.join('\n'));
-
-    if (filePaths.length < 1) return;
-    if (filePaths.length > 1) {
-      showMergeDialog(sortBy(filePaths), mergeFiles);
-      return;
-    }
-
-    await userOpenSingleFile({ path: filePaths[0] });
-  }, [mergeFiles, userOpenSingleFile]);
+    await load({ filePath: path, customOutDir: newCustomOutDir, projectPath });
+  }, [assureOutDirAccess, load]);
 
   const checkFileOpened = useCallback(() => {
     if (isFileOpened) return true;
     toast.fire({ icon: 'info', title: i18n.t('You need to open a media file first') });
     return false;
   }, [isFileOpened]);
+
+  const userOpenFiles = useCallback(async (filePaths) => {
+    try {
+      if (!filePaths || filePaths.length < 1) return;
+
+      console.log('userOpenFiles');
+      console.log(filePaths.join('\n'));
+
+      if (filePaths.length > 1) {
+        showMergeDialog(sortBy(filePaths), mergeFiles);
+        return;
+      }
+
+      // filePaths.length is now 1
+      const firstFilePath = filePaths[0];
+
+      const filePathLowerCase = firstFilePath.toLowerCase();
+
+      // Import CSV project for existing video
+      if (filePathLowerCase.endsWith('.csv')) {
+        if (!checkFileOpened()) return;
+        await loadEdlFile(firstFilePath, 'csv');
+        return;
+      }
+
+      const isLlcProject = filePathLowerCase.endsWith('.llc');
+
+      // If file is already opened, need to ask the user what to do
+      if (isFileOpened) {
+        const inputOptions = { open: i18n.t('Open the file instead of the current one') };
+        if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
+        else inputOptions.tracks = i18n.t('Include all tracks from the new file');
+
+        const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction(inputOptions) : 'open';
+
+        if (openFileResponse === 'open') {
+          await userOpenSingleFile({ path: firstFilePath, isLlcProject });
+          return;
+        }
+        if (openFileResponse === 'project') {
+          await loadEdlFile(firstFilePath, 'llc');
+          return;
+        }
+        if (openFileResponse === 'tracks') {
+          addStreamSourceFile(firstFilePath);
+          setStreamsSelectorShown(true);
+          return;
+        }
+        // Dialog canceled:
+        return;
+      }
+
+      await userOpenSingleFile({ path: firstFilePath, isLlcProject });
+    } catch (err) {
+      console.error('userOpenFiles', err);
+      errorToast(i18n.t('Failed to open file'));
+    }
+  }, [addStreamSourceFile, checkFileOpened, enableAskForFileOpenAction, isFileOpened, loadEdlFile, mergeFiles, userOpenSingleFile]);
 
   const onDrop = useCallback(async (ev) => {
     ev.preventDefault();
@@ -1598,22 +1632,8 @@ const App = memo(() => {
 
     focusWindow();
 
-    if (filePaths.length === 1) {
-      const firstFilePath = filePaths[0];
-      const filePathLowerCase = firstFilePath.toLowerCase();
-      if (filePathLowerCase.endsWith('.llc')) {
-        if (isFileOpened) loadEdlFile(firstFilePath, 'llc');
-        else userOpenSingleFile({ projectPath: firstFilePath }); // Open .llc AND media contained within
-        return;
-      }
-      if (filePathLowerCase.endsWith('.csv')) {
-        if (!checkFileOpened()) return;
-        loadEdlFile(firstFilePath, 'csv');
-        return;
-      }
-    }
-    userOpenFiles(filePaths);
-  }, [userOpenFiles, loadEdlFile, checkFileOpened, isFileOpened, userOpenSingleFile]);
+    await userOpenFiles(filePaths);
+  }, [userOpenFiles]);
 
   const html5ify = useCallback(async ({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: hv }) => {
     const path = getHtml5ifiedPath(cod, fp, speed);

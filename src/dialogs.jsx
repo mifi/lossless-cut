@@ -103,7 +103,7 @@ export async function askForOutDir(defaultPath) {
   return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
 }
 
-export async function askForFileOpenAction() {
+export async function askForFileOpenAction(inputOptions) {
   const { value } = await Swal.fire({
     text: i18n.t('You opened a new file. What do you want to do?'),
     icon: 'question',
@@ -111,10 +111,7 @@ export async function askForFileOpenAction() {
     inputValue: 'open',
     showCancelButton: true,
     customClass: { input: 'swal2-losslesscut-radio' },
-    inputOptions: {
-      open: i18n.t('Open the file instead of the current one'),
-      add: i18n.t('Include all tracks from the new file'),
-    },
+    inputOptions,
     inputValidator: (v) => !v && i18n.t('You need to choose something!'),
   });
 
