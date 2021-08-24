@@ -230,7 +230,7 @@ const CleanupChoices = ({ cleanupChoicesInitial, onChange: onChangeProp }) => {
       <p>{i18n.t('Do you want to move the original file and/or any generated files to trash?')}</p>
 
       <Checkbox label={i18n.t('Trash auto-generated files')} checked={getVal('tmpFiles')} onChange={(e) => onChange('tmpFiles', e.target.checked)} />
-      <Checkbox label={i18n.t('Trash project CSV')} checked={getVal('projectFile')} onChange={(e) => onChange('projectFile', e.target.checked)} />
+      <Checkbox label={i18n.t('Trash project LLC file')} checked={getVal('projectFile')} onChange={(e) => onChange('projectFile', e.target.checked)} />
       <Checkbox label={i18n.t('Trash original source file')} checked={getVal('sourceFile')} onChange={(e) => onChange('sourceFile', e.target.checked)} />
 
       <div style={{ marginTop: 25 }}>
