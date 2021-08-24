@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useState, useMemo } from 'react';
 
 import { FaVideo, FaVideoSlash, FaFileExport, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaTrashAlt, FaInfoCircle } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
@@ -96,7 +96,7 @@ const TagEditor = memo(({ existingTags, customTags, onTagChange, onTagReset }) =
 
 const EditFileDialog = memo(({ editingFile, externalFiles, mainFileFormatData, mainFilePath, customTagsByFile, setCustomTagsByFile }) => {
   const formatData = editingFile === mainFilePath ? mainFileFormatData : externalFiles[editingFile].formatData;
-  const existingTags = formatData.tags;
+  const existingTags = formatData.tags || {};
   const customTags = customTagsByFile[editingFile] || {};
 
   function onTagChange(tag, value) {
@@ -115,11 +115,10 @@ const EditFileDialog = memo(({ editingFile, externalFiles, mainFileFormatData, m
 
 const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, externalFiles, mainFilePath, mainFileStreams, customTagsByStreamId, setCustomTagsByStreamId }) => {
   const streams = editingFile === mainFilePath ? mainFileStreams : externalFiles[editingFile].streams;
-  const stream = streams.find((s) => s.index === editingStreamId);
-  if (!stream) return null;
+  const stream = useMemo(() => streams.find((s) => s.index === editingStreamId), [streams, editingStreamId]);
 
-  const existingTags = stream.tags;
-  const customTags = (customTagsByStreamId[editingFile] || {})[editingStreamId] || {};
+  const existingTags = useMemo(() => (stream && stream.tags) || {}, [stream]);
+  const customTags = useMemo(() => (customTagsByStreamId[editingFile] || {})[editingStreamId] || {}, [customTagsByStreamId, editingFile, editingStreamId]);
 
   // This is deep!
   function onTagChange(tag, value) {
@@ -148,6 +147,8 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
       };
     });
   }
+
+  if (!stream) return null;
 
   return <TagEditor existingTags={existingTags} customTags={customTags} onTagChange={onTagChange} onTagReset={onTagReset} />;
 });
