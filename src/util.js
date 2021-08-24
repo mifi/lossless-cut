@@ -171,4 +171,4 @@ export function generateSegFileName({ template, inputFileNameWithoutExt, segSuff
 export const hasDuplicates = (arr) => new Set(arr).size !== arr.length;
 
 // Need to resolve relative paths from the command line https://github.com/mifi/lossless-cut/issues/639
-export const resolvePathIfNeeded = (inPath) => (path.isAbsolute(path) ? path : path.resolve(inPath));
+export const resolvePathIfNeeded = (inPath) => (path.isAbsolute(inPath) ? inPath : path.resolve(inPath));
