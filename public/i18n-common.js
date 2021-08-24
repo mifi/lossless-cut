@@ -8,14 +8,16 @@ const { join } = require('path');
 const getLangPath = (subPath) => (isDev ? join('public', subPath) : join(app.getAppPath(), 'build', subPath));
 
 // Weblate hardcodes different lang codes than electron
-// https://www.electronjs.org/docs/api/locales
+// https://www.electronjs.org/docs/api/app#appgetlocale
+// https://source.chromium.org/chromium/chromium/src/+/master:ui/base/l10n/l10n_util.cc
 const mapLang = (lng) => ({
   nb: 'nb_NO',
   no: 'nb_NO',
   nn: 'nb_NO',
   zh: 'zh_Hans',
-  'zh-CN': 'zh_Hans',
-  'zh-TW': 'zh_Hans',
+  // https://source.chromium.org/chromium/chromium/src/+/master:ui/base/l10n/l10n_util.cc;l=354
+  'zh-CN': 'zh_Hans', // Chinese simplified (mainland China)
+  'zh-TW': 'zh_Hant', // Chinese traditional (Taiwan)
   fr: 'fr',
   'fr-CA': 'fr',
   'fr-CH': 'fr',

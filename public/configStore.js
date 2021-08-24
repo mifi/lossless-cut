@@ -38,6 +38,7 @@ const defaults = {
   keyboardNormalSeekSpeed: 1,
   enableTransferTimestamps: true,
   outFormatLocked: undefined,
+  safeOutputFileName: true,
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645

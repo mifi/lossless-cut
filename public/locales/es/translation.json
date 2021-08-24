@@ -372,5 +372,15 @@
     "Cleanup successful": "Limpieza realizada con éxito",
     "Cleaning up": "Limpieza",
     "Advanced view disabled. You will now see only the most essential buttons and functions": "Vista avanzada desactivada. Ahora sólo verá los botones y funciones más esenciales",
-    "Advanced view has been enabled. You will now also see non-essential buttons and functions": "Se ha activado la vista avanzada. Ahora también verá botones y funciones no esenciales"
+    "Advanced view has been enabled. You will now also see non-essential buttons and functions": "Se ha activado la vista avanzada. Ahora también verá botones y funciones no esenciales",
+    "Export project": "Exportar proyecto",
+    "DaVinci Resolve / Final Cut Pro XML": "DaVinci Resolve / Final Cut Pro XML",
+    "Text chapters / YouTube": "Capítulos / YouTube",
+    "Import project": "Importar proyecto",
+    "Save project (CSV)": "Guardar proyecto (CSV)",
+    "Load project (CSV)": "Cargar proyecto (CSV)",
+    "Open": "Abrir",
+    "File": "Archivo",
+    "Are you sure you want to quit?": "¿Seguro que desea salir?",
+    "Confirm quit": "Confirmar al salir"
 }

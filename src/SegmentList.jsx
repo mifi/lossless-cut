@@ -21,7 +21,7 @@ const buttonBaseStyle = {
 const neutralButtonColor = 'rgba(255, 255, 255, 0.2)';
 
 
-const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onReorderPress, onLabelPress, enabled, onExportSingleSegmentClick, onExportSegmentEnabledToggle, onExportSegmentDisableAll, onExportSegmentEnableAll, jumpSegStart, jumpSegEnd, addCutSegment }) => {
+const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onReorderPress, onLabelPress, enabled, onExportSingleSegmentClick, onExportSegmentEnabledToggle, onExportSegmentDisableAll, onExportSegmentEnableAll, jumpSegStart, jumpSegEnd, addCutSegment, onViewSegmentTagsPress }) => {
   const { t } = useTranslation();
 
   const ref = useRef();
@@ -48,6 +48,10 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
     { label: enabled ? t('Exclude this segment from export') : t('Include this segment in export'), click: () => onExportSegmentEnabledToggle(seg) },
     { label: t('Include all segments in export'), click: () => onExportSegmentEnableAll(seg) },
     { label: t('Exclude all segments from export'), click: () => onExportSegmentDisableAll(seg) },
+
+    { type: 'separator' },
+
+    { label: t('Segment tags'), click: () => onViewSegmentTagsPress(index) },
   ]);
 
   const duration = seg.end - seg.start;
@@ -87,7 +91,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
       role="button"
       onClick={() => !invertCutSegments && onClick(index)}
       onDoubleClick={onDoubleClick}
-      layout
+      positionTransition
       style={{ originY: 0, margin: '5px 0', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5, position: 'relative', opacity: !enabled && !invertCutSegments ? 0.5 : undefined }}
       initial={{ scaleY: 0 }}
       animate={{ scaleY: 1 }}
@@ -120,7 +124,7 @@ const SegmentList = memo(({
   updateSegOrder, updateSegOrders, addCutSegment, removeCutSegment,
   onLabelSegmentPress, currentCutSeg, segmentAtCursor, toggleSideBar, splitCurrentSegment,
   enabledOutSegments, enabledOutSegmentsRaw, onExportSingleSegmentClick, onExportSegmentEnabledToggle, onExportSegmentDisableAll, onExportSegmentEnableAll,
-  jumpSegStart, jumpSegEnd, simpleMode,
+  jumpSegStart, jumpSegEnd, simpleMode, onViewSegmentTagsPress,
 }) => {
   const { t } = useTranslation();
 
@@ -266,6 +270,7 @@ const SegmentList = memo(({
                 onExportSegmentEnabledToggle={onExportSegmentEnabledToggle}
                 onExportSegmentDisableAll={onExportSegmentDisableAll}
                 onExportSegmentEnableAll={onExportSegmentEnableAll}
+                onViewSegmentTagsPress={onViewSegmentTagsPress}
               />
             );
           })}

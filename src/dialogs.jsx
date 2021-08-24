@@ -4,6 +4,9 @@ import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
 import withReactContent from 'sweetalert2-react-content';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { tomorrow as style } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import JSON5 from 'json5';
 
 import { parseDuration } from './util/duration';
 import { parseYouTube } from './edlFormats';
@@ -102,7 +105,7 @@ export async function askForOutDir(defaultPath) {
 
 export async function askForFileOpenAction() {
   const { value } = await Swal.fire({
-    title: i18n.t('You opened a new file. What do you want to do?'),
+    text: i18n.t('You opened a new file. What do you want to do?'),
     icon: 'question',
     input: 'radio',
     inputValue: 'open',
@@ -306,16 +309,13 @@ export function openYouTubeChaptersDialog(text) {
   });
 }
 
-export async function labelSegmentDialog(currentName) {
+export async function labelSegmentDialog({ currentName, maxLength }) {
   const { value } = await Swal.fire({
     showCancelButton: true,
     title: i18n.t('Label current segment'),
     inputValue: currentName,
     input: 'text',
-    inputValidator: (v) => {
-      const maxLength = 100;
-      return v.length > maxLength ? `${i18n.t('Max length')} ${maxLength}` : undefined;
-    },
+    inputValidator: (v) => (v.length > maxLength ? `${i18n.t('Max length')} ${maxLength}` : undefined),
   });
   return value;
 }
@@ -369,4 +369,32 @@ export async function showOpenAndMergeDialog({ defaultPath, onMergeClick }) {
   });
   if (canceled) return;
   showMergeDialog(filePaths, onMergeClick);
+}
+
+export async function showEditableJsonDialog({ text, title, inputLabel, inputValue, inputValidator }) {
+  const { value } = await Swal.fire({
+    input: 'textarea',
+    inputLabel,
+    text,
+    title,
+    inputPlaceholder: JSON5.stringify({ exampleTag: 'Example value' }, null, 2),
+    inputValue,
+    showCancelButton: true,
+    inputValidator,
+  });
+  return value;
+}
+
+export function showJson5Dialog({ title, json }) {
+  const html = (
+    <SyntaxHighlighter language="javascript" style={style} customStyle={{ textAlign: 'left', maxHeight: 300, overflowY: 'auto', fontSize: 14 }}>
+      {JSON5.stringify(json, null, 2)}
+    </SyntaxHighlighter>
+  );
+
+  ReactSwal.fire({
+    showCloseButton: true,
+    title,
+    html,
+  });
 }

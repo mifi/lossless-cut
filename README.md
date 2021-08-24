@@ -44,6 +44,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Video thumbnails and audio waveform
 - Edit file metadata and per-stream metadata
 - Cut with chapter marks
+- Annotate segments with tags
 
 ## Example lossless use cases
 
@@ -137,7 +138,7 @@ Unsupported files can still be converted to a supported format/codec from the `F
 
 ## Known issues & limitations
 
-- **Cutting times are not accurate!** Start cut time will be "rounded" to the nearest **previous** keyframe.
+- **Cutting times are not accurate!** Start cut time will be "rounded" to the nearest **previous** keyframe. This means that you often have **move the start cut time to few frames after** the desired keyframe.
   - Lossless cutting is not an exact science. For some codecs, it just works. For others, you may need to trial and error depending on the codec, keyframes etc to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
   - Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
 - When exporting you may lose some proprietary data tracks (like `tmcd`, `fdsc` and `gpmd` added by GoPro). These can however be losslessly exported to separate files.
@@ -151,6 +152,7 @@ Unsupported files can still be converted to a supported format/codec from the `F
 - If any other problem, check [Known issues](#known-issues--limitations), or please search for existing issues before you file an issue here on GitHub.
 - If the app crashes immediately upon startup, check the permissions of your User and Temp folders, see [61](https://github.com/mifi/lossless-cut/issues/61).
 - How to uninstall LosslessCut on Windows? There is no installer. Just delete the EXE file or containing folder. User files will be stored in your [appData](https://www.electronjs.org/docs/api/app#appgetpathname) folder.
+- Completely white window when starting up? Try to run with `--disable-gpu` - See [781](https://github.com/mifi/lossless-cut/issues/781).
 
 If you have an issue you can check the developer tools for any errors or clues. Menu: `Tools` -> `Toggle Developer Tools`
 

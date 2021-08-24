@@ -15,8 +15,9 @@ yarn
 Note: `yarn` may take some time to complete.
 
 ### Running
+```bash
+npm run download-ffmpeg # on MacOS only
 
-```
 npm start
 ```
 

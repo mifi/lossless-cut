@@ -14,7 +14,7 @@ i18n
   .use(Backend)
   // detect user language
   // learn more: https://github.com/i18next/i18next-browser-languageDetector
-  // TODO disabled for now because translations need more reviewing https://github.com/mifi/lossless-cut/issues/346
+  // LanguageDetector is disabled because many users are used to english, and I cannot guarantee the status of all the translations so it's best to default to engligh https://github.com/mifi/lossless-cut/issues/346
   // .use(LanguageDetector)
   // pass the i18n instance to react-i18next.
   .use(initReactI18next)

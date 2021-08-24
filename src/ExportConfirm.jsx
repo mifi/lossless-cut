@@ -45,6 +45,7 @@ const ExportConfirm = memo(({
   exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, outFormat,
   preserveMetadataOnMerge, togglePreserveMetadataOnMerge, outSegTemplate, setOutSegTemplate, generateOutSegFileNames,
   filePath, currentSegIndexSafe, isOutSegFileNamesValid, autoDeleteMergedSegments, setAutoDeleteMergedSegments,
+  safeOutputFileName, toggleSafeOutputFileName,
 }) => {
   const { t } = useTranslation();
 
@@ -126,7 +127,7 @@ const ExportConfirm = memo(({
                   </li>
                   {(enabledOutSegments.length === 1 || !autoMerge) && (
                     <li>
-                      <OutSegTemplateEditor filePath={filePath} helpIcon={outSegTemplateHelpIcon} outSegTemplate={outSegTemplate} setOutSegTemplate={setOutSegTemplate} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} isOutSegFileNamesValid={isOutSegFileNamesValid} />
+                      <OutSegTemplateEditor filePath={filePath} helpIcon={outSegTemplateHelpIcon} outSegTemplate={outSegTemplate} setOutSegTemplate={setOutSegTemplate} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} isOutSegFileNamesValid={isOutSegFileNamesValid} safeOutputFileName={safeOutputFileName} toggleSafeOutputFileName={toggleSafeOutputFileName} />
                     </li>
                   )}
                 </ul>

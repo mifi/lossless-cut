@@ -50,8 +50,12 @@ export async function checkDirWriteAccess(dirPath) {
   return true;
 }
 
+export async function pathExists(pathIn) {
+  return fs.exists(pathIn);
+}
+
 export async function dirExists(dirPath) {
-  return (await fs.exists(dirPath)) && (await fs.lstat(dirPath)).isDirectory();
+  return (await pathExists(dirPath)) && (await fs.lstat(dirPath)).isDirectory();
 }
 
 export async function transferTimestamps(inPath, outPath, offset = 0) {
@@ -67,7 +71,13 @@ export const toast = Swal.mixin({
   toast: true,
   position: 'top',
   showConfirmButton: false,
+  showCloseButton: true,
   timer: 5000,
+  timerProgressBar: true,
+  didOpen: (self) => {
+    self.addEventListener('mouseenter', Swal.stopTimer);
+    self.addEventListener('mouseleave', Swal.resumeTimer);
+  },
 });
 
 export const errorToast = (title) => toast.fire({
@@ -139,12 +149,26 @@ export function getOutFileExtension({ isCustomFormatSelected, outFormat, filePat
   return isCustomFormatSelected ? `.${getExtensionForFormat(outFormat)}` : path.extname(filePath);
 }
 
+// This is used as a fallback and so it has to always generate unique file names
 // eslint-disable-next-line no-template-curly-in-string
 export const defaultOutSegTemplate = '${FILENAME}-${CUT_FROM}-${CUT_TO}${SEG_SUFFIX}${EXT}';
 
-export function generateSegFileName({ template, inputFileNameWithoutExt, segSuffix, ext, segNum, segLabel, cutFrom, cutTo }) {
+export function generateSegFileName({ template, inputFileNameWithoutExt, segSuffix, ext, segNum, segLabel, cutFrom, cutTo, tags }) {
   const compiled = lodashTemplate(template);
-  return compiled({ FILENAME: inputFileNameWithoutExt, SEG_SUFFIX: segSuffix, EXT: ext, SEG_NUM: segNum, SEG_LABEL: segLabel, CUT_FROM: cutFrom, CUT_TO: cutTo });
+  const data = {
+    FILENAME: inputFileNameWithoutExt,
+    SEG_SUFFIX: segSuffix,
+    EXT: ext,
+    SEG_NUM: segNum,
+    SEG_LABEL: segLabel,
+    CUT_FROM: cutFrom,
+    CUT_TO: cutTo,
+    SEG_TAGS: Object.fromEntries(Object.entries(tags).map(([key, value]) => [`${key.toLocaleUpperCase('en-US')}`, value])),
+  };
+  return compiled(data);
 }
 
 export const hasDuplicates = (arr) => new Set(arr).size !== arr.length;
+
+// Need to resolve relative paths from the command line https://github.com/mifi/lossless-cut/issues/639
+export const resolvePathIfNeeded = (inPath) => (path.isAbsolute(path) ? path : path.resolve(inPath));

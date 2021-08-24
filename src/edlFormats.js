@@ -70,7 +70,7 @@ export function parseCuesheet(cuesheet) {
     const nextTrack = tracks[i + 1];
     const end = nextTrack && parseTime(nextTrack);
 
-    return { name: track.title, start: parseTime(track), end };
+    return { name: track.title, start: parseTime(track), end, tags: { performer: track.performer, title: track.title } };
   });
 }
 

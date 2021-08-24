@@ -152,7 +152,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       const result = await process;
       console.log(result.stdout);
 
-      await optionalTransferTimestamps(filePath, outPath);
+      await optionalTransferTimestamps(filePath, outPath, cutFrom);
     }
 
     console.log('customTagsByFile', customTagsByFile);
