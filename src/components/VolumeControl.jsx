@@ -10,7 +10,7 @@ const VolumeControl = memo(({ playbackVolume, setPlaybackVolume, usingDummyVideo
   useEffect(() => {
     const clear = () => clearTimeout(timeoutRef.current);
     clear();
-    timeoutRef.current = setTimeout(() => setVolumeControlVisible(false), 5000);
+    timeoutRef.current = setTimeout(() => setVolumeControlVisible(false), 4000);
     return () => clear();
   }, [playbackVolume, volumeControlVisible]);
 
