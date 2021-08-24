@@ -50,8 +50,8 @@ export default () => {
   useEffect(() => safeSetConfig('enableAskForImportChapters', enableAskForImportChapters), [enableAskForImportChapters]);
   const [enableAskForFileOpenAction, setEnableAskForFileOpenAction] = useState(configStore.get('enableAskForFileOpenAction'));
   useEffect(() => safeSetConfig('enableAskForFileOpenAction', enableAskForFileOpenAction), [enableAskForFileOpenAction]);
-  const [muted, setMuted] = useState(configStore.get('muted'));
-  useEffect(() => safeSetConfig('muted', muted), [muted]);
+  const [playbackVolume, setPlaybackVolume] = useState(configStore.get('playbackVolume'));
+  useEffect(() => safeSetConfig('playbackVolume', playbackVolume), [playbackVolume]);
   const [autoSaveProjectFile, setAutoSaveProjectFile] = useState(configStore.get('autoSaveProjectFile'));
   useEffect(() => safeSetConfig('autoSaveProjectFile', autoSaveProjectFile), [autoSaveProjectFile]);
   const [wheelSensitivity, setWheelSensitivity] = useState(configStore.get('wheelSensitivity'));
@@ -125,8 +125,8 @@ export default () => {
     setEnableAskForImportChapters,
     enableAskForFileOpenAction,
     setEnableAskForFileOpenAction,
-    muted,
-    setMuted,
+    playbackVolume,
+    setPlaybackVolume,
     autoSaveProjectFile,
     setAutoSaveProjectFile,
     wheelSensitivity,

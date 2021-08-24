@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { FaVolumeMute, FaVolumeUp, FaAngleLeft, FaWindowClose } from 'react-icons/fa';
+import { FaAngleLeft, FaWindowClose } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import Lottie from 'react-lottie-player';
@@ -38,6 +38,7 @@ import RightMenu from './RightMenu';
 import TimelineControls from './TimelineControls';
 import ExportConfirm from './ExportConfirm';
 import ValueTuner from './components/ValueTuner';
+import VolumeControl from './components/VolumeControl';
 import { loadMifiLink } from './mifi';
 import { primaryColor, controlsBackground } from './colors';
 import allOutFormats from './outFormats';
@@ -149,7 +150,7 @@ const App = memo(() => {
   const isCustomFormatSelected = fileFormat !== detectedFileFormat;
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, muted, setMuted, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName,
   } = useUserPreferences();
 
   const {
@@ -237,12 +238,9 @@ const App = memo(() => {
     return !v;
   }), [setSafeOutputFileName, hideAllNotifications]);
 
-  const toggleMute = useCallback(() => {
-    setMuted((v) => {
-      if (!v && !hideAllNotifications) toast.fire({ icon: 'info', title: i18n.t('Muted preview (exported file will not be affected)') });
-      return !v;
-    });
-  }, [hideAllNotifications, setMuted]);
+  useEffect(() => {
+    if (videoRef.current) videoRef.current.volume = playbackVolume;
+  }, [playbackVolume]);
 
   const seekAbs = useCallback((val) => {
     const video = videoRef.current;
@@ -2037,9 +2035,6 @@ const App = memo(() => {
     // if (isDev) load({ filePath: '/Users/mifi/Downloads/inp.MOV', customOutDir });
   }, []);
 
-  // TODO fastest-audio shows as muted
-  const VolumeIcon = muted || usingDummyVideo ? FaVolumeMute : FaVolumeUp;
-
   useEffect(() => {
     const keyScrollPreventer = (e) => {
       // https://stackoverflow.com/questions/8916620/disable-arrow-key-scrolling-in-users-browser
@@ -2199,7 +2194,7 @@ const App = memo(() => {
       <div className="no-user-select" style={{ position: 'absolute', top: topBarHeight, left: 0, right: sideBarWidth, bottom: bottomBarHeight, visibility: !isFileOpened ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
         {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <video
-          muted={muted}
+          muted={playbackVolume === 0}
           ref={videoRef}
           style={videoStyle}
           src={fileUri}
@@ -2228,23 +2223,17 @@ const App = memo(() => {
           <div
             className="no-user-select"
             style={{
-              position: 'absolute', right: sideBarWidth, bottom: bottomBarHeight, color: 'rgba(255,255,255,0.7)',
+              position: 'absolute', right: sideBarWidth, bottom: bottomBarHeight, marginBottom: 10, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center',
             }}
           >
-            <VolumeIcon
-              title={t('Mute preview? (will not affect output)')}
-              size={30}
-              role="button"
-              style={{ margin: '0 10px 10px 10px' }}
-              onClick={toggleMute}
-            />
+            <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} usingDummyVideo={usingDummyVideo} />
 
             {!showSideBar && (
               <FaAngleLeft
                 title={t('Show sidebar')}
                 size={30}
                 role="button"
-                style={{ margin: '0 10px 10px 10px' }}
+                style={{ margin: '0 7px' }}
                 onClick={toggleSideBar}
               />
             )}
