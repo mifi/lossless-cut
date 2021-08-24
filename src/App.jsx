@@ -1625,16 +1625,6 @@ const App = memo(() => {
     }
   }, [addStreamSourceFile, checkFileOpened, enableAskForFileOpenAction, isFileOpened, loadEdlFile, mergeFiles, userOpenSingleFile]);
 
-  const onDrop = useCallback(async (ev) => {
-    ev.preventDefault();
-    const { files } = ev.dataTransfer;
-    const filePaths = Array.from(files).map(f => f.path);
-
-    focusWindow();
-
-    await userOpenFiles(filePaths);
-  }, [userOpenFiles]);
-
   const html5ify = useCallback(async ({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: hv }) => {
     const path = getHtml5ifiedPath(cod, fp, speed);
 
@@ -1933,9 +1923,18 @@ const App = memo(() => {
   }
 
   useEffect(() => {
+    async function onDrop(ev) {
+      ev.preventDefault();
+      const { files } = ev.dataTransfer;
+      const filePaths = Array.from(files).map(f => f.path);
+
+      focusWindow();
+
+      await userOpenFiles(filePaths);
+    }
     document.body.addEventListener('drop', onDrop);
     return () => document.body.removeEventListener('drop', onDrop);
-  }, [onDrop]);
+  }, [userOpenFiles]);
 
 
   const commonFormatsMap = useMemo(() => fromPairs(commonFormats.map(format => [format, allOutFormats[format]])
