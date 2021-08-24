@@ -1104,12 +1104,12 @@ const App = memo(() => {
         ? await captureFrameFfmpeg({ customOutDir, filePath, currentTime, captureFormat, enableTransferTimestamps })
         : await captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, enableTransferTimestamps });
 
-      openDirToast({ dirPath: outputDir, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
+      if (!hideAllNotifications) openDirToast({ dirPath: outputDir, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
     } catch (err) {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [filePath, captureFormat, customOutDir, previewFilePath, outputDir, enableTransferTimestamps]);
+  }, [filePath, captureFormat, customOutDir, previewFilePath, outputDir, enableTransferTimestamps, hideAllNotifications]);
 
   const changePlaybackRate = useCallback((dir) => {
     if (canvasPlayerEnabled) {
