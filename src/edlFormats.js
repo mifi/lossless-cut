@@ -34,20 +34,34 @@ export async function parseCsv(str) {
 }
 
 export async function parseMplayerEdl(text) {
-  const cutAwaySegments = text.split('\n').map((line) => {
-    // We only support "Cut" (0)
-    const match = line.match(/^\s*([^\s]+)\s+([^\s]+)\s+0\s*$/);
+  const allRows = text.split('\n').map((line) => {
+    const match = line.match(/^\s*([^\s]+)\s+([^\s]+)\s+([0123])\s*$/);
     if (!match) return undefined;
     const start = parseFloat(match[1]);
     const end = parseFloat(match[2]);
-    if (start < 0 || end < 0 || start >= end) throw new Error(i18n.t('Invalid start or end value. Must contain a number of seconds'));
-    return { start, end };
+    const type = parseInt(match[3], 10);
+    if (Number.isNaN(start) || Number.isNaN(end)) return undefined;
+    if (start < 0 || end < 0 || start >= end) return undefined;
+    return { start, end, type };
   }).filter((it) => it);
 
-  if (cutAwaySegments.length === 0) throw new Error(i18n.t('Invalid EDL data found'));
-  const inverted = invertSegments(sortSegments(cutAwaySegments));
-  if (!inverted) throw new Error(i18n.t('Invalid EDL data found'));
-  return inverted;
+  const cutAwaySegments = allRows.filter((row) => row.type === 0);
+  const muteSegments = allRows.filter((row) => row.type === 1);
+  const sceneMarkers = allRows.filter((row) => row.type === 2);
+  const commercialBreaks = allRows.filter((row) => row.type === 3);
+
+  const inverted = cutAwaySegments.length > 0 ? invertSegments(sortSegments(cutAwaySegments)) : [];
+
+  const map = (segments, name, type) => segments.map(({ start, end }) => ({ start, end, name, tags: { mplayerEdlType: type } }));
+
+  const out = [
+    ...map(inverted || [], 'Cut', 0),
+    ...map(muteSegments, 'Mute', 1),
+    ...map(sceneMarkers, 'Scene Marker', 2),
+    ...map(commercialBreaks, 'Commercial Break', 3),
+  ];
+  if (out.length === 0) throw new Error(i18n.t('Invalid EDL data found'));
+  return out;
 }
 
 export function parseCuesheet(cuesheet) {

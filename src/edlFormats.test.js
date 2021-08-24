@@ -1,3 +1,6 @@
+import fs from 'fs';
+import { join } from 'path';
+
 import { parseYouTube, formatYouTube, parseMplayerEdl } from './edlFormats';
 
 it('parseYoutube', () => {
@@ -62,7 +65,7 @@ it('formatYouTube', () => {
 // https://kodi.wiki/view/Edit_decision_list
 // http://www.mplayerhq.hu/DOCS/HTML/en/edl.html
 it('parseMplayerEdl', async () => {
-  // TODO support more durations:
+  // TODO support more durations (frames and timestamps):
   /*
   const str = `\
 5.3     7.1     0
@@ -80,19 +83,49 @@ it('parseMplayerEdl', async () => {
 `;
 */
 
-  const str = `\
-5.3   7.1    0
-15    16.7   1
-420   822    3
-1     255.3  2
-720.1        2  
-`;
+  const str = await fs.promises.readFile(join(__dirname, 'fixtures', 'mplayer.edl'), 'utf-8');
 
-  expect(await parseMplayerEdl(str)).toEqual([{ start: 0, end: 5.3 }, { start: 7.1, end: undefined }]);
+  expect(await parseMplayerEdl(str)).toEqual([
+    { start: 0,
+      end: 5.3,
+      name: 'Cut',
+      tags: { mplayerEdlType: 0 },
+    },
+    { start: 7.1,
+      end: undefined,
+      name: 'Cut',
+      tags: { mplayerEdlType: 0 },
+    },
+    {
+      end: 16.7,
+      start: 15,
+      name: 'Mute',
+      tags: { mplayerEdlType: 1 },
+    },
+    {
+      end: 255.3,
+      start: 1,
+      name: 'Scene Marker',
+      tags: { mplayerEdlType: 2 },
+    },
+    {
+      end: 822,
+      start: 420,
+      name: 'Commercial Break',
+      tags: { mplayerEdlType: 3 },
+    },
+  ]);
+});
 
-  const str2 = `\
-  0   1.1    0
-`;
+it('parseMplayerEdl, starting at 0', async () => {
+  const str2 = '  0   1.1    0\n';
 
-  expect(await parseMplayerEdl(str2)).toEqual([{ start: 1.1, end: undefined }]);
+  expect(await parseMplayerEdl(str2)).toEqual([{
+    start: 1.1,
+    end: undefined,
+    name: 'Cut',
+    tags: {
+      mplayerEdlType: 0,
+    },
+  }]);
 });
