@@ -141,7 +141,7 @@ const Settings = memo(({
       <Row>
         <KeyCell>
           {t('Auto save project file?')}<br />
-          {t('The project will be stored along with the output files as a CSV file')}
+          {t('The project will be stored alongside the output files as a project LLC file')}
         </KeyCell>
         <Table.TextCell>
           <Checkbox
