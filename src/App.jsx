@@ -1857,6 +1857,7 @@ const App = memo(() => {
     }
 
     async function fixInvalidDuration2() {
+      if (!checkFileOpened()) return;
       try {
         setWorking(i18n.t('Fixing file duration'));
         const path = await fixInvalidDuration({ fileFormat, customOutDir });
