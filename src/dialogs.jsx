@@ -371,6 +371,20 @@ export async function showOpenAndMergeDialog({ defaultPath, onMergeClick }) {
   showMergeDialog(filePaths, onMergeClick);
 }
 
+export async function showEditableJsonDialog({ text, title, inputLabel, inputValue, inputValidator }) {
+  const { value } = await Swal.fire({
+    input: 'textarea',
+    inputLabel,
+    text,
+    title,
+    inputPlaceholder: JSON5.stringify({ exampleTag: 'Example value' }, null, 2),
+    inputValue,
+    showCancelButton: true,
+    inputValidator,
+  });
+  return value;
+}
+
 export function showJson5Dialog({ title, json }) {
   const html = (
     <SyntaxHighlighter language="javascript" style={style} customStyle={{ textAlign: 'left', maxHeight: 300, overflowY: 'auto', fontSize: 14 }}>

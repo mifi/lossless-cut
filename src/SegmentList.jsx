@@ -10,7 +10,6 @@ import isEqual from 'lodash/isEqual';
 import useDebounce from 'react-use/lib/useDebounce';
 import scrollIntoView from 'scroll-into-view-if-needed';
 
-import { getSegmentTags } from './segments';
 import useContextMenu from './hooks/useContextMenu';
 import { saveColor } from './colors';
 import { getSegColors } from './util/colors';
@@ -52,7 +51,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 
     { type: 'separator' },
 
-    { label: t('View tags'), enabled: Object.keys(getSegmentTags(seg)).length > 0, click: () => onViewSegmentTagsPress(seg) },
+    { label: t('Segment tags'), click: () => onViewSegmentTagsPress(index) },
   ]);
 
   const duration = seg.end - seg.start;

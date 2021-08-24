@@ -31,20 +31,26 @@ module.exports = (app, mainWindow, newVersion) => {
         },
         { type: 'separator' },
         {
-          label: i18n.t('Load project (CSV)'),
+          label: i18n.t('Import project (LLC)...'),
           click() {
-            mainWindow.webContents.send('importEdlFile', 'csv');
+            mainWindow.webContents.send('importEdlFile', 'llc');
           },
         },
         {
-          label: i18n.t('Save project (CSV)'),
+          label: i18n.t('Export project (LLC)...'),
           click() {
-            mainWindow.webContents.send('exportEdlFile', 'csv');
+            mainWindow.webContents.send('exportEdlFile', 'llc');
           },
         },
         {
           label: i18n.t('Import project'),
           submenu: [
+            {
+              label: i18n.t('LosslessCut (CSV)'),
+              click() {
+                mainWindow.webContents.send('importEdlFile', 'csv');
+              },
+            },
             {
               label: i18n.t('EDL (MPlayer)'),
               click() {
@@ -80,6 +86,12 @@ module.exports = (app, mainWindow, newVersion) => {
         {
           label: i18n.t('Export project'),
           submenu: [
+            {
+              label: i18n.t('LosslessCut (CSV)'),
+              click() {
+                mainWindow.webContents.send('exportEdlFile', 'csv');
+              },
+            },
             {
               label: i18n.t('Timestamps (CSV)'),
               click() {

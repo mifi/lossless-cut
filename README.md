@@ -44,6 +44,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Video thumbnails and audio waveform
 - Edit file metadata and per-stream metadata
 - Cut with chapter marks
+- Annotate segments with tags
 
 ## Example lossless use cases
 

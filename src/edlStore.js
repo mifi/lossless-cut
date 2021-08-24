@@ -1,11 +1,13 @@
 import csvStringify from 'csv-stringify';
 import pify from 'pify';
+import JSON5 from 'json5';
 
 import { parseCuesheet, parseXmeml, parseCsv, parsePbf, parseMplayerEdl } from './edlFormats';
 import { formatDuration } from './util/duration';
 
 const fs = window.require('fs-extra');
 const cueParser = window.require('cue-parser');
+const { basename } = window.require('path');
 
 const csvStringifyAsync = pify(csvStringify);
 
@@ -47,4 +49,17 @@ export async function saveCsvHuman(path, cutSegments) {
 export async function saveTsv(path, cutSegments) {
   const str = await csvStringifyAsync(mapSegments(cutSegments), { delimiter: '\t' });
   await fs.writeFile(path, str);
+}
+
+export async function saveLlcProject({ savePath, filePath, cutSegments }) {
+  const projectData = {
+    version: 1,
+    mediaFileName: basename(filePath),
+    cutSegments: cutSegments.map(({ start, end, name, tags }) => ({ start, end, name, tags })),
+  };
+  await fs.writeFile(savePath, JSON5.stringify(projectData, null, 2));
+}
+
+export async function loadLlcProject(path) {
+  return JSON5.parse(await fs.readFile(path));
 }

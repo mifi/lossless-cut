@@ -11,6 +11,7 @@ import filePathToUrl from 'file-url';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import Mousetrap from 'mousetrap';
+import JSON5 from 'json5';
 
 import fromPairs from 'lodash/fromPairs';
 import clamp from 'lodash/clamp';
@@ -48,16 +49,16 @@ import {
   isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments,
 } from './ffmpeg';
-import { saveCsv, saveTsv, loadCsv, loadXmeml, loadCue, loadPbf, loadMplayerEdl, saveCsvHuman } from './edlStore';
+import { saveCsv, saveTsv, loadCsv, loadXmeml, loadCue, loadPbf, loadMplayerEdl, saveCsvHuman, saveLlcProject, loadLlcProject } from './edlStore';
 import { formatYouTube } from './edlFormats';
 import {
   getOutPath, toast, errorToast, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
-  hasDuplicates, havePermissionToReadFile, isMac, getFileBaseName,
+  hasDuplicates, havePermissionToReadFile, isMac, getFileBaseName, resolvePathIfNeeded, pathExists,
 } from './util';
 import { formatDuration } from './util/duration';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMergeDialog, showOpenAndMergeDialog, openAbout, showJson5Dialog } from './dialogs';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMergeDialog, showOpenAndMergeDialog, openAbout, showEditableJsonDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags } from './segments';
@@ -70,7 +71,7 @@ const isDev = window.require('electron-is-dev');
 const electron = window.require('electron'); // eslint-disable-line
 const trash = window.require('trash');
 const { unlink, exists, readdir } = window.require('fs-extra');
-const { extname, parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, resolve: pathResolve, isAbsolute: pathIsAbsolute, basename } = window.require('path');
+const { extname, parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, basename, dirname } = window.require('path');
 
 const { dialog } = electron.remote;
 
@@ -346,6 +347,7 @@ const App = memo(() => {
   }, [duration, haveInvalidSegs, sortedCutSegments]);
 
   const updateSegAtIndex = useCallback((index, newProps) => {
+    if (index < 0) return;
     const cutSegmentsNew = [...cutSegments];
     cutSegmentsNew.splice(index, 1, { ...cutSegments[index], ...newProps });
     setCutSegments(cutSegmentsNew);
@@ -372,9 +374,21 @@ const App = memo(() => {
     if (value != null) updateSegAtIndex(index, { name: value });
   }, [cutSegments, updateSegAtIndex, maxLabelLength]);
 
-  const onViewSegmentTagsPress = useCallback((segment) => {
-    showJson5Dialog({ title: 'Segment tags', json: getSegmentTags(segment) });
-  }, []);
+  const onViewSegmentTagsPress = useCallback(async (index) => {
+    const segment = cutSegments[index];
+    function inputValidator(jsonStr) {
+      try {
+        const json = JSON5.parse(jsonStr);
+        if (!(typeof json === 'object' && Object.values(json).every((val) => typeof val === 'string'))) throw new Error();
+        return undefined;
+      } catch (err) {
+        return i18n.t('Invalid JSON');
+      }
+    }
+    const tags = getSegmentTags(segment);
+    const newTagsStr = await showEditableJsonDialog({ title: i18n.t('Segment tags'), text: i18n.t('View and edit segment tags in JSON5 format:'), inputValue: Object.keys(tags).length > 0 ? JSON5.stringify(tags, null, 2) : '', inputValidator });
+    if (newTagsStr != null) updateSegAtIndex(index, { tags: JSON5.parse(newTagsStr) });
+  }, [cutSegments, updateSegAtIndex]);
 
   const updateSegOrder = useCallback((index, newOrder) => {
     if (newOrder > cutSegments.length - 1 || newOrder < 0) return;
@@ -488,13 +502,17 @@ const App = memo(() => {
   const effectiveFilePath = previewFilePath || filePath;
   const fileUri = effectiveFilePath ? filePathToUrl(effectiveFilePath) : '';
 
-  const getEdlFilePath = useCallback((fp) => getOutPath(customOutDir, fp, 'llc-edl.csv'), [customOutDir]);
-  const edlFilePath = getEdlFilePath(filePath);
+  const projectSuffix = 'proj.llc';
+  const oldProjectSuffix = 'llc-edl.csv';
+  const getEdlFilePath = useCallback((fp) => getOutPath(customOutDir, fp, projectSuffix), [customOutDir]);
+  // Old versions of LosslessCut used CSV files:
+  const getEdlFilePathOld = useCallback((fp) => getOutPath(customOutDir, fp, oldProjectSuffix), [customOutDir]);
+  const edlFilePath = useMemo(() => getEdlFilePath(filePath), [getEdlFilePath, filePath]);
 
   const currentSaveOperation = useMemo(() => {
     if (!edlFilePath) return undefined;
-    return { cutSegments, edlFilePath };
-  }, [cutSegments, edlFilePath]);
+    return { cutSegments, edlFilePath, filePath };
+  }, [cutSegments, edlFilePath, filePath]);
 
   const [debouncedSaveOperation] = useDebounce(currentSaveOperation, isDev ? 2000 : 500);
 
@@ -504,7 +522,7 @@ const App = memo(() => {
       // NOTE: Could lose a save if user closes too fast, but not a big issue I think
       if (!autoSaveProjectFile || !debouncedSaveOperation) return;
 
-      const { cutSegments: saveOperationCutSegments, edlFilePath: saveOperationEdlFilePath } = debouncedSaveOperation;
+      const { cutSegments: saveOperationCutSegments, edlFilePath: saveOperationEdlFilePath, filePath: saveOperationFilePath } = debouncedSaveOperation;
 
       try {
         // Initial state? Don't save
@@ -515,7 +533,7 @@ const App = memo(() => {
           return;
         }
 
-        await saveCsv(saveOperationEdlFilePath, saveOperationCutSegments);
+        await saveLlcProject({ savePath: saveOperationEdlFilePath, filePath: saveOperationFilePath, cutSegments: saveOperationCutSegments });
         lastSaveOperation.current = debouncedSaveOperation;
       } catch (err) {
         errorToast(i18n.t('Unable to save project file'));
@@ -1160,7 +1178,7 @@ const App = memo(() => {
     setCutSegments(validEdl.map(createSegment));
   }, [setCutSegments]);
 
-  const loadEdlFile = useCallback(async (path, type = 'csv') => {
+  const loadEdlFile = useCallback(async (path, type) => {
     try {
       let edl;
       if (type === 'csv') edl = await loadCsv(path);
@@ -1168,6 +1186,10 @@ const App = memo(() => {
       else if (type === 'cue') edl = await loadCue(path);
       else if (type === 'pbf') edl = await loadPbf(path);
       else if (type === 'mplayer') edl = await loadMplayerEdl(path);
+      else if (type === 'llc') {
+        const project = await loadLlcProject(path);
+        edl = project.cutSegments;
+      }
 
       loadCutSegments(edl);
     } catch (err) {
@@ -1176,8 +1198,8 @@ const App = memo(() => {
     }
   }, [loadCutSegments]);
 
-  const load = useCallback(async ({ filePath: fp, customOutDir: cod, html5FriendlyPathRequested, dummyVideoPathRequested }) => {
-    console.log('Load', { fp, cod, html5FriendlyPathRequested, dummyVideoPathRequested });
+  const load = useCallback(async ({ filePath: fp, customOutDir: cod, html5FriendlyPathRequested, dummyVideoPathRequested, projectPath }) => {
+    console.log('Load', { fp, cod, html5FriendlyPathRequested, dummyVideoPathRequested, projectPath });
 
     if (working) return;
 
@@ -1283,9 +1305,14 @@ const App = memo(() => {
       }
 
       const openedFileEdlPath = getEdlFilePath(fp);
+      const openedFileEdlPathOld = getEdlFilePathOld(fp);
 
-      if (await exists(openedFileEdlPath)) {
-        await loadEdlFile(openedFileEdlPath);
+      if (projectPath) {
+        await loadEdlFile(projectPath, 'llc');
+      } else if (await exists(openedFileEdlPath)) {
+        await loadEdlFile(openedFileEdlPath, 'llc');
+      } else if (await exists(openedFileEdlPathOld)) {
+        await loadEdlFile(openedFileEdlPathOld, 'csv');
       } else {
         const edl = await tryReadChaptersToEdl(fp);
         if (edl.length > 0 && enableAskForImportChapters && (await askForImportChapters())) {
@@ -1311,7 +1338,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [resetState, working, createDummyVideo, loadEdlFile, getEdlFilePath, loadCutSegments, enableAskForImportChapters, showUnsupportedFileMessage, autoLoadTimecode, outFormatLocked, showPreviewFileLoadedMessage]);
+  }, [resetState, working, createDummyVideo, loadEdlFile, getEdlFilePath, getEdlFilePathOld, loadCutSegments, enableAskForImportChapters, showUnsupportedFileMessage, autoLoadTimecode, outFormatLocked, showPreviewFileLoadedMessage]);
 
   const toggleHelp = useCallback(() => setHelpVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1496,12 +1523,58 @@ const App = memo(() => {
     setCopyStreamIdsForPath(path, () => fromPairs(streams.map(({ index }) => [index, true])));
   }, [externalStreamFiles]);
 
-  const userOpenFiles = useCallback(async (filePathsRaw) => {
-    console.log('userOpenFiles');
-    console.log(filePathsRaw.join('\n'));
+  const userOpenSingleFile = useCallback(async ({ path: pathIn, projectPath }) => {
+    let path = pathIn;
+    if (projectPath) {
+      console.log('Loading LLC project', projectPath);
+      const project = await loadLlcProject(projectPath);
+      const { mediaFileName } = project;
+      console.log({ mediaFileName });
+      if (!mediaFileName) return;
+      path = pathJoin(dirname(projectPath), mediaFileName);
+    }
 
-    // Need to resolve relative paths https://github.com/mifi/lossless-cut/issues/639
-    const filePaths = filePathsRaw.map((path) => (pathIsAbsolute(path) ? path : pathResolve(path)));
+    // Because Apple is being nazi about the ability to open "copy protected DVD files"
+    const disallowVob = isMasBuild;
+    if (disallowVob && /\.vob$/i.test(path)) {
+      toast.fire({ icon: 'error', text: 'Unfortunately .vob files are not supported in the App Store version of LosslessCut due to Apple restrictions' });
+      return;
+    }
+
+    if (!(await pathExists(path))) {
+      errorToast(i18n.t('The media you tried to open does not exist'));
+      return;
+    }
+
+    if (!(await havePermissionToReadFile(path))) {
+      errorToast(i18n.t('You do not have permission to access this file'));
+      return;
+    }
+
+    const { newCustomOutDir, cancel } = await assureOutDirAccess(path);
+    if (cancel) return;
+
+    const doLoad = () => load({ filePath: path, customOutDir: newCustomOutDir, projectPath });
+
+    // If no file is already opened, just load the new file
+    if (!isFileOpened) {
+      doLoad();
+      return;
+    }
+
+    const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction() : 'open';
+
+    if (openFileResponse === 'open') {
+      doLoad();
+    } else if (openFileResponse === 'add') {
+      addStreamSourceFile(path);
+      setStreamsSelectorShown(true);
+    }
+  }, [addStreamSourceFile, assureOutDirAccess, enableAskForFileOpenAction, isFileOpened, load]);
+
+  const userOpenFiles = useCallback(async (filePaths) => {
+    console.log('userOpenFiles');
+    console.log(filePaths.join('\n'));
 
     if (filePaths.length < 1) return;
     if (filePaths.length > 1) {
@@ -1509,37 +1582,8 @@ const App = memo(() => {
       return;
     }
 
-    const firstFile = filePaths[0];
-
-    // Because Apple is being nazi about the ability to open "copy protected DVD files"
-    const disallowVob = isMasBuild;
-    if (disallowVob && /\.vob$/i.test(firstFile)) {
-      toast.fire({ icon: 'error', text: 'Unfortunately .vob files are not supported in the App Store version of LosslessCut due to Apple restrictions' });
-      return;
-    }
-
-    if (!(await havePermissionToReadFile(firstFile))) {
-      errorToast(i18n.t('You do not have permission to access this file'));
-      return;
-    }
-
-    const { newCustomOutDir, cancel } = await assureOutDirAccess(firstFile);
-    if (cancel) return;
-
-    if (!isFileOpened) {
-      load({ filePath: firstFile, customOutDir: newCustomOutDir });
-      return;
-    }
-
-    const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction() : 'open';
-
-    if (openFileResponse === 'open') {
-      load({ filePath: firstFile, customOutDir: newCustomOutDir });
-    } else if (openFileResponse === 'add') {
-      addStreamSourceFile(firstFile);
-      setStreamsSelectorShown(true);
-    }
-  }, [addStreamSourceFile, isFileOpened, load, mergeFiles, assureOutDirAccess, enableAskForFileOpenAction]);
+    await userOpenSingleFile({ path: filePaths[0] });
+  }, [mergeFiles, userOpenSingleFile]);
 
   const checkFileOpened = useCallback(() => {
     if (isFileOpened) return true;
@@ -1554,13 +1598,22 @@ const App = memo(() => {
 
     focusWindow();
 
-    if (filePaths.length === 1 && filePaths[0].toLowerCase().endsWith('.csv')) {
-      if (!checkFileOpened()) return;
-      loadEdlFile(filePaths[0]);
-      return;
+    if (filePaths.length === 1) {
+      const firstFilePath = filePaths[0];
+      const filePathLowerCase = firstFilePath.toLowerCase();
+      if (filePathLowerCase.endsWith('.llc')) {
+        if (isFileOpened) loadEdlFile(firstFilePath, 'llc');
+        else userOpenSingleFile({ projectPath: firstFilePath }); // Open .llc AND media contained within
+        return;
+      }
+      if (filePathLowerCase.endsWith('.csv')) {
+        if (!checkFileOpened()) return;
+        loadEdlFile(firstFilePath, 'csv');
+        return;
+      }
     }
     userOpenFiles(filePaths);
-  }, [userOpenFiles, loadEdlFile, checkFileOpened]);
+  }, [userOpenFiles, loadEdlFile, checkFileOpened, isFileOpened, userOpenSingleFile]);
 
   const html5ify = useCallback(async ({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: hv }) => {
     const path = getHtml5ifiedPath(cod, fp, speed);
@@ -1679,14 +1732,18 @@ const App = memo(() => {
         } else if (type === 'csv-human') {
           ext = 'csv';
           filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
+        } else if (type === 'llc') {
+          ext = 'llc';
+          filters = [{ name: i18n.t('LosslessCut project'), extensions: [ext, 'llc'] }];
         }
 
-        const { canceled, filePath: fp } = await dialog.showSaveDialog({ defaultPath: `${new Date().getTime()}.${ext}`, filters });
-        if (canceled || !fp) return;
-        console.log('Saving', type, fp);
-        if (type === 'csv') await saveCsv(fp, cutSegments);
-        else if (type === 'tsv-human') await saveTsv(fp, cutSegments);
-        else if (type === 'csv-human') await saveCsvHuman(fp, cutSegments);
+        const { canceled, filePath: savePath } = await dialog.showSaveDialog({ defaultPath: `${new Date().getTime()}.${ext}`, filters });
+        if (canceled || !savePath) return;
+        console.log('Saving', type, savePath);
+        if (type === 'csv') await saveCsv(savePath, cutSegments);
+        else if (type === 'tsv-human') await saveTsv(savePath, cutSegments);
+        else if (type === 'csv-human') await saveCsvHuman(savePath, cutSegments);
+        else if (type === 'llc') await saveLlcProject({ savePath, filePath, cutSegments });
       } catch (err) {
         errorToast(i18n.t('Failed to export project'));
         console.error('Failed to export project', type, err);
@@ -1714,6 +1771,7 @@ const App = memo(() => {
       else if (type === 'cue') filters = [{ name: i18n.t('CUE files'), extensions: ['cue'] }];
       else if (type === 'pbf') filters = [{ name: i18n.t('PBF files'), extensions: ['pbf'] }];
       else if (type === 'mplayer') filters = [{ name: i18n.t('MPlayer EDL'), extensions: ['*'] }];
+      else if (type === 'llc') filters = [{ name: i18n.t('LosslessCut project'), extensions: ['llc'] }];
 
       const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters });
       if (canceled || filePaths.length < 1) return;
@@ -1792,7 +1850,7 @@ const App = memo(() => {
       }
     }
 
-    const fileOpened = (event, filePaths) => { userOpenFiles(filePaths); };
+    const fileOpened = (event, filePaths) => { userOpenFiles(filePaths.map(resolvePathIfNeeded)); };
     const showStreamsSelector = () => setStreamsSelectorShown(true);
     const openSendReportDialog2 = () => { openSendReportDialogWithState(); };
     const closeFile2 = () => { closeFile(); };
