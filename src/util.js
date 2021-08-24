@@ -86,7 +86,7 @@ export const errorToast = (title) => toast.fire({
 });
 
 export const openDirToast = async ({ dirPath, ...props }) => {
-  const { value } = await toast.fire({ icon: 'success', ...props, timer: 13000, showConfirmButton: true, confirmButtonText: i18n.t('Show'), showCancelButton: true, cancelButtonText: i18n.t('Close') });
+  const { value } = await toast.fire({ icon: 'success', timer: 5000, showConfirmButton: true, confirmButtonText: i18n.t('Show'), showCancelButton: true, cancelButtonText: i18n.t('Close'), ...props });
   if (value) open(dirPath);
 };
 
