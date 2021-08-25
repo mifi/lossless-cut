@@ -30,3 +30,4 @@ npm start
 - `git push && git push --tags`
 - Wait for build and draft in Github actions
 - Release draft at github
+- Bump [snap version](https://snapcraft.io/losslesscut/listing)
