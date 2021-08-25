@@ -28,7 +28,7 @@ const VolumeControl = memo(({ playbackVolume, setPlaybackVolume, usingDummyVideo
     }
   }, [volumeControlVisible, setPlaybackVolume, playbackVolume]);
 
-  // TODO fastest-audio currently shows as muted
+  // TODO fastest-audio/fastest-audio-remux currently shows as muted
   const VolumeIcon = playbackVolume === 0 || usingDummyVideo ? FaVolumeMute : FaVolumeUp;
 
   return (

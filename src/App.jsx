@@ -47,7 +47,7 @@ import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
   getDefaultOutFormat, getFormatData, renderThumbnails as ffmpegRenderThumbnails,
   extractStreams, getAllStreams,
-  isStreamThumbnail, isAudioSupported, isIphoneHevc, tryReadChaptersToEdl,
+  isStreamThumbnail, isAudioDefinitelyNotSupported, isIphoneHevc, tryReadChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments,
 } from './ffmpeg';
 import { saveCsv, saveTsv, loadCsv, loadXmeml, loadCue, loadPbf, loadMplayerEdl, saveCsvHuman, saveLlcProject, loadLlcProject } from './edlStore';
@@ -1210,7 +1210,7 @@ const App = memo(() => {
     setWorking(i18n.t('Loading file'));
 
     async function checkAndSetExistingHtml5FriendlyFile() {
-      const speeds = ['slowest', 'slow-audio', 'slow', 'fast-audio', 'fast', 'fastest-audio', html5dummySuffix];
+      const speeds = ['slowest', 'slow-audio', 'slow', 'fast-audio', 'fast', 'fastest-audio', 'fastest-audio-remux', html5dummySuffix];
       const prefix = `${getFileBaseName(fp)}-${html5ifiedPrefix}`;
 
       const outDir = getOutDir(cod, fp);
@@ -1233,7 +1233,7 @@ const App = memo(() => {
       if (!path) return false;
 
       console.log('Found existing supported file', path, speed);
-      setUsingDummyVideo(speed === 'fastest-audio');
+      setUsingDummyVideo(['fastest-audio', 'fastest-audio-remux'].includes(speed));
       setPreviewFilePath(path);
 
       showPreviewFileLoadedMessage(basename(path));
@@ -1284,7 +1284,7 @@ const App = memo(() => {
       setDetectedFileFormat(ff);
       setFileFormatData(fd);
 
-      if (!isAudioSupported(streams)) {
+      if (isAudioDefinitelyNotSupported(streams)) {
         toast.fire({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
       }
 
@@ -1633,8 +1633,8 @@ const App = memo(() => {
     let audio;
     if (ha) {
       if (speed === 'slowest') audio = 'hq';
-      else if (speed === 'slow-audio' || speed === 'fastest-audio') audio = 'lq';
-      else if (speed === 'fast-audio') audio = 'copy';
+      else if (['slow-audio', 'fastest-audio'].includes(speed)) audio = 'lq';
+      else if (['fast-audio', 'fastest-audio-remux'].includes(speed)) audio = 'copy';
     }
 
     let video;
@@ -1653,7 +1653,7 @@ const App = memo(() => {
   }, [ffmpegHtml5ify, getHtml5ifiedPath]);
 
   const html5ifyAndLoad = useCallback(async (speed) => {
-    if (speed === 'fastest-audio') {
+    if (['fastest-audio', 'fastest-audio-remux'].includes(speed)) {
       const path = await html5ify({ customOutDir, filePath, speed, hasAudio, hasVideo: false });
       load({ filePath, dummyVideoPathRequested: path, customOutDir });
     } else {
@@ -1662,18 +1662,18 @@ const App = memo(() => {
     }
   }, [hasAudio, hasVideo, customOutDir, filePath, html5ify, load]);
 
-  const html5ifyCurrentFile = useCallback(async () => {
+  const userHtml5ifyCurrentFile = useCallback(async () => {
     if (!filePath) return;
 
     try {
       setWorking(i18n.t('Converting to supported format'));
 
-      const speed = await askForHtml5ifySpeed(['fastest', 'fastest-audio', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest']);
+      const speed = await askForHtml5ifySpeed(['fastest', 'fastest-audio', 'fastest-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest']);
       if (!speed) return;
 
       if (speed === 'fastest') {
         await createDummyVideo(customOutDir, filePath);
-      } else if (['fastest-audio', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'].includes(speed)) {
+      } else if (['fastest-audio', 'fastest-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'].includes(speed)) {
         await html5ifyAndLoad(speed);
       }
     } catch (err) {
@@ -1798,7 +1798,7 @@ const App = memo(() => {
       const failedFiles = [];
       let i = 0;
 
-      const speed = await askForHtml5ifySpeed(['fastest-audio', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest']);
+      const speed = await askForHtml5ifySpeed(['fastest-audio', 'fastest-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest']);
       if (!speed) return;
 
       try {
@@ -1870,7 +1870,7 @@ const App = memo(() => {
 
     electron.ipcRenderer.on('file-opened', fileOpened);
     electron.ipcRenderer.on('close-file', closeFile2);
-    electron.ipcRenderer.on('html5ify', html5ifyCurrentFile);
+    electron.ipcRenderer.on('html5ify', userHtml5ifyCurrentFile);
     electron.ipcRenderer.on('show-merge-dialog', showOpenAndMergeDialog2);
     electron.ipcRenderer.on('set-start-offset', setStartOffset);
     electron.ipcRenderer.on('extract-all-streams', extractAllStreams);
@@ -1893,7 +1893,7 @@ const App = memo(() => {
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
       electron.ipcRenderer.removeListener('close-file', closeFile2);
-      electron.ipcRenderer.removeListener('html5ify', html5ifyCurrentFile);
+      electron.ipcRenderer.removeListener('html5ify', userHtml5ifyCurrentFile);
       electron.ipcRenderer.removeListener('show-merge-dialog', showOpenAndMergeDialog2);
       electron.ipcRenderer.removeListener('set-start-offset', setStartOffset);
       electron.ipcRenderer.removeListener('extract-all-streams', extractAllStreams);
@@ -1914,7 +1914,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('reorderSegsByStartTime', reorderSegsByStartTime);
     };
   }, [
-    mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, html5ifyCurrentFile,
+    mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile,
     createDummyVideo, extractAllStreams, userOpenFiles, openSendReportDialogWithState,
     loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ify,
     loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime, closeFile, clearSegments, fixInvalidDuration, invertAllCutSegments,

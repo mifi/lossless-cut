@@ -464,11 +464,13 @@ export function isStreamThumbnail(stream) {
   return stream && stream.disposition && stream.disposition.attached_pic === 1;
 }
 
-export function isAudioSupported(streams) {
-  const audioStreams = streams.filter(stream => stream.codec_type === 'audio');
-  if (audioStreams.length === 0) return true;
+const getAudioStreams = (streams) => streams.filter(stream => stream.codec_type === 'audio');
+
+export function isAudioDefinitelyNotSupported(streams) {
+  const audioStreams = getAudioStreams(streams);
+  if (audioStreams.length === 0) return false;
   // TODO this could be improved
-  return audioStreams.some(stream => !['ac3'].includes(stream.codec_name));
+  return audioStreams.every(stream => ['ac3'].includes(stream.codec_name));
 }
 
 export function isIphoneHevc(format, streams) {
