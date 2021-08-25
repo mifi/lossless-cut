@@ -1,10 +1,10 @@
 import React, { memo, useState, useMemo } from 'react';
 
-import { FaVideo, FaVideoSlash, FaFileExport, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaTrashAlt, FaInfoCircle } from 'react-icons/fa';
+import { FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaTrashAlt, FaInfoCircle, FaFileExport } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
 import { FiEdit, FiCheck, FiTrash } from 'react-icons/fi';
 import { MdSubtitles } from 'react-icons/md';
-import { SegmentedControl, Dialog, Button } from 'evergreen-ui';
+import { SortAscIcon, SortDescIcon, Dialog, Button, PlusIcon, Pane, ForkIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
 import { askForMetadataKey, showJson5Dialog } from './dialogs';
@@ -89,7 +89,7 @@ const TagEditor = memo(({ existingTags, customTags, onTagChange, onTagReset }) =
         </tbody>
       </table>
 
-      <Button style={{ marginTop: 10 }} iconBefore="plus" onClick={onAddPress}>Add metadata</Button>
+      <Button style={{ marginTop: 10 }} iconBefore={PlusIcon} onClick={onAddPress}>Add metadata</Button>
     </>
   );
 });
@@ -207,7 +207,7 @@ const FileHeading = ({ path, formatData, onTrashClick, onEditClick }) => {
   const { t } = useTranslation();
 
   return (
-    <div style={{ display: 'flex', marginBottom: 10, alignItems: 'center' }}>
+    <div style={{ display: 'flex', marginBottom: 15, marginLeft: 5, marginRight: 5, marginTop: 5, alignItems: 'center' }}>
       <div title={path} style={{ wordBreak: 'break-all', fontWeight: 'bold' }}>{path.replace(/.*\/([^/]+)$/, '$1')}</div>
       <FaInfoCircle role="button" onClick={() => onInfoClick(formatData, t('File info'))} size={20} style={{ padding: '0 5px 0 10px' }} />
       {onEditClick && <FiEdit title={t('Edit file metadata')} role="button" size={20} style={{ padding: '0 5px' }} onClick={onEditClick} />}
@@ -237,7 +237,7 @@ const Thead = () => {
 };
 
 const tableStyle = { fontSize: 14, width: '100%' };
-const fileStyle = { marginBottom: 10, backgroundColor: 'rgba(0,0,0,0.04)', padding: 5, borderRadius: 7 };
+const fileStyle = { marginBottom: 20, padding: 5 };
 
 const StreamsSelector = memo(({
   mainFilePath, mainFileFormatData, streams: mainFileStreams, isCopyingStreamId, toggleCopyStreamId,
@@ -273,7 +273,7 @@ const StreamsSelector = memo(({
       <div style={{ color: 'black', padding: 10 }}>
         <p>{t('Click to select which tracks to keep when exporting:')}</p>
 
-        <div style={fileStyle}>
+        <Pane elevation={1} style={fileStyle}>
           {/* We only support editing main file metadata for now */}
           <FileHeading path={mainFilePath} formatData={mainFileFormatData} onEditClick={() => setEditingFile(mainFilePath)} />
           <table style={tableStyle}>
@@ -293,10 +293,10 @@ const StreamsSelector = memo(({
               ))}
             </tbody>
           </table>
-        </div>
+        </Pane>
 
         {externalFilesEntries.map(([path, { streams, formatData }]) => (
-          <div key={path} style={fileStyle}>
+          <Pane elevation={1} key={path} style={fileStyle}>
             <FileHeading path={path} formatData={formatData} onTrashClick={() => removeFile(path)} />
             <table style={tableStyle}>
               <Thead />
@@ -314,36 +314,32 @@ const StreamsSelector = memo(({
                 ))}
               </tbody>
             </table>
-          </div>
+          </Pane>
         ))}
 
-        {externalFilesEntries.length > 0 && (
-          <div style={{ margin: '10px 0' }}>
-            <div>
-              {t('When tracks have different lengths, do you want to make the output file as long as the longest or the shortest track?')}
-            </div>
-            <SegmentedControl
-              options={[{ label: t('Longest'), value: 'longest' }, { label: t('Shortest'), value: 'shortest' }]}
-              value={shortestFlag ? 'shortest' : 'longest'}
-              onChange={value => setShortestFlag(value === 'shortest')}
-            />
-          </div>
-        )}
+        <Button iconBefore={() => <FaFileImport size={16} />} onClick={showAddStreamSourceDialog}>
+          {t('Include more tracks from other file')}
+        </Button>
 
-        <div style={{ cursor: 'pointer', padding: '10px 0' }} role="button" onClick={showAddStreamSourceDialog}>
-          <FaFileImport size={30} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {t('Include more tracks from other file')}
-        </div>
+        {externalFilesEntries.length === 0 && (
+          <Button iconBefore={() => <ForkIcon size={16} />} onClick={onExtractAllStreamsPress}>
+            {t('Export each track as individual files')}
+          </Button>
+        )}
 
         {nonCopiedExtraStreams.length > 0 && (
           <div style={{ margin: '10px 0' }}>
-            {t('Discard or extract unprocessable tracks to separate files?')}
+            <span style={{ marginRight: 10 }}>{t('Discard or extract unprocessable tracks to separate files?')}</span>
             <AutoExportToggler />
           </div>
         )}
 
-        {externalFilesEntries.length === 0 && (
-          <div style={{ cursor: 'pointer', padding: '10px 0' }} role="button" onClick={onExtractAllStreamsPress}>
-            <FaFileExport size={30} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {t('Export each track as individual files')}
+        {externalFilesEntries.length > 0 && (
+          <div style={{ margin: '10px 0' }}>
+            <span style={{ marginRight: 10 }}>{t('When tracks have different lengths, do you want to make the output file as long as the longest or the shortest track?')}</span>
+            <Button iconBefore={shortestFlag ? SortDescIcon : SortAscIcon} onClick={() => setShortestFlag((value) => !value)}>
+              {shortestFlag ? t('Shortest') : t('Longest')}
+            </Button>
           </div>
         )}
       </div>

@@ -3,7 +3,7 @@ import { FaAngleLeft, FaWindowClose } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import Lottie from 'react-lottie-player';
-import { SideSheet, Button, Position, SegmentedControl, Select } from 'evergreen-ui';
+import { SideSheet, Button, Position, ForkIcon, DisableIcon, Select, ThemeProvider } from 'evergreen-ui';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
@@ -19,6 +19,7 @@ import sortBy from 'lodash/sortBy';
 import flatMap from 'lodash/flatMap';
 import isEqual from 'lodash/isEqual';
 
+import theme from './theme';
 import useTimelineScroll from './hooks/useTimelineScroll';
 import useUserPreferences from './hooks/useUserPreferences';
 import useFfmpegOperations from './hooks/useFfmpegOperations';
@@ -53,7 +54,7 @@ import {
 import { saveCsv, saveTsv, loadCsv, loadXmeml, loadCue, loadPbf, loadMplayerEdl, saveCsvHuman, saveLlcProject, loadLlcProject } from './edlStore';
 import { formatYouTube } from './edlFormats';
 import {
-  getOutPath, toast, errorToast, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
+  getOutPath, toast, errorToast, handleError, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   hasDuplicates, havePermissionToReadFile, isMac, getFileBaseName, resolvePathIfNeeded, pathExists,
@@ -469,7 +470,7 @@ const App = memo(() => {
         } */
         setCutTime('start', startTime);
       } catch (err) {
-        errorToast(err.message);
+        handleError(err);
       }
     }
   }, [setCutTime, currentCutSeg, addCutSegment, filePath]);
@@ -486,7 +487,7 @@ const App = memo(() => {
       } */
       setCutTime('end', endTime);
     } catch (err) {
-      errorToast(err.message);
+      handleError(err);
     }
   }, [setCutTime, filePath]);
 
@@ -1620,7 +1621,7 @@ const App = memo(() => {
           return;
         }
         if (openFileResponse === 'tracks') {
-          addStreamSourceFile(firstFilePath);
+          await addStreamSourceFile(firstFilePath);
           setStreamsSelectorShown(true);
           return;
         }
@@ -1929,9 +1930,13 @@ const App = memo(() => {
   ]);
 
   async function showAddStreamSourceDialog() {
-    const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'] });
-    if (canceled || filePaths.length < 1) return;
-    await addStreamSourceFile(filePaths[0]);
+    try {
+      const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'] });
+      if (canceled || filePaths.length < 1) return;
+      await addStreamSourceFile(filePaths[0]);
+    } catch (err) {
+      handleError(err);
+    }
   }
 
   useEffect(() => {
@@ -1961,9 +1966,9 @@ const App = memo(() => {
     ));
   }
 
-  const renderOutFmt = useCallback((props) => (
+  const renderOutFmt = useCallback((style) => (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <Select value={fileFormat || ''} title={i18n.t('Output format')} onChange={withBlur(e => onOutputFormatUserChange(e.target.value))} {...props}>
+    <Select style={style} value={fileFormat || ''} title={i18n.t('Output format')} onChange={withBlur(e => onOutputFormatUserChange(e.target.value))}>
       <option key="disabled1" value="" disabled>{i18n.t('Format')}</option>
 
       {detectedFileFormat && (
@@ -1992,11 +1997,9 @@ const App = memo(() => {
   ), [captureFormat, toggleCaptureFormat]);
 
   const AutoExportToggler = useCallback(() => (
-    <SegmentedControl
-      options={[{ label: i18n.t('Extract'), value: 'extract' }, { label: i18n.t('Discard'), value: 'discard' }]}
-      value={autoExportExtraStreams ? 'extract' : 'discard'}
-      onChange={value => setAutoExportExtraStreams(value === 'extract')}
-    />
+    <Button intent={autoExportExtraStreams === 'extract' ? 'success' : 'danger'} iconBefore={autoExportExtraStreams === 'extract' ? ForkIcon : DisableIcon} onClick={() => setAutoExportExtraStreams(autoExportExtraStreams === 'extract' ? 'discard' : 'extract')}>
+      {autoExportExtraStreams === 'extract' ? i18n.t('Extract') : i18n.t('Discard')}
+    </Button>
   ), [autoExportExtraStreams, setAutoExportExtraStreams]);
 
   const onTunerRequested = useCallback((type) => {
@@ -2109,304 +2112,306 @@ const App = memo(() => {
   // throw new Error('Test');
 
   return (
-    <div>
-      <div className="no-user-select" style={{ background: controlsBackground, height: topBarHeight, display: 'flex', alignItems: 'center', padding: '0 5px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-        <SideSheet
-          width={700}
-          containerProps={{ style: { maxWidth: '100%' } }}
-          position={Position.LEFT}
-          isShown={streamsSelectorShown}
-          onCloseComplete={() => setStreamsSelectorShown(false)}
-        >
-          <StreamsSelector
-            mainFilePath={filePath}
-            mainFileFormatData={fileFormatData}
-            externalFiles={externalStreamFiles}
-            setExternalFiles={setExternalStreamFiles}
-            showAddStreamSourceDialog={showAddStreamSourceDialog}
-            streams={mainStreams}
-            isCopyingStreamId={isCopyingStreamId}
-            toggleCopyStreamId={toggleCopyStreamId}
-            setCopyStreamIdsForPath={setCopyStreamIdsForPath}
-            onExtractAllStreamsPress={extractAllStreams}
-            onExtractStreamPress={extractSingleStream}
-            areWeCutting={areWeCutting}
-            shortestFlag={shortestFlag}
-            setShortestFlag={setShortestFlag}
-            nonCopiedExtraStreams={nonCopiedExtraStreams}
-            AutoExportToggler={AutoExportToggler}
-            customTagsByFile={customTagsByFile}
-            setCustomTagsByFile={setCustomTagsByFile}
-            customTagsByStreamId={customTagsByStreamId}
-            setCustomTagsByStreamId={setCustomTagsByStreamId}
+    <ThemeProvider value={theme}>
+      <div>
+        <div className="no-user-select" style={{ background: controlsBackground, height: topBarHeight, display: 'flex', alignItems: 'center', padding: '0 5px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <SideSheet
+            width={700}
+            containerProps={{ style: { maxWidth: '100%' } }}
+            position={Position.LEFT}
+            isShown={streamsSelectorShown}
+            onCloseComplete={() => setStreamsSelectorShown(false)}
+          >
+            <StreamsSelector
+              mainFilePath={filePath}
+              mainFileFormatData={fileFormatData}
+              externalFiles={externalStreamFiles}
+              setExternalFiles={setExternalStreamFiles}
+              showAddStreamSourceDialog={showAddStreamSourceDialog}
+              streams={mainStreams}
+              isCopyingStreamId={isCopyingStreamId}
+              toggleCopyStreamId={toggleCopyStreamId}
+              setCopyStreamIdsForPath={setCopyStreamIdsForPath}
+              onExtractAllStreamsPress={extractAllStreams}
+              onExtractStreamPress={extractSingleStream}
+              areWeCutting={areWeCutting}
+              shortestFlag={shortestFlag}
+              setShortestFlag={setShortestFlag}
+              nonCopiedExtraStreams={nonCopiedExtraStreams}
+              AutoExportToggler={AutoExportToggler}
+              customTagsByFile={customTagsByFile}
+              setCustomTagsByFile={setCustomTagsByFile}
+              customTagsByStreamId={customTagsByStreamId}
+              setCustomTagsByStreamId={setCustomTagsByStreamId}
+            />
+          </SideSheet>
+
+          <TopMenu
+            filePath={filePath}
+            height={topBarHeight}
+            copyAnyAudioTrack={copyAnyAudioTrack}
+            toggleStripAudio={toggleStripAudio}
+            customOutDir={customOutDir}
+            changeOutDir={changeOutDir}
+            clearOutDir={clearOutDir}
+            isCustomFormatSelected={isCustomFormatSelected}
+            renderOutFmt={renderOutFmt}
+            toggleHelp={toggleHelp}
+            toggleSettings={toggleSettings}
+            numStreamsToCopy={numStreamsToCopy}
+            numStreamsTotal={numStreamsTotal}
+            setStreamsSelectorShown={setStreamsSelectorShown}
+            enabledOutSegments={enabledOutSegments}
+            autoMerge={autoMerge}
+            setAutoMerge={setAutoMerge}
+            autoDeleteMergedSegments={autoDeleteMergedSegments}
+            setAutoDeleteMergedSegments={setAutoDeleteMergedSegments}
+            outFormatLocked={outFormatLocked}
+            onOutFormatLockedClick={onOutFormatLockedClick}
+            simpleMode={simpleMode}
           />
-        </SideSheet>
+        </div>
 
-        <TopMenu
-          filePath={filePath}
-          height={topBarHeight}
-          copyAnyAudioTrack={copyAnyAudioTrack}
-          toggleStripAudio={toggleStripAudio}
-          customOutDir={customOutDir}
-          changeOutDir={changeOutDir}
-          clearOutDir={clearOutDir}
-          isCustomFormatSelected={isCustomFormatSelected}
-          renderOutFmt={renderOutFmt}
-          toggleHelp={toggleHelp}
-          toggleSettings={toggleSettings}
-          numStreamsToCopy={numStreamsToCopy}
-          numStreamsTotal={numStreamsTotal}
-          setStreamsSelectorShown={setStreamsSelectorShown}
-          enabledOutSegments={enabledOutSegments}
-          autoMerge={autoMerge}
-          setAutoMerge={setAutoMerge}
-          autoDeleteMergedSegments={autoDeleteMergedSegments}
-          setAutoDeleteMergedSegments={setAutoDeleteMergedSegments}
-          outFormatLocked={outFormatLocked}
-          onOutFormatLockedClick={onOutFormatLockedClick}
-          simpleMode={simpleMode}
-        />
-      </div>
+        {!isFileOpened && <NoFileLoaded topBarHeight={topBarHeight} bottomBarHeight={bottomBarHeight} mifiLink={mifiLink} toggleHelp={toggleHelp} currentCutSeg={currentCutSeg} simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} />}
 
-      {!isFileOpened && <NoFileLoaded topBarHeight={topBarHeight} bottomBarHeight={bottomBarHeight} mifiLink={mifiLink} toggleHelp={toggleHelp} currentCutSeg={currentCutSeg} simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} />}
+        <AnimatePresence>
+          {working && (
+            <div style={{
+              position: 'absolute', zIndex: 1, bottom: bottomBarHeight, top: topBarHeight, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center',
+            }}
+            >
+              <motion.div
+                style={{ background: primaryColor, boxShadow: `${primaryColor} 0px 0px 20px 25px`, borderRadius: 20, paddingBottom: 15, color: 'white', textAlign: 'center', fontSize: 14 }}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+              >
+                <div style={{ width: 150, height: 150 }}>
+                  <Lottie
+                    loop
+                    animationData={loadingLottie}
+                    play
+                    style={{ width: '170%', height: '130%', marginLeft: '-35%', marginTop: '-29%', pointerEvents: 'none' }}
+                  />
+                </div>
 
-      <AnimatePresence>
-        {working && (
+                <div style={{ marginTop: 10, width: 150 }}>
+                  {working}...
+                </div>
+
+                {(cutProgress != null) && (
+                  <div style={{ marginTop: 10 }}>
+                    {`${(cutProgress * 100).toFixed(1)} %`}
+                  </div>
+                )}
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        <div className="no-user-select" style={{ position: 'absolute', top: topBarHeight, left: 0, right: sideBarWidth, bottom: bottomBarHeight, visibility: !isFileOpened ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
+          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+          <video
+            muted={playbackVolume === 0}
+            ref={videoRef}
+            style={videoStyle}
+            src={fileUri}
+            onPlay={onSartPlaying}
+            onPause={onStopPlaying}
+            onDurationChange={onDurationChange}
+            onTimeUpdate={onTimeUpdate}
+            onError={onVideoError}
+          />
+
+          {canvasPlayerEnabled && <Canvas rotate={effectiveRotation} filePath={filePath} width={mainVideoStream.width} height={mainVideoStream.height} streamIndex={mainVideoStream.index} playerTime={playerTime} commandedTime={commandedTime} playing={playing} />}
+        </div>
+
+        {isRotationSet && !hideCanvasPreview && (
           <div style={{
-            position: 'absolute', zIndex: 1, bottom: bottomBarHeight, top: topBarHeight, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center',
+            position: 'absolute', top: topBarHeight, marginTop: '1em', marginRight: '1em', right: sideBarWidth, color: 'white',
           }}
           >
-            <motion.div
-              style={{ background: primaryColor, boxShadow: `${primaryColor} 0px 0px 20px 25px`, borderRadius: 20, paddingBottom: 15, color: 'white', textAlign: 'center', fontSize: 14 }}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0 }}
-            >
-              <div style={{ width: 150, height: 150 }}>
-                <Lottie
-                  loop
-                  animationData={loadingLottie}
-                  play
-                  style={{ width: '170%', height: '130%', marginLeft: '-35%', marginTop: '-29%', pointerEvents: 'none' }}
-                />
-              </div>
-
-              <div style={{ marginTop: 10, width: 150 }}>
-                {working}...
-              </div>
-
-              {(cutProgress != null) && (
-                <div style={{ marginTop: 10 }}>
-                  {`${(cutProgress * 100).toFixed(1)} %`}
-                </div>
-              )}
-            </motion.div>
+            {t('Rotation preview')}
+            {!canvasPlayerRequired && <FaWindowClose role="button" style={{ cursor: 'pointer', verticalAlign: 'middle', padding: 10 }} onClick={() => setHideCanvasPreview(true)} />}
           </div>
         )}
-      </AnimatePresence>
 
-      <div className="no-user-select" style={{ position: 'absolute', top: topBarHeight, left: 0, right: sideBarWidth, bottom: bottomBarHeight, visibility: !isFileOpened ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
-        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-        <video
-          muted={playbackVolume === 0}
-          ref={videoRef}
-          style={videoStyle}
-          src={fileUri}
-          onPlay={onSartPlaying}
-          onPause={onStopPlaying}
-          onDurationChange={onDurationChange}
-          onTimeUpdate={onTimeUpdate}
-          onError={onVideoError}
-        />
+        {isFileOpened && (
+          <>
+            <div
+              className="no-user-select"
+              style={{
+                position: 'absolute', right: sideBarWidth, bottom: bottomBarHeight, marginBottom: 10, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center',
+              }}
+            >
+              <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} usingDummyVideo={usingDummyVideo} />
 
-        {canvasPlayerEnabled && <Canvas rotate={effectiveRotation} filePath={filePath} width={mainVideoStream.width} height={mainVideoStream.height} streamIndex={mainVideoStream.index} playerTime={playerTime} commandedTime={commandedTime} playing={playing} />}
-      </div>
-
-      {isRotationSet && !hideCanvasPreview && (
-        <div style={{
-          position: 'absolute', top: topBarHeight, marginTop: '1em', marginRight: '1em', right: sideBarWidth, color: 'white',
-        }}
-        >
-          {t('Rotation preview')}
-          {!canvasPlayerRequired && <FaWindowClose role="button" style={{ cursor: 'pointer', verticalAlign: 'middle', padding: 10 }} onClick={() => setHideCanvasPreview(true)} />}
-        </div>
-      )}
-
-      {isFileOpened && (
-        <>
-          <div
-            className="no-user-select"
-            style={{
-              position: 'absolute', right: sideBarWidth, bottom: bottomBarHeight, marginBottom: 10, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center',
-            }}
-          >
-            <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} usingDummyVideo={usingDummyVideo} />
-
-            {!showSideBar && (
-              <FaAngleLeft
-                title={t('Show sidebar')}
-                size={30}
-                role="button"
-                style={{ margin: '0 7px' }}
-                onClick={toggleSideBar}
-              />
-            )}
-          </div>
-
-          <AnimatePresence>
-            {showSideBar && (
-              <motion.div
-                style={{ position: 'absolute', width: sideBarWidth, right: 0, bottom: bottomBarHeight, top: topBarHeight, background: controlsBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column' }}
-                initial={{ x: sideBarWidth }}
-                animate={{ x: 0 }}
-                exit={{ x: sideBarWidth }}
-              >
-                <SegmentList
-                  simpleMode={simpleMode}
-                  currentSegIndex={currentSegIndexSafe}
-                  outSegments={outSegments}
-                  cutSegments={apparentCutSegments}
-                  getFrameCount={getFrameCount}
-                  formatTimecode={formatTimecode}
-                  invertCutSegments={invertCutSegments}
-                  onSegClick={setCurrentSegIndex}
-                  updateSegOrder={updateSegOrder}
-                  updateSegOrders={updateSegOrders}
-                  onLabelSegmentPress={onLabelSegmentPress}
-                  currentCutSeg={currentCutSeg}
-                  segmentAtCursor={segmentAtCursor}
-                  addCutSegment={addCutSegment}
-                  removeCutSegment={removeCutSegment}
-                  toggleSideBar={toggleSideBar}
-                  splitCurrentSegment={splitCurrentSegment}
-                  enabledOutSegmentsRaw={enabledOutSegmentsRaw}
-                  enabledOutSegments={enabledOutSegments}
-                  onExportSingleSegmentClick={onExportSingleSegmentClick}
-                  onExportSegmentEnabledToggle={onExportSegmentEnabledToggle}
-                  onExportSegmentDisableAll={onExportSegmentDisableAll}
-                  onExportSegmentEnableAll={onExportSegmentEnableAll}
-                  jumpSegStart={jumpSegStart}
-                  jumpSegEnd={jumpSegEnd}
-                  onViewSegmentTagsPress={onViewSegmentTagsPress}
+              {!showSideBar && (
+                <FaAngleLeft
+                  title={t('Show sidebar')}
+                  size={30}
+                  role="button"
+                  style={{ margin: '0 7px' }}
+                  onClick={toggleSideBar}
                 />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </>
-      )}
+              )}
+            </div>
 
-      <motion.div
-        className="no-user-select"
-        style={{ background: controlsBackground, position: 'absolute', left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}
-        animate={{ height: bottomBarHeight }}
-      >
-        <Timeline
-          shouldShowKeyframes={shouldShowKeyframes}
-          waveform={waveform}
-          shouldShowWaveform={shouldShowWaveform}
-          waveformEnabled={waveformEnabled}
-          thumbnailsEnabled={thumbnailsEnabled}
-          neighbouringFrames={neighbouringFrames}
-          thumbnails={thumbnailsSorted}
-          getCurrentTime={getCurrentTime}
-          commandedTimeRef={commandedTimeRef}
-          startTimeOffset={startTimeOffset}
-          playerTime={playerTime}
-          commandedTime={commandedTime}
-          zoom={zoom}
-          seekAbs={seekAbs}
-          durationSafe={durationSafe}
-          apparentCutSegments={apparentCutSegments}
-          setCurrentSegIndex={setCurrentSegIndex}
-          currentSegIndexSafe={currentSegIndexSafe}
-          invertCutSegments={invertCutSegments}
-          inverseCutSegments={inverseCutSegments}
-          formatTimecode={formatTimecode}
-          timelineHeight={timelineHeight}
-          onZoomWindowStartTimeChange={setZoomWindowStartTime}
-          playing={playing}
-          isFileOpened={isFileOpened}
-          onWheel={onTimelineWheel}
-        />
+            <AnimatePresence>
+              {showSideBar && (
+                <motion.div
+                  style={{ position: 'absolute', width: sideBarWidth, right: 0, bottom: bottomBarHeight, top: topBarHeight, background: controlsBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column' }}
+                  initial={{ x: sideBarWidth }}
+                  animate={{ x: 0 }}
+                  exit={{ x: sideBarWidth }}
+                >
+                  <SegmentList
+                    simpleMode={simpleMode}
+                    currentSegIndex={currentSegIndexSafe}
+                    outSegments={outSegments}
+                    cutSegments={apparentCutSegments}
+                    getFrameCount={getFrameCount}
+                    formatTimecode={formatTimecode}
+                    invertCutSegments={invertCutSegments}
+                    onSegClick={setCurrentSegIndex}
+                    updateSegOrder={updateSegOrder}
+                    updateSegOrders={updateSegOrders}
+                    onLabelSegmentPress={onLabelSegmentPress}
+                    currentCutSeg={currentCutSeg}
+                    segmentAtCursor={segmentAtCursor}
+                    addCutSegment={addCutSegment}
+                    removeCutSegment={removeCutSegment}
+                    toggleSideBar={toggleSideBar}
+                    splitCurrentSegment={splitCurrentSegment}
+                    enabledOutSegmentsRaw={enabledOutSegmentsRaw}
+                    enabledOutSegments={enabledOutSegments}
+                    onExportSingleSegmentClick={onExportSingleSegmentClick}
+                    onExportSegmentEnabledToggle={onExportSegmentEnabledToggle}
+                    onExportSegmentDisableAll={onExportSegmentDisableAll}
+                    onExportSegmentEnableAll={onExportSegmentEnableAll}
+                    jumpSegStart={jumpSegStart}
+                    jumpSegEnd={jumpSegEnd}
+                    onViewSegmentTagsPress={onViewSegmentTagsPress}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
 
-        <TimelineControls
-          seekAbs={seekAbs}
-          currentSegIndexSafe={currentSegIndexSafe}
-          cutSegments={cutSegments}
-          currentCutSeg={currentCutSeg}
-          setCutStart={setCutStart}
-          setCutEnd={setCutEnd}
-          setCurrentSegIndex={setCurrentSegIndex}
-          cutStartTimeManual={cutStartTimeManual}
-          setCutStartTimeManual={setCutStartTimeManual}
-          cutEndTimeManual={cutEndTimeManual}
-          setCutEndTimeManual={setCutEndTimeManual}
-          duration={durationSafe}
-          jumpCutEnd={jumpCutEnd}
-          jumpCutStart={jumpCutStart}
-          startTimeOffset={startTimeOffset}
-          setCutTime={setCutTime}
-          currentApparentCutSeg={currentApparentCutSeg}
-          playing={playing}
-          shortStep={shortStep}
-          seekClosestKeyframe={seekClosestKeyframe}
-          togglePlay={togglePlay}
-          setTimelineMode={setTimelineMode}
-          timelineMode={timelineMode}
-          hasAudio={hasAudio}
-          hasVideo={hasVideo}
-          keyframesEnabled={keyframesEnabled}
-          toggleKeyframesEnabled={toggleKeyframesEnabled}
-          simpleMode={simpleMode}
-        />
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', height: 36 }}>
-          <LeftMenu
+        <motion.div
+          className="no-user-select"
+          style={{ background: controlsBackground, position: 'absolute', left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}
+          animate={{ height: bottomBarHeight }}
+        >
+          <Timeline
+            shouldShowKeyframes={shouldShowKeyframes}
+            waveform={waveform}
+            shouldShowWaveform={shouldShowWaveform}
+            waveformEnabled={waveformEnabled}
+            thumbnailsEnabled={thumbnailsEnabled}
+            neighbouringFrames={neighbouringFrames}
+            thumbnails={thumbnailsSorted}
+            getCurrentTime={getCurrentTime}
+            commandedTimeRef={commandedTimeRef}
+            startTimeOffset={startTimeOffset}
+            playerTime={playerTime}
+            commandedTime={commandedTime}
             zoom={zoom}
-            setZoom={setZoom}
+            seekAbs={seekAbs}
+            durationSafe={durationSafe}
+            apparentCutSegments={apparentCutSegments}
+            setCurrentSegIndex={setCurrentSegIndex}
+            currentSegIndexSafe={currentSegIndexSafe}
             invertCutSegments={invertCutSegments}
-            setInvertCutSegments={setInvertCutSegments}
-            toggleComfortZoom={toggleComfortZoom}
-            simpleMode={simpleMode}
-            toggleSimpleMode={toggleSimpleMode}
+            inverseCutSegments={inverseCutSegments}
+            formatTimecode={formatTimecode}
+            timelineHeight={timelineHeight}
+            onZoomWindowStartTimeChange={setZoomWindowStartTime}
+            playing={playing}
+            isFileOpened={isFileOpened}
+            onWheel={onTimelineWheel}
           />
 
-          <RightMenu
+          <TimelineControls
+            seekAbs={seekAbs}
+            currentSegIndexSafe={currentSegIndexSafe}
+            cutSegments={cutSegments}
+            currentCutSeg={currentCutSeg}
+            setCutStart={setCutStart}
+            setCutEnd={setCutEnd}
+            setCurrentSegIndex={setCurrentSegIndex}
+            cutStartTimeManual={cutStartTimeManual}
+            setCutStartTimeManual={setCutStartTimeManual}
+            cutEndTimeManual={cutEndTimeManual}
+            setCutEndTimeManual={setCutEndTimeManual}
+            duration={durationSafe}
+            jumpCutEnd={jumpCutEnd}
+            jumpCutStart={jumpCutStart}
+            startTimeOffset={startTimeOffset}
+            setCutTime={setCutTime}
+            currentApparentCutSeg={currentApparentCutSeg}
+            playing={playing}
+            shortStep={shortStep}
+            seekClosestKeyframe={seekClosestKeyframe}
+            togglePlay={togglePlay}
+            setTimelineMode={setTimelineMode}
+            timelineMode={timelineMode}
+            hasAudio={hasAudio}
             hasVideo={hasVideo}
-            isRotationSet={isRotationSet}
-            rotation={rotation}
-            areWeCutting={areWeCutting}
-            autoMerge={autoMerge}
-            increaseRotation={increaseRotation}
-            cleanupFiles={cleanupFiles}
-            renderCaptureFormatButton={renderCaptureFormatButton}
-            capture={capture}
-            onExportPress={onExportPress}
-            enabledOutSegments={enabledOutSegments}
-            exportConfirmEnabled={exportConfirmEnabled}
-            toggleExportConfirmEnabled={toggleExportConfirmEnabled}
+            keyframesEnabled={keyframesEnabled}
+            toggleKeyframesEnabled={toggleKeyframesEnabled}
             simpleMode={simpleMode}
           />
-        </div>
-      </motion.div>
 
-      <ExportConfirm filePath={filePath} autoMerge={autoMerge} setAutoMerge={setAutoMerge} areWeCutting={areWeCutting} enabledOutSegments={enabledOutSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} movFastStart={movFastStart} toggleMovFastStart={toggleMovFastStart} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} segmentsToChapters={segmentsToChapters} toggleSegmentsToChapters={toggleSegmentsToChapters} outFormat={fileFormat} preserveMetadataOnMerge={preserveMetadataOnMerge} togglePreserveMetadataOnMerge={togglePreserveMetadataOnMerge} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} isOutSegFileNamesValid={isOutSegFileNamesValid} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} safeOutputFileName={safeOutputFileName} toggleSafeOutputFileName={toggleSafeOutputFileName} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', height: 36 }}>
+            <LeftMenu
+              zoom={zoom}
+              setZoom={setZoom}
+              invertCutSegments={invertCutSegments}
+              setInvertCutSegments={setInvertCutSegments}
+              toggleComfortZoom={toggleComfortZoom}
+              simpleMode={simpleMode}
+              toggleSimpleMode={toggleSimpleMode}
+            />
 
-      <HelpSheet
-        visible={helpVisible}
-        onTogglePress={toggleHelp}
-        ffmpegCommandLog={ffmpegCommandLog}
-        currentCutSeg={currentCutSeg}
-      />
+            <RightMenu
+              hasVideo={hasVideo}
+              isRotationSet={isRotationSet}
+              rotation={rotation}
+              areWeCutting={areWeCutting}
+              autoMerge={autoMerge}
+              increaseRotation={increaseRotation}
+              cleanupFiles={cleanupFiles}
+              renderCaptureFormatButton={renderCaptureFormatButton}
+              capture={capture}
+              onExportPress={onExportPress}
+              enabledOutSegments={enabledOutSegments}
+              exportConfirmEnabled={exportConfirmEnabled}
+              toggleExportConfirmEnabled={toggleExportConfirmEnabled}
+              simpleMode={simpleMode}
+            />
+          </div>
+        </motion.div>
 
-      <SettingsSheet
-        visible={settingsVisible}
-        onTogglePress={toggleSettings}
-        renderSettings={renderSettings}
-      />
+        <ExportConfirm filePath={filePath} autoMerge={autoMerge} setAutoMerge={setAutoMerge} areWeCutting={areWeCutting} enabledOutSegments={enabledOutSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} movFastStart={movFastStart} toggleMovFastStart={toggleMovFastStart} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} segmentsToChapters={segmentsToChapters} toggleSegmentsToChapters={toggleSegmentsToChapters} outFormat={fileFormat} preserveMetadataOnMerge={preserveMetadataOnMerge} togglePreserveMetadataOnMerge={togglePreserveMetadataOnMerge} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} isOutSegFileNamesValid={isOutSegFileNamesValid} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} safeOutputFileName={safeOutputFileName} toggleSafeOutputFileName={toggleSafeOutputFileName} />
 
-      {tunerVisible && renderTuner(tunerVisible)}
-    </div>
+        <HelpSheet
+          visible={helpVisible}
+          onTogglePress={toggleHelp}
+          ffmpegCommandLog={ffmpegCommandLog}
+          currentCutSeg={currentCutSeg}
+        />
+
+        <SettingsSheet
+          visible={settingsVisible}
+          onTogglePress={toggleSettings}
+          renderSettings={renderSettings}
+        />
+
+        {tunerVisible && renderTuner(tunerVisible)}
+      </div>
+    </ThemeProvider>
   );
 });
 

@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Button } from 'evergreen-ui';
+import { Button, FolderOpenIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
 import { withBlur } from '../util';
@@ -10,7 +10,7 @@ const CustomOutDirButton = memo(({ customOutDir, changeOutDir }) => {
 
   return (
     <Button
-      iconBefore={customOutDir ? 'folder-open' : undefined}
+      iconBefore={customOutDir ? FolderOpenIcon : undefined}
       height={20}
       onClick={withBlur(changeOutDir)}
       title={customOutDir}
