@@ -954,8 +954,16 @@ const App = memo(() => {
       pathSep,
       ':', // https://github.com/mifi/lossless-cut/issues/631
     ];
-    const sameAsInputPath = pathNormalize(pathJoin(outputDir, fileName)) === pathNormalize(filePath);
-    return fileName.length > 0 && !invalidChars.some((c) => fileName.includes(c)) && !sameAsInputPath;
+    const outPath = pathNormalize(pathJoin(outputDir, fileName));
+    const sameAsInputPath = outPath === pathNormalize(filePath);
+    const windowsMaxPathLength = 259;
+    const shouldCheckPathLength = isWindows || isDev;
+    return (
+      fileName.length > 0
+      && !invalidChars.some((c) => fileName.includes(c))
+      && !sameAsInputPath
+      && (!shouldCheckPathLength || outPath.length < windowsMaxPathLength)
+    );
   }), [outputDir, filePath]);
 
   const openSendReportDialogWithState = useCallback(async (err) => {
