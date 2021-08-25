@@ -51,7 +51,7 @@ import {
   isStreamThumbnail, isAudioDefinitelyNotSupported, isIphoneHevc, tryReadChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments,
 } from './ffmpeg';
-import { saveCsv, saveTsv, loadCsv, loadXmeml, loadCue, loadPbf, loadMplayerEdl, saveCsvHuman, saveLlcProject, loadLlcProject } from './edlStore';
+import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, readEdl } from './edlStore';
 import { formatYouTube } from './edlFormats';
 import {
   getOutPath, toast, errorToast, handleError, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
@@ -60,7 +60,7 @@ import {
   hasDuplicates, havePermissionToReadFile, isMac, getFileBaseName, resolvePathIfNeeded, pathExists,
 } from './util';
 import { formatDuration } from './util/duration';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForYouTubeInput, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMergeDialog, showOpenAndMergeDialog, openAbout, showEditableJsonDialog } from './dialogs';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMergeDialog, showOpenAndMergeDialog, openAbout, showEditableJsonDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags } from './segments';
@@ -1193,17 +1193,7 @@ const App = memo(() => {
 
   const loadEdlFile = useCallback(async (path, type) => {
     try {
-      let edl;
-      if (type === 'csv') edl = await loadCsv(path);
-      else if (type === 'xmeml') edl = await loadXmeml(path);
-      else if (type === 'cue') edl = await loadCue(path);
-      else if (type === 'pbf') edl = await loadPbf(path);
-      else if (type === 'mplayer') edl = await loadMplayerEdl(path);
-      else if (type === 'llc') {
-        const project = await loadLlcProject(path);
-        edl = project.cutSegments;
-      }
-
+      const edl = await readEdlFile({ type, path });
       loadCutSegments(edl);
     } catch (err) {
       console.error('EDL load failed', err);
@@ -1740,33 +1730,10 @@ const App = memo(() => {
       setStartTimeOffset(newStartTimeOffset);
     }
 
-    async function exportEdlFile(e, type) {
+    async function exportEdlFile2(e, type) {
+      if (!checkFileOpened()) return;
       try {
-        if (!checkFileOpened()) return;
-
-        let filters;
-        let ext;
-        if (type === 'csv') {
-          ext = 'csv';
-          filters = [{ name: i18n.t('CSV files'), extensions: [ext, 'txt'] }];
-        } else if (type === 'tsv-human') {
-          ext = 'tsv';
-          filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
-        } else if (type === 'csv-human') {
-          ext = 'csv';
-          filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
-        } else if (type === 'llc') {
-          ext = 'llc';
-          filters = [{ name: i18n.t('LosslessCut project'), extensions: [ext, 'llc'] }];
-        }
-
-        const { canceled, filePath: savePath } = await dialog.showSaveDialog({ defaultPath: `${new Date().getTime()}.${ext}`, filters });
-        if (canceled || !savePath) return;
-        console.log('Saving', type, savePath);
-        if (type === 'csv') await saveCsv(savePath, cutSegments);
-        else if (type === 'tsv-human') await saveTsv(savePath, cutSegments);
-        else if (type === 'csv-human') await saveCsvHuman(savePath, cutSegments);
-        else if (type === 'llc') await saveLlcProject({ savePath, filePath, cutSegments });
+        await exportEdlFile({ type, cutSegments, filePath });
       } catch (err) {
         errorToast(i18n.t('Failed to export project'));
         console.error('Failed to export project', type, err);
@@ -1782,23 +1749,12 @@ const App = memo(() => {
     async function importEdlFile(e, type) {
       if (!checkFileOpened()) return;
 
-      if (type === 'youtube') {
-        const edl = await askForYouTubeInput();
+      try {
+        const edl = await readEdl(type);
         if (edl.length > 0) loadCutSegments(edl);
-        return;
+      } catch (err) {
+        handleError(err);
       }
-
-      let filters;
-      if (type === 'csv') filters = [{ name: i18n.t('CSV files'), extensions: ['csv'] }];
-      else if (type === 'xmeml') filters = [{ name: i18n.t('XML files'), extensions: ['xml'] }];
-      else if (type === 'cue') filters = [{ name: i18n.t('CUE files'), extensions: ['cue'] }];
-      else if (type === 'pbf') filters = [{ name: i18n.t('PBF files'), extensions: ['pbf'] }];
-      else if (type === 'mplayer') filters = [{ name: i18n.t('MPlayer EDL'), extensions: ['*'] }];
-      else if (type === 'llc') filters = [{ name: i18n.t('LosslessCut project'), extensions: ['llc'] }];
-
-      const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters });
-      if (canceled || filePaths.length < 1) return;
-      await loadEdlFile(filePaths[0], type);
     }
 
     async function batchConvertFriendlyFormat() {
@@ -1887,7 +1843,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('extract-all-streams', extractAllStreams);
     electron.ipcRenderer.on('showStreamsSelector', showStreamsSelector);
     electron.ipcRenderer.on('importEdlFile', importEdlFile);
-    electron.ipcRenderer.on('exportEdlFile', exportEdlFile);
+    electron.ipcRenderer.on('exportEdlFile', exportEdlFile2);
     electron.ipcRenderer.on('exportEdlYouTube', exportEdlYouTube);
     electron.ipcRenderer.on('openHelp', toggleHelp);
     electron.ipcRenderer.on('openSettings', toggleSettings);
@@ -1910,7 +1866,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('extract-all-streams', extractAllStreams);
       electron.ipcRenderer.removeListener('showStreamsSelector', showStreamsSelector);
       electron.ipcRenderer.removeListener('importEdlFile', importEdlFile);
-      electron.ipcRenderer.removeListener('exportEdlFile', exportEdlFile);
+      electron.ipcRenderer.removeListener('exportEdlFile', exportEdlFile2);
       electron.ipcRenderer.removeListener('exportEdlYouTube', exportEdlYouTube);
       electron.ipcRenderer.removeListener('openHelp', toggleHelp);
       electron.ipcRenderer.removeListener('openSettings', toggleSettings);
