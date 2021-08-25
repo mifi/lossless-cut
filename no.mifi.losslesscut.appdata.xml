@@ -2,7 +2,7 @@
 <component type="desktop">
   <id>no.mifi.losslesscut</id>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>MIT</project_license>
+  <project_license>GPL-2.0</project_license>
   <name>LosslessCut</name>
   <summary>Save space by quickly and losslessly trimming video and audio files</summary>
   <description>

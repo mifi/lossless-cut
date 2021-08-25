@@ -2,7 +2,7 @@
   "name": "lossless-cut",
   "productName": "LosslessCut",
   "description": "The swiss army knife of lossless video/audio editing",
-  "copyright": "Copyright © 2020 ${author}",
+  "copyright": "Copyright © 2021 ${author}",
   "version": "3.37.0",
   "main": "public/electron.js",
   "homepage": "./",
@@ -34,7 +34,7 @@
     "type": "git",
     "url": "https://github.com/mifi/lossless-cut.git"
   },
-  "license": "MIT",
+  "license": "GPL-2.0-only",
   "devDependencies": {
     "@types/jest": "^26.0.20",
     "axios": "^0.21.1",
