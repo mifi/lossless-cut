@@ -335,14 +335,18 @@ const App = memo(() => {
   const sortedCutSegments = useMemo(() => sortSegments(apparentCutSegments), [apparentCutSegments]);
 
   const inverseCutSegments = useMemo(() => {
-    function invertSegmentsInternal() {
-      if (haveInvalidSegs || !isDurationValid(duration)) return undefined;
-      if (!isDurationValid(duration)) return undefined;
-      return invertSegments(sortedCutSegments, duration);
-    }
-    const inverted = invertSegmentsInternal() || [];
-    return inverted.map((seg) => ({ ...seg, segId: `${seg.start}-${seg.end}` }));
+    const inverted = !haveInvalidSegs && isDurationValid(duration) ? invertSegments(sortedCutSegments, duration) : undefined;
+    return (inverted || []).map((seg) => ({ ...seg, segId: `${seg.start}-${seg.end}` }));
   }, [duration, haveInvalidSegs, sortedCutSegments]);
+
+  const invertAllCutSegments = useCallback(() => {
+    const newInverseCutSegments = inverseCutSegments.map(createSegment);
+    if (newInverseCutSegments.length < 1) {
+      errorToast(i18n.t('Make sure you have no overlapping segments.'));
+      return;
+    }
+    setCutSegments(newInverseCutSegments);
+  }, [inverseCutSegments, setCutSegments]);
 
   const updateSegAtIndex = useCallback((index, newProps) => {
     if (index < 0) return;
@@ -1882,6 +1886,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('clearSegments', clearSegments);
     electron.ipcRenderer.on('createNumSegments', createNumSegments2);
     electron.ipcRenderer.on('createFixedDurationSegments', createFixedDurationSegments2);
+    electron.ipcRenderer.on('invertAllCutSegments', invertAllCutSegments);
     electron.ipcRenderer.on('fixInvalidDuration', fixInvalidDuration2);
     electron.ipcRenderer.on('reorderSegsByStartTime', reorderSegsByStartTime);
 
@@ -1904,6 +1909,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('clearSegments', clearSegments);
       electron.ipcRenderer.removeListener('createNumSegments', createNumSegments2);
       electron.ipcRenderer.removeListener('createFixedDurationSegments', createFixedDurationSegments2);
+      electron.ipcRenderer.removeListener('invertAllCutSegments', invertAllCutSegments);
       electron.ipcRenderer.removeListener('fixInvalidDuration', fixInvalidDuration2);
       electron.ipcRenderer.removeListener('reorderSegsByStartTime', reorderSegsByStartTime);
     };
@@ -1911,7 +1917,7 @@ const App = memo(() => {
     mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, html5ifyCurrentFile,
     createDummyVideo, extractAllStreams, userOpenFiles, openSendReportDialogWithState,
     loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ify,
-    loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime, closeFile, clearSegments, fixInvalidDuration,
+    loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime, closeFile, clearSegments, fixInvalidDuration, invertAllCutSegments,
   ]);
 
   async function showAddStreamSourceDialog() {

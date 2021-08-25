@@ -183,6 +183,12 @@ module.exports = (app, mainWindow, newVersion) => {
                 mainWindow.webContents.send('createFixedDurationSegments');
               },
             },
+            {
+              label: i18n.t('Invert all segments on timeline'),
+              click() {
+                mainWindow.webContents.send('invertAllCutSegments');
+              },
+            },
           ],
         },
         {
