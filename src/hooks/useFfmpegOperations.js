@@ -270,24 +270,30 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     // h264/aac_at: No licensing when using HW encoder (Video/Audio Toolbox on Mac)
     // https://github.com/mifi/lossless-cut/issues/372#issuecomment-810766512
 
+    const targetHeight = 400;
+
     switch (video) {
       case 'hq': {
         if (isMac) {
           videoArgs = ['-vf', 'format=yuv420p', '-allow_sw', '1', '-vcodec', 'h264', '-b:v', '15M'];
         } else {
           // AV1 is very slow
-          // videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libaom-av1', '-crf', '30', '-cpu-used', '8'];
+          // videoArgs = ['-vf', 'format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libaom-av1', '-crf', '30', '-cpu-used', '8'];
           // Theora is a bit faster but not that much
           // videoArgs = ['-vf', '-c:v', 'libtheora', '-qscale:v', '1'];
-          videoArgs = ['-vf', 'format=yuv420p', '-c:v', 'libvpx-vp9', '-crf', '30', '-b:v', '0', '-row-mt', '1'];
+          // videoArgs = ['-vf', 'format=yuv420p', '-c:v', 'libvpx-vp9', '-crf', '30', '-b:v', '0', '-row-mt', '1'];
+          // x264 can only be used in GPL projects
+          videoArgs = ['-vf', 'format=yuv420p', '-c:v', 'libx264', '-profile:v', 'high', '-preset:v', 'slow', '-crf', '17'];
         }
         break;
       }
       case 'lq': {
         if (isMac) {
-          videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
+          videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
         } else {
-          videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-sws_flags', 'neighbor', '-c:v', 'libtheora', '-qscale:v', '1'];
+          // videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-sws_flags', 'neighbor', '-c:v', 'libtheora', '-qscale:v', '1'];
+          // x264 can only be used in GPL projects
+          videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-sws_flags', 'neighbor', '-c:v', 'libx264', '-profile:v', 'baseline', '-x264opts', 'level=3.0', '-preset:v', 'ultrafast', '-crf', '28'];
         }
         break;
       }
