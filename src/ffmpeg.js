@@ -248,7 +248,11 @@ export async function getDefaultOutFormat(filePath, formatData) {
   const bytes = await readChunk(filePath, 0, 4100);
   const ft = fileType(bytes) || {};
   console.log(`fileType detected format ${JSON.stringify(ft)}`);
-  const assumedFormat = determineOutputFormat(formats, ft);
+  let assumedFormat = determineOutputFormat(formats, ft);
+
+  // https://github.com/mifi/lossless-cut/issues/367
+  if (assumedFormat === 'mp4' && formatData.tags && formatData.tags.major_brand === 'XAVC') assumedFormat = 'mov';
+
   return mapFormat(assumedFormat);
 }
 
