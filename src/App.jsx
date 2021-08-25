@@ -1689,16 +1689,16 @@ const App = memo(() => {
     if (!error) return;
     if (!fileUri) return; // Probably MEDIA_ELEMENT_ERROR: Empty src attribute
 
-    console.error(error.message);
+    console.error('onVideoError', error.message, error.code);
 
     function showToast() {
       console.log('Trying to create dummy');
       if (!hideAllNotifications) toast.fire({ icon: 'info', text: 'This file is not natively supported. Creating a preview file...' });
     }
 
+    const PIPELINE_ERROR_DECODE = 3; // To reproduce: "RX100VII PCM audio timecode.MP4" or see https://github.com/mifi/lossless-cut/issues/804
     const MEDIA_ERR_SRC_NOT_SUPPORTED = 4;
-    if (error.code === MEDIA_ERR_SRC_NOT_SUPPORTED && !usingDummyVideo) {
-      console.error('MEDIA_ERR_SRC_NOT_SUPPORTED');
+    if ([MEDIA_ERR_SRC_NOT_SUPPORTED, PIPELINE_ERROR_DECODE].includes(error.code) && !usingDummyVideo) {
       if (hasVideo) {
         if (isDurationValid(await getDuration(filePath))) {
           showToast();
