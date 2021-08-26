@@ -338,6 +338,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       '-i', specificFilePath,
       ...videoArgs,
       ...audioArgs,
+      '-sn',
       '-y', outPath,
     ];
 
