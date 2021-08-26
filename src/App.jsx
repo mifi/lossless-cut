@@ -931,7 +931,6 @@ const App = memo(() => {
       const cutFromStr = formatDuration({ seconds: start, fileNameFriendly: true });
       const cutToStr = formatDuration({ seconds: end, fileNameFriendly: true });
       const segNum = i + 1;
-      const tags = getSegmentTags(segment);
 
       // https://github.com/mifi/lossless-cut/issues/583
       let segSuffix = '';
@@ -942,7 +941,11 @@ const App = memo(() => {
 
       const { name: fileNameWithoutExt } = parsePath(filePath);
 
-      const generated = generateSegFileName({ template, segSuffix, inputFileNameWithoutExt: fileNameWithoutExt, ext, segNum, segLabel: filenamifyOrNot(name), cutFrom: cutFromStr, cutTo: cutToStr, tags });
+      // Fields that did not come from the source file's name must be sanitized, because they may contain characters that are not supported by the target operating/file system
+      const tagsSanitized = Object.fromEntries(Object.entries(getSegmentTags(segment)).map(([tag, value]) => [tag, filenamifyOrNot(value)]));
+      const nameSanitized = filenamifyOrNot(name);
+
+      const generated = generateSegFileName({ template, segSuffix, inputFileNameWithoutExt: fileNameWithoutExt, ext, segNum, segLabel: nameSanitized, cutFrom: cutFromStr, cutTo: cutToStr, tags: tagsSanitized });
       return safeOutputFileName ? generated.substr(0, 200) : generated; // If sanitation is enabled, make sure filename is not too long
     })
   ), [enabledOutSegments, filenamifyOrNot, isCustomFormatSelected, fileFormat, filePath, safeOutputFileName]);
@@ -951,10 +954,11 @@ const App = memo(() => {
   const isOutSegFileNamesValid = useCallback((fileNames) => fileNames.every((fileName) => {
     if (!filePath) return false;
 
-    const invalidChars = [
-      pathSep,
-      ':', // https://github.com/mifi/lossless-cut/issues/631
-    ];
+    const invalidChars = [pathSep];
+
+    // Colon is invalid on windows https://github.com/mifi/lossless-cut/issues/631 and on MacOS, but not Linux https://github.com/mifi/lossless-cut/issues/830
+    if (isMac || isWindows) invalidChars.push(':');
+
     const outPath = pathNormalize(pathJoin(outputDir, fileName));
     const sameAsInputPath = outPath === pathNormalize(filePath);
     const windowsMaxPathLength = 259;
