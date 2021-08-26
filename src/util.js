@@ -110,7 +110,7 @@ export function setFileNameTitle(filePath) {
 }
 
 export function filenamify(name) {
-  return name.replace(/[^0-9a-zA-Z_.]/g, '_');
+  return name.replace(/[^0-9a-zA-Z_\-.]/g, '_');
 }
 
 export function withBlur(cb) {
