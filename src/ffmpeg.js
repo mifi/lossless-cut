@@ -165,7 +165,7 @@ export function findNearestKeyFrameTime({ frames, time, direction, fps }) {
 
 export async function tryReadChaptersToEdl(filePath) {
   try {
-    const { stdout } = await runFfprobe(['-i', filePath, '-show_chapters', '-print_format', 'json']);
+    const { stdout } = await runFfprobe(['-i', filePath, '-show_chapters', '-print_format', 'json', '-hide_banner']);
     return JSON.parse(stdout).chapters.map((chapter) => {
       const start = parseFloat(chapter.start_time);
       const end = parseFloat(chapter.end_time);
@@ -189,7 +189,7 @@ export async function getFormatData(filePath) {
   console.log('getFormatData', filePath);
 
   const { stdout } = await runFfprobe([
-    '-of', 'json', '-show_format', '-i', filePath,
+    '-of', 'json', '-show_format', '-i', filePath, '-hide_banner',
   ]);
   return JSON.parse(stdout).format;
 }
@@ -258,7 +258,7 @@ export async function getDefaultOutFormat(filePath, formatData) {
 
 export async function getAllStreams(filePath) {
   const { stdout } = await runFfprobe([
-    '-of', 'json', '-show_entries', 'stream', '-i', filePath,
+    '-of', 'json', '-show_entries', 'stream', '-i', filePath, '-hide_banner',
   ]);
 
   return JSON.parse(stdout);
