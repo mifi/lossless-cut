@@ -1582,7 +1582,7 @@ const App = memo(() => {
       console.log(filePaths.join('\n'));
 
       if (filePaths.length > 1) {
-        showMergeDialog(sortBy(filePaths), mergeFiles);
+        showMergeDialog(filePaths, mergeFiles);
         return;
       }
 

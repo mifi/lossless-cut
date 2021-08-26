@@ -342,6 +342,7 @@ export async function showMergeDialog(paths, onMergeClick) {
     showCancelButton: true,
     confirmButtonText: i18n.t('Merge!'),
     willOpen: (el) => { swalElem = el; },
+    title: i18n.t('Merge/concatenate files'),
     html: (<SortableFiles
       items={outPaths}
       onChange={(val) => { outPaths = val; }}
@@ -366,6 +367,7 @@ export async function showOpenAndMergeDialog({ defaultPath, onMergeClick }) {
     message,
   });
   if (canceled) return;
+
   showMergeDialog(filePaths, onMergeClick);
 }
 
