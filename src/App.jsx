@@ -54,10 +54,10 @@ import {
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, readEdl } from './edlStore';
 import { formatYouTube } from './edlFormats';
 import {
-  getOutPath, toast, errorToast, handleError, showFfmpegFail, setFileNameTitle, getOutDir, withBlur,
+  getOutPath, toast, errorToast, handleError, setFileNameTitle, getOutDir, withBlur,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
-  hasDuplicates, havePermissionToReadFile, isMac, getFileBaseName, resolvePathIfNeeded, pathExists,
+  hasDuplicates, havePermissionToReadFile, isMac, resolvePathIfNeeded, pathExists, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
 } from './util';
 import { formatDuration } from './util/duration';
 import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMergeDialog, showOpenAndMergeDialog, openAbout, showEditableJsonDialog } from './dialogs';
@@ -65,14 +65,20 @@ import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags } from './segments';
 
-
 import loadingLottie from './7077-magic-flow.json';
+
+
+function getHtml5ifiedPath(cod, fp, type) {
+  // See also inside ffmpegHtml5ify
+  const ext = (isMac && ['slowest', 'slow', 'slow-audio'].includes(type)) ? 'mp4' : 'mkv';
+  return getOutPath(cod, fp, `${html5ifiedPrefix}${type}.${ext}`);
+}
 
 
 const isDev = window.require('electron-is-dev');
 const electron = window.require('electron'); // eslint-disable-line
 const trash = window.require('trash');
-const { unlink, exists, readdir } = window.require('fs-extra');
+const { unlink, exists } = window.require('fs-extra');
 const { extname, parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, basename, dirname } = window.require('path');
 
 const { dialog } = electron.remote;
@@ -134,6 +140,7 @@ const App = memo(() => {
   const [showSideBar, setShowSideBar] = useState(true);
   const [hideCanvasPreview, setHideCanvasPreview] = useState(false);
   const [cleanupChoices, setCleanupChoices] = useState({ tmpFiles: true });
+  const [rememberConvertToSupportedFormat, setRememberConvertToSupportedFormat] = useState();
 
   // Segment related state
   const [currentSegIndex, setCurrentSegIndex] = useState(0);
@@ -274,10 +281,6 @@ const App = memo(() => {
   const shortStep = useCallback((dir) => {
     seekRel((1 / (detectedFps || 60)) * dir);
   }, [seekRel, detectedFps]);
-
-  /* useEffect(() => () => {
-    if (usingDummyVideo && previewFilePath) unlink(previewFilePath).catch(console.error);
-  }, [usingDummyVideo, previewFilePath]); */
 
   // 360 means we don't modify rotation
   const isRotationSet = rotation !== 360;
@@ -502,6 +505,7 @@ const App = memo(() => {
     setCustomOutDir();
   }, [setCustomOutDir]);
 
+  const usingPreviewFile = !!previewFilePath;
   const effectiveFilePath = previewFilePath || filePath;
   const fileUri = effectiveFilePath ? filePathToUrl(effectiveFilePath) : '';
 
@@ -600,6 +604,7 @@ const App = memo(() => {
   }, [customOutDir, setCustomOutDir]);
 
   const mergeFiles = useCallback(async ({ paths, allStreams, segmentsToChapters: segmentsToChapters2 }) => {
+    if (working) return;
     try {
       setWorking(i18n.t('Merging'));
 
@@ -627,7 +632,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [assureOutDirAccess, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, customOutDir, ffmpegMergeFiles]);
+  }, [assureOutDirAccess, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, customOutDir, ffmpegMergeFiles, working]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
 
@@ -755,10 +760,10 @@ const App = memo(() => {
     video.currentTime = 0;
     video.playbackRate = 1;
 
+    // setWorking();
     setFileNameTitle();
     setPreviewFilePath();
     setUsingDummyVideo(false);
-    setWorking();
     setPlaying(false);
     setDuration();
     cutSegmentsHistory.go(0);
@@ -802,36 +807,62 @@ const App = memo(() => {
     if (!hideAllNotifications) toast.fire({ text: i18n.t('Loaded existing preview file: {{ fileName }}', { fileName }) });
   }, [hideAllNotifications]);
 
-  const html5ifiedPrefix = 'html5ified-';
-  const html5dummySuffix = 'dummy';
+  const html5ify = useCallback(async ({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: hv }) => {
+    const path = getHtml5ifiedPath(cod, fp, speed);
 
-  const createDummyVideo = useCallback(async (cod, fp) => {
-    const html5ifiedDummyPath = getOutPath(cod, fp, `${html5ifiedPrefix}${html5dummySuffix}.mkv`);
+    let audio;
+    if (ha) {
+      if (speed === 'slowest') audio = 'hq';
+      else if (['slow-audio', 'fastest-audio'].includes(speed)) audio = 'lq';
+      else if (['fast-audio', 'fastest-audio-remux'].includes(speed)) audio = 'copy';
+    }
+
+    let video;
+    if (hv) {
+      if (speed === 'slowest') video = 'hq';
+      else if (['slow-audio', 'slow'].includes(speed)) video = 'lq';
+      else video = 'copy';
+    }
+
     try {
-      setCutProgress(0);
-      await html5ifyDummy({ filePath: fp, outPath: html5ifiedDummyPath, onProgress: setCutProgress });
+      await ffmpegHtml5ify({ filePath: fp, outPath: path, video, audio, onProgress: setCutProgress });
     } finally {
       setCutProgress();
     }
-    setUsingDummyVideo(true);
-    setPreviewFilePath(html5ifiedDummyPath);
+    return path;
+  }, [ffmpegHtml5ify]);
+
+  const html5ifyAndLoad = useCallback(async (cod, fp, speed, hv, ha) => {
+    const usesDummyVideo = ['fastest-audio', 'fastest-audio-remux', 'fastest'].includes(speed);
+    console.log('html5ifyAndLoad', { speed, hasVideo: hv, hasAudio: ha, usesDummyVideo });
+
+    async function doHtml5ify() {
+      if (speed === 'fastest') {
+        const path = getOutPath(cod, fp, `${html5ifiedPrefix}${html5dummySuffix}.mkv`);
+        try {
+          setCutProgress(0);
+          await html5ifyDummy({ filePath: fp, outPath: path, onProgress: setCutProgress });
+        } finally {
+          setCutProgress();
+        }
+        return path;
+      }
+      if (['fastest-audio', 'fastest-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'].includes(speed)) {
+        const shouldIncludeVideo = !usesDummyVideo && hv;
+        const path = await html5ify({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: shouldIncludeVideo });
+        return path;
+      }
+      return undefined;
+    }
+    const path = await doHtml5ify();
+    if (!path) return;
+
+    setPreviewFilePath(path);
+    setUsingDummyVideo(usesDummyVideo);
     showUnsupportedFileMessage();
-  }, [html5ifyDummy, showUnsupportedFileMessage]);
+  }, [html5ify, html5ifyDummy, showUnsupportedFileMessage]);
 
   const showPlaybackFailedMessage = () => errorToast(i18n.t('Unable to playback this file. Try to convert to supported format from the menu'));
-
-  const tryCreateDummyVideo = useCallback(async () => {
-    try {
-      if (working) return;
-      setWorking(i18n.t('Converting to supported format'));
-      await createDummyVideo(customOutDir, filePath);
-    } catch (err) {
-      console.error(err);
-      showPlaybackFailedMessage();
-    } finally {
-      setWorking();
-    }
-  }, [createDummyVideo, filePath, working, customOutDir]);
 
   const togglePlay = useCallback((resetPlaybackRate) => {
     if (!filePath) return;
@@ -860,6 +891,8 @@ const App = memo(() => {
   }, [askBeforeClose, isFileOpened, resetState, working]);
 
   const cleanupFiles = useCallback(async () => {
+    if (working) return;
+
     // Because we will reset state before deleting files
     const saved = { previewFilePath, filePath, edlFilePath };
 
@@ -908,7 +941,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [filePath, previewFilePath, closeFile, edlFilePath, cleanupChoices]);
+  }, [filePath, previewFilePath, closeFile, edlFilePath, cleanupChoices, working]);
 
   const outSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
     [invertCutSegments, inverseCutSegments, apparentCutSegments]);
@@ -1087,7 +1120,7 @@ const App = memo(() => {
         return;
       }
 
-      showFfmpegFail(err);
+      handleError(err);
     } finally {
       setWorking();
       setCutProgress();
@@ -1145,12 +1178,6 @@ const App = memo(() => {
     }
   }, [playing, canvasPlayerEnabled]);
 
-  const getHtml5ifiedPath = useCallback((cod, fp, type) => {
-    // See also inside ffmpegHtml5ify
-    const ext = (isMac && ['slowest', 'slow', 'slow-audio'].includes(type)) ? 'mp4' : 'mkv';
-    return getOutPath(cod, fp, `${html5ifiedPrefix}${type}.${ext}`);
-  }, []);
-
   const firstSegmentAtCursorIndex = useMemo(() => {
     const segmentsAtCursorIndexes = findSegmentsAtCursor(apparentCutSegments, commandedTime);
     return segmentsAtCursorIndexes[0];
@@ -1196,66 +1223,51 @@ const App = memo(() => {
   }, [setCutSegments]);
 
   const loadEdlFile = useCallback(async (path, type) => {
-    try {
-      const edl = await readEdlFile({ type, path });
-      loadCutSegments(edl);
-    } catch (err) {
-      console.error('EDL load failed', err);
-      errorToast(`${i18n.t('Failed to load segments')} (${err.message})`);
-    }
+    console.log('Loading EDL file', type, path);
+    loadCutSegments(await readEdlFile({ type, path }));
   }, [loadCutSegments]);
 
-  const load = useCallback(async ({ filePath: fp, customOutDir: cod, html5FriendlyPathRequested, dummyVideoPathRequested, projectPath }) => {
-    console.log('Load', { fp, cod, html5FriendlyPathRequested, dummyVideoPathRequested, projectPath });
 
-    if (working) return;
+  const load = useCallback(async ({ filePath: fp, customOutDir: cod, projectPath }) => {
+    console.log('Load', { fp, cod, projectPath });
 
     resetState();
 
     setWorking(i18n.t('Loading file'));
 
     async function checkAndSetExistingHtml5FriendlyFile() {
-      const speeds = ['slowest', 'slow-audio', 'slow', 'fast-audio', 'fast', 'fastest-audio', 'fastest-audio-remux', html5dummySuffix];
-      const prefix = `${getFileBaseName(fp)}-${html5ifiedPrefix}`;
-
-      const outDir = getOutDir(cod, fp);
-      const dirEntries = await readdir(outDir);
-      let speed;
-      let path;
-      // eslint-disable-next-line no-restricted-syntax
-      for (const entry of dirEntries) {
-        const prefixMatch = entry.startsWith(prefix);
-        if (prefixMatch) {
-          const speedMatch = speeds.find((s) => new RegExp(`${s}\\..*$`).test(entry.replace(prefix, '')));
-          if (!speedMatch || speedMatch !== html5dummySuffix) { // skip dummy, as it's not very useful
-            path = pathJoin(outDir, entry);
-            if (speedMatch) speed = speedMatch; // We want to also capture any custom user suffix (but NOT dummy)
-            break;
-          }
-        }
-      }
-
-      if (!path) return false;
-
-      console.log('Found existing supported file', path, speed);
-      setUsingDummyVideo(['fastest-audio', 'fastest-audio-remux'].includes(speed));
-      setPreviewFilePath(path);
-
-      showPreviewFileLoadedMessage(basename(path));
+      const res = await findExistingHtml5FriendlyFile(fp, cod);
+      if (!res) return false;
+      console.log('Found existing supported file', res.path);
+      setUsingDummyVideo(res.usingDummyVideo);
+      setPreviewFilePath(res.path);
+      showPreviewFileLoadedMessage(basename(res.path));
       return true;
     }
 
-    try {
-      const fd = await getFormatData(fp);
-
-      const ff = await getDefaultOutFormat(fp, fd);
-      if (!ff) {
-        errorToast(i18n.t('Unable to determine file format'));
-        return;
+    async function getFileMeta() {
+      try {
+        const fd = await getFormatData(fp);
+        const ff = await getDefaultOutFormat(fp, fd);
+        const allStreamsResponse = await getAllStreams(fp);
+        const { streams } = allStreamsResponse;
+        // console.log(streams, fd, ff);
+        return { fd, ff, streams };
+      } catch (err) {
+        // Windows will throw error with code ENOENT if format detection fails.
+        if (err.exitCode === 1 || (isWindows && err.code === 'ENOENT')) {
+          const err2 = new Error(`Unsupported file: ${err.message}`);
+          err2.code = 'LLC_FFPROBE_UNSUPPORTED_FILE';
+          throw err2;
+        }
+        throw err;
       }
+    }
 
-      const { streams } = await getAllStreams(fp);
-      // console.log('streams', streamsNew);
+    try {
+      const { ff, fd, streams } = await getFileMeta();
+
+      if (!ff) throw new Error('Unable to determine file format');
 
       if (autoLoadTimecode) {
         const timecode = getTimecodeFromStreams(streams);
@@ -1294,39 +1306,37 @@ const App = memo(() => {
       }
 
       const validDuration = isDurationValid(parseFloat(fd.duration));
+      const hasLoadedExistingHtml5FriendlyFile = await checkAndSetExistingHtml5FriendlyFile();
 
-      if (html5FriendlyPathRequested) {
-        setUsingDummyVideo(false);
-        setPreviewFilePath(html5FriendlyPathRequested);
-        showUnsupportedFileMessage();
-      } else if (dummyVideoPathRequested) {
-        setUsingDummyVideo(true);
-        setPreviewFilePath(dummyVideoPathRequested);
-        showUnsupportedFileMessage();
-      } else if (
-        !(await checkAndSetExistingHtml5FriendlyFile())
-        && !doesPlayerSupportFile(streams)
-        && validDuration
-      ) {
-        await createDummyVideo(cod, fp);
+      // 'fastest' works with almost all video files
+      if (!hasLoadedExistingHtml5FriendlyFile && !doesPlayerSupportFile(streams) && validDuration) {
+        setWorking(i18n.t('Converting to supported format'));
+        await html5ifyAndLoad(cod, fp, rememberConvertToSupportedFormat || 'fastest', !!videoStream, !!audioStream);
       }
 
-      const openedFileEdlPath = getEdlFilePath(fp);
-      const openedFileEdlPathOld = getEdlFilePathOld(fp);
+      try {
+        const openedFileEdlPath = getEdlFilePath(fp);
+        const openedFileEdlPathOld = getEdlFilePathOld(fp);
 
-      if (projectPath) {
-        await loadEdlFile(projectPath, 'llc');
-      } else if (await exists(openedFileEdlPath)) {
-        await loadEdlFile(openedFileEdlPath, 'llc');
-      } else if (await exists(openedFileEdlPathOld)) {
-        await loadEdlFile(openedFileEdlPathOld, 'csv');
-      } else {
-        const edl = await tryReadChaptersToEdl(fp);
-        if (edl.length > 0 && enableAskForImportChapters && (await askForImportChapters())) {
-          console.log('Read chapters', edl);
-          loadCutSegments(edl);
+        if (projectPath) {
+          await loadEdlFile(projectPath, 'llc');
+        } else if (await exists(openedFileEdlPath)) {
+          await loadEdlFile(openedFileEdlPath, 'llc');
+        } else if (await exists(openedFileEdlPathOld)) {
+          await loadEdlFile(openedFileEdlPathOld, 'csv');
+        } else {
+          const edl = await tryReadChaptersToEdl(fp);
+          if (edl.length > 0 && enableAskForImportChapters && (await askForImportChapters())) {
+            console.log('Read chapters', edl);
+            loadCutSegments(edl);
+          }
         }
+      } catch (err) {
+        console.error('EDL load failed, but continuing', err);
+        errorToast(`${i18n.t('Failed to load segments')} (${err.message})`);
       }
+
+      // throw new Error('test');
 
       if (!validDuration) toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
 
@@ -1335,17 +1345,10 @@ const App = memo(() => {
       // https://github.com/mifi/lossless-cut/issues/515
       setFilePath(fp);
     } catch (err) {
-      // Windows will throw error with code ENOENT if format detection fails.
-      if (err.exitCode === 1 || (isWindows && err.code === 'ENOENT')) {
-        errorToast(i18n.t('Unsupported file'));
-        console.error(err);
-        return;
-      }
-      showFfmpegFail(err);
-    } finally {
-      setWorking();
+      resetState();
+      throw err;
     }
-  }, [resetState, working, createDummyVideo, loadEdlFile, getEdlFilePath, getEdlFilePathOld, loadCutSegments, enableAskForImportChapters, showUnsupportedFileMessage, autoLoadTimecode, outFormatLocked, showPreviewFileLoadedMessage]);
+  }, [resetState, html5ifyAndLoad, loadEdlFile, getEdlFilePath, getEdlFilePathOld, loadCutSegments, enableAskForImportChapters, autoLoadTimecode, outFormatLocked, showPreviewFileLoadedMessage, rememberConvertToSupportedFormat]);
 
   const toggleHelp = useCallback(() => setHelpVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1504,7 +1507,7 @@ const App = memo(() => {
   }, [customOutDir, filePath, mainStreams, outputDir, working]);
 
   const extractAllStreams = useCallback(async () => {
-    if (!filePath) return;
+    if (!filePath || working) return;
 
     if (!(await confirmExtractAllStreamsDialog())) return;
 
@@ -1519,7 +1522,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [customOutDir, filePath, mainStreams, outputDir]);
+  }, [customOutDir, filePath, mainStreams, outputDir, working]);
 
   const addStreamSourceFile = useCallback(async (path) => {
     if (externalStreamFiles[path]) return;
@@ -1544,7 +1547,6 @@ const App = memo(() => {
       projectPath = path;
       path = pathJoin(dirname(path), mediaFileName);
     }
-
     // Because Apple is being nazi about the ability to open "copy protected DVD files"
     const disallowVob = isMasBuild;
     if (disallowVob && /\.vob$/i.test(path)) {
@@ -1576,7 +1578,7 @@ const App = memo(() => {
 
   const userOpenFiles = useCallback(async (filePaths) => {
     try {
-      if (!filePaths || filePaths.length < 1) return;
+      if (!filePaths || filePaths.length < 1 || working) return;
 
       console.log('userOpenFiles');
       console.log(filePaths.join('\n'));
@@ -1590,6 +1592,8 @@ const App = memo(() => {
       const firstFilePath = filePaths[0];
 
       const filePathLowerCase = firstFilePath.toLowerCase();
+
+      setWorking(i18n.t('Loading file'));
 
       // Import CSV project for existing video
       if (filePathLowerCase.endsWith('.csv')) {
@@ -1628,66 +1632,42 @@ const App = memo(() => {
       await userOpenSingleFile({ path: firstFilePath, isLlcProject });
     } catch (err) {
       console.error('userOpenFiles', err);
-      errorToast(i18n.t('Failed to open file'));
-    }
-  }, [addStreamSourceFile, checkFileOpened, enableAskForFileOpenAction, isFileOpened, loadEdlFile, mergeFiles, userOpenSingleFile]);
-
-  const html5ify = useCallback(async ({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: hv }) => {
-    const path = getHtml5ifiedPath(cod, fp, speed);
-
-    let audio;
-    if (ha) {
-      if (speed === 'slowest') audio = 'hq';
-      else if (['slow-audio', 'fastest-audio'].includes(speed)) audio = 'lq';
-      else if (['fast-audio', 'fastest-audio-remux'].includes(speed)) audio = 'copy';
-    }
-
-    let video;
-    if (hv) {
-      if (speed === 'slowest') video = 'hq';
-      else if (['slow-audio', 'slow'].includes(speed)) video = 'lq';
-      else video = 'copy';
-    }
-
-    try {
-      await ffmpegHtml5ify({ filePath: fp, outPath: path, video, audio, onProgress: setCutProgress });
+      if (err.code === 'LLC_FFPROBE_UNSUPPORTED_FILE') {
+        errorToast(i18n.t('Unsupported file'));
+      } else {
+        handleError(i18n.t('Failed to open file'), err);
+      }
     } finally {
-      setCutProgress();
+      setWorking();
     }
-    return path;
-  }, [ffmpegHtml5ify, getHtml5ifiedPath]);
-
-  const html5ifyAndLoad = useCallback(async (speed) => {
-    if (['fastest-audio', 'fastest-audio-remux'].includes(speed)) {
-      const path = await html5ify({ customOutDir, filePath, speed, hasAudio, hasVideo: false });
-      load({ filePath, dummyVideoPathRequested: path, customOutDir });
-    } else {
-      const path = await html5ify({ customOutDir, filePath, speed, hasAudio, hasVideo });
-      load({ filePath, html5FriendlyPathRequested: path, customOutDir });
-    }
-  }, [hasAudio, hasVideo, customOutDir, filePath, html5ify, load]);
+  }, [addStreamSourceFile, checkFileOpened, enableAskForFileOpenAction, isFileOpened, loadEdlFile, mergeFiles, userOpenSingleFile, working]);
 
   const userHtml5ifyCurrentFile = useCallback(async () => {
-    if (!filePath) return;
+    if (!filePath || working) return;
+
+    async function getHtml5ifySpeed() {
+      const { selectedOption, remember } = await askForHtml5ifySpeed({ allowedOptions: ['fastest', 'fastest-audio', 'fastest-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'], showRemember: true, initialOption: rememberConvertToSupportedFormat });
+      if (!selectedOption) return undefined;
+
+      console.log('Choice', { speed: selectedOption, remember });
+
+      setRememberConvertToSupportedFormat(remember ? selectedOption : undefined);
+
+      return selectedOption;
+    }
 
     try {
-      setWorking(i18n.t('Converting to supported format'));
-
-      const speed = await askForHtml5ifySpeed(['fastest', 'fastest-audio', 'fastest-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest']);
+      const speed = await getHtml5ifySpeed();
       if (!speed) return;
-
-      if (speed === 'fastest') {
-        await createDummyVideo(customOutDir, filePath);
-      } else if (['fastest-audio', 'fastest-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'].includes(speed)) {
-        await html5ifyAndLoad(speed);
-      }
+      setWorking(i18n.t('Converting to supported format'));
+      await html5ifyAndLoad(customOutDir, filePath, speed, hasVideo, hasAudio);
     } catch (err) {
       errorToast(i18n.t('Failed to convert file. Try a different conversion'));
       console.error('Failed to html5ify file', err);
     } finally {
       setWorking();
     }
-  }, [createDummyVideo, customOutDir, filePath, html5ifyAndLoad]);
+  }, [customOutDir, filePath, html5ifyAndLoad, hasVideo, hasAudio, rememberConvertToSupportedFormat, working]);
 
   const onVideoError = useCallback(async () => {
     const { error } = videoRef.current;
@@ -1696,25 +1676,35 @@ const App = memo(() => {
 
     console.error('onVideoError', error.message, error.code);
 
-    function showToast() {
-      console.log('Trying to create dummy');
-      if (!hideAllNotifications) toast.fire({ icon: 'info', text: 'This file is not natively supported. Creating a preview file...' });
-    }
-
-    const PIPELINE_ERROR_DECODE = 3; // To reproduce: "RX100VII PCM audio timecode.MP4" or see https://github.com/mifi/lossless-cut/issues/804
-    const MEDIA_ERR_SRC_NOT_SUPPORTED = 4;
-    if ([MEDIA_ERR_SRC_NOT_SUPPORTED, PIPELINE_ERROR_DECODE].includes(error.code) && !usingDummyVideo) {
-      if (hasVideo) {
+    try {
+      const PIPELINE_ERROR_DECODE = 3; // To reproduce: "RX100VII PCM audio timecode.MP4" or see https://github.com/mifi/lossless-cut/issues/804
+      const MEDIA_ERR_SRC_NOT_SUPPORTED = 4; // Test: issue-668-3.20.1.m2ts - NOTE: DEMUXER_ERROR_COULD_NOT_OPEN is also 4
+      if ([MEDIA_ERR_SRC_NOT_SUPPORTED, PIPELINE_ERROR_DECODE].includes(error.code) && !usingPreviewFile && filePath && !working) {
         if (isDurationValid(await getDuration(filePath))) {
-          showToast();
-          await tryCreateDummyVideo();
+          console.log('Trying to create preview');
+          if (!hideAllNotifications) toast.fire({ icon: 'info', text: 'This file is not natively supported. Creating a preview file...' });
+
+          try {
+            setWorking(i18n.t('Converting to supported format'));
+            if (hasVideo) {
+              // "fastest" is the most likely type not to fail for video (but it is muted).
+              await html5ifyAndLoad(customOutDir, filePath, rememberConvertToSupportedFormat || 'fastest', hasVideo, hasAudio);
+            } else if (hasAudio) {
+              // For audio do a fast re-encode
+              await html5ifyAndLoad(customOutDir, filePath, rememberConvertToSupportedFormat || 'fastest-audio', hasVideo, hasAudio);
+            }
+          } catch (err) {
+            console.error(err);
+            showPlaybackFailedMessage();
+          } finally {
+            setWorking();
+          }
         }
-      } else if (hasAudio) {
-        showToast();
-        await html5ifyAndLoad('fastest-audio');
       }
+    } catch (err) {
+      handleError(err);
     }
-  }, [tryCreateDummyVideo, fileUri, usingDummyVideo, hasVideo, hasAudio, html5ifyAndLoad, hideAllNotifications, filePath]);
+  }, [fileUri, usingPreviewFile, hasVideo, hasAudio, html5ifyAndLoad, hideAllNotifications, customOutDir, filePath, working, rememberConvertToSupportedFormat]);
 
   useEffect(() => {
     function showOpenAndMergeDialog2() {
@@ -1762,6 +1752,7 @@ const App = memo(() => {
     }
 
     async function batchConvertFriendlyFormat() {
+      if (working) return;
       const title = i18n.t('Select files to batch convert to supported format');
       const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'], title, message: title });
       if (canceled || filePaths.length < 1) return;
@@ -1769,7 +1760,7 @@ const App = memo(() => {
       const failedFiles = [];
       let i = 0;
 
-      const speed = await askForHtml5ifySpeed(['fastest-audio', 'fastest-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest']);
+      const { selectedOption: speed } = await askForHtml5ifySpeed({ allowedOptions: ['fastest-audio', 'fastest-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'] });
       if (!speed) return;
 
       try {
@@ -1820,12 +1811,12 @@ const App = memo(() => {
     }
 
     async function fixInvalidDuration2() {
-      if (!checkFileOpened()) return;
+      if (!checkFileOpened() || working) return;
       try {
         setWorking(i18n.t('Fixing file duration'));
         const path = await fixInvalidDuration({ fileFormat, customOutDir });
-        load({ filePath: path, customOutDir });
         toast.fire({ icon: 'info', text: i18n.t('Duration has been fixed') });
+        await load({ filePath: path, customOutDir });
       } catch (err) {
         errorToast(i18n.t('Failed to fix file duration'));
         console.error('Failed to fix file duration', err);
@@ -1886,8 +1877,8 @@ const App = memo(() => {
     };
   }, [
     mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile,
-    createDummyVideo, extractAllStreams, userOpenFiles, openSendReportDialogWithState,
-    loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, html5ify,
+    extractAllStreams, userOpenFiles, openSendReportDialogWithState,
+    loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, working, html5ify,
     loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime, closeFile, clearSegments, fixInvalidDuration, invertAllCutSegments,
   ]);
 

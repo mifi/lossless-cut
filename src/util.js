@@ -2,26 +2,28 @@ import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import lodashTemplate from 'lodash/template';
 
-const path = window.require('path');
+const { dirname, parse: parsePath, join, basename, extname, isAbsolute, resolve } = window.require('path');
 const fs = window.require('fs-extra');
 const open = window.require('open');
 const os = window.require('os');
 
+const { readdir } = fs;
+
 export function getOutDir(customOutDir, filePath) {
   if (customOutDir) return customOutDir;
-  if (filePath) return path.dirname(filePath);
+  if (filePath) return dirname(filePath);
   return undefined;
 }
 
 export function getFileBaseName(filePath) {
   if (!filePath) return undefined;
-  const parsed = path.parse(filePath);
+  const parsed = parsePath(filePath);
   return parsed.name;
 }
 
 export function getOutPath(customOutDir, filePath, nameSuffix) {
   if (!filePath) return undefined;
-  return path.join(getOutDir(customOutDir, filePath), `${getFileBaseName(filePath)}-${nameSuffix}`);
+  return join(getOutDir(customOutDir, filePath), `${getFileBaseName(filePath)}-${nameSuffix}`);
 }
 
 export async function havePermissionToReadFile(filePath) {
@@ -51,7 +53,7 @@ export async function checkDirWriteAccess(dirPath) {
 }
 
 export async function pathExists(pathIn) {
-  return fs.exists(pathIn);
+  return fs.pathExists(pathIn);
 }
 
 export async function dirExists(dirPath) {
@@ -80,16 +82,26 @@ export const toast = Swal.mixin({
   },
 });
 
-export const errorToast = (title) => toast.fire({
+export const errorToast = (text) => toast.fire({
   icon: 'error',
-  title,
+  text,
 });
 
-export function handleError(error) {
-  console.error('handleError', error);
+export function handleError(arg1, arg2) {
+  console.error('handleError', arg1, arg2);
+
+  let msg;
+  let errorMsg;
+  if (typeof arg1 === 'string') msg = arg1;
+  else if (typeof arg2 === 'string') msg = arg2;
+
+  if (arg1 instanceof Error) errorMsg = arg1.message;
+  if (arg2 instanceof Error) errorMsg = arg2.message;
+
   toast.fire({
     icon: 'error',
-    text: i18n.t('An error has occurred. {{message}}', { message: error && typeof error.message === 'string' ? error.message.substr(0, 300) : '' }),
+    title: msg || i18n.t('An error has occurred.'),
+    text: errorMsg ? errorMsg.substr(0, 300) : undefined,
   });
 }
 
@@ -99,14 +111,9 @@ export const openDirToast = async ({ dirPath, ...props }) => {
   if (value) open(dirPath);
 };
 
-export async function showFfmpegFail(err) {
-  console.error(err);
-  return errorToast(`${i18n.t('Failed to run ffmpeg:')} ${err.stack}`);
-}
-
 export function setFileNameTitle(filePath) {
   const appName = 'LosslessCut';
-  document.title = filePath ? `${appName} - ${path.basename(filePath)}` : appName;
+  document.title = filePath ? `${appName} - ${basename(filePath)}` : appName;
 }
 
 export function filenamify(name) {
@@ -155,7 +162,7 @@ export function getExtensionForFormat(format) {
 }
 
 export function getOutFileExtension({ isCustomFormatSelected, outFormat, filePath }) {
-  return isCustomFormatSelected ? `.${getExtensionForFormat(outFormat)}` : path.extname(filePath);
+  return isCustomFormatSelected ? `.${getExtensionForFormat(outFormat)}` : extname(filePath);
 }
 
 // This is used as a fallback and so it has to always generate unique file names
@@ -180,4 +187,39 @@ export function generateSegFileName({ template, inputFileNameWithoutExt, segSuff
 export const hasDuplicates = (arr) => new Set(arr).size !== arr.length;
 
 // Need to resolve relative paths from the command line https://github.com/mifi/lossless-cut/issues/639
-export const resolvePathIfNeeded = (inPath) => (path.isAbsolute(inPath) ? inPath : path.resolve(inPath));
+export const resolvePathIfNeeded = (inPath) => (isAbsolute(inPath) ? inPath : resolve(inPath));
+
+export const html5ifiedPrefix = 'html5ified-';
+export const html5dummySuffix = 'dummy';
+
+export async function findExistingHtml5FriendlyFile(fp, cod) {
+  // The order is the priority we will search:
+  const suffixes = ['slowest', 'slow-audio', 'slow', 'fast-audio', 'fast', 'fastest-audio', 'fastest-audio-remux', html5dummySuffix];
+  const prefix = `${getFileBaseName(fp)}-${html5ifiedPrefix}`;
+
+  const outDir = getOutDir(cod, fp);
+  const dirEntries = await readdir(outDir);
+
+  const html5ifiedDirEntries = dirEntries.filter((entry) => entry.startsWith(prefix));
+
+  let matches = [];
+  suffixes.forEach((suffix) => {
+    const entryWithSuffix = html5ifiedDirEntries.find((entry) => new RegExp(`${suffix}\\..*$`).test(entry.replace(prefix, '')));
+    if (entryWithSuffix) matches = [...matches, { entry: entryWithSuffix, suffix }];
+  });
+
+  const nonMatches = html5ifiedDirEntries.filter((entry) => !matches.some((m) => m.entry === entry)).map((entry) => ({ entry }));
+
+  // Allow for non-suffix matches too, e.g. user has a custom html5ified- file but with none of the suffixes above (but last priority)
+  matches = [...matches, ...nonMatches];
+
+  // console.log(matches);
+  if (matches.length < 1) return undefined;
+
+  const { suffix, entry } = matches[0];
+
+  return {
+    path: join(outDir, entry),
+    usingDummyVideo: ['fastest-audio', 'fastest-audio-remux', html5dummySuffix].includes(suffix),
+  };
+}
