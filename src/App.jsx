@@ -119,6 +119,7 @@ const App = memo(() => {
   const [externalStreamFiles, setExternalStreamFiles] = useState([]);
   const [customTagsByFile, setCustomTagsByFile] = useState({});
   const [customTagsByStreamId, setCustomTagsByStreamId] = useState({});
+  const [dispositionByStreamId, setDispositionByStreamId] = useState({});
   const [detectedFps, setDetectedFps] = useState();
   const [mainStreams, setMainStreams] = useState([]);
   const [mainVideoStream, setMainVideoStream] = useState();
@@ -793,6 +794,7 @@ const App = memo(() => {
     setExternalStreamFiles([]);
     setCustomTagsByFile({});
     setCustomTagsByStreamId({});
+    setDisabledSegmentIds({});
     setDetectedFps();
     setMainStreams([]);
     setMainVideoStream();
@@ -1078,6 +1080,7 @@ const App = memo(() => {
         avoidNegativeTs,
         customTagsByFile,
         customTagsByStreamId,
+        dispositionByStreamId,
       });
 
       if (outFiles.length > 1 && autoMerge) {
@@ -1135,7 +1138,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [numStreamsToCopy, enabledOutSegments, outSegTemplateOrDefault, generateOutSegFileNames, customOutDir, filePath, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, autoMerge, exportExtraStreams, fileFormatData, mainStreams, hideAllNotifications, outputDir, segmentsToChapters, invertCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, preserveMetadataOnMerge, nonCopiedExtraStreams, handleCutFailed, isOutSegFileNamesValid, cutMultiple, autoMergeSegments, setWorking]);
+  }, [numStreamsToCopy, enabledOutSegments, outSegTemplateOrDefault, generateOutSegFileNames, customOutDir, filePath, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, autoMerge, exportExtraStreams, fileFormatData, mainStreams, hideAllNotifications, outputDir, segmentsToChapters, invertCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, preserveMetadataOnMerge, nonCopiedExtraStreams, handleCutFailed, isOutSegFileNamesValid, cutMultiple, autoMergeSegments, setWorking]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath || workingRef.current) return;
@@ -2113,6 +2116,8 @@ const App = memo(() => {
               setCustomTagsByFile={setCustomTagsByFile}
               customTagsByStreamId={customTagsByStreamId}
               setCustomTagsByStreamId={setCustomTagsByStreamId}
+              dispositionByStreamId={dispositionByStreamId}
+              setDispositionByStreamId={setDispositionByStreamId}
             />
           </SideSheet>
 

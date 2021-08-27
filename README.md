@@ -43,6 +43,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Import segments from: MP4/MKV chapters, Text file, YouTube, CSV, CUE, XML (DaVinci, Final Cut Pro)
 - Video thumbnails and audio waveform
 - Edit file metadata and per-stream metadata
+- Edit per-stream disposition
 - Cut with chapter marks
 - Annotate segments with tags
 
@@ -60,6 +61,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Quickly cut a file by its MP4/MKV chapters
 - Quickly cut a [YouTube video](https://youtube-dl.org/) by its chapters (or music times from a comment)
 - Change the language of a file's audio/subtitle tracks
+- Attach cover art to videos
 - Change author, title, GPS position, recording time of a video
 - Fix rotation of a video that has the wrong orientation flag set
   - Great for rotating phone videos that come out the wrong way without actually re-encoding the video.

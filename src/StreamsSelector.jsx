@@ -4,7 +4,7 @@ import { FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, F
 import { GoFileBinary } from 'react-icons/go';
 import { FiEdit, FiCheck, FiTrash } from 'react-icons/fi';
 import { MdSubtitles } from 'react-icons/md';
-import { SortAscIcon, SortDescIcon, Dialog, Button, PlusIcon, Pane, ForkIcon } from 'evergreen-ui';
+import { Select, Heading, SortAscIcon, SortDescIcon, Dialog, Button, PlusIcon, Pane, ForkIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
 import { askForMetadataKey, showJson5Dialog } from './dialogs';
@@ -13,6 +13,8 @@ import { getStreamFps } from './ffmpeg';
 
 
 const activeColor = '#9f5f80';
+
+const dispositionOptions = ['default', 'dub', 'original', 'comment', 'lyrics', 'karaoke', 'forced', 'hearing_impaired', 'visual_impaired', 'clean_effects', 'attached_pic', 'captions', 'descriptions', 'dependent', 'metadata'];
 
 const TagEditor = memo(({ existingTags, customTags, onTagChange, onTagReset }) => {
   const { t } = useTranslation();
@@ -113,14 +115,21 @@ const EditFileDialog = memo(({ editingFile, externalFiles, mainFileFormatData, m
   return <TagEditor existingTags={existingTags} customTags={customTags} onTagChange={onTagChange} onTagReset={onTagReset} />;
 });
 
-const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, externalFiles, mainFilePath, mainFileStreams, customTagsByStreamId, setCustomTagsByStreamId }) => {
+const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, externalFiles, mainFilePath, mainFileStreams, customTagsByStreamId, setCustomTagsByStreamId, dispositionByStreamId, setDispositionByStreamId }) => {
   const streams = editingFile === mainFilePath ? mainFileStreams : externalFiles[editingFile].streams;
   const stream = useMemo(() => streams.find((s) => s.index === editingStreamId), [streams, editingStreamId]);
 
   const existingTags = useMemo(() => (stream && stream.tags) || {}, [stream]);
   const customTags = useMemo(() => (customTagsByStreamId[editingFile] || {})[editingStreamId] || {}, [customTagsByStreamId, editingFile, editingStreamId]);
 
-  // This is deep!
+  const customDisposition = useMemo(() => (dispositionByStreamId[editingFile] || {})[editingStreamId], [dispositionByStreamId, editingFile, editingStreamId]);
+  const existingDisposition = useMemo(() => (stream && stream.disposition) || {}, [stream]);
+  const effectiveDisposition = customDisposition || existingDisposition;
+  const currentDisposition = (Object.entries(effectiveDisposition).find(([, value]) => value === 1) || [])[0];
+  // console.log({ effectiveDisposition, currentDisposition });
+
+  const { t } = useTranslation();
+
   function onTagChange(tag, value) {
     setCustomTagsByStreamId((old) => ({
       ...old,
@@ -148,9 +157,37 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     });
   }
 
+  function onCoverArtChange(e) {
+    const newDispositions = dispositionOptions.includes(e.target.value) ? {
+      [e.target.value]: 1,
+    } : undefined;
+
+    // console.log(newDispositions);
+
+    setDispositionByStreamId((old) => ({
+      ...old,
+      [editingFile]: {
+        ...old[editingFile],
+        [editingStreamId]: newDispositions,
+      },
+    }));
+  }
+
   if (!stream) return null;
 
-  return <TagEditor existingTags={existingTags} customTags={customTags} onTagChange={onTagChange} onTagReset={onTagReset} />;
+  return (
+    <>
+      <Heading marginBottom={5}>{t('Track disposition')}</Heading>
+      <Select marginBottom={20} value={currentDisposition || ''} onChange={onCoverArtChange}>
+        <option value="">{t('Unchanged')}</option>
+        {dispositionOptions.map((key) => (
+          <option key={key} value={key}>{key}</option>
+        ))}
+      </Select>
+      <Heading>Tags</Heading>
+      <TagEditor existingTags={existingTags} customTags={customTags} onTagChange={onTagChange} onTagReset={onTagReset} />
+    </>
+  );
 });
 
 function onInfoClick(json, title) {
@@ -244,6 +281,7 @@ const StreamsSelector = memo(({
   setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, externalFiles, setExternalFiles,
   showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams,
   AutoExportToggler, customTagsByFile, setCustomTagsByFile, customTagsByStreamId, setCustomTagsByStreamId,
+  dispositionByStreamId, setDispositionByStreamId,
 }) => {
   const [editingFile, setEditingFile] = useState();
   const [editingStream, setEditingStream] = useState();
@@ -361,7 +399,7 @@ const StreamsSelector = memo(({
         confirmLabel={t('Done')}
         onCloseComplete={() => setEditingStream()}
       >
-        <EditStreamDialog editingStream={editingStream} externalFiles={externalFiles} mainFilePath={mainFilePath} mainFileStreams={mainFileStreams} customTagsByStreamId={customTagsByStreamId} setCustomTagsByStreamId={setCustomTagsByStreamId} />
+        <EditStreamDialog editingStream={editingStream} externalFiles={externalFiles} mainFilePath={mainFilePath} mainFileStreams={mainFileStreams} customTagsByStreamId={customTagsByStreamId} setCustomTagsByStreamId={setCustomTagsByStreamId} dispositionByStreamId={dispositionByStreamId} setDispositionByStreamId={setDispositionByStreamId} />
       </Dialog>
     </>
   );

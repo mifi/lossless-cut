@@ -51,7 +51,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     outputDir, segments, segmentsFileNames, videoDuration, rotation,
     onProgress: onTotalProgress, keyframeCut, copyFileStreams, outFormat,
     appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs,
-    customTagsByFile, customTagsByStreamId,
+    customTagsByFile, customTagsByStreamId, dispositionByStreamId,
   }) => {
     async function cutSingle({ cutFrom, cutTo, onProgress, outPath }) {
       const cuttingStart = isCuttingStart(cutFrom);
@@ -104,21 +104,32 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         return streamCount + copiedStreamIndex;
       }
 
+      // The structure is deep! file -> stream -> key -> value Example: { 'file.mp4': { 0: { key: 'value' } } }
+      const deepMap = (root, fn) => flatMapDeep(
+        Object.entries(root), ([path, streamsMap]) => (
+          Object.entries(streamsMap || {}).map(([streamId, tagsMap]) => (
+            Object.entries(tagsMap || {}).map(([key, value]) => fn(path, streamId, key, value))))),
+      );
+
       const customTagsArgs = [
-        // We only support editing main file metadata for now
+        // Main file metadata:
         ...flatMap(Object.entries(customTagsByFile[filePath] || []), ([key, value]) => ['-metadata', `${key}=${value}`]),
 
-        // The structure is deep! Example: { 'file.mp4': { 0: { tag_name: 'Tag Value' } } }
-        ...flatMapDeep(
-          Object.entries(customTagsByStreamId), ([path, streamsMap]) => (
-            Object.entries(streamsMap).map(([streamId, tagsMap]) => (
-              Object.entries(tagsMap).map(([key, value]) => {
-                const outputIndex = mapInputStreamIndexToOutputIndex(path, parseInt(streamId, 10));
-                if (outputIndex == null) return [];
-                return [`-metadata:s:${outputIndex}`, `${key}=${value}`];
-              })))),
-        ),
+        // Example: { 'file.mp4': { 0: { tag_name: 'Tag Value' } } }
+        ...deepMap(customTagsByStreamId, (path, streamId, tag, value) => {
+          const outputIndex = mapInputStreamIndexToOutputIndex(path, parseInt(streamId, 10));
+          if (outputIndex == null) return [];
+          return [`-metadata:s:${outputIndex}`, `${tag}=${value}`];
+        }),
       ];
+
+      // Example: { 'file.mp4': { 0: { attached_pic: 1 } } }
+      const customDispositionArgs = deepMap(dispositionByStreamId, (path, streamId, disposition, value) => {
+        if (value !== 1) return [];
+        const outputIndex = mapInputStreamIndexToOutputIndex(path, parseInt(streamId, 10));
+        if (outputIndex == null) return [];
+        return [`-disposition:${outputIndex}`, String(disposition)];
+      });
 
       const ffmpegArgs = [
         '-hide_banner',
@@ -137,6 +148,8 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         ...getMovFlags({ preserveMovData, movFastStart }),
 
         ...customTagsArgs,
+
+        ...customDispositionArgs,
 
         // See https://github.com/mifi/lossless-cut/issues/170
         '-ignore_unknown',
