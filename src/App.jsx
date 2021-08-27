@@ -804,7 +804,6 @@ const App = memo(() => {
     setZoom(1);
     setShortestFlag(false);
     setZoomWindowStartTime(0);
-    setDisabledSegmentIds({});
     setHideCanvasPreview(false);
 
     setExportConfirmVisible(false);
