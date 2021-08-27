@@ -923,7 +923,6 @@ const App = memo(() => {
       if (deleteProjectFile && saved.edlFilePath) await trash(saved.edlFilePath).catch(console.error);
       // throw new Error('test');
       if (deleteOriginal) await trash(saved.filePath);
-      toast.fire({ icon: 'info', title: i18n.t('Cleanup successful') });
     } catch (err) {
       try {
         console.warn('Failed to trash', err);
@@ -939,7 +938,6 @@ const App = memo(() => {
           if (deleteTmpFiles && saved.previewFilePath) await unlink(saved.previewFilePath).catch(console.error);
           if (deleteProjectFile && saved.edlFilePath) await unlink(saved.edlFilePath).catch(console.error);
           if (deleteOriginal) await unlink(saved.filePath);
-          toast.fire({ icon: 'info', title: i18n.t('Cleanup successful') });
         }
       } catch (err2) {
         errorToast(`Unable to delete file: ${err2.message}`);
