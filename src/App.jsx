@@ -581,22 +581,29 @@ const App = memo(() => {
     if (!supportsRotation && !hideAllNotifications) toast.fire({ text: i18n.t('Lossless rotation might not work with this file format. You may try changing to MP4') });
   }, [hideAllNotifications, fileFormat]);
 
-  const assureOutDirAccess = useCallback(async (outFilePath) => {
+  const ensureOutDirAccessible = useCallback(async (outFilePath) => {
+    let newCustomOutDir = customOutDir;
+
     // Reset if doesn't exist anymore
     const customOutDirExists = await dirExists(customOutDir);
-    if (!customOutDirExists) setCustomOutDir(undefined);
-    const newCustomOutDir = customOutDirExists ? customOutDir : undefined;
+    if (!customOutDirExists) {
+      setCustomOutDir(undefined);
+      newCustomOutDir = undefined;
+    }
 
-    const outDirPath = getOutDir(newCustomOutDir, outFilePath);
-    const hasDirWriteAccess = await checkDirWriteAccess(outDirPath);
+    const effectiveOutDirPath = getOutDir(newCustomOutDir, outFilePath);
+    const hasDirWriteAccess = await checkDirWriteAccess(effectiveOutDirPath);
     if (!hasDirWriteAccess) {
       if (isMasBuild) {
-        const newOutDir = await askForOutDir(outDirPath);
-        // User cancelled open dialog. Refuse to continue, because we will get permission denied error from MAS sandbox
+        const newOutDir = await askForOutDir(effectiveOutDirPath);
+        // If user canceled open dialog, refuse to continue, because we will get permission denied error from MAS sandbox
         if (!newOutDir) return { cancel: true };
         setCustomOutDir(newOutDir);
+        newCustomOutDir = newOutDir;
       } else {
         errorToast(i18n.t('You have no write access to the directory of this file, please select a custom working dir'));
+        setCustomOutDir(undefined);
+        return { cancel: true };
       }
     }
 
@@ -609,7 +616,7 @@ const App = memo(() => {
       setWorking(i18n.t('Merging'));
 
       const firstPath = paths[0];
-      const { newCustomOutDir, cancel } = await assureOutDirAccess(firstPath);
+      const { newCustomOutDir, cancel } = await ensureOutDirAccessible(firstPath);
       if (cancel) return;
 
       const ext = extname(firstPath);
@@ -632,7 +639,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [assureOutDirAccess, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, customOutDir, ffmpegMergeFiles, working]);
+  }, [ensureOutDirAccessible, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, customOutDir, ffmpegMergeFiles, working]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
 
@@ -1564,11 +1571,11 @@ const App = memo(() => {
       return;
     }
 
-    const { newCustomOutDir, cancel } = await assureOutDirAccess(path);
+    const { newCustomOutDir, cancel } = await ensureOutDirAccessible(path);
     if (cancel) return;
 
     await load({ filePath: path, customOutDir: newCustomOutDir, projectPath });
-  }, [assureOutDirAccess, load]);
+  }, [ensureOutDirAccessible, load]);
 
   const checkFileOpened = useCallback(() => {
     if (isFileOpened) return true;
@@ -1771,7 +1778,7 @@ const App = memo(() => {
         for (const path of filePaths) {
           try {
             // eslint-disable-next-line no-await-in-loop
-            const { newCustomOutDir, cancel } = await assureOutDirAccess(path);
+            const { newCustomOutDir, cancel } = await ensureOutDirAccessible(path);
             if (cancel) {
               toast.fire({ title: i18n.t('Aborted') });
               return;
@@ -1878,7 +1885,7 @@ const App = memo(() => {
   }, [
     mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile,
     extractAllStreams, userOpenFiles, openSendReportDialogWithState,
-    loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, assureOutDirAccess, html5ifyAndLoad, working, html5ify,
+    loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, ensureOutDirAccessible, html5ifyAndLoad, working, html5ify,
     loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime, closeFile, clearSegments, fixInvalidDuration, invertAllCutSegments,
   ]);
 
