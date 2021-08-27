@@ -224,7 +224,10 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
   return (
     <tr style={{ opacity: copyStream ? undefined : 0.4 }}>
       <td style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
-        <div style={{ width: 20 }}>{stream.index}</div>
+        <IconButton title={t('Click to toggle track inclusion when exporting')} appearance="minimal" icon={() => <Icon color={copyStream ? '#52BD95' : '#D14343'} size={20} />} onClick={onClick} />
+        <div style={{ width: 20, textAlign: 'center' }}>{stream.index}</div>
+      </td>
+      <td>
         {stream.codec_type}
       </td>
       <td>{stream.codec_tag !== '0x0000' && stream.codec_tag_string}</td>
@@ -234,9 +237,6 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
       <td>{!Number.isNaN(bitrate) && `${(bitrate / 1e6).toFixed(1)}MBit`}</td>
       <td style={{ maxWidth: '2.5em', overflow: 'hidden' }} title={language}>{language}</td>
       <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
-      <td>
-        <IconButton title={t('Click to toggle track inclusion when exporting')} appearance="minimal" icon={() => <Icon color={copyStream ? '#52BD95' : '#D14343'} size={20} />} onClick={onClick} />
-      </td>
       <td style={{ display: 'flex' }}>
         <IconButton icon={InfoSignIcon} onClick={() => onInfoClick(stream, t('Track info'))} appearance="minimal" iconSize={18} />
         <IconButton title={t('Extract this track as file')} icon={() => <FaFileExport size={18} />} onClick={onExtractStreamPress} appearance="minimal" iconSize={18} />
@@ -293,6 +293,7 @@ const Thead = () => {
   return (
     <thead style={{ color: 'rgba(0,0,0,0.6)', textAlign: 'left' }}>
       <tr>
+        <th>{t('Keep?')}</th>
         <th style={{ paddingLeft: 20 }}>{t('Type')}</th>
         <th>{t('Tag')}</th>
         <th>{t('Codec')}</th>
@@ -301,7 +302,6 @@ const Thead = () => {
         <th>{t('Bitrate')}</th>
         <th>{t('Lang')}</th>
         <th>{t('Data')}</th>
-        <th>{t('Keep?')}</th>
         <th />
       </tr>
     </thead>
