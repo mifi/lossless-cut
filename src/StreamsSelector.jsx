@@ -223,11 +223,10 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
 
   return (
     <tr style={{ opacity: copyStream ? undefined : 0.4 }}>
-      <td style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }} title={t('Click to toggle track inclusion when exporting')}>
-        <div style={{ width: 16 }}>{stream.index}</div>
-        <IconButton appearance="minimal" icon={() => <Icon color={copyStream ? '#52BD95' : '#D14343'} size={20} />} onClick={onClick} />
+      <td style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
+        <div style={{ width: 20 }}>{stream.index}</div>
+        {stream.codec_type}
       </td>
-      <td>{stream.codec_type}</td>
       <td>{stream.codec_tag !== '0x0000' && stream.codec_tag_string}</td>
       <td style={{ maxWidth: '3em', overflow: 'hidden' }} title={stream.codec_name}>{stream.codec_name}</td>
       <td>{!Number.isNaN(duration) && `${formatDuration({ seconds: duration, shorten: true })}`}</td>
@@ -235,6 +234,9 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
       <td>{!Number.isNaN(bitrate) && `${(bitrate / 1e6).toFixed(1)}MBit`}</td>
       <td style={{ maxWidth: '2.5em', overflow: 'hidden' }} title={language}>{language}</td>
       <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
+      <td>
+        <IconButton title={t('Click to toggle track inclusion when exporting')} appearance="minimal" icon={() => <Icon color={copyStream ? '#52BD95' : '#D14343'} size={20} />} onClick={onClick} />
+      </td>
       <td style={{ display: 'flex' }}>
         <IconButton icon={InfoSignIcon} onClick={() => onInfoClick(stream, t('Track info'))} appearance="minimal" iconSize={18} />
         <IconButton title={t('Extract this track as file')} icon={() => <FaFileExport size={18} />} onClick={onExtractStreamPress} appearance="minimal" iconSize={18} />
@@ -289,10 +291,9 @@ const FileHeading = ({ path, formatData, onTrashClick, onEditClick, setCopyAllSt
 const Thead = () => {
   const { t } = useTranslation();
   return (
-    <thead style={{ color: 'rgba(0,0,0,0.6)' }}>
+    <thead style={{ color: 'rgba(0,0,0,0.6)', textAlign: 'left' }}>
       <tr>
-        <th>{t('Keep?')}</th>
-        <th>{t('Type')}</th>
+        <th style={{ paddingLeft: 20 }}>{t('Type')}</th>
         <th>{t('Tag')}</th>
         <th>{t('Codec')}</th>
         <th>{t('Duration')}</th>
@@ -300,6 +301,7 @@ const Thead = () => {
         <th>{t('Bitrate')}</th>
         <th>{t('Lang')}</th>
         <th>{t('Data')}</th>
+        <th>{t('Keep?')}</th>
         <th />
       </tr>
     </thead>
@@ -307,7 +309,7 @@ const Thead = () => {
 };
 
 const tableStyle = { fontSize: 14, width: '100%' };
-const fileStyle = { marginBottom: 20, padding: 5 };
+const fileStyle = { marginBottom: 20, padding: 5, minWidth: '100%', overflowX: 'auto' };
 
 const StreamsSelector = memo(({
   mainFilePath, mainFileFormatData, streams: mainFileStreams, isCopyingStreamId, toggleCopyStreamId,
