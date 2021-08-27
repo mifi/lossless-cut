@@ -264,7 +264,7 @@ export async function getAllStreams(filePath) {
   return JSON.parse(stdout);
 }
 
-function getPreferredCodecFormat(codec, type) {
+function getPreferredCodecFormat({ codec_name: codec, codec_type: type }) {
   const map = {
     mp3: 'mp3',
     opus: 'opus',
@@ -318,9 +318,61 @@ export async function extractStreams({ filePath, customOutDir, streams }) {
     ...streamArgs,
   ];
 
-  // TODO progress
   const { stdout } = await runFfmpeg(ffmpegArgs);
   console.log(stdout);
+}
+
+async function extractAttachmentStreams({ customOutDir, filePath, streams }) {
+  if (streams.length === 0) return;
+
+  console.log('Extracting', streams.length, 'attachment streams');
+
+  const streamArgs = flatMap(streams, ({ index, codec_name: codec, codec_type: type }) => {
+    const ext = codec || 'bin';
+    return [
+      `-dump_attachment:${index}`, getOutPath(customOutDir, filePath, `stream-${index}-${type}-${codec}.${ext}`),
+    ];
+  });
+
+  const ffmpegArgs = [
+    '-y',
+    '-hide_banner',
+    '-loglevel', 'error',
+    ...streamArgs,
+    '-i', filePath,
+  ];
+
+  try {
+    const { stdout } = await runFfmpeg(ffmpegArgs);
+    console.log(stdout);
+  } catch (err) {
+    // Unfortunately ffmpeg will exit with code 1 even though it's a success
+    // Note: This is kind of hacky:
+    if (err.exitCode === 1 && typeof err.stderr === 'string' && err.stderr.includes('At least one output file must be specified')) return;
+    throw err;
+  }
+}
+
+// https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
+export async function extractStreams({ filePath, customOutDir, streams }) {
+  const attachmentStreams = streams.filter((s) => s.codec_type === 'attachment');
+  const nonAttachmentStreams = streams.filter((s) => s.codec_type !== 'attachment');
+
+  const outStreams = nonAttachmentStreams.map((s) => ({
+    index: s.index,
+    codec: s.codec_name || s.codec_tag_string || s.codec_type,
+    type: s.codec_type,
+    format: getPreferredCodecFormat(s),
+  }))
+    .filter(it => it && it.format && it.index != null);
+
+  // console.log(outStreams);
+
+  // TODO progress
+
+  // Attachment streams are handled differently from normal streams
+  await extractNonAttachmentStreams({ customOutDir, filePath, streams: outStreams });
+  await extractAttachmentStreams({ customOutDir, filePath, streams: attachmentStreams });
 }
 
 async function renderThumbnail(filePath, timestamp) {
