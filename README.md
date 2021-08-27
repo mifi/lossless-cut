@@ -27,7 +27,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Losslessly rearrange the order of video/audio segments
 - Lossless merge/concatenation of arbitrary files (with identical codecs parameters, e.g. from the same camera)
 - Lossless stream editing: Combine arbitrary tracks from multiple files (ex. add music or subtitle track to a video file)
-- Losslessly extract all tracks from a file (extract video, audio, subtitle and other tracks from one file into separate files)
+- Losslessly extract all tracks from a file (extract video, audio, subtitle, attachments and other tracks from one file into separate files)
 - Remux into any compatible output format
 - Take full-resolution snapshots from videos in JPEG/PNG format
 - Manual input of cutpoint times
