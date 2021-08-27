@@ -104,7 +104,7 @@ const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
 const App = memo(() => {
   // Per project state
   const [previewFilePath, setPreviewFilePath] = useState();
-  const [working, setWorking] = useState();
+  const [working, setWorkingState] = useState();
   const [usingDummyVideo, setUsingDummyVideo] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [playerTime, setPlayerTime] = useState();
@@ -151,6 +151,12 @@ const App = memo(() => {
     100,
   );
 
+  // Store "working" in a ref so we can avoid race conditions
+  const workingRef = useRef(working);
+  const setWorking = useCallback((val) => {
+    workingRef.current = val;
+    setWorkingState(val);
+  }, []);
 
   const durationSafe = isDurationValid(duration) ? duration : 1;
   const zoomedDuration = isDurationValid(duration) ? duration / zoom : undefined;
@@ -611,7 +617,7 @@ const App = memo(() => {
   }, [customOutDir, setCustomOutDir]);
 
   const mergeFiles = useCallback(async ({ paths, allStreams, segmentsToChapters: segmentsToChapters2 }) => {
-    if (working) return;
+    if (workingRef.current) return;
     try {
       setWorking(i18n.t('Merging'));
 
@@ -639,7 +645,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [ensureOutDirAccessible, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, customOutDir, ffmpegMergeFiles, working]);
+  }, [ensureOutDirAccessible, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, customOutDir, ffmpegMergeFiles, setWorking]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
 
@@ -889,17 +895,15 @@ const App = memo(() => {
   }, [playing, filePath]);
 
   const closeFile = useCallback(() => {
-    if (!isFileOpened || working) return false;
+    if (!isFileOpened || workingRef.current) return false;
     // eslint-disable-next-line no-alert
     if (askBeforeClose && !window.confirm(i18n.t('Are you sure you want to close the current file?'))) return false;
 
     resetState();
     return true;
-  }, [askBeforeClose, isFileOpened, resetState, working]);
+  }, [askBeforeClose, isFileOpened, resetState]);
 
   const cleanupFiles = useCallback(async () => {
-    if (working) return;
-
     // Because we will reset state before deleting files
     const saved = { previewFilePath, filePath, edlFilePath };
 
@@ -915,6 +919,8 @@ const App = memo(() => {
 
     const { tmpFiles: deleteTmpFiles, projectFile: deleteProjectFile, sourceFile: deleteOriginal } = trashResponse;
     if (!deleteTmpFiles && !deleteProjectFile && !deleteOriginal) return;
+
+    if (workingRef.current) return;
 
     try {
       setWorking(i18n.t('Cleaning up'));
@@ -946,7 +952,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [filePath, previewFilePath, closeFile, edlFilePath, cleanupChoices, working]);
+  }, [filePath, previewFilePath, closeFile, edlFilePath, cleanupChoices, setWorking]);
 
   const outSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
     [invertCutSegments, inverseCutSegments, apparentCutSegments]);
@@ -1033,8 +1039,6 @@ const App = memo(() => {
   const closeExportConfirm = useCallback(() => setExportConfirmVisible(false), []);
 
   const onExportConfirm = useCallback(async () => {
-    if (working) return;
-
     if (numStreamsToCopy === 0) {
       errorToast(i18n.t('No tracks selected for export'));
       return;
@@ -1043,6 +1047,7 @@ const App = memo(() => {
     setStreamsSelectorShown(false);
     setExportConfirmVisible(false);
 
+    if (workingRef.current) return;
     try {
       setWorking(i18n.t('Exporting'));
 
@@ -1130,10 +1135,10 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [working, numStreamsToCopy, enabledOutSegments, outSegTemplateOrDefault, generateOutSegFileNames, customOutDir, filePath, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, autoMerge, exportExtraStreams, fileFormatData, mainStreams, hideAllNotifications, outputDir, segmentsToChapters, invertCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, preserveMetadataOnMerge, nonCopiedExtraStreams, handleCutFailed, isOutSegFileNamesValid, cutMultiple, autoMergeSegments]);
+  }, [numStreamsToCopy, enabledOutSegments, outSegTemplateOrDefault, generateOutSegFileNames, customOutDir, filePath, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, autoMerge, exportExtraStreams, fileFormatData, mainStreams, hideAllNotifications, outputDir, segmentsToChapters, invertCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, preserveMetadataOnMerge, nonCopiedExtraStreams, handleCutFailed, isOutSegFileNamesValid, cutMultiple, autoMergeSegments, setWorking]);
 
   const onExportPress = useCallback(async () => {
-    if (working || !filePath) return;
+    if (!filePath || workingRef.current) return;
 
     if (haveInvalidSegs) {
       errorToast(i18n.t('Start time must be before end time'));
@@ -1147,7 +1152,7 @@ const App = memo(() => {
 
     if (exportConfirmEnabled) setExportConfirmVisible(true);
     else await onExportConfirm();
-  }, [working, filePath, haveInvalidSegs, enabledOutSegments, exportConfirmEnabled, onExportConfirm]);
+  }, [filePath, haveInvalidSegs, enabledOutSegments, exportConfirmEnabled, onExportConfirm]);
 
   const capture = useCallback(async () => {
     if (!filePath) return;
@@ -1353,7 +1358,7 @@ const App = memo(() => {
       resetState();
       throw err;
     }
-  }, [resetState, html5ifyAndLoad, loadEdlFile, getEdlFilePath, getEdlFilePathOld, loadCutSegments, enableAskForImportChapters, autoLoadTimecode, outFormatLocked, showPreviewFileLoadedMessage, rememberConvertToSupportedFormat]);
+  }, [resetState, html5ifyAndLoad, loadEdlFile, getEdlFilePath, getEdlFilePathOld, loadCutSegments, enableAskForImportChapters, autoLoadTimecode, outFormatLocked, showPreviewFileLoadedMessage, rememberConvertToSupportedFormat, setWorking]);
 
   const toggleHelp = useCallback(() => setHelpVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1496,11 +1501,12 @@ const App = memo(() => {
   }, [askBeforeClose, isFileOpened]);
 
   const extractSingleStream = useCallback(async (index) => {
-    if (!filePath || working) return;
+    if (!filePath) return;
 
+    if (workingRef.current) return;
     try {
-      // setStreamsSelectorShown(false);
       setWorking(i18n.t('Extracting track'));
+      // setStreamsSelectorShown(false);
       await extractStreams({ customOutDir, filePath, streams: mainStreams.filter((s) => s.index === index) });
       openDirToast({ dirPath: outputDir, text: i18n.t('Track has been extracted') });
     } catch (err) {
@@ -1509,16 +1515,17 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [customOutDir, filePath, mainStreams, outputDir, working]);
+  }, [customOutDir, filePath, mainStreams, outputDir, setWorking]);
 
   const extractAllStreams = useCallback(async () => {
-    if (!filePath || working) return;
+    if (!filePath) return;
 
     if (!(await confirmExtractAllStreamsDialog())) return;
 
+    if (workingRef.current) return;
     try {
-      setStreamsSelectorShown(false);
       setWorking(i18n.t('Extracting all streams'));
+      setStreamsSelectorShown(false);
       await extractStreams({ customOutDir, filePath, streams: mainStreams });
       openDirToast({ dirPath: outputDir, text: i18n.t('All streams have been extracted as separate files') });
     } catch (err) {
@@ -1527,7 +1534,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [customOutDir, filePath, mainStreams, outputDir, working]);
+  }, [customOutDir, filePath, mainStreams, outputDir, setWorking]);
 
   const addStreamSourceFile = useCallback(async (path) => {
     if (externalStreamFiles[path]) return;
@@ -1582,22 +1589,23 @@ const App = memo(() => {
   }, [isFileOpened]);
 
   const userOpenFiles = useCallback(async (filePaths) => {
+    if (!filePaths || filePaths.length < 1) return;
+
+    console.log('userOpenFiles');
+    console.log(filePaths.join('\n'));
+
+    if (filePaths.length > 1) {
+      showMergeDialog(filePaths, mergeFiles);
+      return;
+    }
+
+    // filePaths.length is now 1
+    const firstFilePath = filePaths[0];
+
+    const filePathLowerCase = firstFilePath.toLowerCase();
+
+    if (workingRef.current) return;
     try {
-      if (!filePaths || filePaths.length < 1 || working) return;
-
-      console.log('userOpenFiles');
-      console.log(filePaths.join('\n'));
-
-      if (filePaths.length > 1) {
-        showMergeDialog(filePaths, mergeFiles);
-        return;
-      }
-
-      // filePaths.length is now 1
-      const firstFilePath = filePaths[0];
-
-      const filePathLowerCase = firstFilePath.toLowerCase();
-
       setWorking(i18n.t('Loading file'));
 
       // Import CSV project for existing video
@@ -1645,10 +1653,10 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [addStreamSourceFile, checkFileOpened, enableAskForFileOpenAction, isFileOpened, loadEdlFile, mergeFiles, userOpenSingleFile, working]);
+  }, [addStreamSourceFile, checkFileOpened, enableAskForFileOpenAction, isFileOpened, loadEdlFile, mergeFiles, userOpenSingleFile, setWorking]);
 
   const userHtml5ifyCurrentFile = useCallback(async () => {
-    if (!filePath || working) return;
+    if (!filePath) return;
 
     async function getHtml5ifySpeed() {
       const { selectedOption, remember } = await askForHtml5ifySpeed({ allowedOptions: ['fastest', 'fastest-audio', 'fastest-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'], showRemember: true, initialOption: rememberConvertToSupportedFormat });
@@ -1661,9 +1669,11 @@ const App = memo(() => {
       return selectedOption;
     }
 
+    const speed = await getHtml5ifySpeed();
+    if (!speed) return;
+
+    if (workingRef.current) return;
     try {
-      const speed = await getHtml5ifySpeed();
-      if (!speed) return;
       setWorking(i18n.t('Converting to supported format'));
       await html5ifyAndLoad(customOutDir, filePath, speed, hasVideo, hasAudio);
     } catch (err) {
@@ -1672,7 +1682,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [customOutDir, filePath, html5ifyAndLoad, hasVideo, hasAudio, rememberConvertToSupportedFormat, working]);
+  }, [customOutDir, filePath, html5ifyAndLoad, hasVideo, hasAudio, rememberConvertToSupportedFormat, setWorking]);
 
   const onVideoError = useCallback(async () => {
     const { error } = videoRef.current;
@@ -1682,34 +1692,36 @@ const App = memo(() => {
     console.error('onVideoError', error.message, error.code);
 
     try {
-      const PIPELINE_ERROR_DECODE = 3; // To reproduce: "RX100VII PCM audio timecode.MP4" or see https://github.com/mifi/lossless-cut/issues/804
+      const PIPELINE_ERROR_DECODE = 3; // This usually happens when the user presses play or seeks, but the video is not actually playable. To reproduce: "RX100VII PCM audio timecode.MP4" or see https://github.com/mifi/lossless-cut/issues/804
       const MEDIA_ERR_SRC_NOT_SUPPORTED = 4; // Test: issue-668-3.20.1.m2ts - NOTE: DEMUXER_ERROR_COULD_NOT_OPEN is also 4
-      if ([MEDIA_ERR_SRC_NOT_SUPPORTED, PIPELINE_ERROR_DECODE].includes(error.code) && !usingPreviewFile && filePath && !working) {
-        if (isDurationValid(await getDuration(filePath))) {
-          console.log('Trying to create preview');
-          if (!hideAllNotifications) toast.fire({ icon: 'info', text: 'This file is not natively supported. Creating a preview file...' });
+      if (!([MEDIA_ERR_SRC_NOT_SUPPORTED, PIPELINE_ERROR_DECODE].includes(error.code) && !usingPreviewFile && filePath)) return;
 
-          try {
-            setWorking(i18n.t('Converting to supported format'));
-            if (hasVideo) {
-              // "fastest" is the most likely type not to fail for video (but it is muted).
-              await html5ifyAndLoad(customOutDir, filePath, rememberConvertToSupportedFormat || 'fastest', hasVideo, hasAudio);
-            } else if (hasAudio) {
-              // For audio do a fast re-encode
-              await html5ifyAndLoad(customOutDir, filePath, rememberConvertToSupportedFormat || 'fastest-audio', hasVideo, hasAudio);
-            }
-          } catch (err) {
-            console.error(err);
-            showPlaybackFailedMessage();
-          } finally {
-            setWorking();
-          }
+      if (workingRef.current) return;
+      try {
+        setWorking(i18n.t('Converting to supported format'));
+
+        console.log('Trying to create preview');
+        if (!hideAllNotifications) toast.fire({ icon: 'info', text: 'This file is not natively supported. Creating a preview file...' });
+
+        if (!isDurationValid(await getDuration(filePath))) throw new Error('Invalid duration');
+
+        if (hasVideo) {
+          // "fastest" is the most likely type not to fail for video (but it is muted).
+          await html5ifyAndLoad(customOutDir, filePath, rememberConvertToSupportedFormat || 'fastest', hasVideo, hasAudio);
+        } else if (hasAudio) {
+          // For audio do a fast re-encode
+          await html5ifyAndLoad(customOutDir, filePath, rememberConvertToSupportedFormat || 'fastest-audio', hasVideo, hasAudio);
         }
+      } catch (err) {
+        console.error(err);
+        showPlaybackFailedMessage();
+      } finally {
+        setWorking();
       }
     } catch (err) {
       handleError(err);
     }
-  }, [fileUri, usingPreviewFile, hasVideo, hasAudio, html5ifyAndLoad, hideAllNotifications, customOutDir, filePath, working, rememberConvertToSupportedFormat]);
+  }, [fileUri, usingPreviewFile, hasVideo, hasAudio, html5ifyAndLoad, hideAllNotifications, customOutDir, filePath, rememberConvertToSupportedFormat, setWorking]);
 
   useEffect(() => {
     function showOpenAndMergeDialog2() {
@@ -1757,7 +1769,6 @@ const App = memo(() => {
     }
 
     async function batchConvertFriendlyFormat() {
-      if (working) return;
       const title = i18n.t('Select files to batch convert to supported format');
       const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'], title, message: title });
       if (canceled || filePaths.length < 1) return;
@@ -1768,6 +1779,7 @@ const App = memo(() => {
       const { selectedOption: speed } = await askForHtml5ifySpeed({ allowedOptions: ['fastest-audio', 'fastest-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'] });
       if (!speed) return;
 
+      if (workingRef.current) return;
       try {
         setWorking(i18n.t('Batch converting to supported format'));
         setCutProgress(0);
@@ -1816,7 +1828,7 @@ const App = memo(() => {
     }
 
     async function fixInvalidDuration2() {
-      if (!checkFileOpened() || working) return;
+      if (!checkFileOpened() || workingRef.current) return;
       try {
         setWorking(i18n.t('Fixing file duration'));
         const path = await fixInvalidDuration({ fileFormat, customOutDir });
@@ -1882,8 +1894,8 @@ const App = memo(() => {
     };
   }, [
     mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile,
-    extractAllStreams, userOpenFiles, openSendReportDialogWithState,
-    loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, ensureOutDirAccessible, html5ifyAndLoad, working, html5ify,
+    extractAllStreams, userOpenFiles, openSendReportDialogWithState, setWorking,
+    loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, ensureOutDirAccessible, html5ifyAndLoad, html5ify,
     loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime, closeFile, clearSegments, fixInvalidDuration, invertAllCutSegments,
   ]);
 
