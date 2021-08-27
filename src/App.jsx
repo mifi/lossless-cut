@@ -1238,8 +1238,8 @@ const App = memo(() => {
   }, [loadCutSegments]);
 
 
-  const load = useCallback(async ({ filePath: fp, customOutDir: cod, projectPath }) => {
-    console.log('Load', { fp, cod, projectPath });
+  const loadMedia = useCallback(async ({ filePath: fp, customOutDir: cod, projectPath }) => {
+    console.log('loadMedia', fp, cod, projectPath);
 
     resetState();
 
@@ -1579,8 +1579,8 @@ const App = memo(() => {
     const { newCustomOutDir, cancel } = await ensureOutDirAccessible(path);
     if (cancel) return;
 
-    await load({ filePath: path, customOutDir: newCustomOutDir, projectPath });
-  }, [ensureOutDirAccessible, load]);
+    await loadMedia({ filePath: path, customOutDir: newCustomOutDir, projectPath });
+  }, [ensureOutDirAccessible, loadMedia]);
 
   const checkFileOpened = useCallback(() => {
     if (isFileOpened) return true;
@@ -1833,7 +1833,7 @@ const App = memo(() => {
         setWorking(i18n.t('Fixing file duration'));
         const path = await fixInvalidDuration({ fileFormat, customOutDir });
         toast.fire({ icon: 'info', text: i18n.t('Duration has been fixed') });
-        await load({ filePath: path, customOutDir });
+        await loadMedia({ filePath: path, customOutDir });
       } catch (err) {
         errorToast(i18n.t('Failed to fix file duration'));
         console.error('Failed to fix file duration', err);
@@ -1896,7 +1896,7 @@ const App = memo(() => {
     mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile,
     extractAllStreams, userOpenFiles, openSendReportDialogWithState, setWorking,
     loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, ensureOutDirAccessible, html5ifyAndLoad, html5ify,
-    loadCutSegments, duration, checkFileOpened, load, fileFormat, reorderSegsByStartTime, closeFile, clearSegments, fixInvalidDuration, invertAllCutSegments,
+    loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFile, clearSegments, fixInvalidDuration, invertAllCutSegments,
   ]);
 
   async function showAddStreamSourceDialog() {
@@ -2019,7 +2019,7 @@ const App = memo(() => {
 
   useEffect(() => {
     // Testing:
-    // if (isDev) load({ filePath: '/Users/mifi/Downloads/inp.MOV', customOutDir });
+    // if (isDev) loadMedia({ filePath: '/Users/mifi/Downloads/inp.MOV', customOutDir });
   }, []);
 
   useEffect(() => {
