@@ -85,15 +85,23 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
       const rotationArgs = rotation !== undefined ? ['-metadata:s:v:0', `rotate=${360 - rotation}`] : [];
 
+      // This function tries to calculate the output stream index needed for -metadata:s:x and -disposition:x arguments
+      // It is based on the assumption that copyFileStreamsFiltered contains the order of the input files (and their respective streams orders) sent to ffmpeg, to hopefully calculate the same output stream index values that ffmpeg does internally.
+      // It also takes into account previously added files that have been removed and disabled streams.
       function mapInputStreamIndexToOutputIndex(inputFilePath, inputFileStreamIndex) {
         let streamCount = 0;
-        const found = copyFileStreamsFiltered.find(({ path: path2, streamIds }) => {
+        // Count copied streams of all files until this input file
+        const foundFile = copyFileStreamsFiltered.find(({ path: path2, streamIds }) => {
           if (path2 === inputFilePath) return true;
           streamCount += streamIds.length;
           return false;
         });
-        if (!found) return undefined; // Could happen if a tag has been edited on an external file, then the file was removed
-        return streamCount + inputFileStreamIndex;
+        if (!foundFile) return undefined; // Could happen if a tag has been edited on an external file, then the file was removed
+
+        // Then add the index of the current stream index to the count
+        const copiedStreamIndex = foundFile.streamIds.indexOf(String(inputFileStreamIndex));
+        if (copiedStreamIndex === -1) return undefined; // Could happen if a tag has been edited on a stream, but the stream is disabled
+        return streamCount + copiedStreamIndex;
       }
 
       const customTagsArgs = [
