@@ -326,5 +326,9 @@
     "Paste": "Colar",
     "Copy": "Copiar",
     "Redo": "Refazer",
-    "Undo": "Desfazer"
+    "Undo": "Desfazer",
+    "LosslessCut (CSV)": "LosslessCut (CSV)",
+    "Export project (LLC)...": "Exportar projeto (LLC)...",
+    "Import project (LLC)...": "Importar projeto (LLC)...",
+    "Close batch": "Fechar lote"
 }
