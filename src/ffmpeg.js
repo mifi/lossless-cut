@@ -313,21 +313,12 @@ function getPreferredCodecFormat({ codec_name: codec, codec_type: type }) {
   return undefined;
 }
 
-// https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
-export async function extractStreams({ filePath, customOutDir, streams }) {
-  const outStreams = streams.map((s) => ({
-    index: s.index,
-    codec: s.codec_name || s.codec_tag_string || s.codec_type,
-    type: s.codec_type,
-    format: getPreferredCodecFormat(s.codec_name, s.codec_type),
-  }))
-    .filter(it => it && it.format && it.index != null);
+async function extractNonAttachmentStreams({ customOutDir, filePath, streams }) {
+  if (streams.length === 0) return;
 
-  // console.log(outStreams);
+  console.log('Extracting', streams.length, 'normal streams');
 
-  const streamArgs = flatMap(outStreams, ({
-    index, codec, type, format: { format, ext },
-  }) => [
+  const streamArgs = flatMap(streams, ({ index, codec, type, format: { format, ext } }) => [
     '-map', `0:${index}`, '-c', 'copy', '-f', format, '-y', getOutPath(customOutDir, filePath, `stream-${index}-${type}-${codec}.${ext}`),
   ]);
 
