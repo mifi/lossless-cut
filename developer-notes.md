@@ -31,3 +31,4 @@ npm start
 - Wait for build and draft in Github actions
 - Release draft at github
 - Bump [snap version](https://snapcraft.io/losslesscut/listing)
+- `npm run scan-i18n` to get the newest Englist strings and push so weblate gets them
