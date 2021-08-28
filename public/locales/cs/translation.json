@@ -490,5 +490,6 @@
     "Text chapters / YouTube": "Textové kapitoly / YouTube",
     "LosslessCut (CSV)": "LosslessCut (CSV)",
     "Export project (LLC)...": "Uložit projekt (LLC)...",
-    "Import project (LLC)...": "Nahrát projekt (LLC)..."
+    "Import project (LLC)...": "Nahrát projekt (LLC)...",
+    "Lossless rotation might not work with this file format. You may try changing to MP4": "Bezztrátové otáčení nemusí u tohoto formátu souboru fungovat. Můžete zkusit změnit formát na MP4"
 }
