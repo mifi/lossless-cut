@@ -266,12 +266,14 @@ export async function getAllStreams(filePath) {
 
 export async function readFileMeta(filePath) {
   try {
-    const fd = await getFormatData(filePath);
-    const ff = await getDefaultOutFormat(filePath, fd);
-    const allStreamsResponse = await getAllStreams(filePath);
+    const [formatData, allStreamsResponse] = await Promise.all([
+      getFormatData(filePath),
+      getAllStreams(filePath),
+    ]);
+    const fileFormat = await getDefaultOutFormat(filePath, formatData);
     const { streams } = allStreamsResponse;
-    // console.log(streams, fd, ff);
-    return { fd, ff, streams };
+    // console.log(streams, formatData, fileFormat);
+    return { formatData, fileFormat, streams };
   } catch (err) {
     // Windows will throw error with code ENOENT if format detection fails.
     if (err.exitCode === 1 || (isWindows && err.code === 'ENOENT')) {

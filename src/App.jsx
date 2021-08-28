@@ -1314,7 +1314,8 @@ const App = memo(() => {
     }
 
     try {
-      const { ff, fd, streams } = await readFileMeta(fp);
+      const { fileFormat: ff, formatData: fd, streams } = await readFileMeta(fp);
+      // console.log('file meta read', ff);
 
       if (!ff) throw new Error('Unable to determine file format');
 
