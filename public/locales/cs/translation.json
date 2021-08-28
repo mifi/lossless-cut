@@ -314,7 +314,7 @@
     "Window": "Okno",
     "View": "Pohled",
     "Create fixed duration segments": "Vytvořit segmenty s pevnou dobou trvání",
-    "Clear all segments": "Vymazat všechny segmenty",
+    "Clear all segments": "Odstranit všechny segmenty",
     "Segments": "Segmenty",
     "Edit": "Upravit",
     "Exit": "Ukončit",
@@ -329,5 +329,10 @@
     "Are you sure you want to quit?": "Opravdu chcete skončit?",
     "Open": "Otevřít",
     "Save project (CSV)": "Uložit projekt (CSV)",
-    "File": "Soubor"
+    "File": "Soubor",
+    "Learn More": "Zjistěte více",
+    "Batch convert to supported format": "Dávkový převod do podporovaných formátů",
+    "Extract all tracks": "Extrahovat všechny stopy",
+    "CUE sheet file": "Soubor listu CUE",
+    "Confirm quit": "Potvrdit ukončení"
 }
