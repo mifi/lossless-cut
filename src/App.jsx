@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { FaAngleLeft, FaWindowClose } from 'react-icons/fa';
+import { unstable_batchedUpdates as batchedUpdates } from 'react-dom';
+import { FaAngleLeft, FaWindowClose, FaTimes, FaAngleRight, FaFile } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import Lottie from 'react-lottie-player';
@@ -42,7 +43,7 @@ import ValueTuner from './components/ValueTuner';
 import VolumeControl from './components/VolumeControl';
 import SubtitleControl from './components/SubtitleControl';
 import { loadMifiLink } from './mifi';
-import { primaryColor, controlsBackground } from './colors';
+import { primaryColor, controlsBackground, timelineBackground } from './colors';
 import allOutFormats from './outFormats';
 import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
@@ -61,7 +62,7 @@ import {
   hasDuplicates, havePermissionToReadFile, isMac, resolvePathIfNeeded, pathExists, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
 } from './util';
 import { formatDuration } from './util/duration';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMergeDialog, showOpenAndMergeDialog, openAbout, showEditableJsonDialog } from './dialogs';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMultipleFilesDialog, showOpenAndMergeDialog, openAbout, showEditableJsonDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags } from './segments';
@@ -141,10 +142,13 @@ const App = memo(() => {
   const [keyframesEnabled, setKeyframesEnabled] = useState(true);
   const [waveformEnabled, setWaveformEnabled] = useState(false);
   const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
-  const [showSideBar, setShowSideBar] = useState(true);
+  const [showRightBar, setShowRightBar] = useState(true);
   const [hideCanvasPreview, setHideCanvasPreview] = useState(false);
   const [cleanupChoices, setCleanupChoices] = useState({ tmpFiles: true });
   const [rememberConvertToSupportedFormat, setRememberConvertToSupportedFormat] = useState();
+
+  // Batch state
+  const [batchFiles, setBatchFiles] = useState([]);
 
   // Segment related state
   const [currentSegIndex, setCurrentSegIndex] = useState(0);
@@ -243,7 +247,7 @@ const App = memo(() => {
     });
   }
 
-  const toggleSideBar = useCallback(() => setShowSideBar(v => !v), []);
+  const toggleRightBar = useCallback(() => setShowRightBar(v => !v), []);
 
   const toggleCopyStreamId = useCallback((path, index) => {
     setCopyStreamIdsForPath(path, (old) => ({ ...old, [index]: !old[index] }));
@@ -935,14 +939,24 @@ const App = memo(() => {
     });
   }, [playing, filePath]);
 
-  const closeFile = useCallback(() => {
-    if (!isFileOpened || workingRef.current) return false;
+  const closeFileWithConfirm = useCallback(() => {
     // eslint-disable-next-line no-alert
     if (askBeforeClose && !window.confirm(i18n.t('Are you sure you want to close the current file?'))) return false;
 
     resetState();
     return true;
-  }, [askBeforeClose, isFileOpened, resetState]);
+  }, [askBeforeClose, resetState]);
+
+  const closeFile = useCallback(() => {
+    if (!isFileOpened || workingRef.current) return false;
+    return closeFileWithConfirm();
+  }, [closeFileWithConfirm, isFileOpened]);
+
+  const closeBatch = useCallback(() => {
+    // eslint-disable-next-line no-alert
+    if (askBeforeClose && !window.confirm(i18n.t('Are you sure you want to close the loaded batch of files?'))) return;
+    setBatchFiles([]);
+  }, [askBeforeClose]);
 
   const cleanupFiles = useCallback(async () => {
     // Because we will reset state before deleting files
@@ -1285,6 +1299,8 @@ const App = memo(() => {
 
     resetState();
 
+    console.log('state reset');
+
     setWorking(i18n.t('Loading file'));
 
     async function checkAndSetExistingHtml5FriendlyFile() {
@@ -1396,98 +1412,6 @@ const App = memo(() => {
   }, [findNearestKeyFrameTime, seekAbs]);
 
   const seekAccelerationRef = useRef(1);
-
-  // TODO split up?
-  useEffect(() => {
-    if (exportConfirmVisible) return () => {};
-
-    const togglePlayNoReset = () => togglePlay();
-    const togglePlayReset = () => togglePlay(true);
-    const reducePlaybackRate = () => changePlaybackRate(-1);
-    const increasePlaybackRate = () => changePlaybackRate(1);
-    function seekBackwards() {
-      seekRel(keyboardNormalSeekSpeed * seekAccelerationRef.current * -1);
-      seekAccelerationRef.current *= keyboardSeekAccFactor;
-    }
-    function seekForwards() {
-      seekRel(keyboardNormalSeekSpeed * seekAccelerationRef.current);
-      seekAccelerationRef.current *= keyboardSeekAccFactor;
-    }
-    const seekReset = () => {
-      seekAccelerationRef.current = 1;
-    };
-    const seekBackwardsPercent = () => { seekRelPercent(-0.01); return false; };
-    const seekForwardsPercent = () => { seekRelPercent(0.01); return false; };
-    const seekBackwardsKeyframe = () => seekClosestKeyframe(-1);
-    const seekForwardsKeyframe = () => seekClosestKeyframe(1);
-    const seekBackwardsShort = () => shortStep(-1);
-    const seekForwardsShort = () => shortStep(1);
-    const jumpPrevSegment = () => jumpSeg(-1);
-    const jumpNextSegment = () => jumpSeg(1);
-    const zoomIn = () => { zoomRel(1); return false; };
-    const zoomOut = () => { zoomRel(-1); return false; };
-
-    // mousetrap seems to be the only lib properly handling layouts that require shift to be pressed to get a particular key #520
-    // Also document.addEventListener needs custom handling of modifier keys or C will be triggered by CTRL+C, etc
-    const mousetrap = new Mousetrap();
-    // mousetrap.bind(':', () => console.log('test'));
-    mousetrap.bind('plus', () => addCutSegment());
-    mousetrap.bind('space', () => togglePlayReset());
-    mousetrap.bind('k', () => togglePlayNoReset());
-    mousetrap.bind('j', () => reducePlaybackRate());
-    mousetrap.bind('l', () => increasePlaybackRate());
-    mousetrap.bind('z', () => toggleComfortZoom());
-    mousetrap.bind(',', () => seekBackwardsShort());
-    mousetrap.bind('.', () => seekForwardsShort());
-    mousetrap.bind('c', () => capture());
-    mousetrap.bind('i', () => setCutStart());
-    mousetrap.bind('o', () => setCutEnd());
-    mousetrap.bind('backspace', () => removeCutSegment(currentSegIndexSafe));
-    mousetrap.bind('d', () => cleanupFiles());
-    mousetrap.bind('b', () => splitCurrentSegment());
-    mousetrap.bind('r', () => increaseRotation());
-
-    mousetrap.bind('left', () => seekBackwards());
-    mousetrap.bind('left', () => seekReset(), 'keyup');
-    mousetrap.bind(['ctrl+left', 'command+left'], () => seekBackwardsPercent());
-    mousetrap.bind('alt+left', () => seekBackwardsKeyframe());
-    mousetrap.bind('shift+left', () => jumpCutStart());
-
-    mousetrap.bind('right', () => seekForwards());
-    mousetrap.bind('right', () => seekReset(), 'keyup');
-    mousetrap.bind(['ctrl+right', 'command+right'], () => seekForwardsPercent());
-    mousetrap.bind('alt+right', () => seekForwardsKeyframe());
-    mousetrap.bind('shift+right', () => jumpCutEnd());
-
-    mousetrap.bind('up', () => jumpPrevSegment());
-    mousetrap.bind(['ctrl+up', 'command+up'], () => zoomIn());
-
-    mousetrap.bind('down', () => jumpNextSegment());
-    mousetrap.bind(['ctrl+down', 'command+down'], () => zoomOut());
-
-    // https://github.com/mifi/lossless-cut/issues/610
-    Mousetrap.bind(['ctrl+z', 'command+z'], (e) => {
-      e.preventDefault();
-      cutSegmentsHistory.back();
-    });
-    Mousetrap.bind(['ctrl+shift+z', 'command+shift+z'], (e) => {
-      e.preventDefault();
-      cutSegmentsHistory.forward();
-    });
-
-    mousetrap.bind(['enter'], () => {
-      onLabelSegmentPress(currentSegIndexSafe);
-      return false;
-    });
-
-    return () => mousetrap.reset();
-  }, [
-    addCutSegment, capture, changePlaybackRate, togglePlay, removeCutSegment,
-    setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, cleanupFiles, jumpSeg,
-    seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment, exportConfirmVisible,
-    increaseRotation, jumpCutStart, jumpCutEnd, cutSegmentsHistory, keyboardSeekAccFactor,
-    keyboardNormalSeekSpeed, onLabelSegmentPress, currentSegIndexSafe,
-  ]);
 
   useEffect(() => {
     function onKeyPress() {
@@ -1612,6 +1536,32 @@ const App = memo(() => {
     return false;
   }, [isFileOpened]);
 
+  const batchOpenSingleFile = useCallback(async (path) => {
+    if (workingRef.current) return;
+    if (filePath === path) return;
+    try {
+      setWorking(i18n.t('Loading file'));
+      await userOpenSingleFile({ path });
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setWorking();
+    }
+  }, [userOpenSingleFile, setWorking, filePath]);
+
+  const batchFileJump = useCallback((direction) => {
+    const pathIndex = batchFiles.findIndex(({ path }) => path === filePath);
+    if (pathIndex === -1) return;
+    const nextFile = batchFiles[pathIndex + direction];
+    if (!nextFile) return;
+    batchOpenSingleFile(nextFile.path);
+  }, [filePath, batchFiles, batchOpenSingleFile]);
+
+  const batchLoadFiles = useCallback((paths) => {
+    setBatchFiles(paths.map((path) => ({ path, name: basename(path) })));
+    batchOpenSingleFile(paths[0]);
+  }, [batchOpenSingleFile]);
+
   const userOpenFiles = useCallback(async (filePaths) => {
     if (!filePaths || filePaths.length < 1) return;
 
@@ -1619,7 +1569,7 @@ const App = memo(() => {
     console.log(filePaths.join('\n'));
 
     if (filePaths.length > 1) {
-      showMergeDialog(filePaths, mergeFiles);
+      showMultipleFilesDialog(filePaths, mergeFiles, batchLoadFiles);
       return;
     }
 
@@ -1677,7 +1627,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [addStreamSourceFile, checkFileOpened, enableAskForFileOpenAction, isFileOpened, loadEdlFile, mergeFiles, userOpenSingleFile, setWorking]);
+  }, [addStreamSourceFile, checkFileOpened, enableAskForFileOpenAction, isFileOpened, loadEdlFile, mergeFiles, userOpenSingleFile, setWorking, batchLoadFiles]);
 
   const userHtml5ifyCurrentFile = useCallback(async () => {
     if (!filePath) return;
@@ -1707,6 +1657,103 @@ const App = memo(() => {
       setWorking();
     }
   }, [customOutDir, filePath, html5ifyAndLoad, hasVideo, hasAudio, rememberConvertToSupportedFormat, setWorking]);
+
+
+  // TODO split up?
+  useEffect(() => {
+    if (exportConfirmVisible) return () => {};
+
+    const togglePlayNoReset = () => togglePlay();
+    const togglePlayReset = () => togglePlay(true);
+    const reducePlaybackRate = () => changePlaybackRate(-1);
+    const increasePlaybackRate = () => changePlaybackRate(1);
+    function seekBackwards() {
+      seekRel(keyboardNormalSeekSpeed * seekAccelerationRef.current * -1);
+      seekAccelerationRef.current *= keyboardSeekAccFactor;
+    }
+    function seekForwards() {
+      seekRel(keyboardNormalSeekSpeed * seekAccelerationRef.current);
+      seekAccelerationRef.current *= keyboardSeekAccFactor;
+    }
+    const seekReset = () => {
+      seekAccelerationRef.current = 1;
+    };
+    const seekBackwardsPercent = () => { seekRelPercent(-0.01); return false; };
+    const seekForwardsPercent = () => { seekRelPercent(0.01); return false; };
+    const seekBackwardsKeyframe = () => seekClosestKeyframe(-1);
+    const seekForwardsKeyframe = () => seekClosestKeyframe(1);
+    const seekBackwardsShort = () => shortStep(-1);
+    const seekForwardsShort = () => shortStep(1);
+    const jumpPrevSegment = () => jumpSeg(-1);
+    const jumpNextSegment = () => jumpSeg(1);
+    const zoomIn = () => { zoomRel(1); return false; };
+    const zoomOut = () => { zoomRel(-1); return false; };
+    const batchPreviousFile = () => batchFileJump(-1);
+    const batchNextFile = () => batchFileJump(1);
+
+    // mousetrap seems to be the only lib properly handling layouts that require shift to be pressed to get a particular key #520
+    // Also document.addEventListener needs custom handling of modifier keys or C will be triggered by CTRL+C, etc
+    const mousetrap = new Mousetrap();
+    // mousetrap.bind(':', () => console.log('test'));
+    mousetrap.bind('plus', () => addCutSegment());
+    mousetrap.bind('space', () => togglePlayReset());
+    mousetrap.bind('k', () => togglePlayNoReset());
+    mousetrap.bind('j', () => reducePlaybackRate());
+    mousetrap.bind('l', () => increasePlaybackRate());
+    mousetrap.bind('z', () => toggleComfortZoom());
+    mousetrap.bind(',', () => seekBackwardsShort());
+    mousetrap.bind('.', () => seekForwardsShort());
+    mousetrap.bind('c', () => capture());
+    mousetrap.bind('i', () => setCutStart());
+    mousetrap.bind('o', () => setCutEnd());
+    mousetrap.bind('backspace', () => removeCutSegment(currentSegIndexSafe));
+    mousetrap.bind('d', () => cleanupFiles());
+    mousetrap.bind('b', () => splitCurrentSegment());
+    mousetrap.bind('r', () => increaseRotation());
+
+    mousetrap.bind('left', () => seekBackwards());
+    mousetrap.bind('left', () => seekReset(), 'keyup');
+    mousetrap.bind(['ctrl+left', 'command+left'], () => seekBackwardsPercent());
+    mousetrap.bind('alt+left', () => seekBackwardsKeyframe());
+    mousetrap.bind('shift+left', () => jumpCutStart());
+
+    mousetrap.bind('right', () => seekForwards());
+    mousetrap.bind('right', () => seekReset(), 'keyup');
+    mousetrap.bind(['ctrl+right', 'command+right'], () => seekForwardsPercent());
+    mousetrap.bind('alt+right', () => seekForwardsKeyframe());
+    mousetrap.bind('shift+right', () => jumpCutEnd());
+
+    mousetrap.bind('up', () => jumpPrevSegment());
+    mousetrap.bind(['ctrl+up', 'command+up'], () => zoomIn());
+    mousetrap.bind(['shift+up'], () => batchPreviousFile());
+
+    mousetrap.bind('down', () => jumpNextSegment());
+    mousetrap.bind(['ctrl+down', 'command+down'], () => zoomOut());
+    mousetrap.bind(['shift+down'], () => batchNextFile());
+
+    // https://github.com/mifi/lossless-cut/issues/610
+    Mousetrap.bind(['ctrl+z', 'command+z'], (e) => {
+      e.preventDefault();
+      cutSegmentsHistory.back();
+    });
+    Mousetrap.bind(['ctrl+shift+z', 'command+shift+z'], (e) => {
+      e.preventDefault();
+      cutSegmentsHistory.forward();
+    });
+
+    mousetrap.bind(['enter'], () => {
+      onLabelSegmentPress(currentSegIndexSafe);
+      return false;
+    });
+
+    return () => mousetrap.reset();
+  }, [
+    addCutSegment, capture, changePlaybackRate, togglePlay, removeCutSegment,
+    setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, cleanupFiles, jumpSeg,
+    seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment, exportConfirmVisible,
+    increaseRotation, jumpCutStart, jumpCutEnd, cutSegmentsHistory, keyboardSeekAccFactor,
+    keyboardNormalSeekSpeed, onLabelSegmentPress, currentSegIndexSafe, batchFileJump,
+  ]);
 
   const onVideoError = useCallback(async () => {
     const { error } = videoRef.current;
@@ -1870,9 +1917,11 @@ const App = memo(() => {
     const showStreamsSelector = () => setStreamsSelectorShown(true);
     const openSendReportDialog2 = () => { openSendReportDialogWithState(); };
     const closeFile2 = () => { closeFile(); };
+    const closeBatch2 = () => { closeBatch(); };
 
     electron.ipcRenderer.on('file-opened', fileOpened);
     electron.ipcRenderer.on('close-file', closeFile2);
+    electron.ipcRenderer.on('close-batch-files', closeBatch2);
     electron.ipcRenderer.on('html5ify', userHtml5ifyCurrentFile);
     electron.ipcRenderer.on('show-merge-dialog', showOpenAndMergeDialog2);
     electron.ipcRenderer.on('set-start-offset', setStartOffset);
@@ -1896,6 +1945,7 @@ const App = memo(() => {
     return () => {
       electron.ipcRenderer.removeListener('file-opened', fileOpened);
       electron.ipcRenderer.removeListener('close-file', closeFile2);
+      electron.ipcRenderer.removeListener('close-batch-files', closeBatch2);
       electron.ipcRenderer.removeListener('html5ify', userHtml5ifyCurrentFile);
       electron.ipcRenderer.removeListener('show-merge-dialog', showOpenAndMergeDialog2);
       electron.ipcRenderer.removeListener('set-start-offset', setStartOffset);
@@ -1920,7 +1970,7 @@ const App = memo(() => {
     mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile,
     extractAllStreams, userOpenFiles, openSendReportDialogWithState, setWorking,
     loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, ensureOutDirAccessible, html5ifyAndLoad, html5ify,
-    loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFile, clearSegments, fixInvalidDuration, invertAllCutSegments,
+    loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFile, closeBatch, clearSegments, fixInvalidDuration, invertAllCutSegments,
   ]);
 
   async function showAddStreamSourceDialog() {
@@ -2058,7 +2108,8 @@ const App = memo(() => {
     return () => window.removeEventListener('keydown', keyScrollPreventer);
   }, []);
 
-  const sideBarWidth = showSideBar && isFileOpened ? 200 : 0;
+  const rightBarWidth = showRightBar && isFileOpened ? 200 : 0;
+  const leftBarWidth = batchFiles.length > 0 ? 200 : 0;
 
   const bottomBarHeight = 96 + ((hasAudio && waveformEnabled) || (hasVideo && thumbnailsEnabled) ? timelineHeight : 0);
 
@@ -2173,7 +2224,7 @@ const App = memo(() => {
           />
         </div>
 
-        {!isFileOpened && <NoFileLoaded topBarHeight={topBarHeight} bottomBarHeight={bottomBarHeight} mifiLink={mifiLink} toggleHelp={toggleHelp} currentCutSeg={currentCutSeg} simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} />}
+        {!isFileOpened && <NoFileLoaded top={topBarHeight} bottom={bottomBarHeight} left={leftBarWidth} mifiLink={mifiLink} toggleHelp={toggleHelp} currentCutSeg={currentCutSeg} simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} />}
 
         <AnimatePresence>
           {working && (
@@ -2210,7 +2261,7 @@ const App = memo(() => {
           )}
         </AnimatePresence>
 
-        <div className="no-user-select" style={{ position: 'absolute', top: topBarHeight, left: 0, right: sideBarWidth, bottom: bottomBarHeight, visibility: !isFileOpened ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
+        <div className="no-user-select" style={{ position: 'absolute', top: topBarHeight, left: leftBarWidth, right: rightBarWidth, bottom: bottomBarHeight, visibility: !isFileOpened ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
           {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
           <video
             muted={playbackVolume === 0}
@@ -2231,7 +2282,7 @@ const App = memo(() => {
 
         {isRotationSet && !hideCanvasPreview && (
           <div style={{
-            position: 'absolute', top: topBarHeight, marginTop: '1em', marginRight: '1em', right: sideBarWidth, color: 'white',
+            position: 'absolute', top: topBarHeight, marginTop: '1em', marginRight: '1em', right: rightBarWidth, left: leftBarWidth, color: 'white',
           }}
           >
             {t('Rotation preview')}
@@ -2239,36 +2290,66 @@ const App = memo(() => {
           </div>
         )}
 
+        <AnimatePresence>
+          {batchFiles.length > 0 && (
+            <motion.div
+              style={{ position: 'absolute', width: leftBarWidth, left: 0, bottom: bottomBarHeight, top: topBarHeight, background: timelineBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column' }}
+              initial={{ x: -leftBarWidth }}
+              animate={{ x: 0 }}
+              exit={{ x: -leftBarWidth }}
+            >
+              <div style={{ background: controlsBackground, fontSize: 14, paddingBottom: 7, paddingTop: 3, paddingLeft: 10, paddingRight: 5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                {t('Batch file list')}
+                <FaTimes size={18} role="button" style={{ cursor: 'pointer', color: 'white' }} onClick={() => closeBatch()} title={t('Close batch')} />
+              </div>
+
+              <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
+                {batchFiles.map(({ path, name }) => {
+                  const isCurrent = path === filePath;
+                  return (
+                    <div role="button" style={{ background: isCurrent ? 'rgba(255,255,255,0.15)' : undefined, fontSize: 13, padding: '1px 3px', cursor: 'pointer', display: 'flex', alignItems: 'center', minHeight: 30, alignContent: 'flex-start' }} key={path} title={path} onClick={() => batchOpenSingleFile(path)}>
+                      <FaFile size={14} style={{ color: primaryColor, marginLeft: 3, marginRight: 4, flexShrink: 0 }} />
+                      <div style={{ wordBreak: 'break-all' }}>{name}</div>
+                      <div style={{ flexGrow: 1 }} />
+                      {isCurrent && <FaAngleRight size={14} style={{ color: 'white', marginRight: -3, flexShrink: 0 }} />}
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {isFileOpened && (
           <>
             <div
               className="no-user-select"
               style={{
-                position: 'absolute', right: sideBarWidth, bottom: bottomBarHeight, marginBottom: 10, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center',
+                position: 'absolute', right: rightBarWidth, bottom: bottomBarHeight, marginBottom: 10, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center',
               }}
             >
               <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} usingDummyVideo={usingDummyVideo} />
 
               {subtitleStreams.length > 0 && <SubtitleControl subtitleStreams={subtitleStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} onActiveSubtitleChange={onActiveSubtitleChange} />}
 
-              {!showSideBar && (
+              {!showRightBar && (
                 <FaAngleLeft
                   title={t('Show sidebar')}
                   size={30}
                   role="button"
                   style={{ marginRight: 10 }}
-                  onClick={toggleSideBar}
+                  onClick={toggleRightBar}
                 />
               )}
             </div>
 
             <AnimatePresence>
-              {showSideBar && (
+              {showRightBar && (
                 <motion.div
-                  style={{ position: 'absolute', width: sideBarWidth, right: 0, bottom: bottomBarHeight, top: topBarHeight, background: controlsBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column' }}
-                  initial={{ x: sideBarWidth }}
+                  style={{ position: 'absolute', width: rightBarWidth, right: 0, bottom: bottomBarHeight, top: topBarHeight, background: controlsBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column' }}
+                  initial={{ x: rightBarWidth }}
                   animate={{ x: 0 }}
-                  exit={{ x: sideBarWidth }}
+                  exit={{ x: rightBarWidth }}
                 >
                   <SegmentList
                     simpleMode={simpleMode}
@@ -2286,7 +2367,7 @@ const App = memo(() => {
                     segmentAtCursor={segmentAtCursor}
                     addCutSegment={addCutSegment}
                     removeCutSegment={removeCutSegment}
-                    toggleSideBar={toggleSideBar}
+                    toggleSideBar={toggleRightBar}
                     splitCurrentSegment={splitCurrentSegment}
                     enabledOutSegmentsRaw={enabledOutSegmentsRaw}
                     enabledOutSegments={enabledOutSegments}

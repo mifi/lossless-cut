@@ -84,6 +84,10 @@ const HelpSheet = memo(({ visible, onTogglePress, ffmpegCommandLog, currentCutSe
         <div><kbd>C</kbd> {t('Capture snapshot')}</div>
         <div><kbd>D</kbd> {t('Delete source file')}</div>
 
+        <h2>{t('Batch file list')}</h2>
+        <div><kbd>SHIFT</kbd> + <kbd>↑</kbd> {t('Previous file')}</div>
+        <div><kbd>SHIFT</kbd> + <kbd>↓</kbd> {t('Next file')}</div>
+
         <p style={{ fontWeight: 'bold' }}>{t('Hover mouse over buttons in the main interface to see which function they have')}</p>
 
         <h1 style={{ marginTop: 40 }}>{t('Last ffmpeg commands')}</h1>

@@ -29,6 +29,12 @@ module.exports = (app, mainWindow, newVersion) => {
             mainWindow.webContents.send('close-file');
           },
         },
+        {
+          label: i18n.t('Close batch'),
+          async click() {
+            mainWindow.webContents.send('close-batch-files');
+          },
+        },
         { type: 'separator' },
         {
           label: i18n.t('Import project (LLC)...'),

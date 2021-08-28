@@ -352,12 +352,6 @@ export function openAbout() {
 }
 
 export async function showMergeDialog(paths, onMergeClick) {
-  if (!paths) return;
-  if (paths.length < 2) {
-    errorToast(i18n.t('More than one file must be selected'));
-    return;
-  }
-
   let swalElem;
   let outPaths = paths;
   let allStreams = false;
@@ -382,6 +376,28 @@ export async function showMergeDialog(paths, onMergeClick) {
   }
 }
 
+export async function showMultipleFilesDialog(paths, onMergeClick, onBatchLoadFilesClick) {
+  const { isConfirmed, isDenied } = await Swal.fire({
+    showCloseButton: true,
+    showDenyButton: true,
+    denyButtonAriaLabel: '',
+    denyButtonColor: '#7367f0',
+    denyButtonText: i18n.t('Batch files'),
+    confirmButtonText: i18n.t('Merge/concatenate files'),
+    title: i18n.t('Multiple files'),
+    text: i18n.t('Do you want to merge/concatenate the files or load them for batch processing?'),
+  });
+
+  if (isDenied) {
+    await onBatchLoadFilesClick(paths);
+    return;
+  }
+
+  if (isConfirmed) {
+    await showMergeDialog(paths, onMergeClick);
+  }
+}
+
 export async function showOpenAndMergeDialog({ defaultPath, onMergeClick }) {
   const title = i18n.t('Please select files to be merged');
   const message = i18n.t('Please select files to be merged. The files need to be of the exact same format and codecs');
@@ -391,7 +407,12 @@ export async function showOpenAndMergeDialog({ defaultPath, onMergeClick }) {
     properties: ['openFile', 'multiSelections'],
     message,
   });
-  if (canceled) return;
+  if (canceled || !filePaths) return;
+
+  if (filePaths.length < 2) {
+    errorToast(i18n.t('More than one file must be selected'));
+    return;
+  }
 
   showMergeDialog(filePaths, onMergeClick);
 }
