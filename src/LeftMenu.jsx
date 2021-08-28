@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import SimpleModeButton from './components/SimpleModeButton';
 import { withBlur, toast } from './util';
 
-const electron = window.require('electron');
 const isDev = window.require('electron-is-dev');
 const start = new Date().getTime();
 const zoomOptions = Array(13).fill().map((unused, z) => 2 ** z);
