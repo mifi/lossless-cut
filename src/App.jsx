@@ -40,16 +40,17 @@ import TimelineControls from './TimelineControls';
 import ExportConfirm from './ExportConfirm';
 import ValueTuner from './components/ValueTuner';
 import VolumeControl from './components/VolumeControl';
+import SubtitleControl from './components/SubtitleControl';
 import { loadMifiLink } from './mifi';
 import { primaryColor, controlsBackground } from './colors';
 import allOutFormats from './outFormats';
 import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
-  getDefaultOutFormat, getFormatData, renderThumbnails as ffmpegRenderThumbnails,
+  readFileMeta, getFormatData, renderThumbnails as ffmpegRenderThumbnails,
   extractStreams, getAllStreams,
   isStreamThumbnail, isAudioDefinitelyNotSupported, isIphoneHevc, tryReadChaptersToEdl,
-  getDuration, getTimecodeFromStreams, createChaptersFromSegments,
+  getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
 } from './ffmpeg';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, readEdl } from './edlStore';
 import { formatYouTube } from './edlFormats';
@@ -133,6 +134,8 @@ const App = memo(() => {
   const [shortestFlag, setShortestFlag] = useState(false);
   const [zoomWindowStartTime, setZoomWindowStartTime] = useState(0);
   const [disabledSegmentIds, setDisabledSegmentIds] = useState({});
+  const [subtitlesByStreamId, setSubtitlesByStreamId] = useState({});
+  const [activeSubtitleStreamIndex, setActiveSubtitleStreamIndex] = useState();
 
   // State per application launch
   const [keyframesEnabled, setKeyframesEnabled] = useState(true);
@@ -672,7 +675,33 @@ const App = memo(() => {
     !!(copyStreamIdsByFile[path] || {})[streamId]
   ), [copyStreamIdsByFile]);
 
-  const copyAnyAudioTrack = mainStreams.some(stream => isCopyingStreamId(filePath, stream.index) && stream.codec_type === 'audio');
+  const copyAnyAudioTrack = useMemo(() => mainStreams.some(stream => isCopyingStreamId(filePath, stream.index) && stream.codec_type === 'audio'), [filePath, isCopyingStreamId, mainStreams]);
+
+  const subtitleStreams = useMemo(() => mainStreams.filter((stream) => stream.codec_type === 'subtitle'), [mainStreams]);
+  const activeSubtitle = useMemo(() => subtitlesByStreamId[activeSubtitleStreamIndex], [activeSubtitleStreamIndex, subtitlesByStreamId]);
+
+  const onActiveSubtitleChange = useCallback(async (index) => {
+    if (index == null) {
+      setActiveSubtitleStreamIndex();
+      return;
+    }
+    if (subtitlesByStreamId[index]) { // Already loaded
+      setActiveSubtitleStreamIndex(index);
+      return;
+    }
+    const subtitleStream = index != null && subtitleStreams.find((s) => s.index === index);
+    if (!subtitleStream || workingRef.current) return;
+    try {
+      setWorking(i18n.t('Loading subtitle'));
+      const url = await extractSubtitleTrack(filePath, index);
+      setSubtitlesByStreamId((old) => ({ ...old, [index]: { url, lang: subtitleStream.tags && subtitleStream.tags.language } }));
+      setActiveSubtitleStreamIndex(index);
+    } catch (err) {
+      handleError(`Failed to extract subtitles for stream ${index}`, err.message);
+    } finally {
+      setWorking();
+    }
+  }, [setWorking, subtitleStreams, subtitlesByStreamId, filePath]);
 
   // Streams that are not copy enabled by default
   const extraStreams = useMemo(() => mainStreams
@@ -760,6 +789,15 @@ const App = memo(() => {
     thumnailsRef.current = thumbnails;
   }, [thumbnails]);
 
+  // Cleanup removed subtitles
+  const subtitlesByStreamIdRef = useRef({});
+  useEffect(() => {
+    Object.values(thumnailsRef.current).forEach(({ url }) => {
+      if (!Object.values(subtitlesByStreamId).some(t => t.url === url)) URL.revokeObjectURL(url);
+    });
+    subtitlesByStreamIdRef.current = subtitlesByStreamId;
+  }, [subtitlesByStreamId]);
+
   const hasAudio = !!mainAudioStream;
   const hasVideo = !!mainVideoStream;
   const shouldShowKeyframes = keyframesEnabled && !!mainVideoStream && calcShouldShowKeyframes(zoomedDuration);
@@ -805,6 +843,8 @@ const App = memo(() => {
     setShortestFlag(false);
     setZoomWindowStartTime(0);
     setHideCanvasPreview(false);
+    setSubtitlesByStreamId({});
+    setActiveSubtitleStreamIndex();
 
     setExportConfirmVisible(false);
 
@@ -1257,27 +1297,8 @@ const App = memo(() => {
       return true;
     }
 
-    async function getFileMeta() {
-      try {
-        const fd = await getFormatData(fp);
-        const ff = await getDefaultOutFormat(fp, fd);
-        const allStreamsResponse = await getAllStreams(fp);
-        const { streams } = allStreamsResponse;
-        // console.log(streams, fd, ff);
-        return { fd, ff, streams };
-      } catch (err) {
-        // Windows will throw error with code ENOENT if format detection fails.
-        if (err.exitCode === 1 || (isWindows && err.code === 'ENOENT')) {
-          const err2 = new Error(`Unsupported file: ${err.message}`);
-          err2.code = 'LLC_FFPROBE_UNSUPPORTED_FILE';
-          throw err2;
-        }
-        throw err;
-      }
-    }
-
     try {
-      const { ff, fd, streams } = await getFileMeta();
+      const { ff, fd, streams } = await readFileMeta(fp);
 
       if (!ff) throw new Error('Unable to determine file format');
 
@@ -1288,6 +1309,7 @@ const App = memo(() => {
 
       const videoStream = streams.find(stream => stream.codec_type === 'video' && !isStreamThumbnail(stream));
       const audioStream = streams.find(stream => stream.codec_type === 'audio');
+
       setMainVideoStream(videoStream);
       setMainAudioStream(audioStream);
       if (videoStream) {
@@ -2081,7 +2103,12 @@ const App = memo(() => {
     return <ValueTuner title={title} style={{ bottom: bottomBarHeight }} value={value} setValue={setValue} onFinished={() => setTunerVisible()} max={max} min={min} resetToDefault={resetToDefault} />;
   }
 
-  // throw new Error('Test');
+  function renderSubtitles() {
+    if (!activeSubtitle) return null;
+    return <track default kind="subtitles" label={activeSubtitle.lang} srcLang="en" src={activeSubtitle.url} />;
+  }
+
+  // throw new Error('Test error boundary');
 
   return (
     <ThemeProvider value={theme}>
@@ -2195,7 +2222,9 @@ const App = memo(() => {
             onDurationChange={onDurationChange}
             onTimeUpdate={onTimeUpdate}
             onError={onVideoError}
-          />
+          >
+            {renderSubtitles()}
+          </video>
 
           {canvasPlayerEnabled && <Canvas rotate={effectiveRotation} filePath={filePath} width={mainVideoStream.width} height={mainVideoStream.height} streamIndex={mainVideoStream.index} playerTime={playerTime} commandedTime={commandedTime} playing={playing} />}
         </div>
@@ -2220,12 +2249,14 @@ const App = memo(() => {
             >
               <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} usingDummyVideo={usingDummyVideo} />
 
+              {subtitleStreams.length > 0 && <SubtitleControl subtitleStreams={subtitleStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} onActiveSubtitleChange={onActiveSubtitleChange} />}
+
               {!showSideBar && (
                 <FaAngleLeft
                   title={t('Show sidebar')}
                   size={30}
                   role="button"
-                  style={{ margin: '0 7px' }}
+                  style={{ marginRight: 10 }}
                   onClick={toggleSideBar}
                 />
               )}

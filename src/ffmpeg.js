@@ -264,6 +264,26 @@ export async function getAllStreams(filePath) {
   return JSON.parse(stdout);
 }
 
+export async function readFileMeta(filePath) {
+  try {
+    const fd = await getFormatData(filePath);
+    const ff = await getDefaultOutFormat(filePath, fd);
+    const allStreamsResponse = await getAllStreams(filePath);
+    const { streams } = allStreamsResponse;
+    // console.log(streams, fd, ff);
+    return { fd, ff, streams };
+  } catch (err) {
+    // Windows will throw error with code ENOENT if format detection fails.
+    if (err.exitCode === 1 || (isWindows && err.code === 'ENOENT')) {
+      const err2 = new Error(`Unsupported file: ${err.message}`);
+      err2.code = 'LLC_FFPROBE_UNSUPPORTED_FILE';
+      throw err2;
+    }
+    throw err;
+  }
+}
+
+
 function getPreferredCodecFormat({ codec_name: codec, codec_type: type }) {
   const map = {
     mp3: 'mp3',
@@ -390,6 +410,22 @@ async function renderThumbnail(filePath, timestamp) {
   const { stdout } = await execa(ffmpegPath, args, { encoding: null });
 
   const blob = new Blob([stdout], { type: 'image/jpeg' });
+  return URL.createObjectURL(blob);
+}
+
+export async function extractSubtitleTrack(filePath, streamId) {
+  const args = [
+    '-hide_banner',
+    '-i', filePath,
+    '-map', `0:${streamId}`,
+    '-f', 'webvtt',
+    '-',
+  ];
+
+  const ffmpegPath = await getFfmpegPath();
+  const { stdout } = await execa(ffmpegPath, args, { encoding: null });
+
+  const blob = new Blob([stdout], { type: 'text/vtt' });
   return URL.createObjectURL(blob);
 }
 

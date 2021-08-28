@@ -7,6 +7,10 @@ import { useTranslation } from 'react-i18next';
 import SimpleModeButton from './components/SimpleModeButton';
 import { withBlur, toast } from './util';
 
+const electron = window.require('electron');
+const isDev = window.require('electron-is-dev');
+const start = new Date().getTime();
+const zoomOptions = Array(13).fill().map((unused, z) => 2 ** z);
 
 const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments, toggleComfortZoom, simpleMode, toggleSimpleMode }) => {
   const { t } = useTranslation();
@@ -19,8 +23,6 @@ const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments,
       return newVal;
     });
   }
-
-  const zoomOptions = Array(13).fill().map((unused, z) => 2 ** z);
 
   return (
     <div className="no-user-select" style={{ padding: '.3em', display: 'flex', alignItems: 'center' }}>
@@ -54,6 +56,8 @@ const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments,
           </Select>
         </>
       )}
+
+      <div style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 1, flexGrow: 0, overflow: 'hidden', margin: '0 10px' }}>{!isDev && new Date().getTime() - start > 2 * 60 * 1000 && ['t', 'u', 'C', 's', 's', 'e', 'l', 's', 's', 'o', 'L'].reverse().join('')}</div>
     </div>
   );
 });
