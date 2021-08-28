@@ -315,5 +315,16 @@
     "File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview with audio.": "Arquivo sem suporte nativo. A pré-visualização pode não ter áudio ou ter baixa qualidade. A exportação final, no entanto, será sem perdas com áudio. Você pode convertê-lo a partir do menu para uma melhor visualização com áudio.",
     "Advanced view disabled. You will now see only the most essential buttons and functions": "Visualização avançada desabilitada. Você verá agora somente os botões e funções mais essenciais",
     "Advanced view has been enabled. You will now also see non-essential buttons and functions": "A visualização avançada foi habilitada. Você agora também verá botões e funções não essenciais",
-    "Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut": "Agora cortará na posição exata, mas pode deixar uma parte vazia no início do arquivo. Você pode ter que definir o ponto de corte alguns quadros antes do próximo quadro-chave para obter um corte preciso."
+    "Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut": "Agora cortará na posição exata, mas pode deixar uma parte vazia no início do arquivo. Você pode ter que definir o ponto de corte alguns quadros antes do próximo quadro-chave para obter um corte preciso.",
+    "Loaded existing preview file: {{ fileName }}": "Arquivo de pré-visualização existente carregado: {{ fileName }}",
+    "Help": "Ajuda",
+    "Toggle Developer Tools": "Alternar ferramentas de desenvolvedor",
+    "Minimize": "Minimizar",
+    "Toggle Full Screen": "Alternar tela cheia",
+    "Select All": "Selecionar tudo",
+    "Cut": "Recortar",
+    "Paste": "Colar",
+    "Copy": "Copiar",
+    "Redo": "Refazer",
+    "Undo": "Desfazer"
 }
