@@ -445,6 +445,7 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
   const { from, to } = getIntervalAroundTime(aroundTime, window);
 
   const args1 = [
+    '-hide_banner',
     '-i', filePath,
     '-ss', from,
     '-t', to - from,
@@ -456,6 +457,7 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
   ];
 
   const args2 = [
+    '-hide_banner',
     '-i', '-',
     '-filter_complex', `aformat=channel_layouts=mono,showwavespic=s=640x120:scale=sqrt:colors=${color}`,
     '-frames:v', '1',
