@@ -816,44 +816,46 @@ const App = memo(() => {
     video.currentTime = 0;
     video.playbackRate = 1;
 
-    // setWorking();
-    setFileNameTitle();
-    setPreviewFilePath();
-    setUsingDummyVideo(false);
-    setPlaying(false);
-    setDuration();
-    cutSegmentsHistory.go(0);
-    setCutSegments(createInitialCutSegments()); // TODO this will cause two history items
-    setCutStartTimeManual();
-    setCutEndTimeManual();
-    setFileFormat();
-    setFileFormatData();
-    setDetectedFileFormat();
-    setRotation(360);
-    setCutProgress();
-    setStartTimeOffset(0);
-    setFilePath(''); // Setting video src="" prevents memory leak in chromium
-    setExternalStreamFiles([]);
-    setCustomTagsByFile({});
-    setCustomTagsByStreamId({});
-    setDisabledSegmentIds({});
-    setDetectedFps();
-    setMainStreams([]);
-    setMainVideoStream();
-    setMainAudioStream();
-    setCopyStreamIdsByFile({});
-    setStreamsSelectorShown(false);
-    setZoom(1);
-    setShortestFlag(false);
-    setZoomWindowStartTime(0);
-    setHideCanvasPreview(false);
-    setSubtitlesByStreamId({});
-    setActiveSubtitleStreamIndex();
+    batchedUpdates(() => {
+      // setWorking();
+      setFileNameTitle();
+      setPreviewFilePath();
+      setUsingDummyVideo(false);
+      setPlaying(false);
+      setDuration();
+      cutSegmentsHistory.go(0);
+      setCutSegments(createInitialCutSegments()); // TODO this will cause two history items
+      setCutStartTimeManual();
+      setCutEndTimeManual();
+      setFileFormat();
+      setFileFormatData();
+      setDetectedFileFormat();
+      setRotation(360);
+      setCutProgress();
+      setStartTimeOffset(0);
+      setFilePath(''); // Setting video src="" prevents memory leak in chromium
+      setExternalStreamFiles([]);
+      setCustomTagsByFile({});
+      setCustomTagsByStreamId({});
+      setDisabledSegmentIds({});
+      setDetectedFps();
+      setMainStreams([]);
+      setMainVideoStream();
+      setMainAudioStream();
+      setCopyStreamIdsByFile({});
+      setStreamsSelectorShown(false);
+      setZoom(1);
+      setShortestFlag(false);
+      setZoomWindowStartTime(0);
+      setHideCanvasPreview(false);
+      setSubtitlesByStreamId({});
+      setActiveSubtitleStreamIndex();
 
-    setExportConfirmVisible(false);
+      setExportConfirmVisible(false);
 
-    setThumbnails([]);
-    cancelRenderThumbnails();
+      setThumbnails([]);
+      cancelRenderThumbnails();
+    });
   }, [cutSegmentsHistory, setCutSegments, cancelRenderThumbnails]);
 
 
@@ -1319,20 +1321,12 @@ const App = memo(() => {
 
       if (!ff) throw new Error('Unable to determine file format');
 
-      if (autoLoadTimecode) {
-        const timecode = getTimecodeFromStreams(streams);
-        if (timecode) setStartTimeOffset(timecode);
-      }
+      const timecode = autoLoadTimecode ? getTimecodeFromStreams(streams) : undefined;
 
       const videoStream = streams.find(stream => stream.codec_type === 'video' && !isStreamThumbnail(stream));
       const audioStream = streams.find(stream => stream.codec_type === 'audio');
 
-      setMainVideoStream(videoStream);
-      setMainAudioStream(audioStream);
-      if (videoStream) {
-        const streamFps = getStreamFps(videoStream);
-        if (streamFps != null) setDetectedFps(streamFps);
-      }
+      const detectedFpsNew = videoStream ? getStreamFps(videoStream) : undefined;
 
       const shouldCopyStreamByDefault = (stream) => {
         if (!defaultProcessedCodecTypes.includes(stream.codec_type)) return false;
@@ -1342,15 +1336,12 @@ const App = memo(() => {
         return true;
       };
 
-      setMainStreams(streams);
-      setCopyStreamIdsForPath(fp, () => fromPairs(streams.map((stream) => [
+      const copyStreamIdsForPathNew = fromPairs(streams.map((stream) => [
         stream.index, shouldCopyStreamByDefault(stream),
-      ])));
+      ]));
 
-      setFileNameTitle(fp);
-      setFileFormat(outFormatLocked || ff);
-      setDetectedFileFormat(ff);
-      setFileFormatData(fd);
+      if (timecode) setStartTimeOffset(timecode);
+      if (detectedFpsNew != null) setDetectedFps(detectedFpsNew);
 
       if (isAudioDefinitelyNotSupported(streams)) {
         toast.fire({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
@@ -1391,10 +1382,21 @@ const App = memo(() => {
 
       if (!validDuration) toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
 
-      // This needs to be last, because it triggers <video> to load the video
-      // If not, onVideoError might be triggered before setWorking() has been cleared.
-      // https://github.com/mifi/lossless-cut/issues/515
-      setFilePath(fp);
+      batchedUpdates(() => {
+        setMainStreams(streams);
+        setMainVideoStream(videoStream);
+        setMainAudioStream(audioStream);
+        setCopyStreamIdsForPath(fp, () => copyStreamIdsForPathNew);
+        setFileNameTitle(fp);
+        setFileFormat(outFormatLocked || ff);
+        setDetectedFileFormat(ff);
+        setFileFormatData(fd);
+
+        // This needs to be last, because it triggers <video> to load the video
+        // If not, onVideoError might be triggered before setWorking() has been cleared.
+        // https://github.com/mifi/lossless-cut/issues/515
+        setFilePath(fp);
+      });
     } catch (err) {
       resetState();
       throw err;
