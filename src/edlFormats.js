@@ -5,6 +5,7 @@ import csvParse from 'csv-parse';
 import pify from 'pify';
 import sortBy from 'lodash/sortBy';
 
+import _ from 'lodash';
 import { formatDuration } from './util/duration';
 import { invertSegments, sortSegments } from './segments';
 
@@ -107,8 +108,17 @@ export function parsePbf(text) {
 // https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/FinalCutPro_XML/VersionsoftheInterchangeFormat/VersionsoftheInterchangeFormat.html
 export function parseXmeml(xmlStr) {
   const xml = fastXmlParser.parse(xmlStr);
+
   // TODO maybe support media.audio also?
-  return xml.xmeml.project.children.sequence.media.video.track.clipitem.map((item) => ({ start: item.start / item.rate.timebase, end: item.end / item.rate.timebase }));
+  if (!_.property('xmeml')(xml)) {
+    throw Error('Root element <xmeml> not found in file');
+  } else if (_.property('xmeml.project.children.sequence.media.video.track.clipitem')(xml)) {
+    return xml.xmeml.project.children.sequence.media.video.track.clipitem.map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
+  } else if (_.property('xmeml.sequence.media.video.track.clipitem')(xml)) {
+    return xml.xmeml.sequence.media.video.track.clipitem.map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
+  } else {
+    throw Error('No <clipitem> elements found in file');
+  }
 }
 
 export function parseYouTube(str) {
