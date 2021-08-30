@@ -165,7 +165,7 @@ export function findNearestKeyFrameTime({ frames, time, direction, fps }) {
 
 export async function tryReadChaptersToEdl(filePath) {
   try {
-    const { stdout } = await runFfprobe(['-i', filePath, '-show_chapters', '-print_format', 'json']);
+    const { stdout } = await runFfprobe(['-i', filePath, '-show_chapters', '-print_format', 'json', '-hide_banner']);
     return JSON.parse(stdout).chapters.map((chapter) => {
       const start = parseFloat(chapter.start_time);
       const end = parseFloat(chapter.end_time);
@@ -189,7 +189,7 @@ export async function getFormatData(filePath) {
   console.log('getFormatData', filePath);
 
   const { stdout } = await runFfprobe([
-    '-of', 'json', '-show_format', '-i', filePath,
+    '-of', 'json', '-show_format', '-i', filePath, '-hide_banner',
   ]);
   return JSON.parse(stdout).format;
 }
@@ -248,19 +248,45 @@ export async function getDefaultOutFormat(filePath, formatData) {
   const bytes = await readChunk(filePath, 0, 4100);
   const ft = fileType(bytes) || {};
   console.log(`fileType detected format ${JSON.stringify(ft)}`);
-  const assumedFormat = determineOutputFormat(formats, ft);
+  let assumedFormat = determineOutputFormat(formats, ft);
+
+  // https://github.com/mifi/lossless-cut/issues/367
+  if (assumedFormat === 'mp4' && formatData.tags && formatData.tags.major_brand === 'XAVC') assumedFormat = 'mov';
+
   return mapFormat(assumedFormat);
 }
 
 export async function getAllStreams(filePath) {
   const { stdout } = await runFfprobe([
-    '-of', 'json', '-show_entries', 'stream', '-i', filePath,
+    '-of', 'json', '-show_entries', 'stream', '-i', filePath, '-hide_banner',
   ]);
 
   return JSON.parse(stdout);
 }
 
-function getPreferredCodecFormat(codec, type) {
+export async function readFileMeta(filePath) {
+  try {
+    const [formatData, allStreamsResponse] = await Promise.all([
+      getFormatData(filePath),
+      getAllStreams(filePath),
+    ]);
+    const fileFormat = await getDefaultOutFormat(filePath, formatData);
+    const { streams } = allStreamsResponse;
+    // console.log(streams, formatData, fileFormat);
+    return { formatData, fileFormat, streams };
+  } catch (err) {
+    // Windows will throw error with code ENOENT if format detection fails.
+    if (err.exitCode === 1 || (isWindows && err.code === 'ENOENT')) {
+      const err2 = new Error(`Unsupported file: ${err.message}`);
+      err2.code = 'LLC_FFPROBE_UNSUPPORTED_FILE';
+      throw err2;
+    }
+    throw err;
+  }
+}
+
+
+function getPreferredCodecFormat({ codec_name: codec, codec_type: type }) {
   const map = {
     mp3: 'mp3',
     opus: 'opus',
@@ -289,21 +315,12 @@ function getPreferredCodecFormat(codec, type) {
   return undefined;
 }
 
-// https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
-export async function extractStreams({ filePath, customOutDir, streams }) {
-  const outStreams = streams.map((s) => ({
-    index: s.index,
-    codec: s.codec_name || s.codec_tag_string || s.codec_type,
-    type: s.codec_type,
-    format: getPreferredCodecFormat(s.codec_name, s.codec_type),
-  }))
-    .filter(it => it && it.format && it.index != null);
+async function extractNonAttachmentStreams({ customOutDir, filePath, streams }) {
+  if (streams.length === 0) return;
 
-  // console.log(outStreams);
+  console.log('Extracting', streams.length, 'normal streams');
 
-  const streamArgs = flatMap(outStreams, ({
-    index, codec, type, format: { format, ext },
-  }) => [
+  const streamArgs = flatMap(streams, ({ index, codec, type, format: { format, ext } }) => [
     '-map', `0:${index}`, '-c', 'copy', '-f', format, '-y', getOutPath(customOutDir, filePath, `stream-${index}-${type}-${codec}.${ext}`),
   ]);
 
@@ -314,9 +331,61 @@ export async function extractStreams({ filePath, customOutDir, streams }) {
     ...streamArgs,
   ];
 
-  // TODO progress
   const { stdout } = await runFfmpeg(ffmpegArgs);
   console.log(stdout);
+}
+
+async function extractAttachmentStreams({ customOutDir, filePath, streams }) {
+  if (streams.length === 0) return;
+
+  console.log('Extracting', streams.length, 'attachment streams');
+
+  const streamArgs = flatMap(streams, ({ index, codec_name: codec, codec_type: type }) => {
+    const ext = codec || 'bin';
+    return [
+      `-dump_attachment:${index}`, getOutPath(customOutDir, filePath, `stream-${index}-${type}-${codec}.${ext}`),
+    ];
+  });
+
+  const ffmpegArgs = [
+    '-y',
+    '-hide_banner',
+    '-loglevel', 'error',
+    ...streamArgs,
+    '-i', filePath,
+  ];
+
+  try {
+    const { stdout } = await runFfmpeg(ffmpegArgs);
+    console.log(stdout);
+  } catch (err) {
+    // Unfortunately ffmpeg will exit with code 1 even though it's a success
+    // Note: This is kind of hacky:
+    if (err.exitCode === 1 && typeof err.stderr === 'string' && err.stderr.includes('At least one output file must be specified')) return;
+    throw err;
+  }
+}
+
+// https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
+export async function extractStreams({ filePath, customOutDir, streams }) {
+  const attachmentStreams = streams.filter((s) => s.codec_type === 'attachment');
+  const nonAttachmentStreams = streams.filter((s) => s.codec_type !== 'attachment');
+
+  const outStreams = nonAttachmentStreams.map((s) => ({
+    index: s.index,
+    codec: s.codec_name || s.codec_tag_string || s.codec_type,
+    type: s.codec_type,
+    format: getPreferredCodecFormat(s),
+  }))
+    .filter(it => it && it.format && it.index != null);
+
+  // console.log(outStreams);
+
+  // TODO progress
+
+  // Attachment streams are handled differently from normal streams
+  await extractNonAttachmentStreams({ customOutDir, filePath, streams: outStreams });
+  await extractAttachmentStreams({ customOutDir, filePath, streams: attachmentStreams });
 }
 
 async function renderThumbnail(filePath, timestamp) {
@@ -334,6 +403,22 @@ async function renderThumbnail(filePath, timestamp) {
   const { stdout } = await execa(ffmpegPath, args, { encoding: null });
 
   const blob = new Blob([stdout], { type: 'image/jpeg' });
+  return URL.createObjectURL(blob);
+}
+
+export async function extractSubtitleTrack(filePath, streamId) {
+  const args = [
+    '-hide_banner',
+    '-i', filePath,
+    '-map', `0:${streamId}`,
+    '-f', 'webvtt',
+    '-',
+  ];
+
+  const ffmpegPath = await getFfmpegPath();
+  const { stdout } = await execa(ffmpegPath, args, { encoding: null });
+
+  const blob = new Blob([stdout], { type: 'text/vtt' });
   return URL.createObjectURL(blob);
 }
 
@@ -362,6 +447,7 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
   const { from, to } = getIntervalAroundTime(aroundTime, window);
 
   const args1 = [
+    '-hide_banner',
     '-i', filePath,
     '-ss', from,
     '-t', to - from,
@@ -373,6 +459,7 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
   ];
 
   const args2 = [
+    '-hide_banner',
     '-i', '-',
     '-filter_complex', `aformat=channel_layouts=mono,showwavespic=s=640x120:scale=sqrt:colors=${color}`,
     '-frames:v', '1',
@@ -464,11 +551,13 @@ export function isStreamThumbnail(stream) {
   return stream && stream.disposition && stream.disposition.attached_pic === 1;
 }
 
-export function isAudioSupported(streams) {
-  const audioStreams = streams.filter(stream => stream.codec_type === 'audio');
-  if (audioStreams.length === 0) return true;
+const getAudioStreams = (streams) => streams.filter(stream => stream.codec_type === 'audio');
+
+export function isAudioDefinitelyNotSupported(streams) {
+  const audioStreams = getAudioStreams(streams);
+  if (audioStreams.length === 0) return false;
   // TODO this could be improved
-  return audioStreams.some(stream => !['ac3'].includes(stream.codec_name));
+  return audioStreams.every(stream => ['ac3'].includes(stream.codec_name));
 }
 
 export function isIphoneHevc(format, streams) {

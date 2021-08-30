@@ -20,7 +20,7 @@ const defaults = {
   askBeforeClose: false,
   enableAskForImportChapters: true,
   enableAskForFileOpenAction: true,
-  muted: false,
+  playbackVolume: 1,
   autoSaveProjectFile: true,
   wheelSensitivity: 0.2,
   language: undefined,

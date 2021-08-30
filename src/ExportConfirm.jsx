@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button, Select } from 'evergreen-ui';
+import { Button, Select, CrossIcon } from 'evergreen-ui';
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
 import { IoIosHelpCircle } from 'react-icons/io';
@@ -30,7 +30,7 @@ const sheetStyle = {
   display: 'flex',
 };
 
-const boxStyle = { margin: '15px 15px 50px 15px', background: 'rgba(25, 25, 25, 0.6)', borderRadius: 10, padding: '10px 20px', minHeight: 450 };
+const boxStyle = { margin: '15px 15px 50px 15px', background: 'rgba(25, 25, 25, 0.6)', borderRadius: 10, padding: '10px 20px', minHeight: 450, position: 'relative' };
 
 const outDirStyle = { background: 'rgb(193, 98, 0)', borderRadius: '.4em', padding: '0 .3em', wordBreak: 'break-all', cursor: 'pointer' };
 
@@ -111,6 +111,8 @@ const ExportConfirm = memo(({
           >
             <div style={{ margin: 'auto' }}>
               <div style={boxStyle}>
+                <CrossIcon size={24} style={{ position: 'absolute', right: 0, top: 0, padding: 15, boxSizing: 'content-box', cursor: 'pointer' }} role="button" onClick={onClosePress} />
+
                 <h2 style={{ marginTop: 0 }}>{t('Export options')}</h2>
                 <ul>
                   {enabledOutSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: enabledOutSegments.length })} <MergeExportButton autoMerge={autoMerge} enabledOutSegments={enabledOutSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} /></li>}
@@ -190,11 +192,7 @@ const ExportConfirm = memo(({
               transition={{ duration: 0.4, easings: ['easeOut'] }}
               style={{ display: 'flex', alignItems: 'flex-end' }}
             >
-              <Button appearance="minimal" iconBefore="arrow-left" height={24} onClick={onClosePress} style={{ marginRight: 10, color: 'white' }}>
-                {i18n.t('Back')}
-              </Button>
-
-              <ToggleExportConfirm exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />
+              <ToggleExportConfirm size={25} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />
               <div style={{ fontSize: 13, marginLeft: 3, marginRight: 7, maxWidth: 120, lineHeight: '100%', color: exportConfirmEnabled ? 'white' : 'rgba(255,255,255,0.3)', cursor: 'pointer' }} role="button" onClick={toggleExportConfirmEnabled}>{t('Show this page before exporting?')}</div>
             </motion.div>
 

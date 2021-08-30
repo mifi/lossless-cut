@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import { Button, Table, SegmentedControl, Checkbox, Select } from 'evergreen-ui';
+import { FaYinYang } from 'react-icons/fa';
+import { Button, Table, NumericalIcon, KeyIcon, FolderCloseIcon, DocumentIcon, TimeIcon, Checkbox, Select } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
 
@@ -66,11 +67,11 @@ const Settings = memo(({
       <Row>
         <KeyCell>
           {t('Working directory')}<br />
-          {t('This is where working files, exported files, project files (CSV) are stored.')}
+          {t('This is where working files, exported files, project files (LLC) are stored.')}
         </KeyCell>
         <Table.TextCell>
-          <Button onClick={changeOutDir}>
-            {customOutDir ? t('Custom working directory') : t('Same directory as input file')}
+          <Button iconBefore={customOutDir ? FolderCloseIcon : DocumentIcon} onClick={changeOutDir}>
+            {customOutDir ? t('Custom working directory') : t('Same directory as input file')}...
           </Button>
           <div>{customOutDir}</div>
         </Table.TextCell>
@@ -79,11 +80,9 @@ const Settings = memo(({
       <Row>
         <KeyCell>{t('Set file modification date/time of output files to:')}</KeyCell>
         <Table.TextCell>
-          <SegmentedControl
-            options={[{ label: t('Source file\'s time'), value: 'true' }, { label: t('Current time'), value: 'false' }]}
-            value={enableTransferTimestamps ? 'true' : 'false'}
-            onChange={value => setEnableTransferTimestamps(value === 'true')}
-          />
+          <Button iconBefore={enableTransferTimestamps ? DocumentIcon : TimeIcon} onClick={() => setEnableTransferTimestamps((v) => !v)}>
+            {enableTransferTimestamps ? t('Source file\'s time') : t('Current time')}
+          </Button>
         </Table.TextCell>
       </Row>
 
@@ -94,26 +93,22 @@ const Settings = memo(({
           <b>{t('Normal cut')}</b>: {t('Accurate time but could leave an empty portion at the beginning of the video. Equiv to')} <i>ffmpeg -i -ss ...</i><br />
         </KeyCell>
         <Table.TextCell>
-          <SegmentedControl
-            options={[{ label: t('Keyframe cut'), value: 'keyframe' }, { label: t('Normal cut'), value: 'normal' }]}
-            value={keyframeCut ? 'keyframe' : 'normal'}
-            onChange={value => setKeyframeCut(value === 'keyframe')}
-          />
+          <Button iconBefore={keyframeCut === 'keyframe' ? KeyIcon : undefined} onClick={() => setKeyframeCut(keyframeCut === 'keyframe' ? 'normal' : 'keyframe')}>
+            {keyframeCut === 'keyframe' ? t('Keyframe cut') : t('Normal cut')}
+          </Button>
         </Table.TextCell>
       </Row>
 
       <Row>
         <KeyCell>
-          <span role="img" aria-label="Yin Yang">☯️</span> {t('Choose cutting mode: Remove or keep selected segments from video when exporting?')}<br />
+          {t('Choose cutting mode: Remove or keep selected segments from video when exporting?')}<br />
           <b>{t('Keep')}</b>: {t('The video inside segments will be kept, while the video outside will be discarded.')}<br />
           <b>{t('Remove')}</b>: {t('The video inside segments will be discarded, while the video surrounding them will be kept.')}
         </KeyCell>
         <Table.TextCell>
-          <SegmentedControl
-            options={[{ label: t('Remove'), value: 'discard' }, { label: t('Keep'), value: 'keep' }]}
-            value={invertCutSegments ? 'discard' : 'keep'}
-            onChange={value => setInvertCutSegments(value === 'discard')}
-          />
+          <Button iconBefore={FaYinYang} appearance={invertCutSegments ? 'default' : 'primary'} intent="success" onClick={() => setInvertCutSegments((v) => !v)}>
+            {invertCutSegments ? t('Remove') : t('Keep')}
+          </Button>
         </Table.TextCell>
       </Row>
 
@@ -141,7 +136,7 @@ const Settings = memo(({
       <Row>
         <KeyCell>
           {t('Auto save project file?')}<br />
-          {t('The project will be stored along with the output files as a CSV file')}
+          {t('The project will be stored alongside the output files as a project LLC file')}
         </KeyCell>
         <Table.TextCell>
           <Checkbox
@@ -164,11 +159,9 @@ const Settings = memo(({
       <Row>
         <KeyCell>{t('In timecode show')}</KeyCell>
         <Table.TextCell>
-          <SegmentedControl
-            options={[{ label: t('Frame numbers'), value: 'frames' }, { label: t('Millisecond fractions'), value: 'ms' }]}
-            value={timecodeShowFrames ? 'frames' : 'ms'}
-            onChange={value => setTimecodeShowFrames(value === 'frames')}
-          />
+          <Button iconBefore={timecodeShowFrames ? NumericalIcon : TimeIcon} onClick={() => setTimecodeShowFrames((v) => !v)}>
+            {timecodeShowFrames ? t('Frame numbers') : t('Millisecond fractions')}
+          </Button>
         </Table.TextCell>
       </Row>
 

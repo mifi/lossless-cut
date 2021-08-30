@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Checkbox } from 'evergreen-ui';
+import { Checkbox, RadioGroup, Paragraph } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
@@ -43,10 +43,11 @@ export async function promptTimeOffset(inputValue) {
 }
 
 
-export async function askForHtml5ifySpeed(allowedOptions) {
+export async function askForHtml5ifySpeed({ allowedOptions, showRemember, initialOption }) {
   const availOptions = {
     fastest: i18n.t('Fastest: Low playback speed (no audio)'),
     'fastest-audio': i18n.t('Fastest: Low playback speed'),
+    'fastest-audio-remux': i18n.t('Fastest: Low playback speed (audio remux), likely to fail'),
     fast: i18n.t('Fast: Full quality remux (no audio), likely to fail'),
     'fast-audio': i18n.t('Fast: Full quality remux, likely to fail'),
     slow: i18n.t('Slow: Low quality encode (no audio)'),
@@ -58,18 +59,43 @@ export async function askForHtml5ifySpeed(allowedOptions) {
     inputOptions[allowedOption] = availOptions[allowedOption];
   });
 
-  const { value } = await Swal.fire({
+  let selectedOption = inputOptions[initialOption] ? initialOption : Object.keys(inputOptions)[0];
+  let rememberChoice = !!initialOption;
+
+  const Html = () => {
+    const [option, setOption] = useState(selectedOption);
+    const [remember, setRemember] = useState(rememberChoice);
+    function onOptionChange(e) {
+      selectedOption = e.target.value;
+      setOption(selectedOption);
+    }
+    function onRememberChange(e) {
+      rememberChoice = e.target.checked;
+      setRemember(rememberChoice);
+    }
+    return (
+      <div style={{ textAlign: 'left' }}>
+        <Paragraph>{i18n.t('These options will let you convert files to a format that is supported by the player. You can try different options and see which works with your file. Note that the conversion is for preview only. When you run an export, the output will still be lossless with full quality')}</Paragraph>
+        <RadioGroup
+          options={Object.entries(inputOptions).map(([value, label]) => ({ label, value }))}
+          value={option}
+          onChange={onOptionChange}
+        />
+        {showRemember && <Checkbox checked={remember} onChange={onRememberChange} label={i18n.t('Use this for all files until LosslessCut is restarted?')} />}
+      </div>
+    );
+  };
+
+  const { value: response } = await ReactSwal.fire({
     title: i18n.t('Convert to supported format'),
-    input: 'radio',
-    inputValue: 'fastest',
-    text: i18n.t('These options will let you convert files to a format that is supported by the player. You can try different options and see which works with your file. Note that the conversion is for preview only. When you run an export, the output will still be lossless with full quality'),
+    html: <Html />,
     showCancelButton: true,
-    customClass: { input: 'swal2-losslesscut-radio' },
-    inputOptions,
-    inputValidator: (v) => !v && i18n.t('You need to choose something!'),
   });
 
-  return value;
+  return {
+    selectedOption: response && selectedOption,
+    remember: rememberChoice,
+  };
 }
 
 export async function askForYouTubeInput() {
@@ -103,7 +129,7 @@ export async function askForOutDir(defaultPath) {
   return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
 }
 
-export async function askForFileOpenAction() {
+export async function askForFileOpenAction(inputOptions) {
   const { value } = await Swal.fire({
     text: i18n.t('You opened a new file. What do you want to do?'),
     icon: 'question',
@@ -111,10 +137,7 @@ export async function askForFileOpenAction() {
     inputValue: 'open',
     showCancelButton: true,
     customClass: { input: 'swal2-losslesscut-radio' },
-    inputOptions: {
-      open: i18n.t('Open the file instead of the current one'),
-      add: i18n.t('Include all tracks from the new file'),
-    },
+    inputOptions,
     inputValidator: (v) => !v && i18n.t('You need to choose something!'),
   });
 
@@ -233,7 +256,7 @@ const CleanupChoices = ({ cleanupChoicesInitial, onChange: onChangeProp }) => {
       <p>{i18n.t('Do you want to move the original file and/or any generated files to trash?')}</p>
 
       <Checkbox label={i18n.t('Trash auto-generated files')} checked={getVal('tmpFiles')} onChange={(e) => onChange('tmpFiles', e.target.checked)} />
-      <Checkbox label={i18n.t('Trash project CSV')} checked={getVal('projectFile')} onChange={(e) => onChange('projectFile', e.target.checked)} />
+      <Checkbox label={i18n.t('Trash project LLC file')} checked={getVal('projectFile')} onChange={(e) => onChange('projectFile', e.target.checked)} />
       <Checkbox label={i18n.t('Trash original source file')} checked={getVal('sourceFile')} onChange={(e) => onChange('sourceFile', e.target.checked)} />
 
       <div style={{ marginTop: 25 }}>
@@ -329,12 +352,6 @@ export function openAbout() {
 }
 
 export async function showMergeDialog(paths, onMergeClick) {
-  if (!paths) return;
-  if (paths.length < 2) {
-    errorToast(i18n.t('More than one file must be selected'));
-    return;
-  }
-
   let swalElem;
   let outPaths = paths;
   let allStreams = false;
@@ -344,6 +361,7 @@ export async function showMergeDialog(paths, onMergeClick) {
     showCancelButton: true,
     confirmButtonText: i18n.t('Merge!'),
     willOpen: (el) => { swalElem = el; },
+    title: i18n.t('Merge/concatenate files'),
     html: (<SortableFiles
       items={outPaths}
       onChange={(val) => { outPaths = val; }}
@@ -358,6 +376,28 @@ export async function showMergeDialog(paths, onMergeClick) {
   }
 }
 
+export async function showMultipleFilesDialog(paths, onMergeClick, onBatchLoadFilesClick) {
+  const { isConfirmed, isDenied } = await Swal.fire({
+    showCloseButton: true,
+    showDenyButton: true,
+    denyButtonAriaLabel: '',
+    denyButtonColor: '#7367f0',
+    denyButtonText: i18n.t('Batch files'),
+    confirmButtonText: i18n.t('Merge/concatenate files'),
+    title: i18n.t('Multiple files'),
+    text: i18n.t('Do you want to merge/concatenate the files or load them for batch processing?'),
+  });
+
+  if (isDenied) {
+    await onBatchLoadFilesClick(paths);
+    return;
+  }
+
+  if (isConfirmed) {
+    await showMergeDialog(paths, onMergeClick);
+  }
+}
+
 export async function showOpenAndMergeDialog({ defaultPath, onMergeClick }) {
   const title = i18n.t('Please select files to be merged');
   const message = i18n.t('Please select files to be merged. The files need to be of the exact same format and codecs');
@@ -367,7 +407,13 @@ export async function showOpenAndMergeDialog({ defaultPath, onMergeClick }) {
     properties: ['openFile', 'multiSelections'],
     message,
   });
-  if (canceled) return;
+  if (canceled || !filePaths) return;
+
+  if (filePaths.length < 2) {
+    errorToast(i18n.t('More than one file must be selected'));
+    return;
+  }
+
   showMergeDialog(filePaths, onMergeClick);
 }
 

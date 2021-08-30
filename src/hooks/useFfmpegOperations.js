@@ -51,7 +51,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     outputDir, segments, segmentsFileNames, videoDuration, rotation,
     onProgress: onTotalProgress, keyframeCut, copyFileStreams, outFormat,
     appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs,
-    customTagsByFile, customTagsByStreamId,
+    customTagsByFile, customTagsByStreamId, dispositionByStreamId,
   }) => {
     async function cutSingle({ cutFrom, cutTo, onProgress, outPath }) {
       const cuttingStart = isCuttingStart(cutFrom);
@@ -85,32 +85,51 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
       const rotationArgs = rotation !== undefined ? ['-metadata:s:v:0', `rotate=${360 - rotation}`] : [];
 
+      // This function tries to calculate the output stream index needed for -metadata:s:x and -disposition:x arguments
+      // It is based on the assumption that copyFileStreamsFiltered contains the order of the input files (and their respective streams orders) sent to ffmpeg, to hopefully calculate the same output stream index values that ffmpeg does internally.
+      // It also takes into account previously added files that have been removed and disabled streams.
       function mapInputStreamIndexToOutputIndex(inputFilePath, inputFileStreamIndex) {
         let streamCount = 0;
-        const found = copyFileStreamsFiltered.find(({ path: path2, streamIds }) => {
+        // Count copied streams of all files until this input file
+        const foundFile = copyFileStreamsFiltered.find(({ path: path2, streamIds }) => {
           if (path2 === inputFilePath) return true;
           streamCount += streamIds.length;
           return false;
         });
-        if (!found) return undefined; // Could happen if a tag has been edited on an external file, then the file was removed
-        return streamCount + inputFileStreamIndex;
+        if (!foundFile) return undefined; // Could happen if a tag has been edited on an external file, then the file was removed
+
+        // Then add the index of the current stream index to the count
+        const copiedStreamIndex = foundFile.streamIds.indexOf(String(inputFileStreamIndex));
+        if (copiedStreamIndex === -1) return undefined; // Could happen if a tag has been edited on a stream, but the stream is disabled
+        return streamCount + copiedStreamIndex;
       }
 
+      // The structure is deep! file -> stream -> key -> value Example: { 'file.mp4': { 0: { key: 'value' } } }
+      const deepMap = (root, fn) => flatMapDeep(
+        Object.entries(root), ([path, streamsMap]) => (
+          Object.entries(streamsMap || {}).map(([streamId, tagsMap]) => (
+            Object.entries(tagsMap || {}).map(([key, value]) => fn(path, streamId, key, value))))),
+      );
+
       const customTagsArgs = [
-        // We only support editing main file metadata for now
+        // Main file metadata:
         ...flatMap(Object.entries(customTagsByFile[filePath] || []), ([key, value]) => ['-metadata', `${key}=${value}`]),
 
-        // The structure is deep! Example: { 'file.mp4': { 0: { tag_name: 'Tag Value' } } }
-        ...flatMapDeep(
-          Object.entries(customTagsByStreamId), ([path, streamsMap]) => (
-            Object.entries(streamsMap).map(([streamId, tagsMap]) => (
-              Object.entries(tagsMap).map(([key, value]) => {
-                const outputIndex = mapInputStreamIndexToOutputIndex(path, parseInt(streamId, 10));
-                if (outputIndex == null) return [];
-                return [`-metadata:s:${outputIndex}`, `${key}=${value}`];
-              })))),
-        ),
+        // Example: { 'file.mp4': { 0: { tag_name: 'Tag Value' } } }
+        ...deepMap(customTagsByStreamId, (path, streamId, tag, value) => {
+          const outputIndex = mapInputStreamIndexToOutputIndex(path, parseInt(streamId, 10));
+          if (outputIndex == null) return [];
+          return [`-metadata:s:${outputIndex}`, `${tag}=${value}`];
+        }),
       ];
+
+      // Example: { 'file.mp4': { 0: { attached_pic: 1 } } }
+      const customDispositionArgs = deepMap(dispositionByStreamId, (path, streamId, disposition, value) => {
+        if (value !== 1) return [];
+        const outputIndex = mapInputStreamIndexToOutputIndex(path, parseInt(streamId, 10));
+        if (outputIndex == null) return [];
+        return [`-disposition:${outputIndex}`, String(disposition)];
+      });
 
       const ffmpegArgs = [
         '-hide_banner',
@@ -129,6 +148,8 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         ...getMovFlags({ preserveMovData, movFastStart }),
 
         ...customTagsArgs,
+
+        ...customDispositionArgs,
 
         // See https://github.com/mifi/lossless-cut/issues/170
         '-ignore_unknown',
@@ -270,24 +291,30 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     // h264/aac_at: No licensing when using HW encoder (Video/Audio Toolbox on Mac)
     // https://github.com/mifi/lossless-cut/issues/372#issuecomment-810766512
 
+    const targetHeight = 400;
+
     switch (video) {
       case 'hq': {
         if (isMac) {
           videoArgs = ['-vf', 'format=yuv420p', '-allow_sw', '1', '-vcodec', 'h264', '-b:v', '15M'];
         } else {
           // AV1 is very slow
-          // videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libaom-av1', '-crf', '30', '-cpu-used', '8'];
+          // videoArgs = ['-vf', 'format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libaom-av1', '-crf', '30', '-cpu-used', '8'];
           // Theora is a bit faster but not that much
           // videoArgs = ['-vf', '-c:v', 'libtheora', '-qscale:v', '1'];
-          videoArgs = ['-vf', 'format=yuv420p', '-c:v', 'libvpx-vp9', '-crf', '30', '-b:v', '0', '-row-mt', '1'];
+          // videoArgs = ['-vf', 'format=yuv420p', '-c:v', 'libvpx-vp9', '-crf', '30', '-b:v', '0', '-row-mt', '1'];
+          // x264 can only be used in GPL projects
+          videoArgs = ['-vf', 'format=yuv420p', '-c:v', 'libx264', '-profile:v', 'high', '-preset:v', 'slow', '-crf', '17'];
         }
         break;
       }
       case 'lq': {
         if (isMac) {
-          videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
+          videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
         } else {
-          videoArgs = ['-vf', 'scale=-2:400,format=yuv420p', '-sws_flags', 'neighbor', '-c:v', 'libtheora', '-qscale:v', '1'];
+          // videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-sws_flags', 'neighbor', '-c:v', 'libtheora', '-qscale:v', '1'];
+          // x264 can only be used in GPL projects
+          videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-sws_flags', 'neighbor', '-c:v', 'libx264', '-profile:v', 'baseline', '-x264opts', 'level=3.0', '-preset:v', 'ultrafast', '-crf', '28'];
         }
         break;
       }
@@ -332,6 +359,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       '-i', specificFilePath,
       ...videoArgs,
       ...audioArgs,
+      '-sn',
       '-y', outPath,
     ];
 

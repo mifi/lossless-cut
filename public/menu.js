@@ -29,6 +29,12 @@ module.exports = (app, mainWindow, newVersion) => {
             mainWindow.webContents.send('close-file');
           },
         },
+        {
+          label: i18n.t('Close batch'),
+          async click() {
+            mainWindow.webContents.send('close-batch-files');
+          },
+        },
         { type: 'separator' },
         {
           label: i18n.t('Import project (LLC)...'),
@@ -181,6 +187,12 @@ module.exports = (app, mainWindow, newVersion) => {
               label: i18n.t('Create fixed duration segments'),
               click() {
                 mainWindow.webContents.send('createFixedDurationSegments');
+              },
+            },
+            {
+              label: i18n.t('Invert all segments on timeline'),
+              click() {
+                mainWindow.webContents.send('invertAllCutSegments');
               },
             },
           ],

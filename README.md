@@ -27,7 +27,8 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Losslessly rearrange the order of video/audio segments
 - Lossless merge/concatenation of arbitrary files (with identical codecs parameters, e.g. from the same camera)
 - Lossless stream editing: Combine arbitrary tracks from multiple files (ex. add music or subtitle track to a video file)
-- Losslessly extract all tracks from a file (extract video, audio, subtitle and other tracks from one file into separate files)
+- Losslessly extract all tracks from a file (extract video, audio, subtitle, attachments and other tracks from one file into separate files)
+- Batch view for fast multi-file workflow
 - Remux into any compatible output format
 - Take full-resolution snapshots from videos in JPEG/PNG format
 - Manual input of cutpoint times
@@ -43,8 +44,10 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Import segments from: MP4/MKV chapters, Text file, YouTube, CSV, CUE, XML (DaVinci, Final Cut Pro)
 - Video thumbnails and audio waveform
 - Edit file metadata and per-stream metadata
+- Edit per-stream disposition
 - Cut with chapter marks
 - Annotate segments with tags
+- View subtitles
 
 ## Example lossless use cases
 
@@ -60,6 +63,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Quickly cut a file by its MP4/MKV chapters
 - Quickly cut a [YouTube video](https://youtube-dl.org/) by its chapters (or music times from a comment)
 - Change the language of a file's audio/subtitle tracks
+- Attach cover art to videos
 - Change author, title, GPS position, recording time of a video
 - Fix rotation of a video that has the wrong orientation flag set
   - Great for rotating phone videos that come out the wrong way without actually re-encoding the video.

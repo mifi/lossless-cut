@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { IoIosHelpCircle, IoIosSettings } from 'react-icons/io';
 import { FaLock, FaUnlock } from 'react-icons/fa';
-import { IconButton, Button, CrossIcon } from 'evergreen-ui';
+import { IconButton, Button, CrossIcon, ListIcon, VolumeUpIcon, VolumeOffIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
 import MergeExportButton from './components/MergeExportButton';
@@ -29,12 +29,12 @@ const TopMenu = memo(({
     <>
       {filePath && (
         <>
-          <Button height={20} iconBefore="list" onClick={withBlur(() => setStreamsSelectorShown(true))}>
+          <Button height={20} iconBefore={ListIcon} onClick={withBlur(() => setStreamsSelectorShown(true))}>
             {t('Tracks')} ({numStreamsToCopy}/{numStreamsTotal})
           </Button>
 
           <Button
-            iconBefore={copyAnyAudioTrack ? 'volume-up' : 'volume-off'}
+            iconBefore={copyAnyAudioTrack ? VolumeUpIcon : VolumeOffIcon}
             height={20}
             title={`${t('Discard audio? Current:')} ${copyAnyAudioTrack ? t('Keep audio tracks') : t('Discard audio tracks')}`}
             onClick={withBlur(toggleStripAudio)}
