@@ -360,6 +360,7 @@ export async function showMergeDialog(paths, onMergeClick) {
     width: '90%',
     showCancelButton: true,
     confirmButtonText: i18n.t('Merge!'),
+    cancelButtonText: i18n.t('Cancel'),
     willOpen: (el) => { swalElem = el; },
     title: i18n.t('Merge/concatenate files'),
     html: (<SortableFiles
