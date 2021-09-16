@@ -45,6 +45,7 @@ export default () => {
   const [autoExportExtraStreams, setAutoExportExtraStreams] = useState(configStore.get('autoExportExtraStreams'));
   useEffect(() => safeSetConfig('autoExportExtraStreams', autoExportExtraStreams), [autoExportExtraStreams]);
   const [askBeforeClose, setAskBeforeClose] = useState(configStore.get('askBeforeClose'));
+  const [askBeforeDelete, setAskBeforeDelete] = useState(configStore.get('askBeforeDelete'));
   useEffect(() => safeSetConfig('askBeforeClose', askBeforeClose), [askBeforeClose]);
   const [enableAskForImportChapters, setEnableAskForImportChapters] = useState(configStore.get('enableAskForImportChapters'));
   useEffect(() => safeSetConfig('enableAskForImportChapters', enableAskForImportChapters), [enableAskForImportChapters]);
@@ -121,6 +122,8 @@ export default () => {
     setAutoExportExtraStreams,
     askBeforeClose,
     setAskBeforeClose,
+    askBeforeDelete,
+    setAskBeforeDelete,
     enableAskForImportChapters,
     setEnableAskForImportChapters,
     enableAskForFileOpenAction,
