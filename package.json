@@ -32,7 +32,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mifi/lossless-cut.git"
+    "url": "https://github.com/mikeyaworski/lossless-cut.git"
   },
   "license": "GPL-2.0-only",
   "devDependencies": {
