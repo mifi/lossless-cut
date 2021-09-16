@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 const Settings = memo(({
   changeOutDir, customOutDir, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments,
   autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose,
+  askBeforeDelete, setAskBeforeDelete,
   AutoExportToggler, renderCaptureFormatButton, onTunerRequested, language, setLanguage,
   invertTimelineScroll, setInvertTimelineScroll, ffmpegExperimental, setFfmpegExperimental,
   enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction,
@@ -204,6 +205,17 @@ const Settings = memo(({
             label={t('Ask before closing')}
             checked={askBeforeClose}
             onChange={e => setAskBeforeClose(e.target.checked)}
+          />
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Ask for confirmation when deleting a source file?')}</KeyCell>
+        <Table.TextCell>
+          <Checkbox
+            label={t('Ask before deleting')}
+            checked={askBeforeDelete}
+            onChange={e => setAskBeforeDelete(e.target.checked)}
           />
         </Table.TextCell>
       </Row>

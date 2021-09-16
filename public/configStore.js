@@ -18,6 +18,7 @@ const defaults = {
   autoExportExtraStreams: true,
   exportConfirmEnabled: true,
   askBeforeClose: false,
+  askBeforeDelete: true,
   enableAskForImportChapters: true,
   enableAskForFileOpenAction: true,
   playbackVolume: 1,
