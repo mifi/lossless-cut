@@ -1008,6 +1008,7 @@ const App = memo(() => {
       }
     } finally {
       setWorking();
+      if (deleteOriginal) setBatchFiles(existingBatch => existingBatch.filter(existingFile => existingFile.path !== saved.filePath));
     }
   }, [filePath, previewFilePath, closeFile, edlFilePath, cleanupChoices, setWorking]);
 
