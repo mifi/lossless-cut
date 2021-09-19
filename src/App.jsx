@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { unstable_batchedUpdates as batchedUpdates } from 'react-dom';
-import { FaAngleLeft, FaWindowClose, FaTimes, FaAngleRight, FaFile } from 'react-icons/fa';
+import { FaAngleLeft, FaWindowClose, FaTimes, FaFile } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import Lottie from 'react-lottie-player';
@@ -2121,7 +2121,7 @@ const App = memo(() => {
   }, []);
 
   const rightBarWidth = showRightBar && isFileOpened ? 200 : 0;
-  const leftBarWidth = batchFiles.length > 0 ? 200 : 0;
+  const leftBarWidth = batchFiles.length > 0 ? 250 : 0;
 
   const bottomBarHeight = 96 + ((hasAudio && waveformEnabled) || (hasVideo && thumbnailsEnabled) ? timelineHeight : 0);
 
@@ -2169,6 +2169,10 @@ const App = memo(() => {
   function renderSubtitles() {
     if (!activeSubtitle) return null;
     return <track default kind="subtitles" label={activeSubtitle.lang} srcLang="en" src={activeSubtitle.url} />;
+  }
+
+  function removeFileFromBatch(filePathToRemove) {
+    setBatchFiles(existingBatch => existingBatch.filter(existingFile => existingFile.path !== filePathToRemove));
   }
 
   // throw new Error('Test error boundary');
@@ -2319,11 +2323,30 @@ const App = memo(() => {
                 {batchFiles.map(({ path, name }) => {
                   const isCurrent = path === filePath;
                   return (
-                    <div role="button" style={{ background: isCurrent ? 'rgba(255,255,255,0.15)' : undefined, fontSize: 13, padding: '1px 3px', cursor: 'pointer', display: 'flex', alignItems: 'center', minHeight: 30, alignContent: 'flex-start' }} key={path} title={path} onClick={() => batchOpenSingleFile(path)}>
-                      <FaFile size={14} style={{ color: primaryColor, marginLeft: 3, marginRight: 4, flexShrink: 0 }} />
-                      <div style={{ wordBreak: 'break-all' }}>{name}</div>
-                      <div style={{ flexGrow: 1 }} />
-                      {isCurrent && <FaAngleRight size={14} style={{ color: 'white', marginRight: -3, flexShrink: 0 }} />}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      background: isCurrent ? 'rgba(255,255,255,0.15)' : undefined,
+                    }}
+                    >
+                      <div role="button" style={{ fontSize: 13, padding: '1px 3px', cursor: 'pointer', display: 'flex', alignItems: 'center', minHeight: 30, alignContent: 'flex-start' }} key={path} title={path} onClick={() => batchOpenSingleFile(path)}>
+                        <FaFile size={14} style={{ color: primaryColor, marginLeft: 3, marginRight: 4, flexShrink: 0 }} />
+                        <div style={{ wordBreak: 'break-all' }}>{name}</div>
+                        <div style={{ flexGrow: 1 }} />
+                      </div>
+                      <FaTimes
+                        role="button"
+                        size={18}
+                        style={{
+                          cursor: 'pointer',
+                          color: 'white',
+                          marginLeft: 3,
+                          marginRight: 3,
+                          minWidth: 18,
+                        }}
+                        onClick={() => removeFileFromBatch(path)}
+                        title={t('Remove from batch')}
+                      />
                     </div>
                   );
                 })}
