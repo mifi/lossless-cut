@@ -1586,9 +1586,11 @@ const App = memo(() => {
       setWorking(i18n.t('Loading file'));
 
       // Import CSV project for existing video
-      if (filePathLowerCase.endsWith('.csv')) {
+      const edlFormats = { csv: 'csv', pbf: 'pbf', edl: 'mplayer', cue: 'cue', xml: 'xmeml' };
+      const matchingExt = Object.keys(edlFormats).find((ext) => filePathLowerCase.endsWith(`.${ext}`));
+      if (matchingExt) {
         if (!checkFileOpened()) return;
-        await loadEdlFile(firstFilePath, 'csv');
+        await loadEdlFile(firstFilePath, edlFormats[matchingExt]);
         return;
       }
 
