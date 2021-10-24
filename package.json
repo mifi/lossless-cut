@@ -37,7 +37,7 @@
   "license": "GPL-2.0-only",
   "devDependencies": {
     "@types/jest": "^26.0.20",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "color": "^3.1.0",
     "concurrently": "^6.0.0",
     "cross-env": "^7.0.3",
