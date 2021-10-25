@@ -44,7 +44,7 @@
     "csv-parse": "^4.15.3",
     "csv-stringify": "^5.6.2",
     "electron": "8",
-    "electron-builder": "22.10.4",
+    "electron-builder": "^22.13.1",
     "electron-builder-notarize": "1.1.2",
     "electron-devtools-installer": "^3.1.1",
     "eslint": "^7.23.0",
@@ -268,9 +268,9 @@
       "entitlementsInherit": "entitlements.mas.inherit.plist",
       "provisioningProfile": "LosslessCut_Mac_App_Store_provisioning_profile.provisionprofile",
       "binaries": [
-        "dist/mas/LosslessCut.app/Contents/Resources/ffmpeg",
-        "dist/mas/LosslessCut.app/Contents/Resources/ffprobe",
-        "dist/mas/LosslessCut.app/Contents/Resources/app.asar.unpacked/node_modules/trash/lib/macos-trash"
+        "Resources/ffmpeg",
+        "Resources/ffprobe",
+        "Resources/app.asar.unpacked/node_modules/trash/lib/macos-trash"
       ]
     },
     "win": {
