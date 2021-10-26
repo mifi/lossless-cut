@@ -16,7 +16,7 @@
     "lint": "eslint --ext .jsx --ext .js .",
     "pack-mac": "electron-builder --mac -m dmg",
     "prepack-mac": "yarn build",
-    "pack-mas-dev": "electron-builder --mac -m mas-dev -c.mas.provisioningProfile=LosslessCut_Dev.provisionprofile",
+    "pack-mas-dev": "electron-builder --mac -m mas-dev -c.mas.provisioningProfile=LosslessCut_Dev.provisionprofile -c.mas.identity='Apple Development: Mikael Finstad (JH4PH8B3C8)'",
     "prepack-mas-dev": "yarn build",
     "pack-win": "electron-builder --win",
     "prepack-win": "yarn build",
