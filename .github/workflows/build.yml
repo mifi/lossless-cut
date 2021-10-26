@@ -83,6 +83,7 @@ jobs:
       - name: Upload to Mac App Store
         if: startsWith(matrix.os, 'macos') && env.is_tag == 'true'
         # In case of ERROR ITMS-90189: Redundant Binary Upload
+        # Note: this will succeed on any errors, so beware
         continue-on-error: true
         run: |
           xcrun altool --upload-app -f dist/mas/LosslessCut-mac.pkg --apiKey ${{ secrets.api_key_id }} --apiIssuer ${{ secrets.api_key_issuer_id }}
