@@ -436,7 +436,7 @@
     "Load project (CSV)": "加载项目(CSV)",
     "Open": "打开",
     "File": "文件",
-    "Are you sure you want to quit?": "確定退出？",
+    "Are you sure you want to quit?": "确定退出？",
     "Confirm quit": "确认退出",
     "Accurate time but could leave an empty portion at the beginning of the video. Equiv to": "精确时间但可能在视频开头留下一个空白部分。相当于",
     "Cut at the nearest keyframe (not accurate time.) Equiv to": "在最近的关键帧处切割 (非精确时间)。相当于",
