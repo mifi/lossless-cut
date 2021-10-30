@@ -507,5 +507,9 @@
     "Invert all segments on timeline": "反转时间线上的所有片段",
     "LosslessCut (CSV)": "LosslessCut (CSV)",
     "Export project (LLC)...": "导出项目(LLC)...",
-    "Import project (LLC)...": "导入项目(LLC)..."
+    "Import project (LLC)...": "导入项目(LLC)...",
+    "Batch file list": "批量文件列表",
+    "Previous file": "上一个文件",
+    "Next file": "下一个文件",
+    "Close batch": "批量关闭"
 }
