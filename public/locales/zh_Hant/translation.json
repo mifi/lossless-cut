@@ -448,5 +448,11 @@
     "Close batch": "關閉批處理",
     "Batch file list": "批處理文件列表",
     "Subtitle": "字幕",
-    "Fastest: Low playback speed (audio remux), likely to fail": "最快：低播放速度（音訊重新混合），可能會失敗"
+    "Fastest: Low playback speed (audio remux), likely to fail": "最快：低播放速度（音訊重新混合），可能會失敗",
+    "Loading subtitle": "開啟字幕中",
+    "View and edit segment tags in JSON5 format:": "以 JSON5 格式檢視與編輯段標籤：",
+    "Failed to open file": "無法開啟檔案",
+    "Trash original source file": "丟棄原始檔案",
+    "Clear working directory": "清除工作目錄",
+    "An error has occurred.": "發生了錯誤。"
 }
