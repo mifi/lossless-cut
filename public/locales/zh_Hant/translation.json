@@ -434,5 +434,19 @@
     "Mark out / cut end point for current segment": "標記/切出作為目前片段的終點",
     "Mark in / cut start point for current segment": "標記/切入作為目前片段的起點",
     "Segments and cut points": "分段和切割點",
-    "Jump to cut end": "跳至裁剪終點"
+    "Jump to cut end": "跳至裁剪終點",
+    "Undo": "撤消",
+    "Redo": "重做",
+    "Import project (LLC)...": "匯入專案(LLC)...",
+    "Export project (LLC)...": "匯出專案(LLC)...",
+    "LosslessCut (CSV)": "LosslessCut (CSV)",
+    "Toggle Full Screen": "切換全屏",
+    "Minimize": "最小化",
+    "Sanitize": "清理",
+    "No sanitize": "不清理",
+    "Whether or not to sanitize output file names (sanitizing removes special characters)": "是否對輸出檔案名進行清理（清理刪除特殊字元）",
+    "Close batch": "關閉批處理",
+    "Batch file list": "批處理文件列表",
+    "Subtitle": "字幕",
+    "Fastest: Low playback speed (audio remux), likely to fail": "最快：低播放速度（音訊重新混合），可能會失敗"
 }
