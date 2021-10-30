@@ -454,5 +454,7 @@
     "Failed to open file": "無法開啟檔案",
     "Trash original source file": "丟棄原始檔案",
     "Clear working directory": "清除工作目錄",
-    "An error has occurred.": "發生了錯誤。"
+    "An error has occurred.": "發生了錯誤。",
+    "Toggle Developer Tools": "切換開發者工具",
+    "Trash project LLC file": "丟棄專案LLC檔案"
 }
