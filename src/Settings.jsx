@@ -20,11 +20,11 @@ const Settings = memo(({
   // eslint-disable-next-line react/jsx-props-no-spreading
   const KeyCell = (props) => <Table.TextCell textProps={{ whiteSpace: 'auto' }} {...props} />;
 
-  function onLangChange(e) {
+  const onLangChange = (e) => {
     const { value } = e.target;
     const l = value !== '' ? value : undefined;
     setLanguage(l);
-  }
+  };
 
   // https://www.electronjs.org/docs/api/locales
   // See i18n.js

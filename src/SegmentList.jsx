@@ -130,10 +130,10 @@ const SegmentList = memo(({
 
   const sortableList = outSegments.map((seg) => ({ id: seg.segId, seg }));
 
-  function setSortableList(newList) {
+  const setSortableList = (newList) => {
     if (isEqual(outSegments.map((s) => s.segId), newList.map((l) => l.id))) return; // No change
     updateSegOrders(newList.map((list) => list.id));
-  }
+  };
 
   let headerText = t('Segments to export:');
   if (outSegments.length === 0) {

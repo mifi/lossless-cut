@@ -52,15 +52,15 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
     if (validText != null) setOutSegTemplate(validText);
   }, [validText, setOutSegTemplate]);
 
-  function reset() {
+  const reset = () => {
     setOutSegTemplate(defaultOutSegTemplate);
     setText(defaultOutSegTemplate);
-  }
+  };
 
-  function onToggleClick() {
+  const onToggleClick = () => {
     if (!shown) setShown(true);
     else if (error == null) setShown(false);
-  }
+  };
 
   const onTextChange = useCallback((e) => setText(e.target.value), []);
 

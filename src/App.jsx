@@ -208,7 +208,7 @@ const App = memo(() => {
     }
   }, [detectedFileFormat, outFormatLocked, setOutFormatLocked]);
 
-  function setTimelineMode(newMode) {
+  const setTimelineMode = (newMode) => {
     if (newMode === 'waveform') {
       setWaveformEnabled(v => !v);
       setThumbnailsEnabled(false);
@@ -216,7 +216,7 @@ const App = memo(() => {
       setThumbnailsEnabled(v => !v);
       setWaveformEnabled(false);
     }
-  }
+  };
 
   const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => !v), [setExportConfirmEnabled]);
 
@@ -240,12 +240,12 @@ const App = memo(() => {
 
   const getCurrentTime = useCallback(() => currentTimeRef.current, []);
 
-  function setCopyStreamIdsForPath(path, cb) {
+  const setCopyStreamIdsForPath = (path, cb) => {
     setCopyStreamIdsByFile((old) => {
       const oldIds = old[path] || {};
       return ({ ...old, [path]: cb(oldIds) });
     });
-  }
+  };
 
   const toggleRightBar = useCallback(() => setShowRightBar(v => !v), []);
 
@@ -1978,7 +1978,7 @@ const App = memo(() => {
     loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFile, closeBatch, clearSegments, fixInvalidDuration, invertAllCutSegments,
   ]);
 
-  async function showAddStreamSourceDialog() {
+  const showAddStreamSourceDialog = async () => {
     try {
       const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'] });
       if (canceled || filePaths.length < 1) return;
@@ -1986,7 +1986,7 @@ const App = memo(() => {
     } catch (err) {
       handleError(err);
     }
-  }
+  };
 
   useEffect(() => {
     async function onDrop(ev) {

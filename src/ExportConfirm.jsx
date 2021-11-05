@@ -52,39 +52,39 @@ const ExportConfirm = memo(({
   const isMov = ffmpegIsMov(outFormat);
   const isIpod = outFormat === 'ipod';
 
-  function onPreserveMovDataHelpPress() {
+  const onPreserveMovDataHelpPress = () => {
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Preserve all MOV/MP4 metadata tags (e.g. EXIF, GPS position etc.) from source file? Note that some players have trouble playing back files where all metadata is preserved, like iTunes and other Apple software') });
-  }
+  };
 
-  function onMovFastStartHelpPress() {
+  const onMovFastStartHelpPress = () => {
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Enable this to allow faster playback of the resulting file. This may cause processing to take a little longer') });
-  }
+  };
 
-  function onOutFmtHelpPress() {
+  const onOutFmtHelpPress = () => {
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Defaults to same format as input file. You can losslessly change the file format (container) of the file with this option. Not all formats support all codecs. Matroska/MP4/MOV support the most common codecs. Sometimes it\'s even impossible to export to the same output format as input.') });
-  }
+  };
 
-  function onKeyframeCutHelpPress() {
+  const onKeyframeCutHelpPress = () => {
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('With "keyframe cut", we will cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files. With "Normal cut" you may have to manually set the cutpoint a few frames before the next keyframe to achieve a precise cut') });
-  }
+  };
 
-  function onTracksHelpPress() {
+  const onTracksHelpPress = () => {
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Not all formats support all track types, and LosslessCut is unable to properly cut some track types, so you may have to sacrifice some tracks by disabling them in order to get correct result.') });
-  }
+  };
 
-  function onSegmentsToChaptersHelpPress() {
+  const onSegmentsToChaptersHelpPress = () => {
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('When merging, do you want to create chapters in the merged file, according to the cut segments? NOTE: This may dramatically increase processing time') });
-  }
+  };
 
-  function onPreserveMetadataOnMergeHelpPress() {
+  const onPreserveMetadataOnMergeHelpPress = () => {
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('When merging, do you want to preserve metadata from your original file? NOTE: This may dramatically increase processing time') });
-  }
+  };
 
-  function onOutSegTemplateHelpPress() {
+  const onOutSegTemplateHelpPress = () => {
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('You can customize the file name of the output segment(s) using special variables.') });
-  }
+  };
 
-  function onAvoidNegativeTsHelpPress() {
+  const onAvoidNegativeTsHelpPress = () => {
     // https://ffmpeg.org/ffmpeg-all.html#Format-Options
     const texts = {
       make_non_negative: i18n.t('Shift timestamps to make them non-negative. Also note that this affects only leading negative timestamps, and not non-monotonic negative timestamps.'),
@@ -93,7 +93,7 @@ const ExportConfirm = memo(({
       disabled: i18n.t('Disables shifting of timestamp.'),
     };
     toast.fire({ icon: 'info', timer: 10000, text: `${avoidNegativeTs}: ${texts[avoidNegativeTs]}` });
-  }
+  };
 
   const outSegTemplateHelpIcon = <HelpIcon onClick={onOutSegTemplateHelpPress} />;
 

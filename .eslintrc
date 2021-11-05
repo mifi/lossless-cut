@@ -1,8 +1,14 @@
 {
   "extends": [
     "airbnb",
-    "airbnb/hooks"
+    "airbnb/hooks",
+    "plugin:react/recommended",
+    "plugin:react/jsx-runtime",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:react-hooks/recommended"
   ],
+  "plugins": ["react", "import"],
   "env": {
     "node": true,
     "browser": true,
@@ -22,6 +28,8 @@
     "arrow-parens": 0,
     "jsx-a11y/control-has-associated-label": 0,
     "react/prop-types": 0,
-    "no-multiple-empty-lines": ["error", { "max": 2, "maxBOF": 0, "maxEOF": 0 }]
+    "no-multiple-empty-lines": ["error", { "max": 2, "maxBOF": 0, "maxEOF": 0 }],
+    "no-unused-vars": 0,
+    "react/display-name": 0
   }
 }

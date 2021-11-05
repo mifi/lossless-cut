@@ -65,14 +65,14 @@ export async function askForHtml5ifySpeed({ allowedOptions, showRemember, initia
   const Html = () => {
     const [option, setOption] = useState(selectedOption);
     const [remember, setRemember] = useState(rememberChoice);
-    function onOptionChange(e) {
+    const onOptionChange = (e) => {
       selectedOption = e.target.value;
       setOption(selectedOption);
-    }
-    function onRememberChange(e) {
+    };
+    const onRememberChange = (e) => {
       rememberChoice = e.target.checked;
       setRemember(rememberChoice);
-    }
+    };
     return (
       <div style={{ textAlign: 'left' }}>
         <Paragraph>{i18n.t('These options will let you convert files to a format that is supported by the player. You can try different options and see which works with your file. Note that the conversion is for preview only. When you run an export, the output will still be lossless with full quality')}</Paragraph>

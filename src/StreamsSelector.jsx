@@ -25,11 +25,11 @@ const TagEditor = memo(({ existingTags, customTags, onTagChange, onTagReset }) =
 
   const mergedTags = { ...existingTags, ...customTags, ...(newTag ? { [newTag]: '' } : {}) };
 
-  function onResetClick() {
+  const onResetClick = () => {
     onTagReset(editingTag);
     setEditingTag();
     setNewTag();
-  }
+  };
 
   function onEditClick(tag) {
     if (newTag) {
@@ -54,13 +54,13 @@ const TagEditor = memo(({ existingTags, customTags, onTagChange, onTagReset }) =
     onEditClick();
   }
 
-  async function onAddPress() {
+  const onAddPress = async () => {
     const tag = await askForMetadataKey();
     if (!tag || Object.keys(mergedTags).includes(tag)) return;
     setEditingTag(tag);
     setEditingTagVal('');
     setNewTag(tag);
-  }
+  };
 
   return (
     <>
@@ -103,16 +103,16 @@ const EditFileDialog = memo(({ editingFile, externalFiles, mainFileFormatData, m
   const existingTags = formatData.tags || {};
   const customTags = customTagsByFile[editingFile] || {};
 
-  function onTagChange(tag, value) {
+  const onTagChange = (tag, value) => {
     setCustomTagsByFile((old) => ({ ...old, [editingFile]: { ...old[editingFile], [tag]: value } }));
-  }
+  };
 
-  function onTagReset(tag) {
+  const onTagReset = (tag) => {
     setCustomTagsByFile((old) => {
       const { [tag]: deleted, ...rest } = old[editingFile] || {};
       return { ...old, [editingFile]: rest };
     });
-  }
+  };
 
   return <TagEditor existingTags={existingTags} customTags={customTags} onTagChange={onTagChange} onTagReset={onTagReset} />;
 });
@@ -132,7 +132,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
 
   const { t } = useTranslation();
 
-  function onTagChange(tag, value) {
+  const onTagChange = (tag, value) => {
     setCustomTagsByStreamId((old) => ({
       ...old,
       [editingFile]: {
@@ -143,9 +143,9 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
         },
       },
     }));
-  }
+  };
 
-  function onTagReset(tag) {
+  const onTagReset = (tag) => {
     setCustomTagsByStreamId((old) => {
       const { [tag]: deleted, ...rest } = (old[editingFile] || {})[editingStreamId] || {};
 
@@ -157,9 +157,9 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
         },
       };
     });
-  }
+  };
 
-  function onCoverArtChange(e) {
+  const onCoverArtChange = (e) => {
     const newDispositions = dispositionOptions.includes(e.target.value) ? {
       [e.target.value]: 1,
     } : undefined;
@@ -173,7 +173,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
         [editingStreamId]: newDispositions,
       },
     }));
-  }
+  };
 
   if (!stream) return null;
 
