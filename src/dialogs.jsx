@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Checkbox, RadioGroup, Paragraph } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import i18n from 'i18next';
@@ -65,14 +65,14 @@ export async function askForHtml5ifySpeed({ allowedOptions, showRemember, initia
   const Html = () => {
     const [option, setOption] = useState(selectedOption);
     const [remember, setRemember] = useState(rememberChoice);
-    const onOptionChange = (e) => {
+    const onOptionChange = useCallback((e) => {
       selectedOption = e.target.value;
       setOption(selectedOption);
-    };
-    const onRememberChange = (e) => {
+    }, []);
+    const onRememberChange = useCallback((e) => {
       rememberChoice = e.target.checked;
       setRemember(rememberChoice);
-    };
+    }, []);
     return (
       <div style={{ textAlign: 'left' }}>
         <Paragraph>{i18n.t('These options will let you convert files to a format that is supported by the player. You can try different options and see which works with your file. Note that the conversion is for preview only. When you run an export, the output will still be lossless with full quality')}</Paragraph>

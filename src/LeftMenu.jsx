@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { Select } from 'evergreen-ui';
 import { motion } from 'framer-motion';
 import { FaYinYang } from 'react-icons/fa';
@@ -14,14 +14,14 @@ const zoomOptions = Array(13).fill().map((unused, z) => 2 ** z);
 const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments, toggleComfortZoom, simpleMode, toggleSimpleMode }) => {
   const { t } = useTranslation();
 
-  const onYinYangClick = () => {
+  const onYinYangClick = useCallback(() => {
     setInvertCutSegments(v => {
       const newVal = !v;
       if (newVal) toast.fire({ title: t('When you export, selected segments on the timeline will be REMOVED - the surrounding areas will be KEPT') });
       else toast.fire({ title: t('When you export, selected segments on the timeline will be KEPT - the surrounding areas will be REMOVED.') });
       return newVal;
     });
-  };
+  }, [setInvertCutSegments, t]);
 
   return (
     <div className="no-user-select" style={{ padding: '.3em', display: 'flex', alignItems: 'center' }}>

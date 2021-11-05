@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { FaYinYang } from 'react-icons/fa';
 import { Button, Table, NumericalIcon, KeyIcon, FolderCloseIcon, DocumentIcon, TimeIcon, Checkbox, Select } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
@@ -20,11 +20,11 @@ const Settings = memo(({
   // eslint-disable-next-line react/jsx-props-no-spreading
   const KeyCell = (props) => <Table.TextCell textProps={{ whiteSpace: 'auto' }} {...props} />;
 
-  const onLangChange = (e) => {
+  const onLangChange = useCallback((e) => {
     const { value } = e.target;
     const l = value !== '' ? value : undefined;
     setLanguage(l);
-  };
+  }, [setLanguage]);
 
   // https://www.electronjs.org/docs/api/locales
   // See i18n.js
