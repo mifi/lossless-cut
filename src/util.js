@@ -147,7 +147,7 @@ export const isStoreBuild = isMasBuild || isWindowsStoreBuild;
 
 export const isDurationValid = (duration) => Number.isFinite(duration) && duration > 0;
 
-const platform = os.platform();
+export const platform = os.platform();
 
 export const isWindows = platform === 'win32';
 export const isMac = platform === 'darwin';

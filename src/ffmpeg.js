@@ -5,7 +5,7 @@ import moment from 'moment';
 import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
-import { getOutPath, isDurationValid, getExtensionForFormat, isMac, isWindows } from './util';
+import { getOutPath, isDurationValid, getExtensionForFormat, isMac, isWindows, platform } from './util';
 
 const execa = window.require('execa');
 const { join } = window.require('path');
@@ -21,17 +21,10 @@ export function getFfCommandLine(cmd, args) {
 }
 
 function getFfPath(cmd) {
-  // Testing non-mac setup on mac:
-  // return `node_modules/ffmpeg-ffprobe-static/${cmd}`;
-
-  if (isMac) {
-    return isDev ? `ffmpeg-mac/${cmd}` : join(window.process.resourcesPath, cmd);
-  }
-
   const exeName = isWindows ? `${cmd}.exe` : cmd;
-  return isDev
-    ? `node_modules/ffmpeg-ffprobe-static/${exeName}`
-    : join(window.process.resourcesPath, `node_modules/ffmpeg-ffprobe-static/${exeName}`);
+
+  if (isDev) return `ffmpeg/${platform}/${exeName}`;
+  return join(window.process.resourcesPath, exeName);
 }
 
 export const getFfmpegPath = () => getFfPath('ffmpeg');
