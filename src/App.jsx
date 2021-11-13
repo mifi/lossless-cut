@@ -105,6 +105,9 @@ const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
 
 const App = memo(() => {
   // Per project state
+  const [commandedTime, setCommandedTime] = useState(0);
+  const [ffmpegCommandLog, setFfmpegCommandLog] = useState([]);
+
   const [previewFilePath, setPreviewFilePath] = useState();
   const [working, setWorkingState] = useState();
   const [usingDummyVideo, setUsingDummyVideo] = useState(false);
@@ -129,23 +132,26 @@ const App = memo(() => {
   const [copyStreamIdsByFile, setCopyStreamIdsByFile] = useState({});
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
   const [zoom, setZoom] = useState(1);
-  const [commandedTime, setCommandedTime] = useState(0);
-  const [ffmpegCommandLog, setFfmpegCommandLog] = useState([]);
   const [thumbnails, setThumbnails] = useState([]);
   const [shortestFlag, setShortestFlag] = useState(false);
   const [zoomWindowStartTime, setZoomWindowStartTime] = useState(0);
   const [disabledSegmentIds, setDisabledSegmentIds] = useState({});
   const [subtitlesByStreamId, setSubtitlesByStreamId] = useState({});
   const [activeSubtitleStreamIndex, setActiveSubtitleStreamIndex] = useState();
+  const [hideCanvasPreview, setHideCanvasPreview] = useState(false);
+  const [exportConfirmVisible, setExportConfirmVisible] = useState(false);
 
   // State per application launch
   const [keyframesEnabled, setKeyframesEnabled] = useState(true);
   const [waveformEnabled, setWaveformEnabled] = useState(false);
   const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
   const [showRightBar, setShowRightBar] = useState(true);
-  const [hideCanvasPreview, setHideCanvasPreview] = useState(false);
   const [cleanupChoices, setCleanupChoices] = useState({ tmpFiles: true });
   const [rememberConvertToSupportedFormat, setRememberConvertToSupportedFormat] = useState();
+  const [helpVisible, setHelpVisible] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false);
+  const [tunerVisible, setTunerVisible] = useState();
+  const [mifiLink, setMifiLink] = useState();
 
   // Batch state
   const [batchFiles, setBatchFiles] = useState([]);
@@ -186,13 +192,6 @@ const App = memo(() => {
     i18n.changeLanguage(l).catch(console.error);
     electron.ipcRenderer.send('setLanguage', l);
   }, [language]);
-
-  // Global state
-  const [helpVisible, setHelpVisible] = useState(false);
-  const [settingsVisible, setSettingsVisible] = useState(false);
-  const [tunerVisible, setTunerVisible] = useState();
-  const [exportConfirmVisible, setExportConfirmVisible] = useState(false);
-  const [mifiLink, setMifiLink] = useState();
 
   const videoRef = useRef();
   const currentTimeRef = useRef();
@@ -837,7 +836,7 @@ const App = memo(() => {
       setExternalStreamFiles([]);
       setCustomTagsByFile({});
       setCustomTagsByStreamId({});
-      setDisabledSegmentIds({});
+      setDispositionByStreamId({});
       setDetectedFps();
       setMainStreams([]);
       setMainVideoStream();
@@ -845,15 +844,15 @@ const App = memo(() => {
       setCopyStreamIdsByFile({});
       setStreamsSelectorShown(false);
       setZoom(1);
+      setThumbnails([]);
       setShortestFlag(false);
       setZoomWindowStartTime(0);
-      setHideCanvasPreview(false);
+      setDisabledSegmentIds({});
       setSubtitlesByStreamId({});
       setActiveSubtitleStreamIndex();
-
+      setHideCanvasPreview(false);
       setExportConfirmVisible(false);
 
-      setThumbnails([]);
       cancelRenderThumbnails();
     });
   }, [cutSegmentsHistory, setCutSegments, cancelRenderThumbnails]);
