@@ -5,7 +5,7 @@ import moment from 'moment';
 import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
-import { getOutPath, isDurationValid, getExtensionForFormat, isMac, isWindows, platform } from './util';
+import { getOutPath, isDurationValid, getExtensionForFormat, isWindows, platform } from './util';
 
 const execa = window.require('execa');
 const { join } = window.require('path');
