@@ -49,7 +49,7 @@ import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
   readFileMeta, getFormatData, renderThumbnails as ffmpegRenderThumbnails,
-  extractStreams, getAllStreams,
+  extractStreams, getAllStreams, runStartupCheck,
   isStreamThumbnail, isAudioDefinitelyNotSupported, isIphoneHevc, tryReadChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
 } from './ffmpeg';
@@ -2094,6 +2094,10 @@ const App = memo(() => {
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);
+  }, []);
+
+  useEffect(() => {
+    runStartupCheck().catch((err) => handleError('LosslessCut is installation is broken', err));
   }, []);
 
   useEffect(() => {
