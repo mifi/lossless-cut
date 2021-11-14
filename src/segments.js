@@ -75,5 +75,7 @@ export function invertSegments(sortedCutSegments, duration) {
     });
   }
 
-  return ret;
+  // Filter out zero length resulting segments
+  // https://github.com/mifi/lossless-cut/issues/909
+  return ret.filter(({ start, end }) => end == null || start == null || end > start);
 }

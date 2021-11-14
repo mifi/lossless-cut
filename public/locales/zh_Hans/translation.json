@@ -255,7 +255,7 @@
     "Instead of video apparently starting at 0, you can offset by a specified value. This only applies to the preview inside LosslessCut and does not modify the file in any way. Useful for viewing/cutting videos according to timecodes)": "您可以用指定的值来偏移，而不是视频从0开始。这仅适用于LosslessCut内部的预览，不会以任何方式修改文件。对于根据时间码观看/剪辑视频很有用）",
     "File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview with audio.": "该文件不被支持，预览视图可能无音频或低质量，但最终导出的文件音轨质量无损。你可以在菜单中进行格式转换来实现更佳的音频预览。",
     "For more help and issues, please go to:": "如需更多帮助和问题，请访问:",
-    "Lossless cutting is not an exact science. For some codecs and files it just works. For others you may need to trial and error depending on the codec, keyframes etc to get the best cut.": "无损切削不是一门精确的科学。对于一些编解码器和文件，它可以正常工作。对于其他，你可能需要根据编解码器，关键帧等进行试错以得到最好的剪辑。",
+    "Lossless cutting is not an exact science. For some codecs and files it just works. For others you may need to trial and error depending on the codec, keyframes etc to get the best cut.": "无损切割不是一门精确的科学。对于一些编解码器和文件，它可以正常工作。对于其他，你可能需要根据编解码器，关键帧等进行试错以得到最好的剪辑。",
     "Common problems": "常见问题",
     "You need to open a media file first": "你需要先载入一个媒体文件",
     "Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, see the HELP page.": "已完成！注意：切割点可能不准确。在刪除源文件之前确保已使用播放器/编辑器测试过输出的文件。如果输出文件存在问题，查看“帮助”页面。",
@@ -436,7 +436,7 @@
     "Load project (CSV)": "加载项目(CSV)",
     "Open": "打开",
     "File": "文件",
-    "Are you sure you want to quit?": "確定退出？",
+    "Are you sure you want to quit?": "确定退出？",
     "Confirm quit": "确认退出",
     "Accurate time but could leave an empty portion at the beginning of the video. Equiv to": "精确时间但可能在视频开头留下一个空白部分。相当于",
     "Cut at the nearest keyframe (not accurate time.) Equiv to": "在最近的关键帧处切割 (非精确时间)。相当于",
@@ -507,5 +507,13 @@
     "Invert all segments on timeline": "反转时间线上的所有片段",
     "LosslessCut (CSV)": "LosslessCut (CSV)",
     "Export project (LLC)...": "导出项目(LLC)...",
-    "Import project (LLC)...": "导入项目(LLC)..."
+    "Import project (LLC)...": "导入项目(LLC)...",
+    "Next file": "下一个文件",
+    "Previous file": "上一个文件",
+    "Do you want to merge/concatenate the files or load them for batch processing?": "您是想要合并/连接文件还是加载它们来进行批处理？",
+    "Multiple files": "多个文件",
+    "Batch files": "批处理文件",
+    "Batch file list": "批处理文件列表",
+    "Are you sure you want to close the loaded batch of files?": "您确定要关闭加载的一批文件吗？",
+    "Close batch": "关闭批处理"
 }
