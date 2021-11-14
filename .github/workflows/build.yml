@@ -31,7 +31,8 @@ jobs:
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v2
         with:
-          node-version: 12
+          node-version: 16
+          cache: 'yarn'
 
        # Because of timeout issue https://github.com/yarnpkg/yarn/issues/4890
       - run: yarn install --network-timeout 1000000
@@ -52,9 +53,17 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys/
           echo '${{ secrets.api_key }}' > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
 
-      - name: Download custom ffmpeg for Mac
+      - name: Download ffmpeg for Mac
         if: startsWith(matrix.os, 'macos')
-        run: yarn download-ffmpeg
+        run: yarn download-ffmpeg-mac
+
+      - name: Download ffmpeg for Windows
+        if: startsWith(matrix.os, 'windows')
+        run: yarn download-ffmpeg-windows
+
+      - name: Download ffmpeg for Linux
+        if: startsWith(matrix.os, 'linux')
+        run: yarn download-ffmpeg-linux
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
@@ -83,6 +92,7 @@ jobs:
       - name: Upload to Mac App Store
         if: startsWith(matrix.os, 'macos') && env.is_tag == 'true'
         # In case of ERROR ITMS-90189: Redundant Binary Upload
+        # Note: this will succeed on any errors, so beware
         continue-on-error: true
         run: |
           xcrun altool --upload-app -f dist/mas/LosslessCut-mac.pkg --apiKey ${{ secrets.api_key_id }} --apiIssuer ${{ secrets.api_key_issuer_id }}

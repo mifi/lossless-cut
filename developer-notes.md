@@ -1,7 +1,7 @@
 ## Development building / running
 
 This app is built using Electron.
-Make sure you have at least Node v12. The app uses ffmpeg from PATH when developing.
+Make sure you have at least Node v14. The app uses ffmpeg from PATH when developing.
 
 ```bash
 npm install -g yarn
@@ -21,7 +21,17 @@ npm run download-ffmpeg # on MacOS only
 npm start
 ```
 
+## Testing mas-dev build locally
+
+This will sign using the development provisioning profile:
+
+```
+npm run pack-mas-dev
+```
+
 ## Release
+
+For per-platform build/signing setup, see https://blog.mifi.no/2020/03/31/automated-electron-build-with-release-to-mac-app-store-microsoft-store-snapcraft/
 
 ### Release new version
 

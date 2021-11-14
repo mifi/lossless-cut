@@ -8,7 +8,7 @@ import { getOutPath, transferTimestamps, getOutFileExtension, getOutDir, isMac }
 import { isCuttingStart, isCuttingEnd, handleProgress, getFfCommandLine, getFfmpegPath, getDuration, runFfmpeg, createChaptersFromSegments } from '../ffmpeg';
 
 const execa = window.require('execa');
-const { join } = window.require('path');
+const { join, resolve } = window.require('path');
 const fs = window.require('fs-extra');
 const stringToStream = window.require('string-to-stream');
 
@@ -250,7 +250,9 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       console.log('ffmpeg', ffmpegArgs.join(' '));
 
       // https://superuser.com/questions/787064/filename-quoting-in-ffmpeg-concat
-      const concatTxt = paths.map(file => `file '${join(file).replace(/'/g, "'\\''")}'`).join('\n');
+      // Must add "file:" or we get "Impossible to open 'pipe:xyz.mp4'" on newer ffmpeg versions
+      // https://superuser.com/questions/718027/ffmpeg-concat-doesnt-work-with-absolute-path
+      const concatTxt = paths.map(file => `file 'file:${resolve(file).replace(/'/g, "'\\''")}'`).join('\n');
 
       console.log(concatTxt);
 
