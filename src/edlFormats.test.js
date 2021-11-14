@@ -1,7 +1,9 @@
 import fs from 'fs';
 import { join } from 'path';
 
-import { parseYouTube, formatYouTube, parseMplayerEdl } from './edlFormats';
+import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml } from './edlFormats';
+
+const readFixture = async (name, encoding = 'utf-8') => fs.promises.readFile(join(__dirname, 'fixtures', name), encoding);
 
 it('parseYoutube', () => {
   const str = `
@@ -83,7 +85,7 @@ it('parseMplayerEdl', async () => {
 `;
 */
 
-  const str = await fs.promises.readFile(join(__dirname, 'fixtures', 'mplayer.edl'), 'utf-8');
+  const str = await readFixture('mplayer.edl');
 
   expect(await parseMplayerEdl(str)).toEqual([
     { start: 0,
@@ -128,4 +130,8 @@ it('parseMplayerEdl, starting at 0', async () => {
       mplayerEdlType: 0,
     },
   }]);
+});
+
+it('parses xmeml 1', async () => {
+  expect(await parseXmeml(await readFixture('Final Cut Pro XMEML.xml'))).toMatchSnapshot();
 });

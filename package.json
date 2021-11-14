@@ -3,20 +3,22 @@
   "productName": "LosslessCut",
   "description": "The swiss army knife of lossless video/audio editing",
   "copyright": "Copyright © 2021 ${author}",
-  "version": "3.39.0",
+  "version": "3.40.0",
   "main": "public/electron.js",
   "homepage": "./",
   "scripts": {
     "start": "concurrently -k \"cross-env BROWSER=none PORT=3001 DISABLE_ESLINT_PLUGIN=true react-scripts start\" \"wait-on http://localhost:3001 && electron .\"",
     "icon-gen": "mkdirp icon-build && svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512 && mkdirp icns-build && icon-gen -i src/icon.svg -o ./icns-build --icns --icns-sizes 512,1024 && mkdirp build-resources/appx && npx svg2png src/icon.svg --output=build-resources/appx/StoreLogo.png --width=50 --height=50 && npx svg2png src/icon.svg --output=build-resources/appx/Square150x150Logo.png --width=300 --height=300 && npx svg2png src/icon.svg --output=build-resources/appx/Square44x44Logo.png --width=44 --height=44 && npx svg2png src/icon.svg --output=build-resources/appx/Wide310x150Logo.png --width=620 --height=300",
-    "download-ffmpeg": "mkdir -p ffmpeg-mac && wget https://github.com/mifi/ffmpeg-build-script/releases/download/n4.3.1/ffmpeg -O ffmpeg-mac/ffmpeg && wget https://github.com/mifi/ffmpeg-build-script/releases/download/n4.3.1/ffprobe -O ffmpeg-mac/ffprobe && chmod +x ffmpeg-mac/ffmpeg && chmod +x ffmpeg-mac/ffprobe",
+    "download-ffmpeg-mac": "mkdir -p ffmpeg/darwin && cd ffmpeg/darwin && wget https://github.com/mifi/ffmpeg-build-script/releases/download/n4.4.1/ffmpeg -O ffmpeg && wget https://github.com/mifi/ffmpeg-build-script/releases/download/n4.4.1/ffprobe -O ffprobe && chmod +x ffmpeg && chmod +x ffprobe",
+    "download-ffmpeg-linux": "mkdir -p ffmpeg/linux && cd ffmpeg/linux && wget https://github.com/mifi/ffmpeg-builds/releases/download/4.4.1/ffmpeg-release-amd64-static.tar.xz -O ffmpeg.xz && tar xvf ffmpeg.xz && mv ffmpeg-4.4.1-amd64-static/{ffmpeg,ffprobe} ./",
+    "download-ffmpeg-windows": "npx shx mkdir -p ffmpeg/win32 && cd ffmpeg/win32 && npx download-cli https://github.com/mifi/ffmpeg-builds/releases/download/4.4.1/ffmpeg-n4.4.1-2-gcc33e73618-win64-gpl-4.4.zip --out . --filename ffmpeg.zip && 7z x ffmpeg.zip && npx shx mv ffmpeg-n4.4.1-2-gcc33e73618-win64-gpl-4.4/bin/ffmpeg.exe ./ && npx shx mv ffmpeg-n4.4.1-2-gcc33e73618-win64-gpl-4.4/bin/ffprobe.exe ./",
     "build": "yarn icon-gen && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint --ext .jsx --ext .js .",
     "pack-mac": "electron-builder --mac -m dmg",
     "prepack-mac": "yarn build",
-    "pack-mas-dev": "electron-builder --mac -m mas-dev -c.mas.provisioningProfile=LosslessCut_Dev.provisionprofile",
+    "pack-mas-dev": "electron-builder --mac -m mas-dev -c.mas.provisioningProfile=LosslessCut_Dev.provisionprofile -c.mas.identity='Apple Development: Mikael Finstad (JH4PH8B3C8)'",
     "prepack-mas-dev": "yarn build",
     "pack-win": "electron-builder --win",
     "prepack-win": "yarn build",
@@ -37,14 +39,14 @@
   "license": "GPL-2.0-only",
   "devDependencies": {
     "@types/jest": "^26.0.20",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "color": "^3.1.0",
     "concurrently": "^6.0.0",
     "cross-env": "^7.0.3",
     "csv-parse": "^4.15.3",
     "csv-stringify": "^5.6.2",
     "electron": "8",
-    "electron-builder": "22.10.4",
+    "electron-builder": "^22.13.1",
     "electron-builder-notarize": "1.1.2",
     "electron-devtools-installer": "^3.1.1",
     "eslint": "^7.23.0",
@@ -97,7 +99,6 @@
     "electron-store": "5.1.1",
     "electron-unhandled": "^3.0.2",
     "execa": "^5.0.0",
-    "ffmpeg-ffprobe-static": "4.3.1-rc.2",
     "file-type": "^12.4.0",
     "fs-extra": "^8.1.0",
     "github-api": "^3.2.2",
@@ -130,9 +131,7 @@
       "buildResources": "build-resources"
     },
     "files": [
-      "build/**/*",
-      "!node_modules/ffmpeg-ffprobe-static/ffmpeg",
-      "!node_modules/ffmpeg-ffprobe-static/ffprobe"
+      "build/**/*"
     ],
     "asar": {
       "smartUnpack": false
@@ -156,11 +155,11 @@
       ],
       "extraResources": [
         {
-          "from": "ffmpeg-mac/ffmpeg",
+          "from": "ffmpeg/darwin/ffmpeg",
           "to": "ffmpeg"
         },
         {
-          "from": "ffmpeg-mac/ffprobe",
+          "from": "ffmpeg/darwin/ffprobe",
           "to": "ffprobe"
         }
       ],
@@ -280,8 +279,14 @@
         "appx"
       ],
       "extraResources": [
-        "node_modules/ffmpeg-ffprobe-static/ffmpeg.exe",
-        "node_modules/ffmpeg-ffprobe-static/ffprobe.exe"
+        {
+          "from": "ffmpeg/win32/ffmpeg.exe",
+          "to": "ffmpeg.exe"
+        },
+        {
+          "from": "ffmpeg/win32/ffprobe.exe",
+          "to": "ffprobe.exe"
+        }
       ],
       "icon": "icon-build/app-512.png",
       "fileAssociations": [
@@ -390,8 +395,14 @@
     "linux": {
       "executableName": "losslesscut",
       "extraResources": [
-        "node_modules/ffmpeg-ffprobe-static/ffmpeg",
-        "node_modules/ffmpeg-ffprobe-static/ffprobe"
+        {
+          "from": "ffmpeg/linux/ffmpeg",
+          "to": "ffmpeg"
+        },
+        {
+          "from": "ffmpeg/linux/ffprobe",
+          "to": "ffprobe"
+        }
       ],
       "icon": "icon-build/app-512.png",
       "target": [

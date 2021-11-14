@@ -49,7 +49,7 @@ import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
   readFileMeta, getFormatData, renderThumbnails as ffmpegRenderThumbnails,
-  extractStreams, getAllStreams,
+  extractStreams, getAllStreams, runStartupCheck,
   isStreamThumbnail, isAudioDefinitelyNotSupported, isIphoneHevc, tryReadChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
 } from './ffmpeg';
@@ -105,6 +105,9 @@ const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
 
 const App = memo(() => {
   // Per project state
+  const [commandedTime, setCommandedTime] = useState(0);
+  const [ffmpegCommandLog, setFfmpegCommandLog] = useState([]);
+
   const [previewFilePath, setPreviewFilePath] = useState();
   const [working, setWorkingState] = useState();
   const [usingDummyVideo, setUsingDummyVideo] = useState(false);
@@ -129,23 +132,26 @@ const App = memo(() => {
   const [copyStreamIdsByFile, setCopyStreamIdsByFile] = useState({});
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
   const [zoom, setZoom] = useState(1);
-  const [commandedTime, setCommandedTime] = useState(0);
-  const [ffmpegCommandLog, setFfmpegCommandLog] = useState([]);
   const [thumbnails, setThumbnails] = useState([]);
   const [shortestFlag, setShortestFlag] = useState(false);
   const [zoomWindowStartTime, setZoomWindowStartTime] = useState(0);
   const [disabledSegmentIds, setDisabledSegmentIds] = useState({});
   const [subtitlesByStreamId, setSubtitlesByStreamId] = useState({});
   const [activeSubtitleStreamIndex, setActiveSubtitleStreamIndex] = useState();
+  const [hideCanvasPreview, setHideCanvasPreview] = useState(false);
+  const [exportConfirmVisible, setExportConfirmVisible] = useState(false);
 
   // State per application launch
   const [keyframesEnabled, setKeyframesEnabled] = useState(true);
   const [waveformEnabled, setWaveformEnabled] = useState(false);
   const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
   const [showRightBar, setShowRightBar] = useState(true);
-  const [hideCanvasPreview, setHideCanvasPreview] = useState(false);
   const [cleanupChoices, setCleanupChoices] = useState({ tmpFiles: true });
   const [rememberConvertToSupportedFormat, setRememberConvertToSupportedFormat] = useState();
+  const [helpVisible, setHelpVisible] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false);
+  const [tunerVisible, setTunerVisible] = useState();
+  const [mifiLink, setMifiLink] = useState();
 
   // Batch state
   const [batchFiles, setBatchFiles] = useState([]);
@@ -187,13 +193,6 @@ const App = memo(() => {
     electron.ipcRenderer.send('setLanguage', l);
   }, [language]);
 
-  // Global state
-  const [helpVisible, setHelpVisible] = useState(false);
-  const [settingsVisible, setSettingsVisible] = useState(false);
-  const [tunerVisible, setTunerVisible] = useState();
-  const [exportConfirmVisible, setExportConfirmVisible] = useState(false);
-  const [mifiLink, setMifiLink] = useState();
-
   const videoRef = useRef();
   const currentTimeRef = useRef();
 
@@ -208,7 +207,7 @@ const App = memo(() => {
     }
   }, [detectedFileFormat, outFormatLocked, setOutFormatLocked]);
 
-  function setTimelineMode(newMode) {
+  const setTimelineMode = useCallback((newMode) => {
     if (newMode === 'waveform') {
       setWaveformEnabled(v => !v);
       setThumbnailsEnabled(false);
@@ -216,7 +215,7 @@ const App = memo(() => {
       setThumbnailsEnabled(v => !v);
       setWaveformEnabled(false);
     }
-  }
+  }, []);
 
   const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => !v), [setExportConfirmEnabled]);
 
@@ -240,18 +239,18 @@ const App = memo(() => {
 
   const getCurrentTime = useCallback(() => currentTimeRef.current, []);
 
-  function setCopyStreamIdsForPath(path, cb) {
+  const setCopyStreamIdsForPath = useCallback((path, cb) => {
     setCopyStreamIdsByFile((old) => {
       const oldIds = old[path] || {};
       return ({ ...old, [path]: cb(oldIds) });
     });
-  }
+  }, []);
 
   const toggleRightBar = useCallback(() => setShowRightBar(v => !v), []);
 
   const toggleCopyStreamId = useCallback((path, index) => {
     setCopyStreamIdsForPath(path, (old) => ({ ...old, [index]: !old[index] }));
-  }, []);
+  }, [setCopyStreamIdsForPath]);
 
   const hideAllNotifications = hideNotifications === 'all';
 
@@ -738,7 +737,7 @@ const App = memo(() => {
       });
       return newCopyStreamIds;
     });
-  }, [copyAnyAudioTrack, filePath, mainStreams]);
+  }, [copyAnyAudioTrack, filePath, mainStreams, setCopyStreamIdsForPath]);
 
   const removeCutSegment = useCallback((index) => {
     if (cutSegments.length === 1 && cutSegments[0].start == null && cutSegments[0].end == null) return; // Initial segment
@@ -837,7 +836,7 @@ const App = memo(() => {
       setExternalStreamFiles([]);
       setCustomTagsByFile({});
       setCustomTagsByStreamId({});
-      setDisabledSegmentIds({});
+      setDispositionByStreamId({});
       setDetectedFps();
       setMainStreams([]);
       setMainVideoStream();
@@ -845,15 +844,15 @@ const App = memo(() => {
       setCopyStreamIdsByFile({});
       setStreamsSelectorShown(false);
       setZoom(1);
+      setThumbnails([]);
       setShortestFlag(false);
       setZoomWindowStartTime(0);
-      setHideCanvasPreview(false);
+      setDisabledSegmentIds({});
       setSubtitlesByStreamId({});
       setActiveSubtitleStreamIndex();
-
+      setHideCanvasPreview(false);
       setExportConfirmVisible(false);
 
-      setThumbnails([]);
       cancelRenderThumbnails();
     });
   }, [cutSegmentsHistory, setCutSegments, cancelRenderThumbnails]);
@@ -960,6 +959,8 @@ const App = memo(() => {
     setBatchFiles([]);
   }, [askBeforeClose]);
 
+  const removeBatchFile = useCallback((path) => setBatchFiles((existingBatch) => existingBatch.filter((existingFile) => existingFile.path !== path)), []);
+
   const cleanupFiles = useCallback(async () => {
     // Because we will reset state before deleting files
     const saved = { previewFilePath, filePath, edlFilePath };
@@ -978,6 +979,8 @@ const App = memo(() => {
     if (!deleteTmpFiles && !deleteProjectFile && !deleteOriginal) return;
 
     if (workingRef.current) return;
+
+    removeBatchFile(saved.filePath);
 
     try {
       setWorking(i18n.t('Cleaning up'));
@@ -1009,7 +1012,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [filePath, previewFilePath, closeFile, edlFilePath, cleanupChoices, setWorking]);
+  }, [previewFilePath, filePath, edlFilePath, closeFile, cleanupChoices, removeBatchFile, setWorking]);
 
   const outSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
     [invertCutSegments, inverseCutSegments, apparentCutSegments]);
@@ -1401,7 +1404,7 @@ const App = memo(() => {
       resetState();
       throw err;
     }
-  }, [resetState, html5ifyAndLoad, loadEdlFile, getEdlFilePath, getEdlFilePathOld, loadCutSegments, enableAskForImportChapters, autoLoadTimecode, outFormatLocked, showPreviewFileLoadedMessage, rememberConvertToSupportedFormat, setWorking]);
+  }, [resetState, html5ifyAndLoad, loadEdlFile, getEdlFilePath, getEdlFilePathOld, loadCutSegments, enableAskForImportChapters, autoLoadTimecode, outFormatLocked, showPreviewFileLoadedMessage, rememberConvertToSupportedFormat, setWorking, setCopyStreamIdsForPath]);
 
   const toggleHelp = useCallback(() => setHelpVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1494,7 +1497,7 @@ const App = memo(() => {
     // console.log('streams', streams);
     setExternalStreamFiles(old => ({ ...old, [path]: { streams, formatData } }));
     setCopyStreamIdsForPath(path, () => fromPairs(streams.map(({ index }) => [index, true])));
-  }, [externalStreamFiles]);
+  }, [externalStreamFiles, setCopyStreamIdsForPath]);
 
   const userOpenSingleFile = useCallback(async ({ path: pathIn, isLlcProject }) => {
     let path = pathIn;
@@ -1586,9 +1589,11 @@ const App = memo(() => {
       setWorking(i18n.t('Loading file'));
 
       // Import CSV project for existing video
-      if (filePathLowerCase.endsWith('.csv')) {
+      const edlFormats = { csv: 'csv', pbf: 'pbf', edl: 'mplayer', cue: 'cue', xml: 'xmeml' };
+      const matchingExt = Object.keys(edlFormats).find((ext) => filePathLowerCase.endsWith(`.${ext}`));
+      if (matchingExt) {
         if (!checkFileOpened()) return;
-        await loadEdlFile(firstFilePath, 'csv');
+        await loadEdlFile(firstFilePath, edlFormats[matchingExt]);
         return;
       }
 
@@ -1976,7 +1981,7 @@ const App = memo(() => {
     loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFile, closeBatch, clearSegments, fixInvalidDuration, invertAllCutSegments,
   ]);
 
-  async function showAddStreamSourceDialog() {
+  const showAddStreamSourceDialog = useCallback(async () => {
     try {
       const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'] });
       if (canceled || filePaths.length < 1) return;
@@ -1984,7 +1989,7 @@ const App = memo(() => {
     } catch (err) {
       handleError(err);
     }
-  }
+  }, [addStreamSourceFile]);
 
   useEffect(() => {
     async function onDrop(ev) {
@@ -2092,6 +2097,10 @@ const App = memo(() => {
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);
+  }, []);
+
+  useEffect(() => {
+    runStartupCheck().catch((err) => handleError('LosslessCut is installation is broken', err));
   }, []);
 
   useEffect(() => {
