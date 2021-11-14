@@ -1,4 +1,4 @@
-import React, { memo, useState, useMemo } from 'react';
+import React, { memo, useState, useMemo, useCallback } from 'react';
 
 import { FaCheckCircle, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
@@ -23,13 +23,13 @@ const TagEditor = memo(({ existingTags, customTags, onTagChange, onTagReset }) =
   const [editingTagVal, setEditingTagVal] = useState();
   const [newTag, setNewTag] = useState();
 
-  const mergedTags = { ...existingTags, ...customTags, ...(newTag ? { [newTag]: '' } : {}) };
+  const mergedTags = useMemo(() => ({ ...existingTags, ...customTags, ...(newTag ? { [newTag]: '' } : {}) }), [customTags, existingTags, newTag]);
 
-  function onResetClick() {
+  const onResetClick = useCallback(() => {
     onTagReset(editingTag);
     setEditingTag();
     setNewTag();
-  }
+  }, [editingTag, onTagReset]);
 
   function onEditClick(tag) {
     if (newTag) {
@@ -54,13 +54,13 @@ const TagEditor = memo(({ existingTags, customTags, onTagChange, onTagReset }) =
     onEditClick();
   }
 
-  async function onAddPress() {
+  const onAddPress = useCallback(async () => {
     const tag = await askForMetadataKey();
     if (!tag || Object.keys(mergedTags).includes(tag)) return;
     setEditingTag(tag);
     setEditingTagVal('');
     setNewTag(tag);
-  }
+  }, [mergedTags]);
 
   return (
     <>
@@ -103,16 +103,16 @@ const EditFileDialog = memo(({ editingFile, externalFiles, mainFileFormatData, m
   const existingTags = formatData.tags || {};
   const customTags = customTagsByFile[editingFile] || {};
 
-  function onTagChange(tag, value) {
+  const onTagChange = useCallback((tag, value) => {
     setCustomTagsByFile((old) => ({ ...old, [editingFile]: { ...old[editingFile], [tag]: value } }));
-  }
+  }, [editingFile, setCustomTagsByFile]);
 
-  function onTagReset(tag) {
+  const onTagReset = useCallback((tag) => {
     setCustomTagsByFile((old) => {
       const { [tag]: deleted, ...rest } = old[editingFile] || {};
       return { ...old, [editingFile]: rest };
     });
-  }
+  }, [editingFile, setCustomTagsByFile]);
 
   return <TagEditor existingTags={existingTags} customTags={customTags} onTagChange={onTagChange} onTagReset={onTagReset} />;
 });
@@ -132,7 +132,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
 
   const { t } = useTranslation();
 
-  function onTagChange(tag, value) {
+  const onTagChange = useCallback((tag, value) => {
     setCustomTagsByStreamId((old) => ({
       ...old,
       [editingFile]: {
@@ -143,9 +143,9 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
         },
       },
     }));
-  }
+  }, [editingFile, editingStreamId, setCustomTagsByStreamId]);
 
-  function onTagReset(tag) {
+  const onTagReset = useCallback((tag) => {
     setCustomTagsByStreamId((old) => {
       const { [tag]: deleted, ...rest } = (old[editingFile] || {})[editingStreamId] || {};
 
@@ -157,9 +157,9 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
         },
       };
     });
-  }
+  }, [editingFile, editingStreamId, setCustomTagsByStreamId]);
 
-  function onCoverArtChange(e) {
+  const onCoverArtChange = useCallback((e) => {
     const newDispositions = dispositionOptions.includes(e.target.value) ? {
       [e.target.value]: 1,
     } : undefined;
@@ -173,7 +173,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
         [editingStreamId]: newDispositions,
       },
     }));
-  }
+  }, [editingFile, editingStreamId, setDispositionByStreamId]);
 
   if (!stream) return null;
 

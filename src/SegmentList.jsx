@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useRef } from 'react';
+import React, { memo, useMemo, useRef, useCallback } from 'react';
 import prettyMs from 'pretty-ms';
 import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaCheck, FaTimes } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
@@ -130,10 +130,10 @@ const SegmentList = memo(({
 
   const sortableList = outSegments.map((seg) => ({ id: seg.segId, seg }));
 
-  function setSortableList(newList) {
+  const setSortableList = useCallback((newList) => {
     if (isEqual(outSegments.map((s) => s.segId), newList.map((l) => l.id))) return; // No change
     updateSegOrders(newList.map((list) => list.id));
-  }
+  }, [outSegments, updateSegOrders]);
 
   let headerText = t('Segments to export:');
   if (outSegments.length === 0) {

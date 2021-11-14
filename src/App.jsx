@@ -207,7 +207,7 @@ const App = memo(() => {
     }
   }, [detectedFileFormat, outFormatLocked, setOutFormatLocked]);
 
-  function setTimelineMode(newMode) {
+  const setTimelineMode = useCallback((newMode) => {
     if (newMode === 'waveform') {
       setWaveformEnabled(v => !v);
       setThumbnailsEnabled(false);
@@ -215,7 +215,7 @@ const App = memo(() => {
       setThumbnailsEnabled(v => !v);
       setWaveformEnabled(false);
     }
-  }
+  }, []);
 
   const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => !v), [setExportConfirmEnabled]);
 
@@ -239,18 +239,18 @@ const App = memo(() => {
 
   const getCurrentTime = useCallback(() => currentTimeRef.current, []);
 
-  function setCopyStreamIdsForPath(path, cb) {
+  const setCopyStreamIdsForPath = useCallback((path, cb) => {
     setCopyStreamIdsByFile((old) => {
       const oldIds = old[path] || {};
       return ({ ...old, [path]: cb(oldIds) });
     });
-  }
+  }, []);
 
   const toggleRightBar = useCallback(() => setShowRightBar(v => !v), []);
 
   const toggleCopyStreamId = useCallback((path, index) => {
     setCopyStreamIdsForPath(path, (old) => ({ ...old, [index]: !old[index] }));
-  }, []);
+  }, [setCopyStreamIdsForPath]);
 
   const hideAllNotifications = hideNotifications === 'all';
 
@@ -737,7 +737,7 @@ const App = memo(() => {
       });
       return newCopyStreamIds;
     });
-  }, [copyAnyAudioTrack, filePath, mainStreams]);
+  }, [copyAnyAudioTrack, filePath, mainStreams, setCopyStreamIdsForPath]);
 
   const removeCutSegment = useCallback((index) => {
     if (cutSegments.length === 1 && cutSegments[0].start == null && cutSegments[0].end == null) return; // Initial segment
@@ -1400,7 +1400,7 @@ const App = memo(() => {
       resetState();
       throw err;
     }
-  }, [resetState, html5ifyAndLoad, loadEdlFile, getEdlFilePath, getEdlFilePathOld, loadCutSegments, enableAskForImportChapters, autoLoadTimecode, outFormatLocked, showPreviewFileLoadedMessage, rememberConvertToSupportedFormat, setWorking]);
+  }, [resetState, html5ifyAndLoad, loadEdlFile, getEdlFilePath, getEdlFilePathOld, loadCutSegments, enableAskForImportChapters, autoLoadTimecode, outFormatLocked, showPreviewFileLoadedMessage, rememberConvertToSupportedFormat, setWorking, setCopyStreamIdsForPath]);
 
   const toggleHelp = useCallback(() => setHelpVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1493,7 +1493,7 @@ const App = memo(() => {
     // console.log('streams', streams);
     setExternalStreamFiles(old => ({ ...old, [path]: { streams, formatData } }));
     setCopyStreamIdsForPath(path, () => fromPairs(streams.map(({ index }) => [index, true])));
-  }, [externalStreamFiles]);
+  }, [externalStreamFiles, setCopyStreamIdsForPath]);
 
   const userOpenSingleFile = useCallback(async ({ path: pathIn, isLlcProject }) => {
     let path = pathIn;
@@ -1977,7 +1977,7 @@ const App = memo(() => {
     loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFile, closeBatch, clearSegments, fixInvalidDuration, invertAllCutSegments,
   ]);
 
-  async function showAddStreamSourceDialog() {
+  const showAddStreamSourceDialog = useCallback(async () => {
     try {
       const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'] });
       if (canceled || filePaths.length < 1) return;
@@ -1985,7 +1985,7 @@ const App = memo(() => {
     } catch (err) {
       handleError(err);
     }
-  }
+  }, [addStreamSourceFile]);
 
   useEffect(() => {
     async function onDrop(ev) {

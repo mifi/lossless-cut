@@ -45,11 +45,11 @@ const SortableFiles = memo(({
 
   const { t } = useTranslation();
 
-  function onSortClick() {
+  const onSortClick = useCallback(() => {
     const newSortDesc = sortDesc == null ? false : !sortDesc;
     setItems(orderBy(items, undefined, [newSortDesc ? 'desc' : 'asc']));
     setSortDesc(newSortDesc);
-  }
+  }, [items, sortDesc]);
 
   return (
     <div style={{ textAlign: 'left' }}>
