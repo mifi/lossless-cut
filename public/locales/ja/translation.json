@@ -1,6 +1,6 @@
 {
     "MPlayer EDL": "MPlayer EDL",
-    "EDL (MPlayer)": "",
+    "EDL (MPlayer)": "EDL (MPlayer)",
     "Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut": "正確な位置で切り取りますが、ファイルの最初に抜け部分ができるかもしれません。正確に切り取るには、次のキーフレーム数のフレーム前に切り取り地点を設定する必要があることがあります",
     "Accurate time but could leave an empty portion at the beginning of the video. Equiv to": "正確な時間だが動画の最初に抜け部分ができることも。以下に相当",
     "Will now cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files.": "指定した開始地点の前に最も近いキーフレームで切り取ります。ほとんどのファイルではこれを推奨します。",
@@ -477,5 +477,6 @@
     "Fastest: Low playback speed (audio remux), likely to fail": "最高速: 再生速度が遅い (音声の多重化), 失敗しやすい",
     "An error has occurred.": "エラーが発生しました.",
     "Multiple files": "複数のファイル",
-    "Load segments from the new file, but keep the current media": "現在のメディアのまま、新たなファイルのセグメント情報を読み込む"
+    "Load segments from the new file, but keep the current media": "現在のメディアのまま、新たなファイルのセグメント情報を読み込む",
+    "LosslessCut (CSV)": "LosslessCut (CSV)"
 }
