@@ -959,6 +959,8 @@ const App = memo(() => {
     setBatchFiles([]);
   }, [askBeforeClose]);
 
+  const removeBatchFile = useCallback((path) => setBatchFiles((existingBatch) => existingBatch.filter((existingFile) => existingFile.path !== path)), []);
+
   const cleanupFiles = useCallback(async () => {
     // Because we will reset state before deleting files
     const saved = { previewFilePath, filePath, edlFilePath };
@@ -977,6 +979,8 @@ const App = memo(() => {
     if (!deleteTmpFiles && !deleteProjectFile && !deleteOriginal) return;
 
     if (workingRef.current) return;
+
+    removeBatchFile(saved.filePath);
 
     try {
       setWorking(i18n.t('Cleaning up'));
@@ -1007,9 +1011,8 @@ const App = memo(() => {
       }
     } finally {
       setWorking();
-      if (deleteOriginal) setBatchFiles(existingBatch => existingBatch.filter(existingFile => existingFile.path !== saved.filePath));
     }
-  }, [filePath, previewFilePath, closeFile, edlFilePath, cleanupChoices, setWorking]);
+  }, [previewFilePath, filePath, edlFilePath, closeFile, cleanupChoices, removeBatchFile, setWorking]);
 
   const outSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
     [invertCutSegments, inverseCutSegments, apparentCutSegments]);
