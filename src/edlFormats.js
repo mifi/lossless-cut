@@ -110,15 +110,19 @@ export function parseXmeml(xmlStr) {
   const xml = fastXmlParser.parse(xmlStr);
 
   // TODO maybe support media.audio also?
-  if (!_.property('xmeml')(xml)) {
-    throw Error('Root element <xmeml> not found in file');
-  } else if (_.property('xmeml.project.children.sequence.media.video.track.clipitem')(xml)) {
-    return xml.xmeml.project.children.sequence.media.video.track.clipitem.map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
-  } else if (_.property('xmeml.sequence.media.video.track.clipitem')(xml)) {
-    return xml.xmeml.sequence.media.video.track.clipitem.map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
+  const { xmeml } = xml;
+  if (!xmeml) throw Error('Root element <xmeml> not found in file');
+
+  let sequence;
+  if (_.property('project.children.sequence.media.video.track.clipitem')(xmeml)) {
+    sequence = xmeml.project.children.sequence;
+  } else if (_.property('sequence.media.video.track.clipitem')(xmeml)) {
+    sequence = xmeml.sequence;
   } else {
     throw Error('No <clipitem> elements found in file');
   }
+
+  return sequence.media.video.track.clipitem.map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
 }
 
 export function parseYouTube(str) {
