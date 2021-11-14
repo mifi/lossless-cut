@@ -15,7 +15,6 @@ import Mousetrap from 'mousetrap';
 import JSON5 from 'json5';
 
 import fromPairs from 'lodash/fromPairs';
-import clamp from 'lodash/clamp';
 import sortBy from 'lodash/sortBy';
 import flatMap from 'lodash/flatMap';
 import isEqual from 'lodash/isEqual';
@@ -62,6 +61,7 @@ import {
   hasDuplicates, havePermissionToReadFile, isMac, resolvePathIfNeeded, pathExists, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
 } from './util';
 import { formatDuration } from './util/duration';
+import { adjustRate } from './util/rate-calculator';
 import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMultipleFilesDialog, showOpenAndMergeDialog, openAbout, showEditableJsonDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
@@ -1232,7 +1232,7 @@ const App = memo(() => {
     }
   }, [filePath, captureFormat, customOutDir, previewFilePath, outputDir, enableTransferTimestamps, hideAllNotifications]);
 
-  const changePlaybackRate = useCallback((dir) => {
+  const changePlaybackRate = useCallback((dir, rateMultiplier) => {
     if (canvasPlayerEnabled) {
       toast.fire({ title: i18n.t('Unable to change playback rate right now'), timer: 1000 });
       return;
@@ -1242,8 +1242,7 @@ const App = memo(() => {
     if (!playing) {
       video.play();
     } else {
-      // https://github.com/mifi/lossless-cut/issues/447#issuecomment-766339083
-      const newRate = clamp(Math.round((video.playbackRate + (dir * 0.15)) * 100) / 100, 0.1, 16);
+      const newRate = adjustRate(video.playbackRate, dir, rateMultiplier);
       toast.fire({ title: `${i18n.t('Playback rate:')} ${Math.round(newRate * 100)}%`, timer: 1000 });
       video.playbackRate = newRate;
     }
@@ -1674,7 +1673,9 @@ const App = memo(() => {
     const togglePlayNoReset = () => togglePlay();
     const togglePlayReset = () => togglePlay(true);
     const reducePlaybackRate = () => changePlaybackRate(-1);
+    const reducePlaybackRateMore = () => changePlaybackRate(-1, 2.0);
     const increasePlaybackRate = () => changePlaybackRate(1);
+    const increasePlaybackRateMore = () => changePlaybackRate(1, 2.0);
     function seekBackwards() {
       seekRel(keyboardNormalSeekSpeed * seekAccelerationRef.current * -1);
       seekAccelerationRef.current *= keyboardSeekAccFactor;
@@ -1707,7 +1708,9 @@ const App = memo(() => {
     mousetrap.bind('space', () => togglePlayReset());
     mousetrap.bind('k', () => togglePlayNoReset());
     mousetrap.bind('j', () => reducePlaybackRate());
+    mousetrap.bind('shift+j', () => reducePlaybackRateMore());
     mousetrap.bind('l', () => increasePlaybackRate());
+    mousetrap.bind('shift+l', () => increasePlaybackRateMore());
     mousetrap.bind('z', () => toggleComfortZoom());
     mousetrap.bind(',', () => seekBackwardsShort());
     mousetrap.bind('.', () => seekForwardsShort());
