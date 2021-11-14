@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`parses xmeml 1 1`] = `
+Array [
+  Object {
+    "end": 8.56,
+    "start": 0,
+  },
+  Object {
+    "end": 13.12,
+    "start": 8.56,
+  },
+  Object {
+    "end": 19.12,
+    "start": 13.12,
+  },
+  Object {
+    "end": 27.96,
+    "start": 19.12,
+  },
+  Object {
+    "end": 39.08,
+    "start": 27.96,
+  },
+  Object {
+    "end": 49.36,
+    "start": 39.08,
+  },
+]
+`;
