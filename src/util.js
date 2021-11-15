@@ -1,13 +1,15 @@
 import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import lodashTemplate from 'lodash/template';
+import pMap from 'p-map';
 
 const { dirname, parse: parsePath, join, basename, extname, isAbsolute, resolve } = window.require('path');
 const fs = window.require('fs-extra');
 const open = window.require('open');
 const os = window.require('os');
+const trash = window.require('trash');
 
-const { readdir } = fs;
+const { readdir, unlink } = fs;
 
 export function getOutDir(customOutDir, filePath) {
   if (customOutDir) return customOutDir;
@@ -222,4 +224,53 @@ export async function findExistingHtml5FriendlyFile(fp, cod) {
     path: join(outDir, entry),
     usingDummyVideo: ['fastest-audio', 'fastest-audio-remux', html5dummySuffix].includes(suffix),
   };
+}
+
+export function getHtml5ifiedPath(cod, fp, type) {
+  // See also inside ffmpegHtml5ify
+  const ext = (isMac && ['slowest', 'slow', 'slow-audio'].includes(type)) ? 'mp4' : 'mkv';
+  return getOutPath(cod, fp, `${html5ifiedPrefix}${type}.${ext}`);
+}
+
+export async function deleteFiles({ toDelete, paths: { previewFilePath, filePath, edlFilePath } }) {
+  const failedToTrashFiles = [];
+
+  if (toDelete.tmpFiles && previewFilePath) {
+    try {
+      await trash(previewFilePath);
+    } catch (err) {
+      console.error(err);
+      failedToTrashFiles.push(previewFilePath);
+    }
+  }
+  if (toDelete.projectFile && edlFilePath) {
+    try {
+      // throw new Error('test');
+      await trash(edlFilePath);
+    } catch (err) {
+      console.error(err);
+      failedToTrashFiles.push(edlFilePath);
+    }
+  }
+  if (toDelete.sourceFile) {
+    try {
+      await trash(filePath);
+    } catch (err) {
+      console.error(err);
+      failedToTrashFiles.push(filePath);
+    }
+  }
+
+  if (failedToTrashFiles.length === 0) return; // All good!
+
+  const { value } = await Swal.fire({
+    icon: 'warning',
+    text: i18n.t('Unable to move file to trash. Do you want to permanently delete it?'),
+    confirmButtonText: i18n.t('Permanently delete'),
+    showCancelButton: true,
+  });
+
+  if (value) {
+    await pMap(failedToTrashFiles, async (path) => unlink(path), { concurrency: 1 });
+  }
 }

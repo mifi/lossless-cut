@@ -2,7 +2,6 @@ import React, { memo, useEffect, useState, useCallback, useRef, useMemo } from '
 import { unstable_batchedUpdates as batchedUpdates } from 'react-dom';
 import { FaAngleLeft, FaWindowClose, FaTimes, FaAngleRight, FaFile } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
-import Swal from 'sweetalert2';
 import Lottie from 'react-lottie-player';
 import { SideSheet, Button, Position, ForkIcon, DisableIcon, Select, ThemeProvider } from 'evergreen-ui';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
@@ -59,6 +58,7 @@ import {
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   hasDuplicates, havePermissionToReadFile, isMac, resolvePathIfNeeded, pathExists, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
+  deleteFiles, getHtml5ifiedPath,
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
@@ -70,17 +70,9 @@ import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApp
 import loadingLottie from './7077-magic-flow.json';
 
 
-function getHtml5ifiedPath(cod, fp, type) {
-  // See also inside ffmpegHtml5ify
-  const ext = (isMac && ['slowest', 'slow', 'slow-audio'].includes(type)) ? 'mp4' : 'mkv';
-  return getOutPath(cod, fp, `${html5ifiedPrefix}${type}.${ext}`);
-}
-
-
 const isDev = window.require('electron-is-dev');
 const electron = window.require('electron'); // eslint-disable-line
-const trash = window.require('trash');
-const { unlink, exists } = window.require('fs-extra');
+const { exists } = window.require('fs-extra');
 const { extname, parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, basename, dirname } = window.require('path');
 
 const { dialog } = electron.remote;
@@ -941,17 +933,13 @@ const App = memo(() => {
   }, [playing, filePath]);
 
   const closeFileWithConfirm = useCallback(() => {
+    if (!isFileOpened || workingRef.current) return;
+
     // eslint-disable-next-line no-alert
-    if (askBeforeClose && !window.confirm(i18n.t('Are you sure you want to close the current file?'))) return false;
+    if (askBeforeClose && !window.confirm(i18n.t('Are you sure you want to close the current file?'))) return;
 
     resetState();
-    return true;
-  }, [askBeforeClose, resetState]);
-
-  const closeFile = useCallback(() => {
-    if (!isFileOpened || workingRef.current) return false;
-    return closeFileWithConfirm();
-  }, [closeFileWithConfirm, isFileOpened]);
+  }, [askBeforeClose, resetState, isFileOpened]);
 
   const closeBatch = useCallback(() => {
     // eslint-disable-next-line no-alert
@@ -962,10 +950,7 @@ const App = memo(() => {
   const removeBatchFile = useCallback((path) => setBatchFiles((existingBatch) => existingBatch.filter((existingFile) => existingFile.path !== path)), []);
 
   const cleanupFiles = useCallback(async () => {
-    // Because we will reset state before deleting files
-    const saved = { previewFilePath, filePath, edlFilePath };
-
-    if (!closeFile()) return;
+    if (!isFileOpened) return;
 
     let trashResponse = cleanupChoices;
     if (!cleanupChoices.dontShowAgain) {
@@ -975,44 +960,28 @@ const App = memo(() => {
       setCleanupChoices(trashResponse); // Store for next time
     }
 
-    const { tmpFiles: deleteTmpFiles, projectFile: deleteProjectFile, sourceFile: deleteOriginal } = trashResponse;
-    if (!deleteTmpFiles && !deleteProjectFile && !deleteOriginal) return;
-
     if (workingRef.current) return;
 
-    removeBatchFile(saved.filePath);
+    // Because we will reset state before deleting files
+    const savedPaths = { previewFilePath, filePath, edlFilePath };
+
+    resetState();
+
+    removeBatchFile(savedPaths.filePath);
+
+    if (!trashResponse.tmpFiles && !trashResponse.projectFile && !trashResponse.sourceFile) return;
 
     try {
       setWorking(i18n.t('Cleaning up'));
-
-      if (deleteTmpFiles && saved.previewFilePath) await trash(saved.previewFilePath).catch(console.error);
-      if (deleteProjectFile && saved.edlFilePath) await trash(saved.edlFilePath).catch(console.error);
-      // throw new Error('test');
-      if (deleteOriginal) await trash(saved.filePath);
+      console.log('trashing', trashResponse);
+      await deleteFiles({ toDelete: trashResponse, paths: savedPaths });
     } catch (err) {
-      try {
-        console.warn('Failed to trash', err);
-
-        const { value } = await Swal.fire({
-          icon: 'warning',
-          text: i18n.t('Unable to move file to trash. Do you want to permanently delete it?'),
-          confirmButtonText: i18n.t('Permanently delete'),
-          showCancelButton: true,
-        });
-
-        if (value) {
-          if (deleteTmpFiles && saved.previewFilePath) await unlink(saved.previewFilePath).catch(console.error);
-          if (deleteProjectFile && saved.edlFilePath) await unlink(saved.edlFilePath).catch(console.error);
-          if (deleteOriginal) await unlink(saved.filePath);
-        }
-      } catch (err2) {
-        errorToast(`Unable to delete file: ${err2.message}`);
-        console.error(err2);
-      }
+      errorToast(i18n.t('Unable to delete file: {{message}}', { message: err.message }));
+      console.error(err);
     } finally {
       setWorking();
     }
-  }, [previewFilePath, filePath, edlFilePath, closeFile, cleanupChoices, removeBatchFile, setWorking]);
+  }, [previewFilePath, filePath, edlFilePath, cleanupChoices, isFileOpened, resetState, removeBatchFile, setWorking]);
 
   const outSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
     [invertCutSegments, inverseCutSegments, apparentCutSegments]);
@@ -1927,7 +1896,7 @@ const App = memo(() => {
     const fileOpened = (event, filePaths) => { userOpenFiles(filePaths.map(resolvePathIfNeeded)); };
     const showStreamsSelector = () => setStreamsSelectorShown(true);
     const openSendReportDialog2 = () => { openSendReportDialogWithState(); };
-    const closeFile2 = () => { closeFile(); };
+    const closeFile2 = () => { closeFileWithConfirm(); };
     const closeBatch2 = () => { closeBatch(); };
 
     electron.ipcRenderer.on('file-opened', fileOpened);
@@ -1981,7 +1950,7 @@ const App = memo(() => {
     mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile,
     extractAllStreams, userOpenFiles, openSendReportDialogWithState, setWorking,
     loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, ensureOutDirAccessible, html5ifyAndLoad, html5ify,
-    loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFile, closeBatch, clearSegments, fixInvalidDuration, invertAllCutSegments,
+    loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFileWithConfirm, closeBatch, clearSegments, fixInvalidDuration, invertAllCutSegments,
   ]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
