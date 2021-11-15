@@ -135,3 +135,7 @@ it('parseMplayerEdl, starting at 0', async () => {
 it('parses xmeml 1', async () => {
   expect(await parseXmeml(await readFixture('Final Cut Pro XMEML.xml'))).toMatchSnapshot();
 });
+
+it('parses xmeml 2', async () => {
+  expect(await parseXmeml(await readFixture('Final Cut Pro XMEML 2.xml'))).toMatchSnapshot();
+});
