@@ -25,7 +25,8 @@
     "postinstall": "patch-package && electron-builder install-app-deps",
     "pack-linux": "electron-builder --linux",
     "prepack-linux": "yarn build",
-    "scan-i18n": "i18next-scanner --config i18next-scanner.config.js"
+    "scan-i18n": "i18next-scanner --config i18next-scanner.config.js",
+    "generate-licenses": "yarn licenses generate-disclaimer > licenses.txt && echo '\n\nffmpeg is licensed under GPL v2+:\n\nhttp://www.gnu.org/licenses/old-licenses/gpl-2.0.html' >> licenses.txt"
   },
   "author": {
     "name": "Mikael Finstad",

@@ -42,3 +42,19 @@ For per-platform build/signing setup, see https://blog.mifi.no/2020/03/31/automa
 - Release draft at github
 - Bump [snap version](https://snapcraft.io/losslesscut/listing)
 - `npm run scan-i18n` to get the newest Englist strings and push so weblate gets them
+
+## Licenses
+
+### Generate summary
+
+```
+npx license-checker --summary
+```
+
+### Regenerate licenses file
+
+```
+npm run generate-licenses
+#cp licenses.txt mifi.no/public/losslesscut/
+```
+Then deploy.

@@ -4,7 +4,7 @@ const i18n = require('i18next');
 const { Menu } = electron;
 const { dialog } = electron;
 
-const { homepage, releasesPage } = require('./constants');
+const { homepage, releasesPage, licensesPage } = require('./constants');
 
 module.exports = (app, mainWindow, newVersion) => {
   const menu = [
@@ -272,6 +272,10 @@ module.exports = (app, mainWindow, newVersion) => {
           click() {
             mainWindow.webContents.send('openAbout');
           },
+        },
+        {
+          label: i18n.t('Licenses'),
+          click() { electron.shell.openExternal(licensesPage); },
         },
         {
           label: i18n.t('Learn More'),
