@@ -113,9 +113,13 @@ For more information about supported formats / codecs, see https://www.chromium.
 
 Unsupported files can still be converted to a supported format/codec from the `File` menu. (Try the fastest variant first.) A low quality version of the file (without audio) will then be created and opened in the player. The cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that FFmpeg is able to decode.
 
-## How to use
+## Video demos
 
-[Watch tutorial video](https://www.youtube.com/watch?v=pYHMxXy05Jg) - **Your video here?** If you would like to make a video showing off LosslessCut use cases, let me know and I can link it here!
+- [Common features](https://www.youtube.com/watch?v=pYHMxXy05Jg)
+- [How to add a thumbnail to an MP4](https://www.youtube.com/watch?v=4pYJ93cn80E)
+- [How to add multi-language audio to a video](https://www.youtube.com/watch?v=MRBGDsuw_WU)
+
+- **Your video here?** If you would like to make a video showing off LosslessCut use cases, let me know and I can link it here!
 
 ### Typical workflow
 
