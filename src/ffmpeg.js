@@ -5,7 +5,7 @@ import moment from 'moment';
 import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
-import { getOutPath, isDurationValid, getExtensionForFormat, isWindows, platform } from './util';
+import { getOutPath, isDurationValid, getExtensionForFormat, isWindows, platform, getAudioStreams } from './util';
 
 const execa = window.require('execa');
 const { join } = window.require('path');
@@ -539,12 +539,6 @@ export const defaultProcessedCodecTypes = [
 ];
 
 export const isMov = (format) => ['ismv', 'ipod', 'mp4', 'mov'].includes(format);
-
-export function isStreamThumbnail(stream) {
-  return stream && stream.disposition && stream.disposition.attached_pic === 1;
-}
-
-const getAudioStreams = (streams) => streams.filter(stream => stream.codec_type === 'audio');
 
 export function isAudioDefinitelyNotSupported(streams) {
   const audioStreams = getAudioStreams(streams);

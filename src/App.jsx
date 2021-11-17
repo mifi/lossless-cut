@@ -48,7 +48,7 @@ import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
   readFileMeta, getFormatData, renderThumbnails as ffmpegRenderThumbnails,
   extractStreams, getAllStreams, runStartupCheck,
-  isStreamThumbnail, isAudioDefinitelyNotSupported, isIphoneHevc, tryReadChaptersToEdl,
+  isAudioDefinitelyNotSupported, isIphoneHevc, tryReadChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
 } from './ffmpeg';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, readEdl } from './edlStore';
@@ -58,7 +58,7 @@ import {
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   hasDuplicates, havePermissionToReadFile, isMac, resolvePathIfNeeded, pathExists, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, getHtml5ifiedPath,
+  deleteFiles, getHtml5ifiedPath, isStreamThumbnail, getAudioStreams, getVideoStreams,
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
@@ -1294,16 +1294,22 @@ const App = memo(() => {
 
       const timecode = autoLoadTimecode ? getTimecodeFromStreams(streams) : undefined;
 
-      const videoStream = streams.find(stream => stream.codec_type === 'video' && !isStreamThumbnail(stream));
-      const audioStream = streams.find(stream => stream.codec_type === 'audio');
+      const videoStreams = getVideoStreams(streams);
+      const audioStreams = getAudioStreams(streams);
 
-      const detectedFpsNew = videoStream ? getStreamFps(videoStream) : undefined;
+      const videoStream = videoStreams[0];
+      const audioStream = audioStreams[0];
+
+      const haveVideoStream = !!videoStream;
+      const haveAudioStream = !!audioStream;
+
+      const detectedFpsNew = haveVideoStream ? getStreamFps(videoStream) : undefined;
 
       const shouldCopyStreamByDefault = (stream) => {
         if (!defaultProcessedCodecTypes.includes(stream.codec_type)) return false;
         // Don't enable thumbnail stream by default if we have a main video stream
         // It's been known to cause issues: https://github.com/mifi/lossless-cut/issues/308
-        if (isStreamThumbnail(stream) && videoStream) return false;
+        if (haveVideoStream && isStreamThumbnail(stream)) return false;
         return true;
       };
 
@@ -1324,7 +1330,7 @@ const App = memo(() => {
       // 'fastest' works with almost all video files
       if (!hasLoadedExistingHtml5FriendlyFile && !doesPlayerSupportFile(streams) && validDuration) {
         setWorking(i18n.t('Converting to supported format'));
-        await html5ifyAndLoad(cod, fp, rememberConvertToSupportedFormat || 'fastest', !!videoStream, !!audioStream);
+        await html5ifyAndLoad(cod, fp, rememberConvertToSupportedFormat || 'fastest', haveVideoStream, haveAudioStream);
       }
 
       try {
