@@ -241,7 +241,7 @@
     "No valid segments found": "正しいセグメントなし",
     "No segment to split. Please move cursor over the segment you want to split": "分割するセグメントなし。分割したいセグメント上にカーソルを合わせてください",
     "Start time must be before end time": "開始時間は終了時間より前に指定してください",
-    "Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, see the HELP page.": "完了! 切り取り箇所が不正確なことがあります。元ファイルの削除前に、好きなプレイヤーやエディタで出力ファイルを確認してください。出力ファイルがおかしい場合、ヘルプを参照。",
+    "Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, see the HELP page.": "完了! 切り取り箇所が不正確なことがあります。元ファイルの削除前に、好きなプレイヤーやエディタで出力ファイルを確認してください。出力ファイルがおかしければ、ヘルプを参照。",
     "Permanently delete": "完全に削除",
     "Unable to move file to trash. Do you want to permanently delete it?": "ごみ箱へ移動できません。完全に削除しますか ?",
     "Cleanup successful": "お掃除成功",
