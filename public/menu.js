@@ -4,7 +4,7 @@ const i18n = require('i18next');
 const { Menu } = electron;
 const { dialog } = electron;
 
-const { homepage, releasesPage, licensesPage } = require('./constants');
+const { homepage, getReleaseUrl, licensesPage } = require('./constants');
 
 module.exports = (app, mainWindow, newVersion) => {
   const menu = [
@@ -295,7 +295,7 @@ module.exports = (app, mainWindow, newVersion) => {
       submenu: [
         {
           label: i18n.t('Download {{version}}', { version: newVersion }),
-          click() { electron.shell.openExternal(releasesPage); },
+          click() { electron.shell.openExternal(getReleaseUrl(newVersion)); },
         },
       ],
     });
