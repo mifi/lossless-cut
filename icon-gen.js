@@ -16,5 +16,9 @@ const svg2png = (from, to, width, height) => sharp(from)
   await svg2png('src/icon.svg', './build-resources/appx/Square44x44Logo.png', 44, 44);
   await svg2png('src/icon.svg', './build-resources/appx/Wide310x150Logo.png', 620, 300);
 
-  await icongen('./src/icon.svg', './icns-build', { icns: { sizes: [512, 1024] } });
+  await icongen('./src/icon.svg', './icon-build', { icns: { sizes: [512, 1024] } });
+
+  // https://github.com/mifi/lossless-cut/issues/778
+  // https://stackoverflow.com/questions/3236115/which-icon-sizes-should-my-windows-applications-icon-include
+  await icongen('./src/icon.svg', './icon-build', { ico: { sizes: [16, 24, 32, 40, 48, 64, 96, 128, 256, 512] } });
 })();

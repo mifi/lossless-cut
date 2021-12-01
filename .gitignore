@@ -3,6 +3,6 @@ node_modules
 dist
 build
 icon-build
-icns-build
+build-resources
 doc
 /ffmpeg
