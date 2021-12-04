@@ -456,5 +456,11 @@
     "Clear working directory": "清除工作目錄",
     "An error has occurred.": "發生了錯誤。",
     "Toggle Developer Tools": "切換開發者工具",
-    "Trash project LLC file": "丟棄專案LLC檔案"
+    "Trash project LLC file": "丟棄專案LLC檔案",
+    "Cut": "剪下",
+    "Copy": "複製",
+    "Paste": "貼上",
+    "Select All": "全選",
+    "Invert all segments on timeline": "反轉時間軸上的所有片段",
+    "Help": "幫助"
 }
