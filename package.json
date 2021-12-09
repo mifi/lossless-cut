@@ -10,7 +10,7 @@
     "start": "concurrently -k \"cross-env BROWSER=none PORT=3001 DISABLE_ESLINT_PLUGIN=true react-scripts start\" \"wait-on http://localhost:3001 && electron .\"",
     "icon-gen": "mkdirp icon-build build-resources/appx && node icon-gen.js",
     "download-ffmpeg-mac": "mkdir -p ffmpeg/darwin && cd ffmpeg/darwin && wget https://github.com/mifi/ffmpeg-build-script/releases/download/n4.4.1/ffmpeg -O ffmpeg && wget https://github.com/mifi/ffmpeg-build-script/releases/download/n4.4.1/ffprobe -O ffprobe && chmod +x ffmpeg && chmod +x ffprobe",
-    "download-ffmpeg-linux": "mkdir -p ffmpeg/linux && cd ffmpeg/linux && wget https://github.com/mifi/ffmpeg-builds/releases/download/4.4.1/ffmpeg-release-amd64-static.tar.xz -O ffmpeg.xz && tar xvf ffmpeg.xz && find . -type f \\( -name ffmpeg -o -name ffprobe \\) -exec cp {} ./ \\;",
+    "download-ffmpeg-linux": "mkdir -p ffmpeg/linux && cd ffmpeg/linux && wget https://github.com/mifi/ffmpeg-builds/releases/download/4.4.1/ffmpeg-release-amd64-static.tar.xz -O ffmpeg.xz && tar xvf ffmpeg.xz ffmpeg-4.4.1-amd64-static/ffmpeg ffmpeg-4.4.1-amd64-static/ffprobe --strip-components=1",
     "download-ffmpeg-windows": "npx shx mkdir -p ffmpeg/win32 && cd ffmpeg/win32 && npx download-cli https://github.com/mifi/ffmpeg-builds/releases/download/4.4.1/ffmpeg-n4.4.1-2-gcc33e73618-win64-gpl-4.4.zip --out . --filename ffmpeg.zip && 7z x ffmpeg.zip && npx shx mv ffmpeg-n4.4.1-2-gcc33e73618-win64-gpl-4.4/bin/ffmpeg.exe ./ && npx shx mv ffmpeg-n4.4.1-2-gcc33e73618-win64-gpl-4.4/bin/ffprobe.exe ./",
     "build": "yarn icon-gen && react-scripts build",
     "test": "react-scripts test",
