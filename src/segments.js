@@ -9,7 +9,12 @@ export const createSegment = ({ start, end, name, tags } = {}) => ({
   name: name || '',
   color: generateColor(),
   segId: uuidv4(),
-  tags, // tags is an optional object (key-value)
+
+  // `tags` is an optional object (key-value). Values must always be string
+  // See https://github.com/mifi/lossless-cut/issues/879
+  tags: tags != null && typeof tags === 'object'
+    ? Object.fromEntries(Object.entries(tags).map(([key, value]) => [key, String(value)]))
+    : undefined,
 });
 
 export const createInitialCutSegments = () => [createSegment()];
