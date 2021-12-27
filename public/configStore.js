@@ -47,7 +47,9 @@ async function getCustomStoragePath() {
     const isWindows = os.platform() === 'win32';
     if (!isWindows || process.windowsStore) return undefined;
 
-    const customStoragePath = app.getAppPath();
+    // https://github.com/mifi/lossless-cut/issues/645#issuecomment-1001363314
+    // https://stackoverflow.com/questions/46307797/how-to-get-the-original-path-of-a-portable-electron-app
+    const customStoragePath = process.env.PORTABLE_EXECUTABLE_DIR || app.getAppPath();
     const customConfigPath = join(customStoragePath, 'config.json');
     if (await pathExists(customConfigPath)) return customStoragePath;
     return undefined;
