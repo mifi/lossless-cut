@@ -1,7 +1,7 @@
 const Store = require('electron-store');
 const electron = require('electron');
 const os = require('os');
-const { join } = require('path');
+const { join, dirname } = require('path');
 const { pathExists } = require('fs-extra');
 
 const { app } = electron;
@@ -49,9 +49,10 @@ async function getCustomStoragePath() {
 
     // https://github.com/mifi/lossless-cut/issues/645#issuecomment-1001363314
     // https://stackoverflow.com/questions/46307797/how-to-get-the-original-path-of-a-portable-electron-app
-    const customStoragePath = process.env.PORTABLE_EXECUTABLE_DIR || app.getAppPath();
-    const customConfigPath = join(customStoragePath, 'config.json');
-    if (await pathExists(customConfigPath)) return customStoragePath;
+    // https://github.com/electron-userland/electron-builder/blob/master/docs/configuration/nsis.md
+    const customStorageDir = process.env.PORTABLE_EXECUTABLE_DIR || dirname(app.getPath('exe'));
+    const customConfigPath = join(customStorageDir, 'config.json');
+    if (await pathExists(customConfigPath)) return customStorageDir;
     return undefined;
   } catch (err) {
     console.error('Failed to get custom storage path', err);
