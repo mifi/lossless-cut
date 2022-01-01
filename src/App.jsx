@@ -4,7 +4,7 @@ import { FaAngleLeft, FaWindowClose, FaTimes, FaFile } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import Lottie from 'react-lottie-player';
-import { SideSheet, Button, Position, ForkIcon, DisableIcon, Select, ThemeProvider } from 'evergreen-ui';
+import { SideSheet, Button, Position, ForkIcon, DisableIcon, Select, ThemeProvider, SortAlphabeticalIcon, SortAlphabeticalDescIcon, IconButton } from 'evergreen-ui';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
@@ -17,6 +17,7 @@ import JSON5 from 'json5';
 import fromPairs from 'lodash/fromPairs';
 import clamp from 'lodash/clamp';
 import sortBy from 'lodash/sortBy';
+import orderBy from 'lodash/orderBy';
 import flatMap from 'lodash/flatMap';
 import isEqual from 'lodash/isEqual';
 
@@ -149,6 +150,7 @@ const App = memo(() => {
 
   // Batch state
   const [batchFiles, setBatchFiles] = useState([]);
+  const [batchSortDesc, setBatchSortDesc] = useState();
 
   // Segment related state
   const [currentSegIndex, setCurrentSegIndex] = useState(0);
@@ -1572,6 +1574,12 @@ const App = memo(() => {
     batchOpenSingleFile(paths[0]);
   }, [batchOpenSingleFile]);
 
+  const onBatchSortClick = useCallback(() => {
+    const newSortDesc = batchSortDesc == null ? false : !batchSortDesc;
+    setBatchFiles(orderBy(batchFiles, ['name'], [newSortDesc ? 'desc' : 'asc']));
+    setBatchSortDesc(newSortDesc);
+  }, [batchFiles, batchSortDesc]);
+
   const userOpenFiles = useCallback(async (filePaths) => {
     if (!filePaths || filePaths.length < 1) return;
 
@@ -2316,6 +2324,12 @@ const App = memo(() => {
             >
               <div style={{ background: controlsBackground, fontSize: 14, paddingBottom: 7, paddingTop: 3, paddingLeft: 10, paddingRight: 5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 {t('Batch file list')}
+                <IconButton
+                  size={18}
+                  icon={batchSortDesc ? SortAlphabeticalDescIcon : SortAlphabeticalIcon}
+                  onClick={onBatchSortClick}
+                  style={{ marginLeft: 'auto', marginRight: 5 }}
+                />
                 <FaTimes size={18} role="button" style={{ cursor: 'pointer', color: 'white' }} onClick={() => closeBatch()} title={t('Close batch')} />
               </div>
 
