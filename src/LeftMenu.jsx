@@ -27,6 +27,8 @@ const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments,
     <div className="no-user-select" style={{ padding: '.3em', display: 'flex', alignItems: 'center' }}>
       <SimpleModeButton simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} />
 
+      {simpleMode && <div role="button" onClick={toggleSimpleMode} style={{ marginLeft: 5 }}>{t('Toggle advanced view')}</div>}
+
       {!simpleMode && (
         <div style={{ marginLeft: 5 }}>
           <motion.div
