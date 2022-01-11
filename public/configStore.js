@@ -39,6 +39,7 @@ const defaults = {
   enableTransferTimestamps: true,
   outFormatLocked: undefined,
   safeOutputFileName: true,
+  windowBounds: undefined,
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645

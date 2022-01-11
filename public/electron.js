@@ -2,6 +2,7 @@ const electron = require('electron'); // eslint-disable-line
 const isDev = require('electron-is-dev');
 const unhandled = require('electron-unhandled');
 const i18n = require('i18next');
+const debounce = require('lodash/debounce');
 
 const menu = require('./menu');
 const configStore = require('./configStore');
@@ -33,8 +34,35 @@ let newVersion;
 const openFiles = (paths) => mainWindow.webContents.send('file-opened', paths);
 const openFile = (path) => openFiles([path]);
 
+
+// https://github.com/electron/electron/issues/526#issuecomment-563010533
+function getSizeOptions() {
+  const bounds = configStore.get('windowBounds');
+  const options = {};
+  if (bounds) {
+    const area = electron.screen.getDisplayMatching(bounds).workArea;
+    // If the saved position still valid (the window is entirely inside the display area), use it.
+    if (
+      bounds.x >= area.x
+      && bounds.y >= area.y
+      && bounds.x + bounds.width <= area.x + area.width
+      && bounds.y + bounds.height <= area.y + area.height
+    ) {
+      options.x = bounds.x;
+      options.y = bounds.y;
+    }
+    // If the saved size is still valid, use it.
+    if (bounds.width <= area.width || bounds.height <= area.height) {
+      options.width = bounds.width;
+      options.height = bounds.height;
+    }
+  }
+  return options;
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
+    ...getSizeOptions(),
     darkTheme: true,
     webPreferences: {
       enableRemoteModule: true,
@@ -74,6 +102,15 @@ function createWindow() {
       e.preventDefault();
     }
   });
+
+  const debouncedSaveWindowState = debounce(() => {
+    if (!mainWindow) return;
+    const { x, y, width, height } = mainWindow.getNormalBounds();
+    configStore.set('windowBounds', { x, y, width, height });
+  }, 500);
+
+  mainWindow.on('resize', debouncedSaveWindowState);
+  mainWindow.on('move', debouncedSaveWindowState);
 }
 
 function updateMenu() {
