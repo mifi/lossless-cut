@@ -147,8 +147,9 @@ export function doesPlayerSupportFile(streams) {
   if (videoStreams.length === 0) return true;
   // If we have at least one video that is NOT of the unsupported formats, assume the player will be able to play it natively
   // https://github.com/mifi/lossless-cut/issues/595
+  // https://github.com/mifi/lossless-cut/issues/975
   // But cover art / thumbnail streams don't count e.g. hevc with a png stream (disposition.attached_pic=1)
-  return videoStreams.some(s => !['hevc', 'prores', 'mpeg4'].includes(s.codec_name));
+  return videoStreams.some(s => !['hevc', 'prores', 'mpeg4', 'tscc2'].includes(s.codec_name));
 }
 
 export const isMasBuild = window.process.mas;
