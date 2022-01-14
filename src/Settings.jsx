@@ -54,7 +54,7 @@ const Settings = memo(({
   }, [setLanguage]);
 
   const timecodeFormatOptions = useMemo(() => ({
-    framesTotal: t('Frame numbers'),
+    frameCount: t('Frame counts'),
     timecodeWithDecimalFraction: t('Millisecond fractions'),
     timecodeWithFramesFraction: t('Frame fractions'),
   }), [t]);
@@ -174,7 +174,7 @@ const Settings = memo(({
       <Row>
         <KeyCell>{t('In timecode show')}</KeyCell>
         <Table.TextCell>
-          <Button iconBefore={timecodeFormat === 'framesTotal' ? NumericalIcon : TimeIcon} onClick={onTimecodeFormatClick}>
+          <Button iconBefore={timecodeFormat === 'frameCount' ? NumericalIcon : TimeIcon} onClick={onTimecodeFormatClick}>
             {timecodeFormatOptions[timecodeFormat]}
           </Button>
         </Table.TextCell>

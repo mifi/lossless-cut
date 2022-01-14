@@ -427,7 +427,7 @@ const App = memo(() => {
   }, [detectedFps]);
 
   const formatTimecode = useCallback(({ seconds, shorten }) => {
-    if (timecodeFormat === 'framesTotal') {
+    if (timecodeFormat === 'frameCount') {
       const frameCount = getFrameCount(seconds);
       return frameCount != null ? frameCount : '';
     }
