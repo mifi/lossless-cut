@@ -82,7 +82,7 @@ const Settings = memo(({
       <Row>
         <KeyCell>
           {t('Working directory')}<br />
-          {t('This is where working files, exported files, project files (LLC) are stored.')}
+          {t('This is where working files and exported files are stored.')}
         </KeyCell>
         <Table.TextCell>
           <Button iconBefore={customOutDir ? FolderCloseIcon : DocumentIcon} onClick={changeOutDir}>
@@ -151,7 +151,7 @@ const Settings = memo(({
       <Row>
         <KeyCell>
           {t('Auto save project file?')}<br />
-          {t('The project will be stored alongside the output files as a project LLC file')}
+          {t('The project will be stored alongside the input file as a project LLC file')}
         </KeyCell>
         <Table.TextCell>
           <Checkbox

@@ -523,9 +523,10 @@ const App = memo(() => {
 
   const projectSuffix = 'proj.llc';
   const oldProjectSuffix = 'llc-edl.csv';
-  const getEdlFilePath = useCallback((fp) => getOutPath(customOutDir, fp, projectSuffix), [customOutDir]);
-  // Old versions of LosslessCut used CSV files:
-  const getEdlFilePathOld = useCallback((fp) => getOutPath(customOutDir, fp, oldProjectSuffix), [customOutDir]);
+  // New LLC format is stored along with input file https://github.com/mifi/lossless-cut/issues/905
+  const getEdlFilePath = useCallback((fp) => getOutPath({ filePath: fp, nameSuffix: projectSuffix }), []);
+  // Old versions of LosslessCut used CSV files and stored them in customOutDir:
+  const getEdlFilePathOld = useCallback((fp) => getOutPath({ customOutDir, filePath: fp, nameSuffix: oldProjectSuffix }), [customOutDir]);
   const edlFilePath = useMemo(() => getEdlFilePath(filePath), [getEdlFilePath, filePath]);
 
   const currentSaveOperation = useMemo(() => {
@@ -632,7 +633,7 @@ const App = memo(() => {
       if (cancel) return;
 
       const ext = extname(firstPath);
-      const outPath = getOutPath(newCustomOutDir, firstPath, `merged${ext}`);
+      const outPath = getOutPath({ customOutDir: newCustomOutDir, filePath: firstPath, nameSuffix: `merged${ext}` });
       const outDir = getOutDir(customOutDir, firstPath);
 
       let chapters;
@@ -896,7 +897,7 @@ const App = memo(() => {
 
     async function doHtml5ify() {
       if (speed === 'fastest') {
-        const path = getOutPath(cod, fp, `${html5ifiedPrefix}${html5dummySuffix}.mkv`);
+        const path = getOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${html5dummySuffix}.mkv` });
         try {
           setCutProgress(0);
           await html5ifyDummy({ filePath: fp, outPath: path, onProgress: setCutProgress });

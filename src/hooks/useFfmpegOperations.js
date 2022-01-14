@@ -274,8 +274,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
   const autoMergeSegments = useCallback(async ({ customOutDir, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge }) => {
     const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath });
-    const fileName = `cut-merged-${new Date().getTime()}${ext}`;
-    const outPath = getOutPath(customOutDir, filePath, fileName);
+    const outPath = getOutPath({ customOutDir, filePath, nameSuffix: `cut-merged-${new Date().getTime()}${ext}` });
     const outDir = getOutDir(customOutDir, filePath);
 
     const chapters = await createChaptersFromSegments({ segmentPaths, chapterNames });
@@ -404,8 +403,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
   // https://stackoverflow.com/questions/34118013/how-to-determine-webm-duration-using-ffprobe
   const fixInvalidDuration = useCallback(async ({ fileFormat, customOutDir }) => {
     const ext = getOutFileExtension({ outFormat: fileFormat, filePath });
-    const fileName = `reformatted${ext}`;
-    const outPath = getOutPath(customOutDir, filePath, fileName);
+    const outPath = getOutPath({ customOutDir, filePath, nameSuffix: `reformatted${ext}` });
 
     const ffmpegArgs = [
       '-hide_banner',

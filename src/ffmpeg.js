@@ -314,7 +314,7 @@ async function extractNonAttachmentStreams({ customOutDir, filePath, streams }) 
   console.log('Extracting', streams.length, 'normal streams');
 
   const streamArgs = flatMap(streams, ({ index, codec, type, format: { format, ext } }) => [
-    '-map', `0:${index}`, '-c', 'copy', '-f', format, '-y', getOutPath(customOutDir, filePath, `stream-${index}-${type}-${codec}.${ext}`),
+    '-map', `0:${index}`, '-c', 'copy', '-f', format, '-y', getOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` }),
   ]);
 
   const ffmpegArgs = [
@@ -336,7 +336,7 @@ async function extractAttachmentStreams({ customOutDir, filePath, streams }) {
   const streamArgs = flatMap(streams, ({ index, codec_name: codec, codec_type: type }) => {
     const ext = codec || 'bin';
     return [
-      `-dump_attachment:${index}`, getOutPath(customOutDir, filePath, `stream-${index}-${type}-${codec}.${ext}`),
+      `-dump_attachment:${index}`, getOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` }),
     ];
   });
 
