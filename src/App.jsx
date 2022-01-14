@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { unstable_batchedUpdates as batchedUpdates } from 'react-dom';
-import { FaAngleLeft, FaWindowClose, FaTimes, FaAngleRight, FaFile } from 'react-icons/fa';
+import { FaAngleLeft, FaWindowClose, FaTimes } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
 import Lottie from 'react-lottie-player';
 import { SideSheet, Button, Position, ForkIcon, DisableIcon, Select, ThemeProvider } from 'evergreen-ui';
@@ -39,6 +39,8 @@ import ExportConfirm from './ExportConfirm';
 import ValueTuner from './components/ValueTuner';
 import VolumeControl from './components/VolumeControl';
 import SubtitleControl from './components/SubtitleControl';
+import BatchFile from './components/BatchFile';
+
 import { loadMifiLink } from './mifi';
 import { primaryColor, controlsBackground, timelineBackground } from './colors';
 import allOutFormats from './outFormats';
@@ -2331,17 +2333,9 @@ const App = memo(() => {
               </div>
 
               <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
-                {batchFiles.map(({ path, name }) => {
-                  const isCurrent = path === filePath;
-                  return (
-                    <div role="button" style={{ background: isCurrent ? 'rgba(255,255,255,0.15)' : undefined, fontSize: 13, padding: '1px 3px', cursor: 'pointer', display: 'flex', alignItems: 'center', minHeight: 30, alignContent: 'flex-start' }} key={path} title={path} onClick={() => batchOpenSingleFile(path)}>
-                      <FaFile size={14} style={{ color: primaryColor, marginLeft: 3, marginRight: 4, flexShrink: 0 }} />
-                      <div style={{ wordBreak: 'break-all' }}>{name}</div>
-                      <div style={{ flexGrow: 1 }} />
-                      {isCurrent && <FaAngleRight size={14} style={{ color: 'white', marginRight: -3, flexShrink: 0 }} />}
-                    </div>
-                  );
-                })}
+                {batchFiles.map(({ path, name }) => (
+                  <BatchFile key={path} path={path} name={name} filePath={filePath} onOpen={batchOpenSingleFile} onDelete={removeBatchFile} />
+                ))}
               </div>
             </motion.div>
           )}

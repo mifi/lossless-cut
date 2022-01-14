@@ -25,33 +25,38 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 
   const ref = useRef();
 
-  useContextMenu(ref, invertCutSegments ? [] : [
-    { label: t('Jump to cut start'), click: jumpSegStart },
-    { label: t('Jump to cut end'), click: jumpSegEnd },
+  const contextMenuTemplate = useMemo(() => {
+    if (invertCutSegments) return [];
+    return [
+      { label: t('Jump to cut start'), click: jumpSegStart },
+      { label: t('Jump to cut end'), click: jumpSegEnd },
 
-    { type: 'separator' },
+      { type: 'separator' },
 
-    { label: t('Add segment'), click: addCutSegment },
-    { label: t('Label segment'), click: onLabelPress },
-    { label: t('Remove segment'), click: onRemovePress },
+      { label: t('Add segment'), click: addCutSegment },
+      { label: t('Label segment'), click: onLabelPress },
+      { label: t('Remove segment'), click: onRemovePress },
 
-    { type: 'separator' },
+      { type: 'separator' },
 
-    { label: t('Change segment order'), click: onReorderPress },
-    { label: t('Increase segment order'), click: () => updateOrder(1) },
-    { label: t('Decrease segment order'), click: () => updateOrder(-1) },
+      { label: t('Change segment order'), click: onReorderPress },
+      { label: t('Increase segment order'), click: () => updateOrder(1) },
+      { label: t('Decrease segment order'), click: () => updateOrder(-1) },
 
-    { type: 'separator' },
+      { type: 'separator' },
 
-    { label: t('Include ONLY this segment in export'), click: () => onExportSingleSegmentClick(seg) },
-    { label: enabled ? t('Exclude this segment from export') : t('Include this segment in export'), click: () => onExportSegmentEnabledToggle(seg) },
-    { label: t('Include all segments in export'), click: () => onExportSegmentEnableAll(seg) },
-    { label: t('Exclude all segments from export'), click: () => onExportSegmentDisableAll(seg) },
+      { label: t('Include ONLY this segment in export'), click: () => onExportSingleSegmentClick(seg) },
+      { label: enabled ? t('Exclude this segment from export') : t('Include this segment in export'), click: () => onExportSegmentEnabledToggle(seg) },
+      { label: t('Include all segments in export'), click: () => onExportSegmentEnableAll(seg) },
+      { label: t('Exclude all segments from export'), click: () => onExportSegmentDisableAll(seg) },
 
-    { type: 'separator' },
+      { type: 'separator' },
 
-    { label: t('Segment tags'), click: () => onViewSegmentTagsPress(index) },
-  ]);
+      { label: t('Segment tags'), click: () => onViewSegmentTagsPress(index) },
+    ];
+  }, [addCutSegment, enabled, index, invertCutSegments, jumpSegEnd, jumpSegStart, onExportSegmentDisableAll, onExportSegmentEnableAll, onExportSegmentEnabledToggle, onExportSingleSegmentClick, onLabelPress, onRemovePress, onReorderPress, onViewSegmentTagsPress, seg, t, updateOrder]);
+
+  useContextMenu(ref, contextMenuTemplate);
 
   const duration = seg.end - seg.start;
   const durationMs = duration * 1000;

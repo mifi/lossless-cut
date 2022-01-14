@@ -192,9 +192,11 @@ const Timeline = memo(({
   const onMouseMove = useCallback((e) => setHoveringTime(getMouseTimelinePos(e.nativeEvent)), [getMouseTimelinePos]);
   const onMouseOut = useCallback(() => setHoveringTime(), []);
 
-  useContextMenu(timelineScrollerRef, [
+  const contextMenuTemplate = useMemo(() => [
     { label: t('Seek to timecode'), click: goToTimecode },
-  ]);
+  ], [goToTimecode, t]);
+
+  useContextMenu(timelineScrollerRef, contextMenuTemplate);
 
   return (
     // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
