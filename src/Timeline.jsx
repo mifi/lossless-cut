@@ -3,6 +3,7 @@ import { motion, useMotionValue, useSpring } from 'framer-motion';
 import Hammer from 'react-hammerjs';
 import debounce from 'lodash/debounce';
 import { useTranslation } from 'react-i18next';
+import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
 
 import TimelineSeg from './TimelineSeg';
 import BetweenSegments from './BetweenSegments';
@@ -12,6 +13,7 @@ import { timelineBackground } from './colors';
 
 import { getSegColors } from './util/colors';
 
+const currentTimeWidth = 1;
 
 const hammerOptions = { recognizers: {} };
 
@@ -35,6 +37,18 @@ const Waveform = memo(({ calculateTimelinePercent, durationSafe, waveform, zoom,
       <img ref={imgRef} src={waveform.url} draggable={false} style={style} alt="" onLoad={onLoad} />
     </div>
   );
+});
+
+const CommandedTime = memo(({ commandedTimePercent }) => {
+  const color = 'white';
+  const commonStyle = { left: commandedTimePercent, position: 'absolute', zIndex: 4, pointerEvents: 'none' }
+  return (
+    <>
+      <FaCaretDown style={{ ...commonStyle, top: 0, color, fontSize: 14, marginLeft: -7, marginTop: -6 }} />
+      <div style={{ ...commonStyle, bottom: 0, top: 0, backgroundColor: color, width: currentTimeWidth }} />
+      <FaCaretUp style={{ ...commonStyle, bottom: 0, color, fontSize: 14, marginLeft: -7, marginBottom: -5 }} />
+    </>
+  )
 });
 
 const Timeline = memo(({
@@ -62,7 +76,7 @@ const Timeline = memo(({
   // See https://github.com/mifi/lossless-cut/issues/259
   const areKeyframesTooClose = keyframes.length > zoom * 200;
 
-  const calculateTimelinePos = useCallback((time) => (time !== undefined && time < durationSafe ? time / durationSafe : undefined), [durationSafe]);
+  const calculateTimelinePos = useCallback((time) => (time !== undefined ? Math.min(time / durationSafe, 1) : undefined), [durationSafe]);
   const calculateTimelinePercent = useCallback((time) => {
     const pos = calculateTimelinePos(time);
     return pos !== undefined ? `${pos * 100}%` : undefined;
@@ -119,8 +133,6 @@ const Timeline = memo(({
       scrollLeftMotion.set(Math.max(scrollLeft, 0));
     }
   }, [timeOfInterestPosPixels, scrollLeftMotion]);
-
-  const currentTimeWidth = 1;
 
   // Keep cursor in middle while zooming
   useEffect(() => {
@@ -224,8 +236,12 @@ const Timeline = memo(({
             style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative', backgroundColor: timelineBackground }}
             ref={timelineWrapperRef}
           >
-            {currentTimePercent !== undefined && <motion.div transition={{ type: 'spring', damping: 70, stiffness: 800 }} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, zIndex: 3, backgroundColor: 'rgba(255,255,255,0.6)', width: currentTimeWidth, pointerEvents: 'none' }} />}
-            {commandedTimePercent !== undefined && <div style={{ left: commandedTimePercent, position: 'absolute', bottom: 0, top: 0, zIndex: 4, backgroundColor: 'white', width: currentTimeWidth, pointerEvents: 'none' }} />}
+            {currentTimePercent !== undefined && (
+              <motion.div transition={{ type: 'spring', damping: 70, stiffness: 800 }} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, zIndex: 3, backgroundColor: 'rgba(255,255,255,0.6)', width: currentTimeWidth, pointerEvents: 'none' }} />
+            )}
+            {commandedTimePercent !== undefined && (
+              <CommandedTime commandedTimePercent={commandedTimePercent} />
+            )}
 
             {apparentCutSegments.map((seg, i) => {
               const { segBgColor, segActiveBgColor, segBorderColor } = getSegColors(seg);
