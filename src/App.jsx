@@ -170,7 +170,7 @@ const App = memo(() => {
   const isCustomFormatSelected = fileFormat !== detectedFileFormat;
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeShowFrames, setTimecodeShowFrames, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName,
   } = useUserPreferences();
 
   const {
@@ -421,14 +421,21 @@ const App = memo(() => {
     setCutSegments(sortBy(cutSegments, getSegApparentStart));
   }, [cutSegments, setCutSegments]);
 
-  const formatTimecode = useCallback((sec) => formatDuration({
-    seconds: sec, fps: timecodeShowFrames ? detectedFps : undefined,
-  }), [detectedFps, timecodeShowFrames]);
-
   const getFrameCount = useCallback((sec) => {
     if (detectedFps == null) return undefined;
     return Math.floor(sec * detectedFps);
   }, [detectedFps]);
+
+  const formatTimecode = useCallback((sec) => {
+    if (timecodeFormat === 'framesTotal') {
+      const frameCount = getFrameCount(sec);
+      return frameCount != null ? frameCount : '';
+    }
+    if (timecodeFormat === 'timecodeWithFramesFraction') {
+      return formatDuration({ seconds: sec, fps: detectedFps });
+    }
+    return formatDuration({ seconds: sec });
+  }, [detectedFps, timecodeFormat, getFrameCount]);
 
   useEffect(() => {
     currentTimeRef.current = playing ? playerTime : commandedTime;
@@ -2047,8 +2054,8 @@ const App = memo(() => {
       setInvertCutSegments={setInvertCutSegments}
       autoSaveProjectFile={autoSaveProjectFile}
       setAutoSaveProjectFile={setAutoSaveProjectFile}
-      timecodeShowFrames={timecodeShowFrames}
-      setTimecodeShowFrames={setTimecodeShowFrames}
+      timecodeFormat={timecodeFormat}
+      setTimecodeFormat={setTimecodeFormat}
       askBeforeClose={askBeforeClose}
       setAskBeforeClose={setAskBeforeClose}
       enableAskForImportChapters={enableAskForImportChapters}
@@ -2071,7 +2078,7 @@ const App = memo(() => {
       renderCaptureFormatButton={renderCaptureFormatButton}
       onTunerRequested={onTunerRequested}
     />
-  ), [changeOutDir, customOutDir, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments, autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, ffmpegExperimental, setFfmpegExperimental, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, AutoExportToggler, renderCaptureFormatButton, onTunerRequested, enableTransferTimestamps, setEnableTransferTimestamps]);
+  ), [changeOutDir, customOutDir, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments, autoSaveProjectFile, setAutoSaveProjectFile, timecodeFormat, setTimecodeFormat, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, ffmpegExperimental, setFfmpegExperimental, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, AutoExportToggler, renderCaptureFormatButton, onTunerRequested, enableTransferTimestamps, setEnableTransferTimestamps]);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);

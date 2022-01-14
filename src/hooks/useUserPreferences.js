@@ -38,8 +38,8 @@ export default () => {
   useEffect(() => safeSetConfig('avoidNegativeTs', avoidNegativeTs), [avoidNegativeTs]);
   const [autoMerge, setAutoMerge] = useState(configStore.get('autoMerge'));
   useEffect(() => safeSetConfig('autoMerge', autoMerge), [autoMerge]);
-  const [timecodeShowFrames, setTimecodeShowFrames] = useState(configStore.get('timecodeShowFrames'));
-  useEffect(() => safeSetConfig('timecodeShowFrames', timecodeShowFrames), [timecodeShowFrames]);
+  const [timecodeFormat, setTimecodeFormat] = useState(configStore.get('timecodeFormat'));
+  useEffect(() => safeSetConfig('timecodeFormat', timecodeFormat), [timecodeFormat]);
   const [invertCutSegments, setInvertCutSegments] = useState(configStore.get('invertCutSegments'));
   useEffect(() => safeSetConfig('invertCutSegments', invertCutSegments), [invertCutSegments]);
   const [autoExportExtraStreams, setAutoExportExtraStreams] = useState(configStore.get('autoExportExtraStreams'));
@@ -113,8 +113,8 @@ export default () => {
     setAvoidNegativeTs,
     autoMerge,
     setAutoMerge,
-    timecodeShowFrames,
-    setTimecodeShowFrames,
+    timecodeFormat,
+    setTimecodeFormat,
     invertCutSegments,
     setInvertCutSegments,
     autoExportExtraStreams,

@@ -1,12 +1,39 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { FaYinYang } from 'react-icons/fa';
 import { Button, Table, NumericalIcon, KeyIcon, FolderCloseIcon, DocumentIcon, TimeIcon, Checkbox, Select } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
 
+// https://www.electronjs.org/docs/api/locales
+// See i18n.js
+const langNames = {
+  en: 'English',
+  cs: 'Čeština',
+  de: 'Deutsch',
+  es: 'Español',
+  fr: 'Français',
+  it: 'Italiano',
+  nl: 'Nederlands',
+  nb: 'Norsk',
+  pl: 'Polski',
+  pt: 'Português',
+  pt_BR: 'português do Brasil',
+  fi: 'Suomi',
+  ru: 'русский',
+  // sr: 'Cрпски',
+  tr: 'Türkçe',
+  vi: 'Tiếng Việt',
+  ja: '日本語',
+  zh: '中文',
+  zh_Hant: '繁體中文',
+  zh_Hans: '简体中文',
+  ko: '한국어',
+};
+
+
 const Settings = memo(({
   changeOutDir, customOutDir, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments,
-  autoSaveProjectFile, setAutoSaveProjectFile, timecodeShowFrames, setTimecodeShowFrames, askBeforeClose, setAskBeforeClose,
+  autoSaveProjectFile, setAutoSaveProjectFile, timecodeFormat, setTimecodeFormat, askBeforeClose, setAskBeforeClose,
   AutoExportToggler, renderCaptureFormatButton, onTunerRequested, language, setLanguage,
   invertTimelineScroll, setInvertTimelineScroll, ffmpegExperimental, setFfmpegExperimental,
   enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction,
@@ -26,31 +53,19 @@ const Settings = memo(({
     setLanguage(l);
   }, [setLanguage]);
 
-  // https://www.electronjs.org/docs/api/locales
-  // See i18n.js
-  const langNames = {
-    en: 'English',
-    cs: 'Čeština',
-    de: 'Deutsch',
-    es: 'Español',
-    fr: 'Français',
-    it: 'Italiano',
-    nl: 'Nederlands',
-    nb: 'Norsk',
-    pl: 'Polski',
-    pt: 'Português',
-    pt_BR: 'português do Brasil',
-    fi: 'Suomi',
-    ru: 'русский',
-    // sr: 'Cрпски',
-    tr: 'Türkçe',
-    vi: 'Tiếng Việt',
-    ja: '日本語',
-    zh: '中文',
-    zh_Hant: '繁體中文',
-    zh_Hans: '简体中文',
-    ko: '한국어',
-  };
+  const timecodeFormatOptions = useMemo(() => ({
+    framesTotal: t('Frame numbers'),
+    timecodeWithDecimalFraction: t('Millisecond fractions'),
+    timecodeWithFramesFraction: t('Frame fractions'),
+  }), [t]);
+
+  const onTimecodeFormatClick = useCallback(() => {
+    const keys = Object.keys(timecodeFormatOptions);
+    let index = keys.indexOf(timecodeFormat);
+    if (index === -1 || index >= keys.length - 1) index = 0;
+    else index += 1;
+    setTimecodeFormat(keys[index]);
+  }, [setTimecodeFormat, timecodeFormat, timecodeFormatOptions]);
 
   return (
     <>
@@ -159,8 +174,8 @@ const Settings = memo(({
       <Row>
         <KeyCell>{t('In timecode show')}</KeyCell>
         <Table.TextCell>
-          <Button iconBefore={timecodeShowFrames ? NumericalIcon : TimeIcon} onClick={() => setTimecodeShowFrames((v) => !v)}>
-            {timecodeShowFrames ? t('Frame numbers') : t('Millisecond fractions')}
+          <Button iconBefore={timecodeFormat === 'framesTotal' ? NumericalIcon : TimeIcon} onClick={onTimecodeFormatClick}>
+            {timecodeFormatOptions[timecodeFormat]}
           </Button>
         </Table.TextCell>
       </Row>
