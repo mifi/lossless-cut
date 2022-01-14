@@ -1,4 +1,4 @@
-import csvStringify from 'csv-stringify';
+import csvStringify from 'csv-stringify/lib/browser';
 import pify from 'pify';
 import JSON5 from 'json5';
 import i18n from 'i18next';

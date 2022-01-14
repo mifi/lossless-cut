@@ -7,7 +7,6 @@ import { SideSheet, Button, Position, ForkIcon, DisableIcon, Select, ThemeProvid
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
-import filePathToUrl from 'file-url';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import Mousetrap from 'mousetrap';
@@ -73,6 +72,7 @@ import loadingLottie from './7077-magic-flow.json';
 const isDev = window.require('electron-is-dev');
 const electron = window.require('electron'); // eslint-disable-line
 const { exists } = window.require('fs-extra');
+const filePathToUrl = window.require('file-url');
 const { extname, parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, basename, dirname } = window.require('path');
 
 const { dialog } = electron.remote;

@@ -1,7 +1,7 @@
 import fastXmlParser from 'fast-xml-parser';
 import i18n from 'i18next';
 
-import csvParse from 'csv-parse';
+import csvParse from 'csv-parse/lib/browser';
 import pify from 'pify';
 import sortBy from 'lodash/sortBy';
 

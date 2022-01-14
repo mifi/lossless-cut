@@ -1,10 +1,11 @@
 import React, { memo, useState, useCallback, useEffect } from 'react';
 import { sortableContainer, sortableElement } from 'react-sortable-hoc';
-import { basename } from 'path';
 import { Pane, Checkbox, SortAlphabeticalIcon, SortAlphabeticalDescIcon, IconButton } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 import arrayMove from 'array-move';
 import orderBy from 'lodash/orderBy';
+
+const { basename } = window.require('path');
 
 const rowStyle = {
   padding: '3px 10px', fontSize: 14, margin: '7px 0', overflowY: 'auto', whiteSpace: 'nowrap', cursor: 'grab',
