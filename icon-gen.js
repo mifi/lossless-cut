@@ -1,5 +1,5 @@
 const sharp = require('sharp');
-const icongen = require('@mifi/icon-gen');
+const icongen = require('icon-gen');
 
 const svg2png = (from, to, width, height) => sharp(from)
   .png()
