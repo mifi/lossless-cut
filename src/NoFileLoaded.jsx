@@ -1,5 +1,4 @@
 import React, { memo } from 'react';
-import { FaHandPointRight, FaHandPointLeft } from 'react-icons/fa';
 
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
@@ -21,7 +20,7 @@ const NoFileLoaded = memo(({ top, bottom, left, mifiLink, toggleHelp, currentCut
       </div>
 
       <div style={{ fontSize: '3vmin', color: '#ccc' }}>
-        <Trans><SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaHandPointLeft} style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaHandPointRight} style={{ verticalAlign: 'middle' }} /> or <kbd>I</kbd> <kbd>O</kbd> to set cutpoints</Trans>
+        <Trans><SetCutpointButton currentCutSeg={currentCutSeg} side="start" style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSeg} side="end" style={{ verticalAlign: 'middle' }} /> or <kbd>I</kbd> <kbd>O</kbd> to set cutpoints</Trans>
       </div>
 
       <div style={{ fontSize: '3vmin', color: '#ccc', cursor: 'pointer' }} role="button" onClick={toggleSimpleMode}>

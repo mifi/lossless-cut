@@ -283,3 +283,5 @@ export async function deleteFiles({ toDelete, paths: { previewFilePath, filePath
     await pMap(failedToTrashFiles, async (path) => unlink(path), { concurrency: 1 });
   }
 }
+
+export const mirrorTransform = 'matrix(-1, 0, 0, 1, 0, 0)';

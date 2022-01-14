@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { FaHandPointLeft, FaHandPointRight, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey } from 'react-icons/fa';
+import { FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey } from 'react-icons/fa';
 import { GiSoundWaves } from 'react-icons/gi';
 import { IoMdKey } from 'react-icons/io';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +8,9 @@ import { useTranslation } from 'react-i18next';
 import { getSegColors } from './util/colors';
 import { formatDuration, parseDuration } from './util/duration';
 import { primaryTextColor } from './colors';
+import SegmentCutpointButton from './components/SegmentCutpointButton';
 import SetCutpointButton from './components/SetCutpointButton';
+import { mirrorTransform } from './util';
 
 const TimelineControls = memo(({
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,
@@ -165,8 +167,8 @@ const TimelineControls = memo(({
 
       {!simpleMode && renderJumpCutpointButton(-1)}
 
-      {!simpleMode && <SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} onClick={jumpCutStart} title={t('Jump to cut start')} style={{ marginRight: 5 }} />}
-      <SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaHandPointLeft} onClick={setCutStart} title={t('Set cut start to current position')} style={{ marginRight: 5 }} />
+      {!simpleMode && <SegmentCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} onClick={jumpCutStart} title={t('Jump to cut start')} style={{ marginRight: 5 }} />}
+      <SetCutpointButton currentCutSeg={currentCutSeg} side="start" onClick={setCutStart} title={t('Set cut start to current position')} style={{ marginRight: 5 }} />
 
       {!simpleMode && renderCutTimeInput('start')}
 
@@ -174,7 +176,7 @@ const TimelineControls = memo(({
         size={20}
         role="button"
         title={t('Seek previous keyframe')}
-        style={{ marginRight: 5, transform: 'matrix(-1, 0, 0, 1, 0, 0)' }}
+        style={{ marginRight: 5, transform: mirrorTransform }}
         onClick={() => seekClosestKeyframe(-1)}
       />
 
@@ -214,8 +216,8 @@ const TimelineControls = memo(({
 
       {!simpleMode && renderCutTimeInput('end')}
 
-      <SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaHandPointRight} onClick={setCutEnd} title={t('Set cut end to current position')} style={{ marginLeft: 5 }} />
-      {!simpleMode && <SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} onClick={jumpCutEnd} title={t('Jump to cut end')} style={{ marginLeft: 5 }} />}
+      <SetCutpointButton currentCutSeg={currentCutSeg} side="end" onClick={setCutEnd} title={t('Set cut end to current position')} style={{ marginLeft: 5 }} />
+      {!simpleMode && <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} onClick={jumpCutEnd} title={t('Jump to cut end')} style={{ marginLeft: 5 }} />}
 
       {!simpleMode && renderJumpCutpointButton(1)}
 

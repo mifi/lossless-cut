@@ -1,8 +1,9 @@
 import React, { memo } from 'react';
-import { FaHandPointRight, FaHandPointLeft, FaStepBackward, FaStepForward } from 'react-icons/fa';
+import { FaStepBackward, FaStepForward } from 'react-icons/fa';
 import { useTranslation, Trans } from 'react-i18next';
 
 import SetCutpointButton from './components/SetCutpointButton';
+import SegmentCutpointButton from './components/SegmentCutpointButton';
 import CopyClipboardButton from './components/CopyClipboardButton';
 import { primaryTextColor } from './colors';
 import Sheet from './Sheet';
@@ -57,13 +58,13 @@ const HelpSheet = memo(({ visible, onTogglePress, ffmpegCommandLog, currentCutSe
         <div><kbd>→</kbd> {t('Seek forward 1 sec')}</div>
         <div><kbd>CTRL</kbd> / <kbd>CMD</kbd> + <kbd>←</kbd> {t('Seek backward 1% of timeline at current zoom')}</div>
         <div><kbd>CTRL</kbd> / <kbd>CMD</kbd> + <kbd>→</kbd> {t('Seek forward 1% of timeline at current zoom')}</div>
-        <div style={{ lineHeight: 1.7 }}><SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} style={{ verticalAlign: 'middle' }} />, <kbd>SHIFT</kbd> + <kbd>←</kbd> {t('Jump to cut start')}</div>
-        <div style={{ lineHeight: 1.7 }}><SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} style={{ verticalAlign: 'middle' }} />, <kbd>SHIFT</kbd> + <kbd>→</kbd> {t('Jump to cut end')}</div>
+        <div style={{ lineHeight: 1.7 }}><SegmentCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} style={{ verticalAlign: 'middle' }} />, <kbd>SHIFT</kbd> + <kbd>←</kbd> {t('Jump to cut start')}</div>
+        <div style={{ lineHeight: 1.7 }}><SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} style={{ verticalAlign: 'middle' }} />, <kbd>SHIFT</kbd> + <kbd>→</kbd> {t('Jump to cut end')}</div>
 
         <h2>{t('Segments and cut points')}</h2>
 
-        <div style={{ lineHeight: 1.7 }}><SetCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaHandPointLeft} style={{ verticalAlign: 'middle' }} />, <kbd>I</kbd> {t('Mark in / cut start point for current segment')}</div>
-        <div style={{ lineHeight: 1.7 }}><SetCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaHandPointRight} style={{ verticalAlign: 'middle' }} />, <kbd>O</kbd> {t('Mark out / cut end point for current segment')}</div>
+        <div style={{ lineHeight: 1.7 }}><SetCutpointButton currentCutSeg={currentCutSeg} side="start" style={{ verticalAlign: 'middle' }} />, <kbd>I</kbd> {t('Mark in / cut start point for current segment')}</div>
+        <div style={{ lineHeight: 1.7 }}><SetCutpointButton currentCutSeg={currentCutSeg} side="end" style={{ verticalAlign: 'middle' }} />, <kbd>O</kbd> {t('Mark out / cut end point for current segment')}</div>
         <div><kbd>+</kbd> {t('Add cut segment')}</div>
         <div><kbd>BACKSPACE</kbd> {t('Remove current segment')}</div>
         <div><kbd>ENTER</kbd> {t('Label current segment')}</div>
