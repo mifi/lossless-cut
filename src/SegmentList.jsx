@@ -99,7 +99,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
     >
       <div style={{ color: 'white', marginBottom: 3, display: 'flex', alignItems: 'center', height: 16 }}>
         {renderNumber()}
-        <span style={{ fontSize: 310 / timeStr.length, whiteSpace: 'nowrap' }}>{timeStr}</span>
+        <span style={{ fontSize: Math.min(310 / timeStr.length, 14), whiteSpace: 'nowrap' }}>{timeStr}</span>
       </div>
       <div style={{ fontSize: 12, color: 'white' }}>{seg.name}</div>
       <div style={{ fontSize: 13 }}>
