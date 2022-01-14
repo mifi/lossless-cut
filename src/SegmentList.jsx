@@ -1,5 +1,4 @@
 import React, { memo, useMemo, useRef, useCallback } from 'react';
-import prettyMs from 'pretty-ms';
 import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaCheck, FaTimes } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
 import { motion } from 'framer-motion';
@@ -71,7 +70,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
     return <b style={{ color: 'white', padding: '0 4px', marginRight: 3, background: segBgColor, border: `1px solid ${isActive ? segBorderColor : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
   }
 
-  const timeStr = useMemo(() => `${formatTimecode(seg.start)} - ${formatTimecode(seg.end)}`, [seg.start, seg.end, formatTimecode]);
+  const timeStr = useMemo(() => `${formatTimecode({ seconds: seg.start })} - ${formatTimecode({ seconds: seg.end })}`, [seg.start, seg.end, formatTimecode]);
 
   function onDoubleClick() {
     if (invertCutSegments) return;
@@ -103,7 +102,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
       </div>
       <div style={{ fontSize: 12, color: 'white' }}>{seg.name}</div>
       <div style={{ fontSize: 13 }}>
-        {t('Duration')} {prettyMs(durationMs)}
+        {t('Duration')} {formatTimecode({ seconds: duration, shorten: true })}
       </div>
       <div style={{ fontSize: 12 }}>
         <Trans>{{ durationMsFormatted }} ms, {{ frameCount }} frames</Trans>
@@ -172,6 +171,8 @@ const SegmentList = memo(({
       return <Icon size={24} title={segmentExportEnabled ? t('Include this segment in export') : t('Exclude this segment from export')} style={{ ...buttonBaseStyle, backgroundColor: currentSegActiveBgColor }} role="button" onClick={() => onExportSegmentEnabledToggle(currentCutSeg)} />;
     }
 
+    const segmentsTotal = enabledOutSegments.reduce((acc, { start, end }) => (end - start) + acc, 0);
+
     return (
       <>
         <div style={{ display: 'flex', padding: '5px 0', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid grey' }}>
@@ -224,7 +225,7 @@ const SegmentList = memo(({
 
         <div style={{ padding: '5px 10px', boxSizing: 'border-box', borderBottom: '1px solid grey', borderTop: '1px solid grey', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
           <div>{t('Segments total:')}</div>
-          <div>{formatTimecode(enabledOutSegments.reduce((acc, { start, end }) => (end - start) + acc, 0))}</div>
+          <div>{formatTimecode({ seconds: segmentsTotal })}</div>
         </div>
       </>
     );

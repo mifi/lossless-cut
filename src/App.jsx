@@ -426,15 +426,15 @@ const App = memo(() => {
     return Math.floor(sec * detectedFps);
   }, [detectedFps]);
 
-  const formatTimecode = useCallback((sec) => {
+  const formatTimecode = useCallback(({ seconds, shorten }) => {
     if (timecodeFormat === 'framesTotal') {
-      const frameCount = getFrameCount(sec);
+      const frameCount = getFrameCount(seconds);
       return frameCount != null ? frameCount : '';
     }
     if (timecodeFormat === 'timecodeWithFramesFraction') {
-      return formatDuration({ seconds: sec, fps: detectedFps });
+      return formatDuration({ seconds, fps: detectedFps, shorten });
     }
-    return formatDuration({ seconds: sec });
+    return formatDuration({ seconds, shorten });
   }, [detectedFps, timecodeFormat, getFrameCount]);
 
   useEffect(() => {

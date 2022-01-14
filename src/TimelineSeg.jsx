@@ -4,12 +4,10 @@ import { FaTrashAlt } from 'react-icons/fa';
 
 import { mySpring } from './animations';
 
-import { formatDuration } from './util/duration';
-
 
 const TimelineSeg = memo(({
   duration, cutStart, cutEnd, isActive, segNum, name,
-  onSegClick, invertCutSegments, segBgColor, segActiveBgColor, segBorderColor,
+  onSegClick, invertCutSegments, segBgColor, segActiveBgColor, segBorderColor, formatTimecode,
 }) => {
   const cutSectionWidth = `${((cutEnd - cutStart) / duration) * 100}%`;
 
@@ -42,8 +40,9 @@ const TimelineSeg = memo(({
 
   const onThisSegClick = () => onSegClick(segNum);
 
-  const durationStr = cutEnd > cutStart ? `${formatDuration({ seconds: cutEnd - cutStart, shorten: true })} ` : '';
-  const title = `${durationStr}${name}`;
+  const title = [];
+  if (cutEnd > cutStart) title.push(`${formatTimecode({ seconds: cutEnd - cutStart, shorten: true })}`);
+  if (name) title.push(name);
 
   return (
     <motion.div
@@ -54,7 +53,7 @@ const TimelineSeg = memo(({
       exit={{ opacity: 0, scaleX: 0 }}
       role="button"
       onClick={onThisSegClick}
-      title={title}
+      title={title.join(' ')}
     >
       <div style={{ alignSelf: 'flex-start', flexShrink: 1, fontSize: 10, minWidth: 0, overflow: 'hidden' }}>{segNum + 1}</div>
 
