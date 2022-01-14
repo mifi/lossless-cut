@@ -1808,7 +1808,7 @@ const App = memo(() => {
     async function exportEdlFile2(e, type) {
       if (!checkFileOpened()) return;
       try {
-        await exportEdlFile({ type, cutSegments, filePath });
+        await exportEdlFile({ type, cutSegments, filePath, getFrameCount });
       } catch (err) {
         errorToast(i18n.t('Failed to export project'));
         console.error('Failed to export project', type, err);
@@ -1963,7 +1963,7 @@ const App = memo(() => {
     mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile,
     extractAllStreams, userOpenFiles, openSendReportDialogWithState, setWorking,
     loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, ensureOutDirAccessible, html5ifyAndLoad, html5ify,
-    loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFileWithConfirm, closeBatch, clearSegments, fixInvalidDuration, invertAllCutSegments,
+    loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFileWithConfirm, closeBatch, clearSegments, fixInvalidDuration, invertAllCutSegments, getFrameCount,
   ]);
 
   const showAddStreamSourceDialog = useCallback(async () => {

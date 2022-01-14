@@ -105,6 +105,12 @@ module.exports = (app, mainWindow, newVersion) => {
               },
             },
             {
+              label: i18n.t('Frame numbers (CSV)'),
+              click() {
+                mainWindow.webContents.send('exportEdlFile', 'csv-frames');
+              },
+            },
+            {
               label: i18n.t('Timestamps (TSV/TXT)'),
               click() {
                 mainWindow.webContents.send('exportEdlFile', 'tsv-human');

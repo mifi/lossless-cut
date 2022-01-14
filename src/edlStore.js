@@ -42,17 +42,32 @@ export async function saveCsv(path, cutSegments) {
   await fs.writeFile(path, str);
 }
 
-const formatDurationStr = (duration) => (duration != null ? formatDuration({ seconds: duration }) : '');
+const safeFormatDuration = (duration) => (duration != null ? formatDuration({ seconds: duration }) : '');
+const safeFormatFrameCount = ({ seconds, getFrameCount }) => (seconds != null ? getFrameCount(seconds) : '');
 
-const mapSegments = (segments) => segments.map(({ start, end, name }) => [formatDurationStr(start), formatDurationStr(end), name]);
+const formatSegmentsTimes = (cutSegments) => cutSegments.map(({ start, end, name }) => [
+  safeFormatDuration(start),
+  safeFormatDuration(end),
+  name,
+]);
+const formatSegmentsFrameCounts = ({ cutSegments, getFrameCount }) => cutSegments.map(({ start, end, name }) => [
+  safeFormatFrameCount({ seconds: start, getFrameCount }),
+  safeFormatFrameCount({ seconds: end, getFrameCount }),
+  name,
+]);
 
 export async function saveCsvHuman(path, cutSegments) {
-  const str = await csvStringifyAsync(mapSegments(cutSegments));
+  const str = await csvStringifyAsync(formatSegmentsTimes(cutSegments));
+  await fs.writeFile(path, str);
+}
+
+export async function saveCsvFrames({ path, cutSegments, getFrameCount }) {
+  const str = await csvStringifyAsync(formatSegmentsFrameCounts({ cutSegments, getFrameCount }));
   await fs.writeFile(path, str);
 }
 
 export async function saveTsv(path, cutSegments) {
-  const str = await csvStringifyAsync(mapSegments(cutSegments), { delimiter: '\t' });
+  const str = await csvStringifyAsync(formatSegmentsTimes(cutSegments), { delimiter: '\t' });
   await fs.writeFile(path, str);
 }
 
@@ -98,7 +113,7 @@ export async function readEdl(type) {
   return readEdlFile({ type, path: filePaths[0] });
 }
 
-export async function exportEdlFile({ type, cutSegments, filePath }) {
+export async function exportEdlFile({ type, cutSegments, filePath, getFrameCount }) {
   let filters;
   let ext;
   if (type === 'csv') {
@@ -108,6 +123,9 @@ export async function exportEdlFile({ type, cutSegments, filePath }) {
     ext = 'tsv';
     filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
   } else if (type === 'csv-human') {
+    ext = 'csv';
+    filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
+  } else if (type === 'csv-frames') {
     ext = 'csv';
     filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
   } else if (type === 'llc') {
@@ -121,5 +139,6 @@ export async function exportEdlFile({ type, cutSegments, filePath }) {
   if (type === 'csv') await saveCsv(savePath, cutSegments);
   else if (type === 'tsv-human') await saveTsv(savePath, cutSegments);
   else if (type === 'csv-human') await saveCsvHuman(savePath, cutSegments);
+  else if (type === 'csv-frames') await saveCsvFrames({ path: savePath, cutSegments, getFrameCount });
   else if (type === 'llc') await saveLlcProject({ savePath, filePath, cutSegments });
 }
