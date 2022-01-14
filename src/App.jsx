@@ -1648,6 +1648,18 @@ const App = memo(() => {
     }
   }, [customOutDir, filePath, html5ifyAndLoad, hasVideo, hasAudio, rememberConvertToSupportedFormat, setWorking]);
 
+  const goToTimecode = useCallback(async () => {
+    if (!filePath) return;
+    const timeCode = await promptTimeOffset({
+      initialValue: formatDuration({ seconds: commandedTimeRef.current }),
+      title: i18n.t('Seek to timecode'),
+    });
+
+    if (timeCode === undefined) return;
+
+    seekAbs(timeCode);
+  }, [filePath, seekAbs]);
+
 
   // TODO split up?
   useEffect(() => {
@@ -1704,6 +1716,7 @@ const App = memo(() => {
     mousetrap.bind('d', () => cleanupFiles());
     mousetrap.bind('b', () => splitCurrentSegment());
     mousetrap.bind('r', () => increaseRotation());
+    mousetrap.bind('g', () => goToTimecode());
 
     mousetrap.bind('left', () => seekBackwards());
     mousetrap.bind('left', () => seekReset(), 'keyup');
@@ -1746,7 +1759,7 @@ const App = memo(() => {
     setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, cleanupFiles, jumpSeg,
     seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment, exportConfirmVisible,
     increaseRotation, jumpCutStart, jumpCutEnd, cutSegmentsHistory, keyboardSeekAccFactor,
-    keyboardNormalSeekSpeed, onLabelSegmentPress, currentSegIndexSafe, batchFileJump,
+    keyboardNormalSeekSpeed, onLabelSegmentPress, currentSegIndexSafe, batchFileJump, goToTimecode,
   ]);
 
   const onVideoError = useCallback(async () => {
@@ -1797,9 +1810,11 @@ const App = memo(() => {
     }
 
     async function setStartOffset() {
-      const newStartTimeOffset = await promptTimeOffset(
-        startTimeOffset !== undefined ? formatDuration({ seconds: startTimeOffset }) : undefined,
-      );
+      const newStartTimeOffset = await promptTimeOffset({
+        initialValue: startTimeOffset !== undefined ? formatDuration({ seconds: startTimeOffset }) : undefined,
+        title: i18n.t('Set custom start time offset'),
+        text: i18n.t('Instead of video apparently starting at 0, you can offset by a specified value. This only applies to the preview inside LosslessCut and does not modify the file in any way. (Useful for viewing/cutting videos according to timecodes)'),
+      });
 
       if (newStartTimeOffset === undefined) return;
 
@@ -2415,6 +2430,7 @@ const App = memo(() => {
             playing={playing}
             isFileOpened={isFileOpened}
             onWheel={onTimelineWheel}
+            goToTimecode={goToTimecode}
           />
 
           <TimelineControls

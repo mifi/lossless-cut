@@ -21,12 +21,12 @@ const { dialog, app } = electron.remote;
 
 const ReactSwal = withReactContent(Swal);
 
-export async function promptTimeOffset(inputValue) {
+export async function promptTimeOffset({ initialValue, title, text }) {
   const { value } = await Swal.fire({
-    title: i18n.t('Set custom start time offset'),
-    text: i18n.t('Instead of video apparently starting at 0, you can offset by a specified value. This only applies to the preview inside LosslessCut and does not modify the file in any way. (Useful for viewing/cutting videos according to timecodes)'),
+    title,
+    text,
     input: 'text',
-    inputValue: inputValue || '',
+    inputValue: initialValue || '',
     showCancelButton: true,
     inputPlaceholder: '00:00:00.000',
   });
@@ -37,7 +37,7 @@ export async function promptTimeOffset(inputValue) {
 
   const duration = parseDuration(value);
   // Invalid, try again
-  if (duration === undefined) return promptTimeOffset(value);
+  if (duration === undefined) return promptTimeOffset({ initialValue: value, title, text });
 
   return duration;
 }

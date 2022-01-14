@@ -7,6 +7,7 @@ import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
 
 import TimelineSeg from './TimelineSeg';
 import BetweenSegments from './BetweenSegments';
+import useContextMenu from './hooks/useContextMenu';
 
 
 import { timelineBackground } from './colors';
@@ -41,14 +42,14 @@ const Waveform = memo(({ calculateTimelinePercent, durationSafe, waveform, zoom,
 
 const CommandedTime = memo(({ commandedTimePercent }) => {
   const color = 'white';
-  const commonStyle = { left: commandedTimePercent, position: 'absolute', zIndex: 4, pointerEvents: 'none' }
+  const commonStyle = { left: commandedTimePercent, position: 'absolute', zIndex: 4, pointerEvents: 'none' };
   return (
     <>
       <FaCaretDown style={{ ...commonStyle, top: 0, color, fontSize: 14, marginLeft: -7, marginTop: -6 }} />
       <div style={{ ...commonStyle, bottom: 0, top: 0, backgroundColor: color, width: currentTimeWidth }} />
       <FaCaretUp style={{ ...commonStyle, bottom: 0, color, fontSize: 14, marginLeft: -7, marginBottom: -5 }} />
     </>
-  )
+  );
 });
 
 const Timeline = memo(({
@@ -57,7 +58,7 @@ const Timeline = memo(({
   setCurrentSegIndex, currentSegIndexSafe, invertCutSegments, inverseCutSegments, formatTimecode,
   waveform, shouldShowWaveform, shouldShowKeyframes, timelineHeight, thumbnails,
   onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled,
-  playing, isFileOpened, onWheel, commandedTimeRef,
+  playing, isFileOpened, onWheel, commandedTimeRef, goToTimecode,
 }) => {
   const { t } = useTranslation();
 
@@ -190,6 +191,10 @@ const Timeline = memo(({
 
   const onMouseMove = useCallback((e) => setHoveringTime(getMouseTimelinePos(e.nativeEvent)), [getMouseTimelinePos]);
   const onMouseOut = useCallback(() => setHoveringTime(), []);
+
+  useContextMenu(timelineScrollerRef, [
+    { label: t('Seek to timecode'), click: goToTimecode },
+  ]);
 
   return (
     // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
