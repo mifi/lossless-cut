@@ -1,14 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import sortBy from 'lodash/sortBy';
 
-import { generateColor } from './util/colors';
-
-export const createSegment = ({ start, end, name, tags } = {}) => ({
+export const createSegment = ({ start, end, name, tags, segIndex } = {}) => ({
   start,
   end,
   name: name || '',
-  color: generateColor(),
   segId: uuidv4(),
+  segIndex,
 
   // `tags` is an optional object (key-value). Values must always be string
   // See https://github.com/mifi/lossless-cut/issues/879
@@ -16,8 +14,6 @@ export const createSegment = ({ start, end, name, tags } = {}) => ({
     ? Object.fromEntries(Object.entries(tags).map(([key, value]) => [key, String(value)]))
     : undefined,
 });
-
-export const createInitialCutSegments = () => [createSegment()];
 
 // Because segments could have undefined start / end
 // (meaning extend to start of timeline or end duration)

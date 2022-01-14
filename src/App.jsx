@@ -64,7 +64,7 @@ import { adjustRate } from './util/rate-calculator';
 import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMultipleFilesDialog, showOpenAndMergeDialog, openAbout, showEditableJsonDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
-import { createSegment, createInitialCutSegments, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags } from './segments';
+import { createSegment, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags } from './segments';
 
 import loadingLottie from './7077-magic-flow.json';
 
@@ -149,6 +149,19 @@ const App = memo(() => {
   const [batchFiles, setBatchFiles] = useState([]);
 
   // Segment related state
+  const segCounterRef = useRef(0);
+  const clearSegCounter = useCallback(() => {
+    segCounterRef.current = 0;
+  }, []);
+
+  const createSegmentAndIncrementCount = useCallback((segment) => {
+    const ret = createSegment({ segIndex: segCounterRef.current, ...segment });
+    segCounterRef.current += 1;
+    return ret;
+  }, []);
+
+  const createInitialCutSegments = useCallback(() => () => [createSegmentAndIncrementCount()], [createSegmentAndIncrementCount]);
+
   const [currentSegIndex, setCurrentSegIndex] = useState(0);
   const [cutStartTimeManual, setCutStartTimeManual] = useState();
   const [cutEndTimeManual, setCutEndTimeManual] = useState();
@@ -156,6 +169,11 @@ const App = memo(() => {
     createInitialCutSegments(),
     100,
   );
+
+  const clearSegments = useCallback(() => {
+    clearSegCounter();
+    setCutSegments(createInitialCutSegments());
+  }, [clearSegCounter, createInitialCutSegments, setCutSegments]);
 
   // Store "working" in a ref so we can avoid race conditions
   const workingRef = useRef(working);
@@ -349,7 +367,8 @@ const App = memo(() => {
   }, [duration, haveInvalidSegs, sortedCutSegments]);
 
   const invertAllCutSegments = useCallback(() => {
-    const newInverseCutSegments = inverseCutSegments.map(createSegment);
+    // don't reset segIndex (which represent colors) when inverting
+    const newInverseCutSegments = inverseCutSegments.map((inverseSegment, segIndex) => createSegment({ ...inverseSegment, segIndex }));
     if (newInverseCutSegments.length < 1) {
       errorToast(i18n.t('Make sure you have no overlapping segments.'));
       return;
@@ -456,7 +475,7 @@ const App = memo(() => {
 
       const cutSegmentsNew = [
         ...cutSegments,
-        createSegment({ start: suggestedStart }),
+        createSegmentAndIncrementCount({ start: suggestedStart }),
       ];
 
       setCutSegments(cutSegmentsNew);
@@ -464,9 +483,7 @@ const App = memo(() => {
     } catch (err) {
       console.error(err);
     }
-  }, [
-    currentCutSeg.start, currentCutSeg.end, cutSegments, setCutSegments,
-  ]);
+  }, [currentCutSeg.start, currentCutSeg.end, cutSegments, createSegmentAndIncrementCount, setCutSegments]);
 
   const setCutStart = useCallback(() => {
     if (!filePath) return;
@@ -545,8 +562,8 @@ const App = memo(() => {
       const { cutSegments: saveOperationCutSegments, edlFilePath: saveOperationEdlFilePath, filePath: saveOperationFilePath } = debouncedSaveOperation;
 
       try {
-        // Initial state? Don't save
-        if (isEqual(getCleanCutSegments(saveOperationCutSegments), getCleanCutSegments(createInitialCutSegments()))) return;
+        // Initial state? Don't save (same as createInitialCutSegments but without counting)
+        if (isEqual(getCleanCutSegments(saveOperationCutSegments), getCleanCutSegments([createSegment()]))) return;
 
         if (lastSaveOperation.current && lastSaveOperation.current.edlFilePath === saveOperationEdlFilePath && isEqual(getCleanCutSegments(lastSaveOperation.current.cutSegments), getCleanCutSegments(saveOperationCutSegments))) {
           console.log('Segments unchanged, skipping save');
@@ -743,7 +760,7 @@ const App = memo(() => {
     if (cutSegments.length === 1 && cutSegments[0].start == null && cutSegments[0].end == null) return; // Initial segment
 
     if (cutSegments.length <= 1) {
-      setCutSegments(createInitialCutSegments());
+      clearSegments();
       return;
     }
 
@@ -751,11 +768,7 @@ const App = memo(() => {
     cutSegmentsNew.splice(index, 1);
 
     setCutSegments(cutSegmentsNew);
-  }, [cutSegments, setCutSegments]);
-
-  const clearSegments = useCallback(() => {
-    setCutSegments(createInitialCutSegments());
-  }, [setCutSegments]);
+  }, [clearSegments, cutSegments, setCutSegments]);
 
   const thumnailsRef = useRef([]);
   const thumnailsRenderingPromiseRef = useRef();
@@ -823,7 +836,7 @@ const App = memo(() => {
       setPlaying(false);
       setDuration();
       cutSegmentsHistory.go(0);
-      setCutSegments(createInitialCutSegments()); // TODO this will cause two history items
+      clearSegments(); // TODO this will cause two history items
       setCutStartTimeManual();
       setCutEndTimeManual();
       setFileFormat();
@@ -855,7 +868,7 @@ const App = memo(() => {
 
       cancelRenderThumbnails();
     });
-  }, [cutSegmentsHistory, setCutSegments, cancelRenderThumbnails]);
+  }, [cutSegmentsHistory, clearSegments, cancelRenderThumbnails]);
 
 
   const showUnsupportedFileMessage = useCallback(() => {
@@ -1247,13 +1260,13 @@ const App = memo(() => {
 
     const getNewName = (oldName, suffix) => oldName && `${segmentAtCursor2.name} ${suffix}`;
 
-    const firstPart = createSegment({ name: getNewName(segmentAtCursor2.name, '1'), start: segmentAtCursor2.start, end: currentTimeRef.current });
-    const secondPart = createSegment({ name: getNewName(segmentAtCursor2.name, '2'), start: currentTimeRef.current, end: segmentAtCursor2.end });
+    const firstPart = createSegmentAndIncrementCount({ name: getNewName(segmentAtCursor2.name, '1'), start: segmentAtCursor2.start, end: currentTimeRef.current });
+    const secondPart = createSegmentAndIncrementCount({ name: getNewName(segmentAtCursor2.name, '2'), start: currentTimeRef.current, end: segmentAtCursor2.end });
 
     const newSegments = [...cutSegments];
     newSegments.splice(firstSegmentAtCursorIndex, 1, firstPart, secondPart);
     setCutSegments(newSegments);
-  }, [cutSegments, firstSegmentAtCursorIndex, setCutSegments]);
+  }, [createSegmentAndIncrementCount, cutSegments, firstSegmentAtCursorIndex, setCutSegments]);
 
   const loadCutSegments = useCallback((edl) => {
     const validEdl = edl.filter((row) => (
@@ -1266,8 +1279,9 @@ const App = memo(() => {
 
     if (validEdl.length === 0) throw new Error(i18n.t('No valid segments found'));
 
-    setCutSegments(validEdl.map(createSegment));
-  }, [setCutSegments]);
+    clearSegCounter();
+    setCutSegments(validEdl.map(createSegmentAndIncrementCount));
+  }, [clearSegCounter, createSegmentAndIncrementCount, setCutSegments]);
 
   const loadEdlFile = useCallback(async (path, type) => {
     console.log('Loading EDL file', type, path);
@@ -1979,7 +1993,7 @@ const App = memo(() => {
     mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile,
     extractAllStreams, userOpenFiles, openSendReportDialogWithState, setWorking,
     loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, ensureOutDirAccessible, html5ifyAndLoad, html5ify,
-    loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFileWithConfirm, closeBatch, clearSegments, fixInvalidDuration, invertAllCutSegments, getFrameCount,
+    loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFileWithConfirm, closeBatch, clearSegments, clearSegCounter, fixInvalidDuration, invertAllCutSegments, getFrameCount,
   ]);
 
   const showAddStreamSourceDialog = useCallback(async () => {

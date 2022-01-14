@@ -1,15 +1,31 @@
-import randomColor from './random-color';
+import color from 'color';
 
-export function generateColor() {
-  return randomColor(1, 0.95);
-}
+// https://github.com/mock-end/random-color/blob/master/index.js
+/* eslint-disable */
+function getColor(saturation, value, n) {
+  var ratioMul = 0.618033988749895;
+  var initialHue = 0.65;
 
+  const hue = (initialHue + ((n + 1) * ratioMul)) % 1;
+
+  return color({
+    h: hue * 360,
+    s: saturation * 100,
+    v: value * 100,
+  });
+};
+/* eslint-enable */
+
+// eslint-disable-next-line import/prefer-default-export
 export function getSegColors(seg) {
   if (!seg) return {};
-  const { color } = seg;
+  const { segIndex } = seg;
+
+  const segColor = getColor(1, 0.95, segIndex);
+
   return {
-    segBgColor: color.alpha(0.5).string(),
-    segActiveBgColor: color.lighten(0.5).alpha(0.5).string(),
-    segBorderColor: color.lighten(0.5).string(),
+    segBgColor: segColor.alpha(0.5).string(),
+    segActiveBgColor: segColor.lighten(0.5).alpha(0.5).string(),
+    segBorderColor: segColor.lighten(0.5).string(),
   };
 }
