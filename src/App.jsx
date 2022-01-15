@@ -887,8 +887,8 @@ const App = memo(() => {
     let audio;
     if (ha) {
       if (speed === 'slowest') audio = 'hq';
-      else if (['slow-audio', 'fastest-audio'].includes(speed)) audio = 'lq';
-      else if (['fast-audio', 'fastest-audio-remux'].includes(speed)) audio = 'copy';
+      else if (['slow-audio', 'fast-audio', 'fastest-audio'].includes(speed)) audio = 'lq';
+      else if (['fast-audio-remux', 'fastest-audio-remux'].includes(speed)) audio = 'copy';
     }
 
     let video;
@@ -921,7 +921,7 @@ const App = memo(() => {
         }
         return path;
       }
-      if (['fastest-audio', 'fastest-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'].includes(speed)) {
+      if (['fastest-audio', 'fastest-audio-remux', 'fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'].includes(speed)) {
         const shouldIncludeVideo = !usesDummyVideo && hv;
         const path = await html5ify({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: shouldIncludeVideo });
         return path;
@@ -1639,7 +1639,7 @@ const App = memo(() => {
     if (!filePath) return;
 
     async function getHtml5ifySpeed() {
-      const { selectedOption, remember } = await askForHtml5ifySpeed({ allowedOptions: ['fastest', 'fastest-audio', 'fastest-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'], showRemember: true, initialOption: rememberConvertToSupportedFormat });
+      const { selectedOption, remember } = await askForHtml5ifySpeed({ allowedOptions: ['fastest', 'fastest-audio', 'fastest-audio-remux', 'fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'], showRemember: true, initialOption: rememberConvertToSupportedFormat });
       if (!selectedOption) return undefined;
 
       console.log('Choice', { speed: selectedOption, remember });
@@ -1872,7 +1872,7 @@ const App = memo(() => {
       const failedFiles = [];
       let i = 0;
 
-      const { selectedOption: speed } = await askForHtml5ifySpeed({ allowedOptions: ['fastest-audio', 'fastest-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'] });
+      const { selectedOption: speed } = await askForHtml5ifySpeed({ allowedOptions: ['fastest-audio', 'fastest-audio-remux', 'fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'] });
       if (!speed) return;
 
       if (workingRef.current) return;

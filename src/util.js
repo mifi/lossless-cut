@@ -205,7 +205,7 @@ export const html5dummySuffix = 'dummy';
 
 export async function findExistingHtml5FriendlyFile(fp, cod) {
   // The order is the priority we will search:
-  const suffixes = ['slowest', 'slow-audio', 'slow', 'fast-audio', 'fast', 'fastest-audio', 'fastest-audio-remux', html5dummySuffix];
+  const suffixes = ['slowest', 'slow-audio', 'slow', 'fast-audio-remux', 'fast-audio', 'fast', 'fastest-audio', 'fastest-audio-remux', html5dummySuffix];
   const prefix = `${getFileBaseName(fp)}-${html5ifiedPrefix}`;
 
   const outDir = getOutDir(cod, fp);
