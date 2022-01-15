@@ -38,7 +38,7 @@ const Settings = memo(({
   invertTimelineScroll, setInvertTimelineScroll, ffmpegExperimental, setFfmpegExperimental,
   enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction,
   hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode,
-  enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify
+  enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify,
 }) => {
   const { t } = useTranslation();
 
