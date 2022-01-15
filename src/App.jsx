@@ -821,8 +821,8 @@ const App = memo(() => {
   const shouldShowKeyframes = keyframesEnabled && !!mainVideoStream && calcShouldShowKeyframes(zoomedDuration);
   const shouldShowWaveform = calcShouldShowWaveform(zoomedDuration);
 
-  const { neighbouringFrames, findNearestKeyFrameTime } = useKeyframes({ keyframesEnabled, filePath, commandedTime, mainVideoStream, detectedFps, ffmpegExtractWindow });
-  const { waveform } = useWaveform({ filePath, commandedTime, zoomedDuration, waveformEnabled, mainAudioStream, shouldShowWaveform, ffmpegExtractWindow });
+  const { neighbouringKeyFrames, findNearestKeyFrameTime } = useKeyframes({ keyframesEnabled, filePath, commandedTime, mainVideoStream, detectedFps, ffmpegExtractWindow });
+  const { waveforms } = useWaveform({ filePath, commandedTime, zoomedDuration, waveformEnabled, mainAudioStream, shouldShowWaveform, ffmpegExtractWindow });
 
   const resetState = useCallback(() => {
     const video = videoRef.current;
@@ -2425,11 +2425,11 @@ const App = memo(() => {
         >
           <Timeline
             shouldShowKeyframes={shouldShowKeyframes}
-            waveform={waveform}
+            waveforms={waveforms}
             shouldShowWaveform={shouldShowWaveform}
             waveformEnabled={waveformEnabled}
             thumbnailsEnabled={thumbnailsEnabled}
-            neighbouringFrames={neighbouringFrames}
+            neighbouringKeyFrames={neighbouringKeyFrames}
             thumbnails={thumbnailsSorted}
             getCurrentTime={getCurrentTime}
             commandedTimeRef={commandedTimeRef}

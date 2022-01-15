@@ -18,8 +18,7 @@ const currentTimeWidth = 1;
 
 const hammerOptions = { recognizers: {} };
 
-const Waveform = memo(({ calculateTimelinePercent, durationSafe, waveform, zoom, timelineHeight }) => {
-  const imgRef = useRef();
+const Waveform = memo(({ waveform, calculateTimelinePercent, durationSafe }) => {
   const [style, setStyle] = useState({ display: 'none' });
 
   const leftPos = calculateTimelinePercent(waveform.from);
@@ -32,13 +31,18 @@ const Waveform = memo(({ calculateTimelinePercent, durationSafe, waveform, zoom,
       position: 'absolute', height: '100%', left: leftPos, width: `${((toTruncated - waveform.from) / durationSafe) * 100}%`,
     });
   }
-
   return (
-    <div style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative' }}>
-      <img ref={imgRef} src={waveform.url} draggable={false} style={style} alt="" onLoad={onLoad} />
-    </div>
+    <img src={waveform.url} draggable={false} style={style} alt="" onLoad={onLoad} />
   );
 });
+
+const Waveforms = memo(({ calculateTimelinePercent, durationSafe, waveforms, zoom, timelineHeight }) => (
+  <div style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative' }}>
+    {waveforms.map((waveform) => (
+      <Waveform key={`${waveform.from}-${waveform.to}`} waveform={waveform} calculateTimelinePercent={calculateTimelinePercent} durationSafe={durationSafe} />
+    ))}
+  </div>
+));
 
 const CommandedTime = memo(({ commandedTimePercent }) => {
   const color = 'white';
@@ -54,9 +58,9 @@ const CommandedTime = memo(({ commandedTimePercent }) => {
 
 const Timeline = memo(({
   durationSafe, getCurrentTime, startTimeOffset, playerTime, commandedTime,
-  zoom, neighbouringFrames, seekAbs, apparentCutSegments,
+  zoom, neighbouringKeyFrames, seekAbs, apparentCutSegments,
   setCurrentSegIndex, currentSegIndexSafe, invertCutSegments, inverseCutSegments, formatTimecode,
-  waveform, shouldShowWaveform, shouldShowKeyframes, timelineHeight, thumbnails,
+  waveforms, shouldShowWaveform, shouldShowKeyframes, timelineHeight, thumbnails,
   onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled,
   playing, isFileOpened, onWheel, commandedTimeRef, goToTimecode,
 }) => {
@@ -75,10 +79,11 @@ const Timeline = memo(({
 
   const isZoomed = zoom > 1;
 
-  const keyframes = neighbouringFrames ? neighbouringFrames.filter(f => f.keyframe) : [];
   // Don't show keyframes if too packed together (at current zoom)
   // See https://github.com/mifi/lossless-cut/issues/259
-  const areKeyframesTooClose = keyframes.length > zoom * 200;
+  // todo
+  // const areKeyframesTooClose = keyframes.length > zoom * 200;
+  const areKeyframesTooClose = false;
 
   const calculateTimelinePos = useCallback((time) => (time !== undefined ? Math.min(time / durationSafe, 1) : undefined), [durationSafe]);
   const calculateTimelinePercent = useCallback((time) => {
@@ -218,11 +223,11 @@ const Timeline = memo(({
           onScroll={onTimelineScroll}
           ref={timelineScrollerRef}
         >
-          {waveformEnabled && shouldShowWaveform && waveform && (
-            <Waveform
+          {waveformEnabled && shouldShowWaveform && waveforms && (
+            <Waveforms
               calculateTimelinePercent={calculateTimelinePercent}
               durationSafe={durationSafe}
-              waveform={waveform}
+              waveforms={waveforms}
               zoom={zoom}
               timelineHeight={timelineHeight}
             />
@@ -288,7 +293,7 @@ const Timeline = memo(({
               />
             ))}
 
-            {shouldShowKeyframes && !areKeyframesTooClose && keyframes.map((f) => (
+            {shouldShowKeyframes && !areKeyframesTooClose && neighbouringKeyFrames.map((f) => (
               <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / durationSafe) * 100}%`, marginLeft: -1, width: 1, background: 'rgba(0,0,0,0.4)', pointerEvents: 'none' }} />
             ))}
           </div>

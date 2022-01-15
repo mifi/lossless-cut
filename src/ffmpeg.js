@@ -30,10 +30,17 @@ function getFfPath(cmd) {
 export const getFfmpegPath = () => getFfPath('ffmpeg');
 export const getFfprobePath = () => getFfPath('ffprobe');
 
-export async function runFfprobe(args) {
+export async function runFfprobe(args, { timeout = isDev ? 10000 : 30000 } = {}) {
   const ffprobePath = getFfprobePath();
   console.log(getFfCommandLine('ffprobe', args));
-  return execa(ffprobePath, args);
+  const ps = execa(ffprobePath, args);
+  const timer = setTimeout(() => {
+    console.warn('killing timed out ffprobe');
+    ps.kill();
+  }, timeout);
+  const ret = await ps;
+  clearTimeout(timer);
+  return ret;
 }
 
 export function runFfmpeg(args) {
@@ -92,7 +99,11 @@ export async function readFrames({ filePath, aroundTime, window, stream }) {
   }
   const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', stream, '-show_entries', 'packet=pts_time,flags', '-of', 'json', filePath]);
   const packetsFiltered = JSON.parse(stdout).packets
-    .map(p => ({ keyframe: p.flags[0] === 'K', time: parseFloat(p.pts_time, 10) }))
+    .map(p => ({
+      keyframe: p.flags[0] === 'K',
+      time: parseFloat(p.pts_time, 10),
+      createdAt: new Date(),
+    }))
     .filter(p => !Number.isNaN(p.time));
 
   return sortBy(packetsFiltered, 'time');
@@ -472,7 +483,12 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
     ps2 = execa(ffmpegPath, args2, { encoding: null });
     ps1.stdout.pipe(ps2.stdin);
 
+    const timer = setTimeout(() => {
+      ps1.kill();
+      ps2.kill();
+    }, 10000);
     const { stdout } = await ps2;
+    clearTimeout(timer);
 
     const blob = new Blob([stdout], { type: 'image/png' });
 
@@ -481,6 +497,7 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
       from,
       aroundTime,
       to,
+      createdAt: new Date(),
     };
   } catch (err) {
     if (ps1) ps1.kill();
