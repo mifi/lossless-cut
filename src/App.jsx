@@ -911,6 +911,7 @@ const App = memo(() => {
     console.log('html5ifyAndLoad', { speed, hasVideo: hv, hasAudio: ha, usesDummyVideo });
 
     async function doHtml5ify() {
+      if (speed == null) return undefined;
       if (speed === 'fastest') {
         const path = getOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${html5dummySuffix}.mkv` });
         try {
@@ -921,12 +922,10 @@ const App = memo(() => {
         }
         return path;
       }
-      if (['fastest-audio', 'fastest-audio-remux', 'fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'].includes(speed)) {
-        const shouldIncludeVideo = !usesDummyVideo && hv;
-        const path = await html5ify({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: shouldIncludeVideo });
-        return path;
-      }
-      return undefined;
+
+      const shouldIncludeVideo = !usesDummyVideo && hv;
+      const path = await html5ify({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: shouldIncludeVideo });
+      return path;
     }
     const path = await doHtml5ify();
     if (!path) return;
@@ -1639,7 +1638,12 @@ const App = memo(() => {
     if (!filePath) return;
 
     async function getHtml5ifySpeed() {
-      const { selectedOption, remember } = await askForHtml5ifySpeed({ allowedOptions: ['fastest', 'fastest-audio', 'fastest-audio-remux', 'fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'], showRemember: true, initialOption: rememberConvertToSupportedFormat });
+      const allHtml5ifyOptions = ['fastest', 'fastest-audio', 'fastest-audio-remux', 'fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'];
+      let relevantOptions = [];
+      if (hasAudio && hasVideo) relevantOptions = [...allHtml5ifyOptions];
+      else if (hasAudio) relevantOptions = [...relevantOptions, 'fast-audio-remux', 'slow-audio', 'slowest'];
+      else if (hasVideo) relevantOptions = [...relevantOptions, 'fastest', 'fast', 'slow', 'slowest'];
+      const { selectedOption, remember } = await askForHtml5ifySpeed({ allowedOptions: allHtml5ifyOptions.filter((option) => relevantOptions.includes(option)), showRemember: true, initialOption: rememberConvertToSupportedFormat });
       if (!selectedOption) return undefined;
 
       console.log('Choice', { speed: selectedOption, remember });
