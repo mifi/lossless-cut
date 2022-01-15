@@ -29,8 +29,8 @@ async function writeChaptersFfmetadata(outDir, chapters) {
 function getMovFlags({ preserveMovData, movFastStart }) {
   const flags = [];
 
-  // https://video.stackexchange.com/questions/23741/how-to-prevent-ffmpeg-from-dropping-metadata
   // https://video.stackexchange.com/a/26084/29486
+  // https://github.com/mifi/lossless-cut/issues/331#issuecomment-623401794
   if (preserveMovData) flags.push('use_metadata_tags');
 
   // https://github.com/mifi/lossless-cut/issues/347
@@ -218,7 +218,8 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         // '-loglevel', 'warning',
 
         // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
-        '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe', '-i', '-',
+        '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe',
+        '-i', '-',
 
         // Add the first file for using its metadata. Can only do this if allStreams (-map 0) is set, or else ffmpeg might output this input instead of the concat
         ...(preserveMetadataOnMerge && allStreams ? ['-i', paths[0]] : []),
@@ -230,8 +231,8 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
         ...(allStreams ? ['-map', '0'] : []),
 
-        // Use the file index 1 for metadata
-        // -map_metadata 0 with concat demuxer doesn't seem to preserve metadata when merging.
+        // -map_metadata 0 with concat demuxer doesn't transfer metadata from the concat'ed files when merging.
+        // So we use the first file file (index 1) for metadata
         // Can only do this if allStreams (-map 0) is set
         ...(preserveMetadataOnMerge && allStreams ? ['-map_metadata', '1'] : []),
 
