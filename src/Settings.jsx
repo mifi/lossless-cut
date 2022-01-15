@@ -38,7 +38,7 @@ const Settings = memo(({
   invertTimelineScroll, setInvertTimelineScroll, ffmpegExperimental, setFfmpegExperimental,
   enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction,
   hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode,
-  enableTransferTimestamps, setEnableTransferTimestamps,
+  enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify
 }) => {
   const { t } = useTranslation();
 
@@ -244,6 +244,18 @@ const Settings = memo(({
           />
         </Table.TextCell>
       </Row>
+
+      <Row>
+        <KeyCell>{t('Try to automatically convert to supported format when opening unsupported file?')}</KeyCell>
+        <Table.TextCell>
+          <Checkbox
+            label={t('Auto convert to supported format')}
+            checked={enableAutoHtml5ify}
+            onChange={e => setEnableAutoHtml5ify(e.target.checked)}
+          />
+        </Table.TextCell>
+      </Row>
+
 
       <Row>
         <KeyCell>{t('Hide informational notifications?')}</KeyCell>

@@ -190,7 +190,7 @@ const App = memo(() => {
   const isCustomFormatSelected = fileFormat !== detectedFileFormat;
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, setEnableAutoHtml5ify,
   } = useUserPreferences();
 
   const {
@@ -878,7 +878,7 @@ const App = memo(() => {
   }, [hideAllNotifications]);
 
   const showPreviewFileLoadedMessage = useCallback((fileName) => {
-    if (!hideAllNotifications) toast.fire({ text: i18n.t('Loaded existing preview file: {{ fileName }}', { fileName }) });
+    if (!hideAllNotifications) toast.fire({ icon: 'info', text: i18n.t('Loaded existing preview file: {{ fileName }}', { fileName }) });
   }, [hideAllNotifications]);
 
   const html5ify = useCallback(async ({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: hv }) => {
@@ -927,6 +927,7 @@ const App = memo(() => {
       const path = await html5ify({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: shouldIncludeVideo });
       return path;
     }
+
     const path = await doHtml5ify();
     if (!path) return;
 
@@ -934,6 +935,14 @@ const App = memo(() => {
     setUsingDummyVideo(usesDummyVideo);
     showUnsupportedFileMessage();
   }, [html5ify, html5ifyDummy, showUnsupportedFileMessage]);
+
+  const getConvertToSupportedFormat = useCallback((fallback) => rememberConvertToSupportedFormat || fallback, [rememberConvertToSupportedFormat]);
+
+  const html5ifyAndLoadWithPreferences = useCallback(async (cod, fp, speed, hv, ha) => {
+    if (!enableAutoHtml5ify) return;
+    setWorking(i18n.t('Converting to supported format'));
+    await html5ifyAndLoad(cod, fp, getConvertToSupportedFormat(speed), hv, ha);
+  }, [enableAutoHtml5ify, setWorking, html5ifyAndLoad, getConvertToSupportedFormat]);
 
   const showPlaybackFailedMessage = () => errorToast(i18n.t('Unable to playback this file. Try to convert to supported format from the menu'));
 
@@ -1289,7 +1298,6 @@ const App = memo(() => {
     loadCutSegments(await readEdlFile({ type, path }));
   }, [loadCutSegments]);
 
-
   const loadMedia = useCallback(async ({ filePath: fp, customOutDir: cod, projectPath }) => {
     console.log('loadMedia', fp, cod, projectPath);
 
@@ -1352,8 +1360,7 @@ const App = memo(() => {
 
       // 'fastest' works with almost all video files
       if (!hasLoadedExistingHtml5FriendlyFile && !doesPlayerSupportFile(streams) && validDuration) {
-        setWorking(i18n.t('Converting to supported format'));
-        await html5ifyAndLoad(cod, fp, rememberConvertToSupportedFormat || 'fastest', haveVideoStream, haveAudioStream);
+        await html5ifyAndLoadWithPreferences(cod, fp, 'fastest', haveVideoStream, haveAudioStream);
       }
 
       try {
@@ -1401,7 +1408,7 @@ const App = memo(() => {
       resetState();
       throw err;
     }
-  }, [resetState, html5ifyAndLoad, loadEdlFile, getEdlFilePath, getEdlFilePathOld, loadCutSegments, enableAskForImportChapters, autoLoadTimecode, outFormatLocked, showPreviewFileLoadedMessage, rememberConvertToSupportedFormat, setWorking, setCopyStreamIdsForPath]);
+  }, [resetState, html5ifyAndLoadWithPreferences, loadEdlFile, getEdlFilePath, getEdlFilePathOld, loadCutSegments, enableAskForImportChapters, autoLoadTimecode, outFormatLocked, showPreviewFileLoadedMessage, setWorking, setCopyStreamIdsForPath]);
 
   const toggleHelp = useCallback(() => setHelpVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1799,16 +1806,15 @@ const App = memo(() => {
         setWorking(i18n.t('Converting to supported format'));
 
         console.log('Trying to create preview');
-        if (!hideAllNotifications) toast.fire({ icon: 'info', text: 'This file is not natively supported. Creating a preview file...' });
 
         if (!isDurationValid(await getDuration(filePath))) throw new Error('Invalid duration');
 
         if (hasVideo) {
           // "fastest" is the most likely type not to fail for video (but it is muted).
-          await html5ifyAndLoad(customOutDir, filePath, rememberConvertToSupportedFormat || 'fastest', hasVideo, hasAudio);
+          await html5ifyAndLoadWithPreferences(customOutDir, filePath, 'fastest', hasVideo, hasAudio);
         } else if (hasAudio) {
           // For audio do a fast re-encode
-          await html5ifyAndLoad(customOutDir, filePath, rememberConvertToSupportedFormat || 'fastest-audio', hasVideo, hasAudio);
+          await html5ifyAndLoadWithPreferences(customOutDir, filePath, 'fastest-audio', hasVideo, hasAudio);
         }
       } catch (err) {
         console.error(err);
@@ -1819,7 +1825,7 @@ const App = memo(() => {
     } catch (err) {
       handleError(err);
     }
-  }, [fileUri, usingPreviewFile, hasVideo, hasAudio, html5ifyAndLoad, hideAllNotifications, customOutDir, filePath, rememberConvertToSupportedFormat, setWorking]);
+  }, [fileUri, usingPreviewFile, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, filePath, setWorking]);
 
   useEffect(() => {
     function showOpenAndMergeDialog2() {
@@ -2110,11 +2116,13 @@ const App = memo(() => {
       setAutoLoadTimecode={setAutoLoadTimecode}
       enableTransferTimestamps={enableTransferTimestamps}
       setEnableTransferTimestamps={setEnableTransferTimestamps}
+      enableAutoHtml5ify={enableAutoHtml5ify}
+      setEnableAutoHtml5ify={setEnableAutoHtml5ify}
       AutoExportToggler={AutoExportToggler}
       renderCaptureFormatButton={renderCaptureFormatButton}
       onTunerRequested={onTunerRequested}
     />
-  ), [changeOutDir, customOutDir, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments, autoSaveProjectFile, setAutoSaveProjectFile, timecodeFormat, setTimecodeFormat, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, ffmpegExperimental, setFfmpegExperimental, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, AutoExportToggler, renderCaptureFormatButton, onTunerRequested, enableTransferTimestamps, setEnableTransferTimestamps]);
+  ), [changeOutDir, customOutDir, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments, autoSaveProjectFile, setAutoSaveProjectFile, timecodeFormat, setTimecodeFormat, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, ffmpegExperimental, setFfmpegExperimental, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, AutoExportToggler, renderCaptureFormatButton, onTunerRequested, enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify]);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);

@@ -40,6 +40,7 @@ const defaults = {
   outFormatLocked: undefined,
   safeOutputFileName: true,
   windowBounds: undefined,
+  enableAutoHtml5ify: true,
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645

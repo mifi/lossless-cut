@@ -88,6 +88,8 @@ export default () => {
   useEffect(() => safeSetConfig('outFormatLocked', outFormatLocked), [outFormatLocked]);
   const [safeOutputFileName, setSafeOutputFileName] = useState(configStore.get('safeOutputFileName'));
   useEffect(() => safeSetConfig('safeOutputFileName', safeOutputFileName), [safeOutputFileName]);
+  const [enableAutoHtml5ify, setEnableAutoHtml5ify] = useState(configStore.get('enableAutoHtml5ify'));
+  useEffect(() => safeSetConfig('enableAutoHtml5ify', enableAutoHtml5ify), [enableAutoHtml5ify]);
 
 
   // NOTE! This useEffect must be placed after all usages of firstUpdateRef.current (safeSetConfig)
@@ -163,5 +165,7 @@ export default () => {
     setOutFormatLocked,
     safeOutputFileName,
     setSafeOutputFileName,
+    enableAutoHtml5ify,
+    setEnableAutoHtml5ify,
   };
 };
