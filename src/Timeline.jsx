@@ -71,6 +71,9 @@ const Timeline = memo(({
 
   const currentTime = getCurrentTime() || 0;
   const displayTime = (hoveringTime != null && isFileOpened && !playing ? hoveringTime : currentTime) + startTimeOffset;
+  const displayTimePercent = useMemo(() => `${Math.round((displayTime / durationSafe) * 100)}%`, [displayTime, durationSafe]);
+
+  const isZoomed = zoom > 1;
 
   const keyframes = neighbouringFrames ? neighbouringFrames.filter(f => f.keyframe) : [];
   // Don't show keyframes if too packed together (at current zoom)
@@ -139,14 +142,14 @@ const Timeline = memo(({
   useEffect(() => {
     suppressScrollerEvents();
 
-    if (zoom > 1) {
+    if (isZoomed) {
       const zoomedTargetWidth = timelineScrollerRef.current.offsetWidth * zoom;
 
       const scrollLeft = Math.max((commandedTimeRef.current / durationSafe) * zoomedTargetWidth - timelineScrollerRef.current.offsetWidth / 2, 0);
       scrollLeftMotion.set(scrollLeft);
       timelineScrollerRef.current.scrollLeft = scrollLeft;
     }
-  }, [zoom, durationSafe, commandedTimeRef, scrollLeftMotion]);
+  }, [zoom, durationSafe, commandedTimeRef, scrollLeftMotion, isZoomed]);
 
 
   useEffect(() => {
@@ -299,7 +302,7 @@ const Timeline = memo(({
 
         <div style={{ position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 2 }}>
           <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' }}>
-            {formatTimecode({ seconds: displayTime })}
+            {formatTimecode({ seconds: displayTime })}{isZoomed ? ` ${displayTimePercent}` : ''}
           </div>
         </div>
       </div>
