@@ -38,9 +38,11 @@ export async function runFfprobe(args, { timeout = isDev ? 10000 : 30000 } = {})
     console.warn('killing timed out ffprobe');
     ps.kill();
   }, timeout);
-  const ret = await ps;
-  clearTimeout(timer);
-  return ret;
+  try {
+    return await ps;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export function runFfmpeg(args) {
@@ -487,8 +489,13 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
       ps1.kill();
       ps2.kill();
     }, 10000);
-    const { stdout } = await ps2;
-    clearTimeout(timer);
+
+    let stdout;
+    try {
+      ({ stdout } = await ps2);
+    } finally {
+      clearTimeout(timer);
+    }
 
     const blob = new Blob([stdout], { type: 'image/png' });
 
