@@ -62,7 +62,7 @@ jobs:
         run: yarn download-ffmpeg-windows
 
       - name: Download ffmpeg for Linux
-        if: startsWith(matrix.os, 'linux')
+        if: startsWith(matrix.os, 'ubuntu')
         run: yarn download-ffmpeg-linux
 
       - name: Build/release Electron app
