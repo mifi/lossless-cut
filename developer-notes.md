@@ -43,15 +43,25 @@ For per-platform build/signing setup, see https://blog.mifi.no/2020/03/31/automa
 - Bump [snap version](https://snapcraft.io/losslesscut/listing)
 - `npm run scan-i18n` to get the newest Englist strings and push so weblate gets them
 
-## Licenses
+## Maintainence chores
 
-### Generate summary
+### Keep dependencies up to date
+- ffmpeg
+- electron
+- package.json
+
+### i18n
+`npm run scan-i18n`
+
+### Licenses
+
+#### Generate summary
 
 ```
 npx license-checker --summary
 ```
 
-### Regenerate licenses file
+#### Regenerate licenses file
 
 ```
 npm run generate-licenses
