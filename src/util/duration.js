@@ -17,13 +17,14 @@ export function formatDuration({ seconds: secondsIn, fileNameFriendly, showMs = 
 
   const minutesPadded = shorten && hours === 0 ? `${minutes}` : padStart(minutes, 2, '0');
 
-  const secondsPadded = padStart(Math.floor(secondsAbs) % 60, 2, '0');
-  const ms = secondsAbs - Math.floor(secondsAbs);
+  const secondsAbsFloored = Math.floor(secondsAbs);
+  const secondsPadded = padStart(secondsAbsFloored % 60, 2, '0');
+  const ms = secondsAbs - secondsAbsFloored;
   let msPart = '';
   if (showMs && !(shorten && ms === 0)) {
     const msPadded = fps != null
-      ? padStart(Math.floor(ms * fps), 2, '0')
-      : padStart(Math.floor(ms * 1000), 3, '0');
+      ? padStart(Math.round(ms * fps), 2, '0')
+      : padStart(Math.round(ms * 1000), 3, '0');
     msPart = `.${msPadded}`;
   }
 
