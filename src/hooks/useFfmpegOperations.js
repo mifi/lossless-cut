@@ -4,7 +4,7 @@ import flatMapDeep from 'lodash/flatMapDeep';
 import sum from 'lodash/sum';
 import pMap from 'p-map';
 
-import { getOutPath, transferTimestamps, getOutFileExtension, getOutDir, isMac } from '../util';
+import { getOutPath, transferTimestamps, getOutFileExtension, getOutDir, isMac, deleteDispositionValue } from '../util';
 import { isCuttingStart, isCuttingEnd, handleProgress, getFfCommandLine, getFfmpegPath, getDuration, runFfmpeg, createChaptersFromSegments } from '../ffmpeg';
 
 const execa = window.require('execa');
@@ -38,6 +38,16 @@ function getMovFlags({ preserveMovData, movFastStart }) {
 
   if (flags.length === 0) return [];
   return flatMap(flags, flag => ['-movflags', flag]);
+}
+
+function getMatroskaFlags() {
+  return [
+    '-default_mode', 'infer_no_subs',
+    // because it makes sense to not force subtitles disposition to "default" if they were not default in the input file
+    // after some testing, it seems that default is actually "infer", contrary to what is documented (ffmpeg doc says "passthrough" is default)
+    // https://ffmpeg.org/ffmpeg-formats.html#Options-8
+    // https://github.com/mifi/lossless-cut/issues/972#issuecomment-1015176316
+  ];
 }
 
 function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
@@ -104,12 +114,16 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         return streamCount + copiedStreamIndex;
       }
 
-      // The structure is deep! file -> stream -> key -> value Example: { 'file.mp4': { 0: { key: 'value' } } }
-      const deepMap = (root, fn) => flatMapDeep(
+      const lessDeepMap = (root, fn) => flatMapDeep(
         Object.entries(root), ([path, streamsMap]) => (
-          Object.entries(streamsMap || {}).map(([streamId, tagsMap]) => (
-            Object.entries(tagsMap || {}).map(([key, value]) => fn(path, streamId, key, value))))),
+          Object.entries(streamsMap || {}).map(([streamId, value]) => (
+            fn(path, streamId, value)
+          ))),
       );
+
+      // The structure is deep! file -> stream -> key -> value Example: { 'file.mp4': { 0: { key: 'value' } } }
+      const deepMap = (root, fn) => lessDeepMap(root, (path, streamId, tagsMap) => (
+        Object.entries(tagsMap || {}).map(([key, value]) => fn(path, streamId, key, value))));
 
       const customTagsArgs = [
         // Main file metadata:
@@ -124,11 +138,13 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       ];
 
       // Example: { 'file.mp4': { 0: { attached_pic: 1 } } }
-      const customDispositionArgs = deepMap(dispositionByStreamId, (path, streamId, disposition, value) => {
-        if (value !== 1) return [];
+      const customDispositionArgs = lessDeepMap(dispositionByStreamId, (path, streamId, disposition) => {
+        if (disposition == null) return [];
         const outputIndex = mapInputStreamIndexToOutputIndex(path, parseInt(streamId, 10));
         if (outputIndex == null) return [];
-        return [`-disposition:${outputIndex}`, String(disposition)];
+        // 0 means delete the disposition for this stream
+        const dispositionArg = disposition === deleteDispositionValue ? '0' : disposition;
+        return [`-disposition:${outputIndex}`, String(dispositionArg)];
       });
 
       const ffmpegArgs = [
@@ -146,6 +162,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         '-map_metadata', '0',
 
         ...getMovFlags({ preserveMovData, movFastStart }),
+        ...getMatroskaFlags(),
 
         ...customTagsArgs,
 
@@ -210,6 +227,8 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
     const ffmetadataPath = await writeChaptersFfmetadata(outDir, chapters);
 
+    const shouldMapMetadata = preserveMetadataOnMerge && allStreams;
+
     try {
       // Keep this similar to cutSingle()
       const ffmpegArgs = [
@@ -222,7 +241,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         '-i', '-',
 
         // Add the first file for using its metadata. Can only do this if allStreams (-map 0) is set, or else ffmpeg might output this input instead of the concat
-        ...(preserveMetadataOnMerge && allStreams ? ['-i', paths[0]] : []),
+        ...(shouldMapMetadata ? ['-i', paths[0]] : []),
 
         // Chapters?
         ...(ffmetadataPath ? ['-f', 'ffmetadata', '-i', ffmetadataPath] : []),
@@ -234,9 +253,10 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         // -map_metadata 0 with concat demuxer doesn't transfer metadata from the concat'ed files when merging.
         // So we use the first file file (index 1) for metadata
         // Can only do this if allStreams (-map 0) is set
-        ...(preserveMetadataOnMerge && allStreams ? ['-map_metadata', '1'] : []),
+        ...(shouldMapMetadata ? ['-map_metadata', '1'] : []),
 
         ...getMovFlags({ preserveMovData, movFastStart }),
+        ...getMatroskaFlags(),
 
         // See https://github.com/mifi/lossless-cut/issues/170
         '-ignore_unknown',

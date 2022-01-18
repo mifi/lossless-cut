@@ -10,11 +10,13 @@ import { useTranslation } from 'react-i18next';
 import { askForMetadataKey, showJson5Dialog } from './dialogs';
 import { formatDuration } from './util/duration';
 import { getStreamFps } from './ffmpeg';
+import { deleteDispositionValue } from './util';
 
 
 const activeColor = '#429777';
 
 const dispositionOptions = ['default', 'dub', 'original', 'comment', 'lyrics', 'karaoke', 'forced', 'hearing_impaired', 'visual_impaired', 'clean_effects', 'attached_pic', 'captions', 'descriptions', 'dependent', 'metadata'];
+const unchangedDispositionValue = 'llc_disposition_unchanged';
 
 const TagEditor = memo(({ existingTags, customTags, onTagChange, onTagReset }) => {
   const { t } = useTranslation();
@@ -125,10 +127,16 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
   const customTags = useMemo(() => (customTagsByStreamId[editingFile] || {})[editingStreamId] || {}, [customTagsByStreamId, editingFile, editingStreamId]);
 
   const customDisposition = useMemo(() => (dispositionByStreamId[editingFile] || {})[editingStreamId], [dispositionByStreamId, editingFile, editingStreamId]);
-  const existingDisposition = useMemo(() => (stream && stream.disposition) || {}, [stream]);
-  const effectiveDisposition = customDisposition || existingDisposition;
-  const currentDisposition = (Object.entries(effectiveDisposition).find(([, value]) => value === 1) || [])[0];
-  // console.log({ effectiveDisposition, currentDisposition });
+  const existingDispositionsObj = useMemo(() => (stream && stream.disposition) || {}, [stream]);
+  const effectiveDisposition = useMemo(() => {
+    if (customDisposition) return customDisposition;
+    if (!existingDispositionsObj) return undefined;
+    const existingActiveDispositionEntry = Object.entries(existingDispositionsObj).find(([, value]) => value === 1);
+    if (!existingActiveDispositionEntry) return undefined;
+    return existingActiveDispositionEntry[0]; // return the key
+  }, [customDisposition, existingDispositionsObj]);
+
+  // console.log({ existingDispositionsObj, effectiveDisposition });
 
   const { t } = useTranslation();
 
@@ -159,18 +167,19 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     });
   }, [editingFile, editingStreamId, setCustomTagsByStreamId]);
 
-  const onCoverArtChange = useCallback((e) => {
-    const newDispositions = dispositionOptions.includes(e.target.value) ? {
-      [e.target.value]: 1,
-    } : undefined;
-
-    // console.log(newDispositions);
+  const onDispositionChange = useCallback((e) => {
+    let newDisposition;
+    if (dispositionOptions.includes(e.target.value)) {
+      newDisposition = e.target.value;
+    } else if (e.target.value === deleteDispositionValue) {
+      newDisposition = deleteDispositionValue; // needs a separate value (not a real disposition)
+    } // else unchanged (undefined)
 
     setDispositionByStreamId((old) => ({
       ...old,
       [editingFile]: {
         ...old[editingFile],
-        [editingStreamId]: newDispositions,
+        [editingStreamId]: newDisposition,
       },
     }));
   }, [editingFile, editingStreamId, setDispositionByStreamId]);
@@ -180,8 +189,10 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
   return (
     <>
       <Heading marginBottom={5}>{t('Track disposition')}</Heading>
-      <Select marginBottom={20} value={currentDisposition || ''} onChange={onCoverArtChange}>
-        <option value="">{t('Unchanged')}</option>
+      <Select marginBottom={20} value={effectiveDisposition || unchangedDispositionValue} onChange={onDispositionChange}>
+        <option value={unchangedDispositionValue}>{t('Unchanged')}</option>
+        <option value={deleteDispositionValue}>{t('Remove')}</option>
+
         {dispositionOptions.map((key) => (
           <option key={key} value={key}>{key}</option>
         ))}

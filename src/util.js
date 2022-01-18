@@ -284,4 +284,6 @@ export async function deleteFiles({ toDelete, paths: { previewFilePath, filePath
   }
 }
 
+export const deleteDispositionValue = 'llc_disposition_remove';
+
 export const mirrorTransform = 'matrix(-1, 0, 0, 1, 0, 0)';
