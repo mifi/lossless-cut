@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey } from 'react-icons/fa';
 import { GiSoundWaves } from 'react-icons/gi';
 import { IoMdKey } from 'react-icons/io';
@@ -21,6 +21,11 @@ const TimelineControls = memo(({
 }) => {
   const { t } = useTranslation();
 
+  // Clear manual overrides if upstream cut time has changed
+  useEffect(() => {
+    setCutStartTimeManual();
+    setCutEndTimeManual();
+  }, [setCutStartTimeManual, setCutEndTimeManual, currentApparentCutSeg.start, currentApparentCutSeg.end]);
 
   function renderJumpCutpointButton(direction) {
     const newIndex = currentSegIndexSafe + direction;
@@ -63,14 +68,11 @@ const TimelineControls = memo(({
     };
 
     function parseAndSetCutTime(text) {
-      // Not a valid duration? Only set manual
-      const timeWithOffset = parseDuration(text);
-      if (timeWithOffset === undefined) {
-        setCutTimeManual(text);
-        return;
-      }
+      setCutTimeManual(text);
 
-      setCutTimeManual();
+      // Don't proceed if not a valid time value
+      const timeWithOffset = parseDuration(text);
+      if (timeWithOffset === undefined) return;
 
       const timeWithoutOffset = Math.max(timeWithOffset - startTimeOffset, 0);
       try {
@@ -78,6 +80,8 @@ const TimelineControls = memo(({
         seekAbs(timeWithoutOffset);
       } catch (err) {
         console.error('Cannot set cut time', err);
+        // If we get an error from setCutTime, remain in the editing state (cutTimeManual)
+        // https://github.com/mifi/lossless-cut/issues/988
       }
     }
 
