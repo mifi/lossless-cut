@@ -478,5 +478,19 @@
     "LosslessCut (CSV)": "LosslessCut (CSV)",
     "Export project (LLC)...": "Vie projekti (LLC)...",
     "Import project (LLC)...": "Tuo projekti (LLC)...",
-    "Close batch": "Sulje nippu"
+    "Close batch": "Sulje nippu",
+    "Licenses": "Lisenssit",
+    "Seek to timecode": "Etsi aikakoodi",
+    "Slow down playback more": "Hidasta toistoa enemmän",
+    "Speed up playback more": "Nopeuta toistoa enemmän",
+    "Frame counts": "Kehysten määrä",
+    "Frame fractions": "Kehyksen murtoluvut",
+    "The project will be stored alongside the input file as a project LLC file": "Projekti tallennetaan tuotavien tiedostojen rinnalle projektin LLC-tiedostona",
+    "Try to automatically convert to supported format when opening unsupported file?": "Yritetään muuntaa automaattisesti tuettuun muotoon tiedostoa avattaessa, jota ei tueta?",
+    "Unable to delete file: {{message}}": "Tiedostoa ei voi poistaa: {{message}}",
+    "Auto convert to supported format": "Muuntaa automaattisesti tuettuun muotoon",
+    "Fast: Remux video, encode audio (fails if unsupported video codec)": "Nopea: Remux-video, äänen koodaus (epäonnistuu, jos videokoodekkia ei tueta)",
+    "Frame numbers (CSV)": "Kehysten numerot (CSV)",
+    "This is where working files and exported files are stored.": "Tähän tallennetaan työtiedostot ja viedyt tiedostot.",
+    "Note: Cutting and including external tracks at the same time does not yet work. If you want to do both, it must be done as separate operations. See github issue #896.": "Huomautus: Ulkoisten raitojen leikkaaminen ja sisällyttäminen samaan aikaan ei vielä toimi. Jos haluat tehdä molemmat, ne on tehtävä erillisinä toimintoina. Katso ongelmaa github #896."
 }
