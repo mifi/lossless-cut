@@ -59,7 +59,7 @@ import {
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   hasDuplicates, havePermissionToReadFile, isMac, resolvePathIfNeeded, pathExists, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, getHtml5ifiedPath, isStreamThumbnail, getAudioStreams, getVideoStreams,
+  deleteFiles, getHtml5ifiedPath, isStreamThumbnail, getAudioStreams, getVideoStreams, isOutOfSpaceError,
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
@@ -665,6 +665,10 @@ const App = memo(() => {
       await ffmpegMergeFiles({ paths, outPath, outDir, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters });
       openDirToast({ icon: 'success', dirPath: outDir, text: i18n.t('Files merged!') });
     } catch (err) {
+      if (isOutOfSpaceError(err)) {
+        showDiskFull();
+        return;
+      }
       errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same codecs'));
       console.error('Failed to merge files', err);
     } finally {
@@ -1182,8 +1186,7 @@ const App = memo(() => {
       console.error('stderr:', err.stderr);
 
       if (err.exitCode === 1 || err.code === 'ENOENT') {
-        // A bit hacky but it works, unless someone has a file called "No space left on device" ( ͡° ͜ʖ ͡°)
-        if (typeof err.stderr === 'string' && err.stderr.includes('No space left on device')) {
+        if (isOutOfSpaceError(err)) {
           showDiskFull();
           return;
         }

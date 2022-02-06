@@ -287,3 +287,9 @@ export async function deleteFiles({ toDelete, paths: { previewFilePath, filePath
 export const deleteDispositionValue = 'llc_disposition_remove';
 
 export const mirrorTransform = 'matrix(-1, 0, 0, 1, 0, 0)';
+
+// A bit hacky but it works, unless someone has a file called "No space left on device" ( ͡° ͜ʖ ͡°)
+export const isOutOfSpaceError = (err) => (
+  err && (err.exitCode === 1 || err.code === 'ENOENT')
+  && typeof err.stderr === 'string' && err.stderr.includes('No space left on device')
+);
