@@ -227,9 +227,16 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
     const ffmetadataPath = await writeChaptersFfmetadata(outDir, chapters);
 
-    const shouldMapMetadata = preserveMetadataOnMerge && allStreams;
-
     try {
+      let map;
+      if (allStreams) map = ['-map', '0'];
+      // If preserveMetadataOnMerge option is enabled, we need to explicitly map even if allStreams=false.
+      // We cannot use the ffmpeg's automatic stream selection or else ffmpeg might use the metadata source input (index 1)
+      // instead of the concat input (index 0)
+      // https://ffmpeg.org/ffmpeg.html#Automatic-stream-selection
+      else if (preserveMetadataOnMerge) map = ['-map', 'v:0?', '-map', 'a:0?', '-map', 's:0?'];
+      else map = []; // ffmpeg default mapping
+
       // Keep this similar to cutSingle()
       const ffmpegArgs = [
         '-hide_banner',
@@ -240,20 +247,20 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe',
         '-i', '-',
 
-        // Add the first file for using its metadata. Can only do this if allStreams (-map 0) is set, or else ffmpeg might output this input instead of the concat
-        ...(shouldMapMetadata ? ['-i', paths[0]] : []),
+        // Add the first file (we will get metadata from this input)
+        ...(preserveMetadataOnMerge ? ['-i', paths[0]] : []),
 
         // Chapters?
         ...(ffmetadataPath ? ['-f', 'ffmetadata', '-i', ffmetadataPath] : []),
 
         '-c', 'copy',
 
-        ...(allStreams ? ['-map', '0'] : []),
+        ...map,
 
-        // -map_metadata 0 with concat demuxer doesn't transfer metadata from the concat'ed files when merging.
+        // -map_metadata 0 with concat demuxer doesn't transfer metadata from the concat'ed file input (index 0) when merging.
         // So we use the first file file (index 1) for metadata
         // Can only do this if allStreams (-map 0) is set
-        ...(shouldMapMetadata ? ['-map_metadata', '1'] : []),
+        ...(preserveMetadataOnMerge ? ['-map_metadata', '1'] : []),
 
         ...getMovFlags({ preserveMovData, movFastStart }),
         ...getMatroskaFlags(),

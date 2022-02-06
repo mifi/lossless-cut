@@ -13,8 +13,6 @@ import { parseYouTube } from './edlFormats';
 import CopyClipboardButton from './components/CopyClipboardButton';
 import { errorToast } from './util';
 
-import SortableFiles from './SortableFiles';
-
 const electron = window.require('electron'); // eslint-disable-line
 
 const { dialog, app } = electron.remote;
@@ -352,55 +350,7 @@ export function openAbout() {
   });
 }
 
-export async function showMergeDialog(paths, onMergeClick) {
-  let swalElem;
-  let outPaths = paths;
-  let allStreams = false;
-  let segmentsToChapters = false;
-  const { dismiss } = await ReactSwal.fire({
-    width: '90%',
-    showCancelButton: true,
-    confirmButtonText: i18n.t('Merge!'),
-    cancelButtonText: i18n.t('Cancel'),
-    willOpen: (el) => { swalElem = el; },
-    title: i18n.t('Merge/concatenate files'),
-    html: (<SortableFiles
-      items={outPaths}
-      onChange={(val) => { outPaths = val; }}
-      onAllStreamsChange={(val) => { allStreams = val; }}
-      onSegmentsToChaptersChange={(val) => { segmentsToChapters = val; }}
-      helperContainer={() => swalElem}
-    />),
-  });
-
-  if (!dismiss) {
-    await onMergeClick({ paths: outPaths, allStreams, segmentsToChapters });
-  }
-}
-
-export async function showMultipleFilesDialog(paths, onMergeClick, onBatchLoadFilesClick) {
-  const { isConfirmed, isDenied } = await Swal.fire({
-    showCloseButton: true,
-    showDenyButton: true,
-    denyButtonAriaLabel: '',
-    denyButtonColor: '#7367f0',
-    denyButtonText: i18n.t('Batch files'),
-    confirmButtonText: i18n.t('Merge/concatenate files'),
-    title: i18n.t('Multiple files'),
-    text: i18n.t('Do you want to merge/concatenate the files or load them for batch processing?'),
-  });
-
-  if (isDenied) {
-    await onBatchLoadFilesClick(paths);
-    return;
-  }
-
-  if (isConfirmed) {
-    await showMergeDialog(paths, onMergeClick);
-  }
-}
-
-export async function showOpenAndMergeDialog({ defaultPath, onMergeClick }) {
+export async function showMergeFilesOpenDialog(defaultPath) {
   const title = i18n.t('Please select files to be merged');
   const message = i18n.t('Please select files to be merged. The files need to be of the exact same format and codecs');
   const { canceled, filePaths } = await dialog.showOpenDialog({
@@ -409,14 +359,14 @@ export async function showOpenAndMergeDialog({ defaultPath, onMergeClick }) {
     properties: ['openFile', 'multiSelections'],
     message,
   });
-  if (canceled || !filePaths) return;
+  if (canceled || !filePaths) return undefined;
 
   if (filePaths.length < 2) {
     errorToast(i18n.t('More than one file must be selected'));
-    return;
+    return undefined;
   }
 
-  showMergeDialog(filePaths, onMergeClick);
+  return filePaths;
 }
 
 export async function showEditableJsonDialog({ text, title, inputLabel, inputValue, inputValidator }) {

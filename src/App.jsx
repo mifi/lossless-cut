@@ -3,7 +3,7 @@ import { unstable_batchedUpdates as batchedUpdates } from 'react-dom';
 import { FaAngleLeft, FaWindowClose, FaTimes } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
 import Lottie from 'react-lottie-player';
-import { SideSheet, Button, Position, ForkIcon, DisableIcon, Select, ThemeProvider } from 'evergreen-ui';
+import { SideSheet, Button, Position, ForkIcon, DisableIcon, Select, ThemeProvider, MergeColumnsIcon } from 'evergreen-ui';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
@@ -40,6 +40,7 @@ import ValueTuner from './components/ValueTuner';
 import VolumeControl from './components/VolumeControl';
 import SubtitleControl from './components/SubtitleControl';
 import BatchFile from './components/BatchFile';
+import ConcatDialog from './components/ConcatDialog';
 
 import { loadMifiLink } from './mifi';
 import { primaryColor, controlsBackground, timelineBackground } from './colors';
@@ -63,7 +64,7 @@ import {
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMultipleFilesDialog, showOpenAndMergeDialog, openAbout, showEditableJsonDialog } from './dialogs';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMergeFilesOpenDialog, openAbout, showEditableJsonDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags } from './segments';
@@ -125,6 +126,7 @@ const App = memo(() => {
   const [mainAudioStream, setMainAudioStream] = useState();
   const [copyStreamIdsByFile, setCopyStreamIdsByFile] = useState({});
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
+  const [concatDialogVisible, setConcatDialogVisible] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [thumbnails, setThumbnails] = useState([]);
   const [shortestFlag, setShortestFlag] = useState(false);
@@ -146,8 +148,9 @@ const App = memo(() => {
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [tunerVisible, setTunerVisible] = useState();
   const [mifiLink, setMifiLink] = useState();
+  const [alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles] = useState(false);
 
-  // Batch state
+  // Batch state / concat files
   const [batchFiles, setBatchFiles] = useState([]);
 
   // Segment related state
@@ -642,9 +645,10 @@ const App = memo(() => {
     return { cancel: false, newCustomOutDir };
   }, [customOutDir, setCustomOutDir]);
 
-  const mergeFiles = useCallback(async ({ paths, allStreams, segmentsToChapters: segmentsToChapters2 }) => {
+  const mergeFiles = useCallback(async ({ paths, allStreams }) => {
     if (workingRef.current) return;
     try {
+      setConcatDialogVisible(false);
       setWorking(i18n.t('Merging'));
 
       const firstPath = paths[0];
@@ -656,7 +660,7 @@ const App = memo(() => {
       const outDir = getOutDir(customOutDir, firstPath);
 
       let chapters;
-      if (segmentsToChapters2) {
+      if (segmentsToChapters) {
         const chapterNames = paths.map((path) => parsePath(path).name);
         chapters = await createChaptersFromSegments({ segmentPaths: paths, chapterNames });
       }
@@ -675,7 +679,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [ensureOutDirAccessible, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, customOutDir, ffmpegMergeFiles, setWorking]);
+  }, [setWorking, ensureOutDirAccessible, customOutDir, segmentsToChapters, ffmpegMergeFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
 
@@ -1427,6 +1431,8 @@ const App = memo(() => {
   const seekAccelerationRef = useRef(1);
 
   useEffect(() => {
+    if (concatDialogVisible) return () => {};
+
     function onKeyPress() {
       if (exportConfirmVisible) onExportConfirm();
       else onExportPress();
@@ -1435,7 +1441,7 @@ const App = memo(() => {
     const mousetrap = new Mousetrap();
     mousetrap.bind('e', onKeyPress);
     return () => mousetrap.reset();
-  }, [exportConfirmVisible, onExportConfirm, onExportPress]);
+  }, [exportConfirmVisible, onExportConfirm, onExportPress, concatDialogVisible]);
 
   useEffect(() => {
     function onEscPress() {
@@ -1562,6 +1568,8 @@ const App = memo(() => {
     }
   }, [userOpenSingleFile, setWorking, filePath]);
 
+  const batchFilePaths = useMemo(() => batchFiles.map((f) => f.path), [batchFiles]);
+
   const batchFileJump = useCallback((direction) => {
     const pathIndex = batchFiles.findIndex(({ path }) => path === filePath);
     if (pathIndex === -1) return;
@@ -1572,8 +1580,7 @@ const App = memo(() => {
 
   const batchLoadFiles = useCallback((paths) => {
     setBatchFiles(paths.map((path) => ({ path, name: basename(path) })));
-    batchOpenSingleFile(paths[0]);
-  }, [batchOpenSingleFile]);
+  }, []);
 
   const userOpenFiles = useCallback(async (filePaths) => {
     if (!filePaths || filePaths.length < 1) return;
@@ -1582,9 +1589,15 @@ const App = memo(() => {
     console.log(filePaths.join('\n'));
 
     if (filePaths.length > 1) {
-      showMultipleFilesDialog(filePaths, mergeFiles, batchLoadFiles);
+      batchLoadFiles(filePaths);
+      if (alwaysConcatMultipleFiles) {
+        setConcatDialogVisible(true);
+      } else {
+        batchOpenSingleFile(filePaths[0]);
+      }
       return;
     }
+
 
     // filePaths.length is now 1
     const firstFilePath = filePaths[0];
@@ -1642,7 +1655,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [addStreamSourceFile, checkFileOpened, enableAskForFileOpenAction, isFileOpened, loadEdlFile, mergeFiles, userOpenSingleFile, setWorking, batchLoadFiles]);
+  }, [batchLoadFiles, alwaysConcatMultipleFiles, batchOpenSingleFile, setWorking, isFileOpened, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile]);
 
   const userHtml5ifyCurrentFile = useCallback(async () => {
     if (!filePath) return;
@@ -1693,7 +1706,7 @@ const App = memo(() => {
 
   // TODO split up?
   useEffect(() => {
-    if (exportConfirmVisible) return () => {};
+    if (exportConfirmVisible || concatDialogVisible) return () => {};
 
     const togglePlayNoReset = () => togglePlay();
     const togglePlayReset = () => togglePlay(true);
@@ -1787,7 +1800,7 @@ const App = memo(() => {
   }, [
     addCutSegment, capture, changePlaybackRate, togglePlay, removeCutSegment,
     setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, cleanupFiles, jumpSeg,
-    seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment, exportConfirmVisible,
+    seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment, exportConfirmVisible, concatDialogVisible,
     increaseRotation, jumpCutStart, jumpCutEnd, cutSegmentsHistory, keyboardSeekAccFactor,
     keyboardNormalSeekSpeed, onLabelSegmentPress, currentSegIndexSafe, batchFileJump, goToTimecode,
   ]);
@@ -1831,11 +1844,12 @@ const App = memo(() => {
   }, [fileUri, usingPreviewFile, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, filePath, setWorking]);
 
   useEffect(() => {
-    function showOpenAndMergeDialog2() {
-      showOpenAndMergeDialog({
-        defaultPath: outputDir,
-        onMergeClick: mergeFiles,
-      });
+    async function showOpenAndMergeDialog() {
+      const files = await showMergeFilesOpenDialog(outputDir);
+      if (files) {
+        batchLoadFiles(files);
+        setConcatDialogVisible(true);
+      }
     }
 
     async function setStartOffset() {
@@ -1961,7 +1975,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('close-file', closeFile2);
     electron.ipcRenderer.on('close-batch-files', closeBatch2);
     electron.ipcRenderer.on('html5ify', userHtml5ifyCurrentFile);
-    electron.ipcRenderer.on('show-merge-dialog', showOpenAndMergeDialog2);
+    electron.ipcRenderer.on('show-merge-dialog', showOpenAndMergeDialog);
     electron.ipcRenderer.on('set-start-offset', setStartOffset);
     electron.ipcRenderer.on('extract-all-streams', extractAllStreams);
     electron.ipcRenderer.on('showStreamsSelector', showStreamsSelector);
@@ -1985,7 +1999,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('close-file', closeFile2);
       electron.ipcRenderer.removeListener('close-batch-files', closeBatch2);
       electron.ipcRenderer.removeListener('html5ify', userHtml5ifyCurrentFile);
-      electron.ipcRenderer.removeListener('show-merge-dialog', showOpenAndMergeDialog2);
+      electron.ipcRenderer.removeListener('show-merge-dialog', showOpenAndMergeDialog);
       electron.ipcRenderer.removeListener('set-start-offset', setStartOffset);
       electron.ipcRenderer.removeListener('extract-all-streams', extractAllStreams);
       electron.ipcRenderer.removeListener('showStreamsSelector', showStreamsSelector);
@@ -2005,7 +2019,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('reorderSegsByStartTime', reorderSegsByStartTime);
     };
   }, [
-    mergeFiles, outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile,
+    outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile, batchLoadFiles,
     extractAllStreams, userOpenFiles, openSendReportDialogWithState, setWorking,
     loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, ensureOutDirAccessible, html5ifyAndLoad, html5ify,
     loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFileWithConfirm, closeBatch, clearSegments, clearSegCounter, fixInvalidDuration, invertAllCutSegments, getFrameCount,
@@ -2344,6 +2358,11 @@ const App = memo(() => {
             >
               <div style={{ background: controlsBackground, fontSize: 14, paddingBottom: 7, paddingTop: 3, paddingLeft: 10, paddingRight: 5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 {t('Batch file list')}
+
+                <div style={{ flexGrow: 1 }} />
+
+                <MergeColumnsIcon role="button" title={t('Merge/concatenate files')} color="white" style={{ marginRight: 10, cursor: 'pointer' }} onClick={() => setConcatDialogVisible(true)} />
+
                 <FaTimes size={18} role="button" style={{ cursor: 'pointer', color: 'white' }} onClick={() => closeBatch()} title={t('Close batch')} />
               </div>
 
@@ -2531,6 +2550,8 @@ const App = memo(() => {
           onTogglePress={toggleSettings}
           renderSettings={renderSettings}
         />
+
+        <ConcatDialog isShown={batchFiles.length > 0 && concatDialogVisible} onHide={() => setConcatDialogVisible(false)} initialPaths={batchFilePaths} onConcat={mergeFiles} segmentsToChapters={segmentsToChapters} setSegmentsToChapters={setSegmentsToChapters} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} preserveMetadataOnMerge={preserveMetadataOnMerge} setPreserveMetadataOnMerge={setPreserveMetadataOnMerge} preserveMovData={preserveMovData} setPreserveMovData={setPreserveMovData} />
 
         {tunerVisible && renderTuner(tunerVisible)}
       </div>

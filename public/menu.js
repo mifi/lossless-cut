@@ -243,7 +243,7 @@ module.exports = (app, mainWindow, newVersion) => {
       label: i18n.t('Tools'),
       submenu: [
         {
-          label: i18n.t('Merge files'),
+          label: i18n.t('Merge/concatenate files'),
           click() {
             mainWindow.webContents.send('show-merge-dialog', true);
           },
