@@ -1578,8 +1578,15 @@ const App = memo(() => {
     batchOpenSingleFile(nextFile.path);
   }, [filePath, batchFiles, batchOpenSingleFile]);
 
-  const batchLoadFiles = useCallback((paths) => {
-    setBatchFiles(paths.map((path) => ({ path, name: basename(path) })));
+  const batchLoadPaths = useCallback((newPaths, append) => {
+    setBatchFiles((existingFiles) => {
+      const mapPathsToFiles = (paths) => paths.map((path) => ({ path, name: basename(path) }));
+      if (append) {
+        const newUniquePaths = newPaths.filter((newPath) => !existingFiles.some(({ path: existingPath }) => newPath === existingPath));
+        return [...existingFiles, ...mapPathsToFiles(newUniquePaths)];
+      }
+      return mapPathsToFiles(newPaths);
+    });
   }, []);
 
   const userOpenFiles = useCallback(async (filePaths) => {
@@ -1589,10 +1596,11 @@ const App = memo(() => {
     console.log(filePaths.join('\n'));
 
     if (filePaths.length > 1) {
-      batchLoadFiles(filePaths);
       if (alwaysConcatMultipleFiles) {
+        batchLoadPaths(filePaths);
         setConcatDialogVisible(true);
       } else {
+        batchLoadPaths(filePaths, true);
         batchOpenSingleFile(filePaths[0]);
       }
       return;
@@ -1655,7 +1663,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [batchLoadFiles, alwaysConcatMultipleFiles, batchOpenSingleFile, setWorking, isFileOpened, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile]);
+  }, [batchLoadPaths, alwaysConcatMultipleFiles, batchOpenSingleFile, setWorking, isFileOpened, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile]);
 
   const userHtml5ifyCurrentFile = useCallback(async () => {
     if (!filePath) return;
@@ -1847,7 +1855,7 @@ const App = memo(() => {
     async function showOpenAndMergeDialog() {
       const files = await showMergeFilesOpenDialog(outputDir);
       if (files) {
-        batchLoadFiles(files);
+        batchLoadPaths(files);
         setConcatDialogVisible(true);
       }
     }
@@ -2019,7 +2027,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('reorderSegsByStartTime', reorderSegsByStartTime);
     };
   }, [
-    outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile, batchLoadFiles,
+    outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile, batchLoadPaths,
     extractAllStreams, userOpenFiles, openSendReportDialogWithState, setWorking,
     loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, ensureOutDirAccessible, html5ifyAndLoad, html5ify,
     loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFileWithConfirm, closeBatch, clearSegments, clearSegCounter, fixInvalidDuration, invertAllCutSegments, getFrameCount,
@@ -2361,7 +2369,7 @@ const App = memo(() => {
 
                 <div style={{ flexGrow: 1 }} />
 
-                <MergeColumnsIcon role="button" title={t('Merge/concatenate files')} color="white" style={{ marginRight: 10, cursor: 'pointer' }} onClick={() => setConcatDialogVisible(true)} />
+                {batchFiles.length > 1 && <MergeColumnsIcon role="button" title={t('Merge/concatenate files')} color="white" style={{ marginRight: 10, cursor: 'pointer' }} onClick={() => setConcatDialogVisible(true)} />}
 
                 <FaTimes size={18} role="button" style={{ cursor: 'pointer', color: 'white' }} onClick={() => closeBatch()} title={t('Close batch')} />
               </div>
