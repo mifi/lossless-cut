@@ -95,7 +95,7 @@ If you want to support my continued work on LosslessCut, and you want the advant
 If you prefer to download the executables manually, this will of course always be free:
 
 - Mac OS X: [DMG](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac.dmg)
-- Window: [EXE](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win.exe) / [ZIP](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win.zip)
+- Window: [EXE](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win.exe) / [ZIP](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win.zip) / [PortableApps](https://portableapps.com/apps/music_video/lossless-cut-portable)
 - Linux: [tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux.tar.bz2) / [AppImage](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux.AppImage)
 - [More releases](https://github.com/mifi/lossless-cut/releases)
 
