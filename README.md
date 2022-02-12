@@ -95,7 +95,7 @@ If you want to support my continued work on LosslessCut, and you want the advant
 If you prefer to download the executables manually, this will of course always be free:
 
 - Mac OS X: [DMG](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac.dmg)
-- Window: [EXE](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win.exe) / [ZIP](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win.zip) / [PortableApps](https://portableapps.com/apps/music_video/lossless-cut-portable)
+- Window: [EXE](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win.exe) / [ZIP](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win.zip)
 - Linux: [tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux.tar.bz2) / [AppImage](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux.AppImage)
 - [More releases](https://github.com/mifi/lossless-cut/releases)
 
@@ -199,6 +199,10 @@ This project is maintained by me alone. The project will always remain free and 
 - I made a command line video editor with slick transitions and lots of colors! [editly](https://github.com/mifi/editly)
 - I made a tool for cross platform sharing of files between computer/phone over the local network: [ezshare](https://github.com/mifi/ezshare)
 - I created a super simple Instagram bot for getting more followers [SimpleInstaBot](https://github.com/mifi/SimpleInstaBot)
+
+## See also
+
+- [PortableApps](https://portableapps.com/apps/music_video/lossless-cut-portable) publishes a portable version of LosslessCut (not authored by me)
 
 ---
 
