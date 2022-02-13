@@ -16,7 +16,7 @@ export default ({ filePath, commandedTime, zoomedDuration, waveformEnabled, main
     let aborted = false;
 
     (async () => {
-      const alreadyHaveWaveformAtCommandedTime = waveforms.some((waveform) => waveform.from < commandedTime && waveform.to > commandedTime);
+      const alreadyHaveWaveformAtCommandedTime = waveforms.some((waveform) => waveform.from <= commandedTime && waveform.to >= commandedTime);
       const shouldRun = filePath && mainAudioStream && commandedTime != null && shouldShowWaveform && waveformEnabled && !alreadyHaveWaveformAtCommandedTime && !creatingWaveformPromise.current;
       if (!shouldRun) return;
 
