@@ -2233,40 +2233,6 @@ const App = memo(() => {
     <ThemeProvider value={theme}>
       <div>
         <div className="no-user-select" style={{ background: controlsBackground, height: topBarHeight, display: 'flex', alignItems: 'center', padding: '0 5px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-          <SideSheet
-            width={700}
-            containerProps={{ style: { maxWidth: '100%' } }}
-            position={Position.LEFT}
-            isShown={streamsSelectorShown}
-            onCloseComplete={() => setStreamsSelectorShown(false)}
-          >
-            <StreamsSelector
-              mainFilePath={filePath}
-              mainFileFormatData={fileFormatData}
-              mainFileChapters={chapters}
-              externalFiles={externalStreamFiles}
-              setExternalFiles={setExternalStreamFiles}
-              showAddStreamSourceDialog={showAddStreamSourceDialog}
-              streams={mainStreams}
-              isCopyingStreamId={isCopyingStreamId}
-              toggleCopyStreamId={toggleCopyStreamId}
-              setCopyStreamIdsForPath={setCopyStreamIdsForPath}
-              onExtractAllStreamsPress={extractAllStreams}
-              onExtractStreamPress={extractSingleStream}
-              areWeCutting={areWeCutting}
-              shortestFlag={shortestFlag}
-              setShortestFlag={setShortestFlag}
-              nonCopiedExtraStreams={nonCopiedExtraStreams}
-              AutoExportToggler={AutoExportToggler}
-              customTagsByFile={customTagsByFile}
-              setCustomTagsByFile={setCustomTagsByFile}
-              customTagsByStreamId={customTagsByStreamId}
-              setCustomTagsByStreamId={setCustomTagsByStreamId}
-              dispositionByStreamId={dispositionByStreamId}
-              setDispositionByStreamId={setDispositionByStreamId}
-            />
-          </SideSheet>
-
           <TopMenu
             filePath={filePath}
             height={topBarHeight}
@@ -2546,6 +2512,40 @@ const App = memo(() => {
             />
           </div>
         </motion.div>
+
+        <SideSheet
+          width={700}
+          containerProps={{ style: { maxWidth: '100%' } }}
+          position={Position.LEFT}
+          isShown={streamsSelectorShown}
+          onCloseComplete={() => setStreamsSelectorShown(false)}
+        >
+          <StreamsSelector
+            mainFilePath={filePath}
+            mainFileFormatData={fileFormatData}
+            mainFileChapters={chapters}
+            externalFiles={externalStreamFiles}
+            setExternalFiles={setExternalStreamFiles}
+            showAddStreamSourceDialog={showAddStreamSourceDialog}
+            streams={mainStreams}
+            isCopyingStreamId={isCopyingStreamId}
+            toggleCopyStreamId={toggleCopyStreamId}
+            setCopyStreamIdsForPath={setCopyStreamIdsForPath}
+            onExtractAllStreamsPress={extractAllStreams}
+            onExtractStreamPress={extractSingleStream}
+            areWeCutting={areWeCutting}
+            shortestFlag={shortestFlag}
+            setShortestFlag={setShortestFlag}
+            nonCopiedExtraStreams={nonCopiedExtraStreams}
+            AutoExportToggler={AutoExportToggler}
+            customTagsByFile={customTagsByFile}
+            setCustomTagsByFile={setCustomTagsByFile}
+            customTagsByStreamId={customTagsByStreamId}
+            setCustomTagsByStreamId={setCustomTagsByStreamId}
+            dispositionByStreamId={dispositionByStreamId}
+            setDispositionByStreamId={setDispositionByStreamId}
+          />
+        </SideSheet>
 
         <ExportConfirm filePath={filePath} autoMerge={autoMerge} setAutoMerge={setAutoMerge} areWeCutting={areWeCutting} enabledOutSegments={enabledOutSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} movFastStart={movFastStart} toggleMovFastStart={toggleMovFastStart} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} segmentsToChapters={segmentsToChapters} toggleSegmentsToChapters={toggleSegmentsToChapters} outFormat={fileFormat} preserveMetadataOnMerge={preserveMetadataOnMerge} togglePreserveMetadataOnMerge={togglePreserveMetadataOnMerge} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} isOutSegFileNamesValid={isOutSegFileNamesValid} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} safeOutputFileName={safeOutputFileName} toggleSafeOutputFileName={toggleSafeOutputFileName} />
 
