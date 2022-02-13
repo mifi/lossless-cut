@@ -90,7 +90,8 @@ export default () => {
   useEffect(() => safeSetConfig('safeOutputFileName', safeOutputFileName), [safeOutputFileName]);
   const [enableAutoHtml5ify, setEnableAutoHtml5ify] = useState(configStore.get('enableAutoHtml5ify'));
   useEffect(() => safeSetConfig('enableAutoHtml5ify', enableAutoHtml5ify), [enableAutoHtml5ify]);
-
+  const [segmentsToChaptersOnly, setSegmentsToChaptersOnly] = useState(configStore.get('segmentsToChaptersOnly'));
+  useEffect(() => safeSetConfig('segmentsToChaptersOnly', segmentsToChaptersOnly), [segmentsToChaptersOnly]);
 
   // NOTE! This useEffect must be placed after all usages of firstUpdateRef.current (safeSetConfig)
   useEffect(() => {
@@ -167,5 +168,7 @@ export default () => {
     setSafeOutputFileName,
     enableAutoHtml5ify,
     setEnableAutoHtml5ify,
+    segmentsToChaptersOnly,
+    setSegmentsToChaptersOnly,
   };
 };

@@ -194,7 +194,7 @@ const App = memo(() => {
   const isCustomFormatSelected = fileFormat !== detectedFileFormat;
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, setEnableAutoHtml5ify,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, setEnableAutoHtml5ify, segmentsToChaptersOnly, setSegmentsToChaptersOnly,
   } = useUserPreferences();
 
   const {
@@ -1121,12 +1121,23 @@ const App = memo(() => {
     try {
       setWorking(i18n.t('Exporting'));
 
+      // This is a special mode where segments will be simply written out as chapters: https://github.com/mifi/lossless-cut/issues/993#issuecomment-1037927595
+      let chaptersToAdd;
+      let segmentsToExport = enabledOutSegments;
+      if (segmentsToChaptersOnly) {
+        if (invertCutSegments) throw new Error('Inverted cut segments not supported for chapters only export');
+        // Emulate a single segment with no cuts (full timeline)
+        segmentsToExport = [{ start: 0, end: getSegApparentEnd({}) }];
+        chaptersToAdd = sortBy(enabledOutSegments, 'start').map((segment) => ({ start: segment.start, end: segment.end, name: segment.name }));
+        console.log(chaptersToAdd);
+      }
+
       console.log('outSegTemplateOrDefault', outSegTemplateOrDefault);
 
-      let outSegFileNames = generateOutSegFileNames({ segments: enabledOutSegments, template: outSegTemplateOrDefault });
+      let outSegFileNames = generateOutSegFileNames({ segments: segmentsToExport, template: outSegTemplateOrDefault });
       if (!isOutSegFileNamesValid(outSegFileNames) || hasDuplicates(outSegFileNames)) {
         console.error('Output segments file name invalid, using default instead', outSegFileNames);
-        outSegFileNames = generateOutSegFileNames({ segments: enabledOutSegments, template: defaultOutSegTemplate });
+        outSegFileNames = generateOutSegFileNames({ segments: segmentsToExport, template: defaultOutSegTemplate });
       }
 
       // throw (() => { const err = new Error('test'); err.code = 'ENOENT'; return err; })();
@@ -1137,7 +1148,7 @@ const App = memo(() => {
         rotation: isRotationSet ? effectiveRotation : undefined,
         copyFileStreams,
         keyframeCut,
-        segments: enabledOutSegments,
+        segments: segmentsToExport,
         segmentsFileNames: outSegFileNames,
         onProgress: setCutProgress,
         appendFfmpegCommandLog,
@@ -1149,13 +1160,14 @@ const App = memo(() => {
         customTagsByFile,
         customTagsByStreamId,
         dispositionByStreamId,
+        chapters: chaptersToAdd,
       });
 
       if (outFiles.length > 1 && autoMerge) {
         setCutProgress(0);
         setWorking(i18n.t('Merging'));
 
-        const chapterNames = segmentsToChapters && !invertCutSegments ? enabledOutSegments.map((s) => s.name) : undefined;
+        const chapterNames = segmentsToChapters && !invertCutSegments ? segmentsToExport.map((s) => s.name) : undefined;
 
         await autoMergeSegments({
           customOutDir,
@@ -1205,7 +1217,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [numStreamsToCopy, enabledOutSegments, outSegTemplateOrDefault, generateOutSegFileNames, customOutDir, filePath, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, autoMerge, exportExtraStreams, fileFormatData, mainStreams, hideAllNotifications, outputDir, segmentsToChapters, invertCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, preserveMetadataOnMerge, nonCopiedExtraStreams, handleCutFailed, isOutSegFileNamesValid, cutMultiple, autoMergeSegments, setWorking]);
+  }, [numStreamsToCopy, setWorking, enabledOutSegments, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, isOutSegFileNamesValid, cutMultiple, outputDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, autoMerge, fileFormatData, mainStreams, exportExtraStreams, hideAllNotifications, invertCutSegments, getSegApparentEnd, segmentsToChapters, autoMergeSegments, customOutDir, isCustomFormatSelected, autoDeleteMergedSegments, preserveMetadataOnMerge, filePath, nonCopiedExtraStreams, handleCutFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath || workingRef.current) return;
@@ -2251,6 +2263,8 @@ const App = memo(() => {
           outFormatLocked={outFormatLocked}
           onOutFormatLockedClick={onOutFormatLockedClick}
           simpleMode={simpleMode}
+          segmentsToChaptersOnly={segmentsToChaptersOnly}
+          setSegmentsToChaptersOnly={setSegmentsToChaptersOnly}
         />
 
         <div style={{ flexGrow: 1, display: 'flex', overflowY: 'hidden' }}>
@@ -2522,7 +2536,7 @@ const App = memo(() => {
           />
         </SideSheet>
 
-        <ExportConfirm filePath={filePath} autoMerge={autoMerge} setAutoMerge={setAutoMerge} areWeCutting={areWeCutting} enabledOutSegments={enabledOutSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} movFastStart={movFastStart} toggleMovFastStart={toggleMovFastStart} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} segmentsToChapters={segmentsToChapters} toggleSegmentsToChapters={toggleSegmentsToChapters} outFormat={fileFormat} preserveMetadataOnMerge={preserveMetadataOnMerge} togglePreserveMetadataOnMerge={togglePreserveMetadataOnMerge} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} isOutSegFileNamesValid={isOutSegFileNamesValid} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} safeOutputFileName={safeOutputFileName} toggleSafeOutputFileName={toggleSafeOutputFileName} />
+        <ExportConfirm filePath={filePath} autoMerge={autoMerge} setAutoMerge={setAutoMerge} areWeCutting={areWeCutting} enabledOutSegments={enabledOutSegments} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} keyframeCut={keyframeCut} toggleKeyframeCut={toggleKeyframeCut} renderOutFmt={renderOutFmt} preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} movFastStart={movFastStart} toggleMovFastStart={toggleMovFastStart} avoidNegativeTs={avoidNegativeTs} setAvoidNegativeTs={setAvoidNegativeTs} changeOutDir={changeOutDir} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} segmentsToChapters={segmentsToChapters} toggleSegmentsToChapters={toggleSegmentsToChapters} outFormat={fileFormat} preserveMetadataOnMerge={preserveMetadataOnMerge} togglePreserveMetadataOnMerge={togglePreserveMetadataOnMerge} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} isOutSegFileNamesValid={isOutSegFileNamesValid} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} safeOutputFileName={safeOutputFileName} toggleSafeOutputFileName={toggleSafeOutputFileName} segmentsToChaptersOnly={segmentsToChaptersOnly} setSegmentsToChaptersOnly={setSegmentsToChaptersOnly} />
 
         <HelpSheet
           visible={helpVisible}

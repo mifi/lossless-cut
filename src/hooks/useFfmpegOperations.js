@@ -50,6 +50,8 @@ function getMatroskaFlags() {
   ];
 }
 
+const getChaptersInputArgs = (ffmetadataPath) => (ffmetadataPath ? ['-f', 'ffmetadata', '-i', ffmetadataPath] : []);
+
 function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
   const optionalTransferTimestamps = useCallback(async (...args) => {
     if (enableTransferTimestamps) await transferTimestamps(...args);
@@ -61,8 +63,11 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     outputDir, segments, segmentsFileNames, videoDuration, rotation,
     onProgress: onTotalProgress, keyframeCut, copyFileStreams, outFormat,
     appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs,
-    customTagsByFile, customTagsByStreamId, dispositionByStreamId,
+    customTagsByFile, customTagsByStreamId, dispositionByStreamId, chapters,
   }) => {
+    // We can optionally write chapters
+    const chaptersPath = chapters ? await writeChaptersFfmetadata(outputDir, chapters) : undefined;
+
     async function cutSingle({ cutFrom, cutTo, onProgress, outPath }) {
       const cuttingStart = isCuttingStart(cutFrom);
       const cuttingEnd = isCuttingEnd(cutTo, videoDuration);
@@ -81,17 +86,24 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       // remove -avoid_negative_ts make_zero when not cutting start (no -ss), or else some videos get blank first frame in QuickLook
       const avoidNegativeTsArgs = cuttingStart && avoidNegativeTs ? ['-avoid_negative_ts', avoidNegativeTs] : [];
 
-      const inputArgs = flatMap(copyFileStreamsFiltered, ({ path }) => ['-i', path]);
-      const inputCutArgs = ssBeforeInput ? [
+      const inputFilesArgs = flatMap(copyFileStreamsFiltered, ({ path }) => ['-i', path]);
+      const inputFilesArgsWithCuts = ssBeforeInput ? [
         ...cutFromArgs,
-        ...inputArgs,
+        ...inputFilesArgs,
         ...cutToArgs,
         ...avoidNegativeTsArgs,
       ] : [
-        ...inputArgs,
+        ...inputFilesArgs,
         ...cutFromArgs,
         ...cutToArgs,
       ];
+
+      const inputArgs = [
+        ...inputFilesArgsWithCuts,
+        ...getChaptersInputArgs(chaptersPath),
+      ];
+
+      const chaptersInputIndex = copyFileStreamsFiltered.length;
 
       const rotationArgs = rotation !== undefined ? ['-metadata:s:v:0', `rotate=${360 - rotation}`] : [];
 
@@ -152,14 +164,17 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         // No progress if we set loglevel warning :(
         // '-loglevel', 'warning',
 
-        ...inputCutArgs,
+        ...inputArgs,
 
         '-c', 'copy',
 
         ...(shortestFlag ? ['-shortest'] : []),
 
         ...flatMapDeep(copyFileStreamsFiltered, ({ streamIds }, fileIndex) => streamIds.map(streamId => ['-map', `${fileIndex}:${streamId}`])),
+
         '-map_metadata', '0',
+
+        ...(chaptersPath ? ['-map_chapters', chaptersInputIndex] : []),
 
         ...getMovFlags({ preserveMovData, movFastStart }),
         ...getMatroskaFlags(),
@@ -225,9 +240,40 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     const durations = await pMap(paths, getDuration, { concurrency: 1 });
     const totalDuration = sum(durations);
 
-    const ffmetadataPath = await writeChaptersFfmetadata(outDir, chapters);
+    const chaptersPath = await writeChaptersFfmetadata(outDir, chapters);
 
     try {
+      let inputArgs = [];
+      let inputIndex = 0;
+
+      // Keep track of input index to be used later
+      // eslint-disable-next-line no-inner-declarations
+      function addInput(args) {
+        inputArgs = [...inputArgs, ...args];
+        const retIndex = inputIndex;
+        inputIndex += 1;
+        return retIndex;
+      }
+
+      // concat list - always first
+      addInput([
+        // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
+        '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe',
+        '-i', '-',
+      ]);
+
+      let metadataSourceIndex;
+      if (preserveMetadataOnMerge) {
+        // If preserve metadata, add the first file (we will get metadata from this input)
+        metadataSourceIndex = addInput(['-i', paths[0]]);
+      }
+
+      let chaptersInputIndex;
+      if (chaptersPath) {
+        // if chapters, add chapters source file
+        chaptersInputIndex = addInput(getChaptersInputArgs(chaptersPath));
+      }
+
       let map;
       if (allStreams) map = ['-map', '0'];
       // If preserveMetadataOnMerge option is enabled, we need to explicitly map even if allStreams=false.
@@ -243,15 +289,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         // No progress if we set loglevel warning :(
         // '-loglevel', 'warning',
 
-        // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
-        '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe',
-        '-i', '-',
-
-        // Add the first file (we will get metadata from this input)
-        ...(preserveMetadataOnMerge ? ['-i', paths[0]] : []),
-
-        // Chapters?
-        ...(ffmetadataPath ? ['-f', 'ffmetadata', '-i', ffmetadataPath] : []),
+        ...inputArgs,
 
         '-c', 'copy',
 
@@ -260,7 +298,9 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         // -map_metadata 0 with concat demuxer doesn't transfer metadata from the concat'ed file input (index 0) when merging.
         // So we use the first file file (index 1) for metadata
         // Can only do this if allStreams (-map 0) is set
-        ...(preserveMetadataOnMerge ? ['-map_metadata', '1'] : []),
+        ...(metadataSourceIndex != null ? ['-map_metadata', metadataSourceIndex] : []),
+
+        ...(chaptersInputIndex != null ? ['-map_chapters', chaptersInputIndex] : []),
 
         ...getMovFlags({ preserveMovData, movFastStart }),
         ...getMatroskaFlags(),
@@ -294,7 +334,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       const { stdout } = await process;
       console.log(stdout);
     } finally {
-      if (ffmetadataPath) await fs.unlink(ffmetadataPath).catch((err) => console.error('Failed to delete', ffmetadataPath, err));
+      if (chaptersPath) await fs.unlink(chaptersPath).catch((err) => console.error('Failed to delete', chaptersPath, err));
     }
 
     await optionalTransferTimestamps(paths[0], outPath);

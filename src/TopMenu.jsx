@@ -14,6 +14,7 @@ const TopMenu = memo(({
   filePath, copyAnyAudioTrack, toggleStripAudio, customOutDir, changeOutDir,
   renderOutFmt, toggleHelp, numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown, toggleSettings,
   enabledOutSegments, autoMerge, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments, isCustomFormatSelected, onOutFormatLockedClick, simpleMode, outFormatLocked, clearOutDir,
+  segmentsToChaptersOnly, setSegmentsToChaptersOnly,
 }) => {
   const { t } = useTranslation();
 
@@ -74,7 +75,7 @@ const TopMenu = memo(({
 
           {!simpleMode && (isCustomFormatSelected || outFormatLocked) && renderFormatLock()}
 
-          <MergeExportButton autoMerge={autoMerge} enabledOutSegments={enabledOutSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} />
+          <MergeExportButton autoMerge={autoMerge} enabledOutSegments={enabledOutSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} segmentsToChaptersOnly={segmentsToChaptersOnly} setSegmentsToChaptersOnly={setSegmentsToChaptersOnly} />
         </>
       )}
 

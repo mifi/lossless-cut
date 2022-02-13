@@ -45,7 +45,7 @@ const ExportConfirm = memo(({
   exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, outFormat,
   preserveMetadataOnMerge, togglePreserveMetadataOnMerge, outSegTemplate, setOutSegTemplate, generateOutSegFileNames,
   filePath, currentSegIndexSafe, isOutSegFileNamesValid, autoDeleteMergedSegments, setAutoDeleteMergedSegments,
-  safeOutputFileName, toggleSafeOutputFileName,
+  safeOutputFileName, toggleSafeOutputFileName, segmentsToChaptersOnly, setSegmentsToChaptersOnly,
 }) => {
   const { t } = useTranslation();
 
@@ -97,6 +97,8 @@ const ExportConfirm = memo(({
 
   const outSegTemplateHelpIcon = <HelpIcon onClick={onOutSegTemplateHelpPress} />;
 
+  const willMerge = autoMerge && enabledOutSegments.length >= 2;
+
   // https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container
   return (
     <AnimatePresence>
@@ -115,7 +117,7 @@ const ExportConfirm = memo(({
 
                 <h2 style={{ marginTop: 0 }}>{t('Export options')}</h2>
                 <ul>
-                  {enabledOutSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: enabledOutSegments.length })} <MergeExportButton autoMerge={autoMerge} enabledOutSegments={enabledOutSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} /></li>}
+                  {enabledOutSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: enabledOutSegments.length })} <MergeExportButton autoMerge={autoMerge} enabledOutSegments={enabledOutSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} segmentsToChaptersOnly={segmentsToChaptersOnly} setSegmentsToChaptersOnly={setSegmentsToChaptersOnly} /></li>}
                   <li>
                     {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
                     <HelpIcon onClick={onOutFmtHelpPress} />
@@ -127,7 +129,7 @@ const ExportConfirm = memo(({
                   <li>
                     {t('Save output to path:')} <span role="button" onClick={changeOutDir} style={outDirStyle}>{outputDir}</span>
                   </li>
-                  {(enabledOutSegments.length === 1 || !autoMerge) && (
+                  {!willMerge && !segmentsToChaptersOnly && (
                     <li>
                       <OutSegTemplateEditor filePath={filePath} helpIcon={outSegTemplateHelpIcon} outSegTemplate={outSegTemplate} setOutSegTemplate={setOutSegTemplate} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} isOutSegFileNamesValid={isOutSegFileNamesValid} safeOutputFileName={safeOutputFileName} toggleSafeOutputFileName={toggleSafeOutputFileName} />
                     </li>
@@ -136,7 +138,7 @@ const ExportConfirm = memo(({
 
                 <h3>{t('Advanced options')}</h3>
 
-                {autoMerge && enabledOutSegments.length >= 2 && (
+                {willMerge && !segmentsToChaptersOnly && (
                   <ul>
                     <li>
                       {t('Create chapters from merged segments? (slow)')} <Button height={20} onClick={toggleSegmentsToChapters}>{segmentsToChapters ? t('Yes') : t('No')}</Button>

@@ -13,6 +13,7 @@ const defaults = {
   keyframeCut: true,
   autoMerge: false,
   autoDeleteMergedSegments: true,
+  segmentsToChaptersOnly: false,
   timecodeFormat: 'timecodeWithDecimalFraction',
   invertCutSegments: false,
   autoExportExtraStreams: true,

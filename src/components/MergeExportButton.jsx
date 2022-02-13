@@ -6,7 +6,7 @@ import { MdCallSplit, MdCallMerge } from 'react-icons/md';
 import { withBlur } from '../util';
 
 
-const MergeExportButton = memo(({ autoMerge, enabledOutSegments, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments }) => {
+const MergeExportButton = memo(({ autoMerge, enabledOutSegments, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments, segmentsToChaptersOnly, setSegmentsToChaptersOnly }) => {
   const { t } = useTranslation();
 
   let AutoMergeIcon;
@@ -14,7 +14,12 @@ const MergeExportButton = memo(({ autoMerge, enabledOutSegments, setAutoMerge, a
   let effectiveMode;
   let title;
   let description;
-  if (autoMerge && autoDeleteMergedSegments) {
+
+  if (segmentsToChaptersOnly) {
+    effectiveMode = 'sesgments_to_chapters';
+    title = t('Chapters only');
+    description = t('Don\'t cut the file, but instead create chapters from segments');
+  } else if (autoMerge && autoDeleteMergedSegments) {
     effectiveMode = 'merge';
     AutoMergeIcon = MdCallMerge;
     title = t('Merge cuts');
@@ -41,8 +46,13 @@ const MergeExportButton = memo(({ autoMerge, enabledOutSegments, setAutoMerge, a
         break;
       }
       case 'separate': {
+        setSegmentsToChaptersOnly(true);
+        break;
+      }
+      case 'sesgments_to_chapters': {
         setAutoMerge(true);
         setAutoDeleteMergedSegments(true);
+        setSegmentsToChaptersOnly(false);
         break;
       }
       default:
