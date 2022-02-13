@@ -1604,7 +1604,6 @@ const App = memo(() => {
         setConcatDialogVisible(true);
       } else {
         batchLoadPaths(filePaths, true);
-        batchOpenSingleFile(filePaths[0]);
       }
       return;
     }
@@ -1666,7 +1665,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [batchLoadPaths, alwaysConcatMultipleFiles, batchOpenSingleFile, setWorking, isFileOpened, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile]);
+  }, [batchLoadPaths, alwaysConcatMultipleFiles, setWorking, isFileOpened, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile]);
 
   const userHtml5ifyCurrentFile = useCallback(async () => {
     if (!filePath) return;
