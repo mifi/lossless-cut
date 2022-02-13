@@ -1189,7 +1189,7 @@ const App = memo(() => {
       // https://github.com/mifi/lossless-cut/issues/329
       if (isIphoneHevc(fileFormatData, mainStreams)) msgs.push(i18n.t('There is a known issue with cutting iPhone HEVC videos. The output file may not work in all players.'));
 
-      if (exportExtraStreams && enabledOutSegments.length > 1) {
+      if (exportExtraStreams) {
         try {
           await extractStreams({ filePath, customOutDir, streams: nonCopiedExtraStreams });
           msgs.push(i18n.t('Unprocessable streams were exported as separate files.'));
