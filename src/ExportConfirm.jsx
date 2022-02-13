@@ -156,10 +156,12 @@ const ExportConfirm = memo(({
                 <p>{t('Depending on your specific file/player, you may have to try different options for best results.')}</p>
 
                 <ul>
-                  <li>
-                    {t('Cut mode:')} <KeyframeCutButton keyframeCut={keyframeCut} onClick={withBlur(() => toggleKeyframeCut(false))} />
-                    <HelpIcon onClick={onKeyframeCutHelpPress} /> {!keyframeCut && <span style={warningStyle}>{t('Note: Keyframe cut is recommended for most common files')}</span>}
-                  </li>
+                  {!segmentsToChaptersOnly && (
+                    <li>
+                      {t('Cut mode:')} <KeyframeCutButton keyframeCut={keyframeCut} onClick={withBlur(() => toggleKeyframeCut(false))} />
+                      <HelpIcon onClick={onKeyframeCutHelpPress} /> {!keyframeCut && <span style={warningStyle}>{t('Note: Keyframe cut is recommended for most common files')}</span>}
+                    </li>
+                  )}
 
                   {isMov && (
                     <>

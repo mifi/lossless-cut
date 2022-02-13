@@ -19,7 +19,7 @@ const MergeExportButton = memo(({ autoMerge, enabledOutSegments, setAutoMerge, a
     effectiveMode = 'sesgments_to_chapters';
     title = t('Chapters only');
     AutoMergeIcon = BookmarkIcon;
-    description = t('Don\'t cut the file, but instead export an unmodified original with segments as chapters');
+    description = t('Don\'t cut the file, but instead export an unmodified original which has chapters generated from segments');
   } else if (autoMerge && autoDeleteMergedSegments) {
     effectiveMode = 'merge';
     AutoMergeIcon = MdCallMerge;
