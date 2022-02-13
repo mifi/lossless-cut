@@ -65,10 +65,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs,
     customTagsByFile, customTagsByStreamId, dispositionByStreamId, chapters,
   }) => {
-    // We can optionally write chapters
-    const chaptersPath = chapters ? await writeChaptersFfmetadata(outputDir, chapters) : undefined;
-
-    async function cutSingle({ cutFrom, cutTo, onProgress, outPath }) {
+    async function cutSingle({ cutFrom, cutTo, chaptersPath, onProgress, outPath }) {
       const cuttingStart = isCuttingStart(cutFrom);
       const cuttingEnd = isCuttingEnd(cutTo, videoDuration);
       console.log('Exporting from', cuttingStart ? cutFrom : 'start', 'to', cuttingEnd ? cutTo : 'end');
@@ -219,19 +216,25 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
     const outFiles = [];
 
-    // eslint-disable-next-line no-restricted-syntax,no-unused-vars
-    for (const [i, { start: cutFrom, end: cutTo }] of segments.entries()) {
-      const fileName = segmentsFileNames[i];
+    const chaptersPath = chapters ? await writeChaptersFfmetadata(outputDir, chapters) : undefined;
 
-      const outPath = join(outputDir, fileName);
+    try {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [i, { start: cutFrom, end: cutTo }] of segments.entries()) {
+        const fileName = segmentsFileNames[i];
 
-      // eslint-disable-next-line no-await-in-loop
-      await cutSingle({ cutFrom, cutTo, outPath, onProgress: progress => onSingleProgress(i, progress) });
+        const outPath = join(outputDir, fileName);
 
-      outFiles.push(outPath);
+        // eslint-disable-next-line no-await-in-loop
+        await cutSingle({ cutFrom, cutTo, chaptersPath, outPath, onProgress: progress => onSingleProgress(i, progress) });
+
+        outFiles.push(outPath);
+      }
+
+      return outFiles;
+    } finally {
+      if (chaptersPath) await fs.unlink(chaptersPath).catch((err) => console.error('Failed to delete', chaptersPath, err));
     }
-
-    return outFiles;
   }, [filePath, optionalTransferTimestamps]);
 
   const mergeFiles = useCallback(async ({ paths, outDir, outPath, allStreams, outFormat, ffmpegExperimental, onProgress = () => {}, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge }) => {
