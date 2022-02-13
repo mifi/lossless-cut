@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Button } from 'evergreen-ui';
+import { BookmarkIcon, Button } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 import { MdCallSplit, MdCallMerge } from 'react-icons/md';
 
@@ -18,7 +18,8 @@ const MergeExportButton = memo(({ autoMerge, enabledOutSegments, setAutoMerge, a
   if (segmentsToChaptersOnly) {
     effectiveMode = 'sesgments_to_chapters';
     title = t('Chapters only');
-    description = t('Don\'t cut the file, but instead create chapters from segments');
+    AutoMergeIcon = BookmarkIcon;
+    description = t('Don\'t cut the file, but instead export an unmodified original with segments as chapters');
   } else if (autoMerge && autoDeleteMergedSegments) {
     effectiveMode = 'merge';
     AutoMergeIcon = MdCallMerge;

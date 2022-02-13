@@ -99,6 +99,8 @@ const ExportConfirm = memo(({
 
   const willMerge = autoMerge && enabledOutSegments.length >= 2;
 
+  const canEditTemplate = !autoDeleteMergedSegments && !segmentsToChaptersOnly && enabledOutSegments.length >= 2;
+
   // https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container
   return (
     <AnimatePresence>
@@ -129,7 +131,7 @@ const ExportConfirm = memo(({
                   <li>
                     {t('Save output to path:')} <span role="button" onClick={changeOutDir} style={outDirStyle}>{outputDir}</span>
                   </li>
-                  {!willMerge && !segmentsToChaptersOnly && (
+                  {canEditTemplate && (
                     <li>
                       <OutSegTemplateEditor filePath={filePath} helpIcon={outSegTemplateHelpIcon} outSegTemplate={outSegTemplate} setOutSegTemplate={setOutSegTemplate} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} isOutSegFileNamesValid={isOutSegFileNamesValid} safeOutputFileName={safeOutputFileName} toggleSafeOutputFileName={toggleSafeOutputFileName} />
                     </li>
