@@ -33,8 +33,7 @@ import StreamsSelector from './StreamsSelector';
 import SegmentList from './SegmentList';
 import Settings from './Settings';
 import Timeline from './Timeline';
-import BottomLeftMenu from './BottomLeftMenu';
-import BottomRightMenu from './BottomRightMenu';
+import BottomMenu from './BottomMenu';
 import TimelineControls from './TimelineControls';
 import ExportConfirm from './ExportConfirm';
 import ValueTuner from './components/ValueTuner';
@@ -2471,34 +2470,28 @@ const App = memo(() => {
             simpleMode={simpleMode}
           />
 
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <BottomLeftMenu
-              zoom={zoom}
-              setZoom={setZoom}
-              invertCutSegments={invertCutSegments}
-              setInvertCutSegments={setInvertCutSegments}
-              toggleComfortZoom={toggleComfortZoom}
-              simpleMode={simpleMode}
-              toggleSimpleMode={toggleSimpleMode}
-            />
-
-            <BottomRightMenu
-              hasVideo={hasVideo}
-              isRotationSet={isRotationSet}
-              rotation={rotation}
-              areWeCutting={areWeCutting}
-              autoMerge={autoMerge}
-              increaseRotation={increaseRotation}
-              cleanupFiles={cleanupFiles}
-              renderCaptureFormatButton={renderCaptureFormatButton}
-              capture={capture}
-              onExportPress={onExportPress}
-              enabledOutSegments={enabledOutSegments}
-              exportConfirmEnabled={exportConfirmEnabled}
-              toggleExportConfirmEnabled={toggleExportConfirmEnabled}
-              simpleMode={simpleMode}
-            />
-          </div>
+          <BottomMenu
+            zoom={zoom}
+            setZoom={setZoom}
+            invertCutSegments={invertCutSegments}
+            setInvertCutSegments={setInvertCutSegments}
+            toggleComfortZoom={toggleComfortZoom}
+            simpleMode={simpleMode}
+            toggleSimpleMode={toggleSimpleMode}
+            hasVideo={hasVideo}
+            isRotationSet={isRotationSet}
+            rotation={rotation}
+            areWeCutting={areWeCutting}
+            autoMerge={autoMerge}
+            increaseRotation={increaseRotation}
+            cleanupFiles={cleanupFiles}
+            renderCaptureFormatButton={renderCaptureFormatButton}
+            capture={capture}
+            onExportPress={onExportPress}
+            enabledOutSegments={enabledOutSegments}
+            exportConfirmEnabled={exportConfirmEnabled}
+            toggleExportConfirmEnabled={toggleExportConfirmEnabled}
+          />
         </motion.div>
 
         <SideSheet
