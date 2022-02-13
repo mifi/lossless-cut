@@ -97,7 +97,7 @@ export async function readEdlFile({ type, path }) {
   throw new Error('Invalid EDL type');
 }
 
-export async function readEdl(type) {
+export async function askForEdlImport(type) {
   if (type === 'youtube') return askForYouTubeInput();
 
   let filters;

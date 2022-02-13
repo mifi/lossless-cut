@@ -80,7 +80,7 @@
     "react-sortable-hoc": "^2.0.0",
     "react-sortablejs": "^6.0.0",
     "react-syntax-highlighter": "^15.4.3",
-    "react-use": "^13.26.1",
+    "react-use": "^17.3.2",
     "scroll-into-view-if-needed": "^2.2.28",
     "sharp": "^0.29.3",
     "smpte-timecode": "^1.2.3",

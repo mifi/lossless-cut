@@ -52,7 +52,7 @@ import {
   isAudioDefinitelyNotSupported, isIphoneHevc, tryMapChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
 } from './ffmpeg';
-import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, readEdl } from './edlStore';
+import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube } from './edlFormats';
 import {
   getOutPath, toast, errorToast, handleError, setFileNameTitle, getOutDir, withBlur,
@@ -166,7 +166,7 @@ const App = memo(() => {
     return ret;
   }, []);
 
-  const createInitialCutSegments = useCallback(() => () => [createSegmentAndIncrementCount()], [createSegmentAndIncrementCount]);
+  const createInitialCutSegments = useCallback(() => [createSegmentAndIncrementCount()], [createSegmentAndIncrementCount]);
 
   const [currentSegIndex, setCurrentSegIndex] = useState(0);
   const [cutStartTimeManual, setCutStartTimeManual] = useState();
@@ -1299,7 +1299,7 @@ const App = memo(() => {
     setCutSegments(newSegments);
   }, [createSegmentAndIncrementCount, cutSegments, firstSegmentAtCursorIndex, setCutSegments]);
 
-  const loadCutSegments = useCallback((edl) => {
+  const loadCutSegments = useCallback((edl, append = false) => {
     const validEdl = edl.filter((row) => (
       (row.start === undefined || row.end === undefined || row.start < row.end)
       && (row.start === undefined || row.start >= 0)
@@ -1310,13 +1310,19 @@ const App = memo(() => {
 
     if (validEdl.length === 0) throw new Error(i18n.t('No valid segments found'));
 
-    clearSegCounter();
-    setCutSegments(validEdl.map(createSegmentAndIncrementCount));
+    if (!append) {
+      clearSegCounter();
+    }
+    setCutSegments((existingSegments) => {
+      const newSegments = validEdl.map(createSegmentAndIncrementCount);
+      if (append && existingSegments.length > 1) return [...existingSegments, ...newSegments];
+      return newSegments;
+    });
   }, [clearSegCounter, createSegmentAndIncrementCount, setCutSegments]);
 
-  const loadEdlFile = useCallback(async (path, type) => {
-    console.log('Loading EDL file', type, path);
-    loadCutSegments(await readEdlFile({ type, path }));
+  const loadEdlFile = useCallback(async ({ path, type, append }) => {
+    console.log('Loading EDL file', type, path, append);
+    loadCutSegments(await readEdlFile({ type, path }), append);
   }, [loadCutSegments]);
 
   const loadMedia = useCallback(async ({ filePath: fp, customOutDir: cod, projectPath }) => {
@@ -1389,11 +1395,11 @@ const App = memo(() => {
         const openedFileEdlPathOld = getEdlFilePathOld(fp);
 
         if (projectPath) {
-          await loadEdlFile(projectPath, 'llc');
+          await loadEdlFile({ path: projectPath, type: 'llc' });
         } else if (await exists(openedFileEdlPath)) {
-          await loadEdlFile(openedFileEdlPath, 'llc');
+          await loadEdlFile({ path: openedFileEdlPath, type: 'llc' });
         } else if (await exists(openedFileEdlPathOld)) {
-          await loadEdlFile(openedFileEdlPathOld, 'csv');
+          await loadEdlFile({ path: openedFileEdlPathOld, type: 'csv' });
         } else {
           const edl = await tryMapChaptersToEdl(ch);
           if (edl.length > 0 && enableAskForImportChapters && (await askForImportChapters())) {
@@ -1620,7 +1626,6 @@ const App = memo(() => {
       return;
     }
 
-
     // filePaths.length is now 1
     const firstFilePath = filePaths[0];
 
@@ -1630,12 +1635,12 @@ const App = memo(() => {
     try {
       setWorking(i18n.t('Loading file'));
 
-      // Import CSV project for existing video
+      // Import segments for for already opened file
       const edlFormats = { csv: 'csv', pbf: 'pbf', edl: 'mplayer', cue: 'cue', xml: 'xmeml' };
       const matchingExt = Object.keys(edlFormats).find((ext) => filePathLowerCase.endsWith(`.${ext}`));
       if (matchingExt) {
         if (!checkFileOpened()) return;
-        await loadEdlFile(firstFilePath, edlFormats[matchingExt]);
+        await loadEdlFile({ path: firstFilePath, type: edlFormats[matchingExt], append: true });
         return;
       }
 
@@ -1654,7 +1659,7 @@ const App = memo(() => {
           return;
         }
         if (openFileResponse === 'project') {
-          await loadEdlFile(firstFilePath, 'llc');
+          await loadEdlFile({ path: firstFilePath, type: 'llc' });
           return;
         }
         if (openFileResponse === 'tracks') {
@@ -1906,8 +1911,8 @@ const App = memo(() => {
       if (!checkFileOpened()) return;
 
       try {
-        const edl = await readEdl(type);
-        if (edl.length > 0) loadCutSegments(edl);
+        const edl = await askForEdlImport(type);
+        if (edl.length > 0) loadCutSegments(edl, true);
       } catch (err) {
         handleError(err);
       }
