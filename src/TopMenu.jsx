@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import MergeExportButton from './components/MergeExportButton';
 
 import { withBlur, isMasBuild } from './util';
-import { primaryTextColor } from './colors';
+import { primaryTextColor, controlsBackground } from './colors';
 
 
 const TopMenu = memo(({
@@ -26,7 +26,10 @@ const TopMenu = memo(({
   }
 
   return (
-    <>
+    <div
+      className="no-user-select"
+      style={{ background: controlsBackground, display: 'flex', alignItems: 'center', padding: '3px 5px', justifyContent: 'space-between', flexWrap: 'wrap' }}
+    >
       {filePath && (
         <>
           <Button height={20} iconBefore={ListIcon} onClick={withBlur(() => setStreamsSelectorShown(true))}>
@@ -77,7 +80,7 @@ const TopMenu = memo(({
 
       <IoIosHelpCircle size={24} role="button" onClick={toggleHelp} style={{ verticalAlign: 'middle', marginLeft: 5 }} />
       <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ verticalAlign: 'middle', marginLeft: 5 }} />
-    </>
+    </div>
   );
 });
 

@@ -1,6 +1,7 @@
 import React, { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { unstable_batchedUpdates as batchedUpdates } from 'react-dom';
 import { FaAngleLeft, FaWindowClose, FaTimes } from 'react-icons/fa';
+import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence, motion } from 'framer-motion';
 import Lottie from 'react-lottie-player';
 import { SideSheet, Button, Position, ForkIcon, DisableIcon, Select, ThemeProvider, MergeColumnsIcon } from 'evergreen-ui';
@@ -2176,10 +2177,9 @@ const App = memo(() => {
     return () => window.removeEventListener('keydown', keyScrollPreventer);
   }, []);
 
-  const rightBarWidth = showRightBar && isFileOpened ? 200 : 0;
-  const leftBarWidth = batchFiles.length > 0 ? 200 : 0;
-
-  const bottomBarHeight = 96 + ((hasAudio && waveformEnabled) || (hasVideo && thumbnailsEnabled) ? timelineHeight : 0);
+  const rightBarWidth = 200;
+  const leftBarWidth = 200;
+  const showLeftBar = batchFiles.length > 0;
 
   const thumbnailsSorted = useMemo(() => sortBy(thumbnails, thumbnail => thumbnail.time), [thumbnails]);
 
@@ -2219,7 +2219,7 @@ const App = memo(() => {
 
     const resetToDefault = () => setValue(defaultValue);
 
-    return <ValueTuner title={title} style={{ bottom: bottomBarHeight }} value={value} setValue={setValue} onFinished={() => setTunerVisible()} max={max} min={min} resetToDefault={resetToDefault} />;
+    return <ValueTuner title={title} value={value} setValue={setValue} onFinished={() => setTunerVisible()} max={max} min={min} resetToDefault={resetToDefault} />;
   }
 
   function renderSubtitles() {
@@ -2231,197 +2231,188 @@ const App = memo(() => {
 
   return (
     <ThemeProvider value={theme}>
-      <div>
-        <div className="no-user-select" style={{ background: controlsBackground, height: topBarHeight, display: 'flex', alignItems: 'center', padding: '0 5px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-          <TopMenu
-            filePath={filePath}
-            height={topBarHeight}
-            copyAnyAudioTrack={copyAnyAudioTrack}
-            toggleStripAudio={toggleStripAudio}
-            customOutDir={customOutDir}
-            changeOutDir={changeOutDir}
-            clearOutDir={clearOutDir}
-            isCustomFormatSelected={isCustomFormatSelected}
-            renderOutFmt={renderOutFmt}
-            toggleHelp={toggleHelp}
-            toggleSettings={toggleSettings}
-            numStreamsToCopy={numStreamsToCopy}
-            numStreamsTotal={numStreamsTotal}
-            setStreamsSelectorShown={setStreamsSelectorShown}
-            enabledOutSegments={enabledOutSegments}
-            autoMerge={autoMerge}
-            setAutoMerge={setAutoMerge}
-            autoDeleteMergedSegments={autoDeleteMergedSegments}
-            setAutoDeleteMergedSegments={setAutoDeleteMergedSegments}
-            outFormatLocked={outFormatLocked}
-            onOutFormatLockedClick={onOutFormatLockedClick}
-            simpleMode={simpleMode}
-          />
-        </div>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+        <TopMenu
+          filePath={filePath}
+          height={topBarHeight}
+          copyAnyAudioTrack={copyAnyAudioTrack}
+          toggleStripAudio={toggleStripAudio}
+          customOutDir={customOutDir}
+          changeOutDir={changeOutDir}
+          clearOutDir={clearOutDir}
+          isCustomFormatSelected={isCustomFormatSelected}
+          renderOutFmt={renderOutFmt}
+          toggleHelp={toggleHelp}
+          toggleSettings={toggleSettings}
+          numStreamsToCopy={numStreamsToCopy}
+          numStreamsTotal={numStreamsTotal}
+          setStreamsSelectorShown={setStreamsSelectorShown}
+          enabledOutSegments={enabledOutSegments}
+          autoMerge={autoMerge}
+          setAutoMerge={setAutoMerge}
+          autoDeleteMergedSegments={autoDeleteMergedSegments}
+          setAutoDeleteMergedSegments={setAutoDeleteMergedSegments}
+          outFormatLocked={outFormatLocked}
+          onOutFormatLockedClick={onOutFormatLockedClick}
+          simpleMode={simpleMode}
+        />
 
-        {!isFileOpened && <NoFileLoaded top={topBarHeight} bottom={bottomBarHeight} left={leftBarWidth} mifiLink={mifiLink} toggleHelp={toggleHelp} currentCutSeg={currentCutSeg} simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} />}
-
-        <AnimatePresence>
-          {working && (
-            <div style={{
-              position: 'absolute', zIndex: 1, bottom: bottomBarHeight, top: topBarHeight, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center',
-            }}
-            >
+        <div style={{ flexGrow: 1, display: 'flex', overflowY: 'hidden' }}>
+          <AnimatePresence>
+            {showLeftBar && (
               <motion.div
-                style={{ background: primaryColor, boxShadow: `${primaryColor} 0px 0px 20px 25px`, borderRadius: 20, paddingBottom: 15, color: 'white', textAlign: 'center', fontSize: 14 }}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0 }}
+                className="no-user-select"
+                style={{ width: leftBarWidth, background: timelineBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column' }}
+                initial={{ x: -leftBarWidth }}
+                animate={{ x: 0 }}
+                exit={{ x: -leftBarWidth }}
               >
-                <div style={{ width: 150, height: 150 }}>
-                  <Lottie
-                    loop
-                    animationData={loadingLottie}
-                    play
-                    style={{ width: '170%', height: '130%', marginLeft: '-35%', marginTop: '-29%', pointerEvents: 'none' }}
-                  />
+                <div style={{ background: controlsBackground, fontSize: 14, paddingBottom: 7, paddingTop: 3, paddingLeft: 10, paddingRight: 5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  {t('Batch file list')}
+
+                  <div style={{ flexGrow: 1 }} />
+
+                  {batchFiles.length > 1 && <MergeColumnsIcon role="button" title={t('Merge/concatenate files')} color="white" style={{ marginRight: 10, cursor: 'pointer' }} onClick={() => setConcatDialogVisible(true)} />}
+
+                  <FaTimes size={18} role="button" style={{ cursor: 'pointer', color: 'white' }} onClick={() => closeBatch()} title={t('Close batch')} />
                 </div>
 
-                <div style={{ marginTop: 10, width: 150 }}>
-                  {working}...
+                <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
+                  {batchFiles.map(({ path, name }) => (
+                    <BatchFile key={path} path={path} name={name} filePath={filePath} onOpen={batchOpenSingleFile} onDelete={removeBatchFile} />
+                  ))}
                 </div>
-
-                {(cutProgress != null) && (
-                  <div style={{ marginTop: 10 }}>
-                    {`${(cutProgress * 100).toFixed(1)} %`}
-                  </div>
-                )}
               </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Middle part: */}
+          <div style={{ position: 'relative', flexGrow: 1 }}>
+            {!isFileOpened && <NoFileLoaded mifiLink={mifiLink} toggleHelp={toggleHelp} currentCutSeg={currentCutSeg} simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} />}
+
+            <div className="no-user-select" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, visibility: !isFileOpened ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
+              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+              <video
+                muted={playbackVolume === 0}
+                ref={videoRef}
+                style={videoStyle}
+                src={fileUri}
+                onPlay={onSartPlaying}
+                onPause={onStopPlaying}
+                onDurationChange={onDurationChange}
+                onTimeUpdate={onTimeUpdate}
+                onError={onVideoError}
+              >
+                {renderSubtitles()}
+              </video>
+
+              {canvasPlayerEnabled && <Canvas rotate={effectiveRotation} filePath={filePath} width={mainVideoStream.width} height={mainVideoStream.height} streamIndex={mainVideoStream.index} playerTime={playerTime} commandedTime={commandedTime} playing={playing} />}
             </div>
-          )}
-        </AnimatePresence>
 
-        <div className="no-user-select" style={{ position: 'absolute', top: topBarHeight, left: leftBarWidth, right: rightBarWidth, bottom: bottomBarHeight, visibility: !isFileOpened ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
-          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-          <video
-            muted={playbackVolume === 0}
-            ref={videoRef}
-            style={videoStyle}
-            src={fileUri}
-            onPlay={onSartPlaying}
-            onPause={onStopPlaying}
-            onDurationChange={onDurationChange}
-            onTimeUpdate={onTimeUpdate}
-            onError={onVideoError}
-          >
-            {renderSubtitles()}
-          </video>
-
-          {canvasPlayerEnabled && <Canvas rotate={effectiveRotation} filePath={filePath} width={mainVideoStream.width} height={mainVideoStream.height} streamIndex={mainVideoStream.index} playerTime={playerTime} commandedTime={commandedTime} playing={playing} />}
-        </div>
-
-        {isRotationSet && !hideCanvasPreview && (
-          <div style={{
-            position: 'absolute', top: topBarHeight, marginTop: '1em', marginRight: '1em', right: rightBarWidth, left: leftBarWidth, color: 'white',
-          }}
-          >
-            {t('Rotation preview')}
-            {!canvasPlayerRequired && <FaWindowClose role="button" style={{ cursor: 'pointer', verticalAlign: 'middle', padding: 10 }} onClick={() => setHideCanvasPreview(true)} />}
-          </div>
-        )}
-
-        <AnimatePresence>
-          {batchFiles.length > 0 && (
-            <motion.div
-              style={{ position: 'absolute', width: leftBarWidth, left: 0, bottom: bottomBarHeight, top: topBarHeight, background: timelineBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column' }}
-              initial={{ x: -leftBarWidth }}
-              animate={{ x: 0 }}
-              exit={{ x: -leftBarWidth }}
-            >
-              <div style={{ background: controlsBackground, fontSize: 14, paddingBottom: 7, paddingTop: 3, paddingLeft: 10, paddingRight: 5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                {t('Batch file list')}
-
-                <div style={{ flexGrow: 1 }} />
-
-                {batchFiles.length > 1 && <MergeColumnsIcon role="button" title={t('Merge/concatenate files')} color="white" style={{ marginRight: 10, cursor: 'pointer' }} onClick={() => setConcatDialogVisible(true)} />}
-
-                <FaTimes size={18} role="button" style={{ cursor: 'pointer', color: 'white' }} onClick={() => closeBatch()} title={t('Close batch')} />
+            {isRotationSet && !hideCanvasPreview && (
+              <div style={{ position: 'absolute', top: 0, right: 0, left: 0, marginTop: '1em', marginLeft: '1em', color: 'white', display: 'flex', alignItems: 'center' }}>
+                <MdRotate90DegreesCcw size={26} style={{ marginRight: 5 }} />
+                {t('Rotation preview')}
+                {!canvasPlayerRequired && <FaWindowClose role="button" style={{ cursor: 'pointer', verticalAlign: 'middle', padding: 10 }} onClick={() => setHideCanvasPreview(true)} />}
               </div>
+            )}
 
-              <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
-                {batchFiles.map(({ path, name }) => (
-                  <BatchFile key={path} path={path} name={name} filePath={filePath} onOpen={batchOpenSingleFile} onDelete={removeBatchFile} />
-                ))}
+            {isFileOpened && (
+              <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, marginBottom: 10, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center' }}>
+                <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} usingDummyVideo={usingDummyVideo} />
+
+                {subtitleStreams.length > 0 && <SubtitleControl subtitleStreams={subtitleStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} onActiveSubtitleChange={onActiveSubtitleChange} />}
+
+                {!showRightBar && (
+                  <FaAngleLeft
+                    title={t('Show sidebar')}
+                    size={30}
+                    role="button"
+                    style={{ marginRight: 10 }}
+                    onClick={toggleRightBar}
+                  />
+                )}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {isFileOpened && (
-          <>
-            <div
-              className="no-user-select"
-              style={{
-                position: 'absolute', right: rightBarWidth, bottom: bottomBarHeight, marginBottom: 10, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center',
-              }}
-            >
-              <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} usingDummyVideo={usingDummyVideo} />
-
-              {subtitleStreams.length > 0 && <SubtitleControl subtitleStreams={subtitleStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} onActiveSubtitleChange={onActiveSubtitleChange} />}
-
-              {!showRightBar && (
-                <FaAngleLeft
-                  title={t('Show sidebar')}
-                  size={30}
-                  role="button"
-                  style={{ marginRight: 10 }}
-                  onClick={toggleRightBar}
-                />
-              )}
-            </div>
+            )}
 
             <AnimatePresence>
-              {showRightBar && (
-                <motion.div
-                  style={{ position: 'absolute', width: rightBarWidth, right: 0, bottom: bottomBarHeight, top: topBarHeight, background: controlsBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column' }}
-                  initial={{ x: rightBarWidth }}
-                  animate={{ x: 0 }}
-                  exit={{ x: rightBarWidth }}
-                >
-                  <SegmentList
-                    simpleMode={simpleMode}
-                    currentSegIndex={currentSegIndexSafe}
-                    outSegments={outSegments}
-                    cutSegments={apparentCutSegments}
-                    getFrameCount={getFrameCount}
-                    formatTimecode={formatTimecode}
-                    invertCutSegments={invertCutSegments}
-                    onSegClick={setCurrentSegIndex}
-                    updateSegOrder={updateSegOrder}
-                    updateSegOrders={updateSegOrders}
-                    onLabelSegmentPress={onLabelSegmentPress}
-                    currentCutSeg={currentCutSeg}
-                    segmentAtCursor={segmentAtCursor}
-                    addCutSegment={addCutSegment}
-                    removeCutSegment={removeCutSegment}
-                    toggleSideBar={toggleRightBar}
-                    splitCurrentSegment={splitCurrentSegment}
-                    enabledOutSegmentsRaw={enabledOutSegmentsRaw}
-                    enabledOutSegments={enabledOutSegments}
-                    onExportSingleSegmentClick={onExportSingleSegmentClick}
-                    onExportSegmentEnabledToggle={onExportSegmentEnabledToggle}
-                    onExportSegmentDisableAll={onExportSegmentDisableAll}
-                    onExportSegmentEnableAll={onExportSegmentEnableAll}
-                    jumpSegStart={jumpSegStart}
-                    jumpSegEnd={jumpSegEnd}
-                    onViewSegmentTagsPress={onViewSegmentTagsPress}
-                  />
-                </motion.div>
+              {working && (
+                <div style={{ position: 'absolute', zIndex: 1, bottom: 0, top: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <motion.div
+                    style={{ background: primaryColor, boxShadow: `${primaryColor} 0px 0px 20px 25px`, borderRadius: 20, paddingBottom: 15, color: 'white', textAlign: 'center', fontSize: 14 }}
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0 }}
+                  >
+                    <div style={{ width: 150, height: 150 }}>
+                      <Lottie
+                        loop
+                        animationData={loadingLottie}
+                        play
+                        style={{ width: '170%', height: '130%', marginLeft: '-35%', marginTop: '-29%', pointerEvents: 'none' }}
+                      />
+                    </div>
+
+                    <div style={{ marginTop: 10, width: 150 }}>
+                      {working}...
+                    </div>
+
+                    {(cutProgress != null) && (
+                      <div style={{ marginTop: 10 }}>
+                        {`${(cutProgress * 100).toFixed(1)} %`}
+                      </div>
+                    )}
+                  </motion.div>
+                </div>
               )}
             </AnimatePresence>
-          </>
-        )}
 
-        <motion.div
-          className="no-user-select"
-          style={{ background: controlsBackground, position: 'absolute', left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}
-          animate={{ height: bottomBarHeight }}
-        >
+            {tunerVisible && renderTuner(tunerVisible)}
+          </div>
+
+          <AnimatePresence>
+            {showRightBar && isFileOpened && (
+              <motion.div
+                className="no-user-select"
+                style={{ width: rightBarWidth, background: controlsBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
+                initial={{ x: rightBarWidth }}
+                animate={{ x: 0 }}
+                exit={{ x: rightBarWidth }}
+              >
+                <SegmentList
+                  simpleMode={simpleMode}
+                  currentSegIndex={currentSegIndexSafe}
+                  outSegments={outSegments}
+                  cutSegments={apparentCutSegments}
+                  getFrameCount={getFrameCount}
+                  formatTimecode={formatTimecode}
+                  invertCutSegments={invertCutSegments}
+                  onSegClick={setCurrentSegIndex}
+                  updateSegOrder={updateSegOrder}
+                  updateSegOrders={updateSegOrders}
+                  onLabelSegmentPress={onLabelSegmentPress}
+                  currentCutSeg={currentCutSeg}
+                  segmentAtCursor={segmentAtCursor}
+                  addCutSegment={addCutSegment}
+                  removeCutSegment={removeCutSegment}
+                  toggleSideBar={toggleRightBar}
+                  splitCurrentSegment={splitCurrentSegment}
+                  enabledOutSegmentsRaw={enabledOutSegmentsRaw}
+                  enabledOutSegments={enabledOutSegments}
+                  onExportSingleSegmentClick={onExportSingleSegmentClick}
+                  onExportSegmentEnabledToggle={onExportSegmentEnabledToggle}
+                  onExportSegmentDisableAll={onExportSegmentDisableAll}
+                  onExportSegmentEnableAll={onExportSegmentEnableAll}
+                  jumpSegStart={jumpSegStart}
+                  jumpSegEnd={jumpSegEnd}
+                  onViewSegmentTagsPress={onViewSegmentTagsPress}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <motion.div className="no-user-select" style={{ background: controlsBackground }}>
           <Timeline
             shouldShowKeyframes={shouldShowKeyframes}
             waveforms={waveforms}
@@ -2483,7 +2474,7 @@ const App = memo(() => {
             simpleMode={simpleMode}
           />
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', height: 36 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <BottomLeftMenu
               zoom={zoom}
               setZoom={setZoom}
@@ -2563,8 +2554,6 @@ const App = memo(() => {
         />
 
         <ConcatDialog isShown={batchFiles.length > 0 && concatDialogVisible} onHide={() => setConcatDialogVisible(false)} initialPaths={batchFilePaths} onConcat={mergeFiles} segmentsToChapters={segmentsToChapters} setSegmentsToChapters={setSegmentsToChapters} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} preserveMetadataOnMerge={preserveMetadataOnMerge} setPreserveMetadataOnMerge={setPreserveMetadataOnMerge} preserveMovData={preserveMovData} setPreserveMovData={setPreserveMovData} />
-
-        {tunerVisible && renderTuner(tunerVisible)}
       </div>
     </ThemeProvider>
   );

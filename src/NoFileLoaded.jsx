@@ -8,11 +8,11 @@ import SimpleModeButton from './components/SimpleModeButton';
 
 const electron = window.require('electron');
 
-const NoFileLoaded = memo(({ top, bottom, left, mifiLink, toggleHelp, currentCutSeg, simpleMode, toggleSimpleMode }) => {
+const NoFileLoaded = memo(({ mifiLink, toggleHelp, currentCutSeg, simpleMode, toggleSimpleMode }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="no-user-select" style={{ position: 'fixed', left, right: 0, top, bottom, border: '2vmin dashed #252525', color: '#505050', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}>
+    <div className="no-user-select" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, border: '2vmin dashed #252525', color: '#505050', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}>
       <div style={{ fontSize: '6vmin', textTransform: 'uppercase' }}>{t('DROP FILE(S)')}</div>
 
       <div style={{ fontSize: '4vmin', color: '#777', cursor: 'pointer' }} role="button" onClick={toggleHelp}>
