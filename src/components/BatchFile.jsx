@@ -17,13 +17,12 @@ const BatchFile = memo(({ path, filePath, name, onOpen, onDelete }) => {
   const isCurrent = path === filePath;
 
   return (
-    <div ref={ref} role="button" style={{ background: isCurrent ? 'rgba(255,255,255,0.15)' : undefined, fontSize: 13, padding: '1px 3px', cursor: 'pointer', display: 'flex', alignItems: 'center', minHeight: 30, alignContent: 'flex-start' }} title={path} onClick={() => onOpen(path)}>
-      <div style={{ flexBasis: 5, flexShrink: 1 }} />
+    <div ref={ref} role="button" style={{ background: isCurrent ? 'rgba(255,255,255,0.15)' : undefined, fontSize: 13, padding: '3px 6px', display: 'flex', alignItems: 'center', alignContent: 'flex-start' }} title={path} onClick={() => onOpen(path)}>
       <FaFile size={14} style={{ color: primaryTextColor, flexShrink: 0 }} />
-      <div style={{ flexBasis: 10, flexShrink: 1 }} />
-      <div style={{ wordBreak: 'break-all' }}>{name}</div>
+      <div style={{ flexBasis: 4, flexShrink: 0 }} />
+      <div style={{ whiteSpace: 'nowrap', cursor: 'pointer', overflow: 'hidden' }}>{name}</div>
       <div style={{ flexGrow: 1 }} />
-      {isCurrent && <FaAngleRight size={14} style={{ color: 'white', marginRight: -3, flexShrink: 0 }} />}
+      {isCurrent && <FaAngleRight size={14} style={{ color: 'white', marginRight: -5, flexShrink: 0 }} />}
     </div>
   );
 });
