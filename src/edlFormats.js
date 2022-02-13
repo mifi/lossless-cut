@@ -89,19 +89,21 @@ export function parseCuesheet(cuesheet) {
   });
 }
 
-
+// See https://github.com/mifi/lossless-cut/issues/993#issuecomment-1037090403
 export function parsePbf(text) {
-  const chapters = text.split('\n').map((line) => {
+  const bookmarks = text.split('\n').map((line) => {
     const match = line.match(/^[0-9]+=([0-9]+)\*([^*]+)*([^*]+)?/);
     if (match) return { time: parseInt(match[1], 10) / 1000, name: match[2] };
     return undefined;
   }).filter((it) => it);
 
   const out = [];
-  chapters.forEach((chapter, i) => {
-    const nextChapter = chapters[i + 1];
-    out.push({ start: chapter.time, end: nextChapter && nextChapter.time, name: chapter.name });
-  });
+
+  for (let i = 0; i < bookmarks.length; i += 2) {
+    const bookmark = bookmarks[i];
+    const nextBookmark = bookmarks[i + 1];
+    out.push({ start: bookmark.time, end: nextBookmark && nextBookmark.time, name: bookmark.name });
+  }
   return out;
 }
 
