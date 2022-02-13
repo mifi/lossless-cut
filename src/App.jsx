@@ -33,8 +33,7 @@ import StreamsSelector from './StreamsSelector';
 import SegmentList from './SegmentList';
 import Settings from './Settings';
 import Timeline from './Timeline';
-import BottomMenu from './BottomMenu';
-import TimelineControls from './TimelineControls';
+import BottomBar from './BottomBar';
 import ExportConfirm from './ExportConfirm';
 import ValueTuner from './components/ValueTuner';
 import VolumeControl from './components/VolumeControl';
@@ -2439,7 +2438,27 @@ const App = memo(() => {
             goToTimecode={goToTimecode}
           />
 
-          <TimelineControls
+          <BottomBar
+            zoom={zoom}
+            setZoom={setZoom}
+            invertCutSegments={invertCutSegments}
+            setInvertCutSegments={setInvertCutSegments}
+            toggleComfortZoom={toggleComfortZoom}
+            simpleMode={simpleMode}
+            toggleSimpleMode={toggleSimpleMode}
+            hasVideo={hasVideo}
+            isRotationSet={isRotationSet}
+            rotation={rotation}
+            areWeCutting={areWeCutting}
+            autoMerge={autoMerge}
+            increaseRotation={increaseRotation}
+            cleanupFiles={cleanupFiles}
+            renderCaptureFormatButton={renderCaptureFormatButton}
+            capture={capture}
+            onExportPress={onExportPress}
+            enabledOutSegments={enabledOutSegments}
+            exportConfirmEnabled={exportConfirmEnabled}
+            toggleExportConfirmEnabled={toggleExportConfirmEnabled}
             seekAbs={seekAbs}
             currentSegIndexSafe={currentSegIndexSafe}
             cutSegments={cutSegments}
@@ -2464,33 +2483,8 @@ const App = memo(() => {
             setTimelineMode={setTimelineMode}
             timelineMode={timelineMode}
             hasAudio={hasAudio}
-            hasVideo={hasVideo}
             keyframesEnabled={keyframesEnabled}
             toggleKeyframesEnabled={toggleKeyframesEnabled}
-            simpleMode={simpleMode}
-          />
-
-          <BottomMenu
-            zoom={zoom}
-            setZoom={setZoom}
-            invertCutSegments={invertCutSegments}
-            setInvertCutSegments={setInvertCutSegments}
-            toggleComfortZoom={toggleComfortZoom}
-            simpleMode={simpleMode}
-            toggleSimpleMode={toggleSimpleMode}
-            hasVideo={hasVideo}
-            isRotationSet={isRotationSet}
-            rotation={rotation}
-            areWeCutting={areWeCutting}
-            autoMerge={autoMerge}
-            increaseRotation={increaseRotation}
-            cleanupFiles={cleanupFiles}
-            renderCaptureFormatButton={renderCaptureFormatButton}
-            capture={capture}
-            onExportPress={onExportPress}
-            enabledOutSegments={enabledOutSegments}
-            exportConfirmEnabled={exportConfirmEnabled}
-            toggleExportConfirmEnabled={toggleExportConfirmEnabled}
           />
         </motion.div>
 

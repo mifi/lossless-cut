@@ -11,7 +11,7 @@ import scrollIntoView from 'scroll-into-view-if-needed';
 
 import useContextMenu from './hooks/useContextMenu';
 import { saveColor } from './colors';
-import { getSegColors } from './util/colors';
+import { getSegColor } from './util/colors';
 
 const buttonBaseStyle = {
   margin: '0 3px', borderRadius: 3, color: 'white', cursor: 'pointer',
@@ -70,9 +70,9 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
   function renderNumber() {
     if (invertCutSegments) return <FaSave style={{ color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
 
-    const { segBgColor, segBorderColor } = getSegColors(seg);
+    const segColor = getSegColor(seg);
 
-    return <b style={{ color: 'white', padding: '0 4px', marginRight: 3, background: segBgColor, border: `1px solid ${isActive ? segBorderColor : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
+    return <b style={{ color: 'white', padding: '0 4px', marginRight: 3, background: segColor.alpha(0.5).string(), border: `1px solid ${isActive ? segColor.lighten(0.5).string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
   }
 
   const timeStr = useMemo(() => `${formatTimecode({ seconds: seg.start })} - ${formatTimecode({ seconds: seg.end })}`, [seg.start, seg.end, formatTimecode]);
@@ -166,14 +166,14 @@ const SegmentList = memo(({
   }
 
   function renderFooter() {
-    const { segActiveBgColor: currentSegActiveBgColor } = getSegColors(currentCutSeg);
-    const { segActiveBgColor: segmentAtCursorActiveBgColor } = getSegColors(segmentAtCursor);
+    const currentSegColor = getSegColor(currentCutSeg).alpha(0.5).desaturate(0.4).string();
+    const segAtCursorColor = getSegColor(segmentAtCursor).desaturate(0.4).alpha(0.5).string();
 
     function renderExportEnabledCheckBox() {
       const segmentExportEnabled = currentCutSeg && enabledOutSegmentsRaw.some((s) => s.segId === currentCutSeg.segId);
       const Icon = segmentExportEnabled ? FaCheck : FaTimes;
 
-      return <Icon size={24} title={segmentExportEnabled ? t('Include this segment in export') : t('Exclude this segment from export')} style={{ ...buttonBaseStyle, backgroundColor: currentSegActiveBgColor }} role="button" onClick={() => onExportSegmentEnabledToggle(currentCutSeg)} />;
+      return <Icon size={24} title={segmentExportEnabled ? t('Include this segment in export') : t('Exclude this segment from export')} style={{ ...buttonBaseStyle, backgroundColor: currentSegColor }} role="button" onClick={() => onExportSegmentEnabledToggle(currentCutSeg)} />;
     }
 
     const segmentsTotal = enabledOutSegments.reduce((acc, { start, end }) => (end - start) + acc, 0);
@@ -191,7 +191,7 @@ const SegmentList = memo(({
 
           <FaMinus
             size={24}
-            style={{ ...buttonBaseStyle, background: cutSegments.length >= 2 ? currentSegActiveBgColor : neutralButtonColor }}
+            style={{ ...buttonBaseStyle, background: cutSegments.length >= 2 ? currentSegColor : neutralButtonColor }}
             role="button"
             title={`${t('Remove segment')} ${currentSegIndex + 1}`}
             onClick={() => removeCutSegment(currentSegIndex)}
@@ -203,7 +203,7 @@ const SegmentList = memo(({
                 size={16}
                 title={t('Change segment order')}
                 role="button"
-                style={{ ...buttonBaseStyle, padding: 4, background: currentSegActiveBgColor }}
+                style={{ ...buttonBaseStyle, padding: 4, background: currentSegColor }}
                 onClick={() => onReorderSegsPress(currentSegIndex)}
               />
 
@@ -211,7 +211,7 @@ const SegmentList = memo(({
                 size={16}
                 title={t('Label segment')}
                 role="button"
-                style={{ ...buttonBaseStyle, padding: 4, background: currentSegActiveBgColor }}
+                style={{ ...buttonBaseStyle, padding: 4, background: currentSegColor }}
                 onClick={() => onLabelSegmentPress(currentSegIndex)}
               />
 
@@ -220,10 +220,10 @@ const SegmentList = memo(({
           )}
 
           <AiOutlineSplitCells
-            size={16}
+            size={22}
             title={t('Split segment at cursor')}
             role="button"
-            style={{ ...buttonBaseStyle, padding: 4, background: segmentAtCursor ? segmentAtCursorActiveBgColor : neutralButtonColor }}
+            style={{ ...buttonBaseStyle, padding: 1, background: segmentAtCursor ? segAtCursorColor : neutralButtonColor }}
             onClick={splitCurrentSegment}
           />
         </div>

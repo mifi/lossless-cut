@@ -12,7 +12,7 @@ import useContextMenu from './hooks/useContextMenu';
 
 import { timelineBackground } from './colors';
 
-import { getSegColors } from './util/colors';
+import { getSegColor } from './util/colors';
 
 const currentTimeWidth = 1;
 
@@ -259,7 +259,7 @@ const Timeline = memo(({
             )}
 
             {apparentCutSegments.map((seg, i) => {
-              const { segBgColor, segActiveBgColor, segBorderColor } = getSegColors(seg);
+              const segColor = getSegColor(seg);
 
               if (seg.start === 0 && seg.end === 0) return null; // No video loaded
 
@@ -267,9 +267,9 @@ const Timeline = memo(({
                 <TimelineSeg
                   key={seg.segId}
                   segNum={i}
-                  segBgColor={segBgColor}
-                  segActiveBgColor={segActiveBgColor}
-                  segBorderColor={segBorderColor}
+                  segBgColor={segColor.alpha(0.5).string()}
+                  segActiveBgColor={segColor.lighten(0.5).alpha(0.5).string()}
+                  segBorderColor={segColor.lighten(0.5).string()}
                   onSegClick={setCurrentSegIndex}
                   isActive={i === currentSegIndexSafe}
                   duration={durationSafe}

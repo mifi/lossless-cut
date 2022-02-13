@@ -17,15 +17,15 @@ function getColor(saturation, value, n) {
 /* eslint-enable */
 
 // eslint-disable-next-line import/prefer-default-export
-export function getSegColors(seg) {
-  if (!seg) return {};
+export function getSegColor(seg) {
+  if (!seg) {
+    return color({
+      h: 0,
+      s: 0,
+      v: 100,
+    });
+  }
   const { segIndex } = seg;
 
-  const segColor = getColor(1, 0.95, segIndex);
-
-  return {
-    segBgColor: segColor.alpha(0.5).string(),
-    segActiveBgColor: segColor.lighten(0.5).alpha(0.5).string(),
-    segBorderColor: segColor.lighten(0.5).string(),
-  };
+  return getColor(1, 0.95, segIndex);
 }
