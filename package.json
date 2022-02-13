@@ -136,6 +136,9 @@
     "asar": {
       "smartUnpack": false
     },
+    "asarUnpack": [
+      "node_modules/exiftool-vendored.*/**/*"
+    ],
     "appId": "no.mifi.losslesscut",
     "artifactName": "${productName}-${os}.${ext}",
     "afterSign": "electron-builder-notarize",
@@ -417,5 +420,9 @@
         "removable-media"
       ]
     }
+  },
+  "optionalDependencies": {
+    "exiftool-vendored.exe": "^12.40.0",
+    "exiftool-vendored.pl": "^12.40.0"
   }
 }

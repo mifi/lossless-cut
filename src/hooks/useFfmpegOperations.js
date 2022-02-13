@@ -6,6 +6,7 @@ import pMap from 'p-map';
 
 import { getOutPath, transferTimestamps, getOutFileExtension, getOutDir, isMac, deleteDispositionValue } from '../util';
 import { isCuttingStart, isCuttingEnd, handleProgress, getFfCommandLine, getFfmpegPath, getDuration, runFfmpeg, createChaptersFromSegments } from '../ffmpeg';
+import { exifToolCopyMeta } from '../exiftool';
 
 const execa = window.require('execa');
 const { join, resolve } = window.require('path');
@@ -52,10 +53,16 @@ function getMatroskaFlags() {
 
 const getChaptersInputArgs = (ffmetadataPath) => (ffmetadataPath ? ['-f', 'ffmetadata', '-i', ffmetadataPath] : []);
 
+const enableExifToolCopyMeta = true; //todo
+
 function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
   const optionalTransferTimestamps = useCallback(async (...args) => {
     if (enableTransferTimestamps) await transferTimestamps(...args);
   }, [enableTransferTimestamps]);
+
+  const optionalExifToolCopyMeta = useCallback(async (...args) => {
+    if (enableExifToolCopyMeta) await exifToolCopyMeta(...args);
+  }, []);
 
   // const cut = useCallback(, [filePath, optionalTransferTimestamps]);
 
@@ -205,6 +212,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       const result = await process;
       console.log(result.stdout);
 
+      await optionalExifToolCopyMeta(filePath, outPath);
       await optionalTransferTimestamps(filePath, outPath, cutFrom);
     }
 
@@ -232,7 +240,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     }
 
     return outFiles;
-  }, [filePath, optionalTransferTimestamps]);
+  }, [filePath, optionalTransferTimestamps, optionalExifToolCopyMeta]);
 
   const mergeFiles = useCallback(async ({ paths, outDir, outPath, allStreams, outFormat, ffmpegExperimental, onProgress = () => {}, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge }) => {
     console.log('Merging files', { paths }, 'to', outPath);
@@ -337,8 +345,9 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       if (chaptersPath) await fs.unlink(chaptersPath).catch((err) => console.error('Failed to delete', chaptersPath, err));
     }
 
+    await optionalExifToolCopyMeta(paths[0], outPath);
     await optionalTransferTimestamps(paths[0], outPath);
-  }, [optionalTransferTimestamps]);
+  }, [optionalTransferTimestamps, optionalExifToolCopyMeta]);
 
   const autoMergeSegments = useCallback(async ({ customOutDir, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge }) => {
     const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath });
