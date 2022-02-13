@@ -60,7 +60,7 @@ const Timeline = memo(({
   durationSafe, getCurrentTime, startTimeOffset, playerTime, commandedTime,
   zoom, neighbouringKeyFrames, seekAbs, apparentCutSegments,
   setCurrentSegIndex, currentSegIndexSafe, invertCutSegments, inverseCutSegments, formatTimecode,
-  waveforms, shouldShowWaveform, shouldShowKeyframes, timelineHeight, thumbnails,
+  waveforms, shouldShowWaveform, shouldShowKeyframes, timelineHeight = 36, thumbnails,
   onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled,
   playing, isFileOpened, onWheel, commandedTimeRef, goToTimecode,
 }) => {

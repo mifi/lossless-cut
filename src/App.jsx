@@ -91,10 +91,11 @@ const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && z
 
 const commonFormats = ['mov', 'mp4', 'matroska', 'mp3', 'ipod'];
 
-// TODO flex
-const topBarHeight = 32;
-const timelineHeight = 36;
 const zoomMax = 2 ** 14;
+
+const rightBarWidth = 200;
+const leftBarWidth = 200;
+
 
 const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
 
@@ -2177,8 +2178,6 @@ const App = memo(() => {
     return () => window.removeEventListener('keydown', keyScrollPreventer);
   }, []);
 
-  const rightBarWidth = 200;
-  const leftBarWidth = 200;
   const showLeftBar = batchFiles.length > 0;
 
   const thumbnailsSorted = useMemo(() => sortBy(thumbnails, thumbnail => thumbnail.time), [thumbnails]);
@@ -2234,7 +2233,6 @@ const App = memo(() => {
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
         <TopMenu
           filePath={filePath}
-          height={topBarHeight}
           copyAnyAudioTrack={copyAnyAudioTrack}
           toggleStripAudio={toggleStripAudio}
           customOutDir={customOutDir}
@@ -2435,7 +2433,6 @@ const App = memo(() => {
             invertCutSegments={invertCutSegments}
             inverseCutSegments={inverseCutSegments}
             formatTimecode={formatTimecode}
-            timelineHeight={timelineHeight}
             onZoomWindowStartTimeChange={setZoomWindowStartTime}
             playing={playing}
             isFileOpened={isFileOpened}
