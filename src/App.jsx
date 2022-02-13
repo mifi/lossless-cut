@@ -50,7 +50,7 @@ import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
   readFileMeta, getFormatData, renderThumbnails as ffmpegRenderThumbnails,
   extractStreams, getAllStreams, runStartupCheck,
-  isAudioDefinitelyNotSupported, isIphoneHevc, tryReadChaptersToEdl,
+  isAudioDefinitelyNotSupported, isIphoneHevc, tryMapChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
 } from './ffmpeg';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, readEdl } from './edlStore';
@@ -111,6 +111,7 @@ const App = memo(() => {
   const [duration, setDuration] = useState();
   const [fileFormat, setFileFormat] = useState();
   const [fileFormatData, setFileFormatData] = useState();
+  const [chapters, setChapters] = useState();
   const [detectedFileFormat, setDetectedFileFormat] = useState();
   const [rotation, setRotation] = useState(360);
   const [cutProgress, setCutProgress] = useState();
@@ -659,14 +660,14 @@ const App = memo(() => {
       const outPath = getOutPath({ customOutDir: newCustomOutDir, filePath: firstPath, nameSuffix: `merged${ext}` });
       const outDir = getOutDir(customOutDir, firstPath);
 
-      let chapters;
+      let chaptersFromSegments;
       if (segmentsToChapters) {
         const chapterNames = paths.map((path) => parsePath(path).name);
-        chapters = await createChaptersFromSegments({ segmentPaths: paths, chapterNames });
+        chaptersFromSegments = await createChaptersFromSegments({ segmentPaths: paths, chapterNames });
       }
 
       // console.log('merge', paths);
-      await ffmpegMergeFiles({ paths, outPath, outDir, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters });
+      await ffmpegMergeFiles({ paths, outPath, outDir, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
       openDirToast({ icon: 'success', dirPath: outDir, text: i18n.t('Files merged!') });
     } catch (err) {
       if (isOutOfSpaceError(err)) {
@@ -851,6 +852,7 @@ const App = memo(() => {
       setCutEndTimeManual();
       setFileFormat();
       setFileFormatData();
+      setChapters();
       setDetectedFileFormat();
       setRotation(360);
       setCutProgress();
@@ -1325,7 +1327,7 @@ const App = memo(() => {
     }
 
     try {
-      const { fileFormat: ff, formatData: fd, streams } = await readFileMeta(fp);
+      const { fileFormat: ff, formatData: fd, chapters: ch, streams } = await readFileMeta(fp);
       // console.log('file meta read', ff);
 
       if (!ff) throw new Error('Unable to determine file format');
@@ -1381,9 +1383,9 @@ const App = memo(() => {
         } else if (await exists(openedFileEdlPathOld)) {
           await loadEdlFile(openedFileEdlPathOld, 'csv');
         } else {
-          const edl = await tryReadChaptersToEdl(fp);
+          const edl = await tryMapChaptersToEdl(ch);
           if (edl.length > 0 && enableAskForImportChapters && (await askForImportChapters())) {
-            console.log('Read chapters', edl);
+            console.log('Convert chapters to segments', edl);
             loadCutSegments(edl);
           }
         }
@@ -1405,6 +1407,7 @@ const App = memo(() => {
         setFileFormat(outFormatLocked || ff);
         setDetectedFileFormat(ff);
         setFileFormatData(fd);
+        setChapters(ch);
 
         // This needs to be last, because it triggers <video> to load the video
         // If not, onVideoError might be triggered before setWorking() has been cleared.
@@ -2241,6 +2244,7 @@ const App = memo(() => {
             <StreamsSelector
               mainFilePath={filePath}
               mainFileFormatData={fileFormatData}
+              mainFileChapters={chapters}
               externalFiles={externalStreamFiles}
               setExternalFiles={setExternalStreamFiles}
               showAddStreamSourceDialog={showAddStreamSourceDialog}

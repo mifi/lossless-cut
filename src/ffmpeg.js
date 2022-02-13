@@ -169,10 +169,9 @@ export function findNearestKeyFrameTime({ frames, time, direction, fps }) {
   return nearestFrame.time;
 }
 
-export async function tryReadChaptersToEdl(filePath) {
+export async function tryMapChaptersToEdl(chapters) {
   try {
-    const { stdout } = await runFfprobe(['-i', filePath, '-show_chapters', '-print_format', 'json', '-hide_banner']);
-    return JSON.parse(stdout).chapters.map((chapter) => {
+    return chapters.map((chapter) => {
       const start = parseFloat(chapter.start_time);
       const end = parseFloat(chapter.end_time);
       if (Number.isNaN(start) || Number.isNaN(end)) return undefined;
@@ -272,14 +271,16 @@ export async function getAllStreams(filePath) {
 
 export async function readFileMeta(filePath) {
   try {
-    const [formatData, allStreamsResponse] = await Promise.all([
-      getFormatData(filePath),
-      getAllStreams(filePath),
+    const { stdout } = await runFfprobe([
+      '-of', 'json', '-show_chapters', '-show_format', '-show_entries', 'stream', '-i', filePath, '-hide_banner',
     ]);
+
+    const { streams, format: formatData, chapters } = JSON.parse(stdout);
+
     const fileFormat = await getDefaultOutFormat(filePath, formatData);
-    const { streams } = allStreamsResponse;
     // console.log(streams, formatData, fileFormat);
-    return { formatData, fileFormat, streams };
+
+    return { formatData, fileFormat, streams, chapters };
   } catch (err) {
     // Windows will throw error with code ENOENT if format detection fails.
     if (err.exitCode === 1 || (isWindows && err.code === 'ENOENT')) {
