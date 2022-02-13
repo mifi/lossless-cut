@@ -198,9 +198,9 @@ const ExportConfirm = memo(({
 
             <motion.div
               style={{ transformOrigin: 'bottom right' }}
-              initial={{ scale: 0.5, opacity: 1 }}
+              initial={{ scale: 0.7, opacity: 1 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.5, opacity: 0 }}
+              exit={{ scale: 0.7, opacity: 0 }}
               transition={{ duration: 0.4, easings: ['easeOut'] }}
             >
               <ExportButton enabledOutSegments={enabledOutSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={() => onExportConfirm()} size={1.7} />

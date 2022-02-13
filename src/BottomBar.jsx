@@ -345,7 +345,7 @@ const BottomBar = memo(({
 
         {!simpleMode && <ToggleExportConfirm style={{ marginRight: 5 }} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />}
 
-        <ExportButton enabledOutSegments={enabledOutSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={onExportPress} />
+        <ExportButton size={1.3} enabledOutSegments={enabledOutSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={onExportPress} />
       </div>
     </>
   );
