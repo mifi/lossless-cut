@@ -11,7 +11,7 @@ const isDev = window.require('electron-is-dev');
 const start = new Date().getTime();
 const zoomOptions = Array(13).fill().map((unused, z) => 2 ** z);
 
-const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments, toggleComfortZoom, simpleMode, toggleSimpleMode }) => {
+const BottomLeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments, toggleComfortZoom, simpleMode, toggleSimpleMode }) => {
   const { t } = useTranslation();
 
   const onYinYangClick = useCallback(() => {
@@ -63,4 +63,4 @@ const LeftMenu = memo(({ zoom, setZoom, invertCutSegments, setInvertCutSegments,
   );
 });
 
-export default LeftMenu;
+export default BottomLeftMenu;

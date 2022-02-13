@@ -10,7 +10,7 @@ import ExportButton from './components/ExportButton';
 import ToggleExportConfirm from './components/ToggleExportConfirm';
 
 
-const RightMenu = memo(({
+const BottomRightMenu = memo(({
   isRotationSet, rotation, areWeCutting, increaseRotation, cleanupFiles, renderCaptureFormatButton,
   capture, onExportPress, enabledOutSegments, hasVideo, autoMerge, exportConfirmEnabled, toggleExportConfirmEnabled,
   simpleMode,
@@ -64,4 +64,4 @@ const RightMenu = memo(({
   );
 });
 
-export default RightMenu;
+export default BottomRightMenu;

@@ -31,9 +31,9 @@ import SettingsSheet from './SettingsSheet';
 import StreamsSelector from './StreamsSelector';
 import SegmentList from './SegmentList';
 import Settings from './Settings';
-import LeftMenu from './LeftMenu';
 import Timeline from './Timeline';
-import RightMenu from './RightMenu';
+import BottomLeftMenu from './BottomLeftMenu';
+import BottomRightMenu from './BottomRightMenu';
 import TimelineControls from './TimelineControls';
 import ExportConfirm from './ExportConfirm';
 import ValueTuner from './components/ValueTuner';
@@ -2518,7 +2518,7 @@ const App = memo(() => {
           />
 
           <div style={{ display: 'flex', justifyContent: 'space-between', height: 36 }}>
-            <LeftMenu
+            <BottomLeftMenu
               zoom={zoom}
               setZoom={setZoom}
               invertCutSegments={invertCutSegments}
@@ -2528,7 +2528,7 @@ const App = memo(() => {
               toggleSimpleMode={toggleSimpleMode}
             />
 
-            <RightMenu
+            <BottomRightMenu
               hasVideo={hasVideo}
               isRotationSet={isRotationSet}
               rotation={rotation}
