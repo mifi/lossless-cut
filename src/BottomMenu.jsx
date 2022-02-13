@@ -38,86 +38,87 @@ const BottomMenu = memo(({
   const rotationStr = `${rotation}°`;
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-      <div className="no-user-select" style={{ padding: '.3em', display: 'flex', alignItems: 'center' }}>
-        <SimpleModeButton simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} />
+    <div
+      className="no-user-select"
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '3px 4px' }}
+    >
+      <SimpleModeButton simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} style={{ flexShrink: 0 }} />
 
-        {simpleMode && <div role="button" onClick={toggleSimpleMode} style={{ marginLeft: 5 }}>{t('Toggle advanced view')}</div>}
+      {simpleMode && <div role="button" onClick={toggleSimpleMode} style={{ marginLeft: 5, fontSize: '90%' }}>{t('Toggle advanced view')}</div>}
 
-        {!simpleMode && (
-          <div style={{ marginLeft: 5 }}>
-            <motion.div
-              style={{ width: 26, height: 26 }}
-              animate={{ rotateX: invertCutSegments ? 0 : 180 }}
-              transition={{ duration: 0.3 }}
-            >
-              <FaYinYang
-                size={26}
-                role="button"
-                title={invertCutSegments ? t('Discard selected segments') : t('Keep selected segments')}
-                onClick={onYinYangClick}
-              />
-            </motion.div>
-          </div>
-        )}
-
-        {!simpleMode && (
-          <>
-            <div role="button" style={{ marginRight: 5, marginLeft: 10 }} title={t('Zoom')} onClick={toggleComfortZoom}>{Math.floor(zoom)}x</div>
-
-            <Select height={20} style={{ width: 65 }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
-              <option key="" value="" disabled>{t('Zoom')}</option>
-              {zoomOptions.map(val => (
-                <option key={val} value={String(val)}>{t('Zoom')} {val}x</option>
-              ))}
-            </Select>
-          </>
-        )}
-
-        <div style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 1, flexGrow: 0, overflow: 'hidden', margin: '0 10px' }}>{!isDev && new Date().getTime() - start > 2 * 60 * 1000 && ['t', 'u', 'C', 's', 's', 'e', 'l', 's', 's', 'o', 'L'].reverse().join('')}</div>
-      </div>
-
-      <div className="no-user-select" style={{ padding: '.3em', display: 'flex', alignItems: 'center' }}>
-        {hasVideo && (
-          <>
-            <span style={{ textAlign: 'right', display: 'inline-block' }}>{isRotationSet && rotationStr}</span>
-            <MdRotate90DegreesCcw
-              size={26}
-              style={{ margin: '0px 5px 0 2px', verticalAlign: 'middle', color: isRotationSet ? primaryTextColor : undefined }}
-              title={`${t('Set output rotation. Current: ')} ${isRotationSet ? rotationStr : t('Don\'t modify')}`}
-              onClick={increaseRotation}
+      {!simpleMode && (
+        <div style={{ marginLeft: 5 }}>
+          <motion.div
+            style={{ width: 24, height: 24 }}
+            animate={{ rotateX: invertCutSegments ? 0 : 180 }}
+            transition={{ duration: 0.3 }}
+          >
+            <FaYinYang
+              size={24}
               role="button"
+              title={invertCutSegments ? t('Discard selected segments') : t('Keep selected segments')}
+              onClick={onYinYangClick}
             />
-          </>
-        )}
+          </motion.div>
+        </div>
+      )}
 
-        {!simpleMode && (
-          <FaTrashAlt
-            title={t('Close file and clean up')}
-            style={{ padding: '5px 10px' }}
-            size={16}
-            onClick={cleanupFiles}
+      {!simpleMode && (
+        <>
+          <div role="button" style={{ marginRight: 5, marginLeft: 10 }} title={t('Zoom')} onClick={toggleComfortZoom}>{Math.floor(zoom)}x</div>
+
+          <Select height={20} style={{ flexBasis: 85, flexGrow: 0 }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
+            <option key="" value="" disabled>{t('Zoom')}</option>
+            {zoomOptions.map(val => (
+              <option key={val} value={String(val)}>{t('Zoom')} {val}x</option>
+            ))}
+          </Select>
+        </>
+      )}
+
+      <div style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 1, flexGrow: 0, overflow: 'hidden', margin: '0 10px' }}>{!isDev && new Date().getTime() - start > 2 * 60 * 1000 && ['t', 'u', 'C', 's', 's', 'e', 'l', 's', 's', 'o', 'L'].reverse().join('')}</div>
+
+      <div style={{ flexGrow: 1 }} />
+
+      {hasVideo && (
+        <>
+          <span style={{ textAlign: 'right', display: 'inline-block' }}>{isRotationSet && rotationStr}</span>
+          <MdRotate90DegreesCcw
+            size={24}
+            style={{ margin: '0px 0px 0 2px', verticalAlign: 'middle', color: isRotationSet ? primaryTextColor : undefined }}
+            title={`${t('Set output rotation. Current: ')} ${isRotationSet ? rotationStr : t('Don\'t modify')}`}
+            onClick={increaseRotation}
             role="button"
           />
-        )}
+        </>
+      )}
 
-        {hasVideo && (
-          <>
-            {!simpleMode && renderCaptureFormatButton({ height: 20 })}
+      {!simpleMode && (
+        <FaTrashAlt
+          title={t('Close file and clean up')}
+          style={{ padding: '5px 10px' }}
+          size={16}
+          onClick={cleanupFiles}
+          role="button"
+        />
+      )}
 
-            <IoIosCamera
-              style={{ paddingLeft: 5, paddingRight: 15 }}
-              size={25}
-              title={t('Capture frame')}
-              onClick={capture}
-            />
-          </>
-        )}
+      {hasVideo && (
+        <>
+          {!simpleMode && renderCaptureFormatButton({ height: 20 })}
 
-        {!simpleMode && <ToggleExportConfirm style={{ marginRight: 5 }} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />}
+          <IoIosCamera
+            style={{ paddingLeft: 5, paddingRight: 15 }}
+            size={25}
+            title={t('Capture frame')}
+            onClick={capture}
+          />
+        </>
+      )}
 
-        <ExportButton enabledOutSegments={enabledOutSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={onExportPress} />
-      </div>
+      {!simpleMode && <ToggleExportConfirm style={{ marginRight: 5 }} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />}
+
+      <ExportButton enabledOutSegments={enabledOutSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={onExportPress} />
     </div>
   );
 });
