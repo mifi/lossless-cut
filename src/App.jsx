@@ -2260,7 +2260,7 @@ const App = memo(() => {
             {showLeftBar && (
               <motion.div
                 className="no-user-select"
-                style={{ width: leftBarWidth, background: timelineBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column' }}
+                style={{ width: leftBarWidth, background: timelineBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column', overflowY: 'hidden', overflowX: 'hidden', resize: 'horizontal' }}
                 initial={{ x: -leftBarWidth }}
                 animate={{ x: 0 }}
                 exit={{ x: -leftBarWidth }}
