@@ -52,9 +52,15 @@ module.exports = (app, mainWindow, newVersion) => {
           label: i18n.t('Import project'),
           submenu: [
             {
-              label: i18n.t('LosslessCut (CSV)'),
+              label: i18n.t('Times in seconds (CSV)'),
               click() {
                 mainWindow.webContents.send('importEdlFile', 'csv');
+              },
+            },
+            {
+              label: i18n.t('Frame numbers (CSV)'),
+              click() {
+                mainWindow.webContents.send('importEdlFile', 'csv-frames');
               },
             },
             {
@@ -93,7 +99,7 @@ module.exports = (app, mainWindow, newVersion) => {
           label: i18n.t('Export project'),
           submenu: [
             {
-              label: i18n.t('LosslessCut (CSV)'),
+              label: i18n.t('Times in seconds (CSV)'),
               click() {
                 mainWindow.webContents.send('exportEdlFile', 'csv');
               },

@@ -2,6 +2,7 @@ import fastXmlParser from 'fast-xml-parser';
 import i18n from 'i18next';
 
 import csvParse from 'csv-parse/lib/browser';
+import csvStringify from 'csv-stringify/lib/browser';
 import pify from 'pify';
 import sortBy from 'lodash/sortBy';
 
@@ -10,16 +11,29 @@ import { formatDuration } from './util/duration';
 import { invertSegments, sortSegments } from './segments';
 
 const csvParseAsync = pify(csvParse);
+const csvStringifyAsync = pify(csvStringify);
 
-export async function parseCsv(str) {
-  const rows = await csvParseAsync(str, {});
+export const getTimeFromFrameNum = (detectedFps, frameNum) => frameNum / detectedFps;
+
+export function getFrameCountRaw(detectedFps, sec) {
+  if (detectedFps == null) return undefined;
+  return Math.floor(sec * detectedFps);
+}
+
+export async function parseCsv(csvStr, processTime = (t) => t) {
+  const rows = await csvParseAsync(csvStr, {});
   if (rows.length === 0) throw new Error(i18n.t('No rows found'));
   if (!rows.every(row => row.length === 3)) throw new Error(i18n.t('One or more rows does not have 3 columns'));
 
+  function parseTimeVal(str) {
+    if (str === '') return undefined;
+    const parsed = parseFloat(str, 10);
+    return processTime(parsed);
+  }
   const mapped = rows
     .map(([start, end, name]) => ({
-      start: start === '' ? undefined : parseFloat(start, 10),
-      end: end === '' ? undefined : parseFloat(end, 10),
+      start: parseTimeVal(start),
+      end: parseTimeVal(end),
       name,
     }));
 
@@ -167,4 +181,36 @@ export function formatYouTube(segments) {
     const namePart = segment.name ? ` ${segment.name}` : '';
     return `${timeStr}${namePart}`;
   }).join('\n');
+}
+
+const safeFormatDuration = (duration) => (duration != null ? formatDuration({ seconds: duration }) : '');
+const safeFormatFrameCount = ({ seconds, getFrameCount }) => (seconds != null ? getFrameCount(seconds) : '');
+
+export const formatSegmentsTimes = (cutSegments) => cutSegments.map(({ start, end, name }) => [
+  safeFormatDuration(start),
+  safeFormatDuration(end),
+  name,
+]);
+
+const formatSegmentsFrameCounts = ({ cutSegments, getFrameCount }) => cutSegments.map(({ start, end, name }) => [
+  safeFormatFrameCount({ seconds: start, getFrameCount }),
+  safeFormatFrameCount({ seconds: end, getFrameCount }),
+  name,
+]);
+
+export async function formatCsvFrames({ cutSegments, getFrameCount }) {
+  return csvStringifyAsync(formatSegmentsFrameCounts({ cutSegments, getFrameCount }));
+}
+
+export async function formatCsvSeconds(cutSegments) {
+  const rows = cutSegments.map(({ start, end, name }) => [start, end, name]);
+  return csvStringifyAsync(rows);
+}
+
+export async function formatCsvHuman(cutSegments) {
+  return csvStringifyAsync(formatSegmentsTimes(cutSegments));
+}
+
+export async function formatTsv(cutSegments) {
+  return csvStringifyAsync(formatSegmentsTimes(cutSegments), { delimiter: '\t' });
 }

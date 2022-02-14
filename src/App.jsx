@@ -53,7 +53,7 @@ import {
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
 } from './ffmpeg';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
-import { formatYouTube } from './edlFormats';
+import { formatYouTube, getTimeFromFrameNum as getTimeFromFrameNumRaw, getFrameCountRaw } from './edlFormats';
 import {
   getOutPath, toast, errorToast, handleError, setFileNameTitle, getOutDir, withBlur,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
@@ -446,10 +446,9 @@ const App = memo(() => {
     setCutSegments(sortBy(cutSegments, getSegApparentStart));
   }, [cutSegments, setCutSegments]);
 
-  const getFrameCount = useCallback((sec) => {
-    if (detectedFps == null) return undefined;
-    return Math.floor(sec * detectedFps);
-  }, [detectedFps]);
+  const getFrameCount = useCallback((sec) => getFrameCountRaw(detectedFps, sec), [detectedFps]);
+
+  const getTimeFromFrameNum = useCallback((frameNum) => getTimeFromFrameNumRaw(detectedFps, frameNum), [detectedFps]);
 
   const formatTimecode = useCallback(({ seconds, shorten }) => {
     if (timecodeFormat === 'frameCount') {
@@ -1129,7 +1128,6 @@ const App = memo(() => {
         // Emulate a single segment with no cuts (full timeline)
         segmentsToExport = [{ start: 0, end: getSegApparentEnd({}) }];
         chaptersToAdd = sortBy(enabledOutSegments, 'start').map((segment) => ({ start: segment.start, end: segment.end, name: segment.name }));
-        console.log(chaptersToAdd);
       }
 
       console.log('outSegTemplateOrDefault', outSegTemplateOrDefault);
@@ -1911,7 +1909,7 @@ const App = memo(() => {
       if (!checkFileOpened()) return;
 
       try {
-        const edl = await askForEdlImport(type);
+        const edl = await askForEdlImport({ type, getTimeFromFrameNum });
         if (edl.length > 0) loadCutSegments(edl, true);
       } catch (err) {
         handleError(err);
@@ -2049,7 +2047,7 @@ const App = memo(() => {
     outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile, batchLoadPaths,
     extractAllStreams, userOpenFiles, openSendReportDialogWithState, setWorking,
     loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, ensureOutDirAccessible, html5ifyAndLoad, html5ify,
-    loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFileWithConfirm, closeBatch, clearSegments, clearSegCounter, fixInvalidDuration, invertAllCutSegments, getFrameCount,
+    loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFileWithConfirm, closeBatch, clearSegments, clearSegCounter, fixInvalidDuration, invertAllCutSegments, getFrameCount, getTimeFromFrameNum,
   ]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
