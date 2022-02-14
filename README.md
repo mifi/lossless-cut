@@ -26,27 +26,29 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Losslessly cut out parts of video/audio (for cutting away commercials etc.)
 - Losslessly rearrange the order of video/audio segments
 - Lossless merge/concatenation of arbitrary files (with identical codecs parameters, e.g. from the same camera)
-- Lossless stream editing: Combine arbitrary tracks from multiple files (ex. add music or subtitle track to a video file)
-- Losslessly extract all tracks from a file (extract video, audio, subtitle, attachments and other tracks from one file into separate files)
+- Lossless stream editing
+  - Combine arbitrary tracks from multiple files (ex. add music or subtitle track to a video file)
+  - Remove unneeded tracks
+  - Replace or re-encode only some tracks
+  - Extract all tracks from a file (extract video, audio, subtitle, attachments and other tracks from one file into separate files)
 - Batch view for fast multi-file workflow
-- Remux into any compatible output format
+- Keyboard shortcut workflow
+- Lossless remux video/audio into any compatible output format
 - Take full-resolution snapshots from videos in JPEG/PNG format
 - Manual input of cutpoint times
 - Apply a per-file timecode offset (and auto load timecode from file)
+- Edit file metadata, per-track metadata and per-track disposition
 - Change rotation/orientation metadata in videos
-- View technical data about all streams
-- Timeline zoom and frame/keyframe jumping for accurate cutting around keyframes
+- View technical data about all tracks
+- Timeline zoom and frame/keyframe jumping for cutting around keyframes
+- Video thumbnails and audio waveform
 - Saves per project cut segments to project file
 - View FFmpeg last command log so you can modify and re-run recent commands on the command line
 - Undo/redo
 - Give labels to cut segments
-- View segment details, export/import cut segments as CSV
-- Import segments from: MP4/MKV chapters, Text file, YouTube, CSV, CUE, XML (DaVinci, Final Cut Pro)
-- Video thumbnails and audio waveform
-- Edit file metadata and per-stream metadata
-- Edit per-stream disposition
-- Cut with chapter marks
 - Annotate segments with tags
+- Import/export segments: MP4/MKV chapter marks, Text file, YouTube, CSV, CUE, XML (DaVinci, Final Cut Pro) and more
+- MKV/MP4 embedded chapters marks editor
 - View subtitles
 
 ## Example lossless use cases
@@ -75,7 +77,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 2. Open the exported file and select "Import chapters" in the dialog
 3. File -> Export project -> YouTube Chapters
 
-### Re-encode only the audio track, leaving the video track
+### Re-encode only the audio track, keeping the lossless video track
 
 First export each track as individual files. Then use Handbrake or similar to re-encode the audio file. Then use the `Tools->Merge` in LosslessCut to merge the original video stream with your Handbrake output (or drag it into your original LosslessCut video to include it as a new track.)
 
