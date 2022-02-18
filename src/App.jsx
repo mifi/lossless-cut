@@ -1,9 +1,9 @@
 import React, { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { unstable_batchedUpdates as batchedUpdates } from 'react-dom';
-import { FaAngleLeft, FaWindowClose, FaTimes } from 'react-icons/fa';
+import { FaAngleLeft, FaWindowClose } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Table, SideSheet, Button, Position, ForkIcon, DisableIcon, Select, ThemeProvider, MergeColumnsIcon } from 'evergreen-ui';
+import { Table, SideSheet, Button, Position, ForkIcon, DisableIcon, Select, ThemeProvider } from 'evergreen-ui';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
@@ -42,7 +42,7 @@ import ConcatDialog from './components/ConcatDialog';
 import Loading from './components/Loading';
 
 import { loadMifiLink } from './mifi';
-import { controlsBackground, timelineBackground } from './colors';
+import { controlsBackground } from './colors';
 import allOutFormats from './outFormats';
 import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
