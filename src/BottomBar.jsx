@@ -34,7 +34,7 @@ const BottomBar = memo(({
   setCurrentSegIndex, cutStartTimeManual, setCutStartTimeManual, cutEndTimeManual, setCutEndTimeManual,
   duration, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
   playing, shortStep, togglePlay, setTimelineMode, hasAudio, timelineMode,
-  keyframesEnabled, toggleKeyframesEnabled, seekClosestKeyframe,
+  keyframesEnabled, toggleKeyframesEnabled, seekClosestKeyframe, detectedFps,
 }) => {
   const { t } = useTranslation();
 
@@ -151,32 +151,36 @@ const BottomBar = memo(({
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', flexBasis: leftRightWidth }}>
-          {hasAudio && !simpleMode && (
-            <GiSoundWaves
-              size={24}
-              style={{ padding: '0 5px', color: timelineMode === 'waveform' ? primaryTextColor : undefined }}
-              role="button"
-              title={t('Show waveform')}
-              onClick={() => setTimelineMode('waveform')}
-            />
-          )}
-          {hasVideo && !simpleMode && (
+          {!simpleMode && (
             <>
-              <FaImages
-                size={20}
-                style={{ padding: '0 5px', color: timelineMode === 'thumbnails' ? primaryTextColor : undefined }}
-                role="button"
-                title={t('Show thumbnails')}
-                onClick={() => setTimelineMode('thumbnails')}
-              />
+              {hasAudio && (
+                <GiSoundWaves
+                  size={24}
+                  style={{ padding: '0 5px', color: timelineMode === 'waveform' ? primaryTextColor : undefined }}
+                  role="button"
+                  title={t('Show waveform')}
+                  onClick={() => setTimelineMode('waveform')}
+                />
+              )}
+              {hasVideo && (
+                <>
+                  <FaImages
+                    size={20}
+                    style={{ padding: '0 5px', color: timelineMode === 'thumbnails' ? primaryTextColor : undefined }}
+                    role="button"
+                    title={t('Show thumbnails')}
+                    onClick={() => setTimelineMode('thumbnails')}
+                  />
 
-              <FaKey
-                size={16}
-                style={{ padding: '0 5px', color: keyframesEnabled ? primaryTextColor : undefined }}
-                role="button"
-                title={t('Show keyframes')}
-                onClick={toggleKeyframesEnabled}
-              />
+                  <FaKey
+                    size={16}
+                    style={{ padding: '0 5px', color: keyframesEnabled ? primaryTextColor : undefined }}
+                    role="button"
+                    title={t('Show keyframes')}
+                    onClick={toggleKeyframesEnabled}
+                  />
+                </>
+              )}
             </>
           )}
         </div>
@@ -184,17 +188,20 @@ const BottomBar = memo(({
         <div style={{ flexGrow: 1 }} />
 
         {!simpleMode && (
-          <FaStepBackward
-            size={16}
-            title={t('Jump to start of video')}
-            role="button"
-            onClick={() => seekAbs(0)}
-          />
+          <>
+            <FaStepBackward
+              size={16}
+              title={t('Jump to start of video')}
+              role="button"
+              onClick={() => seekAbs(0)}
+            />
+
+            {renderJumpCutpointButton(-1)}
+
+            <SegmentCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} onClick={jumpCutStart} title={t('Jump to cut start')} style={{ marginRight: 5 }} />
+          </>
         )}
 
-        {!simpleMode && renderJumpCutpointButton(-1)}
-
-        {!simpleMode && <SegmentCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} onClick={jumpCutStart} title={t('Jump to cut start')} style={{ marginRight: 5 }} />}
         <SetCutpointButton currentCutSeg={currentCutSeg} side="start" onClick={setCutStart} title={t('Set cut start to current position')} style={{ marginRight: 5 }} />
 
         {!simpleMode && renderCutTimeInput('start')}
@@ -247,17 +254,20 @@ const BottomBar = memo(({
         {!simpleMode && renderCutTimeInput('end')}
 
         <SetCutpointButton currentCutSeg={currentCutSeg} side="end" onClick={setCutEnd} title={t('Set cut end to current position')} style={{ marginLeft: 5 }} />
-        {!simpleMode && <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} onClick={jumpCutEnd} title={t('Jump to cut end')} style={{ marginLeft: 5 }} />}
-
-        {!simpleMode && renderJumpCutpointButton(1)}
 
         {!simpleMode && (
-          <FaStepForward
-            size={16}
-            title={t('Jump to end of video')}
-            role="button"
-            onClick={() => seekAbs(duration)}
-          />
+          <>
+            <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} onClick={jumpCutEnd} title={t('Jump to cut end')} style={{ marginLeft: 5 }} />
+
+            {renderJumpCutpointButton(1)}
+
+            <FaStepForward
+              size={16}
+              title={t('Jump to end of video')}
+              role="button"
+              onClick={() => seekAbs(duration)}
+            />
+          </>
         )}
 
         <div style={{ flexGrow: 1 }} />
@@ -274,24 +284,22 @@ const BottomBar = memo(({
         {simpleMode && <div role="button" onClick={toggleSimpleMode} style={{ marginLeft: 5, fontSize: '90%' }}>{t('Toggle advanced view')}</div>}
 
         {!simpleMode && (
-          <div style={{ marginLeft: 5 }}>
-            <motion.div
-              style={{ width: 24, height: 24 }}
-              animate={{ rotateX: invertCutSegments ? 0 : 180 }}
-              transition={{ duration: 0.3 }}
-            >
-              <FaYinYang
-                size={24}
-                role="button"
-                title={invertCutSegments ? t('Discard selected segments') : t('Keep selected segments')}
-                onClick={onYinYangClick}
-              />
-            </motion.div>
-          </div>
-        )}
-
-        {!simpleMode && (
           <>
+            <div style={{ marginLeft: 5 }}>
+              <motion.div
+                style={{ width: 24, height: 24 }}
+                animate={{ rotateX: invertCutSegments ? 0 : 180 }}
+                transition={{ duration: 0.3 }}
+              >
+                <FaYinYang
+                  size={24}
+                  role="button"
+                  title={invertCutSegments ? t('Discard selected segments') : t('Keep selected segments')}
+                  onClick={onYinYangClick}
+                />
+              </motion.div>
+            </div>
+
             <div role="button" style={{ marginRight: 5, marginLeft: 10 }} title={t('Zoom')} onClick={toggleComfortZoom}>{Math.floor(zoom)}x</div>
 
             <Select height={20} style={{ flexBasis: 85, flexGrow: 0 }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
@@ -300,6 +308,8 @@ const BottomBar = memo(({
                 <option key={val} value={String(val)}>{t('Zoom')} {val}x</option>
               ))}
             </Select>
+
+            {detectedFps != null && <div title={t('Video FPS')} style={{ color: 'rgba(255,255,255,0.6)', fontSize: '.7em', marginLeft: 6 }}>{detectedFps.toFixed(3)}</div>}
           </>
         )}
 

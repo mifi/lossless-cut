@@ -165,9 +165,9 @@ export function findNearestKeyFrameTime({ frames, time, direction, fps }) {
   const sigma = fps ? (1 / fps) : 0.1;
   const keyframes = frames.filter(f => f.keyframe && (direction > 0 ? f.time > time + sigma : f.time < time - sigma));
   if (keyframes.length === 0) return undefined;
-  const nearestFrame = sortBy(keyframes, keyframe => (direction > 0 ? keyframe.time - time : time - keyframe.time))[0];
-  if (!nearestFrame) return undefined;
-  return nearestFrame.time;
+  const nearestKeyFrame = sortBy(keyframes, keyframe => (direction > 0 ? keyframe.time - time : time - keyframe.time))[0];
+  if (!nearestKeyFrame) return undefined;
+  return nearestKeyFrame.time;
 }
 
 export async function tryMapChaptersToEdl(chapters) {

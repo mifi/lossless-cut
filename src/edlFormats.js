@@ -17,7 +17,7 @@ export const getTimeFromFrameNum = (detectedFps, frameNum) => frameNum / detecte
 
 export function getFrameCountRaw(detectedFps, sec) {
   if (detectedFps == null) return undefined;
-  return Math.floor(sec * detectedFps);
+  return Math.round(sec * detectedFps);
 }
 
 export async function parseCsv(csvStr, processTime = (t) => t) {
@@ -183,7 +183,7 @@ export function formatYouTube(segments) {
   }).join('\n');
 }
 
-// because null/undefined is also a valid value (start/end of timeline)
+// because null/undefined is also valid values (start/end of timeline)
 const safeFormatDuration = (duration) => (duration != null ? formatDuration({ seconds: duration }) : '');
 
 export const formatSegmentsTimes = (cutSegments) => cutSegments.map(({ start, end, name }) => [

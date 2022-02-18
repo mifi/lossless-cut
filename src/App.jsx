@@ -210,7 +210,6 @@ const App = memo(() => {
   }, [language]);
 
   const videoRef = useRef();
-  const currentTimeRef = useRef();
 
   const isFileOpened = !!filePath;
 
@@ -253,8 +252,6 @@ const App = memo(() => {
     setFfmpegCommandLog(old => [...old, { command, time: new Date() }]);
   }
 
-  const getCurrentTime = useCallback(() => currentTimeRef.current, []);
-
   const setCopyStreamIdsForPath = useCallback((path, cb) => {
     setCopyStreamIdsByFile((old) => {
       const oldIds = old[path] || {};
@@ -282,16 +279,13 @@ const App = memo(() => {
   const seekAbs = useCallback((val) => {
     const video = videoRef.current;
     if (val == null || Number.isNaN(val)) return;
-    let valRounded = val;
-    if (detectedFps) valRounded = Math.round(detectedFps * val) / detectedFps; // Round to nearest frame
-
-    let outVal = valRounded;
+    let outVal = val;
     if (outVal < 0) outVal = 0;
     if (outVal > video.duration) outVal = video.duration;
 
     video.currentTime = outVal;
     setCommandedTime(outVal);
-  }, [detectedFps]);
+  }, []);
 
   const commandedTimeRef = useRef(commandedTime);
   useEffect(() => {
@@ -307,9 +301,14 @@ const App = memo(() => {
     seekRel(val * zoomedDuration);
   }, [seekRel, zoomedDuration]);
 
-  const shortStep = useCallback((dir) => {
-    seekRel((1 / (detectedFps || 60)) * dir);
-  }, [seekRel, detectedFps]);
+  const shortStep = useCallback((direction) => {
+    if (!detectedFps) return;
+
+    // try to align with frame
+    const currentTimeNearestFrameNumber = getFrameCountRaw(detectedFps, videoRef.current.currentTime);
+    const nextFrame = currentTimeNearestFrameNumber + direction;
+    seekAbs(nextFrame / detectedFps);
+  }, [seekAbs, detectedFps]);
 
   // 360 means we don't modify rotation
   const isRotationSet = rotation !== 360;
@@ -458,9 +457,7 @@ const App = memo(() => {
     return formatDuration({ seconds, shorten });
   }, [detectedFps, timecodeFormat, getFrameCount]);
 
-  useEffect(() => {
-    currentTimeRef.current = playing ? playerTime : commandedTime;
-  }, [commandedTime, playerTime, playing]);
+  const getCurrentTime = useCallback(() => (playing ? videoRef.current.currentTime : commandedTimeRef.current), [playing]);
 
   // const getSafeCutTime = useCallback((cutTime, next) => ffmpeg.getSafeCutTime(neighbouringFrames, cutTime, next), [neighbouringFrames]);
 
@@ -469,7 +466,7 @@ const App = memo(() => {
       // Cannot add if prev seg is not finished
       if (currentCutSeg.start === undefined && currentCutSeg.end === undefined) return;
 
-      const suggestedStart = currentTimeRef.current;
+      const suggestedStart = getCurrentTime();
       /* if (keyframeCut) {
         const keyframeAlignedStart = getSafeCutTime(suggestedStart, true);
         if (keyframeAlignedStart != null) suggestedStart = keyframeAlignedStart;
@@ -485,19 +482,20 @@ const App = memo(() => {
     } catch (err) {
       console.error(err);
     }
-  }, [currentCutSeg.start, currentCutSeg.end, cutSegments, createSegmentAndIncrementCount, setCutSegments]);
+  }, [currentCutSeg.start, currentCutSeg.end, getCurrentTime, cutSegments, createSegmentAndIncrementCount, setCutSegments]);
 
   const setCutStart = useCallback(() => {
     if (!filePath) return;
 
+    const currentTime = getCurrentTime();
     // https://github.com/mifi/lossless-cut/issues/168
     // If current time is after the end of the current segment in the timeline,
     // add a new segment that starts at playerTime
-    if (currentCutSeg.end != null && currentTimeRef.current > currentCutSeg.end) {
+    if (currentCutSeg.end != null && currentTime > currentCutSeg.end) {
       addCutSegment();
     } else {
       try {
-        const startTime = currentTimeRef.current;
+        const startTime = currentTime;
         /* if (keyframeCut) {
           const keyframeAlignedCutTo = getSafeCutTime(startTime, true);
           if (keyframeAlignedCutTo != null) startTime = keyframeAlignedCutTo;
@@ -507,13 +505,13 @@ const App = memo(() => {
         handleError(err);
       }
     }
-  }, [setCutTime, currentCutSeg, addCutSegment, filePath]);
+  }, [filePath, getCurrentTime, currentCutSeg.end, addCutSegment, setCutTime]);
 
   const setCutEnd = useCallback(() => {
     if (!filePath) return;
 
     try {
-      const endTime = currentTimeRef.current;
+      const endTime = getCurrentTime();
 
       /* if (keyframeCut) {
         const keyframeAlignedCutTo = getSafeCutTime(endTime, false);
@@ -523,7 +521,7 @@ const App = memo(() => {
     } catch (err) {
       handleError(err);
     }
-  }, [setCutTime, filePath]);
+  }, [filePath, getCurrentTime, setCutTime]);
 
   const outputDir = getOutDir(customOutDir, filePath);
 
@@ -1221,7 +1219,7 @@ const App = memo(() => {
     if (!filePath) return;
 
     try {
-      const currentTime = currentTimeRef.current;
+      const currentTime = getCurrentTime();
       const video = videoRef.current;
       const outPath = previewFilePath
         ? await captureFrameFfmpeg({ customOutDir, filePath, currentTime, captureFormat, enableTransferTimestamps })
@@ -1232,7 +1230,7 @@ const App = memo(() => {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [filePath, captureFormat, customOutDir, previewFilePath, outputDir, enableTransferTimestamps, hideAllNotifications]);
+  }, [filePath, getCurrentTime, previewFilePath, customOutDir, captureFormat, enableTransferTimestamps, hideAllNotifications, outputDir]);
 
   const changePlaybackRate = useCallback((dir, rateMultiplier) => {
     if (canvasPlayerEnabled) {
@@ -1250,35 +1248,34 @@ const App = memo(() => {
     }
   }, [playing, canvasPlayerEnabled]);
 
-  const firstSegmentAtCursorIndex = useMemo(() => {
-    const segmentsAtCursorIndexes = findSegmentsAtCursor(apparentCutSegments, commandedTime);
-    return segmentsAtCursorIndexes[0];
-  }, [apparentCutSegments, commandedTime]);
-
-  const segmentAtCursorRef = useRef();
-
   const segmentAtCursor = useMemo(() => {
-    const segment = cutSegments[firstSegmentAtCursorIndex];
-    segmentAtCursorRef.current = segment;
-    return segment;
-  }, [cutSegments, firstSegmentAtCursorIndex]);
+    const segmentsAtCursorIndexes = findSegmentsAtCursor(apparentCutSegments, commandedTime);
+    const firstSegmentAtCursorIndex = segmentsAtCursorIndexes[0];
+
+    return cutSegments[firstSegmentAtCursorIndex];
+  }, [apparentCutSegments, commandedTime, cutSegments]);
 
   const splitCurrentSegment = useCallback(() => {
-    const segmentAtCursor2 = segmentAtCursorRef.current;
-    if (!segmentAtCursor2) {
+    const currentTime = getCurrentTime();
+    const segmentsAtCursorIndexes = findSegmentsAtCursor(apparentCutSegments, currentTime);
+
+    if (segmentsAtCursorIndexes.length === 0) {
       errorToast(i18n.t('No segment to split. Please move cursor over the segment you want to split'));
       return;
     }
 
-    const getNewName = (oldName, suffix) => oldName && `${segmentAtCursor2.name} ${suffix}`;
+    const firstSegmentAtCursorIndex = segmentsAtCursorIndexes[0];
+    const segment = cutSegments[firstSegmentAtCursorIndex];
 
-    const firstPart = createSegmentAndIncrementCount({ name: getNewName(segmentAtCursor2.name, '1'), start: segmentAtCursor2.start, end: currentTimeRef.current });
-    const secondPart = createSegmentAndIncrementCount({ name: getNewName(segmentAtCursor2.name, '2'), start: currentTimeRef.current, end: segmentAtCursor2.end });
+    const getNewName = (oldName, suffix) => oldName && `${segment.name} ${suffix}`;
+
+    const firstPart = createSegmentAndIncrementCount({ name: getNewName(segment.name, '1'), start: segment.start, end: currentTime });
+    const secondPart = createSegmentAndIncrementCount({ name: getNewName(segment.name, '2'), start: currentTime, end: segment.end });
 
     const newSegments = [...cutSegments];
     newSegments.splice(firstSegmentAtCursorIndex, 1, firstPart, secondPart);
     setCutSegments(newSegments);
-  }, [createSegmentAndIncrementCount, cutSegments, firstSegmentAtCursorIndex, setCutSegments]);
+  }, [apparentCutSegments, createSegmentAndIncrementCount, cutSegments, getCurrentTime, setCutSegments]);
 
   const loadCutSegments = useCallback((edl, append = false) => {
     const validEdl = edl.filter((row) => (
@@ -1425,10 +1422,10 @@ const App = memo(() => {
   const jumpSeg = useCallback((val) => setCurrentSegIndex((old) => Math.max(Math.min(old + val, cutSegments.length - 1), 0)), [cutSegments.length]);
 
   const seekClosestKeyframe = useCallback((direction) => {
-    const time = findNearestKeyFrameTime({ time: currentTimeRef.current, direction });
+    const time = findNearestKeyFrameTime({ time: getCurrentTime(), direction });
     if (time == null) return;
     seekAbs(time);
-  }, [findNearestKeyFrameTime, seekAbs]);
+  }, [findNearestKeyFrameTime, getCurrentTime, seekAbs]);
 
   const seekAccelerationRef = useRef(1);
 
@@ -2403,6 +2400,7 @@ const App = memo(() => {
             hasAudio={hasAudio}
             keyframesEnabled={keyframesEnabled}
             toggleKeyframesEnabled={toggleKeyframesEnabled}
+            detectedFps={detectedFps}
           />
         </motion.div>
 
