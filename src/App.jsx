@@ -37,7 +37,7 @@ import ExportConfirm from './ExportConfirm';
 import ValueTuner from './components/ValueTuner';
 import VolumeControl from './components/VolumeControl';
 import SubtitleControl from './components/SubtitleControl';
-import BatchFile from './components/BatchFile';
+import BatchFilesList from './components/BatchFilesList';
 import ConcatDialog from './components/ConcatDialog';
 import Loading from './components/Loading';
 
@@ -2238,29 +2238,15 @@ const App = memo(() => {
         <div style={{ flexGrow: 1, display: 'flex', overflowY: 'hidden' }}>
           <AnimatePresence>
             {showLeftBar && (
-              <motion.div
-                className="no-user-select"
-                style={{ width: leftBarWidth, background: timelineBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column', overflowY: 'hidden', overflowX: 'hidden', resize: 'horizontal' }}
-                initial={{ x: -leftBarWidth }}
-                animate={{ x: 0 }}
-                exit={{ x: -leftBarWidth }}
-              >
-                <div style={{ background: controlsBackground, fontSize: 14, paddingBottom: 7, paddingTop: 3, paddingLeft: 10, paddingRight: 5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  {t('Batch file list')}
-
-                  <div style={{ flexGrow: 1 }} />
-
-                  {batchFiles.length > 1 && <MergeColumnsIcon role="button" title={t('Merge/concatenate files')} color="white" style={{ marginRight: 10, cursor: 'pointer' }} onClick={() => setConcatDialogVisible(true)} />}
-
-                  <FaTimes size={18} role="button" style={{ cursor: 'pointer', color: 'white' }} onClick={() => closeBatch()} title={t('Close batch')} />
-                </div>
-
-                <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
-                  {batchFiles.map(({ path, name }) => (
-                    <BatchFile key={path} path={path} name={name} filePath={filePath} onOpen={batchOpenSingleFile} onDelete={removeBatchFile} />
-                  ))}
-                </div>
-              </motion.div>
+              <BatchFilesList
+                filePath={filePath}
+                width={leftBarWidth}
+                batchFiles={batchFiles}
+                batchOpenSingleFile={batchOpenSingleFile}
+                removeBatchFile={removeBatchFile}
+                setConcatDialogVisible={setConcatDialogVisible}
+                closeBatch={closeBatch}
+              />
             )}
           </AnimatePresence>
 
