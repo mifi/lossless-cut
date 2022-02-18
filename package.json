@@ -7,7 +7,9 @@
   "main": "public/electron.js",
   "homepage": "./",
   "scripts": {
-    "start": "concurrently -k \"cross-env BROWSER=none PORT=3001 DISABLE_ESLINT_PLUGIN=true react-scripts start\" \"wait-on http://localhost:3001 && electron .\"",
+    "start": "concurrently -k \"npm run start:frontend\" \"npm run start:electron\"",
+    "start:frontend": "cross-env BROWSER=none PORT=3001 DISABLE_ESLINT_PLUGIN=true react-scripts start",
+    "start:electron": "wait-on http://localhost:3001 && electron .",
     "icon-gen": "mkdirp icon-build build-resources/appx && node icon-gen.js",
     "download-ffmpeg-mac": "mkdir -p ffmpeg/darwin && cd ffmpeg/darwin && wget https://github.com/mifi/ffmpeg-build-script/releases/download/n4.4.1/ffmpeg -O ffmpeg && wget https://github.com/mifi/ffmpeg-build-script/releases/download/n4.4.1/ffprobe -O ffprobe && chmod +x ffmpeg && chmod +x ffprobe",
     "download-ffmpeg-linux": "mkdir -p ffmpeg/linux && cd ffmpeg/linux && wget https://github.com/mifi/ffmpeg-builds/releases/download/4.4.1/ffmpeg-release-amd64-static.tar.xz -O ffmpeg.xz && tar xvf ffmpeg.xz ffmpeg-4.4.1-amd64-static/ffmpeg ffmpeg-4.4.1-amd64-static/ffprobe --strip-components=1",
