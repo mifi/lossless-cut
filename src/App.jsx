@@ -3,7 +3,6 @@ import { unstable_batchedUpdates as batchedUpdates } from 'react-dom';
 import { FaAngleLeft, FaWindowClose, FaTimes } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence, motion } from 'framer-motion';
-import Lottie from 'react-lottie-player';
 import { Table, SideSheet, Button, Position, ForkIcon, DisableIcon, Select, ThemeProvider, MergeColumnsIcon } from 'evergreen-ui';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
@@ -40,9 +39,10 @@ import VolumeControl from './components/VolumeControl';
 import SubtitleControl from './components/SubtitleControl';
 import BatchFile from './components/BatchFile';
 import ConcatDialog from './components/ConcatDialog';
+import Loading from './components/Loading';
 
 import { loadMifiLink } from './mifi';
-import { primaryColor, controlsBackground, timelineBackground } from './colors';
+import { controlsBackground, timelineBackground } from './colors';
 import allOutFormats from './outFormats';
 import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
@@ -67,8 +67,6 @@ import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurat
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags } from './segments';
-
-import loadingLottie from './7077-magic-flow.json';
 
 
 const isDev = window.require('electron-is-dev');
@@ -2316,35 +2314,7 @@ const App = memo(() => {
             )}
 
             <AnimatePresence>
-              {working && (
-                <div style={{ position: 'absolute', zIndex: 1, bottom: 0, top: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <motion.div
-                    style={{ background: primaryColor, boxShadow: `${primaryColor} 0px 0px 20px 25px`, borderRadius: 20, paddingBottom: 15, color: 'white', textAlign: 'center', fontSize: 14 }}
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0 }}
-                  >
-                    <div style={{ width: 150, height: 150 }}>
-                      <Lottie
-                        loop
-                        animationData={loadingLottie}
-                        play
-                        style={{ width: '170%', height: '130%', marginLeft: '-35%', marginTop: '-29%', pointerEvents: 'none' }}
-                      />
-                    </div>
-
-                    <div style={{ marginTop: 10, width: 150 }}>
-                      {working}...
-                    </div>
-
-                    {(cutProgress != null) && (
-                      <div style={{ marginTop: 10 }}>
-                        {`${(cutProgress * 100).toFixed(1)} %`}
-                      </div>
-                    )}
-                  </motion.div>
-                </div>
-              )}
+              {working && <Loading text={working} cutProgress={cutProgress} />}
             </AnimatePresence>
 
             {tunerVisible && renderTuner(tunerVisible)}
