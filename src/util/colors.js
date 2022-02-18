@@ -1,20 +1,12 @@
 import color from 'color';
 
-// https://github.com/mock-end/random-color/blob/master/index.js
-/* eslint-disable */
-function getColor(saturation, value, n) {
-  var ratioMul = 0.618033988749895;
-  var initialHue = 0.65;
+// http://phrogz.net/css/distinct-colors.html
+const colorStrings = '#ff5100, #ffc569, #ddffd1, #00ccff, #e9d1ff, #ff0084, #ff6975, #ffe6d1, #ffff69, #69ff96, #008cff, #ae00ff, #ff002b, #ff8c00, #8cff00, #69ffff, #0044ff, #ff00d4, #ffd1d9'.split(',').map((str) => str.trim());
+const colors = colorStrings.map((str) => color(str));
 
-  const hue = (initialHue + ((n + 1) * ratioMul)) % 1;
-
-  return color({
-    h: hue * 360,
-    s: saturation * 100,
-    v: value * 100,
-  });
-};
-/* eslint-enable */
+function getColor(n) {
+  return colors[n % colors.length];
+}
 
 // eslint-disable-next-line import/prefer-default-export
 export function getSegColor(seg) {
@@ -27,5 +19,5 @@ export function getSegColor(seg) {
   }
   const { segIndex } = seg;
 
-  return getColor(1, 0.95, segIndex);
+  return getColor(segIndex);
 }

@@ -6,8 +6,8 @@ const SegmentCutpointButton = ({ currentCutSeg, side, Icon, onClick, title, styl
   const segColor = getSegColor(currentCutSeg);
 
   const start = side === 'start';
-  const border = `4px solid ${segColor.lighten(0.5).string()}`;
-  const backgroundColor = segColor.lighten(0.5).alpha(0.5).string();
+  const border = `4px solid ${segColor.lighten(0.1).string()}`;
+  const backgroundColor = segColor.alpha(0.5).string();
 
   return (
     <Icon

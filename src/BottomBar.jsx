@@ -61,8 +61,10 @@ const BottomBar = memo(({
 
     const backgroundColor = seg && getSegColor(seg).alpha(0.5).string();
     const opacity = seg ? undefined : 0.3;
+    const text = seg ? `${newIndex + 1}` : '-';
+    const wide = text.length > 1;
     const segButtonStyle = {
-      backgroundColor, opacity, padding: 6, borderRadius: 10, color: 'white', fontSize: 14, width: 7, lineHeight: '11px', fontWeight: 'bold', margin: '0 5px',
+      backgroundColor, opacity, padding: `6px ${wide ? 4 : 6}px`, borderRadius: 10, color: 'white', fontSize: wide ? 12 : 14, width: 20, boxSizing: 'border-box', letterSpacing: -1, lineHeight: '10px', fontWeight: 'bold', margin: '0 6px',
     };
 
     return (
@@ -72,7 +74,7 @@ const BottomBar = memo(({
         title={`${direction > 0 ? t('Select next segment') : t('Select previous segment')} (${newIndex + 1})`}
         onClick={() => seg && setCurrentSegIndex(newIndex)}
       >
-        {seg ? newIndex + 1 : '-'}
+        {text}
       </div>
     );
   }
@@ -86,7 +88,7 @@ const BottomBar = memo(({
 
     const isCutTimeManualSet = () => cutTimeManual !== undefined;
 
-    const border = `1px solid ${getSegColor(currentCutSeg).desaturate(0.3).string()}`;
+    const border = `1px solid ${getSegColor(currentCutSeg).alpha(0.8).string()}`;
 
     const cutTimeInputStyle = {
       background: 'white', border, borderRadius: 5, color: 'rgba(0, 0, 0, 0.7)', fontSize: 13, textAlign: 'center', padding: '1px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 0 : 5, marginRight: isStart ? 5 : 0, boxSizing: 'border-box', fontFamily: 'inherit', width: 90, outline: 'none',

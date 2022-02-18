@@ -158,13 +158,13 @@ const App = memo(() => {
     segCounterRef.current = 0;
   }, []);
 
-  const createSegmentAndIncrementCount = useCallback((segment) => {
+  const createIndexedSegment = useCallback(({ segment, incrementCount } = {}) => {
     const ret = createSegment({ segIndex: segCounterRef.current, ...segment });
-    segCounterRef.current += 1;
+    if (incrementCount) segCounterRef.current += 1;
     return ret;
   }, []);
 
-  const createInitialCutSegments = useCallback(() => [createSegmentAndIncrementCount()], [createSegmentAndIncrementCount]);
+  const createInitialCutSegments = useCallback(() => [createIndexedSegment()], [createIndexedSegment]);
 
   const [currentSegIndex, setCurrentSegIndex] = useState(0);
   const [cutStartTimeManual, setCutStartTimeManual] = useState();
@@ -474,7 +474,7 @@ const App = memo(() => {
 
       const cutSegmentsNew = [
         ...cutSegments,
-        createSegmentAndIncrementCount({ start: suggestedStart }),
+        createIndexedSegment({ segment: { start: suggestedStart }, incrementCount: true }),
       ];
 
       setCutSegments(cutSegmentsNew);
@@ -482,7 +482,7 @@ const App = memo(() => {
     } catch (err) {
       console.error(err);
     }
-  }, [currentCutSeg.start, currentCutSeg.end, getCurrentTime, cutSegments, createSegmentAndIncrementCount, setCutSegments]);
+  }, [currentCutSeg.start, currentCutSeg.end, getCurrentTime, cutSegments, createIndexedSegment, setCutSegments]);
 
   const setCutStart = useCallback(() => {
     if (!filePath) return;
@@ -1269,13 +1269,13 @@ const App = memo(() => {
 
     const getNewName = (oldName, suffix) => oldName && `${segment.name} ${suffix}`;
 
-    const firstPart = createSegmentAndIncrementCount({ name: getNewName(segment.name, '1'), start: segment.start, end: currentTime });
-    const secondPart = createSegmentAndIncrementCount({ name: getNewName(segment.name, '2'), start: currentTime, end: segment.end });
+    const firstPart = createIndexedSegment({ segment: { name: getNewName(segment.name, '1'), start: segment.start, end: currentTime }, incrementCount: true });
+    const secondPart = createIndexedSegment({ segment: { name: getNewName(segment.name, '2'), start: currentTime, end: segment.end }, incrementCount: true });
 
     const newSegments = [...cutSegments];
     newSegments.splice(firstSegmentAtCursorIndex, 1, firstPart, secondPart);
     setCutSegments(newSegments);
-  }, [apparentCutSegments, createSegmentAndIncrementCount, cutSegments, getCurrentTime, setCutSegments]);
+  }, [apparentCutSegments, createIndexedSegment, cutSegments, getCurrentTime, setCutSegments]);
 
   const loadCutSegments = useCallback((edl, append = false) => {
     const validEdl = edl.filter((row) => (
@@ -1292,11 +1292,11 @@ const App = memo(() => {
       clearSegCounter();
     }
     setCutSegments((existingSegments) => {
-      const newSegments = validEdl.map(createSegmentAndIncrementCount);
+      const newSegments = validEdl.map((segment) => createIndexedSegment({ segment, incrementCount: true }));
       if (append && existingSegments.length > 1) return [...existingSegments, ...newSegments];
       return newSegments;
     });
-  }, [clearSegCounter, createSegmentAndIncrementCount, setCutSegments]);
+  }, [clearSegCounter, createIndexedSegment, setCutSegments]);
 
   const loadEdlFile = useCallback(async ({ path, type, append }) => {
     console.log('Loading EDL file', type, path, append);

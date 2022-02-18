@@ -72,7 +72,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 
     const segColor = getSegColor(seg);
 
-    return <b style={{ color: 'white', padding: '0 4px', marginRight: 3, background: segColor.alpha(0.5).string(), border: `1px solid ${isActive ? segColor.lighten(0.5).string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
+    return <b style={{ color: 'white', padding: '0 4px', marginRight: 3, marginLeft: -3, background: segColor.alpha(0.5).string(), border: `1px solid ${isActive ? segColor.lighten(0.3).string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
   }
 
   const timeStr = useMemo(() => `${formatTimecode({ seconds: seg.start })} - ${formatTimecode({ seconds: seg.end })}`, [seg.start, seg.end, formatTimecode]);
@@ -168,8 +168,8 @@ const SegmentList = memo(({
   }
 
   function renderFooter() {
-    const currentSegColor = getSegColor(currentCutSeg).alpha(0.5).desaturate(0.4).string();
-    const segAtCursorColor = getSegColor(segmentAtCursor).desaturate(0.4).alpha(0.5).string();
+    const currentSegColor = getSegColor(currentCutSeg).alpha(0.5).string();
+    const segAtCursorColor = getSegColor(segmentAtCursor).alpha(0.5).string();
 
     function renderExportEnabledCheckBox() {
       const segmentExportEnabled = currentCutSeg && enabledSegmentsRaw.some((s) => s.segId === currentCutSeg.segId);

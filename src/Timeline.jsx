@@ -267,9 +267,9 @@ const Timeline = memo(({
                 <TimelineSeg
                   key={seg.segId}
                   segNum={i}
-                  segBgColor={segColor.alpha(0.5).string()}
-                  segActiveBgColor={segColor.lighten(0.5).alpha(0.5).string()}
-                  segBorderColor={segColor.lighten(0.5).string()}
+                  segBgColor={segColor.alpha(0.6).string()}
+                  segActiveBgColor={segColor.alpha(0.7).string()}
+                  segBorderColor={segColor.lighten(0.2).string()}
                   onSegClick={setCurrentSegIndex}
                   isActive={i === currentSegIndexSafe}
                   duration={durationSafe}
