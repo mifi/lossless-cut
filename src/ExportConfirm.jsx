@@ -39,7 +39,7 @@ const warningStyle = { color: '#faa', fontSize: '80%' };
 const HelpIcon = ({ onClick }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', verticalAlign: 'middle', marginLeft: 5 }} />;
 
 const ExportConfirm = memo(({
-  autoMerge, areWeCutting, enabledOutSegments, visible, onClosePress, onExportConfirm, keyframeCut, toggleKeyframeCut,
+  autoMerge, areWeCutting, enabledSegments, willMerge, visible, onClosePress, onExportConfirm, keyframeCut, toggleKeyframeCut,
   setAutoMerge, renderOutFmt, preserveMovData, togglePreserveMovData, movFastStart, toggleMovFastStart, avoidNegativeTs, setAvoidNegativeTs,
   changeOutDir, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown,
   exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, outFormat,
@@ -97,9 +97,7 @@ const ExportConfirm = memo(({
 
   const outSegTemplateHelpIcon = <HelpIcon onClick={onOutSegTemplateHelpPress} />;
 
-  const willMerge = autoMerge && enabledOutSegments.length >= 2;
-
-  const canEditTemplate = !autoDeleteMergedSegments && !segmentsToChaptersOnly && enabledOutSegments.length >= 2;
+  const canEditTemplate = !willMerge || !autoDeleteMergedSegments;
 
   // https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container
   return (
@@ -119,7 +117,7 @@ const ExportConfirm = memo(({
 
                 <h2 style={{ marginTop: 0 }}>{t('Export options')}</h2>
                 <ul>
-                  {enabledOutSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: enabledOutSegments.length })} <MergeExportButton autoMerge={autoMerge} enabledOutSegments={enabledOutSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} segmentsToChaptersOnly={segmentsToChaptersOnly} setSegmentsToChaptersOnly={setSegmentsToChaptersOnly} /></li>}
+                  {enabledSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: enabledSegments.length })} <MergeExportButton autoMerge={autoMerge} enabledSegments={enabledSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} segmentsToChaptersOnly={segmentsToChaptersOnly} setSegmentsToChaptersOnly={setSegmentsToChaptersOnly} /></li>}
                   <li>
                     {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
                     <HelpIcon onClick={onOutFmtHelpPress} />
@@ -140,7 +138,7 @@ const ExportConfirm = memo(({
 
                 <h3>{t('Advanced options')}</h3>
 
-                {willMerge && !segmentsToChaptersOnly && (
+                {willMerge && (
                   <ul>
                     <li>
                       {t('Create chapters from merged segments? (slow)')} <Button height={20} onClick={toggleSegmentsToChapters}>{segmentsToChapters ? t('Yes') : t('No')}</Button>
@@ -156,7 +154,7 @@ const ExportConfirm = memo(({
                 <p>{t('Depending on your specific file/player, you may have to try different options for best results.')}</p>
 
                 <ul>
-                  {!segmentsToChaptersOnly && (
+                  {areWeCutting && (
                     <li>
                       {t('Cut mode:')} <KeyframeCutButton keyframeCut={keyframeCut} onClick={withBlur(() => toggleKeyframeCut(false))} />
                       <HelpIcon onClick={onKeyframeCutHelpPress} /> {!keyframeCut && <span style={warningStyle}>{t('Note: Keyframe cut is recommended for most common files')}</span>}
@@ -209,7 +207,7 @@ const ExportConfirm = memo(({
               exit={{ scale: 0.7, opacity: 0 }}
               transition={{ duration: 0.4, easings: ['easeOut'] }}
             >
-              <ExportButton enabledOutSegments={enabledOutSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={() => onExportConfirm()} size={1.7} />
+              <ExportButton enabledSegments={enabledSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={() => onExportConfirm()} size={1.7} />
             </motion.div>
           </div>
         </>

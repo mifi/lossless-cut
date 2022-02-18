@@ -6,19 +6,19 @@ import { useTranslation } from 'react-i18next';
 import { primaryColor } from '../colors';
 
 
-const ExportButton = memo(({ enabledOutSegments, areWeCutting, autoMerge, onClick, size = 1 }) => {
+const ExportButton = memo(({ enabledSegments, areWeCutting, autoMerge, onClick, size = 1 }) => {
   const CutIcon = areWeCutting ? FiScissors : FaFileExport;
 
   const { t } = useTranslation();
 
   let exportButtonTitle = t('Export');
-  if (enabledOutSegments.length === 1) {
+  if (enabledSegments.length === 1) {
     exportButtonTitle = t('Export selection');
-  } else if (enabledOutSegments.length > 1) {
-    exportButtonTitle = t('Export {{ num }} segments', { num: enabledOutSegments.length });
+  } else if (enabledSegments.length > 1) {
+    exportButtonTitle = t('Export {{ num }} segments', { num: enabledSegments.length });
   }
 
-  const exportButtonText = autoMerge && enabledOutSegments && enabledOutSegments.length > 1 ? t('Export+merge') : t('Export');
+  const exportButtonText = autoMerge && enabledSegments && enabledSegments.length > 1 ? t('Export+merge') : t('Export');
 
   return (
     <div

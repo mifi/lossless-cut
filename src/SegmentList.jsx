@@ -123,39 +123,41 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 });
 
 const SegmentList = memo(({
-  formatTimecode, cutSegments, outSegments, getFrameCount, onSegClick,
+  formatTimecode, apparentCutSegments, inverseCutSegments, getFrameCount, onSegClick,
   currentSegIndex, invertCutSegments,
   updateSegOrder, updateSegOrders, addCutSegment, removeCutSegment,
   onLabelSegmentPress, currentCutSeg, segmentAtCursor, toggleSideBar, splitCurrentSegment,
-  enabledOutSegments, enabledOutSegmentsRaw, onExportSingleSegmentClick, onExportSegmentEnabledToggle, onExportSegmentDisableAll, onExportSegmentEnableAll,
+  enabledSegments, enabledSegmentsRaw, onExportSingleSegmentClick, onExportSegmentEnabledToggle, onExportSegmentDisableAll, onExportSegmentEnableAll,
   jumpSegStart, jumpSegEnd, simpleMode, onViewSegmentTagsPress,
 }) => {
   const { t } = useTranslation();
 
-  const sortableList = outSegments.map((seg) => ({ id: seg.segId, seg }));
+  const segments = invertCutSegments ? inverseCutSegments : apparentCutSegments;
+
+  const sortableList = segments.map((seg) => ({ id: seg.segId, seg }));
 
   const setSortableList = useCallback((newList) => {
-    if (isEqual(outSegments.map((s) => s.segId), newList.map((l) => l.id))) return; // No change
+    if (isEqual(segments.map((s) => s.segId), newList.map((l) => l.id))) return; // No change
     updateSegOrders(newList.map((list) => list.id));
-  }, [outSegments, updateSegOrders]);
+  }, [segments, updateSegOrders]);
 
   let headerText = t('Segments to export:');
-  if (outSegments.length === 0) {
+  if (segments.length === 0) {
     if (invertCutSegments) headerText = t('Make sure you have no overlapping segments.');
     else headerText = t('No segments to export.');
   }
 
   async function onReorderSegsPress(index) {
-    if (cutSegments.length < 2) return;
+    if (apparentCutSegments.length < 2) return;
     const { value } = await Swal.fire({
       title: `${t('Change order of segment')} ${index + 1}`,
-      text: `Please enter a number from 1 to ${cutSegments.length} to be the new order for the current segment`,
+      text: `Please enter a number from 1 to ${apparentCutSegments.length} to be the new order for the current segment`,
       input: 'text',
       inputValue: index + 1,
       showCancelButton: true,
       inputValidator: (v) => {
         const parsed = parseInt(v, 10);
-        return Number.isNaN(parsed) || parsed > cutSegments.length || parsed < 1 ? t('Invalid number entered') : undefined;
+        return Number.isNaN(parsed) || parsed > apparentCutSegments.length || parsed < 1 ? t('Invalid number entered') : undefined;
       },
     });
 
@@ -170,13 +172,13 @@ const SegmentList = memo(({
     const segAtCursorColor = getSegColor(segmentAtCursor).desaturate(0.4).alpha(0.5).string();
 
     function renderExportEnabledCheckBox() {
-      const segmentExportEnabled = currentCutSeg && enabledOutSegmentsRaw.some((s) => s.segId === currentCutSeg.segId);
+      const segmentExportEnabled = currentCutSeg && enabledSegmentsRaw.some((s) => s.segId === currentCutSeg.segId);
       const Icon = segmentExportEnabled ? FaCheck : FaTimes;
 
       return <Icon size={24} title={segmentExportEnabled ? t('Include this segment in export') : t('Exclude this segment from export')} style={{ ...buttonBaseStyle, backgroundColor: currentSegColor }} role="button" onClick={() => onExportSegmentEnabledToggle(currentCutSeg)} />;
     }
 
-    const segmentsTotal = enabledOutSegments.reduce((acc, { start, end }) => (end - start) + acc, 0);
+    const segmentsTotal = enabledSegments.reduce((acc, { start, end }) => (end - start) + acc, 0);
 
     return (
       <>
@@ -191,7 +193,7 @@ const SegmentList = memo(({
 
           <FaMinus
             size={24}
-            style={{ ...buttonBaseStyle, background: cutSegments.length >= 2 ? currentSegColor : neutralButtonColor }}
+            style={{ ...buttonBaseStyle, background: apparentCutSegments.length >= 2 ? currentSegColor : neutralButtonColor }}
             role="button"
             title={`${t('Remove segment')} ${currentSegIndex + 1}`}
             onClick={() => removeCutSegment(currentSegIndex)}
@@ -253,7 +255,7 @@ const SegmentList = memo(({
 
         <ReactSortable list={sortableList} setList={setSortableList} sort={!invertCutSegments}>
           {sortableList.map(({ id, seg }, index) => {
-            const enabled = !invertCutSegments && enabledOutSegmentsRaw.includes(seg);
+            const enabled = !invertCutSegments && enabledSegmentsRaw.includes(seg);
             return (
               <Segment
                 key={id}
@@ -283,7 +285,7 @@ const SegmentList = memo(({
         </ReactSortable>
       </div>
 
-      {outSegments.length > 0 && renderFooter()}
+      {segments.length > 0 && renderFooter()}
     </>
   );
 });

@@ -13,7 +13,7 @@ const fs = window.require('fs-extra');
 const stringToStream = window.require('string-to-stream');
 
 async function writeChaptersFfmetadata(outDir, chapters) {
-  if (!chapters) return undefined;
+  if (!chapters || chapters.length === 0) return undefined;
 
   const path = join(outDir, `ffmetadata-${new Date().getTime()}.txt`);
 
@@ -21,7 +21,7 @@ async function writeChaptersFfmetadata(outDir, chapters) {
     const nameOut = name || `Chapter ${i + 1}`;
     return `[CHAPTER]\nTIMEBASE=1/1000\nSTART=${Math.floor(start * 1000)}\nEND=${Math.floor(end * 1000)}\ntitle=${nameOut}`;
   }).join('\n\n');
-  // console.log(ffmetadata);
+  console.log('Writing chapters', ffmetadata);
   await fs.writeFile(path, ffmetadata);
   return path;
 }
@@ -216,7 +216,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
     const outFiles = [];
 
-    const chaptersPath = chapters ? await writeChaptersFfmetadata(outputDir, chapters) : undefined;
+    const chaptersPath = await writeChaptersFfmetadata(outputDir, chapters);
 
     try {
       // eslint-disable-next-line no-restricted-syntax
