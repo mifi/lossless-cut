@@ -293,3 +293,23 @@ export const isOutOfSpaceError = (err) => (
   err && (err.exitCode === 1 || err.code === 'ENOENT')
   && typeof err.stderr === 'string' && err.stderr.includes('No space left on device')
 );
+
+// https://stackoverflow.com/a/2450976/6519037
+export function shuffleArray(arrayIn) {
+  const array = [...arrayIn];
+  let currentIndex = array.length;
+  let randomIndex;
+
+  // While there remain elements to shuffle...
+  while (currentIndex !== 0) {
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}

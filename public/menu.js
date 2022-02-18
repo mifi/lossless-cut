@@ -207,6 +207,12 @@ module.exports = (app, mainWindow, newVersion) => {
                 mainWindow.webContents.send('invertAllCutSegments');
               },
             },
+            {
+              label: i18n.t('Shuffle segments order'),
+              click() {
+                mainWindow.webContents.send('shuffleSegments');
+              },
+            },
           ],
         },
         {

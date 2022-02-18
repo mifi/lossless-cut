@@ -59,7 +59,7 @@ import {
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   hasDuplicates, havePermissionToReadFile, isMac, resolvePathIfNeeded, pathExists, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, getHtml5ifiedPath, isStreamThumbnail, getAudioStreams, getVideoStreams, isOutOfSpaceError,
+  deleteFiles, getHtml5ifiedPath, isStreamThumbnail, getAudioStreams, getVideoStreams, isOutOfSpaceError, shuffleArray,
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
@@ -178,6 +178,8 @@ const App = memo(() => {
     clearSegCounter();
     setCutSegments(createInitialCutSegments());
   }, [clearSegCounter, createInitialCutSegments, setCutSegments]);
+
+  const shuffleSegments = useCallback(() => setCutSegments((oldSegments) => shuffleArray(oldSegments)), [setCutSegments]);
 
   // Store "working" in a ref so we can avoid race conditions
   const workingRef = useRef(working);
@@ -2016,6 +2018,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
     electron.ipcRenderer.on('openSendReportDialog', openSendReportDialog2);
     electron.ipcRenderer.on('clearSegments', clearSegments);
+    electron.ipcRenderer.on('shuffleSegments', shuffleSegments);
     electron.ipcRenderer.on('createNumSegments', createNumSegments2);
     electron.ipcRenderer.on('createFixedDurationSegments', createFixedDurationSegments2);
     electron.ipcRenderer.on('invertAllCutSegments', invertAllCutSegments);
@@ -2040,6 +2043,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
       electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog2);
       electron.ipcRenderer.removeListener('clearSegments', clearSegments);
+      electron.ipcRenderer.removeListener('shuffleSegments', shuffleSegments);
       electron.ipcRenderer.removeListener('createNumSegments', createNumSegments2);
       electron.ipcRenderer.removeListener('createFixedDurationSegments', createFixedDurationSegments2);
       electron.ipcRenderer.removeListener('invertAllCutSegments', invertAllCutSegments);
