@@ -59,7 +59,7 @@ import {
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, isWindows, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   hasDuplicates, havePermissionToReadFile, isMac, resolvePathIfNeeded, pathExists, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, getHtml5ifiedPath, isStreamThumbnail, getAudioStreams, getVideoStreams, isOutOfSpaceError, shuffleArray,
+  deleteFiles, isStreamThumbnail, getAudioStreams, getVideoStreams, isOutOfSpaceError, shuffleArray,
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
@@ -198,7 +198,7 @@ const App = memo(() => {
   } = useUserPreferences();
 
   const {
-    mergeFiles: ffmpegMergeFiles, html5ifyDummy, cutMultiple, autoMergeSegments, html5ify: ffmpegHtml5ify, fixInvalidDuration,
+    mergeFiles: ffmpegMergeFiles, html5ifyDummy, cutMultiple, autoMergeSegments, html5ify, fixInvalidDuration,
   } = useFfmpegOperations({ filePath, enableTransferTimestamps });
 
   const outSegTemplateOrDefault = outSegTemplate || defaultOutSegTemplate;
@@ -887,31 +887,6 @@ const App = memo(() => {
     if (!hideAllNotifications) toast.fire({ icon: 'info', text: i18n.t('Loaded existing preview file: {{ fileName }}', { fileName }) });
   }, [hideAllNotifications]);
 
-  const html5ify = useCallback(async ({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: hv }) => {
-    const path = getHtml5ifiedPath(cod, fp, speed);
-
-    let audio;
-    if (ha) {
-      if (speed === 'slowest') audio = 'hq';
-      else if (['slow-audio', 'fast-audio', 'fastest-audio'].includes(speed)) audio = 'lq';
-      else if (['fast-audio-remux', 'fastest-audio-remux'].includes(speed)) audio = 'copy';
-    }
-
-    let video;
-    if (hv) {
-      if (speed === 'slowest') video = 'hq';
-      else if (['slow-audio', 'slow'].includes(speed)) video = 'lq';
-      else video = 'copy';
-    }
-
-    try {
-      await ffmpegHtml5ify({ filePath: fp, outPath: path, video, audio, onProgress: setCutProgress });
-    } finally {
-      setCutProgress();
-    }
-    return path;
-  }, [ffmpegHtml5ify]);
-
   const html5ifyAndLoad = useCallback(async (cod, fp, speed, hv, ha) => {
     const usesDummyVideo = ['fastest-audio', 'fastest-audio-remux', 'fastest'].includes(speed);
     console.log('html5ifyAndLoad', { speed, hasVideo: hv, hasAudio: ha, usesDummyVideo });
@@ -929,9 +904,12 @@ const App = memo(() => {
         return path;
       }
 
-      const shouldIncludeVideo = !usesDummyVideo && hv;
-      const path = await html5ify({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: shouldIncludeVideo });
-      return path;
+      try {
+        const shouldIncludeVideo = !usesDummyVideo && hv;
+        return await html5ify({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: shouldIncludeVideo, onProgress: setCutProgress });
+      } finally {
+        setCutProgress();
+      }
     }
 
     const path = await doHtml5ify();
@@ -1069,7 +1047,7 @@ const App = memo(() => {
       const nameSanitized = filenamifyOrNot(name);
 
       const generated = generateSegFileName({ template, segSuffix, inputFileNameWithoutExt: fileNameWithoutExt, ext, segNum, segLabel: nameSanitized, cutFrom: cutFromStr, cutTo: cutToStr, tags: tagsSanitized });
-      return safeOutputFileName ? generated.substr(0, 200) : generated; // If sanitation is enabled, make sure filename is not too long
+      return safeOutputFileName ? generated.substring(0, 200) : generated; // If sanitation is enabled, make sure filename is not too long
     })
   ), [segmentsToExport, filenamifyOrNot, isCustomFormatSelected, fileFormat, filePath, safeOutputFileName]);
 
@@ -1928,6 +1906,7 @@ const App = memo(() => {
 
       const failedFiles = [];
       let i = 0;
+      const setTotalProgress = (fileProgress = 0) => setCutProgress((i + fileProgress) / filePaths.length);
 
       const { selectedOption: speed } = await askForHtml5ifySpeed({ allowedOptions: ['fastest-audio', 'fastest-audio-remux', 'fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'] });
       if (!speed) return;
@@ -1948,14 +1927,14 @@ const App = memo(() => {
             }
 
             // eslint-disable-next-line no-await-in-loop
-            await html5ify({ customOutDir: newCustomOutDir, filePath: path, speed, hasAudio: true, hasVideo: true });
+            await html5ify({ customOutDir: newCustomOutDir, filePath: path, speed, hasAudio: true, hasVideo: true, onProgress: setTotalProgress });
           } catch (err2) {
             console.error('Failed to html5ify', path, err2);
             failedFiles.push(path);
           }
 
           i += 1;
-          setCutProgress(i / filePaths.length);
+          setTotalProgress();
         }
 
         if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}`, timer: null, showConfirmButton: true });
@@ -2050,7 +2029,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('fixInvalidDuration', fixInvalidDuration2);
       electron.ipcRenderer.removeListener('reorderSegsByStartTime', reorderSegsByStartTime);
     };
-  }, [outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile, batchLoadPaths, extractAllStreams, userOpenFiles, openSendReportDialogWithState, setWorking, loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, ensureOutDirAccessible, html5ifyAndLoad, html5ify, loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFileWithConfirm, closeBatch, clearSegments, clearSegCounter, fixInvalidDuration, invertAllCutSegments, getFrameCount, getTimeFromFrameNum, shuffleSegments]);
+  }, [outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile, batchLoadPaths, extractAllStreams, userOpenFiles, openSendReportDialogWithState, setWorking, loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, ensureOutDirAccessible, html5ifyAndLoad, loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFileWithConfirm, closeBatch, clearSegments, clearSegCounter, fixInvalidDuration, invertAllCutSegments, getFrameCount, getTimeFromFrameNum, shuffleSegments, html5ify]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
     try {

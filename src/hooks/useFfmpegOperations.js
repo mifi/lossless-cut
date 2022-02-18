@@ -4,7 +4,7 @@ import flatMapDeep from 'lodash/flatMapDeep';
 import sum from 'lodash/sum';
 import pMap from 'p-map';
 
-import { getOutPath, transferTimestamps, getOutFileExtension, getOutDir, isMac, deleteDispositionValue } from '../util';
+import { getOutPath, transferTimestamps, getOutFileExtension, getOutDir, isMac, deleteDispositionValue, getHtml5ifiedPath } from '../util';
 import { isCuttingStart, isCuttingEnd, handleProgress, getFfCommandLine, getFfmpegPath, getDuration, runFfmpeg, createChaptersFromSegments } from '../ffmpeg';
 
 const execa = window.require('execa');
@@ -354,8 +354,24 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     if (autoDeleteMergedSegments) await pMap(segmentPaths, path => fs.unlink(path), { concurrency: 5 });
   }, [filePath, mergeFiles]);
 
-  const html5ify = useCallback(async ({ filePath: specificFilePath, outPath, video, audio, onProgress }) => {
-    console.log('Making HTML5 friendly version', { specificFilePath, outPath, video, audio });
+  const html5ify = useCallback(async ({ customOutDir, filePath: filePathArg, speed, hasAudio, hasVideo, onProgress }) => {
+    const outPath = getHtml5ifiedPath(customOutDir, filePathArg, speed);
+
+    let audio;
+    if (hasAudio) {
+      if (speed === 'slowest') audio = 'hq';
+      else if (['slow-audio', 'fast-audio', 'fastest-audio'].includes(speed)) audio = 'lq';
+      else if (['fast-audio-remux', 'fastest-audio-remux'].includes(speed)) audio = 'copy';
+    }
+
+    let video;
+    if (hasVideo) {
+      if (speed === 'slowest') video = 'hq';
+      else if (['slow-audio', 'slow'].includes(speed)) video = 'lq';
+      else video = 'copy';
+    }
+
+    console.log('Making HTML5 friendly version', { filePathArg, outPath, video, audio });
 
     let videoArgs;
     let audioArgs;
@@ -428,29 +444,31 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     const ffmpegArgs = [
       '-hide_banner',
 
-      '-i', specificFilePath,
+      '-i', filePathArg,
       ...videoArgs,
       ...audioArgs,
       '-sn',
       '-y', outPath,
     ];
 
-    const duration = await getDuration(specificFilePath);
+    const duration = await getDuration(filePathArg);
     const process = runFfmpeg(ffmpegArgs);
     if (duration) handleProgress(process, duration, onProgress);
 
     const { stdout } = await process;
     console.log(stdout);
 
-    await optionalTransferTimestamps(specificFilePath, outPath);
+    await optionalTransferTimestamps(filePathArg, outPath);
+
+    return outPath;
   }, [optionalTransferTimestamps]);
 
   // This is just used to load something into the player with correct length,
   // so user can seek and then we render frames using ffmpeg
-  const html5ifyDummy = useCallback(async ({ filePath: specificFilePath, outPath, onProgress }) => {
-    console.log('Making HTML5 friendly dummy', { specificFilePath, outPath });
+  const html5ifyDummy = useCallback(async ({ filePath: filePathArg, outPath, onProgress }) => {
+    console.log('Making HTML5 friendly dummy', { filePathArg, outPath });
 
-    const duration = await getDuration(specificFilePath);
+    const duration = await getDuration(filePathArg);
 
     const ffmpegArgs = [
       '-hide_banner',
@@ -468,7 +486,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     const { stdout } = await process;
     console.log(stdout);
 
-    await optionalTransferTimestamps(specificFilePath, outPath);
+    await optionalTransferTimestamps(filePathArg, outPath);
   }, [optionalTransferTimestamps]);
 
   // https://stackoverflow.com/questions/34118013/how-to-determine-webm-duration-using-ffprobe

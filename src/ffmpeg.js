@@ -53,6 +53,7 @@ export function runFfmpeg(args) {
 
 
 export function handleProgress(process, cutDuration, onProgress) {
+  if (!onProgress) return;
   onProgress(0);
 
   const rl = readline.createInterface({ input: process.stderr });
