@@ -183,8 +183,8 @@ export function formatYouTube(segments) {
   }).join('\n');
 }
 
+// because null/undefined is also a valid value (start/end of timeline)
 const safeFormatDuration = (duration) => (duration != null ? formatDuration({ seconds: duration }) : '');
-const safeFormatFrameCount = ({ seconds, getFrameCount }) => (seconds != null ? getFrameCount(seconds) : '');
 
 export const formatSegmentsTimes = (cutSegments) => cutSegments.map(({ start, end, name }) => [
   safeFormatDuration(start),
@@ -192,14 +192,16 @@ export const formatSegmentsTimes = (cutSegments) => cutSegments.map(({ start, en
   name,
 ]);
 
-const formatSegmentsFrameCounts = ({ cutSegments, getFrameCount }) => cutSegments.map(({ start, end, name }) => [
-  safeFormatFrameCount({ seconds: start, getFrameCount }),
-  safeFormatFrameCount({ seconds: end, getFrameCount }),
-  name,
-]);
-
 export async function formatCsvFrames({ cutSegments, getFrameCount }) {
-  return csvStringifyAsync(formatSegmentsFrameCounts({ cutSegments, getFrameCount }));
+  const safeFormatFrameCount = (seconds) => (seconds != null ? getFrameCount(seconds) : '');
+
+  const formatted = cutSegments.map(({ start, end, name }) => [
+    safeFormatFrameCount(start),
+    safeFormatFrameCount(end),
+    name,
+  ]);
+
+  return csvStringifyAsync(formatted);
 }
 
 export async function formatCsvSeconds(cutSegments) {
