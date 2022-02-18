@@ -4,7 +4,7 @@ import { FaAngleLeft, FaWindowClose, FaTimes } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence, motion } from 'framer-motion';
 import Lottie from 'react-lottie-player';
-import { SideSheet, Button, Position, ForkIcon, DisableIcon, Select, ThemeProvider, MergeColumnsIcon } from 'evergreen-ui';
+import { Table, SideSheet, Button, Position, ForkIcon, DisableIcon, Select, ThemeProvider, MergeColumnsIcon } from 'evergreen-ui';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
@@ -27,8 +27,8 @@ import useWaveform from './hooks/useWaveform';
 import NoFileLoaded from './NoFileLoaded';
 import Canvas from './Canvas';
 import TopMenu from './TopMenu';
+import Sheet from './Sheet';
 import HelpSheet from './HelpSheet';
-import SettingsSheet from './SettingsSheet';
 import StreamsSelector from './StreamsSelector';
 import SegmentList from './SegmentList';
 import Settings from './Settings';
@@ -2133,44 +2133,6 @@ const App = memo(() => {
     setTunerVisible(type);
   }, []);
 
-  const renderSettings = useCallback(() => (
-    <Settings
-      changeOutDir={changeOutDir}
-      customOutDir={customOutDir}
-      keyframeCut={keyframeCut}
-      setKeyframeCut={setKeyframeCut}
-      invertCutSegments={invertCutSegments}
-      setInvertCutSegments={setInvertCutSegments}
-      autoSaveProjectFile={autoSaveProjectFile}
-      setAutoSaveProjectFile={setAutoSaveProjectFile}
-      timecodeFormat={timecodeFormat}
-      setTimecodeFormat={setTimecodeFormat}
-      askBeforeClose={askBeforeClose}
-      setAskBeforeClose={setAskBeforeClose}
-      enableAskForImportChapters={enableAskForImportChapters}
-      setEnableAskForImportChapters={setEnableAskForImportChapters}
-      enableAskForFileOpenAction={enableAskForFileOpenAction}
-      setEnableAskForFileOpenAction={setEnableAskForFileOpenAction}
-      ffmpegExperimental={ffmpegExperimental}
-      setFfmpegExperimental={setFfmpegExperimental}
-      invertTimelineScroll={invertTimelineScroll}
-      setInvertTimelineScroll={setInvertTimelineScroll}
-      language={language}
-      setLanguage={setLanguage}
-      hideNotifications={hideNotifications}
-      setHideNotifications={setHideNotifications}
-      autoLoadTimecode={autoLoadTimecode}
-      setAutoLoadTimecode={setAutoLoadTimecode}
-      enableTransferTimestamps={enableTransferTimestamps}
-      setEnableTransferTimestamps={setEnableTransferTimestamps}
-      enableAutoHtml5ify={enableAutoHtml5ify}
-      setEnableAutoHtml5ify={setEnableAutoHtml5ify}
-      AutoExportToggler={AutoExportToggler}
-      renderCaptureFormatButton={renderCaptureFormatButton}
-      onTunerRequested={onTunerRequested}
-    />
-  ), [changeOutDir, customOutDir, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments, autoSaveProjectFile, setAutoSaveProjectFile, timecodeFormat, setTimecodeFormat, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, ffmpegExperimental, setFfmpegExperimental, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, AutoExportToggler, renderCaptureFormatButton, onTunerRequested, enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify]);
-
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);
   }, []);
@@ -2553,11 +2515,51 @@ const App = memo(() => {
           currentCutSeg={currentCutSeg}
         />
 
-        <SettingsSheet
-          visible={settingsVisible}
-          onTogglePress={toggleSettings}
-          renderSettings={renderSettings}
-        />
+        <Sheet visible={settingsVisible} onClosePress={toggleSettings} style={{ background: 'white', color: 'black' }}>
+          <Table style={{ marginTop: 40 }}>
+            <Table.Head>
+              <Table.TextHeaderCell>{t('Settings')}</Table.TextHeaderCell>
+              <Table.TextHeaderCell>{t('Current setting')}</Table.TextHeaderCell>
+            </Table.Head>
+            <Table.Body>
+              <Settings
+                changeOutDir={changeOutDir}
+                customOutDir={customOutDir}
+                keyframeCut={keyframeCut}
+                setKeyframeCut={setKeyframeCut}
+                invertCutSegments={invertCutSegments}
+                setInvertCutSegments={setInvertCutSegments}
+                autoSaveProjectFile={autoSaveProjectFile}
+                setAutoSaveProjectFile={setAutoSaveProjectFile}
+                timecodeFormat={timecodeFormat}
+                setTimecodeFormat={setTimecodeFormat}
+                askBeforeClose={askBeforeClose}
+                setAskBeforeClose={setAskBeforeClose}
+                enableAskForImportChapters={enableAskForImportChapters}
+                setEnableAskForImportChapters={setEnableAskForImportChapters}
+                enableAskForFileOpenAction={enableAskForFileOpenAction}
+                setEnableAskForFileOpenAction={setEnableAskForFileOpenAction}
+                ffmpegExperimental={ffmpegExperimental}
+                setFfmpegExperimental={setFfmpegExperimental}
+                invertTimelineScroll={invertTimelineScroll}
+                setInvertTimelineScroll={setInvertTimelineScroll}
+                language={language}
+                setLanguage={setLanguage}
+                hideNotifications={hideNotifications}
+                setHideNotifications={setHideNotifications}
+                autoLoadTimecode={autoLoadTimecode}
+                setAutoLoadTimecode={setAutoLoadTimecode}
+                enableTransferTimestamps={enableTransferTimestamps}
+                setEnableTransferTimestamps={setEnableTransferTimestamps}
+                enableAutoHtml5ify={enableAutoHtml5ify}
+                setEnableAutoHtml5ify={setEnableAutoHtml5ify}
+                AutoExportToggler={AutoExportToggler}
+                renderCaptureFormatButton={renderCaptureFormatButton}
+                onTunerRequested={onTunerRequested}
+              />
+            </Table.Body>
+          </Table>
+        </Sheet>
 
         <ConcatDialog isShown={batchFiles.length > 0 && concatDialogVisible} onHide={() => setConcatDialogVisible(false)} initialPaths={batchFilePaths} onConcat={mergeFiles} segmentsToChapters={segmentsToChapters} setSegmentsToChapters={setSegmentsToChapters} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} preserveMetadataOnMerge={preserveMetadataOnMerge} setPreserveMetadataOnMerge={setPreserveMetadataOnMerge} preserveMovData={preserveMovData} setPreserveMovData={setPreserveMovData} />
       </div>
