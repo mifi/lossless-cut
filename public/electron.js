@@ -32,7 +32,6 @@ let rendererReady = false;
 let newVersion;
 
 const openFiles = (paths) => mainWindow.webContents.send('file-opened', paths);
-const openFile = (path) => openFiles([path]);
 
 
 // https://github.com/electron/electron/issues/526#issuecomment-563010533
@@ -137,10 +136,9 @@ app.on('ready', async () => {
     const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies
 
     installExtension(REACT_DEVELOPER_TOOLS)
-      .then(name => console.log(`Added Extension: ${name}`))
-      .catch(err => console.log('An error occurred: ', err));
+      .then(name => console.log('Added Extension', name))
+      .catch(err => console.log('Failed to add extension', err));
   }
-
 
   createWindow();
   updateMenu();
@@ -166,6 +164,13 @@ app.on('activate', () => {
 });
 
 let openFileInitial;
+let fileOpened = false;
+
+function openFilesOnce(files) {
+  if (fileOpened) return;
+  fileOpened = true;
+  openFiles(files);
+}
 
 electron.ipcMain.on('renderer-ready', () => {
   rendererReady = true;
@@ -181,13 +186,13 @@ electron.ipcMain.on('renderer-ready', () => {
     ? process.argv.slice(ignoreFirstArgs).filter((arg) => arg && !arg.startsWith('-'))
     : [];
 
-  if (filesToOpen.length > 0) openFiles(filesToOpen);
-  else if (openFileInitial) openFile(openFileInitial);
+  if (filesToOpen.length > 0) openFilesOnce(filesToOpen);
+  else if (openFileInitial) openFilesOnce([openFileInitial]);
 });
 
 // Mac OS open with LosslessCut
 app.on('open-file', (event, path) => {
-  if (rendererReady) openFile(path);
+  if (rendererReady) openFilesOnce([path]);
   else openFileInitial = path;
 });
 
