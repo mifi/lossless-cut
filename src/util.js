@@ -190,7 +190,11 @@ export function generateSegFileName({ template, inputFileNameWithoutExt, segSuff
     SEG_LABEL: segLabel,
     CUT_FROM: cutFrom,
     CUT_TO: cutTo,
-    SEG_TAGS: Object.fromEntries(Object.entries(tags).map(([key, value]) => [`${key.toLocaleUpperCase('en-US')}`, value])),
+    SEG_TAGS: {
+      // allow both original case and uppercase
+      ...tags,
+      ...Object.fromEntries(Object.entries(tags).map(([key, value]) => [`${key.toLocaleUpperCase('en-US')}`, value])),
+    },
   };
   return compiled(data);
 }

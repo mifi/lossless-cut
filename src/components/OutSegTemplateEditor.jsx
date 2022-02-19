@@ -63,17 +63,20 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
     setText(defaultOutSegTemplate);
   }, [setOutSegTemplate]);
 
-  const onToggleClick = useCallback(() => {
+  const onHideClick = useCallback(() => {
+    if (error == null) setShown(false);
+  }, [error]);
+
+  const onShowClick = useCallback(() => {
     if (!shown) setShown(true);
-    else if (error == null) setShown(false);
-  }, [error, shown]);
+  }, [shown]);
 
   const onTextChange = useCallback((e) => setText(e.target.value), []);
 
   return (
     <>
       <div>
-        <span role="button" onClick={onToggleClick} style={{ cursor: 'pointer' }}>
+        <span role="button" onClick={onShowClick} style={{ cursor: shown ? undefined : 'pointer' }}>
           {t('Output name(s):')} {outSegFileNames != null && <HighlightedText style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{outSegFileNames[currentSegIndexSafe] || outSegFileNames[0]}</HighlightedText>}
         </span>
         {helpIcon}
@@ -87,12 +90,15 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
             {outSegFileNames && <Button height={20} onClick={onAllSegmentsPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
             <Button title={t('Whether or not to sanitize output file names (sanitizing removes special characters)')} marginLeft={5} height={20} onClick={toggleSafeOutputFileName} intent={safeOutputFileName ? 'success' : 'danger'}>{safeOutputFileName ? t('Sanitize') : t('No sanitize')}</Button>
             <IconButton title={t('Reset')} icon={ResetIcon} height={20} onClick={reset} marginLeft={5} intent="danger" />
-            <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onToggleClick} marginLeft={5} intent="success" />
+            <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" />
           </div>
           <div>
             {error != null && <Alert intent="danger" appearance="card"><Text>{i18n.t('There is an error in the file name template:')}</Text><br /><Text>{error}</Text></Alert>}
             {/* eslint-disable-next-line no-template-curly-in-string */}
-            <div style={{ fontSize: '.8em', color: 'rgba(255,255,255,0.7)' }}>{`${i18n.t('Variables')}`} {'${FILENAME} ${CUT_FROM} ${CUT_TO} ${SEG_NUM} ${SEG_LABEL} ${SEG_SUFFIX} ${EXT} ${SEG_TAGS.XX}'}</div>
+            <div style={{ fontSize: '.8em', color: 'rgba(255,255,255,0.7)' }}>
+              {`${i18n.t('Variables')}`}{': '}
+              {['FILENAME', 'CUT_FROM', 'CUT_TO', 'SEG_NUM', 'SEG_LABEL', 'SEG_SUFFIX', 'EXT', 'SEG_TAGS.XX'].map((variable) => <span role="button" style={{ cursor: 'pointer', marginRight: '.2em' }} onClick={() => setText((oldText) => `${oldText}\${${variable}}`)}>{variable}</span>)}
+            </div>
           </div>
         </>
       )}

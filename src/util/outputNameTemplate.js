@@ -7,8 +7,6 @@ const isDev = window.require('electron-is-dev');
 
 // eslint-disable-next-line import/prefer-default-export
 export function getOutSegError({ fileNames, filePath, outputDir }) {
-  if (hasDuplicates(fileNames)) return i18n.t('Template results in duplicate file names');
-
   let error;
 
   // eslint-disable-next-line no-restricted-syntax
@@ -45,5 +43,10 @@ export function getOutSegError({ fileNames, filePath, outputDir }) {
       break;
     }
   }
-  return error;
+
+  if (error != null) return error;
+
+  if (hasDuplicates(fileNames)) return i18n.t('Template results in duplicate file names');
+
+  return undefined;
 }
