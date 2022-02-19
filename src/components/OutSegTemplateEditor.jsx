@@ -2,7 +2,7 @@ import React, { memo, useState, useEffect, useCallback } from 'react';
 import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { Button, Alert, IconButton, TickIcon, ResetIcon } from 'evergreen-ui';
+import { Text, Button, Alert, IconButton, TickIcon, ResetIcon } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
@@ -14,7 +14,7 @@ const ReactSwal = withReactContent(Swal);
 
 const inputStyle = { flexGrow: 1, fontFamily: 'inherit', fontSize: '.8em' };
 
-const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe, isOutSegFileNamesValid, safeOutputFileName, toggleSafeOutputFileName }) => {
+const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe, getOutSegError, safeOutputFileName, toggleSafeOutputFileName }) => {
   const [text, setText] = useState(outSegTemplate);
   const [debouncedText] = useDebounce(text, 500);
   const [validText, setValidText] = useState();
@@ -30,9 +30,9 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
     try {
       const generatedOutSegFileNames = generateOutSegFileNames({ template: debouncedText });
       setOutSegFileNames(generatedOutSegFileNames);
-      const isOutSegTemplateValid = isOutSegFileNamesValid(generatedOutSegFileNames);
-      if (!isOutSegTemplateValid) {
-        setError(t('This template will result in invalid file names'));
+      const outSegError = getOutSegError(generatedOutSegFileNames);
+      if (outSegError) {
+        setError(outSegError);
         setValidText();
         return;
       }
@@ -44,9 +44,15 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
       setValidText();
       setError(err.message);
     }
-  }, [debouncedText, generateOutSegFileNames, isOutSegFileNamesValid, t]);
+  }, [debouncedText, generateOutSegFileNames, getOutSegError, t]);
 
-  const onAllSegmentsPreviewPress = () => ReactSwal.fire({ title: t('Resulting segment file names'), html: <div style={{ textAlign: 'left', overflowY: 'auto', maxHeight: 400 }}>{outSegFileNames.map((f) => <div key={f} style={{ marginBottom: 7 }}>{f}</div>)}</div> });
+  const onAllSegmentsPreviewPress = () => ReactSwal.fire({
+    title: t('Resulting segment file names'),
+    html: (
+      <div style={{ textAlign: 'left', overflowY: 'auto', maxHeight: 400 }}>
+        {outSegFileNames.map((f) => <div key={f} style={{ marginBottom: 7 }}>{f}</div>)}
+      </div>
+    ) });
 
   useEffect(() => {
     if (validText != null) setOutSegTemplate(validText);
@@ -84,7 +90,7 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
             <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onToggleClick} marginLeft={5} intent="success" />
           </div>
           <div>
-            {error != null && <Alert intent="danger" appearance="card">{`${i18n.t('There is an error in the file name template:')} ${error}`}</Alert>}
+            {error != null && <Alert intent="danger" appearance="card"><Text>{i18n.t('There is an error in the file name template:')}</Text><br /><Text>{error}</Text></Alert>}
             {/* eslint-disable-next-line no-template-curly-in-string */}
             <div style={{ fontSize: '.8em', color: 'rgba(255,255,255,0.7)' }}>{`${i18n.t('Variables')}`} {'${FILENAME} ${CUT_FROM} ${CUT_TO} ${SEG_NUM} ${SEG_LABEL} ${SEG_SUFFIX} ${EXT} ${SEG_TAGS.XX}'}</div>
           </div>
