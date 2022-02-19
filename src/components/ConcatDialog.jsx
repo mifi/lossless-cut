@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Dialog, Pane, Checkbox, SortAlphabeticalIcon, SortAlphabeticalDescIcon, Button, Paragraph } from 'evergreen-ui';
 import { sortableContainer, sortableElement } from 'react-sortable-hoc';
 import arrayMove from 'array-move';
-import orderBy from 'lodash/orderBy';
 
 const { basename } = window.require('path');
 
@@ -53,7 +52,11 @@ const ConcatDialog = memo(({
 
   const onSortClick = useCallback(() => {
     const newSortDesc = sortDesc == null ? false : !sortDesc;
-    setPaths(orderBy(paths, undefined, [newSortDesc ? 'desc' : 'asc']));
+    const sortedPaths = [...paths];
+    const order = newSortDesc ? -1 : 1;
+    // natural language sort (numeric) https://github.com/mifi/lossless-cut/issues/844
+    sortedPaths.sort((a, b) => order * a.localeCompare(b, 'en-US', { numeric: true }));
+    setPaths(sortedPaths);
     setSortDesc(newSortDesc);
   }, [paths, sortDesc]);
 
