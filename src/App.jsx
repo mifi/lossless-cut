@@ -1680,12 +1680,14 @@ const App = memo(() => {
 
       const isLlcProject = filePathLowerCase.endsWith('.llc');
 
-      // If file is already opened, need to ask the user what to do
-      if (isFileOpened) {
-        const inputOptions = { open: i18n.t('Open the file instead of the current one') };
-        if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
-        else inputOptions.tracks = i18n.t('Include all tracks from the new file');
+      // Need to ask the user what to do if more than one option
+      const inputOptions = {};
+      if (isFileOpened) inputOptions.open = i18n.t('Open the file instead of the current one');
+      if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
+      if (isFileOpened && !isLlcProject) inputOptions.tracks = i18n.t('Include all tracks from the new file');
+      if (batchFiles.length > 0) inputOptions.addToBatch = i18n.t('Add the file to the batch list');
 
+      if (Object.keys(inputOptions).length > 0) {
         const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction(inputOptions) : 'open';
 
         if (openFileResponse === 'open') {
@@ -1699,6 +1701,10 @@ const App = memo(() => {
         if (openFileResponse === 'tracks') {
           await addStreamSourceFile(firstFilePath);
           setStreamsSelectorShown(true);
+          return;
+        }
+        if (openFileResponse === 'addToBatch') {
+          batchLoadPaths([firstFilePath], true);
           return;
         }
         // Dialog canceled:
@@ -1716,7 +1722,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [batchLoadPaths, alwaysConcatMultipleFiles, setWorking, isFileOpened, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile]);
+  }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, batchFiles.length, isFileOpened, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile]);
 
   const userHtml5ifyCurrentFile = useCallback(async () => {
     if (!filePath) return;
