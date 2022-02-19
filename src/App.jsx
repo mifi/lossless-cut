@@ -63,7 +63,7 @@ import {
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, showMergeFilesOpenDialog, openAbout, showEditableJsonDialog } from './dialogs';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags } from './segments';
@@ -676,6 +676,15 @@ const App = memo(() => {
     }
   }, [setWorking, ensureOutDirAccessible, customOutDir, segmentsToChapters, ffmpegMergeFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge]);
 
+  const onMergeFilesClick = useCallback(() => {
+    if (batchFiles.length < 2) {
+      errorToast(i18n.t('Please open at least 2 files to merge, then try again'));
+      return;
+    }
+
+    setConcatDialogVisible(true);
+  }, [batchFiles]);
+
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
 
   const toggleKeyframeCut = useCallback((showMessage) => setKeyframeCut((val) => {
@@ -917,6 +926,53 @@ const App = memo(() => {
     setUsingDummyVideo(usesDummyVideo);
     showUnsupportedFileMessage();
   }, [html5ify, html5ifyDummy, showUnsupportedFileMessage]);
+
+  const batchConvertFormat = useCallback(async () => {
+    if (batchFiles.length < 1) return;
+    const filePaths = batchFiles.map((f) => f.path);
+
+    const failedFiles = [];
+    let i = 0;
+    const setTotalProgress = (fileProgress = 0) => setCutProgress((i + fileProgress) / filePaths.length);
+
+    const { selectedOption: speed } = await askForHtml5ifySpeed({ allowedOptions: ['fastest-audio', 'fastest-audio-remux', 'fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'] });
+    if (!speed) return;
+
+    if (workingRef.current) return;
+    try {
+      setWorking(i18n.t('Batch converting to supported format'));
+      setCutProgress(0);
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const path of filePaths) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const { newCustomOutDir, cancel } = await ensureOutDirAccessible(path);
+          if (cancel) {
+            toast.fire({ title: i18n.t('Aborted') });
+            return;
+          }
+
+          // eslint-disable-next-line no-await-in-loop
+          await html5ify({ customOutDir: newCustomOutDir, filePath: path, speed, hasAudio: true, hasVideo: true, onProgress: setTotalProgress });
+        } catch (err2) {
+          console.error('Failed to html5ify', path, err2);
+          failedFiles.push(path);
+        }
+
+        i += 1;
+        setTotalProgress();
+      }
+
+      if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}`, timer: null, showConfirmButton: true });
+    } catch (err) {
+      errorToast(i18n.t('Failed to batch convert to supported format'));
+      console.error('Failed to html5ify', err);
+    } finally {
+      setWorking();
+      setCutProgress();
+    }
+  }, [batchFiles, ensureOutDirAccessible, html5ify, setWorking]);
 
   const getConvertToSupportedFormat = useCallback((fallback) => rememberConvertToSupportedFormat || fallback, [rememberConvertToSupportedFormat]);
 
@@ -1849,14 +1905,6 @@ const App = memo(() => {
   }, [fileUri, usingPreviewFile, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, filePath, setWorking]);
 
   useEffect(() => {
-    async function showOpenAndMergeDialog() {
-      const files = await showMergeFilesOpenDialog(outputDir);
-      if (files) {
-        batchLoadPaths(files);
-        setConcatDialogVisible(true);
-      }
-    }
-
     async function setStartOffset() {
       const newStartTimeOffset = await promptTimeOffset({
         initialValue: startTimeOffset !== undefined ? formatDuration({ seconds: startTimeOffset }) : undefined,
@@ -1893,54 +1941,6 @@ const App = memo(() => {
         if (edl.length > 0) loadCutSegments(edl, true);
       } catch (err) {
         handleError(err);
-      }
-    }
-
-    async function batchConvertFriendlyFormat() {
-      const title = i18n.t('Select files to batch convert to supported format');
-      const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'], title, message: title });
-      if (canceled || filePaths.length < 1) return;
-
-      const failedFiles = [];
-      let i = 0;
-      const setTotalProgress = (fileProgress = 0) => setCutProgress((i + fileProgress) / filePaths.length);
-
-      const { selectedOption: speed } = await askForHtml5ifySpeed({ allowedOptions: ['fastest-audio', 'fastest-audio-remux', 'fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'] });
-      if (!speed) return;
-
-      if (workingRef.current) return;
-      try {
-        setWorking(i18n.t('Batch converting to supported format'));
-        setCutProgress(0);
-
-        // eslint-disable-next-line no-restricted-syntax
-        for (const path of filePaths) {
-          try {
-            // eslint-disable-next-line no-await-in-loop
-            const { newCustomOutDir, cancel } = await ensureOutDirAccessible(path);
-            if (cancel) {
-              toast.fire({ title: i18n.t('Aborted') });
-              return;
-            }
-
-            // eslint-disable-next-line no-await-in-loop
-            await html5ify({ customOutDir: newCustomOutDir, filePath: path, speed, hasAudio: true, hasVideo: true, onProgress: setTotalProgress });
-          } catch (err2) {
-            console.error('Failed to html5ify', path, err2);
-            failedFiles.push(path);
-          }
-
-          i += 1;
-          setTotalProgress();
-        }
-
-        if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}`, timer: null, showConfirmButton: true });
-      } catch (err) {
-        errorToast(i18n.t('Failed to batch convert to supported format'));
-        console.error('Failed to html5ify', err);
-      } finally {
-        setWorking();
-        setCutProgress();
       }
     }
 
@@ -1981,7 +1981,6 @@ const App = memo(() => {
     electron.ipcRenderer.on('close-file', closeFile2);
     electron.ipcRenderer.on('close-batch-files', closeBatch2);
     electron.ipcRenderer.on('html5ify', userHtml5ifyCurrentFile);
-    electron.ipcRenderer.on('show-merge-dialog', showOpenAndMergeDialog);
     electron.ipcRenderer.on('set-start-offset', setStartOffset);
     electron.ipcRenderer.on('extract-all-streams', extractAllStreams);
     electron.ipcRenderer.on('showStreamsSelector', showStreamsSelector);
@@ -1991,7 +1990,6 @@ const App = memo(() => {
     electron.ipcRenderer.on('openHelp', toggleHelp);
     electron.ipcRenderer.on('openSettings', toggleSettings);
     electron.ipcRenderer.on('openAbout', openAbout);
-    electron.ipcRenderer.on('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
     electron.ipcRenderer.on('openSendReportDialog', openSendReportDialog2);
     electron.ipcRenderer.on('clearSegments', clearSegments);
     electron.ipcRenderer.on('shuffleSegments', shuffleSegments);
@@ -2006,7 +2004,6 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('close-file', closeFile2);
       electron.ipcRenderer.removeListener('close-batch-files', closeBatch2);
       electron.ipcRenderer.removeListener('html5ify', userHtml5ifyCurrentFile);
-      electron.ipcRenderer.removeListener('show-merge-dialog', showOpenAndMergeDialog);
       electron.ipcRenderer.removeListener('set-start-offset', setStartOffset);
       electron.ipcRenderer.removeListener('extract-all-streams', extractAllStreams);
       electron.ipcRenderer.removeListener('showStreamsSelector', showStreamsSelector);
@@ -2016,7 +2013,6 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('openHelp', toggleHelp);
       electron.ipcRenderer.removeListener('openSettings', toggleSettings);
       electron.ipcRenderer.removeListener('openAbout', openAbout);
-      electron.ipcRenderer.removeListener('batchConvertFriendlyFormat', batchConvertFriendlyFormat);
       electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog2);
       electron.ipcRenderer.removeListener('clearSegments', clearSegments);
       electron.ipcRenderer.removeListener('shuffleSegments', shuffleSegments);
@@ -2026,7 +2022,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('fixInvalidDuration', fixInvalidDuration2);
       electron.ipcRenderer.removeListener('reorderSegsByStartTime', reorderSegsByStartTime);
     };
-  }, [outputDir, filePath, customOutDir, startTimeOffset, userHtml5ifyCurrentFile, batchLoadPaths, extractAllStreams, userOpenFiles, openSendReportDialogWithState, setWorking, loadEdlFile, cutSegments, apparentCutSegments, edlFilePath, toggleHelp, toggleSettings, ensureOutDirAccessible, html5ifyAndLoad, loadCutSegments, duration, checkFileOpened, loadMedia, fileFormat, reorderSegsByStartTime, closeFileWithConfirm, closeBatch, clearSegments, clearSegCounter, fixInvalidDuration, invertAllCutSegments, getFrameCount, getTimeFromFrameNum, shuffleSegments, html5ify]);
+  }, [apparentCutSegments, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, customOutDir, cutSegments, duration, extractAllStreams, fileFormat, filePath, fixInvalidDuration, getFrameCount, getTimeFromFrameNum, invertAllCutSegments, loadCutSegments, loadMedia, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shuffleSegments, startTimeOffset, toggleHelp, toggleSettings, userHtml5ifyCurrentFile, userOpenFiles]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
     try {
@@ -2219,8 +2215,10 @@ const App = memo(() => {
                 batchFiles={batchFiles}
                 batchOpenSingleFile={batchOpenSingleFile}
                 removeBatchFile={removeBatchFile}
-                setConcatDialogVisible={setConcatDialogVisible}
                 closeBatch={closeBatch}
+                onMergeFilesClick={onMergeFilesClick}
+                onBatchConvertToSupportedFormatClick={batchConvertFormat}
+
               />
             )}
           </AnimatePresence>

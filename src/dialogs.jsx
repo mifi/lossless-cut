@@ -11,7 +11,6 @@ import JSON5 from 'json5';
 import { parseDuration } from './util/duration';
 import { parseYouTube } from './edlFormats';
 import CopyClipboardButton from './components/CopyClipboardButton';
-import { errorToast } from './util';
 
 const electron = window.require('electron'); // eslint-disable-line
 
@@ -348,25 +347,6 @@ export function openAbout() {
     title: 'About LosslessCut',
     text: `You are running version ${app.getVersion()}`,
   });
-}
-
-export async function showMergeFilesOpenDialog(defaultPath) {
-  const title = i18n.t('Please select files to be merged');
-  const message = i18n.t('Please select files to be merged. The files need to be of the exact same format and codecs');
-  const { canceled, filePaths } = await dialog.showOpenDialog({
-    title,
-    defaultPath,
-    properties: ['openFile', 'multiSelections'],
-    message,
-  });
-  if (canceled || !filePaths) return undefined;
-
-  if (filePaths.length < 2) {
-    errorToast(i18n.t('More than one file must be selected'));
-    return undefined;
-  }
-
-  return filePaths;
 }
 
 export async function showEditableJsonDialog({ text, title, inputLabel, inputValue, inputValidator }) {

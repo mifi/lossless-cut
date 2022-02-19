@@ -255,18 +255,6 @@ module.exports = (app, mainWindow, newVersion) => {
       label: i18n.t('Tools'),
       submenu: [
         {
-          label: i18n.t('Merge/concatenate files'),
-          click() {
-            mainWindow.webContents.send('show-merge-dialog', true);
-          },
-        },
-        {
-          label: i18n.t('Batch convert to supported format'),
-          click() {
-            mainWindow.webContents.send('batchConvertFriendlyFormat');
-          },
-        },
-        {
           label: i18n.t('Set custom start offset/timecode'),
           click() {
             mainWindow.webContents.send('set-start-offset', true);

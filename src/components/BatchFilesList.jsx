@@ -1,14 +1,23 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { FaTimes } from 'react-icons/fa';
-import { MergeColumnsIcon } from 'evergreen-ui';
-import BatchFile from './BatchFile';
+import { FaBars } from 'react-icons/fa';
 
+import BatchFile from './BatchFile';
+import useNativeMenu from '../hooks/useNativeMenu';
 import { timelineBackground, controlsBackground } from '../colors';
 
-const BatchFilesList = memo(({ filePath, width, batchFiles, batchOpenSingleFile, removeBatchFile, setConcatDialogVisible, closeBatch }) => {
+const BatchFilesList = memo(({ filePath, width, batchFiles, batchOpenSingleFile, removeBatchFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }) => {
   const { t } = useTranslation();
+
+  const contextMenuTemplate = useMemo(() => [
+    { label: t('Merge/concatenate files'), click: onMergeFilesClick },
+    { label: t('Convert to supported format'), click: onBatchConvertToSupportedFormatClick },
+    { type: 'separator' },
+    { label: t('Close batch'), click: closeBatch },
+  ], [closeBatch, onBatchConvertToSupportedFormatClick, onMergeFilesClick, t]);
+
+  const { openMenu } = useNativeMenu(contextMenuTemplate);
 
   return (
     <motion.div
@@ -23,9 +32,7 @@ const BatchFilesList = memo(({ filePath, width, batchFiles, batchOpenSingleFile,
 
         <div style={{ flexGrow: 1 }} />
 
-        {batchFiles.length > 1 && <MergeColumnsIcon role="button" title={t('Merge/concatenate files')} color="white" style={{ marginRight: 10, cursor: 'pointer' }} onClick={() => setConcatDialogVisible(true)} />}
-
-        <FaTimes size={18} role="button" style={{ cursor: 'pointer', color: 'white' }} onClick={() => closeBatch()} title={t('Close batch')} />
+        <FaBars size={20} role="button" title={t('Batch file list')} style={{ cursor: 'pointer', color: 'white', marginRight: 5 }} onClick={openMenu} />
       </div>
 
       <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
