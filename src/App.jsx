@@ -1663,13 +1663,14 @@ const App = memo(() => {
       const isLlcProject = filePathLowerCase.endsWith('.llc');
 
       // Need to ask the user what to do if more than one option
-      const inputOptions = {};
-      if (isFileOpened) inputOptions.open = i18n.t('Open the file instead of the current one');
+      const inputOptions = {
+        open: isFileOpened ? i18n.t('Open the file instead of the current one') : i18n.t('Open the file'),
+      };
       if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
       if (isFileOpened && !isLlcProject) inputOptions.tracks = i18n.t('Include all tracks from the new file');
       if (batchFiles.length > 0) inputOptions.addToBatch = i18n.t('Add the file to the batch list');
 
-      if (Object.keys(inputOptions).length > 0) {
+      if (Object.keys(inputOptions).length > 1) {
         const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction(inputOptions) : 'open';
 
         if (openFileResponse === 'open') {
