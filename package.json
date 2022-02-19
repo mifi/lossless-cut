@@ -115,7 +115,8 @@
     "semver": "^7.1.3",
     "string-to-stream": "^1.1.1",
     "strtok3": "^6.0.0",
-    "trash": "^7.1.1"
+    "trash": "^7.1.1",
+    "yargs-parser": "^21.0.0"
   },
   "eslintConfig": {
     "extends": "react-app"

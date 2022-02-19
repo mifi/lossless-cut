@@ -3,6 +3,9 @@ const isDev = require('electron-is-dev');
 const unhandled = require('electron-unhandled');
 const i18n = require('i18next');
 const debounce = require('lodash/debounce');
+const yargsParser = require('yargs-parser');
+const JSON5 = require('json5');
+
 
 const menu = require('./menu');
 const configStore = require('./configStore');
@@ -22,6 +25,10 @@ unhandled({
 });
 
 app.name = 'LosslessCut';
+
+let filesToOpen;
+let openFileInitial;
+let fileOpened = false;
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -116,6 +123,20 @@ function updateMenu() {
   menu(app, mainWindow, newVersion);
 }
 
+
+// https://github.com/electron/electron/issues/3657
+// https://github.com/mifi/lossless-cut/issues/357
+// https://github.com/mifi/lossless-cut/issues/639
+// https://github.com/mifi/lossless-cut/issues/591
+function parseCliArgs() {
+  const ignoreFirstArgs = isDev ? 2 : 1;
+  // production: First arg is the LosslessCut executable
+  // dev: First 2 args are electron and the electron.js
+  const argsWithoutAppName = process.argv.length > ignoreFirstArgs ? process.argv.slice(ignoreFirstArgs) : [];
+
+  return yargsParser(argsWithoutAppName);
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -131,6 +152,18 @@ app.on('ready', async () => {
   }
 
   await configStore.init();
+
+  const argv = parseCliArgs();
+  console.log('CLI arguments', argv);
+  filesToOpen = argv._;
+  const { settingsJson } = argv;
+
+  if (settingsJson != null) {
+    console.log('initializing settings', settingsJson);
+    Object.entries(JSON5.parse(settingsJson)).forEach(([key, value]) => {
+      configStore.set(key, value);
+    });
+  }
 
   if (isDev) {
     const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies
@@ -163,9 +196,6 @@ app.on('activate', () => {
   }
 });
 
-let openFileInitial;
-let fileOpened = false;
-
 function openFilesOnce(files) {
   if (fileOpened) return;
   fileOpened = true;
@@ -174,17 +204,6 @@ function openFilesOnce(files) {
 
 electron.ipcMain.on('renderer-ready', () => {
   rendererReady = true;
-  const ignoreFirstArgs = isDev ? 2 : 1;
-  // production: First arg is the LosslessCut executable
-  // dev: First 2 args are electron and the electron.js
-
-  // https://github.com/electron/electron/issues/3657
-  // https://github.com/mifi/lossless-cut/issues/357
-  // https://github.com/mifi/lossless-cut/issues/639
-  // https://github.com/mifi/lossless-cut/issues/591
-  const filesToOpen = process.argv.length > ignoreFirstArgs
-    ? process.argv.slice(ignoreFirstArgs).filter((arg) => arg && !arg.startsWith('-'))
-    : [];
 
   if (filesToOpen.length > 0) openFilesOnce(filesToOpen);
   else if (openFileInitial) openFilesOnce([openFileInitial]);

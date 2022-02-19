@@ -179,6 +179,19 @@ If you have an issue you can check the developer tools for any errors or clues. 
 1234,,Last segment
 ```
 
+## Command line interface (CLI)
+
+### Open one or more files:
+```bash
+LosslessCut file1.mp4 file2.mkv
+```
+
+### Override settings (experimental)
+See [available settings](https://github.com/mifi/lossless-cut/blob/master/public/configStore.js). Note that this is subject to change in newer versions. ⚠️ If you specify incorrect values it could corrupt your configuration file. You may use JSON or JSON5:
+```bash
+LosslessCut --settings-json '{captureFormat:"jpeg", "keyframeCut":true}'
+```
+
 ## Developing
 
 See the [developer notes](developer-notes.md).
