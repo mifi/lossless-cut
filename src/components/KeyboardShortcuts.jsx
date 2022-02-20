@@ -97,7 +97,7 @@ const CreateBinding = memo(({
   );
 });
 
-const rowStyle = { display: 'flex', alignItems: 'flex-start', margin: '6px 0' };
+const rowStyle = { display: 'flex', alignItems: 'center', margin: '6px 0' };
 
 const KeyboardShortcuts = memo(({
   keyBindings, setKeyBindings, currentCutSeg,
@@ -434,6 +434,8 @@ const KeyboardShortcuts = memo(({
                         <IconButton title={t('Remove key binding')} appearance="minimal" intent="danger" icon={DeleteIcon} onClick={() => onDeleteBindingClick({ action, keys })} />
                       </div>
                     ))}
+
+                    {bindingsForThisAction.length === 0 && <Text color="muted">{t('No binding')}</Text>}
                   </div>
 
                   <IconButton title={t('Bind new key to action')} appearance="minimal" intent="success" icon={AddIcon} onClick={() => onAddBindingClick(action)} />
