@@ -285,6 +285,22 @@ const KeyboardShortcuts = memo(({
           name: t('Show sidebar'),
           category: segmentsAndCutpointsCategory,
         },
+        enableOnlyCurrentSegment: {
+          name: t('Include ONLY this segment in export'),
+          category: segmentsAndCutpointsCategory,
+        },
+        disableAllSegments: {
+          name: t('Exclude all segments from export'),
+          category: segmentsAndCutpointsCategory,
+        },
+        enableAllSegments: {
+          name: t('Include all segments in export'),
+          category: segmentsAndCutpointsCategory,
+        },
+        toggleCurrentSegmentEnabled: {
+          name: t('Toggle inclusion of this segment in export'),
+          category: segmentsAndCutpointsCategory,
+        },
 
         // streamsCategory
         toggleStreamsSelector: {

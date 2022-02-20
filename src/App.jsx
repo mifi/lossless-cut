@@ -1076,10 +1076,13 @@ const App = memo(() => {
   // If user has selected none to export, it makes no sense, so export all instead
   const enabledSegments = enabledSegmentsRaw.length > 0 ? enabledSegmentsRaw : inverseOrNormalSegments;
 
-  const onExportSingleSegmentClick = useCallback((activeSeg) => setDisabledSegmentIds(Object.fromEntries(cutSegments.filter((s) => s.segId !== activeSeg.segId).map((s) => [s.segId, true]))), [cutSegments]);
-  const onExportSegmentEnabledToggle = useCallback((toggleSeg) => setDisabledSegmentIds((existing) => ({ ...existing, [toggleSeg.segId]: !existing[toggleSeg.segId] })), []);
-  const onExportSegmentDisableAll = useCallback(() => setDisabledSegmentIds(Object.fromEntries(cutSegments.map((s) => [s.segId, true]))), [cutSegments]);
-  const onExportSegmentEnableAll = useCallback(() => setDisabledSegmentIds({}), []);
+  const enableOnlySegment = useCallback((seg) => setDisabledSegmentIds(Object.fromEntries(cutSegments.filter((s) => s.segId !== seg.segId).map((s) => [s.segId, true]))), [cutSegments]);
+  const toggleSegmentEnabled = useCallback((seg) => setDisabledSegmentIds((existing) => ({ ...existing, [seg.segId]: !existing[seg.segId] })), []);
+  const disableAllSegments = useCallback(() => setDisabledSegmentIds(Object.fromEntries(cutSegments.map((s) => [s.segId, true]))), [cutSegments]);
+  const enableAllSegments = useCallback(() => setDisabledSegmentIds({}), []);
+
+  const enableOnlyCurrentSegment = useCallback(() => enableOnlySegment(currentCutSeg), [currentCutSeg, enableOnlySegment]);
+  const toggleCurrentSegmentEnabled = useCallback(() => toggleSegmentEnabled(currentCutSeg), [currentCutSeg, toggleSegmentEnabled]);
 
   const filenamifyOrNot = useCallback((name) => (safeOutputFileName ? filenamify(name) : name).substr(0, maxLabelLength), [safeOutputFileName, maxLabelLength]);
 
@@ -1715,6 +1718,10 @@ const App = memo(() => {
       toggleCaptureFormat,
       toggleStripAudio,
       setStartTimeOffset: askSetStartTimeOffset,
+      disableAllSegments,
+      enableAllSegments,
+      enableOnlyCurrentSegment,
+      toggleCurrentSegmentEnabled,
     };
 
     function tryMainActions() {
@@ -2310,10 +2317,10 @@ const App = memo(() => {
                   splitCurrentSegment={splitCurrentSegment}
                   enabledSegmentsRaw={enabledSegmentsRaw}
                   enabledSegments={enabledSegments}
-                  onExportSingleSegmentClick={onExportSingleSegmentClick}
-                  onExportSegmentEnabledToggle={onExportSegmentEnabledToggle}
-                  onExportSegmentDisableAll={onExportSegmentDisableAll}
-                  onExportSegmentEnableAll={onExportSegmentEnableAll}
+                  onExportSingleSegmentClick={enableOnlySegment}
+                  onExportSegmentEnabledToggle={toggleSegmentEnabled}
+                  onExportSegmentDisableAll={disableAllSegments}
+                  onExportSegmentEnableAll={enableAllSegments}
                   jumpSegStart={jumpSegStart}
                   jumpSegEnd={jumpSegEnd}
                   onViewSegmentTagsPress={onViewSegmentTagsPress}
