@@ -35,7 +35,7 @@ For per-platform build/signing setup, see https://blog.mifi.no/2020/03/31/automa
 
 ### Release new version
 
-- Commit changed
+- Commit changes
 - `npm version ...`
 - `git push && git push --tags`
 - Wait for build and draft in Github actions
