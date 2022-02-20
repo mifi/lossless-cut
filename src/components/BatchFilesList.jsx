@@ -7,7 +7,7 @@ import BatchFile from './BatchFile';
 import useNativeMenu from '../hooks/useNativeMenu';
 import { timelineBackground, controlsBackground } from '../colors';
 
-const BatchFilesList = memo(({ filePath, width, batchFiles, batchOpenSingleFile, removeBatchFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }) => {
+const BatchFilesList = memo(({ filePath, width, batchFiles, batchOpenSingleFile, batchRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }) => {
   const { t } = useTranslation();
 
   const contextMenuTemplate = useMemo(() => [
@@ -37,7 +37,7 @@ const BatchFilesList = memo(({ filePath, width, batchFiles, batchOpenSingleFile,
 
       <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
         {batchFiles.map(({ path, name }) => (
-          <BatchFile key={path} path={path} name={name} filePath={filePath} onOpen={batchOpenSingleFile} onDelete={removeBatchFile} />
+          <BatchFile key={path} path={path} name={name} filePath={filePath} onOpen={batchOpenSingleFile} onDelete={batchRemoveFile} />
         ))}
       </div>
     </motion.div>

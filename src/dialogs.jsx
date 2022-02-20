@@ -264,7 +264,7 @@ const CleanupChoices = ({ cleanupChoicesInitial, onChange: onChangeProp }) => {
   );
 };
 
-export async function cleanupFilesDialog(cleanupChoicesIn = {}) {
+export async function showCleanupFilesDialog(cleanupChoicesIn = {}) {
   let cleanupChoices = cleanupChoicesIn;
 
   const { value } = await ReactSwal.fire({

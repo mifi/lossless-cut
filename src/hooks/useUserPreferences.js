@@ -92,6 +92,8 @@ export default () => {
   useEffect(() => safeSetConfig('enableAutoHtml5ify', enableAutoHtml5ify), [enableAutoHtml5ify]);
   const [segmentsToChaptersOnly, setSegmentsToChaptersOnly] = useState(configStore.get('segmentsToChaptersOnly'));
   useEffect(() => safeSetConfig('segmentsToChaptersOnly', segmentsToChaptersOnly), [segmentsToChaptersOnly]);
+  const [keyBindings, setKeyBindings] = useState(configStore.get('keyBindings'));
+  useEffect(() => safeSetConfig('keyBindings', keyBindings), [keyBindings]);
 
   // NOTE! This useEffect must be placed after all usages of firstUpdateRef.current (safeSetConfig)
   useEffect(() => {
@@ -170,5 +172,7 @@ export default () => {
     setEnableAutoHtml5ify,
     segmentsToChaptersOnly,
     setSegmentsToChaptersOnly,
+    keyBindings,
+    setKeyBindings,
   };
 };

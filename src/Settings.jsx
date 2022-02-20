@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useMemo } from 'react';
-import { FaYinYang } from 'react-icons/fa';
+import { FaYinYang, FaKeyboard } from 'react-icons/fa';
 import { Button, Table, NumericalIcon, KeyIcon, FolderCloseIcon, DocumentIcon, TimeIcon, Checkbox, Select } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
@@ -39,6 +39,7 @@ const Settings = memo(({
   enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction,
   hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode,
   enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify,
+  onKeyboardShortcutsDialogRequested,
 }) => {
   const { t } = useTranslation();
 
@@ -76,6 +77,13 @@ const Settings = memo(({
             <option key="" value="">{t('System language')}</option>
             {Object.keys(langNames).map((lang) => <option key={lang} value={lang}>{langNames[lang]}</option>)}
           </Select>
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Keyboard & mouse shortcuts')}</KeyCell>
+        <Table.TextCell>
+          <Button iconBefore={() => <FaKeyboard />} onClick={onKeyboardShortcutsDialogRequested}>{t('Keyboard & mouse shortcuts')}</Button>
         </Table.TextCell>
       </Row>
 

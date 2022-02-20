@@ -27,9 +27,9 @@ const zoomOptions = Array(13).fill().map((unused, z) => 2 ** z);
 const leftRightWidth = 100;
 
 const BottomBar = memo(({
-  zoom, setZoom, invertCutSegments, setInvertCutSegments, toggleComfortZoom, simpleMode, toggleSimpleMode,
-  isRotationSet, rotation, areWeCutting, increaseRotation, cleanupFiles, renderCaptureFormatButton,
-  capture, onExportPress, enabledSegments, hasVideo, autoMerge, exportConfirmEnabled, toggleExportConfirmEnabled,
+  zoom, setZoom, invertCutSegments, setInvertCutSegments, timelineToggleComfortZoom, simpleMode, toggleSimpleMode,
+  isRotationSet, rotation, areWeCutting, increaseRotation, cleanupFilesDialog, renderCaptureFormatButton,
+  captureSnapshot, onExportPress, enabledSegments, hasVideo, autoMerge, exportConfirmEnabled, toggleExportConfirmEnabled,
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,
   setCurrentSegIndex, cutStartTimeManual, setCutStartTimeManual, cutEndTimeManual, setCutEndTimeManual,
   duration, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
@@ -302,7 +302,7 @@ const BottomBar = memo(({
               </motion.div>
             </div>
 
-            <div role="button" style={{ marginRight: 5, marginLeft: 10 }} title={t('Zoom')} onClick={toggleComfortZoom}>{Math.floor(zoom)}x</div>
+            <div role="button" style={{ marginRight: 5, marginLeft: 10 }} title={t('Zoom')} onClick={timelineToggleComfortZoom}>{Math.floor(zoom)}x</div>
 
             <Select height={20} style={{ flexBasis: 85, flexGrow: 0 }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
               <option key="" value="" disabled>{t('Zoom')}</option>
@@ -337,7 +337,7 @@ const BottomBar = memo(({
             title={t('Close file and clean up')}
             style={{ padding: '5px 10px' }}
             size={16}
-            onClick={cleanupFiles}
+            onClick={cleanupFilesDialog}
             role="button"
           />
         )}
@@ -350,7 +350,7 @@ const BottomBar = memo(({
               style={{ paddingLeft: 5, paddingRight: 15 }}
               size={25}
               title={t('Capture frame')}
-              onClick={capture}
+              onClick={captureSnapshot}
             />
           </>
         )}

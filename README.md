@@ -50,6 +50,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Import/export segments: MP4/MKV chapter marks, Text file, YouTube, CSV, CUE, XML (DaVinci, Final Cut Pro) and more
 - MKV/MP4 embedded chapters marks editor
 - View subtitles
+- Customizable keyboard hotkeys
 
 ## Example lossless use cases
 

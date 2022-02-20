@@ -9,7 +9,6 @@ import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out thi
 import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
-import Mousetrap from 'mousetrap';
 import JSON5 from 'json5';
 
 import fromPairs from 'lodash/fromPairs';
@@ -23,6 +22,7 @@ import useUserPreferences from './hooks/useUserPreferences';
 import useFfmpegOperations from './hooks/useFfmpegOperations';
 import useKeyframes from './hooks/useKeyframes';
 import useWaveform from './hooks/useWaveform';
+import useKeyboard from './hooks/useKeyboard';
 import NoFileLoaded from './NoFileLoaded';
 import Canvas from './Canvas';
 import TopMenu from './TopMenu';
@@ -39,6 +39,7 @@ import VolumeControl from './components/VolumeControl';
 import SubtitleControl from './components/SubtitleControl';
 import BatchFilesList from './components/BatchFilesList';
 import ConcatDialog from './components/ConcatDialog';
+import KeyboardShortcuts from './components/KeyboardShortcuts';
 import Loading from './components/Loading';
 
 import { loadMifiLink } from './mifi';
@@ -63,7 +64,7 @@ import {
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, cleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog } from './dialogs';
+import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags } from './segments';
@@ -147,6 +148,7 @@ const App = memo(() => {
   const [helpVisible, setHelpVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [tunerVisible, setTunerVisible] = useState();
+  const [keyboardShortcutsVisible, setKeyboardShortcutsVisible] = useState(false);
   const [mifiLink, setMifiLink] = useState();
   const [alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles] = useState(false);
 
@@ -195,7 +197,7 @@ const App = memo(() => {
   const isCustomFormatSelected = fileFormat !== detectedFileFormat;
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, setEnableAutoHtml5ify, segmentsToChaptersOnly, setSegmentsToChaptersOnly,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, setEnableAutoHtml5ify, segmentsToChaptersOnly, setSegmentsToChaptersOnly, keyBindings, setKeyBindings,
   } = useUserPreferences();
 
   const {
@@ -327,7 +329,7 @@ const App = memo(() => {
   }, [canvasPlayerEnabled]);
 
   const comfortZoom = isDurationValid(duration) ? Math.max(duration / 100, 1) : undefined;
-  const toggleComfortZoom = useCallback(() => {
+  const timelineToggleComfortZoom = useCallback(() => {
     if (!comfortZoom) return;
 
     setZoom((prevZoom) => {
@@ -1017,14 +1019,14 @@ const App = memo(() => {
     setBatchFiles([]);
   }, [askBeforeClose]);
 
-  const removeBatchFile = useCallback((path) => setBatchFiles((existingBatch) => existingBatch.filter((existingFile) => existingFile.path !== path)), []);
+  const batchRemoveFile = useCallback((path) => setBatchFiles((existingBatch) => existingBatch.filter((existingFile) => existingFile.path !== path)), []);
 
-  const cleanupFiles = useCallback(async () => {
+  const cleanupFilesDialog = useCallback(async () => {
     if (!isFileOpened) return;
 
     let trashResponse = cleanupChoices;
     if (!cleanupChoices.dontShowAgain) {
-      trashResponse = await cleanupFilesDialog(cleanupChoices);
+      trashResponse = await showCleanupFilesDialog(cleanupChoices);
       console.log('trashResponse', trashResponse);
       if (!trashResponse) return; // Cancelled
       setCleanupChoices(trashResponse); // Store for next time
@@ -1037,7 +1039,7 @@ const App = memo(() => {
 
     resetState();
 
-    removeBatchFile(savedPaths.filePath);
+    batchRemoveFile(savedPaths.filePath);
 
     if (!trashResponse.tmpFiles && !trashResponse.projectFile && !trashResponse.sourceFile) return;
 
@@ -1051,7 +1053,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [previewFilePath, filePath, edlFilePath, cleanupChoices, isFileOpened, resetState, removeBatchFile, setWorking]);
+  }, [previewFilePath, filePath, edlFilePath, cleanupChoices, isFileOpened, resetState, batchRemoveFile, setWorking]);
 
   const inverseOrNormalSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
     [invertCutSegments, inverseCutSegments, apparentCutSegments]);
@@ -1253,7 +1255,7 @@ const App = memo(() => {
     else await onExportConfirm();
   }, [filePath, haveInvalidSegs, segmentsToExport, exportConfirmEnabled, onExportConfirm]);
 
-  const capture = useCallback(async () => {
+  const captureSnapshot = useCallback(async () => {
     if (!filePath) return;
 
     try {
@@ -1467,31 +1469,178 @@ const App = memo(() => {
 
   const seekAccelerationRef = useRef(1);
 
-  useEffect(() => {
-    if (concatDialogVisible) return () => {};
+  const userOpenSingleFile = useCallback(async ({ path: pathIn, isLlcProject }) => {
+    let path = pathIn;
+    let projectPath;
 
-    function onKeyPress() {
-      if (exportConfirmVisible) onExportConfirm();
-      else onExportPress();
+    // Open .llc AND media referenced within
+    if (isLlcProject) {
+      console.log('Loading LLC project', path);
+      const project = await loadLlcProject(path);
+      const { mediaFileName } = project;
+      console.log({ mediaFileName });
+      if (!mediaFileName) return;
+      projectPath = path;
+      path = pathJoin(dirname(path), mediaFileName);
+    }
+    // Because Apple is being nazi about the ability to open "copy protected DVD files"
+    const disallowVob = isMasBuild;
+    if (disallowVob && /\.vob$/i.test(path)) {
+      toast.fire({ icon: 'error', text: 'Unfortunately .vob files are not supported in the App Store version of LosslessCut due to Apple restrictions' });
+      return;
     }
 
-    const mousetrap = new Mousetrap();
-    mousetrap.bind('e', onKeyPress);
-    return () => mousetrap.reset();
-  }, [exportConfirmVisible, onExportConfirm, onExportPress, concatDialogVisible]);
+    if (!(await pathExists(path))) {
+      errorToast(i18n.t('The media you tried to open does not exist'));
+      return;
+    }
 
-  useEffect(() => {
-    function onEscPress() {
+    if (!(await havePermissionToReadFile(path))) {
+      errorToast(i18n.t('You do not have permission to access this file'));
+      return;
+    }
+
+    const { newCustomOutDir, cancel } = await ensureOutDirAccessible(path);
+    if (cancel) return;
+
+    await loadMedia({ filePath: path, customOutDir: newCustomOutDir, projectPath });
+  }, [ensureOutDirAccessible, loadMedia]);
+
+  const batchOpenSingleFile = useCallback(async (path) => {
+    if (workingRef.current) return;
+    if (filePath === path) return;
+    try {
+      setWorking(i18n.t('Loading file'));
+      await userOpenSingleFile({ path });
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setWorking();
+    }
+  }, [userOpenSingleFile, setWorking, filePath]);
+
+  const batchFileJump = useCallback((direction) => {
+    const pathIndex = batchFiles.findIndex(({ path }) => path === filePath);
+    if (pathIndex === -1) return;
+    const nextFile = batchFiles[pathIndex + direction];
+    if (!nextFile) return;
+    batchOpenSingleFile(nextFile.path);
+  }, [filePath, batchFiles, batchOpenSingleFile]);
+
+  const goToTimecode = useCallback(async () => {
+    if (!filePath) return;
+    const timeCode = await promptTimeOffset({
+      initialValue: formatDuration({ seconds: commandedTimeRef.current }),
+      title: i18n.t('Seek to timecode'),
+    });
+
+    if (timeCode === undefined) return;
+
+    seekAbs(timeCode);
+  }, [filePath, seekAbs]);
+
+  const onKeyPress = useCallback(({ action, keyup }) => {
+    function seekReset() {
+      seekAccelerationRef.current = 1;
+    }
+
+    // NOTE: Do not change these keys because users have bound keys by these names
+    // For actions, see also KeyboardShortcuts.jsx
+    const mainActions = {
+      togglePlayNoResetSpeed: () => togglePlay(),
+      togglePlayResetSpeed: () => togglePlay(true),
+      reducePlaybackRate: () => changePlaybackRate(-1),
+      reducePlaybackRateMore: () => changePlaybackRate(-1, 2.0),
+      increasePlaybackRate: () => changePlaybackRate(1),
+      increasePlaybackRateMore: () => changePlaybackRate(1, 2.0),
+      timelineToggleComfortZoom,
+      captureSnapshot,
+      setCutStart,
+      setCutEnd,
+      cleanupFilesDialog,
+      splitCurrentSegment,
+      increaseRotation,
+      goToTimecode,
+
+      seekBackwards() {
+        if (keyup) {
+          seekReset();
+          return;
+        }
+        seekRel(keyboardNormalSeekSpeed * seekAccelerationRef.current * -1);
+        seekAccelerationRef.current *= keyboardSeekAccFactor;
+      },
+      seekForwards() {
+        if (keyup) {
+          seekReset();
+          return;
+        }
+        seekRel(keyboardNormalSeekSpeed * seekAccelerationRef.current);
+        seekAccelerationRef.current *= keyboardSeekAccFactor;
+      },
+      seekBackwardsPercent: () => { seekRelPercent(-0.01); return false; },
+      seekForwardsPercent: () => { seekRelPercent(0.01); return false; },
+      seekBackwardsKeyframe: () => seekClosestKeyframe(-1),
+      seekForwardsKeyframe: () => seekClosestKeyframe(1),
+      seekPreviousFrame: () => shortStep(-1),
+      seekNextFrame: () => shortStep(1),
+      selectPrevSegment: () => jumpSeg(-1),
+      selectNextSegment: () => jumpSeg(1),
+      jumpCutStart,
+      jumpCutEnd,
+      timelineZoomIn: () => { zoomRel(1); return false; },
+      timelineZoomOut: () => { zoomRel(-1); return false; },
+      batchPreviousFile: () => batchFileJump(-1),
+      batchNextFile: () => batchFileJump(1),
+      closeBatch,
+
+      removeCurrentSegment: () => removeCutSegment(currentSegIndexSafe),
+      undo: () => cutSegmentsHistory.back(),
+      redo: () => cutSegmentsHistory.forward(),
+      labelCurrentSegment: () => { onLabelSegmentPress(currentSegIndexSafe); return false; },
+      addSegment: () => addCutSegment(),
+
+      toggleHelp: () => { toggleHelp(); return false; },
+      export: onExportPress,
+    };
+
+    function tryMainActions() {
+      const fn = mainActions[action];
+      if (!fn) return { match: false };
+      const bubble = fn();
+      return { match: true, bubble };
+    }
+
+    if (isDev) console.log('key event', action);
+
+    // always allow
+    if (action === 'closeActiveScreen') {
       closeExportConfirm();
       setHelpVisible(false);
       setSettingsVisible(false);
+      return false;
     }
 
-    const mousetrap = new Mousetrap();
-    mousetrap.bind('h', toggleHelp);
-    mousetrap.bind('escape', onEscPress);
-    return () => mousetrap.reset();
-  }, [closeExportConfirm, toggleHelp]);
+    if (concatDialogVisible || keyboardShortcutsVisible) {
+      return true; // don't allow any further hotkeys
+    }
+
+    if (exportConfirmVisible) {
+      if (action === 'export') {
+        onExportConfirm();
+        return false;
+      }
+      return true; // don't allow any other hotkeys because we are at export confirm
+    }
+
+    // allow main actions
+    const { match, bubble } = tryMainActions();
+    if (match) return bubble;
+
+    return true; // bubble the event
+  }, [addCutSegment, batchFileJump, captureSnapshot, changePlaybackRate, cleanupFilesDialog, closeBatch, closeExportConfirm, concatDialogVisible, currentSegIndexSafe, cutSegmentsHistory, exportConfirmVisible, goToTimecode, increaseRotation, jumpCutEnd, jumpCutStart, jumpSeg, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegmentPress, removeCutSegment, seekClosestKeyframe, seekRel, seekRelPercent, setCutEnd, setCutStart, shortStep, splitCurrentSegment, timelineToggleComfortZoom, toggleHelp, togglePlay, zoomRel]);
+
+  useKeyboard({ keyBindings, onKeyPress });
 
   useEffect(() => {
     document.ondragover = dragPreventer;
@@ -1549,71 +1698,13 @@ const App = memo(() => {
     setCopyStreamIdsForPath(path, () => fromPairs(streams.map(({ index }) => [index, true])));
   }, [externalStreamFiles, setCopyStreamIdsForPath]);
 
-  const userOpenSingleFile = useCallback(async ({ path: pathIn, isLlcProject }) => {
-    let path = pathIn;
-    let projectPath;
-
-    // Open .llc AND media referenced within
-    if (isLlcProject) {
-      console.log('Loading LLC project', path);
-      const project = await loadLlcProject(path);
-      const { mediaFileName } = project;
-      console.log({ mediaFileName });
-      if (!mediaFileName) return;
-      projectPath = path;
-      path = pathJoin(dirname(path), mediaFileName);
-    }
-    // Because Apple is being nazi about the ability to open "copy protected DVD files"
-    const disallowVob = isMasBuild;
-    if (disallowVob && /\.vob$/i.test(path)) {
-      toast.fire({ icon: 'error', text: 'Unfortunately .vob files are not supported in the App Store version of LosslessCut due to Apple restrictions' });
-      return;
-    }
-
-    if (!(await pathExists(path))) {
-      errorToast(i18n.t('The media you tried to open does not exist'));
-      return;
-    }
-
-    if (!(await havePermissionToReadFile(path))) {
-      errorToast(i18n.t('You do not have permission to access this file'));
-      return;
-    }
-
-    const { newCustomOutDir, cancel } = await ensureOutDirAccessible(path);
-    if (cancel) return;
-
-    await loadMedia({ filePath: path, customOutDir: newCustomOutDir, projectPath });
-  }, [ensureOutDirAccessible, loadMedia]);
-
   const checkFileOpened = useCallback(() => {
     if (isFileOpened) return true;
     toast.fire({ icon: 'info', title: i18n.t('You need to open a media file first') });
     return false;
   }, [isFileOpened]);
 
-  const batchOpenSingleFile = useCallback(async (path) => {
-    if (workingRef.current) return;
-    if (filePath === path) return;
-    try {
-      setWorking(i18n.t('Loading file'));
-      await userOpenSingleFile({ path });
-    } catch (err) {
-      handleError(err);
-    } finally {
-      setWorking();
-    }
-  }, [userOpenSingleFile, setWorking, filePath]);
-
   const batchFilePaths = useMemo(() => batchFiles.map((f) => f.path), [batchFiles]);
-
-  const batchFileJump = useCallback((direction) => {
-    const pathIndex = batchFiles.findIndex(({ path }) => path === filePath);
-    if (pathIndex === -1) return;
-    const nextFile = batchFiles[pathIndex + direction];
-    if (!nextFile) return;
-    batchOpenSingleFile(nextFile.path);
-  }, [filePath, batchFiles, batchOpenSingleFile]);
 
   const batchLoadPaths = useCallback((newPaths, append) => {
     setBatchFiles((existingFiles) => {
@@ -1740,120 +1831,6 @@ const App = memo(() => {
       setWorking();
     }
   }, [customOutDir, filePath, html5ifyAndLoad, hasVideo, hasAudio, rememberConvertToSupportedFormat, setWorking]);
-
-  const goToTimecode = useCallback(async () => {
-    if (!filePath) return;
-    const timeCode = await promptTimeOffset({
-      initialValue: formatDuration({ seconds: commandedTimeRef.current }),
-      title: i18n.t('Seek to timecode'),
-    });
-
-    if (timeCode === undefined) return;
-
-    seekAbs(timeCode);
-  }, [filePath, seekAbs]);
-
-
-  // TODO split up?
-  useEffect(() => {
-    if (exportConfirmVisible || concatDialogVisible) return () => {};
-
-    const togglePlayNoReset = () => togglePlay();
-    const togglePlayReset = () => togglePlay(true);
-    const reducePlaybackRate = () => changePlaybackRate(-1);
-    const reducePlaybackRateMore = () => changePlaybackRate(-1, 2.0);
-    const increasePlaybackRate = () => changePlaybackRate(1);
-    const increasePlaybackRateMore = () => changePlaybackRate(1, 2.0);
-    function seekBackwards() {
-      seekRel(keyboardNormalSeekSpeed * seekAccelerationRef.current * -1);
-      seekAccelerationRef.current *= keyboardSeekAccFactor;
-    }
-    function seekForwards() {
-      seekRel(keyboardNormalSeekSpeed * seekAccelerationRef.current);
-      seekAccelerationRef.current *= keyboardSeekAccFactor;
-    }
-    const seekReset = () => {
-      seekAccelerationRef.current = 1;
-    };
-    const seekBackwardsPercent = () => { seekRelPercent(-0.01); return false; };
-    const seekForwardsPercent = () => { seekRelPercent(0.01); return false; };
-    const seekBackwardsKeyframe = () => seekClosestKeyframe(-1);
-    const seekForwardsKeyframe = () => seekClosestKeyframe(1);
-    const seekBackwardsShort = () => shortStep(-1);
-    const seekForwardsShort = () => shortStep(1);
-    const jumpPrevSegment = () => jumpSeg(-1);
-    const jumpNextSegment = () => jumpSeg(1);
-    const zoomIn = () => { zoomRel(1); return false; };
-    const zoomOut = () => { zoomRel(-1); return false; };
-    const batchPreviousFile = () => batchFileJump(-1);
-    const batchNextFile = () => batchFileJump(1);
-
-    // mousetrap seems to be the only lib properly handling layouts that require shift to be pressed to get a particular key #520
-    // Also document.addEventListener needs custom handling of modifier keys or C will be triggered by CTRL+C, etc
-    const mousetrap = new Mousetrap();
-    // mousetrap.bind(':', () => console.log('test'));
-    mousetrap.bind('plus', () => addCutSegment());
-    mousetrap.bind('space', () => togglePlayReset());
-    mousetrap.bind('k', () => togglePlayNoReset());
-    mousetrap.bind('j', () => reducePlaybackRate());
-    mousetrap.bind('shift+j', () => reducePlaybackRateMore());
-    mousetrap.bind('l', () => increasePlaybackRate());
-    mousetrap.bind('shift+l', () => increasePlaybackRateMore());
-    mousetrap.bind('z', () => toggleComfortZoom());
-    mousetrap.bind(',', () => seekBackwardsShort());
-    mousetrap.bind('.', () => seekForwardsShort());
-    mousetrap.bind('c', () => capture());
-    mousetrap.bind('i', () => setCutStart());
-    mousetrap.bind('o', () => setCutEnd());
-    mousetrap.bind('backspace', () => removeCutSegment(currentSegIndexSafe));
-    mousetrap.bind('d', () => cleanupFiles());
-    mousetrap.bind('b', () => splitCurrentSegment());
-    mousetrap.bind('r', () => increaseRotation());
-    mousetrap.bind('g', () => goToTimecode());
-
-    mousetrap.bind('left', () => seekBackwards());
-    mousetrap.bind('left', () => seekReset(), 'keyup');
-    mousetrap.bind(['ctrl+left', 'command+left'], () => seekBackwardsPercent());
-    mousetrap.bind('alt+left', () => seekBackwardsKeyframe());
-    mousetrap.bind('shift+left', () => jumpCutStart());
-
-    mousetrap.bind('right', () => seekForwards());
-    mousetrap.bind('right', () => seekReset(), 'keyup');
-    mousetrap.bind(['ctrl+right', 'command+right'], () => seekForwardsPercent());
-    mousetrap.bind('alt+right', () => seekForwardsKeyframe());
-    mousetrap.bind('shift+right', () => jumpCutEnd());
-
-    mousetrap.bind('up', () => jumpPrevSegment());
-    mousetrap.bind(['ctrl+up', 'command+up'], () => zoomIn());
-    mousetrap.bind(['shift+up'], () => batchPreviousFile());
-
-    mousetrap.bind('down', () => jumpNextSegment());
-    mousetrap.bind(['ctrl+down', 'command+down'], () => zoomOut());
-    mousetrap.bind(['shift+down'], () => batchNextFile());
-
-    // https://github.com/mifi/lossless-cut/issues/610
-    Mousetrap.bind(['ctrl+z', 'command+z'], (e) => {
-      e.preventDefault();
-      cutSegmentsHistory.back();
-    });
-    Mousetrap.bind(['ctrl+shift+z', 'command+shift+z'], (e) => {
-      e.preventDefault();
-      cutSegmentsHistory.forward();
-    });
-
-    mousetrap.bind(['enter'], () => {
-      onLabelSegmentPress(currentSegIndexSafe);
-      return false;
-    });
-
-    return () => mousetrap.reset();
-  }, [
-    addCutSegment, capture, changePlaybackRate, togglePlay, removeCutSegment,
-    setCutEnd, setCutStart, seekRel, seekRelPercent, shortStep, cleanupFiles, jumpSeg,
-    seekClosestKeyframe, zoomRel, toggleComfortZoom, splitCurrentSegment, exportConfirmVisible, concatDialogVisible,
-    increaseRotation, jumpCutStart, jumpCutEnd, cutSegmentsHistory, keyboardSeekAccFactor,
-    keyboardNormalSeekSpeed, onLabelSegmentPress, currentSegIndexSafe, batchFileJump, goToTimecode,
-  ]);
 
   const onVideoError = useCallback(async () => {
     const { error } = videoRef.current;
@@ -2091,6 +2068,8 @@ const App = memo(() => {
     setTunerVisible(type);
   }, []);
 
+  const onKeyboardShortcutsDialogRequested = useCallback(() => setKeyboardShortcutsVisible(true), []);
+
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);
   }, []);
@@ -2203,7 +2182,7 @@ const App = memo(() => {
                 width={leftBarWidth}
                 batchFiles={batchFiles}
                 batchOpenSingleFile={batchOpenSingleFile}
-                removeBatchFile={removeBatchFile}
+                batchRemoveFile={batchRemoveFile}
                 closeBatch={closeBatch}
                 onMergeFilesClick={onMergeFilesClick}
                 onBatchConvertToSupportedFormatClick={batchConvertFormat}
@@ -2345,7 +2324,7 @@ const App = memo(() => {
             setZoom={setZoom}
             invertCutSegments={invertCutSegments}
             setInvertCutSegments={setInvertCutSegments}
-            toggleComfortZoom={toggleComfortZoom}
+            timelineToggleComfortZoom={timelineToggleComfortZoom}
             simpleMode={simpleMode}
             toggleSimpleMode={toggleSimpleMode}
             hasVideo={hasVideo}
@@ -2354,9 +2333,9 @@ const App = memo(() => {
             areWeCutting={areWeCutting}
             autoMerge={autoMerge}
             increaseRotation={increaseRotation}
-            cleanupFiles={cleanupFiles}
+            cleanupFilesDialog={cleanupFilesDialog}
             renderCaptureFormatButton={renderCaptureFormatButton}
-            capture={capture}
+            captureSnapshot={captureSnapshot}
             onExportPress={onExportPress}
             enabledSegments={enabledSegments}
             exportConfirmEnabled={exportConfirmEnabled}
@@ -2431,7 +2410,7 @@ const App = memo(() => {
           visible={helpVisible}
           onTogglePress={toggleHelp}
           ffmpegCommandLog={ffmpegCommandLog}
-          currentCutSeg={currentCutSeg}
+          onKeyboardShortcutsDialogRequested={onKeyboardShortcutsDialogRequested}
         />
 
         <Sheet visible={settingsVisible} onClosePress={toggleSettings} style={{ background: 'white', color: 'black' }}>
@@ -2475,12 +2454,15 @@ const App = memo(() => {
                 AutoExportToggler={AutoExportToggler}
                 renderCaptureFormatButton={renderCaptureFormatButton}
                 onTunerRequested={onTunerRequested}
+                onKeyboardShortcutsDialogRequested={onKeyboardShortcutsDialogRequested}
               />
             </Table.Body>
           </Table>
         </Sheet>
 
         <ConcatDialog isShown={batchFiles.length > 0 && concatDialogVisible} onHide={() => setConcatDialogVisible(false)} initialPaths={batchFilePaths} onConcat={mergeFiles} segmentsToChapters={segmentsToChapters} setSegmentsToChapters={setSegmentsToChapters} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} preserveMetadataOnMerge={preserveMetadataOnMerge} setPreserveMetadataOnMerge={setPreserveMetadataOnMerge} preserveMovData={preserveMovData} setPreserveMovData={setPreserveMovData} />
+
+        <KeyboardShortcuts isShown={keyboardShortcutsVisible} onHide={() => setKeyboardShortcutsVisible(false)} keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} />
       </div>
     </ThemeProvider>
   );

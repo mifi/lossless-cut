@@ -7,6 +7,61 @@ const { pathExists } = require('fs-extra');
 const { app } = electron;
 
 
+const defaultKeyBindings = [
+  { keys: 'plus', action: 'addSegment' },
+  { keys: 'space', action: 'togglePlayResetSpeed' },
+  { keys: 'k', action: 'togglePlayNoResetSpeed' },
+  { keys: 'j', action: 'reducePlaybackRate' },
+  { keys: 'shift+j', action: 'reducePlaybackRateMore' },
+  { keys: 'l', action: 'increasePlaybackRate' },
+  { keys: 'shift+l', action: 'increasePlaybackRateMore' },
+  { keys: 'z', action: 'timelineToggleComfortZoom' },
+  { keys: ',', action: 'seekPreviousFrame' },
+  { keys: '.', action: 'seekNextFrame' },
+  { keys: 'c', action: 'captureSnapshot' },
+  { keys: 'i', action: 'setCutStart' },
+  { keys: 'o', action: 'setCutEnd' },
+  { keys: 'backspace', action: 'removeCurrentSegment' },
+  { keys: 'd', action: 'cleanupFilesDialog' },
+  { keys: 'b', action: 'splitCurrentSegment' },
+  { keys: 'r', action: 'increaseRotation' },
+  { keys: 'g', action: 'goToTimecode' },
+
+  { keys: 'left', action: 'seekBackwards' },
+  { keys: 'ctrl+left', action: 'seekBackwardsPercent' },
+  { keys: 'command+left', action: 'seekBackwardsPercent' },
+  { keys: 'alt+left', action: 'seekBackwardsKeyframe' },
+  { keys: 'shift+left', action: 'jumpCutStart' },
+
+  { keys: 'right', action: 'seekForwards' },
+  { keys: 'ctrl+right', action: 'seekForwardsPercent' },
+  { keys: 'command+right', action: 'seekForwardsPercent' },
+  { keys: 'alt+right', action: 'seekForwardsKeyframe' },
+  { keys: 'shift+right', action: 'jumpCutEnd' },
+
+  { keys: 'up', action: 'selectPrevSegment' },
+  { keys: 'ctrl+up', action: 'timelineZoomIn' },
+  { keys: 'command+up', action: 'timelineZoomIn' },
+  { keys: 'shift+up', action: 'batchPreviousFile' },
+
+  { keys: 'down', action: 'selectNextSegment' },
+  { keys: 'ctrl+down', action: 'timelineZoomOut' },
+  { keys: 'command+down', action: 'timelineZoomOut' },
+  { keys: 'shift+down', action: 'batchNextFile' },
+
+  // https://github.com/mifi/lossless-cut/issues/610
+  { keys: 'ctrl+z', action: 'undo' },
+  { keys: 'command+z', action: 'undo' },
+  { keys: 'ctrl+shift+z', action: 'redo' },
+  { keys: 'command+shift+z', action: 'redo' },
+
+  { keys: 'enter', action: 'labelCurrentSegment' },
+
+  { keys: 'e', action: 'export' },
+  { keys: 'h', action: 'toggleHelp' },
+  { keys: 'escape', action: 'closeActiveScreen' },
+];
+
 const defaults = {
   captureFormat: 'jpeg',
   customOutDir: undefined,
@@ -42,6 +97,7 @@ const defaults = {
   safeOutputFileName: true,
   windowBounds: undefined,
   enableAutoHtml5ify: true,
+  keyBindings: defaultKeyBindings,
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645
