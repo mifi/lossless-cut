@@ -39,6 +39,9 @@ const defaultKeyBindings = [
   { keys: 'alt+right', action: 'seekForwardsKeyframe' },
   { keys: 'shift+right', action: 'jumpCutEnd' },
 
+  { keys: 'ctrl+home', action: 'jumpTimelineStart' },
+  { keys: 'ctrl+end', action: 'jumpTimelineEnd' },
+
   { keys: 'up', action: 'selectPrevSegment' },
   { keys: 'ctrl+up', action: 'timelineZoomIn' },
   { keys: 'command+up', action: 'timelineZoomIn' },

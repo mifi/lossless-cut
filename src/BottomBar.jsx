@@ -32,7 +32,7 @@ const BottomBar = memo(({
   captureSnapshot, onExportPress, enabledSegments, hasVideo, autoMerge, exportConfirmEnabled, toggleExportConfirmEnabled,
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,
   setCurrentSegIndex, cutStartTimeManual, setCutStartTimeManual, cutEndTimeManual, setCutEndTimeManual,
-  duration, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
+  jumpTimelineStart, jumpTimelineEnd, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
   playing, shortStep, togglePlay, setTimelineMode, hasAudio, timelineMode,
   keyframesEnabled, toggleKeyframesEnabled, seekClosestKeyframe, detectedFps,
 }) => {
@@ -195,7 +195,7 @@ const BottomBar = memo(({
               size={16}
               title={t('Jump to start of video')}
               role="button"
-              onClick={() => seekAbs(0)}
+              onClick={jumpTimelineStart}
             />
 
             {renderJumpCutpointButton(-1)}
@@ -267,7 +267,7 @@ const BottomBar = memo(({
               size={16}
               title={t('Jump to end of video')}
               role="button"
-              onClick={() => seekAbs(duration)}
+              onClick={jumpTimelineEnd}
             />
           </>
         )}

@@ -112,6 +112,7 @@ const KeyboardShortcuts = memo(({
     const outputCategory = t('Output actions');
     const batchFilesCategory = t('Batch file list');
     const otherCategory = t('Other operations');
+    const streamsCategory = t('Tracks');
 
     return {
       extraLinesPerCategory: {
@@ -195,6 +196,14 @@ const KeyboardShortcuts = memo(({
           category: seekingCategory,
           before: <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} style={{ verticalAlign: 'middle', marginRight: 5 }} />,
         },
+        jumpTimelineStart: {
+          name: t('Jump to start of video'),
+          category: seekingCategory,
+        },
+        jumpTimelineEnd: {
+          name: t('Jump to end of video'),
+          category: seekingCategory,
+        },
         goToTimecode: {
           name: t('Seek to timecode'),
           category: seekingCategory,
@@ -234,6 +243,43 @@ const KeyboardShortcuts = memo(({
           name: t('Select next segment'),
           category: segmentsAndCutpointsCategory,
         },
+        reorderSegsByStartTime: {
+          name: t('Reorder segments by start time'),
+          category: segmentsAndCutpointsCategory,
+        },
+        invertAllCutSegments: {
+          name: t('Invert all segments on timeline'),
+          category: segmentsAndCutpointsCategory,
+        },
+        createFixedDurationSegments: {
+          name: t('Create fixed duration segments'),
+          category: segmentsAndCutpointsCategory,
+        },
+        createNumSegments: {
+          name: t('Create num segments'),
+          category: segmentsAndCutpointsCategory,
+        },
+        shuffleSegments: {
+          name: t('Shuffle segments order'),
+          category: segmentsAndCutpointsCategory,
+        },
+        clearSegments: {
+          name: t('Clear all segments'),
+          category: segmentsAndCutpointsCategory,
+        },
+        toggleSegmentsList: {
+          name: t('Show sidebar'),
+          category: segmentsAndCutpointsCategory,
+        },
+
+        toggleStreamsSelector: {
+          name: t('Edit tracks / metadata tags'),
+          category: streamsCategory,
+        },
+        extractAllStreams: {
+          name: t('Extract all tracks'),
+          category: streamsCategory,
+        },
 
         timelineZoomIn: {
           name: t('Zoom in timeline'),
@@ -260,6 +306,14 @@ const KeyboardShortcuts = memo(({
           name: t('Delete source file'),
           category: outputCategory,
         },
+        convertFormatCurrentFile: {
+          name: t('Convert current file to supported format'),
+          category: outputCategory,
+        },
+        convertFormatBatch: {
+          name: t('Batch convert files to supported format'),
+          category: outputCategory,
+        },
 
         batchPreviousFile: {
           name: t('Previous file'),
@@ -273,9 +327,29 @@ const KeyboardShortcuts = memo(({
           name: t('Close batch'),
           category: batchFilesCategory,
         },
+        concatBatch: {
+          name: t('Merge/concatenate files'),
+          category: batchFilesCategory,
+        },
 
+        toggleKeyframeCutMode: {
+          name: t('Cut mode'),
+          category: otherCategory,
+        },
+        toggleCaptureFormat: {
+          name: t('Capture frame format'),
+          category: otherCategory,
+        },
+        toggleStripAudio: {
+          name: t('Keep or discard audio tracks'),
+          category: otherCategory,
+        },
         increaseRotation: {
           name: t('Change rotation'),
+          category: otherCategory,
+        },
+        setStartTimeOffset: {
+          name: t('Set custom start offset/timecode'),
           category: otherCategory,
         },
         undo: {

@@ -126,7 +126,7 @@ const SegmentList = memo(({
   formatTimecode, apparentCutSegments, inverseCutSegments, getFrameCount, onSegClick,
   currentSegIndex, invertCutSegments,
   updateSegOrder, updateSegOrders, addCutSegment, removeCutSegment,
-  onLabelSegmentPress, currentCutSeg, segmentAtCursor, toggleSideBar, splitCurrentSegment,
+  onLabelSegmentPress, currentCutSeg, segmentAtCursor, toggleSegmentsList, splitCurrentSegment,
   enabledSegments, enabledSegmentsRaw, onExportSingleSegmentClick, onExportSegmentEnabledToggle, onExportSegmentDisableAll, onExportSegmentEnableAll,
   jumpSegStart, jumpSegEnd, simpleMode, onViewSegmentTagsPress,
 }) => {
@@ -247,7 +247,7 @@ const SegmentList = memo(({
             size={18}
             style={{ verticalAlign: 'middle', color: 'white', cursor: 'pointer' }}
             role="button"
-            onClick={toggleSideBar}
+            onClick={toggleSegmentsList}
           />
 
           {headerText}

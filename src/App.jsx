@@ -64,7 +64,7 @@ import {
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
-import { askForOutDir, askForImportChapters, createNumSegments, createFixedDurationSegments, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog } from './dialogs';
+import { askForOutDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags } from './segments';
@@ -262,7 +262,7 @@ const App = memo(() => {
     });
   }, []);
 
-  const toggleRightBar = useCallback(() => setShowRightBar(v => !v), []);
+  const toggleSegmentsList = useCallback(() => setShowRightBar(v => !v), []);
 
   const toggleCopyStreamId = useCallback((path, index) => {
     setCopyStreamIdsForPath(path, (old) => ({ ...old, [index]: !old[index] }));
@@ -363,6 +363,8 @@ const App = memo(() => {
   const jumpSegEnd = useCallback((index) => seekAbs(apparentCutSegments[index].end), [apparentCutSegments, seekAbs]);
   const jumpCutStart = useCallback(() => jumpSegStart(currentSegIndexSafe), [currentSegIndexSafe, jumpSegStart]);
   const jumpCutEnd = useCallback(() => jumpSegEnd(currentSegIndexSafe), [currentSegIndexSafe, jumpSegEnd]);
+  const jumpTimelineStart = useCallback(() => seekAbs(0), [seekAbs]);
+  const jumpTimelineEnd = useCallback(() => seekAbs(durationSafe), [durationSafe, seekAbs]);
 
   const sortedCutSegments = useMemo(() => sortSegments(apparentCutSegments), [apparentCutSegments]);
 
@@ -679,7 +681,7 @@ const App = memo(() => {
     }
   }, [setWorking, ensureOutDirAccessible, customOutDir, segmentsToChapters, ffmpegMergeFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge]);
 
-  const onMergeFilesClick = useCallback(() => {
+  const concatCurrentBatch = useCallback(() => {
     if (batchFiles.length < 2) {
       errorToast(i18n.t('Please open at least 2 files to merge, then try again'));
       return;
@@ -930,7 +932,7 @@ const App = memo(() => {
     showUnsupportedFileMessage();
   }, [html5ify, html5ifyDummy, showUnsupportedFileMessage]);
 
-  const batchConvertFormat = useCallback(async () => {
+  const convertFormatBatch = useCallback(async () => {
     if (batchFiles.length < 1) return;
     const filePaths = batchFiles.map((f) => f.path);
 
@@ -1539,6 +1541,91 @@ const App = memo(() => {
     seekAbs(timeCode);
   }, [filePath, seekAbs]);
 
+  const toggleStreamsSelector = useCallback(() => setStreamsSelectorShown((v) => !v), []);
+
+  const extractAllStreams = useCallback(async () => {
+    if (!filePath) return;
+
+    if (!(await confirmExtractAllStreamsDialog())) return;
+
+    if (workingRef.current) return;
+    try {
+      setWorking(i18n.t('Extracting all streams'));
+      setStreamsSelectorShown(false);
+      await extractStreams({ customOutDir, filePath, streams: mainStreams });
+      openDirToast({ dirPath: outputDir, text: i18n.t('All streams have been extracted as separate files') });
+    } catch (err) {
+      errorToast(i18n.t('Failed to extract all streams'));
+      console.error('Failed to extract all streams', err);
+    } finally {
+      setWorking();
+    }
+  }, [customOutDir, filePath, mainStreams, outputDir, setWorking]);
+
+  const userHtml5ifyCurrentFile = useCallback(async () => {
+    if (!filePath) return;
+
+    async function getHtml5ifySpeed() {
+      const allHtml5ifyOptions = ['fastest', 'fastest-audio', 'fastest-audio-remux', 'fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'];
+      let relevantOptions = [];
+      if (hasAudio && hasVideo) relevantOptions = [...allHtml5ifyOptions];
+      else if (hasAudio) relevantOptions = [...relevantOptions, 'fast-audio-remux', 'slow-audio', 'slowest'];
+      else if (hasVideo) relevantOptions = [...relevantOptions, 'fastest', 'fast', 'slow', 'slowest'];
+      const { selectedOption, remember } = await askForHtml5ifySpeed({ allowedOptions: allHtml5ifyOptions.filter((option) => relevantOptions.includes(option)), showRemember: true, initialOption: rememberConvertToSupportedFormat });
+      if (!selectedOption) return undefined;
+
+      console.log('Choice', { speed: selectedOption, remember });
+
+      setRememberConvertToSupportedFormat(remember ? selectedOption : undefined);
+
+      return selectedOption;
+    }
+
+    const speed = await getHtml5ifySpeed();
+    if (!speed) return;
+
+    if (workingRef.current) return;
+    try {
+      setWorking(i18n.t('Converting to supported format'));
+      await html5ifyAndLoad(customOutDir, filePath, speed, hasVideo, hasAudio);
+    } catch (err) {
+      errorToast(i18n.t('Failed to convert file. Try a different conversion'));
+      console.error('Failed to html5ify file', err);
+    } finally {
+      setWorking();
+    }
+  }, [customOutDir, filePath, html5ifyAndLoad, hasVideo, hasAudio, rememberConvertToSupportedFormat, setWorking]);
+
+  const checkFileOpened = useCallback(() => {
+    if (isFileOpened) return true;
+    toast.fire({ icon: 'info', title: i18n.t('You need to open a media file first') });
+    return false;
+  }, [isFileOpened]);
+
+  const createNumSegments = useCallback(async () => {
+    if (!checkFileOpened() || !isDurationValid(duration)) return;
+    const segments = await createNumSegmentsDialog(duration);
+    if (segments) loadCutSegments(segments);
+  }, [checkFileOpened, duration, loadCutSegments]);
+
+  const createFixedDurationSegments = useCallback(async () => {
+    if (!checkFileOpened() || !isDurationValid(duration)) return;
+    const segments = await createFixedDurationSegmentsDialog(duration);
+    if (segments) loadCutSegments(segments);
+  }, [checkFileOpened, duration, loadCutSegments]);
+
+  const askSetStartTimeOffset = useCallback(async () => {
+    const newStartTimeOffset = await promptTimeOffset({
+      initialValue: startTimeOffset !== undefined ? formatDuration({ seconds: startTimeOffset }) : undefined,
+      title: i18n.t('Set custom start time offset'),
+      text: i18n.t('Instead of video apparently starting at 0, you can offset by a specified value. This only applies to the preview inside LosslessCut and does not modify the file in any way. (Useful for viewing/cutting videos according to timecodes)'),
+    });
+
+    if (newStartTimeOffset === undefined) return;
+
+    setStartTimeOffset(newStartTimeOffset);
+  }, [startTimeOffset]);
+
   const onKeyPress = useCallback(({ action, keyup }) => {
     function seekReset() {
       seekAccelerationRef.current = 1;
@@ -1561,7 +1648,6 @@ const App = memo(() => {
       splitCurrentSegment,
       increaseRotation,
       goToTimecode,
-
       seekBackwards() {
         if (keyup) {
           seekReset();
@@ -1588,20 +1674,36 @@ const App = memo(() => {
       selectNextSegment: () => jumpSeg(1),
       jumpCutStart,
       jumpCutEnd,
+      jumpTimelineStart,
+      jumpTimelineEnd,
       timelineZoomIn: () => { zoomRel(1); return false; },
       timelineZoomOut: () => { zoomRel(-1); return false; },
       batchPreviousFile: () => batchFileJump(-1),
       batchNextFile: () => batchFileJump(1),
       closeBatch,
-
       removeCurrentSegment: () => removeCutSegment(currentSegIndexSafe),
       undo: () => cutSegmentsHistory.back(),
       redo: () => cutSegmentsHistory.forward(),
       labelCurrentSegment: () => { onLabelSegmentPress(currentSegIndexSafe); return false; },
       addSegment: () => addCutSegment(),
-
       toggleHelp: () => { toggleHelp(); return false; },
       export: onExportPress,
+      reorderSegsByStartTime,
+      invertAllCutSegments,
+      createFixedDurationSegments,
+      createNumSegments,
+      shuffleSegments,
+      clearSegments,
+      toggleSegmentsList,
+      toggleStreamsSelector,
+      extractAllStreams,
+      convertFormatCurrentFile: userHtml5ifyCurrentFile,
+      convertFormatBatch,
+      concatBatch: concatCurrentBatch,
+      toggleKeyframeCutMode: () => toggleKeyframeCut(true),
+      toggleCaptureFormat,
+      toggleStripAudio,
+      setStartTimeOffset: askSetStartTimeOffset,
     };
 
     function tryMainActions() {
@@ -1638,7 +1740,7 @@ const App = memo(() => {
     if (match) return bubble;
 
     return true; // bubble the event
-  }, [addCutSegment, batchFileJump, captureSnapshot, changePlaybackRate, cleanupFilesDialog, closeBatch, closeExportConfirm, concatDialogVisible, currentSegIndexSafe, cutSegmentsHistory, exportConfirmVisible, goToTimecode, increaseRotation, jumpCutEnd, jumpCutStart, jumpSeg, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegmentPress, removeCutSegment, seekClosestKeyframe, seekRel, seekRelPercent, setCutEnd, setCutStart, shortStep, splitCurrentSegment, timelineToggleComfortZoom, toggleHelp, togglePlay, zoomRel]);
+  }, [addCutSegment, askSetStartTimeOffset, batchFileJump, captureSnapshot, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, currentSegIndexSafe, cutSegmentsHistory, exportConfirmVisible, extractAllStreams, goToTimecode, increaseRotation, invertAllCutSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegmentPress, removeCutSegment, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, setCutEnd, setCutStart, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleHelp, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, userHtml5ifyCurrentFile, zoomRel]);
 
   useKeyboard({ keyBindings, onKeyPress });
 
@@ -1670,25 +1772,6 @@ const App = memo(() => {
     }
   }, [customOutDir, filePath, mainStreams, outputDir, setWorking]);
 
-  const extractAllStreams = useCallback(async () => {
-    if (!filePath) return;
-
-    if (!(await confirmExtractAllStreamsDialog())) return;
-
-    if (workingRef.current) return;
-    try {
-      setWorking(i18n.t('Extracting all streams'));
-      setStreamsSelectorShown(false);
-      await extractStreams({ customOutDir, filePath, streams: mainStreams });
-      openDirToast({ dirPath: outputDir, text: i18n.t('All streams have been extracted as separate files') });
-    } catch (err) {
-      errorToast(i18n.t('Failed to extract all streams'));
-      console.error('Failed to extract all streams', err);
-    } finally {
-      setWorking();
-    }
-  }, [customOutDir, filePath, mainStreams, outputDir, setWorking]);
-
   const addStreamSourceFile = useCallback(async (path) => {
     if (externalStreamFiles[path]) return;
     const { streams } = await getAllStreams(path);
@@ -1697,12 +1780,6 @@ const App = memo(() => {
     setExternalStreamFiles(old => ({ ...old, [path]: { streams, formatData } }));
     setCopyStreamIdsForPath(path, () => fromPairs(streams.map(({ index }) => [index, true])));
   }, [externalStreamFiles, setCopyStreamIdsForPath]);
-
-  const checkFileOpened = useCallback(() => {
-    if (isFileOpened) return true;
-    toast.fire({ icon: 'info', title: i18n.t('You need to open a media file first') });
-    return false;
-  }, [isFileOpened]);
 
   const batchFilePaths = useMemo(() => batchFiles.map((f) => f.path), [batchFiles]);
 
@@ -1798,40 +1875,6 @@ const App = memo(() => {
     }
   }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, batchFiles.length, isFileOpened, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile]);
 
-  const userHtml5ifyCurrentFile = useCallback(async () => {
-    if (!filePath) return;
-
-    async function getHtml5ifySpeed() {
-      const allHtml5ifyOptions = ['fastest', 'fastest-audio', 'fastest-audio-remux', 'fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'];
-      let relevantOptions = [];
-      if (hasAudio && hasVideo) relevantOptions = [...allHtml5ifyOptions];
-      else if (hasAudio) relevantOptions = [...relevantOptions, 'fast-audio-remux', 'slow-audio', 'slowest'];
-      else if (hasVideo) relevantOptions = [...relevantOptions, 'fastest', 'fast', 'slow', 'slowest'];
-      const { selectedOption, remember } = await askForHtml5ifySpeed({ allowedOptions: allHtml5ifyOptions.filter((option) => relevantOptions.includes(option)), showRemember: true, initialOption: rememberConvertToSupportedFormat });
-      if (!selectedOption) return undefined;
-
-      console.log('Choice', { speed: selectedOption, remember });
-
-      setRememberConvertToSupportedFormat(remember ? selectedOption : undefined);
-
-      return selectedOption;
-    }
-
-    const speed = await getHtml5ifySpeed();
-    if (!speed) return;
-
-    if (workingRef.current) return;
-    try {
-      setWorking(i18n.t('Converting to supported format'));
-      await html5ifyAndLoad(customOutDir, filePath, speed, hasVideo, hasAudio);
-    } catch (err) {
-      errorToast(i18n.t('Failed to convert file. Try a different conversion'));
-      console.error('Failed to html5ify file', err);
-    } finally {
-      setWorking();
-    }
-  }, [customOutDir, filePath, html5ifyAndLoad, hasVideo, hasAudio, rememberConvertToSupportedFormat, setWorking]);
-
   const onVideoError = useCallback(async () => {
     const { error } = videoRef.current;
     if (!error) return;
@@ -1871,18 +1914,6 @@ const App = memo(() => {
   }, [fileUri, usingPreviewFile, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, filePath, setWorking]);
 
   useEffect(() => {
-    async function setStartOffset() {
-      const newStartTimeOffset = await promptTimeOffset({
-        initialValue: startTimeOffset !== undefined ? formatDuration({ seconds: startTimeOffset }) : undefined,
-        title: i18n.t('Set custom start time offset'),
-        text: i18n.t('Instead of video apparently starting at 0, you can offset by a specified value. This only applies to the preview inside LosslessCut and does not modify the file in any way. (Useful for viewing/cutting videos according to timecodes)'),
-      });
-
-      if (newStartTimeOffset === undefined) return;
-
-      setStartTimeOffset(newStartTimeOffset);
-    }
-
     async function exportEdlFile2(e, type) {
       if (!checkFileOpened()) return;
       try {
@@ -1910,18 +1941,6 @@ const App = memo(() => {
       }
     }
 
-    async function createNumSegments2() {
-      if (!checkFileOpened() || !isDurationValid(duration)) return;
-      const segments = await createNumSegments(duration);
-      if (segments) loadCutSegments(segments);
-    }
-
-    async function createFixedDurationSegments2() {
-      if (!checkFileOpened() || !isDurationValid(duration)) return;
-      const segments = await createFixedDurationSegments(duration);
-      if (segments) loadCutSegments(segments);
-    }
-
     async function fixInvalidDuration2() {
       if (!checkFileOpened() || workingRef.current) return;
       try {
@@ -1947,7 +1966,7 @@ const App = memo(() => {
     electron.ipcRenderer.on('close-file', closeFile2);
     electron.ipcRenderer.on('close-batch-files', closeBatch2);
     electron.ipcRenderer.on('html5ify', userHtml5ifyCurrentFile);
-    electron.ipcRenderer.on('set-start-offset', setStartOffset);
+    electron.ipcRenderer.on('set-start-offset', askSetStartTimeOffset);
     electron.ipcRenderer.on('extract-all-streams', extractAllStreams);
     electron.ipcRenderer.on('showStreamsSelector', showStreamsSelector);
     electron.ipcRenderer.on('importEdlFile', importEdlFile);
@@ -1959,8 +1978,8 @@ const App = memo(() => {
     electron.ipcRenderer.on('openSendReportDialog', openSendReportDialog2);
     electron.ipcRenderer.on('clearSegments', clearSegments);
     electron.ipcRenderer.on('shuffleSegments', shuffleSegments);
-    electron.ipcRenderer.on('createNumSegments', createNumSegments2);
-    electron.ipcRenderer.on('createFixedDurationSegments', createFixedDurationSegments2);
+    electron.ipcRenderer.on('createNumSegments', createNumSegments);
+    electron.ipcRenderer.on('createFixedDurationSegments', createFixedDurationSegments);
     electron.ipcRenderer.on('invertAllCutSegments', invertAllCutSegments);
     electron.ipcRenderer.on('fixInvalidDuration', fixInvalidDuration2);
     electron.ipcRenderer.on('reorderSegsByStartTime', reorderSegsByStartTime);
@@ -1970,7 +1989,7 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('close-file', closeFile2);
       electron.ipcRenderer.removeListener('close-batch-files', closeBatch2);
       electron.ipcRenderer.removeListener('html5ify', userHtml5ifyCurrentFile);
-      electron.ipcRenderer.removeListener('set-start-offset', setStartOffset);
+      electron.ipcRenderer.removeListener('set-start-offset', askSetStartTimeOffset);
       electron.ipcRenderer.removeListener('extract-all-streams', extractAllStreams);
       electron.ipcRenderer.removeListener('showStreamsSelector', showStreamsSelector);
       electron.ipcRenderer.removeListener('importEdlFile', importEdlFile);
@@ -1982,13 +2001,13 @@ const App = memo(() => {
       electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog2);
       electron.ipcRenderer.removeListener('clearSegments', clearSegments);
       electron.ipcRenderer.removeListener('shuffleSegments', shuffleSegments);
-      electron.ipcRenderer.removeListener('createNumSegments', createNumSegments2);
-      electron.ipcRenderer.removeListener('createFixedDurationSegments', createFixedDurationSegments2);
+      electron.ipcRenderer.removeListener('createNumSegments', createNumSegments);
+      electron.ipcRenderer.removeListener('createFixedDurationSegments', createFixedDurationSegments);
       electron.ipcRenderer.removeListener('invertAllCutSegments', invertAllCutSegments);
       electron.ipcRenderer.removeListener('fixInvalidDuration', fixInvalidDuration2);
       electron.ipcRenderer.removeListener('reorderSegsByStartTime', reorderSegsByStartTime);
     };
-  }, [apparentCutSegments, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, customOutDir, cutSegments, duration, extractAllStreams, fileFormat, filePath, fixInvalidDuration, getFrameCount, getTimeFromFrameNum, invertAllCutSegments, loadCutSegments, loadMedia, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shuffleSegments, startTimeOffset, toggleHelp, toggleSettings, userHtml5ifyCurrentFile, userOpenFiles]);
+  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, createFixedDurationSegments, createNumSegments, customOutDir, cutSegments, extractAllStreams, fileFormat, filePath, fixInvalidDuration, getFrameCount, getTimeFromFrameNum, invertAllCutSegments, loadCutSegments, loadMedia, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shuffleSegments, toggleHelp, toggleSettings, userHtml5ifyCurrentFile, userOpenFiles]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
     try {
@@ -2184,9 +2203,8 @@ const App = memo(() => {
                 batchOpenSingleFile={batchOpenSingleFile}
                 batchRemoveFile={batchRemoveFile}
                 closeBatch={closeBatch}
-                onMergeFilesClick={onMergeFilesClick}
-                onBatchConvertToSupportedFormatClick={batchConvertFormat}
-
+                onMergeFilesClick={concatCurrentBatch}
+                onBatchConvertToSupportedFormatClick={convertFormatBatch}
               />
             )}
           </AnimatePresence>
@@ -2234,7 +2252,7 @@ const App = memo(() => {
                     size={30}
                     role="button"
                     style={{ marginRight: 10 }}
-                    onClick={toggleRightBar}
+                    onClick={toggleSegmentsList}
                   />
                 )}
               </div>
@@ -2272,7 +2290,7 @@ const App = memo(() => {
                   segmentAtCursor={segmentAtCursor}
                   addCutSegment={addCutSegment}
                   removeCutSegment={removeCutSegment}
-                  toggleSideBar={toggleRightBar}
+                  toggleSegmentsList={toggleSegmentsList}
                   splitCurrentSegment={splitCurrentSegment}
                   enabledSegmentsRaw={enabledSegmentsRaw}
                   enabledSegments={enabledSegments}
@@ -2351,9 +2369,10 @@ const App = memo(() => {
             setCutStartTimeManual={setCutStartTimeManual}
             cutEndTimeManual={cutEndTimeManual}
             setCutEndTimeManual={setCutEndTimeManual}
-            duration={durationSafe}
             jumpCutEnd={jumpCutEnd}
             jumpCutStart={jumpCutStart}
+            jumpTimelineStart={jumpTimelineStart}
+            jumpTimelineEnd={jumpTimelineEnd}
             startTimeOffset={startTimeOffset}
             setCutTime={setCutTime}
             currentApparentCutSeg={currentApparentCutSeg}
