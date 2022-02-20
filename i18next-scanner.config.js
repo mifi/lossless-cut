@@ -4,6 +4,8 @@ module.exports = {
   output: './public',
 
   options: {
+    sort: true,
+
     // debug: true,
     defaultLng: 'en',
     func: {
