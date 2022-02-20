@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import i18n from 'i18next';
 
 import { errorToast } from '../util';
@@ -102,6 +102,10 @@ export default () => {
   useEffect(() => safeSetConfig('segmentsToChaptersOnly', segmentsToChaptersOnly), [segmentsToChaptersOnly]);
   const [keyBindings, setKeyBindings] = useState(safeGetConfig('keyBindings'));
   useEffect(() => safeSetConfig('keyBindings', keyBindings), [keyBindings]);
+  const resetKeyBindings = useCallback(() => {
+    configStore.reset('keyBindings');
+    setKeyBindings(safeGetConfig('keyBindings'));
+  }, []);
 
   // NOTE! This useEffect must be placed after all usages of firstUpdateRef.current (safeSetConfig)
   useEffect(() => {
@@ -182,5 +186,6 @@ export default () => {
     setSegmentsToChaptersOnly,
     keyBindings,
     setKeyBindings,
+    resetKeyBindings,
   };
 };

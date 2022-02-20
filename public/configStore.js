@@ -62,6 +62,7 @@ const defaultKeyBindings = [
 
   { keys: 'e', action: 'export' },
   { keys: 'h', action: 'toggleHelp' },
+  { keys: 'shift+/', action: 'toggleKeyboardShortcuts' },
   { keys: 'escape', action: 'closeActiveScreen' },
 ];
 

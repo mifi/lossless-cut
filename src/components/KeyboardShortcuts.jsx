@@ -100,7 +100,7 @@ const CreateBinding = memo(({
 const rowStyle = { display: 'flex', alignItems: 'center', margin: '6px 0' };
 
 const KeyboardShortcuts = memo(({
-  keyBindings, setKeyBindings, currentCutSeg,
+  keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg,
 }) => {
   const { t } = useTranslation();
 
@@ -136,7 +136,11 @@ const KeyboardShortcuts = memo(({
         toggleHelp: {
           name: t('Show/hide help screen'),
         },
+        toggleKeyboardShortcuts: {
+          name: t('Keyboard & mouse shortcuts'),
+        },
 
+        // playbackCategory
         togglePlayResetSpeed: {
           name: t('Play/pause'),
           category: playbackCategory,
@@ -162,6 +166,7 @@ const KeyboardShortcuts = memo(({
           category: playbackCategory,
         },
 
+        // seekingCategory
         seekPreviousFrame: {
           name: t('Step backward 1 frame'),
           category: seekingCategory,
@@ -209,6 +214,7 @@ const KeyboardShortcuts = memo(({
           category: seekingCategory,
         },
 
+        // segmentsAndCutpointsCategory
         addSegment: {
           name: t('Add cut segment'),
           category: segmentsAndCutpointsCategory,
@@ -272,6 +278,7 @@ const KeyboardShortcuts = memo(({
           category: segmentsAndCutpointsCategory,
         },
 
+        // streamsCategory
         toggleStreamsSelector: {
           name: t('Edit tracks / metadata tags'),
           category: streamsCategory,
@@ -281,6 +288,7 @@ const KeyboardShortcuts = memo(({
           category: streamsCategory,
         },
 
+        // zoomOperationsCategory
         timelineZoomIn: {
           name: t('Zoom in timeline'),
           category: zoomOperationsCategory,
@@ -294,6 +302,7 @@ const KeyboardShortcuts = memo(({
           category: zoomOperationsCategory,
         },
 
+        // outputCategory
         export: {
           name: t('Export segment(s)'),
           category: outputCategory,
@@ -315,6 +324,7 @@ const KeyboardShortcuts = memo(({
           category: outputCategory,
         },
 
+        // batchFilesCategory
         batchPreviousFile: {
           name: t('Previous file'),
           category: batchFilesCategory,
@@ -332,6 +342,7 @@ const KeyboardShortcuts = memo(({
           category: batchFilesCategory,
         },
 
+        // otherCategory
         toggleKeyframeCutMode: {
           name: t('Cut mode'),
           category: otherCategory,
@@ -379,6 +390,14 @@ const KeyboardShortcuts = memo(({
     console.log('delete key binding', action, keys);
     setKeyBindings((existingBindings) => existingBindings.filter((existingBinding) => !(existingBinding.keys === keys && existingBinding.action === action)));
   }, [setKeyBindings, t]);
+
+
+  const onResetClick = useCallback(() => {
+    // eslint-disable-next-line no-alert
+    if (!window.confirm(t('Are you sure?'))) return;
+
+    resetKeyBindings();
+  }, [resetKeyBindings, t]);
 
   const onAddBindingClick = useCallback((action) => {
     setCreatingBinding(action);
@@ -448,13 +467,15 @@ const KeyboardShortcuts = memo(({
         ))}
       </div>
 
+      <Button intent="danger" onClick={onResetClick}>{t('Reset')}</Button>
+
       <CreateBinding actionsMap={actionsMap} action={creatingBinding} setCreatingBinding={setCreatingBinding} onNewKeyBindingConfirmed={onNewKeyBindingConfirmed} />
     </>
   );
 });
 
 const KeyboardShortcutsDialog = memo(({
-  isShown, onHide, keyBindings, setKeyBindings, currentCutSeg,
+  isShown, onHide, keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg,
 }) => {
   const { t } = useTranslation();
 
@@ -468,7 +489,7 @@ const KeyboardShortcutsDialog = memo(({
       onConfirm={onHide}
       topOffset="3vh"
     >
-      {isShown ? <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} /> : <div />}
+      {isShown ? <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} /> : <div />}
     </Dialog>
   );
 });
