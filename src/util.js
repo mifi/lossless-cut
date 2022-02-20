@@ -58,6 +58,15 @@ export async function pathExists(pathIn) {
   return fs.pathExists(pathIn);
 }
 
+export async function getPathReadAccessError(pathIn) {
+  try {
+    await fs.access(pathIn, fs.constants.R_OK);
+    return undefined;
+  } catch (err) {
+    return err.code;
+  }
+}
+
 export async function dirExists(dirPath) {
   return (await pathExists(dirPath)) && (await fs.lstat(dirPath)).isDirectory();
 }

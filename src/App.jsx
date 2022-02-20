@@ -59,7 +59,7 @@ import {
   getOutPath, toast, errorToast, handleError, setFileNameTitle, getOutDir, withBlur,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
-  havePermissionToReadFile, resolvePathIfNeeded, pathExists, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
+  havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
   deleteFiles, isStreamThumbnail, getAudioStreams, getVideoStreams, isOutOfSpaceError, shuffleArray,
 } from './util';
 import { formatDuration } from './util/duration';
@@ -1502,11 +1502,17 @@ const App = memo(() => {
       return;
     }
 
-    if (!(await pathExists(path))) {
-      errorToast(i18n.t('The media you tried to open does not exist'));
+    const pathReadAccessErrorCode = await getPathReadAccessError(path);
+    if (pathReadAccessErrorCode != null) {
+      let errorMessage;
+      if (pathReadAccessErrorCode === 'ENOENT') errorMessage = i18n.t('The media you tried to open does not exist');
+      else if (['EACCES', 'EPERM'].includes(pathReadAccessErrorCode)) errorMessage = i18n.t('You do not have permission to access this file');
+      else errorMessage = i18n.t('Could not open media due to error {{errorCode}}', { errorCode: pathReadAccessErrorCode });
+      errorToast(errorMessage);
       return;
     }
 
+    // Not sure why this one is needed, but I think sometimes fs.access doesn't fail but it fails when actually trying to read
     if (!(await havePermissionToReadFile(path))) {
       errorToast(i18n.t('You do not have permission to access this file'));
       return;
