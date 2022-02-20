@@ -989,22 +989,29 @@ const App = memo(() => {
 
   const showPlaybackFailedMessage = () => errorToast(i18n.t('Unable to playback this file. Try to convert to supported format from the menu'));
 
-  const togglePlay = useCallback((resetPlaybackRate) => {
-    if (!filePath) return;
+  const pause = useCallback(() => {
+    if (!filePath || !playing) return;
+    videoRef.current.pause();
+  }, [filePath, playing]);
+
+  const play = useCallback((resetPlaybackRate) => {
+    if (!filePath || playing) return;
 
     const video = videoRef.current;
-    if (playing) {
-      video.pause();
-      return;
-    }
-
     if (resetPlaybackRate) video.playbackRate = 1;
-
     video.play().catch((err) => {
       showPlaybackFailedMessage();
       console.error(err);
     });
-  }, [playing, filePath]);
+  }, [filePath, playing]);
+
+  const togglePlay = useCallback((resetPlaybackRate) => {
+    if (playing) {
+      pause();
+      return;
+    }
+    play(resetPlaybackRate);
+  }, [playing, play, pause]);
 
   const closeFileWithConfirm = useCallback(() => {
     if (!isFileOpened || workingRef.current) return;
@@ -1638,6 +1645,8 @@ const App = memo(() => {
     const mainActions = {
       togglePlayNoResetSpeed: () => togglePlay(),
       togglePlayResetSpeed: () => togglePlay(true),
+      play: () => play(),
+      pause,
       reducePlaybackRate: () => changePlaybackRate(-1),
       reducePlaybackRateMore: () => changePlaybackRate(-1, 2.0),
       increasePlaybackRate: () => changePlaybackRate(1),
@@ -1747,7 +1756,7 @@ const App = memo(() => {
     if (match) return bubble;
 
     return true; // bubble the event
-  }, [addCutSegment, askSetStartTimeOffset, batchFileJump, captureSnapshot, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, currentSegIndexSafe, cutSegmentsHistory, exportConfirmVisible, extractAllStreams, goToTimecode, increaseRotation, invertAllCutSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegmentPress, removeCutSegment, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, setCutEnd, setCutStart, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleHelp, toggleKeyboardShortcuts, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addCutSegment, askSetStartTimeOffset, batchFileJump, captureSnapshot, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, currentSegIndexSafe, cutSegmentsHistory, exportConfirmVisible, extractAllStreams, goToTimecode, increaseRotation, invertAllCutSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegmentPress, pause, play, removeCutSegment, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, setCutEnd, setCutStart, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleHelp, toggleKeyboardShortcuts, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, userHtml5ifyCurrentFile, zoomRel]);
 
   useKeyboard({ keyBindings, onKeyPress });
 

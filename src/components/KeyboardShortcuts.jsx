@@ -149,6 +149,14 @@ const KeyboardShortcuts = memo(({
           name: t('Play/pause (no reset speed)'),
           category: playbackCategory,
         },
+        play: {
+          name: t('Play'),
+          category: playbackCategory,
+        },
+        pause: {
+          name: t('Pause'),
+          category: playbackCategory,
+        },
         increasePlaybackRate: {
           name: t('Speed up playback'),
           category: playbackCategory,
