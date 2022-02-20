@@ -1,6 +1,6 @@
 import React, { memo, Fragment, useEffect, useMemo, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, InlineAlert, UndoIcon, Paragraph, TakeActionIcon, IconButton, Button, DeleteIcon, AddIcon, Heading, Text, Dialog } from 'evergreen-ui';
+import { InlineAlert, UndoIcon, Paragraph, TakeActionIcon, IconButton, Button, DeleteIcon, AddIcon, Heading, Text, Dialog } from 'evergreen-ui';
 import { FaMouse, FaPlus, FaStepForward, FaStepBackward } from 'react-icons/fa';
 import Mousetrap from 'mousetrap';
 import groupBy from 'lodash/groupBy';
@@ -334,10 +334,6 @@ const KeyboardShortcuts = memo(({
   return (
     <>
       <div style={{ color: 'black' }}>
-        <div>
-          <Alert marginBottom={20}>{t('Hover mouse over buttons in the main interface to see which function they have')}</Alert>
-        </div>
-
         {categoriesWithActions.map(([category, actionsInCategory]) => (
           <div key={category}>
             {category !== 'undefined' && <Heading marginTop={30} marginBottom={14}>{category}</Heading>}
