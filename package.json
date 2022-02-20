@@ -270,9 +270,9 @@
       "entitlementsInherit": "entitlements.mas.inherit.plist",
       "provisioningProfile": "LosslessCut_Mac_App_Store_provisioning_profile.provisionprofile",
       "binaries": [
-        "dist/mas/LosslessCut.app/Contents/Resources/ffmpeg",
-        "dist/mas/LosslessCut.app/Contents/Resources/ffprobe",
-        "dist/mas/LosslessCut.app/Contents/Resources/app.asar.unpacked/node_modules/trash/lib/macos-trash"
+        "Contents/Resources/ffmpeg",
+        "Contents/Resources/ffprobe",
+        "Contents/Resources/app.asar.unpacked/node_modules/trash/lib/macos-trash"
       ]
     },
     "win": {

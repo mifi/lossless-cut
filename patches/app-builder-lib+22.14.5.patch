@@ -1,0 +1,22 @@
+diff --git a/node_modules/app-builder-lib/out/macPackager.js b/node_modules/app-builder-lib/out/macPackager.js
+index e0b51e3..c9e1ce5 100644
+--- a/node_modules/app-builder-lib/out/macPackager.js
++++ b/node_modules/app-builder-lib/out/macPackager.js
+@@ -199,15 +199,13 @@ class MacPackager extends platformPackager_1.PlatformPackager {
+         let binaries = options.binaries || undefined;
+         if (binaries) {
+             // Accept absolute paths for external binaries, else resolve relative paths from the artifact's app Contents path.
+-            const userDefinedBinaries = await Promise.all(binaries.map(async (destination) => {
++            binaries = await Promise.all(binaries.map(async (destination) => {
+                 if (await fs_1.statOrNull(destination)) {
+                     return destination;
+                 }
+                 return path.resolve(appPath, destination);
+             }));
+-            // Insert at front to prioritize signing. We still sort by depth next
+-            binaries = userDefinedBinaries.concat(binaries);
+-            builder_util_1.log.info("Signing addtional user-defined binaries: " + JSON.stringify(userDefinedBinaries, null, 1));
++            builder_util_1.log.info("Signing addtional user-defined binaries: " + JSON.stringify(binaries, null, 1));
+         }
+         const signOptions = {
+             "identity-validation": false,
