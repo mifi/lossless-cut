@@ -95,4 +95,4 @@ jobs:
         # Note: this will succeed on any errors, so beware
         continue-on-error: true
         run: |
-          xcrun altool --upload-app -f dist/mas/LosslessCut-mac.pkg --apiKey ${{ secrets.api_key_id }} --apiIssuer ${{ secrets.api_key_issuer_id }}
+          xcrun altool --upload-app -f dist/mas/LosslessCut-mac.pkg --type macos --apiKey ${{ secrets.api_key_id }} --apiIssuer ${{ secrets.api_key_issuer_id }}
