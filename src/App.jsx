@@ -56,7 +56,7 @@ import {
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube, getTimeFromFrameNum as getTimeFromFrameNumRaw, getFrameCountRaw } from './edlFormats';
 import {
-  getOutPath, toast, errorToast, handleError, setFileNameTitle, getOutDir, withBlur,
+  getOutPath, toast, errorToast, handleError, setFileNameTitle, getOutDir, getFileDir, withBlur,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
   isDurationValid, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
@@ -64,7 +64,7 @@ import {
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
-import { askForOutDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog } from './dialogs';
+import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags } from './segments';
@@ -616,7 +616,37 @@ const App = memo(() => {
     if (!supportsRotation && !hideAllNotifications) toast.fire({ text: i18n.t('Lossless rotation might not work with this file format. You may try changing to MP4') });
   }, [hideAllNotifications, fileFormat]);
 
-  const ensureOutDirAccessible = useCallback(async (outFilePath) => {
+  const ensureAccessibleDirectories = useCallback(async ({ inputPath, checkInputDir }) => {
+    // MacOS App Store builds don't allow writing anywhere, and we set the flag com.apple.security.files.user-selected.read-write
+    // With this flag, we can show the user an open-dialog for a directory, and once the user has opened that directory, we can write files there until the app is restarted.
+    // NOTE: when MAS (dev) build, Application Support will instead be here:
+    // ~/Library/Containers/no.mifi.losslesscut-mac/Data/Library/Application Support
+    // To start from scratch: rm -rf ~/Library/Containers/no.mifi.losslesscut-mac
+    const simulateMasBuild = false; // isDev; // can be used for testing without having to build mas-dev
+
+    const masMode = isMasBuild || simulateMasBuild;
+
+    if (checkInputDir) {
+      // Check input dir, if we need to write project file here
+      const inputFileDir = getFileDir(inputPath);
+      let simulateMasPermissionError = simulateMasBuild;
+      for (;;) {
+        // eslint-disable-next-line no-await-in-loop
+        if (await checkDirWriteAccess(inputFileDir) && !simulateMasPermissionError) break;
+        if (!masMode) {
+          // fail right away
+          errorToast(i18n.t('You have no write access to the directory of this file'));
+          return { cancel: true };
+        }
+
+        // We are now mas, so we need to try to force the user to allow access to the dir, so we can write the project file later
+        // eslint-disable-next-line no-await-in-loop
+        const userSelectedDir = await askForInputDir(inputFileDir);
+        simulateMasPermissionError = false; // assume user chose the right dir
+        if (userSelectedDir == null) return { cancel: true }; // allow user to cancel
+      }
+    }
+
     let newCustomOutDir = customOutDir;
 
     // Reset if doesn't exist anymore
@@ -626,10 +656,10 @@ const App = memo(() => {
       newCustomOutDir = undefined;
     }
 
-    const effectiveOutDirPath = getOutDir(newCustomOutDir, outFilePath);
+    const effectiveOutDirPath = getOutDir(newCustomOutDir, inputPath);
     const hasDirWriteAccess = await checkDirWriteAccess(effectiveOutDirPath);
-    if (!hasDirWriteAccess) {
-      if (isMasBuild) {
+    if (!hasDirWriteAccess || simulateMasBuild) {
+      if (masMode) {
         const newOutDir = await askForOutDir(effectiveOutDirPath);
         // If user canceled open dialog, refuse to continue, because we will get permission denied error from MAS sandbox
         if (!newOutDir) return { cancel: true };
@@ -638,6 +668,7 @@ const App = memo(() => {
       } else {
         errorToast(i18n.t('You have no write access to the directory of this file, please select a custom working dir'));
         setCustomOutDir(undefined);
+        newCustomOutDir = undefined;
         return { cancel: true };
       }
     }
@@ -652,7 +683,7 @@ const App = memo(() => {
       setWorking(i18n.t('Merging'));
 
       const firstPath = paths[0];
-      const { newCustomOutDir, cancel } = await ensureOutDirAccessible(firstPath);
+      const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: firstPath });
       if (cancel) return;
 
       const ext = extname(firstPath);
@@ -679,7 +710,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [setWorking, ensureOutDirAccessible, customOutDir, segmentsToChapters, ffmpegMergeFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge]);
+  }, [setWorking, ensureAccessibleDirectories, customOutDir, segmentsToChapters, ffmpegMergeFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge]);
 
   const concatCurrentBatch = useCallback(() => {
     if (batchFiles.length < 2) {
@@ -952,11 +983,8 @@ const App = memo(() => {
       for (const path of filePaths) {
         try {
           // eslint-disable-next-line no-await-in-loop
-          const { newCustomOutDir, cancel } = await ensureOutDirAccessible(path);
-          if (cancel) {
-            toast.fire({ title: i18n.t('Aborted') });
-            return;
-          }
+          const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: path });
+          if (cancel) return;
 
           // eslint-disable-next-line no-await-in-loop
           await html5ify({ customOutDir: newCustomOutDir, filePath: path, speed, hasAudio: true, hasVideo: true, onProgress: setTotalProgress });
@@ -977,7 +1005,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [batchFiles, ensureOutDirAccessible, html5ify, setWorking]);
+  }, [batchFiles, ensureAccessibleDirectories, html5ify, setWorking]);
 
   const getConvertToSupportedFormat = useCallback((fallback) => rememberConvertToSupportedFormat || fallback, [rememberConvertToSupportedFormat]);
 
@@ -1518,11 +1546,12 @@ const App = memo(() => {
       return;
     }
 
-    const { newCustomOutDir, cancel } = await ensureOutDirAccessible(path);
+    // checkInputDir: true because we will be writing project file here
+    const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: path, checkInputDir: true });
     if (cancel) return;
 
     await loadMedia({ filePath: path, customOutDir: newCustomOutDir, projectPath });
-  }, [ensureOutDirAccessible, loadMedia]);
+  }, [ensureAccessibleDirectories, loadMedia]);
 
   const batchOpenSingleFile = useCallback(async (path) => {
     if (workingRef.current) return;

@@ -11,9 +11,13 @@ const trash = window.require('trash');
 
 const { readdir, unlink } = fs;
 
+export function getFileDir(filePath) {
+  return filePath ? dirname(filePath) : undefined;
+}
+
 export function getOutDir(customOutDir, filePath) {
   if (customOutDir) return customOutDir;
-  if (filePath) return dirname(filePath);
+  if (filePath) return getFileDir(filePath);
   return undefined;
 }
 
