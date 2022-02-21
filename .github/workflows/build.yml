@@ -95,4 +95,4 @@ jobs:
         # Note: this will succeed on any errors, so beware
         continue-on-error: true
         run: |
-          xcrun altool --upload-app -f dist/mas/LosslessCut-mac.pkg --type macos --apiKey ${{ secrets.api_key_id }} --apiIssuer ${{ secrets.api_key_issuer_id }}
+          node script/xcrun-wrapper.mjs dist/mas/LosslessCut-mac.pkg ${{ secrets.api_key_id }} ${{ secrets.api_key_issuer_id }} 1505323402 no.mifi.losslesscut-mac
