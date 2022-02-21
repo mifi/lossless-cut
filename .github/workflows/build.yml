@@ -91,8 +91,5 @@ jobs:
 
       - name: Upload to Mac App Store
         if: startsWith(matrix.os, 'macos') && env.is_tag == 'true'
-        # In case of ERROR ITMS-90189: Redundant Binary Upload
-        # Note: this will succeed on any errors, so beware
-        continue-on-error: true
         run: |
           node script/xcrun-wrapper.mjs dist/mas/LosslessCut-mac.pkg ${{ secrets.api_key_id }} ${{ secrets.api_key_issuer_id }} 1505323402 no.mifi.losslesscut-mac
