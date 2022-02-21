@@ -1,4 +1,5 @@
 import execa from 'execa';
+import { readFile } from 'fs/promises';
 
 // we need a wrapper script because altool tends to error out very often
 // https://developer.apple.com/forums/thread/698477
@@ -15,8 +16,11 @@ const bundleId = args[4];
 // seems to be the same
 const ascPublicId = apiIssuer;
 
+const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url)));
 
-const packageVersion = process.env.npm_package_version;
+console.log('Using version', packageJson.version);
+
+const packageVersion = packageJson.version;
 // const packageVersion = '3.39.2';
 
 const bundleVersion = packageVersion;
