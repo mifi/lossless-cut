@@ -6,8 +6,7 @@ import CanvasPlayer from './CanvasPlayer';
 const Canvas = memo(({ rotate, filePath, width, height, playerTime, streamIndex, commandedTime, playing }) => {
   const canvasRef = useRef();
 
-  const canvasPlayer = useMemo(() => CanvasPlayer({ path: filePath, width, height, streamIndex }),
-    [filePath, width, height, streamIndex]);
+  const canvasPlayer = useMemo(() => CanvasPlayer({ path: filePath, width, height, streamIndex }), [filePath, width, height, streamIndex]);
 
   useEffect(() => {
     canvasPlayer.setCanvas(canvasRef.current);

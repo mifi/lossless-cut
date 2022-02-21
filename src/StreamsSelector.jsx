@@ -235,7 +235,7 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
   return (
     <tr style={{ opacity: copyStream ? undefined : 0.4 }}>
       <td style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
-        <IconButton title={t('Click to toggle track inclusion when exporting')} appearance="minimal" icon={() => <Icon color={copyStream ? '#52BD95' : '#D14343'} size={20} />} onClick={onClick} />
+        <IconButton title={t('Click to toggle track inclusion when exporting')} appearance="minimal" icon={<Icon color={copyStream ? '#52BD95' : '#D14343'} size={20} />} onClick={onClick} />
         <div style={{ width: 20, textAlign: 'center' }}>{stream.index}</div>
       </td>
       <td>
@@ -250,7 +250,7 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
       <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
       <td style={{ display: 'flex' }}>
         <IconButton icon={InfoSignIcon} onClick={() => onInfoClick(stream, t('Track info'))} appearance="minimal" iconSize={18} />
-        <IconButton title={t('Extract this track as file')} icon={() => <FaFileExport size={18} />} onClick={onExtractStreamPress} appearance="minimal" iconSize={18} />
+        <IconButton title={t('Extract this track as file')} icon={<FaFileExport size={18} />} onClick={onExtractStreamPress} appearance="minimal" iconSize={18} />
 
         <Popover
           position={Position.BOTTOM_LEFT}
@@ -263,10 +263,10 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
               </Menu.Group>
               <Menu.Divider />
               <Menu.Group>
-                <Menu.Item icon={() => <Icon color="black" />} intent="success" onClick={() => batchSetCopyStreamIds((s) => s.codec_type === stream.codec_type, true)}>
+                <Menu.Item icon={<Icon color="black" />} intent="success" onClick={() => batchSetCopyStreamIds((s) => s.codec_type === stream.codec_type, true)}>
                   {t('Keep all {{type}} tracks', { type: stream.codec_type })}
                 </Menu.Item>
-                <Menu.Item icon={() => <FaBan color="black" />} intent="danger" onClick={() => batchSetCopyStreamIds((s) => s.codec_type === stream.codec_type, false)}>
+                <Menu.Item icon={<FaBan color="black" />} intent="danger" onClick={() => batchSetCopyStreamIds((s) => s.codec_type === stream.codec_type, false)}>
                   {t('Discard all {{type}} tracks', { type: stream.codec_type })}
                 </Menu.Item>
               </Menu.Group>
@@ -293,9 +293,9 @@ const FileHeading = ({ path, formatData, chapters, onTrashClick, onEditClick, se
       {chapters && chapters.length > 0 && <IconButton icon={BookIcon} onClick={() => onInfoClick(chapters, t('Chapters'))} appearance="minimal" iconSize={18} />}
       {onEditClick && <IconButton icon={EditIcon} onClick={onEditClick} appearance="minimal" iconSize={18} />}
       {onTrashClick && <IconButton icon={TrashIcon} onClick={onTrashClick} appearance="minimal" iconSize={18} />}
-      <IconButton icon={() => <FaCheckCircle color="#52BD95" size={18} />} onClick={() => setCopyAllStreams(true)} appearance="minimal" />
-      <IconButton icon={() => <FaBan color="#D14343" size={18} />} onClick={() => setCopyAllStreams(false)} appearance="minimal" />
-      {onExtractAllStreamsPress && <IconButton title={t('Export each track as individual files')} icon={() => <ForkIcon size={16} />} onClick={onExtractAllStreamsPress} appearance="minimal" />}
+      <IconButton icon={<FaCheckCircle color="#52BD95" size={18} />} onClick={() => setCopyAllStreams(true)} appearance="minimal" />
+      <IconButton icon={<FaBan color="#D14343" size={18} />} onClick={() => setCopyAllStreams(false)} appearance="minimal" />
+      {onExtractAllStreamsPress && <IconButton title={t('Export each track as individual files')} icon={<ForkIcon size={16} />} onClick={onExtractAllStreamsPress} appearance="minimal" />}
     </div>
   );
 };
@@ -424,7 +424,7 @@ const StreamsSelector = memo(({
           <Alert intent="warning" appearance="card" marginBottom={5}>{t('Note: Cutting and including external tracks at the same time does not yet work. If you want to do both, it must be done as separate operations. See github issue #896.')}</Alert>
         )}
 
-        <Button iconBefore={() => <FaFileImport size={16} />} onClick={showAddStreamSourceDialog}>
+        <Button iconBefore={<FaFileImport size={16} />} onClick={showAddStreamSourceDialog}>
           {t('Include more tracks from other file')}
         </Button>
 

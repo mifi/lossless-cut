@@ -22,6 +22,11 @@
     "arrow-parens": 0,
     "jsx-a11y/control-has-associated-label": 0,
     "react/prop-types": 0,
-    "no-multiple-empty-lines": ["error", { "max": 2, "maxBOF": 0, "maxEOF": 0 }]
+    "no-multiple-empty-lines": ["error", { "max": 2, "maxBOF": 0, "maxEOF": 0 }],
+    "no-promise-executor-return": 0,
+    "react/function-component-definition": 0
+  },
+    "parserOptions": {
+    "ecmaVersion": 2022
   }
 }

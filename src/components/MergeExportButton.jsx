@@ -66,7 +66,7 @@ const MergeExportButton = memo(({ autoMerge, enabledSegments, setAutoMerge, auto
       style={{ minWidth: 120, textAlign: 'center', opacity: enabledSegments && enabledSegments.length < 2 ? 0.4 : undefined }}
       title={description}
       onClick={withBlur(onClick)}
-      iconBefore={AutoMergeIcon && (() => <AutoMergeIcon />)}
+      iconBefore={AutoMergeIcon && <AutoMergeIcon />}
     >
       {title}
     </Button>

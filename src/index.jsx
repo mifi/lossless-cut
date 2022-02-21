@@ -14,10 +14,12 @@ const electron = window.require('electron');
 console.log('Version', electron.remote.app.getVersion());
 
 
-ReactDOM.render((
-  <ErrorBoundary>
-    <Suspense fallback={<div />}>
-      <App />
-    </Suspense>
-  </ErrorBoundary>
-), document.getElementById('root'));
+ReactDOM.render(
+  (
+    <ErrorBoundary>
+      <Suspense fallback={<div />}>
+        <App />
+      </Suspense>
+    </ErrorBoundary>
+  ), document.getElementById('root'),
+);

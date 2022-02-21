@@ -30,6 +30,10 @@ const langNames = {
   ko: '한국어',
 };
 
+// eslint-disable-next-line react/jsx-props-no-spreading
+const Row = (props) => <Table.Row height="auto" paddingY={12} {...props} />;
+// eslint-disable-next-line react/jsx-props-no-spreading
+const KeyCell = (props) => <Table.TextCell textProps={{ whiteSpace: 'auto' }} {...props} />;
 
 const Settings = memo(({
   changeOutDir, customOutDir, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments,
@@ -42,11 +46,6 @@ const Settings = memo(({
   onKeyboardShortcutsDialogRequested,
 }) => {
   const { t } = useTranslation();
-
-  // eslint-disable-next-line react/jsx-props-no-spreading
-  const Row = (props) => <Table.Row height="auto" paddingY={12} {...props} />;
-  // eslint-disable-next-line react/jsx-props-no-spreading
-  const KeyCell = (props) => <Table.TextCell textProps={{ whiteSpace: 'auto' }} {...props} />;
 
   const onLangChange = useCallback((e) => {
     const { value } = e.target;
@@ -83,7 +82,7 @@ const Settings = memo(({
       <Row>
         <KeyCell>{t('Keyboard & mouse shortcuts')}</KeyCell>
         <Table.TextCell>
-          <Button iconBefore={() => <FaKeyboard />} onClick={onKeyboardShortcutsDialogRequested}>{t('Keyboard & mouse shortcuts')}</Button>
+          <Button iconBefore={<FaKeyboard />} onClick={onKeyboardShortcutsDialogRequested}>{t('Keyboard & mouse shortcuts')}</Button>
         </Table.TextCell>
       </Row>
 

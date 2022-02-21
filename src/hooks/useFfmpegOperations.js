@@ -123,12 +123,11 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         return streamCount + copiedStreamIndex;
       }
 
-      const lessDeepMap = (root, fn) => flatMapDeep(
+      const lessDeepMap = (root, fn) => flatMapDeep((
         Object.entries(root), ([path, streamsMap]) => (
           Object.entries(streamsMap || {}).map(([streamId, value]) => (
             fn(path, streamId, value)
-          ))),
-      );
+          )))));
 
       // The structure is deep! file -> stream -> key -> value Example: { 'file.mp4': { 0: { key: 'value' } } }
       const deepMap = (root, fn) => lessDeepMap(root, (path, streamId, tagsMap) => (

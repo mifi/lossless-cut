@@ -1092,8 +1092,9 @@ const App = memo(() => {
     }
   }, [previewFilePath, filePath, edlFilePath, cleanupChoices, isFileOpened, resetState, batchRemoveFile, setWorking]);
 
-  const inverseOrNormalSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments),
-    [invertCutSegments, inverseCutSegments, apparentCutSegments]);
+  const inverseOrNormalSegments = useMemo(() => (
+    invertCutSegments ? inverseCutSegments : apparentCutSegments
+  ), [invertCutSegments, inverseCutSegments, apparentCutSegments]);
 
   const enabledSegmentsRaw = useMemo(() => {
     // For invertCutSegments we do not support filtering
