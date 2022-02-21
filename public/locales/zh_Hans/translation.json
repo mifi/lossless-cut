@@ -529,5 +529,15 @@
     "This is where working files and exported files are stored.": "这是存储工作文件和导出文件的地方。",
     "Auto convert to supported format": "自动转换到支持的格式",
     "The project will be stored alongside the input file as a project LLC file": "该项目将作为项目 LLC 文件存储在输入文件旁边",
-    "Frame fractions": "帧片段"
+    "Frame fractions": "帧片段",
+    "Add the file to the batch list": "将文件添加到批处理列表",
+    "Are you sure?": "你确定吗？",
+    "At least one resulting file name contains invalid characters": "至少一个结果文件名包含无效字符",
+    "At least one resulting file name has no length": "至少一个结果文件名没有长度",
+    "At least one resulting file name is the same as the input path": "至少一个结果文件名与输入路径相同",
+    "At least one resulting file will have a too long path": "至少一个结果文件的路径太长",
+    "Batch convert files to supported format": "将文件批量转换为支持的格式",
+    "Chapters": "章节",
+    "Bind new key to action": "将新键绑定到操作",
+    "Always open this dialog when opening multiple files": "打开多个文件时始终打开此对话框"
 }
