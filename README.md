@@ -203,6 +203,10 @@ This project is maintained by me alone. The project will always remain free and 
 
 [Paypal](https://paypal.me/mifino/usd) | [crypto](https://mifi.no/thanks)
 
+## Articles
+
+- [Featured in the Console newsletter](https://console.substack.com/p/console-93)
+
 ## Attributions
 - App icon made by [Dimi Kazak](http://www.flaticon.com/authors/dimi-kazak "Dimi Kazak") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0")
 - [Lottie animation](https://lottiefiles.com/7077-magic-flow)
