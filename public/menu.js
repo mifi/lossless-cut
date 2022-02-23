@@ -19,20 +19,20 @@ module.exports = (app, mainWindow, newVersion) => {
           async click() {
             const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'] });
             if (canceled) return;
-            mainWindow.webContents.send('file-opened', filePaths);
+            mainWindow.webContents.send('openFiles', filePaths);
           },
         },
         {
           label: i18n.t('Close'),
           accelerator: 'CmdOrCtrl+W',
           async click() {
-            mainWindow.webContents.send('close-file');
+            mainWindow.webContents.send('closeCurrentFile');
           },
         },
         {
           label: i18n.t('Close batch'),
           async click() {
-            mainWindow.webContents.send('close-batch-files');
+            mainWindow.webContents.send('closeBatchFiles');
           },
         },
         { type: 'separator' },
@@ -150,7 +150,7 @@ module.exports = (app, mainWindow, newVersion) => {
           label: i18n.t('Settings'),
           accelerator: 'CmdOrCtrl+,',
           click() {
-            mainWindow.webContents.send('openSettings');
+            mainWindow.webContents.send('toggleSettings');
           },
         },
         { type: 'separator' },
@@ -221,7 +221,7 @@ module.exports = (app, mainWindow, newVersion) => {
             {
               label: i18n.t('Extract all tracks'),
               click() {
-                mainWindow.webContents.send('extract-all-streams');
+                mainWindow.webContents.send('extractAllStreams');
               },
             },
             {
@@ -257,7 +257,7 @@ module.exports = (app, mainWindow, newVersion) => {
         {
           label: i18n.t('Set custom start offset/timecode'),
           click() {
-            mainWindow.webContents.send('set-start-offset', true);
+            mainWindow.webContents.send('askSetStartTimeOffset', true);
           },
         },
         { role: 'toggleDevTools', label: i18n.t('Toggle Developer Tools') },
@@ -270,7 +270,7 @@ module.exports = (app, mainWindow, newVersion) => {
         {
           label: i18n.t('Help and shortcuts'),
           click() {
-            mainWindow.webContents.send('openHelp');
+            mainWindow.webContents.send('toggleHelp');
           },
         },
         {

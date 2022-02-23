@@ -38,7 +38,7 @@ let askBeforeClose = false;
 let rendererReady = false;
 let newVersion;
 
-const openFiles = (paths) => mainWindow.webContents.send('file-opened', paths);
+const openFiles = (paths) => mainWindow.webContents.send('openFiles', paths);
 
 
 // https://github.com/electron/electron/issues/526#issuecomment-563010533

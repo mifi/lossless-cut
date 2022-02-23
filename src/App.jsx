@@ -2016,57 +2016,33 @@ const App = memo(() => {
       }
     }
 
-    const fileOpened = (event, filePaths) => { userOpenFiles(filePaths.map(resolvePathIfNeeded)); };
-    const showStreamsSelector = () => setStreamsSelectorShown(true);
-    const openSendReportDialog2 = () => { openSendReportDialogWithState(); };
-    const closeFile2 = () => { closeFileWithConfirm(); };
-    const closeBatch2 = () => { closeBatch(); };
-
-    electron.ipcRenderer.on('file-opened', fileOpened);
-    electron.ipcRenderer.on('close-file', closeFile2);
-    electron.ipcRenderer.on('close-batch-files', closeBatch2);
-    electron.ipcRenderer.on('html5ify', userHtml5ifyCurrentFile);
-    electron.ipcRenderer.on('set-start-offset', askSetStartTimeOffset);
-    electron.ipcRenderer.on('extract-all-streams', extractAllStreams);
-    electron.ipcRenderer.on('showStreamsSelector', showStreamsSelector);
-    electron.ipcRenderer.on('importEdlFile', importEdlFile);
-    electron.ipcRenderer.on('exportEdlFile', exportEdlFile2);
-    electron.ipcRenderer.on('exportEdlYouTube', exportEdlYouTube);
-    electron.ipcRenderer.on('openHelp', toggleHelp);
-    electron.ipcRenderer.on('openSettings', toggleSettings);
-    electron.ipcRenderer.on('openAbout', openAbout);
-    electron.ipcRenderer.on('openSendReportDialog', openSendReportDialog2);
-    electron.ipcRenderer.on('clearSegments', clearSegments);
-    electron.ipcRenderer.on('shuffleSegments', shuffleSegments);
-    electron.ipcRenderer.on('createNumSegments', createNumSegments);
-    electron.ipcRenderer.on('createFixedDurationSegments', createFixedDurationSegments);
-    electron.ipcRenderer.on('invertAllCutSegments', invertAllCutSegments);
-    electron.ipcRenderer.on('fixInvalidDuration', fixInvalidDuration2);
-    electron.ipcRenderer.on('reorderSegsByStartTime', reorderSegsByStartTime);
-
-    return () => {
-      electron.ipcRenderer.removeListener('file-opened', fileOpened);
-      electron.ipcRenderer.removeListener('close-file', closeFile2);
-      electron.ipcRenderer.removeListener('close-batch-files', closeBatch2);
-      electron.ipcRenderer.removeListener('html5ify', userHtml5ifyCurrentFile);
-      electron.ipcRenderer.removeListener('set-start-offset', askSetStartTimeOffset);
-      electron.ipcRenderer.removeListener('extract-all-streams', extractAllStreams);
-      electron.ipcRenderer.removeListener('showStreamsSelector', showStreamsSelector);
-      electron.ipcRenderer.removeListener('importEdlFile', importEdlFile);
-      electron.ipcRenderer.removeListener('exportEdlFile', exportEdlFile2);
-      electron.ipcRenderer.removeListener('exportEdlYouTube', exportEdlYouTube);
-      electron.ipcRenderer.removeListener('openHelp', toggleHelp);
-      electron.ipcRenderer.removeListener('openSettings', toggleSettings);
-      electron.ipcRenderer.removeListener('openAbout', openAbout);
-      electron.ipcRenderer.removeListener('openSendReportDialog', openSendReportDialog2);
-      electron.ipcRenderer.removeListener('clearSegments', clearSegments);
-      electron.ipcRenderer.removeListener('shuffleSegments', shuffleSegments);
-      electron.ipcRenderer.removeListener('createNumSegments', createNumSegments);
-      electron.ipcRenderer.removeListener('createFixedDurationSegments', createFixedDurationSegments);
-      electron.ipcRenderer.removeListener('invertAllCutSegments', invertAllCutSegments);
-      electron.ipcRenderer.removeListener('fixInvalidDuration', fixInvalidDuration2);
-      electron.ipcRenderer.removeListener('reorderSegsByStartTime', reorderSegsByStartTime);
+    const action = {
+      openFiles: (event, filePaths) => { userOpenFiles(filePaths.map(resolvePathIfNeeded)); },
+      closeCurrentFile: () => { closeFileWithConfirm(); },
+      closeBatchFiles: () => { closeBatch(); },
+      html5ify: userHtml5ifyCurrentFile,
+      askSetStartTimeOffset,
+      extractAllStreams,
+      showStreamsSelector: () => setStreamsSelectorShown(true),
+      importEdlFile,
+      exportEdlFile: exportEdlFile2,
+      exportEdlYouTube,
+      toggleHelp,
+      toggleSettings,
+      openAbout,
+      openSendReportDialog: () => { openSendReportDialogWithState(); },
+      clearSegments,
+      shuffleSegments,
+      createNumSegments,
+      createFixedDurationSegments,
+      invertAllCutSegments,
+      fixInvalidDuration: fixInvalidDuration2,
+      reorderSegsByStartTime,
     };
+
+    const entries = Object.entries(action);
+    entries.forEach(([key, value]) => electron.ipcRenderer.on(key, value));
+    return () => entries.forEach(([key, value]) => electron.ipcRenderer.removeListener(key, value));
   }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, createFixedDurationSegments, createNumSegments, customOutDir, cutSegments, extractAllStreams, fileFormat, filePath, fixInvalidDuration, getFrameCount, getTimeFromFrameNum, invertAllCutSegments, loadCutSegments, loadMedia, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shuffleSegments, toggleHelp, toggleSettings, userHtml5ifyCurrentFile, userOpenFiles]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
@@ -2127,11 +2103,6 @@ const App = memo(() => {
 
   useEffect(() => {
     runStartupCheck().catch((err) => handleError('LosslessCut is installation is broken', err));
-  }, []);
-
-  useEffect(() => {
-    // Testing:
-    // if (isDev) loadMedia({ filePath: '/Users/mifi/Downloads/inp.MOV', customOutDir });
   }, []);
 
   useEffect(() => {
