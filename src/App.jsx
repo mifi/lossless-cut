@@ -23,6 +23,8 @@ import useFfmpegOperations from './hooks/useFfmpegOperations';
 import useKeyframes from './hooks/useKeyframes';
 import useWaveform from './hooks/useWaveform';
 import useKeyboard from './hooks/useKeyboard';
+import useFileFormatState from './hooks/useFileFormatState';
+
 import NoFileLoaded from './NoFileLoaded';
 import Canvas from './Canvas';
 import TopMenu from './TopMenu';
@@ -75,7 +77,7 @@ const isDev = window.require('electron-is-dev');
 const electron = window.require('electron'); // eslint-disable-line
 const { exists } = window.require('fs-extra');
 const filePathToUrl = window.require('file-url');
-const { extname, parse: parsePath, join: pathJoin, basename, dirname } = window.require('path');
+const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('path');
 
 const { dialog } = electron.remote;
 
@@ -107,10 +109,8 @@ const App = memo(() => {
   const [playing, setPlaying] = useState(false);
   const [playerTime, setPlayerTime] = useState();
   const [duration, setDuration] = useState();
-  const [fileFormat, setFileFormat] = useState();
   const [fileFormatData, setFileFormatData] = useState();
   const [chapters, setChapters] = useState();
-  const [detectedFileFormat, setDetectedFileFormat] = useState();
   const [rotation, setRotation] = useState(360);
   const [cutProgress, setCutProgress] = useState();
   const [startTimeOffset, setStartTimeOffset] = useState(0);
@@ -135,6 +135,8 @@ const App = memo(() => {
   const [activeSubtitleStreamIndex, setActiveSubtitleStreamIndex] = useState();
   const [hideCanvasPreview, setHideCanvasPreview] = useState(false);
   const [exportConfirmVisible, setExportConfirmVisible] = useState(false);
+
+  const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
 
   // State per application launch
   const [keyframesEnabled, setKeyframesEnabled] = useState(true);
@@ -192,8 +194,6 @@ const App = memo(() => {
   const durationSafe = isDurationValid(duration) ? duration : 1;
   const zoomedDuration = isDurationValid(duration) ? duration / zoom : undefined;
 
-  const isCustomFormatSelected = fileFormat !== detectedFileFormat;
-
   const {
     captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, setEnableAutoHtml5ify, segmentsToChaptersOnly, setSegmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings,
   } = useUserPreferences();
@@ -221,7 +221,7 @@ const App = memo(() => {
     if (outFormatLocked) {
       setOutFormatLocked(newFormat === detectedFileFormat ? undefined : newFormat);
     }
-  }, [detectedFileFormat, outFormatLocked, setOutFormatLocked]);
+  }, [detectedFileFormat, outFormatLocked, setFileFormat, setOutFormatLocked]);
 
   const setTimelineMode = useCallback((newMode) => {
     if (newMode === 'waveform') {
@@ -674,7 +674,7 @@ const App = memo(() => {
     return { cancel: false, newCustomOutDir };
   }, [customOutDir, setCustomOutDir]);
 
-  const userConcatFiles = useCallback(async ({ paths, allStreams }) => {
+  const userConcatFiles = useCallback(async ({ paths, allStreams, fileFormat: fileFormat2, isCustomFormatSelected: isCustomFormatSelected2 }) => {
     if (workingRef.current) return;
     try {
       setConcatDialogVisible(false);
@@ -684,11 +684,9 @@ const App = memo(() => {
       const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: firstPath });
       if (cancel) return;
 
-      const ext = extname(firstPath);
+      const ext = getOutFileExtension({ isCustomFormatSelected: isCustomFormatSelected2, outFormat: fileFormat2, filePath: firstPath });
       const outPath = getOutPath({ customOutDir: newCustomOutDir, filePath: firstPath, nameSuffix: `merged${ext}` });
       const outDir = getOutDir(customOutDir, firstPath);
-
-      const fileMeta = await readFileMeta(firstPath);
 
       let chaptersFromSegments;
       if (segmentsToChapters) {
@@ -697,7 +695,7 @@ const App = memo(() => {
       }
 
       // console.log('merge', paths);
-      await ffmpegMergeFiles({ paths, outPath, outDir, fileFormat: fileMeta.fileFormat, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
+      await ffmpegMergeFiles({ paths, outPath, outDir, fileFormat: fileFormat2, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
       openDirToast({ icon: 'success', dirPath: outDir, text: i18n.t('Files merged!') });
     } catch (err) {
       if (isOutOfSpaceError(err)) {
@@ -919,7 +917,7 @@ const App = memo(() => {
 
       cancelRenderThumbnails();
     });
-  }, [cutSegmentsHistory, clearSegments, cancelRenderThumbnails]);
+  }, [cutSegmentsHistory, clearSegments, setFileFormat, setDetectedFileFormat, cancelRenderThumbnails]);
 
 
   const showUnsupportedFileMessage = useCallback(() => {
@@ -1496,7 +1494,7 @@ const App = memo(() => {
       resetState();
       throw err;
     }
-  }, [resetState, html5ifyAndLoadWithPreferences, loadEdlFile, getEdlFilePath, getEdlFilePathOld, loadCutSegments, enableAskForImportChapters, autoLoadTimecode, outFormatLocked, showPreviewFileLoadedMessage, setWorking, setCopyStreamIdsForPath]);
+  }, [resetState, setWorking, showPreviewFileLoadedMessage, autoLoadTimecode, html5ifyAndLoadWithPreferences, getEdlFilePath, getEdlFilePathOld, loadEdlFile, enableAskForImportChapters, loadCutSegments, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat]);
 
   const toggleHelp = useCallback(() => setHelpVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);

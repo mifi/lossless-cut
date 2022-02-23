@@ -3,6 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Dialog, Pane, Checkbox, SortAlphabeticalIcon, SortAlphabeticalDescIcon, Button, Paragraph } from 'evergreen-ui';
 import { sortableContainer, sortableElement } from 'react-sortable-hoc';
 import arrayMove from 'array-move';
+import { AiOutlineMergeCells } from 'react-icons/ai';
+
+import { readFileMeta } from '../ffmpeg';
+import useFileFormatState from '../hooks/useFileFormatState';
+import OutputFormatSelect from './OutputFormatSelect';
 
 const { basename } = window.require('path');
 
@@ -41,9 +46,27 @@ const ConcatDialog = memo(({
   const [allStreams, setAllStreams] = useState(false);
   const [sortDesc, setSortDesc] = useState();
 
+  const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
+
   useEffect(() => {
     setPaths(initialPaths);
-  }, [initialPaths]);
+
+    if (initialPaths.length === 0) return undefined;
+
+    let aborted = false;
+    (async () => {
+      const firstPath = initialPaths[0];
+      setFileFormat();
+      setDetectedFileFormat();
+      const fileMeta = await readFileMeta(firstPath);
+      if (aborted) return;
+      setFileFormat(fileMeta.fileFormat);
+      setDetectedFileFormat(fileMeta.fileFormat);
+    })().catch(console.error);
+    return () => {
+      aborted = true;
+    };
+  }, [initialPaths, setDetectedFileFormat, setFileFormat]);
 
   const onSortEnd = useCallback(({ oldIndex, newIndex }) => {
     const newPaths = arrayMove(paths, oldIndex, newIndex);
@@ -60,16 +83,24 @@ const ConcatDialog = memo(({
     setSortDesc(newSortDesc);
   }, [paths, sortDesc]);
 
+  const onOutputFormatUserChange = useCallback((newFormat) => setFileFormat(newFormat), [setFileFormat]);
+
   return (
     <Dialog
       title={t('Merge/concatenate files')}
       isShown={isShown}
-      confirmLabel={t('Merge!')}
-      cancelLabel={t('Cancel')}
       onCloseComplete={onHide}
-      onConfirm={() => onConcat({ paths, allStreams })}
+      onConfirm={() => onConcat({ paths, allStreams, fileFormat, isCustomFormatSelected })}
       topOffset="3vh"
       width="90vw"
+      footer={(
+        <>
+          {fileFormat && detectedFileFormat && <OutputFormatSelect style={{ maxWidth: 150 }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />}
+          <Button iconBefore={sortDesc ? SortAlphabeticalDescIcon : SortAlphabeticalIcon} onClick={onSortClick}>{t('Sort items')}</Button>
+          <Button onClick={onHide} style={{ marginLeft: 10 }}>Cancel</Button>
+          <Button iconBefore={<AiOutlineMergeCells />} isLoading={detectedFileFormat == null} appearance="primary" onClick={() => onConcat({ paths, allStreams, fileFormat, isCustomFormatSelected })}>{t('Merge!')}</Button>
+        </>
+      )}
     >
       <div style={containerStyle}>
         <div style={{ whiteSpace: 'pre-wrap', fontSize: 14, marginBottom: 10 }}>
@@ -81,8 +112,6 @@ const ConcatDialog = memo(({
           onSortEnd={onSortEnd}
           helperClass="dragging-helper-class"
         />
-
-        <Button iconBefore={sortDesc ? SortAlphabeticalDescIcon : SortAlphabeticalIcon} onClick={onSortClick}>{t('Sort items')}</Button>
 
         <div style={{ marginTop: 10 }}>
           <Checkbox checked={allStreams} onChange={(e) => setAllStreams(e.target.checked)} label={`${t('Include all tracks?')} ${t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}`} />
