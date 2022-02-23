@@ -25,6 +25,7 @@
     "pack-win": "electron-builder --win",
     "prepack-win": "yarn build",
     "postinstall": "patch-package && electron-builder install-app-deps",
+    "version": "node script/postversion.mjs && git add no.mifi.losslesscut.appdata.xml",
     "pack-linux": "electron-builder --linux",
     "prepack-linux": "yarn build",
     "scan-i18n": "i18next-scanner --config i18next-scanner.config.js",
