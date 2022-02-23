@@ -255,9 +255,15 @@ module.exports = (app, mainWindow, newVersion) => {
       label: i18n.t('Tools'),
       submenu: [
         {
+          label: i18n.t('Merge/concatenate files'),
+          click() {
+            mainWindow.webContents.send('concatCurrentBatch');
+          },
+        },
+        {
           label: i18n.t('Set custom start offset/timecode'),
           click() {
-            mainWindow.webContents.send('askSetStartTimeOffset', true);
+            mainWindow.webContents.send('askSetStartTimeOffset');
           },
         },
         { role: 'toggleDevTools', label: i18n.t('Toggle Developer Tools') },

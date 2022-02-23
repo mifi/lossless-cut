@@ -2038,12 +2038,13 @@ const App = memo(() => {
       invertAllCutSegments,
       fixInvalidDuration: fixInvalidDuration2,
       reorderSegsByStartTime,
+      concatCurrentBatch,
     };
 
     const entries = Object.entries(action);
     entries.forEach(([key, value]) => electron.ipcRenderer.on(key, value));
     return () => entries.forEach(([key, value]) => electron.ipcRenderer.removeListener(key, value));
-  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, createFixedDurationSegments, createNumSegments, customOutDir, cutSegments, extractAllStreams, fileFormat, filePath, fixInvalidDuration, getFrameCount, getTimeFromFrameNum, invertAllCutSegments, loadCutSegments, loadMedia, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shuffleSegments, toggleHelp, toggleSettings, userHtml5ifyCurrentFile, userOpenFiles]);
+  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, customOutDir, cutSegments, extractAllStreams, fileFormat, filePath, fixInvalidDuration, getFrameCount, getTimeFromFrameNum, invertAllCutSegments, loadCutSegments, loadMedia, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shuffleSegments, toggleHelp, toggleSettings, userHtml5ifyCurrentFile, userOpenFiles]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
     try {
