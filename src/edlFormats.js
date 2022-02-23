@@ -1,4 +1,4 @@
-import fastXmlParser from 'fast-xml-parser';
+import { XMLParser } from 'fast-xml-parser';
 import i18n from 'i18next';
 
 import csvParse from 'csv-parse/lib/browser';
@@ -123,7 +123,7 @@ export function parsePbf(text) {
 
 // https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/FinalCutPro_XML/VersionsoftheInterchangeFormat/VersionsoftheInterchangeFormat.html
 export function parseXmeml(xmlStr) {
-  const xml = fastXmlParser.parse(xmlStr);
+  const xml = new XMLParser().parse(xmlStr);
 
   // TODO maybe support media.audio also?
   const { xmeml } = xml;
