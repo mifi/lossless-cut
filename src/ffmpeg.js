@@ -240,21 +240,21 @@ function mapFormat(requestedFormat) {
   }
 }
 
-function determineOutputFormat(ffprobeFormats, ft) {
-  if (ffprobeFormats.includes(ft.ext)) return ft.ext;
+function determineOutputFormat(ffprobeFormats, fileTypeResponse) {
+  if (ffprobeFormats.includes(fileTypeResponse.ext)) return fileTypeResponse.ext;
   return ffprobeFormats[0] || undefined;
 }
 
-export async function getDefaultOutFormat(filePath, formatData) {
+export async function getSmarterOutFormat(filePath, formatData) {
   const formatsStr = formatData.format_name;
   console.log('formats', formatsStr);
   const formats = (formatsStr || '').split(',');
 
   // ffprobe sometimes returns a list of formats, try to be a bit smarter about it.
   const bytes = await readChunk(filePath, 0, 4100);
-  const ft = fileType(bytes) || {};
-  console.log(`fileType detected format ${JSON.stringify(ft)}`);
-  let assumedFormat = determineOutputFormat(formats, ft);
+  const fileTypeResponse = fileType(bytes) || {};
+  console.log(`fileType detected format ${JSON.stringify(fileTypeResponse)}`);
+  let assumedFormat = determineOutputFormat(formats, fileTypeResponse);
 
   // https://github.com/mifi/lossless-cut/issues/367
   if (assumedFormat === 'mp4' && formatData.tags && formatData.tags.major_brand === 'XAVC') assumedFormat = 'mov';
@@ -278,7 +278,7 @@ export async function readFileMeta(filePath) {
 
     const { streams, format: formatData, chapters } = JSON.parse(stdout);
 
-    const fileFormat = await getDefaultOutFormat(filePath, formatData);
+    const fileFormat = await getSmarterOutFormat(filePath, formatData);
     // console.log(streams, formatData, fileFormat);
 
     return { formatData, fileFormat, streams, chapters };
