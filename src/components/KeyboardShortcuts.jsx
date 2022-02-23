@@ -191,6 +191,14 @@ const KeyboardShortcuts = memo(({
           name: t('Seek forward 1 sec'),
           category: seekingCategory,
         },
+        seekBackwardsKeyframe: {
+          name: t('Seek previous keyframe'),
+          category: seekingCategory,
+        },
+        seekForwardsKeyframe: {
+          name: t('Seek next keyframe'),
+          category: seekingCategory,
+        },
         seekBackwardsPercent: {
           name: t('Seek backward 1% of timeline at current zoom'),
           category: seekingCategory,
