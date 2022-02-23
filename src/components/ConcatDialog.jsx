@@ -43,7 +43,7 @@ const ConcatDialog = memo(({
   const { t } = useTranslation();
 
   const [paths, setPaths] = useState(initialPaths);
-  const [allStreams, setAllStreams] = useState(false);
+  const [includeAllStreams, setIncludeAllStreams] = useState(false);
   const [sortDesc, setSortDesc] = useState();
 
   const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
@@ -90,7 +90,6 @@ const ConcatDialog = memo(({
       title={t('Merge/concatenate files')}
       isShown={isShown}
       onCloseComplete={onHide}
-      onConfirm={() => onConcat({ paths, allStreams, fileFormat, isCustomFormatSelected })}
       topOffset="3vh"
       width="90vw"
       footer={(
@@ -98,7 +97,7 @@ const ConcatDialog = memo(({
           {fileFormat && detectedFileFormat && <OutputFormatSelect style={{ maxWidth: 150 }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />}
           <Button iconBefore={sortDesc ? SortAlphabeticalDescIcon : SortAlphabeticalIcon} onClick={onSortClick}>{t('Sort items')}</Button>
           <Button onClick={onHide} style={{ marginLeft: 10 }}>Cancel</Button>
-          <Button iconBefore={<AiOutlineMergeCells />} isLoading={detectedFileFormat == null} appearance="primary" onClick={() => onConcat({ paths, allStreams, fileFormat, isCustomFormatSelected })}>{t('Merge!')}</Button>
+          <Button iconBefore={<AiOutlineMergeCells />} isLoading={detectedFileFormat == null} appearance="primary" onClick={() => onConcat({ paths, includeAllStreams, fileFormat, isCustomFormatSelected })}>{t('Merge!')}</Button>
         </>
       )}
     >
@@ -114,7 +113,7 @@ const ConcatDialog = memo(({
         />
 
         <div style={{ marginTop: 10 }}>
-          <Checkbox checked={allStreams} onChange={(e) => setAllStreams(e.target.checked)} label={`${t('Include all tracks?')} ${t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}`} />
+          <Checkbox checked={includeAllStreams} onChange={(e) => setIncludeAllStreams(e.target.checked)} label={`${t('Include all tracks?')} ${t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}`} />
 
           <Checkbox checked={preserveMetadataOnMerge} onChange={(e) => setPreserveMetadataOnMerge(e.target.checked)} label={t('Preserve original metadata when merging? (slow)')} />
 

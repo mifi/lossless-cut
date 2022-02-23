@@ -674,7 +674,7 @@ const App = memo(() => {
     return { cancel: false, newCustomOutDir };
   }, [customOutDir, setCustomOutDir]);
 
-  const userConcatFiles = useCallback(async ({ paths, allStreams, fileFormat: fileFormat2, isCustomFormatSelected: isCustomFormatSelected2 }) => {
+  const userConcatFiles = useCallback(async ({ paths, includeAllStreams, fileFormat: fileFormat2, isCustomFormatSelected: isCustomFormatSelected2 }) => {
     if (workingRef.current) return;
     try {
       setConcatDialogVisible(false);
@@ -695,7 +695,7 @@ const App = memo(() => {
       }
 
       // console.log('merge', paths);
-      await ffmpegMergeFiles({ paths, outPath, outDir, fileFormat: fileFormat2, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
+      await ffmpegMergeFiles({ paths, outPath, outDir, fileFormat: fileFormat2, includeAllStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
       openDirToast({ icon: 'success', dirPath: outDir, text: i18n.t('Files merged!') });
     } catch (err) {
       if (isOutOfSpaceError(err)) {
