@@ -199,7 +199,7 @@ const App = memo(() => {
   } = useUserPreferences();
 
   const {
-    mergeFiles: ffmpegMergeFiles, html5ifyDummy, cutMultiple, autoMergeSegments, html5ify, fixInvalidDuration,
+    concatFiles, html5ifyDummy, cutMultiple, autoMergeSegments, html5ify, fixInvalidDuration,
   } = useFfmpegOperations({ filePath, enableTransferTimestamps });
 
   const outSegTemplateOrDefault = outSegTemplate || defaultOutSegTemplate;
@@ -695,7 +695,7 @@ const App = memo(() => {
       }
 
       // console.log('merge', paths);
-      await ffmpegMergeFiles({ paths, outPath, outDir, fileFormat: fileFormat2, includeAllStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
+      await concatFiles({ paths, outPath, outDir, fileFormat: fileFormat2, includeAllStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
       openDirToast({ icon: 'success', dirPath: outDir, text: i18n.t('Files merged!') });
     } catch (err) {
       if (isOutOfSpaceError(err)) {
@@ -708,7 +708,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [setWorking, ensureAccessibleDirectories, customOutDir, segmentsToChapters, ffmpegMergeFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge]);
+  }, [setWorking, ensureAccessibleDirectories, customOutDir, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge]);
 
   const concatCurrentBatch = useCallback(() => {
     if (batchFiles.length < 2) {

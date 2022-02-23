@@ -236,7 +236,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     }
   }, [filePath, optionalTransferTimestamps]);
 
-  const mergeFiles = useCallback(async ({ paths, outDir, outPath, allStreams, outFormat, ffmpegExperimental, onProgress = () => {}, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge }) => {
+  const concatFiles = useCallback(async ({ paths, outDir, outPath, includeAllStreams, outFormat, ffmpegExperimental, onProgress = () => {}, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge }) => {
     console.log('Merging files', { paths }, 'to', outPath);
 
     const durations = await pMap(paths, getDuration, { concurrency: 1 });
@@ -277,7 +277,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       }
 
       let map;
-      if (allStreams) map = ['-map', '0'];
+      if (includeAllStreams) map = ['-map', '0'];
       // If preserveMetadataOnMerge option is enabled, we need to explicitly map even if allStreams=false.
       // We cannot use the ffmpeg's automatic stream selection or else ffmpeg might use the metadata source input (index 1)
       // instead of the concat input (index 0)
@@ -349,9 +349,9 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
     const chapters = await createChaptersFromSegments({ segmentPaths, chapterNames });
 
-    await mergeFiles({ paths: segmentPaths, outDir, outPath, outFormat, allStreams: true, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge });
+    await concatFiles({ paths: segmentPaths, outDir, outPath, outFormat, includeAllStreams: true, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge });
     if (autoDeleteMergedSegments) await pMap(segmentPaths, path => fs.unlink(path), { concurrency: 5 });
-  }, [filePath, mergeFiles]);
+  }, [concatFiles, filePath]);
 
   const html5ify = useCallback(async ({ customOutDir, filePath: filePathArg, speed, hasAudio, hasVideo, onProgress }) => {
     const outPath = getHtml5ifiedPath(customOutDir, filePathArg, speed);
@@ -512,7 +512,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
   }, [filePath, optionalTransferTimestamps]);
 
   return {
-    cutMultiple, mergeFiles, html5ify, html5ifyDummy, fixInvalidDuration, autoMergeSegments,
+    cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, autoMergeSegments,
   };
 }
 
