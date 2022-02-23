@@ -1404,10 +1404,11 @@ const App = memo(() => {
     }
 
     try {
-      const { fileFormat: ff, formatData: fd, chapters: ch, streams } = await readFileMeta(fp);
-      // console.log('file meta read', ff);
+      const fileMeta = await readFileMeta(fp);
+      // console.log('file meta read', fileMeta);
 
-      if (!ff) throw new Error('Unable to determine file format');
+      const { streams } = fileMeta;
+      if (!fileMeta.fileFormat) throw new Error('Unable to determine file format');
 
       const timecode = autoLoadTimecode ? getTimecodeFromStreams(streams) : undefined;
 
@@ -1441,7 +1442,7 @@ const App = memo(() => {
         toast.fire({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
       }
 
-      const validDuration = isDurationValid(parseFloat(fd.duration));
+      const validDuration = isDurationValid(parseFloat(fileMeta.formatData.duration));
       const hasLoadedExistingHtml5FriendlyFile = await checkAndSetExistingHtml5FriendlyFile();
 
       // 'fastest' works with almost all video files
@@ -1460,7 +1461,7 @@ const App = memo(() => {
         } else if (await exists(openedFileEdlPathOld)) {
           await loadEdlFile({ path: openedFileEdlPathOld, type: 'csv' });
         } else {
-          const edl = await tryMapChaptersToEdl(ch);
+          const edl = await tryMapChaptersToEdl(fileMeta.chapters);
           if (edl.length > 0 && enableAskForImportChapters && (await askForImportChapters())) {
             console.log('Convert chapters to segments', edl);
             loadCutSegments(edl);
@@ -1481,10 +1482,10 @@ const App = memo(() => {
         setMainAudioStream(audioStream);
         setCopyStreamIdsForPath(fp, () => copyStreamIdsForPathNew);
         setFileNameTitle(fp);
-        setFileFormat(outFormatLocked || ff);
-        setDetectedFileFormat(ff);
-        setFileFormatData(fd);
-        setChapters(ch);
+        setFileFormat(outFormatLocked || fileMeta.fileFormat);
+        setDetectedFileFormat(fileMeta.fileFormat);
+        setFileFormatData(fileMeta.formatData);
+        setChapters(fileMeta.chapters);
 
         // This needs to be last, because it triggers <video> to load the video
         // If not, onVideoError might be triggered before setWorking() has been cleared.
