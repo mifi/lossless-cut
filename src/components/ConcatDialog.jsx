@@ -69,6 +69,7 @@ const ConcatDialog = memo(({
       onCloseComplete={onHide}
       onConfirm={() => onConcat({ paths, allStreams })}
       topOffset="3vh"
+      width="90vw"
     >
       <div style={containerStyle}>
         <div style={{ whiteSpace: 'pre-wrap', fontSize: 14, marginBottom: 10 }}>
