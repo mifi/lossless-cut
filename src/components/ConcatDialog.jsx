@@ -5,7 +5,7 @@ import { sortableContainer, sortableElement } from 'react-sortable-hoc';
 import arrayMove from 'array-move';
 import { AiOutlineMergeCells } from 'react-icons/ai';
 
-import { readFileMeta } from '../ffmpeg';
+import { readFileMeta, getSmarterOutFormat } from '../ffmpeg';
 import useFileFormatState from '../hooks/useFileFormatState';
 import OutputFormatSelect from './OutputFormatSelect';
 
@@ -59,9 +59,10 @@ const ConcatDialog = memo(({
       setFileFormat();
       setDetectedFileFormat();
       const fileMeta = await readFileMeta(firstPath);
+      const fileFormatNew = await getSmarterOutFormat(firstPath, fileMeta.format);
       if (aborted) return;
-      setFileFormat(fileMeta.fileFormat);
-      setDetectedFileFormat(fileMeta.fileFormat);
+      setFileFormat(fileFormatNew);
+      setDetectedFileFormat(fileFormatNew);
     })().catch(console.error);
     return () => {
       aborted = true;

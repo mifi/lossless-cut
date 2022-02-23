@@ -191,8 +191,8 @@ export async function tryMapChaptersToEdl(chapters) {
   }
 }
 
-export async function getFormatData(filePath) {
-  console.log('getFormatData', filePath);
+async function readFormatData(filePath) {
+  console.log('readFormatData', filePath);
 
   const { stdout } = await runFfprobe([
     '-of', 'json', '-show_format', '-i', filePath, '-hide_banner',
@@ -202,7 +202,7 @@ export async function getFormatData(filePath) {
 
 
 export async function getDuration(filePath) {
-  return parseFloat((await getFormatData(filePath)).duration);
+  return parseFloat((await readFormatData(filePath)).duration);
 }
 
 export async function createChaptersFromSegments({ segmentPaths, chapterNames }) {
@@ -262,26 +262,14 @@ export async function getSmarterOutFormat(filePath, formatData) {
   return mapFormat(assumedFormat);
 }
 
-export async function getAllStreams(filePath) {
-  const { stdout } = await runFfprobe([
-    '-of', 'json', '-show_entries', 'stream', '-i', filePath, '-hide_banner',
-  ]);
-
-  return JSON.parse(stdout);
-}
-
 export async function readFileMeta(filePath) {
   try {
     const { stdout } = await runFfprobe([
       '-of', 'json', '-show_chapters', '-show_format', '-show_entries', 'stream', '-i', filePath, '-hide_banner',
     ]);
 
-    const { streams, format: formatData, chapters } = JSON.parse(stdout);
-
-    const fileFormat = await getSmarterOutFormat(filePath, formatData);
-    // console.log(streams, formatData, fileFormat);
-
-    return { formatData, fileFormat, streams, chapters };
+    const { streams, format, chapters } = JSON.parse(stdout);
+    return { format, streams, chapters };
   } catch (err) {
     // Windows will throw error with code ENOENT if format detection fails.
     if (err.exitCode === 1 || (isWindows && err.code === 'ENOENT')) {

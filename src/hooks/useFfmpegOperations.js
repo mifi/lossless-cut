@@ -342,7 +342,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     await optionalTransferTimestamps(paths[0], outPath);
   }, [optionalTransferTimestamps]);
 
-  const autoMergeSegments = useCallback(async ({ customOutDir, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge }) => {
+  const autoConcatCutSegments = useCallback(async ({ customOutDir, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge }) => {
     const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath });
     const outPath = getOutPath({ customOutDir, filePath, nameSuffix: `cut-merged-${new Date().getTime()}${ext}` });
     const outDir = getOutDir(customOutDir, filePath);
@@ -512,7 +512,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
   }, [filePath, optionalTransferTimestamps]);
 
   return {
-    cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, autoMergeSegments,
+    cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, autoConcatCutSegments,
   };
 }
 

@@ -50,8 +50,8 @@ import { controlsBackground } from './colors';
 import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
-  readFileMeta, getFormatData, renderThumbnails as ffmpegRenderThumbnails,
-  extractStreams, getAllStreams, runStartupCheck,
+  readFileMeta, getSmarterOutFormat, renderThumbnails as ffmpegRenderThumbnails,
+  extractStreams, runStartupCheck,
   isAudioDefinitelyNotSupported, isIphoneHevc, tryMapChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
 } from './ffmpeg';
@@ -199,7 +199,7 @@ const App = memo(() => {
   } = useUserPreferences();
 
   const {
-    concatFiles, html5ifyDummy, cutMultiple, autoMergeSegments, html5ify, fixInvalidDuration,
+    concatFiles, html5ifyDummy, cutMultiple, autoConcatCutSegments, html5ify, fixInvalidDuration,
   } = useFfmpegOperations({ filePath, enableTransferTimestamps });
 
   const outSegTemplateOrDefault = outSegTemplate || defaultOutSegTemplate;
@@ -1227,7 +1227,7 @@ const App = memo(() => {
 
         const chapterNames = segmentsToChapters && !invertCutSegments ? segmentsToExport.map((s) => s.name) : undefined;
 
-        await autoMergeSegments({
+        await autoConcatCutSegments({
           customOutDir,
           outFormat: fileFormat,
           isCustomFormatSelected,
@@ -1275,7 +1275,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, enabledSegments, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, willMerge, fileFormatData, mainStreams, exportExtraStreams, hideAllNotifications, segmentsToChapters, invertCutSegments, autoMergeSegments, customOutDir, isCustomFormatSelected, autoDeleteMergedSegments, preserveMetadataOnMerge, filePath, nonCopiedExtraStreams, handleCutFailed]);
+  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, enabledSegments, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, willMerge, fileFormatData, mainStreams, exportExtraStreams, hideAllNotifications, segmentsToChapters, invertCutSegments, autoConcatCutSegments, customOutDir, isCustomFormatSelected, autoDeleteMergedSegments, preserveMetadataOnMerge, filePath, nonCopiedExtraStreams, handleCutFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath || workingRef.current) return;
@@ -1405,8 +1405,13 @@ const App = memo(() => {
       const fileMeta = await readFileMeta(fp);
       // console.log('file meta read', fileMeta);
 
+      const fileFormatNew = await getSmarterOutFormat(fp, fileMeta.format);
+
       const { streams } = fileMeta;
-      if (!fileMeta.fileFormat) throw new Error('Unable to determine file format');
+
+      // console.log(streams, fileMeta.format, fileFormat);
+
+      if (!fileFormatNew) throw new Error('Unable to determine file format');
 
       const timecode = autoLoadTimecode ? getTimecodeFromStreams(streams) : undefined;
 
@@ -1440,7 +1445,7 @@ const App = memo(() => {
         toast.fire({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
       }
 
-      const validDuration = isDurationValid(parseFloat(fileMeta.formatData.duration));
+      const validDuration = isDurationValid(parseFloat(fileMeta.format.duration));
       const hasLoadedExistingHtml5FriendlyFile = await checkAndSetExistingHtml5FriendlyFile();
 
       // 'fastest' works with almost all video files
@@ -1480,9 +1485,9 @@ const App = memo(() => {
         setMainAudioStream(audioStream);
         setCopyStreamIdsForPath(fp, () => copyStreamIdsForPathNew);
         setFileNameTitle(fp);
-        setFileFormat(outFormatLocked || fileMeta.fileFormat);
-        setDetectedFileFormat(fileMeta.fileFormat);
-        setFileFormatData(fileMeta.formatData);
+        setFileFormat(outFormatLocked || fileFormatNew);
+        setDetectedFileFormat(fileFormatNew);
+        setFileFormatData(fileMeta.format);
         setChapters(fileMeta.chapters);
 
         // This needs to be last, because it triggers <video> to load the video
@@ -1832,8 +1837,7 @@ const App = memo(() => {
 
   const addStreamSourceFile = useCallback(async (path) => {
     if (externalStreamFiles[path]) return;
-    const { streams } = await getAllStreams(path);
-    const formatData = await getFormatData(path);
+    const { streams, format: formatData } = await readFileMeta(path);
     // console.log('streams', streams);
     setExternalStreamFiles(old => ({ ...old, [path]: { streams, formatData } }));
     setCopyStreamIdsForPath(path, () => fromPairs(streams.map(({ index }) => [index, true])));
