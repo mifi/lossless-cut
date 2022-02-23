@@ -3,7 +3,7 @@ import { unstable_batchedUpdates as batchedUpdates } from 'react-dom';
 import { FaAngleLeft, FaWindowClose } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Table, SideSheet, Button, Position, ForkIcon, DisableIcon, Select, ThemeProvider } from 'evergreen-ui';
+import { Table, SideSheet, Button, Position, ForkIcon, DisableIcon, ThemeProvider } from 'evergreen-ui';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
@@ -41,10 +41,10 @@ import BatchFilesList from './components/BatchFilesList';
 import ConcatDialog from './components/ConcatDialog';
 import KeyboardShortcuts from './components/KeyboardShortcuts';
 import Loading from './components/Loading';
+import OutputFormatSelect from './components/OutputFormatSelect';
 
 import { loadMifiLink } from './mifi';
 import { controlsBackground } from './colors';
-import allOutFormats from './outFormats';
 import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
   defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
@@ -86,8 +86,6 @@ const ffmpegExtractWindow = 60;
 const calcShouldShowWaveform = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
 const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
 
-
-const commonFormats = ['mov', 'mp4', 'matroska', 'mp3', 'ipod'];
 
 const zoomMax = 2 ** 14;
 
@@ -676,7 +674,7 @@ const App = memo(() => {
     return { cancel: false, newCustomOutDir };
   }, [customOutDir, setCustomOutDir]);
 
-  const mergeFiles = useCallback(async ({ paths, allStreams }) => {
+  const userConcatFiles = useCallback(async ({ paths, allStreams }) => {
     if (workingRef.current) return;
     try {
       setConcatDialogVisible(false);
@@ -690,6 +688,8 @@ const App = memo(() => {
       const outPath = getOutPath({ customOutDir: newCustomOutDir, filePath: firstPath, nameSuffix: `merged${ext}` });
       const outDir = getOutDir(customOutDir, firstPath);
 
+      const fileMeta = await readFileMeta(firstPath);
+
       let chaptersFromSegments;
       if (segmentsToChapters) {
         const chapterNames = paths.map((path) => parsePath(path).name);
@@ -697,7 +697,7 @@ const App = memo(() => {
       }
 
       // console.log('merge', paths);
-      await ffmpegMergeFiles({ paths, outPath, outDir, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
+      await ffmpegMergeFiles({ paths, outPath, outDir, fileFormat: fileMeta.fileFormat, allStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
       openDirToast({ icon: 'success', dirPath: outDir, text: i18n.t('Files merged!') });
     } catch (err) {
       if (isOutOfSpaceError(err)) {
@@ -2093,37 +2093,9 @@ const App = memo(() => {
     return () => document.body.removeEventListener('drop', onDrop);
   }, [userOpenFiles]);
 
-
-  const commonFormatsMap = useMemo(() => fromPairs(commonFormats.map(format => [format, allOutFormats[format]])
-    .filter(([f]) => f !== detectedFileFormat)), [detectedFileFormat]);
-
-  const otherFormatsMap = useMemo(() => fromPairs(Object.entries(allOutFormats)
-    .filter(([f]) => ![...commonFormats, detectedFileFormat].includes(f))), [detectedFileFormat]);
-
-  function renderFormatOptions(map) {
-    return Object.entries(map).map(([f, name]) => (
-      <option key={f} value={f}>{f} - {name}</option>
-    ));
-  }
-
   const renderOutFmt = useCallback((style) => (
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    <Select style={style} value={fileFormat || ''} title={i18n.t('Output format')} onChange={withBlur(e => onOutputFormatUserChange(e.target.value))}>
-      <option key="disabled1" value="" disabled>{i18n.t('Format')}</option>
-
-      {detectedFileFormat && (
-        <option key={detectedFileFormat} value={detectedFileFormat}>
-          {detectedFileFormat} - {allOutFormats[detectedFileFormat]} {i18n.t('(detected)')}
-        </option>
-      )}
-
-      <option key="disabled2" value="" disabled>--- {i18n.t('Common formats:')} ---</option>
-      {renderFormatOptions(commonFormatsMap)}
-
-      <option key="disabled3" value="" disabled>--- {i18n.t('All formats:')} ---</option>
-      {renderFormatOptions(otherFormatsMap)}
-    </Select>
-  ), [commonFormatsMap, detectedFileFormat, fileFormat, otherFormatsMap, onOutputFormatUserChange]);
+    <OutputFormatSelect style={style} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
+  ), [detectedFileFormat, fileFormat, onOutputFormatUserChange]);
 
   const renderCaptureFormatButton = useCallback((props) => (
     <Button
@@ -2539,7 +2511,7 @@ const App = memo(() => {
           </Table>
         </Sheet>
 
-        <ConcatDialog isShown={batchFiles.length > 0 && concatDialogVisible} onHide={() => setConcatDialogVisible(false)} initialPaths={batchFilePaths} onConcat={mergeFiles} segmentsToChapters={segmentsToChapters} setSegmentsToChapters={setSegmentsToChapters} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} preserveMetadataOnMerge={preserveMetadataOnMerge} setPreserveMetadataOnMerge={setPreserveMetadataOnMerge} preserveMovData={preserveMovData} setPreserveMovData={setPreserveMovData} />
+        <ConcatDialog isShown={batchFiles.length > 0 && concatDialogVisible} onHide={() => setConcatDialogVisible(false)} initialPaths={batchFilePaths} onConcat={userConcatFiles} segmentsToChapters={segmentsToChapters} setSegmentsToChapters={setSegmentsToChapters} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} preserveMetadataOnMerge={preserveMetadataOnMerge} setPreserveMetadataOnMerge={setPreserveMetadataOnMerge} preserveMovData={preserveMovData} setPreserveMovData={setPreserveMovData} />
 
         <KeyboardShortcuts isShown={keyboardShortcutsVisible} onHide={() => setKeyboardShortcutsVisible(false)} keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} />
       </div>
