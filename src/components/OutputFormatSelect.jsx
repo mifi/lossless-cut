@@ -6,7 +6,7 @@ import { Select } from 'evergreen-ui';
 import allOutFormats from '../outFormats';
 import { withBlur } from '../util';
 
-const commonFormats = ['mov', 'mp4', 'matroska', 'mp3', 'ipod'];
+const commonFormats = ['mov', 'mp4', 'matroska', 'webm', 'mp3', 'ipod'];
 
 function renderFormatOptions(map) {
   return Object.entries(map).map(([f, name]) => (
