@@ -17,7 +17,7 @@ const streams1 = [
 // https://stackoverflow.com/questions/32152090/encode-h265-to-hvc1-codec
 test('getMapStreamsArgs', () => {
   const path = '/path/file.mp4';
-const outFormat = 'mp4';
+  const outFormat = 'mp4';
 
   expect(getMapStreamsArgs({
     allFilesMeta: { [path]: { streams: streams1 } },

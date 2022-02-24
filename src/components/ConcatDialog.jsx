@@ -61,7 +61,7 @@ const ConcatDialog = memo(({
       setFileFormat();
       setDetectedFileFormat();
       const fileMetaNew = await readFileMeta(firstPath);
-      const fileFormatNew = await getSmarterOutFormat(firstPath, fileMetaNew.format);
+      const fileFormatNew = await getSmarterOutFormat({ filePath: firstPath, fileMeta: fileMetaNew });
       if (aborted) return;
       setFileMeta(fileMetaNew);
       setFileFormat(fileFormatNew);

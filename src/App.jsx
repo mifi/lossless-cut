@@ -1410,7 +1410,7 @@ const App = memo(() => {
       const fileMeta = await readFileMeta(fp);
       // console.log('file meta read', fileMeta);
 
-      const fileFormatNew = await getSmarterOutFormat(fp, fileMeta.format);
+      const fileFormatNew = await getSmarterOutFormat({ filePath: fp, fileMeta });
 
       // console.log(streams, fileMeta.format, fileFormat);
 

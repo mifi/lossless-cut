@@ -6,6 +6,7 @@ import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
 import { getOutPath, isDurationValid, getExtensionForFormat, isWindows, platform } from './util';
+import { encodeablePcmCodecs } from './util/streams';
 
 const execa = window.require('execa');
 const { join } = window.require('path');
@@ -228,13 +229,20 @@ export async function createChaptersFromSegments({ segmentPaths, chapterNames })
  * Therefore we have to map between detected format and encode format
  * See also ffmpeg -formats
  */
-function mapFormat(requestedFormat) {
+function mapDefaultFormat({ streams, requestedFormat }) {
+  if (requestedFormat === 'mp4') {
+    // Only MOV supports these, so switch to MOV https://github.com/mifi/lossless-cut/issues/948
+    if (streams.some((stream) => encodeablePcmCodecs.includes(stream.codec_name))) {
+      return 'mov';
+    }
+  }
+
   switch (requestedFormat) {
     // These two cmds produce identical output, so we assume that encoding "ipod" means encoding m4a
     // ffmpeg -i example.aac -c copy OutputFile2.m4a
     // ffmpeg -i example.aac -c copy -f ipod OutputFile.m4a
     // See also https://github.com/mifi/lossless-cut/issues/28
-    case 'm4a': return 'ipod';
+    case 'm4a':
     case 'aac': return 'ipod';
     default: return requestedFormat;
   }
@@ -245,8 +253,8 @@ function determineOutputFormat(ffprobeFormats, fileTypeResponse) {
   return ffprobeFormats[0] || undefined;
 }
 
-export async function getSmarterOutFormat(filePath, formatData) {
-  const formatsStr = formatData.format_name;
+export async function getSmarterOutFormat({ filePath, fileMeta: { format, streams } }) {
+  const formatsStr = format.format_name;
   console.log('formats', formatsStr);
   const formats = (formatsStr || '').split(',');
 
@@ -254,12 +262,9 @@ export async function getSmarterOutFormat(filePath, formatData) {
   const bytes = await readChunk(filePath, 0, 4100);
   const fileTypeResponse = fileType(bytes) || {};
   console.log(`fileType detected format ${JSON.stringify(fileTypeResponse)}`);
-  let assumedFormat = determineOutputFormat(formats, fileTypeResponse);
+  const assumedFormat = determineOutputFormat(formats, fileTypeResponse);
 
-  // https://github.com/mifi/lossless-cut/issues/367
-  if (assumedFormat === 'mp4' && formatData.tags && formatData.tags.major_brand === 'XAVC') assumedFormat = 'mov';
-
-  return mapFormat(assumedFormat);
+  return mapDefaultFormat({ streams, requestedFormat: assumedFormat });
 }
 
 export async function readFileMeta(filePath) {
