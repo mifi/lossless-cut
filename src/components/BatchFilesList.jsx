@@ -1,23 +1,23 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { FaBars } from 'react-icons/fa';
+import { FaTimes, FaHatWizard } from 'react-icons/fa';
+import { AiOutlineMergeCells } from 'react-icons/ai';
 
 import BatchFile from './BatchFile';
-import useNativeMenu from '../hooks/useNativeMenu';
 import { timelineBackground, controlsBackground } from '../colors';
+
+const iconStyle = {
+  flexShrink: 0,
+  color: 'white',
+  cursor: 'pointer',
+  paddingTop: 3,
+  paddingBottom: 3,
+  padding: '3px 5px',
+};
 
 const BatchFilesList = memo(({ filePath, width, batchFiles, batchOpenSingleFile, batchRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }) => {
   const { t } = useTranslation();
-
-  const contextMenuTemplate = useMemo(() => [
-    { label: `${t('Merge/concatenate files')}...`, click: onMergeFilesClick },
-    { label: `${t('Convert to supported format')}...`, click: onBatchConvertToSupportedFormatClick },
-    { type: 'separator' },
-    { label: t('Close batch'), click: closeBatch },
-  ], [closeBatch, onBatchConvertToSupportedFormatClick, onMergeFilesClick, t]);
-
-  const { openMenu } = useNativeMenu(contextMenuTemplate);
 
   return (
     <motion.div
@@ -27,12 +27,12 @@ const BatchFilesList = memo(({ filePath, width, batchFiles, batchOpenSingleFile,
       animate={{ x: 0 }}
       exit={{ x: -width }}
     >
-      <div style={{ background: controlsBackground, fontSize: 14, paddingBottom: 7, paddingTop: 3, paddingLeft: 10, paddingRight: 5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ background: controlsBackground, fontSize: 14, paddingBottom: 3, paddingTop: 0, paddingLeft: 10, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
         {t('Batch file list')}
-
         <div style={{ flexGrow: 1 }} />
-
-        <FaBars size={20} role="button" title={t('Batch file list')} style={{ cursor: 'pointer', color: 'white', marginRight: 5 }} onClick={openMenu} />
+        <FaHatWizard size={17} role="button" title={`${t('Convert to supported format')}...`} style={iconStyle} onClick={onBatchConvertToSupportedFormatClick} />
+        <AiOutlineMergeCells size={20} role="button" title={`${t('Merge/concatenate files')}...`} style={iconStyle} onClick={onMergeFilesClick} />
+        <FaTimes size={20} role="button" title={t('Close batch')} style={iconStyle} onClick={closeBatch} />
       </div>
 
       <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
