@@ -46,12 +46,6 @@ kbd {
     box-shadow: inset 0 -1px 0 #bbb;
 }
 
-.dragging-helper-class {
-  color: rgba(0,0,0,0.5);
-  /* https://github.com/clauderic/react-sortable-hoc/issues/803 */
-  z-index: 99999;
-}
-
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }

@@ -1,8 +1,10 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { FaTimes, FaHatWizard } from 'react-icons/fa';
 import { AiOutlineMergeCells } from 'react-icons/ai';
+import { ReactSortable } from 'react-sortablejs';
+import { SortAlphabeticalIcon, SortAlphabeticalDescIcon } from 'evergreen-ui';
 
 import BatchFile from './BatchFile';
 import { timelineBackground, controlsBackground } from '../colors';
@@ -16,8 +18,28 @@ const iconStyle = {
   padding: '3px 5px',
 };
 
-const BatchFilesList = memo(({ selectedBatchFiles, filePath, width, batchFiles, onBatchFileSelect, batchRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }) => {
+const BatchFilesList = memo(({ selectedBatchFiles, filePath, width, batchFiles, setBatchFiles, onBatchFileSelect, batchRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }) => {
   const { t } = useTranslation();
+
+  const [sortDesc, setSortDesc] = useState();
+
+  const sortableList = batchFiles.map((batchFile) => ({ id: batchFile.path, batchFile }));
+
+  const setSortableList = useCallback((newList) => {
+    setBatchFiles(newList.map(({ batchFile }) => batchFile));
+  }, [setBatchFiles]);
+
+  const onSortClick = useCallback(() => {
+    const newSortDesc = sortDesc == null ? false : !sortDesc;
+    const sortedFiles = [...batchFiles];
+    const order = newSortDesc ? -1 : 1;
+    // natural language sort (numeric) https://github.com/mifi/lossless-cut/issues/844
+    sortedFiles.sort((a, b) => order * a.name.localeCompare(b.name, 'en-US', { numeric: true }));
+    setBatchFiles(sortedFiles);
+    setSortDesc(newSortDesc);
+  }, [batchFiles, setBatchFiles, sortDesc]);
+
+  const SortIcon = sortDesc ? SortAlphabeticalDescIcon : SortAlphabeticalIcon;
 
   return (
     <motion.div
@@ -32,13 +54,16 @@ const BatchFilesList = memo(({ selectedBatchFiles, filePath, width, batchFiles, 
         <div style={{ flexGrow: 1 }} />
         <FaHatWizard size={17} role="button" title={`${t('Convert to supported format')}...`} style={iconStyle} onClick={onBatchConvertToSupportedFormatClick} />
         <AiOutlineMergeCells size={20} role="button" title={`${t('Merge/concatenate files')}...`} style={iconStyle} onClick={onMergeFilesClick} />
+        <SortIcon size={25} role="button" title={t('Sort items')} style={iconStyle} onClick={onSortClick} />
         <FaTimes size={20} role="button" title={t('Close batch')} style={iconStyle} onClick={closeBatch} />
       </div>
 
       <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
-        {batchFiles.map(({ path, name }) => (
-          <BatchFile key={path} path={path} name={name} isSelected={selectedBatchFiles.includes(path)} isOpen={filePath === path} onSelect={onBatchFileSelect} onDelete={batchRemoveFile} />
-        ))}
+        <ReactSortable list={sortableList} setList={setSortableList}>
+          {sortableList.map(({ batchFile: { path, name } }) => (
+            <BatchFile key={path} path={path} name={name} isSelected={selectedBatchFiles.includes(path)} isOpen={filePath === path} onSelect={onBatchFileSelect} onDelete={batchRemoveFile} />
+          ))}
+        </ReactSortable>
       </div>
     </motion.div>
   );

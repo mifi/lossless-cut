@@ -93,7 +93,7 @@ const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && z
 const zoomMax = 2 ** 14;
 
 const rightBarWidth = 200;
-const leftBarWidth = 200;
+const leftBarWidth = 240;
 
 
 const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
@@ -2224,6 +2224,7 @@ const App = memo(() => {
                 filePath={filePath}
                 width={leftBarWidth}
                 batchFiles={batchFiles}
+                setBatchFiles={setBatchFiles}
                 onBatchFileSelect={onBatchFileSelect}
                 batchRemoveFile={batchRemoveFile}
                 closeBatch={closeBatch}
