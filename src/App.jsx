@@ -673,7 +673,7 @@ const App = memo(() => {
     return { cancel: false, newCustomOutDir };
   }, [customOutDir, setCustomOutDir]);
 
-  const userConcatFiles = useCallback(async ({ paths, includeAllStreams, streams, fileFormat: fileFormat2, isCustomFormatSelected: isCustomFormatSelected2 }) => {
+  const userConcatFiles = useCallback(async ({ paths, includeAllStreams, streams, fileFormat: outFormat, isCustomFormatSelected: isCustomFormatSelected2 }) => {
     if (workingRef.current) return;
     try {
       setConcatDialogVisible(false);
@@ -683,7 +683,7 @@ const App = memo(() => {
       const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: firstPath });
       if (cancel) return;
 
-      const ext = getOutFileExtension({ isCustomFormatSelected: isCustomFormatSelected2, outFormat: fileFormat2, filePath: firstPath });
+      const ext = getOutFileExtension({ isCustomFormatSelected: isCustomFormatSelected2, outFormat, filePath: firstPath });
       const outPath = getOutPath({ customOutDir: newCustomOutDir, filePath: firstPath, nameSuffix: `merged${ext}` });
       const outDir = getOutDir(customOutDir, firstPath);
 
@@ -694,7 +694,7 @@ const App = memo(() => {
       }
 
       // console.log('merge', paths);
-      await concatFiles({ paths, outPath, outDir, fileFormat: fileFormat2, includeAllStreams, streams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
+      await concatFiles({ paths, outPath, outDir, outFormat, includeAllStreams, streams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
       openDirToast({ icon: 'success', dirPath: outDir, text: i18n.t('Files merged!') });
     } catch (err) {
       if (isOutOfSpaceError(err)) {
