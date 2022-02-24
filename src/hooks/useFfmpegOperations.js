@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import flatMap from 'lodash/flatMap';
-import flatMapDeep from 'lodash/flatMapDeep';
 import sum from 'lodash/sum';
 import pMap from 'p-map';
 
@@ -125,15 +124,24 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         return streamCount + copiedStreamIndex;
       }
 
-      const lessDeepMap = (root, fn) => flatMapDeep((
-        Object.entries(root), ([path, streamsMap]) => (
-          Object.entries(streamsMap || {}).map(([streamId, value]) => (
-            fn(path, streamId, value)
-          )))));
+      function lessDeepMap(root, fn) {
+        let ret = [];
+        Object.entries(root).forEach(([path, streamsMap]) => (
+          Object.entries(streamsMap || {}).forEach(([streamId, value]) => {
+            ret = [...ret, ...fn(path, streamId, value)];
+          })));
+
+        return ret;
+      }
 
       // The structure is deep! file -> stream -> key -> value Example: { 'file.mp4': { 0: { key: 'value' } } }
-      const deepMap = (root, fn) => lessDeepMap(root, (path, streamId, tagsMap) => (
-        Object.entries(tagsMap || {}).map(([key, value]) => fn(path, streamId, key, value))));
+      const deepMap = (root, fn) => lessDeepMap(root, (path, streamId, tagsMap) => {
+        let ret = [];
+        Object.entries(tagsMap || {}).forEach(([key, value]) => {
+          ret = [...ret, ...fn(path, streamId, key, value)];
+        });
+        return ret;
+      });
 
       const customTagsArgs = [
         // Main file metadata:
@@ -287,6 +295,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         allFilesMeta: { [firstPath]: { streams } },
         copyFileStreams: [{ path: firstPath, streamIds: streamIdsToCopy }],
         outFormat,
+        manuallyCopyDisposition: true,
       });
 
       // Keep this similar to cutSingle()

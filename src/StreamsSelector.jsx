@@ -11,6 +11,7 @@ import { askForMetadataKey, showJson5Dialog } from './dialogs';
 import { formatDuration } from './util/duration';
 import { getStreamFps } from './ffmpeg';
 import { deleteDispositionValue } from './util';
+import { getActiveDisposition } from './util/streams';
 
 
 const activeColor = '#429777';
@@ -130,10 +131,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
   const existingDispositionsObj = useMemo(() => (stream && stream.disposition) || {}, [stream]);
   const effectiveDisposition = useMemo(() => {
     if (customDisposition) return customDisposition;
-    if (!existingDispositionsObj) return undefined;
-    const existingActiveDispositionEntry = Object.entries(existingDispositionsObj).find(([, value]) => value === 1);
-    if (!existingActiveDispositionEntry) return undefined;
-    return existingActiveDispositionEntry[0]; // return the key
+    return getActiveDisposition(existingDispositionsObj);
   }, [customDisposition, existingDispositionsObj]);
 
   // console.log({ existingDispositionsObj, effectiveDisposition });

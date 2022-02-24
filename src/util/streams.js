@@ -6,17 +6,43 @@ export const defaultProcessedCodecTypes = [
   'attachment',
 ];
 
-function getPerStreamQuirksFlags({ stream, outputIndex, outFormat }) {
-  if (['mov', 'mp4'].includes(outFormat) && stream.codec_tag === '0x0000' && stream.codec_name === 'hevc') {
-    return [`-tag:${outputIndex}`, 'hvc1'];
+export function getActiveDisposition(disposition) {
+  if (disposition == null) return undefined;
+  const existingActiveDispositionEntry = Object.entries(disposition).find(([, value]) => value === 1);
+  if (!existingActiveDispositionEntry) return undefined;
+  return existingActiveDispositionEntry[0]; // return the key
+}
+
+function getPerStreamQuirksFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false }) {
+  let args = [];
+  if (['mov', 'mp4'].includes(outFormat)) {
+    if (stream.codec_tag === '0x0000' && stream.codec_name === 'hevc') {
+      args = [...args, `-tag:${outputIndex}`, 'hvc1'];
+    }
+
+    // mp4/mov only supports mov_text, so convert it https://stackoverflow.com/a/17584272/6519037
+    // https://github.com/mifi/lossless-cut/issues/418
+    if (stream.codec_type === 'subtitle') {
+      args = [...args, `-c:${outputIndex}`, 'mov_text'];
+    }
   }
-  return [];
+
+  // when concat'ing, disposition doesn't seem to get automatically transferred by ffmpeg, so we must do it manually
+  if (manuallyCopyDisposition && stream.disposition != null) {
+    const activeDisposition = getActiveDisposition(stream.disposition);
+    if (activeDisposition != null) {
+      args = [...args, `-disposition:${outputIndex}`, String(activeDisposition)];
+    }
+  }
+
+  return args;
 }
 
 // eslint-disable-next-line import/prefer-default-export
-export function getMapStreamsArgs({ outFormat, allFilesMeta, copyFileStreams }) {
+export function getMapStreamsArgs({ outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition }) {
   let args = [];
   let outputIndex = 0;
+
   copyFileStreams.forEach(({ streamIds, path }, fileIndex) => {
     streamIds.forEach((streamId) => {
       const { streams } = allFilesMeta[path];
@@ -24,7 +50,7 @@ export function getMapStreamsArgs({ outFormat, allFilesMeta, copyFileStreams }) 
       args = [
         ...args,
         '-map', `${fileIndex}:${streamId}`,
-        ...getPerStreamQuirksFlags({ stream, outputIndex, outFormat }),
+        ...getPerStreamQuirksFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition }),
       ];
       outputIndex += 1;
     });
