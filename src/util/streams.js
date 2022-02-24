@@ -132,6 +132,15 @@ function getPerStreamQuirksFlags({ stream, outputIndex, outFormat, manuallyCopyD
     }
   }
 
+  // pcm_bluray should only ever be put in Blu-ray-style m2ts files, Matroska has no format mapping for it anyway.
+  // Use normal PCM (ie. pcm_s16le or pcm_s24le depending on bitdepth).
+  // https://forum.doom9.org/showthread.php?t=174718
+  // https://github.com/mifi/lossless-cut/issues/476
+  // ffmpeg cannot encode pcm_bluray
+  if (outFormat !== 'mpegts' && stream.codec_type === 'audio' && stream.codec_name === 'pcm_bluray') {
+    args = [...args, `-c:${outputIndex}`, 'pcm_s24le'];
+  }
+
   // when concat'ing, disposition doesn't seem to get automatically transferred by ffmpeg, so we must do it manually
   if (manuallyCopyDisposition && stream.disposition != null) {
     const activeDisposition = getActiveDisposition(stream.disposition);
