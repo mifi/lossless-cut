@@ -100,8 +100,8 @@ const TagEditor = memo(({ existingTags, customTags, onTagChange, onTagReset }) =
   );
 });
 
-const EditFileDialog = memo(({ editingFile, externalFiles, mainFileFormatData, mainFilePath, customTagsByFile, setCustomTagsByFile }) => {
-  const formatData = editingFile === mainFilePath ? mainFileFormatData : externalFiles[editingFile].formatData;
+const EditFileDialog = memo(({ editingFile, allFilesMeta, customTagsByFile, setCustomTagsByFile }) => {
+  const { formatData } = allFilesMeta[editingFile];
   const existingTags = formatData.tags || {};
   const customTags = customTagsByFile[editingFile] || {};
 
@@ -119,8 +119,8 @@ const EditFileDialog = memo(({ editingFile, externalFiles, mainFileFormatData, m
   return <TagEditor existingTags={existingTags} customTags={customTags} onTagChange={onTagChange} onTagReset={onTagReset} />;
 });
 
-const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, externalFiles, mainFilePath, mainFileStreams, customTagsByStreamId, setCustomTagsByStreamId, dispositionByStreamId, setDispositionByStreamId }) => {
-  const streams = editingFile === mainFilePath ? mainFileStreams : externalFiles[editingFile].streams;
+const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, allFilesMeta, customTagsByStreamId, setCustomTagsByStreamId, dispositionByStreamId, setDispositionByStreamId }) => {
+  const { streams } = allFilesMeta[editingFile];
   const stream = useMemo(() => streams.find((s) => s.index === editingStreamId), [streams, editingStreamId]);
 
   const existingTags = useMemo(() => (stream && stream.tags) || {}, [stream]);
@@ -325,7 +325,7 @@ const fileStyle = { marginBottom: 20, padding: 5, minWidth: '100%', overflowX: '
 
 const StreamsSelector = memo(({
   mainFilePath, mainFileFormatData, streams: mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId,
-  setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, externalFiles, setExternalFiles,
+  setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta,
   showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams,
   AutoExportToggler, customTagsByFile, setCustomTagsByFile, customTagsByStreamId, setCustomTagsByStreamId,
   dispositionByStreamId, setDispositionByStreamId,
@@ -345,7 +345,7 @@ const StreamsSelector = memo(({
 
   async function removeFile(path) {
     setCopyStreamIdsForPath(path, () => ({}));
-    setExternalFiles((old) => {
+    setExternalFilesMeta((old) => {
       const { [path]: val, ...rest } = old;
       return rest;
     });
@@ -365,7 +365,7 @@ const StreamsSelector = memo(({
     setCopyStreamIdsForPath(path, (old) => Object.fromEntries(Object.entries(old).map(([streamId]) => [streamId, enabled])));
   }
 
-  const externalFilesEntries = Object.entries(externalFiles);
+  const externalFilesEntries = Object.entries(externalFilesMeta);
 
   return (
     <>
@@ -452,7 +452,7 @@ const StreamsSelector = memo(({
         confirmLabel={t('Done')}
         onCloseComplete={() => setEditingFile()}
       >
-        <EditFileDialog editingFile={editingFile} externalFiles={externalFiles} mainFileFormatData={mainFileFormatData} mainFilePath={mainFilePath} customTagsByFile={customTagsByFile} setCustomTagsByFile={setCustomTagsByFile} />
+        <EditFileDialog editingFile={editingFile} allFilesMeta={allFilesMeta} customTagsByFile={customTagsByFile} setCustomTagsByFile={setCustomTagsByFile} />
       </Dialog>
 
       <Dialog
@@ -462,7 +462,7 @@ const StreamsSelector = memo(({
         confirmLabel={t('Done')}
         onCloseComplete={() => setEditingStream()}
       >
-        <EditStreamDialog editingStream={editingStream} externalFiles={externalFiles} mainFilePath={mainFilePath} mainFileStreams={mainFileStreams} customTagsByStreamId={customTagsByStreamId} setCustomTagsByStreamId={setCustomTagsByStreamId} dispositionByStreamId={dispositionByStreamId} setDispositionByStreamId={setDispositionByStreamId} />
+        <EditStreamDialog editingStream={editingStream} allFilesMeta={allFilesMeta} customTagsByStreamId={customTagsByStreamId} setCustomTagsByStreamId={setCustomTagsByStreamId} dispositionByStreamId={dispositionByStreamId} setDispositionByStreamId={setDispositionByStreamId} />
       </Dialog>
     </>
   );

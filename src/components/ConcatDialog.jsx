@@ -45,6 +45,7 @@ const ConcatDialog = memo(({
   const [paths, setPaths] = useState(initialPaths);
   const [includeAllStreams, setIncludeAllStreams] = useState(false);
   const [sortDesc, setSortDesc] = useState();
+  const [fileMeta, setFileMeta] = useState();
 
   const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
 
@@ -56,11 +57,13 @@ const ConcatDialog = memo(({
     let aborted = false;
     (async () => {
       const firstPath = initialPaths[0];
+      setFileMeta();
       setFileFormat();
       setDetectedFileFormat();
-      const fileMeta = await readFileMeta(firstPath);
-      const fileFormatNew = await getSmarterOutFormat(firstPath, fileMeta.format);
+      const fileMetaNew = await readFileMeta(firstPath);
+      const fileFormatNew = await getSmarterOutFormat(firstPath, fileMetaNew.format);
       if (aborted) return;
+      setFileMeta(fileMetaNew);
       setFileFormat(fileFormatNew);
       setDetectedFileFormat(fileFormatNew);
     })().catch(console.error);
@@ -86,6 +89,8 @@ const ConcatDialog = memo(({
 
   const onOutputFormatUserChange = useCallback((newFormat) => setFileFormat(newFormat), [setFileFormat]);
 
+  const onConcatClick = useCallback(() => onConcat({ paths, includeAllStreams, streams: fileMeta.streams, fileFormat, isCustomFormatSelected }), [fileFormat, fileMeta, includeAllStreams, isCustomFormatSelected, onConcat, paths]);
+
   return (
     <Dialog
       title={t('Merge/concatenate files')}
@@ -98,7 +103,7 @@ const ConcatDialog = memo(({
           {fileFormat && detectedFileFormat && <OutputFormatSelect style={{ maxWidth: 150 }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />}
           <Button iconBefore={sortDesc ? SortAlphabeticalDescIcon : SortAlphabeticalIcon} onClick={onSortClick}>{t('Sort items')}</Button>
           <Button onClick={onHide} style={{ marginLeft: 10 }}>Cancel</Button>
-          <Button iconBefore={<AiOutlineMergeCells />} isLoading={detectedFileFormat == null} appearance="primary" onClick={() => onConcat({ paths, includeAllStreams, fileFormat, isCustomFormatSelected })}>{t('Merge!')}</Button>
+          <Button iconBefore={<AiOutlineMergeCells />} isLoading={detectedFileFormat == null} appearance="primary" onClick={onConcatClick}>{t('Merge!')}</Button>
         </>
       )}
     >

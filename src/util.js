@@ -146,25 +146,6 @@ export function dragPreventer(ev) {
   ev.preventDefault();
 }
 
-export function isStreamThumbnail(stream) {
-  return stream && stream.disposition && stream.disposition.attached_pic === 1;
-}
-
-export const getAudioStreams = (streams) => streams.filter(stream => stream.codec_type === 'audio');
-export const getVideoStreams = (streams) => streams.filter(stream => stream.codec_type === 'video' && !isStreamThumbnail(stream));
-
-// With these codecs, the player will not give a playback error, but instead only play audio
-export function doesPlayerSupportFile(streams) {
-  const videoStreams = getVideoStreams(streams);
-  // Don't check audio formats, assume all is OK
-  if (videoStreams.length === 0) return true;
-  // If we have at least one video that is NOT of the unsupported formats, assume the player will be able to play it natively
-  // https://github.com/mifi/lossless-cut/issues/595
-  // https://github.com/mifi/lossless-cut/issues/975
-  // But cover art / thumbnail streams don't count e.g. hevc with a png stream (disposition.attached_pic=1)
-  return videoStreams.some(s => !['hevc', 'prores', 'mpeg4', 'tscc2'].includes(s.codec_name));
-}
-
 export const isMasBuild = window.process.mas;
 export const isWindowsStoreBuild = window.process.windowsStore;
 export const isStoreBuild = isMasBuild || isWindowsStoreBuild;

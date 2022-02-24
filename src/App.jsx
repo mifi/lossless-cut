@@ -49,20 +49,21 @@ import { loadMifiLink } from './mifi';
 import { controlsBackground } from './colors';
 import { captureFrameFromTag, captureFrameFfmpeg } from './capture-frame';
 import {
-  defaultProcessedCodecTypes, getStreamFps, isCuttingStart, isCuttingEnd,
+  getStreamFps, isCuttingStart, isCuttingEnd,
   readFileMeta, getSmarterOutFormat, renderThumbnails as ffmpegRenderThumbnails,
   extractStreams, runStartupCheck,
-  isAudioDefinitelyNotSupported, isIphoneHevc, tryMapChaptersToEdl,
+  isIphoneHevc, tryMapChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
 } from './ffmpeg';
+import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, defaultProcessedCodecTypes, isAudioDefinitelyNotSupported, doesPlayerSupportFile } from './util/streams';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube, getTimeFromFrameNum as getTimeFromFrameNumRaw, getFrameCountRaw } from './edlFormats';
 import {
   getOutPath, toast, errorToast, handleError, setFileNameTitle, getOutDir, getFileDir, withBlur,
-  checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer, doesPlayerSupportFile,
+  checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer,
   isDurationValid, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, isStreamThumbnail, getAudioStreams, getVideoStreams, isOutOfSpaceError, shuffleArray,
+  deleteFiles, isOutOfSpaceError, shuffleArray,
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
@@ -109,18 +110,16 @@ const App = memo(() => {
   const [playing, setPlaying] = useState(false);
   const [playerTime, setPlayerTime] = useState();
   const [duration, setDuration] = useState();
-  const [fileFormatData, setFileFormatData] = useState();
-  const [chapters, setChapters] = useState();
   const [rotation, setRotation] = useState(360);
   const [cutProgress, setCutProgress] = useState();
   const [startTimeOffset, setStartTimeOffset] = useState(0);
   const [filePath, setFilePath] = useState('');
-  const [externalStreamFiles, setExternalStreamFiles] = useState([]);
+  const [externalFilesMeta, setExternalFilesMeta] = useState({});
   const [customTagsByFile, setCustomTagsByFile] = useState({});
   const [customTagsByStreamId, setCustomTagsByStreamId] = useState({});
   const [dispositionByStreamId, setDispositionByStreamId] = useState({});
   const [detectedFps, setDetectedFps] = useState();
-  const [mainStreams, setMainStreams] = useState([]);
+  const [mainFileMeta, setMainFileMeta] = useState({ streams: [], formatData: {} });
   const [mainVideoStream, setMainVideoStream] = useState();
   const [mainAudioStream, setMainAudioStream] = useState();
   const [copyStreamIdsByFile, setCopyStreamIdsByFile] = useState({});
@@ -674,7 +673,7 @@ const App = memo(() => {
     return { cancel: false, newCustomOutDir };
   }, [customOutDir, setCustomOutDir]);
 
-  const userConcatFiles = useCallback(async ({ paths, includeAllStreams, fileFormat: fileFormat2, isCustomFormatSelected: isCustomFormatSelected2 }) => {
+  const userConcatFiles = useCallback(async ({ paths, includeAllStreams, streams, fileFormat: fileFormat2, isCustomFormatSelected: isCustomFormatSelected2 }) => {
     if (workingRef.current) return;
     try {
       setConcatDialogVisible(false);
@@ -695,7 +694,7 @@ const App = memo(() => {
       }
 
       // console.log('merge', paths);
-      await concatFiles({ paths, outPath, outDir, fileFormat: fileFormat2, includeAllStreams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
+      await concatFiles({ paths, outPath, outDir, fileFormat: fileFormat2, includeAllStreams, streams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
       openDirToast({ icon: 'success', dirPath: outDir, text: i18n.t('Files merged!') });
     } catch (err) {
       if (isOutOfSpaceError(err)) {
@@ -743,6 +742,10 @@ const App = memo(() => {
     !!(copyStreamIdsByFile[path] || {})[streamId]
   ), [copyStreamIdsByFile]);
 
+  const mainStreams = useMemo(() => mainFileMeta.streams, [mainFileMeta.streams]);
+  const mainFileFormatData = useMemo(() => mainFileMeta.formatData, [mainFileMeta.formatData]);
+  const mainFileChapters = useMemo(() => mainFileMeta.chapters, [mainFileMeta.chapters]);
+
   const copyAnyAudioTrack = useMemo(() => mainStreams.some(stream => isCopyingStreamId(filePath, stream.index) && stream.codec_type === 'audio'), [filePath, isCopyingStreamId, mainStreams]);
 
   const subtitleStreams = useMemo(() => mainStreams.filter((stream) => stream.codec_type === 'subtitle'), [mainStreams]);
@@ -783,16 +786,18 @@ const App = memo(() => {
 
   const copyFileStreams = useMemo(() => Object.entries(copyStreamIdsByFile).map(([path, streamIdsMap]) => ({
     path,
-    streamIds: Object.keys(streamIdsMap).filter(index => streamIdsMap[index]),
+    streamIds: Object.keys(streamIdsMap).filter(index => streamIdsMap[index]).map((streamIdStr) => parseInt(streamIdStr, 10)),
   })), [copyStreamIdsByFile]);
 
   const numStreamsToCopy = copyFileStreams
     .reduce((acc, { streamIds }) => acc + streamIds.length, 0);
 
-  const numStreamsTotal = [
-    ...mainStreams,
-    ...flatMap(Object.values(externalStreamFiles), ({ streams }) => streams),
-  ].length;
+  const allFilesMeta = useMemo(() => ({
+    ...externalFilesMeta,
+    [filePath]: mainFileMeta,
+  }), [externalFilesMeta, filePath, mainFileMeta]);
+
+  const numStreamsTotal = flatMap(Object.values(allFilesMeta), ({ streams }) => streams).length;
 
   const toggleStripAudio = useCallback(() => {
     setCopyStreamIdsForPath(filePath, (old) => {
@@ -888,19 +893,17 @@ const App = memo(() => {
       setCutStartTimeManual();
       setCutEndTimeManual();
       setFileFormat();
-      setFileFormatData();
-      setChapters();
       setDetectedFileFormat();
       setRotation(360);
       setCutProgress();
       setStartTimeOffset(0);
       setFilePath(''); // Setting video src="" prevents memory leak in chromium
-      setExternalStreamFiles([]);
+      setExternalFilesMeta({});
       setCustomTagsByFile({});
       setCustomTagsByStreamId({});
       setDispositionByStreamId({});
       setDetectedFps();
-      setMainStreams([]);
+      setMainFileMeta({ streams: [], formatData: [] });
       setMainVideoStream();
       setMainAudioStream();
       setCopyStreamIdsByFile({});
@@ -1153,17 +1156,17 @@ const App = memo(() => {
     const state = {
       filePath,
       fileFormat,
-      externalStreamFiles,
+      setExternalFilesMeta,
       mainStreams,
       copyStreamIdsByFile,
       cutSegments: cutSegments.map(s => ({ start: s.start, end: s.end })),
-      fileFormatData,
+      mainFileFormatData,
       rotation,
       shortestFlag,
     };
 
     openSendReportDialog(err, state);
-  }, [copyStreamIdsByFile, cutSegments, externalStreamFiles, fileFormat, fileFormatData, filePath, mainStreams, rotation, shortestFlag]);
+  }, [copyStreamIdsByFile, cutSegments, setExternalFilesMeta, fileFormat, mainFileFormatData, filePath, mainStreams, rotation, shortestFlag]);
 
   const handleCutFailed = useCallback(async (err) => {
     const sendErrorReport = await showCutFailedDialog({ detectedFileFormat });
@@ -1205,6 +1208,7 @@ const App = memo(() => {
         videoDuration: duration,
         rotation: isRotationSet ? effectiveRotation : undefined,
         copyFileStreams,
+        allFilesMeta,
         keyframeCut,
         segments: segmentsToExport,
         segmentsFileNames: outSegFileNames,
@@ -1245,7 +1249,7 @@ const App = memo(() => {
       const msgs = [i18n.t('Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, see the HELP page.')];
 
       // https://github.com/mifi/lossless-cut/issues/329
-      if (isIphoneHevc(fileFormatData, mainStreams)) msgs.push(i18n.t('There is a known issue with cutting iPhone HEVC videos. The output file may not work in all players.'));
+      if (isIphoneHevc(mainFileFormatData, mainStreams)) msgs.push(i18n.t('There is a known issue with cutting iPhone HEVC videos. The output file may not work in all players.'));
 
       if (exportExtraStreams) {
         try {
@@ -1275,7 +1279,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, enabledSegments, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, willMerge, fileFormatData, mainStreams, exportExtraStreams, hideAllNotifications, segmentsToChapters, invertCutSegments, autoConcatCutSegments, customOutDir, isCustomFormatSelected, autoDeleteMergedSegments, preserveMetadataOnMerge, filePath, nonCopiedExtraStreams, handleCutFailed]);
+  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, enabledSegments, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, willMerge, mainFileFormatData, mainStreams, exportExtraStreams, hideAllNotifications, segmentsToChapters, invertCutSegments, autoConcatCutSegments, customOutDir, isCustomFormatSelected, autoDeleteMergedSegments, preserveMetadataOnMerge, filePath, nonCopiedExtraStreams, handleCutFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath || workingRef.current) return;
@@ -1407,16 +1411,14 @@ const App = memo(() => {
 
       const fileFormatNew = await getSmarterOutFormat(fp, fileMeta.format);
 
-      const { streams } = fileMeta;
-
       // console.log(streams, fileMeta.format, fileFormat);
 
       if (!fileFormatNew) throw new Error('Unable to determine file format');
 
-      const timecode = autoLoadTimecode ? getTimecodeFromStreams(streams) : undefined;
+      const timecode = autoLoadTimecode ? getTimecodeFromStreams(fileMeta.streams) : undefined;
 
-      const videoStreams = getVideoStreams(streams);
-      const audioStreams = getAudioStreams(streams);
+      const videoStreams = getRealVideoStreams(fileMeta.streams);
+      const audioStreams = getAudioStreams(fileMeta.streams);
 
       const videoStream = videoStreams[0];
       const audioStream = audioStreams[0];
@@ -1426,22 +1428,14 @@ const App = memo(() => {
 
       const detectedFpsNew = haveVideoStream ? getStreamFps(videoStream) : undefined;
 
-      const shouldCopyStreamByDefault = (stream) => {
-        if (!defaultProcessedCodecTypes.includes(stream.codec_type)) return false;
-        // Don't enable thumbnail stream by default if we have a main video stream
-        // It's been known to cause issues: https://github.com/mifi/lossless-cut/issues/308
-        if (haveVideoStream && isStreamThumbnail(stream)) return false;
-        return true;
-      };
-
-      const copyStreamIdsForPathNew = fromPairs(streams.map((stream) => [
+      const copyStreamIdsForPathNew = fromPairs(fileMeta.streams.map((stream) => [
         stream.index, shouldCopyStreamByDefault(stream),
       ]));
 
       if (timecode) setStartTimeOffset(timecode);
       if (detectedFpsNew != null) setDetectedFps(detectedFpsNew);
 
-      if (isAudioDefinitelyNotSupported(streams)) {
+      if (isAudioDefinitelyNotSupported(fileMeta.streams)) {
         toast.fire({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
       }
 
@@ -1449,7 +1443,7 @@ const App = memo(() => {
       const hasLoadedExistingHtml5FriendlyFile = await checkAndSetExistingHtml5FriendlyFile();
 
       // 'fastest' works with almost all video files
-      if (!hasLoadedExistingHtml5FriendlyFile && !doesPlayerSupportFile(streams) && validDuration) {
+      if (!hasLoadedExistingHtml5FriendlyFile && !doesPlayerSupportFile(fileMeta.streams) && validDuration) {
         await html5ifyAndLoadWithPreferences(cod, fp, 'fastest', haveVideoStream, haveAudioStream);
       }
 
@@ -1480,15 +1474,13 @@ const App = memo(() => {
       if (!validDuration) toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
 
       batchedUpdates(() => {
-        setMainStreams(streams);
+        setMainFileMeta({ streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters });
         setMainVideoStream(videoStream);
         setMainAudioStream(audioStream);
         setCopyStreamIdsForPath(fp, () => copyStreamIdsForPathNew);
         setFileNameTitle(fp);
         setFileFormat(outFormatLocked || fileFormatNew);
         setDetectedFileFormat(fileFormatNew);
-        setFileFormatData(fileMeta.format);
-        setChapters(fileMeta.chapters);
 
         // This needs to be last, because it triggers <video> to load the video
         // If not, onVideoError might be triggered before setWorking() has been cleared.
@@ -1836,12 +1828,12 @@ const App = memo(() => {
   }, [customOutDir, filePath, mainStreams, outputDir, setWorking]);
 
   const addStreamSourceFile = useCallback(async (path) => {
-    if (externalStreamFiles[path]) return;
-    const { streams, format: formatData } = await readFileMeta(path);
-    // console.log('streams', streams);
-    setExternalStreamFiles(old => ({ ...old, [path]: { streams, formatData } }));
-    setCopyStreamIdsForPath(path, () => fromPairs(streams.map(({ index }) => [index, true])));
-  }, [externalStreamFiles, setCopyStreamIdsForPath]);
+    if (allFilesMeta[path]) return;
+    const fileMeta = await readFileMeta(path);
+    // console.log('streams', fileMeta.streams);
+    setExternalFilesMeta((old) => ({ ...old, [path]: { streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters } }));
+    setCopyStreamIdsForPath(path, () => fromPairs(fileMeta.streams.map(({ index }) => [index, true])));
+  }, [allFilesMeta, setCopyStreamIdsForPath]);
 
   const batchFilePaths = useMemo(() => batchFiles.map((f) => f.path), [batchFiles]);
 
@@ -2404,10 +2396,11 @@ const App = memo(() => {
         >
           <StreamsSelector
             mainFilePath={filePath}
-            mainFileFormatData={fileFormatData}
-            mainFileChapters={chapters}
-            externalFiles={externalStreamFiles}
-            setExternalFiles={setExternalStreamFiles}
+            mainFileFormatData={mainFileFormatData}
+            mainFileChapters={mainFileChapters}
+            allFilesMeta={allFilesMeta}
+            externalFilesMeta={externalFilesMeta}
+            setExternalFilesMeta={setExternalFilesMeta}
             showAddStreamSourceDialog={showAddStreamSourceDialog}
             streams={mainStreams}
             isCopyingStreamId={isCopyingStreamId}

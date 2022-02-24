@@ -5,7 +5,7 @@ import moment from 'moment';
 import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
-import { getOutPath, isDurationValid, getExtensionForFormat, isWindows, platform, getAudioStreams } from './util';
+import { getOutPath, isDurationValid, getExtensionForFormat, isWindows, platform } from './util';
 
 const execa = window.require('execa');
 const { join } = window.require('path');
@@ -268,7 +268,7 @@ export async function readFileMeta(filePath) {
       '-of', 'json', '-show_chapters', '-show_format', '-show_entries', 'stream', '-i', filePath, '-hide_banner',
     ]);
 
-    const { streams, format, chapters } = JSON.parse(stdout);
+    const { streams = [], format = {}, chapters = [] } = JSON.parse(stdout);
     return { format, streams, chapters };
   } catch (err) {
     // Windows will throw error with code ENOENT if format detection fails.
@@ -544,22 +544,8 @@ export async function captureFrame({ timestamp, videoPath, outPath }) {
   await execa(ffmpegPath, args, { encoding: null });
 }
 
-// https://www.ffmpeg.org/doxygen/3.2/libavutil_2utils_8c_source.html#l00079
-export const defaultProcessedCodecTypes = [
-  'video',
-  'audio',
-  'subtitle',
-  'attachment',
-];
 
 export const isMov = (format) => ['ismv', 'ipod', 'mp4', 'mov'].includes(format);
-
-export function isAudioDefinitelyNotSupported(streams) {
-  const audioStreams = getAudioStreams(streams);
-  if (audioStreams.length === 0) return false;
-  // TODO this could be improved
-  return audioStreams.every(stream => ['ac3'].includes(stream.codec_name));
-}
 
 export function isIphoneHevc(format, streams) {
   if (!streams.some((s) => s.codec_name === 'hevc')) return false;
