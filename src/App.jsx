@@ -161,8 +161,8 @@ const App = memo(() => {
   }, []);
 
   const createIndexedSegment = useCallback(({ segment, incrementCount } = {}) => {
-    const ret = createSegment({ segIndex: segCounterRef.current, ...segment });
     if (incrementCount) segCounterRef.current += 1;
+    const ret = createSegment({ segIndex: segCounterRef.current, ...segment });
     return ret;
   }, []);
 
@@ -1352,7 +1352,7 @@ const App = memo(() => {
 
     const getNewName = (oldName, suffix) => oldName && `${segment.name} ${suffix}`;
 
-    const firstPart = createIndexedSegment({ segment: { name: getNewName(segment.name, '1'), start: segment.start, end: currentTime }, incrementCount: true });
+    const firstPart = createIndexedSegment({ segment: { name: getNewName(segment.name, '1'), start: segment.start, end: currentTime }, incrementCount: false });
     const secondPart = createIndexedSegment({ segment: { name: getNewName(segment.name, '2'), start: currentTime, end: segment.end }, incrementCount: true });
 
     const newSegments = [...cutSegments];
@@ -1375,8 +1375,9 @@ const App = memo(() => {
       clearSegCounter();
     }
     setCutSegments((existingSegments) => {
-      const newSegments = validEdl.map((segment) => createIndexedSegment({ segment, incrementCount: true }));
-      if (append && existingSegments.length > 1) return [...existingSegments, ...newSegments];
+      const needToAppend = append && existingSegments.length > 1;
+      const newSegments = validEdl.map((segment, i) => createIndexedSegment({ segment, incrementCount: needToAppend || i > 0 }));
+      if (needToAppend) return [...existingSegments, ...newSegments];
       return newSegments;
     });
   }, [clearSegCounter, createIndexedSegment, setCutSegments]);
