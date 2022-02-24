@@ -153,6 +153,7 @@ const App = memo(() => {
 
   // Batch state / concat files
   const [batchFiles, setBatchFiles] = useState([]);
+  const [selectedBatchFiles, setSelectedBatchFiles] = useState([]);
 
   // Segment related state
   const segCounterRef = useRef(0);
@@ -1055,9 +1056,13 @@ const App = memo(() => {
     // eslint-disable-next-line no-alert
     if (askBeforeClose && !window.confirm(i18n.t('Are you sure you want to close the loaded batch of files?'))) return;
     setBatchFiles([]);
+    setSelectedBatchFiles([]);
   }, [askBeforeClose]);
 
-  const batchRemoveFile = useCallback((path) => setBatchFiles((existingBatch) => existingBatch.filter((existingFile) => existingFile.path !== path)), []);
+  const batchRemoveFile = useCallback((path) => {
+    setBatchFiles((existingBatch) => existingBatch.filter((existingFile) => existingFile.path !== path));
+    setSelectedBatchFiles([]);
+  }, []);
 
   const cleanupFilesDialog = useCallback(async () => {
     if (!isFileOpened) return;
@@ -1565,12 +1570,28 @@ const App = memo(() => {
   }, [userOpenSingleFile, setWorking, filePath]);
 
   const batchFileJump = useCallback((direction) => {
-    const pathIndex = batchFiles.findIndex(({ path }) => path === filePath);
+    if (batchFiles.length === 0) return;
+    if (selectedBatchFiles.length === 0) {
+      setSelectedBatchFiles([batchFiles[0].path]);
+      return;
+    }
+    const selectedFilePath = selectedBatchFiles[direction > 0 ? selectedBatchFiles.length - 1 : 0];
+    const pathIndex = batchFiles.findIndex(({ path }) => path === selectedFilePath);
     if (pathIndex === -1) return;
     const nextFile = batchFiles[pathIndex + direction];
     if (!nextFile) return;
-    batchOpenSingleFile(nextFile.path);
-  }, [filePath, batchFiles, batchOpenSingleFile]);
+    setSelectedBatchFiles([nextFile.path]);
+  }, [batchFiles, selectedBatchFiles]);
+
+  const batchOpenSelectedFile = useCallback(() => {
+    if (selectedBatchFiles.length === 0) return;
+    batchOpenSingleFile(selectedBatchFiles[0]);
+  }, [batchOpenSingleFile, selectedBatchFiles]);
+
+  const onBatchFileSelect = useCallback((path) => {
+    if (selectedBatchFiles.includes(path)) batchOpenSingleFile(path);
+    else setSelectedBatchFiles([path]);
+  }, [batchOpenSingleFile, selectedBatchFiles]);
 
   const goToTimecode = useCallback(async () => {
     if (!filePath) return;
@@ -1727,6 +1748,7 @@ const App = memo(() => {
       timelineZoomOut: () => { zoomRel(-1); return false; },
       batchPreviousFile: () => batchFileJump(-1),
       batchNextFile: () => batchFileJump(1),
+      batchOpenSelectedFile,
       closeBatch,
       removeCurrentSegment: () => removeCutSegment(currentSegIndexSafe),
       undo: () => cutSegmentsHistory.back(),
@@ -1796,7 +1818,7 @@ const App = memo(() => {
     if (match) return bubble;
 
     return true; // bubble the event
-  }, [addCutSegment, askSetStartTimeOffset, batchFileJump, captureSnapshot, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, currentSegIndexSafe, cutSegmentsHistory, disableAllSegments, enableAllSegments, enableOnlyCurrentSegment, exportConfirmVisible, extractAllStreams, goToTimecode, increaseRotation, invertAllCutSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegmentPress, pause, play, removeCutSegment, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, setCutEnd, setCutStart, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentEnabled, toggleHelp, toggleKeyboardShortcuts, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addCutSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, currentSegIndexSafe, cutSegmentsHistory, disableAllSegments, enableAllSegments, enableOnlyCurrentSegment, exportConfirmVisible, extractAllStreams, goToTimecode, increaseRotation, invertAllCutSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegmentPress, pause, play, removeCutSegment, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, setCutEnd, setCutStart, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentEnabled, toggleHelp, toggleKeyboardShortcuts, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, userHtml5ifyCurrentFile, zoomRel]);
 
   useKeyboard({ keyBindings, onKeyPress });
 
@@ -1843,8 +1865,10 @@ const App = memo(() => {
       const mapPathsToFiles = (paths) => paths.map((path) => ({ path, name: basename(path) }));
       if (append) {
         const newUniquePaths = newPaths.filter((newPath) => !existingFiles.some(({ path: existingPath }) => newPath === existingPath));
+        setSelectedBatchFiles([newUniquePaths[0]]);
         return [...existingFiles, ...mapPathsToFiles(newUniquePaths)];
       }
+      setSelectedBatchFiles([newPaths[0]]);
       return mapPathsToFiles(newPaths);
     });
   }, []);
@@ -2196,10 +2220,11 @@ const App = memo(() => {
           <AnimatePresence>
             {showLeftBar && (
               <BatchFilesList
+                selectedBatchFiles={selectedBatchFiles}
                 filePath={filePath}
                 width={leftBarWidth}
                 batchFiles={batchFiles}
-                batchOpenSingleFile={batchOpenSingleFile}
+                onBatchFileSelect={onBatchFileSelect}
                 batchRemoveFile={batchRemoveFile}
                 closeBatch={closeBatch}
                 onMergeFilesClick={concatCurrentBatch}

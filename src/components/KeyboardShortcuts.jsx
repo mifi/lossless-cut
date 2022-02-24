@@ -365,6 +365,10 @@ const KeyboardShortcuts = memo(({
           name: t('Next file'),
           category: batchFilesCategory,
         },
+        batchOpenSelectedFile: {
+          name: t('Open selected file'),
+          category: batchFilesCategory,
+        },
         closeBatch: {
           name: t('Close batch'),
           category: batchFilesCategory,

@@ -52,6 +52,8 @@ const defaultKeyBindings = [
   { keys: 'command+down', action: 'timelineZoomOut' },
   { keys: 'shift+down', action: 'batchNextFile' },
 
+  { keys: 'shift+enter', action: 'batchOpenSelectedFile' },
+
   // https://github.com/mifi/lossless-cut/issues/610
   { keys: 'ctrl+z', action: 'undo' },
   { keys: 'command+z', action: 'undo' },

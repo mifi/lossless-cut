@@ -16,7 +16,7 @@ const iconStyle = {
   padding: '3px 5px',
 };
 
-const BatchFilesList = memo(({ filePath, width, batchFiles, batchOpenSingleFile, batchRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }) => {
+const BatchFilesList = memo(({ selectedBatchFiles, filePath, width, batchFiles, onBatchFileSelect, batchRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }) => {
   const { t } = useTranslation();
 
   return (
@@ -37,7 +37,7 @@ const BatchFilesList = memo(({ filePath, width, batchFiles, batchOpenSingleFile,
 
       <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
         {batchFiles.map(({ path, name }) => (
-          <BatchFile key={path} path={path} name={name} filePath={filePath} onOpen={batchOpenSingleFile} onDelete={batchRemoveFile} />
+          <BatchFile key={path} path={path} name={name} isSelected={selectedBatchFiles.includes(path)} isOpen={filePath === path} onSelect={onBatchFileSelect} onDelete={batchRemoveFile} />
         ))}
       </div>
     </motion.div>
