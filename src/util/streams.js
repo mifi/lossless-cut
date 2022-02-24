@@ -22,8 +22,24 @@ function getPerStreamQuirksFlags({ stream, outputIndex, outFormat, manuallyCopyD
 
     // mp4/mov only supports mov_text, so convert it https://stackoverflow.com/a/17584272/6519037
     // https://github.com/mifi/lossless-cut/issues/418
-    if (stream.codec_type === 'subtitle') {
+    if (stream.codec_type === 'subtitle' && stream.codec_name !== 'mov_text') {
       args = [...args, `-c:${outputIndex}`, 'mov_text'];
+    }
+  }
+
+  if (outFormat === 'matroska') {
+    // matroska doesn't support mov_text, so convert it to SRT (popular codec)
+    // https://github.com/mifi/lossless-cut/issues/418
+    // https://www.reddit.com/r/PleX/comments/bcfvev/can_someone_eli5_subtitles/
+    if (stream.codec_type === 'subtitle' && stream.codec_name === 'mov_text') {
+      args = [...args, `-c:${outputIndex}`, 'srt'];
+    }
+  }
+
+  if (outFormat === 'webm') {
+    // Only WebVTT subtitles are supported for WebM.
+    if (stream.codec_type === 'subtitle' && stream.codec_name === 'mov_text') {
+      args = [...args, `-c:${outputIndex}`, 'webvtt'];
     }
   }
 
