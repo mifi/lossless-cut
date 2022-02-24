@@ -6,7 +6,7 @@ import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
 import { getOutPath, isDurationValid, getExtensionForFormat, isWindows, platform } from './util';
-import { encodeablePcmCodecs } from './util/streams';
+import { pcmAudioCodecs } from './util/streams';
 
 const execa = window.require('execa');
 const { join } = window.require('path');
@@ -232,7 +232,7 @@ export async function createChaptersFromSegments({ segmentPaths, chapterNames })
 function mapDefaultFormat({ streams, requestedFormat }) {
   if (requestedFormat === 'mp4') {
     // Only MOV supports these, so switch to MOV https://github.com/mifi/lossless-cut/issues/948
-    if (streams.some((stream) => encodeablePcmCodecs.includes(stream.codec_name))) {
+    if (streams.some((stream) => pcmAudioCodecs.includes(stream.codec_name))) {
       return 'mov';
     }
   }
