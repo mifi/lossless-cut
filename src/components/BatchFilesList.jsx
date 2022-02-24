@@ -11,8 +11,8 @@ const BatchFilesList = memo(({ filePath, width, batchFiles, batchOpenSingleFile,
   const { t } = useTranslation();
 
   const contextMenuTemplate = useMemo(() => [
-    { label: t('Merge/concatenate files'), click: onMergeFilesClick },
-    { label: t('Convert to supported format'), click: onBatchConvertToSupportedFormatClick },
+    { label: `${t('Merge/concatenate files')}...`, click: onMergeFilesClick },
+    { label: `${t('Convert to supported format')}...`, click: onBatchConvertToSupportedFormatClick },
     { type: 'separator' },
     { label: t('Close batch'), click: closeBatch },
   ], [closeBatch, onBatchConvertToSupportedFormatClick, onMergeFilesClick, t]);
