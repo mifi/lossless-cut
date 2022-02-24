@@ -174,15 +174,13 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
         ...inputArgs,
 
-        '-c', 'copy',
-
-        ...(shortestFlag ? ['-shortest'] : []),
-
         ...mapStreamsArgs,
 
         '-map_metadata', '0',
 
         ...(chaptersPath ? ['-map_chapters', chaptersInputIndex] : []),
+
+        ...(shortestFlag ? ['-shortest'] : []),
 
         ...getMovFlags({ preserveMovData, movFastStart }),
         ...getMatroskaFlags(),
@@ -305,8 +303,6 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         // '-loglevel', 'warning',
 
         ...inputArgs,
-
-        '-c', 'copy',
 
         ...mapStreamsArgs,
 

@@ -24,13 +24,13 @@ test('getMapStreamsArgs', () => {
     copyFileStreams: [{ path, streamIds: streams1.map((stream) => stream.index) }],
     outFormat,
   })).toEqual([
-    '-map', '0:0',
-    '-map', '0:1',
-    '-map', '0:2',
-    '-map', '0:3', '-tag:3', 'hvc1',
-    '-map', '0:4',
-    '-map', '0:5',
-    '-map', '0:6',
+    '-map', '0:0', '-c:0', 'copy',
+    '-map', '0:1', '-c:1', 'copy',
+    '-map', '0:2', '-c:2', 'copy',
+    '-map', '0:3', '-tag:3', 'hvc1', '-c:3', 'copy',
+    '-map', '0:4', '-c:4', 'copy',
+    '-map', '0:5', '-c:5', 'copy',
+    '-map', '0:6', '-c:6', 'copy',
     '-map', '0:7', '-c:7', 'mov_text',
   ]);
 });
@@ -64,6 +64,7 @@ test('getMapStreamsArgs, disposition', () => {
   })).toEqual([
     '-map', '0:0',
     '-disposition:0', 'attached_pic',
+    '-c:0', 'copy',
   ]);
 });
 

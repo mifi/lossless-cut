@@ -102,7 +102,9 @@ export function getActiveDisposition(disposition) {
   return existingActiveDispositionEntry[0]; // return the key
 }
 
-function getPerStreamQuirksFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false }) {
+function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false }) {
+  let outCodec = 'copy';
+
   let args = [];
   if (['mov', 'mp4'].includes(outFormat)) {
     if (stream.codec_tag === '0x0000' && stream.codec_name === 'hevc') {
@@ -112,7 +114,7 @@ function getPerStreamQuirksFlags({ stream, outputIndex, outFormat, manuallyCopyD
     // mp4/mov only supports mov_text, so convert it https://stackoverflow.com/a/17584272/6519037
     // https://github.com/mifi/lossless-cut/issues/418
     if (stream.codec_type === 'subtitle' && stream.codec_name !== 'mov_text') {
-      args = [...args, `-c:${outputIndex}`, 'mov_text'];
+      outCodec = 'mov_text';
     }
   }
 
@@ -121,14 +123,14 @@ function getPerStreamQuirksFlags({ stream, outputIndex, outFormat, manuallyCopyD
     // https://github.com/mifi/lossless-cut/issues/418
     // https://www.reddit.com/r/PleX/comments/bcfvev/can_someone_eli5_subtitles/
     if (stream.codec_type === 'subtitle' && stream.codec_name === 'mov_text') {
-      args = [...args, `-c:${outputIndex}`, 'srt'];
+      outCodec = 'srt';
     }
   }
 
   if (outFormat === 'webm') {
     // Only WebVTT subtitles are supported for WebM.
     if (stream.codec_type === 'subtitle' && stream.codec_name === 'mov_text') {
-      args = [...args, `-c:${outputIndex}`, 'webvtt'];
+      outCodec = 'webvtt';
     }
   }
 
@@ -138,7 +140,7 @@ function getPerStreamQuirksFlags({ stream, outputIndex, outFormat, manuallyCopyD
   // https://github.com/mifi/lossless-cut/issues/476
   // ffmpeg cannot encode pcm_bluray
   if (outFormat !== 'mpegts' && stream.codec_type === 'audio' && stream.codec_name === 'pcm_bluray') {
-    args = [...args, `-c:${outputIndex}`, 'pcm_s24le'];
+    outCodec = 'pcm_s24le';
   }
 
   // when concat'ing, disposition doesn't seem to get automatically transferred by ffmpeg, so we must do it manually
@@ -149,10 +151,11 @@ function getPerStreamQuirksFlags({ stream, outputIndex, outFormat, manuallyCopyD
     }
   }
 
+  args = [...args, `-c:${outputIndex}`, outCodec];
+
   return args;
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export function getMapStreamsArgs({ outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition }) {
   let args = [];
   let outputIndex = 0;
@@ -164,7 +167,7 @@ export function getMapStreamsArgs({ outFormat, allFilesMeta, copyFileStreams, ma
       args = [
         ...args,
         '-map', `${fileIndex}:${streamId}`,
-        ...getPerStreamQuirksFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition }),
+        ...getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition }),
       ];
       outputIndex += 1;
     });
