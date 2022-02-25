@@ -1060,8 +1060,17 @@ const App = memo(() => {
   }, [askBeforeClose]);
 
   const batchRemoveFile = useCallback((path) => {
-    setBatchFiles((existingBatch) => existingBatch.filter((existingFile) => existingFile.path !== path));
-    setSelectedBatchFiles([]);
+    setBatchFiles((existingBatch) => {
+      const index = existingBatch.findIndex((existingFile) => existingFile.path === path);
+      if (index < 0) return existingBatch;
+      const newBatch = [...existingBatch];
+      newBatch.splice(index, 1);
+      const newItemAtIndex = newBatch[index];
+      if (newItemAtIndex != null) setSelectedBatchFiles([newItemAtIndex.path]);
+      else if (newBatch.length > 0) setSelectedBatchFiles([newBatch[0].path]);
+      else setSelectedBatchFiles([]);
+      return newBatch;
+    });
   }, []);
 
   const cleanupFilesDialog = useCallback(async () => {
