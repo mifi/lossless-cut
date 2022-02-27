@@ -58,11 +58,8 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     if (enableTransferTimestamps) await transferTimestamps(...args);
   }, [enableTransferTimestamps]);
 
-
-  const concatFiles = useCallback(async ({ paths, outDir, outPath, includeAllStreams, streams, outFormat, ffmpegExperimental, onProgress = () => {}, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge }) => {
+  const concatFiles = useCallback(async ({ paths, outDir, outPath, metadataFromPath, includeAllStreams, streams, outFormat, ffmpegExperimental, onProgress = () => {}, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge }) => {
     console.log('Merging files', { paths }, 'to', outPath);
-
-    const firstPath = paths[0];
 
     const durations = await pMap(paths, getDuration, { concurrency: 1 });
     const totalDuration = sum(durations);
@@ -92,7 +89,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       let metadataSourceIndex;
       if (preserveMetadataOnMerge) {
         // If preserve metadata, add the first file (we will get metadata from this input)
-        metadataSourceIndex = addInput(['-i', firstPath]);
+        metadataSourceIndex = addInput(['-i', metadataFromPath]);
       }
 
       let chaptersInputIndex;
@@ -103,8 +100,8 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
       const streamIdsToCopy = getStreamIdsToCopy({ streams, includeAllStreams });
       const mapStreamsArgs = getMapStreamsArgs({
-        allFilesMeta: { [firstPath]: { streams } },
-        copyFileStreams: [{ path: firstPath, streamIds: streamIdsToCopy }],
+        allFilesMeta: { [metadataFromPath]: { streams } },
+        copyFileStreams: [{ path: metadataFromPath, streamIds: streamIdsToCopy }],
         outFormat,
         manuallyCopyDisposition: true,
       });
@@ -161,7 +158,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       if (chaptersPath) await fs.unlink(chaptersPath).catch((err) => console.error('Failed to delete', chaptersPath, err));
     }
 
-    await optionalTransferTimestamps(firstPath, outPath);
+    await optionalTransferTimestamps(metadataFromPath, outPath);
   }, [optionalTransferTimestamps]);
 
   const cutMultiple = useCallback(async ({
@@ -357,9 +354,10 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
     const chapters = await createChaptersFromSegments({ segmentPaths, chapterNames });
 
+    const metadataFromPath = segmentPaths[0];
     // need to re-read streams because may have changed
-    const { streams } = await readFileMeta(segmentPaths[0]);
-    await concatFiles({ paths: segmentPaths, outDir, outPath, outFormat, includeAllStreams: true, streams, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge });
+    const { streams } = await readFileMeta(metadataFromPath);
+    await concatFiles({ paths: segmentPaths, outDir, outPath, metadataFromPath, outFormat, includeAllStreams: true, streams, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge });
     if (autoDeleteMergedSegments) await pMap(segmentPaths, path => fs.unlink(path), { concurrency: 5 });
   }, [concatFiles, filePath]);
 
