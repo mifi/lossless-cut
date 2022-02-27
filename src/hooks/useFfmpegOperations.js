@@ -58,7 +58,111 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     if (enableTransferTimestamps) await transferTimestamps(...args);
   }, [enableTransferTimestamps]);
 
-  // const cut = useCallback(, [filePath, optionalTransferTimestamps]);
+
+  const concatFiles = useCallback(async ({ paths, outDir, outPath, includeAllStreams, streams, outFormat, ffmpegExperimental, onProgress = () => {}, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge }) => {
+    console.log('Merging files', { paths }, 'to', outPath);
+
+    const firstPath = paths[0];
+
+    const durations = await pMap(paths, getDuration, { concurrency: 1 });
+    const totalDuration = sum(durations);
+
+    const chaptersPath = await writeChaptersFfmetadata(outDir, chapters);
+
+    try {
+      let inputArgs = [];
+      let inputIndex = 0;
+
+      // Keep track of input index to be used later
+      // eslint-disable-next-line no-inner-declarations
+      function addInput(args) {
+        inputArgs = [...inputArgs, ...args];
+        const retIndex = inputIndex;
+        inputIndex += 1;
+        return retIndex;
+      }
+
+      // concat list - always first
+      addInput([
+        // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
+        '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe',
+        '-i', '-',
+      ]);
+
+      let metadataSourceIndex;
+      if (preserveMetadataOnMerge) {
+        // If preserve metadata, add the first file (we will get metadata from this input)
+        metadataSourceIndex = addInput(['-i', firstPath]);
+      }
+
+      let chaptersInputIndex;
+      if (chaptersPath) {
+        // if chapters, add chapters source file
+        chaptersInputIndex = addInput(getChaptersInputArgs(chaptersPath));
+      }
+
+      const streamIdsToCopy = getStreamIdsToCopy({ streams, includeAllStreams });
+      const mapStreamsArgs = getMapStreamsArgs({
+        allFilesMeta: { [firstPath]: { streams } },
+        copyFileStreams: [{ path: firstPath, streamIds: streamIdsToCopy }],
+        outFormat,
+        manuallyCopyDisposition: true,
+      });
+
+      // Keep this similar to cutSingle()
+      const ffmpegArgs = [
+        '-hide_banner',
+        // No progress if we set loglevel warning :(
+        // '-loglevel', 'warning',
+
+        ...inputArgs,
+
+        ...mapStreamsArgs,
+
+        // -map_metadata 0 with concat demuxer doesn't transfer metadata from the concat'ed file input (index 0) when merging.
+        // So we use the first file file (index 1) for metadata
+        // Can only do this if allStreams (-map 0) is set
+        ...(metadataSourceIndex != null ? ['-map_metadata', metadataSourceIndex] : []),
+
+        ...(chaptersInputIndex != null ? ['-map_chapters', chaptersInputIndex] : []),
+
+        ...getMovFlags({ preserveMovData, movFastStart }),
+        ...getMatroskaFlags(),
+
+        // See https://github.com/mifi/lossless-cut/issues/170
+        '-ignore_unknown',
+
+        // https://superuser.com/questions/543589/information-about-ffmpeg-command-line-options
+        ...(ffmpegExperimental ? ['-strict', 'experimental'] : []),
+
+        ...(outFormat ? ['-f', outFormat] : []),
+        '-y', outPath,
+      ];
+
+      console.log('ffmpeg', ffmpegArgs.join(' '));
+
+      // https://superuser.com/questions/787064/filename-quoting-in-ffmpeg-concat
+      // Must add "file:" or we get "Impossible to open 'pipe:xyz.mp4'" on newer ffmpeg versions
+      // https://superuser.com/questions/718027/ffmpeg-concat-doesnt-work-with-absolute-path
+      const concatTxt = paths.map(file => `file 'file:${resolve(file).replace(/'/g, "'\\''")}'`).join('\n');
+
+      console.log(concatTxt);
+
+      const ffmpegPath = getFfmpegPath();
+      const process = execa(ffmpegPath, ffmpegArgs);
+
+      handleProgress(process, totalDuration, onProgress);
+
+      stringToStream(concatTxt).pipe(process.stdin);
+
+      const { stdout } = await process;
+      console.log(stdout);
+    } finally {
+      if (chaptersPath) await fs.unlink(chaptersPath).catch((err) => console.error('Failed to delete', chaptersPath, err));
+    }
+
+    await optionalTransferTimestamps(firstPath, outPath);
+  }, [optionalTransferTimestamps]);
 
   const cutMultiple = useCallback(async ({
     outputDir, segments, segmentsFileNames, videoDuration, rotation,
@@ -245,111 +349,6 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       if (chaptersPath) await fs.unlink(chaptersPath).catch((err) => console.error('Failed to delete', chaptersPath, err));
     }
   }, [filePath, optionalTransferTimestamps]);
-
-  const concatFiles = useCallback(async ({ paths, outDir, outPath, includeAllStreams, streams, outFormat, ffmpegExperimental, onProgress = () => {}, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge }) => {
-    console.log('Merging files', { paths }, 'to', outPath);
-
-    const firstPath = paths[0];
-
-    const durations = await pMap(paths, getDuration, { concurrency: 1 });
-    const totalDuration = sum(durations);
-
-    const chaptersPath = await writeChaptersFfmetadata(outDir, chapters);
-
-    try {
-      let inputArgs = [];
-      let inputIndex = 0;
-
-      // Keep track of input index to be used later
-      // eslint-disable-next-line no-inner-declarations
-      function addInput(args) {
-        inputArgs = [...inputArgs, ...args];
-        const retIndex = inputIndex;
-        inputIndex += 1;
-        return retIndex;
-      }
-
-      // concat list - always first
-      addInput([
-        // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
-        '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe',
-        '-i', '-',
-      ]);
-
-      let metadataSourceIndex;
-      if (preserveMetadataOnMerge) {
-        // If preserve metadata, add the first file (we will get metadata from this input)
-        metadataSourceIndex = addInput(['-i', firstPath]);
-      }
-
-      let chaptersInputIndex;
-      if (chaptersPath) {
-        // if chapters, add chapters source file
-        chaptersInputIndex = addInput(getChaptersInputArgs(chaptersPath));
-      }
-
-      const streamIdsToCopy = getStreamIdsToCopy({ streams, includeAllStreams });
-      const mapStreamsArgs = getMapStreamsArgs({
-        allFilesMeta: { [firstPath]: { streams } },
-        copyFileStreams: [{ path: firstPath, streamIds: streamIdsToCopy }],
-        outFormat,
-        manuallyCopyDisposition: true,
-      });
-
-      // Keep this similar to cutSingle()
-      const ffmpegArgs = [
-        '-hide_banner',
-        // No progress if we set loglevel warning :(
-        // '-loglevel', 'warning',
-
-        ...inputArgs,
-
-        ...mapStreamsArgs,
-
-        // -map_metadata 0 with concat demuxer doesn't transfer metadata from the concat'ed file input (index 0) when merging.
-        // So we use the first file file (index 1) for metadata
-        // Can only do this if allStreams (-map 0) is set
-        ...(metadataSourceIndex != null ? ['-map_metadata', metadataSourceIndex] : []),
-
-        ...(chaptersInputIndex != null ? ['-map_chapters', chaptersInputIndex] : []),
-
-        ...getMovFlags({ preserveMovData, movFastStart }),
-        ...getMatroskaFlags(),
-
-        // See https://github.com/mifi/lossless-cut/issues/170
-        '-ignore_unknown',
-
-        // https://superuser.com/questions/543589/information-about-ffmpeg-command-line-options
-        ...(ffmpegExperimental ? ['-strict', 'experimental'] : []),
-
-        ...(outFormat ? ['-f', outFormat] : []),
-        '-y', outPath,
-      ];
-
-      console.log('ffmpeg', ffmpegArgs.join(' '));
-
-      // https://superuser.com/questions/787064/filename-quoting-in-ffmpeg-concat
-      // Must add "file:" or we get "Impossible to open 'pipe:xyz.mp4'" on newer ffmpeg versions
-      // https://superuser.com/questions/718027/ffmpeg-concat-doesnt-work-with-absolute-path
-      const concatTxt = paths.map(file => `file 'file:${resolve(file).replace(/'/g, "'\\''")}'`).join('\n');
-
-      console.log(concatTxt);
-
-      const ffmpegPath = getFfmpegPath();
-      const process = execa(ffmpegPath, ffmpegArgs);
-
-      handleProgress(process, totalDuration, onProgress);
-
-      stringToStream(concatTxt).pipe(process.stdin);
-
-      const { stdout } = await process;
-      console.log(stdout);
-    } finally {
-      if (chaptersPath) await fs.unlink(chaptersPath).catch((err) => console.error('Failed to delete', chaptersPath, err));
-    }
-
-    await optionalTransferTimestamps(firstPath, outPath);
-  }, [optionalTransferTimestamps]);
 
   const autoConcatCutSegments = useCallback(async ({ customOutDir, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge }) => {
     const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath });
