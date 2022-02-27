@@ -3,8 +3,8 @@ import flatMap from 'lodash/flatMap';
 import sum from 'lodash/sum';
 import pMap from 'p-map';
 
-import { getOutPath, transferTimestamps, getOutFileExtension, getOutDir, isMac, deleteDispositionValue, getHtml5ifiedPath } from '../util';
 import { isCuttingStart, isCuttingEnd, handleProgress, getFfCommandLine, getFfmpegPath, getDuration, runFfmpeg, createChaptersFromSegments, readFileMeta } from '../ffmpeg';
+import { getOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath } from '../util';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 
 const execa = window.require('execa');
@@ -363,110 +363,8 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
   const html5ify = useCallback(async ({ customOutDir, filePath: filePathArg, speed, hasAudio, hasVideo, onProgress }) => {
     const outPath = getHtml5ifiedPath(customOutDir, filePathArg, speed);
-
-    let audio;
-    if (hasAudio) {
-      if (speed === 'slowest') audio = 'hq';
-      else if (['slow-audio', 'fast-audio', 'fastest-audio'].includes(speed)) audio = 'lq';
-      else if (['fast-audio-remux', 'fastest-audio-remux'].includes(speed)) audio = 'copy';
-    }
-
-    let video;
-    if (hasVideo) {
-      if (speed === 'slowest') video = 'hq';
-      else if (['slow-audio', 'slow'].includes(speed)) video = 'lq';
-      else video = 'copy';
-    }
-
-    console.log('Making HTML5 friendly version', { filePathArg, outPath, video, audio });
-
-    let videoArgs;
-    let audioArgs;
-
-    // h264/aac_at: No licensing when using HW encoder (Video/Audio Toolbox on Mac)
-    // https://github.com/mifi/lossless-cut/issues/372#issuecomment-810766512
-
-    const targetHeight = 400;
-
-    switch (video) {
-      case 'hq': {
-        if (isMac) {
-          videoArgs = ['-vf', 'format=yuv420p', '-allow_sw', '1', '-vcodec', 'h264', '-b:v', '15M'];
-        } else {
-          // AV1 is very slow
-          // videoArgs = ['-vf', 'format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libaom-av1', '-crf', '30', '-cpu-used', '8'];
-          // Theora is a bit faster but not that much
-          // videoArgs = ['-vf', '-c:v', 'libtheora', '-qscale:v', '1'];
-          // videoArgs = ['-vf', 'format=yuv420p', '-c:v', 'libvpx-vp9', '-crf', '30', '-b:v', '0', '-row-mt', '1'];
-          // x264 can only be used in GPL projects
-          videoArgs = ['-vf', 'format=yuv420p', '-c:v', 'libx264', '-profile:v', 'high', '-preset:v', 'slow', '-crf', '17'];
-        }
-        break;
-      }
-      case 'lq': {
-        if (isMac) {
-          videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
-        } else {
-          // videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-sws_flags', 'neighbor', '-c:v', 'libtheora', '-qscale:v', '1'];
-          // x264 can only be used in GPL projects
-          videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-sws_flags', 'neighbor', '-c:v', 'libx264', '-profile:v', 'baseline', '-x264opts', 'level=3.0', '-preset:v', 'ultrafast', '-crf', '28'];
-        }
-        break;
-      }
-      case 'copy': {
-        videoArgs = ['-vcodec', 'copy'];
-        break;
-      }
-      default: {
-        videoArgs = ['-vn'];
-      }
-    }
-
-    switch (audio) {
-      case 'hq': {
-        if (isMac) {
-          audioArgs = ['-acodec', 'aac_at', '-b:a', '192k'];
-        } else {
-          audioArgs = ['-acodec', 'flac'];
-        }
-        break;
-      }
-      case 'lq': {
-        if (isMac) {
-          audioArgs = ['-acodec', 'aac_at', '-ar', '44100', '-ac', '2', '-b:a', '96k'];
-        } else {
-          audioArgs = ['-acodec', 'flac', '-ar', '11025', '-ac', '2'];
-        }
-        break;
-      }
-      case 'copy': {
-        audioArgs = ['-acodec', 'copy'];
-        break;
-      }
-      default: {
-        audioArgs = ['-an'];
-      }
-    }
-
-    const ffmpegArgs = [
-      '-hide_banner',
-
-      '-i', filePathArg,
-      ...videoArgs,
-      ...audioArgs,
-      '-sn',
-      '-y', outPath,
-    ];
-
-    const duration = await getDuration(filePathArg);
-    const process = runFfmpeg(ffmpegArgs);
-    if (duration) handleProgress(process, duration, onProgress);
-
-    const { stdout } = await process;
-    console.log(stdout);
-
+    await ffmpegHtml5ify({ filePath: filePathArg, outPath, speed, hasAudio, hasVideo, onProgress });
     await optionalTransferTimestamps(filePathArg, outPath);
-
     return outPath;
   }, [optionalTransferTimestamps]);
 

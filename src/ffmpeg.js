@@ -5,8 +5,8 @@ import moment from 'moment';
 import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
-import { getOutPath, isDurationValid, getExtensionForFormat, isWindows, platform } from './util';
 import { pcmAudioCodecs } from './util/streams';
+import { getOutPath, isDurationValid, getExtensionForFormat, isWindows, isMac, platform } from './util';
 
 const execa = window.require('execa');
 const { join } = window.require('path');
@@ -662,4 +662,107 @@ export function getTimecodeFromStreams(streams) {
 
 export async function runStartupCheck() {
   await runFfmpeg(['-hide_banner', '-f', 'lavfi', '-i', 'nullsrc=s=256x256:d=1', '-f', 'null', '-']);
+}
+
+export async function html5ify({ outPath, filePath: filePathArg, speed, hasAudio, hasVideo, onProgress }) {
+  let audio;
+  if (hasAudio) {
+    if (speed === 'slowest') audio = 'hq';
+    else if (['slow-audio', 'fast-audio', 'fastest-audio'].includes(speed)) audio = 'lq';
+    else if (['fast-audio-remux', 'fastest-audio-remux'].includes(speed)) audio = 'copy';
+  }
+
+  let video;
+  if (hasVideo) {
+    if (speed === 'slowest') video = 'hq';
+    else if (['slow-audio', 'slow'].includes(speed)) video = 'lq';
+    else video = 'copy';
+  }
+
+  console.log('Making HTML5 friendly version', { filePathArg, outPath, video, audio });
+
+  let videoArgs;
+  let audioArgs;
+
+  // h264/aac_at: No licensing when using HW encoder (Video/Audio Toolbox on Mac)
+  // https://github.com/mifi/lossless-cut/issues/372#issuecomment-810766512
+
+  const targetHeight = 400;
+
+  switch (video) {
+    case 'hq': {
+      if (isMac) {
+        videoArgs = ['-vf', 'format=yuv420p', '-allow_sw', '1', '-vcodec', 'h264', '-b:v', '15M'];
+      } else {
+        // AV1 is very slow
+        // videoArgs = ['-vf', 'format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libaom-av1', '-crf', '30', '-cpu-used', '8'];
+        // Theora is a bit faster but not that much
+        // videoArgs = ['-vf', '-c:v', 'libtheora', '-qscale:v', '1'];
+        // videoArgs = ['-vf', 'format=yuv420p', '-c:v', 'libvpx-vp9', '-crf', '30', '-b:v', '0', '-row-mt', '1'];
+        // x264 can only be used in GPL projects
+        videoArgs = ['-vf', 'format=yuv420p', '-c:v', 'libx264', '-profile:v', 'high', '-preset:v', 'slow', '-crf', '17'];
+      }
+      break;
+    }
+    case 'lq': {
+      if (isMac) {
+        videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
+      } else {
+        // videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-sws_flags', 'neighbor', '-c:v', 'libtheora', '-qscale:v', '1'];
+        // x264 can only be used in GPL projects
+        videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-sws_flags', 'neighbor', '-c:v', 'libx264', '-profile:v', 'baseline', '-x264opts', 'level=3.0', '-preset:v', 'ultrafast', '-crf', '28'];
+      }
+      break;
+    }
+    case 'copy': {
+      videoArgs = ['-vcodec', 'copy'];
+      break;
+    }
+    default: {
+      videoArgs = ['-vn'];
+    }
+  }
+
+  switch (audio) {
+    case 'hq': {
+      if (isMac) {
+        audioArgs = ['-acodec', 'aac_at', '-b:a', '192k'];
+      } else {
+        audioArgs = ['-acodec', 'flac'];
+      }
+      break;
+    }
+    case 'lq': {
+      if (isMac) {
+        audioArgs = ['-acodec', 'aac_at', '-ar', '44100', '-ac', '2', '-b:a', '96k'];
+      } else {
+        audioArgs = ['-acodec', 'flac', '-ar', '11025', '-ac', '2'];
+      }
+      break;
+    }
+    case 'copy': {
+      audioArgs = ['-acodec', 'copy'];
+      break;
+    }
+    default: {
+      audioArgs = ['-an'];
+    }
+  }
+
+  const ffmpegArgs = [
+    '-hide_banner',
+
+    '-i', filePathArg,
+    ...videoArgs,
+    ...audioArgs,
+    '-sn',
+    '-y', outPath,
+  ];
+
+  const duration = await getDuration(filePathArg);
+  const process = runFfmpeg(ffmpegArgs);
+  if (duration) handleProgress(process, duration, onProgress);
+
+  const { stdout } = await process;
+  console.log(stdout);
 }
