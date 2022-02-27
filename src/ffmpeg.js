@@ -95,13 +95,13 @@ function getIntervalAroundTime(time, window) {
   };
 }
 
-export async function readFrames({ filePath, aroundTime, window, stream }) {
+export async function readFrames({ filePath, aroundTime, window, streamIndex }) {
   let intervalsArgs = [];
   if (aroundTime != null) {
     const { from, to } = getIntervalAroundTime(aroundTime, window);
     intervalsArgs = ['-read_intervals', `${from}%${to}`];
   }
-  const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', stream, '-show_entries', 'packet=pts_time,flags', '-of', 'json', filePath]);
+  const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', streamIndex, '-show_entries', 'packet=pts_time,flags', '-of', 'json', filePath]);
   const packetsFiltered = JSON.parse(stdout).packets
     .map(p => ({
       keyframe: p.flags[0] === 'K',

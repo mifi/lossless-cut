@@ -26,7 +26,7 @@ export default ({ keyframesEnabled, filePath, commandedTime, mainVideoStream, de
       if (!shouldRun) return;
 
       try {
-        const promise = readFrames({ filePath, aroundTime: commandedTime, stream: mainVideoStream.index, window: ffmpegExtractWindow });
+        const promise = readFrames({ filePath, aroundTime: commandedTime, streamIndex: mainVideoStream.index, window: ffmpegExtractWindow });
         readingKeyframesPromise.current = promise;
         const newFrames = await promise;
         if (aborted) return;
