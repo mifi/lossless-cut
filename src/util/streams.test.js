@@ -27,7 +27,7 @@ test('getMapStreamsArgs', () => {
     '-map', '0:0', '-c:0', 'copy',
     '-map', '0:1', '-c:1', 'copy',
     '-map', '0:2', '-c:2', 'copy',
-    '-map', '0:3', '-tag:3', 'hvc1', '-c:3', 'copy',
+    '-map', '0:3', '-c:3', 'copy', '-tag:3', 'hvc1',
     '-map', '0:4', '-c:4', 'copy',
     '-map', '0:5', '-c:5', 'copy',
     '-map', '0:6', '-c:6', 'copy',
@@ -63,8 +63,43 @@ test('getMapStreamsArgs, disposition', () => {
     manuallyCopyDisposition: true,
   })).toEqual([
     '-map', '0:0',
-    '-disposition:0', 'attached_pic',
     '-c:0', 'copy',
+    '-disposition:0', 'attached_pic',
+  ]);
+});
+
+test('getMapStreamsArgs, smart cut', () => {
+  const path = '/path/file.mp4';
+  const outFormat = 'mp4';
+
+  expect(getMapStreamsArgs({
+    allFilesMeta: { [path]: { streams: streams1 } },
+    copyFileStreams: [{ path, streamIds: [1, 2, 4, 5, 6, 7] }], // only 1 video stream and the rest
+    outFormat,
+    manuallyCopyDisposition: true,
+    getVideoArgs: ({ streamIndex, outputIndex }) => {
+      if (streamIndex === 2) {
+        return [
+          `-c:${outputIndex}`, 'h264',
+          `-b:${outputIndex}`, 123456789,
+        ];
+      }
+      return undefined;
+    },
+  })).toEqual([
+    '-map', '0:1',
+    '-c:0', 'copy',
+    '-map', '0:2',
+    '-c:1', 'h264',
+    '-b:1', 123456789,
+    '-map', '0:4',
+    '-c:2', 'copy',
+    '-map', '0:5',
+    '-c:3', 'copy',
+    '-map', '0:6',
+    '-c:4', 'copy',
+    '-map', '0:7',
+    '-c:5', 'mov_text',
   ]);
 });
 

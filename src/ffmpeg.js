@@ -5,7 +5,7 @@ import moment from 'moment';
 import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
-import { pcmAudioCodecs } from './util/streams';
+import { pcmAudioCodecs, getMapStreamsArgs } from './util/streams';
 import { getOutPath, isDurationValid, getExtensionForFormat, isWindows, isMac, platform } from './util';
 
 const execa = window.require('execa');
@@ -765,4 +765,55 @@ export async function html5ify({ outPath, filePath: filePathArg, speed, hasAudio
 
   const { stdout } = await process;
   console.log(stdout);
+}
+
+// https://superuser.com/questions/543589/information-about-ffmpeg-command-line-options
+export const getExperimentalArgs = (ffmpegExperimental) => (ffmpegExperimental ? ['-strict', 'experimental'] : []);
+
+export const getVideoTimescaleArgs = (videoTimebase) => (videoTimebase != null ? ['-video_track_timescale', videoTimebase] : []);
+
+// inspired by https://gist.github.com/fernandoherreradelasheras/5eca67f4200f1a7cc8281747da08496e
+export async function cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate, videoTimebase, allFilesMeta, copyFileStreams, videoStreamIndex, ffmpegExperimental }) {
+  function getVideoArgs({ streamIndex, outputIndex }) {
+    if (streamIndex !== videoStreamIndex) return undefined;
+
+    return [
+      `-c:${outputIndex}`, videoCodec,
+      `-b:${outputIndex}`, videoBitrate,
+    ];
+  }
+
+  const mapStreamsArgs = getMapStreamsArgs({
+    allFilesMeta,
+    copyFileStreams,
+    outFormat,
+    getVideoArgs,
+  });
+
+  const ffmpegArgs = [
+    '-hide_banner',
+    // No progress if we set loglevel warning :(
+    // '-loglevel', 'warning',
+
+    // cannot use -ss before -i here (will lead to issues)
+    '-i', filePath,
+    '-ss', cutFrom.toFixed(5),
+    '-t', (cutTo - cutFrom).toFixed(5),
+
+    ...mapStreamsArgs,
+
+    // See https://github.com/mifi/lossless-cut/issues/170
+    '-ignore_unknown',
+
+    ...getVideoTimescaleArgs(videoTimebase),
+
+    ...getExperimentalArgs(ffmpegExperimental),
+
+    '-f', outFormat, '-y', outPath,
+  ];
+
+  const ffmpegCommandLine = getFfCommandLine('ffmpeg', ffmpegArgs);
+  console.log(ffmpegCommandLine);
+
+  await execa(getFfmpegPath(), ffmpegArgs);
 }

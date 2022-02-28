@@ -23,6 +23,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 
 ## Features
 - Lossless cutting of most video and audio formats
+- [Smart cut](https://github.com/mifi/lossless-cut/issues/126) (experimental)
 - Losslessly cut out parts of video/audio (for cutting away commercials etc.)
 - Losslessly rearrange the order of video/audio segments
 - Lossless merge/concatenation of arbitrary files (with identical codecs parameters, e.g. from the same camera)
@@ -152,6 +153,7 @@ Unsupported files can still be converted to a supported format/codec from the `F
 - **Cutting times are not accurate!** Start cut time will be "rounded" to the nearest **previous** keyframe. This means that you often have **move the start cut time to few frames after** the desired keyframe.
   - Lossless cutting is not an exact science. For some codecs, it just works. For others, you may need to trial and error depending on the codec, keyframes etc to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
   - Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
+  - You may try to enable the new "Smart cut" mode. However it is very experimental and may not work for most files.
 - When exporting you may lose some proprietary data tracks (like `tmcd`, `fdsc` and `gpmd` added by GoPro). These can however be losslessly exported to separate files.
 - EXIF/metadata can be preserved (see Export Options dialog), but it doesn't always output compliant files, so use it carefully.
 - Some codecs are not supported natively. There is partial support with low quality playback and no audio. You can convert to a supported codec from the File menu, see [#88](https://github.com/mifi/lossless-cut/issues/88), however it may take some time.

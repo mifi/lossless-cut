@@ -45,7 +45,7 @@ const ExportConfirm = memo(({
   exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, outFormat,
   preserveMetadataOnMerge, togglePreserveMetadataOnMerge, outSegTemplate, setOutSegTemplate, generateOutSegFileNames,
   filePath, currentSegIndexSafe, getOutSegError, autoDeleteMergedSegments, setAutoDeleteMergedSegments,
-  safeOutputFileName, toggleSafeOutputFileName, segmentsToChaptersOnly, setSegmentsToChaptersOnly,
+  safeOutputFileName, toggleSafeOutputFileName, segmentsToChaptersOnly, setSegmentsToChaptersOnly, enableSmartCut, setEnableSmartCut,
 }) => {
   const { t } = useTranslation();
 
@@ -66,6 +66,10 @@ const ExportConfirm = memo(({
 
   const onKeyframeCutHelpPress = useCallback(() => {
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('With "keyframe cut", we will cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files. With "Normal cut" you may have to manually set the cutpoint a few frames before the next keyframe to achieve a precise cut') });
+  }, []);
+
+  const onSmartCutHelpPress = useCallback(() => {
+    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('This experimental feature will re-encode the part of the video from the cutpoint until the next keyframe in order to attempt to make a 100% accurate cut. Only works on some files. I\'ve had success with some h264 files, and only a few h265 files. See more here: {{url}}', { url: 'https://github.com/mifi/lossless-cut/issues/126' }) });
   }, []);
 
   const onTracksHelpPress = useCallback(() => {
@@ -155,10 +159,18 @@ const ExportConfirm = memo(({
 
                 <ul>
                   {areWeCutting && (
-                    <li>
-                      {t('Cut mode:')} <KeyframeCutButton keyframeCut={keyframeCut} onClick={withBlur(() => toggleKeyframeCut(false))} />
-                      <HelpIcon onClick={onKeyframeCutHelpPress} /> {!keyframeCut && <span style={warningStyle}>{t('Note: Keyframe cut is recommended for most common files')}</span>}
-                    </li>
+                    <>
+                      <li>
+                        {t('Smart cut (experimental):')} <Button height={20} onClick={() => setEnableSmartCut((v) => !v)}>{enableSmartCut ? t('Yes') : t('No')}</Button>
+                        <HelpIcon onClick={onSmartCutHelpPress} />
+                      </li>
+                      {!enableSmartCut && (
+                        <li>
+                          {t('Cut mode:')} <KeyframeCutButton keyframeCut={keyframeCut} onClick={withBlur(() => toggleKeyframeCut(false))} />
+                          <HelpIcon onClick={onKeyframeCutHelpPress} /> {!keyframeCut && <span style={warningStyle}>{t('Note: Keyframe cut is recommended for most common files')}</span>}
+                        </li>
+                      )}
+                    </>
                   )}
 
                   {isMov && (
@@ -173,16 +185,19 @@ const ExportConfirm = memo(({
                       </li>
                     </>
                   )}
-                  <li>
-                    {t('Shift timestamps (avoid_negative_ts)')}
-                    <Select height={20} value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value)} style={{ marginLeft: 5 }}>
-                      <option value="make_zero">make_zero</option>
-                      <option value="make_non_negative">make_non_negative</option>
-                      <option value="auto">auto</option>
-                      <option value="disabled">disabled</option>
-                    </Select>
-                    <HelpIcon onClick={onAvoidNegativeTsHelpPress} />
-                  </li>
+
+                  {!enableSmartCut && (
+                    <li>
+                      {t('Shift timestamps (avoid_negative_ts)')}
+                      <Select height={20} value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value)} style={{ marginLeft: 5 }}>
+                        <option value="make_zero">make_zero</option>
+                        <option value="make_non_negative">make_non_negative</option>
+                        <option value="auto">auto</option>
+                        <option value="disabled">disabled</option>
+                      </Select>
+                      <HelpIcon onClick={onAvoidNegativeTsHelpPress} />
+                    </li>
+                  )}
                 </ul>
               </div>
             </div>

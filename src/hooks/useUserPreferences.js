@@ -102,6 +102,9 @@ export default () => {
   useEffect(() => safeSetConfig('segmentsToChaptersOnly', segmentsToChaptersOnly), [segmentsToChaptersOnly]);
   const [keyBindings, setKeyBindings] = useState(safeGetConfig('keyBindings'));
   useEffect(() => safeSetConfig('keyBindings', keyBindings), [keyBindings]);
+  const [enableSmartCut, setEnableSmartCut] = useState(safeGetConfig('enableSmartCut'));
+  useEffect(() => safeSetConfig('enableSmartCut', enableSmartCut), [enableSmartCut]);
+
   const resetKeyBindings = useCallback(() => {
     configStore.reset('keyBindings');
     setKeyBindings(safeGetConfig('keyBindings'));
@@ -187,5 +190,7 @@ export default () => {
     keyBindings,
     setKeyBindings,
     resetKeyBindings,
+    enableSmartCut,
+    setEnableSmartCut,
   };
 };

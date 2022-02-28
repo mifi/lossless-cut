@@ -75,6 +75,7 @@ const defaults = {
   autoMerge: false,
   autoDeleteMergedSegments: true,
   segmentsToChaptersOnly: false,
+  enableSmartCut: false,
   timecodeFormat: 'timecodeWithDecimalFraction',
   invertCutSegments: false,
   autoExportExtraStreams: true,

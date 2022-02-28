@@ -102,45 +102,55 @@ export function getActiveDisposition(disposition) {
   return existingActiveDispositionEntry[0]; // return the key
 }
 
-function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false }) {
-  let outCodec = 'copy';
-
+function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => {} }) {
   let args = [];
-  if (['mov', 'mp4'].includes(outFormat)) {
-    if (stream.codec_tag === '0x0000' && stream.codec_name === 'hevc') {
-      args = [...args, `-tag:${outputIndex}`, 'hvc1'];
-    }
 
+  function addCodecArgs(codec) {
+    args = [...args, `-c:${outputIndex}`, codec];
+  }
+
+  if (stream.codec_type === 'subtitle') {
     // mp4/mov only supports mov_text, so convert it https://stackoverflow.com/a/17584272/6519037
     // https://github.com/mifi/lossless-cut/issues/418
-    if (stream.codec_type === 'subtitle' && stream.codec_name !== 'mov_text') {
-      outCodec = 'mov_text';
+    if (['mov', 'mp4'].includes(outFormat) && stream.codec_name !== 'mov_text') {
+      addCodecArgs('mov_text');
+    } else if (outFormat === 'matroska' && stream.codec_name === 'mov_text') {
+      // matroska doesn't support mov_text, so convert it to SRT (popular codec)
+      // https://github.com/mifi/lossless-cut/issues/418
+      // https://www.reddit.com/r/PleX/comments/bcfvev/can_someone_eli5_subtitles/
+      addCodecArgs('srt');
+    } else if (outFormat === 'webm' && stream.codec_name === 'mov_text') {
+      // Only WebVTT subtitles are supported for WebM.
+      addCodecArgs('webvtt');
+    } else {
+      addCodecArgs('copy');
     }
-  }
-
-  if (outFormat === 'matroska') {
-    // matroska doesn't support mov_text, so convert it to SRT (popular codec)
-    // https://github.com/mifi/lossless-cut/issues/418
-    // https://www.reddit.com/r/PleX/comments/bcfvev/can_someone_eli5_subtitles/
-    if (stream.codec_type === 'subtitle' && stream.codec_name === 'mov_text') {
-      outCodec = 'srt';
+  } else if (stream.codec_type === 'audio') {
+    // pcm_bluray should only ever be put in Blu-ray-style m2ts files, Matroska has no format mapping for it anyway.
+    // Use normal PCM (ie. pcm_s16le or pcm_s24le depending on bitdepth).
+    // https://forum.doom9.org/showthread.php?t=174718
+    // https://github.com/mifi/lossless-cut/issues/476
+    // ffmpeg cannot encode pcm_bluray
+    if (outFormat !== 'mpegts' && stream.codec_name === 'pcm_bluray') {
+      addCodecArgs('pcm_s24le');
+    } else {
+      addCodecArgs('copy');
     }
-  }
-
-  if (outFormat === 'webm') {
-    // Only WebVTT subtitles are supported for WebM.
-    if (stream.codec_type === 'subtitle' && stream.codec_name === 'mov_text') {
-      outCodec = 'webvtt';
+  } else if (stream.codec_type === 'video') {
+    const videoArgs = getVideoArgs({ streamIndex: stream.index, outputIndex });
+    if (videoArgs) {
+      args = [...videoArgs];
+    } else {
+      addCodecArgs('copy');
     }
-  }
 
-  // pcm_bluray should only ever be put in Blu-ray-style m2ts files, Matroska has no format mapping for it anyway.
-  // Use normal PCM (ie. pcm_s16le or pcm_s24le depending on bitdepth).
-  // https://forum.doom9.org/showthread.php?t=174718
-  // https://github.com/mifi/lossless-cut/issues/476
-  // ffmpeg cannot encode pcm_bluray
-  if (outFormat !== 'mpegts' && stream.codec_type === 'audio' && stream.codec_name === 'pcm_bluray') {
-    outCodec = 'pcm_s24le';
+    if (['mov', 'mp4'].includes(outFormat)) {
+      if (['0x0000', '0x31637668'].includes(stream.codec_tag) && stream.codec_name === 'hevc') {
+        args = [...args, `-tag:${outputIndex}`, 'hvc1'];
+      }
+    }
+  } else { // other stream types
+    addCodecArgs('copy');
   }
 
   // when concat'ing, disposition doesn't seem to get automatically transferred by ffmpeg, so we must do it manually
@@ -151,14 +161,14 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
     }
   }
 
-  args = [...args, `-c:${outputIndex}`, outCodec];
+  args = [...args];
 
   return args;
 }
 
-export function getMapStreamsArgs({ outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition }) {
+export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition, getVideoArgs }) {
   let args = [];
-  let outputIndex = 0;
+  let outputIndex = startIndex;
 
   copyFileStreams.forEach(({ streamIds, path }, fileIndex) => {
     streamIds.forEach((streamId) => {
@@ -167,7 +177,7 @@ export function getMapStreamsArgs({ outFormat, allFilesMeta, copyFileStreams, ma
       args = [
         ...args,
         '-map', `${fileIndex}:${streamId}`,
-        ...getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition }),
+        ...getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition, getVideoArgs }),
       ];
       outputIndex += 1;
     });
