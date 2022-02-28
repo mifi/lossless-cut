@@ -1,6 +1,6 @@
-import React, { memo, Fragment, useEffect, useMemo, useCallback, useState } from 'react';
+import React, { memo, Fragment, useEffect, useMemo, useCallback, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { InlineAlert, UndoIcon, Paragraph, TakeActionIcon, IconButton, Button, DeleteIcon, AddIcon, Heading, Text, Dialog } from 'evergreen-ui';
+import { PlusIcon, InlineAlert, UndoIcon, Paragraph, TakeActionIcon, IconButton, Button, DeleteIcon, AddIcon, Heading, Text, Dialog } from 'evergreen-ui';
 import { FaMouse, FaPlus, FaStepForward, FaStepBackward } from 'react-icons/fa';
 import Mousetrap from 'mousetrap';
 import groupBy from 'lodash/groupBy';
@@ -47,8 +47,12 @@ const CreateBinding = memo(({
   const isShown = action != null;
 
   useEffect(() => {
-    if (isShown) setKeysDown([]);
+    if (isShown) {
+      setKeysDown([]);
+    }
   }, [isShown]);
+
+  const addKeyDown = useCallback((character) => setKeysDown((old) => [...new Set([...old, character])]), []);
 
   useEffect(() => {
     if (!isShown) return undefined;
@@ -56,7 +60,7 @@ const CreateBinding = memo(({
     const mousetrap = new Mousetrap();
     function handleKey(character, modifiers, e) {
       if (['keydown', 'keypress'].includes(e.type)) {
-        setKeysDown((old) => [...new Set([...old, character])]);
+        addKeyDown(character);
       }
       e.preventDefault();
     }
@@ -66,7 +70,7 @@ const CreateBinding = memo(({
     return () => {
       mousetrap.handleKey = handleKeyOrig;
     };
-  }, [isShown]);
+  }, [addKeyDown, isShown]);
 
   const isComboInvalid = validKeysDown.length === 0 && keysDown.length > 0;
 
@@ -80,7 +84,7 @@ const CreateBinding = memo(({
       onConfirm={() => onNewKeyBindingConfirmed(action, keysDown)}
       onCancel={() => setCreatingBinding()}
     >
-      {action ? (
+      {isShown ? (
         <div style={{ color: 'black' }}>
           <Paragraph marginBottom={10}><TakeActionIcon verticalAlign="middle" marginRight={5} /> {actionsMap[action].name} <span style={{ color: 'rgba(0,0,0,0.5)' }}>({action})</span></Paragraph>
 
@@ -90,7 +94,10 @@ const CreateBinding = memo(({
 
           {isComboInvalid && <InlineAlert marginBottom={20} intent="danger">{t('Combination is invalid')}</InlineAlert>}
 
-          {keysDown.length > 0 && <div><Button intent="warning" iconBefore={UndoIcon} onClick={() => setKeysDown([])}>{t('Start over')}</Button></div>}
+          <div>
+            {!keysDown.includes('esc') && <Button iconBefore={PlusIcon} onClick={() => addKeyDown('esc')}>ESC</Button>}
+            {keysDown.length > 0 && <Button intent="warning" iconBefore={UndoIcon} onClick={() => setKeysDown([])}>{t('Start over')}</Button>}
+          </div>
         </div>
       ) : <div />}
     </Dialog>
