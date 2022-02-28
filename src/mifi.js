@@ -5,7 +5,7 @@ export async function loadMifiLink() {
   try {
     // In old versions: https://mifi.no/losslesscut/config.json
     const resp = await axios.get('https://losslesscut.mifi.no/config.json');
-    // const resp = await axios.get('http://localhost:8080/config-dev.json');
+    // const resp = await axios.get('http://localhost:8080/losslesscut/config-dev.json');
     return resp.data;
   } catch (err) {
     return undefined;

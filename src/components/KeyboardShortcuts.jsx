@@ -347,12 +347,16 @@ const KeyboardShortcuts = memo(({
           name: t('Delete source file'),
           category: outputCategory,
         },
+        convertFormatBatch: {
+          name: t('Batch convert files to supported format'),
+          category: outputCategory,
+        },
         convertFormatCurrentFile: {
           name: t('Convert current file to supported format'),
           category: outputCategory,
         },
-        convertFormatBatch: {
-          name: t('Batch convert files to supported format'),
+        fixInvalidDuration: {
+          name: t('Fix incorrect duration'),
           category: outputCategory,
         },
 
