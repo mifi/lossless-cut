@@ -180,6 +180,14 @@ const KeyboardShortcuts = memo(({
           name: t('Slow down playback more'),
           category: playbackCategory,
         },
+        increaseVolume: {
+          name: t('Increase audio volume'),
+          category: playbackCategory,
+        },
+        decreaseVolume: {
+          name: t('Decrease audio volume'),
+          category: playbackCategory,
+        },
 
         // seekingCategory
         seekPreviousFrame: {

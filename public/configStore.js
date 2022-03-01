@@ -66,6 +66,9 @@ const defaultKeyBindings = [
   { keys: 'h', action: 'toggleHelp' },
   { keys: 'shift+/', action: 'toggleKeyboardShortcuts' },
   { keys: 'escape', action: 'closeActiveScreen' },
+
+  { keys: 'alt+up', action: 'increaseVolume' },
+  { keys: 'alt+down', action: 'decreaseVolume' },
 ];
 
 const defaults = {
