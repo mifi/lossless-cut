@@ -14,7 +14,7 @@ const { checkNewVersion } = require('./update-checker');
 
 require('./i18n');
 
-const { app } = electron;
+const { app, ipcMain } = electron;
 const { BrowserWindow } = electron;
 
 // https://github.com/electron/electron/issues/18397
@@ -26,9 +26,7 @@ unhandled({
 
 app.name = 'LosslessCut';
 
-let filesToOpen;
-let openFileInitial;
-let fileOpened = false;
+let filesToOpen = [];
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -196,30 +194,23 @@ app.on('activate', () => {
   }
 });
 
-function openFilesOnce(files) {
-  if (fileOpened) return;
-  fileOpened = true;
-  openFiles(files);
-}
-
-electron.ipcMain.on('renderer-ready', () => {
+ipcMain.on('renderer-ready', () => {
   rendererReady = true;
-
-  if (filesToOpen.length > 0) openFilesOnce(filesToOpen);
-  else if (openFileInitial) openFilesOnce([openFileInitial]);
+  if (filesToOpen.length > 0) openFiles(filesToOpen);
 });
 
 // Mac OS open with LosslessCut
 app.on('open-file', (event, path) => {
-  if (rendererReady) openFilesOnce([path]);
-  else openFileInitial = path;
+  if (rendererReady) openFiles([path]);
+  else filesToOpen = [path];
+  event.preventDefault(); // recommended in docs https://www.electronjs.org/docs/latest/api/app#event-open-file-macos
 });
 
-electron.ipcMain.on('setAskBeforeClose', (e, val) => {
+ipcMain.on('setAskBeforeClose', (e, val) => {
   askBeforeClose = val;
 });
 
-electron.ipcMain.on('setLanguage', (e, language) => {
+ipcMain.on('setLanguage', (e, language) => {
   i18n.changeLanguage(language).then(() => updateMenu()).catch(console.error);
 });
 
