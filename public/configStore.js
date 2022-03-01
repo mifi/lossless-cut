@@ -105,6 +105,7 @@ const defaults = {
   windowBounds: undefined,
   enableAutoHtml5ify: true,
   keyBindings: defaultKeyBindings,
+  customFfPath: undefined,
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645

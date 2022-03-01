@@ -104,6 +104,8 @@ export default () => {
   useEffect(() => safeSetConfig('keyBindings', keyBindings), [keyBindings]);
   const [enableSmartCut, setEnableSmartCut] = useState(safeGetConfig('enableSmartCut'));
   useEffect(() => safeSetConfig('enableSmartCut', enableSmartCut), [enableSmartCut]);
+  const [customFfPath, setCustomFfPath] = useState(safeGetConfig('customFfPath'));
+  useEffect(() => safeSetConfig('customFfPath', customFfPath), [customFfPath]);
 
   const resetKeyBindings = useCallback(() => {
     configStore.reset('keyBindings');
@@ -192,5 +194,7 @@ export default () => {
     resetKeyBindings,
     enableSmartCut,
     setEnableSmartCut,
+    customFfPath,
+    setCustomFfPath,
   };
 };

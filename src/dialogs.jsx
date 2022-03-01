@@ -138,6 +138,15 @@ export async function askForOutDir(defaultPath) {
   return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
 }
 
+export async function askForFfPath(defaultPath) {
+  const { filePaths } = await dialog.showOpenDialog({
+    properties: ['openDirectory'],
+    defaultPath,
+    title: i18n.t('Select custom FFmpeg directory'),
+  });
+  return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
+}
+
 export async function askForFileOpenAction(inputOptions) {
   const { value } = await Swal.fire({
     text: i18n.t('You opened a new file. What do you want to do?'),

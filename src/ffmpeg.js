@@ -15,6 +15,12 @@ const readChunk = window.require('read-chunk');
 const readline = window.require('readline');
 const isDev = window.require('electron-is-dev');
 
+let customFfPath;
+
+// Note that this does not work on MAS because of sandbox restrictions
+export function setCustomFfPath(path) {
+  customFfPath = path;
+}
 
 export function getFfCommandLine(cmd, args) {
   const mapArg = arg => (/[^0-9a-zA-Z-_]/.test(arg) ? `'${arg}'` : arg);
@@ -24,7 +30,8 @@ export function getFfCommandLine(cmd, args) {
 function getFfPath(cmd) {
   const exeName = isWindows ? `${cmd}.exe` : cmd;
 
-  if (isDev) return `ffmpeg/${platform}/${exeName}`;
+  if (customFfPath) return join(customFfPath, exeName);
+  if (isDev) return join('ffmpeg', platform, exeName);
   return join(window.process.resourcesPath, exeName);
 }
 

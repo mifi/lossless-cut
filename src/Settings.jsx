@@ -2,9 +2,12 @@ import React, { memo, useCallback, useMemo } from 'react';
 import { FaYinYang, FaKeyboard } from 'react-icons/fa';
 import { Button, Table, NumericalIcon, KeyIcon, FolderCloseIcon, DocumentIcon, TimeIcon, Checkbox, Select } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
+
 import CaptureFormatButton from './components/CaptureFormatButton';
 import AutoExportToggler from './components/AutoExportToggler';
 import useUserSettings from './hooks/useUserSettings';
+import { askForFfPath } from './dialogs';
+import { isMasBuild } from './util';
 
 
 // https://www.electronjs.org/docs/api/locales
@@ -44,7 +47,7 @@ const Settings = memo(({
 }) => {
   const { t } = useTranslation();
 
-  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify } = useUserSettings();
+  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath } = useUserSettings();
 
   const onLangChange = useCallback((e) => {
     const { value } = e.target;
@@ -65,6 +68,11 @@ const Settings = memo(({
     else index += 1;
     setTimecodeFormat(keys[index]);
   }, [setTimecodeFormat, timecodeFormat, timecodeFormatOptions]);
+
+  const changeCustomFfPath = useCallback(async () => {
+    const newCustomFfPath = await askForFfPath(customFfPath);
+    setCustomFfPath(newCustomFfPath);
+  }, [customFfPath, setCustomFfPath]);
 
   return (
     <>
@@ -97,6 +105,21 @@ const Settings = memo(({
           <div>{customOutDir}</div>
         </Table.TextCell>
       </Row>
+
+      {!isMasBuild && (
+        <Row>
+          <KeyCell>
+            {t('Custom FFmpeg directory (experimental)')}<br />
+            {t('This allows you to specify custom FFmpeg and FFprobe binaries to use. Make sure the "ffmpeg" and "ffprobe" executables exist in the same directory, and then select the directory.')}
+          </KeyCell>
+          <Table.TextCell>
+            <Button iconBefore={customFfPath ? FolderCloseIcon : DocumentIcon} onClick={changeCustomFfPath}>
+              {customFfPath ? t('Using external ffmpeg') : t('Using built-in ffmpeg')}
+            </Button>
+            <div>{customFfPath}</div>
+          </Table.TextCell>
+        </Row>
+      )}
 
       <Row>
         <KeyCell>{t('Set file modification date/time of output files to:')}</KeyCell>
