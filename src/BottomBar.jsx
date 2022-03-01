@@ -230,12 +230,10 @@ const BottomBar = memo(({
           />
         )}
 
-        <div style={{ background: primaryColor, margin: '2px 5px 0 5px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 17 }}>
+        <div role="button" onClick={togglePlay} style={{ background: primaryColor, margin: '2px 5px 0 5px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 17 }}>
           <PlayPause
             style={{ marginLeft: playing ? 0 : 2 }}
             size={16}
-            role="button"
-            onClick={togglePlay}
           />
         </div>
 
