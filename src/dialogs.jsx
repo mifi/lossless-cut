@@ -216,8 +216,9 @@ export async function createNumSegments(fileDuration) {
   return edl;
 }
 
+const exampleDuration = '00:00:05.123';
+
 async function askForSegmentDuration(fileDuration) {
-  const example = '00:00:05.123';
   const { value } = await Swal.fire({
     input: 'text',
     showCancelButton: true,
@@ -229,13 +230,44 @@ async function askForSegmentDuration(fileDuration) {
         const numSegments = Math.ceil(fileDuration / duration);
         if (duration > 0 && duration < fileDuration && numSegments <= maxSegments) return undefined;
       }
-      return i18n.t('Please input a valid duration. Example: {{example}}', { example });
+      return i18n.t('Please input a valid duration. Example: {{example}}', { example: exampleDuration });
     },
   });
 
   if (value == null) return undefined;
 
   return parseDuration(value);
+}
+
+export async function askForShiftSegments() {
+  function parseValue(value) {
+    let parseableValue = value;
+    let sign = 1;
+    if (parseableValue[0] === '-') {
+      parseableValue = parseableValue.substring(1);
+      sign = -1;
+    }
+    const duration = parseDuration(parseableValue);
+    if (duration != null && duration > 0) {
+      return duration * sign;
+    }
+    return undefined;
+  }
+
+  const { value } = await Swal.fire({
+    input: 'text',
+    showCancelButton: true,
+    inputValue: '00:00:00.000',
+    text: i18n.t('Shift all segments on the timeline by this amount. Negative values will be shifted back, while positive value will be shifted forward in time.'),
+    inputValidator: (v) => {
+      const parsed = parseValue(v);
+      if (parsed == null) return i18n.t('Please input a valid duration. Example: {{example}}', { example: exampleDuration });
+      return undefined;
+    },
+  });
+
+  if (value == null) return undefined;
+  return parseValue(value);
 }
 
 export async function askForMetadataKey() {

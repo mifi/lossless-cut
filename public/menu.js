@@ -213,6 +213,12 @@ module.exports = (app, mainWindow, newVersion) => {
                 mainWindow.webContents.send('shuffleSegments');
               },
             },
+            {
+              label: i18n.t('Shift all segments on timeline'),
+              click() {
+                mainWindow.webContents.send('shiftAllSegmentTimes');
+              },
+            },
           ],
         },
         {
