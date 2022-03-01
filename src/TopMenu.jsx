@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { IoIosHelpCircle, IoIosSettings } from 'react-icons/io';
 import { FaLock, FaUnlock } from 'react-icons/fa';
 import { IconButton, Button, CrossIcon, ListIcon, VolumeUpIcon, VolumeOffIcon } from 'evergreen-ui';
@@ -8,15 +8,18 @@ import MergeExportButton from './components/MergeExportButton';
 
 import { withBlur, isMasBuild } from './util';
 import { primaryTextColor, controlsBackground } from './colors';
+import useUserSettings from './hooks/useUserSettings';
 
 
 const TopMenu = memo(({
-  filePath, copyAnyAudioTrack, toggleStripAudio, customOutDir, changeOutDir,
+  filePath, fileFormat, copyAnyAudioTrack, toggleStripAudio,
   renderOutFmt, toggleHelp, numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown, toggleSettings,
-  enabledSegments, autoMerge, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments, isCustomFormatSelected, onOutFormatLockedClick, simpleMode, outFormatLocked, clearOutDir,
-  segmentsToChaptersOnly, setSegmentsToChaptersOnly,
+  enabledSegments, isCustomFormatSelected, clearOutDir,
 }) => {
   const { t } = useTranslation();
+  const { customOutDir, changeOutDir, simpleMode, outFormatLocked, setOutFormatLocked } = useUserSettings();
+
+  const onOutFormatLockedClick = useCallback(() => setOutFormatLocked((v) => (v ? undefined : fileFormat)), [fileFormat, setOutFormatLocked]);
 
   // We cannot allow exporting to a directory which has not yet been confirmed by an open dialog because of sandox restrictions
   const showClearWorkingDirButton = customOutDir && !isMasBuild;
@@ -75,7 +78,7 @@ const TopMenu = memo(({
 
           {!simpleMode && (isCustomFormatSelected || outFormatLocked) && renderFormatLock()}
 
-          <MergeExportButton autoMerge={autoMerge} enabledSegments={enabledSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} segmentsToChaptersOnly={segmentsToChaptersOnly} setSegmentsToChaptersOnly={setSegmentsToChaptersOnly} />
+          <MergeExportButton enabledSegments={enabledSegments} />
         </>
       )}
 

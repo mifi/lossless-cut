@@ -3,10 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { FaBaby } from 'react-icons/fa';
 
 import { primaryTextColor } from '../colors';
+import useUserSettings from '../hooks/useUserSettings';
 
 
-const SimpleModeButton = memo(({ simpleMode, toggleSimpleMode, size = 20, style }) => {
+const SimpleModeButton = memo(({ size = 20, style }) => {
   const { t } = useTranslation();
+  const { simpleMode, toggleSimpleMode } = useUserSettings();
 
   return (
     <FaBaby

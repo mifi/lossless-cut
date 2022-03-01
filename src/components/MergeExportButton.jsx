@@ -4,10 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { MdCallSplit, MdCallMerge } from 'react-icons/md';
 
 import { withBlur } from '../util';
+import useUserSettings from '../hooks/useUserSettings';
 
 
-const MergeExportButton = memo(({ autoMerge, enabledSegments, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments, segmentsToChaptersOnly, setSegmentsToChaptersOnly }) => {
+const MergeExportButton = memo(({ enabledSegments }) => {
   const { t } = useTranslation();
+
+  const { autoMerge, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments, segmentsToChaptersOnly, setSegmentsToChaptersOnly } = useUserSettings();
 
   let AutoMergeIcon;
 

@@ -16,6 +16,7 @@ import HighlightedText from './components/HighlightedText';
 
 import { withBlur, toast } from './util';
 import { isMov as ffmpegIsMov } from './ffmpeg';
+import useUserSettings from './hooks/useUserSettings';
 
 const sheetStyle = {
   position: 'fixed',
@@ -39,15 +40,16 @@ const warningStyle = { color: '#faa', fontSize: '80%' };
 const HelpIcon = ({ onClick }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', verticalAlign: 'middle', marginLeft: 5 }} />;
 
 const ExportConfirm = memo(({
-  autoMerge, areWeCutting, enabledSegments, willMerge, visible, onClosePress, onExportConfirm, keyframeCut, toggleKeyframeCut,
-  setAutoMerge, renderOutFmt, preserveMovData, togglePreserveMovData, movFastStart, toggleMovFastStart, avoidNegativeTs, setAvoidNegativeTs,
-  changeOutDir, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown,
-  exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, outFormat,
-  preserveMetadataOnMerge, togglePreserveMetadataOnMerge, outSegTemplate, setOutSegTemplate, generateOutSegFileNames,
-  filePath, currentSegIndexSafe, getOutSegError, autoDeleteMergedSegments, setAutoDeleteMergedSegments,
-  safeOutputFileName, toggleSafeOutputFileName, segmentsToChaptersOnly, setSegmentsToChaptersOnly, enableSmartCut, setEnableSmartCut,
+  areWeCutting, enabledSegments, willMerge, visible, onClosePress, onExportConfirm,
+  renderOutFmt,
+  outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown,
+  outFormat,
+  outSegTemplate, setOutSegTemplate, generateOutSegFileNames,
+  filePath, currentSegIndexSafe, getOutSegError,
 }) => {
   const { t } = useTranslation();
+
+  const { changeOutDir, keyframeCut, preserveMovData, movFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, togglePreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut } = useUserSettings();
 
   const isMov = ffmpegIsMov(outFormat);
   const isIpod = outFormat === 'ipod';
@@ -121,7 +123,7 @@ const ExportConfirm = memo(({
 
                 <h2 style={{ marginTop: 0 }}>{t('Export options')}</h2>
                 <ul>
-                  {enabledSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: enabledSegments.length })} <MergeExportButton autoMerge={autoMerge} enabledSegments={enabledSegments} setAutoMerge={setAutoMerge} autoDeleteMergedSegments={autoDeleteMergedSegments} setAutoDeleteMergedSegments={setAutoDeleteMergedSegments} segmentsToChaptersOnly={segmentsToChaptersOnly} setSegmentsToChaptersOnly={setSegmentsToChaptersOnly} /></li>}
+                  {enabledSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: enabledSegments.length })} <MergeExportButton enabledSegments={enabledSegments} /></li>}
                   <li>
                     {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
                     <HelpIcon onClick={onOutFmtHelpPress} />
@@ -135,7 +137,7 @@ const ExportConfirm = memo(({
                   </li>
                   {canEditTemplate && (
                     <li>
-                      <OutSegTemplateEditor filePath={filePath} helpIcon={outSegTemplateHelpIcon} outSegTemplate={outSegTemplate} setOutSegTemplate={setOutSegTemplate} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} safeOutputFileName={safeOutputFileName} toggleSafeOutputFileName={toggleSafeOutputFileName} />
+                      <OutSegTemplateEditor filePath={filePath} helpIcon={outSegTemplateHelpIcon} outSegTemplate={outSegTemplate} setOutSegTemplate={setOutSegTemplate} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} />
                     </li>
                   )}
                 </ul>
@@ -166,7 +168,7 @@ const ExportConfirm = memo(({
                       </li>
                       {!enableSmartCut && (
                         <li>
-                          {t('Cut mode:')} <KeyframeCutButton keyframeCut={keyframeCut} onClick={withBlur(() => toggleKeyframeCut(false))} />
+                          {t('Cut mode:')} <KeyframeCutButton />
                           <HelpIcon onClick={onKeyframeCutHelpPress} /> {!keyframeCut && <span style={warningStyle}>{t('Note: Keyframe cut is recommended for most common files')}</span>}
                         </li>
                       )}
@@ -176,11 +178,11 @@ const ExportConfirm = memo(({
                   {isMov && (
                     <>
                       <li>
-                        {t('Enable MOV Faststart?')} <MovFastStartButton movFastStart={movFastStart} toggleMovFastStart={toggleMovFastStart} />
+                        {t('Enable MOV Faststart?')} <MovFastStartButton />
                         <HelpIcon onClick={onMovFastStartHelpPress} /> {isIpod && !movFastStart && <span style={warningStyle}>{t('For the ipod format, it is recommended to activate this option')}</span>}
                       </li>
                       <li>
-                        {t('Preserve all MP4/MOV metadata?')} <PreserveMovDataButton preserveMovData={preserveMovData} togglePreserveMovData={togglePreserveMovData} />
+                        {t('Preserve all MP4/MOV metadata?')} <PreserveMovDataButton />
                         <HelpIcon onClick={onPreserveMovDataHelpPress} /> {isIpod && preserveMovData && <span style={warningStyle}>{t('For the ipod format, it is recommended to deactivate this option')}</span>}
                       </li>
                     </>
@@ -211,7 +213,7 @@ const ExportConfirm = memo(({
               transition={{ duration: 0.4, easings: ['easeOut'] }}
               style={{ display: 'flex', alignItems: 'flex-end' }}
             >
-              <ToggleExportConfirm size={25} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />
+              <ToggleExportConfirm size={25} />
               <div style={{ fontSize: 13, marginLeft: 3, marginRight: 7, maxWidth: 120, lineHeight: '100%', color: exportConfirmEnabled ? 'white' : 'rgba(255,255,255,0.3)', cursor: 'pointer' }} role="button" onClick={toggleExportConfirmEnabled}>{t('Show this page before exporting?')}</div>
             </motion.div>
 
@@ -222,7 +224,7 @@ const ExportConfirm = memo(({
               exit={{ scale: 0.7, opacity: 0 }}
               transition={{ duration: 0.4, easings: ['easeOut'] }}
             >
-              <ExportButton enabledSegments={enabledSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={() => onExportConfirm()} size={1.7} />
+              <ExportButton enabledSegments={enabledSegments} areWeCutting={areWeCutting} onClick={() => onExportConfirm()} size={1.7} />
             </motion.div>
           </div>
         </>

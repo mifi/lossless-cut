@@ -8,13 +8,16 @@ import withReactContent from 'sweetalert2-react-content';
 
 import HighlightedText from './HighlightedText';
 import { defaultOutSegTemplate } from '../util';
+import useUserSettings from '../hooks/useUserSettings';
 
 const ReactSwal = withReactContent(Swal);
 
 
 const inputStyle = { flexGrow: 1, fontFamily: 'inherit', fontSize: '.8em' };
 
-const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe, getOutSegError, safeOutputFileName, toggleSafeOutputFileName }) => {
+const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe, getOutSegError }) => {
+  const { safeOutputFileName, toggleSafeOutputFileName } = useUserSettings();
+
   const [text, setText] = useState(outSegTemplate);
   const [debouncedText] = useDebounce(text, 500);
   const [validText, setValidText] = useState();

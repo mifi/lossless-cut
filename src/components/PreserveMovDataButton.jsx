@@ -3,10 +3,12 @@ import { Button } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
 import { withBlur } from '../util';
+import useUserSettings from '../hooks/useUserSettings';
 
 
-const PreserveMovDataButton = memo(({ preserveMovData, togglePreserveMovData }) => {
+const PreserveMovDataButton = memo(() => {
   const { t } = useTranslation();
+  const { preserveMovData, togglePreserveMovData } = useUserSettings();
 
   return (
     <Button height={20} onClick={withBlur(togglePreserveMovData)}>

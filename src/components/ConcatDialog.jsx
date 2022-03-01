@@ -6,6 +6,7 @@ import { AiOutlineMergeCells } from 'react-icons/ai';
 import { readFileMeta, getSmarterOutFormat } from '../ffmpeg';
 import useFileFormatState from '../hooks/useFileFormatState';
 import OutputFormatSelect from './OutputFormatSelect';
+import useUserSettings from '../hooks/useUserSettings';
 
 const { basename } = window.require('path');
 
@@ -17,12 +18,10 @@ const rowStyle = {
 
 const ConcatDialog = memo(({
   isShown, onHide, initialPaths, onConcat,
-  segmentsToChapters, setSegmentsToChapters,
   alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles,
-  preserveMetadataOnMerge, setPreserveMetadataOnMerge,
-  preserveMovData, setPreserveMovData,
 }) => {
   const { t } = useTranslation();
+  const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge } = useUserSettings();
 
   const [paths, setPaths] = useState(initialPaths);
   const [includeAllStreams, setIncludeAllStreams] = useState(false);

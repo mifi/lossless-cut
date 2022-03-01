@@ -4,12 +4,15 @@ import { FaFileExport } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
 import { primaryColor } from '../colors';
+import useUserSettings from '../hooks/useUserSettings';
 
 
-const ExportButton = memo(({ enabledSegments, areWeCutting, autoMerge, onClick, size = 1 }) => {
+const ExportButton = memo(({ enabledSegments, areWeCutting, onClick, size = 1 }) => {
   const CutIcon = areWeCutting ? FiScissors : FaFileExport;
 
   const { t } = useTranslation();
+
+  const { autoMerge } = useUserSettings();
 
   let exportButtonTitle = t('Export');
   if (enabledSegments.length === 1) {

@@ -10,6 +10,7 @@ import useDebounce from 'react-use/lib/useDebounce';
 import scrollIntoView from 'scroll-into-view-if-needed';
 
 import useContextMenu from './hooks/useContextMenu';
+import useUserSettings from './hooks/useUserSettings';
 import { saveColor } from './colors';
 import { getSegColor } from './util/colors';
 
@@ -124,13 +125,15 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 
 const SegmentList = memo(({
   formatTimecode, apparentCutSegments, inverseCutSegments, getFrameCount, onSegClick,
-  currentSegIndex, invertCutSegments,
+  currentSegIndex,
   updateSegOrder, updateSegOrders, addCutSegment, removeCutSegment,
   onLabelSegmentPress, currentCutSeg, segmentAtCursor, toggleSegmentsList, splitCurrentSegment,
   enabledSegments, enabledSegmentsRaw, onExportSingleSegmentClick, onExportSegmentEnabledToggle, onExportSegmentDisableAll, onExportSegmentEnableAll,
-  jumpSegStart, jumpSegEnd, simpleMode, onViewSegmentTagsPress,
+  jumpSegStart, jumpSegEnd, onViewSegmentTagsPress,
 }) => {
   const { t } = useTranslation();
+
+  const { invertCutSegments, simpleMode } = useUserSettings();
 
   const segments = invertCutSegments ? inverseCutSegments : apparentCutSegments;
 

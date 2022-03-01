@@ -13,11 +13,13 @@ import SegmentCutpointButton from './components/SegmentCutpointButton';
 import SetCutpointButton from './components/SetCutpointButton';
 import ExportButton from './components/ExportButton';
 import ToggleExportConfirm from './components/ToggleExportConfirm';
+import CaptureFormatButton from './components/CaptureFormatButton';
 
 import SimpleModeButton from './components/SimpleModeButton';
 import { withBlur, toast, mirrorTransform } from './util';
 import { getSegColor } from './util/colors';
 import { formatDuration, parseDuration } from './util/duration';
+import useUserSettings from './hooks/useUserSettings';
 
 const isDev = window.require('electron-is-dev');
 
@@ -27,9 +29,9 @@ const zoomOptions = Array(13).fill().map((unused, z) => 2 ** z);
 const leftRightWidth = 100;
 
 const BottomBar = memo(({
-  zoom, setZoom, invertCutSegments, setInvertCutSegments, timelineToggleComfortZoom, simpleMode, toggleSimpleMode,
-  isRotationSet, rotation, areWeCutting, increaseRotation, cleanupFilesDialog, renderCaptureFormatButton,
-  captureSnapshot, onExportPress, enabledSegments, hasVideo, autoMerge, exportConfirmEnabled, toggleExportConfirmEnabled,
+  zoom, setZoom, timelineToggleComfortZoom,
+  isRotationSet, rotation, areWeCutting, increaseRotation, cleanupFilesDialog,
+  captureSnapshot, onExportPress, enabledSegments, hasVideo,
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,
   setCurrentSegIndex, cutStartTimeManual, setCutStartTimeManual, cutEndTimeManual, setCutEndTimeManual,
   jumpTimelineStart, jumpTimelineEnd, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
@@ -37,6 +39,8 @@ const BottomBar = memo(({
   keyframesEnabled, toggleKeyframesEnabled, seekClosestKeyframe, detectedFps,
 }) => {
   const { t } = useTranslation();
+
+  const { invertCutSegments, setInvertCutSegments, simpleMode, toggleSimpleMode } = useUserSettings();
 
   const onYinYangClick = useCallback(() => {
     setInvertCutSegments(v => {
@@ -281,7 +285,7 @@ const BottomBar = memo(({
         className="no-user-select"
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '3px 4px' }}
       >
-        <SimpleModeButton simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} style={{ flexShrink: 0 }} />
+        <SimpleModeButton style={{ flexShrink: 0 }} />
 
         {simpleMode && <div role="button" onClick={toggleSimpleMode} style={{ marginLeft: 5, fontSize: '90%' }}>{t('Toggle advanced view')}</div>}
 
@@ -344,7 +348,7 @@ const BottomBar = memo(({
 
         {hasVideo && (
           <>
-            {!simpleMode && renderCaptureFormatButton({ height: 20 })}
+            {!simpleMode && <CaptureFormatButton height={20} />}
 
             <IoIosCamera
               style={{ paddingLeft: 5, paddingRight: 15 }}
@@ -355,9 +359,9 @@ const BottomBar = memo(({
           </>
         )}
 
-        {!simpleMode && <ToggleExportConfirm style={{ marginRight: 5 }} exportConfirmEnabled={exportConfirmEnabled} toggleExportConfirmEnabled={toggleExportConfirmEnabled} />}
+        {!simpleMode && <ToggleExportConfirm style={{ marginRight: 5 }} />}
 
-        <ExportButton size={1.3} enabledSegments={enabledSegments} areWeCutting={areWeCutting} autoMerge={autoMerge} onClick={onExportPress} />
+        <ExportButton size={1.3} enabledSegments={enabledSegments} areWeCutting={areWeCutting} onClick={onExportPress} />
       </div>
     </>
   );

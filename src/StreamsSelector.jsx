@@ -7,6 +7,7 @@ import { MdSubtitles } from 'react-icons/md';
 import { BookIcon, Paragraph, TextInput, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, Select, Heading, SortAscIcon, SortDescIcon, Dialog, Button, PlusIcon, Pane, ForkIcon, Alert } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
+import AutoExportToggler from './components/AutoExportToggler';
 import { askForMetadataKey, showJson5Dialog } from './dialogs';
 import { formatDuration } from './util/duration';
 import { getStreamFps } from './ffmpeg';
@@ -325,7 +326,7 @@ const StreamsSelector = memo(({
   mainFilePath, mainFileFormatData, streams: mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId,
   setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta,
   showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams,
-  AutoExportToggler, customTagsByFile, setCustomTagsByFile, customTagsByStreamId, setCustomTagsByStreamId,
+  customTagsByFile, setCustomTagsByFile, customTagsByStreamId, setCustomTagsByStreamId,
   dispositionByStreamId, setDispositionByStreamId,
 }) => {
   const [editingFile, setEditingFile] = useState();

@@ -2,6 +2,9 @@ import React, { memo, useCallback, useMemo } from 'react';
 import { FaYinYang, FaKeyboard } from 'react-icons/fa';
 import { Button, Table, NumericalIcon, KeyIcon, FolderCloseIcon, DocumentIcon, TimeIcon, Checkbox, Select } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
+import CaptureFormatButton from './components/CaptureFormatButton';
+import AutoExportToggler from './components/AutoExportToggler';
+import useUserSettings from './hooks/useUserSettings';
 
 
 // https://www.electronjs.org/docs/api/locales
@@ -36,16 +39,12 @@ const Row = (props) => <Table.Row height="auto" paddingY={12} {...props} />;
 const KeyCell = (props) => <Table.TextCell textProps={{ whiteSpace: 'auto' }} {...props} />;
 
 const Settings = memo(({
-  changeOutDir, customOutDir, keyframeCut, setKeyframeCut, invertCutSegments, setInvertCutSegments,
-  autoSaveProjectFile, setAutoSaveProjectFile, timecodeFormat, setTimecodeFormat, askBeforeClose, setAskBeforeClose,
-  AutoExportToggler, renderCaptureFormatButton, onTunerRequested, language, setLanguage,
-  invertTimelineScroll, setInvertTimelineScroll, ffmpegExperimental, setFfmpegExperimental,
-  enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction,
-  hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode,
-  enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify,
+  onTunerRequested,
   onKeyboardShortcutsDialogRequested,
 }) => {
   const { t } = useTranslation();
+
+  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify } = useUserSettings();
 
   const onLangChange = useCallback((e) => {
     const { value } = e.target;
@@ -115,8 +114,8 @@ const Settings = memo(({
           <b>{t('Normal cut')}</b>: {t('Accurate time but could leave an empty portion at the beginning of the video. Equiv to')} <i>ffmpeg -i -ss ...</i><br />
         </KeyCell>
         <Table.TextCell>
-          <Button iconBefore={keyframeCut === 'keyframe' ? KeyIcon : undefined} onClick={() => setKeyframeCut(keyframeCut === 'keyframe' ? 'normal' : 'keyframe')}>
-            {keyframeCut === 'keyframe' ? t('Keyframe cut') : t('Normal cut')}
+          <Button iconBefore={keyframeCut ? KeyIcon : undefined} onClick={() => toggleKeyframeCut()}>
+            {keyframeCut ? t('Keyframe cut') : t('Normal cut')}
           </Button>
         </Table.TextCell>
       </Row>
@@ -174,7 +173,7 @@ const Settings = memo(({
           {t('Snapshot capture format')}
         </KeyCell>
         <Table.TextCell>
-          {renderCaptureFormatButton()}
+          <CaptureFormatButton showIcon />
         </Table.TextCell>
       </Row>
 

@@ -8,6 +8,7 @@ import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
 import TimelineSeg from './TimelineSeg';
 import BetweenSegments from './BetweenSegments';
 import useContextMenu from './hooks/useContextMenu';
+import useUserSettings from './hooks/useUserSettings';
 
 
 import { timelineBackground } from './colors';
@@ -59,12 +60,14 @@ const CommandedTime = memo(({ commandedTimePercent }) => {
 const Timeline = memo(({
   durationSafe, getCurrentTime, startTimeOffset, playerTime, commandedTime,
   zoom, neighbouringKeyFrames, seekAbs, apparentCutSegments,
-  setCurrentSegIndex, currentSegIndexSafe, invertCutSegments, inverseCutSegments, formatTimecode,
+  setCurrentSegIndex, currentSegIndexSafe, inverseCutSegments, formatTimecode,
   waveforms, shouldShowWaveform, shouldShowKeyframes, timelineHeight = 36, thumbnails,
   onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled,
   playing, isFileOpened, onWheel, commandedTimeRef, goToTimecode,
 }) => {
   const { t } = useTranslation();
+
+  const { invertCutSegments } = useUserSettings();
 
   const timelineScrollerRef = useRef();
   const timelineScrollerSkipEventRef = useRef();

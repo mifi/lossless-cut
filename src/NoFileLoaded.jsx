@@ -5,11 +5,13 @@ import { useTranslation, Trans } from 'react-i18next';
 
 import SetCutpointButton from './components/SetCutpointButton';
 import SimpleModeButton from './components/SimpleModeButton';
+import useUserSettings from './hooks/useUserSettings';
 
 const electron = window.require('electron');
 
-const NoFileLoaded = memo(({ mifiLink, toggleHelp, currentCutSeg, simpleMode, toggleSimpleMode }) => {
+const NoFileLoaded = memo(({ mifiLink, toggleHelp, currentCutSeg }) => {
   const { t } = useTranslation();
+  const { simpleMode, toggleSimpleMode } = useUserSettings();
 
   return (
     <div className="no-user-select" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, border: '2vmin dashed #252525', color: '#505050', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}>
@@ -24,7 +26,7 @@ const NoFileLoaded = memo(({ mifiLink, toggleHelp, currentCutSeg, simpleMode, to
       </div>
 
       <div style={{ fontSize: '3vmin', color: '#ccc', cursor: 'pointer' }} role="button" onClick={toggleSimpleMode}>
-        <SimpleModeButton simpleMode={simpleMode} toggleSimpleMode={toggleSimpleMode} style={{ verticalAlign: 'middle' }} size={16} /> {simpleMode ? i18n.t('to show advanced view') : i18n.t('to show simple view')}
+        <SimpleModeButton style={{ verticalAlign: 'middle' }} size={16} /> {simpleMode ? i18n.t('to show advanced view') : i18n.t('to show simple view')}
       </div>
 
 
