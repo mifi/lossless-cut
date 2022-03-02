@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { FaYinYang, FaKeyboard } from 'react-icons/fa';
-import { Button, Table, NumericalIcon, KeyIcon, FolderCloseIcon, DocumentIcon, TimeIcon, Checkbox, Select } from 'evergreen-ui';
+import { CogIcon, Button, Table, NumericalIcon, KeyIcon, FolderCloseIcon, DocumentIcon, TimeIcon, Checkbox, Select } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
 import CaptureFormatButton from './components/CaptureFormatButton';
@@ -47,7 +47,7 @@ const Settings = memo(({
 }) => {
   const { t } = useTranslation();
 
-  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath } = useUserSettings();
+  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir } = useUserSettings();
 
   const onLangChange = useCallback((e) => {
     const { value } = e.target;
@@ -106,6 +106,28 @@ const Settings = memo(({
         </Table.TextCell>
       </Row>
 
+      <Row>
+        <KeyCell>
+          {t('Auto save project file?')}<br />
+        </KeyCell>
+        <Table.TextCell>
+          <Checkbox
+            label={t('Auto save project')}
+            checked={autoSaveProjectFile}
+            onChange={e => setAutoSaveProjectFile(e.target.checked)}
+          />
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Store project file (.llc) in the working directory or next to loaded media file?')}</KeyCell>
+        <Table.TextCell>
+          <Button iconBefore={storeProjectInWorkingDir ? FolderCloseIcon : DocumentIcon} disabled={!autoSaveProjectFile} onClick={() => setStoreProjectInWorkingDir((v) => !v)}>
+            {storeProjectInWorkingDir ? t('Store in working directory') : t('Store next to media file')}
+          </Button>
+        </Table.TextCell>
+      </Row>
+
       {!isMasBuild && (
         <Row>
           <KeyCell>
@@ -113,7 +135,7 @@ const Settings = memo(({
             {t('This allows you to specify custom FFmpeg and FFprobe binaries to use. Make sure the "ffmpeg" and "ffprobe" executables exist in the same directory, and then select the directory.')}
           </KeyCell>
           <Table.TextCell>
-            <Button iconBefore={customFfPath ? FolderCloseIcon : DocumentIcon} onClick={changeCustomFfPath}>
+            <Button iconBefore={CogIcon} onClick={changeCustomFfPath}>
               {customFfPath ? t('Using external ffmpeg') : t('Using built-in ffmpeg')}
             </Button>
             <div>{customFfPath}</div>
@@ -173,20 +195,6 @@ const Settings = memo(({
             label={t('Experimental flag')}
             checked={ffmpegExperimental}
             onChange={e => setFfmpegExperimental(e.target.checked)}
-          />
-        </Table.TextCell>
-      </Row>
-
-      <Row>
-        <KeyCell>
-          {t('Auto save project file?')}<br />
-          {t('The project will be stored alongside the input file as a project LLC file')}
-        </KeyCell>
-        <Table.TextCell>
-          <Checkbox
-            label={t('Auto save project')}
-            checked={autoSaveProjectFile}
-            onChange={e => setAutoSaveProjectFile(e.target.checked)}
           />
         </Table.TextCell>
       </Row>

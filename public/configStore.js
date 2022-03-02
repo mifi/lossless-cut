@@ -109,6 +109,7 @@ const defaults = {
   enableAutoHtml5ify: true,
   keyBindings: defaultKeyBindings,
   customFfPath: undefined,
+  storeProjectInWorkingDir: true,
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645

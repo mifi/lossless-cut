@@ -239,7 +239,7 @@ export function getHtml5ifiedPath(cod, fp, type) {
   return getOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${type}.${ext}` });
 }
 
-export async function deleteFiles({ toDelete, paths: { previewFilePath, filePath, edlFilePath } }) {
+export async function deleteFiles({ toDelete, paths: { previewFilePath, sourceFilePath, projectFilePath } }) {
   const failedToTrashFiles = [];
 
   if (toDelete.tmpFiles && previewFilePath) {
@@ -250,21 +250,21 @@ export async function deleteFiles({ toDelete, paths: { previewFilePath, filePath
       failedToTrashFiles.push(previewFilePath);
     }
   }
-  if (toDelete.projectFile && edlFilePath) {
+  if (toDelete.projectFile && projectFilePath) {
     try {
       // throw new Error('test');
-      await trash(edlFilePath);
+      await trash(projectFilePath);
     } catch (err) {
       console.error(err);
-      failedToTrashFiles.push(edlFilePath);
+      failedToTrashFiles.push(projectFilePath);
     }
   }
   if (toDelete.sourceFile) {
     try {
-      await trash(filePath);
+      await trash(sourceFilePath);
     } catch (err) {
       console.error(err);
-      failedToTrashFiles.push(filePath);
+      failedToTrashFiles.push(sourceFilePath);
     }
   }
 

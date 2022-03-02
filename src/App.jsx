@@ -197,7 +197,7 @@ const App = memo(() => {
   const zoomedDuration = isDurationValid(duration) ? duration / zoom : undefined;
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, setEnableAutoHtml5ify, segmentsToChaptersOnly, setSegmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, setEnableSmartCut, customFfPath, setCustomFfPath,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, setEnableAutoHtml5ify, segmentsToChaptersOnly, setSegmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, setEnableSmartCut, customFfPath, setCustomFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir,
   } = useUserSettingsRoot();
 
   useEffect(() => {
@@ -556,16 +556,16 @@ const App = memo(() => {
 
   const projectSuffix = 'proj.llc';
   const oldProjectSuffix = 'llc-edl.csv';
-  // New LLC format is stored along with input file https://github.com/mifi/lossless-cut/issues/905
-  const getEdlFilePath = useCallback((fp) => getOutPath({ filePath: fp, nameSuffix: projectSuffix }), []);
+  // New LLC format can be stored along with input file or in working dir (customOutDir)
+  const getEdlFilePath = useCallback((fp, storeProjectInWorkingDir2 = false) => getOutPath({ customOutDir: storeProjectInWorkingDir2 ? customOutDir : undefined, filePath: fp, nameSuffix: projectSuffix }), [customOutDir]);
   // Old versions of LosslessCut used CSV files and stored them in customOutDir:
   const getEdlFilePathOld = useCallback((fp) => getOutPath({ customOutDir, filePath: fp, nameSuffix: oldProjectSuffix }), [customOutDir]);
-  const edlFilePath = useMemo(() => getEdlFilePath(filePath), [getEdlFilePath, filePath]);
+  const projectFileSavePath = useMemo(() => getEdlFilePath(filePath, storeProjectInWorkingDir), [getEdlFilePath, filePath, storeProjectInWorkingDir]);
 
   const currentSaveOperation = useMemo(() => {
-    if (!edlFilePath) return undefined;
-    return { cutSegments, edlFilePath, filePath };
-  }, [cutSegments, edlFilePath, filePath]);
+    if (!projectFileSavePath) return undefined;
+    return { cutSegments, projectFileSavePath, filePath };
+  }, [cutSegments, filePath, projectFileSavePath]);
 
   const [debouncedSaveOperation] = useDebounce(currentSaveOperation, isDev ? 2000 : 500);
 
@@ -575,18 +575,16 @@ const App = memo(() => {
       // NOTE: Could lose a save if user closes too fast, but not a big issue I think
       if (!autoSaveProjectFile || !debouncedSaveOperation) return;
 
-      const { cutSegments: saveOperationCutSegments, edlFilePath: saveOperationEdlFilePath, filePath: saveOperationFilePath } = debouncedSaveOperation;
-
       try {
         // Initial state? Don't save (same as createInitialCutSegments but without counting)
-        if (isEqual(getCleanCutSegments(saveOperationCutSegments), getCleanCutSegments([createSegment()]))) return;
+        if (isEqual(getCleanCutSegments(debouncedSaveOperation.cutSegments), getCleanCutSegments([createSegment()]))) return;
 
-        if (lastSaveOperation.current && lastSaveOperation.current.edlFilePath === saveOperationEdlFilePath && isEqual(getCleanCutSegments(lastSaveOperation.current.cutSegments), getCleanCutSegments(saveOperationCutSegments))) {
+        if (lastSaveOperation.current && lastSaveOperation.current.projectFileSavePath === debouncedSaveOperation.projectFileSavePath && isEqual(getCleanCutSegments(lastSaveOperation.current.cutSegments), getCleanCutSegments(debouncedSaveOperation.cutSegments))) {
           console.log('Segments unchanged, skipping save');
           return;
         }
 
-        await saveLlcProject({ savePath: saveOperationEdlFilePath, filePath: saveOperationFilePath, cutSegments: saveOperationCutSegments });
+        await saveLlcProject({ savePath: debouncedSaveOperation.projectFileSavePath, filePath: debouncedSaveOperation.filePath, cutSegments: debouncedSaveOperation.cutSegments });
         lastSaveOperation.current = debouncedSaveOperation;
       } catch (err) {
         errorToast(i18n.t('Unable to save project file'));
@@ -628,12 +626,13 @@ const App = memo(() => {
   }, [hideAllNotifications, fileFormat]);
 
   const ensureAccessibleDirectories = useCallback(async ({ inputPath, checkInputDir }) => {
-    // MacOS App Store builds don't allow writing anywhere, and we set the flag com.apple.security.files.user-selected.read-write
+    // MacOS App Store sandbox doesn't allow writing anywhere, and we set the flag com.apple.security.files.user-selected.read-write
     // With this flag, we can show the user an open-dialog for a directory, and once the user has opened that directory, we can write files there until the app is restarted.
     // NOTE: when MAS (dev) build, Application Support will instead be here:
     // ~/Library/Containers/no.mifi.losslesscut-mac/Data/Library/Application Support
     // To start from scratch: rm -rf ~/Library/Containers/no.mifi.losslesscut-mac
-    const simulateMasBuild = false; // isDev; // can be used for testing without having to build mas-dev
+    // const simulateMasBuild = isDev; // can be used for testing this logic without having to build mas-dev
+    const simulateMasBuild = false;
 
     const masMode = isMasBuild || simulateMasBuild;
 
@@ -754,8 +753,8 @@ const App = memo(() => {
   }), [hideAllNotifications, setSimpleMode]);
 
   const userSettingsContext = useMemo(() => ({
-    captureFormat, setCaptureFormat, toggleCaptureFormat, customOutDir, setCustomOutDir, changeOutDir, keyframeCut, setKeyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, togglePreserveMovData, movFastStart, setMovFastStart, toggleMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, togglePreserveMetadataOnMerge, simpleMode, setSimpleMode, toggleSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, toggleSafeOutputFileName, enableAutoHtml5ify, setEnableAutoHtml5ify, segmentsToChaptersOnly, setSegmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, setEnableSmartCut, customFfPath, setCustomFfPath,
-  }), [askBeforeClose, autoDeleteMergedSegments, autoExportExtraStreams, autoLoadTimecode, autoMerge, autoSaveProjectFile, avoidNegativeTs, captureFormat, changeOutDir, customFfPath, customOutDir, enableAskForFileOpenAction, enableAskForImportChapters, enableAutoHtml5ify, enableSmartCut, enableTransferTimestamps, exportConfirmEnabled, ffmpegExperimental, hideNotifications, invertCutSegments, invertTimelineScroll, keyBindings, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyframeCut, language, movFastStart, outFormatLocked, outSegTemplate, playbackVolume, preserveMetadataOnMerge, preserveMovData, resetKeyBindings, safeOutputFileName, segmentsToChapters, segmentsToChaptersOnly, setAskBeforeClose, setAutoDeleteMergedSegments, setAutoExportExtraStreams, setAutoLoadTimecode, setAutoMerge, setAutoSaveProjectFile, setAvoidNegativeTs, setCaptureFormat, setCustomFfPath, setCustomOutDir, setEnableAskForFileOpenAction, setEnableAskForImportChapters, setEnableAutoHtml5ify, setEnableSmartCut, setEnableTransferTimestamps, setExportConfirmEnabled, setFfmpegExperimental, setHideNotifications, setInvertCutSegments, setInvertTimelineScroll, setKeyBindings, setKeyboardNormalSeekSpeed, setKeyboardSeekAccFactor, setKeyframeCut, setLanguage, setMovFastStart, setOutFormatLocked, setOutSegTemplate, setPlaybackVolume, setPreserveMetadataOnMerge, setPreserveMovData, setSafeOutputFileName, setSegmentsToChapters, setSegmentsToChaptersOnly, setSimpleMode, setTimecodeFormat, setWheelSensitivity, simpleMode, timecodeFormat, toggleCaptureFormat, toggleExportConfirmEnabled, toggleKeyframeCut, toggleMovFastStart, togglePreserveMetadataOnMerge, togglePreserveMovData, toggleSafeOutputFileName, toggleSegmentsToChapters, toggleSimpleMode, wheelSensitivity]);
+    captureFormat, setCaptureFormat, toggleCaptureFormat, customOutDir, setCustomOutDir, changeOutDir, keyframeCut, setKeyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, togglePreserveMovData, movFastStart, setMovFastStart, toggleMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, togglePreserveMetadataOnMerge, simpleMode, setSimpleMode, toggleSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, toggleSafeOutputFileName, enableAutoHtml5ify, setEnableAutoHtml5ify, segmentsToChaptersOnly, setSegmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, setEnableSmartCut, customFfPath, setCustomFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir,
+  }), [askBeforeClose, autoDeleteMergedSegments, autoExportExtraStreams, autoLoadTimecode, autoMerge, autoSaveProjectFile, avoidNegativeTs, captureFormat, changeOutDir, customFfPath, customOutDir, enableAskForFileOpenAction, enableAskForImportChapters, enableAutoHtml5ify, enableSmartCut, enableTransferTimestamps, exportConfirmEnabled, ffmpegExperimental, hideNotifications, invertCutSegments, invertTimelineScroll, keyBindings, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyframeCut, language, movFastStart, outFormatLocked, outSegTemplate, playbackVolume, preserveMetadataOnMerge, preserveMovData, resetKeyBindings, safeOutputFileName, segmentsToChapters, segmentsToChaptersOnly, setAskBeforeClose, setAutoDeleteMergedSegments, setAutoExportExtraStreams, setAutoLoadTimecode, setAutoMerge, setAutoSaveProjectFile, setAvoidNegativeTs, setCaptureFormat, setCustomFfPath, setCustomOutDir, setEnableAskForFileOpenAction, setEnableAskForImportChapters, setEnableAutoHtml5ify, setEnableSmartCut, setEnableTransferTimestamps, setExportConfirmEnabled, setFfmpegExperimental, setHideNotifications, setInvertCutSegments, setInvertTimelineScroll, setKeyBindings, setKeyboardNormalSeekSpeed, setKeyboardSeekAccFactor, setKeyframeCut, setLanguage, setMovFastStart, setOutFormatLocked, setOutSegTemplate, setPlaybackVolume, setPreserveMetadataOnMerge, setPreserveMovData, setSafeOutputFileName, setSegmentsToChapters, setSegmentsToChaptersOnly, setSimpleMode, setStoreProjectInWorkingDir, setTimecodeFormat, setWheelSensitivity, simpleMode, storeProjectInWorkingDir, timecodeFormat, toggleCaptureFormat, toggleExportConfirmEnabled, toggleKeyframeCut, toggleMovFastStart, togglePreserveMetadataOnMerge, togglePreserveMovData, toggleSafeOutputFileName, toggleSegmentsToChapters, toggleSimpleMode, wheelSensitivity]);
 
   const isCopyingStreamId = useCallback((path, streamId) => (
     !!(copyStreamIdsByFile[path] || {})[streamId]
@@ -1105,11 +1104,11 @@ const App = memo(() => {
     if (workingRef.current) return;
 
     // Because we will reset state before deleting files
-    const savedPaths = { previewFilePath, filePath, edlFilePath };
+    const savedPaths = { previewFilePath, sourceFilePath: filePath, projectFilePath: projectFileSavePath };
 
     resetState();
 
-    batchRemoveFile(savedPaths.filePath);
+    batchRemoveFile(savedPaths.sourceFilePath);
 
     if (!trashResponse.tmpFiles && !trashResponse.projectFile && !trashResponse.sourceFile) return;
 
@@ -1123,7 +1122,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [previewFilePath, filePath, edlFilePath, cleanupChoices, isFileOpened, resetState, batchRemoveFile, setWorking]);
+  }, [isFileOpened, cleanupChoices, previewFilePath, filePath, projectFileSavePath, resetState, batchRemoveFile, setWorking]);
 
   const inverseOrNormalSegments = useMemo(() => (
     invertCutSegments ? inverseCutSegments : apparentCutSegments
@@ -1443,6 +1442,36 @@ const App = memo(() => {
       return true;
     }
 
+    async function tryOpenProjectPath(path, type) {
+      if (!(await exists(path))) return false;
+      await loadEdlFile({ path, type });
+      return true;
+    }
+
+    async function tryOpenProject({ chapters }) {
+      try {
+        if (projectPath) {
+          await loadEdlFile({ path: projectPath, type: 'llc' });
+          return;
+        }
+
+        // First try to open from source file dir, then from working dir, then finally old csv style project
+        if (await tryOpenProjectPath(getEdlFilePath(fp, true), 'llc')) return;
+        if (await tryOpenProjectPath(getEdlFilePath(fp, false), 'llc')) return;
+        if (await tryOpenProjectPath(getEdlFilePathOld(fp), 'csv')) return;
+
+        const edl = await tryMapChaptersToEdl(chapters);
+        if (edl.length > 0 && enableAskForImportChapters && (await askForImportChapters())) {
+          console.log('Convert chapters to segments', edl);
+          loadCutSegments(edl);
+        }
+      } catch (err) {
+        console.error('EDL load failed, but continuing', err);
+        errorToast(`${i18n.t('Failed to load segments')} (${err.message})`);
+      }
+    }
+
+
     try {
       const fileMeta = await readFileMeta(fp);
       // console.log('file meta read', fileMeta);
@@ -1485,27 +1514,7 @@ const App = memo(() => {
         await html5ifyAndLoadWithPreferences(cod, fp, 'fastest', haveVideoStream, haveAudioStream);
       }
 
-      try {
-        const openedFileEdlPath = getEdlFilePath(fp);
-        const openedFileEdlPathOld = getEdlFilePathOld(fp);
-
-        if (projectPath) {
-          await loadEdlFile({ path: projectPath, type: 'llc' });
-        } else if (await exists(openedFileEdlPath)) {
-          await loadEdlFile({ path: openedFileEdlPath, type: 'llc' });
-        } else if (await exists(openedFileEdlPathOld)) {
-          await loadEdlFile({ path: openedFileEdlPathOld, type: 'csv' });
-        } else {
-          const edl = await tryMapChaptersToEdl(fileMeta.chapters);
-          if (edl.length > 0 && enableAskForImportChapters && (await askForImportChapters())) {
-            console.log('Convert chapters to segments', edl);
-            loadCutSegments(edl);
-          }
-        }
-      } catch (err) {
-        console.error('EDL load failed, but continuing', err);
-        errorToast(`${i18n.t('Failed to load segments')} (${err.message})`);
-      }
+      await tryOpenProject({ chapters: fileMeta.chapters });
 
       // throw new Error('test');
 
@@ -1581,12 +1590,12 @@ const App = memo(() => {
       return;
     }
 
-    // checkInputDir: true because we will be writing project file here
-    const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: path, checkInputDir: true });
+    // checkInputDir: true because we may be be writing project file here (if storeProjectInWorkingDir is true)
+    const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: path, checkInputDir: !storeProjectInWorkingDir });
     if (cancel) return;
 
     await loadMedia({ filePath: path, customOutDir: newCustomOutDir, projectPath });
-  }, [ensureAccessibleDirectories, loadMedia]);
+  }, [ensureAccessibleDirectories, loadMedia, storeProjectInWorkingDir]);
 
   const batchOpenSingleFile = useCallback(async (path) => {
     if (workingRef.current) return;
@@ -1964,7 +1973,7 @@ const App = memo(() => {
         open: isFileOpened ? i18n.t('Open the file instead of the current one') : i18n.t('Open the file'),
       };
       if (isFileOpened) {
-      if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
+        if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
         else inputOptions.tracks = i18n.t('Include all tracks from the new file');
       }
       if (batchFiles.length > 0) inputOptions.addToBatch = i18n.t('Add the file to the batch list');

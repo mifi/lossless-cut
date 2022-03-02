@@ -106,6 +106,8 @@ export default () => {
   useEffect(() => safeSetConfig('enableSmartCut', enableSmartCut), [enableSmartCut]);
   const [customFfPath, setCustomFfPath] = useState(safeGetConfig('customFfPath'));
   useEffect(() => safeSetConfig('customFfPath', customFfPath), [customFfPath]);
+  const [storeProjectInWorkingDir, setStoreProjectInWorkingDir] = useState(safeGetConfig('storeProjectInWorkingDir'));
+  useEffect(() => safeSetConfig('storeProjectInWorkingDir', storeProjectInWorkingDir), [storeProjectInWorkingDir]);
 
   const resetKeyBindings = useCallback(() => {
     configStore.reset('keyBindings');
@@ -196,5 +198,7 @@ export default () => {
     setEnableSmartCut,
     customFfPath,
     setCustomFfPath,
+    storeProjectInWorkingDir,
+    setStoreProjectInWorkingDir,
   };
 };
