@@ -214,16 +214,22 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
   const duration = !Number.isNaN(streamDuration) ? streamDuration : fileDuration;
 
   let Icon;
+  let codecTypeHuman;
   if (stream.codec_type === 'audio') {
     Icon = copyStream ? FaVolumeUp : FaVolumeMute;
+    codecTypeHuman = t('audio');
   } else if (stream.codec_type === 'video') {
     Icon = copyStream ? FaVideo : FaVideoSlash;
+    codecTypeHuman = t('video');
   } else if (stream.codec_type === 'subtitle') {
     Icon = copyStream ? MdSubtitles : FaBan;
+    codecTypeHuman = t('subtitle');
   } else if (stream.codec_type === 'attachment') {
     Icon = copyStream ? FaPaperclip : FaBan;
+    codecTypeHuman = t('attachment');
   } else {
     Icon = copyStream ? GoFileBinary : FaBan;
+    codecTypeHuman = stream.codec_type;
   }
 
   const streamFps = getStreamFps(stream);
@@ -238,7 +244,7 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
         <div style={{ width: 20, textAlign: 'center' }}>{stream.index}</div>
       </td>
       <td>
-        {stream.codec_type}
+        {codecTypeHuman}
       </td>
       <td>{stream.codec_tag !== '0x0000' && stream.codec_tag_string}</td>
       <td style={{ maxWidth: '3em', overflow: 'hidden' }} title={stream.codec_name}>{stream.codec_name}</td>
@@ -263,10 +269,10 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
               <Menu.Divider />
               <Menu.Group>
                 <Menu.Item icon={<Icon color="black" />} intent="success" onClick={() => batchSetCopyStreamIds((s) => s.codec_type === stream.codec_type, true)}>
-                  {t('Keep all {{type}} tracks', { type: stream.codec_type })}
+                  {t('Keep all {{type}} tracks', { type: codecTypeHuman })}
                 </Menu.Item>
                 <Menu.Item icon={<FaBan color="black" />} intent="danger" onClick={() => batchSetCopyStreamIds((s) => s.codec_type === stream.codec_type, false)}>
-                  {t('Discard all {{type}} tracks', { type: stream.codec_type })}
+                  {t('Discard all {{type}} tracks', { type: codecTypeHuman })}
                 </Menu.Item>
               </Menu.Group>
             </Menu>
