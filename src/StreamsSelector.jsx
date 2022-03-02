@@ -97,7 +97,7 @@ const TagEditor = memo(({ existingTags, customTags, onTagChange, onTagReset }) =
         </tbody>
       </table>
 
-      <Button style={{ marginTop: 10 }} iconBefore={PlusIcon} onClick={onAddPress}>Add metadata</Button>
+      <Button style={{ marginTop: 10 }} iconBefore={PlusIcon} onClick={onAddPress}>{t('Add metadata')}</Button>
     </>
   );
 });
