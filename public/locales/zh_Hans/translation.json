@@ -587,5 +587,7 @@
     "Shift all segments on the timeline by this amount. Negative values will be shifted back, while positive value will be shifted forward in time.": "将时间轴上的所有段移动这个量。 负值将向后移动，而正值将及时向前移动。",
     "Store next to media file": "存储在媒体文件旁边",
     "Store project file (.llc) in the working directory or next to loaded media file?": "将项目文件 (.llc) 存储在工作目录中还是加载的媒体文件旁？",
-    "This allows you to specify custom FFmpeg and FFprobe binaries to use. Make sure the \"ffmpeg\" and \"ffprobe\" executables exist in the same directory, and then select the directory.": "这允许您指定要使用的自定义 FFmpeg 和 FFprobe 二进制文件。 确保“ffmpeg”和“ffprobe”可执行文件存在于同一目录中，然后选择目录。"
+    "This allows you to specify custom FFmpeg and FFprobe binaries to use. Make sure the \"ffmpeg\" and \"ffprobe\" executables exist in the same directory, and then select the directory.": "这允许您指定要使用的自定义 FFmpeg 和 FFprobe 二进制文件。 确保“ffmpeg”和“ffprobe”可执行文件存在于同一目录中，然后选择目录。",
+    "You are running version {{version}}": "你正在运行版本 {{version}}",
+    "About LosslessCut": "关于LosslessCut"
 }
