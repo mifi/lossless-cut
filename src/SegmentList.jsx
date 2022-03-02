@@ -11,7 +11,7 @@ import scrollIntoView from 'scroll-into-view-if-needed';
 
 import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
-import { saveColor } from './colors';
+import { saveColor, controlsBackground } from './colors';
 import { getSegColor } from './util/colors';
 
 const buttonBaseStyle = {
@@ -124,7 +124,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 });
 
 const SegmentList = memo(({
-  formatTimecode, apparentCutSegments, inverseCutSegments, getFrameCount, onSegClick,
+  width, formatTimecode, apparentCutSegments, inverseCutSegments, getFrameCount, onSegClick,
   currentSegIndex,
   updateSegOrder, updateSegOrders, addCutSegment, removeCutSegment,
   onLabelSegmentPress, currentCutSeg, segmentAtCursor, toggleSegmentsList, splitCurrentSegment,
@@ -242,7 +242,13 @@ const SegmentList = memo(({
   }
 
   return (
-    <>
+    <motion.div
+      className="no-user-select"
+      style={{ width, background: controlsBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
+      initial={{ x: width }}
+      animate={{ x: 0 }}
+      exit={{ x: width }}
+    >
       <div style={{ padding: '0 10px', overflowY: 'scroll', flexGrow: 1 }} className="hide-scrollbar">
         <div style={{ fontSize: 14, marginBottom: 10 }}>
           <FaAngleRight
@@ -289,7 +295,7 @@ const SegmentList = memo(({
       </div>
 
       {segments.length > 0 && renderFooter()}
-    </>
+    </motion.div>
   );
 });
 

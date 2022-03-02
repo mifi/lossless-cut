@@ -99,6 +99,7 @@ const leftBarWidth = 240;
 
 
 const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
+const bottomMotionStyle = { background: controlsBackground };
 
 
 const App = memo(() => {
@@ -2281,45 +2282,38 @@ const App = memo(() => {
 
             <AnimatePresence>
               {showRightBar && isFileOpened && (
-                <motion.div
-                  className="no-user-select"
-                  style={{ width: rightBarWidth, background: controlsBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
-                  initial={{ x: rightBarWidth }}
-                  animate={{ x: 0 }}
-                  exit={{ x: rightBarWidth }}
-                >
-                  <SegmentList
-                    currentSegIndex={currentSegIndexSafe}
-                    apparentCutSegments={apparentCutSegments}
-                    inverseCutSegments={inverseCutSegments}
-                    getFrameCount={getFrameCount}
-                    formatTimecode={formatTimecode}
-                    onSegClick={setCurrentSegIndex}
-                    updateSegOrder={updateSegOrder}
-                    updateSegOrders={updateSegOrders}
-                    onLabelSegmentPress={onLabelSegmentPress}
-                    currentCutSeg={currentCutSeg}
-                    segmentAtCursor={segmentAtCursor}
-                    addCutSegment={addCutSegment}
-                    removeCutSegment={removeCutSegment}
-                    toggleSegmentsList={toggleSegmentsList}
-                    splitCurrentSegment={splitCurrentSegment}
-                    enabledSegmentsRaw={enabledSegmentsRaw}
-                    enabledSegments={enabledSegments}
-                    onExportSingleSegmentClick={enableOnlySegment}
-                    onExportSegmentEnabledToggle={toggleSegmentEnabled}
-                    onExportSegmentDisableAll={disableAllSegments}
-                    onExportSegmentEnableAll={enableAllSegments}
-                    jumpSegStart={jumpSegStart}
-                    jumpSegEnd={jumpSegEnd}
-                    onViewSegmentTagsPress={onViewSegmentTagsPress}
-                  />
-                </motion.div>
+                <SegmentList
+                  width={rightBarWidth}
+                  currentSegIndex={currentSegIndexSafe}
+                  apparentCutSegments={apparentCutSegments}
+                  inverseCutSegments={inverseCutSegments}
+                  getFrameCount={getFrameCount}
+                  formatTimecode={formatTimecode}
+                  onSegClick={setCurrentSegIndex}
+                  updateSegOrder={updateSegOrder}
+                  updateSegOrders={updateSegOrders}
+                  onLabelSegmentPress={onLabelSegmentPress}
+                  currentCutSeg={currentCutSeg}
+                  segmentAtCursor={segmentAtCursor}
+                  addCutSegment={addCutSegment}
+                  removeCutSegment={removeCutSegment}
+                  toggleSegmentsList={toggleSegmentsList}
+                  splitCurrentSegment={splitCurrentSegment}
+                  enabledSegmentsRaw={enabledSegmentsRaw}
+                  enabledSegments={enabledSegments}
+                  onExportSingleSegmentClick={enableOnlySegment}
+                  onExportSegmentEnabledToggle={toggleSegmentEnabled}
+                  onExportSegmentDisableAll={disableAllSegments}
+                  onExportSegmentEnableAll={enableAllSegments}
+                  jumpSegStart={jumpSegStart}
+                  jumpSegEnd={jumpSegEnd}
+                  onViewSegmentTagsPress={onViewSegmentTagsPress}
+                />
               )}
             </AnimatePresence>
           </div>
 
-          <motion.div className="no-user-select" style={{ background: controlsBackground }}>
+          <motion.div className="no-user-select" style={bottomMotionStyle}>
             <Timeline
               shouldShowKeyframes={shouldShowKeyframes}
               waveforms={waveforms}
