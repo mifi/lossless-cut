@@ -396,8 +396,8 @@ export async function labelSegmentDialog({ currentName, maxLength }) {
 export function openAbout() {
   Swal.fire({
     icon: 'info',
-    title: 'About LosslessCut',
-    text: `You are running version ${app.getVersion()}`,
+    title: i18n.t('About LosslessCut'),
+    text: i18n.t('You are running version {{version}}', { version: app.getVersion() }),
   });
 }
 
