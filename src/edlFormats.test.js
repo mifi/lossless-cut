@@ -1,9 +1,9 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 import { join } from 'path';
 
-import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseCsv, getTimeFromFrameNum, formatCsvFrames, getFrameCountRaw } from './edlFormats';
+import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseCsv, getTimeFromFrameNum, formatCsvFrames, getFrameCountRaw, parsePbf } from './edlFormats';
 
-const readFixture = async (name, encoding = 'utf-8') => fs.promises.readFile(join(__dirname, 'fixtures', name), encoding);
+const readFixture = async (name, encoding = 'utf-8') => fs.readFile(join(__dirname, 'fixtures', name), encoding);
 
 it('parseYoutube', () => {
   const str = `
@@ -164,4 +164,11 @@ it('parses csv with frames', async () => {
     getFrameCount: (sec) => getFrameCountRaw(fps, sec),
   });
   expect(formatted).toEqual(csvFramesStr);
+});
+
+it('parses pbf', async () => {
+  expect(parsePbf(await readFixture('test1.pbf', null))).toMatchSnapshot();
+  expect(parsePbf(await readFixture('test2.pbf', null))).toMatchSnapshot();
+  expect(parsePbf(await readFixture('test3.pbf', null))).toMatchSnapshot();
+  expect(parsePbf(await readFixture('potplayer bookmark format utf16le issue 867.pbf', null))).toMatchSnapshot();
 });

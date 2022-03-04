@@ -18,10 +18,9 @@ async function writeChaptersFfmetadata(outDir, chapters) {
 
   const path = join(outDir, `ffmetadata-${new Date().getTime()}.txt`);
 
-  const ffmetadata = chapters.map(({ start, end, name }, i) => {
-    const nameOut = name || `Chapter ${i + 1}`;
-    return `[CHAPTER]\nTIMEBASE=1/1000\nSTART=${Math.floor(start * 1000)}\nEND=${Math.floor(end * 1000)}\ntitle=${nameOut}`;
-  }).join('\n\n');
+  const ffmetadata = chapters.map(({ start, end, name }) => (
+    `[CHAPTER]\nTIMEBASE=1/1000\nSTART=${Math.floor(start * 1000)}\nEND=${Math.floor(end * 1000)}\ntitle=${name || ''}`
+  )).join('\n\n');
   console.log('Writing chapters', ffmetadata);
   await fs.writeFile(path, ffmetadata);
   return path;
@@ -68,7 +67,11 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     const durations = await pMap(paths, getDuration, { concurrency: 1 });
     const totalDuration = sum(durations);
 
-    const chaptersPath = await writeChaptersFfmetadata(outDir, chapters);
+    let chaptersPath;
+    if (chapters) {
+      const chaptersWithNames = chapters.map((chapter, i) => ({ ...chapter, name: chapter.name || `Chapter ${i + 1}` }));
+      chaptersPath = await writeChaptersFfmetadata(outDir, chaptersWithNames);
+    }
 
     try {
       let inputArgs = [];

@@ -214,20 +214,19 @@ export async function getDuration(filePath) {
 }
 
 export async function createChaptersFromSegments({ segmentPaths, chapterNames }) {
-  if (chapterNames) {
-    try {
-      const durations = await pMap(segmentPaths, (segmentPath) => getDuration(segmentPath), { concurrency: 3 });
-      let timeAt = 0;
-      return durations.map((duration, i) => {
-        const ret = { start: timeAt, end: timeAt + duration, name: chapterNames[i] };
-        timeAt += duration;
-        return ret;
-      });
-    } catch (err) {
-      console.error('Failed to create chapters from segments', err);
-    }
+  if (!chapterNames) return undefined;
+  try {
+    const durations = await pMap(segmentPaths, (segmentPath) => getDuration(segmentPath), { concurrency: 3 });
+    let timeAt = 0;
+    return durations.map((duration, i) => {
+      const ret = { start: timeAt, end: timeAt + duration, name: chapterNames[i] };
+      timeAt += duration;
+      return ret;
+    });
+  } catch (err) {
+    console.error('Failed to create chapters from segments', err);
+    return undefined;
   }
-  return undefined;
 }
 
 /**

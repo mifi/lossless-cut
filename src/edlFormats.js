@@ -65,7 +65,7 @@ export async function parseMplayerEdl(text) {
   const sceneMarkers = allRows.filter((row) => row.type === 2);
   const commercialBreaks = allRows.filter((row) => row.type === 3);
 
-  const inverted = cutAwaySegments.length > 0 ? invertSegments(sortSegments(cutAwaySegments)) : [];
+  const inverted = cutAwaySegments.length > 0 ? invertSegments(sortSegments(cutAwaySegments), true, true) : [];
 
   const map = (segments, name, type) => segments.map(({ start, end }) => ({ start, end, name, tags: { mplayerEdlType: type } }));
 
@@ -104,7 +104,8 @@ export function parseCuesheet(cuesheet) {
 }
 
 // See https://github.com/mifi/lossless-cut/issues/993#issuecomment-1037090403
-export function parsePbf(text) {
+export function parsePbf(buf) {
+  const text = buf.toString('utf16le');
   const bookmarks = text.split('\n').map((line) => {
     const match = line.match(/^[0-9]+=([0-9]+)\*([^*]+)*([^*]+)?/);
     if (match) return { time: parseInt(match[1], 10) / 1000, name: match[2] };
@@ -113,11 +114,18 @@ export function parsePbf(text) {
 
   const out = [];
 
-  for (let i = 0; i < bookmarks.length; i += 2) {
+  for (let i = 0; i < bookmarks.length;) {
     const bookmark = bookmarks[i];
     const nextBookmark = bookmarks[i + 1];
-    out.push({ start: bookmark.time, end: nextBookmark && nextBookmark.time, name: bookmark.name });
+    if (!nextBookmark) {
+      out.push({ start: bookmark.time, end: undefined, name: bookmark.name });
+      i += 1;
+    } else {
+      out.push({ start: bookmark.time, end: nextBookmark && nextBookmark.time, name: bookmark.name });
+      i += nextBookmark.name === ' ' ? 2 : 1;
+    }
   }
+
   return out;
 }
 

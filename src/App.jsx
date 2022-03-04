@@ -72,7 +72,7 @@ import { adjustRate } from './util/rate-calculator';
 import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
-import { createSegment, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags } from './segments';
+import { createSegment, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap } from './segments';
 import { getOutSegError as getOutSegErrorRaw } from './util/outputNameTemplate';
 
 
@@ -369,12 +369,10 @@ const App = memo(() => {
   const jumpTimelineStart = useCallback(() => seekAbs(0), [seekAbs]);
   const jumpTimelineEnd = useCallback(() => seekAbs(durationSafe), [durationSafe, seekAbs]);
 
-  const sortedCutSegments = useMemo(() => sortSegments(apparentCutSegments), [apparentCutSegments]);
-
   const inverseCutSegments = useMemo(() => {
-    const inverted = !haveInvalidSegs && isDurationValid(duration) ? invertSegments(sortedCutSegments, duration) : undefined;
+    const inverted = !haveInvalidSegs && isDurationValid(duration) ? invertSegments(sortSegments(apparentCutSegments), true, true, duration) : undefined;
     return (inverted || []).map((seg) => ({ ...seg, segId: `${seg.start}-${seg.end}` }));
-  }, [duration, haveInvalidSegs, sortedCutSegments]);
+  }, [apparentCutSegments, duration, haveInvalidSegs]);
 
   const invertAllCutSegments = useCallback(() => {
     // don't reset segIndex (which represent colors) when inverting
@@ -1149,8 +1147,8 @@ const App = memo(() => {
   const filenamifyOrNot = useCallback((name) => (safeOutputFileName ? filenamify(name) : name).substr(0, maxLabelLength), [safeOutputFileName, maxLabelLength]);
 
   const segmentsToExport = useMemo(() => {
-    // This is a special mode where all segments will be simply written out as chapters to one file: https://github.com/mifi/lossless-cut/issues/993#issuecomment-1037927595
     if (!segmentsToChaptersOnly) return enabledSegments;
+    // segmentsToChaptersOnly is a special mode where all segments will be simply written out as chapters to one file: https://github.com/mifi/lossless-cut/issues/993#issuecomment-1037927595
     // Chapters export mode: Emulate a single segment with no cuts (full timeline)
     return [{ start: 0, end: getSegApparentEnd({}) }];
   }, [enabledSegments, getSegApparentEnd, segmentsToChaptersOnly]);
@@ -1223,7 +1221,15 @@ const App = memo(() => {
       setWorking(i18n.t('Exporting'));
 
       // Special segments-to-chapters mode:
-      const chaptersToAdd = segmentsToChaptersOnly && sortBy(enabledSegments, 'start').map((segment) => ({ start: segment.start, end: segment.end, name: segment.name }));
+      let chaptersToAdd;
+      if (segmentsToChaptersOnly) {
+        const sortedSegments = sortSegments(enabledSegments);
+        if (hasAnySegmentOverlap(sortedSegments)) {
+          errorToast(i18n.t('Make sure you have no overlapping segments.'));
+          return;
+        }
+        chaptersToAdd = convertSegmentsToChapters(sortedSegments);
+      }
 
       console.log('outSegTemplateOrDefault', outSegTemplateOrDefault);
 

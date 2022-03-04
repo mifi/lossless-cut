@@ -16,7 +16,7 @@ const ReactSwal = withReactContent(Swal);
 // eslint-disable-next-line import/prefer-default-export
 export function openSendReportDialog(err, state) {
   const reportInstructions = isStoreBuild
-    ? <p><Trans>Please send an email to <span style={{ fontWeight: 'bold', cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal('mailto:losslesscut@yankee.no')}>losslesscut@yankee.no</span> where you describe what you were doing.</Trans></p>
+    ? <p><Trans>Please send an email to <span style={{ fontWeight: 'bold', cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal('mailto:losslesscut@mifi.no')}>losslesscut@mifi.no</span> where you describe what you were doing.</Trans></p>
     : <p><Trans>Please create an issue at <span style={{ fontWeight: 'bold', cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/issues')}>https://github.com/mifi/lossless-cut/issues</span> where you describe what you were doing.</Trans></p>;
 
   const platform = os.platform();

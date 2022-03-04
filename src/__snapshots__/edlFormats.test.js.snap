@@ -1,5 +1,100 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`parses pbf 1`] = `
+Array [
+  Object {
+    "end": 189.053,
+    "name": "label 1",
+    "start": 104.612,
+  },
+  Object {
+    "end": 476.194,
+    "name": "label 2",
+    "start": 300.448,
+  },
+  Object {
+    "end": 704.264,
+    "name": "label 3",
+    "start": 567.075,
+  },
+  Object {
+    "end": 855.455,
+    "name": "label 4",
+    "start": 704.264,
+  },
+]
+`;
+
+exports[`parses pbf 2`] = `
+Array [
+  Object {
+    "end": 189.053,
+    "name": "label 1",
+    "start": 104.612,
+  },
+  Object {
+    "end": 300.448,
+    "name": "label 2",
+    "start": 189.053,
+  },
+  Object {
+    "end": 476.194,
+    "name": "label 3",
+    "start": 300.448,
+  },
+  Object {
+    "end": 567.075,
+    "name": "label 4",
+    "start": 476.194,
+  },
+  Object {
+    "end": 704.264,
+    "name": "label 5",
+    "start": 567.075,
+  },
+  Object {
+    "end": 855.455,
+    "name": "label 6",
+    "start": 704.264,
+  },
+]
+`;
+
+exports[`parses pbf 3`] = `
+Array [
+  Object {
+    "end": 189.053,
+    "name": "A",
+    "start": 104.612,
+  },
+  Object {
+    "end": 476.194,
+    "name": "B",
+    "start": 300.448,
+  },
+  Object {
+    "end": 704.264,
+    "name": "C",
+    "start": 567.075,
+  },
+]
+`;
+
+exports[`parses pbf 4`] = `
+Array [
+  Object {
+    "end": 189.053,
+    "name": "A",
+    "start": 104.612,
+  },
+  Object {
+    "end": 476.194,
+    "name": "B",
+    "start": 300.448,
+  },
+]
+`;
+
 exports[`parses xmeml 1 1`] = `
 Array [
   Object {

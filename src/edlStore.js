@@ -24,7 +24,7 @@ export async function loadXmeml(path) {
 }
 
 export async function loadPbf(path) {
-  return parsePbf(await fs.readFile(path, 'utf16le'));
+  return parsePbf(await fs.readFile(path));
 }
 
 export async function loadMplayerEdl(path) {
