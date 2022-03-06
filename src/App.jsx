@@ -1123,7 +1123,7 @@ const App = memo(() => {
     }
   }, [isFileOpened, cleanupChoices, previewFilePath, filePath, projectFileSavePath, resetState, batchRemoveFile, setWorking]);
 
-  const inverseOrNormalSegments = useMemo(() => (
+  const nonFilteredSegments = useMemo(() => (
     invertCutSegments ? inverseCutSegments : apparentCutSegments
   ), [invertCutSegments, inverseCutSegments, apparentCutSegments]);
 
@@ -1134,7 +1134,7 @@ const App = memo(() => {
   }, [invertCutSegments, inverseCutSegments, apparentCutSegments, deselectedSegmentIds]);
 
   // If user has selected none to export, it makes no sense, so export all instead
-  const selectedSegments = selectedSegmentsRaw.length > 0 ? selectedSegmentsRaw : inverseOrNormalSegments;
+  const selectedSegments = selectedSegmentsRaw.length > 0 ? selectedSegmentsRaw : nonFilteredSegments;
 
   const selectOnlySegment = useCallback((seg) => setDeselectedSegmentIds(Object.fromEntries(cutSegments.filter((s) => s.segId !== seg.segId).map((s) => [s.segId, true]))), [cutSegments]);
   const toggleSegmentSelected = useCallback((seg) => setDeselectedSegmentIds((existing) => ({ ...existing, [seg.segId]: !existing[seg.segId] })), []);
@@ -2426,7 +2426,7 @@ const App = memo(() => {
             />
           </SideSheet>
 
-          <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} selectedSegments={selectedSegments} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} />
+          <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegments={nonFilteredSegments} selectedSegments={selectedSegments} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} />
 
           <HelpSheet
             visible={helpVisible}

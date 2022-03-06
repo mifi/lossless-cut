@@ -120,7 +120,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 
       {!invertCutSegments && (
         <div style={{ position: 'absolute', right: 3, bottom: 3 }}>
-          <CheckIcon className="enabled" size={20} onClick={onToggleSegmentSelectedClick} />
+          <CheckIcon className="enabled" size={20} color="white" onClick={onToggleSegmentSelectedClick} />
         </div>
       )}
     </motion.div>

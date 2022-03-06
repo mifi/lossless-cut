@@ -41,11 +41,8 @@ const HelpIcon = ({ onClick }) => <IoIosHelpCircle size={20} role="button" onCli
 
 const ExportConfirm = memo(({
   areWeCutting, selectedSegments, willMerge, visible, onClosePress, onExportConfirm,
-  renderOutFmt,
-  outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown,
-  outFormat,
-  outSegTemplate, setOutSegTemplate, generateOutSegFileNames,
-  filePath, currentSegIndexSafe, getOutSegError,
+  outFormat, renderOutFmt, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, outSegTemplate,
+  setOutSegTemplate, generateOutSegFileNames, filePath, currentSegIndexSafe, getOutSegError, nonFilteredSegments,
 }) => {
   const { t } = useTranslation();
 
@@ -123,6 +120,7 @@ const ExportConfirm = memo(({
 
                 <h2 style={{ marginTop: 0 }}>{t('Export options')}</h2>
                 <ul>
+                  {selectedSegments.length !== nonFilteredSegments.length && <li>{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: selectedSegments.length, nonFilteredSegments: nonFilteredSegments.length })}</li>}
                   {selectedSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: selectedSegments.length })} <MergeExportButton selectedSegments={selectedSegments} /></li>}
                   <li>
                     {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
