@@ -328,6 +328,10 @@ const KeyboardShortcuts = memo(({
           name: t('Toggle current segment selected'),
           category: segmentsAndCutpointsCategory,
         },
+        removeSelectedSegments: {
+          name: t('Remove selected segments'),
+          category: segmentsAndCutpointsCategory,
+        },
 
         // streamsCategory
         toggleStreamsSelector: {

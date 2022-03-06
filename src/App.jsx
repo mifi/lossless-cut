@@ -1869,6 +1869,7 @@ const App = memo(() => {
       enableAllSegments: selectAllSegments,
       enableOnlyCurrentSegment: selectOnlyCurrentSegment,
       toggleCurrentSegmentEnabled: toggleCurrentSegmentSelected,
+      removeSelectedSegments,
       fixInvalidDuration: tryFixInvalidDuration,
       increaseVolume: () => setPlaybackVolume((val) => Math.min(1, val + 0.07)),
       decreaseVolume: () => setPlaybackVolume((val) => Math.max(0, val - 0.07)),
