@@ -21,7 +21,7 @@ const buttonBaseStyle = {
 const neutralButtonColor = 'rgba(255, 255, 255, 0.2)';
 
 
-const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onRemoveSelectedPress, onReorderPress, onLabelPress, enabled, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectAllSegments, jumpSegStart, jumpSegEnd, addSegment, onViewSegmentTagsPress, onExtractSegmentFramesAsImages }) => {
+const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onRemoveSelected, onLabelSelectedSegments, onReorderPress, onLabelPress, enabled, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectAllSegments, jumpSegStart, jumpSegEnd, addSegment, onViewSegmentTags, onExtractSegmentFramesAsImages }) => {
   const { t } = useTranslation();
 
   const ref = useRef();
@@ -37,13 +37,6 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
       { label: t('Add segment'), click: addSegment },
       { label: t('Label segment'), click: onLabelPress },
       { label: t('Remove segment'), click: onRemovePress },
-      { label: t('Remove selected segments'), click: onRemoveSelectedPress },
-
-      { type: 'separator' },
-
-      { label: t('Change segment order'), click: onReorderPress },
-      { label: t('Increase segment order'), click: () => updateOrder(1) },
-      { label: t('Decrease segment order'), click: () => updateOrder(-1) },
 
       { type: 'separator' },
 
@@ -54,10 +47,21 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 
       { type: 'separator' },
 
-      { label: t('Segment tags'), click: () => onViewSegmentTagsPress(index) },
+      { label: t('Label selected segments'), click: onLabelSelectedSegments },
+      { label: t('Remove selected segments'), click: onRemoveSelected },
+
+      { type: 'separator' },
+
+      { label: t('Change segment order'), click: onReorderPress },
+      { label: t('Increase segment order'), click: () => updateOrder(1) },
+      { label: t('Decrease segment order'), click: () => updateOrder(-1) },
+
+      { type: 'separator' },
+
+      { label: t('Segment tags'), click: () => onViewSegmentTags(index) },
       { label: t('Extract all frames as images'), click: () => onExtractSegmentFramesAsImages(index) },
     ];
-  }, [invertCutSegments, t, jumpSegStart, jumpSegEnd, addSegment, onLabelPress, onRemovePress, onRemoveSelectedPress, onReorderPress, updateOrder, onSelectSingleSegment, seg, onSelectAllSegments, onDeselectAllSegments, onSelectSegmentsByLabel, onViewSegmentTagsPress, index, onExtractSegmentFramesAsImages]);
+  }, [invertCutSegments, t, jumpSegStart, jumpSegEnd, addSegment, onLabelPress, onRemovePress, onReorderPress, onRemoveSelected, onLabelSelectedSegments, updateOrder, onSelectSingleSegment, seg, onSelectAllSegments, onDeselectAllSegments, onSelectSegmentsByLabel, onViewSegmentTags, index, onExtractSegmentFramesAsImages]);
 
   useContextMenu(ref, contextMenuTemplate);
 
@@ -136,10 +140,10 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 const SegmentList = memo(({
   width, formatTimecode, apparentCutSegments, inverseCutSegments, getFrameCount, onSegClick,
   currentSegIndex,
-  updateSegOrder, updateSegOrders, addSegment, removeCutSegment, onRemoveSelectedPress,
-  onLabelSegmentPress, currentCutSeg, segmentAtCursor, toggleSegmentsList, splitCurrentSegment,
-  selectedSegments, selectedSegmentsRaw, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectAllSegments, onSelectSegmentsByLabel, onExtractSegmentFramesAsImages,
-  jumpSegStart, jumpSegEnd, onViewSegmentTagsPress,
+  updateSegOrder, updateSegOrders, addSegment, removeCutSegment, onRemoveSelected,
+  onLabelSegment, currentCutSeg, segmentAtCursor, toggleSegmentsList, splitCurrentSegment,
+  selectedSegments, selectedSegmentsRaw, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectAllSegments, onSelectSegmentsByLabel, onExtractSegmentFramesAsImages, onLabelSelectedSegments,
+  jumpSegStart, jumpSegEnd, onViewSegmentTags,
 }) => {
   const { t } = useTranslation();
 
@@ -160,7 +164,7 @@ const SegmentList = memo(({
     else headerText = t('No segments to export.');
   }
 
-  async function onReorderSegsPress(index) {
+  async function onReorderSegs(index) {
     if (apparentCutSegments.length < 2) return;
     const { value } = await Swal.fire({
       title: `${t('Change order of segment')} ${index + 1}`,
@@ -212,7 +216,7 @@ const SegmentList = memo(({
                 title={t('Change segment order')}
                 role="button"
                 style={{ ...buttonBaseStyle, padding: 4, background: currentSegColor }}
-                onClick={() => onReorderSegsPress(currentSegIndex)}
+                onClick={() => onReorderSegs(currentSegIndex)}
               />
 
               <FaTag
@@ -220,7 +224,7 @@ const SegmentList = memo(({
                 title={t('Label segment')}
                 role="button"
                 style={{ ...buttonBaseStyle, padding: 4, background: currentSegColor }}
-                onClick={() => onLabelSegmentPress(currentSegIndex)}
+                onClick={() => onLabelSegment(currentSegIndex)}
               />
             </>
           )}
@@ -274,10 +278,10 @@ const SegmentList = memo(({
                 enabled={enabled}
                 onClick={onSegClick}
                 addSegment={addSegment}
-                onRemoveSelectedPress={onRemoveSelectedPress}
+                onRemoveSelected={onRemoveSelected}
                 onRemovePress={() => removeCutSegment(index)}
-                onReorderPress={() => onReorderSegsPress(index)}
-                onLabelPress={() => onLabelSegmentPress(index)}
+                onReorderPress={() => onReorderSegs(index)}
+                onLabelPress={() => onLabelSegment(index)}
                 jumpSegStart={() => jumpSegStart(index)}
                 jumpSegEnd={() => jumpSegEnd(index)}
                 updateOrder={(dir) => updateSegOrder(index, index + dir)}
@@ -289,9 +293,10 @@ const SegmentList = memo(({
                 onToggleSegmentSelected={onToggleSegmentSelected}
                 onDeselectAllSegments={onDeselectAllSegments}
                 onSelectAllSegments={onSelectAllSegments}
-                onViewSegmentTagsPress={onViewSegmentTagsPress}
+                onViewSegmentTags={onViewSegmentTags}
                 onSelectSegmentsByLabel={onSelectSegmentsByLabel}
                 onExtractSegmentFramesAsImages={onExtractSegmentFramesAsImages}
+                onLabelSelectedSegments={onLabelSelectedSegments}
               />
             );
           })}

@@ -424,12 +424,6 @@ const App = memo(() => {
 
   const maxLabelLength = safeOutputFileName ? 100 : 500;
 
-  const onLabelSegmentPress = useCallback(async (index) => {
-    const { name } = cutSegments[index];
-    const value = await labelSegmentDialog({ currentName: name, maxLength: maxLabelLength });
-    if (value != null) updateSegAtIndex(index, { name: value });
-  }, [cutSegments, updateSegAtIndex, maxLabelLength]);
-
   const onSelectSegmentsByLabel = useCallback(async () => {
     const { name } = currentCutSeg;
     const value = await selectSegmentsByLabelDialog(name);
@@ -443,7 +437,7 @@ const App = memo(() => {
     });
   }, [currentCutSeg, cutSegments]);
 
-  const onViewSegmentTagsPress = useCallback(async (index) => {
+  const onViewSegmentTags = useCallback(async (index) => {
     const segment = cutSegments[index];
     function inputValidator(jsonStr) {
       try {
@@ -1174,6 +1168,22 @@ const App = memo(() => {
 
   const filenamifyOrNot = useCallback((name) => (safeOutputFileName ? filenamify(name) : name).substr(0, maxLabelLength), [safeOutputFileName, maxLabelLength]);
 
+  const onLabelSegment = useCallback(async (index) => {
+    const { name } = cutSegments[index];
+    const value = await labelSegmentDialog({ currentName: name, maxLength: maxLabelLength });
+    if (value != null) updateSegAtIndex(index, { name: value });
+  }, [cutSegments, updateSegAtIndex, maxLabelLength]);
+
+  const onLabelSelectedSegments = useCallback(async () => {
+    if (selectedSegmentsRaw.length < 1) return;
+    const { name } = selectedSegmentsRaw[0];
+    const value = await labelSegmentDialog({ currentName: name, maxLength: maxLabelLength });
+    setCutSegments((existingSegments) => existingSegments.map((existingSegment) => {
+      if (selectedSegmentsRaw.some((seg) => seg.segId === existingSegment.segId)) return { ...existingSegment, name: value };
+      return existingSegment;
+    }));
+  }, [maxLabelLength, selectedSegmentsRaw, setCutSegments]);
+
   const segmentsToExport = useMemo(() => {
     if (!segmentsToChaptersOnly) return selectedSegments;
     // segmentsToChaptersOnly is a special mode where all segments will be simply written out as chapters to one file: https://github.com/mifi/lossless-cut/issues/993#issuecomment-1037927595
@@ -1864,7 +1874,7 @@ const App = memo(() => {
       removeCurrentSegment: () => removeCutSegment(currentSegIndexSafe),
       undo: () => cutSegmentsHistory.back(),
       redo: () => cutSegmentsHistory.forward(),
-      labelCurrentSegment: () => { onLabelSegmentPress(currentSegIndexSafe); return false; },
+      labelCurrentSegment: () => { onLabelSegment(currentSegIndexSafe); return false; },
       addSegment,
       toggleHelp: () => { toggleHelp(); return false; },
       export: onExportPress,
@@ -1935,7 +1945,7 @@ const App = memo(() => {
     if (match) return bubble;
 
     return true; // bubble the event
-  }, [addSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegmentPress, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleHelp, toggleKeyboardShortcuts, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleHelp, toggleKeyboardShortcuts, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   useKeyboard({ keyBindings, onKeyPress });
 
@@ -2350,12 +2360,12 @@ const App = memo(() => {
                   onSegClick={setCurrentSegIndex}
                   updateSegOrder={updateSegOrder}
                   updateSegOrders={updateSegOrders}
-                  onLabelSegmentPress={onLabelSegmentPress}
+                  onLabelSegment={onLabelSegment}
                   currentCutSeg={currentCutSeg}
                   segmentAtCursor={segmentAtCursor}
                   addSegment={addSegment}
                   removeCutSegment={removeCutSegment}
-                  onRemoveSelectedPress={removeSelectedSegments}
+                  onRemoveSelected={removeSelectedSegments}
                   toggleSegmentsList={toggleSegmentsList}
                   splitCurrentSegment={splitCurrentSegment}
                   selectedSegmentsRaw={selectedSegmentsRaw}
@@ -2367,8 +2377,9 @@ const App = memo(() => {
                   onExtractSegmentFramesAsImages={extractSegmentFramesAsImages}
                   jumpSegStart={jumpSegStart}
                   jumpSegEnd={jumpSegEnd}
-                  onViewSegmentTagsPress={onViewSegmentTagsPress}
+                  onViewSegmentTags={onViewSegmentTags}
                   onSelectSegmentsByLabel={onSelectSegmentsByLabel}
+                  onLabelSelectedSegments={onLabelSelectedSegments}
                 />
               )}
             </AnimatePresence>
