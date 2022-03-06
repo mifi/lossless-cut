@@ -7,7 +7,7 @@ import { withBlur } from '../util';
 import useUserSettings from '../hooks/useUserSettings';
 
 
-const MergeExportButton = memo(({ enabledSegments }) => {
+const MergeExportButton = memo(({ selectedSegments }) => {
   const { t } = useTranslation();
 
   const { autoMerge, setAutoMerge, autoDeleteMergedSegments, setAutoDeleteMergedSegments, segmentsToChaptersOnly, setSegmentsToChaptersOnly } = useUserSettings();
@@ -66,7 +66,7 @@ const MergeExportButton = memo(({ enabledSegments }) => {
   return (
     <Button
       height={20}
-      style={{ minWidth: 120, textAlign: 'center', opacity: enabledSegments && enabledSegments.length < 2 ? 0.4 : undefined }}
+      style={{ minWidth: 120, textAlign: 'center', opacity: selectedSegments && selectedSegments.length < 2 ? 0.4 : undefined }}
       title={description}
       onClick={withBlur(onClick)}
       iconBefore={AutoMergeIcon && <AutoMergeIcon />}

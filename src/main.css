@@ -57,3 +57,11 @@ kbd {
   align-items: flex-start !important;
   text-align: left;
 }
+
+.segment-list-entry .enabled {
+  display: none;
+}
+
+.segment-list-entry:hover .enabled {
+  display: inherit;
+}

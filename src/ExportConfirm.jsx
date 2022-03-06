@@ -40,7 +40,7 @@ const warningStyle = { color: '#faa', fontSize: '80%' };
 const HelpIcon = ({ onClick }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', verticalAlign: 'middle', marginLeft: 5 }} />;
 
 const ExportConfirm = memo(({
-  areWeCutting, enabledSegments, willMerge, visible, onClosePress, onExportConfirm,
+  areWeCutting, selectedSegments, willMerge, visible, onClosePress, onExportConfirm,
   renderOutFmt,
   outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown,
   outFormat,
@@ -123,7 +123,7 @@ const ExportConfirm = memo(({
 
                 <h2 style={{ marginTop: 0 }}>{t('Export options')}</h2>
                 <ul>
-                  {enabledSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: enabledSegments.length })} <MergeExportButton enabledSegments={enabledSegments} /></li>}
+                  {selectedSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: selectedSegments.length })} <MergeExportButton selectedSegments={selectedSegments} /></li>}
                   <li>
                     {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
                     <HelpIcon onClick={onOutFmtHelpPress} />
@@ -224,7 +224,7 @@ const ExportConfirm = memo(({
               exit={{ scale: 0.7, opacity: 0 }}
               transition={{ duration: 0.4, easings: ['easeOut'] }}
             >
-              <ExportButton enabledSegments={enabledSegments} areWeCutting={areWeCutting} onClick={() => onExportConfirm()} size={1.7} />
+              <ExportButton selectedSegments={selectedSegments} areWeCutting={areWeCutting} onClick={() => onExportConfirm()} size={1.7} />
             </motion.div>
           </div>
         </>

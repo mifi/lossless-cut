@@ -14,7 +14,7 @@ import useUserSettings from './hooks/useUserSettings';
 const TopMenu = memo(({
   filePath, fileFormat, copyAnyAudioTrack, toggleStripAudio,
   renderOutFmt, toggleHelp, numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown, toggleSettings,
-  enabledSegments, isCustomFormatSelected, clearOutDir,
+  selectedSegments, isCustomFormatSelected, clearOutDir,
 }) => {
   const { t } = useTranslation();
   const { customOutDir, changeOutDir, simpleMode, outFormatLocked, setOutFormatLocked } = useUserSettings();
@@ -78,7 +78,7 @@ const TopMenu = memo(({
 
           {!simpleMode && (isCustomFormatSelected || outFormatLocked) && renderFormatLock()}
 
-          <MergeExportButton enabledSegments={enabledSegments} />
+          <MergeExportButton selectedSegments={selectedSegments} />
         </>
       )}
 

@@ -7,7 +7,7 @@ import { primaryColor } from '../colors';
 import useUserSettings from '../hooks/useUserSettings';
 
 
-const ExportButton = memo(({ enabledSegments, areWeCutting, onClick, size = 1 }) => {
+const ExportButton = memo(({ selectedSegments, areWeCutting, onClick, size = 1 }) => {
   const CutIcon = areWeCutting ? FiScissors : FaFileExport;
 
   const { t } = useTranslation();
@@ -15,13 +15,13 @@ const ExportButton = memo(({ enabledSegments, areWeCutting, onClick, size = 1 })
   const { autoMerge } = useUserSettings();
 
   let exportButtonTitle = t('Export');
-  if (enabledSegments.length === 1) {
+  if (selectedSegments.length === 1) {
     exportButtonTitle = t('Export selection');
-  } else if (enabledSegments.length > 1) {
-    exportButtonTitle = t('Export {{ num }} segments', { num: enabledSegments.length });
+  } else if (selectedSegments.length > 1) {
+    exportButtonTitle = t('Export {{ num }} segments', { num: selectedSegments.length });
   }
 
-  const exportButtonText = autoMerge && enabledSegments && enabledSegments.length > 1 ? t('Export+merge') : t('Export');
+  const exportButtonText = autoMerge && selectedSegments && selectedSegments.length > 1 ? t('Export+merge') : t('Export');
 
   return (
     <div

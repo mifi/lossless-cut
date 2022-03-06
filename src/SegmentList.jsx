@@ -1,5 +1,5 @@
 import React, { memo, useMemo, useRef, useCallback } from 'react';
-import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaRegCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
@@ -21,7 +21,7 @@ const buttonBaseStyle = {
 const neutralButtonColor = 'rgba(255, 255, 255, 0.2)';
 
 
-const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onReorderPress, onLabelPress, enabled, onExportSingleSegmentClick, onExportSegmentEnabledToggle, onExportSegmentDisableAll, onExportSegmentEnableAll, jumpSegStart, jumpSegEnd, addCutSegment, onViewSegmentTagsPress }) => {
+const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onReorderPress, onLabelPress, enabled, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectAllSegments, jumpSegStart, jumpSegEnd, addCutSegment, onViewSegmentTagsPress }) => {
   const { t } = useTranslation();
 
   const ref = useRef();
@@ -46,16 +46,15 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 
       { type: 'separator' },
 
-      { label: t('Include ONLY this segment in export'), click: () => onExportSingleSegmentClick(seg) },
-      { label: enabled ? t('Exclude this segment from export') : t('Include this segment in export'), click: () => onExportSegmentEnabledToggle(seg) },
-      { label: t('Include all segments in export'), click: () => onExportSegmentEnableAll(seg) },
-      { label: t('Exclude all segments from export'), click: () => onExportSegmentDisableAll(seg) },
+      { label: t('Select ONLY current segment'), click: () => onSelectSingleSegment(seg) },
+      { label: t('Select all segments'), click: () => onSelectAllSegments() },
+      { label: t('Deselect all segments'), click: () => onDeselectAllSegments() },
 
       { type: 'separator' },
 
       { label: t('Segment tags'), click: () => onViewSegmentTagsPress(index) },
     ];
-  }, [addCutSegment, enabled, index, invertCutSegments, jumpSegEnd, jumpSegStart, onExportSegmentDisableAll, onExportSegmentEnableAll, onExportSegmentEnabledToggle, onExportSingleSegmentClick, onLabelPress, onRemovePress, onReorderPress, onViewSegmentTagsPress, seg, t, updateOrder]);
+  }, [addCutSegment, index, invertCutSegments, jumpSegEnd, jumpSegStart, onDeselectAllSegments, onSelectAllSegments, onSelectSingleSegment, onLabelPress, onRemovePress, onReorderPress, onViewSegmentTagsPress, seg, t, updateOrder]);
 
   useContextMenu(ref, contextMenuTemplate);
 
@@ -81,7 +80,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
   function onDoubleClick() {
     if (invertCutSegments) return;
     if (!enabled) {
-      onExportSegmentEnabledToggle(seg);
+      onToggleSegmentSelected(seg);
       return;
     }
     jumpSegStart();
@@ -89,6 +88,10 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 
   const durationMsFormatted = Math.floor(durationMs);
   const frameCount = getFrameCount(duration);
+
+  const CheckIcon = enabled ? FaRegCheckCircle : FaRegCircle;
+
+  const onToggleSegmentSelectedClick = useCallback(() => onToggleSegmentSelected(seg), [onToggleSegmentSelected, seg]);
 
   return (
     <motion.div
@@ -101,6 +104,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
       initial={{ scaleY: 0 }}
       animate={{ scaleY: 1 }}
       exit={{ scaleY: 0 }}
+      className="segment-list-entry"
     >
       <div style={{ color: 'white', marginBottom: 3, display: 'flex', alignItems: 'center', height: 16 }}>
         {renderNumber()}
@@ -114,9 +118,9 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
         <Trans>{{ durationMsFormatted }} ms, {{ frameCount }} frames</Trans>
       </div>
 
-      {!enabled && !invertCutSegments && (
-        <div style={{ position: 'absolute', pointerEvents: 'none', top: 0, right: 0, bottom: 0, left: 0, overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <FaTimes style={{ fontSize: 100, color: 'rgba(255,0,0,0.8)' }} />
+      {!invertCutSegments && (
+        <div style={{ position: 'absolute', right: 3, bottom: 3 }}>
+          <CheckIcon className="enabled" size={20} onClick={onToggleSegmentSelectedClick} />
         </div>
       )}
     </motion.div>
@@ -128,7 +132,7 @@ const SegmentList = memo(({
   currentSegIndex,
   updateSegOrder, updateSegOrders, addCutSegment, removeCutSegment,
   onLabelSegmentPress, currentCutSeg, segmentAtCursor, toggleSegmentsList, splitCurrentSegment,
-  enabledSegments, enabledSegmentsRaw, onExportSingleSegmentClick, onExportSegmentEnabledToggle, onExportSegmentDisableAll, onExportSegmentEnableAll,
+  selectedSegments, selectedSegmentsRaw, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectAllSegments,
   jumpSegStart, jumpSegEnd, onViewSegmentTagsPress,
 }) => {
   const { t } = useTranslation();
@@ -174,14 +178,7 @@ const SegmentList = memo(({
     const currentSegColor = getSegColor(currentCutSeg).alpha(0.5).string();
     const segAtCursorColor = getSegColor(segmentAtCursor).alpha(0.5).string();
 
-    function renderExportEnabledCheckBox() {
-      const segmentExportEnabled = currentCutSeg && enabledSegmentsRaw.some((s) => s.segId === currentCutSeg.segId);
-      const Icon = segmentExportEnabled ? FaCheck : FaTimes;
-
-      return <Icon size={24} title={segmentExportEnabled ? t('Include this segment in export') : t('Exclude this segment from export')} style={{ ...buttonBaseStyle, backgroundColor: currentSegColor }} role="button" onClick={() => onExportSegmentEnabledToggle(currentCutSeg)} />;
-    }
-
-    const segmentsTotal = enabledSegments.reduce((acc, { start, end }) => (end - start) + acc, 0);
+    const segmentsTotal = selectedSegments.reduce((acc, { start, end }) => (end - start) + acc, 0);
 
     return (
       <>
@@ -219,8 +216,6 @@ const SegmentList = memo(({
                 style={{ ...buttonBaseStyle, padding: 4, background: currentSegColor }}
                 onClick={() => onLabelSegmentPress(currentSegIndex)}
               />
-
-              {renderExportEnabledCheckBox()}
             </>
           )}
 
@@ -264,7 +259,7 @@ const SegmentList = memo(({
 
         <ReactSortable list={sortableList} setList={setSortableList} sort={!invertCutSegments}>
           {sortableList.map(({ id, seg }, index) => {
-            const enabled = !invertCutSegments && enabledSegmentsRaw.includes(seg);
+            const enabled = !invertCutSegments && selectedSegmentsRaw.includes(seg);
             return (
               <Segment
                 key={id}
@@ -283,10 +278,10 @@ const SegmentList = memo(({
                 formatTimecode={formatTimecode}
                 currentSegIndex={currentSegIndex}
                 invertCutSegments={invertCutSegments}
-                onExportSingleSegmentClick={onExportSingleSegmentClick}
-                onExportSegmentEnabledToggle={onExportSegmentEnabledToggle}
-                onExportSegmentDisableAll={onExportSegmentDisableAll}
-                onExportSegmentEnableAll={onExportSegmentEnableAll}
+                onSelectSingleSegment={onSelectSingleSegment}
+                onToggleSegmentSelected={onToggleSegmentSelected}
+                onDeselectAllSegments={onDeselectAllSegments}
+                onSelectAllSegments={onSelectAllSegments}
                 onViewSegmentTagsPress={onViewSegmentTagsPress}
               />
             );

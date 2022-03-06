@@ -309,19 +309,19 @@ const KeyboardShortcuts = memo(({
           category: segmentsAndCutpointsCategory,
         },
         enableOnlyCurrentSegment: {
-          name: t('Include ONLY this segment in export'),
+          name: t('Select ONLY current segment'),
           category: segmentsAndCutpointsCategory,
         },
         disableAllSegments: {
-          name: t('Exclude all segments from export'),
+          name: t('Deselect all segments'),
           category: segmentsAndCutpointsCategory,
         },
         enableAllSegments: {
-          name: t('Include all segments in export'),
+          name: t('Select all segments'),
           category: segmentsAndCutpointsCategory,
         },
         toggleCurrentSegmentEnabled: {
-          name: t('Toggle inclusion of this segment in export'),
+          name: t('Toggle current segment selected'),
           category: segmentsAndCutpointsCategory,
         },
 
