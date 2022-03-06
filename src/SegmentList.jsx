@@ -21,7 +21,7 @@ const buttonBaseStyle = {
 const neutralButtonColor = 'rgba(255, 255, 255, 0.2)';
 
 
-const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onReorderPress, onLabelPress, enabled, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectAllSegments, jumpSegStart, jumpSegEnd, addCutSegment, onViewSegmentTagsPress }) => {
+const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onRemoveSelectedPress, onReorderPress, onLabelPress, enabled, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectAllSegments, jumpSegStart, jumpSegEnd, addSegment, onViewSegmentTagsPress }) => {
   const { t } = useTranslation();
 
   const ref = useRef();
@@ -34,9 +34,10 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 
       { type: 'separator' },
 
-      { label: t('Add segment'), click: addCutSegment },
+      { label: t('Add segment'), click: addSegment },
       { label: t('Label segment'), click: onLabelPress },
       { label: t('Remove segment'), click: onRemovePress },
+      { label: t('Remove selected segments'), click: onRemoveSelectedPress },
 
       { type: 'separator' },
 
@@ -55,7 +56,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 
       { label: t('Segment tags'), click: () => onViewSegmentTagsPress(index) },
     ];
-  }, [invertCutSegments, t, jumpSegStart, jumpSegEnd, addCutSegment, onLabelPress, onRemovePress, onReorderPress, updateOrder, onSelectSingleSegment, seg, onSelectAllSegments, onDeselectAllSegments, onSelectSegmentsByLabel, onViewSegmentTagsPress, index]);
+  }, [invertCutSegments, t, jumpSegStart, jumpSegEnd, addSegment, onLabelPress, onRemovePress, onRemoveSelectedPress, onReorderPress, updateOrder, onSelectSingleSegment, seg, onSelectAllSegments, onDeselectAllSegments, onSelectSegmentsByLabel, onViewSegmentTagsPress, index]);
 
   useContextMenu(ref, contextMenuTemplate);
 
@@ -131,7 +132,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 const SegmentList = memo(({
   width, formatTimecode, apparentCutSegments, inverseCutSegments, getFrameCount, onSegClick,
   currentSegIndex,
-  updateSegOrder, updateSegOrders, addCutSegment, removeCutSegment,
+  updateSegOrder, updateSegOrders, addSegment, removeCutSegment, onRemoveSelectedPress,
   onLabelSegmentPress, currentCutSeg, segmentAtCursor, toggleSegmentsList, splitCurrentSegment,
   selectedSegments, selectedSegmentsRaw, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectAllSegments, onSelectSegmentsByLabel,
   jumpSegStart, jumpSegEnd, onViewSegmentTagsPress,
@@ -189,7 +190,7 @@ const SegmentList = memo(({
             style={{ ...buttonBaseStyle, background: neutralButtonColor }}
             role="button"
             title={t('Add segment')}
-            onClick={addCutSegment}
+            onClick={addSegment}
           />
 
           <FaMinus
@@ -268,7 +269,8 @@ const SegmentList = memo(({
                 index={index}
                 enabled={enabled}
                 onClick={onSegClick}
-                addCutSegment={addCutSegment}
+                addSegment={addSegment}
+                onRemoveSelectedPress={onRemoveSelectedPress}
                 onRemovePress={() => removeCutSegment(index)}
                 onReorderPress={() => onReorderSegsPress(index)}
                 onLabelPress={() => onLabelSegmentPress(index)}

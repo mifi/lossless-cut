@@ -498,7 +498,7 @@ const App = memo(() => {
 
   // const getSafeCutTime = useCallback((cutTime, next) => ffmpeg.getSafeCutTime(neighbouringFrames, cutTime, next), [neighbouringFrames]);
 
-  const addCutSegment = useCallback(() => {
+  const addSegment = useCallback(() => {
     try {
       // Cannot add if prev seg is not finished
       if (currentCutSeg.start === undefined && currentCutSeg.end === undefined) return;
@@ -521,7 +521,7 @@ const App = memo(() => {
     } catch (err) {
       console.error(err);
     }
-  }, [currentCutSeg.start, currentCutSeg.end, getCurrentTime, cutSegments, createIndexedSegment, setCutSegments]);
+  }, [currentCutSeg.start, currentCutSeg.end, getCurrentTime, duration, cutSegments, createIndexedSegment, setCutSegments]);
 
   const setCutStart = useCallback(() => {
     if (!filePath) return;
@@ -530,8 +530,8 @@ const App = memo(() => {
     // https://github.com/mifi/lossless-cut/issues/168
     // If current time is after the end of the current segment in the timeline,
     // add a new segment that starts at playerTime
-    if (currentCutSeg.end != null && currentTime > currentCutSeg.end) {
-      addCutSegment();
+    if (currentCutSeg.end != null && currentTime >= currentCutSeg.end) {
+      addSegment();
     } else {
       try {
         const startTime = currentTime;
@@ -544,7 +544,7 @@ const App = memo(() => {
         handleError(err);
       }
     }
-  }, [filePath, getCurrentTime, currentCutSeg.end, addCutSegment, setCutTime]);
+  }, [filePath, getCurrentTime, currentCutSeg.end, addSegment, setCutTime]);
 
   const setCutEnd = useCallback(() => {
     if (!filePath) return;
@@ -850,19 +850,21 @@ const App = memo(() => {
     });
   }, [copyAnyAudioTrack, filePath, mainStreams, setCopyStreamIdsForPath]);
 
-  const removeCutSegment = useCallback((index) => {
-    if (cutSegments.length === 1 && cutSegments[0].start == null && cutSegments[0].end == null) return; // Initial segment
-
-    if (cutSegments.length <= 1) {
-      clearSegments();
-      return;
-    }
-
-    const cutSegmentsNew = [...cutSegments];
-    cutSegmentsNew.splice(index, 1);
-
-    setCutSegments(cutSegmentsNew);
+  const removeSegments = useCallback((removeSegmentIds) => {
+    if (cutSegments.length === 1 && cutSegments[0].start == null && cutSegments[0].end == null) return; // We are at initial segment, nothing more we can do (it cannot be removed)
+    setCutSegments((existing) => {
+      const newSegments = existing.filter((seg) => !removeSegmentIds.includes(seg.segId));
+      if (newSegments.length === 0) {
+        clearSegments(); // when removing the last segments, we start over
+        return existing;
+      }
+      return newSegments;
+    });
   }, [clearSegments, cutSegments, setCutSegments]);
+
+  const removeCutSegment = useCallback((index) => {
+    removeSegments([cutSegments[index].segId]);
+  }, [cutSegments, removeSegments]);
 
   const thumnailsRef = useRef([]);
   const thumnailsRenderingPromiseRef = useRef();
@@ -1164,6 +1166,8 @@ const App = memo(() => {
   const toggleSegmentSelected = useCallback((seg) => setDeselectedSegmentIds((existing) => ({ ...existing, [seg.segId]: !existing[seg.segId] })), []);
   const deselectAllSegments = useCallback(() => setDeselectedSegmentIds(Object.fromEntries(cutSegments.map((s) => [s.segId, true]))), [cutSegments]);
   const selectAllSegments = useCallback(() => setDeselectedSegmentIds({}), []);
+
+  const removeSelectedSegments = useCallback(() => removeSegments(selectedSegmentsRaw.map((seg) => seg.segId)), [removeSegments, selectedSegmentsRaw]);
 
   const selectOnlyCurrentSegment = useCallback(() => selectOnlySegment(currentCutSeg), [currentCutSeg, selectOnlySegment]);
   const toggleCurrentSegmentSelected = useCallback(() => toggleSegmentSelected(currentCutSeg), [currentCutSeg, toggleSegmentSelected]);
@@ -1841,7 +1845,7 @@ const App = memo(() => {
       undo: () => cutSegmentsHistory.back(),
       redo: () => cutSegmentsHistory.forward(),
       labelCurrentSegment: () => { onLabelSegmentPress(currentSegIndexSafe); return false; },
-      addSegment: () => addCutSegment(),
+      addSegment,
       toggleHelp: () => { toggleHelp(); return false; },
       export: onExportPress,
       reorderSegsByStartTime,
@@ -1909,7 +1913,7 @@ const App = memo(() => {
     if (match) return bubble;
 
     return true; // bubble the event
-  }, [addCutSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllCutSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegmentPress, pause, play, removeCutSegment, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleHelp, toggleKeyboardShortcuts, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllCutSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegmentPress, pause, play, removeCutSegment, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleHelp, toggleKeyboardShortcuts, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   useKeyboard({ keyBindings, onKeyPress });
 
@@ -2327,8 +2331,9 @@ const App = memo(() => {
                   onLabelSegmentPress={onLabelSegmentPress}
                   currentCutSeg={currentCutSeg}
                   segmentAtCursor={segmentAtCursor}
-                  addCutSegment={addCutSegment}
+                  addSegment={addSegment}
                   removeCutSegment={removeCutSegment}
+                  onRemoveSelectedPress={removeSelectedSegments}
                   toggleSegmentsList={toggleSegmentsList}
                   splitCurrentSegment={splitCurrentSegment}
                   selectedSegmentsRaw={selectedSegmentsRaw}
