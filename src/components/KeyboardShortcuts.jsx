@@ -312,19 +312,19 @@ const KeyboardShortcuts = memo(({
           name: t('Show sidebar'),
           category: segmentsAndCutpointsCategory,
         },
-        enableOnlyCurrentSegment: {
+        selectOnlyCurrentSegment: {
           name: t('Select only this segment'),
           category: segmentsAndCutpointsCategory,
         },
-        disableAllSegments: {
+        deselectAllSegments: {
           name: t('Deselect all segments'),
           category: segmentsAndCutpointsCategory,
         },
-        enableAllSegments: {
+        selectAllSegments: {
           name: t('Select all segments'),
           category: segmentsAndCutpointsCategory,
         },
-        toggleCurrentSegmentEnabled: {
+        toggleCurrentSegmentSelected: {
           name: t('Toggle current segment selected'),
           category: segmentsAndCutpointsCategory,
         },
