@@ -1,12 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import sortBy from 'lodash/sortBy';
 
-export const createSegment = ({ start, end, name, tags, segIndex } = {}) => ({
+export const createSegment = ({ start, end, name, tags, segColorIndex } = {}) => ({
   start,
   end,
   name: name || '',
   segId: uuidv4(),
-  segIndex,
+  segColorIndex,
 
   // `tags` is an optional object (key-value). Values must always be string
   // See https://github.com/mifi/lossless-cut/issues/879

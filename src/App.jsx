@@ -166,7 +166,7 @@ const App = memo(() => {
 
   const createIndexedSegment = useCallback(({ segment, incrementCount } = {}) => {
     if (incrementCount) segCounterRef.current += 1;
-    const ret = createSegment({ segIndex: segCounterRef.current, ...segment });
+    const ret = createSegment({ segColorIndex: segCounterRef.current, ...segment });
     return ret;
   }, []);
 
@@ -379,8 +379,8 @@ const App = memo(() => {
       errorToast(i18n.t('Make sure you have no overlapping segments.'));
       return;
     }
-    // don't reset segIndex (which represent colors) when inverting
-    const newInverseCutSegments = inverseCutSegments.map((inverseSegment, segIndex) => createSegment({ ...inverseSegment, segIndex }));
+    // don't reset segColorIndex (which represent colors) when inverting
+    const newInverseCutSegments = inverseCutSegments.map((inverseSegment, index) => createSegment({ ...inverseSegment, segColorIndex: index }));
     setCutSegments(newInverseCutSegments);
   }, [inverseCutSegments, setCutSegments]);
 

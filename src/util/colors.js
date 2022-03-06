@@ -17,7 +17,7 @@ export function getSegColor(seg) {
       v: 100,
     });
   }
-  const { segIndex } = seg;
+  const { segColorIndex } = seg;
 
-  return getColor(segIndex);
+  return getColor(segColorIndex);
 }
