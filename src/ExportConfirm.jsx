@@ -1,6 +1,7 @@
 import React, { memo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button, Select, CrossIcon } from 'evergreen-ui';
+import { FaRegCheckCircle } from 'react-icons/fa';
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
 import { IoIosHelpCircle } from 'react-icons/io';
@@ -120,7 +121,7 @@ const ExportConfirm = memo(({
 
                 <h2 style={{ marginTop: 0 }}>{t('Export options')}</h2>
                 <ul>
-                  {selectedSegments.length !== nonFilteredSegments.length && <li>{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: selectedSegments.length, nonFilteredSegments: nonFilteredSegments.length })}</li>}
+                  {selectedSegments.length !== nonFilteredSegments.length && <li><FaRegCheckCircle size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: selectedSegments.length, nonFilteredSegments: nonFilteredSegments.length })}</li>}
                   {selectedSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: selectedSegments.length })} <MergeExportButton selectedSegments={selectedSegments} /></li>}
                   <li>
                     {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
