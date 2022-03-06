@@ -509,6 +509,8 @@ const App = memo(() => {
         if (keyframeAlignedStart != null) suggestedStart = keyframeAlignedStart;
       } */
 
+      if (suggestedStart >= duration) return;
+
       const cutSegmentsNew = [
         ...cutSegments,
         createIndexedSegment({ segment: { start: suggestedStart }, incrementCount: true }),
