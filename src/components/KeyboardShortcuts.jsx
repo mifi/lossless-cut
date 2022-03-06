@@ -272,12 +272,12 @@ const KeyboardShortcuts = memo(({
           name: t('Split segment at cursor'),
           category: segmentsAndCutpointsCategory,
         },
-        selectPrevSegment: {
-          name: t('Select previous segment'),
+        jumpPrevSegment: {
+          name: t('Jump to previous segment'),
           category: segmentsAndCutpointsCategory,
         },
-        selectNextSegment: {
-          name: t('Select next segment'),
+        jumpNextSegment: {
+          name: t('Jump to next segment'),
           category: segmentsAndCutpointsCategory,
         },
         reorderSegsByStartTime: {
