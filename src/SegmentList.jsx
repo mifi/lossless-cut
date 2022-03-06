@@ -93,7 +93,10 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 
   const CheckIcon = enabled ? FaRegCheckCircle : FaRegCircle;
 
-  const onToggleSegmentSelectedClick = useCallback(() => onToggleSegmentSelected(seg), [onToggleSegmentSelected, seg]);
+  const onToggleSegmentSelectedClick = useCallback((e) => {
+    e.stopPropagation();
+    onToggleSegmentSelected(seg);
+  }, [onToggleSegmentSelected, seg]);
 
   return (
     <motion.div
