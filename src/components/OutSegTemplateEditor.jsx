@@ -100,7 +100,7 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
             {/* eslint-disable-next-line no-template-curly-in-string */}
             <div style={{ fontSize: '.8em', color: 'rgba(255,255,255,0.7)' }}>
               {`${i18n.t('Variables')}`}{': '}
-              {['FILENAME', 'CUT_FROM', 'CUT_TO', 'SEG_NUM', 'SEG_LABEL', 'SEG_SUFFIX', 'EXT', 'SEG_TAGS.XX'].map((variable) => <span role="button" style={{ cursor: 'pointer', marginRight: '.2em' }} onClick={() => setText((oldText) => `${oldText}\${${variable}}`)}>{variable}</span>)}
+              {['FILENAME', 'CUT_FROM', 'CUT_TO', 'SEG_NUM', 'SEG_LABEL', 'SEG_SUFFIX', 'EXT', 'SEG_TAGS.XX'].map((variable) => <span key={variable} role="button" style={{ cursor: 'pointer', marginRight: '.2em' }} onClick={() => setText((oldText) => `${oldText}\${${variable}}`)}>{variable}</span>)}
             </div>
           </div>
         </>
