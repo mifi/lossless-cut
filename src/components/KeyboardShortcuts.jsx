@@ -309,7 +309,7 @@ const KeyboardShortcuts = memo(({
           category: segmentsAndCutpointsCategory,
         },
         enableOnlyCurrentSegment: {
-          name: t('Select ONLY current segment'),
+          name: t('Select only this segment'),
           category: segmentsAndCutpointsCategory,
         },
         disableAllSegments: {

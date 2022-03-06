@@ -393,6 +393,16 @@ export async function labelSegmentDialog({ currentName, maxLength }) {
   return value;
 }
 
+export async function selectSegmentsByLabelDialog(currentName) {
+  const { value } = await Swal.fire({
+    showCancelButton: true,
+    title: i18n.t('Select segments by label'),
+    inputValue: currentName,
+    input: 'text',
+  });
+  return value;
+}
+
 export function openAbout() {
   Swal.fire({
     icon: 'info',

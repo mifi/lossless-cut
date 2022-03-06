@@ -69,7 +69,7 @@ import {
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
-import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments } from './dialogs';
+import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments, selectSegmentsByLabelDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap } from './segments';
@@ -420,6 +420,19 @@ const App = memo(() => {
     const value = await labelSegmentDialog({ currentName: name, maxLength: maxLabelLength });
     if (value != null) updateSegAtIndex(index, { name: value });
   }, [cutSegments, updateSegAtIndex, maxLabelLength]);
+
+  const onSelectSegmentsByLabel = useCallback(async () => {
+    const { name } = currentCutSeg;
+    const value = await selectSegmentsByLabelDialog(name);
+    if (value == null) return;
+    const segmentsToEnable = cutSegments.filter((seg) => (seg.name || '') === value);
+    if (segmentsToEnable.length === 0 || segmentsToEnable.length === cutSegments.length) return; // no point
+    setDeselectedSegmentIds((existing) => {
+      const ret = { ...existing };
+      segmentsToEnable.forEach(({ segId }) => { ret[segId] = false; });
+      return ret;
+    });
+  }, [currentCutSeg, cutSegments]);
 
   const onViewSegmentTagsPress = useCallback(async (index) => {
     const segment = cutSegments[index];
@@ -2314,6 +2327,7 @@ const App = memo(() => {
                   jumpSegStart={jumpSegStart}
                   jumpSegEnd={jumpSegEnd}
                   onViewSegmentTagsPress={onViewSegmentTagsPress}
+                  onSelectSegmentsByLabel={onSelectSegmentsByLabel}
                 />
               )}
             </AnimatePresence>
