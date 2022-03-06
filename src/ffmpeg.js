@@ -541,18 +541,17 @@ export async function extractWaveform({ filePath, outPath }) {
   console.timeEnd('ffmpeg');
 }
 
+const imageCaptureQuality = 3;
+
 // See also capture-frame.js
-export async function captureFrame({ timestamp, videoPath, outPath }) {
-  const args = [
+export async function captureFrame({ timestamp, videoPath, outPath, numFrames }) {
+  await runFfmpeg([
     '-ss', timestamp,
     '-i', videoPath,
-    '-vframes', '1',
-    '-q:v', '3',
+    '-vframes', numFrames,
+    '-q:v', imageCaptureQuality,
     '-y', outPath,
-  ];
-
-  const ffmpegPath = getFfmpegPath();
-  await execa(ffmpegPath, args, { encoding: null });
+  ]);
 }
 
 

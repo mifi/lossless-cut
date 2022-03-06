@@ -20,13 +20,19 @@ function getFrameFromVideo(video, format) {
   return strongDataUri.decode(dataUri);
 }
 
-export async function captureFrameFfmpeg({ customOutDir, filePath, currentTime, captureFormat, enableTransferTimestamps }) {
-  const time = formatDuration({ seconds: currentTime, fileNameFriendly: true });
+export async function captureFramesFfmpeg({ customOutDir, filePath, fromTime, captureFormat, enableTransferTimestamps, numFrames }) {
+  const time = formatDuration({ seconds: fromTime, fileNameFriendly: true });
+  let nameSuffix;
+  if (numFrames > 1) {
+    const numDigits = Math.floor(Math.log10(numFrames)) + 1;
+    nameSuffix = `${time}-%0${numDigits}d.${captureFormat}`;
+  } else {
+    nameSuffix = `${time}.${captureFormat}`;
+  }
+  const outPath = getOutPath({ customOutDir, filePath, nameSuffix });
+  await ffmpegCaptureFrame({ timestamp: fromTime, videoPath: filePath, outPath, numFrames });
 
-  const outPath = getOutPath({ customOutDir, filePath, nameSuffix: `${time}.${captureFormat}` });
-  await ffmpegCaptureFrame({ timestamp: currentTime, videoPath: filePath, outPath });
-
-  if (enableTransferTimestamps) await transferTimestamps(filePath, outPath, currentTime);
+  if (enableTransferTimestamps && numFrames === 1) await transferTimestamps(filePath, outPath, fromTime);
   return outPath;
 }
 

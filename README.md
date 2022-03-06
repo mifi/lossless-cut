@@ -35,7 +35,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Batch view for fast multi-file workflow
 - Keyboard shortcut workflow
 - Lossless remux video/audio into any compatible output format
-- Take full-resolution snapshots from videos in JPEG/PNG format
+- Take full-resolution snapshots from videos in JPEG/PNG format, or export ranges of video frames to images
 - Manual input of cutpoint times
 - Apply a per-file timecode offset (and auto load timecode from file)
 - Edit file metadata, per-track metadata and per-track disposition
@@ -73,6 +73,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
   - Great for rotating phone videos that come out the wrong way without actually re-encoding the video.
 - Loop a video / audio clip X times quickly without re-encoding
   - See [#284](https://github.com/mifi/lossless-cut/issues/284)
+- Convert a video or parts of it into X image files (not lossless)
 
 ### Export cut times as YouTube Chapters
 1. Export with Merge and "Create chapters from merged segments" enabled

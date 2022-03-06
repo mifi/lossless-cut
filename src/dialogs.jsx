@@ -291,6 +291,15 @@ export async function confirmExtractAllStreamsDialog() {
   return !!value;
 }
 
+export async function confirmExtractFramesAsImages({ numFrames }) {
+  const { value } = await Swal.fire({
+    text: i18n.t('Please confirm that you want to extract all {{numFrames}} frames as separate images', { numFrames }),
+    showCancelButton: true,
+    confirmButtonText: i18n.t('Extract all frames'),
+  });
+  return !!value;
+}
+
 const CleanupChoices = ({ cleanupChoicesInitial, onChange: onChangeProp }) => {
   const [choices, setChoices] = useState(cleanupChoicesInitial);
 
