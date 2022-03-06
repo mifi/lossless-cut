@@ -204,7 +204,7 @@ module.exports = (app, mainWindow, newVersion) => {
             {
               label: i18n.t('Invert all segments on timeline'),
               click() {
-                mainWindow.webContents.send('invertAllCutSegments');
+                mainWindow.webContents.send('invertAllSegments');
               },
             },
             {

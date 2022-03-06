@@ -284,7 +284,7 @@ const KeyboardShortcuts = memo(({
           name: t('Reorder segments by start time'),
           category: segmentsAndCutpointsCategory,
         },
-        invertAllCutSegments: {
+        invertAllSegments: {
           name: t('Invert all segments on timeline'),
           category: segmentsAndCutpointsCategory,
         },
