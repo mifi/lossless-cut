@@ -208,6 +208,12 @@ module.exports = (app, mainWindow, newVersion) => {
               },
             },
             {
+              label: i18n.t('Fill gaps between segments'),
+              click() {
+                mainWindow.webContents.send('fillSegmentsGaps');
+              },
+            },
+            {
               label: i18n.t('Shuffle segments order'),
               click() {
                 mainWindow.webContents.send('shuffleSegments');

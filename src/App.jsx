@@ -375,14 +375,23 @@ const App = memo(() => {
   }, [apparentCutSegments, duration, haveInvalidSegs]);
 
   const invertAllCutSegments = useCallback(() => {
-    // don't reset segIndex (which represent colors) when inverting
-    const newInverseCutSegments = inverseCutSegments.map((inverseSegment, segIndex) => createSegment({ ...inverseSegment, segIndex }));
-    if (newInverseCutSegments.length < 1) {
+    if (inverseCutSegments.length < 1) {
       errorToast(i18n.t('Make sure you have no overlapping segments.'));
       return;
     }
+    // don't reset segIndex (which represent colors) when inverting
+    const newInverseCutSegments = inverseCutSegments.map((inverseSegment, segIndex) => createSegment({ ...inverseSegment, segIndex }));
     setCutSegments(newInverseCutSegments);
   }, [inverseCutSegments, setCutSegments]);
+
+  const fillSegmentsGaps = useCallback(() => {
+    if (inverseCutSegments.length < 1) {
+      errorToast(i18n.t('Make sure you have no overlapping segments.'));
+      return;
+    }
+    const newInverseCutSegments = inverseCutSegments.map((inverseSegment) => createIndexedSegment({ segment: inverseSegment, incrementCount: true }));
+    setCutSegments((existing) => ([...existing, ...newInverseCutSegments]));
+  }, [createIndexedSegment, inverseCutSegments, setCutSegments]);
 
   const updateSegAtIndex = useCallback((index, newProps) => {
     if (index < 0) return;
@@ -1835,6 +1844,7 @@ const App = memo(() => {
       export: onExportPress,
       reorderSegsByStartTime,
       invertAllCutSegments,
+      fillSegmentsGaps,
       createFixedDurationSegments,
       createNumSegments,
       shuffleSegments,
@@ -1897,7 +1907,7 @@ const App = memo(() => {
     if (match) return bubble;
 
     return true; // bubble the event
-  }, [addCutSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, goToTimecode, increaseRotation, invertAllCutSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegmentPress, pause, play, removeCutSegment, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleHelp, toggleKeyboardShortcuts, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addCutSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllCutSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegmentPress, pause, play, removeCutSegment, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleHelp, toggleKeyboardShortcuts, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   useKeyboard({ keyBindings, onKeyPress });
 
@@ -2121,6 +2131,7 @@ const App = memo(() => {
       createNumSegments,
       createFixedDurationSegments,
       invertAllCutSegments,
+      fillSegmentsGaps,
       fixInvalidDuration: tryFixInvalidDuration,
       reorderSegsByStartTime,
       concatCurrentBatch,
@@ -2130,7 +2141,7 @@ const App = memo(() => {
     const entries = Object.entries(action);
     entries.forEach(([key, value]) => electron.ipcRenderer.on(key, value));
     return () => entries.forEach(([key, value]) => electron.ipcRenderer.removeListener(key, value));
-  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, customOutDir, cutSegments, extractAllStreams, fileFormat, filePath, getFrameCount, getTimeFromFrameNum, invertAllCutSegments, loadCutSegments, loadMedia, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleHelp, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
+  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, customOutDir, cutSegments, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, getTimeFromFrameNum, invertAllCutSegments, loadCutSegments, loadMedia, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleHelp, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
     try {

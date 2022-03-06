@@ -288,6 +288,10 @@ const KeyboardShortcuts = memo(({
           name: t('Invert all segments on timeline'),
           category: segmentsAndCutpointsCategory,
         },
+        fillSegmentsGaps: {
+          name: t('Fill gaps between segments'),
+          category: segmentsAndCutpointsCategory,
+        },
         createFixedDurationSegments: {
           name: t('Create fixed duration segments'),
           category: segmentsAndCutpointsCategory,
