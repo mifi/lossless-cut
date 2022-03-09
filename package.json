@@ -11,9 +11,9 @@
     "start:frontend": "cross-env BROWSER=none PORT=3001 DISABLE_ESLINT_PLUGIN=true react-scripts start",
     "start:electron": "wait-on http://localhost:3001 && electron .",
     "icon-gen": "mkdirp icon-build build-resources/appx && node script/icon-gen.mjs",
-    "download-ffmpeg-mac": "mkdirp ffmpeg/darwin && cd ffmpeg/darwin && wget https://github.com/mifi/ffmpeg-build-script/releases/download/4.4.1-2/ffmpeg -O ffmpeg && wget https://github.com/mifi/ffmpeg-build-script/releases/download/4.4.1-2/ffprobe -O ffprobe && chmod +x ffmpeg && chmod +x ffprobe",
-    "download-ffmpeg-linux": "mkdirp ffmpeg/linux && cd ffmpeg/linux && wget https://github.com/mifi/ffmpeg-builds/releases/download/4.4.1/ffmpeg-release-amd64-static.tar.xz -O ffmpeg.xz && tar xvf ffmpeg.xz ffmpeg-4.4.1-amd64-static/ffmpeg ffmpeg-4.4.1-amd64-static/ffprobe --strip-components=1",
-    "download-ffmpeg-windows": "mkdirp ffmpeg/win32 && cd ffmpeg/win32 && npx download-cli https://github.com/mifi/ffmpeg-builds/releases/download/4.4.1/ffmpeg-n4.4.1-2-gcc33e73618-win64-gpl-4.4.zip --out . --filename ffmpeg.zip && 7z x ffmpeg.zip && npx shx mv ffmpeg-n4.4.1-2-gcc33e73618-win64-gpl-4.4/bin/ffmpeg.exe ./ && npx shx mv ffmpeg-n4.4.1-2-gcc33e73618-win64-gpl-4.4/bin/ffprobe.exe ./",
+    "download-ffmpeg-mac": "mkdirp ffmpeg/darwin-x64 && cd ffmpeg/darwin-x64 && wget https://github.com/mifi/ffmpeg-build-script/releases/download/4.4.1-2/ffmpeg -O ffmpeg && wget https://github.com/mifi/ffmpeg-build-script/releases/download/4.4.1-2/ffprobe -O ffprobe && chmod +x ffmpeg && chmod +x ffprobe",
+    "download-ffmpeg-linux": "mkdirp ffmpeg/linux-x64 && cd ffmpeg/linux-x64 && wget https://github.com/mifi/ffmpeg-builds/releases/download/4.4.1/ffmpeg-release-amd64-static.tar.xz -O ffmpeg.xz && tar xvf ffmpeg.xz ffmpeg-4.4.1-amd64-static/ffmpeg ffmpeg-4.4.1-amd64-static/ffprobe --strip-components=1",
+    "download-ffmpeg-windows": "mkdirp ffmpeg/win32-x64 && cd ffmpeg/win32-x64 && npx download-cli https://github.com/mifi/ffmpeg-builds/releases/download/4.4.1/ffmpeg-n4.4.1-2-gcc33e73618-win64-gpl-4.4.zip --out . --filename ffmpeg.zip && 7z x ffmpeg.zip && npx shx mv ffmpeg-n4.4.1-2-gcc33e73618-win64-gpl-4.4/bin/ffmpeg.exe ./ && npx shx mv ffmpeg-n4.4.1-2-gcc33e73618-win64-gpl-4.4/bin/ffprobe.exe ./",
     "build": "yarn icon-gen && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -157,11 +157,11 @@
       ],
       "extraResources": [
         {
-          "from": "ffmpeg/darwin/ffmpeg",
+          "from": "ffmpeg/darwin-${arch}/ffmpeg",
           "to": "ffmpeg"
         },
         {
-          "from": "ffmpeg/darwin/ffprobe",
+          "from": "ffmpeg/darwin-${arch}/ffprobe",
           "to": "ffprobe"
         }
       ],
@@ -282,11 +282,11 @@
       ],
       "extraResources": [
         {
-          "from": "ffmpeg/win32/ffmpeg.exe",
+          "from": "ffmpeg/win32-${arch}/ffmpeg.exe",
           "to": "ffmpeg.exe"
         },
         {
-          "from": "ffmpeg/win32/ffprobe.exe",
+          "from": "ffmpeg/win32-${arch}/ffprobe.exe",
           "to": "ffprobe.exe"
         }
       ],
@@ -397,20 +397,33 @@
     "linux": {
       "executableName": "losslesscut",
       "extraResources": [
-        {
-          "from": "ffmpeg/linux/ffmpeg",
+          {
+          "from": "ffmpeg/linux-${arch}/ffmpeg",
           "to": "ffmpeg"
         },
         {
-          "from": "ffmpeg/linux/ffprobe",
+          "from": "ffmpeg/linux-${arch}/ffprobe",
           "to": "ffprobe"
         }
       ],
       "icon": "icon-build/app-512.png",
       "target": [
-        "tar.bz2",
-        "AppImage",
-        "snap"
+        {
+          "arch": "x64",
+          "target": "tar.bz2"
+        },
+        {
+          "arch": "x64",
+          "target": "AppImage"
+        },
+        {
+          "arch": "x64",
+          "target": "snap"
+        },
+        {
+          "arch": "arm64",
+          "target": "tar.bz2"
+        }
       ]
     },
     "snap": {

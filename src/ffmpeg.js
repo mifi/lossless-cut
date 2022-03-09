@@ -6,7 +6,7 @@ import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
 import { pcmAudioCodecs, getMapStreamsArgs } from './util/streams';
-import { getOutPath, isDurationValid, getExtensionForFormat, isWindows, isMac, platform } from './util';
+import { getOutPath, isDurationValid, getExtensionForFormat, isWindows, isMac, platform, arch } from './util';
 
 const execa = window.require('execa');
 const { join } = window.require('path');
@@ -31,7 +31,7 @@ function getFfPath(cmd) {
   const exeName = isWindows ? `${cmd}.exe` : cmd;
 
   if (customFfPath) return join(customFfPath, exeName);
-  if (isDev) return join('ffmpeg', platform, exeName);
+  if (isDev) return join('ffmpeg', `${platform}-${arch}`, exeName);
   return join(window.process.resourcesPath, exeName);
 }
 
