@@ -92,4 +92,4 @@ jobs:
       - name: Upload to Mac App Store
         if: startsWith(matrix.os, 'macos') && env.is_tag == 'true'
         run: |
-          node script/xcrun-wrapper.mjs dist/mas/LosslessCut-mac.pkg ${{ secrets.api_key_id }} ${{ secrets.api_key_issuer_id }} 1505323402 no.mifi.losslesscut-mac
+          node script/xcrun-wrapper.mjs dist/mas/LosslessCut-mac-x64.pkg ${{ secrets.api_key_id }} ${{ secrets.api_key_issuer_id }} 1505323402 no.mifi.losslesscut-mac
