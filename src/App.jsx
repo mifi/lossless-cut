@@ -703,43 +703,6 @@ const App = memo(() => {
     return { cancel: false, newCustomOutDir };
   }, [customOutDir, setCustomOutDir]);
 
-  const userConcatFiles = useCallback(async ({ paths, includeAllStreams, streams, fileFormat: outFormat, isCustomFormatSelected: isCustomFormatSelected2 }) => {
-    if (workingRef.current) return;
-    try {
-      setConcatDialogVisible(false);
-      setWorking(i18n.t('Merging'));
-
-      const firstPath = paths[0];
-      const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: firstPath });
-      if (cancel) return;
-
-      const ext = getOutFileExtension({ isCustomFormatSelected: isCustomFormatSelected2, outFormat, filePath: firstPath });
-      const outPath = getOutPath({ customOutDir: newCustomOutDir, filePath: firstPath, nameSuffix: `merged${ext}` });
-      const outDir = getOutDir(customOutDir, firstPath);
-
-      let chaptersFromSegments;
-      if (segmentsToChapters) {
-        const chapterNames = paths.map((path) => parsePath(path).name);
-        chaptersFromSegments = await createChaptersFromSegments({ segmentPaths: paths, chapterNames });
-      }
-
-      // console.log('merge', paths);
-      const metadataFromPath = paths[0];
-      await concatFiles({ paths, outPath, outDir, outFormat, metadataFromPath, includeAllStreams, streams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments, appendFfmpegCommandLog });
-      openDirToast({ icon: 'success', dirPath: outDir, text: i18n.t('Files merged!') });
-    } catch (err) {
-      if (isOutOfSpaceError(err)) {
-        showDiskFull();
-        return;
-      }
-      errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same codecs'));
-      console.error('Failed to merge files', err);
-    } finally {
-      setWorking();
-      setCutProgress();
-    }
-  }, [setWorking, ensureAccessibleDirectories, customOutDir, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge]);
-
   const concatCurrentBatch = useCallback(() => {
     if (batchFiles.length < 2) {
       errorToast(i18n.t('Please open at least 2 files to merge, then try again'));
@@ -1108,6 +1071,44 @@ const App = memo(() => {
       return newBatch;
     });
   }, []);
+
+  const userConcatFiles = useCallback(async ({ paths, includeAllStreams, streams, fileFormat: outFormat, isCustomFormatSelected: isCustomFormatSelected2, clearBatchFilesAfterConcat }) => {
+    if (workingRef.current) return;
+    try {
+      setConcatDialogVisible(false);
+      setWorking(i18n.t('Merging'));
+
+      const firstPath = paths[0];
+      const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: firstPath });
+      if (cancel) return;
+
+      const ext = getOutFileExtension({ isCustomFormatSelected: isCustomFormatSelected2, outFormat, filePath: firstPath });
+      const outPath = getOutPath({ customOutDir: newCustomOutDir, filePath: firstPath, nameSuffix: `merged${ext}` });
+      const outDir = getOutDir(customOutDir, firstPath);
+
+      let chaptersFromSegments;
+      if (segmentsToChapters) {
+        const chapterNames = paths.map((path) => parsePath(path).name);
+        chaptersFromSegments = await createChaptersFromSegments({ segmentPaths: paths, chapterNames });
+      }
+
+      // console.log('merge', paths);
+      const metadataFromPath = paths[0];
+      await concatFiles({ paths, outPath, outDir, outFormat, metadataFromPath, includeAllStreams, streams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments, appendFfmpegCommandLog });
+      if (clearBatchFilesAfterConcat) closeBatch();
+      openDirToast({ icon: 'success', dirPath: outDir, text: i18n.t('Files merged!') });
+    } catch (err) {
+      if (isOutOfSpaceError(err)) {
+        showDiskFull();
+        return;
+      }
+      errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same codecs'));
+      console.error('Failed to merge files', err);
+    } finally {
+      setWorking();
+      setCutProgress();
+    }
+  }, [setWorking, ensureAccessibleDirectories, customOutDir, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch]);
 
   const cleanupFilesDialog = useCallback(async () => {
     if (!isFileOpened) return;
