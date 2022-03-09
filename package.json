@@ -139,7 +139,7 @@
       "smartUnpack": false
     },
     "appId": "no.mifi.losslesscut",
-    "artifactName": "${productName}-${os}.${ext}",
+    "artifactName": "${productName}-${os}-${arch}.${ext}",
     "afterSign": "electron-builder-notarize",
     "mac": {
       "hardenedRuntime": true,
