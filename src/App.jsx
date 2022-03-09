@@ -2293,7 +2293,7 @@ const App = memo(() => {
             </AnimatePresence>
 
             {/* Middle part: */}
-            <div style={{ position: 'relative', flexGrow: 1 }}>
+            <div style={{ position: 'relative', flexGrow: 1, overflow: 'hidden' }}>
               {!isFileOpened && <NoFileLoaded mifiLink={mifiLink} toggleHelp={toggleHelp} currentCutSeg={currentCutSeg} />}
 
               <div className="no-user-select" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, visibility: !isFileOpened ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
