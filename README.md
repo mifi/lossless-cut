@@ -100,7 +100,7 @@ If you want to support my continued work on LosslessCut, and you want the advant
 If you prefer to download the executables manually, this will of course always be free:
 
 - Mac OS X: [DMG](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac-x64.dmg)
-- Window: [EXE](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.exe) / [ZIP](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.zip)
+- Window: [EXE](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.exe) (portable/self-extracting) / [ZIP](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.zip) (portable)
 - Linux: [x64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x64.tar.bz2) / [x64 AppImage](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x86_64.AppImage) / [arm64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-arm64.tar.bz2)
 - [More releases](https://github.com/mifi/lossless-cut/releases)
 
@@ -161,11 +161,12 @@ Unsupported files can still be converted to a supported format/codec from the `F
 
 ## Troubleshooting / FAQ
 
-- If you get an error when cutting or opening any kind of file under Windows, try to disable your anti-virus. See [#18](https://github.com/mifi/lossless-cut/issues/18)
-- If you get an error on Linux like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See [#258](https://github.com/mifi/lossless-cut/issues/258)
+- Windows: What's the difference between `.exe` and `.zip` downloads? `.exe` will self-extract on startup to a temp folder and is therefore slower to start up. `.zip` must be extracted manually but is very fast to start up.
+- Windows: If you get an error when cutting or opening any kind of file, try to disable your anti-virus. See [#18](https://github.com/mifi/lossless-cut/issues/18)
+- Windows: How to uninstall LosslessCut? There is no installer. Just delete the EXE file or containing folder. User files are stored in your [appData](https://www.electronjs.org/docs/api/app#appgetpathname) folder.
+- Linux: If you get an error like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See [#258](https://github.com/mifi/lossless-cut/issues/258)
 - If any other problem, check [Known issues](#known-issues--limitations), or please search for existing issues before you file an issue here on GitHub.
 - If the app crashes immediately upon startup, check the permissions of your User and Temp folders, see [61](https://github.com/mifi/lossless-cut/issues/61).
-- How to uninstall LosslessCut on Windows? There is no installer. Just delete the EXE file or containing folder. User files will be stored in your [appData](https://www.electronjs.org/docs/api/app#appgetpathname) folder.
 - Completely white window when starting up? Try to run with `--disable-gpu` - See [781](https://github.com/mifi/lossless-cut/issues/781).
 
 If you have an issue you can check the developer tools for any errors or clues. Menu: `Tools` -> `Toggle Developer Tools`
