@@ -51,7 +51,7 @@
     "csv-stringify": "^5.6.2",
     "electron": "8",
     "electron-builder": "^22.13.1",
-    "electron-builder-notarize": "1.1.2",
+    "electron-builder-notarize": "^1.4.0",
     "electron-devtools-installer": "^3.1.1",
     "eslint": "^7.32.0 || ^8.2.0",
     "eslint-config-airbnb": "^19.0.4",
