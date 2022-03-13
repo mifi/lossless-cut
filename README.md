@@ -108,7 +108,7 @@ If you find LosslessCut useful, I'm very thankful for [donations](https://github
 
 ### Difference between App Stores and Github download
 
-They have exactly the same in-app features, except a few platform limitations. Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps need to prompt for output directory. LosslessCut version in the App Stores lags a few versions behind the GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. GitHub version can contain new, untested features and may contain some bugs. I consider the newest GitHub versions to be a public "beta" test.
+They have exactly the same in-app features, except for a few platform limitations. Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps need to prompt for output directory. LosslessCut version in the App Stores is a few versions behind the GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. GitHub version can contain new, untested features and may contain some bugs. I consider the newest GitHub versions to be a public "beta" test.
 
 ## Supported formats
 
@@ -116,7 +116,7 @@ Since LosslessCut is based on Chromium and uses the HTML5 video player, not all 
 The following formats/codecs should generally work: MP4, MOV, WebM, MKV, OGG, WAV, MP3, AAC, H264, Theora, VP8, VP9
 For more information about supported formats / codecs, see https://www.chromium.org/audio-video.
 
-Unsupported files can still be converted to a supported format/codec from the `File` menu. (Try the fastest variant first.) A low quality version of the file (without audio) will then be created and opened in the player. The cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that FFmpeg is able to decode.
+Unsupported files can still be converted to a supported format/codec from the `File` menu. (Try the "fastest" option first.) A low quality version of the file (with/without audio) will then be created and opened in the player. The actual cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that FFmpeg is able to decode.
 
 ## Video demos
 
