@@ -357,7 +357,7 @@ const App = memo(() => {
     end: getSegApparentEnd(cutSegment),
   })), [cutSegments, getSegApparentEnd]);
 
-  const haveInvalidSegs = useMemo(() => apparentCutSegments.filter(cutSegment => cutSegment.start >= cutSegment.end).length > 0, [apparentCutSegments]);
+  const haveInvalidSegs = useMemo(() => apparentCutSegments.some((cutSegment) => cutSegment.start >= cutSegment.end), [apparentCutSegments]);
 
   const currentSegIndexSafe = Math.min(currentSegIndex, cutSegments.length - 1);
   const currentCutSeg = useMemo(() => cutSegments[currentSegIndexSafe], [currentSegIndexSafe, cutSegments]);
