@@ -299,6 +299,7 @@ const BottomBar = memo(({
                   size={24}
                   role="button"
                   title={invertCutSegments ? t('Discard selected segments') : t('Keep selected segments')}
+                  style={{ color: invertCutSegments ? primaryTextColor : undefined }}
                   onClick={onYinYangClick}
                 />
               </motion.div>

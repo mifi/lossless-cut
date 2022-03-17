@@ -728,8 +728,10 @@ const App = memo(() => {
 
   const toggleSimpleMode = useCallback(() => setSimpleMode((v) => {
     if (!hideAllNotifications) toast.fire({ text: v ? i18n.t('Advanced view has been enabled. You will now also see non-essential buttons and functions') : i18n.t('Advanced view disabled. You will now see only the most essential buttons and functions') });
-    return !v;
-  }), [hideAllNotifications, setSimpleMode]);
+    const newValue = !v;
+    if (newValue) setInvertCutSegments(false);
+    return newValue;
+  }), [hideAllNotifications, setInvertCutSegments, setSimpleMode]);
 
   const effectiveExportMode = useMemo(() => {
     if (segmentsToChaptersOnly) return 'sesgments_to_chapters';
@@ -1371,15 +1373,10 @@ const App = memo(() => {
   }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, selectedSegments, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, detectedFps, enableSmartCut, willMerge, mainFileFormatData, mainStreams, exportExtraStreams, hideAllNotifications, segmentsToChapters, invertCutSegments, autoConcatCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, filePath, nonCopiedExtraStreams, handleCutFailed]);
 
   const onExportPress = useCallback(async () => {
-    if (!filePath || workingRef.current) return;
+    if (!filePath || workingRef.current || segmentsToExport.length < 1) return;
 
     if (haveInvalidSegs) {
       errorToast(i18n.t('Start time must be before end time'));
-      return;
-    }
-
-    if (segmentsToExport.length < 1) {
-      errorToast(i18n.t('No segments to export'));
       return;
     }
 

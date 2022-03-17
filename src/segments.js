@@ -46,7 +46,8 @@ export function hasAnySegmentOverlap(sortedSegments) {
 
   return sortedSegments.some((cutSegment, i) => {
     if (i === 0) return false;
-    return sortedSegments[i - 1].end > cutSegment.start;
+    const previousSeg = sortedSegments[i - 1];
+    return previousSeg.end > cutSegment.start;
   });
 }
 

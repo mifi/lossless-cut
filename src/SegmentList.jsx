@@ -1,5 +1,5 @@
 import React, { memo, useMemo, useRef, useCallback } from 'react';
-import { FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaRegCheckCircle, FaRegCircle } from 'react-icons/fa';
+import { FaYinYang, FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaRegCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
@@ -158,10 +158,10 @@ const SegmentList = memo(({
     updateSegOrders(newList.map((list) => list.id));
   }, [segments, updateSegOrders]);
 
-  let headerText = t('Segments to export:');
+  let header = t('Segments to export:');
   if (segments.length === 0) {
-    if (invertCutSegments) headerText = t('Make sure you have no overlapping segments.');
-    else headerText = t('No segments to export.');
+    if (invertCutSegments) header = <Trans>You have enabled the &quot;invert segments&quot; mode <FaYinYang style={{ verticalAlign: 'middle' }} /> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <FaYinYang style={{ verticalAlign: 'middle' }} /> symbol below to disable this mode.</Trans>;
+    else header = t('No segments to export.');
   }
 
   async function onReorderSegs(index) {
@@ -264,7 +264,7 @@ const SegmentList = memo(({
             onClick={toggleSegmentsList}
           />
 
-          {headerText}
+          {header}
         </div>
 
         <ReactSortable list={sortableList} setList={setSortableList} sort={!invertCutSegments}>
