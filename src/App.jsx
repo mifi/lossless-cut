@@ -1238,10 +1238,11 @@ const App = memo(() => {
       mainFileFormatData,
       rotation,
       shortestFlag,
+      effectiveExportMode,
     };
 
     openSendReportDialog(err, state);
-  }, [copyStreamIdsByFile, cutSegments, setExternalFilesMeta, fileFormat, mainFileFormatData, filePath, mainStreams, rotation, shortestFlag]);
+  }, [filePath, fileFormat, mainStreams, copyStreamIdsByFile, cutSegments, mainFileFormatData, rotation, shortestFlag, effectiveExportMode]);
 
   const handleCutFailed = useCallback(async (err) => {
     const sendErrorReport = await showCutFailedDialog({ detectedFileFormat });
