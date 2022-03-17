@@ -59,7 +59,7 @@ import {
 } from './ffmpeg';
 import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, defaultProcessedCodecTypes, isAudioDefinitelyNotSupported, doesPlayerSupportFile } from './util/streams';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
-import { formatYouTube, getTimeFromFrameNum as getTimeFromFrameNumRaw, getFrameCountRaw } from './edlFormats';
+import { formatYouTube, getFrameCountRaw } from './edlFormats';
 import {
   getOutPath, toast, errorToast, handleError, setFileNameTitle, getOutDir, getFileDir,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer,
