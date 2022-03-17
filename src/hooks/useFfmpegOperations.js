@@ -391,6 +391,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       if (!needsSmartCut) return smartCutMainPartOutPath;
 
       try {
+        if (!detectedFps) throw new Error('Smart cut is not possible when FPS is unknown');
         const frameDuration = 1 / detectedFps;
         const encodeCutTo = Math.max(desiredCutFrom + frameDuration, smartCutFrom - frameDuration); // Subtract one frame so we don't end up with duplicates when concating, and make sure we don't create a 0 length segment
 

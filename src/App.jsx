@@ -308,12 +308,13 @@ const App = memo(() => {
   }, [seekRel, zoomedDuration]);
 
   const shortStep = useCallback((direction) => {
-    if (!detectedFps) return;
+    // If we don't know fps, just assume 30 (for example if audio file)
+    const fps = detectedFps || 30;
 
     // try to align with frame
-    const currentTimeNearestFrameNumber = getFrameCountRaw(detectedFps, videoRef.current.currentTime);
+    const currentTimeNearestFrameNumber = getFrameCountRaw(fps, videoRef.current.currentTime);
     const nextFrame = currentTimeNearestFrameNumber + direction;
-    seekAbs(nextFrame / detectedFps);
+    seekAbs(nextFrame / fps);
   }, [seekAbs, detectedFps]);
 
   // 360 means we don't modify rotation
@@ -474,8 +475,6 @@ const App = memo(() => {
   }, [cutSegments, setCutSegments]);
 
   const getFrameCount = useCallback((sec) => getFrameCountRaw(detectedFps, sec), [detectedFps]);
-
-  const getTimeFromFrameNum = useCallback((frameNum) => getTimeFromFrameNumRaw(detectedFps, frameNum), [detectedFps]);
 
   const formatTimecode = useCallback(({ seconds, shorten }) => {
     if (timecodeFormat === 'frameCount') {
@@ -1566,14 +1565,13 @@ const App = memo(() => {
       const haveVideoStream = !!videoStream;
       const haveAudioStream = !!audioStream;
 
-      const detectedFpsNew = haveVideoStream ? getStreamFps(videoStream) : undefined;
-
       const copyStreamIdsForPathNew = fromPairs(fileMeta.streams.map((stream) => [
         stream.index, shouldCopyStreamByDefault(stream),
       ]));
 
       if (timecode) setStartTimeOffset(timecode);
-      if (detectedFpsNew != null) setDetectedFps(detectedFpsNew);
+
+      setDetectedFps(haveVideoStream ? getStreamFps(videoStream) : undefined);
 
       if (isAudioDefinitelyNotSupported(fileMeta.streams)) {
         toast.fire({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
@@ -2150,7 +2148,7 @@ const App = memo(() => {
       if (!checkFileOpened()) return;
 
       try {
-        const edl = await askForEdlImport({ type, getTimeFromFrameNum });
+        const edl = await askForEdlImport({ type, fps: detectedFps });
         if (edl.length > 0) loadCutSegments(edl, true);
       } catch (err) {
         handleError(err);
@@ -2187,7 +2185,7 @@ const App = memo(() => {
     const entries = Object.entries(action);
     entries.forEach(([key, value]) => electron.ipcRenderer.on(key, value));
     return () => entries.forEach(([key, value]) => electron.ipcRenderer.removeListener(key, value));
-  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, customOutDir, cutSegments, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, getTimeFromFrameNum, invertAllSegments, loadCutSegments, loadMedia, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleHelp, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
+  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, customOutDir, cutSegments, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, invertAllSegments, loadCutSegments, loadMedia, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleHelp, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
     try {
