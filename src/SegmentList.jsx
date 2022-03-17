@@ -11,7 +11,7 @@ import scrollIntoView from 'scroll-into-view-if-needed';
 
 import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
-import { saveColor, controlsBackground } from './colors';
+import { saveColor, controlsBackground, primaryTextColor } from './colors';
 import { getSegColor } from './util/colors';
 
 const buttonBaseStyle = {
@@ -160,7 +160,7 @@ const SegmentList = memo(({
 
   let header = t('Segments to export:');
   if (segments.length === 0) {
-    if (invertCutSegments) header = <Trans>You have enabled the &quot;invert segments&quot; mode <FaYinYang style={{ verticalAlign: 'middle' }} /> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <FaYinYang style={{ verticalAlign: 'middle' }} /> symbol below to disable this mode.</Trans>;
+    if (invertCutSegments) header = <Trans>You have enabled the &quot;invert segments&quot; mode <FaYinYang style={{ verticalAlign: 'middle' }} /> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <FaYinYang style={{ verticalAlign: 'middle', color: primaryTextColor }} /> symbol below to disable this mode.</Trans>;
     else header = t('No segments to export.');
   }
 

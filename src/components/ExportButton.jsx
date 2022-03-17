@@ -7,34 +7,34 @@ import { primaryColor } from '../colors';
 import useUserSettings from '../hooks/useUserSettings';
 
 
-const ExportButton = memo(({ selectedSegments, areWeCutting, onClick, size = 1 }) => {
+const ExportButton = memo(({ segmentsToExport, areWeCutting, onClick, size = 1 }) => {
   const CutIcon = areWeCutting ? FiScissors : FaFileExport;
 
   const { t } = useTranslation();
 
   const { autoMerge } = useUserSettings();
 
-  let exportButtonTitle = t('Export');
-  if (selectedSegments.length === 1) {
-    exportButtonTitle = t('Export selection');
-  } else if (selectedSegments.length > 1) {
-    exportButtonTitle = t('Export {{ num }} segments', { num: selectedSegments.length });
+  let title = t('Export');
+  if (segmentsToExport.length === 1) {
+    title = t('Export selection');
+  } else if (segmentsToExport.length > 1) {
+    title = t('Export {{ num }} segments', { num: segmentsToExport.length });
   }
 
-  const exportButtonText = autoMerge && selectedSegments && selectedSegments.length > 1 ? t('Export+merge') : t('Export');
+  const text = autoMerge && segmentsToExport && segmentsToExport.length > 1 ? t('Export+merge') : t('Export');
 
   return (
     <div
-      style={{ cursor: 'pointer', background: primaryColor, borderRadius: size * 5, paddingTop: size * 1, paddingBottom: size * 2.5, paddingLeft: size * 7, paddingRight: size * 7, fontSize: size * 13, whiteSpace: 'nowrap' }}
+      style={{ cursor: 'pointer', background: primaryColor, borderRadius: size * 5, paddingTop: size * 1, paddingBottom: size * 2.5, paddingLeft: size * 7, paddingRight: size * 7, fontSize: size * 13, whiteSpace: 'nowrap', opacity: segmentsToExport.length === 0 ? 0.5 : undefined }}
       onClick={onClick}
-      title={exportButtonTitle}
+      title={title}
       role="button"
     >
       <CutIcon
         style={{ verticalAlign: 'middle', marginRight: size * 4 }}
         size={size * 15}
       />
-      {exportButtonText}
+      {text}
     </div>
   );
 });

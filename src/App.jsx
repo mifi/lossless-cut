@@ -2430,7 +2430,7 @@ const App = memo(() => {
               cleanupFilesDialog={cleanupFilesDialog}
               captureSnapshot={captureSnapshot}
               onExportPress={onExportPress}
-              selectedSegments={selectedSegments}
+              segmentsToExport={segmentsToExport}
               seekAbs={seekAbs}
               currentSegIndexSafe={currentSegIndexSafe}
               cutSegments={cutSegments}
@@ -2496,7 +2496,7 @@ const App = memo(() => {
             />
           </SideSheet>
 
-          <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegments={nonFilteredSegments} selectedSegments={selectedSegments} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} />
+          <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegments={nonFilteredSegments} selectedSegments={selectedSegments} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} />
 
           <HelpSheet
             visible={helpVisible}

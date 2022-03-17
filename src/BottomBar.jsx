@@ -31,7 +31,7 @@ const leftRightWidth = 100;
 const BottomBar = memo(({
   zoom, setZoom, timelineToggleComfortZoom,
   isRotationSet, rotation, areWeCutting, increaseRotation, cleanupFilesDialog,
-  captureSnapshot, onExportPress, selectedSegments, hasVideo,
+  captureSnapshot, onExportPress, segmentsToExport, hasVideo,
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,
   setCurrentSegIndex, cutStartTimeManual, setCutStartTimeManual, cutEndTimeManual, setCutEndTimeManual,
   jumpTimelineStart, jumpTimelineEnd, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
@@ -360,7 +360,7 @@ const BottomBar = memo(({
 
         {!simpleMode && <ToggleExportConfirm style={{ marginRight: 5 }} />}
 
-        <ExportButton size={1.3} selectedSegments={selectedSegments} areWeCutting={areWeCutting} onClick={onExportPress} />
+        <ExportButton size={1.3} segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={onExportPress} />
       </div>
     </>
   );

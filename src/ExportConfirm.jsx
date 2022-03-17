@@ -41,7 +41,7 @@ const warningStyle = { color: '#faa', fontSize: '80%' };
 const HelpIcon = ({ onClick }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', verticalAlign: 'middle', marginLeft: 5 }} />;
 
 const ExportConfirm = memo(({
-  areWeCutting, selectedSegments, willMerge, visible, onClosePress, onExportConfirm,
+  areWeCutting, selectedSegments, segmentsToExport, willMerge, visible, onClosePress, onExportConfirm,
   outFormat, renderOutFmt, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, outSegTemplate,
   setOutSegTemplate, generateOutSegFileNames, filePath, currentSegIndexSafe, getOutSegError, nonFilteredSegments,
 }) => {
@@ -239,7 +239,7 @@ const ExportConfirm = memo(({
               exit={{ scale: 0.7, opacity: 0 }}
               transition={{ duration: 0.4, easings: ['easeOut'] }}
             >
-              <ExportButton selectedSegments={selectedSegments} areWeCutting={areWeCutting} onClick={() => onExportConfirm()} size={1.7} />
+              <ExportButton segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={() => onExportConfirm()} size={1.7} />
             </motion.div>
           </div>
         </>
