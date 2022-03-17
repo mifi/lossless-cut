@@ -29,8 +29,8 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
   const contextMenuTemplate = useMemo(() => {
     if (invertCutSegments) return [];
     return [
-      { label: t('Jump to cut start'), click: jumpSegStart },
-      { label: t('Jump to cut end'), click: jumpSegEnd },
+      { label: t('Jump to start time'), click: jumpSegStart },
+      { label: t('Jump to end time'), click: jumpSegEnd },
 
       { type: 'separator' },
 

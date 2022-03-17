@@ -223,12 +223,12 @@ const KeyboardShortcuts = memo(({
           category: seekingCategory,
         },
         jumpCutStart: {
-          name: t('Jump to cut start'),
+          name: t('Jump to current segment\'s start time'),
           category: seekingCategory,
           before: <SegmentCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} style={{ verticalAlign: 'middle', marginRight: 5 }} />,
         },
         jumpCutEnd: {
-          name: t('Jump to cut end'),
+          name: t('Jump to current segment\'s end time'),
           category: seekingCategory,
           before: <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} style={{ verticalAlign: 'middle', marginRight: 5 }} />,
         },
@@ -255,12 +255,12 @@ const KeyboardShortcuts = memo(({
           category: segmentsAndCutpointsCategory,
         },
         setCutStart: {
-          name: t('Mark in / cut start point for current segment'),
+          name: t('Start current segment at current time'),
           category: segmentsAndCutpointsCategory,
           before: <SetCutpointButton currentCutSeg={currentCutSeg} side="start" style={{ verticalAlign: 'middle', marginRight: 5 }} />,
         },
         setCutEnd: {
-          name: t('Mark out / cut end point for current segment'),
+          name: t('End current segment at current time'),
           category: segmentsAndCutpointsCategory,
           before: <SetCutpointButton currentCutSeg={currentCutSeg} side="end" style={{ verticalAlign: 'middle', marginRight: 5 }} />,
         },

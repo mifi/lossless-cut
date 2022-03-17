@@ -141,7 +141,7 @@ const BottomBar = memo(({
       <input
         style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? '#dc1d1d' : undefined }}
         type="text"
-        title={isStart ? t('Manually input cut start point') : t('Manually input cut end point')}
+        title={isStart ? t('Manually input current segment\'s start time') : t('Manually input current segment\'s end time')}
         onChange={e => handleCutTimeInput(e.target.value)}
         onPaste={handleCutTimePaste}
         value={isCutTimeManualSet()
@@ -204,11 +204,11 @@ const BottomBar = memo(({
 
             {renderJumpCutpointButton(-1)}
 
-            <SegmentCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} onClick={jumpCutStart} title={t('Jump to cut start')} style={{ marginRight: 5 }} />
+            <SegmentCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} onClick={jumpCutStart} title={t('Jump to current segment\'s start time')} style={{ marginRight: 5 }} />
           </>
         )}
 
-        <SetCutpointButton currentCutSeg={currentCutSeg} side="start" onClick={setCutStart} title={t('Set cut start to current position')} style={{ marginRight: 5 }} />
+        <SetCutpointButton currentCutSeg={currentCutSeg} side="start" onClick={setCutStart} title={t('Start current segment at current time')} style={{ marginRight: 5 }} />
 
         {!simpleMode && renderCutTimeInput('start')}
 
@@ -257,11 +257,11 @@ const BottomBar = memo(({
 
         {!simpleMode && renderCutTimeInput('end')}
 
-        <SetCutpointButton currentCutSeg={currentCutSeg} side="end" onClick={setCutEnd} title={t('Set cut end to current position')} style={{ marginLeft: 5 }} />
+        <SetCutpointButton currentCutSeg={currentCutSeg} side="end" onClick={setCutEnd} title={t('End current segment at current time')} style={{ marginLeft: 5 }} />
 
         {!simpleMode && (
           <>
-            <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} onClick={jumpCutEnd} title={t('Jump to cut end')} style={{ marginLeft: 5 }} />
+            <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} onClick={jumpCutEnd} title={t('Jump to current segment\'s end time')} style={{ marginLeft: 5 }} />
 
             {renderJumpCutpointButton(1)}
 
