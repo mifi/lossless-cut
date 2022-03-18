@@ -573,5 +573,14 @@
     "Toggle current segment selected": "Alternar segmento atual selecionado",
     "{{selectedSegments}} of {{nonFilteredSegments}} segments selected": "{{selectedSegments}} de {{nonFilteredSegments}} segmentos selecionados",
     "Select all segments": "Selecionar todos os segmentos",
-    "Select only this segment": "Selecionar somente este segmento"
+    "Select only this segment": "Selecionar somente este segmento",
+    "End current segment at current time": "Finalizar segmento atual no tempo atual",
+    "Jump to current segment's end time": "Ir para tempo final do segmento atual",
+    "Jump to current segment's start time": "Ir para tempo inicial do segmento atual",
+    "Jump to end time": "Ir para tempo final",
+    "Jump to start time": "Ir para tempo inicial",
+    "Manually input current segment's end time": "Entrar manualmente tempo final do segmento atual",
+    "Manually input current segment's start time": "Entrar manualmente tempo inicial do segmento atual",
+    "Start current segment at current time": "Iniciar segmento atual no tempo atual",
+    "You have enabled the \"invert segments\" mode <1></1> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <3></3> symbol below to disable this mode.": "Você ativou o modo \"inverter segmentos\" <1></1> que cortará segmentos selecionados em vez de mantê-los. Mas não há espaço entre nenhum segmento, ou pelo menos dois segmentos estão sobrepostos. Isso não produziria qualquer saída. Abra espaço entre os segmentos ou clique no símbolo Yin Yang <3></3> abaixo para desativar este modo."
 }
