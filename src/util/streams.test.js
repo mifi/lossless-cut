@@ -39,7 +39,6 @@ test('getMapStreamsArgs', () => {
 });
 
 test('getMapStreamsArgs, subtitles to matroska', () => {
-  const path = '/path/file.mkv';
   const outFormat = 'matroska';
 
   const streams = [
