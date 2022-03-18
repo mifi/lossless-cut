@@ -52,6 +52,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - MKV/MP4 embedded chapters marks editor
 - View subtitles
 - Customizable keyboard hotkeys
+- Black scene detection
 
 ## Example lossless use cases
 

@@ -278,6 +278,13 @@ module.exports = (app, mainWindow, newVersion) => {
             mainWindow.webContents.send('askSetStartTimeOffset');
           },
         },
+        {
+          label: i18n.t('Detect black scenes'),
+          click() {
+            mainWindow.webContents.send('detectBlackScenes');
+          },
+        },
+        { type: 'separator' },
         { role: 'toggleDevTools', label: i18n.t('Toggle Developer Tools') },
       ],
     },

@@ -60,7 +60,7 @@ export function runFfmpeg(args) {
 }
 
 
-export function handleProgress(process, cutDuration, onProgress) {
+export function handleProgress(process, cutDuration, onProgress, customMatcher = () => {}) {
   if (!onProgress) return;
   onProgress(0);
 
@@ -72,7 +72,10 @@ export function handleProgress(process, cutDuration, onProgress) {
       let match = line.match(/frame=\s*[^\s]+\s+fps=\s*[^\s]+\s+q=\s*[^\s]+\s+(?:size|Lsize)=\s*[^\s]+\s+time=\s*([^\s]+)\s+/);
       // Audio only looks like this: "line size=  233422kB time=01:45:50.68 bitrate= 301.1kbits/s speed= 353x    "
       if (!match) match = line.match(/(?:size|Lsize)=\s*[^\s]+\s+time=\s*([^\s]+)\s+/);
-      if (!match) return;
+      if (!match) {
+        customMatcher(line);
+        return;
+      }
 
       const str = match[1];
       // console.log(str);
@@ -512,6 +515,26 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
     if (ps2) ps2.kill();
     throw err;
   }
+}
+
+export async function blackDetect({ filePath, duration, minInterval = 0.05, onProgress }) {
+  const args = ['-hide_banner', '-i', filePath, '-vf', `blackdetect=d=${minInterval}`, '-an', '-f', 'null', '-'];
+  const process = execa(getFfmpegPath(), args, { encoding: null, buffer: false });
+
+  const blackSegments = [];
+
+  function customMatcher(line) {
+    const match = line.match(/^[blackdetect @ 0x[0-9a-f]+] black_start:([\d\\.]+) black_end:([\d\\.]+) black_duration:[\d\\.]+/);
+    if (!match) return;
+    const blackStart = parseFloat(match[1]);
+    const blackEnd = parseFloat(match[2]);
+    if (Number.isNaN(blackStart) || Number.isNaN(blackEnd)) return;
+    blackSegments.push({ blackStart, blackEnd });
+  }
+  handleProgress(process, duration, onProgress, customMatcher);
+
+  await process;
+  return blackSegments;
 }
 
 export async function extractWaveform({ filePath, outPath }) {

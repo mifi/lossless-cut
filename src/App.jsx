@@ -54,7 +54,7 @@ import {
   getStreamFps, isCuttingStart, isCuttingEnd,
   readFileMeta, getSmarterOutFormat, renderThumbnails as ffmpegRenderThumbnails,
   extractStreams, runStartupCheck, setCustomFfPath as ffmpegSetCustomFfPath,
-  isIphoneHevc, tryMapChaptersToEdl,
+  isIphoneHevc, tryMapChaptersToEdl, blackDetect,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
 } from './ffmpeg';
 import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, defaultProcessedCodecTypes, isAudioDefinitelyNotSupported, doesPlayerSupportFile } from './util/streams';
@@ -1736,6 +1736,25 @@ const App = memo(() => {
     }
   }, [customOutDir, filePath, mainStreams, outputDir, setWorking]);
 
+  const detectBlackScenes = useCallback(async () => {
+    if (!filePath) return;
+    if (workingRef.current) return;
+    try {
+      setWorking(i18n.t('Detecting black scenes'));
+      setCutProgress(0);
+
+      const blackSegments = await blackDetect({ filePath, duration, onProgress: setCutProgress });
+      console.log('blackSegments', blackSegments);
+      loadCutSegments(blackSegments.map(({ blackStart, blackEnd }) => ({ start: blackStart, end: blackEnd })));
+    } catch (err) {
+      errorToast(i18n.t('Failed to detect black scenes'));
+      console.error('Failed to detect black scenes', err);
+    } finally {
+      setWorking();
+      setCutProgress();
+    }
+  }, [duration, filePath, setWorking, loadCutSegments]);
+
   const userHtml5ifyCurrentFile = useCallback(async () => {
     if (!filePath) return;
 
@@ -2177,13 +2196,14 @@ const App = memo(() => {
       fixInvalidDuration: tryFixInvalidDuration,
       reorderSegsByStartTime,
       concatCurrentBatch,
+      detectBlackScenes,
       shiftAllSegmentTimes,
     };
 
     const entries = Object.entries(action);
     entries.forEach(([key, value]) => electron.ipcRenderer.on(key, value));
     return () => entries.forEach(([key, value]) => electron.ipcRenderer.removeListener(key, value));
-  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, customOutDir, cutSegments, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, invertAllSegments, loadCutSegments, loadMedia, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleHelp, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
+  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, customOutDir, cutSegments, detectBlackScenes, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, invertAllSegments, loadCutSegments, loadMedia, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleHelp, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
     try {
