@@ -168,7 +168,16 @@ export function getExtensionForFormat(format) {
 }
 
 export function getOutFileExtension({ isCustomFormatSelected, outFormat, filePath }) {
-  return isCustomFormatSelected ? `.${getExtensionForFormat(outFormat)}` : extname(filePath);
+  if (!isCustomFormatSelected) {
+    const ext = extname(filePath);
+    // QuickTime is quirky about the file extension of mov files (has to be .mov)
+    // https://github.com/mifi/lossless-cut/issues/1075#issuecomment-1072084286
+    const hasMovIncorrectExtension = outFormat === 'mov' && ext.toLowerCase() !== '.mov';
+
+    // OK, just keep the current extension. Because most players will not care about the extension
+    if (!hasMovIncorrectExtension) return extname(filePath);
+  }
+  return `.${getExtensionForFormat(outFormat)}`;
 }
 
 // This is used as a fallback and so it has to always generate unique file names
