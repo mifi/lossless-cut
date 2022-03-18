@@ -593,5 +593,14 @@
     "This allows you to specify custom FFmpeg and FFprobe binaries to use. Make sure the \"ffmpeg\" and \"ffprobe\" executables exist in the same directory, and then select the directory.": "Toto umožní vybrat vlastní FFmpeg a FFprobe binární soubory. Ujistěte se, že \"ffmpeg\" a \"ffprobe\" spustitelné soubory v adresáři existují a pak adresář vyberte.",
     "This experimental feature will re-encode the part of the video from the cutpoint until the next keyframe in order to attempt to make a 100% accurate cut. Only works on some files. I've had success with some h264 files, and only a few h265 files. See more here: {{url}}": "Tato experimentální funkce překóduje část videa od střihu k nejbližšímu klíčovému snímku s cílem pokusit se o 100% přesný střih. Funguje jen na některých souborech. Např. některé h264 a několik h265 souborů. Více zde: {{url}}",
     "attachment": "příloha",
-    "audio": "zvuk"
+    "audio": "zvuk",
+    "End current segment at current time": "Ukončit tento segment v tomto čase",
+    "Jump to end time": "Skočit na konec",
+    "Jump to start time": "Skočit na začátek",
+    "Manually input current segment's end time": "Manuálně vložit čas konce tohoto segmentu",
+    "Manually input current segment's start time": "Manuálně vložit čas začátku tohoto segmentu",
+    "Start current segment at current time": "Začátek tohoto segmentu v aktuálním čase",
+    "Jump to current segment's start time": "Skočit na začátek tohoto segmentu",
+    "Jump to current segment's end time": "Skočit na konec tohoto segmentu",
+    "You have enabled the \"invert segments\" mode <1></1> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <3></3> symbol below to disable this mode.": "Zapnuli jste režim Odstranění segmentů <1></1> což znamená že segmenty nebudou součástí exportu. Mezi segmenty ale není místo a nebo se alespoň 2 segmenty překrývají. Nebylo by co exportovat. Buď vytvořte prostor mezi segmenty nebo klikněte na Yinyang <3></3> symbol níže pro přepnutí režimu nakládání se segmenty."
 }
