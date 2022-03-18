@@ -11,16 +11,19 @@ const streams1 = [
   { index: 7, codec_type: 'subtitle', codec_tag: '0x0000', codec_name: 'subrip' },
 ];
 
+const path = '/path/to/file';
+
+const allFilesMeta = { [path]: { streams: streams1 } };
+
 // Some files haven't got a valid video codec tag set, so change it to hvc1 (default by ffmpeg is hev1 which doesn't work in QuickTime)
 // https://github.com/mifi/lossless-cut/issues/1032
 // https://stackoverflow.com/questions/63468587/what-hevc-codec-tag-to-use-with-fmp4-hvc1-or-hev1
 // https://stackoverflow.com/questions/32152090/encode-h265-to-hvc1-codec
 test('getMapStreamsArgs', () => {
-  const path = '/path/file.mp4';
   const outFormat = 'mp4';
 
   expect(getMapStreamsArgs({
-    allFilesMeta: { [path]: { streams: streams1 } },
+    allFilesMeta,
     copyFileStreams: [{ path, streamIds: streams1.map((stream) => stream.index) }],
     outFormat,
   })).toEqual([
@@ -53,11 +56,10 @@ test('getMapStreamsArgs, subtitles to matroska', () => {
 });
 
 test('getMapStreamsArgs, disposition', () => {
-  const path = '/path/file.mp4';
   const outFormat = 'mp4';
 
   expect(getMapStreamsArgs({
-    allFilesMeta: { [path]: { streams: streams1 } },
+    allFilesMeta,
     copyFileStreams: [{ path, streamIds: [0] }],
     outFormat,
     manuallyCopyDisposition: true,
@@ -69,11 +71,10 @@ test('getMapStreamsArgs, disposition', () => {
 });
 
 test('getMapStreamsArgs, smart cut', () => {
-  const path = '/path/file.mp4';
   const outFormat = 'mp4';
 
   expect(getMapStreamsArgs({
-    allFilesMeta: { [path]: { streams: streams1 } },
+    allFilesMeta,
     copyFileStreams: [{ path, streamIds: [1, 2, 4, 5, 6, 7] }], // only 1 video stream and the rest
     outFormat,
     manuallyCopyDisposition: true,
