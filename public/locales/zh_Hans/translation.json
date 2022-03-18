@@ -609,5 +609,14 @@
     "Options": "选项",
     "Toggle current segment selected": "切换选定的当前段",
     "Deselect all segments": "取消选择所有片段",
-    "Remove selected segments": "删除选定的片段"
+    "Remove selected segments": "删除选定的片段",
+    "Jump to current segment's end time": "跳转到当前段的结束时间",
+    "Jump to current segment's start time": "跳转到当前段的开始时间",
+    "Jump to end time": "跳转到结束时间",
+    "Jump to start time": "跳转到开始时间",
+    "Manually input current segment's end time": "手动输入当前段的结束时间",
+    "Manually input current segment's start time": "手动输入当前段的开始时间",
+    "End current segment at current time": "在当前时间结束当前段",
+    "You have enabled the \"invert segments\" mode <1></1> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <3></3> symbol below to disable this mode.": "您已启用“反转片段”模式<1></1>，它将切除选定的段而不是保留它们。 但是任何段之间没有空间，或者至少有两个段重叠。 这不会产生任何输出。 在段之间腾出空间或单击下面的阴阳 <3></3> 符号禁用此模式。",
+    "Start current segment at current time": "在当前时间开始当前段"
 }
