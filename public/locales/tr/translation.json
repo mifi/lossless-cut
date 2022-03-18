@@ -475,7 +475,7 @@
     "Ask before closing": "Kapatmadan önce sor",
     "Auto load timecode": "Zaman kodu otomatik yükleme",
     "Ask about chapters": "Bölümler hakkında soru sor",
-    "Current setting": "Şimdiki ayar",
+    "Current setting": "Geçerli ayar",
     "Include more tracks from other file": "Diğer dosyadan daha fazla parça iz ekle",
     "Click to toggle track inclusion when exporting": "Dışa aktarırken, parça eklemeyi değiştirmek için tıklayın",
     "Track info": "Parça iz bilgisi",
@@ -559,7 +559,7 @@
     "This allows you to specify custom FFmpeg and FFprobe binaries to use. Make sure the \"ffmpeg\" and \"ffprobe\" executables exist in the same directory, and then select the directory.": "Bu, kullanılacak özel FFmpeg ve FFprobe ikili dosyalarını belirlemenize olanak tanır. 'ffmpeg' ve 'ffprobe' yürütülebilir dosyalarının aynı dizinde bulunduğundan emin olun ve ardından dizini seçin.",
     "This experimental feature will re-encode the part of the video from the cutpoint until the next keyframe in order to attempt to make a 100% accurate cut. Only works on some files. I've had success with some h264 files, and only a few h265 files. See more here: {{url}}": "Bu deneysel özellik, %100 doğru bir kesim yapmaya çalışmak için videonun kesim noktasından sonraki ana kareye kadar olan kısmını yeniden kodlayacaktır. Yalnızca bazı dosyalarda çalışır. Bazı h264 dosyalarında ve yalnızca birkaç h265 dosyasında başarılı oldum. Daha fazlasını burada görün: {{url}}",
     "{{selectedSegments}} of {{nonFilteredSegments}} segments selected": "{{selectedSegments}} / {{nonFilteredSegments}} bölüm seçildi",
-    "This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).": "Bu iletişim kutusu dosyaları seri halinde birleştirmek için kullanılabilir, örn. birbiri\nardına:\n[dosya1][dosya2][dosya3]\nParçaları paralel olarak birleştirmek için KULLANILAMAZ. (bir videoya ses parçası\neklemek gibi)\nTüm dosyaların tamamen aynı kodek ve kodek parametrelerine (fps, çözünürlük vb.) sahip olduğundan emin olun.",
+    "This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).": "Bu iletişim kutusu dosyaları seri halinde birleştirmek için kullanılabilir, örn. birbiri ardına:\n[dosya1][dosya2][dosya3]\nParçaları paralel olarak birleştirmek için KULLANILAMAZ (bir videoya ses parçası eklemek gibi).\nTüm dosyaların tamamen aynı kodek ve kodek parametrelerine (fps, çözünürlük vb.) sahip olduğundan emin olun.",
     "attachment": "ek dosya",
     "audio": "ses",
     "About LosslessCut": "LosslessCut Hakkında",
@@ -572,5 +572,14 @@
     "Store project file (.llc) in the working directory or next to loaded media file?": "Proje dosyası (.llc) çalışma dizininde mi yoksa yüklenen medya dosyasının yanında mı saklansın?",
     "You are running version {{version}}": "Bu {{version}} sürümünü çalıştırıyorsunuz",
     "subtitle": "altyazı",
-    "video": "video"
+    "video": "video",
+    "End current segment at current time": "Geçerli bölümü geçerli zamanda sonlandır",
+    "Jump to current segment's end time": "Geçerli bölümün bitiş zamanına atla",
+    "Jump to current segment's start time": "Geçerli bölümün başlangıç zamanına atla",
+    "Jump to end time": "Bitiş zamanına atla",
+    "Manually input current segment's end time": "Geçerli bölümün bitiş zamanını el ile gir",
+    "Jump to start time": "Başlangıç zamanına atla",
+    "Manually input current segment's start time": "Geçerli bölümün başlangıç zamanını el ile gir",
+    "Start current segment at current time": "Geçerli bölümü geçerli zamanda başlat",
+    "You have enabled the \"invert segments\" mode <1></1> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <3></3> symbol below to disable this mode.": "Seçilen bölümleri tutmak yerine kesip atacak olan \"bölümleri ters çevir\" modunu <1></1> etkinleştirdiniz. Ancak herhangi iki bölüm arasında boşluk yok veya en az iki bölüm üst üste gelmektedir. Bu herhangi bir çıktı üretmeyecektir. Bölümler arasında yer açın ya da bu modu devre dışı bırakmak için aşağıdaki Yinyang <3></3> simgesine tıklayın."
 }
