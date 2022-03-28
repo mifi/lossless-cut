@@ -26,7 +26,7 @@
     "no-promise-executor-return": 0,
     "react/function-component-definition": 0
   },
-    "parserOptions": {
+  "parserOptions": {
     "ecmaVersion": 2022
   }
 }

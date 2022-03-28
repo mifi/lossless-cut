@@ -415,10 +415,17 @@ const App = memo(() => {
   }, [currentSegIndexSafe, getSegApparentEnd, currentCutSeg, duration, updateSegAtIndex]);
 
   const shiftAllSegmentTimes = useCallback(async () => {
-    const shiftValue = await askForShiftSegments();
-    if (shiftValue == null) return;
-    const clampValue = (val) => Math.min(Math.max(val + shiftValue, 0), duration);
-    const newSegments = apparentCutSegments.map((segment) => ({ ...segment, start: clampValue(segment.start + shiftValue), end: clampValue(segment.end + shiftValue) })).filter((segment) => segment.end > segment.start);
+    const shift = await askForShiftSegments();
+    if (shift == null) return;
+    const { shiftAmount, shiftValues } = shift;
+    const clampValue = (val) => Math.min(Math.max(val + shiftAmount, 0), duration);
+    const newSegments = apparentCutSegments.map((segment) => {
+      const newSegment = { ...segment };
+      shiftValues.forEach((key) => {
+        newSegment[key] = clampValue(segment[key] + shiftAmount);
+      });
+      return newSegment;
+    }).filter((segment) => segment.end > segment.start);
     if (newSegments.length < 1) setCutSegments(createInitialCutSegments());
     else setCutSegments(newSegments);
   }, [apparentCutSegments, createInitialCutSegments, duration, setCutSegments]);

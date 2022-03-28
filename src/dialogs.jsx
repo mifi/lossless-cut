@@ -8,7 +8,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { tomorrow as style } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import JSON5 from 'json5';
 
-import { parseDuration } from './util/duration';
+import { parseDuration, formatDuration } from './util/duration';
 import { parseYouTube } from './edlFormats';
 import CopyClipboardButton from './components/CopyClipboardButton';
 
@@ -239,6 +239,21 @@ async function askForSegmentDuration(fileDuration) {
   return parseDuration(value);
 }
 
+async function askForShiftSegmentsVariant(time) {
+  const { value } = await Swal.fire({
+    input: 'radio',
+    showCancelButton: true,
+    inputOptions: {
+      start: i18n.t('Start'),
+      end: i18n.t('End'),
+      both: i18n.t('Both'),
+    },
+    inputValue: 'both',
+    text: i18n.t('Do you want to shift the start or end timestamp by {{time}}?', { time: formatDuration({ seconds: time, shorten: true }) }),
+  });
+  return value;
+}
+
 export async function askForShiftSegments() {
   function parseValue(value) {
     let parseableValue = value;
@@ -267,7 +282,15 @@ export async function askForShiftSegments() {
   });
 
   if (value == null) return undefined;
-  return parseValue(value);
+  const parsed = parseValue(value);
+
+  const shiftVariant = await askForShiftSegmentsVariant(parsed);
+  if (shiftVariant == null) return undefined;
+
+  return {
+    shiftAmount: parsed,
+    shiftValues: shiftVariant === 'both' ? ['start', 'end'] : [shiftVariant],
+  };
 }
 
 export async function askForMetadataKey() {
