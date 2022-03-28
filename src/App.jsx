@@ -351,6 +351,7 @@ const App = memo(() => {
     return 0; // Haven't gotten duration yet
   }, [duration]);
 
+  // These are segments guaranteed to have a start and end time
   const apparentCutSegments = useMemo(() => cutSegments.map(cutSegment => ({
     ...cutSegment,
     start: getSegApparentStart(cutSegment),
@@ -414,12 +415,15 @@ const App = memo(() => {
     updateSegAtIndex(currentSegIndexSafe, { [type]: Math.min(Math.max(time, 0), duration) });
   }, [currentSegIndexSafe, getSegApparentEnd, currentCutSeg, duration, updateSegAtIndex]);
 
+  const isSegmentSelected = useCallback(({ segId }) => !deselectedSegmentIds[segId], [deselectedSegmentIds]);
+
   const shiftAllSegmentTimes = useCallback(async () => {
     const shift = await askForShiftSegments();
     if (shift == null) return;
     const { shiftAmount, shiftValues } = shift;
     const clampValue = (val) => Math.min(Math.max(val + shiftAmount, 0), duration);
     const newSegments = apparentCutSegments.map((segment) => {
+      if (!isSegmentSelected(segment)) return segment;
       const newSegment = { ...segment };
       shiftValues.forEach((key) => {
         newSegment[key] = clampValue(segment[key] + shiftAmount);
@@ -428,7 +432,7 @@ const App = memo(() => {
     }).filter((segment) => segment.end > segment.start);
     if (newSegments.length < 1) setCutSegments(createInitialCutSegments());
     else setCutSegments(newSegments);
-  }, [apparentCutSegments, createInitialCutSegments, duration, setCutSegments]);
+  }, [apparentCutSegments, createInitialCutSegments, duration, isSegmentSelected, setCutSegments]);
 
   const maxLabelLength = safeOutputFileName ? 100 : 500;
 
@@ -1159,7 +1163,7 @@ const App = memo(() => {
     }
   }, [isFileOpened, cleanupChoices, previewFilePath, filePath, projectFileSavePath, resetState, batchRemoveFile, setWorking]);
 
-  const selectedSegmentsRaw = useMemo(() => apparentCutSegments.filter((s) => !deselectedSegmentIds[s.segId]), [apparentCutSegments, deselectedSegmentIds]);
+  const selectedSegmentsRaw = useMemo(() => apparentCutSegments.filter(isSegmentSelected), [apparentCutSegments, isSegmentSelected]);
 
   // For invertCutSegments we do not support filtering
   const selectedSegmentsOrInverseRaw = useMemo(() => (invertCutSegments ? inverseCutSegments : selectedSegmentsRaw), [inverseCutSegments, invertCutSegments, selectedSegmentsRaw]);
