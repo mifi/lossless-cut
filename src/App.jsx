@@ -1159,18 +1159,15 @@ const App = memo(() => {
     }
   }, [isFileOpened, cleanupChoices, previewFilePath, filePath, projectFileSavePath, resetState, batchRemoveFile, setWorking]);
 
-  const nonFilteredSegments = useMemo(() => (
-    invertCutSegments ? inverseCutSegments : apparentCutSegments
-  ), [invertCutSegments, inverseCutSegments, apparentCutSegments]);
+  const selectedSegmentsRaw = useMemo(() => apparentCutSegments.filter((s) => !deselectedSegmentIds[s.segId]), [apparentCutSegments, deselectedSegmentIds]);
 
-  const selectedSegmentsRaw = useMemo(() => {
-    // For invertCutSegments we do not support filtering
-    if (invertCutSegments) return inverseCutSegments;
-    return apparentCutSegments.filter((s) => !deselectedSegmentIds[s.segId]);
-  }, [invertCutSegments, inverseCutSegments, apparentCutSegments, deselectedSegmentIds]);
+  // For invertCutSegments we do not support filtering
+  const selectedSegmentsOrInverseRaw = useMemo(() => (invertCutSegments ? inverseCutSegments : selectedSegmentsRaw), [inverseCutSegments, invertCutSegments, selectedSegmentsRaw]);
+
+  const nonFilteredSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments), [invertCutSegments, inverseCutSegments, apparentCutSegments]);
 
   // If user has selected none to export, it makes no sense, so export all instead
-  const selectedSegments = selectedSegmentsRaw.length > 0 ? selectedSegmentsRaw : nonFilteredSegments;
+  const selectedSegmentsOrInverse = selectedSegmentsOrInverseRaw.length > 0 ? selectedSegmentsOrInverseRaw : nonFilteredSegments;
 
   const selectOnlySegment = useCallback((seg) => setDeselectedSegmentIds(Object.fromEntries(cutSegments.filter((s) => s.segId !== seg.segId).map((s) => [s.segId, true]))), [cutSegments]);
   const toggleSegmentSelected = useCallback((seg) => setDeselectedSegmentIds((existing) => ({ ...existing, [seg.segId]: !existing[seg.segId] })), []);
@@ -1201,11 +1198,11 @@ const App = memo(() => {
   }, [maxLabelLength, selectedSegmentsRaw, setCutSegments]);
 
   const segmentsToExport = useMemo(() => {
-    if (!segmentsToChaptersOnly) return selectedSegments;
+    if (!segmentsToChaptersOnly) return selectedSegmentsOrInverse;
     // segmentsToChaptersOnly is a special mode where all segments will be simply written out as chapters to one file: https://github.com/mifi/lossless-cut/issues/993#issuecomment-1037927595
     // Chapters export mode: Emulate a single segment with no cuts (full timeline)
     return [{ start: 0, end: getSegApparentEnd({}) }];
-  }, [selectedSegments, getSegApparentEnd, segmentsToChaptersOnly]);
+  }, [selectedSegmentsOrInverse, getSegApparentEnd, segmentsToChaptersOnly]);
 
   const areWeCutting = useMemo(() => segmentsToExport.some(({ start, end }) => isCuttingStart(start) || isCuttingEnd(end, duration)), [duration, segmentsToExport]);
 
@@ -1278,7 +1275,7 @@ const App = memo(() => {
       // Special segments-to-chapters mode:
       let chaptersToAdd;
       if (segmentsToChaptersOnly) {
-        const sortedSegments = sortSegments(selectedSegments);
+        const sortedSegments = sortSegments(selectedSegmentsOrInverse);
         if (hasAnySegmentOverlap(sortedSegments)) {
           errorToast(i18n.t('Make sure you have no overlapping segments.'));
           return;
@@ -1377,7 +1374,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, selectedSegments, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, detectedFps, enableSmartCut, willMerge, mainFileFormatData, mainStreams, exportExtraStreams, hideAllNotifications, segmentsToChapters, invertCutSegments, autoConcatCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, filePath, nonCopiedExtraStreams, handleCutFailed]);
+  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, selectedSegmentsOrInverse, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, detectedFps, enableSmartCut, willMerge, mainFileFormatData, mainStreams, exportExtraStreams, hideAllNotifications, segmentsToChapters, invertCutSegments, autoConcatCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, filePath, nonCopiedExtraStreams, handleCutFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath || workingRef.current || segmentsToExport.length < 1) return;
@@ -2302,7 +2299,7 @@ const App = memo(() => {
             numStreamsToCopy={numStreamsToCopy}
             numStreamsTotal={numStreamsTotal}
             setStreamsSelectorShown={setStreamsSelectorShown}
-            selectedSegments={selectedSegments}
+            selectedSegments={selectedSegmentsOrInverse}
           />
 
           <div style={{ flexGrow: 1, display: 'flex', overflowY: 'hidden' }}>
@@ -2400,7 +2397,7 @@ const App = memo(() => {
                   toggleSegmentsList={toggleSegmentsList}
                   splitCurrentSegment={splitCurrentSegment}
                   selectedSegmentsRaw={selectedSegmentsRaw}
-                  selectedSegments={selectedSegments}
+                  selectedSegments={selectedSegmentsOrInverse}
                   onSelectSingleSegment={selectOnlySegment}
                   onToggleSegmentSelected={toggleSegmentSelected}
                   onDeselectAllSegments={deselectAllSegments}
@@ -2523,7 +2520,7 @@ const App = memo(() => {
             />
           </SideSheet>
 
-          <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegments={nonFilteredSegments} selectedSegments={selectedSegments} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} />
+          <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegments={nonFilteredSegments} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} />
 
           <HelpSheet
             visible={helpVisible}
