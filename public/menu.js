@@ -166,8 +166,21 @@ module.exports = (app, mainWindow, newVersion) => {
     {
       label: i18n.t('Edit'),
       submenu: [
-        { role: 'undo', label: i18n.t('Undo') },
-        { role: 'redo', label: i18n.t('Redo') },
+        // TODO: See https://github.com/mifi/lossless-cut/issues/610
+        // { role: 'undo', label: i18n.t('Undo') },
+        // { role: 'redo', label: i18n.t('Redo') },
+        {
+          label: i18n.t('Undo'),
+          accelerator: 'CmdOrCtrl+Z',
+          click: async () => dialog.showMessageBox({ message: 'Undo/redo from the menu isn\'t currently working. Please use the keyboard shortcuts instead.' }),
+        },
+        {
+          label: i18n.t('Redo'),
+          accelerator: 'CmdOrCtrl+Shift+Z',
+          click: async () => dialog.showMessageBox({ message: 'Undo/redo from the menu isn\'t currently working. Please use the keyboard shortcuts instead.' }),
+        },
+
+
         { type: 'separator' },
         { role: 'cut', label: i18n.t('Cut') },
         { role: 'copy', label: i18n.t('Copy') },
