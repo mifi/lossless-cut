@@ -146,7 +146,7 @@ const KeyboardShortcuts = memo(({
         toggleKeyboardShortcuts: {
           name: t('Keyboard & mouse shortcuts'),
         },
-
+  
         // playbackCategory
         togglePlayResetSpeed: {
           name: t('Play/pause'),
@@ -188,7 +188,7 @@ const KeyboardShortcuts = memo(({
           name: t('Decrease audio volume'),
           category: playbackCategory,
         },
-
+  
         // seekingCategory
         seekPreviousFrame: {
           name: t('Step backward 1 frame'),
@@ -244,7 +244,7 @@ const KeyboardShortcuts = memo(({
           name: t('Seek to timecode'),
           category: seekingCategory,
         },
-
+  
         // segmentsAndCutpointsCategory
         addSegment: {
           name: t('Add cut segment'),
@@ -332,7 +332,7 @@ const KeyboardShortcuts = memo(({
           name: t('Remove selected segments'),
           category: segmentsAndCutpointsCategory,
         },
-
+  
         // streamsCategory
         toggleStreamsSelector: {
           name: t('Edit tracks / metadata tags'),
@@ -342,7 +342,7 @@ const KeyboardShortcuts = memo(({
           name: t('Extract all tracks'),
           category: streamsCategory,
         },
-
+  
         // zoomOperationsCategory
         timelineZoomIn: {
           name: t('Zoom in timeline'),
@@ -356,7 +356,7 @@ const KeyboardShortcuts = memo(({
           name: t('Toggle zoom between 1x and a calculated comfortable zoom level'),
           category: zoomOperationsCategory,
         },
-
+  
         // outputCategory
         export: {
           name: t('Export segment(s)'),
@@ -386,7 +386,7 @@ const KeyboardShortcuts = memo(({
           name: t('Fix incorrect duration'),
           category: outputCategory,
         },
-
+  
         // batchFilesCategory
         batchPreviousFile: {
           name: t('Previous file'),
@@ -408,7 +408,7 @@ const KeyboardShortcuts = memo(({
           name: t('Merge/concatenate files'),
           category: batchFilesCategory,
         },
-
+  
         // otherCategory
         toggleKeyframeCutMode: {
           name: t('Cut mode'),
@@ -445,6 +445,16 @@ const KeyboardShortcuts = memo(({
       },
     };
   }, [currentCutSeg, t]);
+
+  useEffect(() => {
+    // cleanup invalid bindings, to prevent renamed actions from blocking user to rebind
+    const validBindings = keyBindings.filter(({ action }) => actionsMap[action]);
+
+    if (validBindings.length !== keyBindings.length) {
+      console.log(`Auto deleting ${keyBindings.length - validBindings.length} invalid key binding(s)`);
+      setKeyBindings(validBindings);
+    }
+  }, [actionsMap, keyBindings, setKeyBindings]);
 
   const [creatingBinding, setCreatingBinding] = useState();
 
