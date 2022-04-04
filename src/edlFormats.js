@@ -150,10 +150,6 @@ export function parseXmeml(xmlStr) {
 }
 
 export function parseYouTube(str) {
-  const regex = /(?:([0-9]{2,}):)?([0-9]{1,2}):([0-9]{1,2})(?:\.([0-9]{3}))?[^\S\n]+([^\n]*)\n/g;
-
-  const lines = [];
-
   function parseLine(match) {
     if (!match) return undefined;
     const [, hourStr, minStr, secStr, msStr, name] = match;
@@ -167,11 +163,10 @@ export function parseYouTube(str) {
     return { time, name };
   }
 
-  let m;
-  // eslint-disable-next-line no-cond-assign
-  while ((m = regex.exec(`${str}\n`))) {
-    lines.push(parseLine(m));
-  }
+  const lines = str.split('\n').map((lineStr) => {
+    const match = lineStr.match(/(?:([0-9]{1,}):)?([0-9]{1,2}):([0-9]{1,2})(?:\.([0-9]{3}))?[\s-]+([^\n]*)$/);
+    return parseLine(match);
+  }).filter((line) => line);
 
   const linesSorted = sortBy(lines, (l) => l.time);
 
