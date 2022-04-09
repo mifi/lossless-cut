@@ -66,7 +66,7 @@
     "i18next-scanner": "^3.0.0",
     "icon-gen": "^3.0.0",
     "mkdirp": "^1.0.3",
-    "moment": "^2.18.1",
+    "moment": "^2.29.2",
     "mousetrap": "^1.6.5",
     "p-map": "^4.0.0",
     "patch-package": "^6.2.1",
