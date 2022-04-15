@@ -14,10 +14,18 @@ yarn
 ```
 Note: `yarn` may take some time to complete.
 
-### Running
-```bash
-npm run download-ffmpeg # on MacOS only
+### ffmpeg
 
+Run one of the below commands:
+```bash
+npm run download-ffmpeg-mac
+npm run download-ffmpeg-linux
+npm run download-ffmpeg-windows
+```
+
+### Running
+
+```bash
 npm start
 ```
 
