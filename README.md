@@ -187,6 +187,18 @@ If you have an issue you can check the developer tools for any errors or clues. 
 
 ## Command line interface (CLI)
 
+Note that these exampels assume that you have set up LosslessCut in your `PATH` environment. Alternatively you can run it like this:
+```
+# First navigate to the folder containing the LosslessCut app
+cd /path/to/directory/containing/app
+# On Linux:
+./LosslessCut arguments
+# On Windows:
+./LosslessCut.exe arguments
+# On MacOS:
+./LosslessCut.app/Contents/MacOS/LosslessCut arguments
+```
+
 ### Open one or more files:
 ```bash
 LosslessCut file1.mp4 file2.mkv
