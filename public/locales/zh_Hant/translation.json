@@ -489,5 +489,18 @@
     "Please confirm folder": "請確認資料夾",
     "Confirm": "確認",
     "attachment": "附件",
-    "video": "影片"
+    "video": "影片",
+    "Close current screen": "關閉目前畫面",
+    "Convert current file to supported format": "將目前檔案傳換為支援格式",
+    "At least one resulting file name has no length": "至少有一個結果檔案的名稱無長度",
+    "At least one resulting file name contains invalid characters": "至少有一個結果檔案的名稱包含無效字元",
+    "At least one resulting file name is the same as the input path": "至少有一個結果檔案的名稱與輸入路徑相同",
+    "At least one resulting file will have a too long path": "至少將有一個結果檔案的路徑過長",
+    "Auto convert to supported format": "自動轉換至支援格式",
+    "Batch convert files to supported format": "將檔案批次轉換為支援格式",
+    "Bind new key to action": "將操作綁定到新按鍵",
+    "Chapters": "章節",
+    "Chapters only": "僅章節",
+    "Combination is invalid": "組合無效",
+    "Clear batch file list after merge": "合併後清除批處理檔案列表"
 }
