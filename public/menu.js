@@ -215,6 +215,12 @@ module.exports = (app, mainWindow, newVersion) => {
               },
             },
             {
+              label: i18n.t('Create random segments'),
+              click() {
+                mainWindow.webContents.send('createRandomSegments');
+              },
+            },
+            {
               label: i18n.t('Invert all segments on timeline'),
               click() {
                 mainWindow.webContents.send('invertAllSegments');

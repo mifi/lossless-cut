@@ -239,6 +239,40 @@ async function askForSegmentDuration(fileDuration) {
   return parseDuration(value);
 }
 
+// https://github.com/mifi/lossless-cut/issues/1153
+async function askForSegmentsRandomDurationRange() {
+  function parse(str) {
+    const match = str.replace(/\s/g, '').match(/^duration([\d.]+)to([\d.]+),gap([-\d.]+)to([-\d.]+)$/i);
+    if (!match) return undefined;
+    const values = match.slice(1);
+    const parsed = values.map((val) => parseFloat(val));
+
+    const durationMin = parsed[0];
+    const durationMax = parsed[1];
+    const gapMin = parsed[2];
+    const gapMax = parsed[3];
+
+    if (!(parsed.every((val) => !Number.isNaN(val)) && durationMin <= durationMax && gapMin <= gapMax && durationMin > 0)) return undefined;
+    return { durationMin, durationMax, gapMin, gapMax };
+  }
+
+  const { value } = await Swal.fire({
+    input: 'text',
+    showCancelButton: true,
+    inputValue: 'Duration 3 to 5, Gap 0 to 2',
+    text: i18n.t('Divide timeline into segments with randomized durations and gaps between sergments, in a range specified in seconds with the correct format.'),
+    inputValidator: (v) => {
+      const parsed = parse(v);
+      if (!parsed) return i18n.t('Invalid input');
+      return undefined;
+    },
+  });
+
+  if (value == null) return undefined;
+
+  return parse(value);
+}
+
 async function askForShiftSegmentsVariant(time) {
   const { value } = await Swal.fire({
     input: 'radio',
@@ -372,6 +406,23 @@ export async function createFixedDurationSegments(fileDuration) {
   for (let start = 0; start < fileDuration; start += segmentDuration) {
     const end = start + segmentDuration;
     edl.push({ start, end: end >= fileDuration ? undefined : end });
+  }
+  return edl;
+}
+
+export async function createRandomSegments(fileDuration) {
+  const response = await askForSegmentsRandomDurationRange();
+  if (response == null) return undefined;
+
+  const { durationMin, durationMax, gapMin, gapMax } = response;
+
+  const randomInRange = (min, max) => min + Math.random() * (max - min);
+
+  const edl = [];
+  for (let start = 0; start < fileDuration && edl.length < maxSegments; start += randomInRange(gapMin, gapMax)) {
+    const end = start + randomInRange(durationMin, durationMax);
+    edl.push({ start, end });
+    start = end;
   }
   return edl;
 }

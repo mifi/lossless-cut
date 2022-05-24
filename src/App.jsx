@@ -69,7 +69,7 @@ import {
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
-import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments, selectSegmentsByLabelDialog, confirmExtractFramesAsImages } from './dialogs';
+import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments, selectSegmentsByLabelDialog, confirmExtractFramesAsImages } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap } from './segments';
@@ -1815,6 +1815,12 @@ const App = memo(() => {
     if (segments) loadCutSegments(segments);
   }, [checkFileOpened, duration, loadCutSegments]);
 
+  const createRandomSegments = useCallback(async () => {
+    if (!checkFileOpened() || !isDurationValid(duration)) return;
+    const segments = await createRandomSegmentsDialog(duration);
+    if (segments) loadCutSegments(segments);
+  }, [checkFileOpened, duration, loadCutSegments]);
+
   const askSetStartTimeOffset = useCallback(async () => {
     const newStartTimeOffset = await promptTimeOffset({
       initialValue: startTimeOffset !== undefined ? formatDuration({ seconds: startTimeOffset }) : undefined,
@@ -2199,6 +2205,7 @@ const App = memo(() => {
       shuffleSegments,
       createNumSegments,
       createFixedDurationSegments,
+      createRandomSegments,
       invertAllSegments,
       fillSegmentsGaps,
       fixInvalidDuration: tryFixInvalidDuration,
@@ -2211,7 +2218,7 @@ const App = memo(() => {
     const entries = Object.entries(action);
     entries.forEach(([key, value]) => electron.ipcRenderer.on(key, value));
     return () => entries.forEach(([key, value]) => electron.ipcRenderer.removeListener(key, value));
-  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, customOutDir, cutSegments, detectBlackScenes, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, invertAllSegments, loadCutSegments, loadMedia, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleHelp, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
+  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, customOutDir, cutSegments, detectBlackScenes, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, invertAllSegments, loadCutSegments, loadMedia, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleHelp, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
     try {
