@@ -823,9 +823,9 @@ export async function cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, ou
     // No progress if we set loglevel warning :(
     // '-loglevel', 'warning',
 
-    // cannot use -ss before -i here (will lead to issues)
+    '-ss', cutFrom.toFixed(5), // if we don't -ss before -i, seeking will be slow for long files, see https://github.com/mifi/lossless-cut/issues/126#issuecomment-1135451043
     '-i', filePath,
-    '-ss', cutFrom.toFixed(5),
+    '-ss', '0', // If we don't do this, the output seems to start with an empty black after merging with the encoded part
     '-t', (cutTo - cutFrom).toFixed(5),
 
     ...mapStreamsArgs,
