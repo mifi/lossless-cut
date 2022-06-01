@@ -82,7 +82,7 @@
     "react-syntax-highlighter": "^15.4.3",
     "react-use": "^17.3.2",
     "scroll-into-view-if-needed": "^2.2.28",
-    "sharp": "^0.29.3",
+    "sharp": "^0.30.5",
     "smpte-timecode": "^1.2.3",
     "sortablejs": "^1.13.0",
     "strong-data-uri": "^1.0.5",
