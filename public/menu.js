@@ -2,7 +2,6 @@ const electron = require('electron'); // eslint-disable-line
 const i18n = require('i18next');
 
 const { Menu } = electron;
-const { dialog } = electron;
 
 const { homepage, getReleaseUrl, licensesPage } = require('./constants');
 
@@ -17,9 +16,7 @@ module.exports = (app, mainWindow, newVersion) => {
           label: i18n.t('Open'),
           accelerator: 'CmdOrCtrl+O',
           async click() {
-            const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'] });
-            if (canceled) return;
-            mainWindow.webContents.send('openFiles', filePaths);
+            mainWindow.webContents.send('openFilesDialog');
           },
         },
         {

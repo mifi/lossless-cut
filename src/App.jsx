@@ -101,6 +101,7 @@ const leftBarWidth = 240;
 const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
 const bottomMotionStyle = { background: controlsBackground };
 
+let lastOpenedPath;
 
 const App = memo(() => {
   // Per project state
@@ -2044,6 +2045,8 @@ const App = memo(() => {
     console.log('userOpenFiles');
     console.log(filePaths.join('\n'));
 
+    [lastOpenedPath] = filePaths;
+
     if (filePaths.length > 1) {
       if (alwaysConcatMultipleFiles) {
         batchLoadPaths(filePaths);
@@ -2159,6 +2162,12 @@ const App = memo(() => {
     }
   }, [fileUri, usingPreviewFile, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, filePath, setWorking]);
 
+  const openFilesDialog = useCallback(async () => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'], defaultPath: lastOpenedPath });
+    if (canceled) return;
+    userOpenFiles(filePaths);
+  }, [userOpenFiles]);
+
   useEffect(() => {
     async function exportEdlFile2(e, type) {
       if (!checkFileOpened()) return;
@@ -2189,6 +2198,7 @@ const App = memo(() => {
 
     const action = {
       openFiles: (event, filePaths) => { userOpenFiles(filePaths.map(resolvePathIfNeeded)); },
+      openFilesDialog,
       closeCurrentFile: () => { closeFileWithConfirm(); },
       closeBatchFiles: () => { closeBatch(); },
       html5ify: userHtml5ifyCurrentFile,
@@ -2219,7 +2229,7 @@ const App = memo(() => {
     const entries = Object.entries(action);
     entries.forEach(([key, value]) => electron.ipcRenderer.on(key, value));
     return () => entries.forEach(([key, value]) => electron.ipcRenderer.removeListener(key, value));
-  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, customOutDir, cutSegments, detectBlackScenes, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, invertAllSegments, loadCutSegments, loadMedia, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleHelp, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
+  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, customOutDir, cutSegments, detectBlackScenes, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, invertAllSegments, loadCutSegments, loadMedia, openFilesDialog, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleHelp, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
     try {
