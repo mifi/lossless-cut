@@ -300,6 +300,10 @@ const KeyboardShortcuts = memo(({
           name: t('Create num segments'),
           category: segmentsAndCutpointsCategory,
         },
+        createRandomSegments: {
+          name: t('Create random segments'),
+          category: segmentsAndCutpointsCategory,
+        },
         shuffleSegments: {
           name: t('Shuffle segments order'),
           category: segmentsAndCutpointsCategory,
