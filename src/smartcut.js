@@ -18,9 +18,7 @@ export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, s
 
   async function readKeyframes(window) {
     const frames = await readFrames({ filePath: path, aroundTime: desiredCutFrom, streamIndex: videoStream.index, window });
-    const keyframes = frames.filter((frame) => frame.keyframe);
-    if (keyframes.length < 1) throw new Error('Unable to find keyframe');
-    return keyframes;
+    return frames.filter((frame) => frame.keyframe);
   }
 
   let keyframes = await readKeyframes(10);
