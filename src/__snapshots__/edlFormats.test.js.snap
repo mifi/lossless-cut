@@ -95,6 +95,59 @@ Array [
 ]
 `;
 
+exports[`parses xmeml - with multiple tracks 1`] = `
+Array [
+  Object {
+    "end": 11,
+    "start": 0,
+  },
+  Object {
+    "end": 4.08,
+    "start": 0.96,
+  },
+  Object {
+    "end": 3.88,
+    "start": 1.12,
+  },
+  Object {
+    "end": 4.32,
+    "start": 0.84,
+  },
+  Object {
+    "end": 3.36,
+    "start": 0.36,
+  },
+  Object {
+    "end": 6.24,
+    "start": 0.36,
+  },
+  Object {
+    "end": 4.52,
+    "start": 0.24,
+  },
+  Object {
+    "end": 2.48,
+    "start": 0.48,
+  },
+  Object {
+    "end": 2.36,
+    "start": 0.48,
+  },
+  Object {
+    "end": 1.36,
+    "start": 0.36,
+  },
+  Object {
+    "end": 1.36,
+    "start": 0.36,
+  },
+  Object {
+    "end": 1.04,
+    "start": 0.36,
+  },
+]
+`;
+
 exports[`parses xmeml 1 1`] = `
 Array [
   Object {

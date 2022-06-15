@@ -6,7 +6,6 @@ import csvStringify from 'csv-stringify/lib/browser';
 import pify from 'pify';
 import sortBy from 'lodash/sortBy';
 
-import _ from 'lodash';
 import { formatDuration } from './util/duration';
 import { invertSegments, sortSegments } from './segments';
 
@@ -138,15 +137,22 @@ export function parseXmeml(xmlStr) {
   if (!xmeml) throw Error('Root element <xmeml> not found in file');
 
   let sequence;
-  if (_.property('project.children.sequence.media.video.track.clipitem')(xmeml)) {
+
+  if (xmeml.project?.children?.sequence) {
     sequence = xmeml.project.children.sequence;
-  } else if (_.property('sequence.media.video.track.clipitem')(xmeml)) {
+  } else if (xmeml.sequence) {
     sequence = xmeml.sequence;
   } else {
-    throw Error('No <clipitem> elements found in file');
+    throw new Error('No <sequence> element found');
   }
 
-  return sequence.media.video.track.clipitem.map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
+  if (!sequence?.media?.video?.track) {
+    throw new Error('No <track> element found');
+  }
+
+  const mainTrack = Array.isArray(sequence.media.video.track) ? sequence.media.video.track[0] : sequence.media.video.track;
+
+  return mainTrack.clipitem.map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
 }
 
 export function parseYouTube(str) {

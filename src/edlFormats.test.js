@@ -159,6 +159,11 @@ it('parses xmeml 2', async () => {
   expect(await parseXmeml(await readFixture('Final Cut Pro XMEML 2.xml'))).toMatchSnapshot();
 });
 
+// see https://github.com/mifi/lossless-cut/issues/1195
+it('parses xmeml - with multiple tracks', async () => {
+  expect(await parseXmeml(await readFixture('Final Cut Pro XMEML 3.xml'))).toMatchSnapshot();
+});
+
 // https://github.com/mifi/lossless-cut/issues/1024
 const csvFramesStr = `\
 0,155,EP106_SQ010_SH0010
