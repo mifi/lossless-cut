@@ -163,15 +163,19 @@ Unsupported files can still be converted to a supported format/codec from the `F
 
 ## Troubleshooting / FAQ
 
-- Windows: What's the difference between `.exe` and `.zip` downloads? `.exe` will self-extract on startup to a temp folder and is therefore slower to start up. `.zip` must be extracted manually but is very fast to start up.
-- Windows: If you get an error when cutting or opening any kind of file, try to disable your anti-virus. See [#18](https://github.com/mifi/lossless-cut/issues/18)
-- Windows: How to uninstall LosslessCut? There is no installer. Just delete the EXE file or containing folder. User files are stored in your [appData](https://www.electronjs.org/docs/api/app#appgetpathname) folder.
-- Linux: If you get an error like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See [#258](https://github.com/mifi/lossless-cut/issues/258)
-- If any other problem, check [Known issues](#known-issues--limitations), or please search for existing issues before you file an issue here on GitHub.
+- **Can LosslessCut crop, resize, stretch, mirror, overlay text/images, watermark, blur, redact, re-encode, speed-up/slow-down, create GIF, slideshow, burn subtitles, color grading, fade/combine/mix audio tracks?**
+  - [No, these are all lossy operations, but in the future I may start to implement such features too](https://github.com/mifi/lossless-cut/issues/372).
+- **Linux**: If you get an error like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See [#258](https://github.com/mifi/lossless-cut/issues/258)
+
+### Windows issues
+
+- What's the difference between `.exe` and `.zip` downloads? `.exe` will self-extract on startup to a temp folder and is therefore slower to start up. `.zip` must be extracted manually but is very fast to start up.
+- If you get an error when cutting or opening any kind of file, try to disable your anti-virus. See [#18](https://github.com/mifi/lossless-cut/issues/18)
+- How to uninstall LosslessCut? There is no installer. Just delete the EXE file or containing folder. User files are stored in your [appData](https://www.electronjs.org/docs/api/app#appgetpathname) folder.
 - If the app crashes immediately upon startup, check the permissions of your User and Temp folders, see [61](https://github.com/mifi/lossless-cut/issues/61).
 - Completely white window when starting up? Try to run with `--disable-gpu` - See [781](https://github.com/mifi/lossless-cut/issues/781).
 
-If you have an issue you can check the developer tools for any errors or clues. Menu: `Tools` -> `Toggle Developer Tools`.
+If any other problem, check [Known issues](#known-issues--limitations), or please search for existing issues before you file an issue here on GitHub. You can check the developer tools for any errors or clues. Menu: `Tools` -> `Toggle Developer Tools`.
 Also you are welcome to hang out on [Discord](https://discord.gg/fhnEREfUJ3) 🤗
 
 ## CSV import/export
