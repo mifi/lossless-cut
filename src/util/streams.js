@@ -102,6 +102,8 @@ export function getActiveDisposition(disposition) {
   return existingActiveDispositionEntry[0]; // return the key
 }
 
+export const isMov = (format) => ['ismv', 'ipod', 'mp4', 'mov'].includes(format);
+
 function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => {} }) {
   let args = [];
 
@@ -112,7 +114,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
   if (stream.codec_type === 'subtitle') {
     // mp4/mov only supports mov_text, so convert it https://stackoverflow.com/a/17584272/6519037
     // https://github.com/mifi/lossless-cut/issues/418
-    if (['mov', 'mp4'].includes(outFormat) && stream.codec_name !== 'mov_text') {
+    if (isMov(outFormat) && stream.codec_name !== 'mov_text') {
       addCodecArgs('mov_text');
     } else if (outFormat === 'matroska' && stream.codec_name === 'mov_text') {
       // matroska doesn't support mov_text, so convert it to SRT (popular codec)
@@ -144,7 +146,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
       addCodecArgs('copy');
     }
 
-    if (['mov', 'mp4'].includes(outFormat)) {
+    if (isMov(outFormat)) {
       if (['0x0000', '0x31637668'].includes(stream.codec_tag) && stream.codec_name === 'hevc') {
         args = [...args, `-tag:${outputIndex}`, 'hvc1'];
       }
@@ -233,4 +235,13 @@ export function isAudioDefinitelyNotSupported(streams) {
   if (audioStreams.length === 0) return false;
   // TODO this could be improved
   return audioStreams.every(stream => ['ac3'].includes(stream.codec_name));
+}
+
+export function getVideoTimebase(videoStream) {
+  const timebaseMatch = videoStream.time_base && videoStream.time_base.split('/');
+  if (timebaseMatch) {
+    const timebaseParsed = parseInt(timebaseMatch[1], 10);
+    if (!Number.isNaN(timebaseParsed)) return timebaseParsed;
+  }
+  return undefined;
 }

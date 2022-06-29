@@ -1,4 +1,4 @@
-import { getRealVideoStreams } from './util/streams';
+import { getRealVideoStreams, getVideoTimebase } from './util/streams';
 
 import { readFrames } from './ffmpeg';
 
@@ -56,12 +56,7 @@ export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, s
   const videoCodec = mapInputToOutputCodec(videoStream.codec_name);
   if (videoCodec == null) throw new Error('Unable to determine codec for smart cut');
 
-  let timebase;
-  const timebaseMatch = videoStream.time_base && videoStream.time_base.split('/');
-  if (timebaseMatch) {
-    const timebaseParsed = parseInt(timebaseMatch[1], 10);
-    if (!Number.isNaN(timebaseParsed)) timebase = timebaseParsed;
-  }
+  const timebase = getVideoTimebase(videoStream);
   if (timebase == null) console.warn('Unable to determine timebase', videoStream.time_base);
 
   return {

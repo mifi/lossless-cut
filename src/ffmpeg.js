@@ -577,9 +577,6 @@ export async function captureFrame({ timestamp, videoPath, outPath, numFrames })
   ]);
 }
 
-
-export const isMov = (format) => ['ismv', 'ipod', 'mp4', 'mov'].includes(format);
-
 export function isIphoneHevc(format, streams) {
   if (!streams.some((s) => s.codec_name === 'hevc')) return false;
   const makeTag = format.tags && format.tags['com.apple.quicktime.make'];

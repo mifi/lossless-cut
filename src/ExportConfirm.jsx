@@ -16,7 +16,7 @@ import OutSegTemplateEditor from './components/OutSegTemplateEditor';
 import HighlightedText from './components/HighlightedText';
 
 import { withBlur, toast } from './util';
-import { isMov as ffmpegIsMov } from './ffmpeg';
+import { isMov as ffmpegIsMov } from './util/streams';
 import useUserSettings from './hooks/useUserSettings';
 
 const sheetStyle = {
