@@ -34,7 +34,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
   - Extract all tracks from a file (extract video, audio, subtitle, attachments and other tracks from one file into separate files)
 - Batch view for fast multi-file workflow
 - Keyboard shortcut workflow
-- Lossless remux video/audio into any compatible output format
+- Losslessly remux video/audio into a different container (file) format
 - Take full-resolution snapshots from videos in JPEG/PNG format, or export ranges of video frames to images
 - Manual input of cutpoint times
 - Apply a per-file timecode offset (and auto load timecode from file)
@@ -154,17 +154,18 @@ Unsupported files can still be converted to a supported format/codec from the `F
 ## Known issues & limitations
 
 - **Cutting times are not accurate!** Start cut time will be "rounded" to the nearest **previous** keyframe. This means that you often have **move the start cut time to few frames after** the desired keyframe.
-  - Lossless cutting is not an exact science. For some codecs, it just works. For others, you may need to trial and error depending on the codec, keyframes etc to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
+  - Lossless cutting is not an exact science. For some files, it just works. For others, you may need to trial and error depending on the codec, keyframes etc to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
   - Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
   - You may try to enable the new "Smart cut" mode. However it is very experimental and may not work for most files.
 - When exporting you may lose some proprietary data tracks (like `tmcd`, `fdsc` and `gpmd` added by GoPro). These can however be losslessly exported to separate files.
 - EXIF/metadata can be preserved (see Export Options dialog), but it doesn't always output compliant files, so use it carefully.
-- Some codecs are not supported natively. There is partial support with low quality playback and no audio. You can convert to a supported codec from the File menu, see [#88](https://github.com/mifi/lossless-cut/issues/88), however it may take some time.
+- Some codecs are not natively supported, but will preview with low quality playback and no audio. You may convert these files to a supported codec from the File menu, see [#88](https://github.com/mifi/lossless-cut/issues/88).
 
 ## Troubleshooting / FAQ
 
 - **Can LosslessCut crop, resize, stretch, mirror, overlay text/images, watermark, blur, redact, re-encode, speed-up/slow-down, create GIF, slideshow, burn subtitles, color grading, fade/combine/mix audio tracks?**
-  - [No, these are all lossy operations, but in the future I may start to implement such features too](https://github.com/mifi/lossless-cut/issues/372).
+  - [No, these are all lossy operations, but in the future I may start to implement such features](https://github.com/mifi/lossless-cut/issues/372).
+- MPEG TS files have a tendency to be a bit problematic. It may help to **first** remux them to another format like MP4/MKV. Then you can open the MP4/MKV file an work on that.
 - **Linux**: If you get an error like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See [#258](https://github.com/mifi/lossless-cut/issues/258)
 
 ### Windows issues
