@@ -254,19 +254,18 @@ const SegmentList = memo(({
       animate={{ x: 0 }}
       exit={{ x: width }}
     >
+      <div style={{ fontSize: 14, padding: '0 5px', display: 'flex', alignItems: 'center' }}>
+        <FaAngleRight
+          title={t('Close sidebar')}
+          size={20}
+          style={{ verticalAlign: 'middle', color: 'white', cursor: 'pointer', padding: 2 }}
+          role="button"
+          onClick={toggleSegmentsList}
+        />
+
+        {header}
+      </div>
       <div style={{ padding: '0 10px', overflowY: 'scroll', flexGrow: 1 }} className="hide-scrollbar">
-        <div style={{ fontSize: 14, marginBottom: 10 }}>
-          <FaAngleRight
-            title={t('Close sidebar')}
-            size={18}
-            style={{ verticalAlign: 'middle', color: 'white', cursor: 'pointer' }}
-            role="button"
-            onClick={toggleSegmentsList}
-          />
-
-          {header}
-        </div>
-
         <ReactSortable list={sortableList} setList={setSortableList} sort={!invertCutSegments}>
           {sortableList.map(({ id, seg }, index) => {
             const enabled = !invertCutSegments && selectedSegmentsRaw.includes(seg);
