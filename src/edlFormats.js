@@ -155,6 +155,25 @@ export function parseXmeml(xmlStr) {
   return mainTrack.clipitem.map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
 }
 
+export function parseFcpXml(xmlStr) {
+  const xml = new XMLParser({ ignoreAttributes: false }).parse(xmlStr);
+
+  const { fcpxml } = xml;
+  if (!fcpxml) throw Error('Root element <fcpxml> not found in file');
+
+  function parseTime(str) {
+    const match = str.match(/([0-9]+)\/([0-9]+)s/);
+    if (!match) throw new Error('Invalid attribute');
+    return parseInt(match[1], 10) / parseInt(match[2], 10);
+  }
+
+  return fcpxml.library.event.project.sequence.spine['asset-clip'].map((assetClip) => {
+    const start = parseTime(assetClip['@_start']);
+    const duration = parseTime(assetClip['@_duration']);
+    const end = start + duration;
+    return { start, end };
+  });
+}
 export function parseYouTube(str) {
   function parseLine(match) {
     if (!match) return undefined;

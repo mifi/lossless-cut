@@ -79,6 +79,12 @@ module.exports = (app, mainWindow, newVersion) => {
               },
             },
             {
+              label: i18n.t('Final Cut Pro FCPX / FCPXML'),
+              click() {
+                mainWindow.webContents.send('importEdlFile', 'fcpxml');
+              },
+            },
+            {
               label: i18n.t('CUE sheet file'),
               click() {
                 mainWindow.webContents.send('importEdlFile', 'cue');

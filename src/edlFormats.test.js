@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import { join } from 'path';
 
-import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseCsv, getTimeFromFrameNum, formatCsvFrames, getFrameCountRaw, parsePbf } from './edlFormats';
+import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, getTimeFromFrameNum, formatCsvFrames, getFrameCountRaw, parsePbf } from './edlFormats';
 
 const readFixture = async (name, encoding = 'utf-8') => fs.readFile(join(__dirname, 'fixtures', name), encoding);
 
@@ -162,6 +162,11 @@ it('parses xmeml 2', async () => {
 // see https://github.com/mifi/lossless-cut/issues/1195
 it('parses xmeml - with multiple tracks', async () => {
   expect(await parseXmeml(await readFixture('Final Cut Pro XMEML 3.xml'))).toMatchSnapshot();
+});
+
+// see https://github.com/mifi/lossless-cut/issues/1195
+it('parses fcpxml 1.9', async () => {
+  expect(await parseFcpXml(await readFixture('FCPXML_1_9.fcpxml'))).toMatchSnapshot();
 });
 
 // https://github.com/mifi/lossless-cut/issues/1024

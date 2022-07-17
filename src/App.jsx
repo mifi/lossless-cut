@@ -2067,7 +2067,7 @@ const App = memo(() => {
       setWorking(i18n.t('Loading file'));
 
       // Import segments for for already opened file
-      const edlFormats = { csv: 'csv', pbf: 'pbf', edl: 'mplayer', cue: 'cue', xml: 'xmeml' };
+      const edlFormats = { csv: 'csv', pbf: 'pbf', edl: 'mplayer', cue: 'cue', xml: 'xmeml', fcpxml: 'fcpxml' };
       const matchingExt = Object.keys(edlFormats).find((ext) => filePathLowerCase.endsWith(`.${ext}`));
       if (matchingExt) {
         if (!checkFileOpened()) return;
