@@ -165,6 +165,8 @@ Unsupported files can still be converted to a supported format/codec from the `F
 
 - **Can LosslessCut crop, resize, stretch, mirror, overlay text/images, watermark, blur, redact, re-encode, speed-up/slow-down, create GIF, slideshow, burn subtitles, color grading, fade/combine/mix audio tracks?**
   - [No, these are all lossy operations, but in the future I may start to implement such features](https://github.com/mifi/lossless-cut/issues/372).
+- Can LosslessCut be batched/automated using a CLI or API?
+  - No, it was never designed for that. However there are a few feature requests regarding this: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868)
 - MPEG TS files have a tendency to be a bit problematic. It may help to **first** remux them to another format like MP4/MKV. Then you can open the MP4/MKV file an work on that.
 - **Linux**: If you get an error like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See [#258](https://github.com/mifi/lossless-cut/issues/258)
 
@@ -194,7 +196,7 @@ Also you are welcome to hang out on [Discord](https://discord.gg/fhnEREfUJ3) ðŸ¤
 
 ## Command line interface (CLI)
 
-Note that these exampels assume that you have set up LosslessCut in your `PATH` environment. Alternatively you can run it like this:
+LosslessCut only has limited support for automation through the CLI. Note that these examples assume that you have set up LosslessCut in your `PATH` environment. Alternatively you can run it like this:
 ```
 # First navigate to the folder containing the LosslessCut app
 cd /path/to/directory/containing/app
