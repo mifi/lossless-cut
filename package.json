@@ -276,8 +276,7 @@
     },
     "win": {
       "target": [
-        "portable",
-        "zip",
+        "7z",
         "appx"
       ],
       "extraResources": [
