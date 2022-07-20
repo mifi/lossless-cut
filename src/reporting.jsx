@@ -22,7 +22,7 @@ export function openSendReportDialog(err, state) {
   const platform = os.platform();
   const version = electron.remote.app.getVersion();
 
-  const text = `${err ? err.stack : 'No error'}\n\n${JSON.stringify({
+  const text = `${err ? err.stack : 'No error occurred.'}\n\n${JSON.stringify({
     err: err && {
       code: err.code,
       killed: err.killed,
