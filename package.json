@@ -423,6 +423,10 @@
         {
           "arch": "arm64",
           "target": "tar.bz2"
+        },
+        {
+          "arch": "armv7l",
+          "target": "tar.bz2"
         }
       ]
     },
