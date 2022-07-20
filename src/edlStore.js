@@ -1,7 +1,7 @@
 import JSON5 from 'json5';
 import i18n from 'i18next';
 
-import { parseCuesheet, parseXmeml, parseCsv, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds } from './edlFormats';
+import { parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, getTimeFromFrameNum } from './edlFormats';
 import { askForYouTubeInput } from './dialogs';
 
 const fs = window.require('fs-extra');
@@ -15,12 +15,17 @@ export async function loadCsvSeconds(path) {
   return parseCsv(await fs.readFile(path, 'utf-8'));
 }
 
-export async function loadCsvFrames(path, getTimeFromFrameNum) {
-  return parseCsv(await fs.readFile(path, 'utf-8'), (frameNum) => getTimeFromFrameNum(frameNum));
+export async function loadCsvFrames(path, fps) {
+  if (!fps) throw new Error('The loaded file has an unknown framerate');
+  return parseCsv(await fs.readFile(path, 'utf-8'), (frameNum) => getTimeFromFrameNum(fps, frameNum));
 }
 
 export async function loadXmeml(path) {
   return parseXmeml(await fs.readFile(path, 'utf-8'));
+}
+
+export async function loadFcpXml(path) {
+  return parseFcpXml(await fs.readFile(path, 'utf-8'));
 }
 
 export async function loadPbf(path) {
@@ -64,10 +69,12 @@ export async function loadLlcProject(path) {
   return JSON5.parse(await fs.readFile(path));
 }
 
-export async function readEdlFile({ type, path, getTimeFromFrameNum }) {
+
+export async function readEdlFile({ type, path, fps }) {
   if (type === 'csv') return loadCsvSeconds(path);
-  if (type === 'csv-frames') return loadCsvFrames(path, getTimeFromFrameNum);
+  if (type === 'csv-frames') return loadCsvFrames(path, fps);
   if (type === 'xmeml') return loadXmeml(path);
+  if (type === 'fcpxml') return loadFcpXml(path);
   if (type === 'cue') return loadCue(path);
   if (type === 'pbf') return loadPbf(path);
   if (type === 'mplayer') return loadMplayerEdl(path);
@@ -78,12 +85,13 @@ export async function readEdlFile({ type, path, getTimeFromFrameNum }) {
   throw new Error('Invalid EDL type');
 }
 
-export async function askForEdlImport({ type, getTimeFromFrameNum }) {
+export async function askForEdlImport({ type, fps }) {
   if (type === 'youtube') return askForYouTubeInput();
 
   let filters;
   if (type === 'csv' || type === 'csv-frames') filters = [{ name: i18n.t('CSV files'), extensions: ['csv'] }];
   else if (type === 'xmeml') filters = [{ name: i18n.t('XML files'), extensions: ['xml'] }];
+  else if (type === 'fcpxml') filters = [{ name: i18n.t('FCPXML files'), extensions: ['fcpxml'] }];
   else if (type === 'cue') filters = [{ name: i18n.t('CUE files'), extensions: ['cue'] }];
   else if (type === 'pbf') filters = [{ name: i18n.t('PBF files'), extensions: ['pbf'] }];
   else if (type === 'mplayer') filters = [{ name: i18n.t('MPlayer EDL'), extensions: ['*'] }];
@@ -91,7 +99,7 @@ export async function askForEdlImport({ type, getTimeFromFrameNum }) {
 
   const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters });
   if (canceled || filePaths.length < 1) return [];
-  return readEdlFile({ type, path: filePaths[0], getTimeFromFrameNum });
+  return readEdlFile({ type, path: filePaths[0], fps });
 }
 
 export async function exportEdlFile({ type, cutSegments, filePath, getFrameCount }) {

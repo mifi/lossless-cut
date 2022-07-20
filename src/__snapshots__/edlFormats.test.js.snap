@@ -1,5 +1,702 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`parses fcpxml 1.9 1`] = `
+Array [
+  Object {
+    "end": 13.84,
+    "start": 0,
+  },
+  Object {
+    "end": 25.04,
+    "start": 13.84,
+  },
+  Object {
+    "end": 25.2,
+    "start": 25.04,
+  },
+  Object {
+    "end": 55.44,
+    "start": 25.2,
+  },
+  Object {
+    "end": 68.96,
+    "start": 55.44,
+  },
+  Object {
+    "end": 81.83999999999999,
+    "start": 68.96,
+  },
+  Object {
+    "end": 95.12,
+    "start": 81.84,
+  },
+  Object {
+    "end": 95.16000000000001,
+    "start": 95.12,
+  },
+  Object {
+    "end": 95.28,
+    "start": 95.16,
+  },
+  Object {
+    "end": 112.72,
+    "start": 95.28,
+  },
+  Object {
+    "end": 140.4,
+    "start": 112.72,
+  },
+  Object {
+    "end": 147.36,
+    "start": 140.4,
+  },
+  Object {
+    "end": 170.88000000000002,
+    "start": 147.36,
+  },
+  Object {
+    "end": 176.72,
+    "start": 170.88,
+  },
+  Object {
+    "end": 196.07999999999998,
+    "start": 176.72,
+  },
+  Object {
+    "end": 232.96,
+    "start": 196.08,
+  },
+  Object {
+    "end": 265.92,
+    "start": 232.96,
+  },
+  Object {
+    "end": 281.76,
+    "start": 265.92,
+  },
+  Object {
+    "end": 308.96,
+    "start": 281.76,
+  },
+  Object {
+    "end": 321.68,
+    "start": 308.96,
+  },
+  Object {
+    "end": 353.2,
+    "start": 321.68,
+  },
+  Object {
+    "end": 376.08,
+    "start": 353.2,
+  },
+  Object {
+    "end": 405.68,
+    "start": 376.08,
+  },
+  Object {
+    "end": 412.16,
+    "start": 405.68,
+  },
+  Object {
+    "end": 423.28000000000003,
+    "start": 412.16,
+  },
+  Object {
+    "end": 430.71999999999997,
+    "start": 423.28,
+  },
+  Object {
+    "end": 439.76000000000005,
+    "start": 430.72,
+  },
+  Object {
+    "end": 456.64,
+    "start": 439.76,
+  },
+  Object {
+    "end": 492.71999999999997,
+    "start": 456.64,
+  },
+  Object {
+    "end": 511.44000000000005,
+    "start": 492.72,
+  },
+  Object {
+    "end": 522.24,
+    "start": 511.44,
+  },
+  Object {
+    "end": 524.32,
+    "start": 522.24,
+  },
+  Object {
+    "end": 543.2800000000001,
+    "start": 524.32,
+  },
+  Object {
+    "end": 571.04,
+    "start": 543.28,
+  },
+  Object {
+    "end": 576.3199999999999,
+    "start": 571.04,
+  },
+  Object {
+    "end": 612.48,
+    "start": 576.32,
+  },
+  Object {
+    "end": 626.16,
+    "start": 612.48,
+  },
+  Object {
+    "end": 626.24,
+    "start": 626.16,
+  },
+  Object {
+    "end": 665.04,
+    "start": 626.24,
+  },
+  Object {
+    "end": 694.0799999999999,
+    "start": 665.04,
+  },
+  Object {
+    "end": 762.96,
+    "start": 694.08,
+  },
+  Object {
+    "end": 784.8000000000001,
+    "start": 762.96,
+  },
+  Object {
+    "end": 804.56,
+    "start": 784.8,
+  },
+  Object {
+    "end": 813.52,
+    "start": 804.56,
+  },
+  Object {
+    "end": 831.16,
+    "start": 813.52,
+  },
+  Object {
+    "end": 928.72,
+    "start": 831.16,
+  },
+  Object {
+    "end": 941.0400000000001,
+    "start": 928.72,
+  },
+  Object {
+    "end": 946.3199999999999,
+    "start": 941.04,
+  },
+  Object {
+    "end": 968.8000000000001,
+    "start": 946.32,
+  },
+  Object {
+    "end": 982.16,
+    "start": 968.8,
+  },
+  Object {
+    "end": 1111.2,
+    "start": 982.16,
+  },
+  Object {
+    "end": 1117.04,
+    "start": 1111.2,
+  },
+  Object {
+    "end": 1142.6,
+    "start": 1117.04,
+  },
+  Object {
+    "end": 1142.6399999999999,
+    "start": 1142.6,
+  },
+  Object {
+    "end": 1142.68,
+    "start": 1142.64,
+  },
+  Object {
+    "end": 1180.88,
+    "start": 1142.68,
+  },
+  Object {
+    "end": 1193.2,
+    "start": 1180.88,
+  },
+  Object {
+    "end": 1212.72,
+    "start": 1193.2,
+  },
+  Object {
+    "end": 1233.68,
+    "start": 1212.72,
+  },
+  Object {
+    "end": 1263.76,
+    "start": 1233.68,
+  },
+  Object {
+    "end": 1288.56,
+    "start": 1263.76,
+  },
+  Object {
+    "end": 1294.12,
+    "start": 1288.56,
+  },
+  Object {
+    "end": 1294.1599999999999,
+    "start": 1294.12,
+  },
+  Object {
+    "end": 1294.2,
+    "start": 1294.16,
+  },
+  Object {
+    "end": 1294.24,
+    "start": 1294.2,
+  },
+  Object {
+    "end": 1294.28,
+    "start": 1294.24,
+  },
+  Object {
+    "end": 1294.36,
+    "start": 1294.28,
+  },
+  Object {
+    "end": 1294.4399999999998,
+    "start": 1294.36,
+  },
+  Object {
+    "end": 1294.48,
+    "start": 1294.44,
+  },
+  Object {
+    "end": 1306.84,
+    "start": 1294.48,
+  },
+  Object {
+    "end": 1306.8799999999999,
+    "start": 1306.84,
+  },
+  Object {
+    "end": 1306.92,
+    "start": 1306.88,
+  },
+  Object {
+    "end": 1306.96,
+    "start": 1306.92,
+  },
+  Object {
+    "end": 1339.04,
+    "start": 1306.96,
+  },
+  Object {
+    "end": 1360.24,
+    "start": 1339.04,
+  },
+  Object {
+    "end": 1365.92,
+    "start": 1360.24,
+  },
+  Object {
+    "end": 1382.88,
+    "start": 1365.92,
+  },
+  Object {
+    "end": 1402.0800000000002,
+    "start": 1382.88,
+  },
+  Object {
+    "end": 1417.52,
+    "start": 1402.08,
+  },
+  Object {
+    "end": 1428.16,
+    "start": 1417.52,
+  },
+  Object {
+    "end": 1480.0800000000002,
+    "start": 1428.16,
+  },
+  Object {
+    "end": 1496.24,
+    "start": 1480.08,
+  },
+  Object {
+    "end": 1526.64,
+    "start": 1496.24,
+  },
+  Object {
+    "end": 1532.24,
+    "start": 1526.64,
+  },
+  Object {
+    "end": 1542.24,
+    "start": 1532.24,
+  },
+  Object {
+    "end": 1554.32,
+    "start": 1542.24,
+  },
+  Object {
+    "end": 1565.12,
+    "start": 1554.32,
+  },
+  Object {
+    "end": 1595.4399999999998,
+    "start": 1565.12,
+  },
+  Object {
+    "end": 1602.3200000000002,
+    "start": 1595.44,
+  },
+  Object {
+    "end": 1612.32,
+    "start": 1602.32,
+  },
+  Object {
+    "end": 1648.24,
+    "start": 1612.32,
+  },
+  Object {
+    "end": 1667.76,
+    "start": 1648.24,
+  },
+  Object {
+    "end": 1691.92,
+    "start": 1667.76,
+  },
+  Object {
+    "end": 1705.76,
+    "start": 1691.92,
+  },
+  Object {
+    "end": 1711.12,
+    "start": 1705.76,
+  },
+  Object {
+    "end": 1727,
+    "start": 1711.12,
+  },
+  Object {
+    "end": 1750,
+    "start": 1727,
+  },
+  Object {
+    "end": 1778,
+    "start": 1750,
+  },
+  Object {
+    "end": 1787.6,
+    "start": 1778,
+  },
+  Object {
+    "end": 1794.9599999999998,
+    "start": 1787.6,
+  },
+  Object {
+    "end": 1836.32,
+    "start": 1794.96,
+  },
+  Object {
+    "end": 1905.84,
+    "start": 1836.32,
+  },
+  Object {
+    "end": 1905.8799999999999,
+    "start": 1905.84,
+  },
+  Object {
+    "end": 1909.1200000000001,
+    "start": 1905.88,
+  },
+  Object {
+    "end": 1936.56,
+    "start": 1909.12,
+  },
+  Object {
+    "end": 1941.84,
+    "start": 1936.56,
+  },
+  Object {
+    "end": 1954.48,
+    "start": 1941.84,
+  },
+  Object {
+    "end": 1968.24,
+    "start": 1954.48,
+  },
+  Object {
+    "end": 1972,
+    "start": 1968.24,
+  },
+  Object {
+    "end": 1982.56,
+    "start": 1972,
+  },
+  Object {
+    "end": 1994.56,
+    "start": 1982.56,
+  },
+  Object {
+    "end": 1997.12,
+    "start": 1994.56,
+  },
+  Object {
+    "end": 2164.3599999999997,
+    "start": 1997.12,
+  },
+  Object {
+    "end": 2180.4,
+    "start": 2164.36,
+  },
+  Object {
+    "end": 2199.28,
+    "start": 2180.4,
+  },
+  Object {
+    "end": 2212,
+    "start": 2199.28,
+  },
+  Object {
+    "end": 2237.76,
+    "start": 2212,
+  },
+  Object {
+    "end": 2316.88,
+    "start": 2237.76,
+  },
+  Object {
+    "end": 2332.2400000000002,
+    "start": 2316.88,
+  },
+  Object {
+    "end": 2412.64,
+    "start": 2332.24,
+  },
+  Object {
+    "end": 2672.56,
+    "start": 2412.64,
+  },
+  Object {
+    "end": 2723.24,
+    "start": 2672.56,
+  },
+  Object {
+    "end": 2723.2799999999997,
+    "start": 2723.24,
+  },
+  Object {
+    "end": 2723.36,
+    "start": 2723.28,
+  },
+  Object {
+    "end": 2723.4,
+    "start": 2723.36,
+  },
+  Object {
+    "end": 2725.04,
+    "start": 2723.4,
+  },
+  Object {
+    "end": 2725.08,
+    "start": 2725.04,
+  },
+  Object {
+    "end": 2725.12,
+    "start": 2725.08,
+  },
+  Object {
+    "end": 2725.44,
+    "start": 2725.12,
+  },
+  Object {
+    "end": 2787.2000000000003,
+    "start": 2725.44,
+  },
+  Object {
+    "end": 2806.56,
+    "start": 2787.2,
+  },
+  Object {
+    "end": 2814.56,
+    "start": 2806.56,
+  },
+  Object {
+    "end": 2852.4,
+    "start": 2814.56,
+  },
+  Object {
+    "end": 2864.8,
+    "start": 2852.4,
+  },
+  Object {
+    "end": 2875.28,
+    "start": 2864.8,
+  },
+  Object {
+    "end": 2886.6400000000003,
+    "start": 2875.28,
+  },
+  Object {
+    "end": 2898.3199999999997,
+    "start": 2886.64,
+  },
+  Object {
+    "end": 2942.2400000000002,
+    "start": 2898.32,
+  },
+  Object {
+    "end": 2996,
+    "start": 2942.24,
+  },
+  Object {
+    "end": 3000.88,
+    "start": 2996,
+  },
+  Object {
+    "end": 3026.6400000000003,
+    "start": 3000.88,
+  },
+  Object {
+    "end": 3055.92,
+    "start": 3026.64,
+  },
+  Object {
+    "end": 3062.7200000000003,
+    "start": 3055.92,
+  },
+  Object {
+    "end": 3088.8799999999997,
+    "start": 3062.72,
+  },
+  Object {
+    "end": 3095.76,
+    "start": 3088.88,
+  },
+  Object {
+    "end": 3111.36,
+    "start": 3095.76,
+  },
+  Object {
+    "end": 3118.1600000000003,
+    "start": 3111.36,
+  },
+  Object {
+    "end": 3125.8399999999997,
+    "start": 3118.16,
+  },
+  Object {
+    "end": 3131.28,
+    "start": 3125.84,
+  },
+  Object {
+    "end": 3139.28,
+    "start": 3131.28,
+  },
+  Object {
+    "end": 3174.1600000000003,
+    "start": 3139.28,
+  },
+  Object {
+    "end": 3177.68,
+    "start": 3174.16,
+  },
+  Object {
+    "end": 3177.72,
+    "start": 3177.68,
+  },
+  Object {
+    "end": 3193.12,
+    "start": 3177.72,
+  },
+  Object {
+    "end": 3218.24,
+    "start": 3193.12,
+  },
+  Object {
+    "end": 3235.7599999999998,
+    "start": 3218.24,
+  },
+  Object {
+    "end": 3250,
+    "start": 3235.76,
+  },
+  Object {
+    "end": 3263.76,
+    "start": 3250,
+  },
+  Object {
+    "end": 3267.28,
+    "start": 3263.76,
+  },
+  Object {
+    "end": 3272.96,
+    "start": 3267.28,
+  },
+  Object {
+    "end": 3335.92,
+    "start": 3272.96,
+  },
+  Object {
+    "end": 3499.76,
+    "start": 3335.92,
+  },
+  Object {
+    "end": 3640.7200000000003,
+    "start": 3499.76,
+  },
+  Object {
+    "end": 3655.9599999999996,
+    "start": 3640.72,
+  },
+  Object {
+    "end": 3656.04,
+    "start": 3655.96,
+  },
+  Object {
+    "end": 3668.16,
+    "start": 3656.04,
+  },
+  Object {
+    "end": 3744.7999999999997,
+    "start": 3668.16,
+  },
+  Object {
+    "end": 3770.8,
+    "start": 3744.8,
+  },
+  Object {
+    "end": 3783.6000000000004,
+    "start": 3770.8,
+  },
+  Object {
+    "end": 3793.68,
+    "start": 3783.6,
+  },
+  Object {
+    "end": 3814.64,
+    "start": 3793.68,
+  },
+  Object {
+    "end": 3835.04,
+    "start": 3814.64,
+  },
+  Object {
+    "end": 3843.92,
+    "start": 3835.04,
+  },
+]
+`;
+
 exports[`parses pbf 1`] = `
 Array [
   Object {
@@ -91,6 +788,59 @@ Array [
     "end": 476.194,
     "name": "B",
     "start": 300.448,
+  },
+]
+`;
+
+exports[`parses xmeml - with multiple tracks 1`] = `
+Array [
+  Object {
+    "end": 11,
+    "start": 0,
+  },
+  Object {
+    "end": 4.08,
+    "start": 0.96,
+  },
+  Object {
+    "end": 3.88,
+    "start": 1.12,
+  },
+  Object {
+    "end": 4.32,
+    "start": 0.84,
+  },
+  Object {
+    "end": 3.36,
+    "start": 0.36,
+  },
+  Object {
+    "end": 6.24,
+    "start": 0.36,
+  },
+  Object {
+    "end": 4.52,
+    "start": 0.24,
+  },
+  Object {
+    "end": 2.48,
+    "start": 0.48,
+  },
+  Object {
+    "end": 2.36,
+    "start": 0.48,
+  },
+  Object {
+    "end": 1.36,
+    "start": 0.36,
+  },
+  Object {
+    "end": 1.36,
+    "start": 0.36,
+  },
+  Object {
+    "end": 1.04,
+    "start": 0.36,
   },
 ]
 `;

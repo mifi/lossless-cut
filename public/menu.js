@@ -2,7 +2,6 @@ const electron = require('electron'); // eslint-disable-line
 const i18n = require('i18next');
 
 const { Menu } = electron;
-const { dialog } = electron;
 
 const { homepage, getReleaseUrl, licensesPage } = require('./constants');
 
@@ -17,9 +16,7 @@ module.exports = (app, mainWindow, newVersion) => {
           label: i18n.t('Open'),
           accelerator: 'CmdOrCtrl+O',
           async click() {
-            const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'] });
-            if (canceled) return;
-            mainWindow.webContents.send('openFiles', filePaths);
+            mainWindow.webContents.send('openFilesDialog');
           },
         },
         {
@@ -79,6 +76,12 @@ module.exports = (app, mainWindow, newVersion) => {
               label: i18n.t('DaVinci Resolve / Final Cut Pro XML'),
               click() {
                 mainWindow.webContents.send('importEdlFile', 'xmeml');
+              },
+            },
+            {
+              label: i18n.t('Final Cut Pro FCPX / FCPXML'),
+              click() {
+                mainWindow.webContents.send('importEdlFile', 'fcpxml');
               },
             },
             {
@@ -166,6 +169,8 @@ module.exports = (app, mainWindow, newVersion) => {
     {
       label: i18n.t('Edit'),
       submenu: [
+        // https://github.com/mifi/lossless-cut/issues/610
+        // https://github.com/mifi/lossless-cut/issues/1183
         { role: 'undo', label: i18n.t('Undo') },
         { role: 'redo', label: i18n.t('Redo') },
         { type: 'separator' },
@@ -199,6 +204,12 @@ module.exports = (app, mainWindow, newVersion) => {
               label: i18n.t('Create fixed duration segments'),
               click() {
                 mainWindow.webContents.send('createFixedDurationSegments');
+              },
+            },
+            {
+              label: i18n.t('Create random segments'),
+              click() {
+                mainWindow.webContents.send('createRandomSegments');
               },
             },
             {
@@ -278,6 +289,13 @@ module.exports = (app, mainWindow, newVersion) => {
             mainWindow.webContents.send('askSetStartTimeOffset');
           },
         },
+        {
+          label: i18n.t('Detect black scenes'),
+          click() {
+            mainWindow.webContents.send('detectBlackScenes');
+          },
+        },
+        { type: 'separator' },
         { role: 'toggleDevTools', label: i18n.t('Toggle Developer Tools') },
       ],
     },

@@ -121,23 +121,24 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, customTagsByFile, setC
   return <TagEditor existingTags={existingTags} customTags={customTags} onTagChange={onTagChange} onTagReset={onTagReset} />;
 });
 
-const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, allFilesMeta, customTagsByStreamId, setCustomTagsByStreamId, dispositionByStreamId, setDispositionByStreamId }) => {
+const getStreamDispositionsObj = (stream) => ((stream && stream.disposition) || {});
+const getStreamCustomDisposition = (dispositionByStreamId, file, streamId) => (dispositionByStreamId[file] || {})[streamId];
+
+function getStreamEffectiveDisposition(dispositionByStreamId, file, stream) {
+  const customDisposition = getStreamCustomDisposition(dispositionByStreamId, file, stream.index);
+  const existingDispositionsObj = getStreamDispositionsObj(stream);
+
+  if (customDisposition) return customDisposition;
+  return getActiveDisposition(existingDispositionsObj);
+}
+
+
+const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, allFilesMeta, customTagsByStreamId, setCustomTagsByStreamId }) => {
   const { streams } = allFilesMeta[editingFile];
-  const stream = useMemo(() => streams.find((s) => s.index === editingStreamId), [streams, editingStreamId]);
+  const editingStream = useMemo(() => streams.find((s) => s.index === editingStreamId), [streams, editingStreamId]);
 
-  const existingTags = useMemo(() => (stream && stream.tags) || {}, [stream]);
+  const existingTags = useMemo(() => (editingStream && editingStream.tags) || {}, [editingStream]);
   const customTags = useMemo(() => (customTagsByStreamId[editingFile] || {})[editingStreamId] || {}, [customTagsByStreamId, editingFile, editingStreamId]);
-
-  const customDisposition = useMemo(() => (dispositionByStreamId[editingFile] || {})[editingStreamId], [dispositionByStreamId, editingFile, editingStreamId]);
-  const existingDispositionsObj = useMemo(() => (stream && stream.disposition) || {}, [stream]);
-  const effectiveDisposition = useMemo(() => {
-    if (customDisposition) return customDisposition;
-    return getActiveDisposition(existingDispositionsObj);
-  }, [customDisposition, existingDispositionsObj]);
-
-  // console.log({ existingDispositionsObj, effectiveDisposition });
-
-  const { t } = useTranslation();
 
   const onTagChange = useCallback((tag, value) => {
     setCustomTagsByStreamId((old) => ({
@@ -166,36 +167,10 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     });
   }, [editingFile, editingStreamId, setCustomTagsByStreamId]);
 
-  const onDispositionChange = useCallback((e) => {
-    let newDisposition;
-    if (dispositionOptions.includes(e.target.value)) {
-      newDisposition = e.target.value;
-    } else if (e.target.value === deleteDispositionValue) {
-      newDisposition = deleteDispositionValue; // needs a separate value (not a real disposition)
-    } // else unchanged (undefined)
-
-    setDispositionByStreamId((old) => ({
-      ...old,
-      [editingFile]: {
-        ...old[editingFile],
-        [editingStreamId]: newDisposition,
-      },
-    }));
-  }, [editingFile, editingStreamId, setDispositionByStreamId]);
-
-  if (!stream) return null;
+  if (!editingStream) return null;
 
   return (
     <>
-      <Heading marginBottom={5}>{t('Track disposition')}</Heading>
-      <Select marginBottom={20} value={effectiveDisposition || unchangedDispositionValue} onChange={onDispositionChange}>
-        <option value={unchangedDispositionValue}>{t('Unchanged')}</option>
-        <option value={deleteDispositionValue}>{t('Remove')}</option>
-
-        {dispositionOptions.map((key) => (
-          <option key={key} value={key}>{key}</option>
-        ))}
-      </Select>
       <Heading>Tags</Heading>
       <TagEditor existingTags={existingTags} customTags={customTags} onTagChange={onTagChange} onTagReset={onTagReset} />
     </>
@@ -206,8 +181,10 @@ function onInfoClick(json, title) {
   showJson5Dialog({ title, json });
 }
 
-const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress }) => {
+const Stream = memo(({ dispositionByStreamId, setDispositionByStreamId, filePath, stream, onToggle, batchSetCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress }) => {
   const { t } = useTranslation();
+
+  const effectiveDisposition = useMemo(() => getStreamEffectiveDisposition(dispositionByStreamId, filePath, stream), [dispositionByStreamId, filePath, stream]);
 
   const bitrate = parseInt(stream.bit_rate, 10);
   const streamDuration = parseInt(stream.duration, 10);
@@ -237,22 +214,51 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
 
   const onClick = () => onToggle && onToggle(stream.index);
 
+  const onDispositionChange = useCallback((e) => {
+    let newDisposition;
+    if (dispositionOptions.includes(e.target.value)) {
+      newDisposition = e.target.value;
+    } else if (e.target.value === deleteDispositionValue) {
+      newDisposition = deleteDispositionValue; // needs a separate value (not a real disposition)
+    } // else unchanged (undefined)
+
+    setDispositionByStreamId((old) => ({
+      ...old,
+      [filePath]: {
+        ...old[filePath],
+        [stream.index]: newDisposition,
+      },
+    }));
+  }, [filePath, setDispositionByStreamId, stream.index]);
+
+  const codecTag = stream.codec_tag !== '0x0000' && stream.codec_tag_string;
+
   return (
     <tr style={{ opacity: copyStream ? undefined : 0.4 }}>
       <td style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
-        <IconButton title={t('Click to toggle track inclusion when exporting')} appearance="minimal" icon={<Icon color={copyStream ? '#52BD95' : '#D14343'} size={20} />} onClick={onClick} />
+        <IconButton title={`${t('Click to toggle track inclusion when exporting')} (type ${codecTypeHuman})`} appearance="minimal" icon={<Icon color={copyStream ? '#52BD95' : '#D14343'} size={20} />} onClick={onClick} />
         <div style={{ width: 20, textAlign: 'center' }}>{stream.index}</div>
       </td>
+      <td style={{ maxWidth: '3em', overflow: 'hidden' }} title={stream.codec_name}>{stream.codec_name} {codecTag}</td>
       <td>
-        {codecTypeHuman}
+        {!Number.isNaN(duration) && `${formatDuration({ seconds: duration, shorten: true })}`}
+        {stream.nb_frames != null ? ` (${stream.nb_frames})` : ''}
       </td>
-      <td>{stream.codec_tag !== '0x0000' && stream.codec_tag_string}</td>
-      <td style={{ maxWidth: '3em', overflow: 'hidden' }} title={stream.codec_name}>{stream.codec_name}</td>
-      <td>{!Number.isNaN(duration) && `${formatDuration({ seconds: duration, shorten: true })}`}</td>
-      <td>{stream.nb_frames}</td>
       <td>{!Number.isNaN(bitrate) && `${(bitrate / 1e6).toFixed(1)}MBit`}</td>
       <td style={{ maxWidth: '2.5em', overflow: 'hidden' }} title={language}>{language}</td>
       <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
+      <td>
+        <Select width={100} value={effectiveDisposition || unchangedDispositionValue} onChange={onDispositionChange}>
+          <option value="" disabled>{t('Disposition')}</option>
+          <option value={unchangedDispositionValue}>{t('Unchanged')}</option>
+          <option value={deleteDispositionValue}>{t('Remove')}</option>
+
+          {dispositionOptions.map((key) => (
+            <option key={key} value={key}>{key}</option>
+          ))}
+        </Select>
+
+      </td>
       <td style={{ display: 'flex' }}>
         <IconButton icon={InfoSignIcon} onClick={() => onInfoClick(stream, t('Track info'))} appearance="minimal" iconSize={18} />
         <IconButton title={t('Extract this track as file')} icon={<FaFileExport size={18} />} onClick={onExtractStreamPress} appearance="minimal" iconSize={18} />
@@ -311,14 +317,12 @@ const Thead = () => {
     <thead style={{ color: 'rgba(0,0,0,0.6)', textAlign: 'left' }}>
       <tr>
         <th>{t('Keep?')}</th>
-        <th style={{ paddingLeft: 20 }}>{t('Type')}</th>
-        <th>{t('Tag')}</th>
         <th>{t('Codec')}</th>
         <th>{t('Duration')}</th>
-        <th>{t('Frames')}</th>
         <th>{t('Bitrate')}</th>
         <th>{t('Lang')}</th>
         <th>{t('Data')}</th>
+        <th>{t('Disposition')}</th>
         <th />
       </tr>
     </thead>
@@ -386,6 +390,8 @@ const StreamsSelector = memo(({
             <tbody>
               {mainFileStreams.map((stream) => (
                 <Stream
+                  dispositionByStreamId={dispositionByStreamId}
+                  setDispositionByStreamId={setDispositionByStreamId}
                   key={stream.index}
                   filePath={mainFilePath}
                   stream={stream}
@@ -410,6 +416,8 @@ const StreamsSelector = memo(({
               <tbody>
                 {streams.map((stream) => (
                   <Stream
+                    dispositionByStreamId={dispositionByStreamId}
+                    setDispositionByStreamId={setDispositionByStreamId}
                     key={stream.index}
                     filePath={path}
                     stream={stream}
@@ -467,7 +475,7 @@ const StreamsSelector = memo(({
         confirmLabel={t('Done')}
         onCloseComplete={() => setEditingStream()}
       >
-        <EditStreamDialog editingStream={editingStream} allFilesMeta={allFilesMeta} customTagsByStreamId={customTagsByStreamId} setCustomTagsByStreamId={setCustomTagsByStreamId} dispositionByStreamId={dispositionByStreamId} setDispositionByStreamId={setDispositionByStreamId} />
+        <EditStreamDialog editingStream={editingStream} allFilesMeta={allFilesMeta} customTagsByStreamId={customTagsByStreamId} setCustomTagsByStreamId={setCustomTagsByStreamId} />
       </Dialog>
     </>
   );

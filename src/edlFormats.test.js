@@ -1,9 +1,22 @@
 import fs from 'fs/promises';
 import { join } from 'path';
 
-import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseCsv, getTimeFromFrameNum, formatCsvFrames, getFrameCountRaw, parsePbf } from './edlFormats';
+import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, getTimeFromFrameNum, formatCsvFrames, getFrameCountRaw, parsePbf } from './edlFormats';
 
 const readFixture = async (name, encoding = 'utf-8') => fs.readFile(join(__dirname, 'fixtures', name), encoding);
+
+const expectYouTube1 = [
+  { start: 0, end: 1, name: '00:01 Test 1' },
+  { start: 1, end: 2, name: '"Test 2":' },
+  { start: 2, end: 4, name: '00:57 double' },
+  { start: 4, end: 5, name: '' },
+  { start: 5, end: 61, name: '' },
+  { start: 61, end: 61.012, name: 'Test 3' },
+  { start: 61.012, end: 62.012, name: 'Test 6' },
+  { start: 62.012, end: 3661.012, name: 'Test 7' },
+  { start: 3661.012, end: 10074, name: 'Test - 4' },
+  { start: 10074, end: undefined, name: 'Short - hour and hyphen' },
+];
 
 it('parseYoutube', () => {
   const str = `
@@ -12,10 +25,11 @@ Jump to chapters:
 00:01 "Test 2":
 00:02 00:57 double
 00:01:01 Test 3
-01:01:01.012 Test 4
+01:01:01.012 Test - 4
 00:01:01.012 Test 5
    01:01.012 Test 6
   :01:02.012 Test 7
+2:47:54 - Short - hour and hyphen
 00:57:01.0123 Invalid 2
 00:57:01. Invalid 3
 01:15: Invalid 4
@@ -25,17 +39,7 @@ Jump to chapters:
 00:05 
 `;
   const edl = parseYouTube(str);
-  expect(edl).toEqual([
-    { start: 0, end: 1, name: '00:01 Test 1' },
-    { start: 1, end: 2, name: '"Test 2":' },
-    { start: 2, end: 4, name: '00:57 double' },
-    { start: 4, end: 5, name: '' },
-    { start: 5, end: 61, name: '' },
-    { start: 61, end: 61.012, name: 'Test 3' },
-    { start: 61.012, end: 62.012, name: 'Test 6' },
-    { start: 62.012, end: 3661.012, name: 'Test 7' },
-    { start: 3661.012, end: undefined, name: 'Test 4' },
-  ]);
+  expect(edl).toEqual(expectYouTube1);
 });
 
 it('parseYouTube eol', () => {
@@ -61,6 +65,21 @@ it('formatYouTube', () => {
     { start: 0, end: 100 },
   ]).split('\n')).toEqual([
     '0:00',
+  ]);
+});
+
+it('formatYouTube 2', () => {
+  expect(formatYouTube(expectYouTube1).split('\n')).toEqual([
+    '0:00 00:01 Test 1',
+    '0:01 "Test 2":',
+    '0:02 00:57 double',
+    '0:04',
+    '0:05',
+    '1:01 Test 3',
+    '1:01 Test 6',
+    '1:02 Test 7',
+    '1:01:01 Test - 4',
+    '2:47:54 Short - hour and hyphen',
   ]);
 });
 
@@ -138,6 +157,16 @@ it('parses xmeml 1', async () => {
 
 it('parses xmeml 2', async () => {
   expect(await parseXmeml(await readFixture('Final Cut Pro XMEML 2.xml'))).toMatchSnapshot();
+});
+
+// see https://github.com/mifi/lossless-cut/issues/1195
+it('parses xmeml - with multiple tracks', async () => {
+  expect(await parseXmeml(await readFixture('Final Cut Pro XMEML 3.xml'))).toMatchSnapshot();
+});
+
+// see https://github.com/mifi/lossless-cut/issues/1195
+it('parses fcpxml 1.9', async () => {
+  expect(await parseFcpXml(await readFixture('FCPXML_1_9.fcpxml'))).toMatchSnapshot();
 });
 
 // https://github.com/mifi/lossless-cut/issues/1024

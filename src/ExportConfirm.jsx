@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button, Select, CrossIcon } from 'evergreen-ui';
 import { FaRegCheckCircle } from 'react-icons/fa';
@@ -8,7 +8,7 @@ import { IoIosHelpCircle } from 'react-icons/io';
 
 import KeyframeCutButton from './components/KeyframeCutButton';
 import ExportButton from './components/ExportButton';
-import MergeExportButton from './components/MergeExportButton';
+import ExportModeButton from './components/ExportModeButton';
 import PreserveMovDataButton from './components/PreserveMovDataButton';
 import MovFastStartButton from './components/MovFastStartButton';
 import ToggleExportConfirm from './components/ToggleExportConfirm';
@@ -16,7 +16,7 @@ import OutSegTemplateEditor from './components/OutSegTemplateEditor';
 import HighlightedText from './components/HighlightedText';
 
 import { withBlur, toast } from './util';
-import { isMov as ffmpegIsMov } from './ffmpeg';
+import { isMov as ffmpegIsMov } from './util/streams';
 import useUserSettings from './hooks/useUserSettings';
 
 const sheetStyle = {
@@ -32,7 +32,7 @@ const sheetStyle = {
   display: 'flex',
 };
 
-const boxStyle = { margin: '15px 15px 50px 15px', background: 'rgba(25, 25, 25, 0.6)', borderRadius: 10, padding: '10px 20px', minHeight: 450, position: 'relative' };
+const boxStyle = { margin: '15px 15px 50px 15px', background: 'rgba(25, 25, 25, 0.6)', borderRadius: 10, padding: '10px 20px', minHeight: 500, position: 'relative' };
 
 const outDirStyle = { background: 'rgb(193, 98, 0)', borderRadius: '.4em', padding: '0 .3em', wordBreak: 'break-all', cursor: 'pointer' };
 
@@ -41,16 +41,23 @@ const warningStyle = { color: '#faa', fontSize: '80%' };
 const HelpIcon = ({ onClick }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', verticalAlign: 'middle', marginLeft: 5 }} />;
 
 const ExportConfirm = memo(({
-  areWeCutting, selectedSegments, willMerge, visible, onClosePress, onExportConfirm,
+  areWeCutting, selectedSegments, segmentsToExport, willMerge, visible, onClosePress, onExportConfirm,
   outFormat, renderOutFmt, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, outSegTemplate,
   setOutSegTemplate, generateOutSegFileNames, filePath, currentSegIndexSafe, getOutSegError, nonFilteredSegments,
 }) => {
   const { t } = useTranslation();
 
-  const { changeOutDir, keyframeCut, preserveMovData, movFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, togglePreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut } = useUserSettings();
+  const { changeOutDir, keyframeCut, preserveMovData, movFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, togglePreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode } = useUserSettings();
 
   const isMov = ffmpegIsMov(outFormat);
   const isIpod = outFormat === 'ipod';
+
+  const exportModeDescription = useMemo(() => ({
+    sesgments_to_chapters: t('Don\'t cut the file, but instead export an unmodified original which has chapters generated from segments'),
+    merge: t('Auto merge segments to one file after export'),
+    'merge+separate': t('Auto merge segments to one file after export, but keep segments too'),
+    separate: t('Export to separate files'),
+  })[effectiveExportMode], [effectiveExportMode, t]);
 
   const onPreserveMovDataHelpPress = useCallback(() => {
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Preserve all MOV/MP4 metadata tags (e.g. EXIF, GPS position etc.) from source file? Note that some players have trouble playing back files where all metadata is preserved, like iTunes and other Apple software') });
@@ -88,6 +95,10 @@ const ExportConfirm = memo(({
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('You can customize the file name of the output segment(s) using special variables.') });
   }, []);
 
+  const onExportModeHelpPress = useCallback(() => {
+    toast.fire({ icon: 'info', timer: 10000, text: exportModeDescription });
+  }, [exportModeDescription]);
+
   const onAvoidNegativeTsHelpPress = useCallback(() => {
     // https://ffmpeg.org/ffmpeg-all.html#Format-Options
     const texts = {
@@ -122,7 +133,12 @@ const ExportConfirm = memo(({
                 <h2 style={{ marginTop: 0 }}>{t('Export options')}</h2>
                 <ul>
                   {selectedSegments.length !== nonFilteredSegments.length && <li><FaRegCheckCircle size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: selectedSegments.length, nonFilteredSegments: nonFilteredSegments.length })}</li>}
-                  {selectedSegments.length >= 2 && <li>{t('Merge {{segments}} cut segments to one file?', { segments: selectedSegments.length })} <MergeExportButton selectedSegments={selectedSegments} /></li>}
+                  {selectedSegments.length >= 2 && (
+                    <li>
+                      {t('Merge {{segments}} cut segments to one file?', { segments: selectedSegments.length })} <ExportModeButton selectedSegments={selectedSegments} />
+                      <HelpIcon onClick={onExportModeHelpPress} />
+                    </li>
+                  )}
                   <li>
                     {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
                     <HelpIcon onClick={onOutFmtHelpPress} />
@@ -223,7 +239,7 @@ const ExportConfirm = memo(({
               exit={{ scale: 0.7, opacity: 0 }}
               transition={{ duration: 0.4, easings: ['easeOut'] }}
             >
-              <ExportButton selectedSegments={selectedSegments} areWeCutting={areWeCutting} onClick={() => onExportConfirm()} size={1.7} />
+              <ExportButton segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={() => onExportConfirm()} size={1.7} />
             </motion.div>
           </div>
         </>

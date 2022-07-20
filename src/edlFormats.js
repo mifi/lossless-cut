@@ -6,7 +6,6 @@ import csvStringify from 'csv-stringify/lib/browser';
 import pify from 'pify';
 import sortBy from 'lodash/sortBy';
 
-import _ from 'lodash';
 import { formatDuration } from './util/duration';
 import { invertSegments, sortSegments } from './segments';
 
@@ -138,22 +137,44 @@ export function parseXmeml(xmlStr) {
   if (!xmeml) throw Error('Root element <xmeml> not found in file');
 
   let sequence;
-  if (_.property('project.children.sequence.media.video.track.clipitem')(xmeml)) {
+
+  if (xmeml.project?.children?.sequence) {
     sequence = xmeml.project.children.sequence;
-  } else if (_.property('sequence.media.video.track.clipitem')(xmeml)) {
+  } else if (xmeml.sequence) {
     sequence = xmeml.sequence;
   } else {
-    throw Error('No <clipitem> elements found in file');
+    throw new Error('No <sequence> element found');
   }
 
-  return sequence.media.video.track.clipitem.map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
+  if (!sequence?.media?.video?.track) {
+    throw new Error('No <track> element found');
+  }
+
+  const mainTrack = Array.isArray(sequence.media.video.track) ? sequence.media.video.track[0] : sequence.media.video.track;
+
+  return mainTrack.clipitem.map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
 }
 
+export function parseFcpXml(xmlStr) {
+  const xml = new XMLParser({ ignoreAttributes: false }).parse(xmlStr);
+
+  const { fcpxml } = xml;
+  if (!fcpxml) throw Error('Root element <fcpxml> not found in file');
+
+  function parseTime(str) {
+    const match = str.match(/([0-9]+)\/([0-9]+)s/);
+    if (!match) throw new Error('Invalid attribute');
+    return parseInt(match[1], 10) / parseInt(match[2], 10);
+  }
+
+  return fcpxml.library.event.project.sequence.spine['asset-clip'].map((assetClip) => {
+    const start = parseTime(assetClip['@_start']);
+    const duration = parseTime(assetClip['@_duration']);
+    const end = start + duration;
+    return { start, end };
+  });
+}
 export function parseYouTube(str) {
-  const regex = /(?:([0-9]{2,}):)?([0-9]{1,2}):([0-9]{1,2})(?:\.([0-9]{3}))?[^\S\n]+([^\n]*)\n/g;
-
-  const lines = [];
-
   function parseLine(match) {
     if (!match) return undefined;
     const [, hourStr, minStr, secStr, msStr, name] = match;
@@ -167,11 +188,10 @@ export function parseYouTube(str) {
     return { time, name };
   }
 
-  let m;
-  // eslint-disable-next-line no-cond-assign
-  while ((m = regex.exec(`${str}\n`))) {
-    lines.push(parseLine(m));
-  }
+  const lines = str.split('\n').map((lineStr) => {
+    const match = lineStr.match(/(?:([0-9]{1,}):)?([0-9]{1,2}):([0-9]{1,2})(?:\.([0-9]{3}))?[\s-]+([^\n]*)$/);
+    return parseLine(match);
+  }).filter((line) => line);
 
   const linesSorted = sortBy(lines, (l) => l.time);
 

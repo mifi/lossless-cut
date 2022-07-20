@@ -60,7 +60,7 @@ export function runFfmpeg(args) {
 }
 
 
-export function handleProgress(process, cutDuration, onProgress) {
+export function handleProgress(process, cutDuration, onProgress, customMatcher = () => {}) {
   if (!onProgress) return;
   onProgress(0);
 
@@ -72,7 +72,10 @@ export function handleProgress(process, cutDuration, onProgress) {
       let match = line.match(/frame=\s*[^\s]+\s+fps=\s*[^\s]+\s+q=\s*[^\s]+\s+(?:size|Lsize)=\s*[^\s]+\s+time=\s*([^\s]+)\s+/);
       // Audio only looks like this: "line size=  233422kB time=01:45:50.68 bitrate= 301.1kbits/s speed= 353x    "
       if (!match) match = line.match(/(?:size|Lsize)=\s*[^\s]+\s+time=\s*([^\s]+)\s+/);
-      if (!match) return;
+      if (!match) {
+        customMatcher(line);
+        return;
+      }
 
       const str = match[1];
       // console.log(str);
@@ -514,6 +517,26 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
   }
 }
 
+export async function blackDetect({ filePath, duration, minInterval = 0.05, onProgress }) {
+  const args = ['-hide_banner', '-i', filePath, '-vf', `blackdetect=d=${minInterval}`, '-an', '-f', 'null', '-'];
+  const process = execa(getFfmpegPath(), args, { encoding: null, buffer: false });
+
+  const blackSegments = [];
+
+  function customMatcher(line) {
+    const match = line.match(/^[blackdetect @ 0x[0-9a-f]+] black_start:([\d\\.]+) black_end:([\d\\.]+) black_duration:[\d\\.]+/);
+    if (!match) return;
+    const blackStart = parseFloat(match[1]);
+    const blackEnd = parseFloat(match[2]);
+    if (Number.isNaN(blackStart) || Number.isNaN(blackEnd)) return;
+    blackSegments.push({ blackStart, blackEnd });
+  }
+  handleProgress(process, duration, onProgress, customMatcher);
+
+  await process;
+  return blackSegments;
+}
+
 export async function extractWaveform({ filePath, outPath }) {
   const numSegs = 10;
   const duration = 60 * 60;
@@ -553,9 +576,6 @@ export async function captureFrame({ timestamp, videoPath, outPath, numFrames })
     '-y', outPath,
   ]);
 }
-
-
-export const isMov = (format) => ['ismv', 'ipod', 'mp4', 'mov'].includes(format);
 
 export function isIphoneHevc(format, streams) {
   if (!streams.some((s) => s.codec_name === 'hevc')) return false;
@@ -800,9 +820,9 @@ export async function cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, ou
     // No progress if we set loglevel warning :(
     // '-loglevel', 'warning',
 
-    // cannot use -ss before -i here (will lead to issues)
+    '-ss', cutFrom.toFixed(5), // if we don't -ss before -i, seeking will be slow for long files, see https://github.com/mifi/lossless-cut/issues/126#issuecomment-1135451043
     '-i', filePath,
-    '-ss', cutFrom.toFixed(5),
+    '-ss', '0', // If we don't do this, the output seems to start with an empty black after merging with the encoded part
     '-t', (cutTo - cutFrom).toFixed(5),
 
     ...mapStreamsArgs,

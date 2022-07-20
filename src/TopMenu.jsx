@@ -4,7 +4,7 @@ import { FaLock, FaUnlock } from 'react-icons/fa';
 import { IconButton, Button, CrossIcon, ListIcon, VolumeUpIcon, VolumeOffIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
-import MergeExportButton from './components/MergeExportButton';
+import ExportModeButton from './components/ExportModeButton';
 
 import { withBlur, isMasBuild } from './util';
 import { primaryTextColor, controlsBackground } from './colors';
@@ -78,7 +78,7 @@ const TopMenu = memo(({
 
           {!simpleMode && (isCustomFormatSelected || outFormatLocked) && renderFormatLock()}
 
-          <MergeExportButton selectedSegments={selectedSegments} />
+          <ExportModeButton selectedSegments={selectedSegments} style={{ flexGrow: 0, flexBasis: 140 }} />
         </>
       )}
 
