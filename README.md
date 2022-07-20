@@ -102,7 +102,7 @@ If you want to support my continued work on LosslessCut, and you want the advant
 If you prefer to download the executables manually, this will of course always be free:
 
 - Mac OS X: [DMG](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac-x64.dmg)
-- Window: [EXE](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.exe) (portable/self-extracting) / [ZIP](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.zip) (portable)
+- Windows: [7zip](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z)
 - Linux: [x64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x64.tar.bz2) / [x64 AppImage](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x86_64.AppImage) / [arm64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-arm64.tar.bz2)
 - [More releases](https://github.com/mifi/lossless-cut/releases)
 
@@ -172,11 +172,11 @@ Unsupported files can still be converted to a supported format/codec from the `F
 
 ### Windows issues
 
-- What's the difference between `.exe` and `.zip` downloads? `.exe` will self-extract on startup to a temp folder and is therefore slower to start up. `.zip` must be extracted manually but is very fast to start up.
 - If you get an error when cutting or opening any kind of file, try to disable your anti-virus. See [#18](https://github.com/mifi/lossless-cut/issues/18)
 - How to uninstall LosslessCut? There is no installer. Just delete the EXE file or containing folder. User files are stored in your [appData](https://www.electronjs.org/docs/api/app#appgetpathname) folder.
 - If the app crashes immediately upon startup, check the permissions of your User and Temp folders, see [61](https://github.com/mifi/lossless-cut/issues/61).
 - Completely white window when starting up? Try to run with `--disable-gpu` - See [781](https://github.com/mifi/lossless-cut/issues/781).
+- Where did the `.exe`/`.zip` downloads go? I decided to stop distributing exe and instead just 7zip, due to the [problems that the exe download was causing and the large size of zips.](https://github.com/mifi/lossless-cut/issues/1072#issuecomment-1066026323)
 
 If any other problem, check [Known issues](#known-issues--limitations), or please search for existing issues before you file an issue here on GitHub. You can check the developer tools for any errors or clues. Menu: `Tools` -> `Toggle Developer Tools`.
 Also you are welcome to hang out on [Discord](https://discord.gg/fhnEREfUJ3) 🤗
