@@ -158,6 +158,7 @@ Unsupported files can still be converted to a supported format/codec from the `F
   - Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
   - You may try to enable the new "Smart cut" mode. However it is very experimental and may not work for most files.
 - When exporting you may lose some proprietary data tracks (like `tmcd`, `fdsc` and `gpmd` added by GoPro). These can however be losslessly exported to separate files.
+- If you cut a file, but the duration of the exported file is incorrect (or the same as input), try to disable all tracks except for the video track.
 - EXIF/metadata can be preserved (see Export Options dialog), but it doesn't always output compliant files, so use it carefully.
 - Some codecs are not natively supported, but will preview with low quality playback and no audio. You may convert these files to a supported codec from the File menu, see [#88](https://github.com/mifi/lossless-cut/issues/88).
 
@@ -165,9 +166,9 @@ Unsupported files can still be converted to a supported format/codec from the `F
 
 - **Can LosslessCut crop, resize, stretch, mirror, overlay text/images, watermark, blur, redact, re-encode, speed-up/slow-down, create GIF, slideshow, burn subtitles, color grading, fade/combine/mix audio tracks?**
   - [No, these are all lossy operations, but in the future I may start to implement such features](https://github.com/mifi/lossless-cut/issues/372).
+- **MPEG TS** files have a tendency to be a bit problematic. It may help to **first** remux them to another format like MP4/MKV. Then you can open the MP4/MKV file an work on that.
 - Can LosslessCut be batched/automated using a CLI or API?
   - No, it was never designed for that. However there are a few feature requests regarding this: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868)
-- MPEG TS files have a tendency to be a bit problematic. It may help to **first** remux them to another format like MP4/MKV. Then you can open the MP4/MKV file an work on that.
 - **Linux**: If you get an error like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See [#258](https://github.com/mifi/lossless-cut/issues/258)
 
 ### Windows issues
