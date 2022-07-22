@@ -6,13 +6,13 @@ body:
     attributes:
       label: I have a lot of issues to go through, so in order to make it easier for me to help you, I ask that you please try these things first
       options:
+        - label: Check out all the menus and keyboard shortcuts. Maybe the feature already exists?
+          required: true
         - label: Try with the [newest version from GitHub](https://github.com/mifi/lossless-cut/releases/latest)
           required: true
         - label: Read all the documentation at https://github.com/mifi/lossless-cut to see if the feature already exists
           required: true
         - label: See if someone already suggested this under [Issues](https://github.com/mifi/lossless-cut/issues) or [Discussions](https://github.com/mifi/lossless-cut/discussions)
-          required: true
-        - label: If you have an issue with one particular file, try other type of file and see if it works.
           required: true
   - type: textarea
     id: feature-description
