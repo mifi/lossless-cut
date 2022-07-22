@@ -1,0 +1,23 @@
+name: ✨ Feature request
+description: Suggest an idea for an improvement
+body:
+  - type: checkboxes
+    id: initial-checklist
+    attributes:
+      label: I have a lot of issues to go through, so in order to make it easier for me to help you, I ask that you please try these things first
+      options:
+        - label: Try with the [newest version from GitHub](https://github.com/mifi/lossless-cut/releases/latest)
+          required: true
+        - label: Read all the documentation at https://github.com/mifi/lossless-cut to see if the feature already exists
+          required: true
+        - label: See if someone already suggested this under [Issues](https://github.com/mifi/lossless-cut/issues) or [Discussions](https://github.com/mifi/lossless-cut/discussions)
+          required: true
+        - label: If you have an issue with one particular file, try other type of file and see if it works.
+          required: true
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Description
+      description: A clear and concise description of what you want you would like to be added or improved in LosslessCut. You can attach screenshots if needed.
+    validations:
+      required: true
