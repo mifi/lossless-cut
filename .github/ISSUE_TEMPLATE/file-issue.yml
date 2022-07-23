@@ -10,7 +10,7 @@ body:
     attributes:
       label: I have a lot of issues to go through, so in order to make it easier for me to help you, I ask that you please try these things first
       options:
-        - label: Try with a different kind of file and see if the problem is related to just this file.
+        - label: Try with a different kind of file to confirm that the problem is related to just this file.
           required: true
         - label: Try with the [newest version from GitHub](https://github.com/mifi/lossless-cut/releases/latest)
           required: true
