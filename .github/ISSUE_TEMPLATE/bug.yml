@@ -12,7 +12,7 @@ body:
           required: true
         - label: Search for your problem under [Issues](https://github.com/mifi/lossless-cut/issues) or [Discussions](https://github.com/mifi/lossless-cut/discussions)
           required: true
-        - label: If you have an issue only with one particular file, [use this form instead](https://github.com/mifi/lossless-cut/blob/master/.github/ISSUE_TEMPLATE/file-issue.yml)
+        - label: If you have an issue only with one particular file, [use this form instead](https://github.com/mifi/lossless-cut/issues/new?assignees=&labels=&template=file-issue.yml)
           required: true
   - type: dropdown
     id: operating-system
