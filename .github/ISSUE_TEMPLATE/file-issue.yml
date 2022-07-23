@@ -1,5 +1,9 @@
-name: 🐛 Bug report
-description: If you have a problem **only with a particular file** in LosslessCut, use this form. If you have a problem with all files or LosslessCut in general, [use this form instead](https://github.com/mifi/lossless-cut/issues/new?assignees=&labels=&template=bug.yml).
+name: 📄 Problem with a particular file
+description: Report a problem with a particular file only
+- type: markdown
+  attributes:
+    value: |
+      If you have a problem **only with a particular file**, use this form. If you have a problem with all files or LosslessCut in general, [use this form instead](https://github.com/mifi/lossless-cut/issues/new?assignees=&labels=&template=bug.yml).
 body:
   - type: checkboxes
     id: initial-checklist
