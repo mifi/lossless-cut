@@ -99,7 +99,7 @@
     "electron-store": "5.1.1",
     "electron-unhandled": "^3.0.2",
     "execa": "^5.0.0",
-    "file-type": "^12.4.0",
+    "file-type": "^16.5.4",
     "file-url": "^3.0.0",
     "fs-extra": "^8.1.0",
     "github-api": "^3.2.2",
