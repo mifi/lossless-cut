@@ -116,7 +116,7 @@ export function handleError(arg1, arg2) {
   toast.fire({
     icon: 'error',
     title: msg || i18n.t('An error has occurred.'),
-    text: errorMsg ? errorMsg.substr(0, 300) : undefined,
+    text: errorMsg ? errorMsg.substring(0, 300) : undefined,
   });
 }
 
