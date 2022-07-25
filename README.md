@@ -102,7 +102,7 @@ If you want to support my continued work on LosslessCut, and you want the advant
 If you prefer to download the executables manually, this will of course always be free:
 
 - Mac OS X: [DMG](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac-x64.dmg)
-- Windows: [7zip](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z)
+- Windows: [7zip](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z) (APPX not available)
 - Linux: [x64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x64.tar.bz2) / [x64 AppImage](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x86_64.AppImage) / [arm64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-arm64.tar.bz2) / [Raspberry Pi armv7l](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-armv7l.tar.bz2)
 - [More releases](https://github.com/mifi/lossless-cut/releases)
 
@@ -178,6 +178,7 @@ Unsupported files can still be converted to a supported format/codec from the `F
 - If the app crashes immediately upon startup, check the permissions of your User and Temp folders, see [61](https://github.com/mifi/lossless-cut/issues/61).
 - Completely white window when starting up? Try to run with `--disable-gpu` - See [781](https://github.com/mifi/lossless-cut/issues/781).
 - Where did the `.exe`/`.zip` downloads go? I decided to stop distributing exe and instead just 7zip, due to the [problems that the exe download was causing and the large size of zips.](https://github.com/mifi/lossless-cut/issues/1072#issuecomment-1066026323)
+- [APPX is not signed and **does not work**.](https://github.com/mifi/lossless-cut/issues/337) Please use [7z package](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z) instead.
 
 If any other problem, check [Known issues](#known-issues--limitations), or please search for existing issues before you file an issue here on GitHub. You can check the developer tools for any errors or clues. Menu: `Tools` -> `Toggle Developer Tools`.
 Also you are welcome to hang out on [Discord](https://discord.gg/fhnEREfUJ3) 🤗
