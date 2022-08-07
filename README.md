@@ -164,7 +164,7 @@ Unsupported files can still be converted to a supported format/codec from the `F
 
 ## Troubleshooting / FAQ
 
-- **Can LosslessCut crop, resize, stretch, mirror, overlay text/images, watermark, blur, redact, re-encode, speed-up/slow-down, create GIF, slideshow, burn subtitles, color grading, fade/combine/mix audio tracks?**
+- **Can LosslessCut crop, resize, stretch, mirror, overlay text/images, watermark, blur, redact, re-encode, speed-up/slow-down, create GIF, slideshow, burn subtitles, color grading, fade/combine/mix audio tracks or change audio volume?**
   - [No, these are all lossy operations, but in the future I may start to implement such features](https://github.com/mifi/lossless-cut/issues/372).
 - **MPEG TS** files have a tendency to be a bit problematic. It may help to **first** remux them to another format like MP4/MKV. Then you can open the MP4/MKV file an work on that.
 - Can LosslessCut be batched/automated using a CLI or API?
