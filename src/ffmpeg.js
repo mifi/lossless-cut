@@ -1,5 +1,4 @@
 import pMap from 'p-map';
-import flatMap from 'lodash/flatMap';
 import sortBy from 'lodash/sortBy';
 import moment from 'moment';
 import i18n from 'i18next';
@@ -13,8 +12,12 @@ const { join } = window.require('path');
 const FileType = window.require('file-type');
 const readline = window.require('readline');
 const isDev = window.require('electron-is-dev');
+const { pathExists } = window.require('fs-extra');
 
 let customFfPath;
+
+
+export class RefuseOverwriteError extends Error {}
 
 // Note that this does not work on MAS because of sandbox restrictions
 export function setCustomFfPath(path) {
@@ -325,14 +328,21 @@ function getPreferredCodecFormat({ codec_name: codec, codec_type: type }) {
   return undefined;
 }
 
-async function extractNonAttachmentStreams({ customOutDir, filePath, streams }) {
+async function extractNonAttachmentStreams({ customOutDir, filePath, streams, enableOverwriteOutput }) {
   if (streams.length === 0) return;
 
   console.log('Extracting', streams.length, 'normal streams');
 
-  const streamArgs = flatMap(streams, ({ index, codec, type, format: { format, ext } }) => [
-    '-map', `0:${index}`, '-c', 'copy', '-f', format, '-y', getOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` }),
-  ]);
+  let streamArgs = [];
+  await pMap(streams, async ({ index, codec, type, format: { format, ext } }) => {
+    const outPath = getOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
+    if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
+
+    streamArgs = [
+      ...streamArgs,
+      '-map', `0:${index}`, '-c', 'copy', '-f', format, '-y', outPath,
+    ];
+  }, { concurrency: 1 });
 
   const ffmpegArgs = [
     '-hide_banner',
@@ -345,17 +355,22 @@ async function extractNonAttachmentStreams({ customOutDir, filePath, streams }) 
   console.log(stdout);
 }
 
-async function extractAttachmentStreams({ customOutDir, filePath, streams }) {
+async function extractAttachmentStreams({ customOutDir, filePath, streams, enableOverwriteOutput }) {
   if (streams.length === 0) return;
 
   console.log('Extracting', streams.length, 'attachment streams');
 
-  const streamArgs = flatMap(streams, ({ index, codec_name: codec, codec_type: type }) => {
+  let streamArgs = [];
+  await pMap(streams, async ({ index, codec_name: codec, codec_type: type }) => {
     const ext = codec || 'bin';
-    return [
-      `-dump_attachment:${index}`, getOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` }),
+    const outPath = getOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
+    if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
+
+    streamArgs = [
+      ...streamArgs,
+      `-dump_attachment:${index}`, outPath,
     ];
-  });
+  }, { concurrency: 1 });
 
   const ffmpegArgs = [
     '-y',
@@ -377,7 +392,7 @@ async function extractAttachmentStreams({ customOutDir, filePath, streams }) {
 }
 
 // https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
-export async function extractStreams({ filePath, customOutDir, streams }) {
+export async function extractStreams({ filePath, customOutDir, streams, enableOverwriteOutput }) {
   const attachmentStreams = streams.filter((s) => s.codec_type === 'attachment');
   const nonAttachmentStreams = streams.filter((s) => s.codec_type !== 'attachment');
 
@@ -394,8 +409,8 @@ export async function extractStreams({ filePath, customOutDir, streams }) {
   // TODO progress
 
   // Attachment streams are handled differently from normal streams
-  await extractNonAttachmentStreams({ customOutDir, filePath, streams: outStreams });
-  await extractAttachmentStreams({ customOutDir, filePath, streams: attachmentStreams });
+  await extractNonAttachmentStreams({ customOutDir, filePath, streams: outStreams, enableOverwriteOutput });
+  await extractAttachmentStreams({ customOutDir, filePath, streams: attachmentStreams, enableOverwriteOutput });
 }
 
 async function renderThumbnail(filePath, timestamp) {

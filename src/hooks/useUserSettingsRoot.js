@@ -113,6 +113,8 @@ export default () => {
   useEffect(() => safeSetConfig('customFfPath', customFfPath), [customFfPath]);
   const [storeProjectInWorkingDir, setStoreProjectInWorkingDir] = useState(safeGetConfigInitial('storeProjectInWorkingDir'));
   useEffect(() => safeSetConfig('storeProjectInWorkingDir', storeProjectInWorkingDir), [storeProjectInWorkingDir]);
+  const [enableOverwriteOutput, setEnableOverwriteOutput] = useState(safeGetConfigInitial('enableOverwriteOutput'));
+  useEffect(() => safeSetConfig('enableOverwriteOutput', enableOverwriteOutput), [enableOverwriteOutput]);
 
   const resetKeyBindings = useCallback(() => {
     configStore.reset('keyBindings');
@@ -205,5 +207,7 @@ export default () => {
     setCustomFfPath,
     storeProjectInWorkingDir,
     setStoreProjectInWorkingDir,
+    enableOverwriteOutput,
+    setEnableOverwriteOutput,
   };
 };

@@ -56,7 +56,7 @@ import {
   extractStreams, runStartupCheck, setCustomFfPath as ffmpegSetCustomFfPath,
   isIphoneHevc, tryMapChaptersToEdl, blackDetect,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
-  getFfmpegPath,
+  getFfmpegPath, RefuseOverwriteError,
 } from './ffmpeg';
 import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, defaultProcessedCodecTypes, isAudioDefinitelyNotSupported, doesPlayerSupportFile } from './util/streams';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
@@ -70,7 +70,7 @@ import {
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
-import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments, selectSegmentsByLabelDialog, confirmExtractFramesAsImages } from './dialogs';
+import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments, selectSegmentsByLabelDialog, confirmExtractFramesAsImages, showRefuseToOverwrite } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap } from './segments';
@@ -200,7 +200,7 @@ const App = memo(() => {
   const zoomedDuration = isDurationValid(duration) ? duration / zoom : undefined;
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, setEnableAutoHtml5ify, segmentsToChaptersOnly, setSegmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, setEnableSmartCut, customFfPath, setCustomFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, setEnableAutoHtml5ify, segmentsToChaptersOnly, setSegmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, setEnableSmartCut, customFfPath, setCustomFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, setEnableOverwriteOutput,
   } = useUserSettingsRoot();
 
   useEffect(() => {
@@ -754,8 +754,8 @@ const App = memo(() => {
   }, [autoDeleteMergedSegments, autoMerge, segmentsToChaptersOnly]);
 
   const userSettingsContext = useMemo(() => ({
-    captureFormat, setCaptureFormat, toggleCaptureFormat, customOutDir, setCustomOutDir, changeOutDir, keyframeCut, setKeyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, togglePreserveMovData, movFastStart, setMovFastStart, toggleMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, togglePreserveMetadataOnMerge, simpleMode, setSimpleMode, toggleSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, toggleSafeOutputFileName, enableAutoHtml5ify, setEnableAutoHtml5ify, segmentsToChaptersOnly, setSegmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, setEnableSmartCut, customFfPath, setCustomFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, effectiveExportMode,
-  }), [askBeforeClose, autoDeleteMergedSegments, autoExportExtraStreams, autoLoadTimecode, autoMerge, autoSaveProjectFile, avoidNegativeTs, captureFormat, changeOutDir, customFfPath, customOutDir, effectiveExportMode, enableAskForFileOpenAction, enableAskForImportChapters, enableAutoHtml5ify, enableSmartCut, enableTransferTimestamps, exportConfirmEnabled, ffmpegExperimental, hideNotifications, invertCutSegments, invertTimelineScroll, keyBindings, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyframeCut, language, movFastStart, outFormatLocked, outSegTemplate, playbackVolume, preserveMetadataOnMerge, preserveMovData, resetKeyBindings, safeOutputFileName, segmentsToChapters, segmentsToChaptersOnly, setAskBeforeClose, setAutoDeleteMergedSegments, setAutoExportExtraStreams, setAutoLoadTimecode, setAutoMerge, setAutoSaveProjectFile, setAvoidNegativeTs, setCaptureFormat, setCustomFfPath, setCustomOutDir, setEnableAskForFileOpenAction, setEnableAskForImportChapters, setEnableAutoHtml5ify, setEnableSmartCut, setEnableTransferTimestamps, setExportConfirmEnabled, setFfmpegExperimental, setHideNotifications, setInvertCutSegments, setInvertTimelineScroll, setKeyBindings, setKeyboardNormalSeekSpeed, setKeyboardSeekAccFactor, setKeyframeCut, setLanguage, setMovFastStart, setOutFormatLocked, setOutSegTemplate, setPlaybackVolume, setPreserveMetadataOnMerge, setPreserveMovData, setSafeOutputFileName, setSegmentsToChapters, setSegmentsToChaptersOnly, setSimpleMode, setStoreProjectInWorkingDir, setTimecodeFormat, setWheelSensitivity, simpleMode, storeProjectInWorkingDir, timecodeFormat, toggleCaptureFormat, toggleExportConfirmEnabled, toggleKeyframeCut, toggleMovFastStart, togglePreserveMetadataOnMerge, togglePreserveMovData, toggleSafeOutputFileName, toggleSegmentsToChapters, toggleSimpleMode, wheelSensitivity]);
+    captureFormat, setCaptureFormat, toggleCaptureFormat, customOutDir, setCustomOutDir, changeOutDir, keyframeCut, setKeyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, togglePreserveMovData, movFastStart, setMovFastStart, toggleMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoMerge, setAutoMerge, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, setAutoExportExtraStreams, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, setAutoSaveProjectFile, wheelSensitivity, setWheelSensitivity, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, autoDeleteMergedSegments, setAutoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, togglePreserveMetadataOnMerge, simpleMode, setSimpleMode, toggleSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, setKeyboardSeekAccFactor, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, enableTransferTimestamps, setEnableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, toggleSafeOutputFileName, enableAutoHtml5ify, setEnableAutoHtml5ify, segmentsToChaptersOnly, setSegmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, setEnableSmartCut, customFfPath, setCustomFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput,
+  }), [askBeforeClose, autoDeleteMergedSegments, autoExportExtraStreams, autoLoadTimecode, autoMerge, autoSaveProjectFile, avoidNegativeTs, captureFormat, changeOutDir, customFfPath, customOutDir, effectiveExportMode, enableAskForFileOpenAction, enableAskForImportChapters, enableAutoHtml5ify, enableOverwriteOutput, enableSmartCut, enableTransferTimestamps, exportConfirmEnabled, ffmpegExperimental, hideNotifications, invertCutSegments, invertTimelineScroll, keyBindings, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyframeCut, language, movFastStart, outFormatLocked, outSegTemplate, playbackVolume, preserveMetadataOnMerge, preserveMovData, resetKeyBindings, safeOutputFileName, segmentsToChapters, segmentsToChaptersOnly, setAskBeforeClose, setAutoDeleteMergedSegments, setAutoExportExtraStreams, setAutoLoadTimecode, setAutoMerge, setAutoSaveProjectFile, setAvoidNegativeTs, setCaptureFormat, setCustomFfPath, setCustomOutDir, setEnableAskForFileOpenAction, setEnableAskForImportChapters, setEnableAutoHtml5ify, setEnableOverwriteOutput, setEnableSmartCut, setEnableTransferTimestamps, setExportConfirmEnabled, setFfmpegExperimental, setHideNotifications, setInvertCutSegments, setInvertTimelineScroll, setKeyBindings, setKeyboardNormalSeekSpeed, setKeyboardSeekAccFactor, setKeyframeCut, setLanguage, setMovFastStart, setOutFormatLocked, setOutSegTemplate, setPlaybackVolume, setPreserveMetadataOnMerge, setPreserveMovData, setSafeOutputFileName, setSegmentsToChapters, setSegmentsToChaptersOnly, setSimpleMode, setStoreProjectInWorkingDir, setTimecodeFormat, setWheelSensitivity, simpleMode, storeProjectInWorkingDir, timecodeFormat, toggleCaptureFormat, toggleExportConfirmEnabled, toggleKeyframeCut, toggleMovFastStart, togglePreserveMetadataOnMerge, togglePreserveMovData, toggleSafeOutputFileName, toggleSegmentsToChapters, toggleSimpleMode, wheelSensitivity]);
 
   const isCopyingStreamId = useCallback((path, streamId) => (
     !!(copyStreamIdsByFile[path] || {})[streamId]
@@ -1323,6 +1323,7 @@ const App = memo(() => {
         chapters: chaptersToAdd,
         detectedFps,
         enableSmartCut,
+        enableOverwriteOutput,
       });
 
       if (willMerge) {
@@ -1354,7 +1355,7 @@ const App = memo(() => {
 
       if (exportExtraStreams) {
         try {
-          await extractStreams({ filePath, customOutDir, streams: nonCopiedExtraStreams });
+          await extractStreams({ filePath, customOutDir, streams: nonCopiedExtraStreams, enableOverwriteOutput });
           msgs.push(i18n.t('Unprocessable streams were exported as separate files.'));
         } catch (err) {
           console.error('Extra stream export failed', err);
@@ -1363,6 +1364,11 @@ const App = memo(() => {
 
       if (!hideAllNotifications) openDirToast({ dirPath: outputDir, text: msgs.join(' '), timer: 15000 });
     } catch (err) {
+      if (err instanceof RefuseOverwriteError) {
+        showRefuseToOverwrite();
+        return;
+      }
+
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
 
@@ -1380,7 +1386,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, selectedSegmentsOrInverse, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, detectedFps, enableSmartCut, willMerge, mainFileFormatData, mainStreams, exportExtraStreams, hideAllNotifications, segmentsToChapters, invertCutSegments, autoConcatCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, filePath, nonCopiedExtraStreams, handleCutFailed]);
+  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, detectedFps, enableSmartCut, enableOverwriteOutput, willMerge, mainFileFormatData, mainStreams, exportExtraStreams, hideAllNotifications, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, filePath, nonCopiedExtraStreams, handleCutFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath || workingRef.current || segmentsToExport.length < 1) return;
@@ -1736,15 +1742,19 @@ const App = memo(() => {
     try {
       setWorking(i18n.t('Extracting all streams'));
       setStreamsSelectorShown(false);
-      await extractStreams({ customOutDir, filePath, streams: mainStreams });
+      await extractStreams({ customOutDir, filePath, streams: mainStreams, enableOverwriteOutput });
       openDirToast({ dirPath: outputDir, text: i18n.t('All streams have been extracted as separate files') });
     } catch (err) {
+      if (err instanceof RefuseOverwriteError) {
+        showRefuseToOverwrite();
+        return;
+      }
       errorToast(i18n.t('Failed to extract all streams'));
       console.error('Failed to extract all streams', err);
     } finally {
       setWorking();
     }
-  }, [customOutDir, filePath, mainStreams, outputDir, setWorking]);
+  }, [customOutDir, enableOverwriteOutput, filePath, mainStreams, outputDir, setWorking]);
 
   const detectBlackScenes = useCallback(async () => {
     if (!filePath) return;
@@ -2007,15 +2017,19 @@ const App = memo(() => {
     try {
       setWorking(i18n.t('Extracting track'));
       // setStreamsSelectorShown(false);
-      await extractStreams({ customOutDir, filePath, streams: mainStreams.filter((s) => s.index === index) });
+      await extractStreams({ customOutDir, filePath, streams: mainStreams.filter((s) => s.index === index), enableOverwriteOutput });
       openDirToast({ dirPath: outputDir, text: i18n.t('Track has been extracted') });
     } catch (err) {
+      if (err instanceof RefuseOverwriteError) {
+        showRefuseToOverwrite();
+        return;
+      }
       errorToast(i18n.t('Failed to extract track'));
       console.error('Failed to extract track', err);
     } finally {
       setWorking();
     }
-  }, [customOutDir, filePath, mainStreams, outputDir, setWorking]);
+  }, [customOutDir, enableOverwriteOutput, filePath, mainStreams, outputDir, setWorking]);
 
   const addStreamSourceFile = useCallback(async (path) => {
     if (allFilesMeta[path]) return;

@@ -110,6 +110,7 @@ const defaults = {
   keyBindings: defaultKeyBindings,
   customFfPath: undefined,
   storeProjectInWorkingDir: true,
+  enableOverwriteOutput: true,
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645

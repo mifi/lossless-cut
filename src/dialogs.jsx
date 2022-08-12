@@ -169,6 +169,13 @@ export async function showDiskFull() {
   });
 }
 
+export async function showRefuseToOverwrite() {
+  await Swal.fire({
+    icon: 'warning',
+    text: i18n.t('Output file already exists, refusing to overwrite. You can turn on overwriting in settings.'),
+  });
+}
+
 export async function askForImportChapters() {
   const { value } = await Swal.fire({
     icon: 'question',
