@@ -46,7 +46,7 @@ export function getOutSegError({ fileNames, filePath, outputDir }) {
 
   if (error != null) return error;
 
-  if (hasDuplicates(fileNames)) return i18n.t('Template results in duplicate file names');
+  if (hasDuplicates(fileNames)) return i18n.t('Output file name template results in duplicate file names (you are trying to export multiple files with the same name.)');
 
   return undefined;
 }
