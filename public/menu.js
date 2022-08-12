@@ -156,13 +156,17 @@ module.exports = (app, mainWindow, newVersion) => {
             mainWindow.webContents.send('toggleSettings');
           },
         },
-        { type: 'separator' },
-        {
-          label: i18n.t('Exit'),
-          click() {
-            app.quit();
+        // Due to Apple Review Guidelines, we cannot include an Exit menu item here
+        // Apple has their own Quit from the app menu
+        ...(process.platform !== 'darwin' ? [
+          { type: 'separator' },
+          {
+            label: i18n.t('Exit'),
+            click() {
+              app.quit();
+            },
           },
-        },
+        ] : []),
       ],
     },
 
