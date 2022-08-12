@@ -2,7 +2,7 @@ import React, { memo, useState, useEffect, useCallback } from 'react';
 import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { Text, Button, Alert, IconButton, TickIcon, ResetIcon } from 'evergreen-ui';
+import { Text, Button, Alert, IconButton, TickIcon, ResetIcon, Heading } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
@@ -12,6 +12,8 @@ import useUserSettings from '../hooks/useUserSettings';
 
 const ReactSwal = withReactContent(Swal);
 
+// eslint-disable-next-line no-template-curly-in-string
+const extVar = '${EXT}';
 
 const inputStyle = { flexGrow: 1, fontFamily: 'inherit', fontSize: '.8em' };
 
@@ -48,6 +50,9 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
       setError(err.message);
     }
   }, [debouncedText, generateOutSegFileNames, getOutSegError, t]);
+
+  // eslint-disable-next-line no-template-curly-in-string
+  const isMissingExtension = validText != null && !validText.endsWith(extVar);
 
   const onAllSegmentsPreviewPress = () => ReactSwal.fire({
     title: t('Resulting segment file names'),
@@ -95,8 +100,9 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
             <IconButton title={t('Reset')} icon={ResetIcon} height={20} onClick={reset} marginLeft={5} intent="danger" />
             <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" />
           </div>
-          <div>
-            {error != null && <Alert intent="danger" appearance="card"><Text>{i18n.t('There is an error in the file name template:')}</Text><br /><Text>{error}</Text></Alert>}
+          <div style={{ maxWidth: 600 }}>
+            {error != null && <Alert intent="danger" appearance="card"><Heading color="danger">{i18n.t('There is an error in the file name template:')}</Heading><Text>{error}</Text></Alert>}
+            {isMissingExtension && <Alert intent="warning" appearance="card">{i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVar })}</Alert>}
             {/* eslint-disable-next-line no-template-curly-in-string */}
             <div style={{ fontSize: '.8em', color: 'rgba(255,255,255,0.7)' }}>
               {`${i18n.t('Variables')}`}{': '}
