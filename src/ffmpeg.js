@@ -10,8 +10,7 @@ import { getOutPath, isDurationValid, getExtensionForFormat, isWindows, isMac, p
 
 const execa = window.require('execa');
 const { join } = window.require('path');
-const fileType = window.require('file-type');
-const readChunk = window.require('read-chunk');
+const FileType = window.require('file-type');
 const readline = window.require('readline');
 const isDev = window.require('electron-is-dev');
 
@@ -257,7 +256,12 @@ function mapDefaultFormat({ streams, requestedFormat }) {
   }
 }
 
-function determineOutputFormat(ffprobeFormats, fileTypeResponse) {
+async function determineOutputFormat(ffprobeFormats, filePath) {
+  if (ffprobeFormats.length === 1) return ffprobeFormats[0];
+  // if ffprobe returned a list of formats, try to be a bit smarter about it.
+  const fileTypeResponse = await FileType.fromFile(filePath) || {};
+  console.log(`fileType detected format ${JSON.stringify(fileTypeResponse)}`);
+
   if (ffprobeFormats.includes(fileTypeResponse.ext)) return fileTypeResponse.ext;
   return ffprobeFormats[0] || undefined;
 }
@@ -267,11 +271,7 @@ export async function getSmarterOutFormat({ filePath, fileMeta: { format, stream
   console.log('formats', formatsStr);
   const formats = (formatsStr || '').split(',');
 
-  // ffprobe sometimes returns a list of formats, try to be a bit smarter about it.
-  const bytes = await readChunk(filePath, 0, 4100);
-  const fileTypeResponse = fileType(bytes) || {};
-  console.log(`fileType detected format ${JSON.stringify(fileTypeResponse)}`);
-  const assumedFormat = determineOutputFormat(formats, fileTypeResponse);
+  const assumedFormat = await determineOutputFormat(formats, filePath);
 
   return mapDefaultFormat({ streams, requestedFormat: assumedFormat });
 }
