@@ -390,6 +390,13 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
       const smartCutSegmentsToConcat = [smartCutEncodedPartOutPath, smartCutMainPartOutPath];
 
+      if (smartCutFrom > cutTo) {
+        if (!detectedFps) throw new Error('Smart cut is not possible when FPS is unknown');
+        const file = getSegmentOutPath();
+        await cutEncodeSmartPart({ filePath, cutFrom: desiredCutFrom, cutTo, outPath: file, outFormat, videoCodec, videoBitrate, videoStreamIndex, videoTimebase, allFilesMeta, copyFileStreams: copyFileStreamsFiltered, ffmpegExperimental });
+        return file;
+      }
+
       // for smart cut we need to use keyframe cut here
       await cutSingle({
         cutFrom: smartCutFrom, cutTo, chaptersPath, outPath: smartCutMainPartOutPath, copyFileStreams: copyFileStreamsFiltered, keyframeCut: true, avoidNegativeTs: false, videoDuration, rotation, allFilesMeta, outFormat, appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, customTagsByStreamId, dispositionByStreamId, videoTimebase, onProgress: onCutProgress,
