@@ -1,9 +1,11 @@
 import React, { memo, useState, useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Checkbox, Dialog, Button, Paragraph } from 'evergreen-ui';
+import { IconButton, Alert, Checkbox, Dialog, Button, Paragraph } from 'evergreen-ui';
 import { AiOutlineMergeCells } from 'react-icons/ai';
 import { FaQuestionCircle, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import i18n from 'i18next';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 import { readFileMeta, getSmarterOutFormat } from '../ffmpeg';
 import useFileFormatState from '../hooks/useFileFormatState';
@@ -12,6 +14,8 @@ import useUserSettings from '../hooks/useUserSettings';
 import { isMov } from '../util/streams';
 
 const { basename } = window.require('path');
+
+const ReactSwal = withReactContent(Swal);
 
 const containerStyle = { color: 'black' };
 
@@ -72,29 +76,41 @@ const ConcatDialog = memo(({
     if (!allFilesMeta) return [];
     const allFilesMetaExceptFirstFile = allFilesMeta.slice(1);
     const [, firstFileMeta] = allFilesMeta[0];
-    const errors = [];
+    const errors = {};
+    function addError(path, error) {
+      if (!errors[path]) errors[path] = [];
+      errors[path].push(error);
+    }
     allFilesMetaExceptFirstFile.forEach(([path, { streams }]) => {
-      streams.some((stream, i) => {
+      streams.forEach((stream, i) => {
         const referenceStream = firstFileMeta.streams[i];
         if (!referenceStream) {
-          errors.push([path, i18n.t('Extraneous track {{index}}', { index: stream.index })]);
-          return true;
+          addError(path, i18n.t('Extraneous track {{index}}', { index: stream.index }));
+          return;
         }
         // check all these parameters
-        ['codec_name', 'width', 'height', 'fps', 'pix_fmt', 'level', 'profile', 'sample_fmt', 'r_frame_rate', 'time_base'].some((key) => {
+        ['codec_name', 'width', 'height', 'fps', 'pix_fmt', 'level', 'profile', 'sample_fmt', 'r_frame_rate', 'time_base'].forEach((key) => {
           const val = stream[key];
           const referenceVal = referenceStream[key];
           if (val !== referenceVal) {
-            errors.push([path, i18n.t('Track {{index}} mismatch: {{key1}} {{value1}} != {{value2}}', { index: stream.index, key1: key, value1: val, value2: referenceVal })]);
-            return true;
+            addError(path, i18n.t('Track {{index}} mismatch: {{key1}} {{value1}} != {{value2}}', { index: stream.index, key1: key, value1: val || 'none', value2: referenceVal || 'none' }));
           }
-          return false;
         });
-        return false;
       });
     });
-    return Object.fromEntries(errors);
+    return errors;
   }, [allFilesMeta]);
+
+  const onProblemsByFileClick = useCallback((path) => {
+    ReactSwal.fire({
+      title: i18n.t('Mismatches detected'),
+      html: (
+        <ul style={{ margin: '10px 0', textAlign: 'left' }}>
+          {(problemsByFile[path] || []).map((problem) => <li key={problem}>{problem}</li>)}
+        </ul>
+      ),
+    });
+  }, [problemsByFile]);
 
   useEffect(() => {
     if (!isShown || !enableReadFileMeta) return undefined;
@@ -156,9 +172,8 @@ const ConcatDialog = memo(({
                   {'. '}
                   <span style={{ color: 'rgba(0,0,0,0.7)' }}>{basename(path)}</span>
                   {!allFilesMetaCache[path] && <FaQuestionCircle color="#996A13" style={{ marginLeft: 10 }} />}
-                  {problemsByFile[path] && <FaExclamationTriangle color="#996A13" style={{ marginLeft: 10 }} />}
+                  {problemsByFile[path] && <IconButton appearance="minimal" icon={FaExclamationTriangle} onClick={() => onProblemsByFileClick(path)} title={i18n.t('Mismatches detected')} color="#996A13" style={{ marginLeft: 10 }} />}
                 </div>
-                {problemsByFile[path] && <div style={{ marginBottom: 7, color: '#996A13', fontWeight: 'bold' }}>{problemsByFile[path]}</div>}
               </div>
             ))}
           </div>
