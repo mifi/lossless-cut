@@ -143,9 +143,8 @@ const App = memo(() => {
   const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
 
   // State per application launch
+  const [timelineMode, setTimelineMode] = useState();
   const [keyframesEnabled, setKeyframesEnabled] = useState(true);
-  const [waveformEnabled, setWaveformEnabled] = useState(false);
-  const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
   const [showRightBar, setShowRightBar] = useState(true);
   const [cleanupChoices, setCleanupChoices] = useState({ tmpFiles: true });
   const [rememberConvertToSupportedFormat, setRememberConvertToSupportedFormat] = useState();
@@ -230,15 +229,13 @@ const App = memo(() => {
     }
   }, [detectedFileFormat, outFormatLocked, setFileFormat, setOutFormatLocked]);
 
-  const setTimelineMode = useCallback((newMode) => {
-    if (newMode === 'waveform') {
-      setWaveformEnabled(v => !v);
-      setThumbnailsEnabled(false);
+  const toggleTimelineMode = useCallback((newMode) => {
+    if (newMode === timelineMode) {
+      setTimelineMode();
     } else {
-      setThumbnailsEnabled(v => !v);
-      setWaveformEnabled(false);
+      setTimelineMode(newMode);
     }
-  }, []);
+  }, [timelineMode]);
 
   const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => !v), [setExportConfirmEnabled]);
 
@@ -852,6 +849,12 @@ const App = memo(() => {
     setThumbnails(v => [...v, thumbnail]);
   }
 
+  const hasAudio = !!mainAudioStream;
+  const hasVideo = !!mainVideoStream;
+
+  const waveformEnabled = timelineMode === 'waveform' && hasAudio;
+  const thumbnailsEnabled = timelineMode === 'thumbnails' && hasVideo;
+
   const [, cancelRenderThumbnails] = useDebounceOld(() => {
     async function renderThumbnails() {
       if (!thumbnailsEnabled || thumnailsRenderingPromiseRef.current) return;
@@ -888,8 +891,6 @@ const App = memo(() => {
     subtitlesByStreamIdRef.current = subtitlesByStreamId;
   }, [subtitlesByStreamId]);
 
-  const hasAudio = !!mainAudioStream;
-  const hasVideo = !!mainVideoStream;
   const shouldShowKeyframes = keyframesEnabled && !!mainVideoStream && calcShouldShowKeyframes(zoomedDuration);
   const shouldShowWaveform = calcShouldShowWaveform(zoomedDuration);
 
@@ -2323,10 +2324,6 @@ const App = memo(() => {
 
   const thumbnailsSorted = useMemo(() => sortBy(thumbnails, thumbnail => thumbnail.time), [thumbnails]);
 
-  let timelineMode;
-  if (thumbnailsEnabled) timelineMode = 'thumbnails';
-  if (waveformEnabled) timelineMode = 'waveform';
-
   const { t } = useTranslation();
 
   function renderSubtitles() {
@@ -2531,7 +2528,7 @@ const App = memo(() => {
               shortStep={shortStep}
               seekClosestKeyframe={seekClosestKeyframe}
               togglePlay={togglePlay}
-              setTimelineMode={setTimelineMode}
+              toggleTimelineMode={toggleTimelineMode}
               timelineMode={timelineMode}
               hasAudio={hasAudio}
               keyframesEnabled={keyframesEnabled}
