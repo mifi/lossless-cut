@@ -153,7 +153,8 @@ app.on('ready', async () => {
 
   const argv = parseCliArgs();
   logger.info('CLI arguments', argv);
-  filesToOpen = argv._;
+  // Only if no files to open already (open-file might have already added some files)
+  if (filesToOpen.length === 0) filesToOpen = argv._;
   const { settingsJson } = argv;
 
   if (settingsJson != null) {
