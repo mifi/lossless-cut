@@ -6,7 +6,7 @@ const debounce = require('lodash/debounce');
 const yargsParser = require('yargs-parser');
 const JSON5 = require('json5');
 
-
+const logger = require('./logger');
 const menu = require('./menu');
 const configStore = require('./configStore');
 
@@ -152,12 +152,12 @@ app.on('ready', async () => {
   await configStore.init();
 
   const argv = parseCliArgs();
-  console.log('CLI arguments', argv);
+  logger.info('CLI arguments', argv);
   filesToOpen = argv._;
   const { settingsJson } = argv;
 
   if (settingsJson != null) {
-    console.log('initializing settings', settingsJson);
+    logger.info('initializing settings', settingsJson);
     Object.entries(JSON5.parse(settingsJson)).forEach(([key, value]) => {
       configStore.set(key, value);
     });
@@ -167,8 +167,8 @@ app.on('ready', async () => {
     const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies
 
     installExtension(REACT_DEVELOPER_TOOLS)
-      .then(name => console.log('Added Extension', name))
-      .catch(err => console.log('Failed to add extension', err));
+      .then(name => logger.info('Added Extension', name))
+      .catch(err => logger.error('Failed to add extension', err));
   }
 
   createWindow();
@@ -200,6 +200,7 @@ ipcMain.on('renderer-ready', () => {
 });
 
 // Mac OS open with LosslessCut
+// Emitted when the user wants to open a file with the application. The open-file event is usually emitted when the application is already open and the OS wants to reuse the application to open the file.
 app.on('open-file', (event, path) => {
   if (rendererReady) openFiles([path]);
   else filesToOpen = [path];
@@ -211,14 +212,14 @@ ipcMain.on('setAskBeforeClose', (e, val) => {
 });
 
 ipcMain.on('setLanguage', (e, language) => {
-  i18n.changeLanguage(language).then(() => updateMenu()).catch(console.error);
+  i18n.changeLanguage(language).then(() => updateMenu()).catch((err) => logger.error('Failed to set language', err));
 });
 
 function focusWindow() {
   try {
     app.focus({ steal: true });
   } catch (err) {
-    console.error('Failed to focus window', err);
+    logger.error('Failed to focus window', err);
   }
 }
 
