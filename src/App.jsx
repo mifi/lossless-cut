@@ -62,7 +62,7 @@ import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, defaul
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube, getFrameCountRaw } from './edlFormats';
 import {
-  getOutPath, toast, errorToast, handleError, setFileNameTitle, getOutDir, getFileDir,
+  getOutPath, getSuffixedOutPath, toast, errorToast, handleError, setFileNameTitle, getOutDir, getFileDir,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer,
   isDurationValid, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
@@ -583,9 +583,9 @@ const App = memo(() => {
   const projectSuffix = 'proj.llc';
   const oldProjectSuffix = 'llc-edl.csv';
   // New LLC format can be stored along with input file or in working dir (customOutDir)
-  const getEdlFilePath = useCallback((fp, storeProjectInWorkingDir2 = false) => getOutPath({ customOutDir: storeProjectInWorkingDir2 ? customOutDir : undefined, filePath: fp, nameSuffix: projectSuffix }), [customOutDir]);
+  const getEdlFilePath = useCallback((fp, storeProjectInWorkingDir2 = false) => getSuffixedOutPath({ customOutDir: storeProjectInWorkingDir2 ? customOutDir : undefined, filePath: fp, nameSuffix: projectSuffix }), [customOutDir]);
   // Old versions of LosslessCut used CSV files and stored them in customOutDir:
-  const getEdlFilePathOld = useCallback((fp) => getOutPath({ customOutDir, filePath: fp, nameSuffix: oldProjectSuffix }), [customOutDir]);
+  const getEdlFilePathOld = useCallback((fp) => getSuffixedOutPath({ customOutDir, filePath: fp, nameSuffix: oldProjectSuffix }), [customOutDir]);
   const projectFileSavePath = useMemo(() => getEdlFilePath(filePath, storeProjectInWorkingDir), [getEdlFilePath, filePath, storeProjectInWorkingDir]);
 
   const currentSaveOperation = useMemo(() => {
@@ -960,7 +960,7 @@ const App = memo(() => {
     async function doHtml5ify() {
       if (speed == null) return undefined;
       if (speed === 'fastest') {
-        const path = getOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${html5dummySuffix}.mkv` });
+        const path = getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${html5dummySuffix}.mkv` });
         try {
           setCutProgress(0);
           await html5ifyDummy({ filePath: fp, outPath: path, onProgress: setCutProgress });
@@ -1094,19 +1094,21 @@ const App = memo(() => {
     });
   }, []);
 
-  const userConcatFiles = useCallback(async ({ paths, includeAllStreams, streams, fileFormat: outFormat, isCustomFormatSelected: isCustomFormatSelected2, clearBatchFilesAfterConcat }) => {
+  const userConcatFiles = useCallback(async ({ paths, includeAllStreams, streams, fileFormat: outFormat, fileName: outFileName, clearBatchFilesAfterConcat }) => {
     if (workingRef.current) return;
     try {
       setConcatDialogVisible(false);
       setWorking(i18n.t('Merging'));
 
       const firstPath = paths[0];
+      if (!firstPath) return;
+
       const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: firstPath });
       if (cancel) return;
 
-      const ext = getOutFileExtension({ isCustomFormatSelected: isCustomFormatSelected2, outFormat, filePath: firstPath });
-      const outPath = getOutPath({ customOutDir: newCustomOutDir, filePath: firstPath, nameSuffix: `merged${ext}` });
-      const outDir = getOutDir(customOutDir, firstPath);
+      const outDir = getOutDir(newCustomOutDir, firstPath);
+
+      const outPath = getOutPath({ customOutDir: newCustomOutDir, filePath: firstPath, fileName: outFileName });
 
       let chaptersFromSegments;
       if (segmentsToChapters) {
@@ -1130,7 +1132,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [setWorking, ensureAccessibleDirectories, customOutDir, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch]);
+  }, [setWorking, ensureAccessibleDirectories, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch]);
 
   const cleanupFilesDialog = useCallback(async () => {
     if (!isFileOpened) return;

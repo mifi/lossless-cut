@@ -27,9 +27,14 @@ export function getFileBaseName(filePath) {
   return parsed.name;
 }
 
-export function getOutPath({ customOutDir, filePath, nameSuffix }) {
+export function getOutPath({ customOutDir, filePath, fileName }) {
   if (!filePath) return undefined;
-  return join(getOutDir(customOutDir, filePath), `${getFileBaseName(filePath)}-${nameSuffix}`);
+  return join(getOutDir(customOutDir, filePath), fileName);
+}
+
+export function getSuffixedOutPath({ customOutDir, filePath, nameSuffix }) {
+  if (!filePath) return undefined;
+  return getOutPath({ customOutDir, filePath, fileName: `${getFileBaseName(filePath)}-${nameSuffix}` });
 }
 
 export async function havePermissionToReadFile(filePath) {
@@ -246,7 +251,7 @@ export async function findExistingHtml5FriendlyFile(fp, cod) {
 export function getHtml5ifiedPath(cod, fp, type) {
   // See also inside ffmpegHtml5ify
   const ext = (isMac && ['slowest', 'slow', 'slow-audio'].includes(type)) ? 'mp4' : 'mkv';
-  return getOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${type}.${ext}` });
+  return getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${type}.${ext}` });
 }
 
 export async function deleteFiles({ toDelete, paths: { previewFilePath, sourceFilePath, projectFilePath } }) {

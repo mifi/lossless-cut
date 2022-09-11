@@ -5,7 +5,7 @@ import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
 import { pcmAudioCodecs, getMapStreamsArgs } from './util/streams';
-import { getOutPath, isDurationValid, getExtensionForFormat, isWindows, isMac, platform, arch } from './util';
+import { getSuffixedOutPath, isDurationValid, getExtensionForFormat, isWindows, isMac, platform, arch } from './util';
 
 const execa = window.require('execa');
 const { join } = window.require('path');
@@ -335,7 +335,7 @@ async function extractNonAttachmentStreams({ customOutDir, filePath, streams, en
 
   let streamArgs = [];
   await pMap(streams, async ({ index, codec, type, format: { format, ext } }) => {
-    const outPath = getOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
+    const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
     if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
 
     streamArgs = [
@@ -363,7 +363,7 @@ async function extractAttachmentStreams({ customOutDir, filePath, streams, enabl
   let streamArgs = [];
   await pMap(streams, async ({ index, codec_name: codec, codec_type: type }) => {
     const ext = codec || 'bin';
-    const outPath = getOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
+    const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
     if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
 
     streamArgs = [
