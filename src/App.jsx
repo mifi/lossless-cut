@@ -712,15 +712,6 @@ const App = memo(() => {
     return { cancel: false, newCustomOutDir };
   }, [customOutDir, setCustomOutDir]);
 
-  const concatCurrentBatch = useCallback(() => {
-    if (batchFiles.length < 2) {
-      errorToast(i18n.t('Please open at least 2 files to merge, then try again'));
-      return;
-    }
-
-    setConcatDialogVisible(true);
-  }, [batchFiles]);
-
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
 
   const toggleKeyframeCut = useCallback((showMessage) => setKeyframeCut((val) => {
@@ -1895,6 +1886,119 @@ const App = memo(() => {
     }
   }, [addFileAsCoverArt, captureFormat, customOutDir, enableTransferTimestamps, filePath, getCurrentTime, hideAllNotifications]);
 
+  const batchLoadPaths = useCallback((newPaths, append) => {
+    setBatchFiles((existingFiles) => {
+      const mapPathsToFiles = (paths) => paths.map((path) => ({ path, name: basename(path) }));
+      if (append) {
+        const newUniquePaths = newPaths.filter((newPath) => !existingFiles.some(({ path: existingPath }) => newPath === existingPath));
+        setSelectedBatchFiles([newUniquePaths[0]]);
+        return [...existingFiles, ...mapPathsToFiles(newUniquePaths)];
+      }
+      setSelectedBatchFiles([newPaths[0]]);
+      return mapPathsToFiles(newPaths);
+    });
+  }, []);
+
+  const userOpenFiles = useCallback(async (filePaths) => {
+    if (!filePaths || filePaths.length < 1) return;
+
+    console.log('userOpenFiles');
+    console.log(filePaths.join('\n'));
+
+    [lastOpenedPath] = filePaths;
+
+    if (filePaths.length > 1) {
+      if (alwaysConcatMultipleFiles) {
+        batchLoadPaths(filePaths);
+        setConcatDialogVisible(true);
+      } else {
+        batchLoadPaths(filePaths, true);
+      }
+      return;
+    }
+
+    // filePaths.length is now 1
+    const firstFilePath = filePaths[0];
+
+    const filePathLowerCase = firstFilePath.toLowerCase();
+
+    if (workingRef.current) return;
+    try {
+      setWorking(i18n.t('Loading file'));
+
+      // Import segments for for already opened file
+      const edlFormats = { csv: 'csv', pbf: 'pbf', edl: 'mplayer', cue: 'cue', xml: 'xmeml', fcpxml: 'fcpxml' };
+      const matchingExt = Object.keys(edlFormats).find((ext) => filePathLowerCase.endsWith(`.${ext}`));
+      if (matchingExt) {
+        if (!checkFileOpened()) return;
+        await loadEdlFile({ path: firstFilePath, type: edlFormats[matchingExt], append: true });
+        return;
+      }
+
+      const isLlcProject = filePathLowerCase.endsWith('.llc');
+
+      // Need to ask the user what to do if more than one option
+      const inputOptions = {
+        open: isFileOpened ? i18n.t('Open the file instead of the current one') : i18n.t('Open the file'),
+      };
+      if (isFileOpened) {
+        if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
+        else inputOptions.tracks = i18n.t('Include all tracks from the new file');
+      }
+      if (batchFiles.length > 0) inputOptions.addToBatch = i18n.t('Add the file to the batch list');
+
+      if (Object.keys(inputOptions).length > 1) {
+        const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction(inputOptions) : 'open';
+
+        if (openFileResponse === 'open') {
+          await userOpenSingleFile({ path: firstFilePath, isLlcProject });
+          return;
+        }
+        if (openFileResponse === 'project') {
+          await loadEdlFile({ path: firstFilePath, type: 'llc' });
+          return;
+        }
+        if (openFileResponse === 'tracks') {
+          await addStreamSourceFile(firstFilePath);
+          setStreamsSelectorShown(true);
+          return;
+        }
+        if (openFileResponse === 'addToBatch') {
+          batchLoadPaths([firstFilePath], true);
+          return;
+        }
+        // Dialog canceled:
+        return;
+      }
+
+      await userOpenSingleFile({ path: firstFilePath, isLlcProject });
+    } catch (err) {
+      console.error('userOpenFiles', err);
+      if (err.code === 'LLC_FFPROBE_UNSUPPORTED_FILE') {
+        errorToast(i18n.t('Unsupported file'));
+      } else {
+        handleError(i18n.t('Failed to open file'), err);
+      }
+    } finally {
+      setWorking();
+    }
+  }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, batchFiles.length, isFileOpened, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile]);
+
+  const openFilesDialog = useCallback(async () => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'], defaultPath: lastOpenedPath });
+    if (canceled) return;
+    userOpenFiles(filePaths);
+  }, [userOpenFiles]);
+
+  const concatCurrentBatch = useCallback(() => {
+    if (batchFiles.length < 2) {
+      openFilesDialog();
+      return;
+    }
+
+    setConcatDialogVisible(true);
+  }, [batchFiles.length, openFilesDialog]);
+
   const onKeyPress = useCallback(({ action, keyup }) => {
     function seekReset() {
       seekAccelerationRef.current = 1;
@@ -2067,104 +2171,6 @@ const App = memo(() => {
 
   const batchFilePaths = useMemo(() => batchFiles.map((f) => f.path), [batchFiles]);
 
-  const batchLoadPaths = useCallback((newPaths, append) => {
-    setBatchFiles((existingFiles) => {
-      const mapPathsToFiles = (paths) => paths.map((path) => ({ path, name: basename(path) }));
-      if (append) {
-        const newUniquePaths = newPaths.filter((newPath) => !existingFiles.some(({ path: existingPath }) => newPath === existingPath));
-        setSelectedBatchFiles([newUniquePaths[0]]);
-        return [...existingFiles, ...mapPathsToFiles(newUniquePaths)];
-      }
-      setSelectedBatchFiles([newPaths[0]]);
-      return mapPathsToFiles(newPaths);
-    });
-  }, []);
-
-  const userOpenFiles = useCallback(async (filePaths) => {
-    if (!filePaths || filePaths.length < 1) return;
-
-    console.log('userOpenFiles');
-    console.log(filePaths.join('\n'));
-
-    [lastOpenedPath] = filePaths;
-
-    if (filePaths.length > 1) {
-      if (alwaysConcatMultipleFiles) {
-        batchLoadPaths(filePaths);
-        setConcatDialogVisible(true);
-      } else {
-        batchLoadPaths(filePaths, true);
-      }
-      return;
-    }
-
-    // filePaths.length is now 1
-    const firstFilePath = filePaths[0];
-
-    const filePathLowerCase = firstFilePath.toLowerCase();
-
-    if (workingRef.current) return;
-    try {
-      setWorking(i18n.t('Loading file'));
-
-      // Import segments for for already opened file
-      const edlFormats = { csv: 'csv', pbf: 'pbf', edl: 'mplayer', cue: 'cue', xml: 'xmeml', fcpxml: 'fcpxml' };
-      const matchingExt = Object.keys(edlFormats).find((ext) => filePathLowerCase.endsWith(`.${ext}`));
-      if (matchingExt) {
-        if (!checkFileOpened()) return;
-        await loadEdlFile({ path: firstFilePath, type: edlFormats[matchingExt], append: true });
-        return;
-      }
-
-      const isLlcProject = filePathLowerCase.endsWith('.llc');
-
-      // Need to ask the user what to do if more than one option
-      const inputOptions = {
-        open: isFileOpened ? i18n.t('Open the file instead of the current one') : i18n.t('Open the file'),
-      };
-      if (isFileOpened) {
-        if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
-        else inputOptions.tracks = i18n.t('Include all tracks from the new file');
-      }
-      if (batchFiles.length > 0) inputOptions.addToBatch = i18n.t('Add the file to the batch list');
-
-      if (Object.keys(inputOptions).length > 1) {
-        const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction(inputOptions) : 'open';
-
-        if (openFileResponse === 'open') {
-          await userOpenSingleFile({ path: firstFilePath, isLlcProject });
-          return;
-        }
-        if (openFileResponse === 'project') {
-          await loadEdlFile({ path: firstFilePath, type: 'llc' });
-          return;
-        }
-        if (openFileResponse === 'tracks') {
-          await addStreamSourceFile(firstFilePath);
-          setStreamsSelectorShown(true);
-          return;
-        }
-        if (openFileResponse === 'addToBatch') {
-          batchLoadPaths([firstFilePath], true);
-          return;
-        }
-        // Dialog canceled:
-        return;
-      }
-
-      await userOpenSingleFile({ path: firstFilePath, isLlcProject });
-    } catch (err) {
-      console.error('userOpenFiles', err);
-      if (err.code === 'LLC_FFPROBE_UNSUPPORTED_FILE') {
-        errorToast(i18n.t('Unsupported file'));
-      } else {
-        handleError(i18n.t('Failed to open file'), err);
-      }
-    } finally {
-      setWorking();
-    }
-  }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, batchFiles.length, isFileOpened, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile]);
-
   const onVideoError = useCallback(async () => {
     const { error } = videoRef.current;
     if (!error) return;
@@ -2202,12 +2208,6 @@ const App = memo(() => {
       handleError(err);
     }
   }, [fileUri, usingPreviewFile, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, filePath, setWorking]);
-
-  const openFilesDialog = useCallback(async () => {
-    const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'], defaultPath: lastOpenedPath });
-    if (canceled) return;
-    userOpenFiles(filePaths);
-  }, [userOpenFiles]);
 
   useEffect(() => {
     async function exportEdlFile2(e, type) {
