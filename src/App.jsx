@@ -1865,6 +1865,36 @@ const App = memo(() => {
     }
   }, [checkFileOpened, customOutDir, fileFormat, fixInvalidDuration, loadMedia, setWorking]);
 
+  const addStreamSourceFile = useCallback(async (path) => {
+    if (allFilesMeta[path]) return undefined; // Already added?
+    const fileMeta = await readFileMeta(path);
+    // console.log('streams', fileMeta.streams);
+    setExternalFilesMeta((old) => ({ ...old, [path]: { streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters } }));
+    setCopyStreamIdsForPath(path, () => fromPairs(fileMeta.streams.map(({ index }) => [index, true])));
+    return fileMeta;
+  }, [allFilesMeta, setCopyStreamIdsForPath]);
+
+  const addFileAsCoverArt = useCallback(async (path) => {
+    const fileMeta = await addStreamSourceFile(path);
+    if (!fileMeta) return false;
+    const firstIndex = fileMeta.streams[0].index;
+    setDispositionByStreamId((old) => ({ ...old, [path]: { [firstIndex]: 'attached_pic' } }));
+    return true;
+  }, [addStreamSourceFile]);
+
+  const captureSnapshotAsCoverArt = useCallback(async () => {
+    if (!filePath) return;
+    try {
+      const currentTime = getCurrentTime();
+      const path = await captureFramesFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, enableTransferTimestamps, numFrames: 1 });
+      if (!(await addFileAsCoverArt(path))) return;
+      if (!hideAllNotifications) toast.fire({ text: i18n.t('Current frame has been set as cover art') });
+    } catch (err) {
+      console.error(err);
+      errorToast(i18n.t('Failed to capture frame'));
+    }
+  }, [addFileAsCoverArt, captureFormat, customOutDir, enableTransferTimestamps, filePath, getCurrentTime, hideAllNotifications]);
+
   const onKeyPress = useCallback(({ action, keyup }) => {
     function seekReset() {
       seekAccelerationRef.current = 1;
@@ -1883,6 +1913,7 @@ const App = memo(() => {
       increasePlaybackRateMore: () => changePlaybackRate(1, 2.0),
       timelineToggleComfortZoom,
       captureSnapshot,
+      captureSnapshotAsCoverArt,
       setCutStart,
       setCutEnd,
       cleanupFilesDialog,
@@ -1998,7 +2029,7 @@ const App = memo(() => {
     if (match) return bubble;
 
     return true; // bubble the event
-  }, [addSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleHelp, toggleKeyboardShortcuts, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleHelp, toggleKeyboardShortcuts, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   useKeyboard({ keyBindings, onKeyPress });
 
@@ -2033,14 +2064,6 @@ const App = memo(() => {
       setWorking();
     }
   }, [customOutDir, enableOverwriteOutput, filePath, mainStreams, outputDir, setWorking]);
-
-  const addStreamSourceFile = useCallback(async (path) => {
-    if (allFilesMeta[path]) return;
-    const fileMeta = await readFileMeta(path);
-    // console.log('streams', fileMeta.streams);
-    setExternalFilesMeta((old) => ({ ...old, [path]: { streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters } }));
-    setCopyStreamIdsForPath(path, () => fromPairs(fileMeta.streams.map(({ index }) => [index, true])));
-  }, [allFilesMeta, setCopyStreamIdsForPath]);
 
   const batchFilePaths = useMemo(() => batchFiles.map((f) => f.path), [batchFiles]);
 
