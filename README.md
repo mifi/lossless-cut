@@ -84,7 +84,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 
 ### Re-encode only the audio track, keeping the lossless video track
 
-First export each track as individual files. Then use Handbrake or similar to re-encode the audio file. Then use the `Tools->Merge` in LosslessCut to merge the original video stream with your Handbrake output (or drag it into your original LosslessCut video to include it as a new track.)
+First export each track as individual files. Then use Handbrake or similar to re-encode the audio file (if mp4 file, encode as AAC.) Then open the extracted video stream in LosslessCut. The open your encoded audio file and select "Include all tracks from the new file". Then export.
 
 ### Advanced multi-step workflows
 
