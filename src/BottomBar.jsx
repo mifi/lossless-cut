@@ -40,7 +40,7 @@ const BottomBar = memo(({
 }) => {
   const { t } = useTranslation();
 
-  const { invertCutSegments, setInvertCutSegments, simpleMode, toggleSimpleMode } = useUserSettings();
+  const { invertCutSegments, setInvertCutSegments, simpleMode, toggleSimpleMode, exportConfirmEnabled } = useUserSettings();
 
   const onYinYangClick = useCallback(() => {
     setInvertCutSegments(v => {
@@ -358,7 +358,7 @@ const BottomBar = memo(({
           </>
         )}
 
-        {!simpleMode && <ToggleExportConfirm style={{ marginRight: 5 }} />}
+        {(!simpleMode || !exportConfirmEnabled) && <ToggleExportConfirm style={{ marginRight: 5 }} />}
 
         <ExportButton size={1.3} segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={onExportPress} />
       </div>
