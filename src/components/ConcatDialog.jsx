@@ -165,7 +165,7 @@ const ConcatDialog = memo(({
         footer={(
           <>
             <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-              <Checkbox checked={enableReadFileMeta} onChange={(e) => setEnableReadFileMeta(e.target.checked)} label={t('Check files')} marginLeft={10} marginRight={10} />
+              <Checkbox checked={enableReadFileMeta} onChange={(e) => setEnableReadFileMeta(e.target.checked)} label={t('Check compatibility')} marginLeft={10} marginRight={10} />
               <Button iconBefore={FaCheckCircle} onClick={() => setSettingsVisible(true)}>{t('Options')}</Button>
               {fileFormat && detectedFileFormat ? (
                 <OutputFormatSelect style={{ maxWidth: 180 }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
@@ -203,6 +203,9 @@ const ConcatDialog = memo(({
 
         {enableReadFileMeta && (!allFilesMeta || Object.values(problemsByFile).length > 0) && (
           <Alert intent="warning">{t('A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.')}</Alert>
+        )}
+        {!enableReadFileMeta && (
+          <Alert intent="warning">{t('File compatibility check is not enabled, so the merge operation might not produce a valid output. Enable "Check compatibility" below to check file compatibility before merging.')}</Alert>
         )}
       </Dialog>
 
