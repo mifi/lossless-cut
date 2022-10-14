@@ -221,6 +221,10 @@ See [available settings](https://github.com/mifi/lossless-cut/blob/master/public
 LosslessCut --settings-json '{captureFormat:"jpeg", "keyframeCut":true}'
 ```
 
+### Multiple instances
+
+By default, only a single running instance of LosslessCut is allowed. If you start a new LosslessCut instance from the command line, it will instead pass the list of files onto the already running instance. You can override this behavior by passing `--allow-multiple-instances` via the command line. Running multiple instances is experimental.
+
 ## Developing
 
 See the [developer notes](developer-notes.md).
