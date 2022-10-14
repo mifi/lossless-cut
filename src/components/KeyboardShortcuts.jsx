@@ -9,6 +9,7 @@ import uniq from 'lodash/uniq';
 
 import SetCutpointButton from './SetCutpointButton';
 import SegmentCutpointButton from './SegmentCutpointButton';
+import Window from './Window';
 
 
 const renderKeys = (keys) => keys.map((key, i) => (
@@ -564,6 +565,15 @@ const KeyboardShortcutsDialog = memo(({
 }) => {
   const { t } = useTranslation();
 
+  if (!isShown) return null;
+
+  return (
+    <Window onClose={onHide}>
+      <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} />
+    </Window>
+  );
+
+  /*
   return (
     <Dialog
       title={t('Keyboard & mouse shortcuts')}
@@ -576,7 +586,7 @@ const KeyboardShortcutsDialog = memo(({
     >
       {isShown ? <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} /> : <div />}
     </Dialog>
-  );
+  ); */
 });
 
 export default KeyboardShortcutsDialog;

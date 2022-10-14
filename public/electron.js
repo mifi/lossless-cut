@@ -69,6 +69,9 @@ function createWindow() {
     ...getSizeOptions(),
     darkTheme: true,
     webPreferences: {
+      // todo remove after upgrading electron https://github.com/electron/electron/issues/28511
+      nativeWindowOpen: true,
+
       enableRemoteModule: true,
       contextIsolation: false,
       nodeIntegration: true,
