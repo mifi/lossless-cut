@@ -532,8 +532,14 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
   }
 }
 
-export async function blackDetect({ filePath, duration, minInterval = 0.05, onProgress }) {
-  const args = ['-hide_banner', '-i', filePath, '-vf', `blackdetect=d=${minInterval}`, '-an', '-f', 'null', '-'];
+export async function blackDetect({ filePath, duration, minInterval = 0.05, onProgress, from, to }) {
+  const args = [
+    '-hide_banner',
+    ...(from != null ? ['-ss', from.toFixed(5)] : []),
+    '-i', filePath,
+    ...(to != null ? ['-t', (to - from).toFixed(5)] : []),
+    '-vf', `blackdetect=d=${minInterval}`, '-an', '-f', 'null', '-',
+  ];
   const process = execa(getFfmpegPath(), args, { encoding: null, buffer: false });
 
   const blackSegments = [];
@@ -549,7 +555,8 @@ export async function blackDetect({ filePath, duration, minInterval = 0.05, onPr
   handleProgress(process, duration, onProgress, customMatcher);
 
   await process;
-  return blackSegments;
+  const offset = from != null ? from : 0;
+  return blackSegments.map(({ blackStart, blackEnd }) => ({ blackStart: blackStart + offset, blackEnd: blackEnd + offset }));
 }
 
 export async function extractWaveform({ filePath, outPath }) {

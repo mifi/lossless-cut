@@ -1757,9 +1757,9 @@ const App = memo(() => {
       setWorking(i18n.t('Detecting black scenes'));
       setCutProgress(0);
 
-      const blackSegments = await blackDetect({ filePath, duration, onProgress: setCutProgress });
+      const blackSegments = await blackDetect({ filePath, duration, onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end });
       console.log('blackSegments', blackSegments);
-      loadCutSegments(blackSegments.map(({ blackStart, blackEnd }) => ({ start: blackStart, end: blackEnd })));
+      loadCutSegments(blackSegments.map(({ blackStart, blackEnd }) => ({ start: blackStart, end: blackEnd })), true);
     } catch (err) {
       errorToast(i18n.t('Failed to detect black scenes'));
       console.error('Failed to detect black scenes', err);
@@ -1767,7 +1767,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [duration, filePath, setWorking, loadCutSegments]);
+  }, [filePath, setWorking, duration, currentApparentCutSeg, loadCutSegments]);
 
   const userHtml5ifyCurrentFile = useCallback(async () => {
     if (!filePath) return;
