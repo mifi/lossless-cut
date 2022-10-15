@@ -346,7 +346,8 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
     // This function will either call cutSingle (if no smart cut enabled)
     // or if enabled, will first cut&encode the part before the next keyframe, trying to match the input file's codec params
-    // then it will cut the part *from* the keyframe to "end", and concat them together and return the concated file as a segment
+    // then it will cut the part *from* the keyframe to "end", and concat them together and return the concated file
+    // so that for the calling code it looks as if it's just a normal segment
     async function maybeSmartCutSegment({ start: desiredCutFrom, end: cutTo }, i) {
       const getSegmentOutPath = () => join(outputDir, segmentsFileNames[i]);
 
@@ -365,7 +366,9 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       const streamsToCopyFromMainFile = copyFileStreams.find(({ path }) => path === filePath).streamIds
         .map((streamId) => streams.find((stream) => stream.index === streamId));
 
-      const { cutFrom: smartCutFrom, needsSmartCut, videoCodec, videoBitrate, videoStreamIndex, videoTimebase } = await getSmartCutParams({ path: filePath, videoDuration, desiredCutFrom, streams: streamsToCopyFromMainFile });
+      const { cutFrom: encodeCutTo, needsSmartCut, videoCodec, videoBitrate, videoStreamIndex, videoTimebase } = await getSmartCutParams({ path: filePath, videoDuration, desiredCutFrom, streams: streamsToCopyFromMainFile });
+
+      if (needsSmartCut && !detectedFps) throw new Error('Smart cut is not possible when FPS is unknown');
 
       console.log('Smart cut on video stream', videoStreamIndex);
 
@@ -378,39 +381,43 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         streamIds: streamsToCopyFromMainFile.filter((stream) => !(stream.codec_type === 'video' && stream.index !== videoStreamIndex)).map((stream) => stream.index),
       }];
 
+      // eslint-disable-next-line no-shadow
+      const cutEncodeSmartPartWrapper = async ({ cutFrom, cutTo, outPath }) => cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate, videoStreamIndex, videoTimebase, allFilesMeta, copyFileStreams: copyFileStreamsFiltered, ffmpegExperimental });
+
+      // If we are cutting within two keyframes, just encode the whole part and return that
+      // See https://github.com/mifi/lossless-cut/pull/1267#issuecomment-1236381740
+      if (needsSmartCut && encodeCutTo > cutTo) {
+        const outPath = getSegmentOutPath();
+        await checkOverwrite(outPath);
+        await cutEncodeSmartPartWrapper({ cutFrom: desiredCutFrom, cutTo, outPath });
+        return outPath;
+      }
+
       const ext = getOutFileExtension({ isCustomFormatSelected: true, outFormat, filePath });
 
       const smartCutMainPartOutPath = needsSmartCut
         ? getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `smartcut-segment-copy-${i}${ext}` })
         : getSegmentOutPath();
 
-      if (!needsSmartCut) await checkOverwrite(smartCutMainPartOutPath);
-
       const smartCutEncodedPartOutPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `smartcut-segment-encode-${i}${ext}` });
 
       const smartCutSegmentsToConcat = [smartCutEncodedPartOutPath, smartCutMainPartOutPath];
 
-      if (smartCutFrom > cutTo) {
-        if (!detectedFps) throw new Error('Smart cut is not possible when FPS is unknown');
-        const file = getSegmentOutPath();
-        await cutEncodeSmartPart({ filePath, cutFrom: desiredCutFrom, cutTo, outPath: file, outFormat, videoCodec, videoBitrate, videoStreamIndex, videoTimebase, allFilesMeta, copyFileStreams: copyFileStreamsFiltered, ffmpegExperimental });
-        return file;
-      }
+      if (!needsSmartCut) await checkOverwrite(smartCutMainPartOutPath);
 
       // for smart cut we need to use keyframe cut here
       await cutSingle({
-        cutFrom: smartCutFrom, cutTo, chaptersPath, outPath: smartCutMainPartOutPath, copyFileStreams: copyFileStreamsFiltered, keyframeCut: true, avoidNegativeTs: false, videoDuration, rotation, allFilesMeta, outFormat, appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, customTagsByStreamId, dispositionByStreamId, videoTimebase, onProgress: onCutProgress,
+        cutFrom: encodeCutTo, cutTo, chaptersPath, outPath: smartCutMainPartOutPath, copyFileStreams: copyFileStreamsFiltered, keyframeCut: true, avoidNegativeTs: false, videoDuration, rotation, allFilesMeta, outFormat, appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, customTagsByStreamId, dispositionByStreamId, videoTimebase, onProgress: onCutProgress,
       });
 
       // OK, just return the single cut file (we may need smart cut in other segments though)
       if (!needsSmartCut) return smartCutMainPartOutPath;
 
       try {
-        if (!detectedFps) throw new Error('Smart cut is not possible when FPS is unknown');
         const frameDuration = 1 / detectedFps;
-        const encodeCutTo = Math.max(desiredCutFrom + frameDuration, smartCutFrom - frameDuration); // Subtract one frame so we don't end up with duplicates when concating, and make sure we don't create a 0 length segment
+        const encodeCutToSafe = Math.max(desiredCutFrom + frameDuration, encodeCutTo - frameDuration); // Subtract one frame so we don't end up with duplicates when concating, and make sure we don't create a 0 length segment
 
-        await cutEncodeSmartPart({ filePath, cutFrom: desiredCutFrom, cutTo: encodeCutTo, outPath: smartCutEncodedPartOutPath, outFormat, videoCodec, videoBitrate, videoStreamIndex, videoTimebase, allFilesMeta, copyFileStreams: copyFileStreamsFiltered, ffmpegExperimental });
+        await cutEncodeSmartPartWrapper({ cutFrom: desiredCutFrom, cutTo: encodeCutToSafe, outPath: smartCutEncodedPartOutPath });
 
         // need to re-read streams because indexes may have changed. Using main file as source of streams and metadata
         const { streams: streamsAfterCut } = await readFileMeta(smartCutMainPartOutPath);
