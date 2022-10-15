@@ -3,6 +3,8 @@ const GitHub = require('github-api');
 const electron = require('electron');
 const semver = require('semver');
 
+const logger = require('./logger');
+
 
 const { app } = electron;
 
@@ -20,13 +22,13 @@ async function checkNewVersion() {
     const currentVersion = app.getVersion();
     // const currentVersion = '3.17.2';
 
-    console.log('Current version', currentVersion);
-    console.log('Newest version', newestVersion);
+    logger.info('Current version', currentVersion);
+    logger.info('Newest version', newestVersion);
 
     if (semver.lt(currentVersion, newestVersion)) return newestVersion;
     return undefined;
-  } catch (e) {
-    console.error('Failed to check github version');
+  } catch (err) {
+    logger.error('Failed to check github version', err.message);
     return undefined;
   }
 }

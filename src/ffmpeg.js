@@ -5,7 +5,7 @@ import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
 import { pcmAudioCodecs, getMapStreamsArgs } from './util/streams';
-import { getOutPath, isDurationValid, getExtensionForFormat, isWindows, isMac, platform, arch } from './util';
+import { getSuffixedOutPath, isDurationValid, getExtensionForFormat, isWindows, isMac, platform, arch } from './util';
 
 const execa = window.require('execa');
 const { join } = window.require('path');
@@ -335,7 +335,7 @@ async function extractNonAttachmentStreams({ customOutDir, filePath, streams, en
 
   let streamArgs = [];
   await pMap(streams, async ({ index, codec, type, format: { format, ext } }) => {
-    const outPath = getOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
+    const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
     if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
 
     streamArgs = [
@@ -363,7 +363,7 @@ async function extractAttachmentStreams({ customOutDir, filePath, streams, enabl
   let streamArgs = [];
   await pMap(streams, async ({ index, codec_name: codec, codec_type: type }) => {
     const ext = codec || 'bin';
-    const outPath = getOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
+    const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
     if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
 
     streamArgs = [
@@ -532,8 +532,14 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
   }
 }
 
-export async function blackDetect({ filePath, duration, minInterval = 0.05, onProgress }) {
-  const args = ['-hide_banner', '-i', filePath, '-vf', `blackdetect=d=${minInterval}`, '-an', '-f', 'null', '-'];
+export async function blackDetect({ filePath, duration, minInterval = 0.05, onProgress, from, to }) {
+  const args = [
+    '-hide_banner',
+    ...(from != null ? ['-ss', from.toFixed(5)] : []),
+    '-i', filePath,
+    ...(to != null ? ['-t', (to - from).toFixed(5)] : []),
+    '-vf', `blackdetect=d=${minInterval}`, '-an', '-f', 'null', '-',
+  ];
   const process = execa(getFfmpegPath(), args, { encoding: null, buffer: false });
 
   const blackSegments = [];
@@ -549,7 +555,8 @@ export async function blackDetect({ filePath, duration, minInterval = 0.05, onPr
   handleProgress(process, duration, onProgress, customMatcher);
 
   await process;
-  return blackSegments;
+  const offset = from != null ? from : 0;
+  return blackSegments.map(({ blackStart, blackEnd }) => ({ blackStart: blackStart + offset, blackEnd: blackEnd + offset }));
 }
 
 export async function extractWaveform({ filePath, outPath }) {

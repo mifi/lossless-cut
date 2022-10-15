@@ -3,7 +3,7 @@
   "productName": "LosslessCut",
   "description": "The swiss army knife of lossless video/audio editing",
   "copyright": "Copyright © 2021 ${author}",
-  "version": "3.46.3",
+  "version": "3.47.0",
   "main": "public/electron.js",
   "homepage": "./",
   "scripts": {
@@ -50,7 +50,7 @@
     "csv-parse": "^4.15.3",
     "csv-stringify": "^5.6.2",
     "electron": "8",
-    "electron-builder": "^22.13.1",
+    "electron-builder": "^23.3.3",
     "electron-builder-notarize": "^1.4.0",
     "electron-devtools-installer": "^3.1.1",
     "eslint": "^7.32.0 || ^8.2.0",
@@ -114,6 +114,7 @@
     "string-to-stream": "^1.1.1",
     "strtok3": "^6.0.0",
     "trash": "^7.1.1",
+    "winston": "^3.8.1",
     "yargs-parser": "^21.0.0"
   },
   "eslintConfig": {

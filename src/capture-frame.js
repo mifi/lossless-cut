@@ -1,6 +1,6 @@
 import strongDataUri from 'strong-data-uri';
 
-import { getOutPath, transferTimestamps } from './util';
+import { getSuffixedOutPath, transferTimestamps } from './util';
 import { formatDuration } from './util/duration';
 
 import { captureFrame as ffmpegCaptureFrame } from './ffmpeg';
@@ -29,7 +29,7 @@ export async function captureFramesFfmpeg({ customOutDir, filePath, fromTime, ca
   } else {
     nameSuffix = `${time}.${captureFormat}`;
   }
-  const outPath = getOutPath({ customOutDir, filePath, nameSuffix });
+  const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix });
   await ffmpegCaptureFrame({ timestamp: fromTime, videoPath: filePath, outPath, numFrames });
 
   if (enableTransferTimestamps && numFrames === 1) await transferTimestamps(filePath, outPath, fromTime);
@@ -42,7 +42,7 @@ export async function captureFrameFromTag({ customOutDir, filePath, currentTime,
   const ext = mime.extension(buf.mimetype);
   const time = formatDuration({ seconds: currentTime, fileNameFriendly: true });
 
-  const outPath = getOutPath({ customOutDir, filePath, nameSuffix: `${time}.${ext}` });
+  const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `${time}.${ext}` });
   await fs.writeFile(outPath, buf);
 
   if (enableTransferTimestamps) await transferTimestamps(filePath, outPath, currentTime);

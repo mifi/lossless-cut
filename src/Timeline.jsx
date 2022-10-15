@@ -226,7 +226,7 @@ const Timeline = memo(({
           onScroll={onTimelineScroll}
           ref={timelineScrollerRef}
         >
-          {waveformEnabled && shouldShowWaveform && waveforms && (
+          {waveformEnabled && shouldShowWaveform && waveforms.length > 0 && (
             <Waveforms
               calculateTimelinePercent={calculateTimelinePercent}
               durationSafe={durationSafe}

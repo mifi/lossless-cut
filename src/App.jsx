@@ -62,7 +62,7 @@ import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, defaul
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube, getFrameCountRaw } from './edlFormats';
 import {
-  getOutPath, toast, errorToast, handleError, setFileNameTitle, getOutDir, getFileDir,
+  getOutPath, getSuffixedOutPath, toast, errorToast, handleError, setFileNameTitle, getOutDir, getFileDir,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer,
   isDurationValid, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
@@ -143,9 +143,8 @@ const App = memo(() => {
   const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
 
   // State per application launch
+  const [timelineMode, setTimelineMode] = useState();
   const [keyframesEnabled, setKeyframesEnabled] = useState(true);
-  const [waveformEnabled, setWaveformEnabled] = useState(false);
-  const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
   const [showRightBar, setShowRightBar] = useState(true);
   const [cleanupChoices, setCleanupChoices] = useState({ tmpFiles: true });
   const [rememberConvertToSupportedFormat, setRememberConvertToSupportedFormat] = useState();
@@ -230,15 +229,13 @@ const App = memo(() => {
     }
   }, [detectedFileFormat, outFormatLocked, setFileFormat, setOutFormatLocked]);
 
-  const setTimelineMode = useCallback((newMode) => {
-    if (newMode === 'waveform') {
-      setWaveformEnabled(v => !v);
-      setThumbnailsEnabled(false);
+  const toggleTimelineMode = useCallback((newMode) => {
+    if (newMode === timelineMode) {
+      setTimelineMode();
     } else {
-      setThumbnailsEnabled(v => !v);
-      setWaveformEnabled(false);
+      setTimelineMode(newMode);
     }
-  }, []);
+  }, [timelineMode]);
 
   const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => !v), [setExportConfirmEnabled]);
 
@@ -586,9 +583,9 @@ const App = memo(() => {
   const projectSuffix = 'proj.llc';
   const oldProjectSuffix = 'llc-edl.csv';
   // New LLC format can be stored along with input file or in working dir (customOutDir)
-  const getEdlFilePath = useCallback((fp, storeProjectInWorkingDir2 = false) => getOutPath({ customOutDir: storeProjectInWorkingDir2 ? customOutDir : undefined, filePath: fp, nameSuffix: projectSuffix }), [customOutDir]);
+  const getEdlFilePath = useCallback((fp, storeProjectInWorkingDir2 = false) => getSuffixedOutPath({ customOutDir: storeProjectInWorkingDir2 ? customOutDir : undefined, filePath: fp, nameSuffix: projectSuffix }), [customOutDir]);
   // Old versions of LosslessCut used CSV files and stored them in customOutDir:
-  const getEdlFilePathOld = useCallback((fp) => getOutPath({ customOutDir, filePath: fp, nameSuffix: oldProjectSuffix }), [customOutDir]);
+  const getEdlFilePathOld = useCallback((fp) => getSuffixedOutPath({ customOutDir, filePath: fp, nameSuffix: oldProjectSuffix }), [customOutDir]);
   const projectFileSavePath = useMemo(() => getEdlFilePath(filePath, storeProjectInWorkingDir), [getEdlFilePath, filePath, storeProjectInWorkingDir]);
 
   const currentSaveOperation = useMemo(() => {
@@ -714,15 +711,6 @@ const App = memo(() => {
 
     return { cancel: false, newCustomOutDir };
   }, [customOutDir, setCustomOutDir]);
-
-  const concatCurrentBatch = useCallback(() => {
-    if (batchFiles.length < 2) {
-      errorToast(i18n.t('Please open at least 2 files to merge, then try again'));
-      return;
-    }
-
-    setConcatDialogVisible(true);
-  }, [batchFiles]);
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
 
@@ -852,6 +840,12 @@ const App = memo(() => {
     setThumbnails(v => [...v, thumbnail]);
   }
 
+  const hasAudio = !!mainAudioStream;
+  const hasVideo = !!mainVideoStream;
+
+  const waveformEnabled = timelineMode === 'waveform' && hasAudio;
+  const thumbnailsEnabled = timelineMode === 'thumbnails' && hasVideo;
+
   const [, cancelRenderThumbnails] = useDebounceOld(() => {
     async function renderThumbnails() {
       if (!thumbnailsEnabled || thumnailsRenderingPromiseRef.current) return;
@@ -888,8 +882,6 @@ const App = memo(() => {
     subtitlesByStreamIdRef.current = subtitlesByStreamId;
   }, [subtitlesByStreamId]);
 
-  const hasAudio = !!mainAudioStream;
-  const hasVideo = !!mainVideoStream;
   const shouldShowKeyframes = keyframesEnabled && !!mainVideoStream && calcShouldShowKeyframes(zoomedDuration);
   const shouldShowWaveform = calcShouldShowWaveform(zoomedDuration);
 
@@ -959,7 +951,7 @@ const App = memo(() => {
     async function doHtml5ify() {
       if (speed == null) return undefined;
       if (speed === 'fastest') {
-        const path = getOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${html5dummySuffix}.mkv` });
+        const path = getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${html5dummySuffix}.mkv` });
         try {
           setCutProgress(0);
           await html5ifyDummy({ filePath: fp, outPath: path, onProgress: setCutProgress });
@@ -1093,19 +1085,21 @@ const App = memo(() => {
     });
   }, []);
 
-  const userConcatFiles = useCallback(async ({ paths, includeAllStreams, streams, fileFormat: outFormat, isCustomFormatSelected: isCustomFormatSelected2, clearBatchFilesAfterConcat }) => {
+  const userConcatFiles = useCallback(async ({ paths, includeAllStreams, streams, fileFormat: outFormat, fileName: outFileName, clearBatchFilesAfterConcat }) => {
     if (workingRef.current) return;
     try {
       setConcatDialogVisible(false);
       setWorking(i18n.t('Merging'));
 
       const firstPath = paths[0];
+      if (!firstPath) return;
+
       const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: firstPath });
       if (cancel) return;
 
-      const ext = getOutFileExtension({ isCustomFormatSelected: isCustomFormatSelected2, outFormat, filePath: firstPath });
-      const outPath = getOutPath({ customOutDir: newCustomOutDir, filePath: firstPath, nameSuffix: `merged${ext}` });
-      const outDir = getOutDir(customOutDir, firstPath);
+      const outDir = getOutDir(newCustomOutDir, firstPath);
+
+      const outPath = getOutPath({ customOutDir: newCustomOutDir, filePath: firstPath, fileName: outFileName });
 
       let chaptersFromSegments;
       if (segmentsToChapters) {
@@ -1129,7 +1123,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [setWorking, ensureAccessibleDirectories, customOutDir, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch]);
+  }, [setWorking, ensureAccessibleDirectories, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch]);
 
   const cleanupFilesDialog = useCallback(async () => {
     if (!isFileOpened) return;
@@ -1763,9 +1757,9 @@ const App = memo(() => {
       setWorking(i18n.t('Detecting black scenes'));
       setCutProgress(0);
 
-      const blackSegments = await blackDetect({ filePath, duration, onProgress: setCutProgress });
+      const blackSegments = await blackDetect({ filePath, duration, onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end });
       console.log('blackSegments', blackSegments);
-      loadCutSegments(blackSegments.map(({ blackStart, blackEnd }) => ({ start: blackStart, end: blackEnd })));
+      loadCutSegments(blackSegments.map(({ blackStart, blackEnd }) => ({ start: blackStart, end: blackEnd })), true);
     } catch (err) {
       errorToast(i18n.t('Failed to detect black scenes'));
       console.error('Failed to detect black scenes', err);
@@ -1773,7 +1767,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [duration, filePath, setWorking, loadCutSegments]);
+  }, [filePath, setWorking, duration, currentApparentCutSeg, loadCutSegments]);
 
   const userHtml5ifyCurrentFile = useCallback(async () => {
     if (!filePath) return;
@@ -1862,6 +1856,149 @@ const App = memo(() => {
     }
   }, [checkFileOpened, customOutDir, fileFormat, fixInvalidDuration, loadMedia, setWorking]);
 
+  const addStreamSourceFile = useCallback(async (path) => {
+    if (allFilesMeta[path]) return undefined; // Already added?
+    const fileMeta = await readFileMeta(path);
+    // console.log('streams', fileMeta.streams);
+    setExternalFilesMeta((old) => ({ ...old, [path]: { streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters } }));
+    setCopyStreamIdsForPath(path, () => fromPairs(fileMeta.streams.map(({ index }) => [index, true])));
+    return fileMeta;
+  }, [allFilesMeta, setCopyStreamIdsForPath]);
+
+  const addFileAsCoverArt = useCallback(async (path) => {
+    const fileMeta = await addStreamSourceFile(path);
+    if (!fileMeta) return false;
+    const firstIndex = fileMeta.streams[0].index;
+    setDispositionByStreamId((old) => ({ ...old, [path]: { [firstIndex]: 'attached_pic' } }));
+    return true;
+  }, [addStreamSourceFile]);
+
+  const captureSnapshotAsCoverArt = useCallback(async () => {
+    if (!filePath) return;
+    try {
+      const currentTime = getCurrentTime();
+      const path = await captureFramesFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, enableTransferTimestamps, numFrames: 1 });
+      if (!(await addFileAsCoverArt(path))) return;
+      if (!hideAllNotifications) toast.fire({ text: i18n.t('Current frame has been set as cover art') });
+    } catch (err) {
+      console.error(err);
+      errorToast(i18n.t('Failed to capture frame'));
+    }
+  }, [addFileAsCoverArt, captureFormat, customOutDir, enableTransferTimestamps, filePath, getCurrentTime, hideAllNotifications]);
+
+  const batchLoadPaths = useCallback((newPaths, append) => {
+    setBatchFiles((existingFiles) => {
+      const mapPathsToFiles = (paths) => paths.map((path) => ({ path, name: basename(path) }));
+      if (append) {
+        const newUniquePaths = newPaths.filter((newPath) => !existingFiles.some(({ path: existingPath }) => newPath === existingPath));
+        setSelectedBatchFiles([newUniquePaths[0]]);
+        return [...existingFiles, ...mapPathsToFiles(newUniquePaths)];
+      }
+      setSelectedBatchFiles([newPaths[0]]);
+      return mapPathsToFiles(newPaths);
+    });
+  }, []);
+
+  const userOpenFiles = useCallback(async (filePaths) => {
+    if (!filePaths || filePaths.length < 1) return;
+
+    console.log('userOpenFiles');
+    console.log(filePaths.join('\n'));
+
+    [lastOpenedPath] = filePaths;
+
+    if (filePaths.length > 1) {
+      if (alwaysConcatMultipleFiles) {
+        batchLoadPaths(filePaths);
+        setConcatDialogVisible(true);
+      } else {
+        batchLoadPaths(filePaths, true);
+      }
+      return;
+    }
+
+    // filePaths.length is now 1
+    const firstFilePath = filePaths[0];
+
+    const filePathLowerCase = firstFilePath.toLowerCase();
+
+    if (workingRef.current) return;
+    try {
+      setWorking(i18n.t('Loading file'));
+
+      // Import segments for for already opened file
+      const edlFormats = { csv: 'csv', pbf: 'pbf', edl: 'mplayer', cue: 'cue', xml: 'xmeml', fcpxml: 'fcpxml' };
+      const matchingExt = Object.keys(edlFormats).find((ext) => filePathLowerCase.endsWith(`.${ext}`));
+      if (matchingExt) {
+        if (!checkFileOpened()) return;
+        await loadEdlFile({ path: firstFilePath, type: edlFormats[matchingExt], append: true });
+        return;
+      }
+
+      const isLlcProject = filePathLowerCase.endsWith('.llc');
+
+      // Need to ask the user what to do if more than one option
+      const inputOptions = {
+        open: isFileOpened ? i18n.t('Open the file instead of the current one') : i18n.t('Open the file'),
+      };
+      if (isFileOpened) {
+        if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
+        else inputOptions.tracks = i18n.t('Include all tracks from the new file');
+      }
+      if (batchFiles.length > 0) inputOptions.addToBatch = i18n.t('Add the file to the batch list');
+
+      if (Object.keys(inputOptions).length > 1) {
+        const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction(inputOptions) : 'open';
+
+        if (openFileResponse === 'open') {
+          await userOpenSingleFile({ path: firstFilePath, isLlcProject });
+          return;
+        }
+        if (openFileResponse === 'project') {
+          await loadEdlFile({ path: firstFilePath, type: 'llc' });
+          return;
+        }
+        if (openFileResponse === 'tracks') {
+          await addStreamSourceFile(firstFilePath);
+          setStreamsSelectorShown(true);
+          return;
+        }
+        if (openFileResponse === 'addToBatch') {
+          batchLoadPaths([firstFilePath], true);
+          return;
+        }
+        // Dialog canceled:
+        return;
+      }
+
+      await userOpenSingleFile({ path: firstFilePath, isLlcProject });
+    } catch (err) {
+      console.error('userOpenFiles', err);
+      if (err.code === 'LLC_FFPROBE_UNSUPPORTED_FILE') {
+        errorToast(i18n.t('Unsupported file'));
+      } else {
+        handleError(i18n.t('Failed to open file'), err);
+      }
+    } finally {
+      setWorking();
+    }
+  }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, batchFiles.length, isFileOpened, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile]);
+
+  const openFilesDialog = useCallback(async () => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'], defaultPath: lastOpenedPath });
+    if (canceled) return;
+    userOpenFiles(filePaths);
+  }, [userOpenFiles]);
+
+  const concatCurrentBatch = useCallback(() => {
+    if (batchFiles.length < 2) {
+      openFilesDialog();
+      return;
+    }
+
+    setConcatDialogVisible(true);
+  }, [batchFiles.length, openFilesDialog]);
+
   const onKeyPress = useCallback(({ action, keyup }) => {
     function seekReset() {
       seekAccelerationRef.current = 1;
@@ -1880,6 +2017,7 @@ const App = memo(() => {
       increasePlaybackRateMore: () => changePlaybackRate(1, 2.0),
       timelineToggleComfortZoom,
       captureSnapshot,
+      captureSnapshotAsCoverArt,
       setCutStart,
       setCutEnd,
       cleanupFilesDialog,
@@ -1995,7 +2133,7 @@ const App = memo(() => {
     if (match) return bubble;
 
     return true; // bubble the event
-  }, [addSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleHelp, toggleKeyboardShortcuts, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleHelp, toggleKeyboardShortcuts, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   useKeyboard({ keyBindings, onKeyPress });
 
@@ -2031,113 +2169,7 @@ const App = memo(() => {
     }
   }, [customOutDir, enableOverwriteOutput, filePath, mainStreams, outputDir, setWorking]);
 
-  const addStreamSourceFile = useCallback(async (path) => {
-    if (allFilesMeta[path]) return;
-    const fileMeta = await readFileMeta(path);
-    // console.log('streams', fileMeta.streams);
-    setExternalFilesMeta((old) => ({ ...old, [path]: { streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters } }));
-    setCopyStreamIdsForPath(path, () => fromPairs(fileMeta.streams.map(({ index }) => [index, true])));
-  }, [allFilesMeta, setCopyStreamIdsForPath]);
-
   const batchFilePaths = useMemo(() => batchFiles.map((f) => f.path), [batchFiles]);
-
-  const batchLoadPaths = useCallback((newPaths, append) => {
-    setBatchFiles((existingFiles) => {
-      const mapPathsToFiles = (paths) => paths.map((path) => ({ path, name: basename(path) }));
-      if (append) {
-        const newUniquePaths = newPaths.filter((newPath) => !existingFiles.some(({ path: existingPath }) => newPath === existingPath));
-        setSelectedBatchFiles([newUniquePaths[0]]);
-        return [...existingFiles, ...mapPathsToFiles(newUniquePaths)];
-      }
-      setSelectedBatchFiles([newPaths[0]]);
-      return mapPathsToFiles(newPaths);
-    });
-  }, []);
-
-  const userOpenFiles = useCallback(async (filePaths) => {
-    if (!filePaths || filePaths.length < 1) return;
-
-    console.log('userOpenFiles');
-    console.log(filePaths.join('\n'));
-
-    [lastOpenedPath] = filePaths;
-
-    if (filePaths.length > 1) {
-      if (alwaysConcatMultipleFiles) {
-        batchLoadPaths(filePaths);
-        setConcatDialogVisible(true);
-      } else {
-        batchLoadPaths(filePaths, true);
-      }
-      return;
-    }
-
-    // filePaths.length is now 1
-    const firstFilePath = filePaths[0];
-
-    const filePathLowerCase = firstFilePath.toLowerCase();
-
-    if (workingRef.current) return;
-    try {
-      setWorking(i18n.t('Loading file'));
-
-      // Import segments for for already opened file
-      const edlFormats = { csv: 'csv', pbf: 'pbf', edl: 'mplayer', cue: 'cue', xml: 'xmeml', fcpxml: 'fcpxml' };
-      const matchingExt = Object.keys(edlFormats).find((ext) => filePathLowerCase.endsWith(`.${ext}`));
-      if (matchingExt) {
-        if (!checkFileOpened()) return;
-        await loadEdlFile({ path: firstFilePath, type: edlFormats[matchingExt], append: true });
-        return;
-      }
-
-      const isLlcProject = filePathLowerCase.endsWith('.llc');
-
-      // Need to ask the user what to do if more than one option
-      const inputOptions = {
-        open: isFileOpened ? i18n.t('Open the file instead of the current one') : i18n.t('Open the file'),
-      };
-      if (isFileOpened) {
-        if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
-        else inputOptions.tracks = i18n.t('Include all tracks from the new file');
-      }
-      if (batchFiles.length > 0) inputOptions.addToBatch = i18n.t('Add the file to the batch list');
-
-      if (Object.keys(inputOptions).length > 1) {
-        const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction(inputOptions) : 'open';
-
-        if (openFileResponse === 'open') {
-          await userOpenSingleFile({ path: firstFilePath, isLlcProject });
-          return;
-        }
-        if (openFileResponse === 'project') {
-          await loadEdlFile({ path: firstFilePath, type: 'llc' });
-          return;
-        }
-        if (openFileResponse === 'tracks') {
-          await addStreamSourceFile(firstFilePath);
-          setStreamsSelectorShown(true);
-          return;
-        }
-        if (openFileResponse === 'addToBatch') {
-          batchLoadPaths([firstFilePath], true);
-          return;
-        }
-        // Dialog canceled:
-        return;
-      }
-
-      await userOpenSingleFile({ path: firstFilePath, isLlcProject });
-    } catch (err) {
-      console.error('userOpenFiles', err);
-      if (err.code === 'LLC_FFPROBE_UNSUPPORTED_FILE') {
-        errorToast(i18n.t('Unsupported file'));
-      } else {
-        handleError(i18n.t('Failed to open file'), err);
-      }
-    } finally {
-      setWorking();
-    }
-  }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, batchFiles.length, isFileOpened, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile]);
 
   const onVideoError = useCallback(async () => {
     const { error } = videoRef.current;
@@ -2176,12 +2208,6 @@ const App = memo(() => {
       handleError(err);
     }
   }, [fileUri, usingPreviewFile, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, filePath, setWorking]);
-
-  const openFilesDialog = useCallback(async () => {
-    const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'], defaultPath: lastOpenedPath });
-    if (canceled) return;
-    userOpenFiles(filePaths);
-  }, [userOpenFiles]);
 
   useEffect(() => {
     async function exportEdlFile2(e, type) {
@@ -2322,10 +2348,6 @@ const App = memo(() => {
   const showLeftBar = batchFiles.length > 0;
 
   const thumbnailsSorted = useMemo(() => sortBy(thumbnails, thumbnail => thumbnail.time), [thumbnails]);
-
-  let timelineMode;
-  if (thumbnailsEnabled) timelineMode = 'thumbnails';
-  if (waveformEnabled) timelineMode = 'waveform';
 
   const { t } = useTranslation();
 
@@ -2531,7 +2553,7 @@ const App = memo(() => {
               shortStep={shortStep}
               seekClosestKeyframe={seekClosestKeyframe}
               togglePlay={togglePlay}
-              setTimelineMode={setTimelineMode}
+              toggleTimelineMode={toggleTimelineMode}
               timelineMode={timelineMode}
               hasAudio={hasAudio}
               keyframesEnabled={keyframesEnabled}

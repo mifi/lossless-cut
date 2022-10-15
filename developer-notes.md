@@ -73,6 +73,6 @@ npx license-checker --summary
 
 ```
 npm run generate-licenses
-#cp licenses.txt mifi.no/public/losslesscut/
+#cp licenses.txt losslesscut.mifi.no/public//
 ```
 Then deploy.

@@ -4,6 +4,8 @@ const os = require('os');
 const { join, dirname } = require('path');
 const { pathExists } = require('fs-extra');
 
+const logger = require('./logger');
+
 const { app } = electron;
 
 
@@ -127,7 +129,7 @@ async function getCustomStoragePath() {
     if (await pathExists(customConfigPath)) return customStorageDir;
     return undefined;
   } catch (err) {
-    console.error('Failed to get custom storage path', err);
+    logger.error('Failed to get custom storage path', err);
     return undefined;
   }
 }
@@ -136,7 +138,7 @@ let store;
 
 async function init() {
   const customStoragePath = await getCustomStoragePath();
-  if (customStoragePath) console.log('customStoragePath', customStoragePath);
+  if (customStoragePath) logger.info('customStoragePath', customStoragePath);
 
   for (let i = 0; i < 5; i += 1) {
     try {
@@ -145,7 +147,7 @@ async function init() {
     } catch (err) {
       // eslint-disable-next-line no-await-in-loop
       await new Promise(r => setTimeout(r, 2000));
-      console.error('Failed to create config store, retrying', err);
+      logger.error('Failed to create config store, retrying', err);
     }
   }
 

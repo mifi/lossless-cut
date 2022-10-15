@@ -3,7 +3,7 @@ import flatMap from 'lodash/flatMap';
 import sum from 'lodash/sum';
 import pMap from 'p-map';
 
-import { getOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath } from '../util';
+import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath } from '../util';
 import { isCuttingStart, isCuttingEnd, handleProgress, getFfCommandLine, getFfmpegPath, getDuration, runFfmpeg, createChaptersFromSegments, readFileMeta, cutEncodeSmartPart, getExperimentalArgs, html5ify as ffmpegHtml5ify, getVideoTimescaleArgs, RefuseOverwriteError } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { getSmartCutParams } from '../smartcut';
@@ -381,12 +381,12 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       const ext = getOutFileExtension({ isCustomFormatSelected: true, outFormat, filePath });
 
       const smartCutMainPartOutPath = needsSmartCut
-        ? getOutPath({ customOutDir, filePath, nameSuffix: `smartcut-segment-copy-${i}${ext}` })
+        ? getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `smartcut-segment-copy-${i}${ext}` })
         : getSegmentOutPath();
 
       if (!needsSmartCut) await checkOverwrite(smartCutMainPartOutPath);
 
-      const smartCutEncodedPartOutPath = getOutPath({ customOutDir, filePath, nameSuffix: `smartcut-segment-encode-${i}${ext}` });
+      const smartCutEncodedPartOutPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `smartcut-segment-encode-${i}${ext}` });
 
       const smartCutSegmentsToConcat = [smartCutEncodedPartOutPath, smartCutMainPartOutPath];
 
@@ -436,7 +436,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
   const autoConcatCutSegments = useCallback(async ({ customOutDir, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge, appendFfmpegCommandLog }) => {
     const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath });
-    const outPath = getOutPath({ customOutDir, filePath, nameSuffix: `cut-merged-${new Date().getTime()}${ext}` });
+    const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `cut-merged-${new Date().getTime()}${ext}` });
     const outDir = getOutDir(customOutDir, filePath);
 
     const chapters = await createChaptersFromSegments({ segmentPaths, chapterNames });
@@ -484,7 +484,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
   // https://stackoverflow.com/questions/34118013/how-to-determine-webm-duration-using-ffprobe
   const fixInvalidDuration = useCallback(async ({ fileFormat, customOutDir }) => {
     const ext = getOutFileExtension({ outFormat: fileFormat, filePath });
-    const outPath = getOutPath({ customOutDir, filePath, nameSuffix: `reformatted${ext}` });
+    const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `reformatted${ext}` });
 
     const ffmpegArgs = [
       '-hide_banner',

@@ -370,6 +370,10 @@ const KeyboardShortcuts = memo(({
           name: t('Capture snapshot'),
           category: outputCategory,
         },
+        captureSnapshotAsCoverArt: {
+          name: t('Set current frame as cover art'),
+          category: outputCategory,
+        },
         extractCurrentSegmentFramesAsImages: {
           name: t('Extract all frames in segment as images'),
           category: outputCategory,
