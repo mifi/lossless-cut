@@ -9,7 +9,7 @@
 - When will you implement feature X?
   - I have limited time and I have a lot of projects to work on, so I cannot promise any timeline. I will usually prioritize the issues with the most likes, [see here for a list of the most popular issues](https://github.com/mifi/lossless-cut/issues/691).
 
-# Known issues, limitations, troubleshooting
+# Common / known issues & troubleshooting
 
 ## Cutting times are not accurate
 
@@ -19,26 +19,16 @@ Start cut time will be "rounded" to the nearest **previous** keyframe. This mean
   - If you're seeing a blank video at the beginning of the resulting file, try `Keyframe cut` instead.
   - You may try to enable the new "Smart cut" mode. However it is very experimental and may not work for most files.
 
-## Output file has same length as input
+## Cut file has same length as input
 
-If you cut a file, but the duration of the exported file is incorrect (or the same as input), try to disable all tracks except for the video track.
+If you cut a file, but the duration of the exported file is the same as input file's duration, try to disable all tracks except for the video track and see if that helps. Sometimes a file contains some tracks that LosslessCut is unable to cut. It will then leave them as is, while cutting the other tracks. This may lead to incorrect output duration.
 
-## When exporting you may lose some proprietary data tracks
+## Merge / concat results in incorrect duration, sped up or slowed down segments
 
-For example `tmcd`, `fdsc` and `gpmd` added by GoPro. These can however be losslessly exported to separate files if you want to keep this data for later.
+This might be caused by trying to merge files that are not compatible. Make sure they have the exact same codec parameters before merging. If you are sure they are the same, you can try to running each of the files through LosslessCut before merging them. By "running them through LosslessCut" I mean open each file and just export without cutting, and then merge each of the exported files. This might "clean up" certain parameters in the files, to make them more compatible for merging. In particular it might give them the same timebase, which is known to help. For more info see [#455](https://github.com/mifi/lossless-cut/issues/455).
 
-## EXIF / metadata
-EXIF/metadata can be preserved (see Export Options dialog), but it doesn't always output compliant files, so use it carefully.
+## Smart cut not working
 
-## Low quality playback
-
-Some codecs are not natively supported, so they will preview with low quality playback and no audio. You may convert these files to a supported codec from the File menu, see [#88](https://github.com/mifi/lossless-cut/issues/88).
-
-## MPEG TS / MTS
-
-MPEG TS (`.mts`/`.ts`) files have a tendency to be a bit problematic. It may help to **first** remux them to another format like MP4/MKV. Then you can open the MP4/MKV file an work on that.
-
-## Smart cut
 Smart cut is experimental, but if you're having problems, check out [this issue](https://github.com/mifi/lossless-cut/issues/126).
 
 ## Linux specific issues
@@ -53,7 +43,25 @@ Smart cut is experimental, but if you're having problems, check out [this issue]
 - Where did the `.exe`/`.zip` downloads go? I decided to stop distributing exe and instead just 7zip, due to the [problems that the exe download was causing and the large size of zips.](https://github.com/mifi/lossless-cut/issues/1072#issuecomment-1066026323)
 - [APPX is not signed and **does not work**.](https://github.com/mifi/lossless-cut/issues/337) Please use [7z package](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z) instead.
 
-## Still cannot find an answer?
+# Limitations
+
+## Low quality playback
+
+Some codecs are not natively supported, so they will preview with low quality playback and no audio. You may convert these files to a supported codec from the File menu, see [#88](https://github.com/mifi/lossless-cut/issues/88).
+
+## MPEG TS / MTS
+
+MPEG TS (`.mts`/`.ts`) files have a tendency to be a bit problematic. It may help to **first** remux them to another format like MP4/MKV. Then you can open the MP4/MKV file an work on that.
+
+## EXIF / metadata
+
+EXIF/metadata can be preserved (see Export Options dialog), but it doesn't always output compliant files, so use it carefully.
+
+## When exporting you may lose some proprietary data tracks
+
+For example `tmcd`, `fdsc` and `gpmd` added by GoPro. These can however be losslessly exported to separate files if you want to keep this data for later.
+
+# Still cannot find an answer?
 
 If any other problem please search for [existing issues](https://github.com/mifi/lossless-cut/issues) before you file an issue here on GitHub. You can check the developer tools for any errors or clues. Menu: `Tools` -> `Toggle Developer Tools`.
 Also you are welcome to hang out on [Discord](https://discord.gg/fhnEREfUJ3) 🤗
