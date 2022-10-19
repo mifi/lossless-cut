@@ -11,13 +11,23 @@
 
 # Common / known issues & troubleshooting
 
+## The exported video has a problem
+
+If the video exports successfully without any error from LosslessCut, but it does not look as expected when playing back, please try this:
+
+- Try both `Keyframe cut` vs `Normal cut` (do not use `Smart Cut` if you have any problem)
+- Disable unnecessary tracks from the **Tracks panel**. First try to only enable a single track (e.g. video) and if that succeeds, then work your way by enabling more tracks and see which one is causing the problem. Sometimes LosslessCut (ffmpeg) is unable to cut certain tracks at all.
+- Select a different **output format** (`matroska` and `mov` support a lot of codecs.)
+- Try to enable the **Experimental Flag** under **Settings**
+
 ## Cutting times are not accurate
 
 Start cut time will be "rounded" to the nearest **previous** keyframe. This means that you often have **move the start cut time to few frames after** the desired keyframe.
-  - Lossless cutting is not an exact science. For some files, it just works. For others, you may need to trial and error depending on the codec, keyframes etc to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
-  - Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
-  - If you're seeing a blank video at the beginning of the resulting file, try `Keyframe cut` instead.
-  - You may try to enable the new "Smart cut" mode. However it is very experimental and may not work for most files.
+- Lossless cutting is not an exact science. For some files, it just works. For others, you may need to trial and error depending on the codec, keyframes etc to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
+- Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
+- If you're seeing a blank video at the beginning of the resulting file, try `Keyframe cut` instead.
+- You may try to enable the new "Smart cut" mode to remedy this inaccuracy. However it is very experimental and may not work for most files.
+- Try to set the **start**-cutpoint a few frames **before or after** the nearest keyframe (may also solve audio sync issues)
 
 ## Cut file has same length as input
 
