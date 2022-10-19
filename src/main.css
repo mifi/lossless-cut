@@ -19,19 +19,6 @@ body {
     cursor: default;
 }
 
-.help-sheet h1 {
-  font-size: 1.2em;
-  margin-bottom: .5em;
-  margin-top: 1.3em;
-  text-transform: uppercase;
-}
-
-.help-sheet h2 {
-  font-size: 1em;
-  margin-bottom: .5em;
-  text-transform: uppercase;
-}
-
 kbd {
     display: inline-block;
     padding: 3px 5px;

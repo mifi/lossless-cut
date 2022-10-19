@@ -9,7 +9,7 @@ import useUserSettings from './hooks/useUserSettings';
 
 const electron = window.require('electron');
 
-const NoFileLoaded = memo(({ mifiLink, toggleHelp, currentCutSeg }) => {
+const NoFileLoaded = memo(({ mifiLink, currentCutSeg }) => {
   const { t } = useTranslation();
   const { simpleMode, toggleSimpleMode } = useUserSettings();
 
@@ -17,8 +17,8 @@ const NoFileLoaded = memo(({ mifiLink, toggleHelp, currentCutSeg }) => {
     <div className="no-user-select" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, border: '2vmin dashed #252525', color: '#505050', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}>
       <div style={{ fontSize: '6vmin', textTransform: 'uppercase' }}>{t('DROP FILE(S)')}</div>
 
-      <div style={{ fontSize: '4vmin', color: '#777', cursor: 'pointer' }} role="button" onClick={toggleHelp}>
-        <Trans>Press <kbd>H</kbd> for help</Trans>
+      <div style={{ fontSize: '3vmin', color: '#777', marginBottom: '.3em' }}>
+        <Trans>See <b>Help</b> menu for help</Trans>
       </div>
 
       <div style={{ fontSize: '3vmin', color: '#ccc' }}>

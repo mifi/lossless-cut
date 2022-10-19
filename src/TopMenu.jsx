@@ -1,5 +1,5 @@
 import React, { memo, useCallback } from 'react';
-import { IoIosHelpCircle, IoIosSettings } from 'react-icons/io';
+import { IoIosSettings } from 'react-icons/io';
 import { FaLock, FaUnlock } from 'react-icons/fa';
 import { IconButton, Button, CrossIcon, ListIcon, VolumeUpIcon, VolumeOffIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +13,7 @@ import useUserSettings from './hooks/useUserSettings';
 
 const TopMenu = memo(({
   filePath, fileFormat, copyAnyAudioTrack, toggleStripAudio,
-  renderOutFmt, toggleHelp, numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown, toggleSettings,
+  renderOutFmt, numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown, toggleSettings,
   selectedSegments, isCustomFormatSelected, clearOutDir,
 }) => {
   const { t } = useTranslation();
@@ -82,7 +82,6 @@ const TopMenu = memo(({
         </>
       )}
 
-      <IoIosHelpCircle size={24} role="button" onClick={toggleHelp} style={{ verticalAlign: 'middle', marginLeft: 5 }} />
       <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ verticalAlign: 'middle', marginLeft: 5 }} />
     </div>
   );

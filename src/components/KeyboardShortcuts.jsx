@@ -140,8 +140,8 @@ const KeyboardShortcuts = memo(({
         ],
       },
       actionsMap: {
-        toggleHelp: {
-          name: t('Show/hide help screen'),
+        toggleLastCommands: {
+          name: t('Last ffmpeg commands'),
         },
         toggleKeyboardShortcuts: {
           name: t('Keyboard & mouse shortcuts'),

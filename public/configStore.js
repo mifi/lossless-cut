@@ -65,7 +65,6 @@ const defaultKeyBindings = [
   { keys: 'enter', action: 'labelCurrentSegment' },
 
   { keys: 'e', action: 'export' },
-  { keys: 'h', action: 'toggleHelp' },
   { keys: 'shift+/', action: 'toggleKeyboardShortcuts' },
   { keys: 'escape', action: 'closeActiveScreen' },
 

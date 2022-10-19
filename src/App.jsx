@@ -3,7 +3,7 @@ import { unstable_batchedUpdates as batchedUpdates } from 'react-dom';
 import { FaAngleLeft, FaWindowClose } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Table, SideSheet, Position, ThemeProvider } from 'evergreen-ui';
+import { Heading, InlineAlert, Table, SideSheet, Position, ThemeProvider } from 'evergreen-ui';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
@@ -31,7 +31,7 @@ import NoFileLoaded from './NoFileLoaded';
 import Canvas from './Canvas';
 import TopMenu from './TopMenu';
 import Sheet from './Sheet';
-import HelpSheet from './HelpSheet';
+import LastCommandsSheet from './LastCommandsSheet';
 import StreamsSelector from './StreamsSelector';
 import SegmentList from './SegmentList';
 import Settings from './Settings';
@@ -148,7 +148,7 @@ const App = memo(() => {
   const [showRightBar, setShowRightBar] = useState(true);
   const [cleanupChoices, setCleanupChoices] = useState({ tmpFiles: true });
   const [rememberConvertToSupportedFormat, setRememberConvertToSupportedFormat] = useState();
-  const [helpVisible, setHelpVisible] = useState(false);
+  const [lastCommandsVisible, setLastCommandsVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [tunerVisible, setTunerVisible] = useState();
   const [keyboardShortcutsVisible, setKeyboardShortcutsVisible] = useState(false);
@@ -1245,10 +1245,11 @@ const App = memo(() => {
       rotation,
       shortestFlag,
       effectiveExportMode,
+      outSegTemplate,
     };
 
     openSendReportDialog(err, state);
-  }, [filePath, fileFormat, externalFilesMeta, mainStreams, copyStreamIdsByFile, cutSegments, mainFileFormatData, rotation, shortestFlag, effectiveExportMode]);
+  }, [filePath, fileFormat, externalFilesMeta, mainStreams, copyStreamIdsByFile, cutSegments, mainFileFormatData, rotation, shortestFlag, effectiveExportMode, outSegTemplate]);
 
   const handleCutFailed = useCallback(async (err) => {
     const sendErrorReport = await showCutFailedDialog({ detectedFileFormat });
@@ -1619,7 +1620,7 @@ const App = memo(() => {
     }
   }, [resetState, setWorking, showPreviewFileLoadedMessage, autoLoadTimecode, html5ifyAndLoadWithPreferences, getEdlFilePath, getEdlFilePathOld, loadEdlFile, enableAskForImportChapters, loadCutSegments, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat]);
 
-  const toggleHelp = useCallback(() => setHelpVisible(val => !val), []);
+  const toggleLastCommands = useCallback(() => setLastCommandsVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
 
   const jumpSeg = useCallback((val) => setCurrentSegIndex((old) => Math.max(Math.min(old + val, cutSegments.length - 1), 0)), [cutSegments.length]);
@@ -2063,7 +2064,7 @@ const App = memo(() => {
       redo: () => cutSegmentsHistory.forward(),
       labelCurrentSegment: () => { onLabelSegment(currentSegIndexSafe); return false; },
       addSegment,
-      toggleHelp: () => { toggleHelp(); return false; },
+      toggleLastCommands: () => { toggleLastCommands(); return false; },
       export: onExportPress,
       extractCurrentSegmentFramesAsImages,
       reorderSegsByStartTime,
@@ -2106,7 +2107,7 @@ const App = memo(() => {
     // always allow
     if (action === 'closeActiveScreen') {
       closeExportConfirm();
-      setHelpVisible(false);
+      setLastCommandsVisible(false);
       setSettingsVisible(false);
       return false;
     }
@@ -2133,7 +2134,7 @@ const App = memo(() => {
     if (match) return bubble;
 
     return true; // bubble the event
-  }, [addSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleHelp, toggleKeyboardShortcuts, toggleKeyframeCut, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   useKeyboard({ keyBindings, onKeyPress });
 
@@ -2249,7 +2250,8 @@ const App = memo(() => {
       importEdlFile,
       exportEdlFile: exportEdlFile2,
       exportEdlYouTube,
-      toggleHelp,
+      toggleLastCommands,
+      toggleKeyboardShortcuts,
       toggleSettings,
       openAbout,
       openSendReportDialog: () => { openSendReportDialogWithState(); },
@@ -2270,7 +2272,7 @@ const App = memo(() => {
     const entries = Object.entries(action);
     entries.forEach(([key, value]) => electron.ipcRenderer.on(key, value));
     return () => entries.forEach(([key, value]) => electron.ipcRenderer.removeListener(key, value));
-  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, customOutDir, cutSegments, detectBlackScenes, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, invertAllSegments, loadCutSegments, loadMedia, openFilesDialog, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleHelp, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
+  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, customOutDir, cutSegments, detectBlackScenes, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, invertAllSegments, loadCutSegments, loadMedia, openFilesDialog, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleKeyboardShortcuts, toggleLastCommands, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
     try {
@@ -2304,8 +2306,6 @@ const App = memo(() => {
     setSettingsVisible(false);
     setTunerVisible(type);
   }, []);
-
-  const onKeyboardShortcutsDialogRequested = useCallback(() => setKeyboardShortcutsVisible(true), []);
 
   useEffect(() => {
     if (!isStoreBuild) loadMifiLink().then(setMifiLink);
@@ -2370,7 +2370,6 @@ const App = memo(() => {
             clearOutDir={clearOutDir}
             isCustomFormatSelected={isCustomFormatSelected}
             renderOutFmt={renderOutFmt}
-            toggleHelp={toggleHelp}
             toggleSettings={toggleSettings}
             numStreamsToCopy={numStreamsToCopy}
             numStreamsTotal={numStreamsTotal}
@@ -2398,7 +2397,7 @@ const App = memo(() => {
 
             {/* Middle part: */}
             <div style={{ position: 'relative', flexGrow: 1, overflow: 'hidden' }}>
-              {!isFileOpened && <NoFileLoaded mifiLink={mifiLink} toggleHelp={toggleHelp} currentCutSeg={currentCutSeg} />}
+              {!isFileOpened && <NoFileLoaded mifiLink={mifiLink} currentCutSeg={currentCutSeg} />}
 
               <div className="no-user-select" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, visibility: !isFileOpened ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
                 {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
@@ -2598,15 +2597,16 @@ const App = memo(() => {
 
           <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegments={nonFilteredSegments} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} />
 
-          <HelpSheet
-            visible={helpVisible}
-            onTogglePress={toggleHelp}
+          <LastCommandsSheet
+            visible={lastCommandsVisible}
+            onTogglePress={toggleLastCommands}
             ffmpegCommandLog={ffmpegCommandLog}
-            onKeyboardShortcutsDialogRequested={onKeyboardShortcutsDialogRequested}
           />
 
           <Sheet visible={settingsVisible} onClosePress={toggleSettings} style={{ background: 'white', color: 'black' }}>
-            <Table style={{ marginTop: 40 }}>
+            <Heading>{t('Keyboard & mouse shortcuts')}</Heading>
+            <InlineAlert marginTop={20}>{t('Hover mouse over buttons in the main interface to see which function they have')}</InlineAlert>
+            <Table style={{ marginTop: 20 }}>
               <Table.Head>
                 <Table.TextHeaderCell>{t('Settings')}</Table.TextHeaderCell>
                 <Table.TextHeaderCell>{t('Current setting')}</Table.TextHeaderCell>
@@ -2614,7 +2614,7 @@ const App = memo(() => {
               <Table.Body>
                 <Settings
                   onTunerRequested={onTunerRequested}
-                  onKeyboardShortcutsDialogRequested={onKeyboardShortcutsDialogRequested}
+                  onKeyboardShortcutsDialogRequested={toggleKeyboardShortcuts}
                 />
               </Table.Body>
             </Table>

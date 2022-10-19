@@ -299,6 +299,10 @@ module.exports = (app, mainWindow, newVersion) => {
             mainWindow.webContents.send('detectBlackScenes');
           },
         },
+        {
+          label: i18n.t('Last ffmpeg commands'),
+          click() { mainWindow.webContents.send('toggleLastCommands'); },
+        },
         { type: 'separator' },
         { role: 'toggleDevTools', label: i18n.t('Toggle Developer Tools') },
       ],
@@ -308,28 +312,39 @@ module.exports = (app, mainWindow, newVersion) => {
       label: i18n.t('Help'),
       submenu: [
         {
-          label: i18n.t('Help and shortcuts'),
-          click() {
-            mainWindow.webContents.send('toggleHelp');
-          },
+          label: i18n.t('How to use'),
+          click() { electron.shell.openExternal('https://mifi.no/losslesscut/usage'); },
         },
         {
-          label: i18n.t('About'),
-          click() {
-            mainWindow.webContents.send('openAbout');
-          },
+          label: i18n.t('FAQ'),
+          click() { electron.shell.openExternal('https://mifi.no/losslesscut/faq'); },
         },
         {
-          label: i18n.t('Licenses'),
-          click() { electron.shell.openExternal(licensesPage); },
+          label: i18n.t('Troubleshooting'),
+          click() { electron.shell.openExternal('https://mifi.no/losslesscut/troubleshooting'); },
         },
         {
           label: i18n.t('Learn More'),
           click() { electron.shell.openExternal(homepage); },
         },
         {
+          label: i18n.t('Licenses'),
+          click() { electron.shell.openExternal(licensesPage); },
+        },
+        { type: 'separator' },
+        {
+          label: i18n.t('Keyboard & mouse shortcuts'.replace(/&/g, '&&')),
+          click() {
+            mainWindow.webContents.send('toggleKeyboardShortcuts');
+          },
+        },
+        {
           label: i18n.t('Report an error'),
           click() { mainWindow.webContents.send('openSendReportDialog'); },
+        },
+        {
+          label: i18n.t('Version'),
+          click() { mainWindow.webContents.send('openAbout'); },
         },
       ],
     },
