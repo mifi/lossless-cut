@@ -5,7 +5,7 @@
 - Can LosslessCut be batched/automated using a CLI or API?
   - While it was never designed for advanced batching/automation, it does have a [basic CLI](./cli.md), and there are a few feature requests regarding this: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868).
 - Is there a keyboard shortcut to do X?
-  - [See this issue.](https://github.com/mifi/lossless-cut/issues/254)
+  - First check the Keyboard shortcuts dialog. If you cannot find your shortcut there, [see this issue.](https://github.com/mifi/lossless-cut/issues/254)
 - When will you implement feature X?
   - I have limited time and I have a lot of projects to work on, so I cannot promise any timeline. I will usually prioritize the issues with the most likes, [see here for a list of the most popular issues](https://github.com/mifi/lossless-cut/issues/691).
 
@@ -19,6 +19,7 @@ If the video exports successfully without any error from LosslessCut, but it doe
 - Disable unnecessary tracks from the **Tracks panel**. First try to only enable a single track (e.g. video) and if that succeeds, then work your way by enabling more tracks and see which one is causing the problem. Sometimes LosslessCut (ffmpeg) is unable to cut certain tracks at all.
 - Select a different **output format** (`matroska` and `mov` support a lot of codecs.)
 - Try to enable the **Experimental Flag** under **Settings**
+- Try the same operation with a different file and see whether it's a problem with just one file
 
 ## Cutting times are not accurate
 
@@ -53,9 +54,9 @@ Smart cut is experimental, but if you're having problems, check out [this issue]
 - Where did the `.exe`/`.zip` downloads go? I decided to stop distributing exe and instead just 7zip, due to the [problems that the exe download was causing and the large size of zips.](https://github.com/mifi/lossless-cut/issues/1072#issuecomment-1066026323)
 - [APPX is not signed and **does not work**.](https://github.com/mifi/lossless-cut/issues/337) Please use [7z package](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z) instead.
 
-# Limitations
+# Known limitations
 
-## Low quality playback
+## Low quality / blurry playback and no audio
 
 Some codecs are not natively supported, so they will preview with low quality playback and no audio. You may convert these files to a supported codec from the File menu, see [#88](https://github.com/mifi/lossless-cut/issues/88).
 
