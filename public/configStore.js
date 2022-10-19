@@ -112,6 +112,7 @@ const defaults = {
   customFfPath: undefined,
   storeProjectInWorkingDir: true,
   enableOverwriteOutput: true,
+  mouseWheelZoomModifierKey: 'ctrl',
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645

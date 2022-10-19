@@ -9,6 +9,8 @@ import useUserSettings from './hooks/useUserSettings';
 import { askForFfPath } from './dialogs';
 import { isMasBuild } from './util';
 
+import { keyMap } from './hooks/useTimelineScroll';
+
 
 // https://www.electronjs.org/docs/api/locales
 // See i18n.js
@@ -47,7 +49,7 @@ const Settings = memo(({
 }) => {
   const { t } = useTranslation();
 
-  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, setEnableOverwriteOutput } = useUserSettings();
+  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, setEnableOverwriteOutput, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey } = useUserSettings();
 
   const onLangChange = useCallback((e) => {
     const { value } = e.target;
@@ -214,6 +216,17 @@ const Settings = memo(({
           <Button iconBefore={timecodeFormat === 'frameCount' ? NumericalIcon : TimeIcon} onClick={onTimecodeFormatClick}>
             {timecodeFormatOptions[timecodeFormat]}
           </Button>
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Mouse wheel zoom modifier key')}</KeyCell>
+        <Table.TextCell>
+          <Select value={mouseWheelZoomModifierKey} onChange={(e) => setMouseWheelZoomModifierKey(e.target.value)}>
+            {Object.keys(keyMap).map((key) => (
+              <option key={key} value={key}>{key}</option>
+            ))}
+          </Select>
         </Table.TextCell>
       </Row>
 

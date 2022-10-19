@@ -115,6 +115,8 @@ export default () => {
   useEffect(() => safeSetConfig('storeProjectInWorkingDir', storeProjectInWorkingDir), [storeProjectInWorkingDir]);
   const [enableOverwriteOutput, setEnableOverwriteOutput] = useState(safeGetConfigInitial('enableOverwriteOutput'));
   useEffect(() => safeSetConfig('enableOverwriteOutput', enableOverwriteOutput), [enableOverwriteOutput]);
+  const [mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey] = useState(safeGetConfigInitial('mouseWheelZoomModifierKey'));
+  useEffect(() => safeSetConfig('mouseWheelZoomModifierKey', mouseWheelZoomModifierKey), [mouseWheelZoomModifierKey]);
 
   const resetKeyBindings = useCallback(() => {
     configStore.reset('keyBindings');
@@ -209,5 +211,7 @@ export default () => {
     setStoreProjectInWorkingDir,
     enableOverwriteOutput,
     setEnableOverwriteOutput,
+    mouseWheelZoomModifierKey,
+    setMouseWheelZoomModifierKey,
   };
 };
