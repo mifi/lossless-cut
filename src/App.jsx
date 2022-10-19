@@ -1677,6 +1677,7 @@ const App = memo(() => {
     await loadMedia({ filePath: path, customOutDir: newCustomOutDir, projectPath });
   }, [ensureAccessibleDirectories, loadMedia, storeProjectInWorkingDir]);
 
+  // todo merge with userOpenFiles?
   const batchOpenSingleFile = useCallback(async (path) => {
     if (workingRef.current) return;
     if (filePath === path) return;

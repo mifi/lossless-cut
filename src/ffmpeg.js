@@ -285,7 +285,15 @@ export async function readFileMeta(filePath) {
       '-of', 'json', '-show_chapters', '-show_format', '-show_entries', 'stream', '-i', filePath, '-hide_banner',
     ]);
 
-    const { streams = [], format = {}, chapters = [] } = JSON.parse(stdout);
+    let parsedJson;
+    try {
+      // https://github.com/mifi/lossless-cut/issues/1342
+      parsedJson = JSON.parse(stdout);
+    } catch (err) {
+      console.log('ffprobe stdout', stdout);
+      throw new Error('ffprobe returned malformed data');
+    }
+    const { streams = [], format = {}, chapters = [] } = parsedJson;
     return { format, streams, chapters };
   } catch (err) {
     // Windows will throw error with code ENOENT if format detection fails.
