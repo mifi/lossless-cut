@@ -58,7 +58,7 @@ import {
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
   getFfmpegPath, RefuseOverwriteError,
 } from './ffmpeg';
-import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, defaultProcessedCodecTypes, isAudioDefinitelyNotSupported, doesPlayerSupportFile } from './util/streams';
+import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, doesPlayerSupportFile } from './util/streams';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube, getFrameCountRaw } from './edlFormats';
 import {
@@ -785,7 +785,7 @@ const App = memo(() => {
 
   // Streams that are not copy enabled by default
   const extraStreams = useMemo(() => mainStreams
-    .filter((stream) => !defaultProcessedCodecTypes.includes(stream.codec_type)), [mainStreams]);
+    .filter((stream) => !shouldCopyStreamByDefault(stream)), [mainStreams]);
 
   // Extra streams that the user has not selected for copy
   const nonCopiedExtraStreams = useMemo(() => extraStreams

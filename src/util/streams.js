@@ -1,9 +1,13 @@
 // https://www.ffmpeg.org/doxygen/3.2/libavutil_2utils_8c_source.html#l00079
-export const defaultProcessedCodecTypes = [
+const defaultProcessedCodecTypes = [
   'video',
   'audio',
   'subtitle',
   'attachment',
+];
+
+const unprocessableCodecs = [
+  'dvb_teletext', // ffmpeg doesn't seem to support this https://github.com/mifi/lossless-cut/issues/1343
 ];
 
 // taken from `ffmpeg -codecs`
@@ -189,6 +193,7 @@ export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, cop
 
 export function shouldCopyStreamByDefault(stream) {
   if (!defaultProcessedCodecTypes.includes(stream.codec_type)) return false;
+  if (unprocessableCodecs.includes(stream.codec_name)) return false;
   return true;
 }
 
