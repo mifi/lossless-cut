@@ -8,7 +8,7 @@ body:
       options:
         - label: Try with the [newest version from GitHub](https://github.com/mifi/lossless-cut/releases/latest)
           required: true
-        - label: Read all the documentation at https://github.com/mifi/lossless-cut and **Known issues / Troubleshooting**
+        - label: Read the [documentation](https://github.com/mifi/lossless-cut) and [FAQ, Known issues, Troubleshooting](https://github.com/mifi/lossless-cut/blob/master/issues.md)
           required: true
         - label: Search for your problem under [Issues](https://github.com/mifi/lossless-cut/issues) or [Discussions](https://github.com/mifi/lossless-cut/discussions)
           required: true
