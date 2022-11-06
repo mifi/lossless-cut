@@ -476,5 +476,22 @@
     "LosslessCut (CSV)": "LosslessCut (CSV)",
     "Export project (LLC)...": "Eksportuoti projektą (LLC)...",
     "Import project (LLC)...": "Importuoti projektą (LLC)...",
-    "Close batch": "Uždaryti paketą"
+    "Close batch": "Uždaryti paketą",
+    "Convert current file to supported format": "Konvertuoti dabartinį failą į palaikomą formatą",
+    "At least one resulting file name is the same as the input path": "Bent vieno gauto failo pavadinimas sutampa su įvesties keliu",
+    "At least one resulting file name contains invalid characters": "Bent viename gautame failo pavadinime yra negaliojančių simbolių",
+    "At least one resulting file name has no length": "Bent vienas gautas failo pavadinimas neturi ilgio",
+    "Bind new key to action": "Susieti naują raktą su veiksmu",
+    "Batch convert files to supported format": "Konvertuoti failus paketu į palaikomą formatą",
+    "Chapters": "Skyriai",
+    "Clear batch file list after merge": "Išvalyti paketinių failų sąrašą po sujungimo",
+    "About LosslessCut": "Apie LosslessCut",
+    "Always open this dialog when opening multiple files": "Visada atverti šį dialogo langą, kai atidarote kelis failus",
+    "Are you sure?": "Ar tikrai?",
+    "At least one resulting file will have a too long path": "Bent vieno gauto failo kelias bus per ilgas",
+    "Chapters only": "Tik skyriai",
+    "Close current screen": "Uždaryti dabartinį ekraną",
+    "Combination is invalid": "Derinys netinkamas",
+    "Add the file to the batch list": "Įtraukti failą į paketų sąrašą",
+    "Auto convert to supported format": "Automatiškai konvertuoti į palaikomą formatą"
 }
