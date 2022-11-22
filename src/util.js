@@ -7,9 +7,11 @@ const { dirname, parse: parsePath, join, basename, extname, isAbsolute, resolve 
 const fs = window.require('fs-extra');
 const open = window.require('open');
 const os = window.require('os');
-const trash = window.require('trash');
+const { shell } = window.require('electron');
 
 const { readdir, unlink } = fs;
+
+const trash = async (path) => shell.trashItem(path);
 
 export function getFileDir(filePath) {
   return filePath ? dirname(filePath) : undefined;
