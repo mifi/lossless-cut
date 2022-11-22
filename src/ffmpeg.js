@@ -7,11 +7,12 @@ import Timecode from 'smpte-timecode';
 import { pcmAudioCodecs, getMapStreamsArgs } from './util/streams';
 import { getSuffixedOutPath, isDurationValid, getExtensionForFormat, isWindows, isMac, platform, arch } from './util';
 
+import isDev from './isDev';
+
 const execa = window.require('execa');
 const { join } = window.require('path');
 const FileType = window.require('file-type');
 const readline = window.require('readline');
-const isDev = window.require('electron-is-dev');
 const { pathExists } = window.require('fs-extra');
 
 let customFfPath;

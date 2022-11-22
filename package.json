@@ -49,10 +49,10 @@
     "cross-env": "^7.0.3",
     "csv-parse": "^4.15.3",
     "csv-stringify": "^5.6.2",
-    "electron": "8",
+    "electron": "^21.3.0",
     "electron-builder": "^23.3.3",
     "electron-builder-notarize": "^1.4.0",
-    "electron-devtools-installer": "^3.1.1",
+    "electron-devtools-installer": "^3.2.0",
     "eslint": "^7.32.0 || ^8.2.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-import": "^2.25.3",
@@ -94,10 +94,11 @@
     "wait-on": "^5.3.0"
   },
   "dependencies": {
+    "@electron/remote": "^2.0.8",
     "cue-parser": "^0.3.0",
-    "electron-is-dev": "1",
+    "electron-is-dev": "^2.0.0",
     "electron-store": "5.1.1",
-    "electron-unhandled": "^3.0.2",
+    "electron-unhandled": "^4.0.1",
     "execa": "^5.0.0",
     "file-type": "16",
     "file-url": "^3.0.0",
@@ -122,10 +123,10 @@
   },
   "browserslist": {
     "production": [
-      "electron 8.0"
+      "electron 17.0"
     ],
     "development": [
-      "electron 8.0"
+      "electron 17.0"
     ]
   },
   "build": {

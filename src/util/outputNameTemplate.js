@@ -1,9 +1,9 @@
 import i18n from 'i18next';
 
 import { isMac, isWindows, hasDuplicates } from '../util';
+import isDev from '../isDev';
 
 const { sep: pathSep, join: pathJoin, normalize: pathNormalize } = window.require('path');
-const isDev = window.require('electron-is-dev');
 
 // eslint-disable-next-line import/prefer-default-export
 export function getOutSegError({ fileNames, filePath, outputDir }) {

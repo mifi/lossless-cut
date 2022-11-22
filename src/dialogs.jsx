@@ -14,7 +14,7 @@ import CopyClipboardButton from './components/CopyClipboardButton';
 
 const electron = window.require('electron'); // eslint-disable-line
 
-const { dialog, app } = electron.remote;
+const { dialog, app } = window.require('@electron/remote');
 
 const ReactSwal = withReactContent(Swal);
 

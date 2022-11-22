@@ -9,9 +9,9 @@ import './fonts.css';
 import './main.css';
 
 
-const electron = window.require('electron');
+const { app } = window.require('@electron/remote');
 
-console.log('Version', electron.remote.app.getVersion());
+console.log('Version', app.getVersion());
 
 
 ReactDOM.render(

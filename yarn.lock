@@ -1733,9 +1733,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@electron/get@npm:^1.0.1":
-  version: 1.13.1
-  resolution: "@electron/get@npm:1.13.1"
+"@electron/get@npm:^1.14.1":
+  version: 1.14.1
+  resolution: "@electron/get@npm:1.14.1"
   dependencies:
     debug: ^4.1.1
     env-paths: ^2.2.0
@@ -1751,7 +1751,16 @@ __metadata:
       optional: true
     global-tunnel-ng:
       optional: true
-  checksum: ea9863b73e8aedefb19cfe9b849c585b8bda29e11b90189b115680da4e9ab0167405efe63e5d141da2d13cde24eacacfde62f730f2730d047e58819fe69352f8
+  checksum: 21fec5e82bbee8f9fa183b46e05675b137c3130c7999d3b2b34a0047d1a06ec3c76347b9bbdb9911ba9b2123697804e360a15dda9db614c0226d5d4dcc4d6d15
+  languageName: node
+  linkType: hard
+
+"@electron/remote@npm:^2.0.8":
+  version: 2.0.8
+  resolution: "@electron/remote@npm:2.0.8"
+  peerDependencies:
+    electron: ">= 13.0.0"
+  checksum: d0ef11b3f09d789baf4330c2c021cfc1a997fc5ffdb56e8810ed7fe2fd76cda1a168c0589d2a10284a907fd3829bae14002a58b35c4881473cdd0049f07fbd63
   languageName: node
   linkType: hard
 
@@ -2909,10 +2918,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^12.0.12":
-  version: 12.20.41
-  resolution: "@types/node@npm:12.20.41"
-  checksum: ff90d10f9831e86abf1f17581a70a81e5b6c3be97ec0b02972e6c3201fd19a40f6b230d4346ef7aaf023f24fef07a2131aeb68773ef3b14c3a17da8fbe05e439
+"@types/node@npm:^16.11.26":
+  version: 16.18.3
+  resolution: "@types/node@npm:16.18.3"
+  checksum: 6b8ba2ea5d842f7986e366cb9184c54d273d492784dc62e08fd5afeae938d9b61aec6e4222d2541cd18f9b1412ba361bbcb3f4204fb003608af80a2a6af959f9
   languageName: node
   linkType: hard
 
@@ -3134,6 +3143,15 @@ __metadata:
   dependencies:
     "@types/yargs-parser": "*"
   checksum: 63d06700ffbed745f00d7994eb92416649c8a3ead22f26446979d383f3af52fa9400bb185268f3a44a2348749098ffe33a8185ca676b77bc3206c63b8b73fd01
+  languageName: node
+  linkType: hard
+
+"@types/yauzl@npm:^2.9.1":
+  version: 2.10.0
+  resolution: "@types/yauzl@npm:2.10.0"
+  dependencies:
+    "@types/node": "*"
+  checksum: 55d27ae5d346ea260e40121675c24e112ef0247649073848e5d4e03182713ae4ec8142b98f61a1c6cbe7d3b72fa99bbadb65d8b01873e5e605cdc30f1ff70ef2
   languageName: node
   linkType: hard
 
@@ -4735,9 +4753,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001286, caniuse-lite@npm:^1.0.30001297, caniuse-lite@npm:^1.0.30001299":
-  version: 1.0.30001299
-  resolution: "caniuse-lite@npm:1.0.30001299"
-  checksum: c770f60ebf3e0cc8043ba4db0ebec12d7a595a6b50cb4437c3c5c55b04de9d2413f711f2828be761e8c37bb46b927a8abe6b199b8f0ffc1a34af0ebdee84be27
+  version: 1.0.30001434
+  resolution: "caniuse-lite@npm:1.0.30001434"
+  checksum: 7c9d2641e8e8f3ddf9af14c4ce47266a9d8fd1fc0243626049ff1b2eca4bf02938ff440813cc3feae3fa8d851ec8d1b9718044340c8d09bb4372d92d4f6b519c
   languageName: node
   linkType: hard
 
@@ -5246,18 +5264,6 @@ __metadata:
   version: 0.0.1
   resolution: "concat-map@npm:0.0.1"
   checksum: 902a9f5d8967a3e2faf138d5cb784b9979bad2e6db5357c5b21c568df4ebe62bcb15108af1b2253744844eb964fc023fbd9afbbbb6ddd0bcc204c6fb5b7bf3af
-  languageName: node
-  linkType: hard
-
-"concat-stream@npm:^1.6.2":
-  version: 1.6.2
-  resolution: "concat-stream@npm:1.6.2"
-  dependencies:
-    buffer-from: ^1.0.0
-    inherits: ^2.0.3
-    readable-stream: ^2.2.2
-    typedarray: ^0.0.6
-  checksum: 1ef77032cb4459dcd5187bd710d6fc962b067b64ec6a505810de3d2b8cc0605638551b42f8ec91edf6fcd26141b32ef19ad749239b58fae3aba99187adc32285
   languageName: node
   linkType: hard
 
@@ -6483,7 +6489,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-devtools-installer@npm:^3.1.1":
+"electron-devtools-installer@npm:^3.2.0":
   version: 3.2.0
   resolution: "electron-devtools-installer@npm:3.2.0"
   dependencies:
@@ -6495,10 +6501,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-is-dev@npm:1, electron-is-dev@npm:^1.0.1":
-  version: 1.2.0
-  resolution: "electron-is-dev@npm:1.2.0"
-  checksum: 73eee7aa7ce90a387bf224ec26aa808237164572641ca41cdca34a046adb72406d4414c3cc5b0b5e335a6d6010886474e1325c0b0af40c9fac95210b00195fdb
+"electron-is-dev@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "electron-is-dev@npm:2.0.0"
+  checksum: 7393f46f06153d70a427ea904c60a092e50fbf1015c26c342cebb8324ada8c9e0c0f1f02867af56d9cc76f47be17da8cb311ea6bdc83343e7ebd2323ec4014c8
   languageName: node
   linkType: hard
 
@@ -6561,28 +6567,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-unhandled@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "electron-unhandled@npm:3.0.2"
+"electron-unhandled@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "electron-unhandled@npm:4.0.1"
   dependencies:
     clean-stack: ^2.1.0
-    electron-is-dev: ^1.0.1
+    electron-is-dev: ^2.0.0
     ensure-error: ^2.0.0
     lodash.debounce: ^4.0.8
-  checksum: 7ca47b177b671920e760ea72a0cd06f9f1d3f80e543717fbcbc761c0499c82505672343f5b931f44b1604712467bad6fae1d3f4428a55f735b30f9b9e26d3373
+    serialize-error: ^8.1.0
+  checksum: 64874ef2f2a681a7a4c2f98be7bf0365c02d31ebf0adaef03f5a68a22bff6db3a22be66aef7a21b85c949f8c05647dd31b15d92fb73c0ff22e2e845c5a2a9db9
   languageName: node
   linkType: hard
 
-"electron@npm:8":
-  version: 8.5.5
-  resolution: "electron@npm:8.5.5"
+"electron@npm:^21.3.0":
+  version: 21.3.0
+  resolution: "electron@npm:21.3.0"
   dependencies:
-    "@electron/get": ^1.0.1
-    "@types/node": ^12.0.12
-    extract-zip: ^1.0.3
+    "@electron/get": ^1.14.1
+    "@types/node": ^16.11.26
+    extract-zip: ^2.0.1
   bin:
     electron: cli.js
-  checksum: 97a7239a99c205ef5b4123ee889f93907cc34138d17397a2db1ef6e6d3b72574584bf45a49f3a1a688a466e7f40f88a06c67ced1e29b19ef534e17b2be822db5
+  checksum: c0f170299609410a4aeb2daa9bf4d6ac2872ca226a6ba16b0c97d9dfcfbfa27e0d3339c3b71c66b59dd333d471f813ca16933e7b4e7ce10342799dc60cbdf066
   languageName: node
   linkType: hard
 
@@ -7399,17 +7406,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"extract-zip@npm:^1.0.3":
-  version: 1.7.0
-  resolution: "extract-zip@npm:1.7.0"
+"extract-zip@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "extract-zip@npm:2.0.1"
   dependencies:
-    concat-stream: ^1.6.2
-    debug: ^2.6.9
-    mkdirp: ^0.5.4
+    "@types/yauzl": ^2.9.1
+    debug: ^4.1.1
+    get-stream: ^5.1.0
     yauzl: ^2.10.0
+  dependenciesMeta:
+    "@types/yauzl":
+      optional: true
   bin:
     extract-zip: cli.js
-  checksum: 011bab660d738614555773d381a6ba4815d98c1cfcdcdf027e154ebcc9fc8c9ef637b3ea5c9b2144013100071ee41722ed041fc9aacc60f6198ef747cac0c073
+  checksum: 8cbda9debdd6d6980819cc69734d874ddd71051c9fe5bde1ef307ebcedfe949ba57b004894b585f758b7c9eeeea0e3d87f2dda89b7d25320459c2c9643ebb635
   languageName: node
   linkType: hard
 
@@ -10728,6 +10738,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "lossless-cut@workspace:."
   dependencies:
+    "@electron/remote": ^2.0.8
     "@types/jest": ^26.0.20
     axios: ^0.21.2
     color: ^3.1.0
@@ -10736,13 +10747,13 @@ __metadata:
     csv-parse: ^4.15.3
     csv-stringify: ^5.6.2
     cue-parser: ^0.3.0
-    electron: 8
+    electron: ^21.3.0
     electron-builder: ^23.3.3
     electron-builder-notarize: ^1.4.0
-    electron-devtools-installer: ^3.1.1
-    electron-is-dev: 1
+    electron-devtools-installer: ^3.2.0
+    electron-is-dev: ^2.0.0
     electron-store: 5.1.1
-    electron-unhandled: ^3.0.2
+    electron-unhandled: ^4.0.1
     eslint: ^7.32.0 || ^8.2.0
     eslint-config-airbnb: ^19.0.4
     eslint-plugin-import: ^2.25.3
@@ -11239,7 +11250,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mkdirp@npm:^0.5.1, mkdirp@npm:^0.5.4, mkdirp@npm:^0.5.5, mkdirp@npm:~0.5.1":
+"mkdirp@npm:^0.5.1, mkdirp@npm:^0.5.5, mkdirp@npm:~0.5.1":
   version: 0.5.5
   resolution: "mkdirp@npm:0.5.5"
   dependencies:
@@ -13814,7 +13825,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readable-stream@npm:^2.0.0, readable-stream@npm:^2.0.1, readable-stream@npm:^2.0.5, readable-stream@npm:^2.0.6, readable-stream@npm:^2.1.0, readable-stream@npm:^2.1.5, readable-stream@npm:^2.2.2, readable-stream@npm:^2.3.3, readable-stream@npm:^2.3.5, readable-stream@npm:^2.3.6, readable-stream@npm:~2.3.6":
+"readable-stream@npm:^2.0.0, readable-stream@npm:^2.0.1, readable-stream@npm:^2.0.5, readable-stream@npm:^2.0.6, readable-stream@npm:^2.1.0, readable-stream@npm:^2.1.5, readable-stream@npm:^2.3.3, readable-stream@npm:^2.3.5, readable-stream@npm:^2.3.6, readable-stream@npm:~2.3.6":
   version: 2.3.7
   resolution: "readable-stream@npm:2.3.7"
   dependencies:
@@ -14543,6 +14554,15 @@ __metadata:
   dependencies:
     type-fest: ^0.13.1
   checksum: e0aba4dca2fc9fe74ae1baf38dbd99190e1945445a241ba646290f2176cdb2032281a76443b02ccf0caf30da5657d510746506368889a593b9835a497fc0732e
+  languageName: node
+  linkType: hard
+
+"serialize-error@npm:^8.1.0":
+  version: 8.1.0
+  resolution: "serialize-error@npm:8.1.0"
+  dependencies:
+    type-fest: ^0.20.2
+  checksum: 2eef236d50edd2d7926e602c14fb500dc3a125ee52e9f08f67033181b8e0be5d1122498bdf7c23c80683cddcad083a27974e9e7111ce23165f4d3bcdd6d65102
   languageName: node
   linkType: hard
 
@@ -16197,13 +16217,6 @@ __metadata:
   dependencies:
     is-typedarray: ^1.0.0
   checksum: 99c11aaa8f45189fcfba6b8a4825fd684a321caa9bd7a76a27cf0c7732c174d198b99f449c52c3818107430b5f41c0ccbbfb75cb2ee3ca4a9451710986d61a60
-  languageName: node
-  linkType: hard
-
-"typedarray@npm:^0.0.6":
-  version: 0.0.6
-  resolution: "typedarray@npm:0.0.6"
-  checksum: 33b39f3d0e8463985eeaeeacc3cb2e28bc3dfaf2a5ed219628c0b629d5d7b810b0eb2165f9f607c34871d5daa92ba1dc69f49051cf7d578b4cbd26c340b9d1b1
   languageName: node
   linkType: hard
 

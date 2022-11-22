@@ -10,6 +10,8 @@ import { isStoreBuild, isMasBuild, isWindowsStoreBuild } from './util';
 const electron = window.require('electron'); // eslint-disable-line
 const os = window.require('os');
 
+const { app } = window.require('@electron/remote');
+
 
 const ReactSwal = withReactContent(Swal);
 
@@ -20,7 +22,7 @@ export function openSendReportDialog(err, state) {
     : <p><Trans>Please create an issue at <span style={{ fontWeight: 'bold', cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/issues')}>https://github.com/mifi/lossless-cut/issues</span> where you describe what you were doing.</Trans></p>;
 
   const platform = os.platform();
-  const version = electron.remote.app.getVersion();
+  const version = app.getVersion();
 
   const text = `${err ? err.stack : 'No error occurred.'}\n\n${JSON.stringify({
     err: err && {
