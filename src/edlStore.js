@@ -8,8 +8,7 @@ const fs = window.require('fs-extra');
 const cueParser = window.require('cue-parser');
 const { basename } = window.require('path');
 
-const electron = window.require('electron'); // eslint-disable-line
-const { dialog } = electron.remote;
+const { dialog } = window.require('@electron/remote');
 
 export async function loadCsvSeconds(path) {
   return parseCsv(await fs.readFile(path, 'utf-8'));

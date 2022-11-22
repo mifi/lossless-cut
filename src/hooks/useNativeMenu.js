@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 
 // TODO pull out?
-const { remote } = window.require('electron');
+const remote = window.require('@electron/remote');
 const { Menu } = remote;
 
 // https://github.com/transflow/use-electron-context-menu

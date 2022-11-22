@@ -5,6 +5,7 @@ const i18n = require('i18next');
 const debounce = require('lodash/debounce');
 const yargsParser = require('yargs-parser');
 const JSON5 = require('json5');
+const remote = require('@electron/remote/main');
 
 const logger = require('./logger');
 const menu = require('./menu');
@@ -17,8 +18,9 @@ require('./i18n');
 const { app, ipcMain } = electron;
 const { BrowserWindow } = electron;
 
-// https://github.com/electron/electron/issues/18397
-app.allowRendererProcessReuse = true;
+remote.initialize();
+
+app.commandLine.appendSwitch('enable-features', 'PlatformHEVCDecoderSupport')
 
 unhandled({
   showDialog: true,
@@ -76,6 +78,9 @@ function createWindow() {
       webSecurity: !isDev,
     },
   });
+
+  remote.enable(mainWindow.webContents);
+
 
   if (isDev) mainWindow.loadURL('http://localhost:3001');
   // Need to useloadFile for special characters https://github.com/mifi/lossless-cut/issues/40

@@ -2,11 +2,12 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import i18n from 'i18next';
 
 import { errorToast } from '../util';
+import isDev from '../isDev';
 
 const electron = window.require('electron'); // eslint-disable-line
-const isDev = window.require('electron-is-dev');
+const remote = window.require('@electron/remote');
 
-const configStore = electron.remote.require('./configStore');
+const configStore = remote.require('./configStore');
 
 export default () => {
   const firstUpdateRef = useRef(true);

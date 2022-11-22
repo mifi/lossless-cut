@@ -21,7 +21,7 @@ import { getSegColor } from './util/colors';
 import { formatDuration, parseDuration } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
 
-const isDev = window.require('electron-is-dev');
+import isDev from './isDev';
 
 const start = new Date().getTime();
 const zoomOptions = Array(13).fill().map((unused, z) => 2 ** z);

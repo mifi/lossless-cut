@@ -5,7 +5,9 @@ const Backend = window.require('i18next-fs-backend');
 
 const electron = window.require('electron'); // eslint-disable-line
 
-const { commonI18nOptions, fallbackLng, loadPath, addPath } = electron.remote.require('./i18n-common');
+const remote = window.require('@electron/remote');
+
+const { commonI18nOptions, fallbackLng, loadPath, addPath } = remote.require('./i18n-common');
 
 export { fallbackLng };
 
