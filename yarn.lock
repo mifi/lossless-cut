@@ -10694,7 +10694,6 @@ __metadata:
     mkdirp: ^1.0.3
     moment: ^2.29.4
     mousetrap: ^1.6.5
-    open: ^7.0.3
     p-map: ^4.0.0
     patch-package: ^6.2.1
     pify: ^5.0.0
@@ -11714,7 +11713,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"open@npm:^7.0.3, open@npm:^7.4.2":
+"open@npm:^7.4.2":
   version: 7.4.2
   resolution: "open@npm:7.4.2"
   dependencies:

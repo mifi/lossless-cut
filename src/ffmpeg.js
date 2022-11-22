@@ -338,12 +338,12 @@ function getPreferredCodecFormat({ codec_name: codec, codec_type: type }) {
 }
 
 async function extractNonAttachmentStreams({ customOutDir, filePath, streams, enableOverwriteOutput }) {
-  if (streams.length === 0) return;
+  if (streams.length === 0) return [];
 
   console.log('Extracting', streams.length, 'normal streams');
 
   let streamArgs = [];
-  await pMap(streams, async ({ index, codec, type, format: { format, ext } }) => {
+  const outPaths = await pMap(streams, async ({ index, codec, type, format: { format, ext } }) => {
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
     if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
 
@@ -351,6 +351,7 @@ async function extractNonAttachmentStreams({ customOutDir, filePath, streams, en
       ...streamArgs,
       '-map', `0:${index}`, '-c', 'copy', '-f', format, '-y', outPath,
     ];
+    return outPath;
   }, { concurrency: 1 });
 
   const ffmpegArgs = [
@@ -362,15 +363,17 @@ async function extractNonAttachmentStreams({ customOutDir, filePath, streams, en
 
   const { stdout } = await runFfmpeg(ffmpegArgs);
   console.log(stdout);
+
+  return outPaths;
 }
 
 async function extractAttachmentStreams({ customOutDir, filePath, streams, enableOverwriteOutput }) {
-  if (streams.length === 0) return;
+  if (streams.length === 0) return [];
 
   console.log('Extracting', streams.length, 'attachment streams');
 
   let streamArgs = [];
-  await pMap(streams, async ({ index, codec_name: codec, codec_type: type }) => {
+  const outPaths = await pMap(streams, async ({ index, codec_name: codec, codec_type: type }) => {
     const ext = codec || 'bin';
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
     if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
@@ -379,6 +382,7 @@ async function extractAttachmentStreams({ customOutDir, filePath, streams, enabl
       ...streamArgs,
       `-dump_attachment:${index}`, outPath,
     ];
+    return outPath;
   }, { concurrency: 1 });
 
   const ffmpegArgs = [
@@ -395,9 +399,10 @@ async function extractAttachmentStreams({ customOutDir, filePath, streams, enabl
   } catch (err) {
     // Unfortunately ffmpeg will exit with code 1 even though it's a success
     // Note: This is kind of hacky:
-    if (err.exitCode === 1 && typeof err.stderr === 'string' && err.stderr.includes('At least one output file must be specified')) return;
+    if (err.exitCode === 1 && typeof err.stderr === 'string' && err.stderr.includes('At least one output file must be specified')) return outPaths;
     throw err;
   }
+  return outPaths;
 }
 
 // https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
@@ -418,8 +423,10 @@ export async function extractStreams({ filePath, customOutDir, streams, enableOv
   // TODO progress
 
   // Attachment streams are handled differently from normal streams
-  await extractNonAttachmentStreams({ customOutDir, filePath, streams: outStreams, enableOverwriteOutput });
-  await extractAttachmentStreams({ customOutDir, filePath, streams: attachmentStreams, enableOverwriteOutput });
+  return [
+    ...(await extractNonAttachmentStreams({ customOutDir, filePath, streams: outStreams, enableOverwriteOutput })),
+    ...(await extractAttachmentStreams({ customOutDir, filePath, streams: attachmentStreams, enableOverwriteOutput })),
+  ];
 }
 
 async function renderThumbnail(filePath, timestamp) {
