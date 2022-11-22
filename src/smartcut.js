@@ -12,6 +12,7 @@ function mapInputToOutputCodec(inputCodec) {
 // eslint-disable-next-line import/prefer-default-export
 export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, streams }) {
   const videoStreams = getRealVideoStreams(streams);
+  if (videoStreams.length === 0) throw new Error('Smart cut only works on videos');
   if (videoStreams.length > 1) throw new Error('Can only smart cut video with exactly one video stream');
 
   const videoStream = videoStreams[0];
