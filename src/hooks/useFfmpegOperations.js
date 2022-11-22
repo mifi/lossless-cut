@@ -453,6 +453,8 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     const { streams } = await readFileMeta(metadataFromPath);
     await concatFiles({ paths: segmentPaths, outDir, outPath, metadataFromPath, outFormat, includeAllStreams: true, streams, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge, appendFfmpegCommandLog });
     if (autoDeleteMergedSegments) await tryDeleteFiles(segmentPaths);
+
+    return outPath;
   }, [concatFiles, filePath]);
 
   const html5ify = useCallback(async ({ customOutDir, filePath: filePathArg, speed, hasAudio, hasVideo, onProgress }) => {

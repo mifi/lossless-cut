@@ -1115,7 +1115,7 @@ const App = memo(() => {
       const metadataFromPath = paths[0];
       await concatFiles({ paths, outPath, outDir, outFormat, metadataFromPath, includeAllStreams, streams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments, appendFfmpegCommandLog });
       if (clearBatchFilesAfterConcat) closeBatch();
-      openDirToast({ icon: 'success', dirPath: outDir, text: i18n.t('Files merged!') });
+      openDirToast({ icon: 'success', filePath: outPath, text: i18n.t('Files merged!') });
     } catch (err) {
       if (isOutOfSpaceError(err)) {
         showDiskFull();
@@ -1325,13 +1325,14 @@ const App = memo(() => {
         enableOverwriteOutput,
       });
 
+      let concatOutPath;
       if (willMerge) {
         setCutProgress(0);
         setWorking(i18n.t('Merging'));
 
         const chapterNames = segmentsToChapters && !invertCutSegments ? segmentsToExport.map((s) => s.name) : undefined;
 
-        await autoConcatCutSegments({
+        concatOutPath = await autoConcatCutSegments({
           customOutDir,
           outFormat: fileFormat,
           isCustomFormatSelected,
@@ -1361,7 +1362,8 @@ const App = memo(() => {
         }
       }
 
-      if (!hideAllNotifications) openDirToast({ dirPath: outputDir, text: msgs.join(' '), timer: 15000 });
+      const revealPath = concatOutPath || outFiles[0];
+      if (!hideAllNotifications) openDirToast({ filePath: revealPath, text: msgs.join(' '), timer: 15000 });
     } catch (err) {
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
@@ -1409,12 +1411,12 @@ const App = memo(() => {
         ? await captureFramesFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, enableTransferTimestamps, numFrames: 1 })
         : await captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, enableTransferTimestamps });
 
-      if (!hideAllNotifications) openDirToast({ dirPath: outputDir, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
+      if (!hideAllNotifications) openDirToast({ filePath: outPath, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
     } catch (err) {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [filePath, getCurrentTime, usingPreviewFile, customOutDir, captureFormat, enableTransferTimestamps, hideAllNotifications, outputDir]);
+  }, [filePath, getCurrentTime, usingPreviewFile, customOutDir, captureFormat, enableTransferTimestamps, hideAllNotifications]);
 
   const extractSegmentFramesAsImages = useCallback(async (index) => {
     if (!filePath) return;
@@ -1425,8 +1427,8 @@ const App = memo(() => {
 
     try {
       setWorking(i18n.t('Extracting frames'));
-      await captureFramesFfmpeg({ customOutDir, filePath, fromTime: start, captureFormat, enableTransferTimestamps, numFrames });
-      if (!hideAllNotifications) openDirToast({ dirPath: outputDir, text: i18n.t('Frames extracted to: {{path}}', { path: outputDir }) });
+      const outPath = await captureFramesFfmpeg({ customOutDir, filePath, fromTime: start, captureFormat, enableTransferTimestamps, numFrames });
+      if (!hideAllNotifications) openDirToast({ filePath: outPath, text: i18n.t('Frames extracted to: {{path}}', { path: outputDir }) });
     } catch (err) {
       handleError(err);
     } finally {
@@ -1742,8 +1744,8 @@ const App = memo(() => {
     try {
       setWorking(i18n.t('Extracting all streams'));
       setStreamsSelectorShown(false);
-      await extractStreams({ customOutDir, filePath, streams: mainStreams, enableOverwriteOutput });
-      openDirToast({ dirPath: outputDir, text: i18n.t('All streams have been extracted as separate files') });
+      const extractedPaths = await extractStreams({ customOutDir, filePath, streams: mainStreams, enableOverwriteOutput });
+      openDirToast({ filePath: extractedPaths[0], text: i18n.t('All streams have been extracted as separate files') });
     } catch (err) {
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
@@ -1754,7 +1756,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [customOutDir, enableOverwriteOutput, filePath, mainStreams, outputDir, setWorking]);
+  }, [customOutDir, enableOverwriteOutput, filePath, mainStreams, setWorking]);
 
   const detectBlackScenes = useCallback(async () => {
     if (!filePath) return;
@@ -2161,8 +2163,8 @@ const App = memo(() => {
     try {
       setWorking(i18n.t('Extracting track'));
       // setStreamsSelectorShown(false);
-      await extractStreams({ customOutDir, filePath, streams: mainStreams.filter((s) => s.index === index), enableOverwriteOutput });
-      openDirToast({ dirPath: outputDir, text: i18n.t('Track has been extracted') });
+      const extractedPaths = await extractStreams({ customOutDir, filePath, streams: mainStreams.filter((s) => s.index === index), enableOverwriteOutput });
+      openDirToast({ filePath: extractedPaths[0], text: i18n.t('Track has been extracted') });
     } catch (err) {
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
@@ -2173,7 +2175,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [customOutDir, enableOverwriteOutput, filePath, mainStreams, outputDir, setWorking]);
+  }, [customOutDir, enableOverwriteOutput, filePath, mainStreams, setWorking]);
 
   const batchFilePaths = useMemo(() => batchFiles.map((f) => f.path), [batchFiles]);
 

@@ -5,7 +5,6 @@ import pMap from 'p-map';
 
 const { dirname, parse: parsePath, join, basename, extname, isAbsolute, resolve } = window.require('path');
 const fs = window.require('fs-extra');
-const open = window.require('open');
 const os = window.require('os');
 const { shell } = window.require('electron');
 
@@ -128,9 +127,9 @@ export function handleError(arg1, arg2) {
 }
 
 
-export const openDirToast = async ({ dirPath, ...props }) => {
+export const openDirToast = async ({ filePath, ...props }) => {
   const { value } = await toast.fire({ icon: 'success', timer: 5000, showConfirmButton: true, confirmButtonText: i18n.t('Show'), showCancelButton: true, cancelButtonText: i18n.t('Close'), ...props });
-  if (value) open(dirPath);
+  if (value) shell.showItemInFolder(filePath);
 };
 
 export function setFileNameTitle(filePath) {
