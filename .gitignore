@@ -6,3 +6,12 @@ icon-build
 build-resources
 doc
 /ffmpeg
+/app.log
+
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
