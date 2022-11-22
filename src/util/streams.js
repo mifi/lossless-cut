@@ -233,7 +233,7 @@ export function doesPlayerSupportFile(streams) {
   // https://github.com/mifi/lossless-cut/issues/595
   // https://github.com/mifi/lossless-cut/issues/975
   // But cover art / thumbnail streams don't count e.g. hevc with a png stream (disposition.attached_pic=1)
-  return realVideoStreams.some(s => !['hevc', 'prores', 'mpeg4', 'tscc2', 'dvvideo'].includes(s.codec_name));
+  return realVideoStreams.some(s => !['prores', 'mpeg4', 'tscc2', 'dvvideo'].includes(s.codec_name));
 }
 
 export function isAudioDefinitelyNotSupported(streams) {
