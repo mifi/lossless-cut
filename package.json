@@ -81,7 +81,7 @@
     "react-scripts": "^5.0.1",
     "react-sortablejs": "^6.1.4",
     "react-syntax-highlighter": "^15.4.3",
-    "react-use": "^17.3.2",
+    "react-use": "^17.4.0",
     "scroll-into-view-if-needed": "^2.2.28",
     "sharp": "^0.30.5",
     "smpte-timecode": "^1.2.3",
