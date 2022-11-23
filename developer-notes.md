@@ -18,9 +18,10 @@ Note: `yarn` may take some time to complete.
 
 Run one of the below commands:
 ```bash
-npm run download-ffmpeg-mac
-npm run download-ffmpeg-linux
-npm run download-ffmpeg-windows
+npm run download-ffmpeg-darwin-x64
+npm run download-ffmpeg-darwin-arm64
+npm run download-ffmpeg-linux-x64
+npm run download-ffmpeg-win32-x64
 ```
 
 ### Running
