@@ -1,7 +1,7 @@
 process.traceDeprecation = true;
 process.traceProcessWarnings = true;
 
-const electron = require('electron'); // eslint-disable-line
+const electron = require('electron');
 const isDev = require('electron-is-dev');
 const unhandled = require('electron-unhandled');
 const i18n = require('i18next');

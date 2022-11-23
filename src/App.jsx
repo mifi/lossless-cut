@@ -77,7 +77,7 @@ import { getOutSegError as getOutSegErrorRaw } from './util/outputNameTemplate';
 
 import isDev from './isDev';
 
-const electron = window.require('electron'); // eslint-disable-line
+const electron = window.require('electron');
 const { exists } = window.require('fs-extra');
 const filePathToUrl = window.require('file-url');
 const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('path');

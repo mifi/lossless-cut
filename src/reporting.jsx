@@ -7,7 +7,7 @@ import { Trans } from 'react-i18next';
 import CopyClipboardButton from './components/CopyClipboardButton';
 import { isStoreBuild, isMasBuild, isWindowsStoreBuild } from './util';
 
-const electron = window.require('electron'); // eslint-disable-line
+const electron = window.require('electron');
 const os = window.require('os');
 
 const { app } = window.require('@electron/remote');

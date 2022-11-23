@@ -3,8 +3,6 @@ import { initReactI18next } from 'react-i18next';
 
 const Backend = window.require('i18next-fs-backend');
 
-const electron = window.require('electron'); // eslint-disable-line
-
 const remote = window.require('@electron/remote');
 
 const { commonI18nOptions, fallbackLng, loadPath, addPath } = remote.require('./i18n-common');
