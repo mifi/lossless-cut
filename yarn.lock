@@ -5791,6 +5791,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"data-uri-to-buffer@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "data-uri-to-buffer@npm:4.0.0"
+  checksum: a010653869abe8bb51259432894ac62c52bf79ad761d418d94396f48c346f2ae739c46b254e8bb5987bded8a653d467db1968db3a69bab1d33aa5567baa5cfc7
+  languageName: node
+  linkType: hard
+
 "data-urls@npm:^2.0.0":
   version: 2.0.0
   resolution: "data-urls@npm:2.0.0"
@@ -10661,6 +10668,7 @@ __metadata:
     csv-parse: ^4.15.3
     csv-stringify: ^5.6.2
     cue-parser: ^0.3.0
+    data-uri-to-buffer: ^4.0.0
     electron: ^21.3.0
     electron-builder: ^23.3.3
     electron-builder-notarize: ^1.4.0
@@ -10713,7 +10721,6 @@ __metadata:
     smpte-timecode: ^1.2.3
     sortablejs: ^1.13.0
     string-to-stream: ^1.1.1
-    strong-data-uri: ^1.0.5
     strtok3: ^6.0.0
     sweetalert2: ^11.0.0
     sweetalert2-react-content: ^4.0.0
@@ -15199,15 +15206,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strong-data-uri@npm:^1.0.5":
-  version: 1.0.6
-  resolution: "strong-data-uri@npm:1.0.6"
-  dependencies:
-    truncate: ^2.0.1
-  checksum: 36f20fc80be9ad216924afa4b8228891b043f9b88b27fd4b29a86b430731cd041122c2b35d14630ad56438ed404622f84b24fb23c54f51e2f3bf3fd399c58972
-  languageName: node
-  linkType: hard
-
 "strtok3@npm:^6.0.0":
   version: 6.2.4
   resolution: "strtok3@npm:6.2.4"
@@ -15841,13 +15839,6 @@ __metadata:
   dependencies:
     utf8-byte-length: ^1.0.1
   checksum: ad097314709ea98444ad9c80c03aac8da805b894f37ceb5685c49ad297483afe3a5ec9572ebcaff699dda72b6cd447a2ba2a3fd10e96c2628cd16d94abeb328a
-  languageName: node
-  linkType: hard
-
-"truncate@npm:^2.0.1":
-  version: 2.1.0
-  resolution: "truncate@npm:2.1.0"
-  checksum: a2f1a0fcccf20009ba143a2873925f002e7c5d5390889d285873f2325daa3974216eae4f04244868633c9c41f571059fbad7c20988fbd130fbcf66592ac8c83c
   languageName: node
   linkType: hard
 
