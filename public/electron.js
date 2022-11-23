@@ -255,4 +255,4 @@ function focusWindow() {
   }
 }
 
-module.exports = { focusWindow };
+module.exports = { focusWindow, isDev };
