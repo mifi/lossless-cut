@@ -147,11 +147,15 @@
       "category": "public.app-category.productivity",
       "target": [
         {
-          "target": [
-            "mas",
-            "dmg"
-          ],
+          "target": "mas",
           "arch": "universal"
+        },
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "electronLanguages": [
