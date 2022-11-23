@@ -149,7 +149,12 @@ function parseCliArgs(rawArgv = process.argv) {
 
 const argv = parseCliArgs();
 
-if (!argv.allowMultipleInstances && !app.requestSingleInstanceLock()) {
+function safeRequestSingleInstanceLock() {
+  if (process.mas) return true; // todo remove when fixed https://github.com/electron/electron/issues/35540
+  return app.requestSingleInstanceLock();
+}
+
+if (!argv.allowMultipleInstances && !safeRequestSingleInstanceLock()) {
   app.quit();
 } else {
   // On macOS, the system enforces single instance automatically when users try to open a second instance of your app in Finder, and the open-file and open-url events will be emitted for that.
