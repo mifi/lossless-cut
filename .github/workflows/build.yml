@@ -55,15 +55,17 @@ jobs:
 
       - name: Download ffmpeg for Mac
         if: startsWith(matrix.os, 'macos')
-        run: yarn download-ffmpeg-mac
+        run: |
+          yarn download-ffmpeg-darwin-x64
+          yarn download-ffmpeg-darwin-arm64
 
       - name: Download ffmpeg for Windows
         if: startsWith(matrix.os, 'windows')
-        run: yarn download-ffmpeg-windows
+        run: yarn download-ffmpeg-win32-x64
 
       - name: Download ffmpeg for Linux
         if: startsWith(matrix.os, 'ubuntu')
-        run: yarn download-ffmpeg-linux
+        run: yarn download-ffmpeg-linux-x64
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
@@ -92,4 +94,4 @@ jobs:
       - name: Upload to Mac App Store
         if: startsWith(matrix.os, 'macos') && env.is_tag == 'true'
         run: |
-          node script/xcrun-wrapper.mjs dist/mas/LosslessCut-mac-x64.pkg ${{ secrets.api_key_id }} ${{ secrets.api_key_issuer_id }} 1505323402 no.mifi.losslesscut-mac
+          node script/xcrun-wrapper.mjs dist/mas/LosslessCut-mac-universal.pkg ${{ secrets.api_key_id }} ${{ secrets.api_key_issuer_id }} 1505323402 no.mifi.losslesscut-mac
