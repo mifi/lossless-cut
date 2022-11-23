@@ -44,6 +44,13 @@ jobs:
           # Log in to Snap Store
           snapcraft_token: ${{ secrets.snapcraft_token }}
 
+      - name: Save provisioning profile
+        if: startsWith(matrix.os, 'macos')
+        env:
+          PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          echo -n "$PROVISIONING_PROFILE_BASE64" | base64 --decode > LosslessCut_Mac_App_Store_provisioning_profile.provisionprofile
+
       - name: Prepare Apple API key
         # Import Apple API key for app notarization on macOS and for uploading to Mac App Store
         # 'altool --help': '--apiKey' will search the following directories in sequence for a private key file with the name of:
