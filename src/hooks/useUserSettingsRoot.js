@@ -4,7 +4,6 @@ import i18n from 'i18next';
 import { errorToast } from '../util';
 import isDev from '../isDev';
 
-const electron = window.require('electron'); // eslint-disable-line
 const remote = window.require('@electron/remote');
 
 const configStore = remote.require('./configStore');

@@ -1,4 +1,4 @@
-const electron = require('electron'); // eslint-disable-line
+const electron = require('electron');
 const i18n = require('i18next');
 
 const { Menu } = electron;
