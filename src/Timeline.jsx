@@ -1,6 +1,5 @@
 import React, { memo, useRef, useMemo, useCallback, useEffect, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
-import Hammer from 'react-hammerjs';
 import debounce from 'lodash/debounce';
 import { useTranslation } from 'react-i18next';
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
@@ -16,8 +15,6 @@ import { timelineBackground } from './colors';
 import { getSegColor } from './util/colors';
 
 const currentTimeWidth = 1;
-
-const hammerOptions = { recognizers: {} };
 
 const Waveform = memo(({ waveform, calculateTimelinePercent, durationSafe }) => {
   const [style, setStyle] = useState({ display: 'none' });
@@ -193,14 +190,26 @@ const Timeline = memo(({
   }, [durationSafe]);
 
   const handleTap = useCallback((e) => {
-    seekAbs((getMouseTimelinePos(e.srcEvent)));
+    if (e.nativeEvent.buttons === 1) { // primary button
+      seekAbs((getMouseTimelinePos(e.nativeEvent)));
+    }
   }, [seekAbs, getMouseTimelinePos]);
 
   useEffect(() => {
     setHoveringTime();
   }, [playerTime, commandedTime]);
 
-  const onMouseMove = useCallback((e) => setHoveringTime(getMouseTimelinePos(e.nativeEvent)), [getMouseTimelinePos]);
+  const onMouseMove = useCallback((e) => {
+    // eslint-disable-next-line no-bitwise
+    // const isButtonPressed = (index) => ((e.nativeEvent.buttons >> index) & 1);
+    if (e.nativeEvent.buttons === 0) { // no button pressed
+      setHoveringTime(getMouseTimelinePos(e.nativeEvent));
+      e.preventDefault();
+    } else if (e.nativeEvent.buttons === 1) { // primary button
+      handleTap(e);
+      e.preventDefault();
+    }
+  }, [getMouseTimelinePos, handleTap]);
   const onMouseOut = useCallback(() => setHoveringTime(), []);
 
   const contextMenuTemplate = useMemo(() => [
@@ -210,111 +219,108 @@ const Timeline = memo(({
   useContextMenu(timelineScrollerRef, contextMenuTemplate);
 
   return (
-    // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
-    <Hammer
-      onTap={handleTap}
-      onPan={handleTap}
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/mouse-events-have-key-events
+    <div
+      style={{ position: 'relative' }}
+      onMouseDown={handleTap}
       onMouseMove={onMouseMove}
       onMouseOut={onMouseOut}
-      options={hammerOptions}
     >
-      <div style={{ position: 'relative' }}>
-        <div
-          style={{ overflowX: 'scroll' }}
-          className="hide-scrollbar"
-          onWheel={onWheel}
-          onScroll={onTimelineScroll}
-          ref={timelineScrollerRef}
-        >
-          {waveformEnabled && shouldShowWaveform && waveforms.length > 0 && (
-            <Waveforms
-              calculateTimelinePercent={calculateTimelinePercent}
-              durationSafe={durationSafe}
-              waveforms={waveforms}
-              zoom={zoom}
-              timelineHeight={timelineHeight}
-            />
-          )}
+      <div
+        style={{ overflowX: 'scroll' }}
+        className="hide-scrollbar"
+        onWheel={onWheel}
+        onScroll={onTimelineScroll}
+        ref={timelineScrollerRef}
+      >
+        {waveformEnabled && shouldShowWaveform && waveforms.length > 0 && (
+          <Waveforms
+            calculateTimelinePercent={calculateTimelinePercent}
+            durationSafe={durationSafe}
+            waveforms={waveforms}
+            zoom={zoom}
+            timelineHeight={timelineHeight}
+          />
+        )}
 
-          {thumbnailsEnabled && (
-            <div style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative' }}>
-              {thumbnails.map((thumbnail, i) => {
-                const leftPercent = (thumbnail.time / durationSafe) * 100;
-                const nextThumbnail = thumbnails[i + 1];
-                const nextThumbTime = nextThumbnail ? nextThumbnail.time : durationSafe;
-                const maxWidthPercent = ((nextThumbTime - thumbnail.time) / durationSafe) * 100 * 0.9;
-                return (
-                  <img key={thumbnail.url} src={thumbnail.url} alt="" style={{ position: 'absolute', left: `${leftPercent}%`, height: timelineHeight * 1.5, zIndex: 1, maxWidth: `${maxWidthPercent}%`, objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.5)', borderBottomRightRadius: 15, borderTopLeftRadius: 15, borderTopRightRadius: 15, pointerEvents: 'none' }} />
-                );
-              })}
-            </div>
-          )}
-
-          <div
-            style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative', backgroundColor: timelineBackground }}
-            ref={timelineWrapperRef}
-          >
-            {currentTimePercent !== undefined && (
-              <motion.div transition={{ type: 'spring', damping: 70, stiffness: 800 }} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, zIndex: 3, backgroundColor: 'rgba(255,255,255,0.6)', width: currentTimeWidth, pointerEvents: 'none' }} />
-            )}
-            {commandedTimePercent !== undefined && (
-              <CommandedTime commandedTimePercent={commandedTimePercent} />
-            )}
-
-            {apparentCutSegments.map((seg, i) => {
-              const segColor = getSegColor(seg);
-
-              if (seg.start === 0 && seg.end === 0) return null; // No video loaded
-
+        {thumbnailsEnabled && (
+          <div style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative' }}>
+            {thumbnails.map((thumbnail, i) => {
+              const leftPercent = (thumbnail.time / durationSafe) * 100;
+              const nextThumbnail = thumbnails[i + 1];
+              const nextThumbTime = nextThumbnail ? nextThumbnail.time : durationSafe;
+              const maxWidthPercent = ((nextThumbTime - thumbnail.time) / durationSafe) * 100 * 0.9;
               return (
-                <TimelineSeg
-                  key={seg.segId}
-                  segNum={i}
-                  segBgColor={segColor.alpha(0.6).string()}
-                  segActiveBgColor={segColor.alpha(0.7).string()}
-                  segBorderColor={segColor.lighten(0.2).string()}
-                  onSegClick={setCurrentSegIndex}
-                  isActive={i === currentSegIndexSafe}
-                  duration={durationSafe}
-                  name={seg.name}
-                  cutStart={seg.start}
-                  cutEnd={seg.end}
-                  invertCutSegments={invertCutSegments}
-                  formatTimecode={formatTimecode}
-                />
+                <img key={thumbnail.url} src={thumbnail.url} alt="" style={{ position: 'absolute', left: `${leftPercent}%`, height: timelineHeight * 1.5, zIndex: 1, maxWidth: `${maxWidthPercent}%`, objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.5)', borderBottomRightRadius: 15, borderTopLeftRadius: 15, borderTopRightRadius: 15, pointerEvents: 'none' }} />
               );
             })}
-
-            {inverseCutSegments.map((seg) => (
-              <BetweenSegments
-                // eslint-disable-next-line react/no-array-index-key
-                key={`${seg.start},${seg.end}`}
-                start={seg.start}
-                end={seg.end}
-                duration={durationSafe}
-                invertCutSegments={invertCutSegments}
-              />
-            ))}
-
-            {shouldShowKeyframes && !areKeyframesTooClose && neighbouringKeyFrames.map((f) => (
-              <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / durationSafe) * 100}%`, marginLeft: -1, width: 1, background: 'rgba(0,0,0,0.4)', pointerEvents: 'none' }} />
-            ))}
-          </div>
-        </div>
-
-        {(waveformEnabled && !thumbnailsEnabled && !shouldShowWaveform) && (
-          <div style={{ position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'rgba(255,255,255,0.6)' }}>
-            {t('Zoom in more to view waveform')}
           </div>
         )}
 
-        <div style={{ position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 2 }}>
-          <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' }}>
-            {formatTimecode({ seconds: displayTime })}{isZoomed ? ` ${displayTimePercent}` : ''}
-          </div>
+        <div
+          style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative', backgroundColor: timelineBackground }}
+          ref={timelineWrapperRef}
+        >
+          {currentTimePercent !== undefined && (
+            <motion.div transition={{ type: 'spring', damping: 70, stiffness: 800 }} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, zIndex: 3, backgroundColor: 'rgba(255,255,255,0.6)', width: currentTimeWidth, pointerEvents: 'none' }} />
+          )}
+          {commandedTimePercent !== undefined && (
+            <CommandedTime commandedTimePercent={commandedTimePercent} />
+          )}
+
+          {apparentCutSegments.map((seg, i) => {
+            const segColor = getSegColor(seg);
+
+            if (seg.start === 0 && seg.end === 0) return null; // No video loaded
+
+            return (
+              <TimelineSeg
+                key={seg.segId}
+                segNum={i}
+                segBgColor={segColor.alpha(0.6).string()}
+                segActiveBgColor={segColor.alpha(0.7).string()}
+                segBorderColor={segColor.lighten(0.2).string()}
+                onSegClick={setCurrentSegIndex}
+                isActive={i === currentSegIndexSafe}
+                duration={durationSafe}
+                name={seg.name}
+                cutStart={seg.start}
+                cutEnd={seg.end}
+                invertCutSegments={invertCutSegments}
+                formatTimecode={formatTimecode}
+              />
+            );
+          })}
+
+          {inverseCutSegments.map((seg) => (
+            <BetweenSegments
+              // eslint-disable-next-line react/no-array-index-key
+              key={`${seg.start},${seg.end}`}
+              start={seg.start}
+              end={seg.end}
+              duration={durationSafe}
+              invertCutSegments={invertCutSegments}
+            />
+          ))}
+
+          {shouldShowKeyframes && !areKeyframesTooClose && neighbouringKeyFrames.map((f) => (
+            <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / durationSafe) * 100}%`, marginLeft: -1, width: 1, background: 'rgba(0,0,0,0.4)', pointerEvents: 'none' }} />
+          ))}
         </div>
       </div>
-    </Hammer>
+
+      {(waveformEnabled && !thumbnailsEnabled && !shouldShowWaveform) && (
+        <div style={{ position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'rgba(255,255,255,0.6)' }}>
+          {t('Zoom in more to view waveform')}
+        </div>
+      )}
+
+      <div style={{ position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 2 }}>
+        <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' }}>
+          {formatTimecode({ seconds: displayTime })}{isZoomed ? ` ${displayTimePercent}` : ''}
+        </div>
+      </div>
+    </div>
   );
 });
 

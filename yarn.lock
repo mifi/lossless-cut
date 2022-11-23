@@ -10610,7 +10610,6 @@ __metadata:
     pify: ^5.0.0
     react: ^17.0.2
     react-dom: ^17.0.2
-    react-hammerjs: ^1.0.1
     react-i18next: ^11.3.3
     react-icons: ^4.1.0
     react-lottie-player: ^1.3.3
@@ -13271,17 +13270,6 @@ __metadata:
   version: 3.2.0
   resolution: "react-fast-compare@npm:3.2.0"
   checksum: 8ef272c825ae329f61633ce4ce7f15aa5b84e5214d88bc0823880236e03e985a13195befa2c7a4eda7db3b017dc7985729152d88445823f652403cf36c2b86aa
-  languageName: node
-  linkType: hard
-
-"react-hammerjs@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "react-hammerjs@npm:1.0.1"
-  dependencies:
-    hammerjs: ^2.0.8
-  peerDependencies:
-    react: ^0.14.9 || ^15.3.0 || ^16.0.0-rc || ^16.0
-  checksum: 0196e2ac08d0d4d81d1dfeddd9d871f2162d1f0b8ea1a95ff81cec0dbb6323e45043606f4b65a5ee7063332d1d74cf7e00140d50530205329aa885f4b0bf2997
   languageName: node
   linkType: hard
 
