@@ -64,7 +64,7 @@
     "fast-xml-parser": "^4.0.3",
     "framer-motion": "1",
     "hammerjs": "^2.0.8",
-    "i18next-scanner": "^3.0.0",
+    "i18next-scanner": "^4.1.0",
     "icon-gen": "^3.0.0",
     "mkdirp": "^1.0.3",
     "moment": "^2.29.4",

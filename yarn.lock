@@ -5141,13 +5141,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^6.2.0":
-  version: 6.2.1
-  resolution: "commander@npm:6.2.1"
-  checksum: d7090410c0de6bc5c67d3ca41c41760d6d268f3c799e530aafb73b7437d1826bbf0d2a3edac33f8b57cc9887b4a986dce307fa5557e109be40eadb7c43b21742
-  languageName: node
-  linkType: hard
-
 "commander@npm:^7.2.0":
   version: 7.2.0
   resolution: "commander@npm:7.2.0"
@@ -5159,6 +5152,13 @@ __metadata:
   version: 8.3.0
   resolution: "commander@npm:8.3.0"
   checksum: 0f82321821fc27b83bd409510bb9deeebcfa799ff0bf5d102128b500b7af22872c0c92cb6a0ebc5a4cf19c6b550fba9cedfa7329d18c6442a625f851377bacf0
+  languageName: node
+  linkType: hard
+
+"commander@npm:^9.0.0":
+  version: 9.4.1
+  resolution: "commander@npm:9.4.1"
+  checksum: bfb18e325a5bdf772763c2213d5c7d9e77144d944124e988bcd8e5e65fb6d45d5d4e86b09155d0f2556c9a59c31e428720e57968bcd050b2306e910a0bf3cf13
   languageName: node
   linkType: hard
 
@@ -6631,17 +6631,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ensure-array@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "ensure-array@npm:1.0.0"
-  checksum: d071cd8c5a33fc6d3006db2c9abf12b0245b92045f0fd49d80e306566e94515a7e63dd9979c95365d9556c9f53395c0f747270ee6afd1950549692c507b92b88
-  languageName: node
-  linkType: hard
-
 "ensure-error@npm:^2.0.0":
   version: 2.1.0
   resolution: "ensure-error@npm:2.1.0"
   checksum: a24852103e9f39cb20ccd5b014d2657425fb786356da3ddc19a4842354430002847f1efeafd14c798e9ee62f644be1986b2b60c9eb1c73f335d1a6dea5bda71a
+  languageName: node
+  linkType: hard
+
+"ensure-type@npm:^1.5.0":
+  version: 1.5.1
+  resolution: "ensure-type@npm:1.5.1"
+  checksum: 98d190440ef8f5c78ae00dcfdc07efc46020e9fedeaba485cd29ed7505f3e674a2551919c20095c5bb1a3da9fe73ad4a344771d7a268d608ee9b575fd054c69d
   languageName: node
   linkType: hard
 
@@ -8672,9 +8672,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next-scanner@npm:^3.0.0":
-  version: 3.1.0
-  resolution: "i18next-scanner@npm:3.1.0"
+"i18next-scanner@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "i18next-scanner@npm:4.1.0"
   dependencies:
     acorn: ^8.0.4
     acorn-dynamic-import: ^4.0.0
@@ -8683,9 +8683,9 @@ __metadata:
     acorn-walk: ^8.0.0
     chalk: ^4.1.0
     clone-deep: ^4.0.0
-    commander: ^6.2.0
+    commander: ^9.0.0
     deepmerge: ^4.0.0
-    ensure-array: ^1.0.0
+    ensure-type: ^1.5.0
     eol: ^0.9.1
     esprima-next: ^5.7.0
     gulp-sort: ^2.0.0
@@ -8698,7 +8698,7 @@ __metadata:
     vinyl-fs: ^3.0.1
   bin:
     i18next-scanner: bin/cli.js
-  checksum: 5662564058687c73d48b88490ad6d7bfc5af60e99e461492310182b447e013b1da9d6367f5e164da0bb00aee8bf3d668d53e1e32f841ef1109266bb99a128a3d
+  checksum: 2b10062fdd7c39c9fb0f545dc01d9915734773991f717b9b9a7bbb196c77a45eae129130880cc21bb6d7500985517a5abce7dcb8d8a05bc6523b90384d59d6c2
   languageName: node
   linkType: hard
 
@@ -10694,7 +10694,7 @@ __metadata:
     i18next: ^19.8.5
     i18next-electron-language-detector: ^0.0.10
     i18next-fs-backend: ^1.0.1
-    i18next-scanner: ^3.0.0
+    i18next-scanner: ^4.1.0
     icon-gen: ^3.0.0
     json5: ^2.2.0
     lodash: ^4.17.19
