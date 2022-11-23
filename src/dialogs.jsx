@@ -12,8 +12,6 @@ import { parseDuration, formatDuration } from './util/duration';
 import { parseYouTube } from './edlFormats';
 import CopyClipboardButton from './components/CopyClipboardButton';
 
-const electron = window.require('electron'); // eslint-disable-line
-
 const { dialog, app } = window.require('@electron/remote');
 
 const ReactSwal = withReactContent(Swal);
