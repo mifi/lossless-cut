@@ -1,5 +1,4 @@
 import React, { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { unstable_batchedUpdates as batchedUpdates } from 'react-dom';
 import { FaAngleLeft, FaWindowClose } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -898,45 +897,43 @@ const App = memo(() => {
     video.currentTime = 0;
     video.playbackRate = 1;
 
-    batchedUpdates(() => {
-      // setWorking();
-      setFileNameTitle();
-      setPreviewFilePath();
-      setUsingDummyVideo(false);
-      setPlaying(false);
-      setDuration();
-      cutSegmentsHistory.go(0);
-      clearSegments(); // TODO this will cause two history items
-      setCutStartTimeManual();
-      setCutEndTimeManual();
-      setFileFormat();
-      setDetectedFileFormat();
-      setRotation(360);
-      setCutProgress();
-      setStartTimeOffset(0);
-      setFilePath(''); // Setting video src="" prevents memory leak in chromium
-      setExternalFilesMeta({});
-      setCustomTagsByFile({});
-      setCustomTagsByStreamId({});
-      setDispositionByStreamId({});
-      setDetectedFps();
-      setMainFileMeta({ streams: [], formatData: [] });
-      setMainVideoStream();
-      setMainAudioStream();
-      setCopyStreamIdsByFile({});
-      setStreamsSelectorShown(false);
-      setZoom(1);
-      setThumbnails([]);
-      setShortestFlag(false);
-      setZoomWindowStartTime(0);
-      setDeselectedSegmentIds({});
-      setSubtitlesByStreamId({});
-      setActiveSubtitleStreamIndex();
-      setHideCanvasPreview(false);
-      setExportConfirmVisible(false);
+    // setWorking();
+    setFileNameTitle();
+    setPreviewFilePath();
+    setUsingDummyVideo(false);
+    setPlaying(false);
+    setDuration();
+    cutSegmentsHistory.go(0);
+    clearSegments(); // TODO this will cause two history items
+    setCutStartTimeManual();
+    setCutEndTimeManual();
+    setFileFormat();
+    setDetectedFileFormat();
+    setRotation(360);
+    setCutProgress();
+    setStartTimeOffset(0);
+    setFilePath(''); // Setting video src="" prevents memory leak in chromium
+    setExternalFilesMeta({});
+    setCustomTagsByFile({});
+    setCustomTagsByStreamId({});
+    setDispositionByStreamId({});
+    setDetectedFps();
+    setMainFileMeta({ streams: [], formatData: [] });
+    setMainVideoStream();
+    setMainAudioStream();
+    setCopyStreamIdsByFile({});
+    setStreamsSelectorShown(false);
+    setZoom(1);
+    setThumbnails([]);
+    setShortestFlag(false);
+    setZoomWindowStartTime(0);
+    setDeselectedSegmentIds({});
+    setSubtitlesByStreamId({});
+    setActiveSubtitleStreamIndex();
+    setHideCanvasPreview(false);
+    setExportConfirmVisible(false);
 
-      cancelRenderThumbnails();
-    });
+    cancelRenderThumbnails();
   }, [cutSegmentsHistory, clearSegments, setFileFormat, setDetectedFileFormat, cancelRenderThumbnails]);
 
 
@@ -1606,20 +1603,18 @@ const App = memo(() => {
 
       if (!validDuration) toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
 
-      batchedUpdates(() => {
-        setMainFileMeta({ streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters });
-        setMainVideoStream(videoStream);
-        setMainAudioStream(audioStream);
-        setCopyStreamIdsForPath(fp, () => copyStreamIdsForPathNew);
-        setFileNameTitle(fp);
-        setFileFormat(outFormatLocked || fileFormatNew);
-        setDetectedFileFormat(fileFormatNew);
+      setMainFileMeta({ streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters });
+      setMainVideoStream(videoStream);
+      setMainAudioStream(audioStream);
+      setCopyStreamIdsForPath(fp, () => copyStreamIdsForPathNew);
+      setFileNameTitle(fp);
+      setFileFormat(outFormatLocked || fileFormatNew);
+      setDetectedFileFormat(fileFormatNew);
 
-        // This needs to be last, because it triggers <video> to load the video
-        // If not, onVideoError might be triggered before setWorking() has been cleared.
-        // https://github.com/mifi/lossless-cut/issues/515
-        setFilePath(fp);
-      });
+      // This needs to be last, because it triggers <video> to load the video
+      // If not, onVideoError might be triggered before setWorking() has been cleared.
+      // https://github.com/mifi/lossless-cut/issues/515
+      setFilePath(fp);
     } catch (err) {
       resetState();
       throw err;
