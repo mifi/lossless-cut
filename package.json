@@ -145,13 +145,15 @@
       "hardenedRuntime": true,
       "appId": "no.mifi.losslesscut-mac",
       "category": "public.app-category.productivity",
-      "target": {
-        "target": [
-          "mas",
-          "dmg"
-        ],
-        "arch": "universal"
-      },
+      "target": [
+        {
+          "target": [
+            "mas",
+            "dmg"
+          ],
+          "arch": "universal"
+        }
+      ],
       "electronLanguages": [
         "en"
       ],
