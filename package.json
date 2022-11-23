@@ -78,7 +78,7 @@
     "react-i18next": "^11.3.3",
     "react-icons": "^4.1.0",
     "react-lottie-player": "^1.3.3",
-    "react-scripts": "5.0.0",
+    "react-scripts": "^5.0.1",
     "react-sortablejs": "^6.1.4",
     "react-syntax-highlighter": "^15.4.3",
     "react-use": "^17.3.2",
