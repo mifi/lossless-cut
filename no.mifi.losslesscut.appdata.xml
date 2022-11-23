@@ -18,6 +18,7 @@
   <url type="bugtracker">https://github.com/mifi/lossless-cut/issues</url>
   <url type="donation">https://paypal.me/mifino/usd</url>
   <releases>
+    <release version="3.48.2" date="2022-11-23"/>
     <release version="3.48.1" date="2022-11-23"/>
     <release version="3.48.0" date="2022-11-23"/>
     <release version="3.47.1" date="2022-10-15"/>
