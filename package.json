@@ -85,7 +85,6 @@
     "sharp": "^0.30.5",
     "smpte-timecode": "^1.2.3",
     "sortablejs": "^1.13.0",
-    "strong-data-uri": "^1.0.5",
     "sweetalert2": "^11.0.0",
     "sweetalert2-react-content": "^4.0.0",
     "use-debounce": "^5.1.0",
@@ -96,6 +95,7 @@
   "dependencies": {
     "@electron/remote": "^2.0.8",
     "cue-parser": "^0.3.0",
+    "data-uri-to-buffer": "^4.0.0",
     "electron-is-dev": "^2.0.0",
     "electron-store": "5.1.1",
     "electron-unhandled": "^4.0.1",

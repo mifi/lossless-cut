@@ -1,4 +1,4 @@
-import strongDataUri from 'strong-data-uri';
+import dataUriToBuffer from 'data-uri-to-buffer';
 
 import { getSuffixedOutPath, transferTimestamps } from './util';
 import { formatDuration } from './util/duration';
@@ -17,7 +17,7 @@ function getFrameFromVideo(video, format) {
 
   const dataUri = canvas.toDataURL(`image/${format}`);
 
-  return strongDataUri.decode(dataUri);
+  return dataUriToBuffer(dataUri);
 }
 
 export async function captureFramesFfmpeg({ customOutDir, filePath, fromTime, captureFormat, enableTransferTimestamps, numFrames }) {
@@ -39,7 +39,7 @@ export async function captureFramesFfmpeg({ customOutDir, filePath, fromTime, ca
 export async function captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, enableTransferTimestamps }) {
   const buf = getFrameFromVideo(video, captureFormat);
 
-  const ext = mime.extension(buf.mimetype);
+  const ext = mime.extension(buf.type);
   const time = formatDuration({ seconds: currentTime, fileNameFriendly: true });
 
   const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `${time}.${ext}` });
