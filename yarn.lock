@@ -10396,13 +10396,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.clonedeep@npm:^4.5.0":
-  version: 4.5.0
-  resolution: "lodash.clonedeep@npm:4.5.0"
-  checksum: 92c46f094b064e876a23c97f57f81fbffd5d760bf2d8a1c61d85db6d1e488c66b0384c943abee4f6af7debf5ad4e4282e74ff83177c9e63d8ff081a4837c3489
-  languageName: node
-  linkType: hard
-
 "lodash.debounce@npm:^4.0.8":
   version: 4.0.8
   resolution: "lodash.debounce@npm:4.0.8"
@@ -10552,7 +10545,7 @@ __metadata:
     react-dom: ^18.2.0
     react-i18next: ^11.3.3
     react-icons: ^4.1.0
-    react-lottie-player: ^1.3.3
+    react-lottie-player: ^1.5.0
     react-scripts: ^5.0.1
     react-sortablejs: ^6.1.4
     react-syntax-highlighter: ^15.4.3
@@ -13174,16 +13167,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-lottie-player@npm:^1.3.3":
-  version: 1.4.1
-  resolution: "react-lottie-player@npm:1.4.1"
+"react-lottie-player@npm:^1.5.0":
+  version: 1.5.0
+  resolution: "react-lottie-player@npm:1.5.0"
   dependencies:
     fast-deep-equal: ^3.1.3
-    lodash.clonedeep: ^4.5.0
     lottie-web: ^5.7.6
+    rfdc: ^1.3.0
   peerDependencies:
-    react: ^16.0.0 || ^17.0.0
-  checksum: 1d75c104cd479863d57deced5d767a6425e476eaac8b1b40f7b753467b90cc618abfa6c13236ade8d69a79ec84058b84ca155d1be71c5a43d4e386f09a80a9a5
+    react: ^16.0.0 || ^17.0.0 || ^18.0.0
+  checksum: 6bf5cc55fd8a011a4dd9b7b698e971f33c669ac8e1a757ed6f32952b04104c531fed78fbd879eec5f1ed0d040e2ca8495b7b1879b2b0b62f4b1cc53ef8fca613
   languageName: node
   linkType: hard
 
@@ -13754,6 +13747,13 @@ __metadata:
   version: 1.0.4
   resolution: "reusify@npm:1.0.4"
   checksum: c3076ebcc22a6bc252cb0b9c77561795256c22b757f40c0d8110b1300723f15ec0fc8685e8d4ea6d7666f36c79ccc793b1939c748bf36f18f542744a4e379fcc
+  languageName: node
+  linkType: hard
+
+"rfdc@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "rfdc@npm:1.3.0"
+  checksum: fb2ba8512e43519983b4c61bd3fa77c0f410eff6bae68b08614437bc3f35f91362215f7b4a73cbda6f67330b5746ce07db5dd9850ad3edc91271ad6deea0df32
   languageName: node
   linkType: hard
 
