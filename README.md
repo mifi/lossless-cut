@@ -98,7 +98,11 @@ First export each track as individual files. Then use Handbrake or similar to re
 
 If you want to support my continued work on LosslessCut, and you want the advantage of a secure and simple installation process with automatic updates, consider getting it from your favorite store:
 
-<a href="https://apps.apple.com/app/id1505323402"><img src="mac-app-store-badge.svg" alt="Mac App Store" height="50"/></a> <a href="https://www.microsoft.com/store/apps/9P30LSR4705L?cid=storebadge&ocid=badge"><img src="ms-store-badge.svg" alt="MS badge" height="50"/></a> <a href="https://snapcraft.io/losslesscut"><img src="https://snapcraft.io/static/images/badges/en/snap-store-black.svg" alt="Snapcraft" height="50"/></a> <a href="https://flathub.org/apps/details/no.mifi.losslesscut"><img src="https://flathub.org/assets/badges/flathub-badge-en.png" alt="Flathub" height="50"/></a>
+<a href="https://apps.apple.com/app/id1505323402"><img src="mac-app-store-badge.svg" alt="Mac App Store" height="50"/></a> <a href="https://www.microsoft.com/store/apps/9P30LSR4705L?cid=storebadge&ocid=badge"><img src="ms-store-badge.svg" alt="MS badge" height="50"/></a>
+
+For Linux these are some alternatives:
+
+<a href="https://snapcraft.io/losslesscut"><img src="https://snapcraft.io/static/images/badges/en/snap-store-black.svg" alt="Snapcraft" height="50"/></a> <a href="https://flathub.org/apps/details/no.mifi.losslesscut"><img src="https://flathub.org/assets/badges/flathub-badge-en.png" alt="Flathub" height="50"/></a>
 
 If you prefer to download the executables manually, this will of course always be free:
 
