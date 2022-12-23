@@ -144,7 +144,7 @@ function parseCliArgs(rawArgv = process.argv) {
   // dev: First 2 args are electron and the electron.js
   const argsWithoutAppName = rawArgv.length > ignoreFirstArgs ? rawArgv.slice(ignoreFirstArgs) : [];
 
-  return yargsParser(argsWithoutAppName);
+  return yargsParser(argsWithoutAppName, { boolean: ['allow-multiple-instances'] });
 }
 
 const argv = parseCliArgs();
