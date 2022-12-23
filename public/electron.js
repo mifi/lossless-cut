@@ -149,26 +149,29 @@ function parseCliArgs(rawArgv = process.argv) {
 
 const argv = parseCliArgs();
 
-function safeRequestSingleInstanceLock() {
+function safeRequestSingleInstanceLock(additionalData) {
   if (process.mas) return true; // todo remove when fixed https://github.com/electron/electron/issues/35540
-  return app.requestSingleInstanceLock();
+
+  // using additionalData because the built in "argv" passing is a bit broken:
+  // https://github.com/electron/electron/issues/20322
+  return app.requestSingleInstanceLock(additionalData);
 }
 
-if (!argv.allowMultipleInstances && !safeRequestSingleInstanceLock()) {
+if (!argv.allowMultipleInstances && !safeRequestSingleInstanceLock({ argv: process.argv })) {
   app.quit();
 } else {
   // On macOS, the system enforces single instance automatically when users try to open a second instance of your app in Finder, and the open-file and open-url events will be emitted for that.
   // However when users start your app in command line, the system's single instance mechanism will be bypassed, and you have to use this method to ensure single instance.
   // This can be tested with one terminal: npx electron .
   // and another terminal: npx electron . path/to/file.mp4
-  app.on('second-instance', (event, commandLine) => {
+  app.on('second-instance', (event, commandLine, workingDirectory, additionalData) => {
     // Someone tried to run a second instance, we should focus our window.
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
     }
 
-    const argv2 = parseCliArgs(commandLine);
+    const argv2 = parseCliArgs(additionalData.argv);
     if (argv2._) openFilesEventually(argv2._);
   });
 
