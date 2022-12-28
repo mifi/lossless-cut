@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Checkbox, RadioGroup, Paragraph } from 'evergreen-ui';
+import { Button, TextInputField, Checkbox, RadioGroup, Paragraph, LinkIcon } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
@@ -13,6 +13,7 @@ import { parseYouTube } from './edlFormats';
 import CopyClipboardButton from './components/CopyClipboardButton';
 
 const { dialog, app } = window.require('@electron/remote');
+const electron = window.require('electron');
 
 const ReactSwal = withReactContent(Swal);
 
@@ -400,6 +401,44 @@ export async function showCleanupFilesDialog(cleanupChoicesIn = {}) {
   });
 
   if (value) return cleanupChoices;
+  return undefined;
+}
+
+const ParametersInput = ({ description, parameters: parametersIn, onChange: onChangeProp, docUrl }) => {
+  const [parameters, setParameters] = useState(parametersIn);
+
+  const getParameter = (key) => parameters[key]?.value;
+  const onChange = (key, value) => setParameters((existing) => {
+    const newParameters = { ...existing, [key]: { ...existing[key], value } };
+    onChangeProp(newParameters);
+    return newParameters;
+  });
+
+  return (
+    <div style={{ textAlign: 'left' }}>
+      {description && <p>{description}</p>}
+
+      {docUrl && <p><Button iconBefore={LinkIcon} onClick={() => electron.shell.openExternal(docUrl)}>Read more</Button></p>}
+
+      {Object.entries(parametersIn).map(([key, parameter]) => (
+        <TextInputField key={key} label={parameter.label || key} value={getParameter(key)} onChange={(e) => onChange(key, e.target.value)} hint={parameter.hint} />
+      ))}
+    </div>
+  );
+};
+
+export async function showParametersDialog({ title, description, parameters: parametersIn, docUrl }) {
+  let parameters = parametersIn;
+
+  const { value } = await ReactSwal.fire({
+    title,
+    html: <ParametersInput description={description} parameters={parameters} onChange={(newParameters) => { parameters = newParameters; }} docUrl={docUrl} />,
+    confirmButtonText: i18n.t('Confirm'),
+    showCancelButton: true,
+    cancelButtonText: i18n.t('Cancel'),
+  });
+
+  if (value) return Object.fromEntries(Object.entries(parameters).map(([key, parameter]) => [key, parameter.value]));
   return undefined;
 }
 

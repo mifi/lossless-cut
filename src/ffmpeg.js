@@ -548,31 +548,64 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
   }
 }
 
-export async function blackDetect({ filePath, duration, minInterval = 0.05, onProgress, from, to }) {
+export async function detectIntervals({ filePath, duration, customArgs, onProgress, from, to, matchLineTokens }) {
   const args = [
     '-hide_banner',
     ...(from != null ? ['-ss', from.toFixed(5)] : []),
     '-i', filePath,
     ...(to != null ? ['-t', (to - from).toFixed(5)] : []),
-    '-vf', `blackdetect=d=${minInterval}`, '-an', '-f', 'null', '-',
+    ...customArgs,
+    '-f', 'null', '-',
   ];
   const process = execa(getFfmpegPath(), args, { encoding: null, buffer: false });
 
-  const blackSegments = [];
+  const segments = [];
 
   function customMatcher(line) {
-    const match = line.match(/^[blackdetect @ 0x[0-9a-f]+] black_start:([\d\\.]+) black_end:([\d\\.]+) black_duration:[\d\\.]+/);
-    if (!match) return;
-    const blackStart = parseFloat(match[1]);
-    const blackEnd = parseFloat(match[2]);
-    if (Number.isNaN(blackStart) || Number.isNaN(blackEnd)) return;
-    blackSegments.push({ blackStart, blackEnd });
+    const { start: startStr, end: endStr } = matchLineTokens(line);
+    const start = parseFloat(startStr);
+    const end = parseFloat(endStr);
+    if (start == null || end == null || Number.isNaN(start) || Number.isNaN(end)) return;
+    segments.push({ start, end });
   }
   handleProgress(process, duration, onProgress, customMatcher);
 
   await process;
   const offset = from != null ? from : 0;
-  return blackSegments.map(({ blackStart, blackEnd }) => ({ blackStart: blackStart + offset, blackEnd: blackEnd + offset }));
+  return segments.map(({ start, end }) => ({ start: start + offset, end: end + offset }));
+}
+
+const mapFilterOptions = (options) => Object.entries(options).map(([key, value]) => `${key}=${value}`).join(':');
+
+export async function blackDetect({ filePath, duration, filterOptions, onProgress, from, to }) {
+  function matchLineTokens(line) {
+    const match = line.match(/^[blackdetect\s*@\s*0x[0-9a-f]+] black_start:([\d\\.]+) black_end:([\d\\.]+) black_duration:[\d\\.]+/);
+    if (!match) return {};
+    return {
+      start: parseFloat(match[1]),
+      end: parseFloat(match[2]),
+    };
+  }
+  const customArgs = ['-vf', `blackdetect=${mapFilterOptions(filterOptions)}`, '-an'];
+  return detectIntervals({ filePath, duration, onProgress, from, to, matchLineTokens, customArgs });
+}
+
+export async function silenceDetect({ filePath, duration, filterOptions, onProgress, from, to }) {
+  function matchLineTokens(line) {
+    const match = line.match(/^[silencedetect\s*@\s*0x[0-9a-f]+] silence_end: ([\d\\.]+)[|\s]+silence_duration: ([\d\\.]+)/);
+    if (!match) return {};
+    const end = parseFloat(match[1]);
+    const silenceDuration = parseFloat(match[2]);
+    if (Number.isNaN(end) || Number.isNaN(silenceDuration)) return {};
+    const start = end - silenceDuration;
+    if (start < 0 || end <= 0 || start >= end) return {};
+    return {
+      start,
+      end,
+    };
+  }
+  const customArgs = ['-af', `silencedetect=${mapFilterOptions(filterOptions)}`, '-vn'];
+  return detectIntervals({ filePath, duration, onProgress, from, to, matchLineTokens, customArgs });
 }
 
 export async function extractWaveform({ filePath, outPath }) {

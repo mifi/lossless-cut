@@ -300,6 +300,12 @@ module.exports = (app, mainWindow, newVersion) => {
           },
         },
         {
+          label: i18n.t('Detect silent scenes'),
+          click() {
+            mainWindow.webContents.send('detectSilentScenes');
+          },
+        },
+        {
           label: i18n.t('Last ffmpeg commands'),
           click() { mainWindow.webContents.send('toggleLastCommands'); },
         },

@@ -52,7 +52,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - MKV/MP4 embedded chapters marks editor
 - View subtitles
 - Customizable keyboard hotkeys
-- Black scene detection
+- Black scene detection and silent audio detection
 - Divide timeline into segments with length L or into N segments or even randomized segments!
 - [Basic CLI support](cli.md)
 
