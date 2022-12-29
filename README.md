@@ -52,7 +52,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - MKV/MP4 embedded chapters marks editor
 - View subtitles
 - Customizable keyboard hotkeys
-- Black scene detection and silent audio detection
+- Black scene detection, silent audio detection, and scene change detection
 - Divide timeline into segments with length L or into N segments or even randomized segments!
 - [Basic CLI support](cli.md)
 
@@ -77,6 +77,8 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Loop a video / audio clip X times quickly without re-encoding
   - See [#284](https://github.com/mifi/lossless-cut/issues/284)
 - Convert a video or parts of it into X image files (not lossless)
+- Losslessly split a video into one file per scene (note you probably have to shift segments, see [#330](https://github.com/mifi/lossless-cut/issues/330).)
+- Cut away silent parts of an audio/video
 
 ### Export cut times as YouTube Chapters
 1. Export with Merge and "Create chapters from merged segments" enabled

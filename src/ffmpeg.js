@@ -108,12 +108,8 @@ function getIntervalAroundTime(time, window) {
   };
 }
 
-export async function readFrames({ filePath, aroundTime, window, streamIndex }) {
-  let intervalsArgs = [];
-  if (aroundTime != null) {
-    const { from, to } = getIntervalAroundTime(aroundTime, window);
-    intervalsArgs = ['-read_intervals', `${from}%${to}`];
-  }
+export async function readFrames({ filePath, from, to, streamIndex }) {
+  const intervalsArgs = from != null && to != null ? ['-read_intervals', `${from}%${to}`] : [];
   const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', streamIndex, '-show_entries', 'packet=pts_time,flags', '-of', 'json', filePath]);
   const packetsFiltered = JSON.parse(stdout).packets
     .map(p => ({
@@ -124,6 +120,12 @@ export async function readFrames({ filePath, aroundTime, window, streamIndex }) 
     .filter(p => !Number.isNaN(p.time));
 
   return sortBy(packetsFiltered, 'time');
+}
+
+export async function readFramesAroundTime({ filePath, streamIndex, aroundTime, window }) {
+  if (aroundTime == null) throw new Error('aroundTime was nullish');
+  const { from, to } = getIntervalAroundTime(aroundTime, window);
+  return readFrames({ filePath, from, to, streamIndex });
 }
 
 // https://stackoverflow.com/questions/14005110/how-to-split-a-video-using-ffmpeg-so-that-each-chunk-starts-with-a-key-frame
@@ -548,12 +550,63 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
   }
 }
 
+const getInputSeekArgs = ({ filePath, from, to }) => [
+  ...(from != null ? ['-ss', from.toFixed(5)] : []),
+  '-i', filePath,
+  ...(to != null ? ['-t', (to - from).toFixed(5)] : []),
+];
+
+const getSegmentOffset = (from) => (from != null ? from : 0);
+
+function adjustSegmentsWithOffset({ segments, from }) {
+  const offset = getSegmentOffset(from);
+  return segments.map(({ start, end }) => ({ start: start + offset, end: end != null ? end + offset : end }));
+}
+
+export function mapTimesToSegments(times) {
+  const segments = [];
+  for (let i = 0; i < times.length; i += 1) {
+    const start = times[i];
+    const end = times[i + 1];
+    if (start != null) segments.push({ start, end }); // end undefined is allowed (means until end of video)
+  }
+  return segments;
+}
+
+// https://stackoverflow.com/questions/35675529/using-ffmpeg-how-to-do-a-scene-change-detection-with-timecode
+export async function detectSceneChanges({ filePath, duration, minChange, onProgress, from, to }) {
+  const args = [
+    '-hide_banner',
+    ...getInputSeekArgs({ filePath, from, to }),
+    '-filter_complex', `select='gt(scene,${minChange})',metadata=print:file=-`,
+    '-f', 'null', '-',
+  ];
+  const process = execa(getFfmpegPath(), args, { encoding: null, buffer: false });
+
+  const times = [0];
+
+  handleProgress(process, duration, onProgress);
+  const rl = readline.createInterface({ input: process.stdout });
+  rl.on('line', (line) => {
+    const match = line.match(/^frame:\d+\s+pts:\d+\s+pts_time:([\d.]+)/);
+    if (!match) return;
+    const time = parseFloat(match[1]);
+    if (Number.isNaN(time) || time <= times[times.length - 1]) return;
+    times.push(time);
+  });
+
+  await process;
+
+  const segments = mapTimesToSegments(times);
+
+  return adjustSegmentsWithOffset({ segments, from });
+}
+
+
 export async function detectIntervals({ filePath, duration, customArgs, onProgress, from, to, matchLineTokens }) {
   const args = [
     '-hide_banner',
-    ...(from != null ? ['-ss', from.toFixed(5)] : []),
-    '-i', filePath,
-    ...(to != null ? ['-t', (to - from).toFixed(5)] : []),
+    ...getInputSeekArgs({ filePath, from, to }),
     ...customArgs,
     '-f', 'null', '-',
   ];
@@ -571,8 +624,7 @@ export async function detectIntervals({ filePath, duration, customArgs, onProgre
   handleProgress(process, duration, onProgress, customMatcher);
 
   await process;
-  const offset = from != null ? from : 0;
-  return segments.map(({ start, end }) => ({ start: start + offset, end: end + offset }));
+  return adjustSegmentsWithOffset({ segments, from });
 }
 
 const mapFilterOptions = (options) => Object.entries(options).map(([key, value]) => `${key}=${value}`).join(':');

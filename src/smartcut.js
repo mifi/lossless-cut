@@ -1,6 +1,6 @@
 import { getRealVideoStreams, getVideoTimebase } from './util/streams';
 
-import { readFrames } from './ffmpeg';
+import { readFramesAroundTime } from './ffmpeg';
 
 const { stat } = window.require('fs-extra');
 
@@ -18,7 +18,7 @@ export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, s
   const videoStream = videoStreams[0];
 
   async function readKeyframes(window) {
-    const frames = await readFrames({ filePath: path, aroundTime: desiredCutFrom, streamIndex: videoStream.index, window });
+    const frames = await readFramesAroundTime({ filePath: path, aroundTime: desiredCutFrom, streamIndex: videoStream.index, window });
     return frames.filter((frame) => frame.keyframe);
   }
 

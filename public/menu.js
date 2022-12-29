@@ -306,6 +306,18 @@ module.exports = (app, mainWindow, newVersion) => {
           },
         },
         {
+          label: i18n.t('Detect scene changes'),
+          click() {
+            mainWindow.webContents.send('detectSceneChanges');
+          },
+        },
+        {
+          label: i18n.t('Create segments from keyframes'),
+          click() {
+            mainWindow.webContents.send('createSegmentsFromKeyframes');
+          },
+        },
+        {
           label: i18n.t('Last ffmpeg commands'),
           click() { mainWindow.webContents.send('toggleLastCommands'); },
         },

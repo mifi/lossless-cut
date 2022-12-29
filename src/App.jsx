@@ -53,9 +53,9 @@ import {
   getStreamFps, isCuttingStart, isCuttingEnd,
   readFileMeta, getSmarterOutFormat, renderThumbnails as ffmpegRenderThumbnails,
   extractStreams, runStartupCheck, setCustomFfPath as ffmpegSetCustomFfPath,
-  isIphoneHevc, tryMapChaptersToEdl, blackDetect, silenceDetect,
+  isIphoneHevc, tryMapChaptersToEdl, blackDetect, silenceDetect, detectSceneChanges as ffmpegDetectSceneChanges,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
-  getFfmpegPath, RefuseOverwriteError,
+  getFfmpegPath, RefuseOverwriteError, readFrames, mapTimesToSegments,
 } from './ffmpeg';
 import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, doesPlayerSupportFile } from './util/streams';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
@@ -74,6 +74,8 @@ import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap } from './segments';
 import { getOutSegError as getOutSegErrorRaw } from './util/outputNameTemplate';
+import * as ffmpegParameters from './ffmpeg-parameters';
+import { maxSegmentsAllowed } from './util/constants';
 
 import isDev from './isDev';
 
@@ -1491,13 +1493,14 @@ const App = memo(() => {
 
     if (validEdl.length === 0) throw new Error(i18n.t('No valid segments found'));
 
-    if (!append) {
-      clearSegCounter();
-    }
+    if (!append) clearSegCounter();
+
+    if (validEdl.length > maxSegmentsAllowed) throw new Error(i18n.t('Tried to create too many segments (max {{maxSegmentsAllowed}}.)', { maxSegmentsAllowed }));
+
     setCutSegments((existingSegments) => {
       const needToAppend = append && existingSegments.length > 1;
-      const newSegments = validEdl.map((segment, i) => createIndexedSegment({ segment, incrementCount: needToAppend || i > 0 }));
-      if (needToAppend) return [...existingSegments, ...newSegments];
+      let newSegments = validEdl.map((segment, i) => createIndexedSegment({ segment, incrementCount: needToAppend || i > 0 }));
+      if (needToAppend) newSegments = [...existingSegments, ...newSegments];
       return newSegments;
     });
   }, [clearSegCounter, createIndexedSegment, setCutSegments]);
@@ -1753,7 +1756,7 @@ const App = memo(() => {
     }
   }, [customOutDir, enableOverwriteOutput, filePath, mainStreams, setWorking]);
 
-  const detectScenes = useCallback(async ({ name, workingText, errorText, fn }) => {
+  const detectSegments = useCallback(async ({ name, workingText, errorText, fn }) => {
     if (!filePath) return;
     if (workingRef.current) return;
     try {
@@ -1764,8 +1767,7 @@ const App = memo(() => {
       console.log(name, newSegments);
       loadCutSegments(newSegments, true);
     } catch (err) {
-      errorToast(errorText);
-      console.error('Failed to detect scenes', name, err);
+      handleError(errorText, err);
     } finally {
       setWorking();
       setCutProgress();
@@ -1773,40 +1775,28 @@ const App = memo(() => {
   }, [filePath, setWorking, loadCutSegments]);
 
   const detectBlackScenes = useCallback(async () => {
-    const parameters = {
-      black_min_duration: {
-        value: '2.0',
-        hint: i18n.t('Set the minimum detected black duration expressed in seconds. It must be a non-negative floating point number.'),
-      },
-      picture_black_ratio_th: {
-        value: '0.98',
-        hint: i18n.t('Set the threshold for considering a picture "black".'),
-      },
-      pixel_black_th: {
-        value: '0.10',
-        hint: i18n.t('Set the threshold for considering a pixel "black".'),
-      },
-    };
-    const filterOptions = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters, docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#blackdetect' });
+    const filterOptions = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters: ffmpegParameters.blackdetect(), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#blackdetect' });
     if (filterOptions == null) return;
-    await detectScenes({ name: 'blackScenes', workingText: i18n.t('Detecting black scenes'), errorText: i18n.t('Failed to detect black scenes'), fn: async () => blackDetect({ filePath, duration, filterOptions, onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
-  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectScenes, duration, filePath]);
+    await detectSegments({ name: 'blackScenes', workingText: i18n.t('Detecting black scenes'), errorText: i18n.t('Failed to detect black scenes'), fn: async () => blackDetect({ filePath, duration, filterOptions, onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
+  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, duration, filePath]);
 
   const detectSilentScenes = useCallback(async () => {
-    const parameters = {
-      noise: {
-        value: '-60dB',
-        hint: i18n.t('Set noise tolerance. Can be specified in dB (in case "dB" is appended to the specified value) or amplitude ratio. Default is -60dB, or 0.001.'),
-      },
-      duration: {
-        value: '2.0',
-        hint: i18n.t('Set silence duration until notification (default is 2 seconds).'),
-      },
-    };
-    const filterOptions = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters, docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#silencedetect' });
+    const filterOptions = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters: ffmpegParameters.silencedetect(), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#silencedetect' });
     if (filterOptions == null) return;
-    await detectScenes({ name: 'silentScenes', workingText: i18n.t('Detecting silent scenes'), errorText: i18n.t('Failed to detect silent scenes'), fn: async () => silenceDetect({ filePath, duration, filterOptions, onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
-  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectScenes, duration, filePath]);
+    await detectSegments({ name: 'silentScenes', workingText: i18n.t('Detecting silent scenes'), errorText: i18n.t('Failed to detect silent scenes'), fn: async () => silenceDetect({ filePath, duration, filterOptions, onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
+  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, duration, filePath]);
+
+  const detectSceneChanges = useCallback(async () => {
+    const filterOptions = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters: ffmpegParameters.sceneChange() });
+    if (filterOptions == null) return;
+    await detectSegments({ name: 'sceneChanges', workingText: i18n.t('Detecting scene changes'), errorText: i18n.t('Failed to detect scene changes'), fn: async () => ffmpegDetectSceneChanges({ filePath, duration, minChange: filterOptions.minChange, onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
+  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, duration, filePath]);
+
+  const createSegmentsFromKeyframes = useCallback(async () => {
+    const keyframes = (await readFrames({ filePath, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end, streamIndex: mainVideoStream?.index })).filter((frame) => frame.keyframe);
+    const newSegments = mapTimesToSegments(keyframes.map((keyframe) => keyframe.time));
+    loadCutSegments(newSegments, true);
+  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, filePath, loadCutSegments, mainVideoStream?.index]);
 
   const userHtml5ifyCurrentFile = useCallback(async () => {
     if (!filePath) return;
@@ -2276,7 +2266,7 @@ const App = memo(() => {
       }
     }
 
-    const action = {
+    const actions = {
       openFiles: (event, filePaths) => { userOpenFiles(filePaths.map(resolvePathIfNeeded)); },
       openFilesDialog,
       closeCurrentFile: () => { closeFileWithConfirm(); },
@@ -2305,13 +2295,25 @@ const App = memo(() => {
       concatCurrentBatch,
       detectBlackScenes,
       detectSilentScenes,
+      detectSceneChanges,
+      createSegmentsFromKeyframes,
       shiftAllSegmentTimes,
     };
 
-    const entries = Object.entries(action);
-    entries.forEach(([key, value]) => electron.ipcRenderer.on(key, value));
-    return () => entries.forEach(([key, value]) => electron.ipcRenderer.removeListener(key, value));
-  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, customOutDir, cutSegments, detectBlackScenes, detectSilentScenes, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, invertAllSegments, loadCutSegments, loadMedia, openFilesDialog, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleKeyboardShortcuts, toggleLastCommands, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
+    const actionsWithCatch = Object.entries(actions).map(([key, action]) => [
+      key,
+      async () => {
+        try {
+          await action();
+        } catch (err) {
+          handleError(err);
+        }
+      },
+    ]);
+
+    actionsWithCatch.forEach(([key, action]) => electron.ipcRenderer.on(key, action));
+    return () => actionsWithCatch.forEach(([key, action]) => electron.ipcRenderer.removeListener(key, action));
+  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, createSegmentsFromKeyframes, customOutDir, cutSegments, detectBlackScenes, detectSceneChanges, detectSilentScenes, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, invertAllSegments, loadCutSegments, loadMedia, openFilesDialog, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleKeyboardShortcuts, toggleLastCommands, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
     try {

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Button, TextInputField, Checkbox, RadioGroup, Paragraph, LinkIcon } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import i18n from 'i18next';
@@ -404,15 +404,26 @@ export async function showCleanupFilesDialog(cleanupChoicesIn = {}) {
   return undefined;
 }
 
-const ParametersInput = ({ description, parameters: parametersIn, onChange: onChangeProp, docUrl }) => {
+const ParametersInput = ({ description, parameters: parametersIn, onChange, onSubmit, docUrl }) => {
+  const firstInputRef = useRef();
   const [parameters, setParameters] = useState(parametersIn);
 
   const getParameter = (key) => parameters[key]?.value;
-  const onChange = (key, value) => setParameters((existing) => {
+
+  const handleChange = (key, value) => setParameters((existing) => {
     const newParameters = { ...existing, [key]: { ...existing[key], value } };
-    onChangeProp(newParameters);
+    onChange(newParameters);
     return newParameters;
   });
+
+  const handleSubmit = useCallback((e) => {
+    e.preventDefault();
+    onSubmit();
+  }, [onSubmit]);
+
+  useEffect(() => {
+    firstInputRef.current?.focus?.();
+  }, []);
 
   return (
     <div style={{ textAlign: 'left' }}>
@@ -420,26 +431,44 @@ const ParametersInput = ({ description, parameters: parametersIn, onChange: onCh
 
       {docUrl && <p><Button iconBefore={LinkIcon} onClick={() => electron.shell.openExternal(docUrl)}>Read more</Button></p>}
 
-      {Object.entries(parametersIn).map(([key, parameter]) => (
-        <TextInputField key={key} label={parameter.label || key} value={getParameter(key)} onChange={(e) => onChange(key, e.target.value)} hint={parameter.hint} />
-      ))}
+      <form onSubmit={handleSubmit}>
+        {Object.entries(parametersIn).map(([key, parameter], i) => (
+          <TextInputField ref={i === 0 ? firstInputRef : undefined} key={key} label={parameter.label || key} value={getParameter(key)} onChange={(e) => handleChange(key, e.target.value)} hint={parameter.hint} />
+        ))}
+
+        <input type="submit" value="submit" style={{ display: 'none' }} />
+      </form>
     </div>
   );
 };
 
 export async function showParametersDialog({ title, description, parameters: parametersIn, docUrl }) {
   let parameters = parametersIn;
+  let resolve1;
 
-  const { value } = await ReactSwal.fire({
-    title,
-    html: <ParametersInput description={description} parameters={parameters} onChange={(newParameters) => { parameters = newParameters; }} docUrl={docUrl} />,
-    confirmButtonText: i18n.t('Confirm'),
-    showCancelButton: true,
-    cancelButtonText: i18n.t('Cancel'),
+  const promise1 = new Promise((resolve) => {
+    resolve1 = resolve;
   });
+  const handleSubmit = () => {
+    Swal.close();
+    resolve1(true);
+  };
 
-  if (value) return Object.fromEntries(Object.entries(parameters).map(([key, parameter]) => [key, parameter.value]));
-  return undefined;
+  const promise2 = (async () => {
+    const { isConfirmed } = await ReactSwal.fire({
+      title,
+      html: <ParametersInput description={description} parameters={parameters} onChange={(newParameters) => { parameters = newParameters; }} onSubmit={handleSubmit} docUrl={docUrl} />,
+      confirmButtonText: i18n.t('Confirm'),
+      showCancelButton: true,
+      cancelButtonText: i18n.t('Cancel'),
+    });
+    return isConfirmed;
+  })();
+
+  const isConfirmed = await Promise.race([promise1, promise2]);
+  if (!isConfirmed) return undefined;
+
+  return Object.fromEntries(Object.entries(parameters).map(([key, parameter]) => [key, parameter.value]));
 }
 
 

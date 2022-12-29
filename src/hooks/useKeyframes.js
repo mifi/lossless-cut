@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import sortBy from 'lodash/sortBy';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 
-import { readFrames, findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime } from '../ffmpeg';
+import { readFramesAroundTime, findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime } from '../ffmpeg';
 
 const maxKeyframes = 1000;
 // const maxKeyframes = 100;
@@ -26,7 +26,7 @@ export default ({ keyframesEnabled, filePath, commandedTime, mainVideoStream, de
       if (!shouldRun) return;
 
       try {
-        const promise = readFrames({ filePath, aroundTime: commandedTime, streamIndex: mainVideoStream.index, window: ffmpegExtractWindow });
+        const promise = readFramesAroundTime({ filePath, aroundTime: commandedTime, streamIndex: mainVideoStream.index, window: ffmpegExtractWindow });
         readingKeyframesPromise.current = promise;
         const newFrames = await promise;
         if (aborted) return;
