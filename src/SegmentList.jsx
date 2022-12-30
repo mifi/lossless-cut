@@ -161,8 +161,13 @@ const SegmentList = memo(({
 
   let header = t('Segments to export:');
   if (segments.length === 0) {
-    if (invertCutSegments) header = <Trans>You have enabled the &quot;invert segments&quot; mode <FaYinYang style={{ verticalAlign: 'middle' }} /> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <FaYinYang style={{ verticalAlign: 'middle', color: primaryTextColor }} /> symbol below to disable this mode.</Trans>;
-    else header = t('No segments to export.');
+    if (invertCutSegments) {
+      header = (
+        <Trans>You have enabled the &quot;invert segments&quot; mode <FaYinYang style={{ verticalAlign: 'middle' }} /> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <FaYinYang style={{ verticalAlign: 'middle', color: primaryTextColor }} /> symbol below to disable this mode. Alternatively you may combine overlapping segments from the menu.</Trans>
+      );
+    } else {
+      header = t('No segments to export.');
+    }
   }
 
   async function onReorderSegs(index) {
@@ -254,7 +259,7 @@ const SegmentList = memo(({
       animate={{ x: 0 }}
       exit={{ x: width }}
     >
-      <div style={{ fontSize: 14, padding: '0 5px', display: 'flex', alignItems: 'center' }} className="no-user-select">
+      <div style={{ fontSize: 14, padding: '0 5px' }} className="no-user-select">
         <FaAngleRight
           title={t('Close sidebar')}
           size={20}
@@ -265,6 +270,7 @@ const SegmentList = memo(({
 
         {header}
       </div>
+
       <div style={{ padding: '0 10px', overflowY: 'scroll', flexGrow: 1 }} className="hide-scrollbar">
         <ReactSortable list={sortableList} setList={setSortableList} sort={!invertCutSegments} handle=".segment-handle">
           {sortableList.map(({ id, seg }, index) => {

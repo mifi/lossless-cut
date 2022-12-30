@@ -229,6 +229,12 @@ module.exports = (app, mainWindow, newVersion) => {
               },
             },
             {
+              label: i18n.t('Combine overlapping segments'),
+              click() {
+                mainWindow.webContents.send('combineOverlappingSegments');
+              },
+            },
+            {
               label: i18n.t('Shuffle segments order'),
               click() {
                 mainWindow.webContents.send('shuffleSegments');

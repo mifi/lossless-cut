@@ -5,7 +5,8 @@ import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
 import { pcmAudioCodecs, getMapStreamsArgs } from './util/streams';
-import { getSuffixedOutPath, isDurationValid, getExtensionForFormat, isWindows, isMac, platform, arch } from './util';
+import { getSuffixedOutPath, getExtensionForFormat, isWindows, isMac, platform, arch } from './util';
+import { isDurationValid } from './segments';
 
 import isDev from './isDev';
 

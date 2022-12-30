@@ -156,8 +156,6 @@ export const isMasBuild = window.process.mas;
 export const isWindowsStoreBuild = window.process.windowsStore;
 export const isStoreBuild = isMasBuild || isWindowsStoreBuild;
 
-export const isDurationValid = (duration) => Number.isFinite(duration) && duration > 0;
-
 export const platform = os.platform();
 export const arch = os.arch();
 

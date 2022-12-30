@@ -1,6 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import sortBy from 'lodash/sortBy';
 
+
+export const isDurationValid = (duration) => Number.isFinite(duration) && duration > 0;
+
 export const createSegment = ({ start, end, name, tags, segColorIndex } = {}) => ({
   start,
   end,
@@ -22,6 +25,13 @@ export function getSegApparentStart(seg) {
   return time !== undefined ? time : 0;
 }
 
+export function getSegApparentEnd(seg, duration) {
+  const time = seg.end;
+  if (time !== undefined) return time;
+  if (isDurationValid(duration)) return duration;
+  return 0; // Haven't gotten duration yet - what do to ¯\_(ツ)_/¯
+}
+
 export const getCleanCutSegments = (cs) => cs.map((seg) => ({
   start: seg.start,
   end: seg.end,
@@ -41,14 +51,59 @@ export const getSegmentTags = (segment) => (segment.tags || {});
 
 export const sortSegments = (segments) => sortBy(segments, 'start');
 
+// https://stackoverflow.com/a/30472982/6519037
+export function partitionIntoOverlappingRanges(array, getSegmentStart = (seg) => seg.start, getSegmentEnd = (seg) => seg.end) {
+  function getMaxEnd(array2) {
+    // note: this also mutates array2
+    array2.sort((a, b) => {
+      if (getSegmentEnd(a) < getSegmentEnd(b)) return 1;
+      if (getSegmentEnd(a) > getSegmentEnd(b)) return -1;
+      return 0;
+    });
+    return getSegmentEnd(array2[0]);
+  }
+
+  const ret = [];
+  let g = 0;
+  ret[g] = [array[0]];
+
+  for (let i = 1; i < array.length; i += 1) {
+    if (getSegmentStart(array[i]) >= getSegmentStart(array[i - 1]) && getSegmentStart(array[i]) < getMaxEnd(ret[g])) {
+      ret[g].push(array[i]);
+    } else {
+      g += 1;
+      ret[g] = [array[i]];
+    }
+  }
+
+  return ret.filter((group) => group.length > 1).map((group) => sortBy(group, (seg) => getSegmentStart(seg)));
+}
+
+export function combineOverlappingSegments(existingSegments, getSegApparentEnd2) {
+  const partitionedSegments = partitionIntoOverlappingRanges(existingSegments, getSegApparentStart, getSegApparentEnd2);
+
+  return existingSegments.map((existingSegment) => {
+    const partOfPartition = partitionedSegments.find((partition) => partition.includes(existingSegment));
+    if (partOfPartition == null) return existingSegment; // this is not an overlapping segment, pass it through
+
+    const index = partOfPartition.indexOf(existingSegment);
+    // The first segment is the one with the lowest "start" value, so we use its start value
+    if (index === 0) {
+      return {
+        ...existingSegment,
+        // but use the segment with the highest "end" value as the end value.
+        end: sortBy(partOfPartition, (segment) => segment.end)[partOfPartition.length - 1].end,
+      };
+    }
+    return undefined; // then remove all other segments in this partition group
+  }).filter((segment) => segment);
+}
+
 export function hasAnySegmentOverlap(sortedSegments) {
   if (sortedSegments.length < 1) return false;
 
-  return sortedSegments.some((cutSegment, i) => {
-    if (i === 0) return false;
-    const previousSeg = sortedSegments[i - 1];
-    return previousSeg.end > cutSegment.start;
-  });
+  const overlappingGroups = partitionIntoOverlappingRanges(sortedSegments);
+  return overlappingGroups.length > 0;
 }
 
 export function invertSegments(sortedCutSegments, includeFirstSegment, includeLastSegment, duration) {

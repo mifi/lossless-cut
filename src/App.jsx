@@ -63,7 +63,7 @@ import { formatYouTube, getFrameCountRaw } from './edlFormats';
 import {
   getOutPath, getSuffixedOutPath, toast, errorToast, handleError, setFileNameTitle, getOutDir, getFileDir,
   checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer,
-  isDurationValid, filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
+  filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
   deleteFiles, isOutOfSpaceError, shuffleArray,
 } from './util';
@@ -72,7 +72,7 @@ import { adjustRate } from './util/rate-calculator';
 import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments, selectSegmentsByLabelDialog, confirmExtractFramesAsImages, showRefuseToOverwrite, showParametersDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
-import { createSegment, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap } from './segments';
+import { createSegment, getCleanCutSegments, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap, combineOverlappingSegments as combineOverlappingSegments2, isDurationValid } from './segments';
 import { getOutSegError as getOutSegErrorRaw } from './util/outputNameTemplate';
 import * as ffmpegParameters from './ffmpeg-parameters';
 import { maxSegmentsAllowed, ffmpegExtractWindow, zoomMax, rightBarWidth, leftBarWidth } from './util/constants';
@@ -93,7 +93,6 @@ const { focusWindow } = remote.require('./electron');
 
 const calcShouldShowWaveform = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
 const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
-
 
 
 const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
@@ -344,19 +343,16 @@ const App = memo(() => {
 
   const onTimelineWheel = useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, invertTimelineScroll, zoomRel, seekRel });
 
-  const getSegApparentEnd = useCallback((seg) => {
-    const time = seg.end;
-    if (time !== undefined) return time;
-    if (isDurationValid(duration)) return duration;
-    return 0; // Haven't gotten duration yet
-  }, [duration]);
+  const getSegApparentEnd = useCallback((seg) => getSegApparentEnd2(seg, duration), [duration]);
 
-  // These are segments guaranteed to have a start and end time
-  const apparentCutSegments = useMemo(() => cutSegments.map(cutSegment => ({
+  const getApparentCutSegments = useCallback((segments) => segments.map((cutSegment) => ({
     ...cutSegment,
     start: getSegApparentStart(cutSegment),
     end: getSegApparentEnd(cutSegment),
-  })), [cutSegments, getSegApparentEnd]);
+  })), [getSegApparentEnd]);
+
+  // These are segments guaranteed to have a start and end time
+  const apparentCutSegments = useMemo(() => getApparentCutSegments(cutSegments), [cutSegments, getApparentCutSegments]);
 
   const haveInvalidSegs = useMemo(() => apparentCutSegments.some((cutSegment) => cutSegment.start >= cutSegment.end), [apparentCutSegments]);
 
@@ -394,6 +390,10 @@ const App = memo(() => {
     const newInverseCutSegments = inverseCutSegments.map((inverseSegment) => createIndexedSegment({ segment: inverseSegment, incrementCount: true }));
     setCutSegments((existing) => ([...existing, ...newInverseCutSegments]));
   }, [createIndexedSegment, inverseCutSegments, setCutSegments]);
+
+  const combineOverlappingSegments = useCallback(() => {
+    setCutSegments((existingSegments) => combineOverlappingSegments2(existingSegments, getSegApparentEnd));
+  }, [getSegApparentEnd, setCutSegments]);
 
   const updateSegAtIndex = useCallback((index, newProps) => {
     if (index < 0) return;
@@ -2094,6 +2094,7 @@ const App = memo(() => {
       reorderSegsByStartTime,
       invertAllSegments,
       fillSegmentsGaps,
+      combineOverlappingSegments,
       createFixedDurationSegments,
       createNumSegments,
       createRandomSegments,
@@ -2158,7 +2159,7 @@ const App = memo(() => {
     if (match) return bubble;
 
     return true; // bubble the event
-  }, [addSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, combineOverlappingSegments, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   useKeyboard({ keyBindings, onKeyPress });
 
@@ -2286,6 +2287,7 @@ const App = memo(() => {
       createRandomSegments,
       invertAllSegments,
       fillSegmentsGaps,
+      combineOverlappingSegments,
       fixInvalidDuration: tryFixInvalidDuration,
       reorderSegsByStartTime,
       concatCurrentBatch,
@@ -2309,7 +2311,7 @@ const App = memo(() => {
 
     actionsWithCatch.forEach(([key, action]) => electron.ipcRenderer.on(key, action));
     return () => actionsWithCatch.forEach(([key, action]) => electron.ipcRenderer.removeListener(key, action));
-  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, concatCurrentBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, createSegmentsFromKeyframes, customOutDir, cutSegments, detectBlackScenes, detectSceneChanges, detectSilentScenes, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, invertAllSegments, loadCutSegments, loadMedia, openFilesDialog, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleKeyboardShortcuts, toggleLastCommands, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
+  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, combineOverlappingSegments, concatCurrentBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, createSegmentsFromKeyframes, customOutDir, cutSegments, detectBlackScenes, detectSceneChanges, detectSilentScenes, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, invertAllSegments, loadCutSegments, loadMedia, openFilesDialog, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleKeyboardShortcuts, toggleLastCommands, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
     try {
