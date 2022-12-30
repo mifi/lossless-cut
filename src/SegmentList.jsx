@@ -75,11 +75,11 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
   }, 300, [isActive]);
 
   function renderNumber() {
-    if (invertCutSegments) return <FaSave style={{ color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
+    if (invertCutSegments) return <FaSave style={{ cursor: 'grab', color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
 
     const segColor = getSegColor(seg);
 
-    return <b style={{ color: 'white', padding: '0 4px', marginRight: 3, marginLeft: -3, background: segColor.alpha(0.5).string(), border: `1px solid ${isActive ? segColor.lighten(0.3).string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
+    return <b style={{ cursor: 'grab', color: 'white', padding: '0 4px', marginRight: 3, marginLeft: -3, background: segColor.alpha(0.5).string(), border: `1px solid ${isActive ? segColor.lighten(0.3).string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
   }
 
   const timeStr = useMemo(() => `${formatTimecode({ seconds: seg.start })} - ${formatTimecode({ seconds: seg.end })}`, [seg.start, seg.end, formatTimecode]);
@@ -110,16 +110,17 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
       onClick={() => !invertCutSegments && onClick(index)}
       onDoubleClick={onDoubleClick}
       positionTransition
-      style={{ cursor: 'grab', originY: 0, margin: '5px 0', background: 'rgba(0,0,0,0.1)', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5, position: 'relative', opacity: !enabled && !invertCutSegments ? 0.5 : undefined }}
+      style={{ originY: 0, margin: '5px 0', background: 'rgba(0,0,0,0.1)', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5, position: 'relative', opacity: !enabled && !invertCutSegments ? 0.5 : undefined }}
       initial={{ scaleY: 0 }}
       animate={{ scaleY: 1 }}
       exit={{ scaleY: 0 }}
       className="segment-list-entry"
     >
-      <div style={{ color: 'white', marginBottom: 3, display: 'flex', alignItems: 'center', height: 16 }}>
+      <div className="segment-handle" style={{ cursor: 'grab', color: 'white', marginBottom: 3, display: 'flex', alignItems: 'center', height: 16 }}>
         {renderNumber()}
-        <span style={{ fontSize: Math.min(310 / timeStr.length, 14), whiteSpace: 'nowrap' }}>{timeStr}</span>
+        <span style={{ cursor: 'grab', fontSize: Math.min(310 / timeStr.length, 14), whiteSpace: 'nowrap' }}>{timeStr}</span>
       </div>
+
       <div style={{ fontSize: 12, color: 'white' }}>{seg.name}</div>
       <div style={{ fontSize: 13 }}>
         {t('Duration')} {formatTimecode({ seconds: duration, shorten: true })}
@@ -248,13 +249,12 @@ const SegmentList = memo(({
 
   return (
     <motion.div
-      className="no-user-select"
       style={{ width, background: controlsBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
       initial={{ x: width }}
       animate={{ x: 0 }}
       exit={{ x: width }}
     >
-      <div style={{ fontSize: 14, padding: '0 5px', display: 'flex', alignItems: 'center' }}>
+      <div style={{ fontSize: 14, padding: '0 5px', display: 'flex', alignItems: 'center' }} className="no-user-select">
         <FaAngleRight
           title={t('Close sidebar')}
           size={20}
@@ -266,7 +266,7 @@ const SegmentList = memo(({
         {header}
       </div>
       <div style={{ padding: '0 10px', overflowY: 'scroll', flexGrow: 1 }} className="hide-scrollbar">
-        <ReactSortable list={sortableList} setList={setSortableList} sort={!invertCutSegments}>
+        <ReactSortable list={sortableList} setList={setSortableList} sort={!invertCutSegments} handle=".segment-handle">
           {sortableList.map(({ id, seg }, index) => {
             const enabled = !invertCutSegments && selectedSegmentsRaw.includes(seg);
             return (

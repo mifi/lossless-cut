@@ -1,3 +1,9 @@
 // anything more than this will probably cause the UI to become unusably slow
-// eslint-disable-next-line import/prefer-default-export
 export const maxSegmentsAllowed = 2000;
+
+export const ffmpegExtractWindow = 60;
+
+export const zoomMax = 2 ** 14;
+
+export const rightBarWidth = 200;
+export const leftBarWidth = 240;

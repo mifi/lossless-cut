@@ -22,7 +22,7 @@ export const silencedetect = () => ({
   },
   duration: {
     value: '2.0',
-    hint: i18n.t('Set silence duration until notification (default is 2 seconds).'),
+    hint: i18n.t('Set minimum silence duration that will be converted into a segment.'),
   },
 });
 

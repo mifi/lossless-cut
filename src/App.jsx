@@ -75,7 +75,7 @@ import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, getSegApparentStart, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap } from './segments';
 import { getOutSegError as getOutSegErrorRaw } from './util/outputNameTemplate';
 import * as ffmpegParameters from './ffmpeg-parameters';
-import { maxSegmentsAllowed } from './util/constants';
+import { maxSegmentsAllowed, ffmpegExtractWindow, zoomMax, rightBarWidth, leftBarWidth } from './util/constants';
 
 import isDev from './isDev';
 
@@ -91,15 +91,9 @@ const { dialog } = remote;
 const { focusWindow } = remote.require('./electron');
 
 
-const ffmpegExtractWindow = 60;
 const calcShouldShowWaveform = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
 const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
 
-
-const zoomMax = 2 ** 14;
-
-const rightBarWidth = 200;
-const leftBarWidth = 240;
 
 
 const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
@@ -133,7 +127,7 @@ const App = memo(() => {
   const [copyStreamIdsByFile, setCopyStreamIdsByFile] = useState({});
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
   const [concatDialogVisible, setConcatDialogVisible] = useState(false);
-  const [zoom, setZoom] = useState(1);
+  const [zoomUnrounded, setZoom] = useState(1);
   const [thumbnails, setThumbnails] = useState([]);
   const [shortestFlag, setShortestFlag] = useState(false);
   const [zoomWindowStartTime, setZoomWindowStartTime] = useState(0);
@@ -197,6 +191,8 @@ const App = memo(() => {
     workingRef.current = val;
     setWorkingState(val);
   }, []);
+
+  const zoom = Math.floor(zoomUnrounded);
 
   const durationSafe = isDurationValid(duration) ? duration : 1;
   const zoomedDuration = isDurationValid(duration) ? duration / zoom : undefined;
@@ -325,7 +321,7 @@ const App = memo(() => {
   const isRotationSet = rotation !== 360;
   const effectiveRotation = isRotationSet ? rotation : (mainVideoStream && mainVideoStream.tags && mainVideoStream.tags.rotate && parseInt(mainVideoStream.tags.rotate, 10));
 
-  const zoomRel = useCallback((rel) => setZoom(z => Math.min(Math.max(z + rel, 1), zoomMax)), []);
+  const zoomRel = useCallback((rel) => setZoom((z) => Math.min(Math.max(z + (rel * (1 + (z / 10))), 1), zoomMax)), []);
   const canvasPlayerRequired = !!(mainVideoStream && usingDummyVideo);
   const canvasPlayerWanted = !!(mainVideoStream && isRotationSet && !hideCanvasPreview);
   // Allow user to disable it
