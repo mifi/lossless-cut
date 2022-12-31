@@ -4,7 +4,7 @@ import moment from 'moment';
 import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
-import { pcmAudioCodecs, getMapStreamsArgs } from './util/streams';
+import { pcmAudioCodecs, getMapStreamsArgs, isMov } from './util/streams';
 import { getSuffixedOutPath, getExtensionForFormat, isWindows, isMac, platform, arch } from './util';
 import { isDurationValid } from './segments';
 
@@ -706,6 +706,10 @@ export function isIphoneHevc(format, streams) {
   const makeTag = format.tags && format.tags['com.apple.quicktime.make'];
   const modelTag = format.tags && format.tags['com.apple.quicktime.model'];
   return (makeTag === 'Apple' && modelTag.startsWith('iPhone'));
+}
+
+export function isProblematicAvc1(outFormat, streams) {
+  return isMov(outFormat) && streams.some((s) => s.codec_name === 'h264' && s.codec_tag === '0x31637661');
 }
 
 export function getStreamFps(stream) {

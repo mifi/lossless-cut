@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Button, TextInputField, Checkbox, RadioGroup, Paragraph, LinkIcon } from 'evergreen-ui';
+import { UnorderedList, ListItem, WarningSignIcon, InfoSignIcon, Button, TextInputField, Checkbox, RadioGroup, Paragraph, LinkIcon } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
@@ -9,11 +9,12 @@ import { tomorrow as style } from 'react-syntax-highlighter/dist/esm/styles/hljs
 import JSON5 from 'json5';
 
 import { parseDuration, formatDuration } from './util/duration';
+import { swalToastOptions, toast } from './util';
 import { parseYouTube } from './edlFormats';
 import CopyClipboardButton from './components/CopyClipboardButton';
 
 const { dialog, app } = window.require('@electron/remote');
-const electron = window.require('electron');
+const { shell } = window.require('electron');
 
 const ReactSwal = withReactContent(Swal);
 
@@ -429,7 +430,7 @@ const ParametersInput = ({ description, parameters: parametersIn, onChange, onSu
     <div style={{ textAlign: 'left' }}>
       {description && <p>{description}</p>}
 
-      {docUrl && <p><Button iconBefore={LinkIcon} onClick={() => electron.shell.openExternal(docUrl)}>Read more</Button></p>}
+      {docUrl && <p><Button iconBefore={LinkIcon} onClick={() => shell.openExternal(docUrl)}>Read more</Button></p>}
 
       <form onSubmit={handleSubmit}>
         {Object.entries(parametersIn).map(([key, parameter], i) => (
@@ -593,4 +594,35 @@ export function showJson5Dialog({ title, json }) {
     title,
     html,
   });
+}
+
+export async function openDirToast({ filePath, text, html, ...props }) {
+  const swal = text ? toast : ReactSwal;
+
+  const { value } = await swal.fire({
+    ...swalToastOptions,
+    showConfirmButton: true,
+    confirmButtonText: i18n.t('Show'),
+    showCancelButton: true,
+    cancelButtonText: i18n.t('Close'),
+    text,
+    html,
+    ...props,
+  });
+  if (value) shell.showItemInFolder(filePath);
+}
+
+export async function openCutFinishedToast({ filePath, warnings, notices }) {
+  const html = (
+    <>
+      <div>
+        {i18n.t('Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, see the HELP page.')}
+      </div>
+      <UnorderedList>
+        {warnings.map((msg) => <ListItem key={msg} icon={WarningSignIcon} iconColor="warning">{msg}</ListItem>)}
+        {notices.map((msg) => <ListItem key={msg} icon={InfoSignIcon} iconColor="info">{msg}</ListItem>)}
+      </UnorderedList>
+    </>
+  );
+  await openDirToast({ filePath, html, width: '90%', position: 'center', timer: 15000 });
 }

@@ -53,7 +53,7 @@ import {
   getStreamFps, isCuttingStart, isCuttingEnd,
   readFileMeta, getSmarterOutFormat, renderThumbnails as ffmpegRenderThumbnails,
   extractStreams, runStartupCheck, setCustomFfPath as ffmpegSetCustomFfPath,
-  isIphoneHevc, tryMapChaptersToEdl, blackDetect, silenceDetect, detectSceneChanges as ffmpegDetectSceneChanges,
+  isIphoneHevc, isProblematicAvc1, tryMapChaptersToEdl, blackDetect, silenceDetect, detectSceneChanges as ffmpegDetectSceneChanges,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
   getFfmpegPath, RefuseOverwriteError, readFrames, mapTimesToSegments,
 } from './ffmpeg';
@@ -62,14 +62,14 @@ import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlIm
 import { formatYouTube, getFrameCountRaw } from './edlFormats';
 import {
   getOutPath, getSuffixedOutPath, toast, errorToast, handleError, setFileNameTitle, getOutDir, getFileDir,
-  checkDirWriteAccess, dirExists, openDirToast, isMasBuild, isStoreBuild, dragPreventer,
+  checkDirWriteAccess, dirExists, isMasBuild, isStoreBuild, dragPreventer,
   filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
   deleteFiles, isOutOfSpaceError, shuffleArray,
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
-import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments, selectSegmentsByLabelDialog, confirmExtractFramesAsImages, showRefuseToOverwrite, showParametersDialog } from './dialogs';
+import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showCutFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments, selectSegmentsByLabelDialog, confirmExtractFramesAsImages, showRefuseToOverwrite, showParametersDialog, openDirToast, openCutFinishedToast } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap, combineOverlappingSegments as combineOverlappingSegments2, isDurationValid } from './segments';
@@ -1110,7 +1110,7 @@ const App = memo(() => {
       const metadataFromPath = paths[0];
       await concatFiles({ paths, outPath, outDir, outFormat, metadataFromPath, includeAllStreams, streams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments, appendFfmpegCommandLog });
       if (clearBatchFilesAfterConcat) closeBatch();
-      openDirToast({ icon: 'success', filePath: outPath, text: i18n.t('Files merged!') });
+      if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: outPath, text: i18n.t('Files merged!') });
     } catch (err) {
       if (isOutOfSpaceError(err)) {
         showDiskFull();
@@ -1122,7 +1122,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [setWorking, ensureAccessibleDirectories, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch]);
+  }, [setWorking, ensureAccessibleDirectories, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, hideAllNotifications]);
 
   const cleanupFilesDialog = useCallback(async () => {
     if (!isFileOpened) return;
@@ -1343,22 +1343,26 @@ const App = memo(() => {
         });
       }
 
-      const msgs = [i18n.t('Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, see the HELP page.')];
+      const notices = [];
+      const warnings = [];
 
       // https://github.com/mifi/lossless-cut/issues/329
-      if (isIphoneHevc(mainFileFormatData, mainStreams)) msgs.push(i18n.t('There is a known issue with cutting iPhone HEVC videos. The output file may not work in all players.'));
+      if (isIphoneHevc(mainFileFormatData, mainStreams)) warnings.push(i18n.t('There is a known issue with cutting iPhone HEVC videos. The output file may not work in all players.'));
+
+      // https://github.com/mifi/lossless-cut/issues/280
+      if (!ffmpegExperimental && isProblematicAvc1(fileFormat, mainStreams)) warnings.push(i18n.t('There is a known problem with this file type, and the output might not be playable. You can work around this problem by enabling the "Experimental flag" under Settings.'));
 
       if (exportExtraStreams) {
         try {
           await extractStreams({ filePath, customOutDir, streams: nonCopiedExtraStreams, enableOverwriteOutput });
-          msgs.push(i18n.t('Unprocessable streams were exported as separate files.'));
+          notices.push(i18n.t('Unprocessable streams were exported as separate files.'));
         } catch (err) {
           console.error('Extra stream export failed', err);
         }
       }
 
       const revealPath = concatOutPath || outFiles[0];
-      if (!hideAllNotifications) openDirToast({ filePath: revealPath, text: msgs.join(' '), timer: 15000 });
+      if (!hideAllNotifications) openCutFinishedToast({ filePath: revealPath, warnings, notices });
     } catch (err) {
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
@@ -1406,7 +1410,7 @@ const App = memo(() => {
         ? await captureFramesFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, enableTransferTimestamps, numFrames: 1 })
         : await captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, enableTransferTimestamps });
 
-      if (!hideAllNotifications) openDirToast({ filePath: outPath, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
+      if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: outPath, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
     } catch (err) {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
@@ -1423,7 +1427,7 @@ const App = memo(() => {
     try {
       setWorking(i18n.t('Extracting frames'));
       const outPath = await captureFramesFfmpeg({ customOutDir, filePath, fromTime: start, captureFormat, enableTransferTimestamps, numFrames });
-      if (!hideAllNotifications) openDirToast({ filePath: outPath, text: i18n.t('Frames extracted to: {{path}}', { path: outputDir }) });
+      if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: outPath, text: i18n.t('Frames extracted to: {{path}}', { path: outputDir }) });
     } catch (err) {
       handleError(err);
     } finally {
@@ -1739,7 +1743,7 @@ const App = memo(() => {
       setWorking(i18n.t('Extracting all streams'));
       setStreamsSelectorShown(false);
       const extractedPaths = await extractStreams({ customOutDir, filePath, streams: mainStreams, enableOverwriteOutput });
-      openDirToast({ filePath: extractedPaths[0], text: i18n.t('All streams have been extracted as separate files') });
+      if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: extractedPaths[0], text: i18n.t('All streams have been extracted as separate files') });
     } catch (err) {
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
@@ -1750,7 +1754,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [customOutDir, enableOverwriteOutput, filePath, mainStreams, setWorking]);
+  }, [customOutDir, enableOverwriteOutput, filePath, hideAllNotifications, mainStreams, setWorking]);
 
   const detectSegments = useCallback(async ({ name, workingText, errorText, fn }) => {
     if (!filePath) return;
@@ -2182,7 +2186,7 @@ const App = memo(() => {
       setWorking(i18n.t('Extracting track'));
       // setStreamsSelectorShown(false);
       const extractedPaths = await extractStreams({ customOutDir, filePath, streams: mainStreams.filter((s) => s.index === index), enableOverwriteOutput });
-      openDirToast({ filePath: extractedPaths[0], text: i18n.t('Track has been extracted') });
+      if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: extractedPaths[0], text: i18n.t('Track has been extracted') });
     } catch (err) {
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
@@ -2193,7 +2197,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [customOutDir, enableOverwriteOutput, filePath, mainStreams, setWorking]);
+  }, [customOutDir, enableOverwriteOutput, filePath, hideAllNotifications, mainStreams, setWorking]);
 
   const batchFilePaths = useMemo(() => batchFiles.map((f) => f.path), [batchFiles]);
 

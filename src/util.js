@@ -90,7 +90,7 @@ export async function transferTimestamps(inPath, outPath, offset = 0) {
   }
 }
 
-export const toast = Swal.mixin({
+export const swalToastOptions = {
   toast: true,
   position: 'top',
   showConfirmButton: false,
@@ -101,7 +101,9 @@ export const toast = Swal.mixin({
     self.addEventListener('mouseenter', Swal.stopTimer);
     self.addEventListener('mouseleave', Swal.resumeTimer);
   },
-});
+};
+
+export const toast = Swal.mixin(swalToastOptions);
 
 export const errorToast = (text) => toast.fire({
   icon: 'error',
@@ -125,12 +127,6 @@ export function handleError(arg1, arg2) {
     text: errorMsg ? errorMsg.substring(0, 300) : undefined,
   });
 }
-
-
-export const openDirToast = async ({ filePath, ...props }) => {
-  const { value } = await toast.fire({ icon: 'success', timer: 5000, showConfirmButton: true, confirmButtonText: i18n.t('Show'), showCancelButton: true, cancelButtonText: i18n.t('Close'), ...props });
-  if (value) shell.showItemInFolder(filePath);
-};
 
 export function setFileNameTitle(filePath) {
   const appName = 'LosslessCut';
