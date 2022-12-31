@@ -85,7 +85,7 @@ export function handleProgress(process, cutDuration, onProgress, customMatcher =
       // console.log(str);
       const progressTime = Math.max(0, moment.duration(str).asSeconds());
       // console.log(progressTime);
-      const progress = cutDuration ? progressTime / cutDuration : 0;
+      const progress = cutDuration ? Math.min(progressTime / cutDuration, 1) : 0; // sometimes progressTime will be greater than cutDuration
       onProgress(progress);
     } catch (err) {
       console.log('Failed to parse ffmpeg progress line', err);
