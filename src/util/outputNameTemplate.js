@@ -16,10 +16,17 @@ export function getOutSegError({ fileNames, filePath, outputDir }) {
       break;
     }
 
-    const invalidChars = [pathSep];
+    const invalidChars = new Set();
 
-    // Colon is invalid on windows https://github.com/mifi/lossless-cut/issues/631 and on MacOS, but not Linux https://github.com/mifi/lossless-cut/issues/830
-    if (isMac || isWindows) invalidChars.push(':');
+    // https://stackoverflow.com/questions/1976007/what-characters-are-forbidden-in-windows-and-linux-directory-names
+    if (isWindows) {
+      ['/', '<', '>', ':', '"', '\\', '|', '?', '*'].forEach((char) => invalidChars.add(char));
+    } else if (isMac) {
+      // Colon is invalid on windows https://github.com/mifi/lossless-cut/issues/631 and on MacOS, but not Linux https://github.com/mifi/lossless-cut/issues/830
+      ['/', ':'].forEach((char) => invalidChars.add(char));
+    } else {
+      invalidChars.add(pathSep);
+    }
 
     const outPath = pathNormalize(pathJoin(outputDir, fileName));
     const sameAsInputPath = outPath === pathNormalize(filePath);
@@ -30,7 +37,7 @@ export function getOutSegError({ fileNames, filePath, outputDir }) {
       error = i18n.t('At least one resulting file name has no length');
       break;
     }
-    if (invalidChars.some((c) => fileName.includes(c))) {
+    if ([...fileName].some((char) => invalidChars.has(char))) {
       error = i18n.t('At least one resulting file name contains invalid characters');
       break;
     }

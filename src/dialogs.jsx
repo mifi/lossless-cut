@@ -501,11 +501,12 @@ export async function createRandomSegments(fileDuration) {
   return edl;
 }
 
-export async function showCutFailedDialog({ detectedFileFormat }) {
+export async function showExportFailedDialog({ detectedFileFormat, safeOutputFileName }) {
   const html = (
     <div style={{ textAlign: 'left' }}>
       <Trans>Try one of the following before exporting again:</Trans>
       <ol>
+        {!safeOutputFileName && <li><Trans>Output file names are not sanitized. Try to enable sanitazion or check your segment labels for invalid characters.</Trans></li>}
         {detectedFileFormat === 'mp4' && <li><Trans>Change output <b>Format</b> from <b>MP4</b> to <b>MOV</b></Trans></li>}
         <li><Trans>Select a different output <b>Format</b> (<b>matroska</b> and <b>mp4</b> support most codecs)</Trans></li>
         <li><Trans>Disable unnecessary <b>Tracks</b></Trans></li>

@@ -81,16 +81,18 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
 
   const onTextChange = useCallback((e) => setText(e.target.value), []);
 
+  const needToShow = shown || error != null;
+
   return (
     <>
       <div>
-        <span role="button" onClick={onShowClick} style={{ cursor: shown ? undefined : 'pointer' }}>
+        <span role="button" onClick={onShowClick} style={{ cursor: needToShow ? undefined : 'pointer' }}>
           {t('Output name(s):')} {outSegFileNames != null && <HighlightedText style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{outSegFileNames[currentSegIndexSafe] || outSegFileNames[0]}</HighlightedText>}
         </span>
         {helpIcon}
       </div>
 
-      {shown && (
+      {needToShow && (
         <>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 5, marginTop: 5 }}>
             <input type="text" style={inputStyle} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
