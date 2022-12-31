@@ -42,6 +42,10 @@ This might be caused by trying to merge files that are not compatible. Make sure
 
 Smart cut is experimental, but if you're having problems, check out [this issue](https://github.com/mifi/lossless-cut/issues/126).
 
+## My file changes from MP4 to MOV
+
+Some MP4 files ffmpeg is not able to export as MP4 and therefore needs to use MOV instead. Unfortunately I don't know any way to fix this.
+
 ## Linux specific issues
 
 - If you get an error like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See [#258](https://github.com/mifi/lossless-cut/issues/258)
