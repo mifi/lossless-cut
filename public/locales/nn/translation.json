@@ -1,1 +1,23 @@
-{}
+{
+    "Advanced view disabled. You will now see only the most essential buttons and functions": "Avansert vising avslegen. Du ser no berre dei knappane og funksjonane som tarvst mest",
+    "<0></0> <2></2> or <4>I</4> <6>O</6> to set cutpoints": "<0></0> <2></2> eller <4>I</4> <6>O</6> for å setja klippstadar",
+    "Advanced view has been enabled. You will now also see non-essential buttons and functions": "Avansert vising slegen på. No ser du au knappar og funksjonar som tarvst mindre",
+    "About LosslessCut": "Om LosslessCut",
+    "Accurate time but could leave an empty portion at the beginning of the video. Equiv to": "Grannsam tid men kan leggja att ein tom bit ved byrjinga av videoen. Svarer til",
+    "Add metadata": "Legg til metadata",
+    "Add segment": "Legg til bit",
+    "Advanced options": "Avanserte val",
+    "(detected)": "(fann)",
+    "A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.": "Fann eit mishøve i minst éi fil. Om du haldar fram kan den fullgjorde fila vera uavspelbar.",
+    "All formats:": "Alle format:",
+    "Always open this dialog when opening multiple files": "Vis denne merknaden kvar gong du opnar fleire filer",
+    "An error has occurred.": "Eit mistak har hendt.",
+    "Are you sure you want to close the current file?": "Lat att noverande fil?",
+    "Are you sure you want to quit?": "End appen?",
+    "Ask about what to do when opening a new file when another file is already already open?": "Spør om kva som skal verta gjort ved opning av ei ny fil når ei anna alt er open?",
+    "Ask before closing": "Spør før ending",
+    "Ask for confirmation when closing app or file?": "Spør om stadfesting ved ending av app eller attlating av fil?",
+    "Ask on file open": "Spør ved opning av ei fil",
+    "(data tracks such as GoPro GPS, telemetry etc. are not copied over by default because ffmpeg cannot cut them, thus they will cause the media duration to stay the same after cutting video/audio)": "(Dataspor som GoPro GPS, telemetri, osv. vert ikkje ført over som forval fordi ffmpeg kan ikkje klippe dei, og dei fører då til at medialengda vert den same etter klipping av video/ljod)",
+    "All streams have been extracted as separate files": "Alle straumar har vorte tekne ut som eigne filer"
+}
