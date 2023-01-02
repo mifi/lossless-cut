@@ -2,13 +2,18 @@ import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import lodashTemplate from 'lodash/template';
 import pMap from 'p-map';
+import ky from 'ky';
+
+import isDev from './isDev';
 
 const { dirname, parse: parsePath, join, basename, extname, isAbsolute, resolve } = window.require('path');
 const fs = window.require('fs-extra');
 const os = window.require('os');
 const { shell } = window.require('electron');
+const remote = window.require('@electron/remote');
 
 const { readdir, unlink } = fs;
+
 
 const trash = async (path) => shell.trashItem(path);
 
@@ -301,6 +306,31 @@ export const isOutOfSpaceError = (err) => (
   err && (err.exitCode === 1 || err.code === 'ENOENT')
   && typeof err.stderr === 'string' && err.stderr.includes('No space left on device')
 );
+
+export async function checkAppPath() {
+  try {
+    const forceCheck = false;
+    // const forceCheck = isDev;
+    // this code is purposefully obfuscated to try to detect the most basic cloned app submissions to the MS Store
+    if (!isWindowsStoreBuild && !forceCheck) return;
+    // eslint-disable-next-line no-useless-concat, one-var, one-var-declaration-per-line
+    const mf = 'mi' + 'fi.no', llc = 'Los' + 'slessC' + 'ut';
+    const appPath = isDev ? 'C:\\Program Files\\WindowsApps\\37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84' : remote.app.getAppPath();
+    const pathMatch = appPath.replace(/\\/g, '/').match(/Windows ?Apps\/([^/]+)/); // find the first component after WindowsApps
+    // example pathMatch: 37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84
+    if (!pathMatch) {
+      console.warn('Unknown path match', appPath);
+      return;
+    }
+    const pathSeg = pathMatch[1];
+    if (pathSeg.startsWith(`57275${mf}.no.${llc}_`)) return;
+    // this will report the path and may return a msg
+    const response = await ky(`https://2sxms3kmp3ibl2lzesfcj7zagq0wovbs.lambda-url.us-east-1.on.aws/${btoa(pathSeg)}`).json();
+    if (response.invalid) toast.fire({ timer: 60000, icon: 'error', title: response.title, text: response.text });
+  } catch (err) {
+    if (isDev) console.warn(err.message);
+  }
+}
 
 // https://stackoverflow.com/a/2450976/6519037
 export function shuffleArray(arrayIn) {

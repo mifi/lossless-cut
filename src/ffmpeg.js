@@ -813,7 +813,8 @@ export function getTimecodeFromStreams(streams) {
   return foundTimecode;
 }
 
-export async function runStartupCheck() {
+export async function runFfmpegStartupCheck() {
+  // will throw if exit code != 0
   await runFfmpeg(['-hide_banner', '-f', 'lavfi', '-i', 'nullsrc=s=256x256:d=1', '-f', 'null', '-']);
 }
 

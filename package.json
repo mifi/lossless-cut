@@ -45,7 +45,6 @@
   "devDependencies": {
     "@types/jest": "^26.0.20",
     "@types/sortablejs": "^1.15.0",
-    "axios": "^0.21.2",
     "color": "^3.1.0",
     "concurrently": "^6.0.0",
     "cross-env": "^7.0.3",
@@ -67,6 +66,7 @@
     "hammerjs": "^2.0.8",
     "i18next-scanner": "^4.1.0",
     "icon-gen": "^3.0.0",
+    "ky": "^0.33.1",
     "mkdirp": "^1.0.3",
     "moment": "^2.29.4",
     "mousetrap": "^1.6.5",

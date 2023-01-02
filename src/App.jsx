@@ -46,16 +46,16 @@ import KeyboardShortcuts from './components/KeyboardShortcuts';
 import Loading from './components/Loading';
 import OutputFormatSelect from './components/OutputFormatSelect';
 
-import { loadMifiLink } from './mifi';
+import { loadMifiLink, runStartupCheck } from './mifi';
 import { controlsBackground } from './colors';
 import { captureFrameFromTag, captureFramesFfmpeg } from './capture-frame';
 import {
   getStreamFps, isCuttingStart, isCuttingEnd,
   readFileMeta, getSmarterOutFormat, renderThumbnails as ffmpegRenderThumbnails,
-  extractStreams, runStartupCheck, setCustomFfPath as ffmpegSetCustomFfPath,
+  extractStreams, setCustomFfPath as ffmpegSetCustomFfPath,
   isIphoneHevc, isProblematicAvc1, tryMapChaptersToEdl, blackDetect, silenceDetect, detectSceneChanges as ffmpegDetectSceneChanges,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
-  getFfmpegPath, RefuseOverwriteError, readFrames, mapTimesToSegments,
+  RefuseOverwriteError, readFrames, mapTimesToSegments,
 } from './ffmpeg';
 import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, doesPlayerSupportFile } from './util/streams';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
@@ -2356,24 +2356,7 @@ const App = memo(() => {
 
   const haveCustomFfPath = !!customFfPath;
   useEffect(() => {
-    if (!haveCustomFfPath) {
-      (async () => {
-        try {
-          await runStartupCheck();
-        } catch (err) {
-          if (['EPERM', 'EACCES'].includes(err.code)) {
-            toast.fire({
-              timer: 30000,
-              icon: 'error',
-              title: 'Fatal: ffmpeg not accessible',
-              text: `Got ${err.code}. This probably means that anti-virus is blocking execution of ffmpeg. Please make sure the following file exists and is executable:\n\n${getFfmpegPath()}\n\nSee this issue: https://github.com/mifi/lossless-cut/issues/1114`,
-            });
-            return;
-          }
-          handleError('Fatal: ffmpeg non-functional', err);
-        }
-      })();
-    }
+    runStartupCheck({ ffmpeg: !haveCustomFfPath });
   }, [haveCustomFfPath]);
 
   useEffect(() => {

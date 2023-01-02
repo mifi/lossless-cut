@@ -16,14 +16,11 @@ import ToggleExportConfirm from './components/ToggleExportConfirm';
 import CaptureFormatButton from './components/CaptureFormatButton';
 
 import SimpleModeButton from './components/SimpleModeButton';
-import { withBlur, toast, mirrorTransform } from './util';
+import { withBlur, toast, mirrorTransform, checkAppPath } from './util';
 import { getSegColor } from './util/colors';
 import { formatDuration, parseDuration } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
 
-import isDev from './isDev';
-
-const start = new Date().getTime();
 const zoomOptions = Array(13).fill().map((unused, z) => 2 ** z);
 
 const leftRightWidth = 100;
@@ -58,6 +55,10 @@ const BottomBar = memo(({
     setCutStartTimeManual();
     setCutEndTimeManual();
   }, [setCutStartTimeManual, setCutEndTimeManual, currentApparentCutSeg.start, currentApparentCutSeg.end]);
+
+  useEffect(() => {
+    checkAppPath();
+  }, []);
 
   function renderJumpCutpointButton(direction) {
     const newIndex = currentSegIndexSafe + direction;
@@ -317,8 +318,6 @@ const BottomBar = memo(({
             {detectedFps != null && <div title={t('Video FPS')} style={{ color: 'rgba(255,255,255,0.6)', fontSize: '.7em', marginLeft: 6 }}>{detectedFps.toFixed(3)}</div>}
           </>
         )}
-
-        <div style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 1, flexGrow: 0, overflow: 'hidden', margin: '0 10px' }}>{!isDev && new Date().getTime() - start > 2 * 60 * 1000 && ['t', 'u', 'C', 's', 's', 'e', 'l', 's', 's', 'o', 'L'].reverse().join('')}</div>
 
         <div style={{ flexGrow: 1 }} />
 

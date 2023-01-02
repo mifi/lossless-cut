@@ -4068,7 +4068,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^0.21.1, axios@npm:^0.21.2":
+"axios@npm:^0.21.1":
   version: 0.21.4
   resolution: "axios@npm:0.21.4"
   dependencies:
@@ -10251,6 +10251,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ky@npm:^0.33.1":
+  version: 0.33.1
+  resolution: "ky@npm:0.33.1"
+  checksum: 47a4b74fd6cb4b80b4fbff1d5500d082e2f437955a3abea70690fa4f080910e4e035e10e1b91f695479e99fe3e95a8e32daa1a7e4e9364386bd562a3d4cff21f
+  languageName: node
+  linkType: hard
+
 "language-subtag-registry@npm:~0.3.2":
   version: 0.3.21
   resolution: "language-subtag-registry@npm:0.3.21"
@@ -10517,7 +10524,6 @@ __metadata:
     "@electron/remote": ^2.0.8
     "@types/jest": ^26.0.20
     "@types/sortablejs": ^1.15.0
-    axios: ^0.21.2
     color: ^3.1.0
     concurrently: ^6.0.0
     cross-env: ^7.0.3
@@ -10553,6 +10559,7 @@ __metadata:
     i18next-scanner: ^4.1.0
     icon-gen: ^3.0.0
     json5: ^2.2.0
+    ky: ^0.33.1
     lodash: ^4.17.19
     mime-types: ^2.1.14
     mkdirp: ^1.0.3
