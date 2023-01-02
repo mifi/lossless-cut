@@ -1,4 +1,4 @@
-## Development building / running
+## Development
 
 This app is built using Electron.
 Make sure you have at least Node v14. The app uses ffmpeg from PATH when developing.
@@ -14,7 +14,7 @@ yarn
 ```
 Note: `yarn` may take some time to complete.
 
-### ffmpeg
+### Installing `ffmpeg`
 
 Run one of the below commands:
 ```bash
@@ -30,7 +30,13 @@ npm run download-ffmpeg-win32-x64
 npm start
 ```
 
-## Testing mas-dev build locally
+### Building for production
+
+See:
+- https://www.electron.build/
+- https://github.com/mifi/lossless-cut/blob/master/.github/workflows/build.yml
+
+## Building mas-dev (Mac App Store) build locally
 
 This will sign using the development provisioning profile:
 
@@ -38,9 +44,17 @@ This will sign using the development provisioning profile:
 npm run pack-mas-dev
 ```
 
-## Release
+## Windows Store
 
-For per-platform build/signing setup, see https://blog.mifi.no/2020/03/31/automated-electron-build-with-release-to-mac-app-store-microsoft-store-snapcraft/
+Windows store version is built as a Desktop Bridge app (with `runFullTrust` capability). This means the app has access to essentially everything the user has access to, and even `internetClient` is redundant.
+
+- https://learn.microsoft.com/en-us/windows/uwp/packaging/app-capability-declarations
+- https://learn.microsoft.com/en-us/archive/blogs/appconsult/a-simpler-and-faster-way-to-publish-your-desktop-bridge-applications-on-the-microsoft-store
+- https://stackoverflow.com/a/52921641/6519037
+
+## Releasing
+
+For per-platform build/signing setup, see [this article](https://mifi.no/blog/automated-electron-build-with-release-to-mac-app-store-microsoft-store-snapcraft/).
 
 ### Release new version
 
