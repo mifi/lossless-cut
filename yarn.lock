@@ -10151,6 +10151,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"json5@npm:^2.2.2":
+  version: 2.2.3
+  resolution: "json5@npm:2.2.3"
+  bin:
+    json5: lib/cli.js
+  checksum: 2a7436a93393830bce797d4626275152e37e877b265e94ca69c99e3d20c2b9dab021279146a39cdb700e71b2dd32a4cebd1514cd57cee102b1af906ce5040349
+  languageName: node
+  linkType: hard
+
 "jsonfile@npm:^4.0.0":
   version: 4.0.0
   resolution: "jsonfile@npm:4.0.0"
@@ -10558,7 +10567,7 @@ __metadata:
     i18next-fs-backend: ^1.0.1
     i18next-scanner: ^4.1.0
     icon-gen: ^3.0.0
-    json5: ^2.2.0
+    json5: ^2.2.2
     ky: ^0.33.1
     lodash: ^4.17.19
     mime-types: ^2.1.14
