@@ -4,11 +4,6 @@ import { readFramesAroundTime } from './ffmpeg';
 
 const { stat } = window.require('fs-extra');
 
-function mapInputToOutputCodec(inputCodec) {
-  // if (inputCodec === 'hevc') return 'libx265';
-  return inputCodec;
-}
-
 // eslint-disable-next-line import/prefer-default-export
 export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, streams }) {
   const videoStreams = getRealVideoStreams(streams);
@@ -54,7 +49,7 @@ export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, s
     videoBitrate = stats.size / videoDuration;
   }
 
-  const videoCodec = mapInputToOutputCodec(videoStream.codec_name);
+  const { codec_name: videoCodec } = videoStream;
   if (videoCodec == null) throw new Error('Unable to determine codec for smart cut');
 
   const timebase = getVideoTimebase(videoStream);
