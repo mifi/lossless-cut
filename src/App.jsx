@@ -2243,7 +2243,7 @@ const App = memo(() => {
     async function exportEdlFile2(e, type) {
       if (!checkFileOpened()) return;
       try {
-        await exportEdlFile({ type, cutSegments, filePath, getFrameCount });
+        await exportEdlFile({ type, cutSegments, customOutDir, filePath, getFrameCount });
       } catch (err) {
         errorToast(i18n.t('Failed to export project'));
         console.error('Failed to export project', type, err);

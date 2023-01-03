@@ -3,6 +3,7 @@ import i18n from 'i18next';
 
 import { parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, getTimeFromFrameNum } from './edlFormats';
 import { askForYouTubeInput } from './dialogs';
+import { getOutPath } from './util';
 
 const fs = window.require('fs-extra');
 const cueParser = window.require('cue-parser');
@@ -101,7 +102,7 @@ export async function askForEdlImport({ type, fps }) {
   return readEdlFile({ type, path: filePaths[0], fps });
 }
 
-export async function exportEdlFile({ type, cutSegments, filePath, getFrameCount }) {
+export async function exportEdlFile({ type, cutSegments, customOutDir, filePath, getFrameCount }) {
   let filters;
   let ext;
   if (type === 'csv') {
@@ -121,7 +122,9 @@ export async function exportEdlFile({ type, cutSegments, filePath, getFrameCount
     filters = [{ name: i18n.t('LosslessCut project'), extensions: [ext, 'llc'] }];
   }
 
-  const { canceled, filePath: savePath } = await dialog.showSaveDialog({ defaultPath: `${new Date().getTime()}.${ext}`, filters });
+  const defaultPath = getOutPath({ filePath, customOutDir, fileName: `${new Date().getTime()}.${ext}` });
+
+  const { canceled, filePath: savePath } = await dialog.showSaveDialog({ defaultPath, filters });
   if (canceled || !savePath) return;
   console.log('Saving', type, savePath);
   if (type === 'csv') await saveCsv(savePath, cutSegments);
