@@ -92,5 +92,15 @@
     "Default": "Forval",
     "Decrease audio volume": "Læg ljodstyrk",
     "Click to select which tracks to keep when exporting:": "Klikk for å velja spora du vil halde fram med å ha under utføring:",
-    "Deselect all segments": "Stans valet av bitar"
+    "Deselect all segments": "Stans valet av bitar",
+    "Disables shifting of timestamp.": "Slår av tidsmerke-ymsing.",
+    "Discard": "Avvis",
+    "Discard audio": "Avvis ljod",
+    "Discard audio? Current:": "Avvis ljod? Noverande:",
+    "Discard or extract unprocessable tracks to separate files?": "Avvis eller tak ut uhandsamlege spor til åtskilde filer?",
+    "Detect black scenes": "Finn svarte videosnuttar",
+    "Detecting black scenes": "Finn svarte videosnuttar",
+    "Discard all {{type}} tracks": "Avvis alle {{type}} spor",
+    "Discard audio tracks": "Avvis ljodspor",
+    "Disable unnecessary <1>Tracks</1>": "Slå av uturvande <1>Spor</1>"
 }
