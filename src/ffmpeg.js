@@ -748,6 +748,8 @@ export function isIphoneHevc(format, streams) {
 }
 
 export function isProblematicAvc1(outFormat, streams) {
+  // it seems like this only happens for files that are also 4.2.2 10bit (yuv422p10le)
+  // https://trac.ffmpeg.org/wiki/Chroma%20Subsampling
   return isMov(outFormat) && streams.some((s) => s.codec_name === 'h264' && s.codec_tag === '0x31637661' && s.codec_tag_string === 'avc1' && s.pix_fmt === 'yuv422p10le');
 }
 

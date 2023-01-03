@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { UnorderedList, ListItem, WarningSignIcon, InfoSignIcon, Button, TextInputField, Checkbox, RadioGroup, Paragraph, LinkIcon } from 'evergreen-ui';
+import { HelpIcon, TickCircleIcon, UnorderedList, ListItem, WarningSignIcon, InfoSignIcon, Button, TextInputField, Checkbox, RadioGroup, Paragraph, LinkIcon } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
@@ -615,15 +615,14 @@ export async function openDirToast({ filePath, text, html, ...props }) {
 
 export async function openCutFinishedToast({ filePath, warnings, notices }) {
   const html = (
-    <>
-      <div>
-        {i18n.t('Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, see the HELP page.')}
-      </div>
-      <UnorderedList>
-        {warnings.map((msg) => <ListItem key={msg} icon={WarningSignIcon} iconColor="warning">{msg}</ListItem>)}
-        {notices.map((msg) => <ListItem key={msg} icon={InfoSignIcon} iconColor="info">{msg}</ListItem>)}
-      </UnorderedList>
-    </>
+    <UnorderedList>
+      <ListItem icon={TickCircleIcon} iconColor="success" fontWeight="bold">{i18n.t('Export is done!')}</ListItem>
+      <ListItem icon={InfoSignIcon}>{i18n.t('Note: cutpoints may be inaccurate. Please test the output files in your desired player/editor before you delete the source file.')}</ListItem>
+      <ListItem icon={HelpIcon}>{i18n.t('If output does not look right, see the Help menu.')}</ListItem>
+      {notices.map((msg) => <ListItem key={msg} icon={InfoSignIcon} iconColor="info">{msg}</ListItem>)}
+      {warnings.map((msg) => <ListItem key={msg} icon={WarningSignIcon} iconColor="warning">{msg}</ListItem>)}
+    </UnorderedList>
   );
-  await openDirToast({ filePath, html, width: '90%', position: 'center', timer: 15000 });
+
+  await openDirToast({ filePath, html, width: 800, position: 'center', timer: 15000 });
 }
