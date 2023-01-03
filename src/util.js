@@ -167,6 +167,7 @@ export function getExtensionForFormat(format) {
   const ext = {
     matroska: 'mkv',
     ipod: 'm4a',
+    adts: 'aac',
   }[format];
 
   return ext || format;
@@ -182,6 +183,8 @@ export function getOutFileExtension({ isCustomFormatSelected, outFormat, filePat
     // OK, just keep the current extension. Because most players will not care about the extension
     if (!hasMovIncorrectExtension) return extname(filePath);
   }
+
+  // user is changing format, must update extension too
   return `.${getExtensionForFormat(outFormat)}`;
 }
 

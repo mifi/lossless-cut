@@ -240,45 +240,84 @@ export async function createChaptersFromSegments({ segmentPaths, chapterNames })
 
 /**
  * ffmpeg only supports encoding certain formats, and some of the detected input
- * formats are not the same as the names used for encoding.
- * Therefore we have to map between detected format and encode format
+ * formats are not the same as the muxer name used for encoding.
+ * Therefore we have to map between detected input format and encode format
  * See also ffmpeg -formats
  */
 function mapDefaultFormat({ streams, requestedFormat }) {
   if (requestedFormat === 'mp4') {
-    // Only MOV supports these, so switch to MOV https://github.com/mifi/lossless-cut/issues/948
+    // Only MOV supports these codecs, so default to MOV instead https://github.com/mifi/lossless-cut/issues/948
     if (streams.some((stream) => pcmAudioCodecs.includes(stream.codec_name))) {
       return 'mov';
     }
   }
 
-  switch (requestedFormat) {
+  // see sample.aac
+  if (requestedFormat === 'aac') return 'adts';
+
+  return requestedFormat;
+}
+
+async function determineOutputFormat(ffprobeFormatsStr, filePath) {
+  const ffprobeFormats = (ffprobeFormatsStr || '').split(',').map((str) => str.trim()).filter((str) => str);
+  if (ffprobeFormats.length === 0) {
+    console.warn('ffprobe returned unknown formats', ffprobeFormatsStr);
+    return undefined;
+  }
+
+  const [firstFfprobeFormat] = ffprobeFormats;
+  if (ffprobeFormats.length === 1) return firstFfprobeFormat;
+
+  // If ffprobe returned a list of formats, try to be a bit smarter about it.
+  // This should only be the case for matroska and mov. See `ffmpeg -formats`
+  if (!['matroska', 'mov'].includes(firstFfprobeFormat)) {
+    console.warn('Unknown ffprobe format list', ffprobeFormats);
+    return firstFfprobeFormat;
+  }
+
+  const fileTypeResponse = await FileType.fromFile(filePath);
+  if (fileTypeResponse == null) {
+    console.warn('file-type failed to detect format, defaulting to first', ffprobeFormats);
+    return firstFfprobeFormat;
+  }
+
+  // https://github.com/sindresorhus/file-type/blob/main/core.js
+  // https://www.ftyps.com/
+  // https://exiftool.org/TagNames/QuickTime.html
+  switch (fileTypeResponse.mime) {
+    case 'video/x-matroska': return 'matroska';
+    case 'video/webm': return 'webm';
+    case 'video/quicktime': return 'mov';
+    case 'video/3gpp2': return '3g2';
+    case 'video/3gpp': return '3gp';
+
     // These two cmds produce identical output, so we assume that encoding "ipod" means encoding m4a
     // ffmpeg -i example.aac -c copy OutputFile2.m4a
     // ffmpeg -i example.aac -c copy -f ipod OutputFile.m4a
     // See also https://github.com/mifi/lossless-cut/issues/28
-    case 'm4a':
-    case 'aac': return 'ipod';
-    default: return requestedFormat;
+    case 'audio/x-m4a':
+    case 'audio/mp4':
+      return 'ipod';
+    case 'image/avif':
+    case 'image/heif':
+    case 'image/heif-sequence':
+    case 'image/heic':
+    case 'image/heic-sequence':
+    case 'video/x-m4v':
+    case 'video/mp4':
+    case 'image/x-canon-cr3':
+      return 'mp4';
+
+    default: {
+      console.warn('file-type returned unknown format', ffprobeFormats, fileTypeResponse.mime);
+      return firstFfprobeFormat;
+    }
   }
-}
-
-async function determineOutputFormat(ffprobeFormats, filePath) {
-  if (ffprobeFormats.length === 1) return ffprobeFormats[0];
-  // if ffprobe returned a list of formats, try to be a bit smarter about it.
-  const fileTypeResponse = await FileType.fromFile(filePath) || {};
-  console.log(`fileType detected format ${JSON.stringify(fileTypeResponse)}`);
-
-  if (ffprobeFormats.includes(fileTypeResponse.ext)) return fileTypeResponse.ext;
-  return ffprobeFormats[0] || undefined;
 }
 
 export async function getSmarterOutFormat({ filePath, fileMeta: { format, streams } }) {
   const formatsStr = format.format_name;
-  console.log('formats', formatsStr);
-  const formats = (formatsStr || '').split(',');
-
-  const assumedFormat = await determineOutputFormat(formats, filePath);
+  const assumedFormat = await determineOutputFormat(formatsStr, filePath);
 
   return mapDefaultFormat({ streams, requestedFormat: assumedFormat });
 }
@@ -324,7 +363,7 @@ function getPreferredCodecFormat({ codec_name: codec, codec_type: type }) {
 
     // See mapFormat
     m4a: 'ipod',
-    aac: 'ipod',
+    aac: 'adts',
 
     // TODO add more
     // TODO allow user to change?
