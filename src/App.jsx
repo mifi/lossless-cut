@@ -2305,9 +2305,9 @@ const App = memo(() => {
 
     const actionsWithCatch = Object.entries(actions).map(([key, action]) => [
       key,
-      async () => {
+      async (...args) => {
         try {
-          await action();
+          await action(...args);
         } catch (err) {
           handleError(err);
         }
