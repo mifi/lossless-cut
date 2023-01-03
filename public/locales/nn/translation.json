@@ -49,7 +49,7 @@
     "Close current screen": "Steng denne visinga",
     "Defaults to same format as input file. You can losslessly change the file format (container) of the file with this option. Not all formats support all codecs. Matroska/MP4/MOV support the most common codecs. Sometimes it's even impossible to export to the same output format as input.": "Forvalet vert satt til same format som gjeven fil. Du kan byta filformatet (karet) til fila med dette valet. Ikkje alle format stør alle omkodarar. Matroska/MP4/MOV stør dei mest nytta omkodarane. Nokre gongar er det jamvel umogleg å utføra i same format som vert mata inn.",
     "Delete source file": "Slett kjeldefil",
-    "Depending on your specific file/player, you may have to try different options for best results.": "Bygd på kven fil/avspelar du nyttar, må du kan henda røyna ut ulike val for å få betre verknadar",
+    "Depending on your specific file/player, you may have to try different options for best results.": "Ut ifrå kva for ein fil/avspelar du nyttar, kan ulike val gje deg betre verknadar.",
     "Create fixed duration segments": "Lag bitar med fast lengd",
     "Are you sure?": "Er du viss?",
     "Ask about chapters": "Spør om hovudbolkar",
@@ -91,5 +91,6 @@
     "Decrease segment order": "Læg bitrekkjefylgd",
     "Default": "Forval",
     "Decrease audio volume": "Læg ljodstyrk",
-    "Click to select which tracks to keep when exporting:": "Klikk for å velja spora du vil halde fram med å ha under utføring:"
+    "Click to select which tracks to keep when exporting:": "Klikk for å velja spora du vil halde fram med å ha under utføring:",
+    "Deselect all segments": "Stans valet av bitar"
 }
