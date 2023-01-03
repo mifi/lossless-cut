@@ -1358,6 +1358,7 @@ const App = memo(() => {
           notices.push(i18n.t('Unprocessable streams were exported as separate files.'));
         } catch (err) {
           console.error('Extra stream export failed', err);
+          warnings.push(i18n.t('Unable to export unprocessable streams.'));
         }
       }
 
