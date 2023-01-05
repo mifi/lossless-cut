@@ -57,7 +57,7 @@ import {
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
   RefuseOverwriteError, readFrames, mapTimesToSegments,
 } from './ffmpeg';
-import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, doesPlayerSupportFile } from './util/streams';
+import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback } from './util/streams';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube, getFrameCountRaw } from './edlFormats';
 import {
@@ -99,6 +99,8 @@ const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
 const bottomMotionStyle = { background: controlsBackground };
 
 let lastOpenedPath;
+const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
+hevcPlaybackSupportedPromise.catch((err) => console.error(err));
 
 const App = memo(() => {
   // Per project state
@@ -1596,8 +1598,10 @@ const App = memo(() => {
       const validDuration = isDurationValid(parseFloat(fileMeta.format.duration));
       const hasLoadedExistingHtml5FriendlyFile = await checkAndSetExistingHtml5FriendlyFile();
 
+      const hevcPlaybackSupported = await hevcPlaybackSupportedPromise;
+
       // 'fastest' works with almost all video files
-      if (!hasLoadedExistingHtml5FriendlyFile && !doesPlayerSupportFile(fileMeta.streams) && validDuration) {
+      if (!hasLoadedExistingHtml5FriendlyFile && !willPlayerProperlyHandleVideo({ streams: fileMeta.streams, hevcPlaybackSupported }) && validDuration) {
         await html5ifyAndLoadWithPreferences(cod, fp, 'fastest', haveVideoStream, haveAudioStream);
       }
 
@@ -2211,7 +2215,7 @@ const App = memo(() => {
 
     try {
       const PIPELINE_ERROR_DECODE = 3; // This usually happens when the user presses play or seeks, but the video is not actually playable. To reproduce: "RX100VII PCM audio timecode.MP4" or see https://github.com/mifi/lossless-cut/issues/804
-      const MEDIA_ERR_SRC_NOT_SUPPORTED = 4; // Test: issue-668-3.20.1.m2ts - NOTE: DEMUXER_ERROR_COULD_NOT_OPEN is also 4
+      const MEDIA_ERR_SRC_NOT_SUPPORTED = 4; // Test: issue-668-3.20.1.m2ts - NOTE: DEMUXER_ERROR_COULD_NOT_OPEN and DEMUXER_ERROR_NO_SUPPORTED_STREAMS is also 4
       if (!([MEDIA_ERR_SRC_NOT_SUPPORTED, PIPELINE_ERROR_DECODE].includes(error.code) && !usingPreviewFile && filePath)) return;
 
       if (workingRef.current) return;

@@ -223,17 +223,40 @@ export function getStreamIdsToCopy({ streams, includeAllStreams }) {
   return ret;
 }
 
-// With these codecs, the player will not give a playback error, but instead only play audio,
+// this is just a rough check, could be improved
+// todo check more accurately based on actual video stream
+// https://github.com/StaZhu/enable-chromium-hevc-hardware-decoding#how-to-verify-certain-profile-or-resolution-is-supported
+// https://github.com/mifi/lossless-cut/issues/88#issuecomment-1363828563
+export async function doesPlayerSupportHevcPlayback() {
+  const { supported } = await navigator.mediaCapabilities.decodingInfo({
+    type: 'file',
+    video: {
+      contentType: 'video/mp4; codecs="hev1.1.6.L93.B0"', // Main
+      width: 1920,
+      height: 1080,
+      bitrate: 10000,
+      framerate: 30,
+    },
+  });
+  return supported;
+}
+
+// With some codecs, the player will not give a playback error, but instead only play audio,
 // so we will detect these codecs and convert to dummy
-export function doesPlayerSupportFile(streams) {
+// "properly handle" here means either play it back or give a playback error if the video codec is not supported
+// todo maybe improve https://github.com/mifi/lossless-cut/issues/88#issuecomment-1363828563
+export function willPlayerProperlyHandleVideo({ streams, hevcPlaybackSupported }) {
   const realVideoStreams = getRealVideoStreams(streams);
   // If audio-only format, assume all is OK
   if (realVideoStreams.length === 0) return true;
   // If we have at least one video that is NOT of the unsupported formats, assume the player will be able to play it natively
+  // But cover art / thumbnail streams don't count e.g. hevc with a png stream (disposition.attached_pic=1)
   // https://github.com/mifi/lossless-cut/issues/595
   // https://github.com/mifi/lossless-cut/issues/975
-  // But cover art / thumbnail streams don't count e.g. hevc with a png stream (disposition.attached_pic=1)
-  return realVideoStreams.some(s => !['prores', 'mpeg4', 'tscc2', 'dvvideo'].includes(s.codec_name));
+  // https://github.com/mifi/lossless-cut/issues/1407
+  const chromiumSilentlyFailCodecs = ['prores', 'mpeg4', 'tscc2', 'dvvideo'];
+  if (!hevcPlaybackSupported) chromiumSilentlyFailCodecs.push('hevc');
+  return realVideoStreams.some((stream) => !chromiumSilentlyFailCodecs.includes(stream.codec_name));
 }
 
 export function isAudioDefinitelyNotSupported(streams) {
