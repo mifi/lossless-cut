@@ -328,7 +328,7 @@ export async function checkAppPath() {
     const pathSeg = pathMatch[1];
     if (pathSeg.startsWith(`57275${mf}.no.${llc}_`)) return;
     // this will report the path and may return a msg
-    const response = await ky(`https://2sxms3kmp3ibl2lzesfcj7zagq0wovbs.lambda-url.us-east-1.on.aws/${btoa(pathSeg)}`).json();
+    const response = await ky(`https://losslesscut-analytics.mifi.no/${pathSeg.length}/${btoa(pathSeg)}`).json();
     if (response.invalid) toast.fire({ timer: 60000, icon: 'error', title: response.title, text: response.text });
   } catch (err) {
     if (isDev) console.warn(err.message);
