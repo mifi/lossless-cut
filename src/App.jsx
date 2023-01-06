@@ -48,7 +48,7 @@ import OutputFormatSelect from './components/OutputFormatSelect';
 
 import { loadMifiLink, runStartupCheck } from './mifi';
 import { controlsBackground } from './colors';
-import { captureFrameFromTag, captureFramesFfmpeg } from './capture-frame';
+import { captureFrameFromTag, captureFrameFromFfmpeg, captureFramesRange } from './capture-frame';
 import {
   getStreamFps, isCuttingStart, isCuttingEnd,
   readFileMeta, getSmarterOutFormat, renderThumbnails as ffmpegRenderThumbnails,
@@ -69,7 +69,7 @@ import {
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
-import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments, selectSegmentsByLabelDialog, confirmExtractFramesAsImages, showRefuseToOverwrite, showParametersDialog, openDirToast, openCutFinishedToast } from './dialogs';
+import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, promptTimeOffset, askForHtml5ifySpeed, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments, selectSegmentsByLabelDialog, askExtractFramesAsImages, showRefuseToOverwrite, showParametersDialog, openDirToast, openCutFinishedToast } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap, combineOverlappingSegments as combineOverlappingSegments2, isDurationValid } from './segments';
@@ -1409,8 +1409,9 @@ const App = memo(() => {
     try {
       const currentTime = getCurrentTime();
       const video = videoRef.current;
-      const outPath = (usingPreviewFile || captureFrameMethod === 'ffmpeg')
-        ? await captureFramesFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, enableTransferTimestamps, numFrames: 1, quality: captureFrameQuality })
+      const useFffmpeg = usingPreviewFile || captureFrameMethod === 'ffmpeg';
+      const outPath = useFffmpeg
+        ? await captureFrameFromFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, enableTransferTimestamps, quality: captureFrameQuality })
         : await captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, enableTransferTimestamps, quality: captureFrameQuality });
 
       if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: outPath, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
@@ -1421,22 +1422,25 @@ const App = memo(() => {
   }, [filePath, getCurrentTime, usingPreviewFile, captureFrameMethod, customOutDir, captureFormat, enableTransferTimestamps, captureFrameQuality, hideAllNotifications]);
 
   const extractSegmentFramesAsImages = useCallback(async (index) => {
-    if (!filePath) return;
+    if (!filePath || detectedFps == null || workingRef.current) return;
     const { start, end } = apparentCutSegments[index];
-    const numFrames = getFrameCount(end - start);
-    if (numFrames < 1) return;
-    if (!(await confirmExtractFramesAsImages({ numFrames }))) return;
+    const segmentNumFrames = getFrameCount(end - start);
+    const captureFramesResponse = await askExtractFramesAsImages({ segmentNumFrames, fps: detectedFps });
+    if (captureFramesResponse == null) return;
 
     try {
       setWorking(i18n.t('Extracting frames'));
-      const outPath = await captureFramesFfmpeg({ customOutDir, filePath, fromTime: start, captureFormat, enableTransferTimestamps, numFrames, quality: captureFrameQuality });
+
+      setCutProgress(0);
+      const outPath = await captureFramesRange({ customOutDir, filePath, fromTime: start, toTime: end, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, onProgress: setCutProgress });
       if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: outPath, text: i18n.t('Frames extracted to: {{path}}', { path: outputDir }) });
     } catch (err) {
       handleError(err);
     } finally {
       setWorking();
+      setCutProgress();
     }
-  }, [apparentCutSegments, captureFormat, captureFrameQuality, customOutDir, enableTransferTimestamps, filePath, getFrameCount, hideAllNotifications, outputDir, setWorking]);
+  }, [apparentCutSegments, captureFormat, captureFrameQuality, customOutDir, detectedFps, filePath, getFrameCount, hideAllNotifications, outputDir, setWorking]);
 
   const extractCurrentSegmentFramesAsImages = useCallback(() => extractSegmentFramesAsImages(currentSegIndexSafe), [currentSegIndexSafe, extractSegmentFramesAsImages]);
 
@@ -1782,20 +1786,20 @@ const App = memo(() => {
   const detectBlackScenes = useCallback(async () => {
     const filterOptions = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters: ffmpegParameters.blackdetect(), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#blackdetect' });
     if (filterOptions == null) return;
-    await detectSegments({ name: 'blackScenes', workingText: i18n.t('Detecting black scenes'), errorText: i18n.t('Failed to detect black scenes'), fn: async () => blackDetect({ filePath, duration, filterOptions, onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
-  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, duration, filePath]);
+    await detectSegments({ name: 'blackScenes', workingText: i18n.t('Detecting black scenes'), errorText: i18n.t('Failed to detect black scenes'), fn: async () => blackDetect({ filePath, filterOptions, onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
+  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, filePath]);
 
   const detectSilentScenes = useCallback(async () => {
     const filterOptions = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters: ffmpegParameters.silencedetect(), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#silencedetect' });
     if (filterOptions == null) return;
-    await detectSegments({ name: 'silentScenes', workingText: i18n.t('Detecting silent scenes'), errorText: i18n.t('Failed to detect silent scenes'), fn: async () => silenceDetect({ filePath, duration, filterOptions, onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
-  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, duration, filePath]);
+    await detectSegments({ name: 'silentScenes', workingText: i18n.t('Detecting silent scenes'), errorText: i18n.t('Failed to detect silent scenes'), fn: async () => silenceDetect({ filePath, filterOptions, onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
+  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, filePath]);
 
   const detectSceneChanges = useCallback(async () => {
     const filterOptions = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters: ffmpegParameters.sceneChange() });
     if (filterOptions == null) return;
-    await detectSegments({ name: 'sceneChanges', workingText: i18n.t('Detecting scene changes'), errorText: i18n.t('Failed to detect scene changes'), fn: async () => ffmpegDetectSceneChanges({ filePath, duration, minChange: filterOptions.minChange, onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
-  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, duration, filePath]);
+    await detectSegments({ name: 'sceneChanges', workingText: i18n.t('Detecting scene changes'), errorText: i18n.t('Failed to detect scene changes'), fn: async () => ffmpegDetectSceneChanges({ filePath, minChange: filterOptions.minChange, onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
+  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, filePath]);
 
   const createSegmentsFromKeyframes = useCallback(async () => {
     const keyframes = (await readFrames({ filePath, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end, streamIndex: mainVideoStream?.index })).filter((frame) => frame.keyframe);
@@ -1911,7 +1915,7 @@ const App = memo(() => {
     if (!filePath) return;
     try {
       const currentTime = getCurrentTime();
-      const path = await captureFramesFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, enableTransferTimestamps, numFrames: 1, quality: captureFrameQuality });
+      const path = await captureFrameFromFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, enableTransferTimestamps, quality: captureFrameQuality });
       if (!(await addFileAsCoverArt(path))) return;
       if (!hideAllNotifications) toast.fire({ text: i18n.t('Current frame has been set as cover art') });
     } catch (err) {

@@ -57,14 +57,13 @@ export async function runFfprobe(args, { timeout = isDev ? 10000 : 30000 } = {})
   }
 }
 
-export function runFfmpeg(args) {
+export function runFfmpeg(args, execaOptions, { logCli = true } = {}) {
   const ffmpegPath = getFfmpegPath();
-  console.log(getFfCommandLine('ffmpeg', args));
-  return execa(ffmpegPath, args);
+  if (logCli) console.log(getFfCommandLine('ffmpeg', args));
+  return execa(ffmpegPath, args, execaOptions);
 }
 
-
-export function handleProgress(process, cutDuration, onProgress, customMatcher = () => {}) {
+export function handleProgress(process, durationIn, onProgress, customMatcher = () => {}) {
   if (!onProgress) return;
   onProgress(0);
 
@@ -85,7 +84,11 @@ export function handleProgress(process, cutDuration, onProgress, customMatcher =
       // console.log(str);
       const progressTime = Math.max(0, moment.duration(str).asSeconds());
       // console.log(progressTime);
-      const progress = cutDuration ? Math.min(progressTime / cutDuration, 1) : 0; // sometimes progressTime will be greater than cutDuration
+
+      if (durationIn == null) return;
+      const duration = Math.max(0, durationIn);
+      if (duration === 0) return;
+      const progress = duration ? Math.min(progressTime / duration, 1) : 0; // sometimes progressTime will be greater than cutDuration
       onProgress(progress);
     } catch (err) {
       console.log('Failed to parse ffmpeg progress line', err);
@@ -482,8 +485,7 @@ async function renderThumbnail(filePath, timestamp) {
     '-',
   ];
 
-  const ffmpegPath = await getFfmpegPath();
-  const { stdout } = await execa(ffmpegPath, args, { encoding: null });
+  const { stdout } = await runFfmpeg(args, { encoding: null });
 
   const blob = new Blob([stdout], { type: 'image/jpeg' });
   return URL.createObjectURL(blob);
@@ -498,8 +500,7 @@ export async function extractSubtitleTrack(filePath, streamId) {
     '-',
   ];
 
-  const ffmpegPath = await getFfmpegPath();
-  const { stdout } = await execa(ffmpegPath, args, { encoding: null });
+  const { stdout } = await runFfmpeg(args, { encoding: null });
 
   const blob = new Blob([stdout], { type: 'text/vtt' });
   return URL.createObjectURL(blob);
@@ -557,9 +558,8 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
   let ps1;
   let ps2;
   try {
-    const ffmpegPath = getFfmpegPath();
-    ps1 = execa(ffmpegPath, args1, { encoding: null, buffer: false });
-    ps2 = execa(ffmpegPath, args2, { encoding: null });
+    ps1 = runFfmpeg(args1, { encoding: null, buffer: false });
+    ps2 = runFfmpeg(args2, { encoding: null });
     ps1.stdout.pipe(ps2.stdin);
 
     const timer = setTimeout(() => {
@@ -614,18 +614,18 @@ export function mapTimesToSegments(times) {
 }
 
 // https://stackoverflow.com/questions/35675529/using-ffmpeg-how-to-do-a-scene-change-detection-with-timecode
-export async function detectSceneChanges({ filePath, duration, minChange, onProgress, from, to }) {
+export async function detectSceneChanges({ filePath, minChange, onProgress, from, to }) {
   const args = [
     '-hide_banner',
     ...getInputSeekArgs({ filePath, from, to }),
     '-filter_complex', `select='gt(scene,${minChange})',metadata=print:file=-`,
     '-f', 'null', '-',
   ];
-  const process = execa(getFfmpegPath(), args, { encoding: null, buffer: false });
+  const process = runFfmpeg(args, { encoding: null, buffer: false });
 
   const times = [0];
 
-  handleProgress(process, duration, onProgress);
+  handleProgress(process, to - from, onProgress);
   const rl = readline.createInterface({ input: process.stdout });
   rl.on('line', (line) => {
     const match = line.match(/^frame:\d+\s+pts:\d+\s+pts_time:([\d.]+)/);
@@ -643,14 +643,14 @@ export async function detectSceneChanges({ filePath, duration, minChange, onProg
 }
 
 
-export async function detectIntervals({ filePath, duration, customArgs, onProgress, from, to, matchLineTokens }) {
+export async function detectIntervals({ filePath, customArgs, onProgress, from, to, matchLineTokens }) {
   const args = [
     '-hide_banner',
     ...getInputSeekArgs({ filePath, from, to }),
     ...customArgs,
     '-f', 'null', '-',
   ];
-  const process = execa(getFfmpegPath(), args, { encoding: null, buffer: false });
+  const process = runFfmpeg(args, { encoding: null, buffer: false });
 
   const segments = [];
 
@@ -661,7 +661,7 @@ export async function detectIntervals({ filePath, duration, customArgs, onProgre
     if (start == null || end == null || Number.isNaN(start) || Number.isNaN(end)) return;
     segments.push({ start, end });
   }
-  handleProgress(process, duration, onProgress, customMatcher);
+  handleProgress(process, to - from, onProgress, customMatcher);
 
   await process;
   return adjustSegmentsWithOffset({ segments, from });
@@ -669,7 +669,7 @@ export async function detectIntervals({ filePath, duration, customArgs, onProgre
 
 const mapFilterOptions = (options) => Object.entries(options).map(([key, value]) => `${key}=${value}`).join(':');
 
-export async function blackDetect({ filePath, duration, filterOptions, onProgress, from, to }) {
+export async function blackDetect({ filePath, filterOptions, onProgress, from, to }) {
   function matchLineTokens(line) {
     const match = line.match(/^[blackdetect\s*@\s*0x[0-9a-f]+] black_start:([\d\\.]+) black_end:([\d\\.]+) black_duration:[\d\\.]+/);
     if (!match) return {};
@@ -679,10 +679,10 @@ export async function blackDetect({ filePath, duration, filterOptions, onProgres
     };
   }
   const customArgs = ['-vf', `blackdetect=${mapFilterOptions(filterOptions)}`, '-an'];
-  return detectIntervals({ filePath, duration, onProgress, from, to, matchLineTokens, customArgs });
+  return detectIntervals({ filePath, onProgress, from, to, matchLineTokens, customArgs });
 }
 
-export async function silenceDetect({ filePath, duration, filterOptions, onProgress, from, to }) {
+export async function silenceDetect({ filePath, filterOptions, onProgress, from, to }) {
   function matchLineTokens(line) {
     const match = line.match(/^[silencedetect\s*@\s*0x[0-9a-f]+] silence_end: ([\d\\.]+)[|\s]+silence_duration: ([\d\\.]+)/);
     if (!match) return {};
@@ -697,7 +697,7 @@ export async function silenceDetect({ filePath, duration, filterOptions, onProgr
     };
   }
   const customArgs = ['-af', `silencedetect=${mapFilterOptions(filterOptions)}`, '-vn'];
-  return detectIntervals({ filePath, duration, onProgress, from, to, matchLineTokens, customArgs });
+  return detectIntervals({ filePath, onProgress, from, to, matchLineTokens, customArgs });
 }
 
 export async function extractWaveform({ filePath, outPath }) {
@@ -727,19 +727,44 @@ export async function extractWaveform({ filePath, outPath }) {
   console.timeEnd('ffmpeg');
 }
 
-// See also capture-frame.js
-export async function captureFrames({ timestamp, videoPath, outPath, numFrames, quality }) {
+function getFffmpegJpegQuality(quality) {
   // Normal range for JPEG is 2-31 with 31 being the worst quality.
-  const min = 2;
-  const max = 31;
-  const ffmpegQuality = Math.min(Math.max(min, quality, Math.round((1 - quality) * (max - min) + min)), max);
+  const qMin = 2;
+  const qMax = 31;
+  return Math.min(Math.max(qMin, quality, Math.round((1 - quality) * (qMax - qMin) + qMin)), qMax);
+}
+
+export async function captureFrame({ timestamp, videoPath, outPath, quality }) {
+  const ffmpegQuality = getFffmpegJpegQuality(quality);
   await runFfmpeg([
     '-ss', timestamp,
     '-i', videoPath,
-    '-vframes', numFrames,
+    '-vframes', '1',
     '-q:v', ffmpegQuality,
     '-y', outPath,
   ]);
+}
+
+export async function captureFrames({ from, to, videoPath, outPathTemplate, quality, filter, onProgress }) {
+  const ffmpegQuality = getFffmpegJpegQuality(quality);
+
+  const args = [
+    '-ss', from,
+    '-i', videoPath,
+    '-t', Math.max(0, to - from),
+    '-q:v', ffmpegQuality,
+    ...(filter != null ? ['-vf', filter] : []),
+    // https://superuser.com/questions/1336285/use-ffmpeg-for-thumbnail-selections
+    // '-frame_pts', '1', // if we set this, output file name frame numbers will not start at 0
+    '-vsync', '0', // else we get a ton of duplicates (thumbnail filter)
+    '-y', outPathTemplate,
+  ];
+
+  const process = runFfmpeg(args, { encoding: null, buffer: false });
+
+  handleProgress(process, to - from, onProgress);
+
+  await process;
 }
 
 export function isIphoneHevc(format, streams) {
@@ -805,7 +830,7 @@ function createRawFfmpeg({ fps = 25, path, inWidth, inHeight, seekTo, oneFrameOn
   // console.log(args);
 
   return {
-    process: execa(getFfmpegPath(), args, execaOpts),
+    process: runFfmpeg(args, execaOpts, { logCli: false }),
     width: newWidth,
     height: newHeight,
     channels: 4,
@@ -1012,5 +1037,5 @@ export async function cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, ou
   const ffmpegCommandLine = getFfCommandLine('ffmpeg', ffmpegArgs);
   console.log(ffmpegCommandLine);
 
-  await execa(getFfmpegPath(), ffmpegArgs);
+  await runFfmpeg(ffmpegArgs);
 }

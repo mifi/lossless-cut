@@ -4,11 +4,10 @@ import sum from 'lodash/sum';
 import pMap from 'p-map';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath } from '../util';
-import { isCuttingStart, isCuttingEnd, handleProgress, getFfCommandLine, getFfmpegPath, getDuration, runFfmpeg, createChaptersFromSegments, readFileMeta, cutEncodeSmartPart, getExperimentalArgs, html5ify as ffmpegHtml5ify, getVideoTimescaleArgs, RefuseOverwriteError } from '../ffmpeg';
+import { isCuttingStart, isCuttingEnd, handleProgress, getFfCommandLine, getDuration, runFfmpeg, createChaptersFromSegments, readFileMeta, cutEncodeSmartPart, getExperimentalArgs, html5ify as ffmpegHtml5ify, getVideoTimescaleArgs, RefuseOverwriteError } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { getSmartCutParams } from '../smartcut';
 
-const execa = window.require('execa');
 const { join, resolve } = window.require('path');
 const fs = window.require('fs-extra');
 const stringToStream = window.require('string-to-stream');
@@ -155,8 +154,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       console.log(fullCommandLine);
       appendFfmpegCommandLog(fullCommandLine);
 
-      const ffmpegPath = getFfmpegPath();
-      const process = execa(ffmpegPath, ffmpegArgs);
+      const process = runFfmpeg(ffmpegArgs);
 
       handleProgress(process, totalDuration, onProgress);
 
@@ -312,8 +310,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     console.log(ffmpegCommandLine);
     appendFfmpegCommandLog(ffmpegCommandLine);
 
-    const ffmpegPath = getFfmpegPath();
-    const process = execa(ffmpegPath, ffmpegArgs);
+    const process = runFfmpeg(ffmpegArgs);
     handleProgress(process, cutDuration, onProgress);
     const result = await process;
     console.log(result.stdout);

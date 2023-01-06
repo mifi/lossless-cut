@@ -113,7 +113,7 @@ const defaults = {
   storeProjectInWorkingDir: true,
   enableOverwriteOutput: true,
   mouseWheelZoomModifierKey: 'ctrl',
-  captureFrameMethod: 'ffmpeg',
+  captureFrameMethod: 'videotag', // we don't default to ffmpeg because ffmpeg might choose a frame slightly off
   captureFrameQuality: 0.95,
 };
 

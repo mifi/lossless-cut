@@ -375,7 +375,7 @@ const KeyboardShortcuts = memo(({
           category: outputCategory,
         },
         extractCurrentSegmentFramesAsImages: {
-          name: t('Extract all frames in segment as images'),
+          name: t('Extract frames from segment as image files'),
           category: outputCategory,
         },
         cleanupFilesDialog: {

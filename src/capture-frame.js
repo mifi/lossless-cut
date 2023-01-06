@@ -3,7 +3,7 @@ import dataUriToBuffer from 'data-uri-to-buffer';
 import { getSuffixedOutPath, transferTimestamps } from './util';
 import { formatDuration } from './util/duration';
 
-import { captureFrames as ffmpegCaptureFrames } from './ffmpeg';
+import { captureFrame as ffmpegCaptureFrame, captureFrames as ffmpegCaptureFrames } from './ffmpeg';
 
 const fs = window.require('fs-extra');
 const mime = window.require('mime-types');
@@ -20,19 +20,25 @@ function getFrameFromVideo(video, format, quality) {
   return dataUriToBuffer(dataUri);
 }
 
-export async function captureFramesFfmpeg({ customOutDir, filePath, fromTime, captureFormat, enableTransferTimestamps, numFrames, quality }) {
+export async function captureFramesRange({ customOutDir, filePath, fromTime, toTime, captureFormat, quality, filter, onProgress }) {
   const time = formatDuration({ seconds: fromTime, fileNameFriendly: true });
-  let nameSuffix;
-  if (numFrames > 1) {
-    const numDigits = Math.floor(Math.log10(numFrames)) + 1;
-    nameSuffix = `${time}-%0${numDigits}d.${captureFormat}`;
-  } else {
-    nameSuffix = `${time}.${captureFormat}`;
-  }
-  const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix });
-  await ffmpegCaptureFrames({ timestamp: fromTime, videoPath: filePath, outPath, numFrames, quality });
+  const numDigits = 5;
+  const getSuffix = (numPart) => `${time}-${numPart}.${captureFormat}`;
+  const nameTemplateSuffix = getSuffix(`%0${numDigits}d`);
+  const nameSuffix = getSuffix(`${'1'.padStart(numDigits, '0')}`); // mimic ffmpeg
+  const outPathTemplate = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: nameTemplateSuffix });
+  const firstFileOutPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix });
+  await ffmpegCaptureFrames({ from: fromTime, to: toTime, videoPath: filePath, outPathTemplate, quality, filter, onProgress });
+  return firstFileOutPath;
+}
 
-  if (enableTransferTimestamps && numFrames === 1) await transferTimestamps(filePath, outPath, fromTime);
+export async function captureFrameFromFfmpeg({ customOutDir, filePath, fromTime, captureFormat, enableTransferTimestamps, quality }) {
+  const time = formatDuration({ seconds: fromTime, fileNameFriendly: true });
+  const nameSuffix = `${time}.${captureFormat}`;
+  const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix });
+  await ffmpegCaptureFrame({ timestamp: fromTime, videoPath: filePath, outPath, quality });
+
+  if (enableTransferTimestamps) await transferTimestamps(filePath, outPath, fromTime);
   return outPath;
 }
 
