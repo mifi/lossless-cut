@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { HelpIcon, TickCircleIcon, UnorderedList, ListItem, WarningSignIcon, InfoSignIcon, Checkbox, RadioGroup, Paragraph } from 'evergreen-ui';
+import React, { useState } from 'react';
+import { HelpIcon, TickCircleIcon, UnorderedList, ListItem, WarningSignIcon, InfoSignIcon, Checkbox } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
