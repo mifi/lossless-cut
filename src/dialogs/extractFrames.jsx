@@ -30,7 +30,7 @@ export async function askExtractFramesAsImages({ segmentNumFrames, fps }) {
       text: i18n.t('Capture the best image every nth second'),
       icon: 'question',
       input: 'text',
-      inputLabel: i18n.t('Enter the number of seconds between each image (decimal)'),
+      inputLabel: i18n.t('Enter the max number of seconds between each image (decimal)'),
       inputValue: 5,
       showCancelButton: true,
     });
