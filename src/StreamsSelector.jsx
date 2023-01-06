@@ -333,7 +333,7 @@ const tableStyle = { fontSize: 14, width: '100%' };
 const fileStyle = { marginBottom: 20, padding: 5, minWidth: '100%', overflowX: 'auto' };
 
 const StreamsSelector = memo(({
-  mainFilePath, mainFileFormatData, streams: mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId,
+  mainFilePath, mainFileFormatData, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId,
   setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta,
   showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams,
   customTagsByFile, setCustomTagsByFile, customTagsByStreamId, setCustomTagsByStreamId,
@@ -342,8 +342,6 @@ const StreamsSelector = memo(({
   const [editingFile, setEditingFile] = useState();
   const [editingStream, setEditingStream] = useState();
   const { t } = useTranslation();
-
-  if (!mainFileStreams) return null;
 
   function getFormatDuration(formatData) {
     if (!formatData || !formatData.duration) return undefined;

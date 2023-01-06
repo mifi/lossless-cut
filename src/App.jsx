@@ -1757,9 +1757,11 @@ const App = memo(() => {
 
     if (workingRef.current) return;
     try {
+      const enabledStreams = mainStreams.filter((stream) => isCopyingStreamId(filePath, stream.index));
+
       setWorking(i18n.t('Extracting all streams'));
       setStreamsSelectorShown(false);
-      const extractedPaths = await extractStreams({ customOutDir, filePath, streams: mainStreams, enableOverwriteOutput });
+      const extractedPaths = await extractStreams({ customOutDir, filePath, streams: enabledStreams, enableOverwriteOutput });
       if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: extractedPaths[0], text: i18n.t('All streams have been extracted as separate files') });
     } catch (err) {
       if (err instanceof RefuseOverwriteError) {
@@ -1771,7 +1773,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [customOutDir, enableOverwriteOutput, filePath, hideAllNotifications, mainStreams, setWorking]);
+  }, [customOutDir, enableOverwriteOutput, filePath, hideAllNotifications, isCopyingStreamId, mainStreams, setWorking]);
 
   const detectSegments = useCallback(async ({ name, workingText, errorText, fn }) => {
     if (!filePath) return;
@@ -2611,31 +2613,33 @@ const App = memo(() => {
             isShown={streamsSelectorShown}
             onCloseComplete={() => setStreamsSelectorShown(false)}
           >
-            <StreamsSelector
-              mainFilePath={filePath}
-              mainFileFormatData={mainFileFormatData}
-              mainFileChapters={mainFileChapters}
-              allFilesMeta={allFilesMeta}
-              externalFilesMeta={externalFilesMeta}
-              setExternalFilesMeta={setExternalFilesMeta}
-              showAddStreamSourceDialog={showAddStreamSourceDialog}
-              streams={mainStreams}
-              isCopyingStreamId={isCopyingStreamId}
-              toggleCopyStreamId={toggleCopyStreamId}
-              setCopyStreamIdsForPath={setCopyStreamIdsForPath}
-              onExtractAllStreamsPress={extractAllStreams}
-              onExtractStreamPress={extractSingleStream}
-              areWeCutting={areWeCutting}
-              shortestFlag={shortestFlag}
-              setShortestFlag={setShortestFlag}
-              nonCopiedExtraStreams={nonCopiedExtraStreams}
-              customTagsByFile={customTagsByFile}
-              setCustomTagsByFile={setCustomTagsByFile}
-              customTagsByStreamId={customTagsByStreamId}
-              setCustomTagsByStreamId={setCustomTagsByStreamId}
-              dispositionByStreamId={dispositionByStreamId}
-              setDispositionByStreamId={setDispositionByStreamId}
-            />
+            {mainStreams && (
+              <StreamsSelector
+                mainFilePath={filePath}
+                mainFileFormatData={mainFileFormatData}
+                mainFileChapters={mainFileChapters}
+                allFilesMeta={allFilesMeta}
+                externalFilesMeta={externalFilesMeta}
+                setExternalFilesMeta={setExternalFilesMeta}
+                showAddStreamSourceDialog={showAddStreamSourceDialog}
+                mainFileStreams={mainStreams}
+                isCopyingStreamId={isCopyingStreamId}
+                toggleCopyStreamId={toggleCopyStreamId}
+                setCopyStreamIdsForPath={setCopyStreamIdsForPath}
+                onExtractAllStreamsPress={extractAllStreams}
+                onExtractStreamPress={extractSingleStream}
+                areWeCutting={areWeCutting}
+                shortestFlag={shortestFlag}
+                setShortestFlag={setShortestFlag}
+                nonCopiedExtraStreams={nonCopiedExtraStreams}
+                customTagsByFile={customTagsByFile}
+                setCustomTagsByFile={setCustomTagsByFile}
+                customTagsByStreamId={customTagsByStreamId}
+                setCustomTagsByStreamId={setCustomTagsByStreamId}
+                dispositionByStreamId={dispositionByStreamId}
+                setDispositionByStreamId={setDispositionByStreamId}
+              />
+            )}
           </SideSheet>
 
           <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegments={nonFilteredSegments} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} />
