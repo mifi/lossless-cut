@@ -136,7 +136,6 @@ Unsupported files can still be converted to a supported format/codec from the `F
 - [Common features](https://www.youtube.com/watch?v=pYHMxXy05Jg)
 - [How to add a thumbnail / cover art to an MP4](https://www.youtube.com/watch?v=4pYJ93cn80E)
 - [How to add multi-language audio to a video](https://www.youtube.com/watch?v=MRBGDsuw_WU)
-
 - **Your video here?** If you would like to make a video showing off LosslessCut use cases, let me know and I can link it here!
 
 ### Typical workflow
