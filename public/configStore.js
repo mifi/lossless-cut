@@ -113,6 +113,8 @@ const defaults = {
   storeProjectInWorkingDir: true,
   enableOverwriteOutput: true,
   mouseWheelZoomModifierKey: 'ctrl',
+  captureFrameMethod: 'ffmpeg',
+  captureFrameQuality: 0.95,
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645

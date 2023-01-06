@@ -117,6 +117,10 @@ export default () => {
   useEffect(() => safeSetConfig('enableOverwriteOutput', enableOverwriteOutput), [enableOverwriteOutput]);
   const [mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey] = useState(safeGetConfigInitial('mouseWheelZoomModifierKey'));
   useEffect(() => safeSetConfig('mouseWheelZoomModifierKey', mouseWheelZoomModifierKey), [mouseWheelZoomModifierKey]);
+  const [captureFrameMethod, setCaptureFrameMethod] = useState(safeGetConfigInitial('captureFrameMethod'));
+  useEffect(() => safeSetConfig('captureFrameMethod', captureFrameMethod), [captureFrameMethod]);
+  const [captureFrameQuality, setCaptureFrameQuality] = useState(safeGetConfigInitial('captureFrameQuality'));
+  useEffect(() => safeSetConfig('captureFrameQuality', captureFrameQuality), [captureFrameQuality]);
 
   const resetKeyBindings = useCallback(() => {
     configStore.reset('keyBindings');
@@ -213,5 +217,9 @@ export default () => {
     setEnableOverwriteOutput,
     mouseWheelZoomModifierKey,
     setMouseWheelZoomModifierKey,
+    captureFrameMethod,
+    setCaptureFrameMethod,
+    captureFrameQuality,
+    setCaptureFrameQuality,
   };
 };

@@ -3,24 +3,24 @@ import dataUriToBuffer from 'data-uri-to-buffer';
 import { getSuffixedOutPath, transferTimestamps } from './util';
 import { formatDuration } from './util/duration';
 
-import { captureFrame as ffmpegCaptureFrame } from './ffmpeg';
+import { captureFrames as ffmpegCaptureFrames } from './ffmpeg';
 
 const fs = window.require('fs-extra');
 const mime = window.require('mime-types');
 
-function getFrameFromVideo(video, format) {
+function getFrameFromVideo(video, format, quality) {
   const canvas = document.createElement('canvas');
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
 
   canvas.getContext('2d').drawImage(video, 0, 0);
 
-  const dataUri = canvas.toDataURL(`image/${format}`);
+  const dataUri = canvas.toDataURL(`image/${format}`, quality);
 
   return dataUriToBuffer(dataUri);
 }
 
-export async function captureFramesFfmpeg({ customOutDir, filePath, fromTime, captureFormat, enableTransferTimestamps, numFrames }) {
+export async function captureFramesFfmpeg({ customOutDir, filePath, fromTime, captureFormat, enableTransferTimestamps, numFrames, quality }) {
   const time = formatDuration({ seconds: fromTime, fileNameFriendly: true });
   let nameSuffix;
   if (numFrames > 1) {
@@ -30,14 +30,14 @@ export async function captureFramesFfmpeg({ customOutDir, filePath, fromTime, ca
     nameSuffix = `${time}.${captureFormat}`;
   }
   const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix });
-  await ffmpegCaptureFrame({ timestamp: fromTime, videoPath: filePath, outPath, numFrames });
+  await ffmpegCaptureFrames({ timestamp: fromTime, videoPath: filePath, outPath, numFrames, quality });
 
   if (enableTransferTimestamps && numFrames === 1) await transferTimestamps(filePath, outPath, fromTime);
   return outPath;
 }
 
-export async function captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, enableTransferTimestamps }) {
-  const buf = getFrameFromVideo(video, captureFormat);
+export async function captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, enableTransferTimestamps, quality }) {
+  const buf = getFrameFromVideo(video, captureFormat, quality);
 
   const ext = mime.extension(buf.type);
   const time = formatDuration({ seconds: currentTime, fileNameFriendly: true });

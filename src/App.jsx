@@ -201,7 +201,7 @@ const App = memo(() => {
   const allUserSettings = useUserSettingsRoot();
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, enableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, enableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, captureFrameMethod, captureFrameQuality,
   } = allUserSettings;
 
   useEffect(() => {
@@ -1409,16 +1409,16 @@ const App = memo(() => {
     try {
       const currentTime = getCurrentTime();
       const video = videoRef.current;
-      const outPath = usingPreviewFile
-        ? await captureFramesFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, enableTransferTimestamps, numFrames: 1 })
-        : await captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, enableTransferTimestamps });
+      const outPath = (usingPreviewFile || captureFrameMethod === 'ffmpeg')
+        ? await captureFramesFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, enableTransferTimestamps, numFrames: 1, quality: captureFrameQuality })
+        : await captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, enableTransferTimestamps, quality: captureFrameQuality });
 
       if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: outPath, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
     } catch (err) {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [filePath, getCurrentTime, usingPreviewFile, customOutDir, captureFormat, enableTransferTimestamps, hideAllNotifications]);
+  }, [filePath, getCurrentTime, usingPreviewFile, captureFrameMethod, customOutDir, captureFormat, enableTransferTimestamps, captureFrameQuality, hideAllNotifications]);
 
   const extractSegmentFramesAsImages = useCallback(async (index) => {
     if (!filePath) return;
@@ -1429,14 +1429,14 @@ const App = memo(() => {
 
     try {
       setWorking(i18n.t('Extracting frames'));
-      const outPath = await captureFramesFfmpeg({ customOutDir, filePath, fromTime: start, captureFormat, enableTransferTimestamps, numFrames });
+      const outPath = await captureFramesFfmpeg({ customOutDir, filePath, fromTime: start, captureFormat, enableTransferTimestamps, numFrames, quality: captureFrameQuality });
       if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: outPath, text: i18n.t('Frames extracted to: {{path}}', { path: outputDir }) });
     } catch (err) {
       handleError(err);
     } finally {
       setWorking();
     }
-  }, [apparentCutSegments, captureFormat, customOutDir, enableTransferTimestamps, filePath, getFrameCount, hideAllNotifications, outputDir, setWorking]);
+  }, [apparentCutSegments, captureFormat, captureFrameQuality, customOutDir, enableTransferTimestamps, filePath, getFrameCount, hideAllNotifications, outputDir, setWorking]);
 
   const extractCurrentSegmentFramesAsImages = useCallback(() => extractSegmentFramesAsImages(currentSegIndexSafe), [currentSegIndexSafe, extractSegmentFramesAsImages]);
 
@@ -1911,14 +1911,14 @@ const App = memo(() => {
     if (!filePath) return;
     try {
       const currentTime = getCurrentTime();
-      const path = await captureFramesFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, enableTransferTimestamps, numFrames: 1 });
+      const path = await captureFramesFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, enableTransferTimestamps, numFrames: 1, quality: captureFrameQuality });
       if (!(await addFileAsCoverArt(path))) return;
       if (!hideAllNotifications) toast.fire({ text: i18n.t('Current frame has been set as cover art') });
     } catch (err) {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [addFileAsCoverArt, captureFormat, customOutDir, enableTransferTimestamps, filePath, getCurrentTime, hideAllNotifications]);
+  }, [addFileAsCoverArt, captureFormat, captureFrameQuality, customOutDir, enableTransferTimestamps, filePath, getCurrentTime, hideAllNotifications]);
 
   const batchLoadPaths = useCallback((newPaths, append) => {
     setBatchFiles((existingFiles) => {

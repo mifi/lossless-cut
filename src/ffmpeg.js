@@ -727,15 +727,17 @@ export async function extractWaveform({ filePath, outPath }) {
   console.timeEnd('ffmpeg');
 }
 
-const imageCaptureQuality = 3;
-
 // See also capture-frame.js
-export async function captureFrame({ timestamp, videoPath, outPath, numFrames }) {
+export async function captureFrames({ timestamp, videoPath, outPath, numFrames, quality }) {
+  // Normal range for JPEG is 2-31 with 31 being the worst quality.
+  const min = 2;
+  const max = 31;
+  const ffmpegQuality = Math.min(Math.max(min, quality, Math.round((1 - quality) * (max - min) + min)), max);
   await runFfmpeg([
     '-ss', timestamp,
     '-i', videoPath,
     '-vframes', numFrames,
-    '-q:v', imageCaptureQuality,
+    '-q:v', ffmpegQuality,
     '-y', outPath,
   ]);
 }

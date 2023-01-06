@@ -8,35 +8,10 @@ import AutoExportToggler from './components/AutoExportToggler';
 import useUserSettings from './hooks/useUserSettings';
 import { askForFfPath } from './dialogs';
 import { isMasBuild } from './util';
+import { langNames } from './util/constants';
 
 import { keyMap } from './hooks/useTimelineScroll';
 
-
-// https://www.electronjs.org/docs/api/locales
-// See i18n.js
-const langNames = {
-  en: 'English',
-  cs: 'Čeština',
-  de: 'Deutsch',
-  es: 'Español',
-  fr: 'Français',
-  it: 'Italiano',
-  nl: 'Nederlands',
-  nb: 'Norsk',
-  pl: 'Polski',
-  pt: 'Português',
-  pt_BR: 'português do Brasil',
-  fi: 'Suomi',
-  ru: 'русский',
-  // sr: 'Cрпски',
-  tr: 'Türkçe',
-  vi: 'Tiếng Việt',
-  ja: '日本語',
-  zh: '中文',
-  zh_Hant: '繁體中文',
-  zh_Hans: '简体中文',
-  ko: '한국어',
-};
 
 // eslint-disable-next-line react/jsx-props-no-spreading
 const Row = (props) => <Table.Row height="auto" paddingY={12} {...props} />;
@@ -49,7 +24,7 @@ const Settings = memo(({
 }) => {
   const { t } = useTranslation();
 
-  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, setEnableOverwriteOutput, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey } = useUserSettings();
+  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, enableTransferTimestamps, setEnableTransferTimestamps, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, setEnableOverwriteOutput, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey, captureFrameMethod, setCaptureFrameMethod, captureFrameQuality, setCaptureFrameQuality } = useUserSettings();
 
   const onLangChange = useCallback((e) => {
     const { value } = e.target;
@@ -207,6 +182,23 @@ const Settings = memo(({
         </KeyCell>
         <Table.TextCell>
           <CaptureFormatButton showIcon />
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Snapshot capture method')}</KeyCell>
+        <Table.TextCell>
+          <Button onClick={() => setCaptureFrameMethod((existing) => (existing === 'ffmpeg' ? 'videotag' : 'ffmpeg'))}>
+            {captureFrameMethod === 'ffmpeg' ? t('FFmpeg') : t('HTML video tag')}
+          </Button>
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Snapshot capture quality')}</KeyCell>
+        <Table.TextCell>
+          <input type="range" min={1} max={1000} style={{ width: 200 }} value={Math.round(captureFrameQuality * 1000)} onChange={(e) => setCaptureFrameQuality(Math.max(Math.min(1, parseInt(e.target.value, 10) / 1000)), 0)} /><br />
+          {Math.round(captureFrameQuality * 100)}%
         </Table.TextCell>
       </Row>
 

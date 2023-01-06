@@ -7,3 +7,29 @@ export const zoomMax = 2 ** 14;
 
 export const rightBarWidth = 200;
 export const leftBarWidth = 240;
+
+// https://www.electronjs.org/docs/api/locales
+// See i18n.js
+export const langNames = {
+  en: 'English',
+  cs: 'Čeština',
+  de: 'Deutsch',
+  es: 'Español',
+  fr: 'Français',
+  it: 'Italiano',
+  nl: 'Nederlands',
+  nb: 'Norsk',
+  pl: 'Polski',
+  pt: 'Português',
+  pt_BR: 'português do Brasil',
+  fi: 'Suomi',
+  ru: 'русский',
+  // sr: 'Cрпски',
+  tr: 'Türkçe',
+  vi: 'Tiếng Việt',
+  ja: '日本語',
+  zh: '中文',
+  zh_Hant: '繁體中文',
+  zh_Hans: '简体中文',
+  ko: '한국어',
+};
