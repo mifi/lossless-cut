@@ -23,6 +23,7 @@ import useKeyframes from './hooks/useKeyframes';
 import useWaveform from './hooks/useWaveform';
 import useKeyboard from './hooks/useKeyboard';
 import useFileFormatState from './hooks/useFileFormatState';
+import useFrameCapture from './hooks/useFrameCapture';
 
 import UserSettingsContext from './contexts/UserSettingsContext';
 
@@ -48,7 +49,6 @@ import OutputFormatSelect from './components/OutputFormatSelect';
 
 import { loadMifiLink, runStartupCheck } from './mifi';
 import { controlsBackground } from './colors';
-import { captureFrameFromTag, captureFrameFromFfmpeg, captureFramesRange } from './capture-frame';
 import {
   getStreamFps, isCuttingStart, isCuttingEnd,
   readFileMeta, getSmarterOutFormat, renderThumbnails as ffmpegRenderThumbnails,
@@ -201,7 +201,7 @@ const App = memo(() => {
   const allUserSettings = useUserSettingsRoot();
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, enableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, captureFrameMethod, captureFrameQuality,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, enableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat,
   } = allUserSettings;
 
   useEffect(() => {
@@ -489,16 +489,18 @@ const App = memo(() => {
 
   const getFrameCount = useCallback((sec) => getFrameCountRaw(detectedFps, sec), [detectedFps]);
 
-  const formatTimecode = useCallback(({ seconds, shorten }) => {
+  const formatTimecode = useCallback(({ seconds, shorten, fileNameFriendly }) => {
     if (timecodeFormat === 'frameCount') {
       const frameCount = getFrameCount(seconds);
       return frameCount != null ? frameCount : '';
     }
     if (timecodeFormat === 'timecodeWithFramesFraction') {
-      return formatDuration({ seconds, fps: detectedFps, shorten });
+      return formatDuration({ seconds, fps: detectedFps, shorten, fileNameFriendly });
     }
-    return formatDuration({ seconds, shorten });
+    return formatDuration({ seconds, shorten, fileNameFriendly });
   }, [detectedFps, timecodeFormat, getFrameCount]);
+
+  const { captureFrameFromTag, captureFrameFromFfmpeg, captureFramesRange } = useFrameCapture({ formatTimecode });
 
   const getCurrentTime = useCallback(() => (playing ? videoRef.current.currentTime : commandedTimeRef.current), [playing]);
 
@@ -1208,8 +1210,8 @@ const App = memo(() => {
   const generateOutSegFileNames = useCallback(({ segments = segmentsToExport, template, forceSafeOutputFileName }) => (
     segments.map((segment, i) => {
       const { start, end, name = '' } = segment;
-      const cutFromStr = formatDuration({ seconds: start, fileNameFriendly: true });
-      const cutToStr = formatDuration({ seconds: end, fileNameFriendly: true });
+      const cutFromStr = formatTimecode({ seconds: start, fileNameFriendly: true });
+      const cutToStr = formatTimecode({ seconds: end, fileNameFriendly: true });
       const segNum = i + 1;
 
       const filenamifyOrNot = (fileName) => (safeOutputFileName || forceSafeOutputFileName ? filenamify(fileName) : fileName).substr(0, maxLabelLength);
@@ -1230,7 +1232,7 @@ const App = memo(() => {
       const generated = generateSegFileName({ template, segSuffix, inputFileNameWithoutExt: fileNameWithoutExt, ext, segNum, segLabel: nameSanitized, cutFrom: cutFromStr, cutTo: cutToStr, tags: tagsSanitized });
       return safeOutputFileName ? generated.substring(0, 200) : generated; // If sanitation is enabled, make sure filename is not too long
     })
-  ), [segmentsToExport, isCustomFormatSelected, fileFormat, filePath, safeOutputFileName, maxLabelLength]);
+  ), [segmentsToExport, formatTimecode, isCustomFormatSelected, fileFormat, filePath, safeOutputFileName, maxLabelLength]);
 
   const getOutSegError = useCallback((fileNames) => getOutSegErrorRaw({ fileNames, filePath, outputDir }), [outputDir, filePath]);
 
@@ -1419,7 +1421,7 @@ const App = memo(() => {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [filePath, getCurrentTime, usingPreviewFile, captureFrameMethod, customOutDir, captureFormat, enableTransferTimestamps, captureFrameQuality, hideAllNotifications]);
+  }, [filePath, getCurrentTime, usingPreviewFile, captureFrameMethod, captureFrameFromFfmpeg, customOutDir, captureFormat, enableTransferTimestamps, captureFrameQuality, captureFrameFromTag, hideAllNotifications]);
 
   const extractSegmentFramesAsImages = useCallback(async (index) => {
     if (!filePath || detectedFps == null || workingRef.current) return;
@@ -1440,7 +1442,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [apparentCutSegments, captureFormat, captureFrameFileNameFormat, captureFrameQuality, customOutDir, detectedFps, filePath, getFrameCount, hideAllNotifications, outputDir, setWorking]);
+  }, [apparentCutSegments, captureFormat, captureFrameFileNameFormat, captureFrameQuality, captureFramesRange, customOutDir, detectedFps, filePath, getFrameCount, hideAllNotifications, outputDir, setWorking]);
 
   const extractCurrentSegmentFramesAsImages = useCallback(() => extractSegmentFramesAsImages(currentSegIndexSafe), [currentSegIndexSafe, extractSegmentFramesAsImages]);
 
@@ -1922,7 +1924,7 @@ const App = memo(() => {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [addFileAsCoverArt, captureFormat, captureFrameQuality, customOutDir, enableTransferTimestamps, filePath, getCurrentTime, hideAllNotifications]);
+  }, [addFileAsCoverArt, captureFormat, captureFrameFromFfmpeg, captureFrameQuality, customOutDir, enableTransferTimestamps, filePath, getCurrentTime, hideAllNotifications]);
 
   const batchLoadPaths = useCallback((newPaths, append) => {
     setBatchFiles((existingFiles) => {
