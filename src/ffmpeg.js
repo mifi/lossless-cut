@@ -745,7 +745,7 @@ export async function captureFrame({ timestamp, videoPath, outPath, quality }) {
   ]);
 }
 
-export async function captureFrames({ from, to, videoPath, outPathTemplate, quality, filter, onProgress }) {
+export async function captureFrames({ from, to, videoPath, outPathTemplate, quality, filter, framePts, onProgress }) {
   const ffmpegQuality = getFffmpegJpegQuality(quality);
 
   const args = [
@@ -755,7 +755,7 @@ export async function captureFrames({ from, to, videoPath, outPathTemplate, qual
     '-q:v', ffmpegQuality,
     ...(filter != null ? ['-vf', filter] : []),
     // https://superuser.com/questions/1336285/use-ffmpeg-for-thumbnail-selections
-    // '-frame_pts', '1', // if we set this, output file name frame numbers will not start at 0
+    ...(framePts ? ['-frame_pts', '1'] : []),
     '-vsync', '0', // else we get a ton of duplicates (thumbnail filter)
     '-y', outPathTemplate,
   ];

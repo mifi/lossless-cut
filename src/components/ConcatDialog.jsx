@@ -12,7 +12,7 @@ import useFileFormatState from '../hooks/useFileFormatState';
 import OutputFormatSelect from './OutputFormatSelect';
 import useUserSettings from '../hooks/useUserSettings';
 import { isMov } from '../util/streams';
-import { getOutFileExtension, getFileBaseName } from '../util';
+import { getOutFileExtension, getSuffixedFileName } from '../util';
 
 const { basename } = window.require('path');
 
@@ -77,7 +77,7 @@ const ConcatDialog = memo(({
       return;
     }
     const ext = getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath: firstPath });
-    setOutFileName(`${getFileBaseName(firstPath)}-merged-${uniqueSuffix}${ext}`);
+    setOutFileName(getSuffixedFileName(firstPath, `merged-${uniqueSuffix}${ext}`));
   }, [fileFormat, firstPath, isCustomFormatSelected, uniqueSuffix]);
 
   const allFilesMeta = useMemo(() => {

@@ -121,6 +121,8 @@ export default () => {
   useEffect(() => safeSetConfig('captureFrameMethod', captureFrameMethod), [captureFrameMethod]);
   const [captureFrameQuality, setCaptureFrameQuality] = useState(safeGetConfigInitial('captureFrameQuality'));
   useEffect(() => safeSetConfig('captureFrameQuality', captureFrameQuality), [captureFrameQuality]);
+  const [captureFrameFileNameFormat, setCaptureFrameFileNameFormat] = useState(safeGetConfigInitial('captureFrameFileNameFormat'));
+  useEffect(() => safeSetConfig('captureFrameFileNameFormat', captureFrameFileNameFormat), [captureFrameFileNameFormat]);
 
   const resetKeyBindings = useCallback(() => {
     configStore.reset('keyBindings');
@@ -221,5 +223,7 @@ export default () => {
     setCaptureFrameMethod,
     captureFrameQuality,
     setCaptureFrameQuality,
+    captureFrameFileNameFormat,
+    setCaptureFrameFileNameFormat,
   };
 };

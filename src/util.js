@@ -27,7 +27,7 @@ export function getOutDir(customOutDir, filePath) {
   return undefined;
 }
 
-export function getFileBaseName(filePath) {
+function getFileBaseName(filePath) {
   if (!filePath) return undefined;
   const parsed = parsePath(filePath);
   return parsed.name;
@@ -38,9 +38,11 @@ export function getOutPath({ customOutDir, filePath, fileName }) {
   return join(getOutDir(customOutDir, filePath), fileName);
 }
 
+export const getSuffixedFileName = (filePath, nameSuffix) => `${getFileBaseName(filePath)}-${nameSuffix}`;
+
 export function getSuffixedOutPath({ customOutDir, filePath, nameSuffix }) {
   if (!filePath) return undefined;
-  return getOutPath({ customOutDir, filePath, fileName: `${getFileBaseName(filePath)}-${nameSuffix}` });
+  return getOutPath({ customOutDir, filePath, fileName: getSuffixedFileName(filePath, nameSuffix) });
 }
 
 export async function havePermissionToReadFile(filePath) {
@@ -222,7 +224,7 @@ export const html5dummySuffix = 'dummy';
 export async function findExistingHtml5FriendlyFile(fp, cod) {
   // The order is the priority we will search:
   const suffixes = ['slowest', 'slow-audio', 'slow', 'fast-audio-remux', 'fast-audio', 'fast', 'fastest-audio', 'fastest-audio-remux', html5dummySuffix];
-  const prefix = `${getFileBaseName(fp)}-${html5ifiedPrefix}`;
+  const prefix = getSuffixedFileName(fp, html5ifiedPrefix);
 
   const outDir = getOutDir(cod, fp);
   const dirEntries = await readdir(outDir);
@@ -353,4 +355,9 @@ export function shuffleArray(arrayIn) {
   }
 
   return array;
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
+export function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }

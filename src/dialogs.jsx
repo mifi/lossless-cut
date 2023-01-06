@@ -552,6 +552,8 @@ export async function askExtractFramesAsImages({ segmentNumFrames, fps }) {
     // we don't know estimatedMaxNumFiles here
   }
 
+  estimatedMaxNumFiles += 1; // just to be sure
+
   if (estimatedMaxNumFiles > 1000) {
     const { isConfirmed } = await Swal.fire({
       icon: 'warning',
@@ -562,7 +564,7 @@ export async function askExtractFramesAsImages({ segmentNumFrames, fps }) {
     if (!isConfirmed) return undefined;
   }
 
-  return { filter };
+  return { filter, estimatedMaxNumFiles };
 }
 
 export async function createFixedDurationSegments(fileDuration) {

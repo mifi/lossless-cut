@@ -1432,7 +1432,7 @@ const App = memo(() => {
       setWorking(i18n.t('Extracting frames'));
 
       setCutProgress(0);
-      const outPath = await captureFramesRange({ customOutDir, filePath, fromTime: start, toTime: end, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, onProgress: setCutProgress });
+      const outPath = await captureFramesRange({ customOutDir, filePath, fps: detectedFps, fromTime: start, toTime: end, estimatedMaxNumFiles: captureFramesResponse.estimatedMaxNumFiles, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, outputTimestamps: captureFrameFileNameFormat === 'timestamp', onProgress: setCutProgress });
       if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: outPath, text: i18n.t('Frames extracted to: {{path}}', { path: outputDir }) });
     } catch (err) {
       handleError(err);
@@ -1440,7 +1440,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [apparentCutSegments, captureFormat, captureFrameQuality, customOutDir, detectedFps, filePath, getFrameCount, hideAllNotifications, outputDir, setWorking]);
+  }, [apparentCutSegments, captureFormat, captureFrameFileNameFormat, captureFrameQuality, customOutDir, detectedFps, filePath, getFrameCount, hideAllNotifications, outputDir, setWorking]);
 
   const extractCurrentSegmentFramesAsImages = useCallback(() => extractSegmentFramesAsImages(currentSegIndexSafe), [currentSegIndexSafe, extractSegmentFramesAsImages]);
 
