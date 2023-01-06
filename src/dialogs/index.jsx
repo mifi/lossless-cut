@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { HelpIcon, TickCircleIcon, UnorderedList, ListItem, WarningSignIcon, InfoSignIcon, Button, TextInputField, Checkbox, RadioGroup, Paragraph, LinkIcon } from 'evergreen-ui';
+import React, { useState, useCallback } from 'react';
+import { HelpIcon, TickCircleIcon, UnorderedList, ListItem, WarningSignIcon, InfoSignIcon, Checkbox, RadioGroup, Paragraph } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
@@ -8,10 +8,10 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { tomorrow as style } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import JSON5 from 'json5';
 
-import { parseDuration, formatDuration } from './util/duration';
-import { swalToastOptions, toast } from './util';
-import { parseYouTube } from './edlFormats';
-import CopyClipboardButton from './components/CopyClipboardButton';
+import { parseDuration, formatDuration } from '../util/duration';
+import { swalToastOptions, toast } from '../util';
+import { parseYouTube } from '../edlFormats';
+import CopyClipboardButton from '../components/CopyClipboardButton';
 
 const { dialog, app } = window.require('@electron/remote');
 const { shell } = window.require('electron');
@@ -394,177 +394,6 @@ export async function showCleanupFilesDialog(cleanupChoicesIn = {}) {
 
   if (value) return cleanupChoices;
   return undefined;
-}
-
-const ParametersInput = ({ description, parameters: parametersIn, onChange, onSubmit, docUrl }) => {
-  const firstInputRef = useRef();
-  const [parameters, setParameters] = useState(parametersIn);
-
-  const getParameter = (key) => parameters[key]?.value;
-
-  const handleChange = (key, value) => setParameters((existing) => {
-    const newParameters = { ...existing, [key]: { ...existing[key], value } };
-    onChange(newParameters);
-    return newParameters;
-  });
-
-  const handleSubmit = useCallback((e) => {
-    e.preventDefault();
-    onSubmit();
-  }, [onSubmit]);
-
-  useEffect(() => {
-    firstInputRef.current?.focus?.();
-  }, []);
-
-  return (
-    <div style={{ textAlign: 'left' }}>
-      {description && <p>{description}</p>}
-
-      {docUrl && <p><Button iconBefore={LinkIcon} onClick={() => shell.openExternal(docUrl)}>Read more</Button></p>}
-
-      <form onSubmit={handleSubmit}>
-        {Object.entries(parametersIn).map(([key, parameter], i) => (
-          <TextInputField ref={i === 0 ? firstInputRef : undefined} key={key} label={parameter.label || key} value={getParameter(key)} onChange={(e) => handleChange(key, e.target.value)} hint={parameter.hint} />
-        ))}
-
-        <input type="submit" value="submit" style={{ display: 'none' }} />
-      </form>
-    </div>
-  );
-};
-
-export async function showParametersDialog({ title, description, parameters: parametersIn, docUrl }) {
-  let parameters = parametersIn;
-  let resolve1;
-
-  const promise1 = new Promise((resolve) => {
-    resolve1 = resolve;
-  });
-  const handleSubmit = () => {
-    Swal.close();
-    resolve1(true);
-  };
-
-  const promise2 = (async () => {
-    const { isConfirmed } = await ReactSwal.fire({
-      title,
-      html: <ParametersInput description={description} parameters={parameters} onChange={(newParameters) => { parameters = newParameters; }} onSubmit={handleSubmit} docUrl={docUrl} />,
-      confirmButtonText: i18n.t('Confirm'),
-      showCancelButton: true,
-      cancelButtonText: i18n.t('Cancel'),
-    });
-    return isConfirmed;
-  })();
-
-  const isConfirmed = await Promise.race([promise1, promise2]);
-  if (!isConfirmed) return undefined;
-
-  return Object.fromEntries(Object.entries(parameters).map(([key, parameter]) => [key, parameter.value]));
-}
-
-export async function askExtractFramesAsImages({ segmentNumFrames, fps }) {
-  const { value: captureChoice } = await Swal.fire({
-    text: i18n.t('Extract frames of the selected segment as images?'),
-    icon: 'question',
-    input: 'radio',
-    inputValue: 'thumbnailFilter',
-    showCancelButton: true,
-    customClass: { input: 'swal2-losslesscut-radio' },
-    inputOptions: {
-      thumbnailFilter: i18n.t('Capture the best image every nth second'),
-      selectNthSec: i18n.t('Capture exactly one image every nth second'),
-      selectNthFrame: i18n.t('Capture exactly one image every nth frame'),
-      selectScene: i18n.t('Capture frames that differ the most from the previous frame'),
-      everyFrame: i18n.t('Capture every single frame as an image'),
-    },
-  });
-
-  if (!captureChoice) return undefined;
-
-  let filter;
-  let estimatedMaxNumFiles = segmentNumFrames;
-
-  if (captureChoice === 'thumbnailFilter') {
-    const { value } = await Swal.fire({
-      text: i18n.t('Capture the best image every nth second'),
-      icon: 'question',
-      input: 'text',
-      inputLabel: i18n.t('Enter a decimal number of seconds'),
-      inputValue: 5,
-      showCancelButton: true,
-    });
-    if (value == null) return undefined;
-    const intervalFrames = Math.round(parseFloat(value) * fps);
-    if (Number.isNaN(intervalFrames) || intervalFrames < 1 || intervalFrames > 1000) return undefined; // a too large value uses a lot of memory
-
-    filter = `thumbnail=${intervalFrames}`;
-    estimatedMaxNumFiles = Math.round(segmentNumFrames / intervalFrames);
-  }
-
-  if (captureChoice === 'selectNthSec' || captureChoice === 'selectNthFrame') {
-    let nthFrame;
-    if (captureChoice === 'selectNthFrame') {
-      const { value } = await Swal.fire({
-        text: i18n.t('Capture exactly one image every nth frame'),
-        icon: 'question',
-        input: 'number',
-        inputLabel: i18n.t('Enter an integer number of frames'),
-        inputValue: 30,
-        showCancelButton: true,
-      });
-      if (value == null) return undefined;
-      const intervalFrames = parseInt(value, 10);
-      if (Number.isNaN(intervalFrames) || intervalFrames < 1) return undefined;
-      nthFrame = intervalFrames;
-    } else {
-      const { value } = await Swal.fire({
-        text: i18n.t('Capture exactly one image every nth second'),
-        icon: 'question',
-        input: 'text',
-        inputLabel: i18n.t('Enter a decimal number of seconds'),
-        inputValue: 5,
-        showCancelButton: true,
-      });
-      if (value == null) return undefined;
-      const intervalFrames = Math.round(parseFloat(value) * fps);
-      if (Number.isNaN(intervalFrames) || intervalFrames < 1) return undefined;
-      nthFrame = intervalFrames;
-    }
-
-    filter = `select=not(mod(n\\,${nthFrame}))`;
-    estimatedMaxNumFiles = Math.round(segmentNumFrames / nthFrame);
-  }
-  if (captureChoice === 'selectScene') {
-    const { value } = await Swal.fire({
-      text: i18n.t('Capture frames that differ the most from the previous frame'),
-      icon: 'question',
-      input: 'text',
-      inputLabel: i18n.t('Enter a decimal number between 0 and 1 (sane values are 0.3 - 0.5)'),
-      inputValue: '0.4',
-      showCancelButton: true,
-    });
-    if (value == null) return undefined;
-    const minSceneChange = parseFloat(value);
-    if (Number.isNaN(minSceneChange) || minSceneChange <= 0 || minSceneChange >= 1) return undefined;
-
-    filter = `select=gt(scene\\,${minSceneChange})`;
-    // we don't know estimatedMaxNumFiles here
-  }
-
-  estimatedMaxNumFiles += 1; // just to be sure
-
-  if (estimatedMaxNumFiles > 1000) {
-    const { isConfirmed } = await Swal.fire({
-      icon: 'warning',
-      text: i18n.t('Note that depending on input parameters, up to {{estimatedMaxNumFiles}} files may be produced!', { estimatedMaxNumFiles }),
-      showCancelButton: true,
-      confirmButtonText: i18n.t('Confirm'),
-    });
-    if (!isConfirmed) return undefined;
-  }
-
-  return { filter, estimatedMaxNumFiles };
 }
 
 export async function createFixedDurationSegments(fileDuration) {
