@@ -37,6 +37,8 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Losslessly remux video/audio into a different container (file) format
 - Take full-resolution snapshots from videos in JPEG/PNG format (low or high quality)
 - Export ranges of video frames to images (every nth frame, second, by scene change, best thumbnails)
+  - Export only from a selected time range (segment)
+  - Optionally include original timestamps in image file names
 - Manual input of cutpoint times
 - Apply a per-file timecode offset (and auto load timecode from file)
 - Edit file metadata, per-track metadata and per-track disposition
