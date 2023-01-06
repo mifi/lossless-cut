@@ -20,7 +20,7 @@ const KeyCell = (props) => <Table.TextCell textProps={{ whiteSpace: 'auto' }} {.
 
 const Header = ({ title }) => (
   <Row backgroundColor="rgba(0,0,0,0.05)">
-    <Table.TextCell>{title}</Table.TextCell>
+    <Table.TextCell><b>{title}</b></Table.TextCell>
     <Table.TextCell />
   </Row>
 );
