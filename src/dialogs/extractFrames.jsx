@@ -30,7 +30,7 @@ export async function askExtractFramesAsImages({ segmentNumFrames, fps }) {
       text: i18n.t('Capture the best image every nth second'),
       icon: 'question',
       input: 'text',
-      inputLabel: i18n.t('Enter a decimal number of seconds'),
+      inputLabel: i18n.t('Enter the number of seconds between each image (decimal)'),
       inputValue: 5,
       showCancelButton: true,
     });
@@ -49,7 +49,7 @@ export async function askExtractFramesAsImages({ segmentNumFrames, fps }) {
         text: i18n.t('Capture exactly one image every nth frame'),
         icon: 'question',
         input: 'number',
-        inputLabel: i18n.t('Enter an integer number of frames'),
+        inputLabel: i18n.t('Enter the number of frames between each image (integer)'),
         inputValue: 30,
         showCancelButton: true,
       });
@@ -62,7 +62,7 @@ export async function askExtractFramesAsImages({ segmentNumFrames, fps }) {
         text: i18n.t('Capture exactly one image every nth second'),
         icon: 'question',
         input: 'text',
-        inputLabel: i18n.t('Enter a decimal number of seconds'),
+        inputLabel: i18n.t('Enter the number of seconds between each image (decimal)'),
         inputValue: 5,
         showCancelButton: true,
       });

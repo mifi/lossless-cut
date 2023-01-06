@@ -44,7 +44,7 @@ import SubtitleControl from './components/SubtitleControl';
 import BatchFilesList from './components/BatchFilesList';
 import ConcatDialog from './components/ConcatDialog';
 import KeyboardShortcuts from './components/KeyboardShortcuts';
-import Loading from './components/Loading';
+import Working from './components/Working';
 import OutputFormatSelect from './components/OutputFormatSelect';
 
 import { loadMifiLink, runStartupCheck } from './mifi';
@@ -55,7 +55,7 @@ import {
   extractStreams, setCustomFfPath as ffmpegSetCustomFfPath,
   isIphoneHevc, isProblematicAvc1, tryMapChaptersToEdl, blackDetect, silenceDetect, detectSceneChanges as ffmpegDetectSceneChanges,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
-  RefuseOverwriteError, readFrames, mapTimesToSegments,
+  RefuseOverwriteError, readFrames, mapTimesToSegments, abortFfmpegs,
 } from './ffmpeg';
 import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback } from './util/streams';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
@@ -1371,6 +1371,10 @@ const App = memo(() => {
       const revealPath = concatOutPath || outFiles[0];
       if (!hideAllNotifications) openCutFinishedToast({ filePath: revealPath, warnings, notices });
     } catch (err) {
+      if (err.killed === true) {
+        // assume execa killed (aborted by user)
+        return;
+      }
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
         return;
@@ -2484,7 +2488,7 @@ const App = memo(() => {
               )}
 
               <AnimatePresence>
-                {working && <Loading text={working} cutProgress={cutProgress} />}
+                {working && <Working text={working} cutProgress={cutProgress} onAbortClick={abortFfmpegs} />}
               </AnimatePresence>
 
               {tunerVisible && <ValueTuners type={tunerVisible} onFinished={() => setTunerVisible()} />}

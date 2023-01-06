@@ -18,6 +18,9 @@ const { pathExists } = window.require('fs-extra');
 
 let customFfPath;
 
+const runningFfmpegs = new Set();
+// setInterval(() => console.log(runningFfmpegs.size), 1000);
+
 
 export class RefuseOverwriteError extends Error {}
 
@@ -60,7 +63,23 @@ export async function runFfprobe(args, { timeout = isDev ? 10000 : 30000 } = {})
 export function runFfmpeg(args, execaOptions, { logCli = true } = {}) {
   const ffmpegPath = getFfmpegPath();
   if (logCli) console.log(getFfCommandLine('ffmpeg', args));
-  return execa(ffmpegPath, args, execaOptions);
+  const process = execa(ffmpegPath, args, execaOptions);
+
+  (async () => {
+    runningFfmpegs.add(process);
+    try {
+      await process;
+    } finally {
+      runningFfmpegs.delete(process);
+    }
+  })();
+  return process;
+}
+
+export function abortFfmpegs() {
+  runningFfmpegs.forEach((process) => {
+    process.kill('SIGTERM', { forceKillAfterTimeout: 10000 });
+  });
 }
 
 export function handleProgress(process, durationIn, onProgress, customMatcher = () => {}) {
