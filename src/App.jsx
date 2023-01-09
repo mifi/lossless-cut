@@ -97,6 +97,11 @@ const { focusWindow } = remote.require('./electron');
 const calcShouldShowWaveform = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
 const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
 
+function setDocumentExtraTitle(extra) {
+  const baseTitle = 'LosslessCut';
+  if (extra != null) document.title = `${baseTitle} - ${extra}`;
+  else document.title = baseTitle;
+}
 
 const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
 const bottomMotionStyle = { background: controlsBackground };
@@ -195,6 +200,16 @@ const App = memo(() => {
     workingRef.current = val;
     setWorkingState(val);
   }, []);
+
+  useEffect(() => {
+    if (!working || cutProgress == null) setDocumentExtraTitle();
+    else {
+      const parts = [];
+      if (working) parts.push(working);
+      if (cutProgress != null) parts.push(`${(cutProgress * 100).toFixed(1)}%`);
+      setDocumentExtraTitle(parts.join(' '));
+    }
+  }, [cutProgress, working]);
 
   const zoom = Math.floor(zoomUnrounded);
 
