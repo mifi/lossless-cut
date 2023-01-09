@@ -310,7 +310,7 @@ const Timeline = memo(({
       </div>
 
       {(waveformEnabled && !thumbnailsEnabled && !shouldShowWaveform) && (
-        <div style={{ position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'rgba(255,255,255,0.6)' }}>
+        <div style={{ position: 'absolute', pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'rgba(255,255,255,0.6)' }}>
           {t('Zoom in more to view waveform')}
         </div>
       )}
