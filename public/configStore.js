@@ -116,6 +116,7 @@ const defaults = {
   captureFrameMethod: 'videotag', // we don't default to ffmpeg because ffmpeg might choose a frame slightly off
   captureFrameQuality: 0.95,
   captureFrameFileNameFormat: 'timestamp',
+  enableNativeHevc: true,
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645
