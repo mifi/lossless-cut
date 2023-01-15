@@ -106,7 +106,6 @@
     "fs-extra": "^8.1.0",
     "github-api": "^3.2.2",
     "i18next": "^19.8.5",
-    "i18next-electron-language-detector": "^0.0.10",
     "i18next-fs-backend": "^1.0.1",
     "json5": "^2.2.2",
     "lodash": "^4.17.19",

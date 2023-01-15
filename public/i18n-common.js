@@ -1,3 +1,4 @@
+// intentionally disabled because I don't know the quality of the languages, so better to default to english
 // const LanguageDetector = window.require('i18next-electron-language-detector');
 const isDev = require('electron-is-dev');
 

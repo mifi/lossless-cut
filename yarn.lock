@@ -8556,13 +8556,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next-electron-language-detector@npm:^0.0.10":
-  version: 0.0.10
-  resolution: "i18next-electron-language-detector@npm:0.0.10"
-  checksum: 6b9b4e2cda2add73f118ca1225ac3f82ddb219fe1fd0c3c65c147f6bfa9b82e9b0143455eabf8e0ad8e173e253bf34e46c56af5bc6bc09c84809ac6cb77397c2
-  languageName: node
-  linkType: hard
-
 "i18next-fs-backend@npm:^1.0.1":
   version: 1.1.4
   resolution: "i18next-fs-backend@npm:1.1.4"
@@ -10549,7 +10542,6 @@ __metadata:
     github-api: ^3.2.2
     hammerjs: ^2.0.8
     i18next: ^19.8.5
-    i18next-electron-language-detector: ^0.0.10
     i18next-fs-backend: ^1.0.1
     i18next-scanner: ^4.1.0
     icon-gen: ^3.0.0
