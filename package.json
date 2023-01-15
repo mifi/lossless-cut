@@ -50,7 +50,7 @@
     "cross-env": "^7.0.3",
     "csv-parse": "^4.15.3",
     "csv-stringify": "^5.6.2",
-    "electron": "^21.3.0",
+    "electron": "^22.0.2",
     "electron-builder": "^23.6.0",
     "electron-builder-notarize": "^1.4.0",
     "electron-devtools-installer": "^3.2.0",
@@ -94,7 +94,7 @@
     "wait-on": "^5.3.0"
   },
   "dependencies": {
-    "@electron/remote": "^2.0.8",
+    "@electron/remote": "^2.0.9",
     "cue-parser": "^0.3.0",
     "data-uri-to-buffer": "^4.0.0",
     "electron-is-dev": "^2.0.0",

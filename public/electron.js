@@ -23,8 +23,6 @@ const { BrowserWindow } = electron;
 
 remote.initialize();
 
-app.commandLine.appendSwitch('enable-features', 'PlatformHEVCDecoderSupport');
-
 unhandled({
   showDialog: true,
 });
