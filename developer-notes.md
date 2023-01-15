@@ -66,6 +66,36 @@ For per-platform build/signing setup, see [this article](https://mifi.no/blog/au
 - Bump [snap version](https://snapcraft.io/losslesscut/listing)
 - `npm run scan-i18n` to get the newest Englist strings and push so weblate gets them
 
+## Minimum OS version
+
+Minimum supported OS versions for Electron. As of electron 22:
+
+- MacOS High Sierra 10.13
+- Windows 10
+
+### MacOS [`LSMinimumSystemVersion`](https://developer.apple.com/documentation/bundleresources/information_property_list/lsminimumsystemversion)
+
+How to check the value:
+
+```bash
+npm run pack-mas-dev
+cat dist/mas-dev-arm64/LosslessCut.app/Contents/Info.plist
+```
+
+```
+<key>LSMinimumSystemVersion</key>
+<string>10.13</string>
+```
+
+`LSMinimumSystemVersion` can be overridden in `electron-builder` by [`mac.minimumSystemVersion`](https://www.electron.build/configuration/mac.html)
+
+See also `MACOS_MIN` in [ffmpeg-build-script](https://github.com/mifi/ffmpeg-build-script/blob/master/build-ffmpeg).
+
+Links:
+- https://support.google.com/chrome/a/answer/7100626
+- https://bignerdranch.com/blog/requiring-a-minimum-version-of-os-x-for-your-application/
+- [#1386](https://github.com/mifi/lossless-cut/issues/1386)
+
 ## Maintainence chores
 
 ### Keep dependencies up to date
