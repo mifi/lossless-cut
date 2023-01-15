@@ -117,6 +117,7 @@ const defaults = {
   captureFrameQuality: 0.95,
   captureFrameFileNameFormat: 'timestamp',
   enableNativeHevc: true,
+  enableUpdateCheck: true,
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645

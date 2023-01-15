@@ -202,7 +202,9 @@ if (!argv.allowMultipleInstances && !safeRequestSingleInstanceLock({ argv: proce
     createWindow();
     updateMenu();
 
-    if (!process.windowsStore && !process.mas) {
+    const enableUpdateCheck = configStore.get('enableUpdateCheck');
+
+    if (enableUpdateCheck && !process.windowsStore && !process.mas) {
       newVersion = await checkNewVersion();
       // newVersion = '1.2.3';
       if (newVersion) updateMenu();

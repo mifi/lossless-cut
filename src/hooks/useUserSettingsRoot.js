@@ -127,6 +127,9 @@ export default () => {
   useEffect(() => safeSetConfig({ captureFrameFileNameFormat }), [captureFrameFileNameFormat]);
   const [enableNativeHevc, setEnableNativeHevc] = useState(safeGetConfigInitial('enableNativeHevc'));
   useEffect(() => safeSetConfig({ enableNativeHevc }), [enableNativeHevc]);
+  const [enableUpdateCheck, setEnableUpdateCheck] = useState(safeGetConfigInitial('enableUpdateCheck'));
+  useEffect(() => safeSetConfig({ enableUpdateCheck }), [enableUpdateCheck]);
+
 
   const resetKeyBindings = useCallback(() => {
     configStore.reset('keyBindings');
@@ -231,5 +234,7 @@ export default () => {
     setCaptureFrameFileNameFormat,
     enableNativeHevc,
     setEnableNativeHevc,
+    enableUpdateCheck,
+    setEnableUpdateCheck,
   };
 };
