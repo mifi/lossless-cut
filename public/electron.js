@@ -9,6 +9,7 @@ const debounce = require('lodash/debounce');
 const yargsParser = require('yargs-parser');
 const JSON5 = require('json5');
 const remote = require('@electron/remote/main');
+const { stat } = require('fs/promises');
 
 const logger = require('./logger');
 const menu = require('./menu');
@@ -18,8 +19,7 @@ const { checkNewVersion } = require('./update-checker');
 
 require('./i18n');
 
-const { app, ipcMain } = electron;
-const { BrowserWindow } = electron;
+const { app, ipcMain, shell, BrowserWindow } = electron;
 
 remote.initialize();
 
@@ -242,6 +242,15 @@ if (!argv.allowMultipleInstances && !safeRequestSingleInstanceLock({ argv: proce
 
   ipcMain.on('setLanguage', (e, language) => {
     i18n.changeLanguage(language).then(() => updateMenu()).catch((err) => logger.error('Failed to set language', err));
+  });
+
+  ipcMain.handle('tryTrashItem', async (e, path) => {
+    try {
+      await stat(path);
+    } catch (err) {
+      if (err.code === 'ENOENT') return;
+    }
+    await shell.trashItem(path);
   });
 }
 

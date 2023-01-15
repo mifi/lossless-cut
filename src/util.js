@@ -9,13 +9,13 @@ import isDev from './isDev';
 const { dirname, parse: parsePath, join, basename, extname, isAbsolute, resolve } = window.require('path');
 const fs = window.require('fs-extra');
 const os = window.require('os');
-const { shell } = window.require('electron');
+const { ipcRenderer } = window.require('electron');
 const remote = window.require('@electron/remote');
 
 const { readdir, unlink } = fs;
 
 
-const trash = async (path) => shell.trashItem(path);
+const trashFile = async (path) => ipcRenderer.invoke('tryTrashItem', path);
 
 export function getFileDir(filePath) {
   return filePath ? dirname(filePath) : undefined;
@@ -264,7 +264,7 @@ export async function deleteFiles({ toDelete, paths: { previewFilePath, sourceFi
 
   if (toDelete.tmpFiles && previewFilePath) {
     try {
-      await trash(previewFilePath);
+      await trashFile(previewFilePath);
     } catch (err) {
       console.error(err);
       failedToTrashFiles.push(previewFilePath);
@@ -273,7 +273,7 @@ export async function deleteFiles({ toDelete, paths: { previewFilePath, sourceFi
   if (toDelete.projectFile && projectFilePath) {
     try {
       // throw new Error('test');
-      await trash(projectFilePath);
+      await trashFile(projectFilePath);
     } catch (err) {
       console.error(err);
       failedToTrashFiles.push(projectFilePath);
@@ -281,7 +281,7 @@ export async function deleteFiles({ toDelete, paths: { previewFilePath, sourceFi
   }
   if (toDelete.sourceFile) {
     try {
-      await trash(sourceFilePath);
+      await trashFile(sourceFilePath);
     } catch (err) {
       console.error(err);
       failedToTrashFiles.push(sourceFilePath);
