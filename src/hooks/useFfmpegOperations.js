@@ -497,6 +497,11 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
       '-i', filePath,
 
+      // https://github.com/mifi/lossless-cut/issues/1415
+      '-map_metadata', '0',
+      '-map', '0',
+      '-ignore_unknown',
+
       '-c', 'copy',
       '-y', outPath,
     ];
