@@ -69,6 +69,8 @@ export function runFfmpeg(args, execaOptions, { logCli = true } = {}) {
     runningFfmpegs.add(process);
     try {
       await process;
+    } catch (err) {
+      // ignored here
     } finally {
       runningFfmpegs.delete(process);
     }
