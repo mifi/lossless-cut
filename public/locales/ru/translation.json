@@ -114,7 +114,7 @@
     "Auto save project file?": "Авто сохранение файла проекта?",
     "Experimental flag": "Экспериментальный флаг",
     "Enable experimental ffmpeg features flag?": "Включить флаг экспериментальных функций ffmpeg?",
-    "(data tracks such as GoPro GPS, telemetry etc. are not copied over by default because ffmpeg cannot cut them, thus they will cause the media duration to stay the same after cutting video/audio)": "(дорожки данных, такие как GoPro GPS, телеметрия и т. д., не копируются по умолчанию, потому что ffmpeg не может их обрезать, поэтому они заставят продолжительность мультимедиа оставаться неизменной после вырезания видео / аудио)",
+    "(data tracks such as GoPro GPS, telemetry etc. are not copied over by default because ffmpeg cannot cut them, thus they will cause the media duration to stay the same after cutting video/audio)": "(дорожки данных, такие как GoPro GPS, телеметрия и подобные, не копируются по умолчанию, потому что ffmpeg не умеет с ними работать, и не сможет вырезать из них данные. Так что их длина останется той же, что и до обрезки)",
     "Extract unprocessable tracks to separate files or discard them?": "Извлекать необработанные треки в отдельные файлы или выбросить их?",
     "The video inside segments will be discarded, while the video surrounding them will be kept.": "Видео внутри сегментов будет отброшено, а видео вокруг них останется.",
     "Remove": "Удалить",
