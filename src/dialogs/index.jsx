@@ -359,8 +359,8 @@ export async function createRandomSegments(fileDuration) {
   const randomInRange = (min, max) => min + Math.random() * (max - min);
 
   const edl = [];
-  for (let start = 0; start < fileDuration && edl.length < maxSegments; start += randomInRange(gapMin, gapMax)) {
-    const end = start + randomInRange(durationMin, durationMax);
+  for (let start = randomInRange(gapMin, gapMax); start < fileDuration && edl.length < maxSegments; start += randomInRange(gapMin, gapMax)) {
+    const end = Math.min(fileDuration, start + randomInRange(durationMin, durationMax));
     edl.push({ start, end });
     start = end;
   }
