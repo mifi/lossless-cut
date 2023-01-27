@@ -61,7 +61,7 @@ import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudi
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube, getFrameCountRaw } from './edlFormats';
 import {
-  getOutPath, getSuffixedOutPath, toast, errorToast, handleError, setFileNameTitle, getOutDir, getFileDir,
+  getOutPath, getSuffixedOutPath, toast, errorToast, handleError, getOutDir, getFileDir,
   checkDirWriteAccess, dirExists, isMasBuild, isStoreBuild, dragPreventer,
   filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
@@ -202,14 +202,14 @@ const App = memo(() => {
   }, []);
 
   useEffect(() => {
-    if (!working || cutProgress == null) setDocumentExtraTitle();
-    else {
-      const parts = [];
-      if (working) parts.push(working);
+    const parts = [];
+    if (filePath) parts.push(basename(filePath));
+    if (working) {
+      parts.push('-', working);
       if (cutProgress != null) parts.push(`${(cutProgress * 100).toFixed(1)}%`);
-      setDocumentExtraTitle(parts.join(' '));
     }
-  }, [cutProgress, working]);
+    setDocumentExtraTitle(parts.length > 0 ? parts.join(' ') : undefined);
+  }, [cutProgress, filePath, working]);
 
   const zoom = Math.floor(zoomUnrounded);
 
@@ -918,7 +918,6 @@ const App = memo(() => {
     video.playbackRate = 1;
 
     // setWorking();
-    setFileNameTitle();
     setPreviewFilePath();
     setUsingDummyVideo(false);
     setPlaying(false);
@@ -1645,7 +1644,6 @@ const App = memo(() => {
       setMainVideoStream(videoStream);
       setMainAudioStream(audioStream);
       setCopyStreamIdsForPath(fp, () => copyStreamIdsForPathNew);
-      setFileNameTitle(fp);
       setFileFormat(outFormatLocked || fileFormatNew);
       setDetectedFileFormat(fileFormatNew);
 

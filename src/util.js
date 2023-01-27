@@ -6,7 +6,7 @@ import ky from 'ky';
 
 import isDev from './isDev';
 
-const { dirname, parse: parsePath, join, basename, extname, isAbsolute, resolve } = window.require('path');
+const { dirname, parse: parsePath, join, extname, isAbsolute, resolve } = window.require('path');
 const fs = window.require('fs-extra');
 const os = window.require('os');
 const { ipcRenderer } = window.require('electron');
@@ -133,11 +133,6 @@ export function handleError(arg1, arg2) {
     title: msg || i18n.t('An error has occurred.'),
     text: errorMsg ? errorMsg.substring(0, 300) : undefined,
   });
-}
-
-export function setFileNameTitle(filePath) {
-  const appName = 'LosslessCut';
-  document.title = filePath ? `${appName} - ${basename(filePath)}` : appName;
 }
 
 export function filenamify(name) {
