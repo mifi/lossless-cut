@@ -302,6 +302,7 @@ const CleanupChoices = ({ cleanupChoicesInitial, onChange: onChangeProp }) => {
   const [choices, setChoices] = useState(cleanupChoicesInitial);
 
   const getVal = (key) => !!choices[key];
+
   const onChange = (key, val) => setChoices((c) => {
     const newChoices = { ...c, [key]: val };
     onChangeProp(newChoices);
@@ -318,6 +319,7 @@ const CleanupChoices = ({ cleanupChoicesInitial, onChange: onChangeProp }) => {
 
       <div style={{ marginTop: 25 }}>
         <Checkbox label={i18n.t('Don\'t show dialog again until restarting app')} checked={getVal('dontShowAgain')} onChange={(e) => onChange('dontShowAgain', e.target.checked)} />
+        <Checkbox label={i18n.t('Do this automatically after export')} disabled={!getVal('dontShowAgain')} checked={getVal('cleanupAfterExport')} onChange={(e) => onChange('cleanupAfterExport', e.target.checked)} />
       </div>
     </div>
   );

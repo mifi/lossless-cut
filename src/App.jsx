@@ -1145,6 +1145,26 @@ const App = memo(() => {
     }
   }, [setWorking, ensureAccessibleDirectories, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, hideAllNotifications]);
 
+  const cleanupFiles = useCallback(async (cleanupChoices2) => {
+    // Store paths before we reset state
+    const savedPaths = { previewFilePath, sourceFilePath: filePath, projectFilePath: projectFileSavePath };
+
+    resetState();
+
+    batchRemoveFile(savedPaths.sourceFilePath);
+
+    if (!cleanupChoices2.tmpFiles && !cleanupChoices2.projectFile && !cleanupChoices2.sourceFile) return;
+
+    try {
+      setWorking(i18n.t('Cleaning up'));
+      console.log('trashing', cleanupChoices2);
+      await deleteFiles({ toDelete: cleanupChoices2, paths: savedPaths });
+    } catch (err) {
+      errorToast(i18n.t('Unable to delete file: {{message}}', { message: err.message }));
+      console.error(err);
+    }
+  }, [batchRemoveFile, filePath, previewFilePath, projectFileSavePath, resetState, setWorking]);
+
   const cleanupFilesDialog = useCallback(async () => {
     if (!isFileOpened) return;
 
@@ -1158,26 +1178,12 @@ const App = memo(() => {
 
     if (workingRef.current) return;
 
-    // Because we will reset state before deleting files
-    const savedPaths = { previewFilePath, sourceFilePath: filePath, projectFilePath: projectFileSavePath };
-
-    resetState();
-
-    batchRemoveFile(savedPaths.sourceFilePath);
-
-    if (!trashResponse.tmpFiles && !trashResponse.projectFile && !trashResponse.sourceFile) return;
-
     try {
-      setWorking(i18n.t('Cleaning up'));
-      console.log('trashing', trashResponse);
-      await deleteFiles({ toDelete: trashResponse, paths: savedPaths });
-    } catch (err) {
-      errorToast(i18n.t('Unable to delete file: {{message}}', { message: err.message }));
-      console.error(err);
+      await cleanupFiles(trashResponse);
     } finally {
       setWorking();
     }
-  }, [isFileOpened, cleanupChoices, previewFilePath, filePath, projectFileSavePath, resetState, batchRemoveFile, setWorking]);
+  }, [isFileOpened, cleanupChoices, cleanupFiles, setWorking]);
 
   const selectedSegmentsRaw = useMemo(() => apparentCutSegments.filter(isSegmentSelected), [apparentCutSegments, isSegmentSelected]);
 
@@ -1387,6 +1393,8 @@ const App = memo(() => {
 
       const revealPath = concatOutPath || outFiles[0];
       if (!hideAllNotifications) openCutFinishedToast({ filePath: revealPath, warnings, notices });
+
+      await cleanupFiles(cleanupChoices);
     } catch (err) {
       if (err.killed === true) {
         // assume execa killed (aborted by user)
@@ -1414,7 +1422,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, detectedFps, enableSmartCut, enableOverwriteOutput, willMerge, mainFileFormatData, mainStreams, exportExtraStreams, hideAllNotifications, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, filePath, nonCopiedExtraStreams, handleExportFailed]);
+  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, detectedFps, enableSmartCut, enableOverwriteOutput, willMerge, mainFileFormatData, mainStreams, exportExtraStreams, hideAllNotifications, cleanupFiles, cleanupChoices, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath || workingRef.current || segmentsToExport.length < 1) return;
