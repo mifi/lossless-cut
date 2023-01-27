@@ -189,27 +189,46 @@ const Timeline = memo(({
     return (relX / target.offsetWidth) * durationSafe;
   }, [durationSafe]);
 
-  const handleTap = useCallback((e) => {
-    if (e.nativeEvent.buttons === 1) { // primary button
-      seekAbs((getMouseTimelinePos(e.nativeEvent)));
-    }
-  }, [seekAbs, getMouseTimelinePos]);
+  const mouseDownRef = useRef();
+
+  const handleScrub = useCallback((e) => seekAbs((getMouseTimelinePos(e))), [seekAbs, getMouseTimelinePos]);
 
   useEffect(() => {
     setHoveringTime();
   }, [playerTime, commandedTime]);
 
-  const onMouseMove = useCallback((e) => {
-    // eslint-disable-next-line no-bitwise
-    // const isButtonPressed = (index) => ((e.nativeEvent.buttons >> index) & 1);
-    if (e.nativeEvent.buttons === 0) { // no button pressed
-      setHoveringTime(getMouseTimelinePos(e.nativeEvent));
-      e.preventDefault();
-    } else if (e.nativeEvent.buttons === 1) { // primary button
-      handleTap(e);
-      e.preventDefault();
+  const onMouseDown = useCallback((e) => {
+    if (e.nativeEvent.buttons !== 1) return; // not primary button
+
+    handleScrub(e.nativeEvent);
+
+    mouseDownRef.current = e.target;
+
+    function onMouseMove(e2) {
+      if (mouseDownRef.current == null) return;
+      seekAbs(getMouseTimelinePos(e2));
     }
-  }, [getMouseTimelinePos, handleTap]);
+
+    function onMouseUp() {
+      mouseDownRef.current = undefined;
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('mousemove', onMouseMove);
+    }
+
+    // https://github.com/mifi/lossless-cut/issues/1432
+    // https://stackoverflow.com/questions/11533098/how-to-catch-mouse-up-event-outside-of-element
+    // https://stackoverflow.com/questions/6073505/what-is-the-difference-between-screenx-y-clientx-y-and-pagex-y
+    window.addEventListener('mouseup', onMouseUp, { once: true });
+    window.addEventListener('mousemove', onMouseMove);
+  }, [getMouseTimelinePos, handleScrub, seekAbs]);
+
+  const onMouseMove = useCallback((e) => {
+    if (!mouseDownRef.current) { // no button pressed
+      setHoveringTime(getMouseTimelinePos(e.nativeEvent));
+    }
+    e.preventDefault();
+  }, [getMouseTimelinePos]);
+
   const onMouseOut = useCallback(() => setHoveringTime(), []);
 
   const contextMenuTemplate = useMemo(() => [
@@ -222,7 +241,7 @@ const Timeline = memo(({
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/mouse-events-have-key-events
     <div
       style={{ position: 'relative' }}
-      onMouseDown={handleTap}
+      onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseOut={onMouseOut}
     >
