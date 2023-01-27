@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { Select } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
@@ -40,15 +40,22 @@ const ExportModeButton = memo(({ selectedSegments, style }) => {
     }
   }
 
+  const selectableModes = useMemo(() => [
+    'separate',
+    ...(selectedSegments.length >= 2 || effectiveExportMode === 'merge' ? ['merge'] : []),
+    ...(selectedSegments.length >= 2 || effectiveExportMode === 'merge+separate' ? ['merge+separate'] : []),
+    'sesgments_to_chapters',
+  ], [effectiveExportMode, selectedSegments.length]);
+
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <Select
       height={20}
-      style={{ opacity: selectedSegments && selectedSegments.length < 2 ? 0.4 : undefined, ...style }}
+      style={style}
       value={effectiveExportMode}
       onChange={withBlur((e) => onChange(e.target.value))}
     >
-      {['separate', 'merge', 'merge+separate', 'sesgments_to_chapters'].map((mode) => {
+      {selectableModes.map((mode) => {
         const titles = {
           sesgments_to_chapters: t('Chapters only'),
           merge: t('Merge cuts'),

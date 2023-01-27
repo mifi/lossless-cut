@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button, Select, CrossIcon } from 'evergreen-ui';
+import { WarningSignIcon, Button, Select, CrossIcon } from 'evergreen-ui';
 import { FaRegCheckCircle } from 'react-icons/fa';
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
@@ -38,7 +38,7 @@ const outDirStyle = { background: 'rgb(193, 98, 0)', borderRadius: '.4em', paddi
 
 const warningStyle = { color: '#faa', fontSize: '80%' };
 
-const HelpIcon = ({ onClick }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', verticalAlign: 'middle', marginLeft: 5 }} />;
+const HelpIcon = ({ onClick, style }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', verticalAlign: 'middle', marginLeft: 5, ...style }} />;
 
 const ExportConfirm = memo(({
   areWeCutting, selectedSegments, segmentsToExport, willMerge, visible, onClosePress, onExportConfirm,
@@ -133,12 +133,11 @@ const ExportConfirm = memo(({
                 <h2 style={{ marginTop: 0 }}>{t('Export options')}</h2>
                 <ul>
                   {selectedSegments.length !== nonFilteredSegments.length && <li><FaRegCheckCircle size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: selectedSegments.length, nonFilteredSegments: nonFilteredSegments.length })}</li>}
-                  {selectedSegments.length >= 2 && (
-                    <li>
-                      {t('Merge {{segments}} cut segments to one file?', { segments: selectedSegments.length })} <ExportModeButton selectedSegments={selectedSegments} />
-                      <HelpIcon onClick={onExportModeHelpPress} />
-                    </li>
-                  )}
+                  <li>
+                    {t('Merge {{segments}} cut segments to one file?', { segments: selectedSegments.length })} <ExportModeButton selectedSegments={selectedSegments} />
+                    <HelpIcon onClick={onExportModeHelpPress} />
+                    {effectiveExportMode === 'sesgments_to_chapters' && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" />}
+                  </li>
                   <li>
                     {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
                     <HelpIcon onClick={onOutFmtHelpPress} />
