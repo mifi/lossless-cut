@@ -1841,32 +1841,31 @@ const App = memo(() => {
     loadCutSegments(newSegments, true);
   }, [currentApparentCutSeg.end, currentApparentCutSeg.start, filePath, loadCutSegments, mainVideoStream?.index]);
 
-  const userHtml5ifyCurrentFile = useCallback(async () => {
+  const userHtml5ifyCurrentFile = useCallback(async ({ ignoreRememberedValue } = {}) => {
     if (!filePath) return;
 
-    async function getHtml5ifySpeed() {
+    let selectedOption = rememberConvertToSupportedFormat;
+    if (selectedOption == null || ignoreRememberedValue) {
       const allHtml5ifyOptions = ['fastest', 'fastest-audio', 'fastest-audio-remux', 'fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'];
       let relevantOptions = [];
       if (hasAudio && hasVideo) relevantOptions = [...allHtml5ifyOptions];
       else if (hasAudio) relevantOptions = [...relevantOptions, 'fast-audio-remux', 'slow-audio', 'slowest'];
       else if (hasVideo) relevantOptions = [...relevantOptions, 'fastest', 'fast', 'slow', 'slowest'];
-      const { selectedOption, remember } = await askForHtml5ifySpeed({ allowedOptions: allHtml5ifyOptions.filter((option) => relevantOptions.includes(option)), showRemember: true, initialOption: rememberConvertToSupportedFormat });
-      if (!selectedOption) return undefined;
 
-      console.log('Choice', { speed: selectedOption, remember });
+      const userResponse = await askForHtml5ifySpeed({ allowedOptions: allHtml5ifyOptions.filter((option) => relevantOptions.includes(option)), showRemember: true, initialOption: selectedOption });
+      console.log('Choice', userResponse);
+      ({ selectedOption } = userResponse);
+      if (!selectedOption) return;
+
+      const { remember } = userResponse;
 
       setRememberConvertToSupportedFormat(remember ? selectedOption : undefined);
-
-      return selectedOption;
     }
-
-    const speed = await getHtml5ifySpeed();
-    if (!speed) return;
 
     if (workingRef.current) return;
     try {
       setWorking(i18n.t('Converting to supported format'));
-      await html5ifyAndLoad(customOutDir, filePath, speed, hasVideo, hasAudio);
+      await html5ifyAndLoad(customOutDir, filePath, selectedOption, hasVideo, hasAudio);
     } catch (err) {
       errorToast(i18n.t('Failed to convert file. Try a different conversion'));
       console.error('Failed to html5ify file', err);
@@ -2150,7 +2149,7 @@ const App = memo(() => {
       toggleSegmentsList,
       toggleStreamsSelector,
       extractAllStreams,
-      convertFormatCurrentFile: userHtml5ifyCurrentFile,
+      convertFormatCurrentFile: () => userHtml5ifyCurrentFile(),
       convertFormatBatch,
       concatBatch: concatCurrentBatch,
       toggleKeyframeCutMode: () => toggleKeyframeCut(true),
@@ -2315,7 +2314,7 @@ const App = memo(() => {
       openFilesDialog,
       closeCurrentFile: () => { closeFileWithConfirm(); },
       closeBatchFiles: () => { closeBatch(); },
-      html5ify: userHtml5ifyCurrentFile,
+      html5ify: () => userHtml5ifyCurrentFile({ ignoreRememberedValue: true }),
       askSetStartTimeOffset,
       extractAllStreams,
       showStreamsSelector: () => setStreamsSelectorShown(true),
