@@ -1395,7 +1395,7 @@ const App = memo(() => {
       const revealPath = concatOutPath || outFiles[0];
       if (!hideAllNotifications) openCutFinishedToast({ filePath: revealPath, warnings, notices });
 
-      await cleanupFiles(cleanupChoices);
+      if (cleanupChoices.cleanupAfterExport) await cleanupFiles(cleanupChoices);
     } catch (err) {
       if (err.killed === true) {
         // assume execa killed (aborted by user)
