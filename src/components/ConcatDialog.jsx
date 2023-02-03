@@ -158,6 +158,7 @@ const ConcatDialog = memo(({
     <>
       <Dialog
         title={t('Merge/concatenate files')}
+        shouldCloseOnOverlayClick={false}
         isShown={isShown}
         onCloseComplete={onHide}
         topOffset="3vh"
