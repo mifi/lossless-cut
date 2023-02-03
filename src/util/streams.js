@@ -111,8 +111,11 @@ export const isMov = (format) => ['ismv', 'ipod', 'mp4', 'mov'].includes(format)
 function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => {} }) {
   let args = [];
 
+  function addArgs(...newArgs) {
+    args.push(...newArgs);
+  }
   function addCodecArgs(codec) {
-    args = [...args, `-c:${outputIndex}`, codec];
+    addArgs(`-c:${outputIndex}`, codec);
   }
 
   if (stream.codec_type === 'subtitle') {
@@ -139,6 +142,12 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
     // ffmpeg cannot encode pcm_bluray
     if (outFormat !== 'mpegts' && stream.codec_name === 'pcm_bluray') {
       addCodecArgs('pcm_s24le');
+    } else if (outFormat === 'dv' && stream.codec_name === 'pcm_s16le' && stream.sample_rate !== '48000') {
+      // DV seems to require 48kHz output
+      // https://trac.ffmpeg.org/ticket/8352
+      // I think DV format only supports PCM_S16LE https://github.com/FFmpeg/FFmpeg/blob/b92028346c35dad837dd1160930435d88bd838b5/libavformat/dvenc.c#L450
+      addCodecArgs('pcm_s16le');
+      addArgs(`-ar:${outputIndex}`, '48000'); // maybe technically not lossless?
     } else {
       addCodecArgs('copy');
     }
@@ -152,7 +161,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
 
     if (isMov(outFormat)) {
       if (['0x0000', '0x31637668'].includes(stream.codec_tag) && stream.codec_name === 'hevc') {
-        args = [...args, `-tag:${outputIndex}`, 'hvc1'];
+        addArgs(`-tag:${outputIndex}`, 'hvc1');
       }
     }
   } else { // other stream types
@@ -163,7 +172,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
   if (manuallyCopyDisposition && stream.disposition != null) {
     const activeDisposition = getActiveDisposition(stream.disposition);
     if (activeDisposition != null) {
-      args = [...args, `-disposition:${outputIndex}`, String(activeDisposition)];
+      addArgs(`-disposition:${outputIndex}`, String(activeDisposition));
     }
   }
 
