@@ -36,7 +36,11 @@ If you cut a file, but the duration of the exported file is the same as input fi
 
 ## Merge / concat results in incorrect duration, sped up or slowed down segments
 
-This might be caused by trying to merge files that are not compatible. Make sure they have the exact same codec parameters before merging. If you are sure they are the same, you can try to running each of the files through LosslessCut before merging them. By "running them through LosslessCut" I mean open each file and just export without cutting, and then merge each of the exported files. This might "clean up" certain parameters in the files, to make them more compatible for merging. In particular it might give them the same timebase, which is known to help. For more info see [#455](https://github.com/mifi/lossless-cut/issues/455).
+This might be caused by trying to merge files that are not compatible. Make sure they have the exact same codec parameters before merging. If you are sure they are the same, you can try to first running each of the files through LosslessCut before merging them:
+1. First open each file separately and just export without cutting anything.
+2. Merge the exported files.
+
+This might "clean up" certain parameters in the files, to make them more compatible for merging. In particular it might give them the same timebase, which is known to help. Changing format (remuxing) to TS first is known to give the files a common timebase, which makes it possible to merge them. For more info see [#455](https://github.com/mifi/lossless-cut/issues/455).
 
 ## Smart cut not working
 
