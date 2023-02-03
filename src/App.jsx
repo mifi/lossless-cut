@@ -1426,6 +1426,8 @@ const App = memo(() => {
         }
       }
 
+      if (areWeCutting) notices.push(i18n.t('Cutpoints may be inaccurate.'));
+
       const revealPath = concatOutPath || outFiles[0];
       if (!hideAllNotifications) openCutFinishedToast({ filePath: revealPath, warnings, notices });
 
@@ -1457,7 +1459,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, detectedFps, enableSmartCut, enableOverwriteOutput, willMerge, mainFileFormatData, mainStreams, exportExtraStreams, hideAllNotifications, cleanupFiles, cleanupChoices, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
+  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, detectedFps, enableSmartCut, enableOverwriteOutput, willMerge, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, hideAllNotifications, cleanupChoices, cleanupFiles, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath || workingRef.current || segmentsToExport.length < 1) return;

@@ -519,7 +519,7 @@ export async function openCutFinishedToast({ filePath, warnings, notices }) {
   const html = (
     <UnorderedList>
       <ListItem icon={TickCircleIcon} iconColor="success" fontWeight="bold">{i18n.t('Export is done!')}</ListItem>
-      <ListItem icon={InfoSignIcon} iconColor="info">{i18n.t('Note: cutpoints may be inaccurate. Please test the output files in your desired player/editor before you delete the source file.')}</ListItem>
+      <ListItem icon={InfoSignIcon}>{i18n.t('Please test the output file in your desired player/editor before you delete the source file.')}</ListItem>
       <OutputIncorrectSeeHelpMenu />
       <Notices notices={notices} />
       <Warnings warnings={warnings} />
@@ -533,7 +533,7 @@ export async function openConcatFinishedToast({ filePath, notices }) {
   const html = (
     <UnorderedList>
       <ListItem icon={TickCircleIcon} iconColor="success" fontWeight="bold">{i18n.t('Files merged!')}</ListItem>
-      <ListItem icon={InfoSignIcon} color="info">{i18n.t('Please test the output files in your desired player/editor before you delete the source files.')}</ListItem>
+      <ListItem icon={InfoSignIcon}>{i18n.t('Please test the output files in your desired player/editor before you delete the source files.')}</ListItem>
       <OutputIncorrectSeeHelpMenu />
       <Notices notices={notices} />
     </UnorderedList>
