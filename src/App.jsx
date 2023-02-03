@@ -65,14 +65,14 @@ import {
   checkDirWriteAccess, dirExists, isMasBuild, isStoreBuild, dragPreventer,
   filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, isOutOfSpaceError, shuffleArray, getNumDigits,
+  deleteFiles, isOutOfSpaceError, shuffleArray, getNumDigits, isExecaFailure,
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
 import { showParametersDialog } from './dialogs/parameters';
 import { askExtractFramesAsImages } from './dialogs/extractFrames';
 import { askForHtml5ifySpeed } from './dialogs/html5ify';
-import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments, selectSegmentsByLabelDialog, showRefuseToOverwrite, openDirToast, openCutFinishedToast } from './dialogs';
+import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments, selectSegmentsByLabelDialog, showRefuseToOverwrite, openDirToast, openCutFinishedToast, openConcatFinishedToast } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap, combineOverlappingSegments as combineOverlappingSegments2, isDurationValid } from './segments';
@@ -1105,6 +1105,48 @@ const App = memo(() => {
     });
   }, []);
 
+  const commonSettings = useMemo(() => ({
+    ffmpegExperimental,
+    preserveMovData,
+    movFastStart,
+    preserveMetadataOnMerge,
+  }), [ffmpegExperimental, movFastStart, preserveMetadataOnMerge, preserveMovData]);
+
+  const openSendReportDialogWithState = useCallback(async (err) => {
+    const state = {
+      ...commonSettings,
+
+      filePath,
+      fileFormat,
+      externalFilesMeta,
+      mainStreams,
+      copyStreamIdsByFile,
+      cutSegments: cutSegments.map(s => ({ start: s.start, end: s.end })),
+      mainFileFormatData,
+      rotation,
+      shortestFlag,
+      effectiveExportMode,
+      outSegTemplate,
+    };
+
+    openSendReportDialog(err, state);
+  }, [commonSettings, copyStreamIdsByFile, cutSegments, effectiveExportMode, externalFilesMeta, fileFormat, filePath, mainFileFormatData, mainStreams, outSegTemplate, rotation, shortestFlag]);
+
+  const openSendConcatReportDialogWithState = useCallback(async (err, reportState) => {
+    const state = { ...commonSettings, ...reportState };
+    openSendReportDialog(err, state);
+  }, [commonSettings]);
+
+  const handleExportFailed = useCallback(async (err) => {
+    const sendErrorReport = await showExportFailedDialog({ fileFormat, safeOutputFileName });
+    if (sendErrorReport) openSendReportDialogWithState(err);
+  }, [fileFormat, safeOutputFileName, openSendReportDialogWithState]);
+
+  const handleConcatFailed = useCallback(async (err, reportState) => {
+    const sendErrorReport = await showConcatFailedDialog({ fileFormat });
+    if (sendErrorReport) openSendConcatReportDialogWithState(err, reportState);
+  }, [fileFormat, openSendConcatReportDialogWithState]);
+
   const userConcatFiles = useCallback(async ({ paths, includeAllStreams, streams, fileFormat: outFormat, fileName: outFileName, clearBatchFilesAfterConcat }) => {
     if (workingRef.current) return;
     try {
@@ -1131,19 +1173,34 @@ const App = memo(() => {
       const metadataFromPath = paths[0];
       await concatFiles({ paths, outPath, outDir, outFormat, metadataFromPath, includeAllStreams, streams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments, appendFfmpegCommandLog });
       if (clearBatchFilesAfterConcat) closeBatch();
-      if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: outPath, text: i18n.t('Files merged!') });
+      const notices = [];
+      if (!includeAllStreams) notices.push(i18n.t('If your source files have more than two tracks, the extra tracks might have been removed. You can change this option before merging.'));
+      if (!hideAllNotifications) openConcatFinishedToast({ filePath: outPath, notices });
     } catch (err) {
-      if (isOutOfSpaceError(err)) {
-        showDiskFull();
+      if (err.killed === true) {
+        // assume execa killed (aborted by user)
         return;
       }
-      errorToast(i18n.t('Failed to merge files. Make sure they are all of the exact same codecs'));
-      console.error('Failed to merge files', err);
+
+      console.error('stdout:', err.stdout);
+      console.error('stderr:', err.stderr);
+
+      if (isExecaFailure(err)) {
+        if (isOutOfSpaceError(err)) {
+          showDiskFull();
+          return;
+        }
+        const reportState = { includeAllStreams, streams, outFormat, outFileName, segmentsToChapters };
+        handleConcatFailed(err, reportState);
+        return;
+      }
+
+      handleError(err);
     } finally {
       setWorking();
       setCutProgress();
     }
-  }, [setWorking, ensureAccessibleDirectories, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, hideAllNotifications]);
+  }, [setWorking, ensureAccessibleDirectories, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, hideAllNotifications, handleConcatFailed]);
 
   const cleanupFiles = useCallback(async (cleanupChoices2) => {
     // Store paths before we reset state
@@ -1259,29 +1316,6 @@ const App = memo(() => {
   ), [segmentsToExport, formatTimecode, isCustomFormatSelected, fileFormat, filePath, safeOutputFileName, maxLabelLength]);
 
   const getOutSegError = useCallback((fileNames) => getOutSegErrorRaw({ fileNames, filePath, outputDir }), [outputDir, filePath]);
-
-  const openSendReportDialogWithState = useCallback(async (err) => {
-    const state = {
-      filePath,
-      fileFormat,
-      externalFilesMeta,
-      mainStreams,
-      copyStreamIdsByFile,
-      cutSegments: cutSegments.map(s => ({ start: s.start, end: s.end })),
-      mainFileFormatData,
-      rotation,
-      shortestFlag,
-      effectiveExportMode,
-      outSegTemplate,
-    };
-
-    openSendReportDialog(err, state);
-  }, [filePath, fileFormat, externalFilesMeta, mainStreams, copyStreamIdsByFile, cutSegments, mainFileFormatData, rotation, shortestFlag, effectiveExportMode, outSegTemplate]);
-
-  const handleExportFailed = useCallback(async (err) => {
-    const sendErrorReport = await showExportFailedDialog({ detectedFileFormat, safeOutputFileName });
-    if (sendErrorReport) openSendReportDialogWithState(err);
-  }, [detectedFileFormat, safeOutputFileName, openSendReportDialogWithState]);
 
   const closeExportConfirm = useCallback(() => setExportConfirmVisible(false), []);
 
@@ -1409,7 +1443,7 @@ const App = memo(() => {
       console.error('stdout:', err.stdout);
       console.error('stderr:', err.stderr);
 
-      if (err.exitCode === 1 || err.code === 'ENOENT') {
+      if (isExecaFailure(err)) {
         if (isOutOfSpaceError(err)) {
           showDiskFull();
           return;

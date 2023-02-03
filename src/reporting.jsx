@@ -53,6 +53,8 @@ export function openSendReportDialog(err, state) {
 
         <p><Trans>Include the following text:</Trans> <CopyClipboardButton text={text} /></p>
 
+        {!isStoreBuild && <p style={{ fontSize: '.8em', color: 'rgba(0,0,0,0.5)' }}><Trans>You might want to redact any sensitive information like paths.</Trans></p>}
+
         <div style={{ fontWeight: 600, fontSize: 12, whiteSpace: 'pre-wrap', color: '#900' }} contentEditable suppressContentEditableWarning>
           {text}
         </div>

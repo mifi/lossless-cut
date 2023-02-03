@@ -210,7 +210,7 @@ const ConcatDialog = memo(({
         )}
       </Dialog>
 
-      <Dialog isShown={settingsVisible} onCloseComplete={() => setSettingsVisible(false)} title={t('Options')} hasCancel={false} confirmLabel={t('Close')}>
+      <Dialog isShown={settingsVisible} onCloseComplete={() => setSettingsVisible(false)} title={t('Merge options')} hasCancel={false} confirmLabel={t('Close')}>
         <Checkbox checked={includeAllStreams} onChange={(e) => setIncludeAllStreams(e.target.checked)} label={`${t('Include all tracks?')} ${t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}`} />
 
         <Checkbox checked={preserveMetadataOnMerge} onChange={(e) => setPreserveMetadataOnMerge(e.target.checked)} label={t('Preserve original metadata when merging? (slow)')} />

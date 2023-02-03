@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HelpIcon, TickCircleIcon, UnorderedList, ListItem, WarningSignIcon, InfoSignIcon, Checkbox } from 'evergreen-ui';
+import { HelpIcon, TickCircleIcon, WarningSignIcon, InfoSignIcon, Checkbox } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
@@ -369,25 +369,52 @@ export async function createRandomSegments(fileDuration) {
   return edl;
 }
 
-export async function showExportFailedDialog({ detectedFileFormat, safeOutputFileName }) {
+const MovSuggestion = ({ fileFormat }) => fileFormat === 'mp4' && <li><Trans>Change output <b>Format</b> from <b>MP4</b> to <b>MOV</b></Trans></li>;
+const OutputFormatSuggestion = () => <li><Trans>Select a different output <b>Format</b> (<b>matroska</b> and <b>mp4</b> support most codecs)</Trans></li>;
+const WorkingDirectorySuggestion = () => <li><Trans>Set a different <b>Working directory</b></Trans></li>;
+const DifferentFileSuggestion = () => <li><Trans>Try with a <b>Different file</b></Trans></li>;
+const HelpSuggestion = () => <li><Trans>See <b>Help</b></Trans> menu</li>;
+const ErrorReportSuggestion = () => <li><Trans>If nothing helps, you can send an <b>Error report</b></Trans></li>;
+
+export async function showExportFailedDialog({ fileFormat, safeOutputFileName }) {
   const html = (
     <div style={{ textAlign: 'left' }}>
       <Trans>Try one of the following before exporting again:</Trans>
       <ol>
         {!safeOutputFileName && <li><Trans>Output file names are not sanitized. Try to enable sanitazion or check your segment labels for invalid characters.</Trans></li>}
-        {detectedFileFormat === 'mp4' && <li><Trans>Change output <b>Format</b> from <b>MP4</b> to <b>MOV</b></Trans></li>}
-        <li><Trans>Select a different output <b>Format</b> (<b>matroska</b> and <b>mp4</b> support most codecs)</Trans></li>
+        <MovSuggestion fileFormat={fileFormat} />
+        <OutputFormatSuggestion />
         <li><Trans>Disable unnecessary <b>Tracks</b></Trans></li>
         <li><Trans>Try both <b>Normal cut</b> and <b>Keyframe cut</b></Trans></li>
-        <li><Trans>Set a different <b>Working directory</b></Trans></li>
-        <li><Trans>Try with a <b>Different file</b></Trans></li>
-        <li><Trans>See <b>Help</b></Trans> menu</li>
-        <li><Trans>If nothing helps, you can send an <b>Error report</b></Trans></li>
+        <WorkingDirectorySuggestion />
+        <DifferentFileSuggestion />
+        <HelpSuggestion />
+        <ErrorReportSuggestion />
       </ol>
     </div>
   );
 
   const { value } = await ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, timer: null, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
+  return value;
+}
+
+export async function showConcatFailedDialog({ fileFormat }) {
+  const html = (
+    <div style={{ textAlign: 'left' }}>
+      <Trans>Try each of the following before merging again:</Trans>
+      <ol>
+        <MovSuggestion fileFormat={fileFormat} />
+        <OutputFormatSuggestion />
+        <li><Trans>Disable <b>merge options</b></Trans></li>
+        <WorkingDirectorySuggestion />
+        <DifferentFileSuggestion />
+        <HelpSuggestion />
+        <ErrorReportSuggestion />
+      </ol>
+    </div>
+  );
+
+  const { value } = await ReactSwal.fire({ title: i18n.t('Unable to merge files'), html, timer: null, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
   return value;
 }
 
@@ -481,16 +508,36 @@ export async function openDirToast({ filePath, text, html, ...props }) {
   if (value) shell.showItemInFolder(filePath);
 }
 
+const UnorderedList = ({ children }) => <ul style={{ paddingLeft: '1em' }}>{children}</ul>;
+const ListItem = ({ icon: Icon, iconColor, children }) => <li style={{ listStyle: 'none' }}>{Icon && <Icon color={iconColor} size={14} marginRight=".3em" />} {children}</li>;
+
+const Notices = ({ notices }) => notices.map((msg) => <ListItem key={msg} icon={InfoSignIcon} iconColor="info">{msg}</ListItem>);
+const Warnings = ({ warnings }) => warnings.map((msg) => <ListItem key={msg} icon={WarningSignIcon} iconColor="warning">{msg}</ListItem>);
+const OutputIncorrectSeeHelpMenu = () => <ListItem icon={HelpIcon}>{i18n.t('If output does not look right, see the Help menu.')}</ListItem>;
+
 export async function openCutFinishedToast({ filePath, warnings, notices }) {
   const html = (
     <UnorderedList>
       <ListItem icon={TickCircleIcon} iconColor="success" fontWeight="bold">{i18n.t('Export is done!')}</ListItem>
-      <ListItem icon={InfoSignIcon}>{i18n.t('Note: cutpoints may be inaccurate. Please test the output files in your desired player/editor before you delete the source file.')}</ListItem>
-      <ListItem icon={HelpIcon}>{i18n.t('If output does not look right, see the Help menu.')}</ListItem>
-      {notices.map((msg) => <ListItem key={msg} icon={InfoSignIcon} iconColor="info">{msg}</ListItem>)}
-      {warnings.map((msg) => <ListItem key={msg} icon={WarningSignIcon} iconColor="warning">{msg}</ListItem>)}
+      <ListItem icon={InfoSignIcon} iconColor="info">{i18n.t('Note: cutpoints may be inaccurate. Please test the output files in your desired player/editor before you delete the source file.')}</ListItem>
+      <OutputIncorrectSeeHelpMenu />
+      <Notices notices={notices} />
+      <Warnings warnings={warnings} />
     </UnorderedList>
   );
 
-  await openDirToast({ filePath, html, width: 800, position: 'center', timer: 15000 });
+  await openDirToast({ filePath, html, width: 800, position: 'center', timer: 30000 });
+}
+
+export async function openConcatFinishedToast({ filePath, notices }) {
+  const html = (
+    <UnorderedList>
+      <ListItem icon={TickCircleIcon} iconColor="success" fontWeight="bold">{i18n.t('Files merged!')}</ListItem>
+      <ListItem icon={InfoSignIcon} color="info">{i18n.t('Please test the output files in your desired player/editor before you delete the source files.')}</ListItem>
+      <OutputIncorrectSeeHelpMenu />
+      <Notices notices={notices} />
+    </UnorderedList>
+  );
+
+  await openDirToast({ filePath, html, width: 800, position: 'center', timer: 30000 });
 }

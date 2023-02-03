@@ -301,9 +301,13 @@ export const deleteDispositionValue = 'llc_disposition_remove';
 
 export const mirrorTransform = 'matrix(-1, 0, 0, 1, 0, 0)';
 
+// I *think* Windows will throw error with code ENOENT if ffprobe/ffmpeg fails (execa), but other OS'es will return this error code if a file is not found, so it would be wrong to attribute it to exec failure.
+// see https://github.com/mifi/lossless-cut/issues/451
+export const isExecaFailure = (err) => err.exitCode === 1 || (isWindows && err.code === 'ENOENT');
+
 // A bit hacky but it works, unless someone has a file called "No space left on device" ( ͡° ͜ʖ ͡°)
 export const isOutOfSpaceError = (err) => (
-  err && (err.exitCode === 1 || err.code === 'ENOENT')
+  err && isExecaFailure(err)
   && typeof err.stderr === 'string' && err.stderr.includes('No space left on device')
 );
 

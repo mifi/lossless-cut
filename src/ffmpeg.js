@@ -5,7 +5,7 @@ import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
 import { pcmAudioCodecs, getMapStreamsArgs, isMov } from './util/streams';
-import { getSuffixedOutPath, getExtensionForFormat, isWindows, isMac, platform, arch } from './util';
+import { getSuffixedOutPath, getExtensionForFormat, isWindows, isMac, platform, arch, isExecaFailure } from './util';
 import { isDurationValid } from './segments';
 
 import isDev from './isDev';
@@ -364,7 +364,7 @@ export async function readFileMeta(filePath) {
     return { format, streams, chapters };
   } catch (err) {
     // Windows will throw error with code ENOENT if format detection fails.
-    if (err.exitCode === 1 || (isWindows && err.code === 'ENOENT')) {
+    if (isExecaFailure(err)) {
       const err2 = new Error(`Unsupported file: ${err.message}`);
       err2.code = 'LLC_FFPROBE_UNSUPPORTED_FILE';
       throw err2;
