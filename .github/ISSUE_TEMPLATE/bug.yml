@@ -20,6 +20,7 @@ body:
       label: Operating System
       description: Which operating system are you running?
       options:
+        - MacOS 13
         - MacOS 12
         - MacOS 11
         - MacOS 10
@@ -30,7 +31,7 @@ body:
         - Windows 7
         - Windows Vista
         - Linux
-        - Other
+        - Other (please specify)
     validations:
       required: true
   - type: textarea
