@@ -72,6 +72,7 @@
     "p-map": "^4.0.0",
     "patch-package": "^6.2.1",
     "pify": "^5.0.0",
+    "pretty-bytes": "^6.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^11.3.3",

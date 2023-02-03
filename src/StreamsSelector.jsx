@@ -6,6 +6,7 @@ import { FiEdit, FiCheck, FiTrash } from 'react-icons/fi';
 import { MdSubtitles } from 'react-icons/md';
 import { BookIcon, Paragraph, TextInput, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, Select, Heading, SortAscIcon, SortDescIcon, Dialog, Button, PlusIcon, Pane, ForkIcon, Alert } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
+import prettyBytes from 'pretty-bytes';
 
 import AutoExportToggler from './components/AutoExportToggler';
 import { askForMetadataKey, showJson5Dialog } from './dialogs';
@@ -244,7 +245,7 @@ const Stream = memo(({ dispositionByStreamId, setDispositionByStreamId, filePath
         {!Number.isNaN(duration) && `${formatDuration({ seconds: duration, shorten: true })}`}
         {stream.nb_frames != null ? ` (${stream.nb_frames})` : ''}
       </td>
-      <td>{!Number.isNaN(bitrate) && `${(bitrate / 1e6).toFixed(1)}MBit`}</td>
+      <td>{!Number.isNaN(bitrate) && (stream.codec_type === 'audio' ? `${Math.round(bitrate / 1000)} kbps` : prettyBytes(bitrate, { bits: true }))}</td>
       <td style={{ maxWidth: '2.5em', overflow: 'hidden' }} title={language}>{language}</td>
       <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
       <td>
