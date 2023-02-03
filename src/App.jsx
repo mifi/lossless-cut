@@ -65,7 +65,7 @@ import {
   checkDirWriteAccess, dirExists, isMasBuild, isStoreBuild, dragPreventer,
   filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, isOutOfSpaceError, shuffleArray,
+  deleteFiles, isOutOfSpaceError, shuffleArray, getNumDigits,
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
@@ -1235,13 +1235,14 @@ const App = memo(() => {
       const { start, end, name = '' } = segment;
       const cutFromStr = formatTimecode({ seconds: start, fileNameFriendly: true });
       const cutToStr = formatTimecode({ seconds: end, fileNameFriendly: true });
-      const segNum = i + 1;
+      const numDigits = getNumDigits(segments.length);
+      const segNum = `${i + 1}`.padStart(numDigits, '0');
 
       const filenamifyOrNot = (fileName) => (safeOutputFileName || forceSafeOutputFileName ? filenamify(fileName) : fileName).substr(0, maxLabelLength);
 
-      // https://github.com/mifi/lossless-cut/issues/583
       let segSuffix = '';
       if (name) segSuffix = `-${filenamifyOrNot(name)}`;
+      // https://github.com/mifi/lossless-cut/issues/583
       else if (segments.length > 1) segSuffix = `-seg${segNum}`;
 
       const ext = getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath });

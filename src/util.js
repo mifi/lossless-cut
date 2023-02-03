@@ -352,6 +352,8 @@ export function shuffleArray(arrayIn) {
   return array;
 }
 
+export const getNumDigits = (value) => Math.floor(value > 0 ? Math.log10(value) : 0) + 1;
+
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
 export function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string

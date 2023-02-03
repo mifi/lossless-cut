@@ -1,7 +1,7 @@
 import dataUriToBuffer from 'data-uri-to-buffer';
 import pMap from 'p-map';
 
-import { getSuffixedOutPath, getOutDir, transferTimestamps, getSuffixedFileName, getOutPath, escapeRegExp } from '../util';
+import { getSuffixedOutPath, getOutDir, transferTimestamps, getSuffixedFileName, getOutPath, escapeRegExp, getNumDigits } from '../util';
 
 import { captureFrame as ffmpegCaptureFrame, captureFrames as ffmpegCaptureFrames } from '../ffmpeg';
 
@@ -27,7 +27,7 @@ export default ({ formatTimecode }) => {
     const getSuffix = (prefix) => `${prefix}.${captureFormat}`;
 
     if (!outputTimestamps) {
-      const numDigits = Math.floor(Math.log10(estimatedMaxNumFiles)) + 1;
+      const numDigits = getNumDigits(estimatedMaxNumFiles);
       const nameTemplateSuffix = getSuffix(`%0${numDigits}d`);
       const nameSuffix = getSuffix(`${'1'.padStart(numDigits, '0')}`); // mimic ffmpeg output
       const outPathTemplate = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: nameTemplateSuffix });
