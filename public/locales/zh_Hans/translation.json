@@ -662,7 +662,7 @@
     "Capture frames that differ the most from the previous frame": "捕获与上一帧差异最大的帧",
     "Capture the best image every nth second": "每 n 秒捕获最佳图像",
     "Check for updates": "检查更新",
-    "Check for updates on startup?": "检查启动时的更新？",
+    "Check for updates on startup?": "启动时检查更新？",
     "Combine overlapping segments": "合并重叠段",
     "Detecting silent scenes": "正在检测静默场景",
     "Create segments from keyframes": "从关键帧创建段",
