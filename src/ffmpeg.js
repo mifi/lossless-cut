@@ -5,7 +5,7 @@ import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 
 import { pcmAudioCodecs, getMapStreamsArgs, isMov } from './util/streams';
-import { getSuffixedOutPath, getExtensionForFormat, isWindows, isMac, platform, arch, isExecaFailure } from './util';
+import { getSuffixedOutPath, isWindows, isMac, platform, arch, isExecaFailure } from './util';
 import { isDurationValid } from './segments';
 
 import isDev from './isDev';
@@ -374,31 +374,34 @@ export async function readFileMeta(filePath) {
 }
 
 
-function getPreferredCodecFormat({ codec_name: codec, codec_type: type }) {
+function getPreferredCodecFormat(stream) {
   const map = {
-    mp3: 'mp3',
-    opus: 'opus',
-    vorbis: 'ogg',
-    h264: 'mp4',
-    hevc: 'mp4',
-    eac3: 'eac3',
+    mp3: { format: 'mp3', ext: 'mp3' },
+    opus: { format: 'opus', ext: 'opus' },
+    vorbis: { format: 'ogg', ext: 'ogg' },
+    h264: { format: 'mp4', ext: 'mp4' },
+    hevc: { format: 'mp4', ext: 'mp4' },
+    eac3: { format: 'eac3', ext: 'eac3' },
 
-    subrip: 'srt',
+    subrip: { format: 'srt', ext: 'srt' },
 
-    // See mapFormat
-    m4a: 'ipod',
-    aac: 'adts',
+    m4a: { format: 'ipod', ext: 'm4a' },
+    aac: { format: 'adts', ext: 'aac' },
+    jpeg: { format: 'image2', ext: 'jpeg' },
+    png: { format: 'image2', ext: 'png' },
 
     // TODO add more
     // TODO allow user to change?
   };
 
-  const format = map[codec];
-  if (format) return { ext: getExtensionForFormat(format), format };
-  if (type === 'video') return { ext: 'mkv', format: 'matroska' };
-  if (type === 'audio') return { ext: 'mka', format: 'matroska' };
-  if (type === 'subtitle') return { ext: 'mks', format: 'matroska' };
-  if (type === 'data') return { ext: 'bin', format: 'data' }; // https://superuser.com/questions/1243257/save-data-stream
+  const match = map[stream.codec_name];
+  if (match) return match;
+
+  // default fallbacks:
+  if (stream.codec_type === 'video') return { ext: 'mkv', format: 'matroska' };
+  if (stream.codec_type === 'audio') return { ext: 'mka', format: 'matroska' };
+  if (stream.codec_type === 'subtitle') return { ext: 'mks', format: 'matroska' };
+  if (stream.codec_type === 'data') return { ext: 'bin', format: 'data' }; // https://superuser.com/questions/1243257/save-data-stream
 
   return undefined;
 }
