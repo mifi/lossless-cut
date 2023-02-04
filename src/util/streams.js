@@ -160,7 +160,8 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
     }
 
     if (isMov(outFormat)) {
-      if (['0x0000', '0x31637668'].includes(stream.codec_tag) && stream.codec_name === 'hevc') {
+      // 0x31766568 see https://github.com/mifi/lossless-cut/issues/1444
+      if (['0x0000', '0x31637668', '0x31766568'].includes(stream.codec_tag) && stream.codec_name === 'hevc') {
         addArgs(`-tag:${outputIndex}`, 'hvc1');
       }
     }
