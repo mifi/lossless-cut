@@ -238,12 +238,12 @@ const Stream = memo(({ dispositionByStreamId, setDispositionByStreamId, filePath
     <tr style={{ opacity: copyStream ? undefined : 0.4 }}>
       <td style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
         <IconButton title={`${t('Click to toggle track inclusion when exporting')} (type ${codecTypeHuman})`} appearance="minimal" icon={<Icon color={copyStream ? '#52BD95' : '#D14343'} size={20} />} onClick={onClick} />
-        <div style={{ width: 20, textAlign: 'center' }}>{stream.index}</div>
+        <div style={{ width: 20, textAlign: 'center' }}>{stream.index + 1}</div>
       </td>
       <td style={{ maxWidth: '3em', overflow: 'hidden' }} title={stream.codec_name}>{stream.codec_name} {codecTag}</td>
       <td>
         {!Number.isNaN(duration) && `${formatDuration({ seconds: duration, shorten: true })}`}
-        {stream.nb_frames != null ? ` (${stream.nb_frames})` : ''}
+        {stream.nb_frames != null ? <div>{stream.nb_frames}f</div> : null}
       </td>
       <td>{!Number.isNaN(bitrate) && (stream.codec_type === 'audio' ? `${Math.round(bitrate / 1000)} kbps` : prettyBytes(bitrate, { bits: true }))}</td>
       <td style={{ maxWidth: '2.5em', overflow: 'hidden' }} title={language}>{language}</td>
@@ -261,7 +261,7 @@ const Stream = memo(({ dispositionByStreamId, setDispositionByStreamId, filePath
 
       </td>
       <td style={{ display: 'flex' }}>
-        <IconButton icon={InfoSignIcon} onClick={() => onInfoClick(stream, t('Track info'))} appearance="minimal" iconSize={18} />
+        <IconButton icon={InfoSignIcon} onClick={() => onInfoClick(stream, t('Track {{num}} info', { num: stream.index + 1 }))} appearance="minimal" iconSize={18} />
         <IconButton title={t('Extract this track as file')} icon={<FaFileExport size={18} />} onClick={onExtractStreamPress} appearance="minimal" iconSize={18} />
 
         <Popover
@@ -468,7 +468,7 @@ const StreamsSelector = memo(({
       </Dialog>
 
       <Dialog
-        title={t('Edit track {{trackNum}} metadata', { trackNum: editingStream && editingStream.streamId })}
+        title={t('Edit track {{trackNum}} metadata', { trackNum: editingStream && (editingStream.streamId + 1) })}
         isShown={!!editingStream}
         hasCancel={false}
         confirmLabel={t('Done')}

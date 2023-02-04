@@ -101,7 +101,7 @@ const ConcatDialog = memo(({
       streams.forEach((stream, i) => {
         const referenceStream = firstFileMeta.streams[i];
         if (!referenceStream) {
-          addError(path, i18n.t('Extraneous track {{index}}', { index: stream.index }));
+          addError(path, i18n.t('Extraneous track {{index}}', { index: stream.index + 1 }));
           return;
         }
         // check all these parameters
@@ -109,7 +109,7 @@ const ConcatDialog = memo(({
           const val = stream[key];
           const referenceVal = referenceStream[key];
           if (val !== referenceVal) {
-            addError(path, i18n.t('Track {{index}} mismatch: {{key1}} {{value1}} != {{value2}}', { index: stream.index, key1: key, value1: val || 'none', value2: referenceVal || 'none' }));
+            addError(path, i18n.t('Track {{index}} mismatch: {{key1}} {{value1}} != {{value2}}', { index: stream.index + 1, key1: key, value1: val || 'none', value2: referenceVal || 'none' }));
           }
         });
       });
