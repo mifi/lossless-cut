@@ -16,10 +16,10 @@
 If the video exports successfully without any error from LosslessCut, but it does not look as expected when playing back, please try this:
 
 - Try both `Keyframe cut` vs `Normal cut` (do not use `Smart Cut` if you have any problem)
-- Disable unnecessary tracks from the **Tracks panel**. First try to only enable a single track (e.g. video) and if that succeeds, then work your way by enabling more tracks and see which one is causing the problem. Sometimes LosslessCut (ffmpeg) is unable to cut certain tracks at all.
+- Disable unnecessary tracks from the **Tracks panel**. First try to disable all tracks except the main track (e.g. video) and if that succeeds, then work your way by enabling more tracks and see which one is causing the problem. Sometimes LosslessCut (ffmpeg) is unable to cut certain tracks at all.
 - Select a different **output format** (`matroska` and `mov` support a lot of codecs.)
 - Try to enable the **Experimental Flag** under **Settings**
-- Try the same operation with a different file and see whether it's a problem with just one file
+- Try the same operation with a different file (same codec or different codec) and see whether it's a problem with just one particular file.
 
 ## Cutting times are not accurate
 
@@ -28,19 +28,24 @@ Start cut time will be "rounded" to the nearest **previous** keyframe. This mean
 - Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
 - If you're seeing a blank video at the beginning of the resulting file, try `Keyframe cut` instead.
 - You may try to enable the new "Smart cut" mode to remedy this inaccuracy. However it is very experimental and may not work for most files.
-- Try to set the **start**-cutpoint a few frames **before or after** the nearest keyframe (may also solve audio sync issues)
+- Try to set the **start**-cutpoint a few frames **before or after** the nearest keyframe (may also solve audio sync issues).
+- Alternatively, try to change `avoid_negative_ts` (in export options).
 
 ## Cut file has same length as input
 
-If you cut a file, but the duration of the exported file is the same as input file's duration, try to disable all tracks except for the video track and see if that helps. Sometimes a file contains some tracks that LosslessCut is unable to cut. It will then leave them as is, while cutting the other tracks. This may lead to incorrect output duration.
+If you cut a file, but the duration of the exported file is the same as input file's duration, try to disable all tracks except for the video track and see if that helps. Sometimes a file contains some tracks that LosslessCut is unable to cut. It will then leave them as is, while cutting the other tracks. This may lead to incorrect output duration. Try also changing `avoid_negative_ts` (in export options).
+
+## Merge / concat results in corrupt or broken parts
+
+Try to change `avoid_negative_ts` (in export options). Also try to disable tracks (see above).
 
 ## Merge / concat results in incorrect duration, sped up or slowed down segments
 
-This might be caused by trying to merge files that are not compatible. Make sure they have the exact same codec parameters before merging. If you are sure they are the same, you can try to first running each of the files through LosslessCut before merging them:
+This can happen when trying to merge files that are not compatible. Make sure they have the exact same codec parameters before merging. If you are sure they are the same, you can try to first running each of the files separately through LosslessCut before merging the outputs:
 1. First open each file separately and just export without cutting anything.
 2. Merge the exported files.
 
-This might "clean up" certain parameters in the files, to make them more compatible for merging. In particular it might give them the same timebase, which is known to help. Changing format (remuxing) to TS first is known to give the files a common timebase, which makes it possible to merge them. For more info see [#455](https://github.com/mifi/lossless-cut/issues/455).
+This might "clean up" certain parameters in the files, to make them more compatible for merging. In particular it could give them the same timebase, which is known to help. Changing format (remuxing) to TS first is known to give the files a common timebase, which makes it possible to merge them. For more info see [#455](https://github.com/mifi/lossless-cut/issues/455).
 
 ## Smart cut not working
 
@@ -71,7 +76,7 @@ Some codecs are not natively supported, so they will preview with low quality pl
 
 ## MPEG TS / MTS
 
-MPEG TS (`.mts`/`.ts`) files have a tendency to be a bit problematic. It may help to **first** remux them to another format like MP4/MKV. Then you can open the MP4/MKV file an work on that.
+MPEG TS (`.mts`/`.ts`) files have a tendency to be a bit problematic. It may help to **first** remux them to another format like MP4/MKV. Then you can open the MP4/MKV file an work on that. Also disable non-needed tracks.
 
 ## EXIF / metadata
 
