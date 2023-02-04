@@ -44,6 +44,7 @@ const ExportConfirm = memo(({
   areWeCutting, selectedSegments, segmentsToExport, willMerge, visible, onClosePress, onExportConfirm,
   outFormat, renderOutFmt, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, outSegTemplate,
   setOutSegTemplate, generateOutSegFileNames, filePath, currentSegIndexSafe, getOutSegError, nonFilteredSegments,
+  mainCopiedThumbnailStreams,
 }) => {
   const { t } = useTranslation();
 
@@ -51,6 +52,9 @@ const ExportConfirm = memo(({
 
   const isMov = ffmpegIsMov(outFormat);
   const isIpod = outFormat === 'ipod';
+
+  // some thumbnail streams (png,jpg etc) cannot always be cut correctly, so we warn if they try to.
+  const areWeCuttingProblematicStreams = areWeCutting && mainCopiedThumbnailStreams.length > 0;
 
   const exportModeDescription = useMemo(() => ({
     sesgments_to_chapters: t('Don\'t cut the file, but instead export an unmodified original which has chapters generated from segments'),
@@ -130,13 +134,13 @@ const ExportConfirm = memo(({
               <div style={boxStyle}>
                 <CrossIcon size={24} style={{ position: 'absolute', right: 0, top: 0, padding: 15, boxSizing: 'content-box', cursor: 'pointer' }} role="button" onClick={onClosePress} />
 
-                <h2 style={{ marginTop: 0 }}>{t('Export options')}</h2>
-                <ul>
+                <h2 style={{ marginTop: 0, marginBottom: '.5em' }}>{t('Export options')}</h2>
+                <ul style={{ margin: 0 }}>
                   {selectedSegments.length !== nonFilteredSegments.length && <li><FaRegCheckCircle size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: selectedSegments.length, nonFilteredSegments: nonFilteredSegments.length })}</li>}
                   <li>
                     {t('Merge {{segments}} cut segments to one file?', { segments: selectedSegments.length })} <ExportModeButton selectedSegments={selectedSegments} />
                     <HelpIcon onClick={onExportModeHelpPress} />
-                    {effectiveExportMode === 'sesgments_to_chapters' && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" />}
+                    {effectiveExportMode === 'sesgments_to_chapters' && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" title={i18n.t('Chapters only')} />}
                   </li>
                   <li>
                     {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
@@ -145,6 +149,8 @@ const ExportConfirm = memo(({
                   <li>
                     <Trans>Input has {{ numStreamsTotal }} tracks - <HighlightedText style={{ cursor: 'pointer' }} onClick={() => setStreamsSelectorShown(true)}>Keeping {{ numStreamsToCopy }} tracks</HighlightedText></Trans>
                     <HelpIcon onClick={onTracksHelpPress} />
+                    {areWeCuttingProblematicStreams && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" />}
+                    {areWeCuttingProblematicStreams && <div style={warningStyle}><Trans>Warning: Cutting thumbnail tracks is known to cause problems. Consider disabling track {{ trackNumber: mainCopiedThumbnailStreams[0].index + 1 }}.</Trans></div>}
                   </li>
                   <li>
                     {t('Save output to path:')} <span role="button" onClick={changeOutDir} style={outDirStyle}>{outputDir}</span>
@@ -156,10 +162,10 @@ const ExportConfirm = memo(({
                   )}
                 </ul>
 
-                <h3>{t('Advanced options')}</h3>
+                <h3 style={{ marginBottom: '.5em' }}>{t('Advanced options')}</h3>
 
                 {willMerge && (
-                  <ul>
+                  <ul style={{ marginTop: 0, marginBottom: '1em' }}>
                     <li>
                       {t('Create chapters from merged segments? (slow)')} <Button height={20} onClick={toggleSegmentsToChapters}>{segmentsToChapters ? t('Yes') : t('No')}</Button>
                       <HelpIcon onClick={onSegmentsToChaptersHelpPress} />
@@ -171,14 +177,15 @@ const ExportConfirm = memo(({
                   </ul>
                 )}
 
-                <p>{t('Depending on your specific file/player, you may have to try different options for best results.')}</p>
+                <p style={{ margin: '.5em 0' }}>{t('Depending on your specific file/player, you may have to try different options for best results.')}</p>
 
-                <ul>
+                <ul style={{ margin: 0 }}>
                   {areWeCutting && (
                     <>
                       <li>
                         {t('Smart cut (experimental):')} <Button height={20} onClick={() => setEnableSmartCut((v) => !v)}>{enableSmartCut ? t('Yes') : t('No')}</Button>
                         <HelpIcon onClick={onSmartCutHelpPress} />
+                        {enableSmartCut && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" title={i18n.t('Experimental functionality has been activated!')} />}
                       </li>
                       {!enableSmartCut && (
                         <li>
@@ -204,14 +211,15 @@ const ExportConfirm = memo(({
 
                   {!enableSmartCut && (
                     <li>
-                      {t('Shift timestamps (avoid_negative_ts)')}
+                      &quot;avoid_negative_ts&quot;
                       <Select height={20} value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value)} style={{ marginLeft: 5 }}>
+                        <option value="auto">auto</option>
                         <option value="make_zero">make_zero</option>
                         <option value="make_non_negative">make_non_negative</option>
-                        <option value="auto">auto</option>
                         <option value="disabled">disabled</option>
                       </Select>
                       <HelpIcon onClick={onAvoidNegativeTsHelpPress} />
+                      {!['make_zero', 'auto'].includes(avoidNegativeTs) && <div style={warningStyle}>{t('It\'s generally recommended to set this to one of: {{values}}', { values: '"auto", "make_zero"' })}</div>}
                     </li>
                   )}
                 </ul>

@@ -1,6 +1,6 @@
 import React, { memo, useState, useMemo, useCallback } from 'react';
 
-import { FaCheckCircle, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport } from 'react-icons/fa';
+import { FaImage, FaCheckCircle, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
 import { FiEdit, FiCheck, FiTrash } from 'react-icons/fi';
 import { MdSubtitles } from 'react-icons/md';
@@ -13,7 +13,7 @@ import { askForMetadataKey, showJson5Dialog } from './dialogs';
 import { formatDuration } from './util/duration';
 import { getStreamFps } from './ffmpeg';
 import { deleteDispositionValue } from './util';
-import { getActiveDisposition } from './util/streams';
+import { getActiveDisposition, attachedPicDisposition } from './util/streams';
 
 
 const activeColor = '#429777';
@@ -197,8 +197,13 @@ const Stream = memo(({ dispositionByStreamId, setDispositionByStreamId, filePath
     Icon = copyStream ? FaVolumeUp : FaVolumeMute;
     codecTypeHuman = t('audio');
   } else if (stream.codec_type === 'video') {
-    Icon = copyStream ? FaVideo : FaVideoSlash;
-    codecTypeHuman = t('video');
+    if (effectiveDisposition === attachedPicDisposition) {
+      Icon = copyStream ? FaImage : FaBan;
+      codecTypeHuman = t('thumbnail');
+    } else {
+      Icon = copyStream ? FaVideo : FaVideoSlash;
+      codecTypeHuman = t('video');
+    }
   } else if (stream.codec_type === 'subtitle') {
     Icon = copyStream ? MdSubtitles : FaBan;
     codecTypeHuman = t('subtitle');

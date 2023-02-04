@@ -57,7 +57,7 @@ import {
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
   RefuseOverwriteError, readFrames, mapTimesToSegments, abortFfmpegs,
 } from './ffmpeg';
-import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback } from './util/streams';
+import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback, isStreamThumbnail } from './util/streams';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube, getFrameCountRaw } from './edlFormats';
 import {
@@ -804,13 +804,14 @@ const App = memo(() => {
     }
   }, [setWorking, subtitleStreams, subtitlesByStreamId, filePath]);
 
+  const mainCopiedStreams = useMemo(() => mainStreams.filter((stream) => isCopyingStreamId(filePath, stream.index)), [filePath, isCopyingStreamId, mainStreams]);
+  const mainCopiedThumbnailStreams = useMemo(() => mainCopiedStreams.filter(isStreamThumbnail), [mainCopiedStreams]);
+
   // Streams that are not copy enabled by default
-  const extraStreams = useMemo(() => mainStreams
-    .filter((stream) => !shouldCopyStreamByDefault(stream)), [mainStreams]);
+  const extraStreams = useMemo(() => mainStreams.filter((stream) => !shouldCopyStreamByDefault(stream)), [mainStreams]);
 
   // Extra streams that the user has not selected for copy
-  const nonCopiedExtraStreams = useMemo(() => extraStreams
-    .filter((stream) => !isCopyingStreamId(filePath, stream.index)), [extraStreams, filePath, isCopyingStreamId]);
+  const nonCopiedExtraStreams = useMemo(() => extraStreams.filter((stream) => !isCopyingStreamId(filePath, stream.index)), [extraStreams, filePath, isCopyingStreamId]);
 
   const exportExtraStreams = autoExportExtraStreams && nonCopiedExtraStreams.length > 0;
 
@@ -819,14 +820,15 @@ const App = memo(() => {
     streamIds: Object.keys(streamIdsMap).filter(index => streamIdsMap[index]).map((streamIdStr) => parseInt(streamIdStr, 10)),
   })), [copyStreamIdsByFile]);
 
-  const numStreamsToCopy = copyFileStreams
-    .reduce((acc, { streamIds }) => acc + streamIds.length, 0);
+  // total number of streams to copy for ALL files
+  const numStreamsToCopy = copyFileStreams.reduce((acc, { streamIds }) => acc + streamIds.length, 0);
 
   const allFilesMeta = useMemo(() => ({
     ...externalFilesMeta,
     [filePath]: mainFileMeta,
   }), [externalFilesMeta, filePath, mainFileMeta]);
 
+  // total number of streams for ALL files
   const numStreamsTotal = flatMap(Object.values(allFilesMeta), ({ streams }) => streams).length;
 
   const toggleStripAudio = useCallback(() => {
@@ -1818,11 +1820,9 @@ const App = memo(() => {
 
     if (workingRef.current) return;
     try {
-      const enabledStreams = mainStreams.filter((stream) => isCopyingStreamId(filePath, stream.index));
-
       setWorking(i18n.t('Extracting all streams'));
       setStreamsSelectorShown(false);
-      const extractedPaths = await extractStreams({ customOutDir, filePath, streams: enabledStreams, enableOverwriteOutput });
+      const extractedPaths = await extractStreams({ customOutDir, filePath, streams: mainCopiedStreams, enableOverwriteOutput });
       if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: extractedPaths[0], text: i18n.t('All streams have been extracted as separate files') });
     } catch (err) {
       if (err instanceof RefuseOverwriteError) {
@@ -1834,7 +1834,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [customOutDir, enableOverwriteOutput, filePath, hideAllNotifications, isCopyingStreamId, mainStreams, setWorking]);
+  }, [customOutDir, enableOverwriteOutput, filePath, hideAllNotifications, mainCopiedStreams, setWorking]);
 
   const detectSegments = useCallback(async ({ name, workingText, errorText, fn }) => {
     if (!filePath) return;
@@ -2702,7 +2702,7 @@ const App = memo(() => {
             )}
           </SideSheet>
 
-          <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegments={nonFilteredSegments} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} />
+          <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegments={nonFilteredSegments} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} />
 
           <LastCommandsSheet
             visible={lastCommandsVisible}

@@ -402,7 +402,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
       if (!needsSmartCut) await checkOverwrite(smartCutMainPartOutPath);
 
-      // for smart cut we need to use keyframe cut here
+      // for smart cut we need to use keyframe cut here, and no avoid_negative_ts
       await cutSingle({
         cutFrom: encodeCutTo, cutTo, chaptersPath, outPath: smartCutMainPartOutPath, copyFileStreams: copyFileStreamsFiltered, keyframeCut: true, avoidNegativeTs: false, videoDuration, rotation, allFilesMeta, outFormat, appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, customTagsByStreamId, dispositionByStreamId, videoTimebase, onProgress: onCutProgress,
       });

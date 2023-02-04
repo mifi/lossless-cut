@@ -207,8 +207,10 @@ export function shouldCopyStreamByDefault(stream) {
   return true;
 }
 
+export const attachedPicDisposition = 'attached_pic';
+
 export function isStreamThumbnail(stream) {
-  return stream && stream.disposition && stream.disposition.attached_pic === 1;
+  return stream && stream.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
 }
 
 export const getAudioStreams = (streams) => streams.filter(stream => stream.codec_type === 'audio');
