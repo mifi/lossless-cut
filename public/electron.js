@@ -169,6 +169,8 @@ if (!argv.allowMultipleInstances && !safeRequestSingleInstanceLock({ argv: proce
       mainWindow.focus();
     }
 
+    if (!Array.isArray(additionalData?.argv)) return;
+
     const argv2 = parseCliArgs(additionalData.argv);
     if (argv2._) openFilesEventually(argv2._);
   });
