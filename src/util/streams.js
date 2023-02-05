@@ -218,21 +218,28 @@ export const getRealVideoStreams = (streams) => streams.filter(stream => stream.
 export const getSubtitleStreams = (streams) => streams.filter(stream => stream.codec_type === 'subtitle');
 
 export function getStreamIdsToCopy({ streams, includeAllStreams }) {
-  if (includeAllStreams) return streams.map((stream) => stream.index);
+  if (includeAllStreams) {
+    return {
+      streamIdsToCopy: streams.map((stream) => stream.index),
+      excludedStreamIds: [],
+    };
+  }
 
   // If preserveMetadataOnMerge option is enabled, we MUST explicitly map all streams even if includeAllStreams=false.
   // We cannot use the ffmpeg's automatic stream selection or else ffmpeg might use the metadata source input (index 1)
   // instead of the concat input (index 0)
   // https://ffmpeg.org/ffmpeg.html#Automatic-stream-selection
-  const ret = [];
+  const streamIdsToCopy = [];
   // TODO try to mimic ffmpeg default mapping https://ffmpeg.org/ffmpeg.html#Automatic-stream-selection
   const videoStreams = getRealVideoStreams(streams);
   const audioStreams = getAudioStreams(streams);
   const subtitleStreams = getSubtitleStreams(streams);
-  if (videoStreams.length > 0) ret.push(videoStreams[0].index);
-  if (audioStreams.length > 0) ret.push(audioStreams[0].index);
-  if (subtitleStreams.length > 0) ret.push(subtitleStreams[0].index);
-  return ret;
+  if (videoStreams.length > 0) streamIdsToCopy.push(videoStreams[0].index);
+  if (audioStreams.length > 0) streamIdsToCopy.push(audioStreams[0].index);
+  if (subtitleStreams.length > 0) streamIdsToCopy.push(subtitleStreams[0].index);
+
+  const excludedStreamIds = streams.filter((s) => !streamIdsToCopy.includes(s.index)).map((s) => s.index);
+  return { streamIdsToCopy, excludedStreamIds };
 }
 
 // this is just a rough check, could be improved

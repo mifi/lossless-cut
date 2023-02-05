@@ -516,9 +516,10 @@ const Warnings = ({ warnings }) => warnings.map((msg) => <ListItem key={msg} ico
 const OutputIncorrectSeeHelpMenu = () => <ListItem icon={HelpIcon}>{i18n.t('If output does not look right, see the Help menu.')}</ListItem>;
 
 export async function openCutFinishedToast({ filePath, warnings, notices }) {
+  const hasWarnings = warnings.length > 0;
   const html = (
     <UnorderedList>
-      <ListItem icon={TickCircleIcon} iconColor="success" fontWeight="bold">{i18n.t('Export is done!')}</ListItem>
+      <ListItem icon={TickCircleIcon} iconColor={hasWarnings ? 'warning' : 'success'} fontWeight="bold">{hasWarnings ? i18n.t('Export finished with warning(s)') : i18n.t('Export is done!')}</ListItem>
       <ListItem icon={InfoSignIcon}>{i18n.t('Please test the output file in your desired player/editor before you delete the source file.')}</ListItem>
       <OutputIncorrectSeeHelpMenu />
       <Notices notices={notices} />
@@ -529,13 +530,15 @@ export async function openCutFinishedToast({ filePath, warnings, notices }) {
   await openDirToast({ filePath, html, width: 800, position: 'center', timer: 30000 });
 }
 
-export async function openConcatFinishedToast({ filePath, notices }) {
+export async function openConcatFinishedToast({ filePath, warnings, notices }) {
+  const hasWarnings = warnings.length > 0;
   const html = (
     <UnorderedList>
-      <ListItem icon={TickCircleIcon} iconColor="success" fontWeight="bold">{i18n.t('Files merged!')}</ListItem>
+      <ListItem icon={TickCircleIcon} iconColor={hasWarnings ? 'warning' : 'success'} fontWeight="bold">{hasWarnings ? i18n.t('Files merged with warning(s)') : i18n.t('Files merged!')}</ListItem>
       <ListItem icon={InfoSignIcon}>{i18n.t('Please test the output files in your desired player/editor before you delete the source files.')}</ListItem>
       <OutputIncorrectSeeHelpMenu />
       <Notices notices={notices} />
+      <Warnings warnings={warnings} />
     </UnorderedList>
   );
 

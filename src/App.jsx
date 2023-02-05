@@ -14,6 +14,7 @@ import fromPairs from 'lodash/fromPairs';
 import sortBy from 'lodash/sortBy';
 import flatMap from 'lodash/flatMap';
 import isEqual from 'lodash/isEqual';
+import sum from 'lodash/sum';
 
 import theme from './theme';
 import useTimelineScroll from './hooks/useTimelineScroll';
@@ -65,7 +66,7 @@ import {
   checkDirWriteAccess, dirExists, isMasBuild, isStoreBuild, dragPreventer,
   filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, isOutOfSpaceError, shuffleArray, getNumDigits, isExecaFailure,
+  deleteFiles, isOutOfSpaceError, shuffleArray, getNumDigits, isExecaFailure, readFileSize, readFileSizes, checkFileSizes,
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
@@ -257,7 +258,11 @@ const App = memo(() => {
     }
   }, [timelineMode]);
 
-  const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => !v), [setExportConfirmEnabled]);
+  const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => {
+    const newVal = !v;
+    toast.fire({ text: newVal ? i18n.t('Export options will be shown before exporting.') : i18n.t('Export options will not be shown before exporting.') });
+    return newVal;
+  }), [setExportConfirmEnabled]);
 
   const toggleSegmentsToChapters = useCallback(() => setSegmentsToChapters((v) => !v), [setSegmentsToChapters]);
 
@@ -1171,13 +1176,22 @@ const App = memo(() => {
         chaptersFromSegments = await createChaptersFromSegments({ segmentPaths: paths, chapterNames });
       }
 
+      const inputSize = sum(await readFileSizes(paths));
+
       // console.log('merge', paths);
       const metadataFromPath = paths[0];
-      await concatFiles({ paths, outPath, outDir, outFormat, metadataFromPath, includeAllStreams, streams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments, appendFfmpegCommandLog });
-      if (clearBatchFilesAfterConcat) closeBatch();
+      const { haveExcludedStreams } = await concatFiles({ paths, outPath, outDir, outFormat, metadataFromPath, includeAllStreams, streams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments, appendFfmpegCommandLog });
+
+      const warnings = [];
       const notices = [];
-      if (!includeAllStreams) notices.push(i18n.t('If your source files have more than two tracks, the extra tracks might have been removed. You can change this option before merging.'));
-      if (!hideAllNotifications) openConcatFinishedToast({ filePath: outPath, notices });
+
+      const outputSize = await readFileSize(outPath); // * 1.06; // testing:)
+      const sizeCheckResult = checkFileSizes(inputSize, outputSize);
+      if (sizeCheckResult != null) warnings.push(sizeCheckResult);
+
+      if (clearBatchFilesAfterConcat) closeBatch();
+      if (!includeAllStreams && haveExcludedStreams) notices.push(i18n.t('Some extra tracks have been discarded. You can change this option before merging.'));
+      if (!hideAllNotifications) openConcatFinishedToast({ filePath: outPath, notices, warnings });
     } catch (err) {
       if (err.killed === true) {
         // assume execa killed (aborted by user)
@@ -1410,6 +1424,8 @@ const App = memo(() => {
       const notices = [];
       const warnings = [];
 
+      if (!exportConfirmEnabled) notices.push(i18n.t('Export options are not shown. You can enable export options by clicking the icon right next to the export button.'));
+
       // https://github.com/mifi/lossless-cut/issues/329
       if (isIphoneHevc(mainFileFormatData, mainStreams)) warnings.push(i18n.t('There is a known issue with cutting iPhone HEVC videos. The output file may not work in all players.'));
 
@@ -1461,7 +1477,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, detectedFps, enableSmartCut, enableOverwriteOutput, willMerge, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, hideAllNotifications, cleanupChoices, cleanupFiles, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
+  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, detectedFps, enableSmartCut, enableOverwriteOutput, willMerge, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, hideAllNotifications, cleanupChoices, cleanupFiles, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath || workingRef.current || segmentsToExport.length < 1) return;

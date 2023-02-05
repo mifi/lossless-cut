@@ -104,7 +104,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
         chaptersInputIndex = addInput(getChaptersInputArgs(chaptersPath));
       }
 
-      const streamIdsToCopy = getStreamIdsToCopy({ streams, includeAllStreams });
+      const { streamIdsToCopy, excludedStreamIds } = getStreamIdsToCopy({ streams, includeAllStreams });
       const mapStreamsArgs = getMapStreamsArgs({
         allFilesMeta: { [metadataFromPath]: { streams } },
         copyFileStreams: [{ path: metadataFromPath, streamIds: streamIdsToCopy }],
@@ -162,11 +162,13 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
       const { stdout } = await process;
       console.log(stdout);
+
+      await optionalTransferTimestamps(metadataFromPath, outPath);
+
+      return { haveExcludedStreams: excludedStreamIds.length > 0 };
     } finally {
       if (chaptersPath) await tryDeleteFiles([chaptersPath]);
     }
-
-    await optionalTransferTimestamps(metadataFromPath, outPath);
   }, [optionalTransferTimestamps]);
 
   const cutSingle = useCallback(async ({

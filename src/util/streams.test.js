@@ -104,6 +104,7 @@ test('getMapStreamsArgs, smart cut', () => {
 });
 
 test('getStreamIdsToCopy, includeAllStreams false', () => {
-  const streamIdsToCopy = getStreamIdsToCopy({ streams: streams1, includeAllStreams: false });
+  const { streamIdsToCopy, excludedStreamIds } = getStreamIdsToCopy({ streams: streams1, includeAllStreams: false });
   expect(streamIdsToCopy).toEqual([2, 1, 7]);
+  expect(excludedStreamIds).toEqual([0, 3, 4, 5, 6]);
 });

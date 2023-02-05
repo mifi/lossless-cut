@@ -3,16 +3,18 @@ import i18n from 'i18next';
 import lodashTemplate from 'lodash/template';
 import pMap from 'p-map';
 import ky from 'ky';
+import prettyBytes from 'pretty-bytes';
 
 import isDev from './isDev';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve } = window.require('path');
-const fs = window.require('fs-extra');
+const fsExtra = window.require('fs-extra');
+const { stat } = window.require('fs/promises');
 const os = window.require('os');
 const { ipcRenderer } = window.require('electron');
 const remote = window.require('@electron/remote');
 
-const { readdir, unlink } = fs;
+const { readdir, unlink } = fsExtra;
 
 
 const trashFile = async (path) => ipcRenderer.invoke('tryTrashItem', path);
@@ -47,9 +49,9 @@ export function getSuffixedOutPath({ customOutDir, filePath, nameSuffix }) {
 
 export async function havePermissionToReadFile(filePath) {
   try {
-    const fd = await fs.open(filePath, 'r');
+    const fd = await fsExtra.open(filePath, 'r');
     try {
-      await fs.close(fd);
+      await fsExtra.close(fd);
     } catch (err) {
       console.error('Failed to close fd', err);
     }
@@ -62,7 +64,7 @@ export async function havePermissionToReadFile(filePath) {
 
 export async function checkDirWriteAccess(dirPath) {
   try {
-    await fs.access(dirPath, fs.constants.W_OK);
+    await fsExtra.access(dirPath, fsExtra.constants.W_OK);
   } catch (err) {
     if (err.code === 'EPERM') return false; // Thrown on Mac (MAS build) when user has not yet allowed access
     if (err.code === 'EACCES') return false; // Thrown on Linux when user doesn't have access to output dir
@@ -72,12 +74,12 @@ export async function checkDirWriteAccess(dirPath) {
 }
 
 export async function pathExists(pathIn) {
-  return fs.pathExists(pathIn);
+  return fsExtra.pathExists(pathIn);
 }
 
 export async function getPathReadAccessError(pathIn) {
   try {
-    await fs.access(pathIn, fs.constants.R_OK);
+    await fsExtra.access(pathIn, fsExtra.constants.R_OK);
     return undefined;
   } catch (err) {
     return err.code;
@@ -85,13 +87,13 @@ export async function getPathReadAccessError(pathIn) {
 }
 
 export async function dirExists(dirPath) {
-  return (await pathExists(dirPath)) && (await fs.lstat(dirPath)).isDirectory();
+  return (await pathExists(dirPath)) && (await fsExtra.lstat(dirPath)).isDirectory();
 }
 
 export async function transferTimestamps(inPath, outPath, offset = 0) {
   try {
-    const { atime, mtime } = await fs.stat(inPath);
-    await fs.utimes(outPath, (atime.getTime() / 1000) + offset, (mtime.getTime() / 1000) + offset);
+    const { atime, mtime } = await stat(inPath);
+    await fsExtra.utimes(outPath, (atime.getTime() / 1000) + offset, (mtime.getTime() / 1000) + offset);
   } catch (err) {
     console.error('Failed to set output file modified time', err);
   }
@@ -361,4 +363,18 @@ export const getNumDigits = (value) => Math.floor(value > 0 ? Math.log10(value) 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
 export function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
+export const readFileSize = async (path) => (await stat(path)).size;
+
+export const readFileSizes = (paths) => pMap(paths, async (path) => readFileSize(path), { concurrency: 5 });
+
+export function checkFileSizes(inputSize, outputSize) {
+  const diff = Math.abs(outputSize - inputSize);
+  const relDiff = diff / inputSize;
+  const maxDiffPercent = 5;
+  const sourceFilesTotalSize = prettyBytes(inputSize);
+  const outputFileTotalSize = prettyBytes(outputSize);
+  if (relDiff > maxDiffPercent / 100) return i18n.t('The size of the merged output file ({{outputFileTotalSize}}) differs from the total size of source files ({{sourceFilesTotalSize}}) by more than {{maxDiffPercent}}%. This could indicate that there was a problem during the merge.', { maxDiffPercent, sourceFilesTotalSize, outputFileTotalSize });
+  return undefined;
 }
