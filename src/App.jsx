@@ -9,6 +9,7 @@ import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import JSON5 from 'json5';
+import pMap from 'p-map';
 
 import fromPairs from 'lodash/fromPairs';
 import sortBy from 'lodash/sortBy';
@@ -56,7 +57,7 @@ import {
   extractStreams, setCustomFfPath as ffmpegSetCustomFfPath,
   isIphoneHevc, isProblematicAvc1, tryMapChaptersToEdl, blackDetect, silenceDetect, detectSceneChanges as ffmpegDetectSceneChanges,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
-  RefuseOverwriteError, readFrames, mapTimesToSegments, abortFfmpegs,
+  RefuseOverwriteError, readFrames, mapTimesToSegments, abortFfmpegs, findKeyframeNearTime,
 } from './ffmpeg';
 import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback, isStreamThumbnail } from './util/streams';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
@@ -73,7 +74,7 @@ import { adjustRate } from './util/rate-calculator';
 import { showParametersDialog } from './dialogs/parameters';
 import { askExtractFramesAsImages } from './dialogs/extractFrames';
 import { askForHtml5ifySpeed } from './dialogs/html5ify';
-import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments, selectSegmentsByLabelDialog, showRefuseToOverwrite, openDirToast, openCutFinishedToast, openConcatFinishedToast } from './dialogs';
+import { askForOutDir, askForInputDir, askForImportChapters, createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, labelSegmentDialog, openYouTubeChaptersDialog, openAbout, showEditableJsonDialog, askForShiftSegments, selectSegmentsByLabelDialog, showRefuseToOverwrite, openDirToast, openCutFinishedToast, openConcatFinishedToast, askForAlignSegments } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap, combineOverlappingSegments as combineOverlappingSegments2, isDurationValid } from './segments';
@@ -442,22 +443,61 @@ const App = memo(() => {
 
   const isSegmentSelected = useCallback(({ segId }) => !deselectedSegmentIds[segId], [deselectedSegmentIds]);
 
-  const shiftAllSegmentTimes = useCallback(async () => {
-    const shift = await askForShiftSegments();
-    if (shift == null) return;
-    const { shiftAmount, shiftValues } = shift;
+  const modifySelectedSegmentTimes = useCallback(async (transformSegment, concurrency = 5) => {
     const clampValue = (val) => Math.min(Math.max(val, 0), duration);
-    const newSegments = apparentCutSegments.map((segment) => {
-      if (!isSegmentSelected(segment)) return segment;
-      const newSegment = { ...segment };
-      shiftValues.forEach((key) => {
-        newSegment[key] = clampValue(segment[key] + shiftAmount);
-      });
+
+    let newSegments = await pMap(apparentCutSegments, async (segment) => {
+      if (!isSegmentSelected(segment)) return segment; // pass thru non-selected segments
+      const newSegment = await transformSegment(segment);
+      newSegment.start = clampValue(newSegment.start);
+      newSegment.end = clampValue(newSegment.end);
       return newSegment;
-    }).filter((segment) => segment.end > segment.start);
+    }, { concurrency });
+    newSegments = newSegments.filter((segment) => segment.end > segment.start);
     if (newSegments.length < 1) setCutSegments(createInitialCutSegments());
     else setCutSegments(newSegments);
   }, [apparentCutSegments, createInitialCutSegments, duration, isSegmentSelected, setCutSegments]);
+
+  const shiftAllSegmentTimes = useCallback(async () => {
+    const shift = await askForShiftSegments();
+    if (shift == null) return;
+
+    const { shiftAmount, shiftKeys } = shift;
+    await modifySelectedSegmentTimes((segment) => {
+      const newSegment = { ...segment };
+      shiftKeys.forEach((key) => {
+        newSegment[key] += shiftAmount;
+      });
+      return newSegment;
+    });
+  }, [modifySelectedSegmentTimes]);
+
+  const alignSegmentTimesToKeyframes = useCallback(async () => {
+    if (!mainVideoStream || workingRef.current) return;
+    try {
+      const response = await askForAlignSegments();
+      if (response == null) return;
+      setWorking(i18n.t('Aligning segments to keyframes'));
+      const { mode, startOrEnd } = response;
+      await modifySelectedSegmentTimes(async (segment) => {
+        const newSegment = { ...segment };
+
+        async function align(key) {
+          const time = newSegment[key];
+          const keyframe = await findKeyframeNearTime({ filePath, streamIndex: mainVideoStream.index, time, mode });
+          if (!keyframe == null) throw new Error(`Cannot find any keyframe within 60 seconds of frame ${time}`);
+          newSegment[key] = keyframe;
+        }
+        if (startOrEnd.includes('start')) await align('start');
+        if (startOrEnd.includes('end')) await align('end');
+        return newSegment;
+      });
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setWorking();
+    }
+  }, [filePath, mainVideoStream, modifySelectedSegmentTimes, setWorking]);
 
   const maxLabelLength = safeOutputFileName ? 100 : 500;
 
@@ -2395,6 +2435,7 @@ const App = memo(() => {
       detectSceneChanges,
       createSegmentsFromKeyframes,
       shiftAllSegmentTimes,
+      alignSegmentTimesToKeyframes,
     };
 
     const actionsWithCatch = Object.entries(actions).map(([key, action]) => [
@@ -2410,7 +2451,7 @@ const App = memo(() => {
 
     actionsWithCatch.forEach(([key, action]) => electron.ipcRenderer.on(key, action));
     return () => actionsWithCatch.forEach(([key, action]) => electron.ipcRenderer.removeListener(key, action));
-  }, [apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, combineOverlappingSegments, concatCurrentBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, createSegmentsFromKeyframes, customOutDir, cutSegments, detectBlackScenes, detectSceneChanges, detectSilentScenes, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, invertAllSegments, loadCutSegments, loadMedia, openFilesDialog, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleKeyboardShortcuts, toggleLastCommands, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
+  }, [alignSegmentTimesToKeyframes, apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, combineOverlappingSegments, concatCurrentBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, createSegmentsFromKeyframes, customOutDir, cutSegments, detectBlackScenes, detectSceneChanges, detectSilentScenes, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, invertAllSegments, loadCutSegments, loadMedia, openFilesDialog, openSendReportDialogWithState, reorderSegsByStartTime, setWorking, shiftAllSegmentTimes, shuffleSegments, toggleKeyboardShortcuts, toggleLastCommands, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
     try {

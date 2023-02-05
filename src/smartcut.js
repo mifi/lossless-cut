@@ -1,6 +1,6 @@
 import { getRealVideoStreams, getVideoTimebase } from './util/streams';
 
-import { readFramesAroundTime } from './ffmpeg';
+import { readKeyframesAroundTime, findNextKeyframe, findKeyframeAtExactTime } from './ffmpeg';
 
 const { stat } = window.require('fs-extra');
 
@@ -12,14 +12,11 @@ export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, s
 
   const videoStream = videoStreams[0];
 
-  async function readKeyframes(window) {
-    const frames = await readFramesAroundTime({ filePath: path, aroundTime: desiredCutFrom, streamIndex: videoStream.index, window });
-    return frames.filter((frame) => frame.keyframe);
-  }
+  const readKeyframes = async (window) => readKeyframesAroundTime({ filePath: path, streamIndex: videoStream.index, aroundTime: desiredCutFrom, window });
 
   let keyframes = await readKeyframes(10);
 
-  const keyframeAtExactTime = keyframes.find((keyframe) => Math.abs(keyframe.time - desiredCutFrom) < 0.000001);
+  const keyframeAtExactTime = findKeyframeAtExactTime(keyframes, desiredCutFrom);
   if (keyframeAtExactTime) {
     console.log('Start cut is already on exact keyframe', keyframeAtExactTime.time);
 
@@ -30,15 +27,14 @@ export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, s
     };
   }
 
-  const findNextKeyframe = () => keyframes.find((keyframe) => keyframe.time > desiredCutFrom); // (they are already sorted)
-  let nextKeyframe = findNextKeyframe();
-  if (!nextKeyframe) {
-    console.log('Cannot find any keyframe after desired start cut point, trying with larger window');
-    keyframes = await readKeyframes(60);
-    nextKeyframe = findNextKeyframe();
-  }
+  let nextKeyframe = findNextKeyframe(keyframes, desiredCutFrom);
 
-  if (!nextKeyframe) throw new Error('Cannot find any keyframe after desired start cut point');
+  if (nextKeyframe == null) {
+    // try again with a larger window
+    keyframes = await readKeyframes(60);
+    nextKeyframe = findNextKeyframe(keyframes, desiredCutFrom);
+  }
+  if (nextKeyframe == null) throw new Error('Cannot find any keyframe after the desired start cut point');
 
   console.log('Smart cut from keyframe', { keyframe: nextKeyframe.time, desiredCutFrom });
 

@@ -223,7 +223,7 @@ async function askForSegmentsRandomDurationRange() {
   return parse(value);
 }
 
-async function askForShiftSegmentsVariant(time) {
+async function askForSegmentsStartOrEnd(text) {
   const { value } = await Swal.fire({
     input: 'radio',
     showCancelButton: true,
@@ -233,9 +233,11 @@ async function askForShiftSegmentsVariant(time) {
       both: i18n.t('Both'),
     },
     inputValue: 'both',
-    text: i18n.t('Do you want to shift the start or end timestamp by {{time}}?', { time: formatDuration({ seconds: time, shorten: true }) }),
+    text,
   });
-  return value;
+  if (!value) return undefined;
+
+  return value === 'both' ? ['start', 'end'] : [value];
 }
 
 export async function askForShiftSegments() {
@@ -268,12 +270,37 @@ export async function askForShiftSegments() {
   if (value == null) return undefined;
   const parsed = parseValue(value);
 
-  const shiftVariant = await askForShiftSegmentsVariant(parsed);
-  if (shiftVariant == null) return undefined;
+  const startOrEnd = await askForSegmentsStartOrEnd(i18n.t('Do you want to shift the start or end timestamp by {{time}}?', { time: formatDuration({ seconds: parsed, shorten: true }) }));
+  if (startOrEnd == null) return undefined;
 
   return {
     shiftAmount: parsed,
-    shiftValues: shiftVariant === 'both' ? ['start', 'end'] : [shiftVariant],
+    shiftKeys: startOrEnd,
+  };
+}
+
+
+export async function askForAlignSegments() {
+  const startOrEnd = await askForSegmentsStartOrEnd(i18n.t('Do you want to align the segment start or end timestamps to keyframes?'));
+  if (startOrEnd == null) return undefined;
+
+  const { value: mode } = await Swal.fire({
+    input: 'radio',
+    showCancelButton: true,
+    inputOptions: {
+      nearest: i18n.t('Nearest keyframe'),
+      before: i18n.t('Previous keyframe'),
+      after: i18n.t('Next keyframe'),
+    },
+    inputValue: 'before',
+    text: i18n.t('Do you want to align segment times to the nearest, previous or next keyframe?'),
+  });
+
+  if (mode == null) return undefined;
+
+  return {
+    mode,
+    startOrEnd,
   };
 }
 

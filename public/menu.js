@@ -246,6 +246,12 @@ module.exports = (app, mainWindow, newVersion) => {
                 mainWindow.webContents.send('shiftAllSegmentTimes');
               },
             },
+            {
+              label: i18n.t('Align segment times to keyframes'),
+              click() {
+                mainWindow.webContents.send('alignSegmentTimesToKeyframes');
+              },
+            },
           ],
         },
         {

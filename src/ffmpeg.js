@@ -3,6 +3,7 @@ import sortBy from 'lodash/sortBy';
 import moment from 'moment';
 import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
+import minBy from 'lodash/minBy';
 
 import { pcmAudioCodecs, getMapStreamsArgs, isMov } from './util/streams';
 import { getSuffixedOutPath, isWindows, isMac, platform, arch, isExecaFailure } from './util';
@@ -153,6 +154,39 @@ export async function readFramesAroundTime({ filePath, streamIndex, aroundTime, 
   return readFrames({ filePath, from, to, streamIndex });
 }
 
+export async function readKeyframesAroundTime({ filePath, streamIndex, aroundTime, window }) {
+  const frames = await readFramesAroundTime({ filePath, aroundTime, streamIndex, window });
+  return frames.filter((frame) => frame.keyframe);
+}
+
+export const findKeyframeAtExactTime = (keyframes, time) => keyframes.find((keyframe) => Math.abs(keyframe.time - time) < 0.000001);
+export const findNextKeyframe = (keyframes, time) => keyframes.find((keyframe) => keyframe.time >= time); // (assume they are already sorted)
+const findPreviousKeyframe = (keyframes, time) => keyframes.findLast((keyframe) => keyframe.time <= time);
+const findNearestKeyframe = (keyframes, time) => minBy(keyframes, (keyframe) => Math.abs(keyframe.time - time));
+
+function findKeyframe(keyframes, time, mode) {
+  switch (mode) {
+    case 'nearest': return findNearestKeyframe(keyframes, time);
+    case 'before': return findPreviousKeyframe(keyframes, time);
+    case 'after': return findNextKeyframe(keyframes, time);
+    default: return undefined;
+  }
+}
+
+export async function findKeyframeNearTime({ filePath, streamIndex, time, mode }) {
+  let keyframes = await readKeyframesAroundTime({ filePath, streamIndex, aroundTime: time, window: 10 });
+  let nearByKeyframe = findKeyframe(keyframes, time, mode);
+
+  if (!nearByKeyframe) {
+    keyframes = await readKeyframesAroundTime({ filePath, streamIndex, aroundTime: time, window: 60 });
+    nearByKeyframe = findKeyframe(keyframes, time, mode);
+  }
+
+  if (!nearByKeyframe) return undefined;
+  return nearByKeyframe.time;
+}
+
+// todo this is not in use
 // https://stackoverflow.com/questions/14005110/how-to-split-a-video-using-ffmpeg-so-that-each-chunk-starts-with-a-key-frame
 // http://kicherer.org/joomla/index.php/de/blog/42-avcut-frame-accurate-video-cutting-with-only-small-quality-loss
 export function getSafeCutTime(frames, cutTime, nextMode) {
