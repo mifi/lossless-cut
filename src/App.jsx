@@ -446,7 +446,7 @@ const App = memo(() => {
     const shift = await askForShiftSegments();
     if (shift == null) return;
     const { shiftAmount, shiftValues } = shift;
-    const clampValue = (val) => Math.min(Math.max(val + shiftAmount, 0), duration);
+    const clampValue = (val) => Math.min(Math.max(val, 0), duration);
     const newSegments = apparentCutSegments.map((segment) => {
       if (!isSegmentSelected(segment)) return segment;
       const newSegment = { ...segment };
