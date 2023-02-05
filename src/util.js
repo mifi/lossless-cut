@@ -7,7 +7,7 @@ import prettyBytes from 'pretty-bytes';
 
 import isDev from './isDev';
 
-const { dirname, parse: parsePath, join, extname, isAbsolute, resolve } = window.require('path');
+const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
 const fsExtra = window.require('fs-extra');
 const { stat } = window.require('fs/promises');
 const os = window.require('os');
@@ -377,4 +377,20 @@ export function checkFileSizes(inputSize, outputSize) {
   const outputFileTotalSize = prettyBytes(outputSize);
   if (relDiff > maxDiffPercent / 100) return i18n.t('The size of the merged output file ({{outputFileTotalSize}}) differs from the total size of source files ({{sourceFilesTotalSize}}) by more than {{maxDiffPercent}}%. This could indicate that there was a problem during the merge.', { maxDiffPercent, sourceFilesTotalSize, outputFileTotalSize });
   return undefined;
+}
+
+function setDocumentExtraTitle(extra) {
+  const baseTitle = 'LosslessCut';
+  if (extra != null) document.title = `${baseTitle} - ${extra}`;
+  else document.title = baseTitle;
+}
+
+export function setDocumentTitle({ filePath, working, cutProgress }) {
+  const parts = [];
+  if (filePath) parts.push(basename(filePath));
+  if (working) {
+    parts.push('-', working);
+    if (cutProgress != null) parts.push(`${(cutProgress * 100).toFixed(1)}%`);
+  }
+  setDocumentExtraTitle(parts.length > 0 ? parts.join(' ') : undefined);
 }

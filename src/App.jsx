@@ -65,7 +65,7 @@ import {
   checkDirWriteAccess, dirExists, isMasBuild, isStoreBuild, dragPreventer,
   filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, isOutOfSpaceError, getNumDigits, isExecaFailure, readFileSize, readFileSizes, checkFileSizes,
+  deleteFiles, isOutOfSpaceError, getNumDigits, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle,
 } from './util';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
@@ -95,11 +95,6 @@ const { focusWindow } = remote.require('./electron');
 const calcShouldShowWaveform = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
 const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
 
-function setDocumentExtraTitle(extra) {
-  const baseTitle = 'LosslessCut';
-  if (extra != null) document.title = `${baseTitle} - ${extra}`;
-  else document.title = baseTitle;
-}
 
 const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
 const bottomMotionStyle = { background: controlsBackground };
@@ -172,15 +167,7 @@ const App = memo(() => {
     setWorkingState(val);
   }, []);
 
-  useEffect(() => {
-    const parts = [];
-    if (filePath) parts.push(basename(filePath));
-    if (working) {
-      parts.push('-', working);
-      if (cutProgress != null) parts.push(`${(cutProgress * 100).toFixed(1)}%`);
-    }
-    setDocumentExtraTitle(parts.length > 0 ? parts.join(' ') : undefined);
-  }, [cutProgress, filePath, working]);
+  useEffect(() => setDocumentTitle({ filePath, working, cutProgress }), [cutProgress, filePath, working]);
 
   const zoom = Math.floor(zoomUnrounded);
 
