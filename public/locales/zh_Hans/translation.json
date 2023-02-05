@@ -706,5 +706,21 @@
     "Set the minimum detected black duration expressed in seconds. It must be a non-negative floating point number.": "设置以秒为单位的检测到的最小黑色持续时间。它必须是一个非负浮点数。",
     "Set the threshold for considering a pixel \"black\".": "设置考虑像素“黑色”的阈值。",
     "There is a known problem with this file type, and the output might not be playable. You can work around this problem by enabling the \"Experimental flag\" under Settings.": "此文件类型存在一个已知问题，输出可能无法播放。您可以通过启用“设置”下的“实验标志”来解决此问题。",
-    "Set the threshold for considering a picture \"black\".": "设置考虑图片“黑色”的阈值。"
+    "Set the threshold for considering a picture \"black\".": "设置考虑图片“黑色”的阈值。",
+    "Cutpoints may be inaccurate.": "切割点可能不准确。",
+    "Disable <1>merge options</1>": "禁用 <1>合并选项</1>",
+    "Do this automatically after export": "导出后自动执行此操作",
+    "It's generally recommended to set this to one of: {{values}}": "通常建议将其设置为以下值之一: {{values}}",
+    "Merge options": "合并选项",
+    "Please test the output file in your desired player/editor before you delete the source file.": "在删除源文件之前，请在所需的播放器/编辑器中测试输出文件。",
+    "Please test the output files in your desired player/editor before you delete the source files.": "在删除源文件之前，请在所需的播放器/编辑器中测试输出文件。",
+    "Unable to merge files": "无法合并文件",
+    "You might want to redact any sensitive information like paths.": "您可能想要编辑任何敏感信息，例如路径。",
+    "thumbnail": "缩略图",
+    "Track {{num}} info": "轨道{{num}}的信息",
+    "Experimental functionality has been activated!": "实验功能已激活！",
+    "Extracting {{numTracks}} unprocessable tracks(s)": "正在提取{{numTracks}}个无法处理的轨道",
+    "If your source files have more than two tracks, the extra tracks might have been removed. You can change this option before merging.": "如果源文件有两个以上的轨道，则多余的轨道可能已被移除。您可以在合并之前更改此选项。",
+    "Try each of the following before merging again:": "在再次合并之前，请尝试以下各项操作：",
+    "Warning: Cutting thumbnail tracks is known to cause problems. Consider disabling track {{trackNumber}}.": "警告：已知剪切缩略图轨道会导致问题。考虑禁用轨道 {{trackNumber}}。"
 }
