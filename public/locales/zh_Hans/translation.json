@@ -722,5 +722,19 @@
     "Extracting {{numTracks}} unprocessable tracks(s)": "正在提取{{numTracks}}个无法处理的轨道",
     "If your source files have more than two tracks, the extra tracks might have been removed. You can change this option before merging.": "如果源文件有两个以上的轨道，则多余的轨道可能已被移除。您可以在合并之前更改此选项。",
     "Try each of the following before merging again:": "在再次合并之前，请尝试以下各项操作：",
-    "Warning: Cutting thumbnail tracks is known to cause problems. Consider disabling track {{trackNumber}}.": "警告：已知剪切缩略图轨道会导致问题。考虑禁用轨道 {{trackNumber}}。"
+    "Warning: Cutting thumbnail tracks is known to cause problems. Consider disabling track {{trackNumber}}.": "警告：已知剪切缩略图轨道会导致问题。考虑禁用轨道 {{trackNumber}}。",
+    "Do you want to align the segment start or end timestamps to keyframes?": "是否要将分段开始或结束时间戳与关键帧对齐？",
+    "Export finished with warning(s)": "导出已完成，但有警告",
+    "Export options are not shown. You can enable export options by clicking the icon right next to the export button.": "未显示导出选项。您可以通过单击导出按钮旁边的图标来启用导出选项。",
+    "Export options will be shown before exporting.": "导出选项将在导出前显示。",
+    "Export options will not be shown before exporting.": "导出前不会显示导出选项。",
+    "Next keyframe": "下一关键帧",
+    "Some extra tracks have been discarded. You can change this option before merging.": "一些额外的轨道已被丢弃。您可以在合并之前更改此选项。",
+    "Aligning segments to keyframes": "正在将分段时间与关键帧对齐",
+    "Previous keyframe": "上一关键帧",
+    "Do you want to align segment times to the nearest, previous or next keyframe?": "是否要将分段时间与最近的、上一个或下一个关键帧对齐？",
+    "Align segment times to keyframes": "将分段时间与关键帧对齐",
+    "Files merged with warning(s)": "文件合并出现警告",
+    "Nearest keyframe": "最近的关键帧",
+    "The size of the merged output file ({{outputFileTotalSize}}) differs from the total size of source files ({{sourceFilesTotalSize}}) by more than {{maxDiffPercent}}%. This could indicate that there was a problem during the merge.": "合并输出文件的大小 ({{outputFileTotalSize}}) 与源文件的总大小 ({{sourceFilesTotalSize}}) 相差超过 {{maxDiffPercent}}%。这可能表明合并期间出现问题。"
 }
