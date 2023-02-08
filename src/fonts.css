@@ -1,80 +1,80 @@
-/* noto-sans-300 */
+/* open-sans-300 */
 @font-face {
-  font-family: 'Noto Sans SemiCondensed';
+  font-family: 'Open Sans SemiCondensed';
   font-style: normal;
   font-weight: 300;
-  src: local('Noto Sans SemiCondensed Light'), local('NotoSans-SemiCondensedLight'),
-       url('./fonts/notosans-sc300light.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
+  src: local('Open Sans SemiCondensed Light'), local('OpenSans-SemiCondensedLight'),
+       url('./fonts/opensans-sc300light.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
 }
-/* noto-sans-300italic */
+/* open-sans-300italic */
 @font-face {
-  font-family: 'Noto Sans SemiCondensed';
+  font-family: 'Open Sans SemiCondensed';
   font-style: italic;
   font-weight: 300;
-  src: local('Noto Sans SemiCondensed Light Italic'), local('NotoSans-SemiCondensedLightItalic'),
-       url('./fonts/notosans-sc300lightitalic.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
+  src: local('Open Sans SemiCondensed Light Italic'), local('OpenSans-SemiCondensedLightItalic'),
+       url('./fonts/opensans-sc300lightitalic.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
 }
-/* noto-sans-regular */
+/* open-sans-regular */
 @font-face {
-  font-family: 'Noto Sans SemiCondensed';
+  font-family: 'Open Sans SemiCondensed';
   font-style: normal;
   font-weight: 400;
-  src: local('Noto Sans SemiCondensed'), local('NotoSans-SemiCondensed'),
-       url('./fonts/notosans-sc400regular.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
+  src: local('Open Sans SemiCondensed'), local('OpenSans-SemiCondensed'),
+       url('./fonts/opensans-sc400regular.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
 }
-/* noto-sans-italic */
+/* open-sans-italic */
 @font-face {
-  font-family: 'Noto Sans SemiCondensed';
+  font-family: 'Open Sans SemiCondensed';
   font-style: italic;
   font-weight: 400;
-  src: local('Noto Sans SemiCondensed Italic'), local('NotoSans-SemiCondensedItalic'),
-       url('./fonts/notosans-sc400regularitalic.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
+  src: local('Open Sans SemiCondensed Italic'), local('OpenSans-SemiCondensedItalic'),
+       url('./fonts/opensans-sc400regularitalic.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
 }
-/* noto-sans-600 */
+/* open-sans-600 */
 @font-face {
-  font-family: 'Noto Sans SemiCondensed';
+  font-family: 'Open Sans SemiCondensed';
   font-style: normal;
   font-weight: 600;
-  src: local('Noto Sans SemiCondensed SemiBold'), local('NotoSans-SemiCondensedSemiBold'),
-       url('./fonts/notosans-sc600semibold.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
+  src: local('Open Sans SemiCondensed SemiBold'), local('OpenSans-SemiCondensedSemiBold'),
+       url('./fonts/opensans-sc600semibold.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
 }
-/* noto-sans-600italic */
+/* open-sans-600italic */
 @font-face {
-  font-family: 'Noto Sans SemiCondensed';
+  font-family: 'Open Sans SemiCondensed';
   font-style: italic;
   font-weight: 600;
-  src: local('Noto Sans SemiCondensed SemiBold Italic'), local('NotoSans-SemiCondensedSemiBoldItalic'),
-       url('./fonts/notosans-sc600semibolditalic.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
+  src: local('Open Sans SemiCondensed SemiBold Italic'), local('OpenSans-SemiCondensedSemiBoldItalic'),
+       url('./fonts/opensans-sc600semibolditalic.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
 }
-/* noto-sans-700 */
+/* open-sans-700 */
 @font-face {
-  font-family: 'Noto Sans SemiCondensed';
+  font-family: 'Open Sans SemiCondensed';
   font-style: normal;
   font-weight: 700;
-  src: local('Noto Sans SemiCondensed Bold'), local('NotoSans-SemiCondensedBold'),
-       url('./fonts/notosans-sc700bold.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
+  src: local('Open Sans SemiCondensed Bold'), local('OpenSans-SemiCondensedBold'),
+       url('./fonts/opensans-sc700bold.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
 }
-/* noto-sans-700italic */
+/* open-sans-700italic */
 @font-face {
-  font-family: 'Noto Sans SemiCondensed';
+  font-family: 'Open Sans SemiCondensed';
   font-style: italic;
   font-weight: 700;
-  src: local('Noto Sans SemiCondensed Bold Italic'), local('NotoSans-SemiCondensedBoldItalic'),
-       url('./fonts/notosans-sc700bolditalic.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
+  src: local('Open Sans SemiCondensed Bold Italic'), local('OpenSans-SemiCondensedBoldItalic'),
+       url('./fonts/opensans-sc700bolditalic.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
 }
-/* noto-sans-800 */
+/* open-sans-800 */
 @font-face {
-  font-family: 'Noto Sans SemiCondensed';
+  font-family: 'Open Sans SemiCondensed';
   font-style: normal;
   font-weight: 800;
-  src: local('Noto Sans SemiCondensed ExtraBold'), local('NotoSans-SemiCondensedExtraBold'),
-       url('./fonts/notosans-sc800extrabold.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
+  src: local('Open Sans SemiCondensed ExtraBold'), local('OpenSans-SemiCondensedExtraBold'),
+       url('./fonts/opensans-sc800extrabold.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
 }
-/* noto-sans-800italic */
+/* open-sans-800italic */
 @font-face {
-  font-family: 'Noto Sans SemiCondensed';
+  font-family: 'Open Sans SemiCondensed';
   font-style: italic;
   font-weight: 800;
-  src: local('Noto Sans SemiCondensed ExtraBold Italic'), local('NotoSans-SemiCondensedExtraBoldItalic'),
-       url('./fonts/notosans-sc800extrabolditalic.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
+  src: local('Open Sans SemiCondensed ExtraBold Italic'), local('OpenSans-SemiCondensedExtraBoldItalic'),
+       url('./fonts/opensans-sc800extrabolditalic.woff2') format('woff2'); /* Chrome 26+, Opera 23+, Firefox 39+ */
 }
