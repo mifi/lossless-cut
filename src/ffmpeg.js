@@ -1057,10 +1057,16 @@ export async function cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, ou
   function getVideoArgs({ streamIndex, outputIndex }) {
     if (streamIndex !== videoStreamIndex) return undefined;
 
-    return [
+    const args = [
       `-c:${outputIndex}`, videoCodec,
       `-b:${outputIndex}`, videoBitrate,
     ];
+
+    // seems like ffmpeg handles this itself well when encoding same source file
+    // if (videoLevel != null) args.push(`-level:${outputIndex}`, videoLevel);
+    // if (videoProfile != null) args.push(`-profile:${outputIndex}`, videoProfile);
+
+    return args;
   }
 
   const mapStreamsArgs = getMapStreamsArgs({

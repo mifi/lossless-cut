@@ -287,6 +287,7 @@ export async function deleteFiles({ toDelete, paths: { previewFilePath, sourceFi
 
   if (failedToTrashFiles.length === 0) return; // All good!
 
+  // todo allow bypassing trash altogether? https://github.com/mifi/lossless-cut/discussions/1425
   const { value } = await Swal.fire({
     icon: 'warning',
     text: i18n.t('Unable to move file to trash. Do you want to permanently delete it?'),
