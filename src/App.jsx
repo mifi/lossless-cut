@@ -1813,6 +1813,7 @@ const App = memo(() => {
       createFixedDurationSegments,
       createNumSegments,
       createRandomSegments,
+      alignSegmentTimesToKeyframes,
       shuffleSegments,
       clearSegments,
       toggleSegmentsList,
@@ -1831,6 +1832,7 @@ const App = memo(() => {
       toggleCurrentSegmentSelected,
       removeSelectedSegments,
       fixInvalidDuration: tryFixInvalidDuration,
+      shiftAllSegmentTimes,
       increaseVolume: () => setPlaybackVolume((val) => Math.min(1, val + 0.07)),
       decreaseVolume: () => setPlaybackVolume((val) => Math.max(0, val - 0.07)),
     };
@@ -1874,7 +1876,7 @@ const App = memo(() => {
     if (match) return bubble;
 
     return true; // bubble the event
-  }, [addSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, combineOverlappingSegments, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addSegment, alignSegmentTimesToKeyframes, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, combineOverlappingSegments, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   useKeyboard({ keyBindings, onKeyPress });
 

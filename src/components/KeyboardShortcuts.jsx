@@ -292,6 +292,14 @@ const KeyboardShortcuts = memo(({
           name: t('Fill gaps between segments'),
           category: segmentsAndCutpointsCategory,
         },
+        shiftAllSegmentTimes: {
+          name: t('Shift all segments on timeline'),
+          category: segmentsAndCutpointsCategory,
+        },
+        alignSegmentTimesToKeyframes: {
+          name: t('Align segment times to keyframes'),
+          category: segmentsAndCutpointsCategory,
+        },
         createFixedDurationSegments: {
           name: t('Create fixed duration segments'),
           category: segmentsAndCutpointsCategory,
