@@ -309,7 +309,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
     const ffmpegCommandLine = getFfCommandLine('ffmpeg', ffmpegArgs);
 
-    console.log(ffmpegCommandLine);
+    // console.log(ffmpegCommandLine);
     appendFfmpegCommandLog(ffmpegCommandLine);
 
     const process = runFfmpeg(ffmpegArgs);

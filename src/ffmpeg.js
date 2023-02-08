@@ -1092,8 +1092,5 @@ export async function cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, ou
     '-f', outFormat, '-y', outPath,
   ];
 
-  const ffmpegCommandLine = getFfCommandLine('ffmpeg', ffmpegArgs);
-  console.log(ffmpegCommandLine);
-
   await runFfmpeg(ffmpegArgs);
 }
