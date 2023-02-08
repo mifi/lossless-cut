@@ -608,5 +608,15 @@
     "Detect scene changes": "Scèneveranderingen detecteren",
     "Detect silent scenes": "Stille scènes detecteren",
     "Detecting scene changes": "Scèneveranderingen detecteren",
-    "Detecting silent scenes": "Stille scenes detecteren"
+    "Detecting silent scenes": "Stille scenes detecteren",
+    "Enable HEVC hardware decoding": "HEVC-hardwaredecodering inschakelen",
+    "End": "Einde",
+    "Check for updates": "Op updates controleren",
+    "Check for updates on startup?": "Bij opstarten controleren op updates?",
+    "Do you want to align segment times to the nearest, previous or next keyframe?": "Wilt u segment-tijden uitlijnen met het dichtste, vorige of volgende keyframe?",
+    "Do you want to align the segment start or end timestamps to keyframes?": "Wilt u de begin- of eind-tijdstempel van het segment uitlijnen op keyframes?",
+    "Do you want to shift the start or end timestamp by {{time}}?": "Wilt u de begin- of eind-tijdstempel verschuiven met {{time}}?",
+    "Aligning segments to keyframes": "Segmenten uitlijnen op keyframes",
+    "Align segment times to keyframes": "Segment-tijden uitlijnen op keyframes",
+    "Enable HEVC / H265 hardware decoding (you may need to turn this off if you have problems with HEVC files)": "HEVC-/H265-hardwaredecodering inschakelen (mogelijk moet u dit uitschakelen als u problemen hebt met HEVC-bestanden)"
 }
