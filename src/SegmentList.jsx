@@ -272,7 +272,7 @@ const SegmentList = memo(({
       </div>
 
       <div style={{ padding: '0 10px', overflowY: 'scroll', flexGrow: 1 }} className="hide-scrollbar">
-        <ReactSortable list={sortableList} setList={setSortableList} sort={!invertCutSegments} handle=".segment-handle">
+        <ReactSortable list={sortableList} setList={setSortableList} disabled={!!invertCutSegments} handle=".segment-handle">
           {sortableList.map(({ id, seg }, index) => {
             const enabled = !invertCutSegments && selectedSegmentsRaw.includes(seg);
             return (
