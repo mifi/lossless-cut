@@ -736,5 +736,6 @@
     "Align segment times to keyframes": "将分段时间与关键帧对齐",
     "Files merged with warning(s)": "文件合并出现警告",
     "Nearest keyframe": "最近的关键帧",
-    "The size of the merged output file ({{outputFileTotalSize}}) differs from the total size of source files ({{sourceFilesTotalSize}}) by more than {{maxDiffPercent}}%. This could indicate that there was a problem during the merge.": "合并输出文件的大小 ({{outputFileTotalSize}}) 与源文件的总大小 ({{sourceFilesTotalSize}}) 相差超过 {{maxDiffPercent}}%。这可能表明合并期间出现问题。"
+    "The size of the merged output file ({{outputFileTotalSize}}) differs from the total size of source files ({{sourceFilesTotalSize}}) by more than {{maxDiffPercent}}%. This could indicate that there was a problem during the merge.": "合并输出文件的大小 ({{outputFileTotalSize}}) 与源文件的总大小 ({{sourceFilesTotalSize}}) 相差超过 {{maxDiffPercent}}%。这可能表明合并期间出现问题。",
+    "Divide timeline into segments with randomized durations and gaps between segments, in a range specified in seconds with the correct format.": "将时间线分成具有随机持续时间和分段之间间隔的分段，范围内以秒为单位，格式正确。"
 }
