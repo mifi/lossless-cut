@@ -41,6 +41,7 @@ let newVersion;
 
 const openFiles = (paths) => mainWindow.webContents.send('openFiles', paths);
 
+const isStoreBuild = process.windowsStore || process.mas;
 
 // https://github.com/electron/electron/issues/526#issuecomment-563010533
 function getSizeOptions() {
@@ -124,7 +125,7 @@ function createWindow() {
 }
 
 function updateMenu() {
-  menu(app, mainWindow, newVersion);
+  menu({ app, mainWindow, newVersion, isStoreBuild });
 }
 
 function openFilesEventually(paths) {
@@ -206,7 +207,7 @@ if (!argv.allowMultipleInstances && !safeRequestSingleInstanceLock({ argv: proce
 
     const enableUpdateCheck = configStore.get('enableUpdateCheck');
 
-    if (enableUpdateCheck && !process.windowsStore && !process.mas) {
+    if (enableUpdateCheck && !isStoreBuild) {
       newVersion = await checkNewVersion();
       // newVersion = '1.2.3';
       if (newVersion) updateMenu();

@@ -9,7 +9,7 @@ const { Menu } = electron;
 
 const { homepage, getReleaseUrl, licensesPage } = require('./constants');
 
-module.exports = (app, mainWindow, newVersion) => {
+module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
   const menu = [
     ...(process.platform === 'darwin' ? [{ role: 'appMenu' }] : []),
 
@@ -376,15 +376,17 @@ module.exports = (app, mainWindow, newVersion) => {
           label: t('Report an error'),
           click() { mainWindow.webContents.send('openSendReportDialog'); },
         },
-        {
-          label: t('Version'),
-          click() { mainWindow.webContents.send('openAbout'); },
-        },
+        ...(!isStoreBuild ? [
+          {
+            label: t('Version'),
+            click() { mainWindow.webContents.send('openAbout'); },
+          },
+        ] : []),
       ],
     },
   ];
 
-  if (newVersion) {
+  if (!isStoreBuild && newVersion) {
     menu.push({
       label: t('New version!'),
       submenu: [
