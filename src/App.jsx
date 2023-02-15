@@ -1687,7 +1687,9 @@ const App = memo(() => {
         if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
         else inputOptions.tracks = i18n.t('Include all tracks from the new file');
       }
+
       if (batchFiles.length > 0) inputOptions.addToBatch = i18n.t('Add the file to the batch list');
+      else if (isFileOpened) inputOptions.mergeWithCurrentFile = i18n.t('Merge/concatenate with current file');
 
       if (Object.keys(inputOptions).length > 1) {
         const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction(inputOptions) : 'open';
@@ -1709,6 +1711,14 @@ const App = memo(() => {
           batchLoadPaths([firstFilePath], true);
           return;
         }
+        if (openFileResponse === 'mergeWithCurrentFile') {
+          const batchPaths = new Set();
+          if (filePath) batchPaths.add(filePath);
+          filePaths.forEach((path) => batchPaths.add(path));
+          batchLoadPaths([...batchPaths]);
+          if (batchPaths.size > 1) setConcatDialogVisible(true);
+          return;
+        }
         // Dialog canceled:
         return;
       }
@@ -1724,7 +1734,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, batchFiles.length, isFileOpened, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile]);
+  }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, isFileOpened, batchFiles.length, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile, filePath]);
 
   const openFilesDialog = useCallback(async () => {
     const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'], defaultPath: lastOpenedPath });
