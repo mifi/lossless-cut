@@ -77,7 +77,10 @@ const ConcatDialog = memo(({
       return;
     }
     const ext = getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath: firstPath });
-    setOutFileName(getSuffixedFileName(firstPath, `merged-${uniqueSuffix}${ext}`));
+    setOutFileName((existingOutputName) => {
+      if (existingOutputName == null) return getSuffixedFileName(firstPath, `merged-${uniqueSuffix}${ext}`);
+      return existingOutputName.replace(/(\.[^.]*)?$/, ext); // make sure the last (optional) .* is replaced by .ext`
+    });
   }, [fileFormat, firstPath, isCustomFormatSelected, uniqueSuffix]);
 
   const allFilesMeta = useMemo(() => {
