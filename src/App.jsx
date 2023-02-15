@@ -1585,7 +1585,8 @@ const App = memo(() => {
     if (!checkFileOpened() || workingRef.current) return;
     try {
       setWorking(i18n.t('Fixing file duration'));
-      const path = await fixInvalidDuration({ fileFormat, customOutDir });
+      setCutProgress(0);
+      const path = await fixInvalidDuration({ fileFormat, customOutDir, duration, onProgress: setCutProgress });
       toast.fire({ icon: 'info', text: i18n.t('Duration has been fixed') });
       await loadMedia({ filePath: path, customOutDir });
     } catch (err) {
@@ -1593,8 +1594,9 @@ const App = memo(() => {
       console.error('Failed to fix file duration', err);
     } finally {
       setWorking();
+      setCutProgress();
     }
-  }, [checkFileOpened, customOutDir, fileFormat, fixInvalidDuration, loadMedia, setWorking]);
+  }, [checkFileOpened, customOutDir, duration, fileFormat, fixInvalidDuration, loadMedia, setWorking]);
 
   const addStreamSourceFile = useCallback(async (path) => {
     if (allFilesMeta[path]) return undefined; // Already added?
