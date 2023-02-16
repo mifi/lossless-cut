@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import i18n from 'i18next';
 
-import { errorToast } from '../util';
+import { errorToast } from '../swal';
 import isDev from '../isDev';
 
 const remote = window.require('@electron/remote');

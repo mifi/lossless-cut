@@ -2,13 +2,13 @@ import React, { memo, useMemo, useRef, useCallback } from 'react';
 import { FaYinYang, FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaRegCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
 import { motion } from 'framer-motion';
-import Swal from 'sweetalert2';
 import { useTranslation, Trans } from 'react-i18next';
 import { ReactSortable } from 'react-sortablejs';
 import isEqual from 'lodash/isEqual';
 import useDebounce from 'react-use/lib/useDebounce';
 import scrollIntoView from 'scroll-into-view-if-needed';
 
+import Swal from './swal';
 import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
 import { saveColor, controlsBackground, primaryTextColor } from './colors';

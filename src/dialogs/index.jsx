@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { HelpIcon, TickCircleIcon, WarningSignIcon, InfoSignIcon, Checkbox } from 'evergreen-ui';
-import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
 import withReactContent from 'sweetalert2-react-content';
@@ -9,7 +8,7 @@ import { tomorrow as style } from 'react-syntax-highlighter/dist/esm/styles/hljs
 import JSON5 from 'json5';
 
 import { parseDuration, formatDuration } from '../util/duration';
-import { swalToastOptions, toast } from '../util';
+import Swal, { swalToastOptions, toast } from '../swal';
 import { parseYouTube } from '../edlFormats';
 import CopyClipboardButton from '../components/CopyClipboardButton';
 

@@ -1,5 +1,6 @@
-import Swal from 'sweetalert2';
 import i18n from 'i18next';
+
+import Swal from '../swal';
 
 
 // eslint-disable-next-line import/prefer-default-export

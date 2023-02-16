@@ -61,12 +61,13 @@ import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudi
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube, getFrameCountRaw } from './edlFormats';
 import {
-  getOutPath, getSuffixedOutPath, toast, errorToast, handleError, getOutDir, getFileDir,
+  getOutPath, getSuffixedOutPath, handleError, getOutDir, getFileDir,
   checkDirWriteAccess, dirExists, isMasBuild, isStoreBuild, dragPreventer,
   filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
   deleteFiles, isOutOfSpaceError, getNumDigits, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle,
 } from './util';
+import { toast, errorToast } from './swal';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
 import { askExtractFramesAsImages } from './dialogs/extractFrames';

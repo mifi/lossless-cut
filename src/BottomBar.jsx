@@ -16,7 +16,8 @@ import ToggleExportConfirm from './components/ToggleExportConfirm';
 import CaptureFormatButton from './components/CaptureFormatButton';
 
 import SimpleModeButton from './components/SimpleModeButton';
-import { withBlur, toast, mirrorTransform, checkAppPath } from './util';
+import { withBlur, mirrorTransform, checkAppPath } from './util';
+import { toast } from './swal';
 import { getSegColor } from './util/colors';
 import { formatDuration, parseDuration } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';

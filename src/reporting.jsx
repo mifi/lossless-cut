@@ -1,11 +1,11 @@
 import React from 'react';
-import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
 
 import CopyClipboardButton from './components/CopyClipboardButton';
 import { isStoreBuild, isMasBuild, isWindowsStoreBuild } from './util';
+import Swal from './swal';
 
 const electron = window.require('electron');
 const os = window.require('os');

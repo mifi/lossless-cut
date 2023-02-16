@@ -1,7 +1,8 @@
 import ky from 'ky';
 
 import { runFfmpegStartupCheck, getFfmpegPath } from './ffmpeg';
-import { toast, handleError } from './util';
+import { toast } from './swal';
+import { handleError } from './util';
 import isDev from './isDev';
 
 

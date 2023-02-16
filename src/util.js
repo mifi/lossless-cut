@@ -1,4 +1,3 @@
-import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import lodashTemplate from 'lodash/template';
 import pMap from 'p-map';
@@ -6,6 +5,7 @@ import ky from 'ky';
 import prettyBytes from 'pretty-bytes';
 
 import isDev from './isDev';
+import Swal, { toast } from './swal';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
 const fsExtra = window.require('fs-extra');
@@ -98,26 +98,6 @@ export async function transferTimestamps(inPath, outPath, offset = 0) {
     console.error('Failed to set output file modified time', err);
   }
 }
-
-export const swalToastOptions = {
-  toast: true,
-  position: 'top',
-  showConfirmButton: false,
-  showCloseButton: true,
-  timer: 5000,
-  timerProgressBar: true,
-  didOpen: (self) => {
-    self.addEventListener('mouseenter', Swal.stopTimer);
-    self.addEventListener('mouseleave', Swal.resumeTimer);
-  },
-};
-
-export const toast = Swal.mixin(swalToastOptions);
-
-export const errorToast = (text) => toast.fire({
-  icon: 'error',
-  text,
-});
 
 export function handleError(arg1, arg2) {
   console.error('handleError', arg1, arg2);

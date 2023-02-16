@@ -4,9 +4,9 @@ import { TextInput, IconButton, Alert, Checkbox, Dialog, Button, Paragraph } fro
 import { AiOutlineMergeCells } from 'react-icons/ai';
 import { FaQuestionCircle, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import i18n from 'i18next';
-import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
+import Swal from '../swal';
 import { readFileMeta, getSmarterOutFormat } from '../ffmpeg';
 import useFileFormatState from '../hooks/useFileFormatState';
 import OutputFormatSelect from './OutputFormatSelect';

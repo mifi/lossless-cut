@@ -1,8 +1,10 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Button, TextInputField, LinkIcon } from 'evergreen-ui';
-import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import withReactContent from 'sweetalert2-react-content';
+
+import Swal from '../swal';
+
 
 const { shell } = window.require('electron');
 
