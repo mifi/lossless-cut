@@ -5,8 +5,7 @@
   ],
   "env": {
     "node": true,
-    "browser": true,
-    "jest": true
+    "browser": true
   },
   "rules": {
     "max-len": 0,

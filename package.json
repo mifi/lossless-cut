@@ -16,7 +16,7 @@
     "download-ffmpeg-linux-x64": "mkdirp ffmpeg/linux-x64 && cd ffmpeg/linux-x64 && wget https://github.com/mifi/ffmpeg-builds/releases/download/5.1.2/linux-x64-v5.1.1.tar.xz -O ffmpeg-ffprobe.xz && tar -xv --strip-components=1 -f ffmpeg-ffprobe.xz ffmpeg-5.1.1-amd64-static/ffmpeg ffmpeg-5.1.1-amd64-static/ffprobe",
     "download-ffmpeg-win32-x64": "mkdirp ffmpeg/win32-x64 && cd ffmpeg/win32-x64 && npx download-cli https://github.com/mifi/ffmpeg-builds/releases/download/5.1.2/win32-x64-v5.1.2.7z --out . --filename ffmpeg-ffprobe.7z && 7z x ffmpeg-ffprobe.7z && npx shx mv ffmpeg-5.1.2-essentials_build/bin/ffmpeg.exe ./ && npx shx mv ffmpeg-5.1.2-essentials_build/bin/ffprobe.exe ./",
     "build": "yarn icon-gen && vite build --outDir vite-dist",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test": "vitest",
     "lint": "eslint --ext .jsx --ext .js . --ext .mjs",
     "pack-mac": "electron-builder --mac -m dmg",
     "prepack-mac": "yarn build",
@@ -42,7 +42,6 @@
   },
   "license": "GPL-2.0-only",
   "devDependencies": {
-    "@types/jest": "^26.0.20",
     "@types/sortablejs": "^1.15.0",
     "@vitejs/plugin-react": "^3.1.0",
     "color": "^3.1.0",
@@ -65,7 +64,6 @@
     "framer-motion": "^9.0.3",
     "i18next-scanner": "^4.1.0",
     "icon-gen": "^3.0.0",
-    "jest": "^29.4.3",
     "ky": "^0.33.1",
     "mkdirp": "^1.0.3",
     "moment": "^2.29.4",
@@ -92,6 +90,7 @@
     "use-trace-update": "^1.3.0",
     "uuid": "^8.3.2",
     "vite": "^4.1.1",
+    "vitest": "^0.28.5",
     "wait-on": "^7.0.1"
   },
   "dependencies": {
@@ -119,17 +118,6 @@
   },
   "eslintConfig": {
     "extends": "react-app"
-  },
-  "jest": {
-    "extensionsToTreatAsEsm": [
-      ".js",
-      ".mjs"
-    ],
-    "testEnvironment": "node",
-    "testMatch": [
-      "**/__tests__/**/*.?([mc])[jt]s?(x)",
-      "**/?(*.)+(spec|test).?([mc])[jt]s?(x)"
-    ]
   },
   "build": {
     "directories": {

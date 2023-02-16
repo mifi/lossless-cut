@@ -1,3 +1,5 @@
+import { it, expect } from 'vitest';
+
 import { convertSegmentsToChapters, partitionIntoOverlappingRanges, getSegApparentStart, getSegApparentEnd } from './segments';
 
 it('converts segments to chapters with gaps', () => {

@@ -1,3 +1,5 @@
+import { it, expect } from 'vitest';
+
 import { formatDuration, parseDuration } from './duration';
 
 it('should format duration properly', () => {

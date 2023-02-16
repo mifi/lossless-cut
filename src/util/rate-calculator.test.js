@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { adjustRate, DEFAULT_PLAYBACK_RATE } from './rate-calculator';
 
 it('inverts for reverse direction', () => {
