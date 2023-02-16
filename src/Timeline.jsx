@@ -310,8 +310,7 @@ const Timeline = memo(({
 
           {inverseCutSegments.map((seg) => (
             <BetweenSegments
-              // eslint-disable-next-line react/no-array-index-key
-              key={`${seg.start},${seg.end}`}
+              key={seg.segId}
               start={seg.start}
               end={seg.end}
               duration={durationSafe}

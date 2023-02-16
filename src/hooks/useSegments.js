@@ -156,7 +156,7 @@ export default ({
 
   const inverseCutSegments = useMemo(() => {
     const inverted = !haveInvalidSegs && isDurationValid(duration) ? invertSegments(sortSegments(apparentCutSegments), true, true, duration) : undefined;
-    return (inverted || []).map((seg) => ({ ...seg, segId: `${seg.start}-${seg.end}` }));
+    return inverted || [];
   }, [apparentCutSegments, duration, haveInvalidSegs]);
 
   const invertAllSegments = useCallback(() => {

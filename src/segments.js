@@ -114,29 +114,37 @@ export function invertSegments(sortedCutSegments, includeFirstSegment, includeLa
   const ret = [];
 
   if (includeFirstSegment) {
-    if (sortedCutSegments[0].start > 0) {
-      ret.push({
+    const firstSeg = sortedCutSegments[0];
+    if (firstSeg.start > 0) {
+      const inverted = {
         start: 0,
-        end: sortedCutSegments[0].start,
-      });
+        end: firstSeg.start,
+      };
+      if (firstSeg.segId != null) inverted.segId = `start-${firstSeg.segId}`;
+      ret.push(inverted);
     }
   }
 
   sortedCutSegments.forEach((cutSegment, i) => {
     if (i === 0) return;
-    ret.push({
-      start: sortedCutSegments[i - 1].end,
+    const previousSeg = sortedCutSegments[i - 1];
+    const inverted = {
+      start: previousSeg.end,
       end: cutSegment.start,
-    });
+    };
+    if (previousSeg.segId != null && cutSegment.segId != null) inverted.segId = `${previousSeg.segId}-${cutSegment.segId}`;
+    ret.push(inverted);
   });
 
   if (includeLastSegment) {
-    const last = sortedCutSegments[sortedCutSegments.length - 1];
-    if (last.end < duration || duration == null) {
-      ret.push({
-        start: last.end,
+    const lastSeg = sortedCutSegments[sortedCutSegments.length - 1];
+    if (lastSeg.end < duration || duration == null) {
+      const inverted = {
+        start: lastSeg.end,
         end: duration,
-      });
+      };
+      if (lastSeg.segId != null) inverted.segId = `${lastSeg.segId}-end`;
+      ret.push(inverted);
     }
   }
 

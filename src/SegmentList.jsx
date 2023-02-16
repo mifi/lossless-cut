@@ -13,6 +13,7 @@ import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
 import { saveColor, controlsBackground, primaryTextColor } from './colors';
 import { getSegColor } from './util/colors';
+import { mySpring } from './animations';
 
 const buttonBaseStyle = {
   margin: '0 3px', borderRadius: 3, color: 'white', cursor: 'pointer',
@@ -109,7 +110,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
       role="button"
       onClick={() => !invertCutSegments && onClick(index)}
       onDoubleClick={onDoubleClick}
-      layouy
+      layout
       style={{ originY: 0, margin: '5px 0', background: 'rgba(0,0,0,0.1)', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5, position: 'relative' }}
       initial={{ scaleY: 0 }}
       animate={{ scaleY: 1, opacity: !enabled && !invertCutSegments ? 0.5 : undefined }}
@@ -258,6 +259,7 @@ const SegmentList = memo(({
       initial={{ x: width }}
       animate={{ x: 0 }}
       exit={{ x: width }}
+      transition={mySpring}
     >
       <div style={{ fontSize: 14, padding: '0 5px' }} className="no-user-select">
         <FaAngleRight
