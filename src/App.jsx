@@ -76,7 +76,7 @@ import { askForHtml5ifySpeed } from './dialogs/html5ify';
 import { askForOutDir, askForImportChapters, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, openAbout, showRefuseToOverwrite, openDirToast, openCutFinishedToast, openConcatFinishedToast } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
-import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid } from './segments';
+import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, playOnlyCurrentSegment } from './segments';
 import { getOutSegError as getOutSegErrorRaw } from './util/outputNameTemplate';
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 
@@ -114,6 +114,7 @@ const App = memo(() => {
   const [working, setWorkingState] = useState();
   const [usingDummyVideo, setUsingDummyVideo] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const playingOnlySegmentIdRef = useRef();
   const [playerTime, setPlayerTime] = useState();
   const [duration, setDuration] = useState();
   const [rotation, setRotation] = useState(360);
@@ -341,7 +342,7 @@ const App = memo(() => {
   }, [isFileOpened]);
 
   const {
-    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, onViewSegmentTags, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, createNumSegments, createFixedDurationSegments, createRandomSegments, apparentCutSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, currentApparentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, selectedSegmentsRaw, setCutTime, getSegApparentEnd, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, toggleSegmentSelected, selectOnlySegment,
+    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, onViewSegmentTags, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, createNumSegments, createFixedDurationSegments, createRandomSegments, apparentCutSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, currentApparentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, selectedSegmentsRaw, setCutTime, getSegApparentEnd, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, toggleSegmentSelected, selectOnlySegment, getApparentCutSegmentById,
   } = useSegments({ filePath, workingRef, setWorking, setCutProgress, mainVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened });
 
   const jumpSegStart = useCallback((index) => seekAbs(apparentCutSegments[index].start), [apparentCutSegments, seekAbs]);
@@ -431,7 +432,10 @@ const App = memo(() => {
     }
   }
 
-  const onStopPlaying = useCallback(() => onPlayingChange(false), []);
+  const onStopPlaying = useCallback(() => {
+    onPlayingChange(false);
+    playingOnlySegmentIdRef.current = undefined;
+  }, []);
   const onSartPlaying = useCallback(() => onPlayingChange(true), []);
   const onDurationChange = useCallback((e) => {
     // Some files report duration infinity first, then proper duration later
@@ -440,12 +444,6 @@ const App = memo(() => {
     console.log('onDurationChange', durationNew);
     if (isDurationValid(durationNew)) setDuration(durationNew);
   }, []);
-
-  const onTimeUpdate = useCallback((e) => {
-    const { currentTime } = e.target;
-    if (playerTime === currentTime) return;
-    setPlayerTime(currentTime);
-  }, [playerTime]);
 
   const increaseRotation = useCallback(() => {
     setRotation((r) => (r + 90) % 450);
@@ -630,6 +628,7 @@ const App = memo(() => {
     setPreviewFilePath();
     setUsingDummyVideo(false);
     setPlaying(false);
+    playingOnlySegmentIdRef.current = undefined;
     setDuration();
     cutSegmentsHistory.go(0);
     clearSegments(); // TODO this will cause two history items
@@ -775,13 +774,38 @@ const App = memo(() => {
     });
   }, [filePath, playing]);
 
-  const togglePlay = useCallback((resetPlaybackRate) => {
+  const togglePlay = useCallback(({ resetPlaybackRate, onlyCurrentSegment } = {}) => {
+    playingOnlySegmentIdRef.current = undefined;
     if (playing) {
       pause();
       return;
     }
+    if (onlyCurrentSegment != null) {
+      playingOnlySegmentIdRef.current = { segId: currentApparentCutSeg.segId, mode: onlyCurrentSegment };
+      seekAbs(currentApparentCutSeg.start);
+    }
     play(resetPlaybackRate);
-  }, [playing, play, pause]);
+  }, [playing, play, pause, currentApparentCutSeg.segId, currentApparentCutSeg.start, seekAbs]);
+
+  const onTimeUpdate = useCallback((e) => {
+    const { currentTime } = e.target;
+    if (playerTime === currentTime) return;
+    setPlayerTime(currentTime);
+
+    if (playingOnlySegmentIdRef.current != null) {
+      const { segId, mode } = playingOnlySegmentIdRef.current;
+      const playingOnlySegment = getApparentCutSegmentById(segId);
+
+      if (playingOnlySegment != null) {
+        const { seek, stop } = playOnlyCurrentSegment({ mode, currentTime, playingOnlySegment });
+        if (seek) seekAbs(seek);
+        if (stop) {
+          playingOnlySegmentIdRef.current = undefined;
+          pause();
+        }
+      }
+    }
+  }, [getApparentCutSegmentById, pause, playerTime, seekAbs]);
 
   const closeFileWithConfirm = useCallback(() => {
     if (!isFileOpened || workingRef.current) return;
@@ -1710,7 +1734,10 @@ const App = memo(() => {
     // For actions, see also KeyboardShortcuts.jsx
     const mainActions = {
       togglePlayNoResetSpeed: () => togglePlay(),
-      togglePlayResetSpeed: () => togglePlay(true),
+      togglePlayResetSpeed: () => togglePlay({ resetPlaybackRate: true }),
+      togglePlayOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, onlyCurrentSegment: 'play' }),
+      toggleLoopOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, onlyCurrentSegment: 'loop-full' }),
+      toggleLoopStartEndOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, onlyCurrentSegment: 'loop-start-end' }),
       play: () => play(),
       pause,
       reducePlaybackRate: () => changePlaybackRate(-1),

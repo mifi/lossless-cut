@@ -106,6 +106,8 @@ export default ({
   // These are segments guaranteed to have a start and end time
   const apparentCutSegments = useMemo(() => getApparentCutSegments(cutSegments), [cutSegments, getApparentCutSegments]);
 
+  const getApparentCutSegmentById = useCallback((id) => apparentCutSegments.find((s) => s.segId === id), [apparentCutSegments]);
+
   const haveInvalidSegs = useMemo(() => apparentCutSegments.some((cutSegment) => cutSegment.start >= cutSegment.end), [apparentCutSegments]);
 
   const currentSegIndexSafe = Math.min(currentSegIndex, cutSegments.length - 1);
@@ -465,6 +467,7 @@ export default ({
     createFixedDurationSegments,
     createRandomSegments,
     apparentCutSegments,
+    getApparentCutSegmentById,
     haveInvalidSegs,
     currentSegIndexSafe,
     currentCutSeg,
