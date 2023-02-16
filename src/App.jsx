@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { FaAngleLeft, FaWindowClose } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { Heading, InlineAlert, Table, SideSheet, Position, ThemeProvider } from 'evergreen-ui';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
@@ -97,7 +97,7 @@ const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && z
 
 
 const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
-const bottomMotionStyle = { background: controlsBackground };
+const bottomStyle = { background: controlsBackground };
 
 let lastOpenedPath;
 const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
@@ -2240,7 +2240,7 @@ const App = memo(() => {
             </AnimatePresence>
           </div>
 
-          <motion.div className="no-user-select" style={bottomMotionStyle}>
+          <div className="no-user-select" style={bottomStyle}>
             <Timeline
               shouldShowKeyframes={shouldShowKeyframes}
               waveforms={waveforms}
@@ -2311,7 +2311,7 @@ const App = memo(() => {
               toggleKeyframesEnabled={toggleKeyframesEnabled}
               detectedFps={detectedFps}
             />
-          </motion.div>
+          </div>
 
           <SideSheet
             width={700}
