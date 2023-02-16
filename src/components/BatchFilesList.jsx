@@ -20,7 +20,7 @@ const iconStyle = {
   padding: '3px 5px',
 };
 
-const BatchFilesList = memo(({ selectedBatchFiles, filePath, width, batchFiles, setBatchFiles, onBatchFileSelect, batchRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }) => {
+const BatchFilesList = memo(({ selectedBatchFiles, filePath, width, batchFiles, setBatchFiles, onBatchFileSelect, batchListRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }) => {
   const { t } = useTranslation();
 
   const [sortDesc, setSortDesc] = useState();
@@ -64,7 +64,7 @@ const BatchFilesList = memo(({ selectedBatchFiles, filePath, width, batchFiles, 
       <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
         <ReactSortable list={sortableList} setList={setSortableList}>
           {sortableList.map(({ batchFile: { path, name } }) => (
-            <BatchFile key={path} path={path} name={name} isSelected={selectedBatchFiles.includes(path)} isOpen={filePath === path} onSelect={onBatchFileSelect} onDelete={batchRemoveFile} />
+            <BatchFile key={path} path={path} name={name} isSelected={selectedBatchFiles.includes(path)} isOpen={filePath === path} onSelect={onBatchFileSelect} onDelete={batchListRemoveFile} />
           ))}
         </ReactSortable>
       </div>

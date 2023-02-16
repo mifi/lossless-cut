@@ -236,48 +236,33 @@ export function getHtml5ifiedPath(cod, fp, type) {
   return getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${type}.${ext}` });
 }
 
-export async function deleteFiles({ toDelete, paths: { previewFilePath, sourceFilePath, projectFilePath } }) {
+export async function deleteFiles(paths, deleteIfTrashFails) {
   const failedToTrashFiles = [];
 
-  if (toDelete.tmpFiles && previewFilePath) {
+  // eslint-disable-next-line no-restricted-syntax
+  for (const path of paths) {
     try {
-      await trashFile(previewFilePath);
+      // eslint-disable-next-line no-await-in-loop
+      await trashFile(path);
     } catch (err) {
       console.error(err);
-      failedToTrashFiles.push(previewFilePath);
-    }
-  }
-  if (toDelete.projectFile && projectFilePath) {
-    try {
-      // throw new Error('test');
-      await trashFile(projectFilePath);
-    } catch (err) {
-      console.error(err);
-      failedToTrashFiles.push(projectFilePath);
-    }
-  }
-  if (toDelete.sourceFile) {
-    try {
-      await trashFile(sourceFilePath);
-    } catch (err) {
-      console.error(err);
-      failedToTrashFiles.push(sourceFilePath);
+      failedToTrashFiles.push(path);
     }
   }
 
   if (failedToTrashFiles.length === 0) return; // All good!
 
-  // todo allow bypassing trash altogether? https://github.com/mifi/lossless-cut/discussions/1425
-  const { value } = await Swal.fire({
-    icon: 'warning',
-    text: i18n.t('Unable to move file to trash. Do you want to permanently delete it?'),
-    confirmButtonText: i18n.t('Permanently delete'),
-    showCancelButton: true,
-  });
-
-  if (value) {
-    await pMap(failedToTrashFiles, async (path) => unlink(path), { concurrency: 1 });
+  if (!deleteIfTrashFails) {
+    const { value } = await Swal.fire({
+      icon: 'warning',
+      text: i18n.t('Unable to move file to trash. Do you want to permanently delete it?'),
+      confirmButtonText: i18n.t('Permanently delete'),
+      showCancelButton: true,
+    });
+    if (!value) return;
   }
+
+  await pMap(failedToTrashFiles, async (path) => unlink(path), { concurrency: 1 });
 }
 
 export const deleteDispositionValue = 'llc_disposition_remove';

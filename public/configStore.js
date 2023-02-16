@@ -118,6 +118,9 @@ const defaults = {
   captureFrameFileNameFormat: 'timestamp',
   enableNativeHevc: true,
   enableUpdateCheck: true,
+  cleanupChoices: {
+    trashTmpFiles: true, askForCleanup: true,
+  },
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645

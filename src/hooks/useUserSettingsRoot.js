@@ -129,6 +129,8 @@ export default () => {
   useEffect(() => safeSetConfig({ enableNativeHevc }), [enableNativeHevc]);
   const [enableUpdateCheck, setEnableUpdateCheck] = useState(safeGetConfigInitial('enableUpdateCheck'));
   useEffect(() => safeSetConfig({ enableUpdateCheck }), [enableUpdateCheck]);
+  const [cleanupChoices, setCleanupChoices] = useState(safeGetConfigInitial('cleanupChoices'));
+  useEffect(() => safeSetConfig({ cleanupChoices }), [cleanupChoices]);
 
 
   const resetKeyBindings = useCallback(() => {
@@ -236,5 +238,7 @@ export default () => {
     setEnableNativeHevc,
     enableUpdateCheck,
     setEnableUpdateCheck,
+    cleanupChoices,
+    setCleanupChoices,
   };
 };

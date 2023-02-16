@@ -147,7 +147,6 @@ const App = memo(() => {
   const [timelineMode, setTimelineMode] = useState();
   const [keyframesEnabled, setKeyframesEnabled] = useState(true);
   const [showRightBar, setShowRightBar] = useState(true);
-  const [cleanupChoices, setCleanupChoices] = useState({ tmpFiles: true });
   const [rememberConvertToSupportedFormat, setRememberConvertToSupportedFormat] = useState();
   const [lastCommandsVisible, setLastCommandsVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
@@ -180,7 +179,7 @@ const App = memo(() => {
   const allUserSettings = useUserSettingsRoot();
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, enableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, enableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, setCleanupChoices,
   } = allUserSettings;
 
   useEffect(() => {
@@ -823,7 +822,7 @@ const App = memo(() => {
     setSelectedBatchFiles([]);
   }, [askBeforeClose]);
 
-  const batchRemoveFile = useCallback((path) => {
+  const batchListRemoveFile = useCallback((path) => {
     setBatchFiles((existingBatch) => {
       const index = existingBatch.findIndex((existingFile) => existingFile.path === path);
       if (index < 0) return existingBatch;
@@ -947,41 +946,52 @@ const App = memo(() => {
     // Store paths before we reset state
     const savedPaths = { previewFilePath, sourceFilePath: filePath, projectFilePath: projectFileSavePath };
 
+    batchListRemoveFile(savedPaths.sourceFilePath);
+
+    // close the file
     resetState();
-
-    batchRemoveFile(savedPaths.sourceFilePath);
-
-    if (!cleanupChoices2.tmpFiles && !cleanupChoices2.projectFile && !cleanupChoices2.sourceFile) return;
 
     try {
       setWorking(i18n.t('Cleaning up'));
-      console.log('trashing', cleanupChoices2);
-      await deleteFiles({ toDelete: cleanupChoices2, paths: savedPaths });
+      console.log('Cleaning up files', cleanupChoices2);
+
+      const pathsToDelete = [];
+      if (cleanupChoices2.trashTmpFiles && savedPaths.previewFilePath) pathsToDelete.push(savedPaths.previewFilePath);
+      if (cleanupChoices2.trashProjectFile && savedPaths.projectFilePath) pathsToDelete.push(savedPaths.projectFilePath);
+      if (cleanupChoices2.trashSourceFile && savedPaths.sourceFilePath) pathsToDelete.push(savedPaths.sourceFilePath);
+
+      await deleteFiles(pathsToDelete, cleanupChoices2.deleteIfTrashFails);
     } catch (err) {
       errorToast(i18n.t('Unable to delete file: {{message}}', { message: err.message }));
       console.error(err);
     }
-  }, [batchRemoveFile, filePath, previewFilePath, projectFileSavePath, resetState, setWorking]);
+  }, [batchListRemoveFile, filePath, previewFilePath, projectFileSavePath, resetState, setWorking]);
+
+  const askForCleanupChoices = useCallback(async () => {
+    const trashResponse = await showCleanupFilesDialog(cleanupChoices);
+    if (!trashResponse) return undefined; // Canceled
+    setCleanupChoices(trashResponse); // Store for next time
+    return trashResponse;
+  }, [cleanupChoices, setCleanupChoices]);
 
   const cleanupFilesDialog = useCallback(async () => {
     if (!isFileOpened) return;
 
-    let trashResponse = cleanupChoices;
-    if (!cleanupChoices.dontShowAgain) {
-      trashResponse = await showCleanupFilesDialog(cleanupChoices);
-      console.log('trashResponse', trashResponse);
-      if (!trashResponse) return; // Cancelled
-      setCleanupChoices(trashResponse); // Store for next time
+    let response = cleanupChoices;
+    if (cleanupChoices.askForCleanup) {
+      response = await askForCleanupChoices();
+      console.log('trashResponse', response);
+      if (!response) return; // Canceled
     }
 
     if (workingRef.current) return;
 
     try {
-      await cleanupFiles(trashResponse);
+      await cleanupFiles(response);
     } finally {
       setWorking();
     }
-  }, [isFileOpened, cleanupChoices, cleanupFiles, setWorking]);
+  }, [isFileOpened, cleanupChoices, askForCleanupChoices, cleanupFiles, setWorking]);
 
   // For invertCutSegments we do not support filtering
   const selectedSegmentsOrInverseRaw = useMemo(() => (invertCutSegments ? inverseCutSegments : selectedSegmentsRaw), [inverseCutSegments, invertCutSegments, selectedSegmentsRaw]);
@@ -2118,7 +2128,7 @@ const App = memo(() => {
                   batchFiles={batchFiles}
                   setBatchFiles={setBatchFiles}
                   onBatchFileSelect={onBatchFileSelect}
-                  batchRemoveFile={batchRemoveFile}
+                  batchListRemoveFile={batchListRemoveFile}
                   closeBatch={closeBatch}
                   onMergeFilesClick={concatCurrentBatch}
                   onBatchConvertToSupportedFormatClick={convertFormatBatch}
@@ -2349,6 +2359,7 @@ const App = memo(() => {
                 <Settings
                   onTunerRequested={onTunerRequested}
                   onKeyboardShortcutsDialogRequested={toggleKeyboardShortcuts}
+                  askForCleanupChoices={askForCleanupChoices}
                 />
               </Table.Body>
             </Table>

@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { FaYinYang, FaKeyboard } from 'react-icons/fa';
-import { CogIcon, Button, Table, NumericalIcon, KeyIcon, FolderCloseIcon, DocumentIcon, TimeIcon, Checkbox, Select } from 'evergreen-ui';
+import { CleanIcon, CogIcon, Button, Table, NumericalIcon, KeyIcon, FolderCloseIcon, DocumentIcon, TimeIcon, Checkbox, Select } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
 import CaptureFormatButton from './components/CaptureFormatButton';
@@ -28,6 +28,7 @@ const Header = ({ title }) => (
 const Settings = memo(({
   onTunerRequested,
   onKeyboardShortcutsDialogRequested,
+  askForCleanupChoices,
 }) => {
   const { t } = useTranslation();
 
@@ -202,6 +203,13 @@ const Settings = memo(({
             checked={enableOverwriteOutput}
             onChange={e => setEnableOverwriteOutput(e.target.checked)}
           />
+        </Table.TextCell>
+      </Row>
+
+      <Row>
+        <KeyCell>{t('Cleanup files after export?')}</KeyCell>
+        <Table.TextCell>
+          <Button iconBefore={<CleanIcon />} onClick={askForCleanupChoices}>{t('Change preferences')}</Button>
         </Table.TextCell>
       </Row>
 
