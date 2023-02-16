@@ -1,4 +1,7 @@
+import { test, expect } from 'vitest';
+
 import { getMapStreamsArgs, getStreamIdsToCopy } from './streams';
+
 
 const streams1 = [
   { index: 0, codec_type: 'video', codec_tag: '0x0000', codec_name: 'mjpeg', disposition: { attached_pic: 1 } },

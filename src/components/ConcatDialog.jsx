@@ -4,9 +4,9 @@ import { TextInput, IconButton, Alert, Checkbox, Dialog, Button, Paragraph } fro
 import { AiOutlineMergeCells } from 'react-icons/ai';
 import { FaQuestionCircle, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import i18n from 'i18next';
-import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
+import Swal from '../swal';
 import { readFileMeta, getSmarterOutFormat } from '../ffmpeg';
 import useFileFormatState from '../hooks/useFileFormatState';
 import OutputFormatSelect from './OutputFormatSelect';
@@ -77,7 +77,10 @@ const ConcatDialog = memo(({
       return;
     }
     const ext = getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath: firstPath });
-    setOutFileName(getSuffixedFileName(firstPath, `merged-${uniqueSuffix}${ext}`));
+    setOutFileName((existingOutputName) => {
+      if (existingOutputName == null) return getSuffixedFileName(firstPath, `merged-${uniqueSuffix}${ext}`);
+      return existingOutputName.replace(/(\.[^.]*)?$/, ext); // make sure the last (optional) .* is replaced by .ext`
+    });
   }, [fileFormat, firstPath, isCustomFormatSelected, uniqueSuffix]);
 
   const allFilesMeta = useMemo(() => {

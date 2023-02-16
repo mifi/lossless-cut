@@ -4,6 +4,7 @@ import { readKeyframesAroundTime, findNextKeyframe, findKeyframeAtExactTime } fr
 
 const { stat } = window.require('fs-extra');
 
+
 // eslint-disable-next-line import/prefer-default-export
 export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, streams }) {
   const videoStreams = getRealVideoStreams(streams);
@@ -50,6 +51,10 @@ export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, s
 
   const timebase = getVideoTimebase(videoStream);
   if (timebase == null) console.warn('Unable to determine timebase', videoStream.time_base);
+
+  // seems like ffmpeg handles this itself well when encoding same source file
+  // const videoLevel = parseLevel(videoStream);
+  // const videoProfile = parseProfile(videoStream);
 
   return {
     cutFrom: nextKeyframe.time,

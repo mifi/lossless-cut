@@ -1,8 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { Checkbox, RadioGroup, Paragraph } from 'evergreen-ui';
-import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import withReactContent from 'sweetalert2-react-content';
+
+import Swal from '../swal';
+
 
 const ReactSwal = withReactContent(Swal);
 

@@ -61,6 +61,7 @@ export async function runFfprobe(args, { timeout = isDev ? 10000 : 30000 } = {})
   }
 }
 
+// todo collect warnings from ffmpeg output and show them after export? example: https://github.com/mifi/lossless-cut/issues/1469
 export function runFfmpeg(args, execaOptions, { logCli = true } = {}) {
   const ffmpegPath = getFfmpegPath();
   if (logCli) console.log(getFfCommandLine('ffmpeg', args));
@@ -77,6 +78,17 @@ export function runFfmpeg(args, execaOptions, { logCli = true } = {}) {
     }
   })();
   return process;
+}
+
+export function logStdoutStderr({ stdout, stderr }) {
+  if (stdout.length > 0) {
+    console.log('%cSTDOUT:', 'color: green; font-weight: bold');
+    console.log(stdout);
+  }
+  if (stderr.length > 0) {
+    console.log('%cSTDERR:', 'color: blue; font-weight: bold');
+    console.log(stderr);
+  }
 }
 
 export function abortFfmpegs() {
@@ -1057,10 +1069,16 @@ export async function cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, ou
   function getVideoArgs({ streamIndex, outputIndex }) {
     if (streamIndex !== videoStreamIndex) return undefined;
 
-    return [
+    const args = [
       `-c:${outputIndex}`, videoCodec,
       `-b:${outputIndex}`, videoBitrate,
     ];
+
+    // seems like ffmpeg handles this itself well when encoding same source file
+    // if (videoLevel != null) args.push(`-level:${outputIndex}`, videoLevel);
+    // if (videoProfile != null) args.push(`-profile:${outputIndex}`, videoProfile);
+
+    return args;
   }
 
   const mapStreamsArgs = getMapStreamsArgs({
@@ -1091,9 +1109,6 @@ export async function cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, ou
 
     '-f', outFormat, '-y', outPath,
   ];
-
-  const ffmpegCommandLine = getFfCommandLine('ffmpeg', ffmpegArgs);
-  console.log(ffmpegCommandLine);
 
   await runFfmpeg(ffmpegArgs);
 }

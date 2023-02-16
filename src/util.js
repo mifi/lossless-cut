@@ -1,4 +1,3 @@
-import Swal from 'sweetalert2';
 import i18n from 'i18next';
 import lodashTemplate from 'lodash/template';
 import pMap from 'p-map';
@@ -6,8 +5,9 @@ import ky from 'ky';
 import prettyBytes from 'pretty-bytes';
 
 import isDev from './isDev';
+import Swal, { toast } from './swal';
 
-const { dirname, parse: parsePath, join, extname, isAbsolute, resolve } = window.require('path');
+const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
 const fsExtra = window.require('fs-extra');
 const { stat } = window.require('fs/promises');
 const os = window.require('os');
@@ -98,26 +98,6 @@ export async function transferTimestamps(inPath, outPath, offset = 0) {
     console.error('Failed to set output file modified time', err);
   }
 }
-
-export const swalToastOptions = {
-  toast: true,
-  position: 'top',
-  showConfirmButton: false,
-  showCloseButton: true,
-  timer: 5000,
-  timerProgressBar: true,
-  didOpen: (self) => {
-    self.addEventListener('mouseenter', Swal.stopTimer);
-    self.addEventListener('mouseleave', Swal.resumeTimer);
-  },
-};
-
-export const toast = Swal.mixin(swalToastOptions);
-
-export const errorToast = (text) => toast.fire({
-  icon: 'error',
-  text,
-});
 
 export function handleError(arg1, arg2) {
   console.error('handleError', arg1, arg2);
@@ -256,47 +236,33 @@ export function getHtml5ifiedPath(cod, fp, type) {
   return getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${type}.${ext}` });
 }
 
-export async function deleteFiles({ toDelete, paths: { previewFilePath, sourceFilePath, projectFilePath } }) {
+export async function deleteFiles(paths, deleteIfTrashFails) {
   const failedToTrashFiles = [];
 
-  if (toDelete.tmpFiles && previewFilePath) {
+  // eslint-disable-next-line no-restricted-syntax
+  for (const path of paths) {
     try {
-      await trashFile(previewFilePath);
+      // eslint-disable-next-line no-await-in-loop
+      await trashFile(path);
     } catch (err) {
       console.error(err);
-      failedToTrashFiles.push(previewFilePath);
-    }
-  }
-  if (toDelete.projectFile && projectFilePath) {
-    try {
-      // throw new Error('test');
-      await trashFile(projectFilePath);
-    } catch (err) {
-      console.error(err);
-      failedToTrashFiles.push(projectFilePath);
-    }
-  }
-  if (toDelete.sourceFile) {
-    try {
-      await trashFile(sourceFilePath);
-    } catch (err) {
-      console.error(err);
-      failedToTrashFiles.push(sourceFilePath);
+      failedToTrashFiles.push(path);
     }
   }
 
   if (failedToTrashFiles.length === 0) return; // All good!
 
-  const { value } = await Swal.fire({
-    icon: 'warning',
-    text: i18n.t('Unable to move file to trash. Do you want to permanently delete it?'),
-    confirmButtonText: i18n.t('Permanently delete'),
-    showCancelButton: true,
-  });
-
-  if (value) {
-    await pMap(failedToTrashFiles, async (path) => unlink(path), { concurrency: 1 });
+  if (!deleteIfTrashFails) {
+    const { value } = await Swal.fire({
+      icon: 'warning',
+      text: i18n.t('Unable to move file to trash. Do you want to permanently delete it?'),
+      confirmButtonText: i18n.t('Permanently delete'),
+      showCancelButton: true,
+    });
+    if (!value) return;
   }
+
+  await pMap(failedToTrashFiles, async (path) => unlink(path), { concurrency: 1 });
 }
 
 export const deleteDispositionValue = 'llc_disposition_remove';
@@ -377,4 +343,20 @@ export function checkFileSizes(inputSize, outputSize) {
   const outputFileTotalSize = prettyBytes(outputSize);
   if (relDiff > maxDiffPercent / 100) return i18n.t('The size of the merged output file ({{outputFileTotalSize}}) differs from the total size of source files ({{sourceFilesTotalSize}}) by more than {{maxDiffPercent}}%. This could indicate that there was a problem during the merge.', { maxDiffPercent, sourceFilesTotalSize, outputFileTotalSize });
   return undefined;
+}
+
+function setDocumentExtraTitle(extra) {
+  const baseTitle = 'LosslessCut';
+  if (extra != null) document.title = `${baseTitle} - ${extra}`;
+  else document.title = baseTitle;
+}
+
+export function setDocumentTitle({ filePath, working, cutProgress }) {
+  const parts = [];
+  if (filePath) parts.push(basename(filePath));
+  if (working) {
+    parts.push('-', working);
+    if (cutProgress != null) parts.push(`${(cutProgress * 100).toFixed(1)}%`);
+  }
+  setDocumentExtraTitle(parts.length > 0 ? parts.join(' ') : undefined);
 }

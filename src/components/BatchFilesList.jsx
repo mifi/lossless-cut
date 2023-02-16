@@ -8,6 +8,8 @@ import { SortAlphabeticalIcon, SortAlphabeticalDescIcon } from 'evergreen-ui';
 
 import BatchFile from './BatchFile';
 import { timelineBackground, controlsBackground } from '../colors';
+import { mySpring } from '../animations';
+
 
 const iconStyle = {
   flexShrink: 0,
@@ -18,7 +20,7 @@ const iconStyle = {
   padding: '3px 5px',
 };
 
-const BatchFilesList = memo(({ selectedBatchFiles, filePath, width, batchFiles, setBatchFiles, onBatchFileSelect, batchRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }) => {
+const BatchFilesList = memo(({ selectedBatchFiles, filePath, width, batchFiles, setBatchFiles, onBatchFileSelect, batchListRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }) => {
   const { t } = useTranslation();
 
   const [sortDesc, setSortDesc] = useState();
@@ -48,6 +50,7 @@ const BatchFilesList = memo(({ selectedBatchFiles, filePath, width, batchFiles, 
       initial={{ x: -width }}
       animate={{ x: 0 }}
       exit={{ x: -width }}
+      transition={mySpring}
     >
       <div style={{ background: controlsBackground, fontSize: 14, paddingBottom: 3, paddingTop: 0, paddingLeft: 10, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
         {t('Batch file list')}
@@ -61,7 +64,7 @@ const BatchFilesList = memo(({ selectedBatchFiles, filePath, width, batchFiles, 
       <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
         <ReactSortable list={sortableList} setList={setSortableList}>
           {sortableList.map(({ batchFile: { path, name } }) => (
-            <BatchFile key={path} path={path} name={name} isSelected={selectedBatchFiles.includes(path)} isOpen={filePath === path} onSelect={onBatchFileSelect} onDelete={batchRemoveFile} />
+            <BatchFile key={path} path={path} name={name} isSelected={selectedBatchFiles.includes(path)} isOpen={filePath === path} onSelect={onBatchFileSelect} onDelete={batchListRemoveFile} />
           ))}
         </ReactSortable>
       </div>

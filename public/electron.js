@@ -38,9 +38,11 @@ let mainWindow;
 let askBeforeClose = false;
 let rendererReady = false;
 let newVersion;
+let disableNetworking;
 
 const openFiles = (paths) => mainWindow.webContents.send('openFiles', paths);
 
+const isStoreBuild = process.windowsStore || process.mas;
 
 // https://github.com/electron/electron/issues/526#issuecomment-563010533
 function getSizeOptions() {
@@ -85,7 +87,7 @@ function createWindow() {
 
   if (isDev) mainWindow.loadURL('http://localhost:3001');
   // Need to useloadFile for special characters https://github.com/mifi/lossless-cut/issues/40
-  else mainWindow.loadFile('build/index.html');
+  else mainWindow.loadFile('vite-dist/index.html');
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
@@ -124,7 +126,7 @@ function createWindow() {
 }
 
 function updateMenu() {
-  menu(app, mainWindow, newVersion);
+  menu({ app, mainWindow, newVersion, isStoreBuild });
 }
 
 function openFilesEventually(paths) {
@@ -142,7 +144,7 @@ function parseCliArgs(rawArgv = process.argv) {
   // dev: First 2 args are electron and the electron.js
   const argsWithoutAppName = rawArgv.length > ignoreFirstArgs ? rawArgv.slice(ignoreFirstArgs) : [];
 
-  return yargsParser(argsWithoutAppName, { boolean: ['allow-multiple-instances'] });
+  return yargsParser(argsWithoutAppName, { boolean: ['allow-multiple-instances', 'disable-networking'] });
 }
 
 const argv = parseCliArgs();
@@ -186,6 +188,8 @@ if (!argv.allowMultipleInstances && !safeRequestSingleInstanceLock({ argv: proce
     if (filesToOpen.length === 0) filesToOpen = argv._;
     const { settingsJson } = argv;
 
+    ({ disableNetworking } = argv);
+
     if (settingsJson != null) {
       logger.info('initializing settings', settingsJson);
       Object.entries(JSON5.parse(settingsJson)).forEach(([key, value]) => {
@@ -206,7 +210,7 @@ if (!argv.allowMultipleInstances && !safeRequestSingleInstanceLock({ argv: proce
 
     const enableUpdateCheck = configStore.get('enableUpdateCheck');
 
-    if (enableUpdateCheck && !process.windowsStore && !process.mas) {
+    if (!disableNetworking && enableUpdateCheck && !isStoreBuild) {
       newVersion = await checkNewVersion();
       // newVersion = '1.2.3';
       if (newVersion) updateMenu();
@@ -264,4 +268,6 @@ function focusWindow() {
   }
 }
 
-module.exports = { focusWindow, isDev };
+const hasDisabledNetworking = () => !!disableNetworking;
+
+module.exports = { focusWindow, isDev, hasDisabledNetworking };

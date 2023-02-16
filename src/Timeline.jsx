@@ -55,7 +55,7 @@ const CommandedTime = memo(({ commandedTimePercent }) => {
 });
 
 const Timeline = memo(({
-  durationSafe, getCurrentTime, startTimeOffset, playerTime, commandedTime,
+  durationSafe, startTimeOffset, playerTime, commandedTime, relevantTime,
   zoom, neighbouringKeyFrames, seekAbs, apparentCutSegments,
   setCurrentSegIndex, currentSegIndexSafe, inverseCutSegments, formatTimecode,
   waveforms, shouldShowWaveform, shouldShowKeyframes, timelineHeight = 36, thumbnails,
@@ -73,8 +73,7 @@ const Timeline = memo(({
 
   const [hoveringTime, setHoveringTime] = useState();
 
-  const currentTime = getCurrentTime() || 0;
-  const displayTime = (hoveringTime != null && isFileOpened && !playing ? hoveringTime : currentTime) + startTimeOffset;
+  const displayTime = (hoveringTime != null && isFileOpened && !playing ? hoveringTime : relevantTime) + startTimeOffset;
   const displayTimePercent = useMemo(() => `${Math.round((displayTime / durationSafe) * 100)}%`, [displayTime, durationSafe]);
 
   const isZoomed = zoom > 1;
@@ -96,10 +95,10 @@ const Timeline = memo(({
 
   const timeOfInterestPosPixels = useMemo(() => {
     // https://github.com/mifi/lossless-cut/issues/676
-    const pos = calculateTimelinePos(playerTime);
+    const pos = calculateTimelinePos(relevantTime);
     if (pos != null && timelineScrollerRef.current) return pos * zoom * timelineScrollerRef.current.offsetWidth;
     return undefined;
-  }, [calculateTimelinePos, playerTime, zoom]);
+  }, [calculateTimelinePos, relevantTime, zoom]);
 
   const calcZoomWindowStartTime = useCallback(() => (timelineScrollerRef.current
     ? (timelineScrollerRef.current.scrollLeft / (timelineScrollerRef.current.offsetWidth * zoom)) * durationSafe
@@ -123,7 +122,7 @@ const Timeline = memo(({
   const spring = useSpring(scrollLeftMotion, { damping: 100, stiffness: 1000 });
 
   useEffect(() => {
-    spring.onChange(value => {
+    spring.on('change', (value) => {
       if (timelineScrollerSkipEventRef.current) return; // Don't animate while zooming
       timelineScrollerRef.current.scrollLeft = value;
     });
@@ -195,7 +194,7 @@ const Timeline = memo(({
 
   useEffect(() => {
     setHoveringTime();
-  }, [playerTime, commandedTime]);
+  }, [relevantTime]);
 
   const onMouseDown = useCallback((e) => {
     if (e.nativeEvent.buttons !== 1) return; // not primary button
@@ -296,9 +295,7 @@ const Timeline = memo(({
               <TimelineSeg
                 key={seg.segId}
                 segNum={i}
-                segBgColor={segColor.alpha(0.6).string()}
-                segActiveBgColor={segColor.alpha(0.7).string()}
-                segBorderColor={segColor.lighten(0.2).string()}
+                segColor={segColor}
                 onSegClick={setCurrentSegIndex}
                 isActive={i === currentSegIndexSafe}
                 duration={durationSafe}
@@ -313,8 +310,7 @@ const Timeline = memo(({
 
           {inverseCutSegments.map((seg) => (
             <BetweenSegments
-              // eslint-disable-next-line react/no-array-index-key
-              key={`${seg.start},${seg.end}`}
+              key={seg.segId}
               start={seg.start}
               end={seg.end}
               duration={durationSafe}

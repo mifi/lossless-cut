@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import i18n from 'i18next';
 
-import { errorToast } from '../util';
+import { errorToast } from '../swal';
 import isDev from '../isDev';
 
 const remote = window.require('@electron/remote');
@@ -129,6 +129,8 @@ export default () => {
   useEffect(() => safeSetConfig({ enableNativeHevc }), [enableNativeHevc]);
   const [enableUpdateCheck, setEnableUpdateCheck] = useState(safeGetConfigInitial('enableUpdateCheck'));
   useEffect(() => safeSetConfig({ enableUpdateCheck }), [enableUpdateCheck]);
+  const [cleanupChoices, setCleanupChoices] = useState(safeGetConfigInitial('cleanupChoices'));
+  useEffect(() => safeSetConfig({ cleanupChoices }), [cleanupChoices]);
 
 
   const resetKeyBindings = useCallback(() => {
@@ -236,5 +238,7 @@ export default () => {
     setEnableNativeHevc,
     enableUpdateCheck,
     setEnableUpdateCheck,
+    cleanupChoices,
+    setCleanupChoices,
   };
 };

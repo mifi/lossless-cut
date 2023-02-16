@@ -15,7 +15,8 @@ import ToggleExportConfirm from './components/ToggleExportConfirm';
 import OutSegTemplateEditor from './components/OutSegTemplateEditor';
 import HighlightedText from './components/HighlightedText';
 
-import { withBlur, toast } from './util';
+import { withBlur } from './util';
+import { toast } from './swal';
 import { isMov as ffmpegIsMov } from './util/streams';
 import useUserSettings from './hooks/useUserSettings';
 

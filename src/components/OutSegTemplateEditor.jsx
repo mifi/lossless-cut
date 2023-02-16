@@ -3,9 +3,9 @@ import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { Text, Button, Alert, IconButton, TickIcon, ResetIcon, Heading } from 'evergreen-ui';
-import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
+import Swal from '../swal';
 import HighlightedText from './HighlightedText';
 import { defaultOutSegTemplate } from '../util';
 import useUserSettings from '../hooks/useUserSettings';

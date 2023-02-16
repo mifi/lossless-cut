@@ -4,7 +4,7 @@ import sum from 'lodash/sum';
 import pMap from 'p-map';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath } from '../util';
-import { isCuttingStart, isCuttingEnd, handleProgress, getFfCommandLine, getDuration, runFfmpeg, createChaptersFromSegments, readFileMeta, cutEncodeSmartPart, getExperimentalArgs, html5ify as ffmpegHtml5ify, getVideoTimescaleArgs, RefuseOverwriteError } from '../ffmpeg';
+import { isCuttingStart, isCuttingEnd, handleProgress, getFfCommandLine, getDuration, runFfmpeg, createChaptersFromSegments, readFileMeta, cutEncodeSmartPart, getExperimentalArgs, html5ify as ffmpegHtml5ify, getVideoTimescaleArgs, RefuseOverwriteError, logStdoutStderr } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { getSmartCutParams } from '../smartcut';
 
@@ -160,8 +160,8 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
       stringToStream(concatTxt).pipe(process.stdin);
 
-      const { stdout } = await process;
-      console.log(stdout);
+      const result = await process;
+      logStdoutStderr(result);
 
       await optionalTransferTimestamps(metadataFromPath, outPath);
 
@@ -309,13 +309,13 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
     const ffmpegCommandLine = getFfCommandLine('ffmpeg', ffmpegArgs);
 
-    console.log(ffmpegCommandLine);
+    // console.log(ffmpegCommandLine);
     appendFfmpegCommandLog(ffmpegCommandLine);
 
     const process = runFfmpeg(ffmpegArgs);
     handleProgress(process, cutDuration, onProgress);
     const result = await process;
-    console.log(result.stdout);
+    logStdoutStderr(result);
 
     await optionalTransferTimestamps(filePath, outPath, cutFrom);
   }, [filePath, optionalTransferTimestamps]);
@@ -483,14 +483,14 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     const process = runFfmpeg(ffmpegArgs);
     handleProgress(process, duration, onProgress);
 
-    const { stdout } = await process;
-    console.log(stdout);
+    const result = await process;
+    logStdoutStderr(result);
 
     await optionalTransferTimestamps(filePathArg, outPath);
   }, [optionalTransferTimestamps]);
 
   // https://stackoverflow.com/questions/34118013/how-to-determine-webm-duration-using-ffprobe
-  const fixInvalidDuration = useCallback(async ({ fileFormat, customOutDir }) => {
+  const fixInvalidDuration = useCallback(async ({ fileFormat, customOutDir, duration, onProgress }) => {
     const ext = getOutFileExtension({ outFormat: fileFormat, filePath });
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `reformatted${ext}` });
 
@@ -508,9 +508,11 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       '-y', outPath,
     ];
 
-    // TODO progress
-    const { stdout } = await runFfmpeg(ffmpegArgs);
-    console.log(stdout);
+    const process = runFfmpeg(ffmpegArgs);
+    handleProgress(process, duration, onProgress);
+
+    const result = await process;
+    logStdoutStderr(result);
 
     await optionalTransferTimestamps(filePath, outPath);
 

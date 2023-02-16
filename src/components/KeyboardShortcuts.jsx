@@ -156,6 +156,18 @@ const KeyboardShortcuts = memo(({
           name: t('Play/pause (no reset speed)'),
           category: playbackCategory,
         },
+        togglePlayOnlyCurrentSegment: {
+          name: t('Play/pause (only current segment)'),
+          category: playbackCategory,
+        },
+        toggleLoopOnlyCurrentSegment: {
+          name: t('Loop/pause (only current segment)'),
+          category: playbackCategory,
+        },
+        toggleLoopStartEndOnlyCurrentSegment: {
+          name: t('Loop/pause (only beginning and end of current segment)'),
+          category: playbackCategory,
+        },
         play: {
           name: t('Play'),
           category: playbackCategory,
@@ -290,6 +302,14 @@ const KeyboardShortcuts = memo(({
         },
         fillSegmentsGaps: {
           name: t('Fill gaps between segments'),
+          category: segmentsAndCutpointsCategory,
+        },
+        shiftAllSegmentTimes: {
+          name: t('Shift all segments on timeline'),
+          category: segmentsAndCutpointsCategory,
+        },
+        alignSegmentTimesToKeyframes: {
+          name: t('Align segment times to keyframes'),
           category: segmentsAndCutpointsCategory,
         },
         createFixedDurationSegments: {

@@ -2,17 +2,18 @@ import React, { memo, useMemo, useRef, useCallback } from 'react';
 import { FaYinYang, FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaRegCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
 import { motion } from 'framer-motion';
-import Swal from 'sweetalert2';
 import { useTranslation, Trans } from 'react-i18next';
 import { ReactSortable } from 'react-sortablejs';
 import isEqual from 'lodash/isEqual';
 import useDebounce from 'react-use/lib/useDebounce';
 import scrollIntoView from 'scroll-into-view-if-needed';
 
+import Swal from './swal';
 import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
 import { saveColor, controlsBackground, primaryTextColor } from './colors';
 import { getSegColor } from './util/colors';
+import { mySpring } from './animations';
 
 const buttonBaseStyle = {
   margin: '0 3px', borderRadius: 3, color: 'white', cursor: 'pointer',
@@ -109,10 +110,10 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
       role="button"
       onClick={() => !invertCutSegments && onClick(index)}
       onDoubleClick={onDoubleClick}
-      positionTransition
-      style={{ originY: 0, margin: '5px 0', background: 'rgba(0,0,0,0.1)', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5, position: 'relative', opacity: !enabled && !invertCutSegments ? 0.5 : undefined }}
+      layout
+      style={{ originY: 0, margin: '5px 0', background: 'rgba(0,0,0,0.1)', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5, position: 'relative' }}
       initial={{ scaleY: 0 }}
-      animate={{ scaleY: 1 }}
+      animate={{ scaleY: 1, opacity: !enabled && !invertCutSegments ? 0.5 : undefined }}
       exit={{ scaleY: 0 }}
       className="segment-list-entry"
     >
@@ -258,6 +259,7 @@ const SegmentList = memo(({
       initial={{ x: width }}
       animate={{ x: 0 }}
       exit={{ x: width }}
+      transition={mySpring}
     >
       <div style={{ fontSize: 14, padding: '0 5px' }} className="no-user-select">
         <FaAngleRight
@@ -272,7 +274,7 @@ const SegmentList = memo(({
       </div>
 
       <div style={{ padding: '0 10px', overflowY: 'scroll', flexGrow: 1 }} className="hide-scrollbar">
-        <ReactSortable list={sortableList} setList={setSortableList} sort={!invertCutSegments} handle=".segment-handle">
+        <ReactSortable list={sortableList} setList={setSortableList} disabled={!!invertCutSegments} handle=".segment-handle">
           {sortableList.map(({ id, seg }, index) => {
             const enabled = !invertCutSegments && selectedSegmentsRaw.includes(seg);
             return (

@@ -1,7 +1,13 @@
 import fs from 'fs/promises';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { it, expect } from 'vitest';
+
 
 import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, getTimeFromFrameNum, formatCsvFrames, getFrameCountRaw, parsePbf } from './edlFormats';
+
+// eslint-disable-next-line no-underscore-dangle
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const readFixture = async (name, encoding = 'utf-8') => fs.readFile(join(__dirname, 'fixtures', name), encoding);
 

@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { FaAngleLeft, FaWindowClose } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { Heading, InlineAlert, Table, SideSheet, Position, ThemeProvider } from 'evergreen-ui';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
@@ -24,6 +24,7 @@ import useKeyboard from './hooks/useKeyboard';
 import useFileFormatState from './hooks/useFileFormatState';
 import useFrameCapture from './hooks/useFrameCapture';
 import useSegments from './hooks/useSegments';
+import useDirectoryAccess, { DirectoryAccessDeclinedError } from './hooks/useDirectoryAccess';
 
 import UserSettingsContext from './contexts/UserSettingsContext';
 
@@ -61,20 +62,21 @@ import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudi
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube, getFrameCountRaw } from './edlFormats';
 import {
-  getOutPath, getSuffixedOutPath, toast, errorToast, handleError, getOutDir, getFileDir,
-  checkDirWriteAccess, dirExists, isMasBuild, isStoreBuild, dragPreventer,
+  getOutPath, getSuffixedOutPath, handleError, getOutDir,
+  isMasBuild, isStoreBuild, dragPreventer,
   filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, isOutOfSpaceError, getNumDigits, isExecaFailure, readFileSize, readFileSizes, checkFileSizes,
+  deleteFiles, isOutOfSpaceError, getNumDigits, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle,
 } from './util';
+import { toast, errorToast } from './swal';
 import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
 import { askExtractFramesAsImages } from './dialogs/extractFrames';
 import { askForHtml5ifySpeed } from './dialogs/html5ify';
-import { askForOutDir, askForInputDir, askForImportChapters, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, openAbout, showRefuseToOverwrite, openDirToast, openCutFinishedToast, openConcatFinishedToast } from './dialogs';
+import { askForOutDir, askForImportChapters, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, openAbout, showRefuseToOverwrite, openDirToast, openCutFinishedToast, openConcatFinishedToast } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
-import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid } from './segments';
+import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, playOnlyCurrentSegment } from './segments';
 import { getOutSegError as getOutSegErrorRaw } from './util/outputNameTemplate';
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 
@@ -89,20 +91,15 @@ const remote = window.require('@electron/remote');
 
 const { dialog } = remote;
 
-const { focusWindow } = remote.require('./electron');
+const { focusWindow, hasDisabledNetworking } = remote.require('./electron');
 
 
 const calcShouldShowWaveform = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
 const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
 
-function setDocumentExtraTitle(extra) {
-  const baseTitle = 'LosslessCut';
-  if (extra != null) document.title = `${baseTitle} - ${extra}`;
-  else document.title = baseTitle;
-}
 
 const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
-const bottomMotionStyle = { background: controlsBackground };
+const bottomStyle = { background: controlsBackground };
 
 let lastOpenedPath;
 const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
@@ -117,6 +114,7 @@ const App = memo(() => {
   const [working, setWorkingState] = useState();
   const [usingDummyVideo, setUsingDummyVideo] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const playingOnlySegmentIdRef = useRef();
   const [playerTime, setPlayerTime] = useState();
   const [duration, setDuration] = useState();
   const [rotation, setRotation] = useState(360);
@@ -149,7 +147,6 @@ const App = memo(() => {
   const [timelineMode, setTimelineMode] = useState();
   const [keyframesEnabled, setKeyframesEnabled] = useState(true);
   const [showRightBar, setShowRightBar] = useState(true);
-  const [cleanupChoices, setCleanupChoices] = useState({ tmpFiles: true });
   const [rememberConvertToSupportedFormat, setRememberConvertToSupportedFormat] = useState();
   const [lastCommandsVisible, setLastCommandsVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
@@ -172,15 +169,7 @@ const App = memo(() => {
     setWorkingState(val);
   }, []);
 
-  useEffect(() => {
-    const parts = [];
-    if (filePath) parts.push(basename(filePath));
-    if (working) {
-      parts.push('-', working);
-      if (cutProgress != null) parts.push(`${(cutProgress * 100).toFixed(1)}%`);
-    }
-    setDocumentExtraTitle(parts.length > 0 ? parts.join(' ') : undefined);
-  }, [cutProgress, filePath, working]);
+  useEffect(() => setDocumentTitle({ filePath, working, cutProgress }), [cutProgress, filePath, working]);
 
   const zoom = Math.floor(zoomUnrounded);
 
@@ -190,7 +179,7 @@ const App = memo(() => {
   const allUserSettings = useUserSettingsRoot();
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, enableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, enableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, setCleanupChoices,
   } = allUserSettings;
 
   useEffect(() => {
@@ -338,7 +327,10 @@ const App = memo(() => {
 
   const onTimelineWheel = useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, invertTimelineScroll, zoomRel, seekRel });
 
-  const getCurrentTime = useCallback(() => (playing ? videoRef.current.currentTime : commandedTimeRef.current), [playing]);
+  // Relevant time is the player's playback position if we're currently playing - if not, it's the user's commanded time.
+  const relevantTime = useMemo(() => (playing ? playerTime : commandedTime) || 0, [commandedTime, playerTime, playing]);
+  // The reason why we also have a getter is because it can be used when we need to get the time, but don't want to re-render for every time update (which can be heavy!)
+  const getRelevantTime = useCallback(() => (playing ? videoRef.current.currentTime : commandedTimeRef.current) || 0, [playing]);
 
   const maxLabelLength = safeOutputFileName ? 100 : 500;
 
@@ -349,8 +341,8 @@ const App = memo(() => {
   }, [isFileOpened]);
 
   const {
-    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, onViewSegmentTags, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, createNumSegments, createFixedDurationSegments, createRandomSegments, apparentCutSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, currentApparentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, selectedSegmentsRaw, setCutTime, getSegApparentEnd, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, toggleSegmentSelected, selectOnlySegment,
-  } = useSegments({ filePath, workingRef, setWorking, setCutProgress, mainVideoStream, duration, getCurrentTime, maxLabelLength, checkFileOpened });
+    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, onViewSegmentTags, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, createNumSegments, createFixedDurationSegments, createRandomSegments, apparentCutSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, currentApparentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, selectedSegmentsRaw, setCutTime, getSegApparentEnd, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, toggleSegmentSelected, selectOnlySegment, getApparentCutSegmentById,
+  } = useSegments({ filePath, workingRef, setWorking, setCutProgress, mainVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened });
 
   const jumpSegStart = useCallback((index) => seekAbs(apparentCutSegments[index].start), [apparentCutSegments, seekAbs]);
   const jumpSegEnd = useCallback((index) => seekAbs(apparentCutSegments[index].end), [apparentCutSegments, seekAbs]);
@@ -395,10 +387,10 @@ const App = memo(() => {
   const projectSuffix = 'proj.llc';
   const oldProjectSuffix = 'llc-edl.csv';
   // New LLC format can be stored along with input file or in working dir (customOutDir)
-  const getEdlFilePath = useCallback((fp, storeProjectInWorkingDir2 = false) => getSuffixedOutPath({ customOutDir: storeProjectInWorkingDir2 ? customOutDir : undefined, filePath: fp, nameSuffix: projectSuffix }), [customOutDir]);
-  // Old versions of LosslessCut used CSV files and stored them in customOutDir:
-  const getEdlFilePathOld = useCallback((fp) => getSuffixedOutPath({ customOutDir, filePath: fp, nameSuffix: oldProjectSuffix }), [customOutDir]);
-  const projectFileSavePath = useMemo(() => getEdlFilePath(filePath, storeProjectInWorkingDir), [getEdlFilePath, filePath, storeProjectInWorkingDir]);
+  const getEdlFilePath = useCallback((fp, cod) => getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: projectSuffix }), []);
+  // Old versions of LosslessCut used CSV files and stored them always in customOutDir:
+  const getEdlFilePathOld = useCallback((fp, cod) => getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: oldProjectSuffix }), []);
+  const projectFileSavePath = useMemo(() => getEdlFilePath(filePath, storeProjectInWorkingDir ? customOutDir : undefined), [getEdlFilePath, filePath, storeProjectInWorkingDir, customOutDir]);
 
   const currentSaveOperation = useMemo(() => {
     if (!projectFileSavePath) return undefined;
@@ -439,7 +431,10 @@ const App = memo(() => {
     }
   }
 
-  const onStopPlaying = useCallback(() => onPlayingChange(false), []);
+  const onStopPlaying = useCallback(() => {
+    onPlayingChange(false);
+    playingOnlySegmentIdRef.current = undefined;
+  }, []);
   const onSartPlaying = useCallback(() => onPlayingChange(true), []);
   const onDurationChange = useCallback((e) => {
     // Some files report duration infinity first, then proper duration later
@@ -449,12 +444,6 @@ const App = memo(() => {
     if (isDurationValid(durationNew)) setDuration(durationNew);
   }, []);
 
-  const onTimeUpdate = useCallback((e) => {
-    const { currentTime } = e.target;
-    if (playerTime === currentTime) return;
-    setPlayerTime(currentTime);
-  }, [playerTime]);
-
   const increaseRotation = useCallback(() => {
     setRotation((r) => (r + 90) % 450);
     setHideCanvasPreview(false);
@@ -463,66 +452,7 @@ const App = memo(() => {
     if (!supportsRotation && !hideAllNotifications) toast.fire({ text: i18n.t('Lossless rotation might not work with this file format. You may try changing to MP4') });
   }, [hideAllNotifications, fileFormat]);
 
-  const ensureAccessibleDirectories = useCallback(async ({ inputPath, checkInputDir }) => {
-    // MacOS App Store sandbox doesn't allow writing anywhere, and we set the flag com.apple.security.files.user-selected.read-write
-    // With this flag, we can show the user an open-dialog for a directory, and once the user has opened that directory, we can write files there until the app is restarted.
-    // NOTE: when MAS (dev) build, Application Support will instead be here:
-    // ~/Library/Containers/no.mifi.losslesscut-mac/Data/Library/Application Support
-    // To start from scratch: rm -rf ~/Library/Containers/no.mifi.losslesscut-mac
-    // const simulateMasBuild = isDev; // can be used for testing this logic without having to build mas-dev
-    const simulateMasBuild = false;
-
-    const masMode = isMasBuild || simulateMasBuild;
-
-    if (checkInputDir) {
-      // Check input dir, if we need to write project file here
-      const inputFileDir = getFileDir(inputPath);
-      let simulateMasPermissionError = simulateMasBuild;
-      for (;;) {
-        // eslint-disable-next-line no-await-in-loop
-        if (await checkDirWriteAccess(inputFileDir) && !simulateMasPermissionError) break;
-        if (!masMode) {
-          // fail right away
-          errorToast(i18n.t('You have no write access to the directory of this file'));
-          return { cancel: true };
-        }
-
-        // We are now mas, so we need to try to force the user to allow access to the dir, so we can write the project file later
-        // eslint-disable-next-line no-await-in-loop
-        const userSelectedDir = await askForInputDir(inputFileDir);
-        simulateMasPermissionError = false; // assume user chose the right dir
-        if (userSelectedDir == null) return { cancel: true }; // allow user to cancel
-      }
-    }
-
-    let newCustomOutDir = customOutDir;
-
-    // Reset if doesn't exist anymore
-    const customOutDirExists = await dirExists(customOutDir);
-    if (!customOutDirExists) {
-      setCustomOutDir(undefined);
-      newCustomOutDir = undefined;
-    }
-
-    const effectiveOutDirPath = getOutDir(newCustomOutDir, inputPath);
-    const hasDirWriteAccess = await checkDirWriteAccess(effectiveOutDirPath);
-    if (!hasDirWriteAccess || simulateMasBuild) {
-      if (masMode) {
-        const newOutDir = await askForOutDir(effectiveOutDirPath);
-        // If user canceled open dialog, refuse to continue, because we will get permission denied error from MAS sandbox
-        if (!newOutDir) return { cancel: true };
-        setCustomOutDir(newOutDir);
-        newCustomOutDir = newOutDir;
-      } else {
-        errorToast(i18n.t('You have no write access to the directory of this file, please select a custom working dir'));
-        setCustomOutDir(undefined);
-        newCustomOutDir = undefined;
-        return { cancel: true };
-      }
-    }
-
-    return { cancel: false, newCustomOutDir };
-  }, [customOutDir, setCustomOutDir]);
+  const { ensureWritableOutDir, ensureAccessToSourceDir } = useDirectoryAccess({ customOutDir, setCustomOutDir });
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
 
@@ -687,6 +617,7 @@ const App = memo(() => {
   const { waveforms } = useWaveform({ filePath, commandedTime, zoomedDuration, waveformEnabled, mainAudioStream, shouldShowWaveform, ffmpegExtractWindow });
 
   const resetState = useCallback(() => {
+    console.log('State reset');
     const video = videoRef.current;
     setCommandedTime(0);
     video.currentTime = 0;
@@ -696,6 +627,7 @@ const App = memo(() => {
     setPreviewFilePath();
     setUsingDummyVideo(false);
     setPlaying(false);
+    playingOnlySegmentIdRef.current = undefined;
     setDuration();
     cutSegmentsHistory.go(0);
     clearSegments(); // TODO this will cause two history items
@@ -769,8 +701,7 @@ const App = memo(() => {
 
     setPreviewFilePath(path);
     setUsingDummyVideo(usesDummyVideo);
-    showUnsupportedFileMessage();
-  }, [html5ify, html5ifyDummy, showUnsupportedFileMessage]);
+  }, [html5ify, html5ifyDummy]);
 
   const convertFormatBatch = useCallback(async () => {
     if (batchFiles.length < 1) return;
@@ -792,12 +723,13 @@ const App = memo(() => {
       for (const path of filePaths) {
         try {
           // eslint-disable-next-line no-await-in-loop
-          const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: path });
-          if (cancel) return;
+          const newCustomOutDir = await ensureWritableOutDir(path);
 
           // eslint-disable-next-line no-await-in-loop
           await html5ify({ customOutDir: newCustomOutDir, filePath: path, speed, hasAudio: true, hasVideo: true, onProgress: setTotalProgress });
         } catch (err2) {
+          if (err2 instanceof DirectoryAccessDeclinedError) return;
+
           console.error('Failed to html5ify', path, err2);
           failedFiles.push(path);
         }
@@ -814,7 +746,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [batchFiles, ensureAccessibleDirectories, html5ify, setWorking]);
+  }, [batchFiles, ensureWritableOutDir, html5ify, setWorking]);
 
   const getConvertToSupportedFormat = useCallback((fallback) => rememberConvertToSupportedFormat || fallback, [rememberConvertToSupportedFormat]);
 
@@ -842,13 +774,38 @@ const App = memo(() => {
     });
   }, [filePath, playing]);
 
-  const togglePlay = useCallback((resetPlaybackRate) => {
+  const togglePlay = useCallback(({ resetPlaybackRate, onlyCurrentSegment } = {}) => {
+    playingOnlySegmentIdRef.current = undefined;
     if (playing) {
       pause();
       return;
     }
+    if (onlyCurrentSegment != null) {
+      playingOnlySegmentIdRef.current = { segId: currentApparentCutSeg.segId, mode: onlyCurrentSegment };
+      seekAbs(currentApparentCutSeg.start);
+    }
     play(resetPlaybackRate);
-  }, [playing, play, pause]);
+  }, [playing, play, pause, currentApparentCutSeg.segId, currentApparentCutSeg.start, seekAbs]);
+
+  const onTimeUpdate = useCallback((e) => {
+    const { currentTime } = e.target;
+    if (playerTime === currentTime) return;
+    setPlayerTime(currentTime);
+
+    if (playingOnlySegmentIdRef.current != null) {
+      const { segId, mode } = playingOnlySegmentIdRef.current;
+      const playingOnlySegment = getApparentCutSegmentById(segId);
+
+      if (playingOnlySegment != null) {
+        const { seek, stop } = playOnlyCurrentSegment({ mode, currentTime, playingOnlySegment });
+        if (seek) seekAbs(seek);
+        if (stop) {
+          playingOnlySegmentIdRef.current = undefined;
+          pause();
+        }
+      }
+    }
+  }, [getApparentCutSegmentById, pause, playerTime, seekAbs]);
 
   const closeFileWithConfirm = useCallback(() => {
     if (!isFileOpened || workingRef.current) return;
@@ -866,7 +823,7 @@ const App = memo(() => {
     setSelectedBatchFiles([]);
   }, [askBeforeClose]);
 
-  const batchRemoveFile = useCallback((path) => {
+  const batchListRemoveFile = useCallback((path) => {
     setBatchFiles((existingBatch) => {
       const index = existingBatch.findIndex((existingFile) => existingFile.path === path);
       if (index < 0) return existingBatch;
@@ -931,8 +888,7 @@ const App = memo(() => {
       const firstPath = paths[0];
       if (!firstPath) return;
 
-      const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: firstPath });
-      if (cancel) return;
+      const newCustomOutDir = await ensureWritableOutDir(firstPath);
 
       const outDir = getOutDir(newCustomOutDir, firstPath);
 
@@ -961,6 +917,8 @@ const App = memo(() => {
       if (!includeAllStreams && haveExcludedStreams) notices.push(i18n.t('Some extra tracks have been discarded. You can change this option before merging.'));
       if (!hideAllNotifications) openConcatFinishedToast({ filePath: outPath, notices, warnings });
     } catch (err) {
+      if (err instanceof DirectoryAccessDeclinedError) return;
+
       if (err.killed === true) {
         // assume execa killed (aborted by user)
         return;
@@ -984,47 +942,58 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [setWorking, ensureAccessibleDirectories, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, hideAllNotifications, handleConcatFailed]);
+  }, [setWorking, ensureWritableOutDir, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, hideAllNotifications, handleConcatFailed]);
 
   const cleanupFiles = useCallback(async (cleanupChoices2) => {
     // Store paths before we reset state
     const savedPaths = { previewFilePath, sourceFilePath: filePath, projectFilePath: projectFileSavePath };
 
+    batchListRemoveFile(savedPaths.sourceFilePath);
+
+    // close the file
     resetState();
-
-    batchRemoveFile(savedPaths.sourceFilePath);
-
-    if (!cleanupChoices2.tmpFiles && !cleanupChoices2.projectFile && !cleanupChoices2.sourceFile) return;
 
     try {
       setWorking(i18n.t('Cleaning up'));
-      console.log('trashing', cleanupChoices2);
-      await deleteFiles({ toDelete: cleanupChoices2, paths: savedPaths });
+      console.log('Cleaning up files', cleanupChoices2);
+
+      const pathsToDelete = [];
+      if (cleanupChoices2.trashTmpFiles && savedPaths.previewFilePath) pathsToDelete.push(savedPaths.previewFilePath);
+      if (cleanupChoices2.trashProjectFile && savedPaths.projectFilePath) pathsToDelete.push(savedPaths.projectFilePath);
+      if (cleanupChoices2.trashSourceFile && savedPaths.sourceFilePath) pathsToDelete.push(savedPaths.sourceFilePath);
+
+      await deleteFiles(pathsToDelete, cleanupChoices2.deleteIfTrashFails);
     } catch (err) {
       errorToast(i18n.t('Unable to delete file: {{message}}', { message: err.message }));
       console.error(err);
     }
-  }, [batchRemoveFile, filePath, previewFilePath, projectFileSavePath, resetState, setWorking]);
+  }, [batchListRemoveFile, filePath, previewFilePath, projectFileSavePath, resetState, setWorking]);
+
+  const askForCleanupChoices = useCallback(async () => {
+    const trashResponse = await showCleanupFilesDialog(cleanupChoices);
+    if (!trashResponse) return undefined; // Canceled
+    setCleanupChoices(trashResponse); // Store for next time
+    return trashResponse;
+  }, [cleanupChoices, setCleanupChoices]);
 
   const cleanupFilesDialog = useCallback(async () => {
     if (!isFileOpened) return;
 
-    let trashResponse = cleanupChoices;
-    if (!cleanupChoices.dontShowAgain) {
-      trashResponse = await showCleanupFilesDialog(cleanupChoices);
-      console.log('trashResponse', trashResponse);
-      if (!trashResponse) return; // Cancelled
-      setCleanupChoices(trashResponse); // Store for next time
+    let response = cleanupChoices;
+    if (cleanupChoices.askForCleanup) {
+      response = await askForCleanupChoices();
+      console.log('trashResponse', response);
+      if (!response) return; // Canceled
     }
 
     if (workingRef.current) return;
 
     try {
-      await cleanupFiles(trashResponse);
+      await cleanupFiles(response);
     } finally {
       setWorking();
     }
-  }, [isFileOpened, cleanupChoices, cleanupFiles, setWorking]);
+  }, [isFileOpened, cleanupChoices, askForCleanupChoices, cleanupFiles, setWorking]);
 
   // For invertCutSegments we do not support filtering
   const selectedSegmentsOrInverseRaw = useMemo(() => (invertCutSegments ? inverseCutSegments : selectedSegmentsRaw), [inverseCutSegments, invertCutSegments, selectedSegmentsRaw]);
@@ -1235,7 +1204,7 @@ const App = memo(() => {
     if (!filePath) return;
 
     try {
-      const currentTime = getCurrentTime();
+      const currentTime = getRelevantTime();
       const video = videoRef.current;
       const useFffmpeg = usingPreviewFile || captureFrameMethod === 'ffmpeg';
       const outPath = useFffmpeg
@@ -1247,7 +1216,7 @@ const App = memo(() => {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [filePath, getCurrentTime, usingPreviewFile, captureFrameMethod, captureFrameFromFfmpeg, customOutDir, captureFormat, enableTransferTimestamps, captureFrameQuality, captureFrameFromTag, hideAllNotifications]);
+  }, [filePath, getRelevantTime, usingPreviewFile, captureFrameMethod, captureFrameFromFfmpeg, customOutDir, captureFormat, enableTransferTimestamps, captureFrameQuality, captureFrameFromTag, hideAllNotifications]);
 
   const extractSegmentFramesAsImages = useCallback(async (index) => {
     if (!filePath || detectedFps == null || workingRef.current) return;
@@ -1300,61 +1269,70 @@ const App = memo(() => {
     loadCutSegments(await readEdlFile({ type, path }), append);
   }, [loadCutSegments]);
 
-  const loadMedia = useCallback(async ({ filePath: fp, customOutDir: cod, projectPath }) => {
-    console.log('loadMedia', fp, cod, projectPath);
-
-    resetState();
-
-    console.log('state reset');
-
-    setWorking(i18n.t('Loading file'));
-
-    async function checkAndSetExistingHtml5FriendlyFile() {
-      const res = await findExistingHtml5FriendlyFile(fp, cod);
-      if (!res) return false;
-      console.log('Found existing supported file', res.path);
-      setUsingDummyVideo(res.usingDummyVideo);
-      setPreviewFilePath(res.path);
-      showPreviewFileLoadedMessage(basename(res.path));
-      return true;
-    }
-
+  const loadMedia = useCallback(async ({ filePath: fp, projectPath }) => {
     async function tryOpenProjectPath(path, type) {
       if (!(await exists(path))) return false;
       await loadEdlFile({ path, type });
       return true;
     }
 
-    async function tryOpenProject({ chapters }) {
+    const storeProjectInSourceDir = !storeProjectInWorkingDir;
+
+    async function tryOpenProject({ chapters, cod }) {
       try {
-        if (projectPath) {
-          await loadEdlFile({ path: projectPath, type: 'llc' });
-          return;
+        // First try to open from from working dir
+        if (await tryOpenProjectPath(getEdlFilePath(fp, cod), 'llc')) return;
+
+        // then try to open project from source file dir
+        const sameDirEdlFilePath = getEdlFilePath(fp);
+        // MAS only allows fs.stat (fs-extra.exists) if we don't have access to input dir yet, so check first if the file exists,
+        // so we don't need to annoy the user by asking for permission if the project file doesn't exist
+        if (await exists(sameDirEdlFilePath)) {
+          // Ok, the file exists. now we have to ask the user, because we need to read that file
+          await ensureAccessToSourceDir(fp);
+          // Ok, we got access from the user (or already have access), now read the project file
+          await loadEdlFile({ path: sameDirEdlFilePath, type: 'llc' });
         }
 
-        // First try to open from source file dir, then from working dir, then finally old csv style project
-        if (await tryOpenProjectPath(getEdlFilePath(fp, true), 'llc')) return;
-        if (await tryOpenProjectPath(getEdlFilePath(fp, false), 'llc')) return;
-        if (await tryOpenProjectPath(getEdlFilePathOld(fp), 'csv')) return;
+        // then finally old csv style project
+        if (await tryOpenProjectPath(getEdlFilePathOld(fp, cod), 'csv')) return;
 
+        // OK, we didn't find a project file, instead maybe try to create project (segments) from chapters
         const edl = await tryMapChaptersToEdl(chapters);
         if (edl.length > 0 && enableAskForImportChapters && (await askForImportChapters())) {
           console.log('Convert chapters to segments', edl);
           loadCutSegments(edl);
         }
       } catch (err) {
+        if (err instanceof DirectoryAccessDeclinedError) throw err;
         console.error('EDL load failed, but continuing', err);
         errorToast(`${i18n.t('Failed to load segments')} (${err.message})`);
       }
     }
 
+    setWorking(i18n.t('Loading file'));
     try {
+      // Need to check if file is actually readable
+      const pathReadAccessErrorCode = await getPathReadAccessError(fp);
+      if (pathReadAccessErrorCode != null) {
+        let errorMessage;
+        if (pathReadAccessErrorCode === 'ENOENT') errorMessage = i18n.t('The media you tried to open does not exist');
+        else if (['EACCES', 'EPERM'].includes(pathReadAccessErrorCode)) errorMessage = i18n.t('You do not have permission to access this file');
+        else errorMessage = i18n.t('Could not open media due to error {{errorCode}}', { errorCode: pathReadAccessErrorCode });
+        errorToast(errorMessage);
+        return;
+      }
+
+      // Not sure why this one is needed, but I think sometimes fs.access doesn't fail but it fails when actually trying to read
+      if (!(await havePermissionToReadFile(fp))) {
+        errorToast(i18n.t('You do not have permission to access this file'));
+        return;
+      }
+
       const fileMeta = await readFileMeta(fp);
       // console.log('file meta read', fileMeta);
 
       const fileFormatNew = await getSmarterOutFormat({ filePath: fp, fileMeta });
-
-      // console.log(streams, fileMeta.format, fileFormat);
 
       if (!fileFormatNew) throw new Error('Unable to determine file format');
 
@@ -1373,30 +1351,48 @@ const App = memo(() => {
         stream.index, shouldCopyStreamByDefault(stream),
       ]));
 
-      if (timecode) setStartTimeOffset(timecode);
-
-      setDetectedFps(haveVideoStream ? getStreamFps(videoStream) : undefined);
-
-      if (isAudioDefinitelyNotSupported(fileMeta.streams)) {
-        toast.fire({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
-      }
-
       const validDuration = isDurationValid(parseFloat(fileMeta.format.duration));
-      const hasLoadedExistingHtml5FriendlyFile = await checkAndSetExistingHtml5FriendlyFile();
 
       const hevcPlaybackSupported = enableNativeHevc && await hevcPlaybackSupportedPromise;
 
-      // 'fastest' works with almost all video files
-      if (!hasLoadedExistingHtml5FriendlyFile && !willPlayerProperlyHandleVideo({ streams: fileMeta.streams, hevcPlaybackSupported }) && validDuration) {
+      // need to ensure we have access to write to working directory
+      const cod = await ensureWritableOutDir(fp);
+
+      // if storeProjectInSourceDir is true, we will be writing project file to input path's dir, so ensure that one too
+      if (storeProjectInSourceDir) await ensureAccessToSourceDir(fp);
+
+      const existingHtml5FriendlyFile = await findExistingHtml5FriendlyFile(fp, cod);
+
+      const needsAutoHtml5ify = !existingHtml5FriendlyFile && !willPlayerProperlyHandleVideo({ streams: fileMeta.streams, hevcPlaybackSupported }) && validDuration;
+
+      // BEGIN STATE UPDATES:
+
+      console.log('loadMedia', fp, cod, projectPath);
+
+      resetState();
+
+      if (existingHtml5FriendlyFile) {
+        console.log('Found existing html5 friendly file', existingHtml5FriendlyFile.path);
+        setUsingDummyVideo(existingHtml5FriendlyFile.usingDummyVideo);
+        setPreviewFilePath(existingHtml5FriendlyFile.path);
+      }
+
+      if (needsAutoHtml5ify) {
+        // Try to auto-html5ify if there are known issues with this file
+        // 'fastest' works with almost all video files
         await html5ifyAndLoadWithPreferences(cod, fp, 'fastest', haveVideoStream, haveAudioStream);
       }
 
-      await tryOpenProject({ chapters: fileMeta.chapters });
+      if (projectPath) {
+        await loadEdlFile({ path: projectPath, type: 'llc' });
+      } else {
+        await tryOpenProject({ chapters: fileMeta.chapters, cod });
+      }
 
       // throw new Error('test');
 
-      if (!validDuration) toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
-
+      if (timecode) setStartTimeOffset(timecode);
+      setDetectedFps(haveVideoStream ? getStreamFps(videoStream) : undefined);
       setMainFileMeta({ streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters });
       setMainVideoStream(videoStream);
       setMainAudioStream(audioStream);
@@ -1404,15 +1400,29 @@ const App = memo(() => {
       setFileFormat(outFormatLocked || fileFormatNew);
       setDetectedFileFormat(fileFormatNew);
 
+      // only show one toast, or else we will only show the last one
+      if (existingHtml5FriendlyFile) {
+        showPreviewFileLoadedMessage(basename(existingHtml5FriendlyFile.path));
+      } else if (needsAutoHtml5ify) {
+        showUnsupportedFileMessage();
+      } else if (isAudioDefinitelyNotSupported(fileMeta.streams)) {
+        if (!hideAllNotifications) toast.fire({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
+      } else if (!validDuration) {
+        toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
+      }
+
       // This needs to be last, because it triggers <video> to load the video
       // If not, onVideoError might be triggered before setWorking() has been cleared.
       // https://github.com/mifi/lossless-cut/issues/515
       setFilePath(fp);
     } catch (err) {
+      if (err) {
+        if (err instanceof DirectoryAccessDeclinedError) return;
+      }
       resetState();
       throw err;
     }
-  }, [resetState, setWorking, showPreviewFileLoadedMessage, loadEdlFile, getEdlFilePath, getEdlFilePathOld, enableAskForImportChapters, loadCutSegments, autoLoadTimecode, enableNativeHevc, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat, html5ifyAndLoadWithPreferences]);
+  }, [setWorking, loadEdlFile, getEdlFilePath, getEdlFilePathOld, enableAskForImportChapters, loadCutSegments, autoLoadTimecode, enableNativeHevc, ensureWritableOutDir, storeProjectInWorkingDir, ensureAccessToSourceDir, resetState, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat, html5ifyAndLoadWithPreferences, showPreviewFileLoadedMessage, showUnsupportedFileMessage, hideAllNotifications]);
 
   const toggleLastCommands = useCallback(() => setLastCommandsVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1420,10 +1430,10 @@ const App = memo(() => {
   const jumpSeg = useCallback((val) => setCurrentSegIndex((old) => Math.max(Math.min(old + val, cutSegments.length - 1), 0)), [cutSegments.length, setCurrentSegIndex]);
 
   const seekClosestKeyframe = useCallback((direction) => {
-    const time = findNearestKeyFrameTime({ time: getCurrentTime(), direction });
+    const time = findNearestKeyFrameTime({ time: getRelevantTime(), direction });
     if (time == null) return;
     seekAbs(time);
-  }, [findNearestKeyFrameTime, getCurrentTime, seekAbs]);
+  }, [findNearestKeyFrameTime, getRelevantTime, seekAbs]);
 
   const seekAccelerationRef = useRef(1);
 
@@ -1439,7 +1449,16 @@ const App = memo(() => {
       console.log({ mediaFileName });
       if (!mediaFileName) return;
       projectPath = path;
-      path = pathJoin(dirname(path), mediaFileName);
+
+      const mediaFilePath = pathJoin(dirname(path), mediaFileName);
+
+      // We might need to get user's access to the project file's directory, in order to read the media file
+      try {
+        await ensureAccessToSourceDir(mediaFilePath);
+      } catch (err) {
+        if (err instanceof DirectoryAccessDeclinedError) return;
+      }
+      path = mediaFilePath;
     }
     // Because Apple is being nazi about the ability to open "copy protected DVD files"
     const disallowVob = isMasBuild;
@@ -1448,28 +1467,8 @@ const App = memo(() => {
       return;
     }
 
-    const pathReadAccessErrorCode = await getPathReadAccessError(path);
-    if (pathReadAccessErrorCode != null) {
-      let errorMessage;
-      if (pathReadAccessErrorCode === 'ENOENT') errorMessage = i18n.t('The media you tried to open does not exist');
-      else if (['EACCES', 'EPERM'].includes(pathReadAccessErrorCode)) errorMessage = i18n.t('You do not have permission to access this file');
-      else errorMessage = i18n.t('Could not open media due to error {{errorCode}}', { errorCode: pathReadAccessErrorCode });
-      errorToast(errorMessage);
-      return;
-    }
-
-    // Not sure why this one is needed, but I think sometimes fs.access doesn't fail but it fails when actually trying to read
-    if (!(await havePermissionToReadFile(path))) {
-      errorToast(i18n.t('You do not have permission to access this file'));
-      return;
-    }
-
-    // checkInputDir: true because we may be be writing project file here (if storeProjectInWorkingDir is true)
-    const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: path, checkInputDir: !storeProjectInWorkingDir });
-    if (cancel) return;
-
-    await loadMedia({ filePath: path, customOutDir: newCustomOutDir, projectPath });
-  }, [ensureAccessibleDirectories, loadMedia, storeProjectInWorkingDir]);
+    await loadMedia({ filePath: path, projectPath });
+  }, [ensureAccessToSourceDir, loadMedia]);
 
   // todo merge with userOpenFiles?
   const batchOpenSingleFile = useCallback(async (path) => {
@@ -1598,16 +1597,19 @@ const App = memo(() => {
     if (!checkFileOpened() || workingRef.current) return;
     try {
       setWorking(i18n.t('Fixing file duration'));
-      const path = await fixInvalidDuration({ fileFormat, customOutDir });
-      toast.fire({ icon: 'info', text: i18n.t('Duration has been fixed') });
-      await loadMedia({ filePath: path, customOutDir });
+      setCutProgress(0);
+      const path = await fixInvalidDuration({ fileFormat, customOutDir, duration, onProgress: setCutProgress });
+      if (!hideAllNotifications) toast.fire({ icon: 'info', text: i18n.t('Duration has been fixed') });
+
+      await loadMedia({ filePath: path });
     } catch (err) {
       errorToast(i18n.t('Failed to fix file duration'));
       console.error('Failed to fix file duration', err);
     } finally {
       setWorking();
+      setCutProgress();
     }
-  }, [checkFileOpened, customOutDir, fileFormat, fixInvalidDuration, loadMedia, setWorking]);
+  }, [checkFileOpened, customOutDir, duration, fileFormat, fixInvalidDuration, hideAllNotifications, loadMedia, setWorking]);
 
   const addStreamSourceFile = useCallback(async (path) => {
     if (allFilesMeta[path]) return undefined; // Already added?
@@ -1629,7 +1631,7 @@ const App = memo(() => {
   const captureSnapshotAsCoverArt = useCallback(async () => {
     if (!filePath) return;
     try {
-      const currentTime = getCurrentTime();
+      const currentTime = getRelevantTime();
       const path = await captureFrameFromFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, enableTransferTimestamps, quality: captureFrameQuality });
       if (!(await addFileAsCoverArt(path))) return;
       if (!hideAllNotifications) toast.fire({ text: i18n.t('Current frame has been set as cover art') });
@@ -1637,7 +1639,7 @@ const App = memo(() => {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [addFileAsCoverArt, captureFormat, captureFrameFromFfmpeg, captureFrameQuality, customOutDir, enableTransferTimestamps, filePath, getCurrentTime, hideAllNotifications]);
+  }, [addFileAsCoverArt, captureFormat, captureFrameFromFfmpeg, captureFrameQuality, customOutDir, enableTransferTimestamps, filePath, getRelevantTime, hideAllNotifications]);
 
   const batchLoadPaths = useCallback((newPaths, append) => {
     setBatchFiles((existingFiles) => {
@@ -1698,7 +1700,9 @@ const App = memo(() => {
         if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
         else inputOptions.tracks = i18n.t('Include all tracks from the new file');
       }
+
       if (batchFiles.length > 0) inputOptions.addToBatch = i18n.t('Add the file to the batch list');
+      else if (isFileOpened) inputOptions.mergeWithCurrentFile = i18n.t('Merge/concatenate with current file');
 
       if (Object.keys(inputOptions).length > 1) {
         const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction(inputOptions) : 'open';
@@ -1720,6 +1724,14 @@ const App = memo(() => {
           batchLoadPaths([firstFilePath], true);
           return;
         }
+        if (openFileResponse === 'mergeWithCurrentFile') {
+          const batchPaths = new Set();
+          if (filePath) batchPaths.add(filePath);
+          filePaths.forEach((path) => batchPaths.add(path));
+          batchLoadPaths([...batchPaths]);
+          if (batchPaths.size > 1) setConcatDialogVisible(true);
+          return;
+        }
         // Dialog canceled:
         return;
       }
@@ -1735,7 +1747,7 @@ const App = memo(() => {
     } finally {
       setWorking();
     }
-  }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, batchFiles.length, isFileOpened, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile]);
+  }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, isFileOpened, batchFiles.length, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile, filePath]);
 
   const openFilesDialog = useCallback(async () => {
     const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'], defaultPath: lastOpenedPath });
@@ -1761,7 +1773,10 @@ const App = memo(() => {
     // For actions, see also KeyboardShortcuts.jsx
     const mainActions = {
       togglePlayNoResetSpeed: () => togglePlay(),
-      togglePlayResetSpeed: () => togglePlay(true),
+      togglePlayResetSpeed: () => togglePlay({ resetPlaybackRate: true }),
+      togglePlayOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, onlyCurrentSegment: 'play' }),
+      toggleLoopOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, onlyCurrentSegment: 'loop-full' }),
+      toggleLoopStartEndOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, onlyCurrentSegment: 'loop-start-end' }),
       play: () => play(),
       pause,
       reducePlaybackRate: () => changePlaybackRate(-1),
@@ -1826,6 +1841,7 @@ const App = memo(() => {
       createFixedDurationSegments,
       createNumSegments,
       createRandomSegments,
+      alignSegmentTimesToKeyframes,
       shuffleSegments,
       clearSegments,
       toggleSegmentsList,
@@ -1844,6 +1860,7 @@ const App = memo(() => {
       toggleCurrentSegmentSelected,
       removeSelectedSegments,
       fixInvalidDuration: tryFixInvalidDuration,
+      shiftAllSegmentTimes,
       increaseVolume: () => setPlaybackVolume((val) => Math.min(1, val + 0.07)),
       decreaseVolume: () => setPlaybackVolume((val) => Math.max(0, val - 0.07)),
     };
@@ -1887,7 +1904,7 @@ const App = memo(() => {
     if (match) return bubble;
 
     return true; // bubble the event
-  }, [addSegment, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, combineOverlappingSegments, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addSegment, alignSegmentTimesToKeyframes, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, combineOverlappingSegments, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   useKeyboard({ keyBindings, onKeyPress });
 
@@ -1948,9 +1965,11 @@ const App = memo(() => {
         if (hasVideo) {
           // "fastest" is the most likely type not to fail for video (but it is muted).
           await html5ifyAndLoadWithPreferences(customOutDir, filePath, 'fastest', hasVideo, hasAudio);
+          showUnsupportedFileMessage();
         } else if (hasAudio) {
           // For audio do a fast re-encode
           await html5ifyAndLoadWithPreferences(customOutDir, filePath, 'fastest-audio', hasVideo, hasAudio);
+          showUnsupportedFileMessage();
         }
       } catch (err) {
         console.error(err);
@@ -1961,7 +1980,7 @@ const App = memo(() => {
     } catch (err) {
       handleError(err);
     }
-  }, [fileUri, usingPreviewFile, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, filePath, setWorking]);
+  }, [fileUri, usingPreviewFile, filePath, setWorking, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, showUnsupportedFileMessage]);
 
   useEffect(() => {
     async function exportEdlFile2(e, type) {
@@ -2076,7 +2095,7 @@ const App = memo(() => {
   }, []);
 
   useEffect(() => {
-    if (!isStoreBuild) loadMifiLink().then(setMifiLink);
+    if (!isStoreBuild && !hasDisabledNetworking()) loadMifiLink().then(setMifiLink);
   }, []);
 
   const haveCustomFfPath = !!customFfPath;
@@ -2138,7 +2157,7 @@ const App = memo(() => {
                   batchFiles={batchFiles}
                   setBatchFiles={setBatchFiles}
                   onBatchFileSelect={onBatchFileSelect}
-                  batchRemoveFile={batchRemoveFile}
+                  batchListRemoveFile={batchListRemoveFile}
                   closeBatch={closeBatch}
                   onMergeFilesClick={concatCurrentBatch}
                   onBatchConvertToSupportedFormatClick={convertFormatBatch}
@@ -2239,7 +2258,7 @@ const App = memo(() => {
             </AnimatePresence>
           </div>
 
-          <motion.div className="no-user-select" style={bottomMotionStyle}>
+          <div className="no-user-select" style={bottomStyle}>
             <Timeline
               shouldShowKeyframes={shouldShowKeyframes}
               waveforms={waveforms}
@@ -2248,11 +2267,12 @@ const App = memo(() => {
               thumbnailsEnabled={thumbnailsEnabled}
               neighbouringKeyFrames={neighbouringKeyFrames}
               thumbnails={thumbnailsSorted}
-              getCurrentTime={getCurrentTime}
-              commandedTimeRef={commandedTimeRef}
-              startTimeOffset={startTimeOffset}
               playerTime={playerTime}
               commandedTime={commandedTime}
+              relevantTime={relevantTime}
+              getRelevantTime={getRelevantTime}
+              commandedTimeRef={commandedTimeRef}
+              startTimeOffset={startTimeOffset}
               zoom={zoom}
               seekAbs={seekAbs}
               durationSafe={durationSafe}
@@ -2310,7 +2330,7 @@ const App = memo(() => {
               toggleKeyframesEnabled={toggleKeyframesEnabled}
               detectedFps={detectedFps}
             />
-          </motion.div>
+          </div>
 
           <SideSheet
             width={700}
@@ -2368,6 +2388,7 @@ const App = memo(() => {
                 <Settings
                   onTunerRequested={onTunerRequested}
                   onKeyboardShortcutsDialogRequested={toggleKeyboardShortcuts}
+                  askForCleanupChoices={askForCleanupChoices}
                 />
               </Table.Body>
             </Table>

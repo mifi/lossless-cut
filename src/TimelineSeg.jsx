@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTrashAlt } from 'react-icons/fa';
 
@@ -7,13 +7,19 @@ import { mySpring } from './animations';
 
 const TimelineSeg = memo(({
   duration, cutStart, cutEnd, isActive, segNum, name,
-  onSegClick, invertCutSegments, segBgColor, segActiveBgColor, segBorderColor, formatTimecode,
+  onSegClick, invertCutSegments, segColor, formatTimecode,
 }) => {
   const cutSectionWidth = `${((cutEnd - cutStart) / duration) * 100}%`;
 
   const startTimePos = `${(cutStart / duration) * 100}%`;
-  const markerBorder = `2px solid ${isActive ? segBorderColor : 'transparent'}`;
-  const backgroundColor = isActive ? segActiveBgColor : segBgColor;
+
+  const markerBorder = useMemo(() => `2px solid ${isActive ? segColor.lighten(0.2).string() : 'transparent'}`, [isActive, segColor]);
+
+  const backgroundColor = useMemo(() => {
+    if (invertCutSegments) return segColor.alpha(0.4).string();
+    if (isActive) return segColor.alpha(0.7).string();
+    return segColor.alpha(0.6).string();
+  }, [invertCutSegments, isActive, segColor]);
   const markerBorderRadius = 5;
 
   const wrapperStyle = {
@@ -25,7 +31,6 @@ const TimelineSeg = memo(({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    background: backgroundColor,
     originX: 0,
     boxSizing: 'border-box',
 
@@ -47,9 +52,10 @@ const TimelineSeg = memo(({
   return (
     <motion.div
       style={wrapperStyle}
-      layoutTransition={mySpring}
+      layout
+      transition={mySpring}
       initial={{ opacity: 0, scaleX: 0 }}
-      animate={{ opacity: 1, scaleX: 1 }}
+      animate={{ opacity: 1, scaleX: 1, backgroundColor }}
       exit={{ opacity: 0, scaleX: 0 }}
       role="button"
       onClick={onThisSegClick}
@@ -66,7 +72,7 @@ const TimelineSeg = memo(({
             style={{ width: 16, height: 16, flexShrink: 1 }}
           >
             <FaTrashAlt
-              style={{ width: '100%', color: segBorderColor }}
+              style={{ width: '100%', color: 'rgba(255,255,255,0.8)' }}
               size={16}
             />
           </motion.div>

@@ -1,12 +1,5 @@
 node_modules
 .DS_Store
-dist
-build
-icon-build
-build-resources
-doc
-/ffmpeg
-/app.log
 *.provisionprofile
 
 .pnp.*
@@ -16,3 +9,11 @@ doc
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+/dist
+/vite-dist
+/icon-build
+/build-resources
+/doc
+/ffmpeg
+/app.log

@@ -120,7 +120,7 @@ var PAGE_HEIGHT = 800;
  *         Firefox v4/Win7  |     undefined    |       3
  *
  */
-function normalizeWheel(/*object*/ event) /*object*/ {
+export default function normalizeWheel(/*object*/ event) /*object*/ {
   var sX = 0, sY = 0,       // spinX, spinY
       pX = 0, pY = 0;       // pixelX, pixelY
 
@@ -161,5 +161,3 @@ function normalizeWheel(/*object*/ event) /*object*/ {
            pixelX : pX,
            pixelY : pY };
 }
-
-module.exports = normalizeWheel;
