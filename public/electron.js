@@ -87,7 +87,7 @@ function createWindow() {
 
   if (isDev) mainWindow.loadURL('http://localhost:3001');
   // Need to useloadFile for special characters https://github.com/mifi/lossless-cut/issues/40
-  else mainWindow.loadFile('build/index.html');
+  else mainWindow.loadFile('vite-dist/index.html');
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()

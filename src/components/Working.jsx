@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
-import Lottie from 'react-lottie-player';
+import Lottie from 'react-lottie-player/dist/LottiePlayerLight';
 import { Button } from 'evergreen-ui';
 import { Trans } from 'react-i18next';
 

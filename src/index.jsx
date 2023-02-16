@@ -2,6 +2,8 @@ import React, { Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MotionConfig } from 'framer-motion';
 
+import 'sweetalert2/dist/sweetalert2.css';
+
 import App from './App';
 import ErrorBoundary from './ErrorBoundary';
 import './i18n';
