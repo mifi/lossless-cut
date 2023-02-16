@@ -24,6 +24,7 @@ import useKeyboard from './hooks/useKeyboard';
 import useFileFormatState from './hooks/useFileFormatState';
 import useFrameCapture from './hooks/useFrameCapture';
 import useSegments from './hooks/useSegments';
+import useDirectoryAccess from './hooks/useDirectoryAccess';
 
 import UserSettingsContext from './contexts/UserSettingsContext';
 
@@ -61,8 +62,8 @@ import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudi
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube, getFrameCountRaw } from './edlFormats';
 import {
-  getOutPath, getSuffixedOutPath, handleError, getOutDir, getFileDir,
-  checkDirWriteAccess, dirExists, isMasBuild, isStoreBuild, dragPreventer,
+  getOutPath, getSuffixedOutPath, handleError, getOutDir,
+  isMasBuild, isStoreBuild, dragPreventer,
   filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
   deleteFiles, isOutOfSpaceError, getNumDigits, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle,
@@ -72,7 +73,7 @@ import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
 import { askExtractFramesAsImages } from './dialogs/extractFrames';
 import { askForHtml5ifySpeed } from './dialogs/html5ify';
-import { askForOutDir, askForInputDir, askForImportChapters, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, openAbout, showRefuseToOverwrite, openDirToast, openCutFinishedToast, openConcatFinishedToast } from './dialogs';
+import { askForOutDir, askForImportChapters, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, openAbout, showRefuseToOverwrite, openDirToast, openCutFinishedToast, openConcatFinishedToast } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid } from './segments';
@@ -454,66 +455,7 @@ const App = memo(() => {
     if (!supportsRotation && !hideAllNotifications) toast.fire({ text: i18n.t('Lossless rotation might not work with this file format. You may try changing to MP4') });
   }, [hideAllNotifications, fileFormat]);
 
-  const ensureAccessibleDirectories = useCallback(async ({ inputPath, checkInputDir }) => {
-    // MacOS App Store sandbox doesn't allow writing anywhere, and we set the flag com.apple.security.files.user-selected.read-write
-    // With this flag, we can show the user an open-dialog for a directory, and once the user has opened that directory, we can write files there until the app is restarted.
-    // NOTE: when MAS (dev) build, Application Support will instead be here:
-    // ~/Library/Containers/no.mifi.losslesscut-mac/Data/Library/Application Support
-    // To start from scratch: rm -rf ~/Library/Containers/no.mifi.losslesscut-mac
-    // const simulateMasBuild = isDev; // can be used for testing this logic without having to build mas-dev
-    const simulateMasBuild = false;
-
-    const masMode = isMasBuild || simulateMasBuild;
-
-    if (checkInputDir) {
-      // Check input dir, if we need to write project file here
-      const inputFileDir = getFileDir(inputPath);
-      let simulateMasPermissionError = simulateMasBuild;
-      for (;;) {
-        // eslint-disable-next-line no-await-in-loop
-        if (await checkDirWriteAccess(inputFileDir) && !simulateMasPermissionError) break;
-        if (!masMode) {
-          // fail right away
-          errorToast(i18n.t('You have no write access to the directory of this file'));
-          return { cancel: true };
-        }
-
-        // We are now mas, so we need to try to force the user to allow access to the dir, so we can write the project file later
-        // eslint-disable-next-line no-await-in-loop
-        const userSelectedDir = await askForInputDir(inputFileDir);
-        simulateMasPermissionError = false; // assume user chose the right dir
-        if (userSelectedDir == null) return { cancel: true }; // allow user to cancel
-      }
-    }
-
-    let newCustomOutDir = customOutDir;
-
-    // Reset if doesn't exist anymore
-    const customOutDirExists = await dirExists(customOutDir);
-    if (!customOutDirExists) {
-      setCustomOutDir(undefined);
-      newCustomOutDir = undefined;
-    }
-
-    const effectiveOutDirPath = getOutDir(newCustomOutDir, inputPath);
-    const hasDirWriteAccess = await checkDirWriteAccess(effectiveOutDirPath);
-    if (!hasDirWriteAccess || simulateMasBuild) {
-      if (masMode) {
-        const newOutDir = await askForOutDir(effectiveOutDirPath);
-        // If user canceled open dialog, refuse to continue, because we will get permission denied error from MAS sandbox
-        if (!newOutDir) return { cancel: true };
-        setCustomOutDir(newOutDir);
-        newCustomOutDir = newOutDir;
-      } else {
-        errorToast(i18n.t('You have no write access to the directory of this file, please select a custom working dir'));
-        setCustomOutDir(undefined);
-        newCustomOutDir = undefined;
-        return { cancel: true };
-      }
-    }
-
-    return { cancel: false, newCustomOutDir };
-  }, [customOutDir, setCustomOutDir]);
+  const { ensureWritableDirs } = useDirectoryAccess({ customOutDir, setCustomOutDir });
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
 
@@ -678,6 +620,7 @@ const App = memo(() => {
   const { waveforms } = useWaveform({ filePath, commandedTime, zoomedDuration, waveformEnabled, mainAudioStream, shouldShowWaveform, ffmpegExtractWindow });
 
   const resetState = useCallback(() => {
+    console.log('State reset');
     const video = videoRef.current;
     setCommandedTime(0);
     video.currentTime = 0;
@@ -760,8 +703,7 @@ const App = memo(() => {
 
     setPreviewFilePath(path);
     setUsingDummyVideo(usesDummyVideo);
-    showUnsupportedFileMessage();
-  }, [html5ify, html5ifyDummy, showUnsupportedFileMessage]);
+  }, [html5ify, html5ifyDummy]);
 
   const convertFormatBatch = useCallback(async () => {
     if (batchFiles.length < 1) return;
@@ -783,7 +725,7 @@ const App = memo(() => {
       for (const path of filePaths) {
         try {
           // eslint-disable-next-line no-await-in-loop
-          const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: path });
+          const { newCustomOutDir, cancel } = await ensureWritableDirs({ inputPath: path });
           if (cancel) return;
 
           // eslint-disable-next-line no-await-in-loop
@@ -805,7 +747,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [batchFiles, ensureAccessibleDirectories, html5ify, setWorking]);
+  }, [batchFiles, ensureWritableDirs, html5ify, setWorking]);
 
   const getConvertToSupportedFormat = useCallback((fallback) => rememberConvertToSupportedFormat || fallback, [rememberConvertToSupportedFormat]);
 
@@ -922,7 +864,7 @@ const App = memo(() => {
       const firstPath = paths[0];
       if (!firstPath) return;
 
-      const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: firstPath });
+      const { newCustomOutDir, cancel } = await ensureWritableDirs({ inputPath: firstPath });
       if (cancel) return;
 
       const outDir = getOutDir(newCustomOutDir, firstPath);
@@ -975,7 +917,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [setWorking, ensureAccessibleDirectories, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, hideAllNotifications, handleConcatFailed]);
+  }, [setWorking, ensureWritableDirs, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, hideAllNotifications, handleConcatFailed]);
 
   const cleanupFiles = useCallback(async (cleanupChoices2) => {
     // Store paths before we reset state
@@ -1291,25 +1233,7 @@ const App = memo(() => {
     loadCutSegments(await readEdlFile({ type, path }), append);
   }, [loadCutSegments]);
 
-  const loadMedia = useCallback(async ({ filePath: fp, customOutDir: cod, projectPath }) => {
-    console.log('loadMedia', fp, cod, projectPath);
-
-    resetState();
-
-    console.log('state reset');
-
-    setWorking(i18n.t('Loading file'));
-
-    async function checkAndSetExistingHtml5FriendlyFile() {
-      const res = await findExistingHtml5FriendlyFile(fp, cod);
-      if (!res) return false;
-      console.log('Found existing supported file', res.path);
-      setUsingDummyVideo(res.usingDummyVideo);
-      setPreviewFilePath(res.path);
-      showPreviewFileLoadedMessage(basename(res.path));
-      return true;
-    }
-
+  const loadMedia = useCallback(async ({ filePath: fp, projectPath }) => {
     async function tryOpenProjectPath(path, type) {
       if (!(await exists(path))) return false;
       await loadEdlFile({ path, type });
@@ -1339,13 +1263,29 @@ const App = memo(() => {
       }
     }
 
+    setWorking(i18n.t('Loading file'));
     try {
+      // Need to check if file is actually readable
+      const pathReadAccessErrorCode = await getPathReadAccessError(fp);
+      if (pathReadAccessErrorCode != null) {
+        let errorMessage;
+        if (pathReadAccessErrorCode === 'ENOENT') errorMessage = i18n.t('The media you tried to open does not exist');
+        else if (['EACCES', 'EPERM'].includes(pathReadAccessErrorCode)) errorMessage = i18n.t('You do not have permission to access this file');
+        else errorMessage = i18n.t('Could not open media due to error {{errorCode}}', { errorCode: pathReadAccessErrorCode });
+        errorToast(errorMessage);
+        return;
+      }
+
+      // Not sure why this one is needed, but I think sometimes fs.access doesn't fail but it fails when actually trying to read
+      if (!(await havePermissionToReadFile(fp))) {
+        errorToast(i18n.t('You do not have permission to access this file'));
+        return;
+      }
+
       const fileMeta = await readFileMeta(fp);
       // console.log('file meta read', fileMeta);
 
       const fileFormatNew = await getSmarterOutFormat({ filePath: fp, fileMeta });
-
-      // console.log(streams, fileMeta.format, fileFormat);
 
       if (!fileFormatNew) throw new Error('Unable to determine file format');
 
@@ -1364,21 +1304,35 @@ const App = memo(() => {
         stream.index, shouldCopyStreamByDefault(stream),
       ]));
 
-      if (timecode) setStartTimeOffset(timecode);
-
-      setDetectedFps(haveVideoStream ? getStreamFps(videoStream) : undefined);
-
-      if (isAudioDefinitelyNotSupported(fileMeta.streams)) {
-        toast.fire({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
-      }
-
       const validDuration = isDurationValid(parseFloat(fileMeta.format.duration));
-      const hasLoadedExistingHtml5FriendlyFile = await checkAndSetExistingHtml5FriendlyFile();
 
       const hevcPlaybackSupported = enableNativeHevc && await hevcPlaybackSupportedPromise;
 
-      // 'fastest' works with almost all video files
-      if (!hasLoadedExistingHtml5FriendlyFile && !willPlayerProperlyHandleVideo({ streams: fileMeta.streams, hevcPlaybackSupported }) && validDuration) {
+      const mightNeedAutoHtml5ify = !willPlayerProperlyHandleVideo({ streams: fileMeta.streams, hevcPlaybackSupported }) && validDuration;
+
+      // We may be be writing project file to input path's dir (if storeProjectInWorkingDir is true), or write html5ified file to input dir
+      const { newCustomOutDir: cod, canceled } = await ensureWritableDirs({ inputPath: fp, checkInputDir: !storeProjectInWorkingDir || mightNeedAutoHtml5ify });
+      if (canceled) return;
+
+      const existingHtml5FriendlyFile = await findExistingHtml5FriendlyFile(fp, cod);
+
+      const needsAutoHtml5ify = !existingHtml5FriendlyFile && mightNeedAutoHtml5ify;
+
+      // BEGIN STATE UPDATES:
+
+      console.log('loadMedia', fp, cod, projectPath);
+
+      resetState();
+
+      if (existingHtml5FriendlyFile) {
+        console.log('Found existing html5 friendly file', existingHtml5FriendlyFile.path);
+        setUsingDummyVideo(existingHtml5FriendlyFile.usingDummyVideo);
+        setPreviewFilePath(existingHtml5FriendlyFile.path);
+      }
+
+      if (needsAutoHtml5ify) {
+        // Try to auto-html5ify if there are known issues with this file
+        // 'fastest' works with almost all video files
         await html5ifyAndLoadWithPreferences(cod, fp, 'fastest', haveVideoStream, haveAudioStream);
       }
 
@@ -1386,14 +1340,25 @@ const App = memo(() => {
 
       // throw new Error('test');
 
-      if (!validDuration) toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
-
+      if (timecode) setStartTimeOffset(timecode);
+      setDetectedFps(haveVideoStream ? getStreamFps(videoStream) : undefined);
       setMainFileMeta({ streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters });
       setMainVideoStream(videoStream);
       setMainAudioStream(audioStream);
       setCopyStreamIdsForPath(fp, () => copyStreamIdsForPathNew);
       setFileFormat(outFormatLocked || fileFormatNew);
       setDetectedFileFormat(fileFormatNew);
+
+      // only show one toast, or else we will only show the last one
+      if (existingHtml5FriendlyFile) {
+        showPreviewFileLoadedMessage(basename(existingHtml5FriendlyFile.path));
+      } else if (needsAutoHtml5ify) {
+        showUnsupportedFileMessage();
+      } else if (isAudioDefinitelyNotSupported(fileMeta.streams)) {
+        toast.fire({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
+      } else if (!validDuration) {
+        toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
+      }
 
       // This needs to be last, because it triggers <video> to load the video
       // If not, onVideoError might be triggered before setWorking() has been cleared.
@@ -1403,7 +1368,7 @@ const App = memo(() => {
       resetState();
       throw err;
     }
-  }, [resetState, setWorking, showPreviewFileLoadedMessage, loadEdlFile, getEdlFilePath, getEdlFilePathOld, enableAskForImportChapters, loadCutSegments, autoLoadTimecode, enableNativeHevc, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat, html5ifyAndLoadWithPreferences]);
+  }, [ensureWritableDirs, storeProjectInWorkingDir, resetState, setWorking, loadEdlFile, getEdlFilePath, getEdlFilePathOld, enableAskForImportChapters, loadCutSegments, autoLoadTimecode, enableNativeHevc, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat, showPreviewFileLoadedMessage, html5ifyAndLoadWithPreferences, showUnsupportedFileMessage]);
 
   const toggleLastCommands = useCallback(() => setLastCommandsVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1439,28 +1404,8 @@ const App = memo(() => {
       return;
     }
 
-    const pathReadAccessErrorCode = await getPathReadAccessError(path);
-    if (pathReadAccessErrorCode != null) {
-      let errorMessage;
-      if (pathReadAccessErrorCode === 'ENOENT') errorMessage = i18n.t('The media you tried to open does not exist');
-      else if (['EACCES', 'EPERM'].includes(pathReadAccessErrorCode)) errorMessage = i18n.t('You do not have permission to access this file');
-      else errorMessage = i18n.t('Could not open media due to error {{errorCode}}', { errorCode: pathReadAccessErrorCode });
-      errorToast(errorMessage);
-      return;
-    }
-
-    // Not sure why this one is needed, but I think sometimes fs.access doesn't fail but it fails when actually trying to read
-    if (!(await havePermissionToReadFile(path))) {
-      errorToast(i18n.t('You do not have permission to access this file'));
-      return;
-    }
-
-    // checkInputDir: true because we may be be writing project file here (if storeProjectInWorkingDir is true)
-    const { newCustomOutDir, cancel } = await ensureAccessibleDirectories({ inputPath: path, checkInputDir: !storeProjectInWorkingDir });
-    if (cancel) return;
-
-    await loadMedia({ filePath: path, customOutDir: newCustomOutDir, projectPath });
-  }, [ensureAccessibleDirectories, loadMedia, storeProjectInWorkingDir]);
+    await loadMedia({ filePath: path, projectPath });
+  }, [loadMedia]);
 
   // todo merge with userOpenFiles?
   const batchOpenSingleFile = useCallback(async (path) => {
@@ -1592,7 +1537,8 @@ const App = memo(() => {
       setCutProgress(0);
       const path = await fixInvalidDuration({ fileFormat, customOutDir, duration, onProgress: setCutProgress });
       toast.fire({ icon: 'info', text: i18n.t('Duration has been fixed') });
-      await loadMedia({ filePath: path, customOutDir });
+
+      await loadMedia({ filePath: path });
     } catch (err) {
       errorToast(i18n.t('Failed to fix file duration'));
       console.error('Failed to fix file duration', err);
@@ -1953,9 +1899,11 @@ const App = memo(() => {
         if (hasVideo) {
           // "fastest" is the most likely type not to fail for video (but it is muted).
           await html5ifyAndLoadWithPreferences(customOutDir, filePath, 'fastest', hasVideo, hasAudio);
+          showUnsupportedFileMessage();
         } else if (hasAudio) {
           // For audio do a fast re-encode
           await html5ifyAndLoadWithPreferences(customOutDir, filePath, 'fastest-audio', hasVideo, hasAudio);
+          showUnsupportedFileMessage();
         }
       } catch (err) {
         console.error(err);
@@ -1966,7 +1914,7 @@ const App = memo(() => {
     } catch (err) {
       handleError(err);
     }
-  }, [fileUri, usingPreviewFile, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, filePath, setWorking]);
+  }, [fileUri, usingPreviewFile, filePath, setWorking, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, showUnsupportedFileMessage]);
 
   useEffect(() => {
     async function exportEdlFile2(e, type) {
