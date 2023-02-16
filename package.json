@@ -62,7 +62,7 @@
     "eslint-plugin-react-hooks": "^4.3.0",
     "evergreen-ui": "^6.13.1",
     "fast-xml-parser": "^4.0.3",
-    "framer-motion": "1",
+    "framer-motion": "^9.0.3",
     "i18next-scanner": "^4.1.0",
     "icon-gen": "^3.0.0",
     "ky": "^0.33.1",

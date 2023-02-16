@@ -52,7 +52,8 @@ const TimelineSeg = memo(({
   return (
     <motion.div
       style={wrapperStyle}
-      layoutTransition={mySpring}
+      layout
+      transition={mySpring}
       initial={{ opacity: 0, scaleX: 0 }}
       animate={{ opacity: 1, scaleX: 1, backgroundColor }}
       exit={{ opacity: 0, scaleX: 0 }}

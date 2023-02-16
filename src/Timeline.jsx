@@ -123,7 +123,7 @@ const Timeline = memo(({
   const spring = useSpring(scrollLeftMotion, { damping: 100, stiffness: 1000 });
 
   useEffect(() => {
-    spring.onChange(value => {
+    spring.on('change', (value) => {
       if (timelineScrollerSkipEventRef.current) return; // Don't animate while zooming
       timelineScrollerRef.current.scrollLeft = value;
     });
