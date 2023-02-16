@@ -1355,7 +1355,7 @@ const App = memo(() => {
       } else if (needsAutoHtml5ify) {
         showUnsupportedFileMessage();
       } else if (isAudioDefinitelyNotSupported(fileMeta.streams)) {
-        toast.fire({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
+        if (!hideAllNotifications) toast.fire({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
       } else if (!validDuration) {
         toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
       }
@@ -1368,7 +1368,7 @@ const App = memo(() => {
       resetState();
       throw err;
     }
-  }, [ensureWritableDirs, storeProjectInWorkingDir, resetState, setWorking, loadEdlFile, getEdlFilePath, getEdlFilePathOld, enableAskForImportChapters, loadCutSegments, autoLoadTimecode, enableNativeHevc, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat, showPreviewFileLoadedMessage, html5ifyAndLoadWithPreferences, showUnsupportedFileMessage]);
+  }, [setWorking, loadEdlFile, getEdlFilePath, getEdlFilePathOld, enableAskForImportChapters, loadCutSegments, autoLoadTimecode, enableNativeHevc, ensureWritableDirs, storeProjectInWorkingDir, resetState, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat, html5ifyAndLoadWithPreferences, showPreviewFileLoadedMessage, showUnsupportedFileMessage, hideAllNotifications]);
 
   const toggleLastCommands = useCallback(() => setLastCommandsVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1536,7 +1536,7 @@ const App = memo(() => {
       setWorking(i18n.t('Fixing file duration'));
       setCutProgress(0);
       const path = await fixInvalidDuration({ fileFormat, customOutDir, duration, onProgress: setCutProgress });
-      toast.fire({ icon: 'info', text: i18n.t('Duration has been fixed') });
+      if (!hideAllNotifications) toast.fire({ icon: 'info', text: i18n.t('Duration has been fixed') });
 
       await loadMedia({ filePath: path });
     } catch (err) {
@@ -1546,7 +1546,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [checkFileOpened, customOutDir, duration, fileFormat, fixInvalidDuration, loadMedia, setWorking]);
+  }, [checkFileOpened, customOutDir, duration, fileFormat, fixInvalidDuration, hideAllNotifications, loadMedia, setWorking]);
 
   const addStreamSourceFile = useCallback(async (path) => {
     if (allFilesMeta[path]) return undefined; // Already added?
