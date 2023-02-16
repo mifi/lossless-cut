@@ -209,7 +209,7 @@ async function askForSegmentsRandomDurationRange() {
     input: 'text',
     showCancelButton: true,
     inputValue: 'Duration 3 to 5, Gap 0 to 2',
-    text: i18n.t('Divide timeline into segments with randomized durations and gaps between sergments, in a range specified in seconds with the correct format.'),
+    text: i18n.t('Divide timeline into segments with randomized durations and gaps between segments, in a range specified in seconds with the correct format.'),
     inputValidator: (v) => {
       const parsed = parse(v);
       if (!parsed) return i18n.t('Invalid input');
