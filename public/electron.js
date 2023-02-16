@@ -38,6 +38,7 @@ let mainWindow;
 let askBeforeClose = false;
 let rendererReady = false;
 let newVersion;
+let disableNetworking;
 
 const openFiles = (paths) => mainWindow.webContents.send('openFiles', paths);
 
@@ -143,7 +144,7 @@ function parseCliArgs(rawArgv = process.argv) {
   // dev: First 2 args are electron and the electron.js
   const argsWithoutAppName = rawArgv.length > ignoreFirstArgs ? rawArgv.slice(ignoreFirstArgs) : [];
 
-  return yargsParser(argsWithoutAppName, { boolean: ['allow-multiple-instances'] });
+  return yargsParser(argsWithoutAppName, { boolean: ['allow-multiple-instances', 'disable-networking'] });
 }
 
 const argv = parseCliArgs();
@@ -187,6 +188,8 @@ if (!argv.allowMultipleInstances && !safeRequestSingleInstanceLock({ argv: proce
     if (filesToOpen.length === 0) filesToOpen = argv._;
     const { settingsJson } = argv;
 
+    ({ disableNetworking } = argv);
+
     if (settingsJson != null) {
       logger.info('initializing settings', settingsJson);
       Object.entries(JSON5.parse(settingsJson)).forEach(([key, value]) => {
@@ -207,7 +210,7 @@ if (!argv.allowMultipleInstances && !safeRequestSingleInstanceLock({ argv: proce
 
     const enableUpdateCheck = configStore.get('enableUpdateCheck');
 
-    if (enableUpdateCheck && !isStoreBuild) {
+    if (!disableNetworking && enableUpdateCheck && !isStoreBuild) {
       newVersion = await checkNewVersion();
       // newVersion = '1.2.3';
       if (newVersion) updateMenu();
@@ -265,4 +268,6 @@ function focusWindow() {
   }
 }
 
-module.exports = { focusWindow, isDev };
+const hasDisabledNetworking = () => !!disableNetworking;
+
+module.exports = { focusWindow, isDev, hasDisabledNetworking };

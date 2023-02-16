@@ -91,7 +91,7 @@ const remote = window.require('@electron/remote');
 
 const { dialog } = remote;
 
-const { focusWindow } = remote.require('./electron');
+const { focusWindow, hasDisabledNetworking } = remote.require('./electron');
 
 
 const calcShouldShowWaveform = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
@@ -2029,7 +2029,7 @@ const App = memo(() => {
   }, []);
 
   useEffect(() => {
-    if (!isStoreBuild) loadMifiLink().then(setMifiLink);
+    if (!isStoreBuild && !hasDisabledNetworking()) loadMifiLink().then(setMifiLink);
   }, []);
 
   const haveCustomFfPath = !!customFfPath;
