@@ -7,45 +7,53 @@ import { errorToast } from '../swal';
 // eslint-disable-next-line no-unused-vars
 import isDev from '../isDev';
 
+export class DirectoryAccessDeclinedError extends Error {}
+
+// MacOS App Store sandbox doesn't allow reading/writing anywhere,
+// except those exact file paths that have been explicitly drag-dropped into LosslessCut or opened using the opener dialog
+// Therefore we set the flag com.apple.security.files.user-selected.read-write
+// With this flag, we can show the user an open-dialog for a **directory**, and once the user has opened that directory, we can read/write files in this directory until the app is restarted.
+// NOTE! fs.stat is still allowed everywhere, even though read/write is not
+// see also developer-notes.md
+
+// const simulateMasBuild = isDev; // can be used for testing this logic without having to build mas-dev
+const simulateMasBuild = false;
+
+const masMode = isMasBuild || simulateMasBuild;
 
 export default ({ customOutDir, setCustomOutDir }) => {
-  // MacOS App Store sandbox doesn't allow writing anywhere, and we set the flag com.apple.security.files.user-selected.read-write
-  // With this flag, we can show the user an open-dialog for a directory, and once the user has opened that directory, we can write files there until the app is restarted.
-  // NOTE: when MAS (dev) build, Application Support will instead be here:
-  // ~/Library/Containers/no.mifi.losslesscut-mac/Data/Library/Application Support
-  // To start from scratch: rm -rf ~/Library/Containers/no.mifi.losslesscut-mac
-  const ensureWritableDirs = useCallback(async ({ inputPath, checkInputDir }) => {
-    // const simulateMasBuild = isDev; // can be used for testing this logic without having to build mas-dev
-    const simulateMasBuild = false;
+  const ensureAccessToSourceDir = useCallback(async (inputPath) => {
+    // Called if we need to read/write to the source file's directory (probably to read/write the project file)
+    const inputFileDir = getFileDir(inputPath);
 
-    const masMode = isMasBuild || simulateMasBuild;
+    let simulateMasPermissionError = simulateMasBuild;
 
-    // First check input file's directory, but only if we need to write to it (probably to write the project file)
-    if (checkInputDir) {
-      const inputFileDir = getFileDir(inputPath);
-      let simulateMasPermissionError = simulateMasBuild;
-      for (;;) {
-        // eslint-disable-next-line no-await-in-loop
-        if (await checkDirWriteAccess(inputFileDir) && !simulateMasPermissionError) break;
+    for (;;) {
+      // eslint-disable-next-line no-await-in-loop
+      if (await checkDirWriteAccess(inputFileDir) && !simulateMasPermissionError) break;
 
-        if (!masMode) {
-          // don't know what to do; fail right away
-          errorToast(i18n.t('You have no write access to the directory of this file'));
-          return { canceled: true };
-        }
-
-        // We are now mas, so we need to try to encourage the user to allow access to the dir, so we can write the project file later
-        // eslint-disable-next-line no-await-in-loop
-        const userSelectedDir = await askForInputDir(inputFileDir);
-        simulateMasPermissionError = false; // assume user chose the right dir
-        if (userSelectedDir == null) return { canceled: true }; // allow user to cancel
+      if (!masMode) {
+        // don't know what to do; fail right away
+        errorToast(i18n.t('You have no write access to the directory of this file'));
+        throw new DirectoryAccessDeclinedError();
       }
-    }
 
-    // Now we have (optionally) checked input path. Need to also check working dir
+      // We are now mas, so we need to try to encourage the user to allow access to the dir
+      // eslint-disable-next-line no-await-in-loop
+      const userSelectedDir = await askForInputDir(inputFileDir);
+
+      // allow user to cancel:
+      if (userSelectedDir == null) throw new DirectoryAccessDeclinedError();
+
+      simulateMasPermissionError = false; // assume user chose the right dir
+    }
+  }, []);
+
+  const ensureWritableOutDir = useCallback(async (inputPath) => {
+    // we might need to change the output directory if the user chooses to give us a different one.
     let newCustomOutDir = customOutDir;
 
-    // Reset if doesn't exist anymore
+    // Reset if working directory doesn't exist anymore
     const customOutDirExists = await dirExists(customOutDir);
     if (!customOutDirExists) {
       setCustomOutDir(undefined);
@@ -57,22 +65,25 @@ export default ({ customOutDir, setCustomOutDir }) => {
     if (!hasDirWriteAccess || simulateMasBuild) {
       if (masMode) {
         const newOutDir = await askForOutDir(effectiveOutDirPath);
+
         // If user canceled open dialog, refuse to continue, because we will get permission denied error from MAS sandbox
-        if (!newOutDir) return { canceled: true };
+        if (!newOutDir) throw new DirectoryAccessDeclinedError();
+
+        // OK, use the dir that the user gave us access to
         setCustomOutDir(newOutDir);
         newCustomOutDir = newOutDir;
       } else {
         errorToast(i18n.t('You have no write access to the directory of this file, please select a custom working dir'));
         setCustomOutDir(undefined);
-        return { canceled: true };
+        throw new DirectoryAccessDeclinedError();
       }
     }
 
-    return { canceled: false, newCustomOutDir };
+    return newCustomOutDir;
   }, [customOutDir, setCustomOutDir]);
 
-
   return {
-    ensureWritableDirs,
+    ensureAccessToSourceDir,
+    ensureWritableOutDir,
   };
 };

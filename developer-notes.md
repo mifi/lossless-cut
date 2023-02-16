@@ -44,6 +44,19 @@ This will sign using the development provisioning profile:
 npm run pack-mas-dev
 ```
 
+MAS builds have some restrictions, see `isMasBuild` variable in code. In particular, any file cannot be read without the user's consent.
+
+NOTE: when MAS (dev) build, Application Support will instead be here:
+```
+~/Library/Containers/no.mifi.losslesscut-mac/Data/Library/Application Support
+```
+
+### Starting over fresh
+
+```
+rm -rf ~/Library/Containers/no.mifi.losslesscut-mac
+```
+
 ## Windows Store
 
 Windows store version is built as a Desktop Bridge app (with `runFullTrust` capability). This means the app has access to essentially everything the user has access to, and even `internetClient` is redundant.

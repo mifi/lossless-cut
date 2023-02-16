@@ -24,7 +24,7 @@ import useKeyboard from './hooks/useKeyboard';
 import useFileFormatState from './hooks/useFileFormatState';
 import useFrameCapture from './hooks/useFrameCapture';
 import useSegments from './hooks/useSegments';
-import useDirectoryAccess from './hooks/useDirectoryAccess';
+import useDirectoryAccess, { DirectoryAccessDeclinedError } from './hooks/useDirectoryAccess';
 
 import UserSettingsContext from './contexts/UserSettingsContext';
 
@@ -387,10 +387,10 @@ const App = memo(() => {
   const projectSuffix = 'proj.llc';
   const oldProjectSuffix = 'llc-edl.csv';
   // New LLC format can be stored along with input file or in working dir (customOutDir)
-  const getEdlFilePath = useCallback((fp, storeProjectInWorkingDir2 = false) => getSuffixedOutPath({ customOutDir: storeProjectInWorkingDir2 ? customOutDir : undefined, filePath: fp, nameSuffix: projectSuffix }), [customOutDir]);
-  // Old versions of LosslessCut used CSV files and stored them in customOutDir:
-  const getEdlFilePathOld = useCallback((fp) => getSuffixedOutPath({ customOutDir, filePath: fp, nameSuffix: oldProjectSuffix }), [customOutDir]);
-  const projectFileSavePath = useMemo(() => getEdlFilePath(filePath, storeProjectInWorkingDir), [getEdlFilePath, filePath, storeProjectInWorkingDir]);
+  const getEdlFilePath = useCallback((fp, cod) => getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: projectSuffix }), []);
+  // Old versions of LosslessCut used CSV files and stored them always in customOutDir:
+  const getEdlFilePathOld = useCallback((fp, cod) => getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: oldProjectSuffix }), []);
+  const projectFileSavePath = useMemo(() => getEdlFilePath(filePath, storeProjectInWorkingDir ? customOutDir : undefined), [getEdlFilePath, filePath, storeProjectInWorkingDir, customOutDir]);
 
   const currentSaveOperation = useMemo(() => {
     if (!projectFileSavePath) return undefined;
@@ -452,7 +452,7 @@ const App = memo(() => {
     if (!supportsRotation && !hideAllNotifications) toast.fire({ text: i18n.t('Lossless rotation might not work with this file format. You may try changing to MP4') });
   }, [hideAllNotifications, fileFormat]);
 
-  const { ensureWritableDirs } = useDirectoryAccess({ customOutDir, setCustomOutDir });
+  const { ensureWritableOutDir, ensureAccessToSourceDir } = useDirectoryAccess({ customOutDir, setCustomOutDir });
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
 
@@ -723,12 +723,13 @@ const App = memo(() => {
       for (const path of filePaths) {
         try {
           // eslint-disable-next-line no-await-in-loop
-          const { newCustomOutDir, cancel } = await ensureWritableDirs({ inputPath: path });
-          if (cancel) return;
+          const newCustomOutDir = await ensureWritableOutDir(path);
 
           // eslint-disable-next-line no-await-in-loop
           await html5ify({ customOutDir: newCustomOutDir, filePath: path, speed, hasAudio: true, hasVideo: true, onProgress: setTotalProgress });
         } catch (err2) {
+          if (err2 instanceof DirectoryAccessDeclinedError) return;
+
           console.error('Failed to html5ify', path, err2);
           failedFiles.push(path);
         }
@@ -745,7 +746,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [batchFiles, ensureWritableDirs, html5ify, setWorking]);
+  }, [batchFiles, ensureWritableOutDir, html5ify, setWorking]);
 
   const getConvertToSupportedFormat = useCallback((fallback) => rememberConvertToSupportedFormat || fallback, [rememberConvertToSupportedFormat]);
 
@@ -887,8 +888,7 @@ const App = memo(() => {
       const firstPath = paths[0];
       if (!firstPath) return;
 
-      const { newCustomOutDir, cancel } = await ensureWritableDirs({ inputPath: firstPath });
-      if (cancel) return;
+      const newCustomOutDir = await ensureWritableOutDir(firstPath);
 
       const outDir = getOutDir(newCustomOutDir, firstPath);
 
@@ -917,6 +917,8 @@ const App = memo(() => {
       if (!includeAllStreams && haveExcludedStreams) notices.push(i18n.t('Some extra tracks have been discarded. You can change this option before merging.'));
       if (!hideAllNotifications) openConcatFinishedToast({ filePath: outPath, notices, warnings });
     } catch (err) {
+      if (err instanceof DirectoryAccessDeclinedError) return;
+
       if (err.killed === true) {
         // assume execa killed (aborted by user)
         return;
@@ -940,7 +942,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [setWorking, ensureWritableDirs, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, hideAllNotifications, handleConcatFailed]);
+  }, [setWorking, ensureWritableOutDir, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, hideAllNotifications, handleConcatFailed]);
 
   const cleanupFiles = useCallback(async (cleanupChoices2) => {
     // Store paths before we reset state
@@ -1274,24 +1276,35 @@ const App = memo(() => {
       return true;
     }
 
-    async function tryOpenProject({ chapters }) {
+    const storeProjectInSourceDir = !storeProjectInWorkingDir;
+
+    async function tryOpenProject({ chapters, cod }) {
       try {
-        if (projectPath) {
-          await loadEdlFile({ path: projectPath, type: 'llc' });
-          return;
+        // First try to open from from working dir
+        if (await tryOpenProjectPath(getEdlFilePath(fp, cod), 'llc')) return;
+
+        // then try to open project from source file dir
+        const sameDirEdlFilePath = getEdlFilePath(fp);
+        // MAS only allows fs.stat (fs-extra.exists) if we don't have access to input dir yet, so check first if the file exists,
+        // so we don't need to annoy the user by asking for permission if the project file doesn't exist
+        if (await exists(sameDirEdlFilePath)) {
+          // Ok, the file exists. now we have to ask the user, because we need to read that file
+          await ensureAccessToSourceDir(fp);
+          // Ok, we got access from the user (or already have access), now read the project file
+          await loadEdlFile({ path: sameDirEdlFilePath, type: 'llc' });
         }
 
-        // First try to open from source file dir, then from working dir, then finally old csv style project
-        if (await tryOpenProjectPath(getEdlFilePath(fp, true), 'llc')) return;
-        if (await tryOpenProjectPath(getEdlFilePath(fp, false), 'llc')) return;
-        if (await tryOpenProjectPath(getEdlFilePathOld(fp), 'csv')) return;
+        // then finally old csv style project
+        if (await tryOpenProjectPath(getEdlFilePathOld(fp, cod), 'csv')) return;
 
+        // OK, we didn't find a project file, instead maybe try to create project (segments) from chapters
         const edl = await tryMapChaptersToEdl(chapters);
         if (edl.length > 0 && enableAskForImportChapters && (await askForImportChapters())) {
           console.log('Convert chapters to segments', edl);
           loadCutSegments(edl);
         }
       } catch (err) {
+        if (err instanceof DirectoryAccessDeclinedError) throw err;
         console.error('EDL load failed, but continuing', err);
         errorToast(`${i18n.t('Failed to load segments')} (${err.message})`);
       }
@@ -1342,15 +1355,15 @@ const App = memo(() => {
 
       const hevcPlaybackSupported = enableNativeHevc && await hevcPlaybackSupportedPromise;
 
-      const mightNeedAutoHtml5ify = !willPlayerProperlyHandleVideo({ streams: fileMeta.streams, hevcPlaybackSupported }) && validDuration;
+      // need to ensure we have access to write to working directory
+      const cod = await ensureWritableOutDir(fp);
 
-      // We may be be writing project file to input path's dir (if storeProjectInWorkingDir is true), or write html5ified file to input dir
-      const { newCustomOutDir: cod, canceled } = await ensureWritableDirs({ inputPath: fp, checkInputDir: !storeProjectInWorkingDir || mightNeedAutoHtml5ify });
-      if (canceled) return;
+      // if storeProjectInSourceDir is true, we will be writing project file to input path's dir, so ensure that one too
+      if (storeProjectInSourceDir) await ensureAccessToSourceDir(fp);
 
       const existingHtml5FriendlyFile = await findExistingHtml5FriendlyFile(fp, cod);
 
-      const needsAutoHtml5ify = !existingHtml5FriendlyFile && mightNeedAutoHtml5ify;
+      const needsAutoHtml5ify = !existingHtml5FriendlyFile && !willPlayerProperlyHandleVideo({ streams: fileMeta.streams, hevcPlaybackSupported }) && validDuration;
 
       // BEGIN STATE UPDATES:
 
@@ -1370,7 +1383,11 @@ const App = memo(() => {
         await html5ifyAndLoadWithPreferences(cod, fp, 'fastest', haveVideoStream, haveAudioStream);
       }
 
-      await tryOpenProject({ chapters: fileMeta.chapters });
+      if (projectPath) {
+        await loadEdlFile({ path: projectPath, type: 'llc' });
+      } else {
+        await tryOpenProject({ chapters: fileMeta.chapters, cod });
+      }
 
       // throw new Error('test');
 
@@ -1399,10 +1416,13 @@ const App = memo(() => {
       // https://github.com/mifi/lossless-cut/issues/515
       setFilePath(fp);
     } catch (err) {
+      if (err) {
+        if (err instanceof DirectoryAccessDeclinedError) return;
+      }
       resetState();
       throw err;
     }
-  }, [setWorking, loadEdlFile, getEdlFilePath, getEdlFilePathOld, enableAskForImportChapters, loadCutSegments, autoLoadTimecode, enableNativeHevc, ensureWritableDirs, storeProjectInWorkingDir, resetState, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat, html5ifyAndLoadWithPreferences, showPreviewFileLoadedMessage, showUnsupportedFileMessage, hideAllNotifications]);
+  }, [setWorking, loadEdlFile, getEdlFilePath, getEdlFilePathOld, enableAskForImportChapters, loadCutSegments, autoLoadTimecode, enableNativeHevc, ensureWritableOutDir, storeProjectInWorkingDir, ensureAccessToSourceDir, resetState, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat, html5ifyAndLoadWithPreferences, showPreviewFileLoadedMessage, showUnsupportedFileMessage, hideAllNotifications]);
 
   const toggleLastCommands = useCallback(() => setLastCommandsVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -1429,7 +1449,16 @@ const App = memo(() => {
       console.log({ mediaFileName });
       if (!mediaFileName) return;
       projectPath = path;
-      path = pathJoin(dirname(path), mediaFileName);
+
+      const mediaFilePath = pathJoin(dirname(path), mediaFileName);
+
+      // We might need to get user's access to the project file's directory, in order to read the media file
+      try {
+        await ensureAccessToSourceDir(mediaFilePath);
+      } catch (err) {
+        if (err instanceof DirectoryAccessDeclinedError) return;
+      }
+      path = mediaFilePath;
     }
     // Because Apple is being nazi about the ability to open "copy protected DVD files"
     const disallowVob = isMasBuild;
@@ -1439,7 +1468,7 @@ const App = memo(() => {
     }
 
     await loadMedia({ filePath: path, projectPath });
-  }, [loadMedia]);
+  }, [ensureAccessToSourceDir, loadMedia]);
 
   // todo merge with userOpenFiles?
   const batchOpenSingleFile = useCallback(async (path) => {

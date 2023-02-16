@@ -63,7 +63,7 @@ export async function askForInputDir(defaultPath) {
     properties: ['openDirectory', 'createDirectory'],
     defaultPath,
     title: i18n.t('Please confirm folder'),
-    message: i18n.t('Press confirm to grant LosslessCut permissions to write the project file (This is due to App Sandbox restrictions)'),
+    message: i18n.t('Press confirm to grant LosslessCut access to write the project file (due to App Sandbox restrictions).'),
     buttonLabel: i18n.t('Confirm'),
   });
   return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
