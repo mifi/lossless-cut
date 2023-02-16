@@ -55,7 +55,7 @@ const CommandedTime = memo(({ commandedTimePercent }) => {
 });
 
 const Timeline = memo(({
-  durationSafe, getCurrentTime, startTimeOffset, playerTime, commandedTime,
+  durationSafe, startTimeOffset, playerTime, commandedTime, relevantTime,
   zoom, neighbouringKeyFrames, seekAbs, apparentCutSegments,
   setCurrentSegIndex, currentSegIndexSafe, inverseCutSegments, formatTimecode,
   waveforms, shouldShowWaveform, shouldShowKeyframes, timelineHeight = 36, thumbnails,
@@ -73,8 +73,7 @@ const Timeline = memo(({
 
   const [hoveringTime, setHoveringTime] = useState();
 
-  const currentTime = getCurrentTime() || 0;
-  const displayTime = (hoveringTime != null && isFileOpened && !playing ? hoveringTime : currentTime) + startTimeOffset;
+  const displayTime = (hoveringTime != null && isFileOpened && !playing ? hoveringTime : relevantTime) + startTimeOffset;
   const displayTimePercent = useMemo(() => `${Math.round((displayTime / durationSafe) * 100)}%`, [displayTime, durationSafe]);
 
   const isZoomed = zoom > 1;
@@ -96,10 +95,10 @@ const Timeline = memo(({
 
   const timeOfInterestPosPixels = useMemo(() => {
     // https://github.com/mifi/lossless-cut/issues/676
-    const pos = calculateTimelinePos(playerTime);
+    const pos = calculateTimelinePos(relevantTime);
     if (pos != null && timelineScrollerRef.current) return pos * zoom * timelineScrollerRef.current.offsetWidth;
     return undefined;
-  }, [calculateTimelinePos, playerTime, zoom]);
+  }, [calculateTimelinePos, relevantTime, zoom]);
 
   const calcZoomWindowStartTime = useCallback(() => (timelineScrollerRef.current
     ? (timelineScrollerRef.current.scrollLeft / (timelineScrollerRef.current.offsetWidth * zoom)) * durationSafe
@@ -195,7 +194,7 @@ const Timeline = memo(({
 
   useEffect(() => {
     setHoveringTime();
-  }, [playerTime, commandedTime]);
+  }, [relevantTime]);
 
   const onMouseDown = useCallback((e) => {
     if (e.nativeEvent.buttons !== 1) return; // not primary button

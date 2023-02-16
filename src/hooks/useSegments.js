@@ -17,7 +17,7 @@ import { maxSegmentsAllowed } from '../util/constants';
 
 export default ({
   filePath, workingRef, setWorking, setCutProgress, mainVideoStream,
-  duration, getCurrentTime, maxLabelLength, checkFileOpened,
+  duration, getRelevantTime, maxLabelLength, checkFileOpened,
 }) => {
   // Segment related state
   const segCounterRef = useRef(0);
@@ -299,7 +299,7 @@ export default ({
       // Cannot add if prev seg is not finished
       if (currentCutSeg.start === undefined && currentCutSeg.end === undefined) return;
 
-      const suggestedStart = getCurrentTime();
+      const suggestedStart = getRelevantTime();
       /* if (keyframeCut) {
         const keyframeAlignedStart = getSafeCutTime(suggestedStart, true);
         if (keyframeAlignedStart != null) suggestedStart = keyframeAlignedStart;
@@ -317,20 +317,20 @@ export default ({
     } catch (err) {
       console.error(err);
     }
-  }, [currentCutSeg.start, currentCutSeg.end, getCurrentTime, duration, cutSegments, createIndexedSegment, setCutSegments, setCurrentSegIndex]);
+  }, [currentCutSeg.start, currentCutSeg.end, getRelevantTime, duration, cutSegments, createIndexedSegment, setCutSegments, setCurrentSegIndex]);
 
   const setCutStart = useCallback(() => {
     if (!checkFileOpened()) return;
 
-    const currentTime = getCurrentTime();
+    const relevantTime = getRelevantTime();
     // https://github.com/mifi/lossless-cut/issues/168
     // If current time is after the end of the current segment in the timeline,
     // add a new segment that starts at playerTime
-    if (currentCutSeg.end != null && currentTime >= currentCutSeg.end) {
+    if (currentCutSeg.end != null && relevantTime >= currentCutSeg.end) {
       addSegment();
     } else {
       try {
-        const startTime = currentTime;
+        const startTime = relevantTime;
         /* if (keyframeCut) {
           const keyframeAlignedCutTo = getSafeCutTime(startTime, true);
           if (keyframeAlignedCutTo != null) startTime = keyframeAlignedCutTo;
@@ -340,13 +340,13 @@ export default ({
         handleError(err);
       }
     }
-  }, [checkFileOpened, getCurrentTime, currentCutSeg.end, addSegment, setCutTime]);
+  }, [checkFileOpened, getRelevantTime, currentCutSeg.end, addSegment, setCutTime]);
 
   const setCutEnd = useCallback(() => {
     if (!checkFileOpened()) return;
 
     try {
-      const endTime = getCurrentTime();
+      const endTime = getRelevantTime();
 
       /* if (keyframeCut) {
         const keyframeAlignedCutTo = getSafeCutTime(endTime, false);
@@ -356,7 +356,7 @@ export default ({
     } catch (err) {
       handleError(err);
     }
-  }, [checkFileOpened, getCurrentTime, setCutTime]);
+  }, [checkFileOpened, getRelevantTime, setCutTime]);
 
   const onLabelSegment = useCallback(async (index) => {
     const { name } = cutSegments[index];
@@ -365,8 +365,8 @@ export default ({
   }, [cutSegments, updateSegAtIndex, maxLabelLength]);
 
   const splitCurrentSegment = useCallback(() => {
-    const currentTime = getCurrentTime();
-    const segmentsAtCursorIndexes = findSegmentsAtCursor(apparentCutSegments, currentTime);
+    const relevantTime = getRelevantTime();
+    const segmentsAtCursorIndexes = findSegmentsAtCursor(apparentCutSegments, relevantTime);
 
     if (segmentsAtCursorIndexes.length === 0) {
       errorToast(i18n.t('No segment to split. Please move cursor over the segment you want to split'));
@@ -378,13 +378,13 @@ export default ({
 
     const getNewName = (oldName, suffix) => oldName && `${segment.name} ${suffix}`;
 
-    const firstPart = createIndexedSegment({ segment: { name: getNewName(segment.name, '1'), start: segment.start, end: currentTime }, incrementCount: false });
-    const secondPart = createIndexedSegment({ segment: { name: getNewName(segment.name, '2'), start: currentTime, end: segment.end }, incrementCount: true });
+    const firstPart = createIndexedSegment({ segment: { name: getNewName(segment.name, '1'), start: segment.start, end: relevantTime }, incrementCount: false });
+    const secondPart = createIndexedSegment({ segment: { name: getNewName(segment.name, '2'), start: relevantTime, end: segment.end }, incrementCount: true });
 
     const newSegments = [...cutSegments];
     newSegments.splice(firstSegmentAtCursorIndex, 1, firstPart, secondPart);
     setCutSegments(newSegments);
-  }, [apparentCutSegments, createIndexedSegment, cutSegments, getCurrentTime, setCutSegments]);
+  }, [apparentCutSegments, createIndexedSegment, cutSegments, getRelevantTime, setCutSegments]);
 
   const createNumSegments = useCallback(async () => {
     if (!checkFileOpened() || !isDurationValid(duration)) return;

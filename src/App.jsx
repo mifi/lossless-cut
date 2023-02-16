@@ -325,7 +325,10 @@ const App = memo(() => {
 
   const onTimelineWheel = useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, invertTimelineScroll, zoomRel, seekRel });
 
-  const getCurrentTime = useCallback(() => (playing ? videoRef.current.currentTime : commandedTimeRef.current), [playing]);
+  // Relevant time is the player's playback position if we're currently playing - if not, it's the user's commanded time.
+  const relevantTime = useMemo(() => (playing ? playerTime : commandedTime) || 0, [commandedTime, playerTime, playing]);
+  // The reason why we also have a getter is because it can be used when we need to get the time, but don't want to re-render for every time update (which can be heavy!)
+  const getRelevantTime = useCallback(() => (playing ? videoRef.current.currentTime : commandedTimeRef.current) || 0, [playing]);
 
   const maxLabelLength = safeOutputFileName ? 100 : 500;
 
@@ -337,7 +340,7 @@ const App = memo(() => {
 
   const {
     cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, onViewSegmentTags, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, createNumSegments, createFixedDurationSegments, createRandomSegments, apparentCutSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, currentApparentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, selectedSegmentsRaw, setCutTime, getSegApparentEnd, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, toggleSegmentSelected, selectOnlySegment,
-  } = useSegments({ filePath, workingRef, setWorking, setCutProgress, mainVideoStream, duration, getCurrentTime, maxLabelLength, checkFileOpened });
+  } = useSegments({ filePath, workingRef, setWorking, setCutProgress, mainVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened });
 
   const jumpSegStart = useCallback((index) => seekAbs(apparentCutSegments[index].start), [apparentCutSegments, seekAbs]);
   const jumpSegEnd = useCallback((index) => seekAbs(apparentCutSegments[index].end), [apparentCutSegments, seekAbs]);
@@ -1222,7 +1225,7 @@ const App = memo(() => {
     if (!filePath) return;
 
     try {
-      const currentTime = getCurrentTime();
+      const currentTime = getRelevantTime();
       const video = videoRef.current;
       const useFffmpeg = usingPreviewFile || captureFrameMethod === 'ffmpeg';
       const outPath = useFffmpeg
@@ -1234,7 +1237,7 @@ const App = memo(() => {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [filePath, getCurrentTime, usingPreviewFile, captureFrameMethod, captureFrameFromFfmpeg, customOutDir, captureFormat, enableTransferTimestamps, captureFrameQuality, captureFrameFromTag, hideAllNotifications]);
+  }, [filePath, getRelevantTime, usingPreviewFile, captureFrameMethod, captureFrameFromFfmpeg, customOutDir, captureFormat, enableTransferTimestamps, captureFrameQuality, captureFrameFromTag, hideAllNotifications]);
 
   const extractSegmentFramesAsImages = useCallback(async (index) => {
     if (!filePath || detectedFps == null || workingRef.current) return;
@@ -1407,10 +1410,10 @@ const App = memo(() => {
   const jumpSeg = useCallback((val) => setCurrentSegIndex((old) => Math.max(Math.min(old + val, cutSegments.length - 1), 0)), [cutSegments.length, setCurrentSegIndex]);
 
   const seekClosestKeyframe = useCallback((direction) => {
-    const time = findNearestKeyFrameTime({ time: getCurrentTime(), direction });
+    const time = findNearestKeyFrameTime({ time: getRelevantTime(), direction });
     if (time == null) return;
     seekAbs(time);
-  }, [findNearestKeyFrameTime, getCurrentTime, seekAbs]);
+  }, [findNearestKeyFrameTime, getRelevantTime, seekAbs]);
 
   const seekAccelerationRef = useRef(1);
 
@@ -1618,7 +1621,7 @@ const App = memo(() => {
   const captureSnapshotAsCoverArt = useCallback(async () => {
     if (!filePath) return;
     try {
-      const currentTime = getCurrentTime();
+      const currentTime = getRelevantTime();
       const path = await captureFrameFromFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, enableTransferTimestamps, quality: captureFrameQuality });
       if (!(await addFileAsCoverArt(path))) return;
       if (!hideAllNotifications) toast.fire({ text: i18n.t('Current frame has been set as cover art') });
@@ -1626,7 +1629,7 @@ const App = memo(() => {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [addFileAsCoverArt, captureFormat, captureFrameFromFfmpeg, captureFrameQuality, customOutDir, enableTransferTimestamps, filePath, getCurrentTime, hideAllNotifications]);
+  }, [addFileAsCoverArt, captureFormat, captureFrameFromFfmpeg, captureFrameQuality, customOutDir, enableTransferTimestamps, filePath, getRelevantTime, hideAllNotifications]);
 
   const batchLoadPaths = useCallback((newPaths, append) => {
     setBatchFiles((existingFiles) => {
@@ -2249,11 +2252,12 @@ const App = memo(() => {
               thumbnailsEnabled={thumbnailsEnabled}
               neighbouringKeyFrames={neighbouringKeyFrames}
               thumbnails={thumbnailsSorted}
-              getCurrentTime={getCurrentTime}
-              commandedTimeRef={commandedTimeRef}
-              startTimeOffset={startTimeOffset}
               playerTime={playerTime}
               commandedTime={commandedTime}
+              relevantTime={relevantTime}
+              getRelevantTime={getRelevantTime}
+              commandedTimeRef={commandedTimeRef}
+              startTimeOffset={startTimeOffset}
               zoom={zoom}
               seekAbs={seekAbs}
               durationSafe={durationSafe}
