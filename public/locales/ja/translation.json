@@ -697,5 +697,7 @@
     "Some extra tracks have been discarded. You can change this option before merging.": "一部の追加のトラックは破棄されました。結合前にこのオプションを変更できます。",
     "The size of the merged output file ({{outputFileTotalSize}}) differs from the total size of source files ({{sourceFilesTotalSize}}) by more than {{maxDiffPercent}}%. This could indicate that there was a problem during the merge.": "結合された出力ファイルのサイズ ({{outputFileTotalSize}}) が、入力ファイルの合計サイズ ({{sourceFilesTotalSize}}) と{{maxDiffPercent}}%以上異なります。結合中に問題が起きた可能性があります。",
     "Export options will be shown before exporting.": "出力前に出力オプションを表示します。",
-    "Export options are not shown. You can enable export options by clicking the icon right next to the export button.": "出力オプションは表示されていません。出力ボタンの隣のアイコンをクリックし出力オプションの表示を有効化できます。"
+    "Export options are not shown. You can enable export options by clicking the icon right next to the export button.": "出力オプションは表示されていません。出力ボタンの隣のアイコンをクリックし出力オプションの表示を有効化できます。",
+    "Export finished with warning(s)": "警告ありで出力が完了しました",
+    "Files merged with warning(s)": "警告ありで結合が完了しました"
 }
