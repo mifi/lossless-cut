@@ -44,7 +44,7 @@ const HelpIcon = ({ onClick, style }) => <IoIosHelpCircle size={20} role="button
 const ExportConfirm = memo(({
   areWeCutting, selectedSegments, segmentsToExport, willMerge, visible, onClosePress, onExportConfirm,
   outFormat, renderOutFmt, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, outSegTemplate,
-  setOutSegTemplate, generateOutSegFileNames, filePath, currentSegIndexSafe, getOutSegError, nonFilteredSegments,
+  setOutSegTemplate, generateOutSegFileNames, filePath, currentSegIndexSafe, getOutSegError, nonFilteredSegmentsOrInverse,
   mainCopiedThumbnailStreams,
 }) => {
   const { t } = useTranslation();
@@ -137,7 +137,7 @@ const ExportConfirm = memo(({
 
                 <h2 style={{ marginTop: 0, marginBottom: '.5em' }}>{t('Export options')}</h2>
                 <ul style={{ margin: 0 }}>
-                  {selectedSegments.length !== nonFilteredSegments.length && <li><FaRegCheckCircle size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: selectedSegments.length, nonFilteredSegments: nonFilteredSegments.length })}</li>}
+                  {selectedSegments.length !== nonFilteredSegmentsOrInverse.length && <li><FaRegCheckCircle size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: selectedSegments.length, nonFilteredSegments: nonFilteredSegmentsOrInverse.length })}</li>}
                   <li>
                     {t('Merge {{segments}} cut segments to one file?', { segments: selectedSegments.length })} <ExportModeButton selectedSegments={selectedSegments} />
                     <HelpIcon onClick={onExportModeHelpPress} />

@@ -76,7 +76,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
   }, 300, [isActive]);
 
   function renderNumber() {
-    if (invertCutSegments) return <FaSave style={{ cursor: 'grab', color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
+    if (invertCutSegments) return <FaSave style={{ color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
 
     const segColor = getSegColor(seg);
 
@@ -104,6 +104,8 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
     onToggleSegmentSelected(seg);
   }, [onToggleSegmentSelected, seg]);
 
+  const cursor = invertCutSegments ? undefined : 'grab';
+
   return (
     <motion.div
       ref={ref}
@@ -117,9 +119,9 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
       exit={{ scaleY: 0 }}
       className="segment-list-entry"
     >
-      <div className="segment-handle" style={{ cursor: 'grab', color: 'white', marginBottom: 3, display: 'flex', alignItems: 'center', height: 16 }}>
+      <div className="segment-handle" style={{ cursor, color: 'white', marginBottom: 3, display: 'flex', alignItems: 'center', height: 16 }}>
         {renderNumber()}
-        <span style={{ cursor: 'grab', fontSize: Math.min(310 / timeStr.length, 14), whiteSpace: 'nowrap' }}>{timeStr}</span>
+        <span style={{ cursor, fontSize: Math.min(310 / timeStr.length, 14), whiteSpace: 'nowrap' }}>{timeStr}</span>
       </div>
 
       <div style={{ fontSize: 12, color: 'white' }}>{seg.name}</div>

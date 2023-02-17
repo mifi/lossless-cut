@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect } from 'react';
+import React, { memo, useCallback, useEffect, useMemo } from 'react';
 import { Select } from 'evergreen-ui';
 import { motion } from 'framer-motion';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
@@ -33,10 +33,36 @@ const BottomBar = memo(({
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,
   setCurrentSegIndex, cutStartTimeManual, setCutStartTimeManual, cutEndTimeManual, setCutEndTimeManual,
   jumpTimelineStart, jumpTimelineEnd, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
-  playing, shortStep, togglePlay, toggleTimelineMode, hasAudio, timelineMode,
-  keyframesEnabled, toggleKeyframesEnabled, seekClosestKeyframe, detectedFps,
+  playing, shortStep, togglePlay, toggleLoopSelectedSegments, toggleTimelineMode, hasAudio, timelineMode,
+  keyframesEnabled, toggleKeyframesEnabled, seekClosestKeyframe, detectedFps, isFileOpened, selectedSegments,
 }) => {
   const { t } = useTranslation();
+
+  // ok this is a bit over-engineered but what the hell!
+  const loopSelectedSegmentsButtonStyle = useMemo(() => {
+    // cannot have less than 1 gradient element:
+    const selectedSegmentsSafe = (selectedSegments.length > 1 ? selectedSegments : [selectedSegments[0], selectedSegments[0]]).slice(0, 10);
+
+    const gradientColors = selectedSegmentsSafe.map((seg, i) => {
+      const segColor = getSegColor(seg);
+      // make colors stronger, the more segments
+      return `${segColor.alpha(Math.max(0.4, Math.min(0.8, selectedSegmentsSafe.length / 3))).string()} ${((i / (selectedSegmentsSafe.length - 1)) * 100).toFixed(1)}%`;
+    }).join(', ');
+
+    return {
+      paddingLeft: 2,
+      backgroundOffset: 30,
+      background: `linear-gradient(90deg, ${gradientColors})`,
+      border: '1px solid rgb(200,200,200)',
+      margin: '2px 4px 0 0px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 20,
+      height: 24,
+      borderRadius: 4,
+    };
+  }, [selectedSegments]);
 
   const { invertCutSegments, setInvertCutSegments, simpleMode, toggleSimpleMode, exportConfirmEnabled } = useUserSettings();
 
@@ -199,6 +225,7 @@ const BottomBar = memo(({
           <>
             <FaStepBackward
               size={16}
+              style={{ flexShrink: 0 }}
               title={t('Jump to start of video')}
               role="button"
               onClick={jumpTimelineStart}
@@ -234,8 +261,14 @@ const BottomBar = memo(({
 
         <div role="button" onClick={() => togglePlay()} style={{ background: primaryColor, margin: '2px 5px 0 5px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 17 }}>
           <PlayPause
-            style={{ marginLeft: playing ? 0 : 2 }}
+            style={{ paddingLeft: playing ? 0 : 2 }}
             size={16}
+          />
+        </div>
+
+        <div role="button" onClick={toggleLoopSelectedSegments} title={t('Play selected segments in order')} style={loopSelectedSegmentsButtonStyle}>
+          <FaPlay
+            size={14}
           />
         </div>
 
@@ -269,6 +302,7 @@ const BottomBar = memo(({
 
             <FaStepForward
               size={16}
+              style={{ flexShrink: 0 }}
               title={t('Jump to end of video')}
               role="button"
               onClick={jumpTimelineEnd}
@@ -335,7 +369,7 @@ const BottomBar = memo(({
           </>
         )}
 
-        {!simpleMode && (
+        {!simpleMode && isFileOpened && (
           <FaTrashAlt
             title={t('Close file and clean up')}
             style={{ padding: '5px 10px' }}

@@ -113,6 +113,7 @@ const KeyboardShortcuts = memo(({
 
   const { actionsMap, extraLinesPerCategory } = useMemo(() => {
     const playbackCategory = t('Playback');
+    const selectivePlaybackCategory = t('Playback/preview segments only');
     const seekingCategory = t('Seeking');
     const segmentsAndCutpointsCategory = t('Segments and cut points');
     const zoomOperationsCategory = t('Timeline/zoom operations');
@@ -156,18 +157,6 @@ const KeyboardShortcuts = memo(({
           name: t('Play/pause (no reset speed)'),
           category: playbackCategory,
         },
-        togglePlayOnlyCurrentSegment: {
-          name: t('Play/pause (only current segment)'),
-          category: playbackCategory,
-        },
-        toggleLoopOnlyCurrentSegment: {
-          name: t('Loop/pause (only current segment)'),
-          category: playbackCategory,
-        },
-        toggleLoopStartEndOnlyCurrentSegment: {
-          name: t('Loop/pause (only beginning and end of current segment)'),
-          category: playbackCategory,
-        },
         play: {
           name: t('Play'),
           category: playbackCategory,
@@ -199,6 +188,24 @@ const KeyboardShortcuts = memo(({
         decreaseVolume: {
           name: t('Decrease audio volume'),
           category: playbackCategory,
+        },
+
+        // selectivePlaybackCategory
+        togglePlayOnlyCurrentSegment: {
+          name: t('Play current segment once'),
+          category: selectivePlaybackCategory,
+        },
+        toggleLoopOnlyCurrentSegment: {
+          name: t('Loop current segment'),
+          category: selectivePlaybackCategory,
+        },
+        toggleLoopStartEndOnlyCurrentSegment: {
+          name: t('Loop beginning and end of current segment'),
+          category: selectivePlaybackCategory,
+        },
+        toggleLoopSelectedSegments: {
+          name: t('Play selected segments in order'),
+          category: selectivePlaybackCategory,
         },
 
         // seekingCategory

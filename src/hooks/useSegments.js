@@ -18,7 +18,7 @@ import { maxSegmentsAllowed } from '../util/constants';
 
 export default ({
   filePath, workingRef, setWorking, setCutProgress, mainVideoStream,
-  duration, getRelevantTime, maxLabelLength, checkFileOpened,
+  duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments,
 }) => {
   // Segment related state
   const segCounterRef = useRef(0);
@@ -430,6 +430,13 @@ export default ({
     }));
   }, [maxLabelLength, selectedSegmentsRaw, setCutSegments]);
 
+  // Guaranteed to have at least one segment (if user has selected none to export (selectedSegments empty), it makes no sense so select all instead.)
+  const selectedSegments = useMemo(() => (selectedSegmentsRaw.length > 0 ? selectedSegmentsRaw : apparentCutSegments), [apparentCutSegments, selectedSegmentsRaw]);
+
+  // For invertCutSegments we do not support filtering (selecting) segments
+  const selectedSegmentsOrInverse = useMemo(() => (invertCutSegments ? inverseCutSegments : selectedSegments), [inverseCutSegments, invertCutSegments, selectedSegments]);
+  const nonFilteredSegmentsOrInverse = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments), [invertCutSegments, inverseCutSegments, apparentCutSegments]);
+
   const removeSelectedSegments = useCallback(() => removeSegments(selectedSegmentsRaw.map((seg) => seg.segId)), [removeSegments, selectedSegmentsRaw]);
 
   const selectOnlySegment = useCallback((seg) => setDeselectedSegmentIds(Object.fromEntries(cutSegments.filter((s) => s.segId !== seg.segId).map((s) => [s.segId, true]))), [cutSegments]);
@@ -476,7 +483,9 @@ export default ({
     clearSegments,
     loadCutSegments,
     selectedSegmentsRaw,
-    setCutTime,
+    selectedSegments,
+    selectedSegmentsOrInverse,
+    nonFilteredSegmentsOrInverse,
     getSegApparentEnd,
     setCurrentSegIndex,
 

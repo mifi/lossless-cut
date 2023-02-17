@@ -165,34 +165,49 @@ export function convertSegmentsToChapters(sortedSegments) {
   return sortSegments([...sortedSegments, ...invertedSegments]);
 }
 
-export function playOnlyCurrentSegment({ mode, currentTime, playingOnlySegment }) {
-  if (mode === 'loop-start-end') {
-    const maxSec = 3; // max time each side (start/end)
-    const sec = Math.min(maxSec, (playingOnlySegment.end - playingOnlySegment.start) / 3) * 2;
+export function playOnlyCurrentSegment({ playbackMode, currentTime, playingSegment }) {
+  switch (playbackMode) {
+    case 'loop-segment-start-end': {
+      const maxSec = 3; // max time each side (start/end)
+      const sec = Math.min(maxSec, (playingSegment.end - playingSegment.start) / 3) * 2;
 
-    const startWindowEnd = playingOnlySegment.start + sec / 2;
-    const endWindowStart = playingOnlySegment.end - sec / 2;
+      const startWindowEnd = playingSegment.start + sec / 2;
+      const endWindowStart = playingSegment.end - sec / 2;
 
-    if (currentTime >= playingOnlySegment.end) {
-      return { seek: playingOnlySegment.start };
+      if (currentTime >= playingSegment.end) {
+        return { seek: playingSegment.start };
+      }
+      if (currentTime < endWindowStart && currentTime >= startWindowEnd) {
+        return { seek: endWindowStart };
+      }
+      break;
     }
-    if (currentTime < endWindowStart && currentTime >= startWindowEnd) {
-      return { seek: endWindowStart };
-    }
-  }
 
-  if (mode === 'loop-full') {
-    if (currentTime >= playingOnlySegment.end) {
-      return { seek: playingOnlySegment.start };
+    case 'loop-segment': {
+      if (currentTime >= playingSegment.end) {
+        return { seek: playingSegment.start };
+      }
+      break;
     }
-  }
 
-  // mode === 'play'
-  if (currentTime >= playingOnlySegment.end) {
-    return {
-      seek: playingOnlySegment.end,
-      stop: true,
-    };
+    case 'play-segment-once': {
+      if (currentTime >= playingSegment.end) {
+        return {
+          seek: playingSegment.end,
+          stop: true,
+        };
+      }
+      break;
+    }
+
+    case 'loop-selected-segments': {
+      if (currentTime >= playingSegment.end) {
+        return { nextSegment: true };
+      }
+      break;
+    }
+
+    default:
   }
 
   return {};

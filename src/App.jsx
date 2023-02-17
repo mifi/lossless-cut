@@ -115,7 +115,7 @@ const App = memo(() => {
   const [usingDummyVideo, setUsingDummyVideo] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [canvasPlayerEventId, setCanvasPlayerEventId] = useState(0);
-  const playingOnlySegmentIdRef = useRef();
+  const playbackModeRef = useRef();
   const [playerTime, setPlayerTime] = useState();
   const [duration, setDuration] = useState();
   const [rotation, setRotation] = useState(360);
@@ -278,14 +278,19 @@ const App = memo(() => {
     setCanvasPlayerEventId((id) => id + 1); // To make sure that we can seek even to the same commanded time that we are already add (e.g. loop current segment)
   }, []);
 
+  const userSeekAbs = useCallback((val) => {
+    playbackModeRef.current = undefined; // If the user seeks, we clear any custom playback mode
+    return seekAbs(val);
+  }, [seekAbs]);
+
   const commandedTimeRef = useRef(commandedTime);
   useEffect(() => {
     commandedTimeRef.current = commandedTime;
   }, [commandedTime]);
 
   const seekRel = useCallback((val) => {
-    seekAbs(videoRef.current.currentTime + val);
-  }, [seekAbs]);
+    userSeekAbs(videoRef.current.currentTime + val);
+  }, [userSeekAbs]);
 
   const seekRelPercent = useCallback((val) => {
     if (!isDurationValid(zoomedDuration)) return;
@@ -299,8 +304,8 @@ const App = memo(() => {
     // try to align with frame
     const currentTimeNearestFrameNumber = getFrameCountRaw(fps, videoRef.current.currentTime);
     const nextFrame = currentTimeNearestFrameNumber + direction;
-    seekAbs(nextFrame / fps);
-  }, [seekAbs, detectedFps]);
+    userSeekAbs(nextFrame / fps);
+  }, [detectedFps, userSeekAbs]);
 
   // 360 means we don't modify rotation
   const isRotationSet = rotation !== 360;
@@ -343,15 +348,15 @@ const App = memo(() => {
   }, [isFileOpened]);
 
   const {
-    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, onViewSegmentTags, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, createNumSegments, createFixedDurationSegments, createRandomSegments, apparentCutSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, currentApparentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, selectedSegmentsRaw, setCutTime, getSegApparentEnd, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, toggleSegmentSelected, selectOnlySegment, getApparentCutSegmentById,
-  } = useSegments({ filePath, workingRef, setWorking, setCutProgress, mainVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened });
+    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, onViewSegmentTags, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, createNumSegments, createFixedDurationSegments, createRandomSegments, apparentCutSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, currentApparentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, selectedSegmentsRaw, setCutTime, getSegApparentEnd, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, toggleSegmentSelected, selectOnlySegment, getApparentCutSegmentById, selectedSegments, selectedSegmentsOrInverse, nonFilteredSegmentsOrInverse,
+  } = useSegments({ filePath, workingRef, setWorking, setCutProgress, mainVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments });
 
-  const jumpSegStart = useCallback((index) => seekAbs(apparentCutSegments[index].start), [apparentCutSegments, seekAbs]);
-  const jumpSegEnd = useCallback((index) => seekAbs(apparentCutSegments[index].end), [apparentCutSegments, seekAbs]);
+  const jumpSegStart = useCallback((index) => userSeekAbs(apparentCutSegments[index].start), [apparentCutSegments, userSeekAbs]);
+  const jumpSegEnd = useCallback((index) => userSeekAbs(apparentCutSegments[index].end), [apparentCutSegments, userSeekAbs]);
   const jumpCutStart = useCallback(() => jumpSegStart(currentSegIndexSafe), [currentSegIndexSafe, jumpSegStart]);
   const jumpCutEnd = useCallback(() => jumpSegEnd(currentSegIndexSafe), [currentSegIndexSafe, jumpSegEnd]);
-  const jumpTimelineStart = useCallback(() => seekAbs(0), [seekAbs]);
-  const jumpTimelineEnd = useCallback(() => seekAbs(durationSafe), [durationSafe, seekAbs]);
+  const jumpTimelineStart = useCallback(() => userSeekAbs(0), [userSeekAbs]);
+  const jumpTimelineEnd = useCallback(() => userSeekAbs(durationSafe), [durationSafe, userSeekAbs]);
 
 
   const getFrameCount = useCallback((sec) => getFrameCountRaw(detectedFps, sec), [detectedFps]);
@@ -435,7 +440,7 @@ const App = memo(() => {
 
   const onStopPlaying = useCallback(() => {
     onPlayingChange(false);
-    playingOnlySegmentIdRef.current = undefined;
+    playbackModeRef.current = undefined;
   }, []);
   const onSartPlaying = useCallback(() => onPlayingChange(true), []);
   const onDurationChange = useCallback((e) => {
@@ -629,7 +634,7 @@ const App = memo(() => {
     setPreviewFilePath();
     setUsingDummyVideo(false);
     setPlaying(false);
-    playingOnlySegmentIdRef.current = undefined;
+    playbackModeRef.current = undefined;
     setCanvasPlayerEventId(0);
     setDuration();
     cutSegmentsHistory.go(0);
@@ -761,6 +766,9 @@ const App = memo(() => {
 
   const showPlaybackFailedMessage = () => errorToast(i18n.t('Unable to playback this file. Try to convert to supported format from the menu'));
 
+  const getNewJumpIndex = (oldIndex, direction) => Math.max(oldIndex + direction, 0);
+  const jumpSeg = useCallback((direction) => setCurrentSegIndex((old) => Math.min(getNewJumpIndex(old, direction), cutSegments.length - 1)), [cutSegments, setCurrentSegIndex]);
+
   const pause = useCallback(() => {
     if (!filePath || !playing) return;
     videoRef.current.pause();
@@ -777,38 +785,56 @@ const App = memo(() => {
     });
   }, [filePath, playing]);
 
-  const togglePlay = useCallback(({ resetPlaybackRate, onlyCurrentSegment } = {}) => {
-    playingOnlySegmentIdRef.current = undefined;
+  const togglePlay = useCallback(({ resetPlaybackRate, playbackMode } = {}) => {
+    playbackModeRef.current = undefined;
     if (playing) {
       pause();
       return;
     }
-    if (onlyCurrentSegment != null) {
-      playingOnlySegmentIdRef.current = { segId: currentApparentCutSeg.segId, mode: onlyCurrentSegment };
-      seekAbs(currentApparentCutSeg.start);
+    if (playbackMode != null) {
+      if (playbackMode === 'loop-selected-segments') {
+        const firstSelectedSegment = selectedSegments[0];
+        playbackModeRef.current = { segId: firstSelectedSegment.segId, playbackMode };
+        const index = apparentCutSegments.indexOf(firstSelectedSegment);
+        if (index >= 0) setCurrentSegIndex(index);
+        seekAbs(firstSelectedSegment.start);
+      } else {
+        playbackModeRef.current = { segId: currentApparentCutSeg.segId, playbackMode };
+        seekAbs(currentApparentCutSeg.start);
+      }
     }
     play(resetPlaybackRate);
-  }, [playing, play, pause, currentApparentCutSeg.segId, currentApparentCutSeg.start, seekAbs]);
+  }, [playing, play, pause, selectedSegments, apparentCutSegments, setCurrentSegIndex, seekAbs, currentApparentCutSeg.segId, currentApparentCutSeg.start]);
 
   const onTimeUpdate = useCallback((e) => {
     const { currentTime } = e.target;
     if (playerTime === currentTime) return;
     setPlayerTime(currentTime);
 
-    if (playingOnlySegmentIdRef.current != null) {
-      const { segId, mode } = playingOnlySegmentIdRef.current;
-      const playingOnlySegment = getApparentCutSegmentById(segId);
+    if (playbackModeRef.current != null) {
+      const { segId, playbackMode } = playbackModeRef.current;
+      const playingSegment = getApparentCutSegmentById(segId);
 
-      if (playingOnlySegment != null) {
-        const { seek, stop } = playOnlyCurrentSegment({ mode, currentTime, playingOnlySegment });
-        if (seek) seekAbs(seek);
+      if (playingSegment != null) {
+        const { seek, stop, nextSegment } = playOnlyCurrentSegment({ playbackMode, currentTime, playingSegment });
+        // console.log({ seek, stop, nextSegment });
+
+        if (nextSegment != null) {
+          const index = selectedSegments.indexOf(playingSegment);
+          let newIndex = getNewJumpIndex(index >= 0 ? index : 0, 1);
+          if (newIndex > selectedSegments.length - 1) newIndex = 0; // have reached end of last segment, start over
+          const nextSelectedSegment = selectedSegments[newIndex];
+          if (nextSelectedSegment != null) seekAbs(nextSelectedSegment.start);
+          playbackModeRef.current.segId = nextSelectedSegment.segId;
+        }
+        if (seek != null) seekAbs(seek);
         if (stop) {
-          playingOnlySegmentIdRef.current = undefined;
+          playbackModeRef.current = undefined;
           pause();
         }
       }
     }
-  }, [getApparentCutSegmentById, pause, playerTime, seekAbs]);
+  }, [getApparentCutSegmentById, pause, playerTime, seekAbs, selectedSegments]);
 
   const closeFileWithConfirm = useCallback(() => {
     if (!isFileOpened || workingRef.current) return;
@@ -997,14 +1023,6 @@ const App = memo(() => {
       setWorking();
     }
   }, [isFileOpened, cleanupChoices, askForCleanupChoices, cleanupFiles, setWorking]);
-
-  // For invertCutSegments we do not support filtering
-  const selectedSegmentsOrInverseRaw = useMemo(() => (invertCutSegments ? inverseCutSegments : selectedSegmentsRaw), [inverseCutSegments, invertCutSegments, selectedSegmentsRaw]);
-
-  const nonFilteredSegments = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments), [invertCutSegments, inverseCutSegments, apparentCutSegments]);
-
-  // If user has selected none to export, it makes no sense, so export all instead
-  const selectedSegmentsOrInverse = selectedSegmentsOrInverseRaw.length > 0 ? selectedSegmentsOrInverseRaw : nonFilteredSegments;
 
   const segmentsToExport = useMemo(() => {
     if (!segmentsToChaptersOnly) return selectedSegmentsOrInverse;
@@ -1430,13 +1448,11 @@ const App = memo(() => {
   const toggleLastCommands = useCallback(() => setLastCommandsVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
 
-  const jumpSeg = useCallback((val) => setCurrentSegIndex((old) => Math.max(Math.min(old + val, cutSegments.length - 1), 0)), [cutSegments.length, setCurrentSegIndex]);
-
   const seekClosestKeyframe = useCallback((direction) => {
     const time = findNearestKeyFrameTime({ time: getRelevantTime(), direction });
     if (time == null) return;
-    seekAbs(time);
-  }, [findNearestKeyFrameTime, getRelevantTime, seekAbs]);
+    userSeekAbs(time);
+  }, [findNearestKeyFrameTime, getRelevantTime, userSeekAbs]);
 
   const seekAccelerationRef = useRef(1);
 
@@ -1520,8 +1536,8 @@ const App = memo(() => {
 
     if (timeCode === undefined) return;
 
-    seekAbs(timeCode);
-  }, [filePath, seekAbs]);
+    userSeekAbs(timeCode);
+  }, [filePath, userSeekAbs]);
 
   const toggleStreamsSelector = useCallback(() => setStreamsSelectorShown((v) => !v), []);
 
@@ -1767,6 +1783,8 @@ const App = memo(() => {
     setConcatDialogVisible(true);
   }, [batchFiles.length, openFilesDialog]);
 
+  const toggleLoopSelectedSegments = useCallback(() => togglePlay({ resetPlaybackRate: true, playbackMode: 'loop-selected-segments' }), [togglePlay]);
+
   const onKeyPress = useCallback(({ action, keyup }) => {
     function seekReset() {
       seekAccelerationRef.current = 1;
@@ -1777,9 +1795,10 @@ const App = memo(() => {
     const mainActions = {
       togglePlayNoResetSpeed: () => togglePlay(),
       togglePlayResetSpeed: () => togglePlay({ resetPlaybackRate: true }),
-      togglePlayOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, onlyCurrentSegment: 'play' }),
-      toggleLoopOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, onlyCurrentSegment: 'loop-full' }),
-      toggleLoopStartEndOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, onlyCurrentSegment: 'loop-start-end' }),
+      togglePlayOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, playbackMode: 'play-segment-once' }),
+      toggleLoopOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, playbackMode: 'loop-segment' }),
+      toggleLoopStartEndOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, playbackMode: 'loop-segment-start-end' }),
+      toggleLoopSelectedSegments,
       play: () => play(),
       pause,
       reducePlaybackRate: () => changePlaybackRate(-1),
@@ -1907,7 +1926,7 @@ const App = memo(() => {
     if (match) return bubble;
 
     return true; // bubble the event
-  }, [addSegment, alignSegmentTimesToKeyframes, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, combineOverlappingSegments, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addSegment, alignSegmentTimesToKeyframes, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, combineOverlappingSegments, concatCurrentBatch, concatDialogVisible, convertFormatBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, toggleLoopSelectedSegments, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   useKeyboard({ keyBindings, onKeyPress });
 
@@ -2277,7 +2296,7 @@ const App = memo(() => {
               commandedTimeRef={commandedTimeRef}
               startTimeOffset={startTimeOffset}
               zoom={zoom}
-              seekAbs={seekAbs}
+              seekAbs={userSeekAbs}
               durationSafe={durationSafe}
               apparentCutSegments={apparentCutSegments}
               setCurrentSegIndex={setCurrentSegIndex}
@@ -2304,10 +2323,11 @@ const App = memo(() => {
               captureSnapshot={captureSnapshot}
               onExportPress={onExportPress}
               segmentsToExport={segmentsToExport}
-              seekAbs={seekAbs}
+              seekAbs={userSeekAbs}
               currentSegIndexSafe={currentSegIndexSafe}
               cutSegments={cutSegments}
               currentCutSeg={currentCutSeg}
+              selectedSegments={selectedSegments}
               setCutStart={setCutStart}
               setCutEnd={setCutEnd}
               setCurrentSegIndex={setCurrentSegIndex}
@@ -2332,6 +2352,8 @@ const App = memo(() => {
               keyframesEnabled={keyframesEnabled}
               toggleKeyframesEnabled={toggleKeyframesEnabled}
               detectedFps={detectedFps}
+              toggleLoopSelectedSegments={toggleLoopSelectedSegments}
+              isFileOpened={isFileOpened}
             />
           </div>
 
@@ -2371,7 +2393,7 @@ const App = memo(() => {
             )}
           </SideSheet>
 
-          <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegments={nonFilteredSegments} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} />
+          <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegmentsOrInverse={nonFilteredSegmentsOrInverse} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} />
 
           <LastCommandsSheet
             visible={lastCommandsVisible}
