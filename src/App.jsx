@@ -114,6 +114,7 @@ const App = memo(() => {
   const [working, setWorkingState] = useState();
   const [usingDummyVideo, setUsingDummyVideo] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [canvasPlayerEventId, setCanvasPlayerEventId] = useState(0);
   const playingOnlySegmentIdRef = useRef();
   const [playerTime, setPlayerTime] = useState();
   const [duration, setDuration] = useState();
@@ -274,6 +275,7 @@ const App = memo(() => {
 
     video.currentTime = outVal;
     setCommandedTime(outVal);
+    setCanvasPlayerEventId((id) => id + 1); // To make sure that we can seek even to the same commanded time that we are already add (e.g. loop current segment)
   }, []);
 
   const commandedTimeRef = useRef(commandedTime);
@@ -628,6 +630,7 @@ const App = memo(() => {
     setUsingDummyVideo(false);
     setPlaying(false);
     playingOnlySegmentIdRef.current = undefined;
+    setCanvasPlayerEventId(0);
     setDuration();
     cutSegmentsHistory.go(0);
     clearSegments(); // TODO this will cause two history items
@@ -2185,7 +2188,7 @@ const App = memo(() => {
                   {renderSubtitles()}
                 </video>
 
-                {canvasPlayerEnabled && <Canvas rotate={effectiveRotation} filePath={filePath} width={mainVideoStream.width} height={mainVideoStream.height} streamIndex={mainVideoStream.index} playerTime={playerTime} commandedTime={commandedTime} playing={playing} />}
+                {canvasPlayerEnabled && <Canvas rotate={effectiveRotation} filePath={filePath} width={mainVideoStream.width} height={mainVideoStream.height} streamIndex={mainVideoStream.index} playerTime={playerTime} commandedTime={commandedTime} playing={playing} eventId={canvasPlayerEventId} />}
               </div>
 
               {isRotationSet && !hideCanvasPreview && (

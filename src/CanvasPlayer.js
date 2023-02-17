@@ -79,7 +79,6 @@ export default ({ path, width: inWidth, height: inHeight, streamIndex, getCanvas
 
   function pause(seekTo) {
     if (terminated) return;
-    if (!playing && commandedTime === seekTo) return;
     playing = false;
     commandedTime = seekTo;
 
@@ -89,7 +88,6 @@ export default ({ path, width: inWidth, height: inHeight, streamIndex, getCanvas
 
   function play(playFrom) {
     if (terminated) return;
-    if (playing && commandedTime === playFrom) return;
     playing = true;
     commandedTime = playFrom;
 

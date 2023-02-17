@@ -3,7 +3,7 @@ import { useDebounce } from 'use-debounce';
 
 import CanvasPlayer from './CanvasPlayer';
 
-const Canvas = memo(({ rotate, filePath, width, height, playerTime, streamIndex, commandedTime, playing }) => {
+const Canvas = memo(({ rotate, filePath, width, height, playerTime, streamIndex, commandedTime, playing, eventId }) => {
   const canvasRef = useRef();
 
   const canvasPlayer = useMemo(() => CanvasPlayer({ path: filePath, width, height, streamIndex, getCanvas: () => canvasRef.current }), [filePath, width, height, streamIndex]);
@@ -14,12 +14,14 @@ const Canvas = memo(({ rotate, filePath, width, height, playerTime, streamIndex,
 
   const state = useMemo(() => {
     if (playing) {
-      return { time: commandedTime, playing };
+      return { startTime: commandedTime, playing, eventId };
     }
-    return { time: playerTime, playing };
-  }, [commandedTime, playerTime, playing]);
+    return { startTime: playerTime, playing, eventId };
+  }, [commandedTime, eventId, playerTime, playing]);
 
-  const [debouncedState, { cancel }] = useDebounce(state, 300, { leading: true, equalityFn: ({ time: time1, playing: playing1 }, { time: time2, playing: playing2 }) => time1 === time2 && playing1 === playing2 });
+  const [debouncedState, { cancel }] = useDebounce(state, 200, {
+    equalityFn: (a, b) => a.startTime === b.startTime && a.playing === b.playing && a.eventId === b.eventId,
+  });
 
   /* useEffect(() => {
     console.log('state', state);
@@ -32,12 +34,12 @@ const Canvas = memo(({ rotate, filePath, width, height, playerTime, streamIndex,
   useEffect(() => {
     // console.log('debouncedState', debouncedState);
 
-    if (debouncedState.time == null) return;
+    if (debouncedState.startTime == null) return;
 
     if (debouncedState.playing) {
-      canvasPlayer.play(debouncedState.time);
+      canvasPlayer.play(debouncedState.startTime);
     } else {
-      canvasPlayer.pause(debouncedState.time);
+      canvasPlayer.pause(debouncedState.startTime);
     }
   }, [debouncedState, canvasPlayer]);
 
