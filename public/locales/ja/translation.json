@@ -295,7 +295,7 @@
     "DROP FILE(S)": "ファイルをドロップ",
     "Unable to save your preferences. Try to disable any anti-virus": "設定を保存できません。ウイルス対策ソフトを無効にしてみてください",
     "Hover mouse over buttons in the main interface to see which function they have": "機能の説明を見るには、メインウィンドウのボタン上にマウスカーソルを乗せます",
-    "Delete source file": "ファイルの削除",
+    "Delete source file": "入力ファイルの削除",
     "Trash original source file, project CSV and auto-generated files": "元の入力ファイル, プロジェクトの CSV と自動生成ファイルを削除",
     "Trash project CSV and auto-generated files": "プロジェクトの CSV と自動生成ファイルを削除",
     "Trash auto-generated files": "自動生成ファイルをごみ箱へ",
@@ -699,5 +699,16 @@
     "Export options will be shown before exporting.": "出力前に出力オプションを表示します。",
     "Export options are not shown. You can enable export options by clicking the icon right next to the export button.": "出力オプションは表示されていません。出力ボタンの隣のアイコンをクリックし出力オプションの表示を有効化できます。",
     "Export finished with warning(s)": "警告ありで出力が完了しました",
-    "Files merged with warning(s)": "警告ありで結合が完了しました"
+    "Files merged with warning(s)": "警告ありで結合が完了しました",
+    "Change preferences": "設定の変更",
+    "Cleanup files after export?": "出力後にファイルを掃除しますか？",
+    "Close currently opened file": "現在開いているファイルを閉じる",
+    "Do all of this automatically after exporting a file?": "ファイルの出力後、このすべてを自動的で実行しますか？",
+    "Loop/pause (only current segment)": "ループ/停止 (現在のセグメントのみ)",
+    "Play/pause (only current segment)": "再生/停止 (現在のセグメントのみ)",
+    "Show this dialog every time?": "このダイアログを毎回表示しますか？",
+    "What do you want to do after exporting a file or when pressing the \"delete source file\" button?": "ファイルの出力後や「入力ファイルの削除」ボタンを押した際に行う処理はどれですか？",
+    "Loop/pause (only beginning and end of current segment)": "再生/停止 (現在のセグメントの先頭と末端のみ)",
+    "Permanently delete the files if trash fails?": "ゴミ箱への移動が失敗したらファイルを完全に削除しますか？",
+    "Press confirm to grant LosslessCut access to write the project file (due to App Sandbox restrictions).": "確認を押すと、LosslessCut にプロジェクトファイルの書き込み権限を与えます（App Sandbox の制限のため）。"
 }
