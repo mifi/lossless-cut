@@ -1,12 +1,12 @@
 // intentionally disabled because I don't know the quality of the languages, so better to default to english
 // const LanguageDetector = window.require('i18next-electron-language-detector');
 const isDev = require('electron-is-dev');
-
 const { app } = require('electron');
-
 const { join } = require('path');
 
-const getLangPath = (subPath) => (isDev ? join('public', subPath) : join(app.getAppPath(), 'build', subPath));
+const { frontendBuildDir } = require('./util');
+
+const getLangPath = (subPath) => (isDev ? join('public', subPath) : join(app.getAppPath(), frontendBuildDir, subPath));
 
 // Weblate hardcodes different lang codes than electron
 // https://www.electronjs.org/docs/api/app#appgetlocale

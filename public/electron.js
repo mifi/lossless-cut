@@ -14,6 +14,7 @@ const { stat } = require('fs/promises');
 const logger = require('./logger');
 const menu = require('./menu');
 const configStore = require('./configStore');
+const { frontendBuildDir } = require('./util');
 
 const { checkNewVersion } = require('./update-checker');
 
@@ -87,7 +88,7 @@ function createWindow() {
 
   if (isDev) mainWindow.loadURL('http://localhost:3001');
   // Need to useloadFile for special characters https://github.com/mifi/lossless-cut/issues/40
-  else mainWindow.loadFile('vite-dist/index.html');
+  else mainWindow.loadFile(`${frontendBuildDir}/index.html`);
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
