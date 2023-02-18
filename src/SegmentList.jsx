@@ -22,7 +22,7 @@ const buttonBaseStyle = {
 const neutralButtonColor = 'rgba(255, 255, 255, 0.2)';
 
 
-const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onRemoveSelected, onLabelSelectedSegments, onReorderPress, onLabelPress, enabled, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectAllSegments, jumpSegStart, jumpSegEnd, addSegment, onViewSegmentTags, onExtractSegmentFramesAsImages }) => {
+const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onRemoveSelected, onLabelSelectedSegments, onReorderPress, onLabelPress, selected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectAllSegments, jumpSegStart, jumpSegEnd, addSegment, onViewSegmentTags, onExtractSegmentFramesAsImages }) => {
   const { t } = useTranslation();
 
   const ref = useRef();
@@ -87,7 +87,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 
   function onDoubleClick() {
     if (invertCutSegments) return;
-    if (!enabled) {
+    if (!selected) {
       onToggleSegmentSelected(seg);
       return;
     }
@@ -97,7 +97,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
   const durationMsFormatted = Math.floor(durationMs);
   const frameCount = getFrameCount(duration);
 
-  const CheckIcon = enabled ? FaRegCheckCircle : FaRegCircle;
+  const CheckIcon = selected ? FaRegCheckCircle : FaRegCircle;
 
   const onToggleSegmentSelectedClick = useCallback((e) => {
     e.stopPropagation();
@@ -115,7 +115,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
       layout
       style={{ originY: 0, margin: '5px 0', background: 'rgba(0,0,0,0.1)', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5, position: 'relative' }}
       initial={{ scaleY: 0 }}
-      animate={{ scaleY: 1, opacity: !enabled && !invertCutSegments ? 0.5 : undefined }}
+      animate={{ scaleY: 1, opacity: !selected && !invertCutSegments ? 0.5 : undefined }}
       exit={{ scaleY: 0 }}
       className="segment-list-entry"
     >
@@ -146,7 +146,7 @@ const SegmentList = memo(({
   currentSegIndex,
   updateSegOrder, updateSegOrders, addSegment, removeCutSegment, onRemoveSelected,
   onLabelSegment, currentCutSeg, segmentAtCursor, toggleSegmentsList, splitCurrentSegment,
-  selectedSegments, selectedSegmentsRaw, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectAllSegments, onSelectSegmentsByLabel, onExtractSegmentFramesAsImages, onLabelSelectedSegments,
+  selectedSegments, isSegmentSelected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectAllSegments, onSelectSegmentsByLabel, onExtractSegmentFramesAsImages, onLabelSelectedSegments,
   jumpSegStart, jumpSegEnd, onViewSegmentTags,
 }) => {
   const { t } = useTranslation();
@@ -278,13 +278,13 @@ const SegmentList = memo(({
       <div style={{ padding: '0 10px', overflowY: 'scroll', flexGrow: 1 }} className="hide-scrollbar">
         <ReactSortable list={sortableList} setList={setSortableList} disabled={!!invertCutSegments} handle=".segment-handle">
           {sortableList.map(({ id, seg }, index) => {
-            const enabled = !invertCutSegments && selectedSegmentsRaw.includes(seg);
+            const selected = !invertCutSegments && isSegmentSelected({ segId: seg.segId });
             return (
               <Segment
                 key={id}
                 seg={seg}
                 index={index}
-                enabled={enabled}
+                selected={selected}
                 onClick={onSegClick}
                 addSegment={addSegment}
                 onRemoveSelected={onRemoveSelected}

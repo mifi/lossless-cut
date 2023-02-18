@@ -60,7 +60,7 @@ const Timeline = memo(({
   setCurrentSegIndex, currentSegIndexSafe, inverseCutSegments, formatTimecode,
   waveforms, shouldShowWaveform, shouldShowKeyframes, timelineHeight = 36, thumbnails,
   onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled,
-  playing, isFileOpened, onWheel, commandedTimeRef, goToTimecode,
+  playing, isFileOpened, onWheel, commandedTimeRef, goToTimecode, isSegmentSelected,
 }) => {
   const { t } = useTranslation();
 
@@ -291,6 +291,8 @@ const Timeline = memo(({
 
             if (seg.start === 0 && seg.end === 0) return null; // No video loaded
 
+            const selected = invertCutSegments || isSegmentSelected({ segId: seg.segId });
+
             return (
               <TimelineSeg
                 key={seg.segId}
@@ -304,6 +306,7 @@ const Timeline = memo(({
                 cutEnd={seg.end}
                 invertCutSegments={invertCutSegments}
                 formatTimecode={formatTimecode}
+                selected={selected}
               />
             );
           })}

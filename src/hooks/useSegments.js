@@ -482,7 +482,7 @@ export default ({
     inverseCutSegments,
     clearSegments,
     loadCutSegments,
-    selectedSegmentsRaw,
+    isSegmentSelected,
     selectedSegments,
     selectedSegmentsOrInverse,
     nonFilteredSegmentsOrInverse,

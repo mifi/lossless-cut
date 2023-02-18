@@ -7,7 +7,7 @@ import { mySpring } from './animations';
 
 const TimelineSeg = memo(({
   duration, cutStart, cutEnd, isActive, segNum, name,
-  onSegClick, invertCutSegments, segColor, formatTimecode,
+  onSegClick, invertCutSegments, segColor, formatTimecode, selected,
 }) => {
   const cutSectionWidth = `${((cutEnd - cutStart) / duration) * 100}%`;
 
@@ -16,10 +16,10 @@ const TimelineSeg = memo(({
   const markerBorder = useMemo(() => `2px solid ${isActive ? segColor.lighten(0.2).string() : 'transparent'}`, [isActive, segColor]);
 
   const backgroundColor = useMemo(() => {
-    if (invertCutSegments) return segColor.alpha(0.4).string();
+    if (invertCutSegments || !selected) return segColor.alpha(0.4).string();
     if (isActive) return segColor.alpha(0.7).string();
     return segColor.alpha(0.6).string();
-  }, [invertCutSegments, isActive, segColor]);
+  }, [invertCutSegments, isActive, segColor, selected]);
   const markerBorderRadius = 5;
 
   const wrapperStyle = {

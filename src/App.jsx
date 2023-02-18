@@ -348,7 +348,7 @@ const App = memo(() => {
   }, [isFileOpened]);
 
   const {
-    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, onViewSegmentTags, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, createNumSegments, createFixedDurationSegments, createRandomSegments, apparentCutSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, currentApparentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, selectedSegmentsRaw, setCutTime, getSegApparentEnd, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, toggleSegmentSelected, selectOnlySegment, getApparentCutSegmentById, selectedSegments, selectedSegmentsOrInverse, nonFilteredSegmentsOrInverse,
+    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, onViewSegmentTags, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, createNumSegments, createFixedDurationSegments, createRandomSegments, apparentCutSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, currentApparentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, isSegmentSelected, setCutTime, getSegApparentEnd, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, toggleSegmentSelected, selectOnlySegment, getApparentCutSegmentById, selectedSegments, selectedSegmentsOrInverse, nonFilteredSegmentsOrInverse,
   } = useSegments({ filePath, workingRef, setWorking, setCutProgress, mainVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments });
 
   const jumpSegStart = useCallback((index) => userSeekAbs(apparentCutSegments[index].start), [apparentCutSegments, userSeekAbs]);
@@ -2263,7 +2263,7 @@ const App = memo(() => {
                   onRemoveSelected={removeSelectedSegments}
                   toggleSegmentsList={toggleSegmentsList}
                   splitCurrentSegment={splitCurrentSegment}
-                  selectedSegmentsRaw={selectedSegmentsRaw}
+                  isSegmentSelected={isSegmentSelected}
                   selectedSegments={selectedSegmentsOrInverse}
                   onSelectSingleSegment={selectOnlySegment}
                   onToggleSegmentSelected={toggleSegmentSelected}
@@ -2308,6 +2308,7 @@ const App = memo(() => {
               isFileOpened={isFileOpened}
               onWheel={onTimelineWheel}
               goToTimecode={goToTimecode}
+              isSegmentSelected={isSegmentSelected}
             />
 
             <BottomBar
