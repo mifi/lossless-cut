@@ -1165,7 +1165,7 @@ const App = memo(() => {
       if (exportExtraStreams) {
         try {
           setCutProgress(); // If extracting extra streams takes a long time, prevent loader from being stuck at 100%
-          setWorking(i18n.t('Extracting {{numTracks}} unprocessable tracks(s)', { numTracks: nonCopiedExtraStreams.length }));
+          setWorking(i18n.t('Extracting {{count}} unprocessable tracks', { count: nonCopiedExtraStreams.length }));
           await extractStreams({ filePath, customOutDir, streams: nonCopiedExtraStreams, enableOverwriteOutput });
           notices.push(i18n.t('Unprocessable streams were exported as separate files.'));
         } catch (err) {

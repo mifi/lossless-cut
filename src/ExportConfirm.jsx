@@ -97,8 +97,8 @@ const ExportConfirm = memo(({
   }, []);
 
   const onOutSegTemplateHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('You can customize the file name of the output segment(s) using special variables.') });
-  }, []);
+    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('You can customize the file name of the output segment(s) using special variables.', { count: segmentsToExport.length }) });
+  }, [segmentsToExport.length]);
 
   const onExportModeHelpPress = useCallback(() => {
     toast.fire({ icon: 'info', timer: 10000, text: exportModeDescription });
@@ -139,7 +139,7 @@ const ExportConfirm = memo(({
                 <ul style={{ margin: 0 }}>
                   {selectedSegments.length !== nonFilteredSegmentsOrInverse.length && <li><FaRegCheckCircle size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: selectedSegments.length, nonFilteredSegments: nonFilteredSegmentsOrInverse.length })}</li>}
                   <li>
-                    {t('Merge {{segments}} cut segments to one file?', { segments: selectedSegments.length })} <ExportModeButton selectedSegments={selectedSegments} />
+                    {selectedSegments.length > 1 ? t('Merge {{segments}} cut segments to one file?', { segments: selectedSegments.length }) : t('Export mode')} <ExportModeButton selectedSegments={selectedSegments} />
                     <HelpIcon onClick={onExportModeHelpPress} />
                     {effectiveExportMode === 'sesgments_to_chapters' && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" title={i18n.t('Chapters only')} />}
                   </li>

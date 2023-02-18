@@ -55,7 +55,7 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
   const isMissingExtension = validText != null && !validText.endsWith(extVar);
 
   const onAllSegmentsPreviewPress = () => ReactSwal.fire({
-    title: t('Resulting segment file names'),
+    title: t('Resulting segment file names', { count: outSegFileNames.length }),
     html: (
       <div style={{ textAlign: 'left', overflowY: 'auto', maxHeight: 400 }}>
         {outSegFileNames.map((f) => <div key={f} style={{ marginBottom: 7 }}>{f}</div>)}
@@ -87,7 +87,7 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
     <>
       <div>
         <span role="button" onClick={onShowClick} style={{ cursor: needToShow ? undefined : 'pointer' }}>
-          {t('Output name(s):')} {outSegFileNames != null && <HighlightedText style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{outSegFileNames[currentSegIndexSafe] || outSegFileNames[0]}</HighlightedText>}
+          {outSegFileNames != null && t('Output name(s):', { count: outSegFileNames.length })} {outSegFileNames != null && <HighlightedText style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{outSegFileNames[currentSegIndexSafe] || outSegFileNames[0]}</HighlightedText>}
         </span>
         {helpIcon}
       </div>
