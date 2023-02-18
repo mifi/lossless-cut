@@ -37,13 +37,11 @@ const commonI18nOptions = {
   // updateMissing: isDev,
   // saveMissingTo: 'all',
 
+  // Keep in sync between i18next-parser.config.js and i18n-common.js:
   // TODO improve keys?
   // Maybe do something like this: https://stackoverflow.com/a/19405314/6519037
-  // https://www.i18next.com/translation-function/context
   keySeparator: false,
   nsSeparator: false,
-  pluralSeparator: false,
-  contextSeparator: false,
 };
 
 const loadPath = (lng, ns) => getLangPath(`locales/${mapLang(lng)}/${ns}.json`);

@@ -14,7 +14,7 @@ i18n
   // .use(LanguageDetector)
   // init i18next
   // for all options read: https://www.i18next.com/overview/configuration-options
-  // See also i18next-scanner.config.js
+  // See also i18next-parser.config.mjs
   .init({
     ...commonI18nOptions,
 

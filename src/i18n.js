@@ -9,6 +9,7 @@ const { commonI18nOptions, fallbackLng, loadPath, addPath } = remote.require('./
 
 export { fallbackLng };
 
+// https://github.com/i18next/react-i18next/blob/master/example/react/src/i18n.js
 // https://github.com/i18next/i18next/issues/869
 i18n
   .use(Backend)
@@ -20,7 +21,7 @@ i18n
   .use(initReactI18next)
   // init i18next
   // for all options read: https://www.i18next.com/overview/configuration-options
-  // See also i18next-scanner.config.js
+  // See also i18next-parser.config.mjs
   .init({
     ...commonI18nOptions,
 
