@@ -122,7 +122,7 @@ export async function exportEdlFile({ type, cutSegments, customOutDir, filePath,
     filters = [{ name: i18n.t('LosslessCut project'), extensions: [ext, 'llc'] }];
   }
 
-  const defaultPath = getOutPath({ filePath, customOutDir, fileName: `${new Date().getTime()}.${ext}` });
+  const defaultPath = getOutPath({ filePath, customOutDir, fileName: `${basename(filePath)}.${ext}` });
 
   const { canceled, filePath: savePath } = await dialog.showSaveDialog({ defaultPath, filters });
   if (canceled || !savePath) return;
