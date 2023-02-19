@@ -18,7 +18,7 @@ import { maxSegmentsAllowed } from '../util/constants';
 
 export default ({
   filePath, workingRef, setWorking, setCutProgress, mainVideoStream,
-  duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments,
+  duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly,
 }) => {
   // Segment related state
   const segCounterRef = useRef(0);
@@ -441,6 +441,14 @@ export default ({
   const selectedSegmentsOrInverse = useMemo(() => (invertCutSegments ? inverseCutSegments : selectedSegments), [inverseCutSegments, invertCutSegments, selectedSegments]);
   const nonFilteredSegmentsOrInverse = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments), [invertCutSegments, inverseCutSegments, apparentCutSegments]);
 
+  const segmentsToExport = useMemo(() => {
+    // segmentsToChaptersOnly is a special mode where all segments will be simply written out as chapters to one file: https://github.com/mifi/lossless-cut/issues/993#issuecomment-1037927595
+    // Chapters export mode: Emulate a single segment with no cuts (full timeline)
+    if (segmentsToChaptersOnly) return [{ start: 0, end: getSegApparentEnd({}) }];
+
+    return selectedSegmentsOrInverse;
+  }, [selectedSegmentsOrInverse, getSegApparentEnd, segmentsToChaptersOnly]);
+
   const removeSelectedSegments = useCallback(() => removeSegments(selectedSegmentsRaw.map((seg) => seg.segId)), [removeSegments, selectedSegmentsRaw]);
 
   const selectOnlySegment = useCallback((seg) => setDeselectedSegmentIds(Object.fromEntries(cutSegments.filter((s) => s.segId !== seg.segId).map((s) => [s.segId, true]))), [cutSegments]);
@@ -490,7 +498,8 @@ export default ({
     selectedSegments,
     selectedSegmentsOrInverse,
     nonFilteredSegmentsOrInverse,
-    getSegApparentEnd,
+    segmentsToExport,
+
     setCurrentSegIndex,
 
     setDeselectedSegmentIds,

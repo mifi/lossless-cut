@@ -55,7 +55,7 @@ const tryDeleteFiles = async (paths) => pMap(paths, (path) => {
   fs.unlink(path).catch((err) => console.error('Failed to delete', path, err));
 }, { concurrency: 5 });
 
-function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
+function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut }) {
   const optionalTransferTimestamps = useCallback(async (...args) => {
     if (enableTransferTimestamps) await transferTimestamps(...args);
   }, [enableTransferTimestamps]);
@@ -324,7 +324,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     outputDir, customOutDir, segments, segmentsFileNames, videoDuration, rotation, detectedFps,
     onProgress: onTotalProgress, keyframeCut, copyFileStreams, allFilesMeta, outFormat,
     appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs,
-    customTagsByFile, customTagsByStreamId, dispositionByStreamId, chapters, preserveMetadataOnMerge, enableSmartCut,
+    customTagsByFile, customTagsByStreamId, dispositionByStreamId, chapters, preserveMetadataOnMerge,
     enableOverwriteOutput,
   }) => {
     console.log('customTagsByFile', customTagsByFile);
@@ -350,7 +350,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     async function maybeSmartCutSegment({ start: desiredCutFrom, end: cutTo }, i) {
       const getSegmentOutPath = () => join(outputDir, segmentsFileNames[i]);
 
-      if (!enableSmartCut) {
+      if (!needSmartCut) {
         // old fashioned way
         const outPath = getSegmentOutPath();
         await checkOverwrite(outPath);
@@ -365,9 +365,9 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       const streamsToCopyFromMainFile = copyFileStreams.find(({ path }) => path === filePath).streamIds
         .map((streamId) => streams.find((stream) => stream.index === streamId));
 
-      const { cutFrom: encodeCutTo, needsSmartCut, videoCodec, videoBitrate, videoStreamIndex, videoTimebase } = await getSmartCutParams({ path: filePath, videoDuration, desiredCutFrom, streams: streamsToCopyFromMainFile });
+      const { cutFrom: encodeCutTo, segmentNeedsSmartCut, videoCodec, videoBitrate, videoStreamIndex, videoTimebase } = await getSmartCutParams({ path: filePath, videoDuration, desiredCutFrom, streams: streamsToCopyFromMainFile });
 
-      if (needsSmartCut && !detectedFps) throw new Error('Smart cut is not possible when FPS is unknown');
+      if (segmentNeedsSmartCut && !detectedFps) throw new Error('Smart cut is not possible when FPS is unknown');
 
       console.log('Smart cut on video stream', videoStreamIndex);
 
@@ -385,7 +385,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
       // If we are cutting within two keyframes, just encode the whole part and return that
       // See https://github.com/mifi/lossless-cut/pull/1267#issuecomment-1236381740
-      if (needsSmartCut && encodeCutTo > cutTo) {
+      if (segmentNeedsSmartCut && encodeCutTo > cutTo) {
         const outPath = getSegmentOutPath();
         await checkOverwrite(outPath);
         await cutEncodeSmartPartWrapper({ cutFrom: desiredCutFrom, cutTo, outPath });
@@ -394,7 +394,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
       const ext = getOutFileExtension({ isCustomFormatSelected: true, outFormat, filePath });
 
-      const smartCutMainPartOutPath = needsSmartCut
+      const smartCutMainPartOutPath = segmentNeedsSmartCut
         ? getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `smartcut-segment-copy-${i}${ext}` })
         : getSegmentOutPath();
 
@@ -402,7 +402,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
 
       const smartCutSegmentsToConcat = [smartCutEncodedPartOutPath, smartCutMainPartOutPath];
 
-      if (!needsSmartCut) await checkOverwrite(smartCutMainPartOutPath);
+      if (!segmentNeedsSmartCut) await checkOverwrite(smartCutMainPartOutPath);
 
       // for smart cut we need to use keyframe cut here, and no avoid_negative_ts
       await cutSingle({
@@ -410,7 +410,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       });
 
       // OK, just return the single cut file (we may need smart cut in other segments though)
-      if (!needsSmartCut) return smartCutMainPartOutPath;
+      if (!segmentNeedsSmartCut) return smartCutMainPartOutPath;
 
       try {
         const frameDuration = 1 / detectedFps;
@@ -438,7 +438,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
     } finally {
       if (chaptersPath) await tryDeleteFiles([chaptersPath]);
     }
-  }, [concatFiles, cutSingle, filePath]);
+  }, [concatFiles, cutSingle, filePath, needSmartCut]);
 
   const autoConcatCutSegments = useCallback(async ({ customOutDir, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge, appendFfmpegCommandLog }) => {
     const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath });

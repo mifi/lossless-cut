@@ -45,7 +45,7 @@ const ExportConfirm = memo(({
   areWeCutting, selectedSegments, segmentsToExport, willMerge, visible, onClosePress, onExportConfirm,
   outFormat, renderOutFmt, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, outSegTemplate,
   setOutSegTemplate, generateOutSegFileNames, filePath, currentSegIndexSafe, getOutSegError, nonFilteredSegmentsOrInverse,
-  mainCopiedThumbnailStreams,
+  mainCopiedThumbnailStreams, needSmartCut,
 }) => {
   const { t } = useTranslation();
 
@@ -186,9 +186,9 @@ const ExportConfirm = memo(({
                       <li>
                         {t('Smart cut (experimental):')} <Button height={20} onClick={() => setEnableSmartCut((v) => !v)}>{enableSmartCut ? t('Yes') : t('No')}</Button>
                         <HelpIcon onClick={onSmartCutHelpPress} />
-                        {enableSmartCut && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" title={i18n.t('Experimental functionality has been activated!')} />}
+                        {needSmartCut && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" title={i18n.t('Experimental functionality has been activated!')} />}
                       </li>
-                      {!enableSmartCut && (
+                      {!needSmartCut && (
                         <li>
                           {t('Cut mode:')} <KeyframeCutButton />
                           <HelpIcon onClick={onKeyframeCutHelpPress} /> {!keyframeCut && <span style={warningStyle}>{t('Note: Keyframe cut is recommended for most common files')}</span>}
@@ -210,7 +210,7 @@ const ExportConfirm = memo(({
                     </>
                   )}
 
-                  {!enableSmartCut && (
+                  {!needSmartCut && (
                     <li>
                       &quot;avoid_negative_ts&quot;
                       <Select height={20} value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value)} style={{ marginLeft: 5 }}>

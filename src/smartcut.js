@@ -24,7 +24,7 @@ export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, s
     return {
       cutFrom: keyframeAtExactTime.time,
       videoStreamIndex: videoStream.index,
-      needsSmartCut: false,
+      segmentNeedsSmartCut: false,
     };
   }
 
@@ -59,7 +59,7 @@ export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, s
   return {
     cutFrom: nextKeyframe.time,
     videoStreamIndex: videoStream.index,
-    needsSmartCut: true,
+    segmentNeedsSmartCut: true,
     videoCodec,
     videoBitrate: Math.floor(videoBitrate),
     videoTimebase: timebase,
