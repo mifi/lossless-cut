@@ -714,5 +714,19 @@
     "Export finished with warning(s)_other": "出力しましたが複数の警告があります",
     "Files merged with warning(s)_one": "出力しましたが警告があります",
     "Files merged with warning(s)_other": "出力しましたが複数の警告があります",
-    "Export finished with warning(s)_one": "出力しましたが警告があります"
+    "Export finished with warning(s)_one": "出力しましたが警告があります",
+    "Merge/concatenate with current file": "現在のファイルに結合/連結",
+    "Loop current segment": "現在のセグメントをループ",
+    "Loop beginning and end of current segment": "現在のセグメントの最初と最後をループ",
+    "Output name(s):_one": "出力ファイル名:",
+    "Resulting segment file names_one": "最終的なファイル名",
+    "Play selected segments in order": "選択済みセグメントを順に再生",
+    "Playback/preview segments only": "セグメントのみを再生/プレビュー",
+    "You can customize the file name of the output segment(s) using special variables._one": "特別な変数を使うと、出力するファイル名を指定できます。",
+    "You can customize the file name of the output segment(s) using special variables._other": "特別な変数を使うと、出力するセグメントのファイル名を指定できます。",
+    "You have enabled the &quot;invert segments&quot; mode <1></1> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <3></3> symbol below to disable this mode. Alternatively you may combine overlapping segments from the menu.": "「セグメントを反転」<1></1>が有効のため、選択されたセグメントは保持されるのではなく切り捨てる設定です。しかしセグメント同士の間がまったくないか、2つ以上のセグメントが重なっています。そのため出力される部分はありません。セグメント間を空けるか、陰陽マーク<3></3>をクリックし反転を無効にしてください。メニューから重なったセグメントの結合もできます。",
+    "Output name(s):_other": "出力ファイル名:",
+    "Resulting segment file names_other": "最終的なファイル名",
+    "Divide timeline into segments with randomized durations and gaps between segments, in a range specified in seconds with the correct format.": "有効な形式で秒単位に指定された範囲内で、ランダムな長さとセグメント間の間隔にして、タイムラインをセグメントに分割する。",
+    "Play current segment once": "現在のセグメントを1回再生"
 }
