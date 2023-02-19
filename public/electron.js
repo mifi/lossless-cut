@@ -140,7 +140,7 @@ function openFilesEventually(paths) {
 // https://github.com/mifi/lossless-cut/issues/639
 // https://github.com/mifi/lossless-cut/issues/591
 function parseCliArgs(rawArgv = process.argv) {
-  const ignoreFirstArgs = isDev ? 2 : 1;
+  const ignoreFirstArgs = process.defaultApp ? 2 : 1;
   // production: First arg is the LosslessCut executable
   // dev: First 2 args are electron and the electron.js
   const argsWithoutAppName = rawArgv.length > ignoreFirstArgs ? rawArgv.slice(ignoreFirstArgs) : [];
