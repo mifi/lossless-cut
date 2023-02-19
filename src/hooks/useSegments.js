@@ -142,16 +142,20 @@ export default ({
   }, [currentApparentCutSeg.end, currentApparentCutSeg.start, filePath, loadCutSegments, mainVideoStream]);
 
   const removeSegments = useCallback((removeSegmentIds) => {
-    if (cutSegments.length === 1 && cutSegments[0].start == null && cutSegments[0].end == null) return; // We are at initial segment, nothing more we can do (it cannot be removed)
-    setCutSegments((existing) => {
-      const newSegments = existing.filter((seg) => !removeSegmentIds.includes(seg.segId));
+    setCutSegments((existingSegments) => {
+      if (existingSegments.length === 1 && existingSegments[0].start == null && existingSegments[0].end == null) {
+        return existingSegments; // We are at initial segment, nothing more we can do (it cannot be removed)
+      }
+
+      const newSegments = existingSegments.filter((seg) => !removeSegmentIds.includes(seg.segId));
       if (newSegments.length === 0) {
-        clearSegments(); // when removing the last segments, we start over
-        return existing;
+        // when removing the last segments, we start over
+        clearSegCounter();
+        return createInitialCutSegments();
       }
       return newSegments;
     });
-  }, [clearSegments, cutSegments, setCutSegments]);
+  }, [clearSegCounter, createInitialCutSegments, setCutSegments]);
 
   const removeCutSegment = useCallback((index) => {
     removeSegments([cutSegments[index].segId]);

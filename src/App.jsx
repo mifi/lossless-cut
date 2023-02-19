@@ -638,7 +638,7 @@ const App = memo(() => {
     setCanvasPlayerEventId(0);
     setDuration();
     cutSegmentsHistory.go(0);
-    clearSegments(); // TODO this will cause two history items
+    clearSegments();
     setCutStartTimeManual();
     setCutEndTimeManual();
     setFileFormat();
