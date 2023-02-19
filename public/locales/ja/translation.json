@@ -472,8 +472,8 @@
     "Segment tags": "セグメントのタグ",
     "Invalid JSON": "JSONが正しくありません",
     "Clear working directory": "作業フォルダの消去",
-    "Import project (LLC)...": "プロジェクト インポート(LLC)...",
-    "Export project (LLC)...": "プロジェクト エクスポート(LLC)...",
+    "Import project (LLC)...": "プロジェクト インポート(LLC)…",
+    "Export project (LLC)...": "プロジェクト エクスポート(LLC)…",
     "Fastest: Low playback speed (audio remux), likely to fail": "最高速: 再生速度が遅い (音声の多重化), 失敗しやすい",
     "An error has occurred.": "エラーが発生しました.",
     "Multiple files": "複数のファイル",
@@ -710,5 +710,9 @@
     "What do you want to do after exporting a file or when pressing the \"delete source file\" button?": "ファイルの出力後や「入力ファイルの削除」ボタンを押した際に行う処理はどれですか？",
     "Loop/pause (only beginning and end of current segment)": "再生/停止 (現在のセグメントの先頭と末端のみ)",
     "Permanently delete the files if trash fails?": "ゴミ箱への移動が失敗したらファイルを完全に削除しますか？",
-    "Press confirm to grant LosslessCut access to write the project file (due to App Sandbox restrictions).": "確認を押すと、LosslessCut にプロジェクトファイルの書き込み権限を与えます（App Sandbox の制限のため）。"
+    "Press confirm to grant LosslessCut access to write the project file (due to App Sandbox restrictions).": "確認を押すと、LosslessCut にプロジェクトファイルの書き込み権限を与えます（App Sandbox の制限のため）。",
+    "Export finished with warning(s)_other": "出力しましたが複数の警告があります",
+    "Files merged with warning(s)_one": "出力しましたが警告があります",
+    "Files merged with warning(s)_other": "出力しましたが複数の警告があります",
+    "Export finished with warning(s)_one": "出力しましたが警告があります"
 }
