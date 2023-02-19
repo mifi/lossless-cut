@@ -158,9 +158,7 @@ function safeRequestSingleInstanceLock(additionalData) {
   return app.requestSingleInstanceLock(additionalData);
 }
 
-if (!argv.allowMultipleInstances && !safeRequestSingleInstanceLock({ argv: process.argv })) {
-  app.quit();
-} else {
+function initApp() {
   // On macOS, the system enforces single instance automatically when users try to open a second instance of your app in Finder, and the open-file and open-url events will be emitted for that.
   // However when users start your app in command line, the system's single instance mechanism will be bypassed, and you have to use this method to ensure single instance.
   // This can be tested with one terminal: npx electron .
@@ -176,46 +174,6 @@ if (!argv.allowMultipleInstances && !safeRequestSingleInstanceLock({ argv: proce
 
     const argv2 = parseCliArgs(additionalData.argv);
     if (argv2._) openFilesEventually(argv2._);
-  });
-
-  // This method will be called when Electron has finished
-  // initialization and is ready to create browser windows.
-  // Some APIs can only be used after this event occurs.
-  app.on('ready', async () => {
-    await configStore.init();
-
-    logger.info('CLI arguments', argv);
-    // Only if no files to open already (open-file might have already added some files)
-    if (filesToOpen.length === 0) filesToOpen = argv._;
-    const { settingsJson } = argv;
-
-    ({ disableNetworking } = argv);
-
-    if (settingsJson != null) {
-      logger.info('initializing settings', settingsJson);
-      Object.entries(JSON5.parse(settingsJson)).forEach(([key, value]) => {
-        configStore.set(key, value);
-      });
-    }
-
-    if (isDev) {
-      const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies
-
-      installExtension(REACT_DEVELOPER_TOOLS)
-        .then(name => logger.info('Added Extension', name))
-        .catch(err => logger.error('Failed to add extension', err));
-    }
-
-    createWindow();
-    updateMenu();
-
-    const enableUpdateCheck = configStore.get('enableUpdateCheck');
-
-    if (!disableNetworking && enableUpdateCheck && !isStoreBuild) {
-      newVersion = await checkNewVersion();
-      // newVersion = '1.2.3';
-      if (newVersion) updateMenu();
-    }
   });
 
   // Quit when all windows are closed.
@@ -260,6 +218,71 @@ if (!argv.allowMultipleInstances && !safeRequestSingleInstanceLock({ argv: proce
     await shell.trashItem(path);
   });
 }
+
+
+// This promise will be fulfilled when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
+// Call this immediately, to make sure we don't miss it (race condition)
+const readyPromise = app.whenReady();
+
+(async () => {
+  try {
+    logger.info('Initializing config store');
+    await configStore.init();
+
+    // todo remove backwards compat:
+    if (argv.allowMultipleInstances) configStore.set('allowMultipleInstances', true);
+
+    const allowMultipleInstances = configStore.get('allowMultipleInstances');
+
+    if (!allowMultipleInstances && !safeRequestSingleInstanceLock({ argv: process.argv })) {
+      logger.info('Found running instance, quitting');
+      app.quit();
+      return;
+    }
+
+    initApp();
+
+    logger.info('Waiting for app to become ready');
+    await readyPromise;
+
+    logger.info('CLI arguments', argv);
+    // Only if no files to open already (open-file might have already added some files)
+    if (filesToOpen.length === 0) filesToOpen = argv._;
+    const { settingsJson } = argv;
+
+    ({ disableNetworking } = argv);
+
+    if (settingsJson != null) {
+      logger.info('initializing settings', settingsJson);
+      Object.entries(JSON5.parse(settingsJson)).forEach(([key, value]) => {
+        configStore.set(key, value);
+      });
+    }
+
+    if (isDev) {
+      const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies
+
+      installExtension(REACT_DEVELOPER_TOOLS)
+        .then(name => logger.info('Added Extension', name))
+        .catch(err => logger.error('Failed to add extension', err));
+    }
+
+    createWindow();
+    updateMenu();
+
+    const enableUpdateCheck = configStore.get('enableUpdateCheck');
+
+    if (!disableNetworking && enableUpdateCheck && !isStoreBuild) {
+      newVersion = await checkNewVersion();
+      // newVersion = '1.2.3';
+      if (newVersion) updateMenu();
+    }
+  } catch (err) {
+    logger.error('Failed to initialize', err);
+  }
+})();
 
 function focusWindow() {
   try {

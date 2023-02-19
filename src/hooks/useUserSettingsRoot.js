@@ -131,6 +131,8 @@ export default () => {
   useEffect(() => safeSetConfig({ enableUpdateCheck }), [enableUpdateCheck]);
   const [cleanupChoices, setCleanupChoices] = useState(safeGetConfigInitial('cleanupChoices'));
   useEffect(() => safeSetConfig({ cleanupChoices }), [cleanupChoices]);
+  const [allowMultipleInstances, setAllowMultipleInstances] = useState(safeGetConfigInitial('allowMultipleInstances'));
+  useEffect(() => safeSetConfig({ allowMultipleInstances }), [allowMultipleInstances]);
 
 
   const resetKeyBindings = useCallback(() => {
@@ -240,5 +242,7 @@ export default () => {
     setEnableUpdateCheck,
     cleanupChoices,
     setCleanupChoices,
+    allowMultipleInstances,
+    setAllowMultipleInstances,
   };
 };
