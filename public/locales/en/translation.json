@@ -19,6 +19,8 @@
     "Aligning segments to keyframes": "Aligning segments to keyframes",
     "All formats:": "All formats:",
     "All streams have been extracted as separate files": "All streams have been extracted as separate files",
+    "Allow multiple instances": "Allow multiple instances",
+    "Allow multiple instances of LosslessCut to run concurrently? (experimental)": "Allow multiple instances of LosslessCut to run concurrently? (experimental)",
     "Always open this dialog when opening multiple files": "Always open this dialog when opening multiple files",
     "An error has occurred.": "An error has occurred.",
     "Are you sure you want to close the current file?": "Are you sure you want to close the current file?",
