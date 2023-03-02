@@ -123,6 +123,10 @@ If you find LosslessCut useful, I'm very thankful for [donations](https://github
 
 They have exactly the same in-app features, except for a few platform limitations. Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps need to prompt for output directory. LosslessCut version in the App Stores is a few versions behind the GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. GitHub version can contain new, untested features and may contain some bugs. I consider the newest GitHub versions to be a public "beta" test.
 
+### Nightly builds 🧪
+
+If you want to test the very latest and greatest bleeding-edge version. 1. Go to [Actions](https://github.com/mifi/lossless-cut/actions/workflows/build.yml), 2. click on the latest *Build/release*, 3. scroll all the way down to *Artifacts*. **Note:** these builds may be totally broken!
+
 ## Supported formats
 
 Since LosslessCut is based on Chromium and uses the HTML5 video player, not all FFmpeg supported formats will be supported smoothly.
