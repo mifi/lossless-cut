@@ -26,12 +26,12 @@ jobs:
       - run: git config --global core.autocrlf false
 
       - name: Check out Git repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
           cache: 'yarn'
 
        # Because of timeout issue https://github.com/yarnpkg/yarn/issues/4890
