@@ -419,7 +419,6 @@ export async function readFileMeta(filePath) {
   }
 }
 
-
 function getPreferredCodecFormat(stream) {
   const map = {
     mp3: { format: 'mp3', ext: 'mp3' },
@@ -430,6 +429,7 @@ function getPreferredCodecFormat(stream) {
     eac3: { format: 'eac3', ext: 'eac3' },
 
     subrip: { format: 'srt', ext: 'srt' },
+    mov_text: { format: 'mp4', ext: 'mp4' },
 
     m4a: { format: 'ipod', ext: 'm4a' },
     aac: { format: 'adts', ext: 'aac' },
@@ -455,10 +455,19 @@ function getPreferredCodecFormat(stream) {
 async function extractNonAttachmentStreams({ customOutDir, filePath, streams, enableOverwriteOutput }) {
   if (streams.length === 0) return [];
 
-  console.log('Extracting', streams.length, 'normal streams');
+  const outStreams = streams.map((s) => ({
+    index: s.index,
+    codec: s.codec_name || s.codec_tag_string || s.codec_type,
+    type: s.codec_type,
+    format: getPreferredCodecFormat(s),
+  }))
+    .filter(({ format, index }) => format != null && index != null);
+
+  // console.log(outStreams);
+
 
   let streamArgs = [];
-  const outPaths = await pMap(streams, async ({ index, codec, type, format: { format, ext } }) => {
+  const outPaths = await pMap(outStreams, async ({ index, codec, type, format: { format, ext } }) => {
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
     if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
 
@@ -525,21 +534,11 @@ export async function extractStreams({ filePath, customOutDir, streams, enableOv
   const attachmentStreams = streams.filter((s) => s.codec_type === 'attachment');
   const nonAttachmentStreams = streams.filter((s) => s.codec_type !== 'attachment');
 
-  const outStreams = nonAttachmentStreams.map((s) => ({
-    index: s.index,
-    codec: s.codec_name || s.codec_tag_string || s.codec_type,
-    type: s.codec_type,
-    format: getPreferredCodecFormat(s),
-  }))
-    .filter(it => it && it.format && it.index != null);
-
-  // console.log(outStreams);
-
   // TODO progress
 
   // Attachment streams are handled differently from normal streams
   return [
-    ...(await extractNonAttachmentStreams({ customOutDir, filePath, streams: outStreams, enableOverwriteOutput })),
+    ...(await extractNonAttachmentStreams({ customOutDir, filePath, streams: nonAttachmentStreams, enableOverwriteOutput })),
     ...(await extractAttachmentStreams({ customOutDir, filePath, streams: attachmentStreams, enableOverwriteOutput })),
   ];
 }
