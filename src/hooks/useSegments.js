@@ -512,5 +512,6 @@ export default ({
     onSelectSegmentsByLabel,
     toggleSegmentSelected,
     selectOnlySegment,
+    setCutTime,
   };
 };
