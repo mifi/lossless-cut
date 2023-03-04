@@ -231,6 +231,7 @@ const Settings = memo(({
           <Button onClick={() => setCaptureFrameMethod((existing) => (existing === 'ffmpeg' ? 'videotag' : 'ffmpeg'))}>
             {captureFrameMethod === 'ffmpeg' ? t('FFmpeg') : t('HTML video tag')}
           </Button>
+          {captureFrameMethod === 'ffmpeg' && <div style={{ whiteSpace: 'initial' }}>{t('FFmpeg capture method might sometimes capture more correct colors, but the captured snapshot might be off by one or more frames, relative to the preview.')}</div>}
         </Table.TextCell>
       </Row>
 
