@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { t } from 'i18next';
 
 import normalizeWheel from './normalizeWheel';
 
@@ -7,6 +8,13 @@ export const keyMap = {
   shift: 'shiftKey',
   alt: 'altKey',
   meta: 'metaKey',
+};
+
+export const modifierKeyNames = {
+  ctrl: t('Ctrl'),
+  shift: t('Shift'),
+  alt: t('Alt'),
+  meta: t('⌘ Cmd / ⊞ Win'),
 };
 
 function useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, invertTimelineScroll, zoomRel, seekRel }) {

@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { FaYinYang, FaKeyboard } from 'react-icons/fa';
-import { CleanIcon, CogIcon, Button, Table, NumericalIcon, KeyIcon, FolderCloseIcon, DocumentIcon, TimeIcon, Checkbox, Select } from 'evergreen-ui';
+import { GlobeIcon, CleanIcon, CogIcon, Button, Table, NumericalIcon, KeyIcon, FolderCloseIcon, DocumentIcon, TimeIcon, Checkbox, Select } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
 import CaptureFormatButton from './components/CaptureFormatButton';
@@ -10,7 +10,7 @@ import { askForFfPath } from './dialogs';
 import { isMasBuild, isStoreBuild } from './util';
 import { langNames } from './util/constants';
 
-import { keyMap } from './hooks/useTimelineScroll';
+import { modifierKeyNames } from './hooks/useTimelineScroll';
 
 
 // eslint-disable-next-line react/jsx-props-no-spreading
@@ -63,7 +63,7 @@ const Settings = memo(({
   return (
     <>
       <Row>
-        <KeyCell>App language</KeyCell>
+        <KeyCell><GlobeIcon style={{ verticalAlign: 'middle', marginRight: '.5em' }} /> App language</KeyCell>
         <Table.TextCell>
           <Select value={language || ''} onChange={onLangChange}>
             <option key="" value="">{t('System language')}</option>
@@ -133,8 +133,8 @@ const Settings = memo(({
         <KeyCell>{t('Mouse wheel zoom modifier key')}</KeyCell>
         <Table.TextCell>
           <Select value={mouseWheelZoomModifierKey} onChange={(e) => setMouseWheelZoomModifierKey(e.target.value)}>
-            {Object.keys(keyMap).map((key) => (
-              <option key={key} value={key}>{key}</option>
+            {Object.entries(modifierKeyNames).map(([key, value]) => (
+              <option key={key} value={key}>{value}</option>
             ))}
           </Select>
         </Table.TextCell>
