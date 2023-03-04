@@ -160,9 +160,6 @@ const App = memo(() => {
   const [batchFiles, setBatchFiles] = useState([]);
   const [selectedBatchFiles, setSelectedBatchFiles] = useState([]);
 
-  const [cutStartTimeManual, setCutStartTimeManual] = useState();
-  const [cutEndTimeManual, setCutEndTimeManual] = useState();
-
   // Store "working" in a ref so we can avoid race conditions
   const workingRef = useRef(working);
   const setWorking = useCallback((val) => {
@@ -656,8 +653,6 @@ const App = memo(() => {
     setDuration();
     cutSegmentsHistory.go(0);
     clearSegments();
-    setCutStartTimeManual();
-    setCutEndTimeManual();
     setFileFormat();
     setDetectedFileFormat();
     setRotation(360);
@@ -2346,10 +2341,6 @@ const App = memo(() => {
               setCutStart={setCutStart}
               setCutEnd={setCutEnd}
               setCurrentSegIndex={setCurrentSegIndex}
-              cutStartTimeManual={cutStartTimeManual}
-              setCutStartTimeManual={setCutStartTimeManual}
-              cutEndTimeManual={cutEndTimeManual}
-              setCutEndTimeManual={setCutEndTimeManual}
               jumpCutEnd={jumpCutEnd}
               jumpCutStart={jumpCutStart}
               jumpTimelineStart={jumpTimelineStart}

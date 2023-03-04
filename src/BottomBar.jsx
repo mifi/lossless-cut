@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Select } from 'evergreen-ui';
 import { motion } from 'framer-motion';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
@@ -19,19 +19,121 @@ import SimpleModeButton from './components/SimpleModeButton';
 import { withBlur, mirrorTransform, checkAppPath } from './util';
 import { toast } from './swal';
 import { getSegColor } from './util/colors';
-import { formatDuration, parseDuration } from './util/duration';
+import { formatDuration, parseDuration, isExactDurationMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
+
+const { clipboard } = window.require('electron');
+
 
 const zoomOptions = Array(13).fill().map((unused, z) => 2 ** z);
 
 const leftRightWidth = 100;
+
+const CutTimeInput = memo(({ cutTime, setCutTime, startTimeOffset, seekAbs, currentCutSeg, currentApparentCutSeg, isStart }) => {
+  const { t } = useTranslation();
+
+  const [cutTimeManual, setCutTimeManual] = useState();
+
+  // Clear manual overrides if upstream cut time has changed
+  useEffect(() => {
+    setCutTimeManual();
+  }, [setCutTimeManual, currentApparentCutSeg.start, currentApparentCutSeg.end]);
+
+  const isCutTimeManualSet = () => cutTimeManual !== undefined;
+
+  const border = `1px solid ${getSegColor(currentCutSeg).alpha(0.8).string()}`;
+
+  const cutTimeInputStyle = {
+    background: 'white', border, borderRadius: 5, color: 'rgba(0, 0, 0, 0.7)', fontSize: 13, textAlign: 'center', padding: '1px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 0 : 5, marginRight: isStart ? 5 : 0, boxSizing: 'border-box', fontFamily: 'inherit', width: 90, outline: 'none',
+  };
+
+  const trySetTime = useCallback((timeWithOffset) => {
+    const timeWithoutOffset = Math.max(timeWithOffset - startTimeOffset, 0);
+    try {
+      setCutTime(isStart ? 'start' : 'end', timeWithoutOffset);
+      seekAbs(timeWithoutOffset);
+      setCutTimeManual();
+    } catch (err) {
+      console.error('Cannot set cut time', err);
+      // If we get an error from setCutTime, remain in the editing state (cutTimeManual)
+      // https://github.com/mifi/lossless-cut/issues/988
+    }
+  }, [isStart, seekAbs, setCutTime, startTimeOffset]);
+
+  const handleSubmit = useCallback((e) => {
+    e.preventDefault();
+
+    // Don't proceed if not a valid time value
+    const timeWithOffset = parseDuration(cutTimeManual);
+    if (timeWithOffset === undefined) return;
+
+    trySetTime(timeWithOffset);
+  }, [cutTimeManual, trySetTime]);
+
+  const parseAndSetCutTime = useCallback((text) => {
+    // Don't proceed if not a valid time value
+    const timeWithOffset = parseDuration(text);
+    if (timeWithOffset === undefined) return;
+
+    trySetTime(timeWithOffset);
+  }, [trySetTime]);
+
+  function handleCutTimeInput(text) {
+    setCutTimeManual(text);
+
+    if (isExactDurationMatch(text)) parseAndSetCutTime(text);
+  }
+
+  const tryPaste = useCallback((clipboardText) => {
+    try {
+      setCutTimeManual(clipboardText);
+      parseAndSetCutTime(clipboardText);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [parseAndSetCutTime]);
+
+  const handleCutTimePaste = useCallback((e) => {
+    e.preventDefault();
+
+    try {
+      const clipboardData = e.clipboardData.getData('Text');
+      setCutTimeManual(clipboardData);
+      parseAndSetCutTime(clipboardData);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [parseAndSetCutTime]);
+
+  const handleContextMenu = useCallback(() => {
+    const text = clipboard.readText();
+    if (text) tryPaste(text);
+  }, [tryPaste]);
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? '#dc1d1d' : undefined }}
+        type="text"
+        title={isStart ? t('Manually input current segment\'s start time') : t('Manually input current segment\'s end time')}
+        onChange={e => handleCutTimeInput(e.target.value)}
+        onPaste={handleCutTimePaste}
+        onBlur={() => setCutTimeManual()}
+        onContextMenu={handleContextMenu}
+        value={isCutTimeManualSet()
+          ? cutTimeManual
+          : formatDuration({ seconds: cutTime + startTimeOffset })}
+      />
+    </form>
+  );
+});
 
 const BottomBar = memo(({
   zoom, setZoom, timelineToggleComfortZoom,
   isRotationSet, rotation, areWeCutting, increaseRotation, cleanupFilesDialog,
   captureSnapshot, onExportPress, segmentsToExport, hasVideo,
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,
-  setCurrentSegIndex, cutStartTimeManual, setCutStartTimeManual, cutEndTimeManual, setCutEndTimeManual,
+  setCurrentSegIndex,
   jumpTimelineStart, jumpTimelineEnd, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
   playing, shortStep, togglePlay, toggleLoopSelectedSegments, toggleTimelineMode, hasAudio, timelineMode,
   keyframesEnabled, toggleKeyframesEnabled, seekClosestKeyframe, detectedFps, isFileOpened, selectedSegments,
@@ -77,12 +179,6 @@ const BottomBar = memo(({
 
   const rotationStr = `${rotation}°`;
 
-  // Clear manual overrides if upstream cut time has changed
-  useEffect(() => {
-    setCutStartTimeManual();
-    setCutEndTimeManual();
-  }, [setCutStartTimeManual, setCutEndTimeManual, currentApparentCutSeg.start, currentApparentCutSeg.end]);
-
   useEffect(() => {
     checkAppPath();
   }, []);
@@ -108,74 +204,6 @@ const BottomBar = memo(({
       >
         {text}
       </div>
-    );
-  }
-
-  function renderCutTimeInput(type) {
-    const isStart = type === 'start';
-
-    const cutTimeManual = isStart ? cutStartTimeManual : cutEndTimeManual;
-    const cutTime = isStart ? currentApparentCutSeg.start : currentApparentCutSeg.end;
-    const setCutTimeManual = isStart ? setCutStartTimeManual : setCutEndTimeManual;
-
-    const isCutTimeManualSet = () => cutTimeManual !== undefined;
-
-    const border = `1px solid ${getSegColor(currentCutSeg).alpha(0.8).string()}`;
-
-    const cutTimeInputStyle = {
-      background: 'white', border, borderRadius: 5, color: 'rgba(0, 0, 0, 0.7)', fontSize: 13, textAlign: 'center', padding: '1px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 0 : 5, marginRight: isStart ? 5 : 0, boxSizing: 'border-box', fontFamily: 'inherit', width: 90, outline: 'none',
-    };
-
-    function parseAndSetCutTime(text) {
-      setCutTimeManual(text);
-
-      // Don't proceed if not a valid time value
-      const timeWithOffset = parseDuration(text);
-      if (timeWithOffset === undefined) return;
-
-      const timeWithoutOffset = Math.max(timeWithOffset - startTimeOffset, 0);
-      try {
-        setCutTime(type, timeWithoutOffset);
-        seekAbs(timeWithoutOffset);
-      } catch (err) {
-        console.error('Cannot set cut time', err);
-        // If we get an error from setCutTime, remain in the editing state (cutTimeManual)
-        // https://github.com/mifi/lossless-cut/issues/988
-      }
-    }
-
-    function handleCutTimeInput(text) {
-      // Allow the user to erase to reset
-      if (text.length === 0) {
-        setCutTimeManual();
-        return;
-      }
-
-      parseAndSetCutTime(text);
-    }
-
-    async function handleCutTimePaste(e) {
-      e.preventDefault();
-
-      try {
-        const clipboardData = e.clipboardData.getData('Text');
-        parseAndSetCutTime(clipboardData);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    return (
-      <input
-        style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? '#dc1d1d' : undefined }}
-        type="text"
-        title={isStart ? t('Manually input current segment\'s start time') : t('Manually input current segment\'s end time')}
-        onChange={e => handleCutTimeInput(e.target.value)}
-        onPaste={handleCutTimePaste}
-        value={isCutTimeManualSet()
-          ? cutTimeManual
-          : formatDuration({ seconds: cutTime + startTimeOffset })}
-      />
     );
   }
 
@@ -239,7 +267,7 @@ const BottomBar = memo(({
 
         <SetCutpointButton currentCutSeg={currentCutSeg} side="start" onClick={setCutStart} title={t('Start current segment at current time')} style={{ marginRight: 5 }} />
 
-        {!simpleMode && renderCutTimeInput('start')}
+        {!simpleMode && <CutTimeInput currentCutSeg={currentCutSeg} currentApparentCutSeg={currentApparentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentApparentCutSeg.start} setCutTime={setCutTime} isStart />}
 
         <IoMdKey
           size={25}
@@ -290,7 +318,7 @@ const BottomBar = memo(({
           onClick={() => seekClosestKeyframe(1)}
         />
 
-        {!simpleMode && renderCutTimeInput('end')}
+        {!simpleMode && <CutTimeInput currentCutSeg={currentCutSeg} currentApparentCutSeg={currentApparentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentApparentCutSeg.end} setCutTime={setCutTime} />}
 
         <SetCutpointButton currentCutSeg={currentCutSeg} side="end" onClick={setCutEnd} title={t('End current segment at current time')} style={{ marginLeft: 5 }} />
 

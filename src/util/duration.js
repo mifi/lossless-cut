@@ -32,18 +32,25 @@ export function formatDuration({ seconds: secondsIn, fileNameFriendly, showMs = 
   return `${sign}${hoursPart}${minutesPadded}${delim}${secondsPadded}${msPart}`;
 }
 
-export function parseDuration(str) {
-  if (!str) return undefined;
-  const match = str.trim().match(/^(-?)(\d{2}):(\d{2}):(\d{2})\.(\d{3})$/);
-  if (!match) return undefined;
-  const isNegatve = match[1] === '-';
-  const hours = parseInt(match[2], 10);
-  const minutes = parseInt(match[3], 10);
-  const seconds = parseInt(match[4], 10);
-  const ms = parseInt(match[5], 10);
-  if (hours > 59 || minutes > 59 || seconds > 59) return undefined;
+export const isExactDurationMatch = (str) => /^-?\d{2}:\d{2}:\d{2}.\d{3}$/.test(str);
 
-  let ret = (((((hours * 60) + minutes) * 60) + seconds) + (ms / 1000));
-  if (isNegatve) ret *= -1;
-  return ret;
+// See also parseYoutube
+export function parseDuration(str) {
+  const match = str.replace(/\s/g, '').match(/^(-?)(?:(?:(\d{1,}):)?(\d{1,2}):)?(\d{1,2}(?:[.,]\d{1,3})?)$/);
+
+  if (!match) return undefined;
+
+  const [, sign, hourStr, minStr, secStrRaw] = match;
+  const secStr = secStrRaw.replace(',', '.');
+  const hour = hourStr != null ? parseInt(hourStr, 10) : 0;
+  const min = minStr != null ? parseInt(minStr, 10) : 0;
+  const sec = parseFloat(secStr);
+
+  if (min > 59 || sec >= 60) return undefined;
+
+  let time = (((hour * 60) + min) * 60 + sec);
+
+  if (sign === '-') time *= -1;
+
+  return time;
 }
