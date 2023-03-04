@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import ExportModeButton from './components/ExportModeButton';
 
-import { withBlur, isMasBuild } from './util';
+import { withBlur } from './util';
 import { primaryTextColor, controlsBackground } from './colors';
 import useUserSettings from './hooks/useUserSettings';
 
@@ -21,8 +21,7 @@ const TopMenu = memo(({
 
   const onOutFormatLockedClick = useCallback(() => setOutFormatLocked((v) => (v ? undefined : fileFormat)), [fileFormat, setOutFormatLocked]);
 
-  // We cannot allow exporting to a directory which has not yet been confirmed by an open dialog because of sandox restrictions
-  const showClearWorkingDirButton = customOutDir && !isMasBuild;
+  const showClearWorkingDirButton = !!customOutDir;
 
   function renderFormatLock() {
     const Icon = outFormatLocked ? FaLock : FaUnlock;

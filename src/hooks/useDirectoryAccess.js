@@ -21,13 +21,14 @@ const simulateMasBuild = false;
 
 const masMode = isMasBuild || simulateMasBuild;
 
-export default ({ customOutDir, setCustomOutDir }) => {
+export default ({ setCustomOutDir }) => {
   const ensureAccessToSourceDir = useCallback(async (inputPath) => {
     // Called if we need to read/write to the source file's directory (probably to read/write the project file)
     const inputFileDir = getFileDir(inputPath);
 
     let simulateMasPermissionError = simulateMasBuild;
 
+    // If we are MAS, we need to loop try to make the user confirm the dialog with the same path as the defaultPath.
     for (;;) {
       // eslint-disable-next-line no-await-in-loop
       if (await checkDirWriteAccess(inputFileDir) && !simulateMasPermissionError) break;
@@ -49,16 +50,20 @@ export default ({ customOutDir, setCustomOutDir }) => {
     }
   }, []);
 
-  const ensureWritableOutDir = useCallback(async (inputPath) => {
+  const ensureWritableOutDir = useCallback(async ({ inputPath, outDir }) => {
     // we might need to change the output directory if the user chooses to give us a different one.
-    let newCustomOutDir = customOutDir;
+    let newCustomOutDir = outDir;
 
-    // Reset if working directory doesn't exist anymore
-    const customOutDirExists = await dirExists(customOutDir);
-    if (!customOutDirExists) {
-      setCustomOutDir(undefined);
-      newCustomOutDir = undefined;
+    if (newCustomOutDir) {
+      // Reset if working directory doesn't exist anymore
+      const customOutDirExists = await dirExists(newCustomOutDir);
+      if (!customOutDirExists) {
+        setCustomOutDir(undefined);
+        newCustomOutDir = undefined;
+      }
     }
+
+    if (!newCustomOutDir && !inputPath) return newCustomOutDir;
 
     const effectiveOutDirPath = getOutDir(newCustomOutDir, inputPath);
     const hasDirWriteAccess = await checkDirWriteAccess(effectiveOutDirPath);
@@ -80,7 +85,7 @@ export default ({ customOutDir, setCustomOutDir }) => {
     }
 
     return newCustomOutDir;
-  }, [customOutDir, setCustomOutDir]);
+  }, [setCustomOutDir]);
 
   return {
     ensureAccessToSourceDir,

@@ -180,7 +180,7 @@ const App = memo(() => {
   const allUserSettings = useUserSettingsRoot();
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, enableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, setCleanupChoices,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, enableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, setCleanupChoices,
   } = allUserSettings;
 
   useEffect(() => {
@@ -374,15 +374,6 @@ const App = memo(() => {
 
   const outputDir = getOutDir(customOutDir, filePath);
 
-  const changeOutDir = useCallback(async () => {
-    const newOutDir = await askForOutDir(outputDir);
-    if (newOutDir) setCustomOutDir(newOutDir);
-  }, [outputDir, setCustomOutDir]);
-
-  const clearOutDir = useCallback(() => {
-    setCustomOutDir();
-  }, [setCustomOutDir]);
-
   const usingPreviewFile = !!previewFilePath;
   const effectiveFilePath = previewFilePath || filePath;
   const fileUri = effectiveFilePath ? filePathToUrl(effectiveFilePath) : '';
@@ -393,7 +384,8 @@ const App = memo(() => {
   const getEdlFilePath = useCallback((fp, cod) => getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: projectSuffix }), []);
   // Old versions of LosslessCut used CSV files and stored them always in customOutDir:
   const getEdlFilePathOld = useCallback((fp, cod) => getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: oldProjectSuffix }), []);
-  const projectFileSavePath = useMemo(() => getEdlFilePath(filePath, storeProjectInWorkingDir ? customOutDir : undefined), [getEdlFilePath, filePath, storeProjectInWorkingDir, customOutDir]);
+  const getProjectFileSavePath = useCallback((storeProjectInWorkingDirIn) => getEdlFilePath(filePath, storeProjectInWorkingDirIn ? customOutDir : undefined), [getEdlFilePath, filePath, customOutDir]);
+  const projectFileSavePath = useMemo(() => getProjectFileSavePath(storeProjectInWorkingDir), [getProjectFileSavePath, storeProjectInWorkingDir]);
 
   const currentSaveOperation = useMemo(() => {
     if (!projectFileSavePath) return undefined;
@@ -455,7 +447,7 @@ const App = memo(() => {
     if (!supportsRotation && !hideAllNotifications) toast.fire({ text: i18n.t('Lossless rotation might not work with this file format. You may try changing to MP4') });
   }, [hideAllNotifications, fileFormat]);
 
-  const { ensureWritableOutDir, ensureAccessToSourceDir } = useDirectoryAccess({ customOutDir, setCustomOutDir });
+  const { ensureWritableOutDir, ensureAccessToSourceDir } = useDirectoryAccess({ setCustomOutDir });
 
   const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
 
@@ -485,6 +477,35 @@ const App = memo(() => {
     if (autoMerge) return 'merge+separate';
     return 'separate';
   }, [autoDeleteMergedSegments, autoMerge, segmentsToChaptersOnly]);
+
+  const changeOutDir = useCallback(async () => {
+    const newOutDir = await askForOutDir(outputDir);
+    if (newOutDir) setCustomOutDir(newOutDir);
+  }, [outputDir, setCustomOutDir]);
+
+  const clearOutDir = useCallback(async () => {
+    try {
+      await ensureWritableOutDir({ inputPath: filePath, outDir: undefined });
+      setCustomOutDir();
+    } catch (err) {
+      if (err instanceof DirectoryAccessDeclinedError) return;
+      throw err;
+    }
+  }, [ensureWritableOutDir, filePath, setCustomOutDir]);
+
+  const toggleStoreProjectInWorkingDir = useCallback(async () => {
+    const newValue = !storeProjectInWorkingDir;
+    const path = getProjectFileSavePath(newValue);
+    if (path) { // path will be falsy if no file loaded
+      try {
+        await ensureAccessToSourceDir(path);
+      } catch (err) {
+        if (err instanceof DirectoryAccessDeclinedError) return;
+        console.error(err);
+      }
+    }
+    setStoreProjectInWorkingDir(newValue);
+  }, [ensureAccessToSourceDir, getProjectFileSavePath, setStoreProjectInWorkingDir, storeProjectInWorkingDir]);
 
   const userSettingsContext = useMemo(() => ({
     ...allUserSettings, toggleCaptureFormat, changeOutDir, toggleKeyframeCut, togglePreserveMovData, toggleMovFastStart, toggleExportConfirmEnabled, toggleSegmentsToChapters, togglePreserveMetadataOnMerge, toggleSimpleMode, toggleSafeOutputFileName, effectiveExportMode,
@@ -734,7 +755,7 @@ const App = memo(() => {
       for (const path of filePaths) {
         try {
           // eslint-disable-next-line no-await-in-loop
-          const newCustomOutDir = await ensureWritableOutDir(path);
+          const newCustomOutDir = await ensureWritableOutDir({ inputPath: path, outDir: customOutDir });
 
           // eslint-disable-next-line no-await-in-loop
           await html5ify({ customOutDir: newCustomOutDir, filePath: path, speed, hasAudio: true, hasVideo: true, onProgress: setTotalProgress });
@@ -757,7 +778,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [batchFiles, ensureWritableOutDir, html5ify, setWorking]);
+  }, [batchFiles, customOutDir, ensureWritableOutDir, html5ify, setWorking]);
 
   const getConvertToSupportedFormat = useCallback((fallback) => rememberConvertToSupportedFormat || fallback, [rememberConvertToSupportedFormat]);
 
@@ -920,7 +941,7 @@ const App = memo(() => {
       const firstPath = paths[0];
       if (!firstPath) return;
 
-      const newCustomOutDir = await ensureWritableOutDir(firstPath);
+      const newCustomOutDir = await ensureWritableOutDir({ inputPath: firstPath, outDir: customOutDir });
 
       const outDir = getOutDir(newCustomOutDir, firstPath);
 
@@ -974,7 +995,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [setWorking, ensureWritableOutDir, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, hideAllNotifications, handleConcatFailed]);
+  }, [setWorking, ensureWritableOutDir, customOutDir, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, hideAllNotifications, handleConcatFailed]);
 
   const cleanupFiles = useCallback(async (cleanupChoices2) => {
     // Store paths before we reset state
@@ -1370,7 +1391,7 @@ const App = memo(() => {
       const hevcPlaybackSupported = enableNativeHevc && await hevcPlaybackSupportedPromise;
 
       // need to ensure we have access to write to working directory
-      const cod = await ensureWritableOutDir(fp);
+      const cod = await ensureWritableOutDir({ inputPath: fp, outDir: customOutDir });
 
       // if storeProjectInSourceDir is true, we will be writing project file to input path's dir, so ensure that one too
       if (storeProjectInSourceDir) await ensureAccessToSourceDir(fp);
@@ -1436,7 +1457,7 @@ const App = memo(() => {
       resetState();
       throw err;
     }
-  }, [setWorking, loadEdlFile, getEdlFilePath, getEdlFilePathOld, enableAskForImportChapters, loadCutSegments, autoLoadTimecode, enableNativeHevc, ensureWritableOutDir, storeProjectInWorkingDir, ensureAccessToSourceDir, resetState, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat, html5ifyAndLoadWithPreferences, showPreviewFileLoadedMessage, showUnsupportedFileMessage, hideAllNotifications]);
+  }, [storeProjectInWorkingDir, setWorking, loadEdlFile, getEdlFilePath, getEdlFilePathOld, enableAskForImportChapters, ensureAccessToSourceDir, loadCutSegments, autoLoadTimecode, enableNativeHevc, ensureWritableOutDir, customOutDir, resetState, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat, html5ifyAndLoadWithPreferences, showPreviewFileLoadedMessage, showUnsupportedFileMessage, hideAllNotifications]);
 
   const toggleLastCommands = useCallback(() => setLastCommandsVisible(val => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
@@ -2408,6 +2429,7 @@ const App = memo(() => {
                   onTunerRequested={onTunerRequested}
                   onKeyboardShortcutsDialogRequested={toggleKeyboardShortcuts}
                   askForCleanupChoices={askForCleanupChoices}
+                  toggleStoreProjectInWorkingDir={toggleStoreProjectInWorkingDir}
                 />
               </Table.Body>
             </Table>
