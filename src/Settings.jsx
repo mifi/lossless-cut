@@ -10,7 +10,7 @@ import { askForFfPath } from './dialogs';
 import { isMasBuild, isStoreBuild } from './util';
 import { langNames } from './util/constants';
 
-import { modifierKeyNames } from './hooks/useTimelineScroll';
+import { getModifierKeyNames } from './hooks/useTimelineScroll';
 
 
 // eslint-disable-next-line react/jsx-props-no-spreading
@@ -133,7 +133,7 @@ const Settings = memo(({
         <KeyCell>{t('Mouse wheel zoom modifier key')}</KeyCell>
         <Table.TextCell>
           <Select value={mouseWheelZoomModifierKey} onChange={(e) => setMouseWheelZoomModifierKey(e.target.value)}>
-            {Object.entries(modifierKeyNames).map(([key, value]) => (
+            {Object.entries(getModifierKeyNames()).map(([key, value]) => (
               <option key={key} value={key}>{value}</option>
             ))}
           </Select>

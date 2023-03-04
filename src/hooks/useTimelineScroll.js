@@ -10,12 +10,12 @@ export const keyMap = {
   meta: 'metaKey',
 };
 
-export const modifierKeyNames = {
+export const getModifierKeyNames = () => ({
   ctrl: t('Ctrl'),
   shift: t('Shift'),
   alt: t('Alt'),
   meta: t('⌘ Cmd / ⊞ Win'),
-};
+});
 
 function useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, invertTimelineScroll, zoomRel, seekRel }) {
   const onWheel = useCallback((e) => {
