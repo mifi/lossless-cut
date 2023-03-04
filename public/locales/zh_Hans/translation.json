@@ -770,5 +770,9 @@
     "Play current segment once": "播放当前片段一次",
     "Playback/preview segments only": "仅播放/预览片段",
     "Allow multiple instances": "允许多个实例",
-    "Allow multiple instances of LosslessCut to run concurrently? (experimental)": "允许多个 LosslessCut 实例同时运行？（实验性）"
+    "Allow multiple instances of LosslessCut to run concurrently? (experimental)": "允许多个 LosslessCut 实例同时运行？（实验性）",
+    "⌘ Cmd / ⊞ Win": "⌘ Cmd / ⊞ Win",
+    "Alt": "Alt",
+    "Ctrl": "Ctrl",
+    "Shift": "Shift"
 }
