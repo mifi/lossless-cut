@@ -73,7 +73,7 @@ import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
 import { askExtractFramesAsImages } from './dialogs/extractFrames';
 import { askForHtml5ifySpeed } from './dialogs/html5ify';
-import { askForOutDir, askForImportChapters, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, openAbout, showRefuseToOverwrite, openDirToast, openCutFinishedToast, openConcatFinishedToast } from './dialogs';
+import { askForOutDir, askForImportChapters, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, openAbout, showRefuseToOverwrite, openDirToast, openCutFinishedToast, openConcatFinishedToast, showOpenDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, playOnlyCurrentSegment } from './segments';
@@ -88,9 +88,6 @@ const filePathToUrl = window.require('file-url');
 const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('path');
 
 const remote = window.require('@electron/remote');
-
-const { dialog } = remote;
-
 const { focusWindow, hasDisabledNetworking } = remote.require('./electron');
 
 
@@ -1778,7 +1775,7 @@ const App = memo(() => {
   }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, isFileOpened, batchFiles.length, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile, filePath]);
 
   const openFilesDialog = useCallback(async () => {
-    const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'], defaultPath: lastOpenedPath });
+    const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile', 'multiSelections'], defaultPath: lastOpenedPath });
     if (canceled) return;
     userOpenFiles(filePaths);
   }, [userOpenFiles]);
@@ -2094,7 +2091,7 @@ const App = memo(() => {
 
   const showAddStreamSourceDialog = useCallback(async () => {
     try {
-      const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'] });
+      const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'] });
       if (canceled || filePaths.length < 1) return;
       await addStreamSourceFile(filePaths[0]);
     } catch (err) {

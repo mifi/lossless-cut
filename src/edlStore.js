@@ -2,7 +2,7 @@ import JSON5 from 'json5';
 import i18n from 'i18next';
 
 import { parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, getTimeFromFrameNum } from './edlFormats';
-import { askForYouTubeInput } from './dialogs';
+import { askForYouTubeInput, showOpenDialog } from './dialogs';
 import { getOutPath } from './util';
 
 const fs = window.require('fs-extra');
@@ -97,7 +97,7 @@ export async function askForEdlImport({ type, fps }) {
   else if (type === 'mplayer') filters = [{ name: i18n.t('MPlayer EDL'), extensions: ['*'] }];
   else if (type === 'llc') filters = [{ name: i18n.t('LosslessCut project'), extensions: ['llc'] }];
 
-  const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters });
+  const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'], filters });
   if (canceled || filePaths.length < 1) return [];
   return readEdlFile({ type, path: filePaths[0], fps });
 }

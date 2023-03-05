@@ -11,6 +11,7 @@ import { parseDuration, formatDuration } from '../util/duration';
 import Swal, { swalToastOptions, toast } from '../swal';
 import { parseYouTube } from '../edlFormats';
 import CopyClipboardButton from '../components/CopyClipboardButton';
+import { isWindows } from '../util';
 
 const { dialog, app } = window.require('@electron/remote');
 const { shell } = window.require('electron');
@@ -38,6 +39,12 @@ export async function promptTimeOffset({ initialValue, title, text }) {
   return duration;
 }
 
+// https://github.com/mifi/lossless-cut/issues/1495
+export const showOpenDialog = async ({
+  filters = isWindows ? [{ name: i18n.t('All Files'), extensions: ['*'] }] : undefined,
+  ...props
+}) => dialog.showOpenDialog({ ...props, filters });
+
 export async function askForYouTubeInput() {
   const example = i18n.t('YouTube video description\n00:00 Intro\n00:01 Chapter 2\n00:00:02.123 Chapter 3');
   const { value } = await Swal.fire({
@@ -59,7 +66,7 @@ export async function askForYouTubeInput() {
 }
 
 export async function askForInputDir(defaultPath) {
-  const { filePaths } = await dialog.showOpenDialog({
+  const { filePaths } = await showOpenDialog({
     properties: ['openDirectory', 'createDirectory'],
     defaultPath,
     title: i18n.t('Please confirm folder'),
@@ -70,7 +77,7 @@ export async function askForInputDir(defaultPath) {
 }
 
 export async function askForOutDir(defaultPath) {
-  const { filePaths } = await dialog.showOpenDialog({
+  const { filePaths } = await showOpenDialog({
     properties: ['openDirectory', 'createDirectory'],
     defaultPath,
     title: i18n.t('Where do you want to save output files?'),
@@ -81,7 +88,7 @@ export async function askForOutDir(defaultPath) {
 }
 
 export async function askForFfPath(defaultPath) {
-  const { filePaths } = await dialog.showOpenDialog({
+  const { filePaths } = await showOpenDialog({
     properties: ['openDirectory'],
     defaultPath,
     title: i18n.t('Select custom FFmpeg directory'),
