@@ -516,7 +516,7 @@
     "Output file name": "Nome file destinazione",
     "Overwrite existing files": "Sovrascrivi file esistenti",
     "Please create an issue at <1>https://github.com/mifi/lossless-cut/issues</1> where you describe what you were doing.": "Segnala un problema in <1>https://github.com/mifi/lossless-cut/issues</1> dove descriverai cosa stavi facendo.",
-    "Please input a valid duration. Example: {{example}}": "Inserisci una durata valida. Esempio: {{esempio}}",
+    "Please input a valid duration. Example: {{example}}": "Inserisci una durata valida. Esempio: {{example}}",
     "Set file modification date/time of output files to:": "Imposta la data/ora di modifica dei file destinazione a:",
     "Shift all segments on the timeline by this amount. Negative values will be shifted back, while positive value will be shifted forward in time.": "Sposta tutti i segmenti nella timeline di questa quantità. \nCon valori negativi verranno spostati indietro, mentre con valori positivi verranno spostati in avanti nel tempo.",
     "Shift all segments on timeline": "Sposta tutti i segmenti nella timeline",
