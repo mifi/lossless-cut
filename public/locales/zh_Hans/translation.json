@@ -774,5 +774,7 @@
     "⌘ Cmd / ⊞ Win": "⌘ Cmd / ⊞ Win",
     "Alt": "Alt",
     "Ctrl": "Ctrl",
-    "Shift": "Shift"
+    "Shift": "Shift",
+    "All Files": "所有文件",
+    "FFmpeg capture method might sometimes capture more correct colors, but the captured snapshot might be off by one or more frames, relative to the preview.": "FFmpeg 捕获方法有时可能会捕获更正确的颜色，但相对于预览，捕获的快照可能会偏离一个或多个帧。"
 }
