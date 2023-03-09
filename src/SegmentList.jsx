@@ -22,7 +22,7 @@ const buttonBaseStyle = {
 const neutralButtonColor = 'rgba(255, 255, 255, 0.2)';
 
 
-const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onRemoveSelected, onLabelSelectedSegments, onReorderPress, onLabelPress, selected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectAllSegments, jumpSegStart, jumpSegEnd, addSegment, onViewSegmentTags, onExtractSegmentFramesAsImages }) => {
+const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onRemoveSelected, onLabelSelectedSegments, onReorderPress, onLabelPress, selected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectAllSegments, jumpSegStart, jumpSegEnd, addSegment, onViewSegmentTags, onExtractSegmentFramesAsImages, onInvertSelectedSegments }) => {
   const { t } = useTranslation();
 
   const ref = useRef();
@@ -45,6 +45,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
       { label: t('Select all segments'), click: () => onSelectAllSegments() },
       { label: t('Deselect all segments'), click: () => onDeselectAllSegments() },
       { label: t('Select segments by label'), click: () => onSelectSegmentsByLabel(seg) },
+      { label: t('Invert selected segments'), click: () => onInvertSelectedSegments() },
 
       { type: 'separator' },
 
@@ -62,7 +63,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
       { label: t('Segment tags'), click: () => onViewSegmentTags(index) },
       { label: t('Extract frames as image files'), click: () => onExtractSegmentFramesAsImages(index) },
     ];
-  }, [invertCutSegments, t, jumpSegStart, jumpSegEnd, addSegment, onLabelPress, onRemovePress, onReorderPress, onRemoveSelected, onLabelSelectedSegments, updateOrder, onSelectSingleSegment, seg, onSelectAllSegments, onDeselectAllSegments, onSelectSegmentsByLabel, onViewSegmentTags, index, onExtractSegmentFramesAsImages]);
+  }, [invertCutSegments, t, jumpSegStart, jumpSegEnd, addSegment, onLabelPress, onRemovePress, onLabelSelectedSegments, onRemoveSelected, onReorderPress, onSelectSingleSegment, seg, onSelectAllSegments, onDeselectAllSegments, onSelectSegmentsByLabel, onInvertSelectedSegments, updateOrder, onViewSegmentTags, index, onExtractSegmentFramesAsImages]);
 
   useContextMenu(ref, contextMenuTemplate);
 
@@ -146,7 +147,7 @@ const SegmentList = memo(({
   currentSegIndex,
   updateSegOrder, updateSegOrders, addSegment, removeCutSegment, onRemoveSelected,
   onLabelSegment, currentCutSeg, segmentAtCursor, toggleSegmentsList, splitCurrentSegment,
-  selectedSegments, isSegmentSelected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectAllSegments, onSelectSegmentsByLabel, onExtractSegmentFramesAsImages, onLabelSelectedSegments,
+  selectedSegments, isSegmentSelected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectAllSegments, onSelectSegmentsByLabel, onExtractSegmentFramesAsImages, onLabelSelectedSegments, onInvertSelectedSegments,
   jumpSegStart, jumpSegEnd, onViewSegmentTags,
 }) => {
   const { t } = useTranslation();
@@ -306,6 +307,7 @@ const SegmentList = memo(({
                 onSelectSegmentsByLabel={onSelectSegmentsByLabel}
                 onExtractSegmentFramesAsImages={onExtractSegmentFramesAsImages}
                 onLabelSelectedSegments={onLabelSelectedSegments}
+                onInvertSelectedSegments={onInvertSelectedSegments}
               />
             );
           })}

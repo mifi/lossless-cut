@@ -363,6 +363,10 @@ const KeyboardShortcuts = memo(({
           name: t('Toggle current segment selected'),
           category: segmentsAndCutpointsCategory,
         },
+        invertSelectedSegments: {
+          name: t('Invert selected segments'),
+          category: segmentsAndCutpointsCategory,
+        },
         removeSelectedSegments: {
           name: t('Remove selected segments'),
           category: segmentsAndCutpointsCategory,

@@ -454,6 +454,7 @@ export default ({
   const selectOnlySegment = useCallback((seg) => setDeselectedSegmentIds(Object.fromEntries(cutSegments.filter((s) => s.segId !== seg.segId).map((s) => [s.segId, true]))), [cutSegments]);
   const toggleSegmentSelected = useCallback((seg) => setDeselectedSegmentIds((existing) => ({ ...existing, [seg.segId]: !existing[seg.segId] })), []);
   const deselectAllSegments = useCallback(() => setDeselectedSegmentIds(Object.fromEntries(cutSegments.map((s) => [s.segId, true]))), [cutSegments]);
+  const invertSelectedSegments = useCallback(() => setDeselectedSegmentIds((existing) => Object.fromEntries(cutSegments.map((s) => [s.segId, !existing[s.segId]]))), [cutSegments]);
   const selectAllSegments = useCallback(() => setDeselectedSegmentIds({}), []);
 
   const selectOnlyCurrentSegment = useCallback(() => selectOnlySegment(currentCutSeg), [currentCutSeg, selectOnlySegment]);
@@ -508,6 +509,7 @@ export default ({
     selectAllSegments,
     selectOnlyCurrentSegment,
     toggleCurrentSegmentSelected,
+    invertSelectedSegments,
     removeSelectedSegments,
     onSelectSegmentsByLabel,
     toggleSegmentSelected,
