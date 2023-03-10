@@ -73,6 +73,7 @@ function getSizeOptions() {
 function createWindow() {
   const darkMode = configStore.get('darkMode');
   // todo follow darkMode setting when user switches
+  // https://www.electronjs.org/docs/latest/tutorial/dark-mode
   if (darkMode) nativeTheme.themeSource = 'dark';
 
   mainWindow = new BrowserWindow({

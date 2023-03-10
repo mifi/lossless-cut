@@ -322,7 +322,7 @@ const Timeline = memo(({
           ))}
 
           {shouldShowKeyframes && !areKeyframesTooClose && neighbouringKeyFrames.map((f) => (
-            <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / durationSafe) * 100}%`, marginLeft: -1, width: 1, background: 'var(--gray9)', mixBlendMode: 'difference', pointerEvents: 'none' }} />
+            <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / durationSafe) * 100}%`, marginLeft: -1, width: 1, background: 'var(--gray11)', pointerEvents: 'none' }} />
           ))}
         </div>
       </div>
