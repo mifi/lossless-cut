@@ -15,9 +15,9 @@ const ReactSwal = withReactContent(Swal);
 // eslint-disable-next-line no-template-curly-in-string
 const extVar = '${EXT}';
 
-const inputStyle = { flexGrow: 1, fontFamily: 'inherit', fontSize: '.8em', backgroundColor: 'var(--gray3)', color: 'var(--gray12)', appearance: 'none', border: 'none' };
+const inputStyle = { flexGrow: 1, fontFamily: 'inherit', fontSize: '.8em', backgroundColor: 'var(--gray3)', color: 'var(--gray12)', border: '1px solid var(--gray6)', appearance: 'none' };
 
-const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe, getOutSegError }) => {
+const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe, getOutSegError }) => {
   const { safeOutputFileName, toggleSafeOutputFileName } = useUserSettings();
 
   const [text, setText] = useState(outSegTemplate);
@@ -86,12 +86,9 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
   return (
     <>
       <div>
-        <span>
-          {outSegFileNames != null && t('Output name(s):', { count: outSegFileNames.length })}
-          {' '}
-          {outSegFileNames != null && <HighlightedText role="button" onClick={onShowClick} style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>{outSegFileNames[currentSegIndexSafe] || outSegFileNames[0] || '-'}</HighlightedText>}
-        </span>
-        {helpIcon}
+        <div>{outSegFileNames != null && t('Output name(s):', { count: outSegFileNames.length })}</div>
+
+        {outSegFileNames != null && <HighlightedText role="button" onClick={onShowClick} style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>{outSegFileNames[currentSegIndexSafe] || outSegFileNames[0] || '-'}</HighlightedText>}
       </div>
 
       {needToShow && (
@@ -107,8 +104,7 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
           <div style={{ maxWidth: 600 }}>
             {error != null && <Alert intent="danger" appearance="card"><Heading color="danger">{i18n.t('There is an error in the file name template:')}</Heading><Text>{error}</Text></Alert>}
             {isMissingExtension && <Alert intent="warning" appearance="card">{i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVar })}</Alert>}
-            {/* eslint-disable-next-line no-template-curly-in-string */}
-            <div style={{ fontSize: '.8em', color: 'rgba(255,255,255,0.7)' }}>
+            <div style={{ fontSize: '.8em', color: 'var(--gray11)' }}>
               {`${i18n.t('Variables')}`}{': '}
               {['FILENAME', 'CUT_FROM', 'CUT_TO', 'SEG_NUM', 'SEG_LABEL', 'SEG_SUFFIX', 'EXT', 'SEG_TAGS.XX'].map((variable) => <span key={variable} role="button" style={{ cursor: 'pointer', marginRight: '.2em' }} onClick={() => setText((oldText) => `${oldText}\${${variable}}`)}>{variable}</span>)}
             </div>

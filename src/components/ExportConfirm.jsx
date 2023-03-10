@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { WarningSignIcon, Button, CrossIcon } from 'evergreen-ui';
+import { WarningSignIcon, CrossIcon } from 'evergreen-ui';
 import { FaRegCheckCircle } from 'react-icons/fa';
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
@@ -15,6 +15,7 @@ import ToggleExportConfirm from './ToggleExportConfirm';
 import OutSegTemplateEditor from './OutSegTemplateEditor';
 import HighlightedText, { highlightedTextStyle } from './HighlightedText';
 import Select from './Select';
+import Switch from './Switch';
 
 import { primaryTextColor } from '../colors';
 import { withBlur } from '../util';
@@ -106,8 +107,6 @@ const ExportConfirm = memo(({
     toast.fire({ icon: 'info', timer: 10000, text: `${avoidNegativeTs}: ${texts[avoidNegativeTs]}` });
   }, [avoidNegativeTs]);
 
-  const outSegTemplateHelpIcon = <HelpIcon onClick={onOutSegTemplateHelpPress} />;
-
   const canEditTemplate = !willMerge || !autoDeleteMergedSegments;
 
   // https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container
@@ -127,94 +126,199 @@ const ExportConfirm = memo(({
                 <CrossIcon size={24} style={{ position: 'absolute', right: 0, top: 0, padding: 15, boxSizing: 'content-box', cursor: 'pointer' }} role="button" onClick={onClosePress} />
 
                 <h2 style={{ marginTop: 0, marginBottom: '.5em' }}>{t('Export options')}</h2>
-                <ul style={{ margin: 0 }}>
-                  {selectedSegments.length !== nonFilteredSegmentsOrInverse.length && <li><FaRegCheckCircle size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: selectedSegments.length, nonFilteredSegments: nonFilteredSegmentsOrInverse.length })}</li>}
-                  <li>
-                    {selectedSegments.length > 1 ? t('Export mode for {{segments}} segments', { segments: selectedSegments.length }) : t('Export mode')} <ExportModeButton selectedSegments={selectedSegments} />
-                    <HelpIcon onClick={onExportModeHelpPress} />
-                    {effectiveExportMode === 'sesgments_to_chapters' && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" title={i18n.t('Chapters only')} />}
-                  </li>
-                  <li>
-                    {t('Output container format:')} {renderOutFmt({ height: 20, maxWidth: 150 })}
-                    <HelpIcon onClick={onOutFmtHelpPress} />
-                  </li>
-                  <li>
-                    <Trans>Input has {{ numStreamsTotal }} tracks - <HighlightedText style={{ cursor: 'pointer' }} onClick={() => setStreamsSelectorShown(true)}>Keeping {{ numStreamsToCopy }} tracks</HighlightedText></Trans>
-                    <HelpIcon onClick={onTracksHelpPress} />
-                    {areWeCuttingProblematicStreams && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" />}
-                    {areWeCuttingProblematicStreams && <div style={warningStyle}><Trans>Warning: Cutting thumbnail tracks is known to cause problems. Consider disabling track {{ trackNumber: mainCopiedThumbnailStreams[0].index + 1 }}.</Trans></div>}
-                  </li>
-                  <li>
-                    {t('Save output to path:')} <span role="button" onClick={changeOutDir} style={outDirStyle}>{outputDir}</span>
-                  </li>
-                  {canEditTemplate && (
-                    <li>
-                      <OutSegTemplateEditor filePath={filePath} helpIcon={outSegTemplateHelpIcon} outSegTemplate={outSegTemplate} setOutSegTemplate={setOutSegTemplate} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} />
-                    </li>
-                  )}
-                </ul>
 
+                <table className={styles.options}>
+                  <tbody>
+                    {selectedSegments.length !== nonFilteredSegmentsOrInverse.length && (
+                      <tr>
+                        <td colSpan={2}>
+                          <FaRegCheckCircle size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: selectedSegments.length, nonFilteredSegments: nonFilteredSegmentsOrInverse.length })}
+                        </td>
+                        <td />
+                      </tr>
+                    )}
+
+                    <tr>
+                      <td>
+                        {selectedSegments.length > 1 ? t('Export mode for {{segments}} segments', { segments: selectedSegments.length }) : t('Export mode')}
+                      </td>
+                      <td>
+                        <ExportModeButton selectedSegments={selectedSegments} />
+                      </td>
+                      <td>
+                        {effectiveExportMode === 'sesgments_to_chapters' && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" title={i18n.t('Chapters only')} />}
+                        <HelpIcon onClick={onExportModeHelpPress} />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        {t('Output container format:')}
+                      </td>
+                      <td>
+                        {renderOutFmt({ height: 20, maxWidth: 150 })}
+                      </td>
+                      <td>
+                        <HelpIcon onClick={onOutFmtHelpPress} />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <Trans>Input has {{ numStreamsTotal }} tracks</Trans>
+                        {areWeCuttingProblematicStreams && (
+                          <div style={warningStyle}><Trans>Warning: Cutting thumbnail tracks is known to cause problems. Consider disabling track {{ trackNumber: mainCopiedThumbnailStreams[0] ? mainCopiedThumbnailStreams[0].index + 1 : 0 }}.</Trans></div>
+                        )}
+                      </td>
+                      <td>
+                        <HighlightedText style={{ cursor: 'pointer' }} onClick={() => setStreamsSelectorShown(true)}><Trans>Keeping {{ numStreamsToCopy }} tracks</Trans></HighlightedText>
+                      </td>
+                      <td>
+                        {areWeCuttingProblematicStreams && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" />}
+                        <HelpIcon onClick={onTracksHelpPress} />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        {t('Save output to path:')}
+                      </td>
+                      <td>
+                        <span role="button" onClick={changeOutDir} style={outDirStyle}>{outputDir}</span>
+                      </td>
+                      <td />
+                    </tr>
+
+                    {canEditTemplate && (
+                      <tr>
+                        <td colSpan={2}>
+                          <OutSegTemplateEditor filePath={filePath} outSegTemplate={outSegTemplate} setOutSegTemplate={setOutSegTemplate} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} />
+                        </td>
+                        <td>
+                          <HelpIcon onClick={onOutSegTemplateHelpPress} />
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
                 <h3 style={{ marginBottom: '.5em' }}>{t('Advanced options')}</h3>
 
-                {willMerge && (
-                  <ul style={{ marginTop: 0, marginBottom: '1em' }}>
-                    <li>
-                      {t('Create chapters from merged segments? (slow)')} <Button height={20} onClick={toggleSegmentsToChapters}>{segmentsToChapters ? t('Yes') : t('No')}</Button>
-                      <HelpIcon onClick={onSegmentsToChaptersHelpPress} />
-                    </li>
-                    <li>
-                      {t('Preserve original metadata when merging? (slow)')} <Button height={20} onClick={togglePreserveMetadataOnMerge}>{preserveMetadataOnMerge ? t('Yes') : t('No')}</Button>
-                      <HelpIcon onClick={onPreserveMetadataOnMergeHelpPress} />
-                    </li>
-                  </ul>
-                )}
+                <table className={styles.options}>
+                  <tbody>
+                    {willMerge && (
+                      <>
+                        <tr>
+                          <td>
+                            {t('Create chapters from merged segments? (slow)')}
+                          </td>
+                          <td>
+                            <Switch checked={segmentsToChapters} onCheckedChange={toggleSegmentsToChapters} />
+                          </td>
+                          <td>
+                            <HelpIcon onClick={onSegmentsToChaptersHelpPress} />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            {t('Preserve original metadata when merging? (slow)')}
+                          </td>
+                          <td>
+                            <Switch checked={preserveMetadataOnMerge} onCheckedChange={togglePreserveMetadataOnMerge} />
+                          </td>
+                          <td>
+                            <HelpIcon onClick={onPreserveMetadataOnMergeHelpPress} />
+                          </td>
+                        </tr>
+                      </>
+                    )}
 
-                <p style={{ margin: '.5em 0' }}>{t('Depending on your specific file/player, you may have to try different options for best results.')}</p>
+                    <tr>
+                      <td style={{ paddingTop: '.5em', color: 'var(--gray11)' }} colSpan={2}>
+                        {t('Depending on your specific file/player, you may have to try different options for best results.')}
+                      </td>
+                      <td />
+                    </tr>
 
-                <ul style={{ margin: 0 }}>
-                  {areWeCutting && (
-                    <>
-                      <li>
-                        {t('Smart cut (experimental):')} <Button height={20} onClick={() => setEnableSmartCut((v) => !v)}>{enableSmartCut ? t('Yes') : t('No')}</Button>
-                        <HelpIcon onClick={onSmartCutHelpPress} />
-                        {needSmartCut && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" title={i18n.t('Experimental functionality has been activated!')} />}
-                      </li>
-                      {!needSmartCut && (
-                        <li>
-                          {t('Cut mode:')} <KeyframeCutButton />
-                          <HelpIcon onClick={onKeyframeCutHelpPress} /> {!keyframeCut && <span style={warningStyle}>{t('Note: Keyframe cut is recommended for most common files')}</span>}
-                        </li>
-                      )}
-                    </>
-                  )}
+                    {areWeCutting && (
+                      <>
+                        <tr>
+                          <td>
+                            {t('Smart cut (experimental):')}
+                          </td>
+                          <td>
+                            <Switch checked={enableSmartCut} onCheckedChange={() => setEnableSmartCut((v) => !v)} />
+                          </td>
+                          <td>
+                            {needSmartCut && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" title={i18n.t('Experimental functionality has been activated!')} />}
+                            <HelpIcon onClick={onSmartCutHelpPress} />
+                          </td>
+                        </tr>
+                        {!needSmartCut && (
+                          <tr>
+                            <td>
+                              {t('Cut mode:')}
+                              {!keyframeCut && <div style={warningStyle}>{t('Note: Keyframe cut is recommended for most common files')}</div>}
+                            </td>
+                            <td>
+                              <KeyframeCutButton />
+                            </td>
+                            <td>
+                              {!keyframeCut && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" />}
+                              <HelpIcon onClick={onKeyframeCutHelpPress} />
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    )}
 
-                  {isMov && (
-                    <>
-                      <li>
-                        {t('Enable MOV Faststart?')} <MovFastStartButton />
-                        <HelpIcon onClick={onMovFastStartHelpPress} /> {isIpod && !movFastStart && <span style={warningStyle}>{t('For the ipod format, it is recommended to activate this option')}</span>}
-                      </li>
-                      <li>
-                        {t('Preserve all MP4/MOV metadata?')} <PreserveMovDataButton />
-                        <HelpIcon onClick={onPreserveMovDataHelpPress} /> {isIpod && preserveMovData && <span style={warningStyle}>{t('For the ipod format, it is recommended to deactivate this option')}</span>}
-                      </li>
-                    </>
-                  )}
+                    {isMov && (
+                      <>
+                        <tr>
+                          <td>
+                            {t('Enable MOV Faststart?')}
+                          </td>
+                          <td>
+                            <MovFastStartButton />
+                          </td>
+                          <td>
+                            <HelpIcon onClick={onMovFastStartHelpPress} /> {isIpod && !movFastStart && <span style={warningStyle}>{t('For the ipod format, it is recommended to activate this option')}</span>}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            {t('Preserve all MP4/MOV metadata?')}
+                            {isIpod && preserveMovData && <div style={warningStyle}>{t('For the ipod format, it is recommended to deactivate this option')}</div>}
+                          </td>
+                          <td>
+                            <PreserveMovDataButton />
+                          </td>
+                          <td>
+                            {isIpod && preserveMovData && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" />}
+                            <HelpIcon onClick={onPreserveMovDataHelpPress} />
+                          </td>
+                        </tr>
+                      </>
+                    )}
 
-                  {!needSmartCut && (
-                    <li>
-                      &quot;avoid_negative_ts&quot;
-                      <Select value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value)} style={{ height: 20, marginLeft: 5 }}>
-                        <option value="auto">auto</option>
-                        <option value="make_zero">make_zero</option>
-                        <option value="make_non_negative">make_non_negative</option>
-                        <option value="disabled">disabled</option>
-                      </Select>
-                      <HelpIcon onClick={onAvoidNegativeTsHelpPress} />
-                      {!['make_zero', 'auto'].includes(avoidNegativeTs) && <div style={warningStyle}>{t('It\'s generally recommended to set this to one of: {{values}}', { values: '"auto", "make_zero"' })}</div>}
-                    </li>
-                  )}
-                </ul>
+                    {!needSmartCut && (
+                      <tr>
+                        <td>
+                          &quot;avoid_negative_ts&quot;
+                          {!['make_zero', 'auto'].includes(avoidNegativeTs) && <div style={warningStyle}>{t('It\'s generally recommended to set this to one of: {{values}}', { values: '"auto", "make_zero"' })}</div>}
+                        </td>
+                        <td>
+                          <Select value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value)} style={{ height: 20, marginLeft: 5 }}>
+                            <option value="auto">auto</option>
+                            <option value="make_zero">make_zero</option>
+                            <option value="make_non_negative">make_non_negative</option>
+                            <option value="disabled">disabled</option>
+                          </Select>
+                        </td>
+                        <td>
+                          {!['make_zero', 'auto'].includes(avoidNegativeTs) && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" />}
+                          <HelpIcon onClick={onAvoidNegativeTsHelpPress} />
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </motion.div>

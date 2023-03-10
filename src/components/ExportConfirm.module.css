@@ -24,3 +24,14 @@
   background: var(--blackA8);
 }
 
+table.options {
+  width: 100%;
+}
+
+table.options td:last-child {
+  text-align: right;
+  width: 3em;
+}
+table.options td:nth-child(2) {
+  text-align: right;
+}
