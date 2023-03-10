@@ -1305,7 +1305,7 @@ const App = memo(() => {
 
     const storeProjectInSourceDir = !storeProjectInWorkingDir;
 
-    async function tryOpenProject({ chapters, cod }) {
+    async function tryFindAndLoadProjectFile({ chapters, cod }) {
       try {
         // First try to open from from working dir
         if (await tryOpenProjectPath(getEdlFilePath(fp, cod), 'llc')) return;
@@ -1413,7 +1413,7 @@ const App = memo(() => {
       if (projectPath) {
         await loadEdlFile({ path: projectPath, type: 'llc' });
       } else {
-        await tryOpenProject({ chapters: fileMeta.chapters, cod });
+        await tryFindAndLoadProjectFile({ chapters: fileMeta.chapters, cod });
       }
 
       // throw new Error('test');
@@ -1471,11 +1471,19 @@ const App = memo(() => {
       console.log('Loading LLC project', path);
       const project = await loadLlcProject(path);
       const { mediaFileName } = project;
+
       console.log({ mediaFileName });
       if (!mediaFileName) return;
-      projectPath = path;
 
       const mediaFilePath = pathJoin(dirname(path), mediaFileName);
+
+      // Note: MAS only allows fs.stat (fs-extra.exists) if we don't have access to input dir yet
+      if (!(await exists(mediaFilePath))) {
+        errorToast(i18n.t('The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}', { mediaFileName }));
+        return;
+      }
+
+      projectPath = path;
 
       // We might need to get user's access to the project file's directory, in order to read the media file
       try {
