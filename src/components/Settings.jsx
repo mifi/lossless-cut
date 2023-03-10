@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { FaYinYang, FaKeyboard } from 'react-icons/fa';
-import { GlobeIcon, CleanIcon, CogIcon, Button, NumericalIcon, KeyIcon, FolderCloseIcon, DocumentIcon, TimeIcon } from 'evergreen-ui';
+import { GlobeIcon, CleanIcon, CogIcon, Button, NumericalIcon, FolderCloseIcon, DocumentIcon, TimeIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
 import CaptureFormatButton from './CaptureFormatButton';
@@ -28,7 +28,7 @@ const Header = ({ title }) => (
   </Row>
 );
 
-const detailsStyle = { opacity: 0.7, fontSize: '.9em', marginTop: '.3em' };
+const detailsStyle = { opacity: 0.75, fontSize: '.9em', marginTop: '.3em' };
 
 const Settings = memo(({
   onTunerRequested,
@@ -200,14 +200,21 @@ const Settings = memo(({
             <KeyCell>
               {t('Keyframe cut mode')}<br />
               <div style={detailsStyle}>
-                <b>{t('Keyframe cut')}</b>: {t('Cut at the nearest keyframe (not accurate time.) Equiv to')} <i>ffmpeg -ss -i ...</i><br />
-                <b>{t('Normal cut')}</b>: {t('Accurate time but could leave an empty portion at the beginning of the video. Equiv to')} <i>ffmpeg -i -ss ...</i><br />
+                {keyframeCut ? (
+                  <>
+                    {t('Cut at the nearest keyframe (not accurate time.) Equiv to')}:<br />
+                    <code>ffmpeg -ss -i ...</code>
+                  </>
+                ) : (
+                  <>
+                    {t('Accurate time but could leave an empty portion at the beginning of the video. Equiv to')}:<br />
+                    <code>ffmpeg -i -ss ...</code>
+                  </>
+                )}
               </div>
             </KeyCell>
             <td>
-              <Button iconBefore={keyframeCut ? KeyIcon : undefined} onClick={() => toggleKeyframeCut()}>
-                {keyframeCut ? t('Keyframe cut') : t('Normal cut')}
-              </Button>
+              <Switch checked={keyframeCut} onCheckedChange={() => toggleKeyframeCut()} />
             </td>
           </Row>
 

@@ -6,7 +6,6 @@ import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
 import { IoIosHelpCircle } from 'react-icons/io';
 
-import KeyframeCutButton from './KeyframeCutButton';
 import ExportButton from './ExportButton';
 import ExportModeButton from './ExportModeButton';
 import PreserveMovDataButton from './PreserveMovDataButton';
@@ -41,7 +40,7 @@ const ExportConfirm = memo(({
 }) => {
   const { t } = useTranslation();
 
-  const { changeOutDir, keyframeCut, preserveMovData, movFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, togglePreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode } = useUserSettings();
+  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, movFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, togglePreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode } = useUserSettings();
 
   const isMov = ffmpegIsMov(outFormat);
   const isIpod = outFormat === 'ipod';
@@ -230,7 +229,7 @@ const ExportConfirm = memo(({
                     )}
 
                     <tr>
-                      <td style={{ paddingTop: '.5em', color: 'var(--gray11)' }} colSpan={2}>
+                      <td style={{ paddingTop: '.5em', color: 'var(--gray11)', fontSize: '.9em' }} colSpan={2}>
                         {t('Depending on your specific file/player, you may have to try different options for best results.')}
                       </td>
                       <td />
@@ -253,11 +252,11 @@ const ExportConfirm = memo(({
                         {!needSmartCut && (
                           <tr>
                             <td>
-                              {t('Cut mode:')}
+                              {t('Keyframe cut mode')}
                               {!keyframeCut && <div style={warningStyle}>{t('Note: Keyframe cut is recommended for most common files')}</div>}
                             </td>
                             <td>
-                              <KeyframeCutButton />
+                              <Switch checked={keyframeCut} onCheckedChange={() => toggleKeyframeCut()} />
                             </td>
                             <td>
                               {!keyframeCut && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" />}

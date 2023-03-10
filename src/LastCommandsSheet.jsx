@@ -1,6 +1,5 @@
 import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Heading } from 'evergreen-ui';
 
 import CopyClipboardButton from './components/CopyClipboardButton';
 import Sheet from './components/Sheet';
@@ -10,7 +9,7 @@ const LastCommandsSheet = memo(({ visible, onTogglePress, ffmpegCommandLog }) =>
 
   return (
     <Sheet visible={visible} onClosePress={onTogglePress} style={{ paddingTop: '2em' }}>
-      <Heading color="white">{t('Last ffmpeg commands')}</Heading>
+      <h2>{t('Last ffmpeg commands')}</h2>
 
       {ffmpegCommandLog.length > 0 ? (
         <div>

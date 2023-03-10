@@ -1,3 +1,7 @@
+.settings td {
+  vertical-align: top;
+}
+
 .settings td:first-child, .settings th:first-child {
   padding: 1em 2em 1em 2em;
 }

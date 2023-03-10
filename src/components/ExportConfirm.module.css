@@ -5,7 +5,7 @@
   top: 0;
   bottom: 0;
   z-index: 10;
-  background: var(--whiteA10);
+  background: var(--whiteA11);
   color: var(--gray12);
   backdrop-filter: blur(30px);
   overflow-y: scroll;
@@ -17,11 +17,11 @@
 }
 
 .box {
-  background: var(--whiteA8);
+  background: var(--whiteA11);
 }
 
 :global(.dark-theme) .box {
-  background: var(--blackA8);
+  background: var(--blackA11);
 }
 
 table.options {
@@ -34,4 +34,8 @@ table.options td:last-child {
 }
 table.options td:nth-child(2) {
   text-align: right;
+}
+
+table.options td {
+  vertical-align: top;
 }
