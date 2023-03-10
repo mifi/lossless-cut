@@ -1,6 +1,5 @@
 import React, { memo } from 'react';
 
-import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
 
 import SetCutpointButton from './components/SetCutpointButton';
@@ -26,7 +25,11 @@ const NoFileLoaded = memo(({ mifiLink, currentCutSeg }) => {
       </div>
 
       <div style={{ fontSize: '3vmin', color: 'var(--gray11)' }} role="button">
-        <SimpleModeButton style={{ verticalAlign: 'middle' }} size={16} /> {simpleMode ? i18n.t('to show advanced view') : i18n.t('to show simple view')}
+        {simpleMode ? (
+          <Trans><SimpleModeButton style={{ verticalAlign: 'middle' }} size={16} /> to show advanced view</Trans>
+        ) : (
+          <Trans><SimpleModeButton style={{ verticalAlign: 'middle' }} size={16} /> to show simple view</Trans>
+        )}
       </div>
 
 
