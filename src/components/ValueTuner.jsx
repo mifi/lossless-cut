@@ -11,9 +11,9 @@ const ValueTuner = memo(({ style, title, value, setValue, onFinished, resolution
   }
 
   return (
-    <div style={{ background: 'white', color: 'black', position: 'absolute', bottom: 0, zIndex: 10, padding: 10, margin: 10, borderRadius: 10, ...style }}>
+    <div style={{ background: 'var(--gray1)', color: 'var(--gray12)', position: 'absolute', bottom: 0, zIndex: 10, padding: 10, margin: 10, borderRadius: 10, ...style }}>
       <div style={{ display: 'flex', alignItems: 'center', flexBasis: 400 }}>
-        <div>{title}</div>
+        <div style={{ marginBottom: '.5em' }}>{title}</div>
         <div style={{ marginLeft: 10, fontWeight: 'bold' }}>{value.toFixed(2)}</div>
         <div style={{ flexGrow: 1, flexBasis: 10 }} />
         <Button height={20} onClick={resetToDefault}>{t('Default')}</Button>

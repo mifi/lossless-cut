@@ -1,3 +1,15 @@
+@import '@radix-ui/colors/red.css';
+@import '@radix-ui/colors/redDark.css';
+@import '@radix-ui/colors/green.css';
+@import '@radix-ui/colors/greenDark.css';
+@import '@radix-ui/colors/cyan.css';
+@import '@radix-ui/colors/cyanDark.css';
+@import '@radix-ui/colors/gray.css';
+@import '@radix-ui/colors/grayDark.css';
+@import '@radix-ui/colors/blackA.css';
+@import '@radix-ui/colors/whiteA.css';
+
+
 html {
   font-family: 'Open Sans', 'Noto Sans SemiCondensed', 'Noto Sans', sans-serif;
   font-size: 16px;
@@ -24,13 +36,13 @@ kbd {
     padding: 3px 5px;
     font-size: 11px;
     line-height: 10px;
-    color: #555;
+    color: var(--gray11);
     vertical-align: middle;
-    background-color: #fdfdfd;
-    border: solid 1px #ccc;
-    border-bottom-color: #bbb;
+    background-color: var(--gray4);
+    border: solid 1px var(--gray8);
+    border-bottom-color: var(--gray8);
     border-radius: 3px;
-    box-shadow: inset 0 -1px 0 #bbb;
+    box-shadow: inset 0 -1px 0 var(--gray8);
 }
 
 .hide-scrollbar::-webkit-scrollbar {

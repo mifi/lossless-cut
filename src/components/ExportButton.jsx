@@ -25,7 +25,7 @@ const ExportButton = memo(({ segmentsToExport, areWeCutting, onClick, size = 1 }
 
   return (
     <div
-      style={{ cursor: 'pointer', background: primaryColor, borderRadius: size * 5, paddingTop: size * 1, paddingBottom: size * 2.5, paddingLeft: size * 7, paddingRight: size * 7, fontSize: size * 13, whiteSpace: 'nowrap', opacity: segmentsToExport.length === 0 ? 0.5 : undefined }}
+      style={{ cursor: 'pointer', background: primaryColor, color: 'white', borderRadius: size * 5, paddingTop: size * 1, paddingBottom: size * 2.5, paddingLeft: size * 7, paddingRight: size * 7, fontSize: size * 13, whiteSpace: 'nowrap', opacity: segmentsToExport.length === 0 ? 0.5 : undefined }}
       onClick={onClick}
       title={title}
       role="button"

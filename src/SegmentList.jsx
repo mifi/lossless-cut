@@ -11,7 +11,7 @@ import scrollIntoView from 'scroll-into-view-if-needed';
 import Swal from './swal';
 import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
-import { saveColor, controlsBackground, primaryTextColor } from './colors';
+import { saveColor, controlsBackground, primaryTextColor, darkModeTransition } from './colors';
 import { getSegColor } from './util/colors';
 import { mySpring } from './animations';
 
@@ -19,10 +19,10 @@ const buttonBaseStyle = {
   margin: '0 3px', borderRadius: 3, color: 'white', cursor: 'pointer',
 };
 
-const neutralButtonColor = 'rgba(255, 255, 255, 0.2)';
+const neutralButtonColor = 'var(--gray8)';
 
 
-const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onRemoveSelected, onLabelSelectedSegments, onReorderPress, onLabelPress, selected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectAllSegments, jumpSegStart, jumpSegEnd, addSegment, onViewSegmentTags, onExtractSegmentFramesAsImages, onInvertSelectedSegments }) => {
+const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onRemoveSelected, onLabelSelectedSegments, onReorderPress, onLabelPress, selected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectAllSegments, jumpSegStart, jumpSegEnd, addSegment, onViewSegmentTags, onExtractSegmentFramesAsImages, onInvertSelectedSegments }) => {
   const { t } = useTranslation();
 
   const ref = useRef();
@@ -79,7 +79,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
   function renderNumber() {
     if (invertCutSegments) return <FaSave style={{ color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
 
-    const segColor = getSegColor(seg);
+    const segColor = getSegColor(seg, darkMode);
 
     return <b style={{ cursor: 'grab', color: 'white', padding: '0 4px', marginRight: 3, marginLeft: -3, background: segColor.alpha(0.5).string(), border: `1px solid ${isActive ? segColor.lighten(0.3).string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
   }
@@ -114,18 +114,18 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
       onClick={() => !invertCutSegments && onClick(index)}
       onDoubleClick={onDoubleClick}
       layout
-      style={{ originY: 0, margin: '5px 0', background: 'rgba(0,0,0,0.1)', border: `1px solid rgba(255,255,255,${isActive ? 1 : 0.3})`, padding: 5, borderRadius: 5, position: 'relative' }}
+      style={{ originY: 0, margin: '5px 0', background: 'var(--gray2)', border: isActive ? '1px solid var(--gray10)' : '1px solid transparent', padding: 5, borderRadius: 5, position: 'relative' }}
       initial={{ scaleY: 0 }}
       animate={{ scaleY: 1, opacity: !selected && !invertCutSegments ? 0.5 : undefined }}
       exit={{ scaleY: 0 }}
       className="segment-list-entry"
     >
-      <div className="segment-handle" style={{ cursor, color: 'white', marginBottom: 3, display: 'flex', alignItems: 'center', height: 16 }}>
+      <div className="segment-handle" style={{ cursor, color: 'var(--gray12)', marginBottom: 3, display: 'flex', alignItems: 'center', height: 16 }}>
         {renderNumber()}
         <span style={{ cursor, fontSize: Math.min(310 / timeStr.length, 14), whiteSpace: 'nowrap' }}>{timeStr}</span>
       </div>
 
-      <div style={{ fontSize: 12, color: 'white' }}>{seg.name}</div>
+      <div style={{ fontSize: 12, color: primaryTextColor }}>{seg.name}</div>
       <div style={{ fontSize: 13 }}>
         {t('Duration')} {formatTimecode({ seconds: duration, shorten: true })}
       </div>
@@ -135,7 +135,7 @@ const Segment = memo(({ seg, index, currentSegIndex, formatTimecode, getFrameCou
 
       {!invertCutSegments && (
         <div style={{ position: 'absolute', right: 3, bottom: 3 }}>
-          <CheckIcon className="enabled" size={20} color="white" onClick={onToggleSegmentSelectedClick} />
+          <CheckIcon className="enabled" size={20} color="var(--gray12)" onClick={onToggleSegmentSelectedClick} />
         </div>
       )}
     </motion.div>
@@ -152,7 +152,7 @@ const SegmentList = memo(({
 }) => {
   const { t } = useTranslation();
 
-  const { invertCutSegments, simpleMode } = useUserSettings();
+  const { invertCutSegments, simpleMode, darkMode } = useUserSettings();
 
   const segments = invertCutSegments ? inverseCutSegments : apparentCutSegments;
 
@@ -195,14 +195,14 @@ const SegmentList = memo(({
   }
 
   function renderFooter() {
-    const currentSegColor = getSegColor(currentCutSeg).alpha(0.5).string();
-    const segAtCursorColor = getSegColor(segmentAtCursor).alpha(0.5).string();
+    const currentSegColor = getSegColor(currentCutSeg, darkMode).alpha(0.5).string();
+    const segAtCursorColor = getSegColor(segmentAtCursor, darkMode).alpha(0.5).string();
 
     const segmentsTotal = selectedSegments.reduce((acc, { start, end }) => (end - start) + acc, 0);
 
     return (
       <>
-        <div style={{ display: 'flex', padding: '5px 0', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid grey' }}>
+        <div style={{ display: 'flex', padding: '5px 0', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid var(gray6)' }}>
           <FaPlus
             size={24}
             style={{ ...buttonBaseStyle, background: neutralButtonColor }}
@@ -248,7 +248,7 @@ const SegmentList = memo(({
           />
         </div>
 
-        <div style={{ padding: '5px 10px', boxSizing: 'border-box', borderBottom: '1px solid grey', borderTop: '1px solid grey', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+        <div style={{ padding: '5px 10px', boxSizing: 'border-box', borderBottom: '1px solid var(gray6)', borderTop: '1px solid var(gray6)', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
           <div>{t('Segments total:')}</div>
           <div>{formatTimecode({ seconds: segmentsTotal })}</div>
         </div>
@@ -258,17 +258,17 @@ const SegmentList = memo(({
 
   return (
     <motion.div
-      style={{ width, background: controlsBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
+      style={{ width, background: controlsBackground, color: 'var(--gray11)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
       initial={{ x: width }}
       animate={{ x: 0 }}
       exit={{ x: width }}
       transition={mySpring}
     >
-      <div style={{ fontSize: 14, padding: '0 5px' }} className="no-user-select">
+      <div style={{ fontSize: 14, padding: '0 5px', color: 'var(--gray12)' }} className="no-user-select">
         <FaAngleRight
           title={t('Close sidebar')}
           size={20}
-          style={{ verticalAlign: 'middle', color: 'white', cursor: 'pointer', padding: 2 }}
+          style={{ verticalAlign: 'middle', color: 'var(--gray11)', cursor: 'pointer', padding: 2 }}
           role="button"
           onClick={toggleSegmentsList}
         />
@@ -283,6 +283,7 @@ const SegmentList = memo(({
             return (
               <Segment
                 key={id}
+                darkMode={darkMode}
                 seg={seg}
                 index={index}
                 selected={selected}

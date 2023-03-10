@@ -2,7 +2,7 @@ import React, { memo, useEffect, useState, useCallback, useRef, useMemo } from '
 import { FaAngleLeft, FaWindowClose } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence } from 'framer-motion';
-import { Heading, InlineAlert, Table, SideSheet, Position, ThemeProvider } from 'evergreen-ui';
+import { SideSheet, Position, ThemeProvider } from 'evergreen-ui';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
@@ -31,14 +31,14 @@ import UserSettingsContext from './contexts/UserSettingsContext';
 import NoFileLoaded from './NoFileLoaded';
 import Canvas from './Canvas';
 import TopMenu from './TopMenu';
-import Sheet from './Sheet';
+import Sheet from './components/Sheet';
 import LastCommandsSheet from './LastCommandsSheet';
 import StreamsSelector from './StreamsSelector';
 import SegmentList from './SegmentList';
-import Settings from './Settings';
+import Settings from './components/Settings';
 import Timeline from './Timeline';
 import BottomBar from './BottomBar';
-import ExportConfirm from './ExportConfirm';
+import ExportConfirm from './components/ExportConfirm';
 import ValueTuners from './components/ValueTuners';
 import VolumeControl from './components/VolumeControl';
 import SubtitleControl from './components/SubtitleControl';
@@ -49,7 +49,7 @@ import Working from './components/Working';
 import OutputFormatSelect from './components/OutputFormatSelect';
 
 import { loadMifiLink, runStartupCheck } from './mifi';
-import { controlsBackground } from './colors';
+import { controlsBackground, darkModeTransition } from './colors';
 import {
   getStreamFps, isCuttingStart, isCuttingEnd,
   readFileMeta, getSmarterOutFormat, renderThumbnails as ffmpegRenderThumbnails,
@@ -96,7 +96,7 @@ const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && z
 
 
 const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
-const bottomStyle = { background: controlsBackground };
+const bottomStyle = { background: controlsBackground, transition: darkModeTransition };
 
 let lastOpenedPath;
 const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
@@ -174,7 +174,7 @@ const App = memo(() => {
   const allUserSettings = useUserSettingsRoot();
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, enableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, setCleanupChoices,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, enableTransferTimestamps, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, setCleanupChoices, darkMode, setDarkMode,
   } = allUserSettings;
 
   useEffect(() => {
@@ -2160,7 +2160,7 @@ const App = memo(() => {
   return (
     <UserSettingsContext.Provider value={userSettingsContext}>
       <ThemeProvider value={theme}>
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+        <div className={darkMode ? 'dark-theme' : undefined} style={{ display: 'flex', flexDirection: 'column', height: '100vh', color: 'var(--gray12)', background: 'var(--gray1)', transition: darkModeTransition }}>
           <TopMenu
             filePath={filePath}
             fileFormat={fileFormat}
@@ -2226,7 +2226,7 @@ const App = memo(() => {
               )}
 
               {isFileOpened && (
-                <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, marginBottom: 10, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center' }}>
+                <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, marginBottom: 10, display: 'flex', alignItems: 'center' }}>
                   <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} usingDummyVideo={usingDummyVideo} />
 
                   {subtitleStreams.length > 0 && <SubtitleControl subtitleStreams={subtitleStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} onActiveSubtitleChange={onActiveSubtitleChange} />}
@@ -2236,7 +2236,7 @@ const App = memo(() => {
                       title={t('Show sidebar')}
                       size={30}
                       role="button"
-                      style={{ marginRight: 10 }}
+                      style={{ marginRight: 10, color: 'var(--gray12)', opacity: 0.7 }}
                       onClick={toggleSegmentsList}
                     />
                   )}
@@ -2359,6 +2359,8 @@ const App = memo(() => {
               detectedFps={detectedFps}
               toggleLoopSelectedSegments={toggleLoopSelectedSegments}
               isFileOpened={isFileOpened}
+              darkMode={darkMode}
+              setDarkMode={setDarkMode}
             />
           </div>
 
@@ -2406,23 +2408,13 @@ const App = memo(() => {
             ffmpegCommandLog={ffmpegCommandLog}
           />
 
-          <Sheet visible={settingsVisible} onClosePress={toggleSettings} style={{ background: 'white', color: 'black' }}>
-            <Heading>{t('Keyboard & mouse shortcuts')}</Heading>
-            <InlineAlert marginTop={20}>{t('Hover mouse over buttons in the main interface to see which function they have')}</InlineAlert>
-            <Table style={{ marginTop: 20 }}>
-              <Table.Head>
-                <Table.TextHeaderCell>{t('Settings')}</Table.TextHeaderCell>
-                <Table.TextHeaderCell>{t('Current setting')}</Table.TextHeaderCell>
-              </Table.Head>
-              <Table.Body>
-                <Settings
-                  onTunerRequested={onTunerRequested}
-                  onKeyboardShortcutsDialogRequested={toggleKeyboardShortcuts}
-                  askForCleanupChoices={askForCleanupChoices}
-                  toggleStoreProjectInWorkingDir={toggleStoreProjectInWorkingDir}
-                />
-              </Table.Body>
-            </Table>
+          <Sheet visible={settingsVisible} onClosePress={toggleSettings} style={{ padding: '1em 0' }}>
+            <Settings
+              onTunerRequested={onTunerRequested}
+              onKeyboardShortcutsDialogRequested={toggleKeyboardShortcuts}
+              askForCleanupChoices={askForCleanupChoices}
+              toggleStoreProjectInWorkingDir={toggleStoreProjectInWorkingDir}
+            />
           </Sheet>
 
           <ConcatDialog isShown={batchFiles.length > 0 && concatDialogVisible} onHide={() => setConcatDialogVisible(false)} paths={batchFilePaths} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} />

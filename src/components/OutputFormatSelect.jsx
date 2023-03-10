@@ -1,10 +1,10 @@
 import React, { memo, useMemo } from 'react';
 import i18n from 'i18next';
 import fromPairs from 'lodash/fromPairs';
-import { Select } from 'evergreen-ui';
 
 import allOutFormats from '../outFormats';
 import { withBlur } from '../util';
+import Select from './Select';
 
 const commonFormats = ['mov', 'mp4', 'matroska', 'webm', 'mp3', 'ipod'];
 

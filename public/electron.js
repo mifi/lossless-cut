@@ -20,7 +20,7 @@ const { checkNewVersion } = require('./update-checker');
 
 require('./i18n');
 
-const { app, ipcMain, shell, BrowserWindow } = electron;
+const { app, ipcMain, shell, BrowserWindow, nativeTheme } = electron;
 
 remote.initialize();
 
@@ -71,6 +71,10 @@ function getSizeOptions() {
 }
 
 function createWindow() {
+  const darkMode = configStore.get('darkMode');
+  // todo follow darkMode setting when user switches
+  if (darkMode) nativeTheme.themeSource = 'dark';
+
   mainWindow = new BrowserWindow({
     ...getSizeOptions(),
     darkTheme: true,
@@ -81,6 +85,7 @@ function createWindow() {
       // https://github.com/electron/electron/issues/5107
       webSecurity: !isDev,
     },
+    backgroundColor: darkMode ? '#333' : '#fff',
   });
 
   remote.enable(mainWindow.webContents);

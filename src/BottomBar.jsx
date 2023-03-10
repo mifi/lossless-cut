@@ -1,19 +1,19 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { Select } from 'evergreen-ui';
 import { motion } from 'framer-motion';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import { IoIosCamera, IoMdKey } from 'react-icons/io';
-import { FaYinYang, FaTrashAlt, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey } from 'react-icons/fa';
+import { FaYinYang, FaTrashAlt, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey, FaSun } from 'react-icons/fa';
 import { GiSoundWaves } from 'react-icons/gi';
 // import useTraceUpdate from 'use-trace-update';
 
-import { primaryTextColor, primaryColor } from './colors';
+import { primaryTextColor, primaryColor, darkModeTransition } from './colors';
 import SegmentCutpointButton from './components/SegmentCutpointButton';
 import SetCutpointButton from './components/SetCutpointButton';
 import ExportButton from './components/ExportButton';
 import ToggleExportConfirm from './components/ToggleExportConfirm';
 import CaptureFormatButton from './components/CaptureFormatButton';
+import Select from './components/Select';
 
 import SimpleModeButton from './components/SimpleModeButton';
 import { withBlur, mirrorTransform, checkAppPath } from './util';
@@ -29,7 +29,7 @@ const zoomOptions = Array(13).fill().map((unused, z) => 2 ** z);
 
 const leftRightWidth = 100;
 
-const CutTimeInput = memo(({ cutTime, setCutTime, startTimeOffset, seekAbs, currentCutSeg, currentApparentCutSeg, isStart }) => {
+const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, seekAbs, currentCutSeg, currentApparentCutSeg, isStart }) => {
   const { t } = useTranslation();
 
   const [cutTimeManual, setCutTimeManual] = useState();
@@ -41,10 +41,10 @@ const CutTimeInput = memo(({ cutTime, setCutTime, startTimeOffset, seekAbs, curr
 
   const isCutTimeManualSet = () => cutTimeManual !== undefined;
 
-  const border = `1px solid ${getSegColor(currentCutSeg).alpha(0.8).string()}`;
+  const border = `.15em solid ${getSegColor(currentCutSeg, darkMode).alpha(0.8).string()}`;
 
   const cutTimeInputStyle = {
-    background: 'white', border, borderRadius: 5, color: 'rgba(0, 0, 0, 0.7)', fontSize: 13, textAlign: 'center', padding: '1px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 0 : 5, marginRight: isStart ? 5 : 0, boxSizing: 'border-box', fontFamily: 'inherit', width: 90, outline: 'none',
+    border, borderRadius: 5, backgroundColor: 'var(--gray5)', transition: darkModeTransition, fontSize: 13, textAlign: 'center', padding: '1px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 0 : 5, marginRight: isStart ? 5 : 0, boxSizing: 'border-box', fontFamily: 'inherit', width: 90, outline: 'none',
   };
 
   const trySetTime = useCallback((timeWithOffset) => {
@@ -113,7 +113,7 @@ const CutTimeInput = memo(({ cutTime, setCutTime, startTimeOffset, seekAbs, curr
   return (
     <form onSubmit={handleSubmit}>
       <input
-        style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? '#dc1d1d' : undefined }}
+        style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? 'var(--red11)' : 'var(--gray12)' }}
         type="text"
         title={isStart ? t('Manually input current segment\'s start time') : t('Manually input current segment\'s end time')}
         onChange={e => handleCutTimeInput(e.target.value)}
@@ -137,6 +137,7 @@ const BottomBar = memo(({
   jumpTimelineStart, jumpTimelineEnd, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
   playing, shortStep, togglePlay, toggleLoopSelectedSegments, toggleTimelineMode, hasAudio, timelineMode,
   keyframesEnabled, toggleKeyframesEnabled, seekClosestKeyframe, detectedFps, isFileOpened, selectedSegments,
+  darkMode, setDarkMode,
 }) => {
   const { t } = useTranslation();
 
@@ -146,7 +147,7 @@ const BottomBar = memo(({
     const selectedSegmentsSafe = (selectedSegments.length > 1 ? selectedSegments : [selectedSegments[0], selectedSegments[0]]).slice(0, 10);
 
     const gradientColors = selectedSegmentsSafe.map((seg, i) => {
-      const segColor = getSegColor(seg);
+      const segColor = getSegColor(seg, darkMode);
       // make colors stronger, the more segments
       return `${segColor.alpha(Math.max(0.4, Math.min(0.8, selectedSegmentsSafe.length / 3))).string()} ${((i / (selectedSegmentsSafe.length - 1)) * 100).toFixed(1)}%`;
     }).join(', ');
@@ -155,7 +156,8 @@ const BottomBar = memo(({
       paddingLeft: 2,
       backgroundOffset: 30,
       background: `linear-gradient(90deg, ${gradientColors})`,
-      border: '1px solid rgb(200,200,200)',
+      border: '1px solid var(--gray8)',
+      color: 'white',
       margin: '2px 4px 0 0px',
       display: 'flex',
       alignItems: 'center',
@@ -164,7 +166,7 @@ const BottomBar = memo(({
       height: 24,
       borderRadius: 4,
     };
-  }, [selectedSegments]);
+  }, [darkMode, selectedSegments]);
 
   const { invertCutSegments, setInvertCutSegments, simpleMode, toggleSimpleMode, exportConfirmEnabled } = useUserSettings();
 
@@ -187,8 +189,8 @@ const BottomBar = memo(({
     const newIndex = currentSegIndexSafe + direction;
     const seg = cutSegments[newIndex];
 
-    const backgroundColor = seg && getSegColor(seg).alpha(0.5).string();
-    const opacity = seg ? undefined : 0.3;
+    const backgroundColor = seg && getSegColor(seg, darkMode).alpha(0.5).string();
+    const opacity = seg ? undefined : 0.5;
     const text = seg ? `${newIndex + 1}` : '-';
     const wide = text.length > 1;
     const segButtonStyle = {
@@ -215,10 +217,12 @@ const BottomBar = memo(({
         <div style={{ display: 'flex', alignItems: 'center', flexBasis: leftRightWidth }}>
           {!simpleMode && (
             <>
+              <FaSun color="var(--gray12)" role="button" onClick={() => setDarkMode((v) => !v)} style={{ padding: '0 .2em 0 .3em' }} />
+
               {hasAudio && (
                 <GiSoundWaves
                   size={24}
-                  style={{ padding: '0 5px', color: timelineMode === 'waveform' ? primaryTextColor : undefined }}
+                  style={{ padding: '0 .1em', color: timelineMode === 'waveform' ? primaryTextColor : undefined }}
                   role="button"
                   title={t('Show waveform')}
                   onClick={() => toggleTimelineMode('waveform')}
@@ -228,7 +232,7 @@ const BottomBar = memo(({
                 <>
                   <FaImages
                     size={20}
-                    style={{ padding: '0 5px', color: timelineMode === 'thumbnails' ? primaryTextColor : undefined }}
+                    style={{ padding: '0 .2em', color: timelineMode === 'thumbnails' ? primaryTextColor : undefined }}
                     role="button"
                     title={t('Show thumbnails')}
                     onClick={() => toggleTimelineMode('thumbnails')}
@@ -236,7 +240,7 @@ const BottomBar = memo(({
 
                   <FaKey
                     size={16}
-                    style={{ padding: '0 5px', color: keyframesEnabled ? primaryTextColor : undefined }}
+                    style={{ padding: '0 .2em', color: keyframesEnabled ? primaryTextColor : undefined }}
                     role="button"
                     title={t('Show keyframes')}
                     onClick={toggleKeyframesEnabled}
@@ -267,7 +271,7 @@ const BottomBar = memo(({
 
         <SetCutpointButton currentCutSeg={currentCutSeg} side="start" onClick={setCutStart} title={t('Start current segment at current time')} style={{ marginRight: 5 }} />
 
-        {!simpleMode && <CutTimeInput currentCutSeg={currentCutSeg} currentApparentCutSeg={currentApparentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentApparentCutSeg.start} setCutTime={setCutTime} isStart />}
+        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} currentApparentCutSeg={currentApparentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentApparentCutSeg.start} setCutTime={setCutTime} isStart />}
 
         <IoMdKey
           size={25}
@@ -287,7 +291,7 @@ const BottomBar = memo(({
           />
         )}
 
-        <div role="button" onClick={() => togglePlay()} style={{ background: primaryColor, margin: '2px 5px 0 5px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 17 }}>
+        <div role="button" onClick={() => togglePlay()} style={{ background: primaryColor, margin: '2px 5px 0 5px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 17, color: 'white' }}>
           <PlayPause
             style={{ paddingLeft: playing ? 0 : 2 }}
             size={16}
@@ -318,7 +322,7 @@ const BottomBar = memo(({
           onClick={() => seekClosestKeyframe(1)}
         />
 
-        {!simpleMode && <CutTimeInput currentCutSeg={currentCutSeg} currentApparentCutSeg={currentApparentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentApparentCutSeg.end} setCutTime={setCutTime} />}
+        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} currentApparentCutSeg={currentApparentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentApparentCutSeg.end} setCutTime={setCutTime} />}
 
         <SetCutpointButton currentCutSeg={currentCutSeg} side="end" onClick={setCutEnd} title={t('End current segment at current time')} style={{ marginLeft: 5 }} />
 
@@ -371,14 +375,14 @@ const BottomBar = memo(({
 
             <div role="button" style={{ marginRight: 5, marginLeft: 10 }} title={t('Zoom')} onClick={timelineToggleComfortZoom}>{Math.floor(zoom)}x</div>
 
-            <Select height={20} style={{ flexBasis: 85, flexGrow: 0 }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
+            <Select style={{ height: 20, flexBasis: 85, flexGrow: 0 }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
               <option key="" value="" disabled>{t('Zoom')}</option>
               {zoomOptions.map(val => (
                 <option key={val} value={String(val)}>{t('Zoom')} {val}x</option>
               ))}
             </Select>
 
-            {detectedFps != null && <div title={t('Video FPS')} style={{ color: 'rgba(255,255,255,0.6)', fontSize: '.7em', marginLeft: 6 }}>{detectedFps.toFixed(3)}</div>}
+            {detectedFps != null && <div title={t('Video FPS')} style={{ color: 'var(--gray11)', fontSize: '.7em', marginLeft: 6 }}>{detectedFps.toFixed(3)}</div>}
           </>
         )}
 

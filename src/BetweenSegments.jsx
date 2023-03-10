@@ -29,13 +29,13 @@ const BetweenSegments = memo(({ start, end, duration, invertCutSegments }) => {
       layout
       transition={mySpring}
     >
-      <div style={{ flexGrow: 1, borderBottom: '1px dashed rgba(255, 255, 255, 0.3)', marginLeft: 5, marginRight: 5 }} />
+      <div style={{ flexGrow: 1, borderBottom: '1px dashed var(--gray10)', marginLeft: 5, marginRight: 5 }} />
       {invertCutSegments ? (
         <FaSave style={{ color: saveColor }} size={16} />
       ) : (
-        <FaTrashAlt style={{ color: 'rgba(255, 255, 255, 0.3)' }} size={16} />
+        <FaTrashAlt style={{ color: 'var(--gray10)' }} size={16} />
       )}
-      <div style={{ flexGrow: 1, borderBottom: '1px dashed rgba(255, 255, 255, 0.3)', marginLeft: 5, marginRight: 5 }} />
+      <div style={{ flexGrow: 1, borderBottom: '1px dashed var(--gray10)', marginLeft: 5, marginRight: 5 }} />
     </motion.div>
   );
 });

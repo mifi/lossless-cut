@@ -15,7 +15,7 @@ const ReactSwal = withReactContent(Swal);
 // eslint-disable-next-line no-template-curly-in-string
 const extVar = '${EXT}';
 
-const inputStyle = { flexGrow: 1, fontFamily: 'inherit', fontSize: '.8em' };
+const inputStyle = { flexGrow: 1, fontFamily: 'inherit', fontSize: '.8em', backgroundColor: 'var(--gray3)', color: 'var(--gray12)', appearance: 'none', border: 'none' };
 
 const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe, getOutSegError }) => {
   const { safeOutputFileName, toggleSafeOutputFileName } = useUserSettings();
@@ -86,8 +86,10 @@ const OutSegTemplateEditor = memo(({ helpIcon, outSegTemplate, setOutSegTemplate
   return (
     <>
       <div>
-        <span role="button" onClick={onShowClick} style={{ cursor: needToShow ? undefined : 'pointer' }}>
-          {outSegFileNames != null && t('Output name(s):', { count: outSegFileNames.length })} {outSegFileNames != null && <HighlightedText style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{outSegFileNames[currentSegIndexSafe] || outSegFileNames[0]}</HighlightedText>}
+        <span>
+          {outSegFileNames != null && t('Output name(s):', { count: outSegFileNames.length })}
+          {' '}
+          {outSegFileNames != null && <HighlightedText role="button" onClick={onShowClick} style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>{outSegFileNames[currentSegIndexSafe] || outSegFileNames[0] || '-'}</HighlightedText>}
         </span>
         {helpIcon}
       </div>

@@ -133,6 +133,8 @@ export default () => {
   useEffect(() => safeSetConfig({ cleanupChoices }), [cleanupChoices]);
   const [allowMultipleInstances, setAllowMultipleInstances] = useState(safeGetConfigInitial('allowMultipleInstances'));
   useEffect(() => safeSetConfig({ allowMultipleInstances }), [allowMultipleInstances]);
+  const [darkMode, setDarkMode] = useState(safeGetConfigInitial('darkMode'));
+  useEffect(() => safeSetConfig({ darkMode }), [darkMode]);
 
 
   const resetKeyBindings = useCallback(() => {
@@ -244,5 +246,7 @@ export default () => {
     setCleanupChoices,
     allowMultipleInstances,
     setAllowMultipleInstances,
+    darkMode,
+    setDarkMode,
   };
 };

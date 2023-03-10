@@ -33,6 +33,7 @@ const TimelineSeg = memo(({
     justifyContent: 'space-between',
     originX: 0,
     boxSizing: 'border-box',
+    color: 'white',
 
     borderLeft: markerBorder,
     borderTopLeftRadius: markerBorderRadius,
@@ -72,7 +73,7 @@ const TimelineSeg = memo(({
             style={{ width: 16, height: 16, flexShrink: 1 }}
           >
             <FaTrashAlt
-              style={{ width: '100%', color: 'rgba(255,255,255,0.8)' }}
+              style={{ width: '100%', color: 'var(--gray12)' }}
               size={16}
             />
           </motion.div>

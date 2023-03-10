@@ -1,45 +1,36 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { WarningSignIcon, Button, Select, CrossIcon } from 'evergreen-ui';
+import { WarningSignIcon, Button, CrossIcon } from 'evergreen-ui';
 import { FaRegCheckCircle } from 'react-icons/fa';
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
 import { IoIosHelpCircle } from 'react-icons/io';
 
-import KeyframeCutButton from './components/KeyframeCutButton';
-import ExportButton from './components/ExportButton';
-import ExportModeButton from './components/ExportModeButton';
-import PreserveMovDataButton from './components/PreserveMovDataButton';
-import MovFastStartButton from './components/MovFastStartButton';
-import ToggleExportConfirm from './components/ToggleExportConfirm';
-import OutSegTemplateEditor from './components/OutSegTemplateEditor';
-import HighlightedText from './components/HighlightedText';
+import KeyframeCutButton from './KeyframeCutButton';
+import ExportButton from './ExportButton';
+import ExportModeButton from './ExportModeButton';
+import PreserveMovDataButton from './PreserveMovDataButton';
+import MovFastStartButton from './MovFastStartButton';
+import ToggleExportConfirm from './ToggleExportConfirm';
+import OutSegTemplateEditor from './OutSegTemplateEditor';
+import HighlightedText, { highlightedTextStyle } from './HighlightedText';
+import Select from './Select';
 
-import { withBlur } from './util';
-import { toast } from './swal';
-import { isMov as ffmpegIsMov } from './util/streams';
-import useUserSettings from './hooks/useUserSettings';
+import { primaryTextColor } from '../colors';
+import { withBlur } from '../util';
+import { toast } from '../swal';
+import { isMov as ffmpegIsMov } from '../util/streams';
+import useUserSettings from '../hooks/useUserSettings';
+import styles from './ExportConfirm.module.css';
 
-const sheetStyle = {
-  position: 'fixed',
-  left: 0,
-  right: 0,
-  top: 0,
-  bottom: 0,
-  zIndex: 10,
-  background: 'rgba(105, 105, 105, 0.7)',
-  backdropFilter: 'blur(10px)',
-  overflowY: 'scroll',
-  display: 'flex',
-};
 
-const boxStyle = { margin: '15px 15px 50px 15px', background: 'rgba(25, 25, 25, 0.6)', borderRadius: 10, padding: '10px 20px', minHeight: 500, position: 'relative' };
+const boxStyle = { margin: '15px 15px 50px 15px', borderRadius: 10, padding: '10px 20px', minHeight: 500, position: 'relative' };
 
-const outDirStyle = { background: 'rgb(193, 98, 0)', borderRadius: '.4em', padding: '0 .3em', wordBreak: 'break-all', cursor: 'pointer' };
+const outDirStyle = { ...highlightedTextStyle, wordBreak: 'break-all', cursor: 'pointer' };
 
-const warningStyle = { color: '#faa', fontSize: '80%' };
+const warningStyle = { color: 'var(--red11)', fontSize: '80%' };
 
-const HelpIcon = ({ onClick, style }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', verticalAlign: 'middle', marginLeft: 5, ...style }} />;
+const HelpIcon = ({ onClick, style }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', color: primaryTextColor, verticalAlign: 'middle', marginLeft: 5, ...style }} />;
 
 const ExportConfirm = memo(({
   areWeCutting, selectedSegments, segmentsToExport, willMerge, visible, onClosePress, onExportConfirm,
@@ -128,11 +119,11 @@ const ExportConfirm = memo(({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={sheetStyle}
+            className={styles.sheet}
             transition={{ duration: 0.3, easings: ['easeOut'] }}
           >
             <div style={{ margin: 'auto' }}>
-              <div style={boxStyle}>
+              <div style={boxStyle} className={styles.box}>
                 <CrossIcon size={24} style={{ position: 'absolute', right: 0, top: 0, padding: 15, boxSizing: 'content-box', cursor: 'pointer' }} role="button" onClick={onClosePress} />
 
                 <h2 style={{ marginTop: 0, marginBottom: '.5em' }}>{t('Export options')}</h2>
@@ -213,7 +204,7 @@ const ExportConfirm = memo(({
                   {!needSmartCut && (
                     <li>
                       &quot;avoid_negative_ts&quot;
-                      <Select height={20} value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value)} style={{ marginLeft: 5 }}>
+                      <Select value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value)} style={{ height: 20, marginLeft: 5 }}>
                         <option value="auto">auto</option>
                         <option value="make_zero">make_zero</option>
                         <option value="make_non_negative">make_non_negative</option>
@@ -237,7 +228,7 @@ const ExportConfirm = memo(({
               style={{ display: 'flex', alignItems: 'flex-end' }}
             >
               <ToggleExportConfirm size={25} />
-              <div style={{ fontSize: 13, marginLeft: 3, marginRight: 7, maxWidth: 120, lineHeight: '100%', color: exportConfirmEnabled ? 'white' : 'rgba(255,255,255,0.3)', cursor: 'pointer' }} role="button" onClick={toggleExportConfirmEnabled}>{t('Show this page before exporting?')}</div>
+              <div style={{ fontSize: 13, marginLeft: 3, marginRight: 7, maxWidth: 120, lineHeight: '100%', color: exportConfirmEnabled ? 'var(--gray12)' : 'var(--gray11)', cursor: 'pointer' }} role="button" onClick={toggleExportConfirmEnabled}>{t('Show this page before exporting?')}</div>
             </motion.div>
 
             <motion.div

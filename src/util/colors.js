@@ -9,7 +9,7 @@ function getColor(n) {
 }
 
 // eslint-disable-next-line import/prefer-default-export
-export function getSegColor(seg) {
+export function getSegColor(seg, darkMode) {
   if (!seg) {
     return color({
       h: 0,
@@ -19,5 +19,7 @@ export function getSegColor(seg) {
   }
   const { segColorIndex } = seg;
 
-  return getColor(segColorIndex);
+  const theColor = getColor(segColorIndex);
+  if (!darkMode) return theColor.darken(0.6);
+  return theColor;
 }

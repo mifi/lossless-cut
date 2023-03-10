@@ -1,8 +1,8 @@
 import React, { memo, useState, useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextInput, IconButton, Alert, Checkbox, Dialog, Button, Paragraph } from 'evergreen-ui';
+import { TextInput, IconButton, Alert, Checkbox, Dialog, Button, Paragraph, CogIcon } from 'evergreen-ui';
 import { AiOutlineMergeCells } from 'react-icons/ai';
-import { FaQuestionCircle, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
+import { FaQuestionCircle, FaExclamationTriangle } from 'react-icons/fa';
 import i18n from 'i18next';
 import withReactContent from 'sweetalert2-react-content';
 
@@ -170,9 +170,9 @@ const ConcatDialog = memo(({
           <>
             <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               <Checkbox checked={enableReadFileMeta} onChange={(e) => setEnableReadFileMeta(e.target.checked)} label={t('Check compatibility')} marginLeft={10} marginRight={10} />
-              <Button iconBefore={FaCheckCircle} onClick={() => setSettingsVisible(true)}>{t('Options')}</Button>
+              <Button iconBefore={CogIcon} onClick={() => setSettingsVisible(true)}>{t('Options')}</Button>
               {fileFormat && detectedFileFormat ? (
-                <OutputFormatSelect style={{ maxWidth: 180 }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
+                <OutputFormatSelect style={{ height: 30, maxWidth: 180 }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
               ) : (
                 <Button disabled isLoading>{t('Loading')}</Button>
               )}

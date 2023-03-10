@@ -1,9 +1,11 @@
 import React from 'react';
 
 import { getSegColor } from '../util/colors';
+import useUserSettings from '../hooks/useUserSettings';
 
 const SegmentCutpointButton = ({ currentCutSeg, side, Icon, onClick, title, style }) => {
-  const segColor = getSegColor(currentCutSeg);
+  const { darkMode } = useUserSettings();
+  const segColor = getSegColor(currentCutSeg, darkMode);
 
   const start = side === 'start';
   const border = `4px solid ${segColor.lighten(0.1).string()}`;

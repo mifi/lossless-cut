@@ -4,11 +4,12 @@ import { FaImage, FaCheckCircle, FaPaperclip, FaVideo, FaVideoSlash, FaFileImpor
 import { GoFileBinary } from 'react-icons/go';
 import { FiEdit, FiCheck, FiTrash } from 'react-icons/fi';
 import { MdSubtitles } from 'react-icons/md';
-import { BookIcon, Paragraph, TextInput, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, Select, Heading, SortAscIcon, SortDescIcon, Dialog, Button, PlusIcon, Pane, ForkIcon, Alert } from 'evergreen-ui';
+import { BookIcon, Paragraph, TextInput, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, Heading, SortAscIcon, SortDescIcon, Dialog, Button, PlusIcon, Pane, ForkIcon, Alert } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 import prettyBytes from 'pretty-bytes';
 
 import AutoExportToggler from './components/AutoExportToggler';
+import Select from './components/Select';
 import { askForMetadataKey, showJson5Dialog } from './dialogs';
 import { formatDuration } from './util/duration';
 import { getStreamFps } from './ffmpeg';
@@ -254,7 +255,7 @@ const Stream = memo(({ dispositionByStreamId, setDispositionByStreamId, filePath
       <td style={{ maxWidth: '2.5em', overflow: 'hidden' }} title={language}>{language}</td>
       <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
       <td>
-        <Select width={100} value={effectiveDisposition || unchangedDispositionValue} onChange={onDispositionChange}>
+        <Select style={{ width: 100 }} value={effectiveDisposition || unchangedDispositionValue} onChange={onDispositionChange}>
           <option value="" disabled>{t('Disposition')}</option>
           <option value={unchangedDispositionValue}>{t('Unchanged')}</option>
           <option value={deleteDispositionValue}>{t('Remove')}</option>

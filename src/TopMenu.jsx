@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import ExportModeButton from './components/ExportModeButton';
 
 import { withBlur } from './util';
-import { primaryTextColor, controlsBackground } from './colors';
+import { primaryTextColor, controlsBackground, darkModeTransition } from './colors';
 import useUserSettings from './hooks/useUserSettings';
 
 
@@ -31,7 +31,7 @@ const TopMenu = memo(({
   return (
     <div
       className="no-user-select"
-      style={{ background: controlsBackground, display: 'flex', alignItems: 'center', padding: '3px 5px', justifyContent: 'space-between', flexWrap: 'wrap' }}
+      style={{ background: controlsBackground, transition: darkModeTransition, display: 'flex', alignItems: 'center', padding: '3px 5px', justifyContent: 'space-between', flexWrap: 'wrap' }}
     >
       {filePath && (
         <>

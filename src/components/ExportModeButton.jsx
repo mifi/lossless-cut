@@ -1,9 +1,9 @@
 import React, { memo, useMemo } from 'react';
-import { Select } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
 import { withBlur } from '../util';
 import useUserSettings from '../hooks/useUserSettings';
+import Select from './Select';
 
 const ExportModeButton = memo(({ selectedSegments, style }) => {
   const { t } = useTranslation();
@@ -50,8 +50,7 @@ const ExportModeButton = memo(({ selectedSegments, style }) => {
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <Select
-      height={20}
-      style={style}
+      style={{ height: 20, ...style }}
       value={effectiveExportMode}
       onChange={withBlur((e) => onChange(e.target.value))}
     >

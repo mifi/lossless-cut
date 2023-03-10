@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { Heading } from 'evergreen-ui';
 
 import CopyClipboardButton from './components/CopyClipboardButton';
-import Sheet from './Sheet';
+import Sheet from './components/Sheet';
 
 const LastCommandsSheet = memo(({ visible, onTogglePress, ffmpegCommandLog }) => {
   const { t } = useTranslation();
 
   return (
-    <Sheet visible={visible} onClosePress={onTogglePress} style={{ background: '#6b6b6b', color: 'white' }}>
+    <Sheet visible={visible} onClosePress={onTogglePress} style={{ paddingTop: '2em' }}>
       <Heading color="white">{t('Last ffmpeg commands')}</Heading>
 
       {ffmpegCommandLog.length > 0 ? (

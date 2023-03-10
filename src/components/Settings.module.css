@@ -1,0 +1,22 @@
+.settings td:first-child, .settings th:first-child {
+  padding: 1em 2em 1em 2em;
+}
+.settings td:nth-child(2), .settings th:nth-child(2) {
+  padding: 1em 2em 1em 0em;
+}
+
+.settings th {
+  text-align: left;
+}
+
+.settings tr.header {
+  background-color: var(--blackA3);
+}
+
+:global(.dark-theme) .settings tr.header {
+  background-color: var(--whiteA6);
+}
+
+.settings {
+  border-collapse: collapse;
+}

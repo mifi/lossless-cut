@@ -10,7 +10,7 @@ import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
 
 
-import { timelineBackground } from './colors';
+import { timelineBackground, darkModeTransition } from './colors';
 
 import { getSegColor } from './util/colors';
 
@@ -43,7 +43,7 @@ const Waveforms = memo(({ calculateTimelinePercent, durationSafe, waveforms, zoo
 ));
 
 const CommandedTime = memo(({ commandedTimePercent }) => {
-  const color = 'white';
+  const color = 'var(--gray12)';
   const commonStyle = { left: commandedTimePercent, position: 'absolute', zIndex: 4, pointerEvents: 'none' };
   return (
     <>
@@ -64,7 +64,7 @@ const Timeline = memo(({
 }) => {
   const { t } = useTranslation();
 
-  const { invertCutSegments } = useUserSettings();
+  const { invertCutSegments, darkMode } = useUserSettings();
 
   const timelineScrollerRef = useRef();
   const timelineScrollerSkipEventRef = useRef();
@@ -276,18 +276,18 @@ const Timeline = memo(({
         )}
 
         <div
-          style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative', backgroundColor: timelineBackground }}
+          style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative', backgroundColor: timelineBackground, transition: darkModeTransition }}
           ref={timelineWrapperRef}
         >
           {currentTimePercent !== undefined && (
-            <motion.div transition={{ type: 'spring', damping: 70, stiffness: 800 }} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, zIndex: 3, backgroundColor: 'rgba(255,255,255,0.6)', width: currentTimeWidth, pointerEvents: 'none' }} />
+            <motion.div transition={{ type: 'spring', damping: 70, stiffness: 800 }} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, zIndex: 3, backgroundColor: 'var(--gray12)', width: currentTimeWidth, pointerEvents: 'none' }} />
           )}
           {commandedTimePercent !== undefined && (
             <CommandedTime commandedTimePercent={commandedTimePercent} />
           )}
 
           {apparentCutSegments.map((seg, i) => {
-            const segColor = getSegColor(seg);
+            const segColor = getSegColor(seg, darkMode);
 
             if (seg.start === 0 && seg.end === 0) return null; // No video loaded
 
@@ -322,13 +322,13 @@ const Timeline = memo(({
           ))}
 
           {shouldShowKeyframes && !areKeyframesTooClose && neighbouringKeyFrames.map((f) => (
-            <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / durationSafe) * 100}%`, marginLeft: -1, width: 1, background: 'rgba(0,0,0,0.4)', pointerEvents: 'none' }} />
+            <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / durationSafe) * 100}%`, marginLeft: -1, width: 1, background: 'var(--gray9)', mixBlendMode: 'difference', pointerEvents: 'none' }} />
           ))}
         </div>
       </div>
 
       {(waveformEnabled && !thumbnailsEnabled && !shouldShowWaveform) && (
-        <div style={{ position: 'absolute', pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'rgba(255,255,255,0.6)' }}>
+        <div style={{ position: 'absolute', pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'var(--gray11)' }}>
           {t('Zoom in more to view waveform')}
         </div>
       )}

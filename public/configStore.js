@@ -122,6 +122,7 @@ const defaults = {
     trashTmpFiles: true, askForCleanup: true,
   },
   allowMultipleInstances: false,
+  darkMode: true,
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645

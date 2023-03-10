@@ -47,7 +47,7 @@ const VolumeControl = memo(({ playbackVolume, setPlaybackVolume, usingDummyVideo
         title={t('Mute preview? (will not affect output)')}
         size={30}
         role="button"
-        style={{ margin: '0 7px' }}
+        style={{ margin: '0 7px', color: 'var(--gray12)', opacity: 0.7 }}
         onClick={onVolumeIconClick}
       />
     </>

@@ -7,13 +7,13 @@ import { ReactSortable } from 'react-sortablejs';
 import { SortAlphabeticalIcon, SortAlphabeticalDescIcon } from 'evergreen-ui';
 
 import BatchFile from './BatchFile';
-import { timelineBackground, controlsBackground } from '../colors';
+import { controlsBackground, darkModeTransition } from '../colors';
 import { mySpring } from '../animations';
 
 
 const iconStyle = {
   flexShrink: 0,
-  color: 'white',
+  color: 'var(--gray12)',
   cursor: 'pointer',
   paddingTop: 3,
   paddingBottom: 3,
@@ -46,19 +46,19 @@ const BatchFilesList = memo(({ selectedBatchFiles, filePath, width, batchFiles, 
   return (
     <motion.div
       className="no-user-select"
-      style={{ width, background: timelineBackground, color: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column', overflowY: 'hidden', overflowX: 'hidden', resize: 'horizontal' }}
+      style={{ width, background: controlsBackground, color: 'var(--gray12)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden', overflowX: 'hidden', resize: 'horizontal' }}
       initial={{ x: -width }}
       animate={{ x: 0 }}
       exit={{ x: -width }}
       transition={mySpring}
     >
-      <div style={{ background: controlsBackground, fontSize: 14, paddingBottom: 3, paddingTop: 0, paddingLeft: 10, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-        {t('Batch file list')}
+      <div style={{ fontSize: 14, paddingBottom: 3, paddingTop: 0, paddingLeft: 10, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        <div>{t('Batch file list')}</div>
         <div style={{ flexGrow: 1 }} />
         <FaHatWizard size={17} role="button" title={`${t('Convert to supported format')}...`} style={iconStyle} onClick={onBatchConvertToSupportedFormatClick} />
         <AiOutlineMergeCells size={20} role="button" title={`${t('Merge/concatenate files')}...`} style={iconStyle} onClick={onMergeFilesClick} />
         <SortIcon size={25} role="button" title={t('Sort items')} style={iconStyle} onClick={onSortClick} />
-        <FaTimes size={20} role="button" title={t('Close batch')} style={iconStyle} onClick={closeBatch} />
+        <FaTimes size={20} role="button" title={t('Close batch')} style={{ ...iconStyle, color: 'var(--gray11)' }} onClick={closeBatch} />
       </div>
 
       <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
