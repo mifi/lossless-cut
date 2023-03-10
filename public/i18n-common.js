@@ -6,7 +6,16 @@ const { join } = require('path');
 
 const { frontendBuildDir } = require('./util');
 
-const getLangPath = (subPath) => (isDev ? join('public', subPath) : join(app.getAppPath(), frontendBuildDir, subPath));
+let customLocalesPath;
+function setCustomLocalesPath(p) {
+  customLocalesPath = p;
+}
+
+function getLangPath(subPath) {
+  if (customLocalesPath != null) return join(customLocalesPath, subPath);
+  if (isDev) return join('public', subPath);
+  return join(app.getAppPath(), frontendBuildDir, subPath);
+}
 
 // Weblate hardcodes different lang codes than electron
 // https://www.electronjs.org/docs/api/app#appgetlocale
@@ -47,4 +56,10 @@ const commonI18nOptions = {
 const loadPath = (lng, ns) => getLangPath(`locales/${mapLang(lng)}/${ns}.json`);
 const addPath = (lng, ns) => getLangPath(`locales/${mapLang(lng)}/${ns}.missing.json`);
 
-module.exports = { fallbackLng, loadPath, addPath, commonI18nOptions };
+module.exports = {
+  fallbackLng,
+  loadPath,
+  addPath,
+  commonI18nOptions,
+  setCustomLocalesPath,
+};

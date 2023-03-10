@@ -169,7 +169,7 @@ Unsupported files can still be converted to a supported format/codec from the `F
 
 ## [Command line interface (CLI)](cli.md)
 
-## [Developer notes](developer-notes.md)
+## [Contributing](developer-notes.md)
 
 ## [Known issues, limitations, troubleshooting, FAQ](issues.md)
 

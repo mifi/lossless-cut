@@ -18,6 +18,8 @@ const { frontendBuildDir } = require('./util');
 
 const { checkNewVersion } = require('./update-checker');
 
+const i18nCommon = require('./i18n-common');
+
 require('./i18n');
 
 const { app, ipcMain, shell, BrowserWindow, nativeTheme } = electron;
@@ -155,6 +157,9 @@ function parseCliArgs(rawArgv = process.argv) {
 }
 
 const argv = parseCliArgs();
+
+if (argv.localesPath != null) i18nCommon.setCustomLocalesPath(argv.localesPath);
+
 
 function safeRequestSingleInstanceLock(additionalData) {
   if (process.mas) return true; // todo remove when fixed https://github.com/electron/electron/issues/35540
