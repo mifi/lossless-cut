@@ -42,7 +42,7 @@ const TopMenu = memo(({
           <Button
             iconBefore={copyAnyAudioTrack ? VolumeUpIcon : VolumeOffIcon}
             height={20}
-            title={`${t('Discard audio? Current:')} ${copyAnyAudioTrack ? t('Keep audio tracks') : t('Discard audio tracks')}`}
+            title={copyAnyAudioTrack ? t('Keep audio tracks') : t('Discard audio tracks')}
             onClick={withBlur(toggleStripAudio)}
           >
             {copyAnyAudioTrack ? t('Keep audio') : t('Discard audio')}

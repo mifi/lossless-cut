@@ -130,7 +130,7 @@ const ExportConfirm = memo(({
                 <ul style={{ margin: 0 }}>
                   {selectedSegments.length !== nonFilteredSegmentsOrInverse.length && <li><FaRegCheckCircle size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: selectedSegments.length, nonFilteredSegments: nonFilteredSegmentsOrInverse.length })}</li>}
                   <li>
-                    {selectedSegments.length > 1 ? t('Merge {{segments}} cut segments to one file?', { segments: selectedSegments.length }) : t('Export mode')} <ExportModeButton selectedSegments={selectedSegments} />
+                    {selectedSegments.length > 1 ? t('Export mode for {{segments}} segments', { segments: selectedSegments.length }) : t('Export mode')} <ExportModeButton selectedSegments={selectedSegments} />
                     <HelpIcon onClick={onExportModeHelpPress} />
                     {effectiveExportMode === 'sesgments_to_chapters' && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" title={i18n.t('Chapters only')} />}
                   </li>
