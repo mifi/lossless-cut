@@ -710,5 +710,9 @@
     "Shift": "Maiusc",
     "Ctrl": "Ctrl",
     "All Files": "Tutti i file",
-    "FFmpeg capture method might sometimes capture more correct colors, but the captured snapshot might be off by one or more frames, relative to the preview.": "Il metodo di acquisizione FFmpeg potrebbe talvolta acquisire colori più corretti, ma l'istantanea acquisita potrebbe essere diversa rispetto all'anteprima di uno o più fotogrammi."
+    "FFmpeg capture method might sometimes capture more correct colors, but the captured snapshot might be off by one or more frames, relative to the preview.": "Il metodo di acquisizione FFmpeg potrebbe talvolta acquisire colori più corretti, ma l'istantanea acquisita potrebbe essere diversa rispetto all'anteprima di uno o più fotogrammi.",
+    "<0></0> to show simple view": "Seelziona <0></0> per la vista semplice",
+    "Invert selected segments": "Inverti segmenti selezionati",
+    "<0></0> to show advanced view": "Seleziona <0></0> per la vista avanzata",
+    "Show informational notifications": "Visualizza notifiche informative"
 }
