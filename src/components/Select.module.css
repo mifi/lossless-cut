@@ -6,7 +6,7 @@
   background-color: var(--gray3);
   color: var(--gray12);
   border-radius: .3em;
-  padding: 0 .3em;
+  padding: 0 1.2em 0 .3em;
   outline: .05em solid var(--gray8);
   border: .05em solid var(--gray7);
 
