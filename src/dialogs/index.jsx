@@ -13,7 +13,7 @@ import { parseYouTube } from '../edlFormats';
 import CopyClipboardButton from '../components/CopyClipboardButton';
 import { isWindows } from '../util';
 
-const { dialog, app } = window.require('@electron/remote');
+const { dialog } = window.require('@electron/remote');
 const { shell } = window.require('electron');
 
 const ReactSwal = withReactContent(Swal);
