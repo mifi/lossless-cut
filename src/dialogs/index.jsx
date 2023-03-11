@@ -494,14 +494,6 @@ export async function selectSegmentsByLabelDialog(currentName) {
   return value;
 }
 
-export function openAbout() {
-  Swal.fire({
-    icon: 'info',
-    title: i18n.t('About LosslessCut'),
-    text: i18n.t('You are running version {{version}}', { version: app.getVersion() }),
-  });
-}
-
 export async function showEditableJsonDialog({ text, title, inputLabel, inputValue, inputValidator }) {
   const { value } = await Swal.fire({
     input: 'textarea',

@@ -376,12 +376,7 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
           label: esc(t('Report an error')),
           click() { mainWindow.webContents.send('openSendReportDialog'); },
         },
-        ...(!isStoreBuild ? [
-          {
-            label: esc(t('Version')),
-            click() { mainWindow.webContents.send('openAbout'); },
-          },
-        ] : []),
+        ...(process.platform !== 'darwin' ? [{ role: 'about' }] : []),
       ],
     },
   ];

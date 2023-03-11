@@ -30,7 +30,23 @@ unhandled({
   showDialog: true,
 });
 
-app.name = 'LosslessCut';
+const appName = 'LosslessCut';
+
+app.name = appName;
+
+const isStoreBuild = process.windowsStore || process.mas;
+
+const showVersion = !isStoreBuild;
+
+const aboutPanelOptions = { applicationName: appName };
+if (!showVersion) {
+  // version will be wrong in Store builds
+  aboutPanelOptions.applicationVersion = '';
+  aboutPanelOptions.version = '';
+}
+
+// https://www.electronjs.org/docs/latest/api/app#appsetaboutpaneloptionsoptions
+app.setAboutPanelOptions(aboutPanelOptions);
 
 let filesToOpen = [];
 
@@ -44,8 +60,6 @@ let newVersion;
 let disableNetworking;
 
 const openFiles = (paths) => mainWindow.webContents.send('openFiles', paths);
-
-const isStoreBuild = process.windowsStore || process.mas;
 
 // https://github.com/electron/electron/issues/526#issuecomment-563010533
 function getSizeOptions() {
