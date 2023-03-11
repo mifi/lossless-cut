@@ -169,9 +169,11 @@ Unsupported files can still be converted to a supported format/codec from the `F
 
 ## [Command line interface (CLI)](cli.md)
 
+## [Known issues, limitations, troubleshooting, FAQ](issues.md)
+
 ## [Contributing](developer-notes.md)
 
-## [Known issues, limitations, troubleshooting, FAQ](issues.md)
+## [Translations](translations.md)
 
 If you have any problem or question, [please read this](issues.md) before creating an issue. I try to answer most common questions here.
 
@@ -192,7 +194,7 @@ This project is maintained by me alone. The project will always remain free and 
 - [Lottie animation](https://lottiefiles.com/7077-magic-flow)
 - Thanks to Adi Abinun for his UI sketch work, inspiration and guidance
 - [Thanks to everyone for supporting](https://mifi.no/thanks/) my open source work 🙌
-- Thanks to translators who helped translate the app. [You can too!](https://hosted.weblate.org/projects/losslesscut/losslesscut/)
+- Thanks to translators who helped translate the app. [You can too!](translations.md)
 
 ## More software
 
