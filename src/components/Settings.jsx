@@ -203,12 +203,12 @@ const Settings = memo(({
                 {keyframeCut ? (
                   <>
                     {t('Cut at the nearest keyframe (not accurate time.) Equiv to')}:<br />
-                    <code>ffmpeg -ss -i ...</code>
+                    <code className="highlighted">ffmpeg -ss -i ...</code>
                   </>
                 ) : (
                   <>
                     {t('Accurate time but could leave an empty portion at the beginning of the video. Equiv to')}:<br />
-                    <code>ffmpeg -i -ss ...</code>
+                    <code className="highlighted">ffmpeg -i -ss ...</code>
                   </>
                 )}
               </div>

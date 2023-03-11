@@ -49,7 +49,7 @@ kbd {
     box-shadow: inset 0 -1px 0 var(--gray8);
 }
 
-code {
+code.highlighted {
   background-color: var(--gray4);
   border-radius: .2em;
 }
