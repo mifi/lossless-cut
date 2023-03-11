@@ -86,6 +86,10 @@ EXIF/metadata can be preserved (see Export Options dialog), but it doesn't alway
 
 For example `tmcd`, `fdsc` and `gpmd` added by GoPro. These can however be losslessly exported to separate files if you want to keep this data for later.
 
+## Multiple LosslessCut instances
+
+By default, only a single running instance of LosslessCut is allowed. If you start a new LosslessCut instance from the command line, it will instead pass the list of files onto the already running instance. You can override this behavior inside settings **(experimental)**.
+
 # Still cannot find an answer?
 
 If any other problem please search for [existing issues](https://github.com/mifi/lossless-cut/issues) before you file an issue here on GitHub. You can check the developer tools for any errors or clues. Menu: `Tools` -> `Toggle Developer Tools`.
