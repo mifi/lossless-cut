@@ -258,7 +258,7 @@ const SegmentList = memo(({
 
   return (
     <motion.div
-      style={{ width, background: controlsBackground, color: 'var(--gray11)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
+      style={{ width, background: controlsBackground, borderLeft: '1px solid var(--gray6)', color: 'var(--gray11)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
       initial={{ x: width }}
       animate={{ x: 0 }}
       exit={{ x: width }}

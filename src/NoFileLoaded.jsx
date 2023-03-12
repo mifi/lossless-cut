@@ -13,18 +13,18 @@ const NoFileLoaded = memo(({ mifiLink, currentCutSeg }) => {
   const { simpleMode } = useUserSettings();
 
   return (
-    <div className="no-user-select" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, border: '2vmin dashed var(--gray5)', color: 'var(--gray12)', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}>
-      <div style={{ fontSize: '6vmin', textTransform: 'uppercase' }}>{t('DROP FILE(S)')}</div>
+    <div className="no-user-select" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, border: '1.5vmin dashed var(--gray3)', color: 'var(--gray12)', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}>
+      <div style={{ fontSize: '6vmin', textTransform: 'uppercase', color: 'var(--gray11)' }}>{t('DROP FILE(S)')}</div>
 
-      <div style={{ fontSize: '3vmin', color: 'var(--gray11)', marginBottom: '.3em' }}>
+      <div style={{ fontSize: '2.5vmin', color: 'var(--gray11)', marginBottom: '.3em' }}>
         <Trans>See <b>Help</b> menu for help</Trans>
       </div>
 
-      <div style={{ fontSize: '3vmin', color: 'var(--gray11)' }}>
+      <div style={{ fontSize: '2.5vmin', color: 'var(--gray11)' }}>
         <Trans><SetCutpointButton currentCutSeg={currentCutSeg} side="start" style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSeg} side="end" style={{ verticalAlign: 'middle' }} /> or <kbd>I</kbd> <kbd>O</kbd> to set cutpoints</Trans>
       </div>
 
-      <div style={{ fontSize: '3vmin', color: 'var(--gray11)' }} role="button">
+      <div style={{ fontSize: '2.5vmin', color: 'var(--gray11)' }} role="button">
         {simpleMode ? (
           <Trans><SimpleModeButton style={{ verticalAlign: 'middle' }} size={16} /> to show advanced view</Trans>
         ) : (

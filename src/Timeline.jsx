@@ -34,8 +34,8 @@ const Waveform = memo(({ waveform, calculateTimelinePercent, durationSafe }) => 
   );
 });
 
-const Waveforms = memo(({ calculateTimelinePercent, durationSafe, waveforms, zoom, timelineHeight }) => (
-  <div style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative' }}>
+const Waveforms = memo(({ calculateTimelinePercent, durationSafe, waveforms, zoom, height }) => (
+  <div style={{ height, width: `${zoom * 100}%`, position: 'relative' }}>
     {waveforms.map((waveform) => (
       <Waveform key={`${waveform.from}-${waveform.to}`} waveform={waveform} calculateTimelinePercent={calculateTimelinePercent} durationSafe={durationSafe} />
     ))}
@@ -58,11 +58,13 @@ const Timeline = memo(({
   durationSafe, startTimeOffset, playerTime, commandedTime, relevantTime,
   zoom, neighbouringKeyFrames, seekAbs, apparentCutSegments,
   setCurrentSegIndex, currentSegIndexSafe, inverseCutSegments, formatTimecode,
-  waveforms, shouldShowWaveform, shouldShowKeyframes, timelineHeight = 36, thumbnails,
-  onZoomWindowStartTimeChange, waveformEnabled, thumbnailsEnabled,
+  waveforms, shouldShowWaveform, shouldShowKeyframes, thumbnails,
+  onZoomWindowStartTimeChange, waveformEnabled, showThumbnails,
   playing, isFileOpened, onWheel, commandedTimeRef, goToTimecode, isSegmentSelected,
 }) => {
   const { t } = useTranslation();
+
+  const timelineHeight = 36;
 
   const { invertCutSegments, darkMode } = useUserSettings();
 
@@ -239,11 +241,17 @@ const Timeline = memo(({
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/mouse-events-have-key-events
     <div
-      style={{ position: 'relative' }}
+      style={{ position: 'relative', borderTop: '1px solid var(--gray6)', borderBottom: '1px solid var(--gray6)' }}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseOut={onMouseOut}
     >
+      {(waveformEnabled && !shouldShowWaveform) && (
+        <div style={{ pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'var(--gray11)' }}>
+          {t('Zoom in more to view waveform')}
+        </div>
+      )}
+
       <div
         style={{ overflowX: 'scroll' }}
         className="hide-scrollbar"
@@ -257,19 +265,19 @@ const Timeline = memo(({
             durationSafe={durationSafe}
             waveforms={waveforms}
             zoom={zoom}
-            timelineHeight={timelineHeight}
+            height={40}
           />
         )}
 
-        {thumbnailsEnabled && (
-          <div style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative' }}>
+        {showThumbnails && (
+          <div style={{ height: 60, width: `${zoom * 100}%`, position: 'relative', marginBottom: 3 }}>
             {thumbnails.map((thumbnail, i) => {
               const leftPercent = (thumbnail.time / durationSafe) * 100;
               const nextThumbnail = thumbnails[i + 1];
               const nextThumbTime = nextThumbnail ? nextThumbnail.time : durationSafe;
               const maxWidthPercent = ((nextThumbTime - thumbnail.time) / durationSafe) * 100 * 0.9;
               return (
-                <img key={thumbnail.url} src={thumbnail.url} alt="" style={{ position: 'absolute', left: `${leftPercent}%`, height: timelineHeight * 1.5, zIndex: 1, maxWidth: `${maxWidthPercent}%`, objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.5)', borderBottomRightRadius: 15, borderTopLeftRadius: 15, borderTopRightRadius: 15, pointerEvents: 'none' }} />
+                <img key={thumbnail.url} src={thumbnail.url} alt="" style={{ position: 'absolute', left: `${leftPercent}%`, height: '100%', boxSizing: 'border-box', zIndex: 1, maxWidth: `${maxWidthPercent}%`, objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.5)', borderBottomRightRadius: 15, borderTopLeftRadius: 15, borderTopRightRadius: 15, pointerEvents: 'none' }} />
               );
             })}
           </div>
@@ -326,12 +334,6 @@ const Timeline = memo(({
           ))}
         </div>
       </div>
-
-      {(waveformEnabled && !thumbnailsEnabled && !shouldShowWaveform) && (
-        <div style={{ position: 'absolute', pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'var(--gray11)' }}>
-          {t('Zoom in more to view waveform')}
-        </div>
-      )}
 
       <div style={{ position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 2 }}>
         <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' }}>

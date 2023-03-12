@@ -2,7 +2,7 @@ import React, { memo, useState, useEffect, useCallback } from 'react';
 import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { Text, Button, Alert, IconButton, TickIcon, ResetIcon, Heading } from 'evergreen-ui';
+import { WarningSignIcon, ErrorIcon, Button, Alert, IconButton, TickIcon, ResetIcon } from 'evergreen-ui';
 import withReactContent from 'sweetalert2-react-content';
 
 import Swal from '../swal';
@@ -93,7 +93,7 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
 
       {needToShow && (
         <>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 5, marginTop: 5 }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 5, marginTop: 10 }}>
             <input type="text" style={inputStyle} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
 
             {outSegFileNames && <Button height={20} onClick={onAllSegmentsPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
@@ -102,8 +102,8 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
             <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" />
           </div>
           <div style={{ maxWidth: 600 }}>
-            {error != null && <Alert intent="danger" appearance="card"><Heading color="danger">{i18n.t('There is an error in the file name template:')}</Heading><Text>{error}</Text></Alert>}
-            {isMissingExtension && <Alert intent="warning" appearance="card">{i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVar })}</Alert>}
+            {error != null && <div style={{ marginBottom: '1em' }}><ErrorIcon color="var(--red9)" /> {i18n.t('There is an error in the file name template:')} {error}</div>}
+            {isMissingExtension && <div style={{ marginBottom: '1em' }}><WarningSignIcon color="var(--amber9)" /> {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVar })}</div>}
             <div style={{ fontSize: '.8em', color: 'var(--gray11)' }}>
               {`${i18n.t('Variables')}`}{': '}
               {['FILENAME', 'CUT_FROM', 'CUT_TO', 'SEG_NUM', 'SEG_LABEL', 'SEG_SUFFIX', 'EXT', 'SEG_TAGS.XX'].map((variable) => <span key={variable} role="button" style={{ cursor: 'pointer', marginRight: '.2em' }} onClick={() => setText((oldText) => `${oldText}\${${variable}}`)}>{variable}</span>)}

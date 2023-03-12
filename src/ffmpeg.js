@@ -596,14 +596,12 @@ export async function renderThumbnails({ filePath, from, duration, onThumbnail }
 }
 
 
-export async function renderWaveformPng({ filePath, aroundTime, window, color }) {
-  const { from, to } = getIntervalAroundTime(aroundTime, window);
-
+export async function renderWaveformPng({ filePath, start, duration, color }) {
   const args1 = [
     '-hide_banner',
     '-i', filePath,
-    '-ss', from,
-    '-t', to - from,
+    '-ss', start,
+    '-t', duration,
     '-c', 'copy',
     '-vn',
     '-map', 'a:0',
@@ -614,7 +612,7 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
   const args2 = [
     '-hide_banner',
     '-i', '-',
-    '-filter_complex', `aformat=channel_layouts=mono,showwavespic=s=640x120:scale=sqrt:colors=${color}`,
+    '-filter_complex', `showwavespic=s=2000x300:scale=lin:filter=peak:split_channels=1:colors=${color}`,
     '-frames:v', '1',
     '-vcodec', 'png',
     '-f', 'image2',
@@ -622,18 +620,19 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
   ];
 
   console.log(getFfCommandLine('ffmpeg1', args1));
-  console.log(getFfCommandLine('ffmpeg2', args2));
+  console.log('|', getFfCommandLine('ffmpeg2', args2));
 
   let ps1;
   let ps2;
   try {
-    ps1 = runFfmpeg(args1, { encoding: null, buffer: false });
-    ps2 = runFfmpeg(args2, { encoding: null });
+    ps1 = runFfmpeg(args1, { encoding: null, buffer: false }, { logCli: false });
+    ps2 = runFfmpeg(args2, { encoding: null }, { logCli: false });
     ps1.stdout.pipe(ps2.stdin);
 
     const timer = setTimeout(() => {
       ps1.kill();
       ps2.kill();
+      console.warn('ffmpeg timed out');
     }, 10000);
 
     let stdout;
@@ -647,9 +646,9 @@ export async function renderWaveformPng({ filePath, aroundTime, window, color })
 
     return {
       url: URL.createObjectURL(blob),
-      from,
-      aroundTime,
-      to,
+      from: start,
+      to: start + duration,
+      duration,
       createdAt: new Date(),
     };
   } catch (err) {

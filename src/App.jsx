@@ -2,7 +2,7 @@ import React, { memo, useEffect, useState, useCallback, useRef, useMemo } from '
 import { FaAngleLeft, FaWindowClose } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence } from 'framer-motion';
-import { SideSheet, Position, ThemeProvider } from 'evergreen-ui';
+import { ThemeProvider } from 'evergreen-ui';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
@@ -79,6 +79,7 @@ import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, playOnlyCurrentSegment } from './segments';
 import { getOutSegError as getOutSegErrorRaw } from './util/outputNameTemplate';
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
+import BigWaveform from './components/BigWaveform';
 
 import isDev from './isDev';
 
@@ -142,7 +143,8 @@ const App = memo(() => {
   const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
 
   // State per application launch
-  const [timelineMode, setTimelineMode] = useState();
+  const [waveformMode, setWaveformMode] = useState();
+  const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
   const [keyframesEnabled, setKeyframesEnabled] = useState(true);
   const [showRightBar, setShowRightBar] = useState(true);
   const [rememberConvertToSupportedFormat, setRememberConvertToSupportedFormat] = useState();
@@ -200,13 +202,17 @@ const App = memo(() => {
     }
   }, [detectedFileFormat, outFormatLocked, setFileFormat, setOutFormatLocked]);
 
-  const toggleTimelineMode = useCallback((newMode) => {
-    if (newMode === timelineMode) {
-      setTimelineMode();
+  const toggleWaveformMode = useCallback((newMode) => {
+    if (waveformMode === 'waveform') {
+      setWaveformMode('big-waveform');
+    } else if (waveformMode === 'big-waveform') {
+      setWaveformMode();
     } else {
-      setTimelineMode(newMode);
+      setWaveformMode(newMode);
     }
-  }, [timelineMode]);
+  }, [waveformMode]);
+
+  const toggleEnableThumbnails = useCallback(() => setThumbnailsEnabled((v) => !v), []);
 
   const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => {
     const newVal = !v;
@@ -589,12 +595,13 @@ const App = memo(() => {
   const hasAudio = !!mainAudioStream;
   const hasVideo = !!mainVideoStream;
 
-  const waveformEnabled = timelineMode === 'waveform' && hasAudio;
-  const thumbnailsEnabled = timelineMode === 'thumbnails' && hasVideo;
+  const waveformEnabled = hasAudio && ['waveform', 'big-waveform'].includes(waveformMode);
+  const bigWaveformEnabled = waveformEnabled && waveformMode === 'big-waveform';
+  const showThumbnails = thumbnailsEnabled && hasVideo;
 
   const [, cancelRenderThumbnails] = useDebounceOld(() => {
     async function renderThumbnails() {
-      if (!thumbnailsEnabled || thumnailsRenderingPromiseRef.current) return;
+      if (!showThumbnails || thumnailsRenderingPromiseRef.current) return;
 
       try {
         setThumbnails([]);
@@ -609,7 +616,7 @@ const App = memo(() => {
     }
 
     if (isDurationValid(zoomedDuration)) renderThumbnails();
-  }, 500, [zoomedDuration, filePath, zoomWindowStartTime, thumbnailsEnabled]);
+  }, 500, [zoomedDuration, filePath, zoomWindowStartTime, showThumbnails]);
 
   // Cleanup removed thumbnails
   useEffect(() => {
@@ -628,11 +635,11 @@ const App = memo(() => {
     subtitlesByStreamIdRef.current = subtitlesByStreamId;
   }, [subtitlesByStreamId]);
 
-  const shouldShowKeyframes = keyframesEnabled && !!mainVideoStream && calcShouldShowKeyframes(zoomedDuration);
+  const shouldShowKeyframes = keyframesEnabled && hasVideo && calcShouldShowKeyframes(zoomedDuration);
   const shouldShowWaveform = calcShouldShowWaveform(zoomedDuration);
 
   const { neighbouringKeyFrames, findNearestKeyFrameTime } = useKeyframes({ keyframesEnabled, filePath, commandedTime, mainVideoStream, detectedFps, ffmpegExtractWindow });
-  const { waveforms } = useWaveform({ filePath, commandedTime, zoomedDuration, waveformEnabled, mainAudioStream, shouldShowWaveform, ffmpegExtractWindow });
+  const { waveforms } = useWaveform({ darkMode, filePath, relevantTime, waveformEnabled, mainAudioStream, shouldShowWaveform, ffmpegExtractWindow, durationSafe });
 
   const resetState = useCallback(() => {
     console.log('State reset');
@@ -1420,6 +1427,7 @@ const App = memo(() => {
 
       if (timecode) setStartTimeOffset(timecode);
       setDetectedFps(haveVideoStream ? getStreamFps(videoStream) : undefined);
+      if (!haveVideoStream) setWaveformMode('big-waveform');
       setMainFileMeta({ streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters });
       setMainVideoStream(videoStream);
       setMainAudioStream(audioStream);
@@ -1916,6 +1924,7 @@ const App = memo(() => {
       closeExportConfirm();
       setLastCommandsVisible(false);
       setSettingsVisible(false);
+      setStreamsSelectorShown(false);
       return false;
     }
 
@@ -2205,7 +2214,7 @@ const App = memo(() => {
             <div style={{ position: 'relative', flexGrow: 1, overflow: 'hidden' }}>
               {!isFileOpened && <NoFileLoaded mifiLink={mifiLink} currentCutSeg={currentCutSeg} />}
 
-              <div className="no-user-select" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, visibility: !isFileOpened ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
+              <div className="no-user-select" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, visibility: !isFileOpened || !hasVideo || bigWaveformEnabled ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
                 {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
                 <video
                   muted={playbackVolume === 0}
@@ -2223,6 +2232,8 @@ const App = memo(() => {
 
                 {canvasPlayerEnabled && <Canvas rotate={effectiveRotation} filePath={filePath} width={mainVideoStream.width} height={mainVideoStream.height} streamIndex={mainVideoStream.index} playerTime={playerTime} commandedTime={commandedTime} playing={playing} eventId={canvasPlayerEventId} />}
               </div>
+
+              {bigWaveformEnabled && <BigWaveform waveforms={waveforms} relevantTime={relevantTime} playing={playing} durationSafe={durationSafe} zoom={zoomUnrounded} seekRel={seekRel} />}
 
               {isRotationSet && !hideCanvasPreview && (
                 <div style={{ position: 'absolute', top: 0, right: 0, left: 0, marginTop: '1em', marginLeft: '1em', color: 'white', display: 'flex', alignItems: 'center' }}>
@@ -2301,7 +2312,7 @@ const App = memo(() => {
               waveforms={waveforms}
               shouldShowWaveform={shouldShowWaveform}
               waveformEnabled={waveformEnabled}
-              thumbnailsEnabled={thumbnailsEnabled}
+              showThumbnails={showThumbnails}
               neighbouringKeyFrames={neighbouringKeyFrames}
               thumbnails={thumbnailsSorted}
               playerTime={playerTime}
@@ -2358,8 +2369,10 @@ const App = memo(() => {
               shortStep={shortStep}
               seekClosestKeyframe={seekClosestKeyframe}
               togglePlay={togglePlay}
-              toggleTimelineMode={toggleTimelineMode}
-              timelineMode={timelineMode}
+              showThumbnails={showThumbnails}
+              toggleEnableThumbnails={toggleEnableThumbnails}
+              toggleWaveformMode={toggleWaveformMode}
+              waveformMode={waveformMode}
               hasAudio={hasAudio}
               keyframesEnabled={keyframesEnabled}
               toggleKeyframesEnabled={toggleKeyframesEnabled}
@@ -2371,13 +2384,7 @@ const App = memo(() => {
             />
           </div>
 
-          <SideSheet
-            width={700}
-            containerProps={{ style: { maxWidth: '100%' } }}
-            position={Position.LEFT}
-            isShown={streamsSelectorShown}
-            onCloseComplete={() => setStreamsSelectorShown(false)}
-          >
+          <Sheet visible={streamsSelectorShown} onClosePress={() => setStreamsSelectorShown(false)} style={{ padding: '1em 0' }}>
             {mainStreams && (
               <StreamsSelector
                 mainFilePath={filePath}
@@ -2405,7 +2412,7 @@ const App = memo(() => {
                 setDispositionByStreamId={setDispositionByStreamId}
               />
             )}
-          </SideSheet>
+          </Sheet>
 
           <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegmentsOrInverse={nonFilteredSegmentsOrInverse} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} setStreamsSelectorShown={setStreamsSelectorShown} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} needSmartCut={needSmartCut} />
 

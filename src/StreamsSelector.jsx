@@ -4,7 +4,7 @@ import { FaImage, FaCheckCircle, FaPaperclip, FaVideo, FaVideoSlash, FaFileImpor
 import { GoFileBinary } from 'react-icons/go';
 import { FiEdit, FiCheck, FiTrash } from 'react-icons/fi';
 import { MdSubtitles } from 'react-icons/md';
-import { BookIcon, Paragraph, TextInput, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, Heading, SortAscIcon, SortDescIcon, Dialog, Button, PlusIcon, Pane, ForkIcon, Alert } from 'evergreen-ui';
+import { BookIcon, TextInput, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, Heading, SortAscIcon, SortDescIcon, Dialog, Button, PlusIcon, ForkIcon, WarningSignIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 import prettyBytes from 'pretty-bytes';
 
@@ -243,7 +243,7 @@ const Stream = memo(({ dispositionByStreamId, setDispositionByStreamId, filePath
   return (
     <tr style={{ opacity: copyStream ? undefined : 0.4 }}>
       <td style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
-        <IconButton title={`${t('Click to toggle track inclusion when exporting')} (type ${codecTypeHuman})`} appearance="minimal" icon={<Icon color={copyStream ? '#52BD95' : '#D14343'} size={20} />} onClick={onClick} />
+        <IconButton iconSize={20} color={copyStream ? '#52BD95' : '#D14343'} title={`${t('Click to toggle track inclusion when exporting')} (type ${codecTypeHuman})`} appearance="minimal" icon={Icon} onClick={onClick} />
         <div style={{ width: 20, textAlign: 'center' }}>{stream.index + 1}</div>
       </td>
       <td style={{ maxWidth: '3em', overflow: 'hidden' }} title={stream.codec_name}>{stream.codec_name} {codecTag}</td>
@@ -255,7 +255,7 @@ const Stream = memo(({ dispositionByStreamId, setDispositionByStreamId, filePath
       <td style={{ maxWidth: '2.5em', overflow: 'hidden' }} title={language}>{language}</td>
       <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
       <td>
-        <Select style={{ width: 100 }} value={effectiveDisposition || unchangedDispositionValue} onChange={onDispositionChange}>
+        <Select style={{ width: '7em', fontSize: '1.1em' }} value={effectiveDisposition || unchangedDispositionValue} onChange={onDispositionChange}>
           <option value="" disabled>{t('Disposition')}</option>
           <option value={unchangedDispositionValue}>{t('Unchanged')}</option>
           <option value={deleteDispositionValue}>{t('Remove')}</option>
@@ -266,9 +266,10 @@ const Stream = memo(({ dispositionByStreamId, setDispositionByStreamId, filePath
         </Select>
 
       </td>
-      <td style={{ display: 'flex' }}>
+
+      <td style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <IconButton icon={InfoSignIcon} onClick={() => onInfoClick(stream, t('Track {{num}} info', { num: stream.index + 1 }))} appearance="minimal" iconSize={18} />
-        <IconButton title={t('Extract this track as file')} icon={<FaFileExport size={18} />} onClick={onExtractStreamPress} appearance="minimal" iconSize={18} />
+        {onExtractStreamPress && <IconButton title={t('Extract this track as file')} icon={FaFileExport} onClick={onExtractStreamPress} appearance="minimal" iconSize={18} />}
 
         <Popover
           position={Position.BOTTOM_LEFT}
@@ -302,8 +303,8 @@ const FileHeading = ({ path, formatData, chapters, onTrashClick, onEditClick, se
   const { t } = useTranslation();
 
   return (
-    <div style={{ display: 'flex', marginBottom: 15, marginLeft: 5, marginRight: 5, marginTop: 5, alignItems: 'center' }}>
-      <Heading title={path} style={{ wordBreak: 'break-all', marginRight: 10 }}>{path.replace(/.*\/([^/]+)$/, '$1')}</Heading>
+    <div style={{ display: 'flex', marginBottom: '.2em', borderBottom: '1px solid var(--gray7)' }}>
+      <div title={path} style={{ wordBreak: 'break-all', marginRight: '1em', fontWeight: 'bold' }}>{path.replace(/.*\/([^/]+)$/, '$1')}</div>
 
       <div style={{ flexGrow: 1 }} />
 
@@ -311,9 +312,9 @@ const FileHeading = ({ path, formatData, chapters, onTrashClick, onEditClick, se
       {chapters && chapters.length > 0 && <IconButton icon={BookIcon} onClick={() => onInfoClick(chapters, t('Chapters'))} appearance="minimal" iconSize={18} />}
       {onEditClick && <IconButton icon={EditIcon} onClick={onEditClick} appearance="minimal" iconSize={18} />}
       {onTrashClick && <IconButton icon={TrashIcon} onClick={onTrashClick} appearance="minimal" iconSize={18} />}
-      <IconButton icon={<FaCheckCircle color="#52BD95" size={18} />} onClick={() => setCopyAllStreams(true)} appearance="minimal" />
-      <IconButton icon={<FaBan color="#D14343" size={18} />} onClick={() => setCopyAllStreams(false)} appearance="minimal" />
-      {onExtractAllStreamsPress && <IconButton title={t('Export each track as individual files')} icon={<ForkIcon size={16} />} onClick={onExtractAllStreamsPress} appearance="minimal" />}
+      <IconButton iconSize={18} color="#52BD95" icon={FaCheckCircle} onClick={() => setCopyAllStreams(true)} appearance="minimal" />
+      <IconButton iconSize={18} color="#D14343" icon={FaBan} onClick={() => setCopyAllStreams(false)} appearance="minimal" />
+      {onExtractAllStreamsPress && <IconButton iconSize={16} title={t('Export each track as individual files')} icon={ForkIcon} onClick={onExtractAllStreamsPress} appearance="minimal" />}
     </div>
   );
 };
@@ -321,7 +322,7 @@ const FileHeading = ({ path, formatData, chapters, onTrashClick, onEditClick, se
 const Thead = () => {
   const { t } = useTranslation();
   return (
-    <thead style={{ color: 'rgba(0,0,0,0.6)', textAlign: 'left' }}>
+    <thead style={{ color: 'var(--gray12)', textAlign: 'left' }}>
       <tr>
         <th>{t('Keep?')}</th>
         <th>{t('Codec')}</th>
@@ -337,7 +338,7 @@ const Thead = () => {
 };
 
 const tableStyle = { fontSize: 14, width: '100%' };
-const fileStyle = { marginBottom: 20, padding: 5, minWidth: '100%', overflowX: 'auto' };
+const fileStyle = { margin: '1.5em 1em 1.5em 1em', padding: 5, overflowX: 'auto' };
 
 const StreamsSelector = memo(({
   mainFilePath, mainFileFormatData, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId,
@@ -383,79 +384,79 @@ const StreamsSelector = memo(({
 
   return (
     <>
-      <div style={{ color: 'black', padding: 10 }}>
-        <Paragraph marginBottom={10}>{t('Click to select which tracks to keep when exporting:')}</Paragraph>
+      <p style={{ margin: '.5em 1em' }}>{t('Click to select which tracks to keep when exporting:')}</p>
 
-        <Pane elevation={1} style={fileStyle}>
-          {/* We only support editing main file metadata for now */}
-          <FileHeading path={mainFilePath} formatData={mainFileFormatData} chapters={mainFileChapters} onEditClick={() => setEditingFile(mainFilePath)} setCopyAllStreams={(enabled) => setCopyAllStreamsForPath(mainFilePath, enabled)} onExtractAllStreamsPress={onExtractAllStreamsPress} />
+      <div style={fileStyle}>
+        {/* We only support editing main file metadata for now */}
+        <FileHeading path={mainFilePath} formatData={mainFileFormatData} chapters={mainFileChapters} onEditClick={() => setEditingFile(mainFilePath)} setCopyAllStreams={(enabled) => setCopyAllStreamsForPath(mainFilePath, enabled)} onExtractAllStreamsPress={onExtractAllStreamsPress} />
+        <table style={tableStyle}>
+          <Thead />
+
+          <tbody>
+            {mainFileStreams.map((stream) => (
+              <Stream
+                dispositionByStreamId={dispositionByStreamId}
+                setDispositionByStreamId={setDispositionByStreamId}
+                key={stream.index}
+                filePath={mainFilePath}
+                stream={stream}
+                copyStream={isCopyingStreamId(mainFilePath, stream.index)}
+                onToggle={(streamId) => toggleCopyStreamId(mainFilePath, streamId)}
+                batchSetCopyStreamIds={(filter, enabled) => batchSetCopyStreamIdsForPath(mainFilePath, mainFileStreams, filter, enabled)}
+                setEditingStream={setEditingStream}
+                fileDuration={getFormatDuration(mainFileFormatData)}
+                onExtractStreamPress={() => onExtractStreamPress(stream.index)}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {externalFilesEntries.map(([path, { streams, formatData }]) => (
+        <div key={path} style={fileStyle}>
+          <FileHeading path={path} formatData={formatData} onTrashClick={() => removeFile(path)} setCopyAllStreams={(enabled) => setCopyAllStreamsForPath(path, enabled)} />
+
           <table style={tableStyle}>
             <Thead />
-
             <tbody>
-              {mainFileStreams.map((stream) => (
+              {streams.map((stream) => (
                 <Stream
                   dispositionByStreamId={dispositionByStreamId}
                   setDispositionByStreamId={setDispositionByStreamId}
                   key={stream.index}
-                  filePath={mainFilePath}
+                  filePath={path}
                   stream={stream}
-                  copyStream={isCopyingStreamId(mainFilePath, stream.index)}
-                  onToggle={(streamId) => toggleCopyStreamId(mainFilePath, streamId)}
-                  batchSetCopyStreamIds={(filter, enabled) => batchSetCopyStreamIdsForPath(mainFilePath, mainFileStreams, filter, enabled)}
+                  copyStream={isCopyingStreamId(path, stream.index)}
+                  onToggle={(streamId) => toggleCopyStreamId(path, streamId)}
+                  batchSetCopyStreamIds={(filter, enabled) => batchSetCopyStreamIdsForPath(path, streams, filter, enabled)}
                   setEditingStream={setEditingStream}
-                  fileDuration={getFormatDuration(mainFileFormatData)}
-                  onExtractStreamPress={() => onExtractStreamPress(stream.index)}
+                  fileDuration={getFormatDuration(formatData)}
                 />
               ))}
             </tbody>
           </table>
-        </Pane>
+        </div>
+      ))}
 
-        {externalFilesEntries.map(([path, { streams, formatData }]) => (
-          <Pane elevation={1} key={path} style={fileStyle}>
-            <FileHeading path={path} formatData={formatData} onTrashClick={() => removeFile(path)} setCopyAllStreams={(enabled) => setCopyAllStreamsForPath(path, enabled)} />
-
-            <table style={tableStyle}>
-              <Thead />
-              <tbody>
-                {streams.map((stream) => (
-                  <Stream
-                    dispositionByStreamId={dispositionByStreamId}
-                    setDispositionByStreamId={setDispositionByStreamId}
-                    key={stream.index}
-                    filePath={path}
-                    stream={stream}
-                    copyStream={isCopyingStreamId(path, stream.index)}
-                    onToggle={(streamId) => toggleCopyStreamId(path, streamId)}
-                    batchSetCopyStreamIds={(filter, enabled) => batchSetCopyStreamIdsForPath(path, streams, filter, enabled)}
-                    setEditingStream={setEditingStream}
-                    fileDuration={getFormatDuration(formatData)}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </Pane>
-        ))}
-
+      <div style={{ margin: '1em 1em' }}>
         {externalFilesEntries.length > 0 && (
-          <Alert intent="warning" appearance="card" marginBottom={5}>{t('Note: Cutting and including external tracks at the same time does not yet work. If you want to do both, it must be done as separate operations. See github issue #896.')}</Alert>
+          <div style={{ marginBottom: '1em' }}><WarningSignIcon color="warning" /> {t('Note: Cutting and including external tracks at the same time does not yet work. If you want to do both, it must be done as separate operations. See github issue #896.')}</div>
         )}
 
-        <Button iconBefore={<FaFileImport size={16} />} onClick={showAddStreamSourceDialog}>
+        <Button iconBefore={<FaFileImport size={16} />} marginBottom="1em" onClick={showAddStreamSourceDialog}>
           {t('Include more tracks from other file')}
         </Button>
 
         {nonCopiedExtraStreams.length > 0 && (
-          <div style={{ margin: '10px 0' }}>
+          <div style={{ marginBottom: '1em' }}>
             <span style={{ marginRight: 10 }}>{t('Discard or extract unprocessable tracks to separate files?')}</span>
             <AutoExportToggler />
           </div>
         )}
 
         {externalFilesEntries.length > 0 && (
-          <div style={{ margin: '10px 0' }}>
-            <span style={{ marginRight: 10 }}>{t('When tracks have different lengths, do you want to make the output file as long as the longest or the shortest track?')}</span>
+          <div style={{ marginBottom: '1em' }}>
+            <div style={{ marginBottom: '.5em' }}>{t('When tracks have different lengths, do you want to make the output file as long as the longest or the shortest track?')}</div>
             <Button iconBefore={shortestFlag ? SortDescIcon : SortAscIcon} onClick={() => setShortestFlag((value) => !value)}>
               {shortestFlag ? t('Shortest') : t('Longest')}
             </Button>

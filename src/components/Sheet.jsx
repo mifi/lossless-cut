@@ -14,7 +14,7 @@ const Sheet = memo(({ visible, onClosePress, style, children }) => (
         style={style}
         className={styles.sheet}
       >
-        <IoIosCloseCircleOutline role="button" onClick={onClosePress} size={30} style={{ position: 'fixed', right: 0, top: 0, padding: 20 }} />
+        <IoIosCloseCircleOutline role="button" onClick={onClosePress} size={30} style={{ position: 'fixed', right: 0, top: 0, padding: 20, zIndex: 1, cursor: 'pointer' }} />
 
         <div style={{ overflowY: 'scroll', height: '100%' }}>
           {children}

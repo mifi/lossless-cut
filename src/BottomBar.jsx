@@ -135,9 +135,10 @@ const BottomBar = memo(({
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,
   setCurrentSegIndex,
   jumpTimelineStart, jumpTimelineEnd, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
-  playing, shortStep, togglePlay, toggleLoopSelectedSegments, toggleTimelineMode, hasAudio, timelineMode,
+  playing, shortStep, togglePlay, toggleLoopSelectedSegments, hasAudio,
   keyframesEnabled, toggleKeyframesEnabled, seekClosestKeyframe, detectedFps, isFileOpened, selectedSegments,
   darkMode, setDarkMode,
+  toggleEnableThumbnails, toggleWaveformMode, waveformMode, showThumbnails,
 }) => {
   const { t } = useTranslation();
 
@@ -194,7 +195,7 @@ const BottomBar = memo(({
     const text = seg ? `${newIndex + 1}` : '-';
     const wide = text.length > 1;
     const segButtonStyle = {
-      backgroundColor, opacity, padding: `6px ${wide ? 4 : 6}px`, borderRadius: 10, color: 'white', fontSize: wide ? 12 : 14, width: 20, boxSizing: 'border-box', letterSpacing: -1, lineHeight: '10px', fontWeight: 'bold', margin: '0 6px',
+      backgroundColor, opacity, padding: `6px ${wide ? 4 : 6}px`, borderRadius: 10, color: seg ? 'white' : undefined, fontSize: wide ? 12 : 14, width: 20, boxSizing: 'border-box', letterSpacing: -1, lineHeight: '10px', fontWeight: 'bold', margin: '0 6px',
     };
 
     return (
@@ -222,20 +223,20 @@ const BottomBar = memo(({
               {hasAudio && (
                 <GiSoundWaves
                   size={24}
-                  style={{ padding: '0 .1em', color: timelineMode === 'waveform' ? primaryTextColor : undefined }}
+                  style={{ padding: '0 .1em', color: ['big-waveform', 'waveform'].includes(waveformMode) ? primaryTextColor : undefined }}
                   role="button"
                   title={t('Show waveform')}
-                  onClick={() => toggleTimelineMode('waveform')}
+                  onClick={() => toggleWaveformMode('waveform')}
                 />
               )}
               {hasVideo && (
                 <>
                   <FaImages
                     size={20}
-                    style={{ padding: '0 .2em', color: timelineMode === 'thumbnails' ? primaryTextColor : undefined }}
+                    style={{ padding: '0 .2em', color: showThumbnails ? primaryTextColor : undefined }}
                     role="button"
                     title={t('Show thumbnails')}
-                    onClick={() => toggleTimelineMode('thumbnails')}
+                    onClick={toggleEnableThumbnails}
                   />
 
                   <FaKey
