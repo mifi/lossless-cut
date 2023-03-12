@@ -130,7 +130,7 @@ const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, g
         {t('Duration')} {formatTimecode({ seconds: duration, shorten: true })}
       </div>
       <div style={{ fontSize: 12 }}>
-        <Trans>{{ durationMsFormatted }} ms, {{ frameCount }} frames</Trans>
+        <Trans>{{ durationMsFormatted }} ms, {{ frameCount: frameCount ?? '?' }} frames</Trans>
       </div>
 
       {!invertCutSegments && (
