@@ -1,4 +1,4 @@
-import React, { Fragment, memo, useEffect, useState, useCallback, useRef } from 'react';
+import React, { memo, useEffect, useState, useCallback, useRef } from 'react';
 import { ffmpegExtractWindow } from '../util/constants';
 
 
@@ -87,24 +87,22 @@ const BigWaveform = memo(({ waveforms, relevantTime, playing, durationSafe, zoom
         const widthPercent = `${width * 100}%`;
 
         return (
-          <Fragment key={`${waveform.from}-${waveform.to}`}>
-            <img
-              src={waveform.url}
-              draggable={false}
-              alt=""
-              style={{
-                pointerEvents: 'none',
-                backgroundColor: 'var(--gray3)',
-                position: 'absolute',
-                height: '100%',
-                width: widthPercent,
-                left: leftPercent,
-                borderLeft: waveform.from === 0 ? '1px solid var(--gray11)' : undefined,
-                borderRight: waveform.to >= durationSafe ? '1px solid var(--gray11)' : undefined,
-              }}
-            />
-            <div style={{ pointerEvents: 'none', position: 'absolute', width: widthPercent, backgroundColor: 'var(--gray12)', height: 1, top: '50%', left: leftPercent }} />
-          </Fragment>
+          <img
+            key={`${waveform.from}-${waveform.to}`}
+            src={waveform.url}
+            draggable={false}
+            alt=""
+            style={{
+              pointerEvents: 'none',
+              backgroundColor: 'var(--gray3)',
+              position: 'absolute',
+              height: '100%',
+              width: widthPercent,
+              left: leftPercent,
+              borderLeft: waveform.from === 0 ? '1px solid var(--gray11)' : undefined,
+              borderRight: waveform.to >= durationSafe ? '1px solid var(--gray11)' : undefined,
+            }}
+          />
         );
       })}
 
