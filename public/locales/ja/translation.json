@@ -742,5 +742,10 @@
     "<0></0> to show advanced view": "<0></0> 高度な機能を表示",
     "Invert selected segments": "セグメントの選択を反転",
     "Show informational notifications": "情報を伝える通知を表示",
-    "⌘ Cmd / ⊞ Win": "⌘ Cmd / ⊞ Win"
+    "⌘ Cmd / ⊞ Win": "⌘ Cmd / ⊞ Win",
+    "Export mode for {{segments}} segments": "{{segments}}セグメントの出力種別",
+    "FFmpeg capture method might sometimes capture more correct colors, but the captured snapshot might be off by one or more frames, relative to the preview.": "FFmpeg の撮影方式では、時々さらに正確な色を取得できますが、撮影したスナップショットがプレビューよりも1フレーム以上ずれていることがあります。",
+    "The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}": "このプロジェクトが参照しているメディアは、このプロジェクトファイルと同じフォルダにありません: {{mediaFileName}}",
+    "Input has {{numStreamsTotal}} tracks": "入力元は{{numStreamsTotal}}トラックを含む",
+    "Keeping {{numStreamsToCopy}} tracks": "{{numStreamsToCopy}}トラック保持"
 }
