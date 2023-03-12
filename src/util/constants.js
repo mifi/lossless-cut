@@ -23,6 +23,7 @@ export const langNames = {
   pl: 'Polski',
   pt: 'Português',
   pt_BR: 'Português do Brasil',
+  sl: 'Slovenščina',
   fi: 'Suomi',
   ru: 'Русский',
   // sr: 'Cрпски',
