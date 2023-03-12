@@ -2,7 +2,7 @@ import React, { memo, useState, useEffect, useCallback } from 'react';
 import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { WarningSignIcon, ErrorIcon, Button, Alert, IconButton, TickIcon, ResetIcon } from 'evergreen-ui';
+import { WarningSignIcon, ErrorIcon, Button, IconButton, TickIcon, ResetIcon } from 'evergreen-ui';
 import withReactContent from 'sweetalert2-react-content';
 
 import Swal from '../swal';
