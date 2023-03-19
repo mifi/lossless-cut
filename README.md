@@ -173,7 +173,7 @@ Unsupported files can still be converted to a supported format/codec from the `F
 
 ## [Contributing](developer-notes.md)
 
-## [Translations](translations.md)
+## [Translation](translation.md)
 
 If you have any problem or question, [please read this](issues.md) before creating an issue. I try to answer most common questions here.
 
@@ -194,7 +194,7 @@ This project is maintained by me alone. The project will always remain free and 
 - [Lottie animation](https://lottiefiles.com/7077-magic-flow)
 - Thanks to Adi Abinun for his UI sketch work, inspiration and guidance
 - [Thanks to everyone for supporting](https://mifi.no/thanks/) my open source work 🙌
-- Thanks to translators who helped translate the app. [You can too!](translations.md)
+- Thanks to translators who helped translate the app. [You can too!](translation.md)
 
 ## More software
 
