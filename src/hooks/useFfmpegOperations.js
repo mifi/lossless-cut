@@ -88,7 +88,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut 
       // concat list - always first
       addInput([
         // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
-        '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe',
+        '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe,fd',
         '-i', '-',
       ]);
 
