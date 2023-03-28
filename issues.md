@@ -43,6 +43,8 @@ Start cut time will be "rounded" to the nearest **previous** keyframe. This mean
 
 If you cut a file, but the duration of the exported file is the same as input file's duration, try to disable all tracks except for the video track and see if that helps. Sometimes a file contains some tracks that LosslessCut is unable to cut. It will then leave them as is, while cutting the other tracks. This may lead to incorrect output duration. Try also changing `avoid_negative_ts` (in export options).
 
+If you are trying to cut a FLAC file but your output has the same duration as input, you might have run into [this ffmpeg issue](https://github.com/mifi/lossless-cut/discussions/1320).
+
 ## Merge / concat results in corrupt or broken parts
 
 Try to change `avoid_negative_ts` (in export options). Also try to disable tracks (see above).
