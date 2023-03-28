@@ -119,9 +119,7 @@ If you prefer to download the executables manually, this will of course always b
 
 If you find LosslessCut useful, I'm very thankful for [donations](https://github.com/mifi/lossless-cut#donate-).
 
-### Difference between App Stores and GitHub download
-
-They have exactly the same in-app features, except for a few platform limitations. Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps need to prompt for output directory. LosslessCut version in the App Stores is a few versions behind the GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. GitHub version can contain new, untested features and may contain some bugs. I consider the newest GitHub versions to be a public "beta" test.
+**What's the difference between App Stores and GitHub download?** [Please see FAQ](issues.md#app-stores-and-github-difference)
 
 ### Nightly builds 🧪
 
