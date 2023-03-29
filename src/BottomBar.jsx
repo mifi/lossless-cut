@@ -159,7 +159,7 @@ const BottomBar = memo(({
       background: `linear-gradient(90deg, ${gradientColors})`,
       border: '1px solid var(--gray8)',
       color: 'white',
-      margin: '2px 4px 0 0px',
+      margin: '0px 5px 0 0px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -299,12 +299,6 @@ const BottomBar = memo(({
           />
         </div>
 
-        <div role="button" onClick={toggleLoopSelectedSegments} title={t('Play selected segments in order')} style={loopSelectedSegmentsButtonStyle}>
-          <FaPlay
-            size={14}
-          />
-        </div>
-
         {!simpleMode && (
           <FaCaretRight
             style={{ flexShrink: 0, marginRight: -6, marginLeft: -4 }}
@@ -424,6 +418,12 @@ const BottomBar = memo(({
             />
           </>
         )}
+
+        <div role="button" onClick={toggleLoopSelectedSegments} title={t('Play selected segments in order')} style={loopSelectedSegmentsButtonStyle}>
+          <FaPlay
+            size={14}
+          />
+        </div>
 
         {(!simpleMode || !exportConfirmEnabled) && <ToggleExportConfirm style={{ marginRight: 5 }} />}
 
