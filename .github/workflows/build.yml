@@ -15,6 +15,7 @@ jobs:
 
     env:
       is_tag: ${{ startsWith(github.ref, 'refs/tags/v') }}
+      SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_TOKEN }}
 
     strategy:
       matrix:
@@ -38,11 +39,8 @@ jobs:
       - run: yarn install --network-timeout 1000000
 
       - name: Install and login to Snapcraft
-        uses: samuelmeuli/action-snapcraft@v1
+        uses: samuelmeuli/action-snapcraft@v2
         if: startsWith(matrix.os, 'ubuntu')
-        with:
-          # Log in to Snap Store
-          snapcraft_token: ${{ secrets.snapcraft_token }}
 
       - name: Save provisioning profile
         if: startsWith(matrix.os, 'macos')
