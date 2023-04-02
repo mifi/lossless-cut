@@ -7,7 +7,7 @@ import withReactContent from 'sweetalert2-react-content';
 
 import Swal from '../swal';
 import HighlightedText from './HighlightedText';
-import { defaultOutSegTemplate } from '../util';
+import { defaultOutSegTemplate } from '../util/outputNameTemplate';
 import useUserSettings from '../hooks/useUserSettings';
 
 const ReactSwal = withReactContent(Swal);
@@ -33,9 +33,9 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
     if (debouncedText == null) return;
 
     try {
-      const generatedOutSegFileNames = generateOutSegFileNames({ template: debouncedText });
-      setOutSegFileNames(generatedOutSegFileNames);
-      const outSegError = getOutSegError(generatedOutSegFileNames);
+      const newOutSegFileNames = generateOutSegFileNames({ template: debouncedText });
+      setOutSegFileNames(newOutSegFileNames);
+      const outSegError = getOutSegError(newOutSegFileNames);
       if (outSegError) {
         setError(outSegError);
         setValidText();
@@ -96,7 +96,7 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 5, marginTop: 10 }}>
             <input type="text" style={inputStyle} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
 
-            {outSegFileNames && <Button height={20} onClick={onAllSegmentsPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
+            {outSegFileNames != null && <Button height={20} onClick={onAllSegmentsPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
             <Button title={t('Whether or not to sanitize output file names (sanitizing removes special characters)')} marginLeft={5} height={20} onClick={toggleSafeOutputFileName} intent={safeOutputFileName ? 'success' : 'danger'}>{safeOutputFileName ? t('Sanitize') : t('No sanitize')}</Button>
             <IconButton title={t('Reset')} icon={ResetIcon} height={20} onClick={reset} marginLeft={5} intent="danger" />
             <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" />

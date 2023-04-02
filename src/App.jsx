@@ -64,9 +64,8 @@ import { formatYouTube, getFrameCountRaw } from './edlFormats';
 import {
   getOutPath, getSuffixedOutPath, handleError, getOutDir,
   isMasBuild, isStoreBuild, dragPreventer,
-  filenamify, getOutFileExtension, generateSegFileName, defaultOutSegTemplate,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, isOutOfSpaceError, getNumDigits, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle,
+  deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle,
 } from './util';
 import { toast, errorToast } from './swal';
 import { formatDuration } from './util/duration';
@@ -76,8 +75,8 @@ import { askForHtml5ifySpeed } from './dialogs/html5ify';
 import { askForOutDir, askForImportChapters, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openCutFinishedToast, openConcatFinishedToast, showOpenDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
-import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, getSegmentTags, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, playOnlyCurrentSegment } from './segments';
-import { getOutSegError as getOutSegErrorRaw } from './util/outputNameTemplate';
+import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, playOnlyCurrentSegment } from './segments';
+import { getOutSegError as getOutSegErrorRaw, generateOutSegFileNames as generateOutSegFileNamesRaw, defaultOutSegTemplate } from './util/outputNameTemplate';
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 import BigWaveform from './components/BigWaveform';
 
@@ -1048,34 +1047,10 @@ const App = memo(() => {
   }, [isFileOpened, cleanupChoices, askForCleanupChoices, cleanupFiles, setWorking]);
 
   const generateOutSegFileNames = useCallback(({ segments = segmentsToExport, template, forceSafeOutputFileName }) => (
-    segments.map((segment, i) => {
-      const { start, end, name = '' } = segment;
-      const cutFromStr = formatTimecode({ seconds: start, fileNameFriendly: true });
-      const cutToStr = formatTimecode({ seconds: end, fileNameFriendly: true });
-      const numDigits = getNumDigits(segments.length);
-      const segNum = `${i + 1}`.padStart(numDigits, '0');
+    generateOutSegFileNamesRaw({ segments, template, forceSafeOutputFileName, formatTimecode, isCustomFormatSelected, fileFormat, filePath, safeOutputFileName, maxLabelLength })
+  ), [fileFormat, filePath, formatTimecode, isCustomFormatSelected, maxLabelLength, safeOutputFileName, segmentsToExport]);
 
-      const filenamifyOrNot = (fileName) => (safeOutputFileName || forceSafeOutputFileName ? filenamify(fileName) : fileName).substr(0, maxLabelLength);
-
-      let segSuffix = '';
-      if (name) segSuffix = `-${filenamifyOrNot(name)}`;
-      // https://github.com/mifi/lossless-cut/issues/583
-      else if (segments.length > 1) segSuffix = `-seg${segNum}`;
-
-      const ext = getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath });
-
-      const { name: fileNameWithoutExt } = parsePath(filePath);
-
-      // Fields that did not come from the source file's name must be sanitized, because they may contain characters that are not supported by the target operating/file system
-      const tagsSanitized = Object.fromEntries(Object.entries(getSegmentTags(segment)).map(([tag, value]) => [tag, filenamifyOrNot(value)]));
-      const nameSanitized = filenamifyOrNot(name);
-
-      const generated = generateSegFileName({ template, segSuffix, inputFileNameWithoutExt: fileNameWithoutExt, ext, segNum, segLabel: nameSanitized, cutFrom: cutFromStr, cutTo: cutToStr, tags: tagsSanitized });
-      return safeOutputFileName ? generated.substring(0, 200) : generated; // If sanitation is enabled, make sure filename is not too long
-    })
-  ), [segmentsToExport, formatTimecode, isCustomFormatSelected, fileFormat, filePath, safeOutputFileName, maxLabelLength]);
-
-  const getOutSegError = useCallback((fileNames) => getOutSegErrorRaw({ fileNames, filePath, outputDir }), [outputDir, filePath]);
+  const getOutSegError = useCallback((fileNames) => getOutSegErrorRaw({ fileNames, filePath, outputDir, safeOutputFileName }), [filePath, outputDir, safeOutputFileName]);
 
   const closeExportConfirm = useCallback(() => setExportConfirmVisible(false), []);
 
@@ -1124,7 +1099,7 @@ const App = memo(() => {
         allFilesMeta,
         keyframeCut,
         segments: segmentsToExport,
-        segmentsFileNames: outSegFileNames,
+        outSegFileNames,
         onProgress: setCutProgress,
         appendFfmpegCommandLog,
         shortestFlag,

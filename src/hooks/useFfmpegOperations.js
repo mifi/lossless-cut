@@ -8,8 +8,9 @@ import { isCuttingStart, isCuttingEnd, handleProgress, getFfCommandLine, getDura
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { getSmartCutParams } from '../smartcut';
 
-const { join, resolve } = window.require('path');
-const fs = window.require('fs-extra');
+const { join, resolve, dirname } = window.require('path');
+const { pathExists } = window.require('fs-extra');
+const { writeFile, unlink, mkdir } = window.require('fs/promises');
 const stringToStream = window.require('string-to-stream');
 
 async function writeChaptersFfmetadata(outDir, chapters) {
@@ -21,7 +22,7 @@ async function writeChaptersFfmetadata(outDir, chapters) {
     `[CHAPTER]\nTIMEBASE=1/1000\nSTART=${Math.floor(start * 1000)}\nEND=${Math.floor(end * 1000)}\ntitle=${name || ''}`
   )).join('\n\n');
   console.log('Writing chapters', ffmetadata);
-  await fs.writeFile(path, ffmetadata);
+  await writeFile(path, ffmetadata);
   return path;
 }
 
@@ -52,7 +53,7 @@ function getMatroskaFlags() {
 const getChaptersInputArgs = (ffmetadataPath) => (ffmetadataPath ? ['-f', 'ffmetadata', '-i', ffmetadataPath] : []);
 
 const tryDeleteFiles = async (paths) => pMap(paths, (path) => {
-  fs.unlink(path).catch((err) => console.error('Failed to delete', path, err));
+  unlink(path).catch((err) => console.error('Failed to delete', path, err));
 }, { concurrency: 5 });
 
 function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut }) {
@@ -321,7 +322,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut 
   }, [filePath, optionalTransferTimestamps]);
 
   const cutMultiple = useCallback(async ({
-    outputDir, customOutDir, segments, segmentsFileNames, videoDuration, rotation, detectedFps,
+    outputDir, customOutDir, segments, outSegFileNames, videoDuration, rotation, detectedFps,
     onProgress: onTotalProgress, keyframeCut, copyFileStreams, allFilesMeta, outFormat,
     appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs,
     customTagsByFile, customTagsByStreamId, dispositionByStreamId, chapters, preserveMetadataOnMerge,
@@ -339,7 +340,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut 
     const chaptersPath = await writeChaptersFfmetadata(outputDir, chapters);
 
     async function checkOverwrite(path) {
-      if (!enableOverwriteOutput && await fs.pathExists(path)) throw new RefuseOverwriteError();
+      if (!enableOverwriteOutput && await pathExists(path)) throw new RefuseOverwriteError();
     }
 
 
@@ -348,11 +349,17 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut 
     // then it will cut the part *from* the keyframe to "end", and concat them together and return the concated file
     // so that for the calling code it looks as if it's just a normal segment
     async function maybeSmartCutSegment({ start: desiredCutFrom, end: cutTo }, i) {
-      const getSegmentOutPath = () => join(outputDir, segmentsFileNames[i]);
+      async function makeSegmentOutPath() {
+        const outPath = join(outputDir, outSegFileNames[i]);
+        // because outSegFileNames might contain slashes https://github.com/mifi/lossless-cut/issues/1532
+        const actualOutputDir = dirname(outPath);
+        if (actualOutputDir !== outputDir) await mkdir(actualOutputDir, { recursive: true });
+        return outPath;
+      }
 
       if (!needSmartCut) {
         // old fashioned way
-        const outPath = getSegmentOutPath();
+        const outPath = await makeSegmentOutPath();
         await checkOverwrite(outPath);
         await cutSingle({
           cutFrom: desiredCutFrom, cutTo, chaptersPath, outPath, copyFileStreams, keyframeCut, avoidNegativeTs, videoDuration, rotation, allFilesMeta, outFormat, appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, customTagsByStreamId, dispositionByStreamId, onProgress: (progress) => onSingleProgress(i, progress),
@@ -386,7 +393,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut 
       // If we are cutting within two keyframes, just encode the whole part and return that
       // See https://github.com/mifi/lossless-cut/pull/1267#issuecomment-1236381740
       if (segmentNeedsSmartCut && encodeCutTo > cutTo) {
-        const outPath = getSegmentOutPath();
+        const outPath = await makeSegmentOutPath();
         await checkOverwrite(outPath);
         await cutEncodeSmartPartWrapper({ cutFrom: desiredCutFrom, cutTo, outPath });
         return outPath;
@@ -396,7 +403,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut 
 
       const smartCutMainPartOutPath = segmentNeedsSmartCut
         ? getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `smartcut-segment-copy-${i}${ext}` })
-        : getSegmentOutPath();
+        : await makeSegmentOutPath();
 
       const smartCutEncodedPartOutPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `smartcut-segment-encode-${i}${ext}` });
 
@@ -421,7 +428,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut 
         // need to re-read streams because indexes may have changed. Using main file as source of streams and metadata
         const { streams: streamsAfterCut } = await readFileMeta(smartCutMainPartOutPath);
 
-        const outPath = getSegmentOutPath();
+        const outPath = await makeSegmentOutPath();
         await checkOverwrite(outPath);
 
         await concatFiles({ paths: smartCutSegmentsToConcat, outDir: outputDir, outPath, metadataFromPath: smartCutMainPartOutPath, outFormat, includeAllStreams: true, streams: streamsAfterCut, ffmpegExperimental, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge, videoTimebase, appendFfmpegCommandLog, onProgress: onConcatProgress });

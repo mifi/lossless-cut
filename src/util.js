@@ -1,5 +1,4 @@
 import i18n from 'i18next';
-import lodashTemplate from 'lodash/template';
 import pMap from 'p-map';
 import ky from 'ky';
 import prettyBytes from 'pretty-bytes';
@@ -165,29 +164,6 @@ export function getOutFileExtension({ isCustomFormatSelected, outFormat, filePat
 
   // user is changing format, must update extension too
   return `.${getExtensionForFormat(outFormat)}`;
-}
-
-// This is used as a fallback and so it has to always generate unique file names
-// eslint-disable-next-line no-template-curly-in-string
-export const defaultOutSegTemplate = '${FILENAME}-${CUT_FROM}-${CUT_TO}${SEG_SUFFIX}${EXT}';
-
-export function generateSegFileName({ template, inputFileNameWithoutExt, segSuffix, ext, segNum, segLabel, cutFrom, cutTo, tags }) {
-  const compiled = lodashTemplate(template);
-  const data = {
-    FILENAME: inputFileNameWithoutExt,
-    SEG_SUFFIX: segSuffix,
-    EXT: ext,
-    SEG_NUM: segNum,
-    SEG_LABEL: segLabel,
-    CUT_FROM: cutFrom,
-    CUT_TO: cutTo,
-    SEG_TAGS: {
-      // allow both original case and uppercase
-      ...tags,
-      ...Object.fromEntries(Object.entries(tags).map(([key, value]) => [`${key.toLocaleUpperCase('en-US')}`, value])),
-    },
-  };
-  return compiled(data);
 }
 
 export const hasDuplicates = (arr) => new Set(arr).size !== arr.length;
