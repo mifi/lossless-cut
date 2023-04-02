@@ -15,7 +15,7 @@ const ReactSwal = withReactContent(Swal);
 // eslint-disable-next-line no-template-curly-in-string
 const extVar = '${EXT}';
 
-const inputStyle = { flexGrow: 1, fontFamily: 'inherit', fontSize: '.8em', backgroundColor: 'var(--gray3)', color: 'var(--gray12)', border: '1px solid var(--gray6)', appearance: 'none' };
+const inputStyle = { flexGrow: 1, fontFamily: 'inherit', fontSize: '.8em', backgroundColor: 'var(--gray3)', color: 'var(--gray12)', border: '1px solid var(--gray7)', appearance: 'none' };
 
 const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe, getOutSegError }) => {
   const { safeOutputFileName, toggleSafeOutputFileName } = useUserSettings();

@@ -3,23 +3,29 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaTrashAlt } from 'react-icons/fa';
 
 import { mySpring } from './animations';
+import useUserSettings from './hooks/useUserSettings';
 
 
 const TimelineSeg = memo(({
   duration, cutStart, cutEnd, isActive, segNum, name,
   onSegClick, invertCutSegments, segColor, formatTimecode, selected,
 }) => {
+  const { darkMode } = useUserSettings();
+
   const cutSectionWidth = `${((cutEnd - cutStart) / duration) * 100}%`;
 
   const startTimePos = `${(cutStart / duration) * 100}%`;
 
-  const markerBorder = useMemo(() => `2px solid ${isActive ? segColor.lighten(0.2).string() : 'transparent'}`, [isActive, segColor]);
+  const markerBorder = useMemo(() => {
+    if (!isActive) return '2px solid transparent';
+    return `2px solid ${(darkMode ? segColor.desaturate(0.6).lightness(70) : segColor.desaturate(0.9).lightness(20)).string()}`;
+  }, [darkMode, isActive, segColor]);
 
   const backgroundColor = useMemo(() => {
-    if (invertCutSegments || !selected) return segColor.alpha(0.4).string();
-    if (isActive) return segColor.alpha(0.7).string();
-    return segColor.alpha(0.6).string();
-  }, [invertCutSegments, isActive, segColor, selected]);
+    if (invertCutSegments || !selected) return darkMode ? segColor.desaturate(0.9).lightness(25).string() : segColor.desaturate(0.9).lightness(80).string();
+    if (isActive) return darkMode ? segColor.desaturate(0.7).lightness(50).string() : segColor.desaturate(0.7).lightness(40).string();
+    return darkMode ? segColor.desaturate(0.7).lightness(40).string() : segColor.desaturate(0.9).lightness(55).string();
+  }, [darkMode, invertCutSegments, isActive, segColor, selected]);
   const markerBorderRadius = 5;
 
   const wrapperStyle = {

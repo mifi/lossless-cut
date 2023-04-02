@@ -46,7 +46,7 @@ const BatchFilesList = memo(({ selectedBatchFiles, filePath, width, batchFiles, 
   return (
     <motion.div
       className="no-user-select"
-      style={{ width, background: controlsBackground, color: 'var(--gray12)', borderRight: '1px solid var(--gray6)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden', overflowX: 'hidden', resize: 'horizontal' }}
+      style={{ width, background: controlsBackground, color: 'var(--gray12)', borderRight: '1px solid var(--gray7)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden', overflowX: 'hidden', resize: 'horizontal' }}
       initial={{ x: -width }}
       animate={{ x: 0 }}
       exit={{ x: -width }}

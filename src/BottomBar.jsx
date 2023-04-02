@@ -41,7 +41,8 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
 
   const isCutTimeManualSet = () => cutTimeManual !== undefined;
 
-  const border = `.15em solid ${getSegColor(currentCutSeg, darkMode).alpha(0.8).string()}`;
+  const segColor = getSegColor(currentCutSeg);
+  const border = `.1em solid ${darkMode ? segColor.desaturate(0.9).lightness(50).string() : segColor.desaturate(0.7).lightness(60).string()}`;
 
   const cutTimeInputStyle = {
     border, borderRadius: 5, backgroundColor: 'var(--gray5)', transition: darkModeTransition, fontSize: 13, textAlign: 'center', padding: '1px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 0 : 5, marginRight: isStart ? 5 : 0, boxSizing: 'border-box', fontFamily: 'inherit', width: 90, outline: 'none',
@@ -148,7 +149,7 @@ const BottomBar = memo(({
     const selectedSegmentsSafe = (selectedSegments.length > 1 ? selectedSegments : [selectedSegments[0], selectedSegments[0]]).slice(0, 10);
 
     const gradientColors = selectedSegmentsSafe.map((seg, i) => {
-      const segColor = getSegColor(seg, darkMode);
+      const segColor = getSegColor(seg);
       // make colors stronger, the more segments
       return `${segColor.alpha(Math.max(0.4, Math.min(0.8, selectedSegmentsSafe.length / 3))).string()} ${((i / (selectedSegmentsSafe.length - 1)) * 100).toFixed(1)}%`;
     }).join(', ');
@@ -167,7 +168,7 @@ const BottomBar = memo(({
       height: 24,
       borderRadius: 4,
     };
-  }, [darkMode, selectedSegments]);
+  }, [selectedSegments]);
 
   const { invertCutSegments, setInvertCutSegments, simpleMode, toggleSimpleMode, exportConfirmEnabled } = useUserSettings();
 
@@ -190,7 +191,7 @@ const BottomBar = memo(({
     const newIndex = currentSegIndexSafe + direction;
     const seg = cutSegments[newIndex];
 
-    const backgroundColor = seg && getSegColor(seg, darkMode).alpha(0.5).string();
+    const backgroundColor = seg && getSegColor(seg).desaturate(0.9).lightness(darkMode ? 35 : 55).string();
     const opacity = seg ? undefined : 0.5;
     const text = seg ? `${newIndex + 1}` : '-';
     const wide = text.length > 1;

@@ -5,11 +5,11 @@ import useUserSettings from '../hooks/useUserSettings';
 
 const SegmentCutpointButton = ({ currentCutSeg, side, Icon, onClick, title, style }) => {
   const { darkMode } = useUserSettings();
-  const segColor = getSegColor(currentCutSeg, darkMode);
+  const segColor = getSegColor(currentCutSeg);
 
   const start = side === 'start';
-  const border = `4px solid ${segColor.lighten(0.1).string()}`;
-  const backgroundColor = segColor.alpha(0.5).string();
+  const border = `3px solid ${segColor.desaturate(0.9).lightness(darkMode ? 45 : 35).string()}`;
+  const backgroundColor = segColor.desaturate(0.9).lightness(darkMode ? 35 : 55).string();
 
   return (
     <Icon

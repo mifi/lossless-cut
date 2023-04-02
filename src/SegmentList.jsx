@@ -79,9 +79,12 @@ const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, g
   function renderNumber() {
     if (invertCutSegments) return <FaSave style={{ color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
 
-    const segColor = getSegColor(seg, darkMode);
+    const segColor = getSegColor(seg);
 
-    return <b style={{ cursor: 'grab', color: 'white', padding: '0 4px', marginRight: 3, marginLeft: -3, background: segColor.alpha(0.5).string(), border: `1px solid ${isActive ? segColor.lighten(0.3).string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
+    const color = segColor.desaturate(0.75).lightness(darkMode ? 35 : 55);
+    const borderColor = darkMode ? color.lighten(0.5) : color.darken(0.3);
+
+    return <b style={{ cursor: 'grab', color: 'white', padding: '0 4px', marginRight: 3, marginLeft: -3, background: color.string(), border: `1px solid ${isActive ? borderColor.string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
   }
 
   const timeStr = useMemo(() => `${formatTimecode({ seconds: seg.start })} - ${formatTimecode({ seconds: seg.end })}`, [seg.start, seg.end, formatTimecode]);
@@ -195,8 +198,9 @@ const SegmentList = memo(({
   }
 
   function renderFooter() {
-    const currentSegColor = getSegColor(currentCutSeg, darkMode).alpha(0.5).string();
-    const segAtCursorColor = getSegColor(segmentAtCursor, darkMode).alpha(0.5).string();
+    const getButtonColor = (seg) => getSegColor(seg).desaturate(0.8).lightness(darkMode ? 45 : 55).string();
+    const currentSegColor = getButtonColor(currentCutSeg);
+    const segAtCursorColor = getButtonColor(segmentAtCursor);
 
     const segmentsTotal = selectedSegments.reduce((acc, { start, end }) => (end - start) + acc, 0);
 
@@ -258,7 +262,7 @@ const SegmentList = memo(({
 
   return (
     <motion.div
-      style={{ width, background: controlsBackground, borderLeft: '1px solid var(--gray6)', color: 'var(--gray11)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
+      style={{ width, background: controlsBackground, borderLeft: '1px solid var(--gray7)', color: 'var(--gray11)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
       initial={{ x: width }}
       animate={{ x: 0 }}
       exit={{ x: width }}

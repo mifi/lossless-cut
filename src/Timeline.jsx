@@ -66,7 +66,7 @@ const Timeline = memo(({
 
   const timelineHeight = 36;
 
-  const { invertCutSegments, darkMode } = useUserSettings();
+  const { invertCutSegments } = useUserSettings();
 
   const timelineScrollerRef = useRef();
   const timelineScrollerSkipEventRef = useRef();
@@ -241,7 +241,7 @@ const Timeline = memo(({
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/mouse-events-have-key-events
     <div
-      style={{ position: 'relative', borderTop: '1px solid var(--gray6)', borderBottom: '1px solid var(--gray6)' }}
+      style={{ position: 'relative', borderTop: '1px solid var(--gray7)', borderBottom: '1px solid var(--gray7)' }}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseOut={onMouseOut}
@@ -295,7 +295,7 @@ const Timeline = memo(({
           )}
 
           {apparentCutSegments.map((seg, i) => {
-            const segColor = getSegColor(seg, darkMode);
+            const segColor = getSegColor(seg);
 
             if (seg.start === 0 && seg.end === 0) return null; // No video loaded
 
