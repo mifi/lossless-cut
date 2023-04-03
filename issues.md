@@ -65,6 +65,10 @@ Smart cut is experimental, but if you're having problems, check out [this issue]
 
 Some MP4 files ffmpeg is not able to export as MP4 and therefore needs to use MOV instead. Unfortunately I don't know any way to fix this.
 
+## Output file name is missing characters
+
+If the output file name has special characters that get replaced by underscore (`_`), try to turn off ["Sanitize"](https://github.com/mifi/lossless-cut/issues/889) in the "Output file names" editor in the "Export options" dialog.
+
 ## Linux specific issues
 
 - If you get an error like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See [#258](https://github.com/mifi/lossless-cut/issues/258)
