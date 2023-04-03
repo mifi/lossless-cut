@@ -12,8 +12,6 @@ import useUserSettings from './hooks/useUserSettings';
 
 import { timelineBackground, darkModeTransition } from './colors';
 
-import { getSegColor } from './util/colors';
-
 const currentTimeWidth = 1;
 
 const Waveform = memo(({ waveform, calculateTimelinePercent, durationSafe }) => {
@@ -295,8 +293,6 @@ const Timeline = memo(({
           )}
 
           {apparentCutSegments.map((seg, i) => {
-            const segColor = getSegColor(seg);
-
             if (seg.start === 0 && seg.end === 0) return null; // No video loaded
 
             const selected = invertCutSegments || isSegmentSelected({ segId: seg.segId });
@@ -304,14 +300,11 @@ const Timeline = memo(({
             return (
               <TimelineSeg
                 key={seg.segId}
+                seg={seg}
                 segNum={i}
-                segColor={segColor}
                 onSegClick={setCurrentSegIndex}
                 isActive={i === currentSegIndexSafe}
                 duration={durationSafe}
-                name={seg.name}
-                cutStart={seg.start}
-                cutEnd={seg.end}
                 invertCutSegments={invertCutSegments}
                 formatTimecode={formatTimecode}
                 selected={selected}

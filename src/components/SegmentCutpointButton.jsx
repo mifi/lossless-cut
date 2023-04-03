@@ -1,15 +1,16 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
-import { getSegColor } from '../util/colors';
+import { useSegColors } from '../contexts';
 import useUserSettings from '../hooks/useUserSettings';
 
 const SegmentCutpointButton = ({ currentCutSeg, side, Icon, onClick, title, style }) => {
   const { darkMode } = useUserSettings();
-  const segColor = getSegColor(currentCutSeg);
+  const { getSegColor } = useSegColors();
+  const segColor = useMemo(() => getSegColor(currentCutSeg), [currentCutSeg, getSegColor]);
 
   const start = side === 'start';
-  const border = `3px solid ${segColor.desaturate(0.9).lightness(darkMode ? 45 : 35).string()}`;
-  const backgroundColor = segColor.desaturate(0.9).lightness(darkMode ? 35 : 55).string();
+  const border = `3px solid ${segColor.desaturate(0.6).lightness(darkMode ? 45 : 35).string()}`;
+  const backgroundColor = segColor.desaturate(0.6).lightness(darkMode ? 35 : 55).string();
 
   return (
     <Icon

@@ -18,7 +18,8 @@ import Select from './components/Select';
 import SimpleModeButton from './components/SimpleModeButton';
 import { withBlur, mirrorTransform, checkAppPath } from './util';
 import { toast } from './swal';
-import { getSegColor } from './util/colors';
+import { getSegColor as getSegColorRaw } from './util/colors';
+import { useSegColors } from './contexts';
 import { formatDuration, parseDuration, isExactDurationMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
 
@@ -31,6 +32,7 @@ const leftRightWidth = 100;
 
 const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, seekAbs, currentCutSeg, currentApparentCutSeg, isStart }) => {
   const { t } = useTranslation();
+  const { getSegColor } = useSegColors();
 
   const [cutTimeManual, setCutTimeManual] = useState();
 
@@ -41,8 +43,10 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
 
   const isCutTimeManualSet = () => cutTimeManual !== undefined;
 
-  const segColor = getSegColor(currentCutSeg);
-  const border = `.1em solid ${darkMode ? segColor.desaturate(0.9).lightness(50).string() : segColor.desaturate(0.7).lightness(60).string()}`;
+  const border = useMemo(() => {
+    const segColor = getSegColor(currentCutSeg);
+    return `.1em solid ${darkMode ? segColor.desaturate(0.4).lightness(50).string() : segColor.desaturate(0.2).lightness(60).string()}`;
+  }, [currentCutSeg, darkMode, getSegColor]);
 
   const cutTimeInputStyle = {
     border, borderRadius: 5, backgroundColor: 'var(--gray5)', transition: darkModeTransition, fontSize: 13, textAlign: 'center', padding: '1px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 0 : 5, marginRight: isStart ? 5 : 0, boxSizing: 'border-box', fontFamily: 'inherit', width: 90, outline: 'none',
@@ -142,6 +146,7 @@ const BottomBar = memo(({
   toggleEnableThumbnails, toggleWaveformMode, waveformMode, showThumbnails,
 }) => {
   const { t } = useTranslation();
+  const { getSegColor } = useSegColors();
 
   // ok this is a bit over-engineered but what the hell!
   const loopSelectedSegmentsButtonStyle = useMemo(() => {
@@ -149,7 +154,7 @@ const BottomBar = memo(({
     const selectedSegmentsSafe = (selectedSegments.length > 1 ? selectedSegments : [selectedSegments[0], selectedSegments[0]]).slice(0, 10);
 
     const gradientColors = selectedSegmentsSafe.map((seg, i) => {
-      const segColor = getSegColor(seg);
+      const segColor = getSegColorRaw(seg);
       // make colors stronger, the more segments
       return `${segColor.alpha(Math.max(0.4, Math.min(0.8, selectedSegmentsSafe.length / 3))).string()} ${((i / (selectedSegmentsSafe.length - 1)) * 100).toFixed(1)}%`;
     }).join(', ');
@@ -191,7 +196,7 @@ const BottomBar = memo(({
     const newIndex = currentSegIndexSafe + direction;
     const seg = cutSegments[newIndex];
 
-    const backgroundColor = seg && getSegColor(seg).desaturate(0.9).lightness(darkMode ? 35 : 55).string();
+    const backgroundColor = seg && getSegColor(seg).desaturate(0.6).lightness(darkMode ? 35 : 55).string();
     const opacity = seg ? undefined : 0.5;
     const text = seg ? `${newIndex + 1}` : '-';
     const wide = text.length > 1;

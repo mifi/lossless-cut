@@ -1,5 +1,5 @@
 import { useContext } from 'react';
 
-import UserSettingsContext from '../contexts/UserSettingsContext';
+import { UserSettingsContext } from '../contexts';
 
 export default () => useContext(UserSettingsContext);

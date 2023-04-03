@@ -123,6 +123,7 @@ const defaults = {
   },
   allowMultipleInstances: false,
   darkMode: true,
+  preferStrongColors: false,
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645

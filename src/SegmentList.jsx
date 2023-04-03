@@ -12,7 +12,7 @@ import Swal from './swal';
 import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
 import { saveColor, controlsBackground, primaryTextColor, darkModeTransition } from './colors';
-import { getSegColor } from './util/colors';
+import { useSegColors } from './contexts';
 import { mySpring } from './animations';
 
 const buttonBaseStyle = {
@@ -24,6 +24,7 @@ const neutralButtonColor = 'var(--gray8)';
 
 const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onRemoveSelected, onLabelSelectedSegments, onReorderPress, onLabelPress, selected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectAllSegments, jumpSegStart, jumpSegEnd, addSegment, onViewSegmentTags, onExtractSegmentFramesAsImages, onInvertSelectedSegments }) => {
   const { t } = useTranslation();
+  const { getSegColor } = useSegColors();
 
   const ref = useRef();
 
@@ -81,7 +82,7 @@ const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, g
 
     const segColor = getSegColor(seg);
 
-    const color = segColor.desaturate(0.75).lightness(darkMode ? 35 : 55);
+    const color = segColor.desaturate(0.25).lightness(darkMode ? 35 : 55);
     const borderColor = darkMode ? color.lighten(0.5) : color.darken(0.3);
 
     return <b style={{ cursor: 'grab', color: 'white', padding: '0 4px', marginRight: 3, marginLeft: -3, background: color.string(), border: `1px solid ${isActive ? borderColor.string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
@@ -154,6 +155,7 @@ const SegmentList = memo(({
   jumpSegStart, jumpSegEnd, onViewSegmentTags,
 }) => {
   const { t } = useTranslation();
+  const { getSegColor } = useSegColors();
 
   const { invertCutSegments, simpleMode, darkMode } = useUserSettings();
 
@@ -198,7 +200,7 @@ const SegmentList = memo(({
   }
 
   function renderFooter() {
-    const getButtonColor = (seg) => getSegColor(seg).desaturate(0.8).lightness(darkMode ? 45 : 55).string();
+    const getButtonColor = (seg) => getSegColor(seg).desaturate(0.3).lightness(darkMode ? 45 : 55).string();
     const currentSegColor = getButtonColor(currentCutSeg);
     const segAtCursorColor = getButtonColor(segmentAtCursor);
 

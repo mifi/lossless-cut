@@ -135,6 +135,8 @@ export default () => {
   useEffect(() => safeSetConfig({ allowMultipleInstances }), [allowMultipleInstances]);
   const [darkMode, setDarkMode] = useState(safeGetConfigInitial('darkMode'));
   useEffect(() => safeSetConfig({ darkMode }), [darkMode]);
+  const [preferStrongColors, setPreferStrongColors] = useState(safeGetConfigInitial('preferStrongColors'));
+  useEffect(() => safeSetConfig({ preferStrongColors }), [preferStrongColors]);
 
 
   const resetKeyBindings = useCallback(() => {
@@ -248,5 +250,7 @@ export default () => {
     setAllowMultipleInstances,
     darkMode,
     setDarkMode,
+    preferStrongColors,
+    setPreferStrongColors,
   };
 };

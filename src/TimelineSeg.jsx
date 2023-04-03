@@ -4,13 +4,18 @@ import { FaTrashAlt } from 'react-icons/fa';
 
 import { mySpring } from './animations';
 import useUserSettings from './hooks/useUserSettings';
+import { useSegColors } from './contexts';
 
 
 const TimelineSeg = memo(({
-  duration, cutStart, cutEnd, isActive, segNum, name,
-  onSegClick, invertCutSegments, segColor, formatTimecode, selected,
+  seg, duration, isActive, segNum, onSegClick, invertCutSegments, formatTimecode, selected,
 }) => {
   const { darkMode } = useUserSettings();
+  const { getSegColor } = useSegColors();
+
+  const segColor = useMemo(() => getSegColor(seg), [getSegColor, seg]);
+
+  const { name, start: cutStart, end: cutEnd } = seg;
 
   const cutSectionWidth = `${((cutEnd - cutStart) / duration) * 100}%`;
 
@@ -18,13 +23,13 @@ const TimelineSeg = memo(({
 
   const markerBorder = useMemo(() => {
     if (!isActive) return '2px solid transparent';
-    return `2px solid ${(darkMode ? segColor.desaturate(0.6).lightness(70) : segColor.desaturate(0.9).lightness(20)).string()}`;
+    return `2px solid ${darkMode ? segColor.desaturate(0.1).lightness(70).string() : segColor.desaturate(0.2).lightness(40).string()}`;
   }, [darkMode, isActive, segColor]);
 
   const backgroundColor = useMemo(() => {
-    if (invertCutSegments || !selected) return darkMode ? segColor.desaturate(0.9).lightness(25).string() : segColor.desaturate(0.9).lightness(80).string();
-    if (isActive) return darkMode ? segColor.desaturate(0.7).lightness(50).string() : segColor.desaturate(0.7).lightness(40).string();
-    return darkMode ? segColor.desaturate(0.7).lightness(40).string() : segColor.desaturate(0.9).lightness(55).string();
+    if (invertCutSegments || !selected) return darkMode ? segColor.desaturate(0.4).lightness(25).string() : segColor.desaturate(0.4).lightness(83).string();
+    if (isActive) return darkMode ? segColor.desaturate(0.2).lightness(50).string() : segColor.desaturate(0.2).lightness(60).string();
+    return darkMode ? segColor.desaturate(0.2).lightness(40).string() : segColor.desaturate(0.5).lightness(65).string();
   }, [darkMode, invertCutSegments, isActive, segColor, selected]);
   const markerBorderRadius = 5;
 
