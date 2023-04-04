@@ -11,7 +11,7 @@ import { handleError, shuffleArray } from '../util';
 import { errorToast } from '../swal';
 import { showParametersDialog } from '../dialogs/parameters';
 import { createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, showEditableJsonDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog } from '../dialogs';
-import { createSegment, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, combineOverlappingSegments as combineOverlappingSegments2, isDurationValid, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2 } from '../segments';
+import { createSegment, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2 } from '../segments';
 import * as ffmpegParameters from '../ffmpeg-parameters';
 import { maxSegmentsAllowed } from '../util/constants';
 
@@ -188,6 +188,10 @@ export default ({
   const combineOverlappingSegments = useCallback(() => {
     setCutSegments((existingSegments) => combineOverlappingSegments2(existingSegments, getSegApparentEnd));
   }, [getSegApparentEnd, setCutSegments]);
+
+  const combineSelectedSegments = useCallback(() => {
+    setCutSegments((existingSegments) => combineSelectedSegments2(existingSegments, getSegApparentEnd2, isSegmentSelected));
+  }, [isSegmentSelected, setCutSegments]);
 
   const updateSegAtIndex = useCallback((index, newProps) => {
     if (index < 0) return;
@@ -472,6 +476,7 @@ export default ({
     invertAllSegments,
     fillSegmentsGaps,
     combineOverlappingSegments,
+    combineSelectedSegments,
     shiftAllSegmentTimes,
     alignSegmentTimesToKeyframes,
     onViewSegmentTags,

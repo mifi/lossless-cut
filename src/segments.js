@@ -1,5 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import sortBy from 'lodash/sortBy';
+import minBy from 'lodash/minBy';
+import maxBy from 'lodash/maxBy';
 
 
 export const isDurationValid = (duration) => Number.isFinite(duration) && duration > 0;
@@ -96,6 +98,24 @@ export function combineOverlappingSegments(existingSegments, getSegApparentEnd2)
       };
     }
     return undefined; // then remove all other segments in this partition group
+  }).filter((segment) => segment);
+}
+
+export function combineSelectedSegments(existingSegments, getSegApparentEnd2, isSegmentSelected) {
+  const selectedSegments = existingSegments.filter(isSegmentSelected);
+  const firstSegment = minBy(selectedSegments, (seg) => getSegApparentStart(seg));
+  const lastSegment = maxBy(selectedSegments, (seg) => getSegApparentEnd2(seg));
+
+  return existingSegments.map((existingSegment) => {
+    if (existingSegment === firstSegment) {
+      return {
+        ...firstSegment,
+        start: firstSegment.start,
+        end: lastSegment.end,
+      };
+    }
+    if (isSegmentSelected(existingSegment)) return undefined; // remove other selected segments
+    return existingSegment;
   }).filter((segment) => segment);
 }
 

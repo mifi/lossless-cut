@@ -339,6 +339,9 @@ const KeyboardShortcuts = memo(({
           name: t('Combine overlapping segments'),
           category: segmentsAndCutpointsCategory,
         },
+        combineSelectedSegments: {
+          name: t('Combine selected segments'),
+        },
         clearSegments: {
           name: t('Clear all segments'),
           category: segmentsAndCutpointsCategory,

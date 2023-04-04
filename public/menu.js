@@ -239,6 +239,12 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
               },
             },
             {
+              label: esc(t('Combine selected segments')),
+              click() {
+                mainWindow.webContents.send('combineSelectedSegments');
+              },
+            },
+            {
               label: esc(t('Shuffle segments order')),
               click() {
                 mainWindow.webContents.send('shuffleSegments');
