@@ -8,7 +8,7 @@ import useUserSettings from './hooks/useUserSettings';
 
 const electron = window.require('electron');
 
-const NoFileLoaded = memo(({ mifiLink, currentCutSeg, onClick }) => {
+const NoFileLoaded = memo(({ mifiLink, currentCutSeg, onClick, darkMode }) => {
   const { t } = useTranslation();
   const { simpleMode } = useUserSettings();
 
@@ -40,7 +40,7 @@ const NoFileLoaded = memo(({ mifiLink, currentCutSeg, onClick }) => {
 
       {mifiLink && mifiLink.loadUrl && (
         <div style={{ position: 'relative', margin: '3vmin', width: '60vmin', height: '20vmin' }}>
-          <iframe src={mifiLink.loadUrl} title="iframe" style={{ background: 'rgba(0,0,0,0)', border: 'none', pointerEvents: 'none', width: '100%', height: '100%', position: 'absolute' }} />
+          <iframe src={`${mifiLink.loadUrl}#dark=${darkMode ? 'true' : 'false'}`} title="iframe" style={{ background: 'rgba(0,0,0,0)', border: 'none', pointerEvents: 'none', width: '100%', height: '100%', position: 'absolute' }} />
           {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus */}
           <div style={{ width: '100%', height: '100%', position: 'absolute', cursor: 'pointer' }} role="button" onClick={(e) => { e.stopPropagation(); electron.shell.openExternal(mifiLink.targetUrl); }} />
         </div>
