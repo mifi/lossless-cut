@@ -23,13 +23,14 @@ const TimelineSeg = memo(({
 
   const markerBorder = useMemo(() => {
     if (!isActive) return '2px solid transparent';
-    return `2px solid ${darkMode ? segColor.desaturate(0.1).lightness(70).string() : segColor.desaturate(0.2).lightness(40).string()}`;
+    return `1.5px solid ${darkMode ? segColor.desaturate(0.1).lightness(70).string() : segColor.desaturate(0.2).lightness(40).string()}`;
   }, [darkMode, isActive, segColor]);
 
   const backgroundColor = useMemo(() => {
-    if (invertCutSegments || !selected) return darkMode ? segColor.desaturate(0.4).lightness(25).string() : segColor.desaturate(0.4).lightness(83).string();
-    if (isActive) return darkMode ? segColor.desaturate(0.2).lightness(50).string() : segColor.desaturate(0.2).lightness(60).string();
-    return darkMode ? segColor.desaturate(0.2).lightness(40).string() : segColor.desaturate(0.5).lightness(65).string();
+    // we use both transparency and lightness, so that segments can be visible when overlapping
+    if (invertCutSegments || !selected) return darkMode ? segColor.desaturate(0.3).lightness(30).alpha(0.5).string() : segColor.desaturate(0.3).lightness(70).alpha(0.5).string();
+    if (isActive) return darkMode ? segColor.saturate(0.2).lightness(60).alpha(0.7).string() : segColor.saturate(0.2).lightness(40).alpha(0.8).string();
+    return darkMode ? segColor.desaturate(0.2).lightness(50).alpha(0.7).string() : segColor.lightness(35).alpha(0.6).string();
   }, [darkMode, invertCutSegments, isActive, segColor, selected]);
   const markerBorderRadius = 5;
 
