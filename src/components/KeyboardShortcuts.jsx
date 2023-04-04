@@ -481,6 +481,10 @@ const KeyboardShortcuts = memo(({
           name: t('Redo'),
           category: otherCategory,
         },
+        copySegmentsToClipboard: {
+          name: t('Copy selected segments times to clipboard'),
+          category: otherCategory,
+        },
         closeActiveScreen: {
           name: t('Close current screen'),
           category: otherCategory,

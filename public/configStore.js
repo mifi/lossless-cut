@@ -62,6 +62,9 @@ const defaultKeyBindings = [
   { keys: 'ctrl+shift+z', action: 'redo' },
   { keys: 'command+shift+z', action: 'redo' },
 
+  { keys: 'ctrl+c', action: 'copySegmentsToClipboard' },
+  { keys: 'command+c', action: 'copySegmentsToClipboard' },
+
   { keys: 'enter', action: 'labelCurrentSegment' },
 
   { keys: 'e', action: 'export' },
