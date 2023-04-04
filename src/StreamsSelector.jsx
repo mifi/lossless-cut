@@ -218,6 +218,7 @@ const Stream = memo(({ dispositionByStreamId, setDispositionByStreamId, filePath
 
   const streamFps = getStreamFps(stream);
   const language = stream.tags && stream.tags.language;
+  const title = stream.tags && stream.tags.title;
 
   const onClick = () => onToggle && onToggle(stream.index);
 
@@ -252,10 +253,11 @@ const Stream = memo(({ dispositionByStreamId, setDispositionByStreamId, filePath
         {stream.nb_frames != null ? <div>{stream.nb_frames}f</div> : null}
       </td>
       <td>{!Number.isNaN(bitrate) && (stream.codec_type === 'audio' ? `${Math.round(bitrate / 1000)} kbps` : prettyBytes(bitrate, { bits: true }))}</td>
+      <td style={{ maxWidth: '2.5em', wordBreak: 'break-word' }} title={title}>{title}</td>
       <td style={{ maxWidth: '2.5em', overflow: 'hidden' }} title={language}>{language}</td>
       <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
       <td>
-        <Select style={{ width: '7em', fontSize: '1.1em' }} value={effectiveDisposition || unchangedDispositionValue} onChange={onDispositionChange}>
+        <Select style={{ width: '6em' }} value={effectiveDisposition || unchangedDispositionValue} onChange={onDispositionChange}>
           <option value="" disabled>{t('Disposition')}</option>
           <option value={unchangedDispositionValue}>{t('Unchanged')}</option>
           <option value={deleteDispositionValue}>{t('Remove')}</option>
@@ -269,7 +271,6 @@ const Stream = memo(({ dispositionByStreamId, setDispositionByStreamId, filePath
 
       <td style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <IconButton icon={InfoSignIcon} onClick={() => onInfoClick(stream, t('Track {{num}} info', { num: stream.index + 1 }))} appearance="minimal" iconSize={18} />
-        {onExtractStreamPress && <IconButton title={t('Extract this track as file')} icon={FaFileExport} onClick={onExtractStreamPress} appearance="minimal" iconSize={18} />}
 
         <Popover
           position={Position.BOTTOM_LEFT}
@@ -279,6 +280,11 @@ const Stream = memo(({ dispositionByStreamId, setDispositionByStreamId, filePath
                 <Menu.Item icon={EditIcon} onClick={() => setEditingStream({ streamId: stream.index, path: filePath })}>
                   {t('Edit track metadata')}
                 </Menu.Item>
+                {onExtractStreamPress && (
+                  <Menu.Item icon={<FaFileExport color="black" />} onClick={onExtractStreamPress}>
+                    {t('Extract this track as file')}
+                  </Menu.Item>
+                )}
               </Menu.Group>
               <Menu.Divider />
               <Menu.Group>
@@ -319,25 +325,28 @@ const FileHeading = ({ path, formatData, chapters, onTrashClick, onEditClick, se
   );
 };
 
+const thStyle = { borderBottom: '1px solid var(--gray6)', paddingBottom: '.5em' };
+
 const Thead = () => {
   const { t } = useTranslation();
   return (
-    <thead style={{ color: 'var(--gray12)', textAlign: 'left' }}>
+    <thead style={{ color: 'var(--gray12)', textAlign: 'left', fontSize: '.9em' }}>
       <tr>
-        <th>{t('Keep?')}</th>
-        <th>{t('Codec')}</th>
-        <th>{t('Duration')}</th>
-        <th>{t('Bitrate')}</th>
-        <th>{t('Lang')}</th>
-        <th>{t('Data')}</th>
-        <th>{t('Disposition')}</th>
-        <th />
+        <th style={thStyle}>{t('Keep?')}</th>
+        <th style={thStyle}>{t('Codec')}</th>
+        <th style={thStyle}>{t('Duration')}</th>
+        <th style={thStyle}>{t('Bitrate')}</th>
+        <th style={thStyle}>{t('Title')}</th>
+        <th style={thStyle}>{t('Lang')}</th>
+        <th style={thStyle}>{t('Data')}</th>
+        <th style={thStyle}>{t('Disposition')}</th>
+        <th style={thStyle} />
       </tr>
     </thead>
   );
 };
 
-const tableStyle = { fontSize: 14, width: '100%' };
+const tableStyle = { fontSize: 14, width: '100%', borderCollapse: 'collapse' };
 const fileStyle = { margin: '1.5em 1em 1.5em 1em', padding: 5, overflowX: 'auto' };
 
 const StreamsSelector = memo(({
