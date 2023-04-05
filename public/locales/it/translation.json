@@ -361,7 +361,7 @@
     "Custom FFmpeg directory (experimental)": "Cartella FFmpeg personalizzata (sperimentale)",
     "Divide timeline into a number of equal length segments": "Dividi la timeline in un numero di segmenti di uguale lunghezza",
     "Label selected segments": "Etichetta segmenti selezionati",
-    "Download {{version}}": "Download {{versione}}",
+    "Download {{version}}": "Download {{version}}",
     "Don't cut the file, but instead export an unmodified original which has chapters generated from segments": "Non tagliare il file, ma esporta invece un originale non modificato che ha capitoli generati dai segmenti",
     "Exit": "Esci",
     "Enter value": "Inserisci valore",
