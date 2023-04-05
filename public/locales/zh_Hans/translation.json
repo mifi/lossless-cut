@@ -783,6 +783,11 @@
     "Show informational notifications": "显示信息通知",
     "Input has {{numStreamsTotal}} tracks": "输入有 {{numStreamsTotal}} 条轨道",
     "Keeping {{numStreamsToCopy}} tracks": "保留{{numStreamsToCopy}} 条轨道",
-    "Export mode for {{segments}} segments": "{{segments}} 片段的导出模式",
-    "The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}": "您试图打开的项目文件引用的媒体文件与项目文件不在同一目录中： {{mediaFileName}}"
+    "Export mode for {{segments}} segments": "{{segments}} 个片段的导出模式",
+    "The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}": "您试图打开的项目文件引用的媒体文件与项目文件不在同一目录中： {{mediaFileName}}",
+    "Prefer strong colors": "偏好强烈的色彩",
+    "Title": "标题",
+    "User interface": "用户界面",
+    "Combine selected segments": "合并所选片段",
+    "Copy selected segments times to clipboard": "将所选片段时间复制到剪贴板"
 }
