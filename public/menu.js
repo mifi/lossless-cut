@@ -382,7 +382,7 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
           label: esc(t('Report an error')),
           click() { mainWindow.webContents.send('openSendReportDialog'); },
         },
-        ...(process.platform !== 'darwin' ? [{ role: 'about' }] : []),
+        ...(process.platform !== 'darwin' ? [{ role: 'about', label: esc(t('About LosslessCut')) }] : []),
       ],
     },
   ];
