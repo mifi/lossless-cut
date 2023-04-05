@@ -286,7 +286,7 @@ const Settings = memo(({
           <Row>
             <KeyCell>{t('Show informational notifications')}</KeyCell>
             <td>
-              <Switch checked={!hideNotifications} onCheckedChange={(v) => setHideNotifications(v ? 'all' : undefined)} />
+              <Switch checked={!hideNotifications} onCheckedChange={(v) => setHideNotifications(v ? undefined : 'all')} />
             </td>
           </Row>
 
