@@ -71,7 +71,7 @@ function interpolateSegmentFileName({ template, inputFileNameWithoutExt, segSuff
 
   if (segSuffix) {
     if (segNum > 1) {
-      currentTimestamp -= 1;
+      currentTimestamp += 1;
     } 
   }
 
