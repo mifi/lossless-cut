@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect, useCallback } from 'react';
+import React, { memo, useState, useEffect, useCallback, useRef } from 'react';
 import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +26,7 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
   const [error, setError] = useState();
   const [outSegFileNames, setOutSegFileNames] = useState();
   const [shown, setShown] = useState();
+  const inputRef = useRef(null);
 
   const { t } = useTranslation();
 
@@ -83,6 +84,24 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
 
   const needToShow = shown || error != null;
 
+  const onTextClick = useCallback(() => {
+    inputRef.current.focus();
+  }, []);
+  
+  const onVariableClick = useCallback((variable) => {
+    const input = inputRef.current;
+    const startPos = input.selectionStart;
+    const endPos = input.selectionEnd;
+  
+    const newValue = `${text.slice(0, startPos)}${'${' + variable + '}' + text.slice(endPos)}`;
+    setText(newValue);
+  
+    // Move the cursor to after the inserted variable
+    const newPos = startPos + variable.length + 2;
+    input.selectionStart = newPos;
+    input.selectionEnd = newPos;
+  }, [text]);
+
   return (
     <>
       <div>
@@ -94,7 +113,7 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
       {needToShow && (
         <>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 5, marginTop: 10 }}>
-            <input type="text" style={inputStyle} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
+          <input type="text" ref={inputRef} style={inputStyle} onChange={onTextChange} onClick={onTextClick} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
 
             {outSegFileNames != null && <Button height={20} onClick={onAllSegmentsPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
             <Button title={t('Whether or not to sanitize output file names (sanitizing removes special characters)')} marginLeft={5} height={20} onClick={toggleSafeOutputFileName} intent={safeOutputFileName ? 'success' : 'danger'}>{safeOutputFileName ? t('Sanitize') : t('No sanitize')}</Button>
@@ -106,7 +125,9 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
             {isMissingExtension && <div style={{ marginBottom: '1em' }}><WarningSignIcon color="var(--amber9)" /> {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVar })}</div>}
             <div style={{ fontSize: '.8em', color: 'var(--gray11)' }}>
               {`${i18n.t('Variables')}`}{': '}
-              {['FILENAME', 'CUT_FROM', 'CUT_TO', 'SEG_NUM', 'SEG_LABEL', 'SEG_SUFFIX', 'EXT', 'SEG_TAGS.XX'].map((variable) => <span key={variable} role="button" style={{ cursor: 'pointer', marginRight: '.2em' }} onClick={() => setText((oldText) => `${oldText}\${${variable}}`)}>{variable}</span>)}
+              {['FILENAME', 'TIMESTAMP', 'CUT_FROM', 'CUT_TO', 'SEG_NUM', 'SEG_LABEL', 'SEG_SUFFIX', 'EXT', 'SEG_TAGS.XX'].map((variable) => (
+                <span key={variable} role="button" style={{ cursor: 'pointer', marginRight: '.2em' }} onClick={() => onVariableClick(variable)}>{variable}</span>
+              ))}
             </div>
           </div>
         </>

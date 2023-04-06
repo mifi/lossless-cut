@@ -74,6 +74,7 @@ function interpolateSegmentFileName({ template, inputFileNameWithoutExt, segSuff
     EXT: ext,
     SEG_NUM: segNum,
     SEG_LABEL: segLabel,
+    TIMESTAMP: Date.now(),
     CUT_FROM: cutFrom,
     CUT_TO: cutTo,
     SEG_TAGS: {
