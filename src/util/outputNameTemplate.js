@@ -65,18 +65,16 @@ export function getOutSegError({ fileNames, filePath, outputDir, safeOutputFileN
 // This is used as a fallback and so it has to always generate unique file names
 // eslint-disable-next-line no-template-curly-in-string
 export const defaultOutSegTemplate = '${FILENAME}-${CUT_FROM}-${CUT_TO}${SEG_SUFFIX}${EXT}';
-
-function interpolateSegmentFileName({ template, inputFileNameWithoutExt, currentTimestamp, segSuffix, ext, segNum, segLabel, cutFrom, cutTo, tags }) {
+let currentTimestamp = Date.now();
+function interpolateSegmentFileName({ template, inputFileNameWithoutExt, segSuffix, ext, segNum, segLabel, cutFrom, cutTo, tags }) {
   const compiled = lodashTemplate(template);
+
   if (segSuffix) {
     if (segNum > 1) {
-      currentTimestamp = Date.now() + 1;
-    } else {
-      currentTimestamp = Date.now();
-    }
-  } else {
-    currentTimestamp = Date.now();
+      currentTimestamp -= 1;
+    } 
   }
+
   const data = {
     FILENAME: inputFileNameWithoutExt,
     SEG_SUFFIX: segSuffix,
