@@ -66,15 +66,24 @@ export function getOutSegError({ fileNames, filePath, outputDir, safeOutputFileN
 // eslint-disable-next-line no-template-curly-in-string
 export const defaultOutSegTemplate = '${FILENAME}-${CUT_FROM}-${CUT_TO}${SEG_SUFFIX}${EXT}';
 
-function interpolateSegmentFileName({ template, inputFileNameWithoutExt, segSuffix, ext, segNum, segLabel, cutFrom, cutTo, tags }) {
+function interpolateSegmentFileName({ template, inputFileNameWithoutExt, currentTimestamp, segSuffix, ext, segNum, segLabel, cutFrom, cutTo, tags }) {
   const compiled = lodashTemplate(template);
+  if (segSuffix) {
+    if (segNum > 1) {
+      currentTimestamp = Date.now() + 1;
+    } else {
+      currentTimestamp = Date.now();
+    }
+  } else {
+    currentTimestamp = Date.now();
+  }
   const data = {
     FILENAME: inputFileNameWithoutExt,
     SEG_SUFFIX: segSuffix,
     EXT: ext,
     SEG_NUM: segNum,
     SEG_LABEL: segLabel,
-    TIMESTAMP: Date.now(),
+    TIMESTAMP: currentTimestamp,
     CUT_FROM: cutFrom,
     CUT_TO: cutTo,
     SEG_TAGS: {
