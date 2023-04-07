@@ -9,6 +9,7 @@ When exporting multiple segments as separate files, LosslessCut offers you the a
 | `${FILENAME}` | The original filename without the extension (e.g. `Beach Trip` for a file named `Beach Trip.mp4`)
 | `${EXT}` | The extension of the file (e.g.: `.mp4`, `.mkv`)
 | `${SEG_NUM}` | Number of the segment (e.g. `1`, `2` or `3`)
+| `${EPOCH_MS}` | Number of milliseconds since epoch (e.g. `1680852771465`)
 | `${SEG_LABEL}` | The label of the segment (e.g. `Getting_Lunch`)
 | `${SEG_SUFFIX}` | If a label exists for this segment, the label will be used, prepended by `-`. Otherwise, the segment number prepended by `-seg` will be used (e.g. `-Getting_Lunch`, `-seg1`)
 | `${CUT_FROM}` | The timestamp for the beginning of the segment in `hh.mm.ss.sss` format (e.g. `00.00.27.184`)

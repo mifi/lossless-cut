@@ -4,6 +4,7 @@ import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { WarningSignIcon, ErrorIcon, Button, IconButton, TickIcon, ResetIcon } from 'evergreen-ui';
 import withReactContent from 'sweetalert2-react-content';
+import { IoIosHelpCircle } from 'react-icons/io';
 
 import Swal from '../swal';
 import HighlightedText from './HighlightedText';
@@ -11,6 +12,8 @@ import { defaultOutSegTemplate } from '../util/outputNameTemplate';
 import useUserSettings from '../hooks/useUserSettings';
 
 const ReactSwal = withReactContent(Swal);
+
+const electron = window.require('electron');
 
 // eslint-disable-next-line no-template-curly-in-string
 const extVar = '${EXT}';
@@ -26,7 +29,7 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
   const [error, setError] = useState();
   const [outSegFileNames, setOutSegFileNames] = useState();
   const [shown, setShown] = useState();
-  const inputRef = useRef(null);
+  const inputRef = useRef();
 
   const { t } = useTranslation();
 
@@ -84,18 +87,14 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
 
   const needToShow = shown || error != null;
 
-  const onTextClick = useCallback(() => {
-    inputRef.current.focus();
-  }, []);
-  
   const onVariableClick = useCallback((variable) => {
     const input = inputRef.current;
     const startPos = input.selectionStart;
     const endPos = input.selectionEnd;
-  
-    const newValue = `${text.slice(0, startPos)}${'${' + variable + '}' + text.slice(endPos)}`;
+
+    const newValue = `${text.slice(0, startPos)}${`\${${variable}}${text.slice(endPos)}`}`;
     setText(newValue);
-  
+
     // Move the cursor to after the inserted variable
     const newPos = startPos + variable.length + 2;
     input.selectionStart = newPos;
@@ -113,7 +112,7 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
       {needToShow && (
         <>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 5, marginTop: 10 }}>
-          <input type="text" ref={inputRef} style={inputStyle} onChange={onTextChange} onClick={onTextClick} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
+            <input type="text" ref={inputRef} style={inputStyle} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
 
             {outSegFileNames != null && <Button height={20} onClick={onAllSegmentsPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
             <Button title={t('Whether or not to sanitize output file names (sanitizing removes special characters)')} marginLeft={5} height={20} onClick={toggleSafeOutputFileName} intent={safeOutputFileName ? 'success' : 'danger'}>{safeOutputFileName ? t('Sanitize') : t('No sanitize')}</Button>
@@ -123,9 +122,10 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
           <div style={{ maxWidth: 600 }}>
             {error != null && <div style={{ marginBottom: '1em' }}><ErrorIcon color="var(--red9)" /> {i18n.t('There is an error in the file name template:')} {error}</div>}
             {isMissingExtension && <div style={{ marginBottom: '1em' }}><WarningSignIcon color="var(--amber9)" /> {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVar })}</div>}
-            <div style={{ fontSize: '.8em', color: 'var(--gray11)' }}>
-              {`${i18n.t('Variables')}`}{': '}
-              {['FILENAME', 'TIMESTAMP', 'CUT_FROM', 'CUT_TO', 'SEG_NUM', 'SEG_LABEL', 'SEG_SUFFIX', 'EXT', 'SEG_TAGS.XX'].map((variable) => (
+            <div style={{ fontSize: '.8em', color: 'var(--gray11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center' }}>
+              {`${i18n.t('Variables')}:`}
+              <IoIosHelpCircle fontSize="1.3em" color="var(--gray12)" role="button" cursor="pointer" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/import-export.md#customising-exported-file-names')} />
+              {['FILENAME', 'CUT_FROM', 'CUT_TO', 'SEG_NUM', 'SEG_LABEL', 'SEG_SUFFIX', 'EXT', 'SEG_TAGS.XX', 'EPOCH_MS'].map((variable) => (
                 <span key={variable} role="button" style={{ cursor: 'pointer', marginRight: '.2em' }} onClick={() => onVariableClick(variable)}>{variable}</span>
               ))}
             </div>

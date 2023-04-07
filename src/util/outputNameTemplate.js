@@ -65,15 +65,9 @@ export function getOutSegError({ fileNames, filePath, outputDir, safeOutputFileN
 // This is used as a fallback and so it has to always generate unique file names
 // eslint-disable-next-line no-template-curly-in-string
 export const defaultOutSegTemplate = '${FILENAME}-${CUT_FROM}-${CUT_TO}${SEG_SUFFIX}${EXT}';
-let currentTimestamp = Date.now();
-function interpolateSegmentFileName({ template, inputFileNameWithoutExt, segSuffix, ext, segNum, segLabel, cutFrom, cutTo, tags }) {
-  const compiled = lodashTemplate(template);
 
-  if (segSuffix) {
-    if (segNum > 1) {
-      currentTimestamp += 1;
-    } 
-  }
+function interpolateSegmentFileName({ template, epochMs, inputFileNameWithoutExt, segSuffix, ext, segNum, segLabel, cutFrom, cutTo, tags }) {
+  const compiled = lodashTemplate(template);
 
   const data = {
     FILENAME: inputFileNameWithoutExt,
@@ -81,7 +75,7 @@ function interpolateSegmentFileName({ template, inputFileNameWithoutExt, segSuff
     EXT: ext,
     SEG_NUM: segNum,
     SEG_LABEL: segLabel,
-    TIMESTAMP: currentTimestamp,
+    EPOCH_MS: String(epochMs),
     CUT_FROM: cutFrom,
     CUT_TO: cutTo,
     SEG_TAGS: {
@@ -99,6 +93,8 @@ function formatSegNum(segIndex, segments) {
 }
 
 export function generateOutSegFileNames({ segments, template, forceSafeOutputFileName, formatTimecode, isCustomFormatSelected, fileFormat, filePath, safeOutputFileName, maxLabelLength }) {
+  const currentTimestamp = Date.now();
+
   return segments.map((segment, i) => {
     const { start, end, name = '' } = segment;
     const segNum = formatSegNum(i, segments);
@@ -118,6 +114,7 @@ export function generateOutSegFileNames({ segments, template, forceSafeOutputFil
 
     const segFileName = interpolateSegmentFileName({
       template,
+      epochMs: currentTimestamp + i, // for convenience: give each segment a unique timestamp
       segNum,
       inputFileNameWithoutExt,
       segSuffix: getSegSuffix(),
