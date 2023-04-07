@@ -81,6 +81,7 @@ If the output file name has special characters that get replaced by underscore (
 - Preview of H265/HEVC files is completely black or corrupted? Go to settings and disable "Hardware HEVC decoding" 
 - Where did the `.exe`/`.zip` downloads go? I decided to stop distributing exe and instead just 7zip, due to the [problems that the exe download was causing and the large size of zips.](https://github.com/mifi/lossless-cut/issues/1072#issuecomment-1066026323)
 - [APPX is not signed and **does not work**.](https://github.com/mifi/lossless-cut/issues/337) Please use [7z package](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z) instead.
+- If you receive a KERNEL32.dll error, it's probably because you're running Windows 7, 8 or 8.1 which are [no longer supported.](https://github.com/mifi/lossless-cut/discussions/1476)
 
 # Known limitations
 

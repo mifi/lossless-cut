@@ -34,7 +34,7 @@ const HelpIcon = ({ onClick, style }) => <IoIosHelpCircle size={20} role="button
 
 const ExportConfirm = memo(({
   areWeCutting, selectedSegments, segmentsToExport, willMerge, visible, onClosePress, onExportConfirm,
-  outFormat, renderOutFmt, outputDir, numStreamsTotal, numStreamsToCopy, setStreamsSelectorShown, outSegTemplate,
+  outFormat, renderOutFmt, outputDir, numStreamsTotal, numStreamsToCopy, onShowStreamsSelectorClick, outSegTemplate,
   setOutSegTemplate, generateOutSegFileNames, filePath, currentSegIndexSafe, getOutSegError, nonFilteredSegmentsOrInverse,
   mainCopiedThumbnailStreams, needSmartCut,
 }) => {
@@ -168,7 +168,7 @@ const ExportConfirm = memo(({
                         )}
                       </td>
                       <td>
-                        <HighlightedText style={{ cursor: 'pointer' }} onClick={() => setStreamsSelectorShown(true)}><Trans>Keeping {{ numStreamsToCopy }} tracks</Trans></HighlightedText>
+                        <HighlightedText style={{ cursor: 'pointer' }} onClick={onShowStreamsSelectorClick}><Trans>Keeping {{ numStreamsToCopy }} tracks</Trans></HighlightedText>
                       </td>
                       <td>
                         {areWeCuttingProblematicStreams && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" />}

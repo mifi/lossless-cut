@@ -14,6 +14,8 @@ body:
           required: true
         - label: If you have an issue only with one particular file, [use this form instead](https://github.com/mifi/lossless-cut/issues/new?assignees=&labels=&template=file-issue.yml)
           required: true
+        - label: Windows 7, 8 and 8.1 are [no longer supported](https://github.com/mifi/lossless-cut/discussions/1476) **I am not using Windows 8.1 or older**
+          required: true
   - type: dropdown
     id: operating-system
     attributes:

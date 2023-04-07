@@ -361,7 +361,7 @@
     "Custom FFmpeg directory (experimental)": "Cartella FFmpeg personalizzata (sperimentale)",
     "Divide timeline into a number of equal length segments": "Dividi la timeline in un numero di segmenti di uguale lunghezza",
     "Label selected segments": "Etichetta segmenti selezionati",
-    "Download {{version}}": "Download {{versione}}",
+    "Download {{version}}": "Download {{version}}",
     "Don't cut the file, but instead export an unmodified original which has chapters generated from segments": "Non tagliare il file, ma esporta invece un originale non modificato che ha capitoli generati dai segmenti",
     "Exit": "Esci",
     "Enter value": "Inserisci valore",
@@ -718,5 +718,10 @@
     "Input has {{numStreamsTotal}} tracks": "La sorgente ha {{numStreamsTotal}} tracce",
     "Keeping {{numStreamsToCopy}} tracks": "Mantieni {{numStreamsToCopy}} tracce",
     "Export mode for {{segments}} segments": "Modalità esportazione {{segments}} segmenti",
-    "The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}": "Il file multimediale a cui fa riferimento il file progetto che hai tentato di aprire non esiste nella stessa cartella del file progetto: {{mediaFileName}}"
+    "The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}": "Il file multimediale a cui fa riferimento il file progetto che hai tentato di aprire non esiste nella stessa cartella del file progetto: {{mediaFileName}}",
+    "Title": "Titolo",
+    "Combine selected segments": "Combina i segmenti selezionati",
+    "Copy selected segments times to clipboard": "Copia i tempi dei segmenti selezionati negli Appunti",
+    "Prefer strong colors": "Preferisci i colori forti",
+    "User interface": "Interfaccia utente"
 }
