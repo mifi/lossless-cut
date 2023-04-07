@@ -32,7 +32,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
   - Remove unneeded tracks
   - Replace or re-encode only some tracks
   - Extract all tracks from a file (extract video, audio, subtitle, attachments and other tracks from one file into separate files)
-- Batch view for fast multi-file workflow (note: no mass export yet)
+- Fast multi-file workflow (note: no mass/batch export yet)
 - Keyboard shortcut workflow
 - Losslessly remux video/audio into a different container (file) format
 - Take full-resolution snapshots from videos in JPEG/PNG format (low or high quality)
