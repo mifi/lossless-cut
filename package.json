@@ -138,7 +138,6 @@
     "appId": "no.mifi.losslesscut",
     "artifactName": "${productName}-${os}-${arch}.${ext}",
     "afterSign": "electron-builder-notarize",
-    "afterAllArtifactBuild": "./script/afterAllArtifactBuild.js",
     "mac": {
       "hardenedRuntime": true,
       "appId": "no.mifi.losslesscut-mac",
