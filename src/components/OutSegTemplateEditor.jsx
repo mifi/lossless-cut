@@ -94,11 +94,6 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
 
     const newValue = `${text.slice(0, startPos)}${`\${${variable}}${text.slice(endPos)}`}`;
     setText(newValue);
-
-    // Move the cursor to after the inserted variable
-    const newPos = startPos + variable.length + 2;
-    input.selectionStart = newPos;
-    input.selectionEnd = newPos;
   }, [text]);
 
   return (
