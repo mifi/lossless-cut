@@ -259,9 +259,6 @@ const readyPromise = app.whenReady();
     logger.info('Initializing config store');
     await configStore.init();
 
-    // todo remove backwards compat:
-    if (argv.allowMultipleInstances) configStore.set('allowMultipleInstances', true);
-
     const allowMultipleInstances = configStore.get('allowMultipleInstances');
 
     if (!allowMultipleInstances && !safeRequestSingleInstanceLock({ argv: process.argv })) {
