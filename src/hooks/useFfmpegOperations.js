@@ -4,14 +4,13 @@ import sum from 'lodash/sum';
 import pMap from 'p-map';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath } from '../util';
-import { isCuttingStart, isCuttingEnd, handleProgress, getFfCommandLine, getDuration, runFfmpeg, createChaptersFromSegments, readFileMeta, cutEncodeSmartPart, getExperimentalArgs, html5ify as ffmpegHtml5ify, getVideoTimescaleArgs, RefuseOverwriteError, logStdoutStderr } from '../ffmpeg';
+import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileMeta, cutEncodeSmartPart, getExperimentalArgs, html5ify as ffmpegHtml5ify, getVideoTimescaleArgs, RefuseOverwriteError, logStdoutStderr, runFfmpegConcat } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { getSmartCutParams } from '../smartcut';
 
 const { join, resolve, dirname } = window.require('path');
 const { pathExists } = window.require('fs-extra');
 const { writeFile, unlink, mkdir } = window.require('fs/promises');
-const stringToStream = window.require('string-to-stream');
 
 async function writeChaptersFfmetadata(outDir, chapters) {
   if (!chapters || chapters.length === 0) return undefined;
@@ -155,13 +154,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut 
       console.log(fullCommandLine);
       appendFfmpegCommandLog(fullCommandLine);
 
-      const process = runFfmpeg(ffmpegArgs);
-
-      handleProgress(process, totalDuration, onProgress);
-
-      stringToStream(concatTxt).pipe(process.stdin);
-
-      const result = await process;
+      const result = await runFfmpegConcat({ ffmpegArgs, concatTxt, totalDuration, onProgress });
       logStdoutStderr(result);
 
       await optionalTransferTimestamps(metadataFromPath, outPath);
@@ -313,9 +306,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut 
     // console.log(ffmpegCommandLine);
     appendFfmpegCommandLog(ffmpegCommandLine);
 
-    const process = runFfmpeg(ffmpegArgs);
-    handleProgress(process, cutDuration, onProgress);
-    const result = await process;
+    const result = await runFfmpegWithProgress({ ffmpegArgs, duration: cutDuration, onProgress });
     logStdoutStderr(result);
 
     await optionalTransferTimestamps(filePath, outPath, cutFrom);
@@ -487,10 +478,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut 
       '-y', outPath,
     ];
 
-    const process = runFfmpeg(ffmpegArgs);
-    handleProgress(process, duration, onProgress);
-
-    const result = await process;
+    const result = await runFfmpegWithProgress({ ffmpegArgs, duration, onProgress });
     logStdoutStderr(result);
 
     await optionalTransferTimestamps(filePathArg, outPath);
@@ -515,10 +503,7 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut 
       '-y', outPath,
     ];
 
-    const process = runFfmpeg(ffmpegArgs);
-    handleProgress(process, duration, onProgress);
-
-    const result = await process;
+    const result = await runFfmpegWithProgress({ ffmpegArgs, duration, onProgress });
     logStdoutStderr(result);
 
     await optionalTransferTimestamps(filePath, outPath);

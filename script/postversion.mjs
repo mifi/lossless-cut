@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'fs/promises';
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 const xmlUrl = new URL('../no.mifi.losslesscut.appdata.xml', import.meta.url);
 const xmlData = await readFile(xmlUrl);
@@ -13,7 +13,7 @@ const xml = parser.parse(xmlData);
 
 const { version } = packageJson;
 
-xml.component.releases.release = [{ '@_version': version, '@_date': moment().format('YYYY-MM-DD') }, ...xml.component.releases.release];
+xml.component.releases.release = [{ '@_version': version, '@_date': DateTime.now().toISODate() }, ...xml.component.releases.release];
 
 const builder = new XMLBuilder({ format: true, ignoreAttributes: false, suppressEmptyNode: true });
 await writeFile(xmlUrl, builder.build(xml));
