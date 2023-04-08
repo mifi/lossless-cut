@@ -33,7 +33,7 @@ function getFfPath(cmd) {
 
   if (customFfPath) return join(customFfPath, exeName);
   if (isDev) return join('ffmpeg', `${platform}-${arch}`, exeName);
-  return join(window.process.resourcesPath, exeName);
+  return join(process.resourcesPath, exeName);
 }
 
 const getFfprobePath = () => getFfPath('ffprobe');
