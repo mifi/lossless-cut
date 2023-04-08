@@ -3,7 +3,7 @@ const isDev = require('electron-is-dev');
 const readline = require('readline');
 const stringToStream = require('string-to-stream');
 
-const { platform, arch, isWindows, isMac } = require('./util');
+const { platform, arch, isWindows, isMac, isLinux } = require('./util');
 
 const execaPromise = import('execa');
 
@@ -88,11 +88,18 @@ function handleProgress(process, durationIn, onProgress, customMatcher = () => {
   });
 }
 
+function getExecaOptions({ env, ...customExecaOptions } = {}) {
+  const execaOptions = { ...customExecaOptions, env: { ...env } };
+  // https://github.com/mifi/lossless-cut/issues/1143#issuecomment-1500883489
+  if (isLinux && !isDev && !customFfPath) execaOptions.env.LD_LIBRARY_PATH = process.resourcesPath;
+}
+
 // todo collect warnings from ffmpeg output and show them after export? example: https://github.com/mifi/lossless-cut/issues/1469
-function runFfmpegProcess(args, execaOptions, { logCli = true } = {}) {
+function runFfmpegProcess(args, customExecaOptions, { logCli = true } = {}) {
   const ffmpegPath = getFfmpegPath();
   if (logCli) console.log(getFfCommandLine('ffmpeg', args));
-  const process = execa(ffmpegPath, args, execaOptions);
+
+  const process = execa(ffmpegPath, args, getExecaOptions(customExecaOptions));
 
   (async () => {
     runningFfmpegs.add(process);
@@ -126,7 +133,7 @@ async function runFfmpegWithProgress({ ffmpegArgs, duration, onProgress }) {
 async function runFfprobe(args, { timeout = isDev ? 10000 : 30000 } = {}) {
   const ffprobePath = getFfprobePath();
   console.log(getFfCommandLine('ffprobe', args));
-  const ps = execa(ffprobePath, args);
+  const ps = execa(ffprobePath, args, getExecaOptions());
   const timer = setTimeout(() => {
     console.warn('killing timed out ffprobe');
     ps.kill();
