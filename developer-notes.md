@@ -82,7 +82,7 @@ For per-platform build/signing setup, see [this article](https://mifi.no/blog/au
 - For files `LosslessCut-mac-universal.pkg` and `LosslessCut-win-x64.appx` add prefix `-DO-NOT-DOWNLOAD`
 - Release the draft
 - Bump [snap version](https://snapcraft.io/losslesscut/listing)
-- `npm run scan-i18n` to get the newest Englist strings and push so weblate gets them
+- `npm run scan-i18n` to get the newest English strings and push so weblate gets them
 
 ## Minimum OS version
 
