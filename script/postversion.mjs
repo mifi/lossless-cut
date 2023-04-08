@@ -1,5 +1,6 @@
 import { readFile, writeFile } from 'fs/promises';
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
+// eslint-disable-next-line import/no-unresolved
 import { DateTime } from 'luxon';
 
 const xmlUrl = new URL('../no.mifi.losslesscut.appdata.xml', import.meta.url);
