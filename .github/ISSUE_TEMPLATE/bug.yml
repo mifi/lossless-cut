@@ -1,5 +1,5 @@
 name: 🐛 Bug report
-description: Describe a problem or bug with LosslessCut
+description: Describe a bug in LosslessCut (not related to a specific file)
 body:
   - type: checkboxes
     id: initial-checklist
