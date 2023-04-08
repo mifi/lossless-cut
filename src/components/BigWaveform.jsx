@@ -10,7 +10,9 @@ const BigWaveform = memo(({ waveforms, relevantTime, playing, durationSafe, zoom
 
   const scaleFactor = zoom;
 
-  const [smoothTime, setSmoothTime] = useState(relevantTime);
+  const [smoothTimeRaw, setSmoothTime] = useState(relevantTime);
+
+  const smoothTime = smoothTimeRaw ?? relevantTime;
 
   const mouseDownRef = useRef();
   const containerRef = useRef();
@@ -47,8 +49,6 @@ const BigWaveform = memo(({ waveforms, relevantTime, playing, durationSafe, zoom
 
 
   useEffect(() => {
-    let time = relevantTime;
-    setSmoothTime(time);
     const startTime = new Date().getTime();
 
     if (playing) {
@@ -56,7 +56,6 @@ const BigWaveform = memo(({ waveforms, relevantTime, playing, durationSafe, zoom
       // eslint-disable-next-line no-inner-declarations
       function render() {
         raf = window.requestAnimationFrame(() => {
-          time = new Date().getTime() / 1000;
           setSmoothTime(relevantTime + (new Date().getTime() - startTime) / 1000);
           render();
         });
@@ -65,6 +64,8 @@ const BigWaveform = memo(({ waveforms, relevantTime, playing, durationSafe, zoom
       render();
       return () => window.cancelAnimationFrame(raf);
     }
+
+    setSmoothTime(undefined);
 
     return undefined;
   }, [relevantTime, playing]);
