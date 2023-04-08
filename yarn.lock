@@ -3448,16 +3448,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:^23.1.0":
-  version: 23.1.0
-  resolution: "electron@npm:23.1.0"
+"electron@npm:23":
+  version: 23.2.2
+  resolution: "electron@npm:23.2.2"
   dependencies:
     "@electron/get": ^2.0.0
     "@types/node": ^16.11.26
     extract-zip: ^2.0.1
   bin:
     electron: cli.js
-  checksum: 57c013a6dc15847a1661197f3a84774dfcbc6b3a5c3f92a4da4bbebe42b8a37eb7891d814315ae61ef28403ae4299e79a21a01a7936e8277cfcc3da9f4282af1
+  checksum: 49dc4ec9c456a74b379ce164ce3a3a9d2a1b5463953796f7b0c3a1c29e17d0c680b595c22423bd7366cf0bf8e58db70bfb4ea0bbdba2d7229f7b48cfc4c5688a
   languageName: node
   linkType: hard
 
@@ -6196,7 +6196,7 @@ __metadata:
     csv-stringify: ^5.6.2
     cue-parser: ^0.3.0
     data-uri-to-buffer: ^4.0.0
-    electron: ^23.1.0
+    electron: 23
     electron-builder: ^23.6.0
     electron-builder-notarize: ^1.4.0
     electron-devtools-installer: ^3.2.0
