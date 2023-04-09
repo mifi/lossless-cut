@@ -8,7 +8,7 @@ import { IoIosHelpCircle } from 'react-icons/io';
 
 import Swal from '../swal';
 import HighlightedText from './HighlightedText';
-import { defaultOutSegTemplate } from '../util/outputNameTemplate';
+import { defaultOutSegTemplate, segNumVariable } from '../util/outputNameTemplate';
 import useUserSettings from '../hooks/useUserSettings';
 
 const ReactSwal = withReactContent(Swal);
@@ -115,12 +115,14 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
             <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" />
           </div>
           <div style={{ maxWidth: 600 }}>
-            {error != null && <div style={{ marginBottom: '1em' }}><ErrorIcon color="var(--red9)" /> {i18n.t('There is an error in the file name template:')} {error}</div>}
+            {error != null && <div style={{ marginBottom: '1em' }}><ErrorIcon color="var(--red9)" size={14} verticalAlign="baseline" /> {i18n.t('There is an error in the file name template:')} {error}</div>}
+
             {isMissingExtension && <div style={{ marginBottom: '1em' }}><WarningSignIcon color="var(--amber9)" /> {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVar })}</div>}
+
             <div style={{ fontSize: '.8em', color: 'var(--gray11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center' }}>
               {`${i18n.t('Variables')}:`}
               <IoIosHelpCircle fontSize="1.3em" color="var(--gray12)" role="button" cursor="pointer" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/import-export.md#customising-exported-file-names')} />
-              {['FILENAME', 'CUT_FROM', 'CUT_TO', 'SEG_NUM', 'SEG_LABEL', 'SEG_SUFFIX', 'EXT', 'SEG_TAGS.XX', 'EPOCH_MS'].map((variable) => (
+              {['FILENAME', 'CUT_FROM', 'CUT_TO', segNumVariable, 'SEG_LABEL', 'SEG_SUFFIX', 'EXT', 'SEG_TAGS.XX', 'EPOCH_MS'].map((variable) => (
                 <span key={variable} role="button" style={{ cursor: 'pointer', marginRight: '.2em' }} onClick={() => onVariableClick(variable)}>{variable}</span>
               ))}
             </div>

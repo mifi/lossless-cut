@@ -6,6 +6,8 @@ import isDev from '../isDev';
 import { getSegmentTags } from '../segments';
 
 
+export const segNumVariable = 'SEG_NUM';
+
 const { parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize } = window.require('path');
 
 // eslint-disable-next-line import/prefer-default-export
@@ -57,7 +59,7 @@ export function getOutSegError({ fileNames, filePath, outputDir, safeOutputFileN
 
   if (error != null) return error;
 
-  if (hasDuplicates(fileNames)) return i18n.t('Output file name template results in duplicate file names (you are trying to export multiple files with the same name.)');
+  if (hasDuplicates(fileNames)) return i18n.t('Output file name template results in duplicate file names (you are trying to export multiple files with the same name). You can fix this for example by adding the "{{segNumVariable}}" variable.', { segNumVariable });
 
   return undefined;
 }
@@ -93,7 +95,7 @@ function formatSegNum(segIndex, segments) {
 }
 
 export function generateOutSegFileNames({ segments, template, forceSafeOutputFileName, formatTimecode, isCustomFormatSelected, fileFormat, filePath, safeOutputFileName, maxLabelLength }) {
-  const currentTimestamp = Date.now();
+  const epochMs = Date.now();
 
   return segments.map((segment, i) => {
     const { start, end, name = '' } = segment;
@@ -114,7 +116,7 @@ export function generateOutSegFileNames({ segments, template, forceSafeOutputFil
 
     const segFileName = interpolateSegmentFileName({
       template,
-      epochMs: currentTimestamp + i, // for convenience: give each segment a unique timestamp
+      epochMs,
       segNum,
       inputFileNameWithoutExt,
       segSuffix: getSegSuffix(),
