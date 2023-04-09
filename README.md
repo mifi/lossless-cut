@@ -12,7 +12,7 @@
   <a href="https://mifi.no/thanks/">Thanks to my supporters</a> and everyone who purchased LosslessCut!
 	<br>
 	<br>
-  <p align="center"><img src="https://github.com/mifi/lossless-cut/raw/master/main_screenshot.jpg" width="600" alt="screenshot" /></p>
+  <p align="center"><img src="main_screenshot.jpg" width="600" alt="screenshot" /></p>
 	<br>
 	<br>
 </div>
