@@ -12,7 +12,7 @@
   <a href="https://mifi.no/thanks/">Thanks to my supporters</a> and everyone who purchased LosslessCut!
 	<br>
 	<br>
-  <p align="center"><img src="https://github.com/mifi/lossless-cut/raw/master/main_screenshot.jpg" width="600" alt="screenshot" /></p>
+  <p align="center"><img src="main_screenshot.jpg" width="600" alt="screenshot" /></p>
 	<br>
 	<br>
 </div>
@@ -32,7 +32,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
   - Remove unneeded tracks
   - Replace or re-encode only some tracks
   - Extract all tracks from a file (extract video, audio, subtitle, attachments and other tracks from one file into separate files)
-- Batch view for fast multi-file workflow (note: no mass export yet)
+- Fast multi-file workflow (note: no mass/batch export yet)
 - Keyboard shortcut workflow
 - Losslessly remux video/audio into a different container (file) format
 - Take full-resolution snapshots from videos in JPEG/PNG format (low or high quality)
@@ -102,7 +102,7 @@ First export each track as individual files. Then use Handbrake or similar to re
 
 ## Download
 
-If you want to support my continued work on LosslessCut, and you want the advantage of a secure and simple installation process with automatic updates, consider getting it from your favorite store:
+If you want to support my continued work on LosslessCut, and you want the advantage of a secure and simple installation process with automatic, stable updates, consider getting it from your favorite store:
 
 <a href="https://apps.apple.com/app/id1505323402"><img src="mac-app-store-badge.svg" alt="Mac App Store" height="50"/></a> <a href="https://www.microsoft.com/store/apps/9P30LSR4705L?cid=storebadge&ocid=badge"><img src="ms-store-badge.svg" alt="MS badge" height="50"/></a>
 
@@ -117,7 +117,7 @@ If you prefer to download the executables manually, this will of course always b
 - Linux: [x64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x64.tar.bz2) / [x64 AppImage](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x86_64.AppImage) / [arm64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-arm64.tar.bz2) / [Raspberry Pi armv7l](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-armv7l.tar.bz2)
 - [More releases](https://github.com/mifi/lossless-cut/releases) (note that APPX for Windows and PKG for MacOS **do not work**)
 
-If you find LosslessCut useful, I'm very thankful for [donations](https://github.com/mifi/lossless-cut#donate-).
+If you find LosslessCut useful, I'm very thankful for [your support](https://github.com/mifi/lossless-cut#donate-).
 
 **What's the difference between App Stores and GitHub download?** [Please see FAQ](issues.md#app-stores-and-github-difference)
 

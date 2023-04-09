@@ -1,4 +1,4 @@
-import execa from 'execa';
+import { execa } from 'execa';
 import { readFile } from 'fs/promises';
 
 // we need a wrapper script because altool tends to error out very often

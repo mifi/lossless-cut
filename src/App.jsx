@@ -2263,7 +2263,7 @@ const App = memo(() => {
                 )}
 
                 <AnimatePresence>
-                  {working && <Working text={working} cutProgress={cutProgress} onAbortClick={abortFfmpegs} />}
+                  {working && <Working text={working} cutProgress={cutProgress} onAbortClick={() => abortFfmpegs()} />}
                 </AnimatePresence>
 
                 {tunerVisible && <ValueTuners type={tunerVisible} onFinished={() => setTunerVisible()} />}

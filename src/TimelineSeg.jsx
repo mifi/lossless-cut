@@ -46,6 +46,7 @@ const TimelineSeg = memo(({
     originX: 0,
     boxSizing: 'border-box',
     color: 'white',
+    overflow: 'hidden',
 
     borderLeft: markerBorder,
     borderTopLeftRadius: markerBorderRadius,
@@ -74,7 +75,7 @@ const TimelineSeg = memo(({
       onClick={onThisSegClick}
       title={title.join(' ')}
     >
-      <div style={{ alignSelf: 'flex-start', flexShrink: 1, fontSize: 10, minWidth: 0, overflow: 'hidden' }}>{segNum + 1}</div>
+      <div style={{ alignSelf: 'flex-start', flexShrink: 0, fontSize: 10, minWidth: 0, letterSpacing: '-.1em' }}>{segNum + 1}</div>
 
       <AnimatePresence>
         {invertCutSegments && (

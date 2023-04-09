@@ -78,9 +78,11 @@ For per-platform build/signing setup, see [this article](https://mifi.no/blog/au
 - `npm version ...`
 - `git push && git push --tags`
 - Wait for build and draft in Github actions
-- Release draft at github
+- Open draft in github and add Release notes
+- For files `LosslessCut-mac-universal.pkg` and `LosslessCut-win-x64.appx` add prefix `-DO-NOT-DOWNLOAD`
+- Release the draft
 - Bump [snap version](https://snapcraft.io/losslesscut/listing)
-- `npm run scan-i18n` to get the newest Englist strings and push so weblate gets them
+- `npm run scan-i18n` to get the newest English strings and push so weblate gets them
 
 ## Minimum OS version
 

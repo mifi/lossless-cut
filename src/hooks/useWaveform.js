@@ -35,14 +35,18 @@ export default ({ darkMode, filePath, relevantTime, durationSafe, waveformEnable
         const safeExtractDuration = Math.min(waveformStartTime + ffmpegExtractWindow, durationSafe) - waveformStartTime;
         const promise = renderWaveformPng({ filePath, start: waveformStartTime, duration: safeExtractDuration, color: waveformColor });
         creatingWaveformPromise.current = promise;
-        const newWaveform = await promise;
+        const { buffer, ...newWaveform } = await promise;
         if (aborted) return;
+
         setWaveforms((currentWaveforms) => {
           const waveformsByCreatedAt = sortBy(currentWaveforms, 'createdAt');
           return [
             // cleanup old
             ...(currentWaveforms.length >= maxWaveforms ? waveformsByCreatedAt.slice(1) : waveformsByCreatedAt),
-            newWaveform,
+            {
+              ...newWaveform,
+              url: URL.createObjectURL(new Blob([buffer], { type: 'image/png' })),
+            },
           ];
         });
       } catch (err) {
