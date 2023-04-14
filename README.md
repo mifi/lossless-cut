@@ -160,7 +160,7 @@ Unsupported files can still be converted to a supported format/codec from the `F
 - Press the **Camera** button (or <kbd>C</kbd>) if you want to take a JPEG/PNG snapshot from the current time
 - If you want to move the original file to trash, press the **trash** button
 - For best results you may need to trial and error with another output format (Matroska takes nearly everything), change keyframe cut mode or disable some tracks (see [known issues](issues.md)).
-- Press <kbd>H</kbd> to view help and all keyboard shortcuts.
+- Press <kbd>SHIFT</kbd> + <kbd>/</kbd> to view all keyboard & mouse shortcuts.
 - **Note:** The original video file will not be modified. Instead, a file is created file in the same directory as the original file with from/to timestamps in the file name.
 
 ## [Import / export](import-export.md)
