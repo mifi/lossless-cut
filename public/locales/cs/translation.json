@@ -763,5 +763,10 @@
     "Export mode for {{segments}} segments": "Režim exportu pro {{segments}} segmentů",
     "Invert selected segments": "Obrátit výběr segmentů",
     "Keeping {{numStreamsToCopy}} tracks": "Zachování {{numStreamsToCopy}} stop",
-    "The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}": "Mediální soubor na který odkazuje soubor projektu, který jste chtěli otevřít, neexistuje ve stejné složce jako soubor projektu: {{mediaFileName}}"
+    "The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}": "Mediální soubor na který odkazuje soubor projektu, který jste chtěli otevřít, neexistuje ve stejné složce jako soubor projektu: {{mediaFileName}}",
+    "Combine selected segments": "Spojit vybrané segmenty",
+    "Copy selected segments times to clipboard": "Kopírovat časy vybraných segmentů do schránky",
+    "Prefer strong colors": "Upřednostnit výrazné barvy",
+    "Title": "Název",
+    "User interface": "Uživatelské rozhraní"
 }
