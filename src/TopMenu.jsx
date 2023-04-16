@@ -31,57 +31,67 @@ const TopMenu = memo(({
   return (
     <div
       className="no-user-select"
-      style={{ background: controlsBackground, transition: darkModeTransition, display: 'flex', alignItems: 'center', padding: '3px 5px', justifyContent: 'space-between', flexWrap: 'wrap' }}
+      style={{
+        background: controlsBackground,
+        transition: darkModeTransition,
+        display: 'flex',
+        alignItems: 'center',
+        padding: '3px 5px',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap' }}
     >
-      {filePath && (
-        <>
-          <Button height={20} iconBefore={ListIcon} onClick={withBlur(() => setStreamsSelectorShown(true))}>
-            {t('Tracks')} ({numStreamsToCopy}/{numStreamsTotal})
-          </Button>
+      {/* Left Buttons */}
+      <div style={{ display: 'flex' }}>
+        {filePath && (
+          <>
+            <Button height={20} iconBefore={ListIcon} onClick={withBlur(() => setStreamsSelectorShown(true))}>
+              {t('Tracks')} ({numStreamsToCopy}/{numStreamsTotal})
+            </Button>
 
-          <Button
-            iconBefore={copyAnyAudioTrack ? VolumeUpIcon : VolumeOffIcon}
+            <Button
+              iconBefore={copyAnyAudioTrack ? VolumeUpIcon : VolumeOffIcon}
+              height={20}
+              title={copyAnyAudioTrack ? t('Keep audio tracks') : t('Discard audio tracks')}
+              onClick={withBlur(toggleStripAudio)}
+            >
+              {copyAnyAudioTrack ? t('Keep audio') : t('Discard audio')}
+            </Button>
+          </>
+        )}
+      </div>
+
+      {/* Right Buttons */}
+      <div style={{ display: 'flex' }}>
+        {showClearWorkingDirButton && (
+          <IconButton
+            intent="danger"
+            icon={CrossIcon}
             height={20}
-            title={copyAnyAudioTrack ? t('Keep audio tracks') : t('Discard audio tracks')}
-            onClick={withBlur(toggleStripAudio)}
-          >
-            {copyAnyAudioTrack ? t('Keep audio') : t('Discard audio')}
-          </Button>
-        </>
-      )}
+            onClick={withBlur(clearOutDir)}
+            title={t('Clear working directory')}
+          />
+        )}
 
-      <div style={{ flexGrow: 1 }} />
-
-      {showClearWorkingDirButton && (
-        <IconButton
-          intent="danger"
-          icon={CrossIcon}
+        <Button
           height={20}
-          onClick={withBlur(clearOutDir)}
-          title={t('Clear working directory')}
-        />
-      )}
+          onClick={withBlur(changeOutDir)}
+          title={customOutDir}
+        >
+          {customOutDir ? t('Working dir set') : t('Working dir unset')}
+        </Button>
 
-      <Button
-        height={20}
-        onClick={withBlur(changeOutDir)}
-        title={customOutDir}
-        paddingLeft={showClearWorkingDirButton ? 4 : undefined}
-      >
-        {customOutDir ? t('Working dir set') : t('Working dir unset')}
-      </Button>
+        {filePath && (
+          <>
+            {renderOutFmt({ height: 20 })}
 
-      {filePath && (
-        <>
-          {renderOutFmt({ height: 20, maxWidth: 100 })}
+            {!simpleMode && (isCustomFormatSelected || outFormatLocked) && renderFormatLock()}
 
-          {!simpleMode && (isCustomFormatSelected || outFormatLocked) && renderFormatLock()}
+            <ExportModeButton selectedSegments={selectedSegments} style={{ flexGrow: 0, flexBasis: 140 }} />
+          </>
+        )}
 
-          <ExportModeButton selectedSegments={selectedSegments} style={{ flexGrow: 0, flexBasis: 140 }} />
-        </>
-      )}
-
-      <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ verticalAlign: 'middle', marginLeft: 5 }} />
+        <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ verticalAlign: 'middle', marginLeft: 5 }} />
+      </div>
     </div>
   );
 });

@@ -23,7 +23,12 @@ const OutputFormatSelect = memo(({ style, detectedFileFormat, fileFormat, onOutp
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <Select style={style} value={fileFormat || ''} title={i18n.t('Output format')} onChange={withBlur(e => onOutputFormatUserChange(e.target.value))}>
+    <Select
+      style={{ ...style, width: `${(8 * allOutFormats[fileFormat].length) + 100}px` }}
+      value={fileFormat || ''}
+      title={i18n.t('Output format')}
+      onChange={withBlur(e => onOutputFormatUserChange(e.target.value))}
+    >
       <option key="disabled1" value="" disabled>{i18n.t('Format')}</option>
 
       {detectedFileFormat && (
