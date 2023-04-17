@@ -15,11 +15,24 @@ const { app } = window.require('@electron/remote');
 
 const ReactSwal = withReactContent(Swal);
 
+const linkStyle = { fontWeight: 'bold', cursor: 'pointer' };
+
+
 // eslint-disable-next-line import/prefer-default-export
 export function openSendReportDialog(err, state) {
   const reportInstructions = isStoreBuild
-    ? <p><Trans>Please send an email to <span style={{ fontWeight: 'bold', cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal('mailto:losslesscut@mifi.no')}>losslesscut@mifi.no</span> where you describe what you were doing.</Trans></p>
-    : <p><Trans>Please create an issue at <span style={{ fontWeight: 'bold', cursor: 'pointer' }} role="button" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/issues')}>https://github.com/mifi/lossless-cut/issues</span> where you describe what you were doing.</Trans></p>;
+    ? (
+      <p><Trans>Please send an email to <span style={linkStyle} role="button" onClick={() => electron.shell.openExternal('mailto:losslesscut@mifi.no')}>losslesscut@mifi.no</span> where you describe what you were doing.</Trans></p>
+    ) : (
+      <Trans>
+        <p>
+          If you&apos;re having a problem or question about LosslessCut, please first check the links in the <b>Help</b> menu. If you cannot find any resolution, you may ask a question in <span style={linkStyle} role="button" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/discussions')}>GitHub discussions</span> or on <span style={linkStyle} role="button" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut')}>Discord.</span>
+        </p>
+        <p>
+          If you believe that you found a bug in LosslessCut, you may <span style={linkStyle} role="button" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/issues')}>report a bug</span>.
+        </p>
+      </Trans>
+    );
 
   const platform = os.platform();
   const version = app.getVersion();
@@ -47,6 +60,7 @@ export function openSendReportDialog(err, state) {
   ReactSwal.fire({
     showCloseButton: true,
     title: i18n.t('Send problem report'),
+    showConfirmButton: false,
     html: (
       <div style={{ textAlign: 'left', overflow: 'auto', maxHeight: 300, overflowY: 'auto' }}>
         {reportInstructions}

@@ -364,23 +364,28 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
           click() { electron.shell.openExternal('https://mifi.no/losslesscut/troubleshooting'); },
         },
         {
-          label: esc(t('Learn More')),
-          click() { electron.shell.openExternal(homepage); },
-        },
-        {
-          label: esc(t('Licenses')),
-          click() { electron.shell.openExternal(licensesPage); },
-        },
-        { type: 'separator' },
-        {
           label: esc(t('Keyboard & mouse shortcuts')),
           click() {
             mainWindow.webContents.send('toggleKeyboardShortcuts');
           },
         },
         {
+          label: esc(t('Learn More')),
+          click() { electron.shell.openExternal(homepage); },
+        },
+        { type: 'separator' },
+        {
           label: esc(t('Report an error')),
           click() { mainWindow.webContents.send('openSendReportDialog'); },
+        },
+        {
+          label: esc(t('Feature request')),
+          click() { electron.shell.openExternal('https://github.com/mifi/lossless-cut/issues'); },
+        },
+        { type: 'separator' },
+        {
+          label: esc(t('Licenses')),
+          click() { electron.shell.openExternal(licensesPage); },
         },
         ...(process.platform !== 'darwin' ? [{ role: 'about', label: esc(t('About LosslessCut')) }] : []),
       ],
