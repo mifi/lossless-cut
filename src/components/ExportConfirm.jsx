@@ -145,7 +145,7 @@ const ExportConfirm = memo(({
                         <ExportModeButton selectedSegments={selectedSegments} />
                       </td>
                       <td>
-                        {effectiveExportMode === 'sesgments_to_chapters' && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" title={i18n.t('Chapters only')} />}
+                        {effectiveExportMode === 'sesgments_to_chapters' && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" title={i18n.t('Segments to chapters mode is active, this means that the file will not be cut. Instead chapters will be created from the segments.')} />}
                         <HelpIcon onClick={onExportModeHelpPress} />
                       </td>
                     </tr>

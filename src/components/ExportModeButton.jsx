@@ -54,9 +54,11 @@ const ExportModeButton = memo(({ selectedSegments, style }) => {
       value={effectiveExportMode}
       onChange={withBlur((e) => onChange(e.target.value))}
     >
+      <option key="disabled" value="" disabled>{t('Export mode')}</option>
+
       {selectableModes.map((mode) => {
         const titles = {
-          sesgments_to_chapters: t('Chapters only'),
+          sesgments_to_chapters: t('Segments to chapters'),
           merge: t('Merge cuts'),
           'merge+separate': t('Merge & Separate'),
           separate: t('Separate files'),
