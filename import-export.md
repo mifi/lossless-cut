@@ -35,6 +35,10 @@ LosslessCut also allows importing/exporting your project (segments) in a variety
 1234,,Last segment
 ```
 
+### TSV
+
+Same as CSV but `<tab>` instead.
+
 ### More formats?
 
 See https://github.com/mifi/lossless-cut/issues/1340

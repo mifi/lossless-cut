@@ -1,5 +1,5 @@
 name: 🐛 Bug report
-description: Describe a bug in LosslessCut (not related to a specific file)
+description: Describe a bug in LosslessCut (not related to a specific file or file type).
 body:
   - type: checkboxes
     id: initial-checklist
@@ -12,9 +12,9 @@ body:
           required: true
         - label: Search for your problem under [Issues](https://github.com/mifi/lossless-cut/issues) or [Discussions](https://github.com/mifi/lossless-cut/discussions)
           required: true
-        - label: If you have an issue only with one particular file, [use this form instead](https://github.com/mifi/lossless-cut/issues/new?assignees=&labels=&template=file-issue.yml)
+        - label: If you have a problem only with a particular file (or file type), [use this form instead](https://github.com/mifi/lossless-cut/issues/new?assignees=&labels=&template=file-issue.yml)
           required: true
-        - label: Windows 7, 8 and 8.1 are [no longer supported](https://github.com/mifi/lossless-cut/discussions/1476) **I am not using Windows 8.1 or older**
+        - label: Windows 7, 8 and 8.1 are [no longer supported](https://github.com/mifi/lossless-cut/discussions/1476). **This is not a question about Windows 8.1 or older.**
           required: true
   - type: dropdown
     id: operating-system
@@ -22,6 +22,7 @@ body:
       label: Operating System
       description: Which operating system are you running?
       options:
+        - I don't want to say
         - MacOS 13
         - MacOS 12
         - MacOS 11
