@@ -202,16 +202,6 @@ const App = memo(() => {
     }
   }, [detectedFileFormat, outFormatLocked, setFileFormat, setOutFormatLocked]);
 
-  const toggleWaveformMode = useCallback((newMode) => {
-    if (waveformMode === 'waveform') {
-      setWaveformMode('big-waveform');
-    } else if (waveformMode === 'big-waveform') {
-      setWaveformMode();
-    } else {
-      setWaveformMode(newMode);
-    }
-  }, [waveformMode]);
-
   const toggleEnableThumbnails = useCallback(() => setThumbnailsEnabled((v) => !v), []);
 
   const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => {
@@ -252,6 +242,17 @@ const App = memo(() => {
   }, [setCopyStreamIdsForPath]);
 
   const hideAllNotifications = hideNotifications === 'all';
+
+  const toggleWaveformMode = useCallback(() => {
+    if (waveformMode === 'waveform') {
+      setWaveformMode('big-waveform');
+    } else if (waveformMode === 'big-waveform') {
+      setWaveformMode();
+    } else {
+      if (!hideAllNotifications) toast.fire({ text: i18n.t('Mini-waveform has been enabled. Click again to enable full-screen waveform') });
+      setWaveformMode('waveform');
+    }
+  }, [hideAllNotifications, waveformMode]);
 
   const toggleSafeOutputFileName = useCallback(() => setSafeOutputFileName((v) => {
     if (v && !hideAllNotifications) toast.fire({ icon: 'info', text: i18n.t('Output file name will not be sanitized, and any special characters will be preserved. This may cause the export to fail and can cause other funny issues. Use at your own risk!') });

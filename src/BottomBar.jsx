@@ -232,7 +232,7 @@ const BottomBar = memo(({
                   style={{ padding: '0 .1em', color: ['big-waveform', 'waveform'].includes(waveformMode) ? primaryTextColor : undefined }}
                   role="button"
                   title={t('Show waveform')}
-                  onClick={() => toggleWaveformMode('waveform')}
+                  onClick={() => toggleWaveformMode()}
                 />
               )}
               {hasVideo && (
