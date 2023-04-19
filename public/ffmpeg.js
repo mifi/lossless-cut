@@ -92,6 +92,7 @@ function getExecaOptions({ env, ...customExecaOptions } = {}) {
   const execaOptions = { ...customExecaOptions, env: { ...env } };
   // https://github.com/mifi/lossless-cut/issues/1143#issuecomment-1500883489
   if (isLinux && !isDev && !customFfPath) execaOptions.env.LD_LIBRARY_PATH = process.resourcesPath;
+  return execaOptions;
 }
 
 // todo collect warnings from ffmpeg output and show them after export? example: https://github.com/mifi/lossless-cut/issues/1469
