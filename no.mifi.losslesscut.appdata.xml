@@ -18,19 +18,43 @@
   <url type="bugtracker">https://github.com/mifi/lossless-cut/issues</url>
   <url type="donation">https://paypal.me/mifino/usd</url>
   <releases>
-    <release version="3.37.0" date="2021-07-25" />
-    <release version="3.31.1" date="2021-01-25" />
-    <release version="3.30.0" date="2020-12-15" />
-    <release version="3.29.1" date="2020-12-11" />
-    <release version="3.29.0" date="2020-12-10" />
-    <release version="3.27.0" date="2020-11-26" />
-    <release version="3.22.8" date="2020-07-10" />
-    <release version="3.22.3" date="2020-05-06" />
-    <release version="3.22.2" date="2020-05-04" />
-    <release version="3.18.0" date="2020-04-10" />
-    <release version="3.17.14" date="2020-03-30" />
-    <release version="3.17.9" date="2020-03-29" />
-    <release version="2.6.2" date="2019-11-05" />
+    <release version="3.55.2" date="2023-04-09"/>
+    <release version="3.55.1" date="2023-04-07"/>
+    <release version="3.55.0" date="2023-04-07"/>
+    <release version="3.54.0" date="2023-04-04"/>
+    <release version="3.53.0" date="2023-03-10"/>
+    <release version="3.52.0" date="2023-02-17"/>
+    <release version="3.51.1" date="2023-02-17"/>
+    <release version="3.51.0" date="2023-02-17"/>
+    <release version="3.50.0" date="2023-02-05"/>
+    <release version="3.49.0" date="2023-01-15"/>
+    <release version="3.48.2" date="2022-11-23"/>
+    <release version="3.48.1" date="2022-11-23"/>
+    <release version="3.48.0" date="2022-11-23"/>
+    <release version="3.47.1" date="2022-10-15"/>
+    <release version="3.47.0" date="2022-10-15"/>
+    <release version="3.46.3" date="2022-08-12"/>
+    <release version="3.46.2" date="2022-07-20"/>
+    <release version="3.46.1" date="2022-07-20"/>
+    <release version="3.46.0" date="2022-07-20"/>
+    <release version="3.45.0" date="2022-05-23"/>
+    <release version="3.44.0" date="2022-03-09"/>
+    <release version="3.43.0" date="2022-02-22"/>
+    <release version="3.42.0" date="2022-01-16"/>
+    <release version="3.40.0" date="2021-11-13"/>
+    <release version="3.37.0" date="2021-07-25"/>
+    <release version="3.31.1" date="2021-01-25"/>
+    <release version="3.30.0" date="2020-12-15"/>
+    <release version="3.29.1" date="2020-12-11"/>
+    <release version="3.29.0" date="2020-12-10"/>
+    <release version="3.27.0" date="2020-11-26"/>
+    <release version="3.22.8" date="2020-07-10"/>
+    <release version="3.22.3" date="2020-05-06"/>
+    <release version="3.22.2" date="2020-05-04"/>
+    <release version="3.18.0" date="2020-04-10"/>
+    <release version="3.17.14" date="2020-03-30"/>
+    <release version="3.17.9" date="2020-03-29"/>
+    <release version="2.6.2" date="2019-11-05"/>
   </releases>
   <content_rating type="oars-1.0">
     <content_attribute id="violence-cartoon">none</content_attribute>

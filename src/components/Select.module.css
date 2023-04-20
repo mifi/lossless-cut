@@ -1,0 +1,22 @@
+.select {
+  appearance: none;
+  font: inherit;
+  line-height: 120%;
+  font-size: .8em;
+  background-color: var(--gray3);
+  color: var(--gray12);
+  border-radius: .3em;
+  padding: 0 1.2em 0 .3em;
+  outline: .05em solid var(--gray8);
+  border: .05em solid var(--gray7);
+
+  background-image: url("data:image/svg+xml;utf8,<svg fill='rgba(0,0,0,0.6)' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+  background-repeat: no-repeat;
+  background-position-x: 100%;
+  background-position-y: 0;
+  background-size: auto 100%;
+}
+
+:global(.dark-theme) .select {
+  background-image: url("data:image/svg+xml;utf8,<svg fill='rgba(255,255,255,0.6)' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+}

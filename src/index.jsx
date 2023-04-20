@@ -1,23 +1,42 @@
 import React, { Suspense } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
+import { MotionConfig } from 'framer-motion';
+
+import 'sweetalert2/dist/sweetalert2.css';
+
+import '@fontsource/open-sans/300.css';
+import '@fontsource/open-sans/300-italic.css';
+import '@fontsource/open-sans/400.css';
+import '@fontsource/open-sans/400-italic.css';
+import '@fontsource/open-sans/500.css';
+import '@fontsource/open-sans/500-italic.css';
+import '@fontsource/open-sans/600.css';
+import '@fontsource/open-sans/600-italic.css';
+import '@fontsource/open-sans/700.css';
+import '@fontsource/open-sans/700-italic.css';
+import '@fontsource/open-sans/800.css';
+import '@fontsource/open-sans/800-italic.css';
 
 import App from './App';
 import ErrorBoundary from './ErrorBoundary';
 import './i18n';
 
-import './fonts.css';
 import './main.css';
 
 
-const electron = window.require('electron');
+const { app } = window.require('@electron/remote');
 
-console.log('Version', electron.remote.app.getVersion());
+console.log('Version', app.getVersion());
 
 
-ReactDOM.render((
+const container = document.getElementById('root');
+const root = createRoot(container);
+root.render(
   <ErrorBoundary>
     <Suspense fallback={<div />}>
-      <App />
+      <MotionConfig reducedMotion="user">
+        <App />
+      </MotionConfig>
     </Suspense>
-  </ErrorBoundary>
-), document.getElementById('root'));
+  </ErrorBoundary>,
+);

@@ -1,43 +1,47 @@
-import React, { memo, useEffect, useRef, useMemo, useState } from 'react';
-import useDebounce from 'react-use/lib/useDebounce';
+import React, { memo, useEffect, useRef, useMemo } from 'react';
+import { useDebounce } from 'use-debounce';
 
 import CanvasPlayer from './CanvasPlayer';
 
-const Canvas = memo(({ rotate, filePath, width, height, playerTime, streamIndex, commandedTime, playing }) => {
+const Canvas = memo(({ rotate, filePath, width, height, playerTime, streamIndex, commandedTime, playing, eventId }) => {
   const canvasRef = useRef();
 
-  const canvasPlayer = useMemo(() => CanvasPlayer({ path: filePath, width, height, streamIndex }),
-    [filePath, width, height, streamIndex]);
-
-  useEffect(() => {
-    canvasPlayer.setCanvas(canvasRef.current);
-
-    return () => {
-      canvasPlayer.setCanvas();
-      canvasPlayer.dispose();
-    };
-  }, [canvasPlayer]);
-
-  const [debouncedPlayerTime, setDebouncedPlayerTime] = useState(0);
-  const [debouncedCommandedTime, setDebouncedCommandedTime] = useState(0);
-
-  const [, cancelPlayerTimeDebounce] = useDebounce(() => {
-    setDebouncedPlayerTime(playerTime);
-  }, 100, [playerTime]);
-
-  const [, cancelCommandedTimeDebounce] = useDebounce(() => {
-    setDebouncedCommandedTime(commandedTime);
-  }, 300, [commandedTime]);
+  const canvasPlayer = useMemo(() => CanvasPlayer({ path: filePath, width, height, streamIndex, getCanvas: () => canvasRef.current }), [filePath, width, height, streamIndex]);
 
   useEffect(() => () => {
-    cancelPlayerTimeDebounce();
-    cancelCommandedTimeDebounce();
-  }, [cancelPlayerTimeDebounce, cancelCommandedTimeDebounce]);
+    canvasPlayer.terminate();
+  }, [canvasPlayer]);
+
+  const state = useMemo(() => {
+    if (playing) {
+      return { startTime: commandedTime, playing, eventId };
+    }
+    return { startTime: playerTime, playing, eventId };
+  }, [commandedTime, eventId, playerTime, playing]);
+
+  const [debouncedState, { cancel }] = useDebounce(state, 200, {
+    equalityFn: (a, b) => a.startTime === b.startTime && a.playing === b.playing && a.eventId === b.eventId,
+  });
+
+  /* useEffect(() => {
+    console.log('state', state);
+  }, [state]); */
+
+  useEffect(() => () => {
+    cancel();
+  }, [cancel]);
 
   useEffect(() => {
-    if (playing) canvasPlayer.play(debouncedCommandedTime);
-    else canvasPlayer.pause(debouncedPlayerTime);
-  }, [canvasPlayer, debouncedCommandedTime, debouncedPlayerTime, playing]);
+    // console.log('debouncedState', debouncedState);
+
+    if (debouncedState.startTime == null) return;
+
+    if (debouncedState.playing) {
+      canvasPlayer.play(debouncedState.startTime);
+    } else {
+      canvasPlayer.pause(debouncedState.startTime);
+    }
+  }, [debouncedState, canvasPlayer]);
 
   const canvasStyle = useMemo(() => ({ display: 'block', width: '100%', height: '100%', objectFit: 'contain', transform: rotate ? `rotate(${rotate}deg)` : undefined }), [rotate]);
 

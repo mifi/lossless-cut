@@ -1,17 +1,15 @@
 import React, { memo } from 'react';
-import { Button } from 'evergreen-ui';
-import { useTranslation } from 'react-i18next';
 
 import { withBlur } from '../util';
+import useUserSettings from '../hooks/useUserSettings';
+import Switch from './Switch';
 
 
-const MovFastStartButton = memo(({ movFastStart, toggleMovFastStart }) => {
-  const { t } = useTranslation();
+const MovFastStartButton = memo(() => {
+  const { movFastStart, toggleMovFastStart } = useUserSettings();
 
   return (
-    <Button height={20} onClick={withBlur(toggleMovFastStart)}>
-      {movFastStart ? t('Yes') : t('No')}
-    </Button>
+    <Switch checked={movFastStart} onCheckedChange={withBlur(toggleMovFastStart)} />
   );
 });
 

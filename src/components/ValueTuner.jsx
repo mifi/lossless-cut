@@ -11,15 +11,16 @@ const ValueTuner = memo(({ style, title, value, setValue, onFinished, resolution
   }
 
   return (
-    <div style={{ background: 'white', color: 'black', padding: 10, margin: 10, borderRadius: 10, width: '100%', maxWidth: 500, position: 'fixed', left: 0, zIndex: 10, ...style }}>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <div>{title}</div>
+    <div style={{ background: 'var(--gray1)', color: 'var(--gray12)', position: 'absolute', bottom: 0, zIndex: 10, padding: 10, margin: 10, borderRadius: 10, ...style }}>
+      <div style={{ display: 'flex', alignItems: 'center', flexBasis: 400 }}>
+        <div style={{ marginBottom: '.5em' }}>{title}</div>
         <div style={{ marginLeft: 10, fontWeight: 'bold' }}>{value.toFixed(2)}</div>
-        <div style={{ flexGrow: 1 }} />
+        <div style={{ flexGrow: 1, flexBasis: 10 }} />
         <Button height={20} onClick={resetToDefault}>{t('Default')}</Button>
         <Button height={20} intent="success" onClick={onFinished}>{t('Done')}</Button>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+
+      <div style={{ display: 'flex' }}>
         <input style={{ flexGrow: 1 }} type="range" min="0" max="1000" step="1" value={((value - min) / (max - min)) * resolution} onChange={onChange} />
       </div>
     </div>

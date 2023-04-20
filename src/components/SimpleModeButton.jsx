@@ -3,16 +3,18 @@ import { useTranslation } from 'react-i18next';
 import { FaBaby } from 'react-icons/fa';
 
 import { primaryTextColor } from '../colors';
+import useUserSettings from '../hooks/useUserSettings';
 
 
-const SimpleModeButton = memo(({ simpleMode, toggleSimpleMode, size = 20, style }) => {
+const SimpleModeButton = memo(({ size = 20, style }) => {
   const { t } = useTranslation();
+  const { simpleMode, toggleSimpleMode } = useUserSettings();
 
   return (
     <FaBaby
       title={t('Toggle advanced view')}
       size={size}
-      style={{ color: simpleMode ? primaryTextColor : 'white', ...style }}
+      style={{ color: simpleMode ? primaryTextColor : 'var(--gray12)', ...style }}
       onClick={toggleSimpleMode}
     />
   );

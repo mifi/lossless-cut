@@ -1,0 +1,62 @@
+name: 📄 Problem with a particular file
+description: Report a problem with a particular file only
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If you have a problem **only with a particular file**, use this form. If you have a problem with all files or LosslessCut in general, [use this form instead](https://github.com/mifi/lossless-cut/issues/new?assignees=&labels=&template=bug.yml).
+  - type: checkboxes
+    id: initial-checklist
+    attributes:
+      label: I have a lot of issues to go through, so in order to make it easier for me to help you, I ask that you please try these things first
+      options:
+        - label: Try with a different kind of file to confirm that the problem is related to just this file.
+          required: true
+        - label: Try with the [newest version from GitHub](https://github.com/mifi/lossless-cut/releases/latest)
+          required: true
+        - label: Read the [documentation](https://github.com/mifi/lossless-cut) and [FAQ, Known issues, Troubleshooting](https://github.com/mifi/lossless-cut/blob/master/issues.md)
+          required: true
+        - label: Search for your problem under [Issues](https://github.com/mifi/lossless-cut/issues) or [Discussions](https://github.com/mifi/lossless-cut/discussions)
+          required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: How would I reproduce the problem? Please describe step-by-step what you're doing from starting up LosslessCut until the problem occurs. You can attach screenshots if needed.
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What should happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual behavior
+      description: What happens instead?
+    validations:
+      required: true
+  - type: textarea
+    id: error-report
+    attributes:
+      label: Provide an error report
+      description: 'Please provide the error report from LosslessCut (Menu: Help -> Report an error) and paste it here'
+    validations:
+      required: true
+  - type: input
+    id: share-file
+    attributes:
+      label: Share the file
+      description: If you have an issue cutting a particular file, please share the file here, if possible. (or mail a link to finstaden@gmail.com if private). If possible, provide a file as small as possible that reproduces the problem.
+    validations:
+      required: false
+  - type: textarea
+    id: share-log
+    attributes:
+      label: Share log
+      description: 'Please open developer tools after starting LosslessCut and before doing the failing operation. Then share any relevant output from the javascript Console. (Menu: Tools > Toggle Developer Tools)'
+    validations:
+      required: false

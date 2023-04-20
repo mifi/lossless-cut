@@ -109,7 +109,6 @@ const ffmpegFormats = {
   sbc: 'raw SBC',
   scc: 'Scenarist Closed Captions',
   sdl: 'SDL2 output device',
-  singlejpeg: 'JPEG single image',
   smjpeg: 'Loki SDL MJPEG',
   smoothstreaming: 'Smooth Streaming Muxer',
   sox: 'SoX native',

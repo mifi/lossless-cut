@@ -5,7 +5,7 @@ on:
     tags:
       - 'v*'
   schedule:
-    - cron: '0 10 * * 0'
+    - cron: '0 10 * * *'
   workflow_dispatch:
 
 
@@ -15,6 +15,7 @@ jobs:
 
     env:
       is_tag: ${{ startsWith(github.ref, 'refs/tags/v') }}
+      SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_TOKEN }}
 
     strategy:
       matrix:
@@ -26,22 +27,27 @@ jobs:
       - run: git config --global core.autocrlf false
 
       - name: Check out Git repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: 12
+          node-version: 18
+          cache: 'yarn'
 
        # Because of timeout issue https://github.com/yarnpkg/yarn/issues/4890
       - run: yarn install --network-timeout 1000000
 
       - name: Install and login to Snapcraft
-        uses: samuelmeuli/action-snapcraft@v1
+        uses: samuelmeuli/action-snapcraft@v2
         if: startsWith(matrix.os, 'ubuntu')
-        with:
-          # Log in to Snap Store
-          snapcraft_token: ${{ secrets.snapcraft_token }}
+
+      - name: Save provisioning profile
+        if: startsWith(matrix.os, 'macos')
+        env:
+          PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          echo -n "$PROVISIONING_PROFILE_BASE64" | base64 --decode > LosslessCut_Mac_App_Store_provisioning_profile.provisionprofile
 
       - name: Prepare Apple API key
         # Import Apple API key for app notarization on macOS and for uploading to Mac App Store
@@ -52,9 +58,19 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys/
           echo '${{ secrets.api_key }}' > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
 
-      - name: Download custom ffmpeg for Mac
+      - name: Download ffmpeg for Mac
         if: startsWith(matrix.os, 'macos')
-        run: yarn download-ffmpeg
+        run: |
+          yarn download-ffmpeg-darwin-x64
+          yarn download-ffmpeg-darwin-arm64
+
+      - name: Download ffmpeg for Windows
+        if: startsWith(matrix.os, 'windows')
+        run: yarn download-ffmpeg-win32-x64
+
+      - name: Download ffmpeg for Linux
+        if: startsWith(matrix.os, 'ubuntu')
+        run: yarn download-ffmpeg-linux-x64
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
@@ -82,7 +98,30 @@ jobs:
 
       - name: Upload to Mac App Store
         if: startsWith(matrix.os, 'macos') && env.is_tag == 'true'
-        # In case of ERROR ITMS-90189: Redundant Binary Upload
-        continue-on-error: true
         run: |
-          xcrun altool --upload-app -f dist/mas/LosslessCut-mac.pkg --apiKey ${{ secrets.api_key_id }} --apiIssuer ${{ secrets.api_key_issuer_id }}
+          node script/xcrun-wrapper.mjs dist/mas-universal/LosslessCut-mac-universal.pkg ${{ secrets.api_key_id }} ${{ secrets.api_key_issuer_id }} 1505323402 no.mifi.losslesscut-mac
+
+      - uses: actions/upload-artifact@v3
+        if: startsWith(matrix.os, 'macos') && env.is_tag == 'false'
+        with:
+          name: MacOS
+          path: |
+            dist/LosslessCut-mac-arm64.dmg
+            dist/LosslessCut-mac-x64.dmg
+
+      - uses: actions/upload-artifact@v3
+        if: startsWith(matrix.os, 'windows') && env.is_tag == 'false'
+        with:
+          name: Windows
+          path: |
+            dist/LosslessCut-win-x64.7z
+
+      - uses: actions/upload-artifact@v3
+        if: startsWith(matrix.os, 'ubuntu') && env.is_tag == 'false'
+        with:
+          name: Linux
+          path: |
+            dist/LosslessCut-linux-arm64.tar.bz2
+            dist/LosslessCut-linux-armv7l.tar.bz2
+            dist/LosslessCut-linux-x64.tar.bz2
+

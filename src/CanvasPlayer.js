@@ -3,15 +3,14 @@ import { encodeLiveRawStream, getOneRawFrame } from './ffmpeg';
 // TODO keep everything in electron land?
 const strtok3 = window.require('strtok3');
 
-export default ({ path, width: inWidth, height: inHeight, streamIndex }) => {
-  let canvas;
-
+export default ({ path, width: inWidth, height: inHeight, streamIndex, getCanvas }) => {
   let terminated;
-  let cancel;
+  let aborters = [];
   let commandedTime;
   let playing;
 
   function drawOnCanvas(rgbaImage, width, height) {
+    const canvas = getCanvas();
     if (!canvas || rgbaImage.length === 0) return;
 
     canvas.width = width;
@@ -23,83 +22,88 @@ export default ({ path, width: inWidth, height: inHeight, streamIndex }) => {
     ctx.putImageData(new ImageData(Uint8ClampedArray.from(rgbaImage), width, height), 0, 0);
   }
 
-  async function run() {
+  async function command() {
     let process;
-    let cancelled;
+    let aborted = false;
 
-    cancel = () => {
-      cancelled = true;
-      if (process) process.cancel();
-      cancel = undefined;
-    };
+    function killProcess() {
+      if (process) {
+        process.kill();
+        process = undefined;
+      }
+    }
 
-    if (playing) {
-      try {
+    function abort() {
+      aborted = true;
+      killProcess();
+      aborters = aborters.filter(((aborter) => aborter !== abort));
+    }
+    aborters.push(abort);
+
+    try {
+      if (playing) {
         const { process: processIn, channels, width, height } = encodeLiveRawStream({ path, inWidth, inHeight, streamIndex, seekTo: commandedTime });
         process = processIn;
 
         // process.stderr.on('data', data => console.log(data.toString('utf-8')));
 
         const tokenizer = await strtok3.fromStream(process.stdout);
+        if (aborted) return;
 
         const size = width * height * channels;
-        const buf = Buffer.allocUnsafe(size);
+        const rgbaImage = Buffer.allocUnsafe(size);
 
-        while (!cancelled) {
+        while (!aborted) {
           // eslint-disable-next-line no-await-in-loop
-          await tokenizer.readBuffer(buf, { length: size });
-          if (!cancelled) drawOnCanvas(buf, width, height);
+          await tokenizer.readBuffer(rgbaImage, { length: size });
+          if (aborted) return;
+          drawOnCanvas(rgbaImage, width, height);
         }
-      } catch (err) {
-        if (!err.isCanceled) console.warn(err.message);
-      }
-    } else {
-      try {
+      } else {
         const { process: processIn, width, height } = getOneRawFrame({ path, inWidth, inHeight, streamIndex, seekTo: commandedTime, outSize: 1000 });
         process = processIn;
         const { stdout: rgbaImage } = await process;
-
-        if (!cancelled) drawOnCanvas(rgbaImage, width, height);
-      } catch (err) {
-        if (!err.isCanceled) console.warn(err.message);
+        if (aborted) return;
+        drawOnCanvas(rgbaImage, width, height);
       }
+    } catch (err) {
+      if (!err.killed) console.warn(err.message);
+    } finally {
+      killProcess();
     }
   }
 
-  function command() {
-    if (cancel) cancel();
-    run();
+  function abortAll() {
+    aborters.forEach((aborter) => aborter());
   }
 
   function pause(seekTo) {
     if (terminated) return;
-    if (!playing && commandedTime === seekTo) return;
     playing = false;
     commandedTime = seekTo;
+
+    abortAll();
     command();
   }
 
   function play(playFrom) {
     if (terminated) return;
-    if (playing && commandedTime === playFrom) return;
     playing = true;
     commandedTime = playFrom;
+
+    abortAll();
     command();
   }
 
-  function setCanvas(c) {
-    canvas = c;
-  }
-
-  function dispose() {
+  function terminate() {
+    if (terminated) return;
     terminated = true;
-    if (cancel) cancel();
+    abortAll();
   }
 
   return {
     play,
     pause,
-    setCanvas,
-    dispose,
+    terminate,
   };
 };

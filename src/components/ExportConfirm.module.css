@@ -1,0 +1,41 @@
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+  background: var(--whiteA11);
+  color: var(--gray12);
+  backdrop-filter: blur(30px);
+  overflow-y: scroll;
+  display: flex;
+}
+
+:global(.dark-theme) .sheet {
+  background: var(--blackA11);
+}
+
+.box {
+  background: var(--whiteA11);
+}
+
+:global(.dark-theme) .box {
+  background: var(--blackA11);
+}
+
+table.options {
+  width: 100%;
+}
+
+table.options td:last-child {
+  text-align: right;
+  width: 3em;
+}
+table.options td:nth-child(2) {
+  text-align: right;
+}
+
+table.options td {
+  vertical-align: top;
+}

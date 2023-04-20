@@ -1,7 +1,7 @@
 import React, { memo, useState, useCallback, useRef, useEffect } from 'react';
 import { MdSubtitles } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
-import { Select } from 'evergreen-ui';
+import Select from './Select';
 
 const SubtitleControl = memo(({ subtitleStreams, activeSubtitleStreamIndex, onActiveSubtitleChange }) => {
   const [controlVisible, setControlVisible] = useState(false);
@@ -32,7 +32,6 @@ const SubtitleControl = memo(({ subtitleStreams, activeSubtitleStreamIndex, onAc
     <>
       {controlVisible && (
         <Select
-          height={20}
           value={activeSubtitleStreamIndex}
           onChange={onChange}
         >
@@ -46,7 +45,7 @@ const SubtitleControl = memo(({ subtitleStreams, activeSubtitleStreamIndex, onAc
       <MdSubtitles
         size={30}
         role="button"
-        style={{ margin: '0 7px' }}
+        style={{ margin: '0 7px', color: 'var(--gray12)', opacity: 0.7 }}
         onClick={onIconClick}
       />
     </>

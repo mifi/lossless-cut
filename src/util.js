@@ -1,36 +1,56 @@
-import Swal from 'sweetalert2';
 import i18n from 'i18next';
-import lodashTemplate from 'lodash/template';
+import pMap from 'p-map';
+import ky from 'ky';
+import prettyBytes from 'pretty-bytes';
 
-const { dirname, parse: parsePath, join, basename, extname, isAbsolute, resolve } = window.require('path');
-const fs = window.require('fs-extra');
-const open = window.require('open');
+import isDev from './isDev';
+import Swal, { toast } from './swal';
+
+const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
+const fsExtra = window.require('fs-extra');
+const { stat } = window.require('fs/promises');
 const os = window.require('os');
+const { ipcRenderer } = window.require('electron');
+const remote = window.require('@electron/remote');
 
-const { readdir } = fs;
+const { readdir, unlink } = fsExtra;
+
+
+const trashFile = async (path) => ipcRenderer.invoke('tryTrashItem', path);
+
+export function getFileDir(filePath) {
+  return filePath ? dirname(filePath) : undefined;
+}
 
 export function getOutDir(customOutDir, filePath) {
   if (customOutDir) return customOutDir;
-  if (filePath) return dirname(filePath);
+  if (filePath) return getFileDir(filePath);
   return undefined;
 }
 
-export function getFileBaseName(filePath) {
+function getFileBaseName(filePath) {
   if (!filePath) return undefined;
   const parsed = parsePath(filePath);
   return parsed.name;
 }
 
-export function getOutPath(customOutDir, filePath, nameSuffix) {
+export function getOutPath({ customOutDir, filePath, fileName }) {
   if (!filePath) return undefined;
-  return join(getOutDir(customOutDir, filePath), `${getFileBaseName(filePath)}-${nameSuffix}`);
+  return join(getOutDir(customOutDir, filePath), fileName);
+}
+
+export const getSuffixedFileName = (filePath, nameSuffix) => `${getFileBaseName(filePath)}-${nameSuffix}`;
+
+export function getSuffixedOutPath({ customOutDir, filePath, nameSuffix }) {
+  if (!filePath) return undefined;
+  return getOutPath({ customOutDir, filePath, fileName: getSuffixedFileName(filePath, nameSuffix) });
 }
 
 export async function havePermissionToReadFile(filePath) {
   try {
-    const fd = await fs.open(filePath, 'r');
+    const fd = await fsExtra.open(filePath, 'r');
     try {
-      await fs.close(fd);
+      await fsExtra.close(fd);
     } catch (err) {
       console.error('Failed to close fd', err);
     }
@@ -43,7 +63,7 @@ export async function havePermissionToReadFile(filePath) {
 
 export async function checkDirWriteAccess(dirPath) {
   try {
-    await fs.access(dirPath, fs.constants.W_OK);
+    await fsExtra.access(dirPath, fsExtra.constants.W_OK);
   } catch (err) {
     if (err.code === 'EPERM') return false; // Thrown on Mac (MAS build) when user has not yet allowed access
     if (err.code === 'EACCES') return false; // Thrown on Linux when user doesn't have access to output dir
@@ -53,39 +73,30 @@ export async function checkDirWriteAccess(dirPath) {
 }
 
 export async function pathExists(pathIn) {
-  return fs.pathExists(pathIn);
+  return fsExtra.pathExists(pathIn);
+}
+
+export async function getPathReadAccessError(pathIn) {
+  try {
+    await fsExtra.access(pathIn, fsExtra.constants.R_OK);
+    return undefined;
+  } catch (err) {
+    return err.code;
+  }
 }
 
 export async function dirExists(dirPath) {
-  return (await pathExists(dirPath)) && (await fs.lstat(dirPath)).isDirectory();
+  return (await pathExists(dirPath)) && (await fsExtra.lstat(dirPath)).isDirectory();
 }
 
 export async function transferTimestamps(inPath, outPath, offset = 0) {
   try {
-    const { atime, mtime } = await fs.stat(inPath);
-    await fs.utimes(outPath, (atime.getTime() / 1000) + offset, (mtime.getTime() / 1000) + offset);
+    const { atime, mtime } = await stat(inPath);
+    await fsExtra.utimes(outPath, (atime.getTime() / 1000) + offset, (mtime.getTime() / 1000) + offset);
   } catch (err) {
     console.error('Failed to set output file modified time', err);
   }
 }
-
-export const toast = Swal.mixin({
-  toast: true,
-  position: 'top',
-  showConfirmButton: false,
-  showCloseButton: true,
-  timer: 5000,
-  timerProgressBar: true,
-  didOpen: (self) => {
-    self.addEventListener('mouseenter', Swal.stopTimer);
-    self.addEventListener('mouseleave', Swal.resumeTimer);
-  },
-});
-
-export const errorToast = (text) => toast.fire({
-  icon: 'error',
-  text,
-});
 
 export function handleError(arg1, arg2) {
   console.error('handleError', arg1, arg2);
@@ -101,19 +112,8 @@ export function handleError(arg1, arg2) {
   toast.fire({
     icon: 'error',
     title: msg || i18n.t('An error has occurred.'),
-    text: errorMsg ? errorMsg.substr(0, 300) : undefined,
+    text: errorMsg ? errorMsg.substring(0, 300) : undefined,
   });
-}
-
-
-export const openDirToast = async ({ dirPath, ...props }) => {
-  const { value } = await toast.fire({ icon: 'success', timer: 5000, showConfirmButton: true, confirmButtonText: i18n.t('Show'), showCancelButton: true, cancelButtonText: i18n.t('Close'), ...props });
-  if (value) open(dirPath);
-};
-
-export function setFileNameTitle(filePath) {
-  const appName = 'LosslessCut';
-  document.title = filePath ? `${appName} - ${basename(filePath)}` : appName;
 }
 
 export function filenamify(name) {
@@ -131,23 +131,12 @@ export function dragPreventer(ev) {
   ev.preventDefault();
 }
 
-// With these codecs, the player will not give a playback error, but instead only play audio
-export function doesPlayerSupportFile(streams) {
-  const videoStreams = streams.filter(s => s.codec_type === 'video');
-  // Don't check audio formats, assume all is OK
-  if (videoStreams.length === 0) return true;
-  // If we have at least one video that is NOT of the unsupported formats, assume the player will be able to play it natively
-  // https://github.com/mifi/lossless-cut/issues/595
-  return videoStreams.some(s => !['hevc', 'prores', 'mpeg4'].includes(s.codec_name));
-}
-
 export const isMasBuild = window.process.mas;
 export const isWindowsStoreBuild = window.process.windowsStore;
 export const isStoreBuild = isMasBuild || isWindowsStoreBuild;
 
-export const isDurationValid = (duration) => Number.isFinite(duration) && duration > 0;
-
-const platform = os.platform();
+export const platform = os.platform();
+export const arch = os.arch();
 
 export const isWindows = platform === 'win32';
 export const isMac = platform === 'darwin';
@@ -156,32 +145,25 @@ export function getExtensionForFormat(format) {
   const ext = {
     matroska: 'mkv',
     ipod: 'm4a',
+    adts: 'aac',
   }[format];
 
   return ext || format;
 }
 
 export function getOutFileExtension({ isCustomFormatSelected, outFormat, filePath }) {
-  return isCustomFormatSelected ? `.${getExtensionForFormat(outFormat)}` : extname(filePath);
-}
+  if (!isCustomFormatSelected) {
+    const ext = extname(filePath);
+    // QuickTime is quirky about the file extension of mov files (has to be .mov)
+    // https://github.com/mifi/lossless-cut/issues/1075#issuecomment-1072084286
+    const hasMovIncorrectExtension = outFormat === 'mov' && ext.toLowerCase() !== '.mov';
 
-// This is used as a fallback and so it has to always generate unique file names
-// eslint-disable-next-line no-template-curly-in-string
-export const defaultOutSegTemplate = '${FILENAME}-${CUT_FROM}-${CUT_TO}${SEG_SUFFIX}${EXT}';
+    // OK, just keep the current extension. Because most players will not care about the extension
+    if (!hasMovIncorrectExtension) return extname(filePath);
+  }
 
-export function generateSegFileName({ template, inputFileNameWithoutExt, segSuffix, ext, segNum, segLabel, cutFrom, cutTo, tags }) {
-  const compiled = lodashTemplate(template);
-  const data = {
-    FILENAME: inputFileNameWithoutExt,
-    SEG_SUFFIX: segSuffix,
-    EXT: ext,
-    SEG_NUM: segNum,
-    SEG_LABEL: segLabel,
-    CUT_FROM: cutFrom,
-    CUT_TO: cutTo,
-    SEG_TAGS: Object.fromEntries(Object.entries(tags).map(([key, value]) => [`${key.toLocaleUpperCase('en-US')}`, value])),
-  };
-  return compiled(data);
+  // user is changing format, must update extension too
+  return `.${getExtensionForFormat(outFormat)}`;
 }
 
 export const hasDuplicates = (arr) => new Set(arr).size !== arr.length;
@@ -194,8 +176,8 @@ export const html5dummySuffix = 'dummy';
 
 export async function findExistingHtml5FriendlyFile(fp, cod) {
   // The order is the priority we will search:
-  const suffixes = ['slowest', 'slow-audio', 'slow', 'fast-audio', 'fast', 'fastest-audio', 'fastest-audio-remux', html5dummySuffix];
-  const prefix = `${getFileBaseName(fp)}-${html5ifiedPrefix}`;
+  const suffixes = ['slowest', 'slow-audio', 'slow', 'fast-audio-remux', 'fast-audio', 'fast', 'fastest-audio', 'fastest-audio-remux', html5dummySuffix];
+  const prefix = getSuffixedFileName(fp, html5ifiedPrefix);
 
   const outDir = getOutDir(cod, fp);
   const dirEntries = await readdir(outDir);
@@ -222,4 +204,135 @@ export async function findExistingHtml5FriendlyFile(fp, cod) {
     path: join(outDir, entry),
     usingDummyVideo: ['fastest-audio', 'fastest-audio-remux', html5dummySuffix].includes(suffix),
   };
+}
+
+export function getHtml5ifiedPath(cod, fp, type) {
+  // See also inside ffmpegHtml5ify
+  const ext = (isMac && ['slowest', 'slow', 'slow-audio'].includes(type)) ? 'mp4' : 'mkv';
+  return getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${type}.${ext}` });
+}
+
+export async function deleteFiles(paths, deleteIfTrashFails) {
+  const failedToTrashFiles = [];
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const path of paths) {
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      await trashFile(path);
+    } catch (err) {
+      console.error(err);
+      failedToTrashFiles.push(path);
+    }
+  }
+
+  if (failedToTrashFiles.length === 0) return; // All good!
+
+  if (!deleteIfTrashFails) {
+    const { value } = await Swal.fire({
+      icon: 'warning',
+      text: i18n.t('Unable to move file to trash. Do you want to permanently delete it?'),
+      confirmButtonText: i18n.t('Permanently delete'),
+      showCancelButton: true,
+    });
+    if (!value) return;
+  }
+
+  await pMap(failedToTrashFiles, async (path) => unlink(path), { concurrency: 1 });
+}
+
+export const deleteDispositionValue = 'llc_disposition_remove';
+
+export const mirrorTransform = 'matrix(-1, 0, 0, 1, 0, 0)';
+
+// I *think* Windows will throw error with code ENOENT if ffprobe/ffmpeg fails (execa), but other OS'es will return this error code if a file is not found, so it would be wrong to attribute it to exec failure.
+// see https://github.com/mifi/lossless-cut/issues/451
+export const isExecaFailure = (err) => err.exitCode === 1 || (isWindows && err.code === 'ENOENT');
+
+// A bit hacky but it works, unless someone has a file called "No space left on device" ( ͡° ͜ʖ ͡°)
+export const isOutOfSpaceError = (err) => (
+  err && isExecaFailure(err)
+  && typeof err.stderr === 'string' && err.stderr.includes('No space left on device')
+);
+
+export async function checkAppPath() {
+  try {
+    const forceCheck = false;
+    // const forceCheck = isDev;
+    // this code is purposefully obfuscated to try to detect the most basic cloned app submissions to the MS Store
+    if (!isWindowsStoreBuild && !forceCheck) return;
+    // eslint-disable-next-line no-useless-concat, one-var, one-var-declaration-per-line
+    const mf = 'mi' + 'fi.no', llc = 'Los' + 'slessC' + 'ut';
+    const appPath = isDev ? 'C:\\Program Files\\WindowsApps\\37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84' : remote.app.getAppPath();
+    const pathMatch = appPath.replace(/\\/g, '/').match(/Windows ?Apps\/([^/]+)/); // find the first component after WindowsApps
+    // example pathMatch: 37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84
+    if (!pathMatch) {
+      console.warn('Unknown path match', appPath);
+      return;
+    }
+    const pathSeg = pathMatch[1];
+    if (pathSeg.startsWith(`57275${mf}.${llc}_`)) return;
+    // this will report the path and may return a msg
+    const response = await ky(`https://losslesscut-analytics.mifi.no/${pathSeg.length}/${btoa(pathSeg)}`).json();
+    if (response.invalid) toast.fire({ timer: 60000, icon: 'error', title: response.title, text: response.text });
+  } catch (err) {
+    if (isDev) console.warn(err.message);
+  }
+}
+
+// https://stackoverflow.com/a/2450976/6519037
+export function shuffleArray(arrayIn) {
+  const array = [...arrayIn];
+  let currentIndex = array.length;
+  let randomIndex;
+
+  // While there remain elements to shuffle...
+  while (currentIndex !== 0) {
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
+
+export const getNumDigits = (value) => Math.floor(value > 0 ? Math.log10(value) : 0) + 1;
+
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
+export function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
+export const readFileSize = async (path) => (await stat(path)).size;
+
+export const readFileSizes = (paths) => pMap(paths, async (path) => readFileSize(path), { concurrency: 5 });
+
+export function checkFileSizes(inputSize, outputSize) {
+  const diff = Math.abs(outputSize - inputSize);
+  const relDiff = diff / inputSize;
+  const maxDiffPercent = 5;
+  const sourceFilesTotalSize = prettyBytes(inputSize);
+  const outputFileTotalSize = prettyBytes(outputSize);
+  if (relDiff > maxDiffPercent / 100) return i18n.t('The size of the merged output file ({{outputFileTotalSize}}) differs from the total size of source files ({{sourceFilesTotalSize}}) by more than {{maxDiffPercent}}%. This could indicate that there was a problem during the merge.', { maxDiffPercent, sourceFilesTotalSize, outputFileTotalSize });
+  return undefined;
+}
+
+function setDocumentExtraTitle(extra) {
+  const baseTitle = 'LosslessCut';
+  if (extra != null) document.title = `${baseTitle} - ${extra}`;
+  else document.title = baseTitle;
+}
+
+export function setDocumentTitle({ filePath, working, cutProgress }) {
+  const parts = [];
+  if (filePath) parts.push(basename(filePath));
+  if (working) {
+    parts.push('-', working);
+    if (cutProgress != null) parts.push(`${(cutProgress * 100).toFixed(1)}%`);
+  }
+  setDocumentExtraTitle(parts.length > 0 ? parts.join(' ') : undefined);
 }

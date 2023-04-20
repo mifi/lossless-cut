@@ -1,5 +1,23 @@
+/*
+https://www.radix-ui.com/docs/colors/palette-composition/the-scales
+https://www.radix-ui.com/docs/colors/palette-composition/understanding-the-scale
+*/
+@import '@radix-ui/colors/red.css';
+@import '@radix-ui/colors/redDark.css';
+@import '@radix-ui/colors/amber.css';
+@import '@radix-ui/colors/amberDark.css';
+@import '@radix-ui/colors/green.css';
+@import '@radix-ui/colors/greenDark.css';
+@import '@radix-ui/colors/cyan.css';
+@import '@radix-ui/colors/cyanDark.css';
+@import '@radix-ui/colors/gray.css';
+@import '@radix-ui/colors/grayDark.css';
+@import '@radix-ui/colors/blackA.css';
+@import '@radix-ui/colors/whiteA.css';
+
+
 html {
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'Open Sans', 'Noto Sans SemiCondensed', 'Noto Sans', sans-serif;
   font-size: 16px;
 }
 
@@ -19,35 +37,23 @@ body {
     cursor: default;
 }
 
-.help-sheet h1 {
-  font-size: 1.2em;
-  margin-bottom: .5em;
-  margin-top: 1.3em;
-  text-transform: uppercase;
-}
-
-.help-sheet h2 {
-  font-size: 1em;
-  margin-bottom: .5em;
-  text-transform: uppercase;
-}
-
 kbd {
     display: inline-block;
     padding: 3px 5px;
     font-size: 11px;
     line-height: 10px;
-    color: #555;
+    color: var(--gray11);
     vertical-align: middle;
-    background-color: #fdfdfd;
-    border: solid 1px #ccc;
-    border-bottom-color: #bbb;
+    background-color: var(--gray4);
+    border: solid 1px var(--gray8);
+    border-bottom-color: var(--gray8);
     border-radius: 3px;
-    box-shadow: inset 0 -1px 0 #bbb;
+    box-shadow: inset 0 -1px 0 var(--gray8);
 }
 
-.dragging-helper-class {
-  color: rgba(0,0,0,0.5);
+code.highlighted {
+  background-color: var(--gray4);
+  border-radius: .2em;
 }
 
 .hide-scrollbar::-webkit-scrollbar {
@@ -60,4 +66,12 @@ kbd {
   /* !important is important: https://github.com/mifi/lossless-cut/issues/541#issuecomment-750003650 */
   align-items: flex-start !important;
   text-align: left;
+}
+
+.segment-list-entry .enabled {
+  display: none;
+}
+
+.segment-list-entry:hover .enabled {
+  display: inherit;
 }

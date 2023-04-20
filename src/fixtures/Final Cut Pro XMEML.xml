@@ -1,0 +1,1511 @@
+﻿<?xml version="1.0"?>
+<xmeml version="5">
+	<project>
+		<name>Untitled Project 1</name>
+		<children>
+			<bin>
+				<updatebehavior>add</updatebehavior>
+				<name>Media Bins</name>
+				<children />
+			</bin>
+			<clip id="DuaLipa.mp4">
+				<updatebehavior>add</updatebehavior>
+				<name>DuaLipa.mp4</name>
+				<duration>5615</duration>
+				<rate>
+					<ntsc>FALSE</ntsc>
+					<timebase>25</timebase>
+				</rate>
+				<in>-1</in>
+				<out>-1</out>
+				<masterclipid>DuaLipa.mp4</masterclipid>
+				<ismasterclip>TRUE</ismasterclip>
+				<logginginfo>
+					<scene />
+					<shottake />
+					<lognote />
+					<good>FALSE</good>
+				</logginginfo>
+				<labels>
+					<label2 />
+				</labels>
+				<comments>
+					<mastercomment1 />
+					<mastercomment2 />
+					<mastercomment3 />
+					<mastercomment4 />
+				</comments>
+				<media>
+					<video>
+						<track>
+							<clipitem id="DuaLipa.mp41">
+								<name>DuaLipa.mp4</name>
+								<duration>5615</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>0</in>
+								<out>5615</out>
+								<start>0</start>
+								<end>5615</end>
+								<pixelaspectratio>Square</pixelaspectratio>
+								<anamorphic>FALSE</anamorphic>
+								<alphatype>none</alphatype>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa">
+									<name>DuaLipa.mp4</name>
+									<pathurl>DuaLipa.mp4</pathurl>
+									<rate>
+										<timebase>25</timebase>
+										<ntsc>FALSE</ntsc>
+									</rate>
+									<duration>5615</duration>
+									<timecode>
+										<rate>
+											<timebase>25</timebase>
+											<ntsc>FALSE</ntsc>
+										</rate>
+										<frame>0</frame>
+										<displayformat>NDF</displayformat>
+										<source>source</source>
+									</timecode>
+									<media>
+										<video>
+											<duration>5615</duration>
+											<samplecharacteristics>
+												<width>1920</width>
+												<height>1080</height>
+											</samplecharacteristics>
+										</video>
+										<audio>
+											<samplecharacteristics>
+												<samplerate>44100</samplerate>
+												<depth>16</depth>
+											</samplecharacteristics>
+											<channelcount>1</channelcount>
+										</audio>
+										<audio>
+											<samplecharacteristics>
+												<samplerate>44100</samplerate>
+												<depth>16</depth>
+											</samplecharacteristics>
+											<channelcount>1</channelcount>
+										</audio>
+									</media>
+								</file>
+								<sourcetrack>
+									<mediatype>video</mediatype>
+								</sourcetrack>
+								<fielddominance>none</fielddominance>
+							</clipitem>
+							<enabled>TRUE</enabled>
+							<locked>FALSE</locked>
+						</track>
+					</video>
+					<audio>
+						<track>
+							<clipitem id="DuaLipa.mp42">
+								<name>DuaLipa.mp4</name>
+								<duration>5615</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>0</in>
+								<out>5615</out>
+								<start>0</start>
+								<end>5615</end>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<sourcetrack>
+									<mediatype>audio</mediatype>
+								</sourcetrack>
+							</clipitem>
+							<enabled>TRUE</enabled>
+							<locked>FALSE</locked>
+						</track>
+						<track>
+							<clipitem id="DuaLipa.mp43">
+								<name>DuaLipa.mp4</name>
+								<duration>5615</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>0</in>
+								<out>5615</out>
+								<start>0</start>
+								<end>5615</end>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<sourcetrack>
+									<mediatype>audio</mediatype>
+								</sourcetrack>
+							</clipitem>
+							<enabled>TRUE</enabled>
+							<locked>FALSE</locked>
+						</track>
+					</audio>
+				</media>
+			</clip>
+			<sequence id="Sequence 1">
+				<updatebehavior>add</updatebehavior>
+				<name>Sequence 1</name>
+				<duration>1234</duration>
+				<rate>
+					<ntsc>FALSE</ntsc>
+					<timebase>25</timebase>
+				</rate>
+				<timecode>
+					<rate>
+						<ntsc>FALSE</ntsc>
+						<timebase>25</timebase>
+					</rate>
+					<frame>90016</frame>
+					<source>source</source>
+					<displayformat>NDF</displayformat>
+				</timecode>
+				<in>-1</in>
+				<out>-1</out>
+				<media>
+					<video>
+						<format>
+							<samplecharacteristics>
+								<width>1920</width>
+								<height>1080</height>
+								<pixelaspectratio>Square</pixelaspectratio>
+								<anamorphic>FALSE</anamorphic>
+								<fielddominance>none</fielddominance>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<colordepth>24</colordepth>
+								<codec>
+									<appspecificdata>
+										<data>
+											<qtcodec>
+												<codectypecode>avc1</codectypecode>
+											</qtcodec>
+										</data>
+										<appname>Final Cut Pro</appname>
+										<appmanufacturer>Apple Inc.</appmanufacturer>
+										<appversion>7.0</appversion>
+									</appspecificdata>
+								</codec>
+							</samplecharacteristics>
+						</format>
+						<track>
+							<clipitem id="DuaLipa.mp4805306369">
+								<name>DuaLipa.mp4</name>
+								<duration>214</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>0</in>
+								<out>214</out>
+								<start>0</start>
+								<end>214</end>
+								<pixelaspectratio>Square</pixelaspectratio>
+								<anamorphic>FALSE</anamorphic>
+								<alphatype>none</alphatype>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Opacity</name>
+										<effectid>opacity</effectid>
+										<effectcategory>motion</effectcategory>
+										<effecttype>motion</effecttype>
+										<mediatype>video</mediatype>
+										<parameter>
+											<parameterid>opacity</parameterid>
+											<name>opacity</name>
+											<valuemin>0</valuemin>
+											<valuemax>100</valuemax>
+											<value>100</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>video</mediatype>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306369</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870914</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709141</linkclipref>
+								</link>
+								<fielddominance>none</fielddominance>
+							</clipitem>
+							<clipitem id="DuaLipa.mp4805306371">
+								<name>DuaLipa.mp4</name>
+								<duration>114</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>214</in>
+								<out>328</out>
+								<start>214</start>
+								<end>328</end>
+								<pixelaspectratio>Square</pixelaspectratio>
+								<anamorphic>FALSE</anamorphic>
+								<alphatype>none</alphatype>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Opacity</name>
+										<effectid>opacity</effectid>
+										<effectcategory>motion</effectcategory>
+										<effecttype>motion</effecttype>
+										<mediatype>video</mediatype>
+										<parameter>
+											<parameterid>opacity</parameterid>
+											<name>opacity</name>
+											<valuemin>0</valuemin>
+											<valuemax>100</valuemax>
+											<value>100</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>video</mediatype>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306371</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870916</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709161</linkclipref>
+								</link>
+								<fielddominance>none</fielddominance>
+							</clipitem>
+							<clipitem id="DuaLipa.mp4805306373">
+								<name>DuaLipa.mp4</name>
+								<duration>150</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>328</in>
+								<out>478</out>
+								<start>328</start>
+								<end>478</end>
+								<pixelaspectratio>Square</pixelaspectratio>
+								<anamorphic>FALSE</anamorphic>
+								<alphatype>none</alphatype>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Opacity</name>
+										<effectid>opacity</effectid>
+										<effectcategory>motion</effectcategory>
+										<effecttype>motion</effecttype>
+										<mediatype>video</mediatype>
+										<parameter>
+											<parameterid>opacity</parameterid>
+											<name>opacity</name>
+											<valuemin>0</valuemin>
+											<valuemax>100</valuemax>
+											<value>100</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>video</mediatype>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306373</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870918</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709181</linkclipref>
+								</link>
+								<fielddominance>none</fielddominance>
+							</clipitem>
+							<clipitem id="DuaLipa.mp4805306375">
+								<name>DuaLipa.mp4</name>
+								<duration>221</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>478</in>
+								<out>699</out>
+								<start>478</start>
+								<end>699</end>
+								<pixelaspectratio>Square</pixelaspectratio>
+								<anamorphic>FALSE</anamorphic>
+								<alphatype>none</alphatype>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Opacity</name>
+										<effectid>opacity</effectid>
+										<effectcategory>motion</effectcategory>
+										<effecttype>motion</effecttype>
+										<mediatype>video</mediatype>
+										<parameter>
+											<parameterid>opacity</parameterid>
+											<name>opacity</name>
+											<valuemin>0</valuemin>
+											<valuemax>100</valuemax>
+											<value>100</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>video</mediatype>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306375</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870920</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709201</linkclipref>
+								</link>
+								<fielddominance>none</fielddominance>
+							</clipitem>
+							<clipitem id="DuaLipa.mp4805306377">
+								<name>DuaLipa.mp4</name>
+								<duration>278</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>699</in>
+								<out>977</out>
+								<start>699</start>
+								<end>977</end>
+								<pixelaspectratio>Square</pixelaspectratio>
+								<anamorphic>FALSE</anamorphic>
+								<alphatype>none</alphatype>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Opacity</name>
+										<effectid>opacity</effectid>
+										<effectcategory>motion</effectcategory>
+										<effecttype>motion</effecttype>
+										<mediatype>video</mediatype>
+										<parameter>
+											<parameterid>opacity</parameterid>
+											<name>opacity</name>
+											<valuemin>0</valuemin>
+											<valuemax>100</valuemax>
+											<value>100</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>video</mediatype>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306377</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870922</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709221</linkclipref>
+								</link>
+								<fielddominance>none</fielddominance>
+							</clipitem>
+							<clipitem id="DuaLipa.mp4805306379">
+								<name>DuaLipa.mp4</name>
+								<duration>257</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>977</in>
+								<out>1234</out>
+								<start>977</start>
+								<end>1234</end>
+								<pixelaspectratio>Square</pixelaspectratio>
+								<anamorphic>FALSE</anamorphic>
+								<alphatype>none</alphatype>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Opacity</name>
+										<effectid>opacity</effectid>
+										<effectcategory>motion</effectcategory>
+										<effecttype>motion</effecttype>
+										<mediatype>video</mediatype>
+										<parameter>
+											<parameterid>opacity</parameterid>
+											<name>opacity</name>
+											<valuemin>0</valuemin>
+											<valuemax>100</valuemax>
+											<value>100</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>video</mediatype>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306379</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870924</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709241</linkclipref>
+								</link>
+								<fielddominance>none</fielddominance>
+							</clipitem>
+						</track>
+					</video>
+					<audio>
+						<track>
+							<clipitem id="DuaLipa.mp4536870914">
+								<name>DuaLipa.mp4</name>
+								<duration>214</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>0</in>
+								<out>214</out>
+								<start>0</start>
+								<end>214</end>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Audio Levels</name>
+										<effectid>audiolevels</effectid>
+										<effectcategory>audiolevels</effectcategory>
+										<effecttype>audiolevels</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>level</parameterid>
+											<name>Level</name>
+											<valuemin>0</valuemin>
+											<valuemax>3,98109</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<filter>
+									<effect>
+										<name>Audio Pan</name>
+										<effectid>audiopan</effectid>
+										<effectcategory>audiopan</effectcategory>
+										<effecttype>audiopan</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>pan</parameterid>
+											<name>Pan</name>
+											<valuemin>-1</valuemin>
+											<valuemax>1</valuemax>
+											<value>-1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>audio</mediatype>
+									<trackindex>1</trackindex>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306369</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870914</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709141</linkclipref>
+								</link>
+							</clipitem>
+							<clipitem id="DuaLipa.mp4536870916">
+								<name>DuaLipa.mp4</name>
+								<duration>114</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>214</in>
+								<out>328</out>
+								<start>214</start>
+								<end>328</end>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Audio Levels</name>
+										<effectid>audiolevels</effectid>
+										<effectcategory>audiolevels</effectcategory>
+										<effecttype>audiolevels</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>level</parameterid>
+											<name>Level</name>
+											<valuemin>0</valuemin>
+											<valuemax>3,98109</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<filter>
+									<effect>
+										<name>Audio Pan</name>
+										<effectid>audiopan</effectid>
+										<effectcategory>audiopan</effectcategory>
+										<effecttype>audiopan</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>pan</parameterid>
+											<name>Pan</name>
+											<valuemin>-1</valuemin>
+											<valuemax>1</valuemax>
+											<value>-1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>audio</mediatype>
+									<trackindex>1</trackindex>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306371</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870916</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709161</linkclipref>
+								</link>
+							</clipitem>
+							<clipitem id="DuaLipa.mp4536870918">
+								<name>DuaLipa.mp4</name>
+								<duration>150</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>328</in>
+								<out>478</out>
+								<start>328</start>
+								<end>478</end>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Audio Levels</name>
+										<effectid>audiolevels</effectid>
+										<effectcategory>audiolevels</effectcategory>
+										<effecttype>audiolevels</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>level</parameterid>
+											<name>Level</name>
+											<valuemin>0</valuemin>
+											<valuemax>3,98109</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<filter>
+									<effect>
+										<name>Audio Pan</name>
+										<effectid>audiopan</effectid>
+										<effectcategory>audiopan</effectcategory>
+										<effecttype>audiopan</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>pan</parameterid>
+											<name>Pan</name>
+											<valuemin>-1</valuemin>
+											<valuemax>1</valuemax>
+											<value>-1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>audio</mediatype>
+									<trackindex>1</trackindex>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306373</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870918</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709181</linkclipref>
+								</link>
+							</clipitem>
+							<clipitem id="DuaLipa.mp4536870920">
+								<name>DuaLipa.mp4</name>
+								<duration>221</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>478</in>
+								<out>699</out>
+								<start>478</start>
+								<end>699</end>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Audio Levels</name>
+										<effectid>audiolevels</effectid>
+										<effectcategory>audiolevels</effectcategory>
+										<effecttype>audiolevels</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>level</parameterid>
+											<name>Level</name>
+											<valuemin>0</valuemin>
+											<valuemax>3,98109</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<filter>
+									<effect>
+										<name>Audio Pan</name>
+										<effectid>audiopan</effectid>
+										<effectcategory>audiopan</effectcategory>
+										<effecttype>audiopan</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>pan</parameterid>
+											<name>Pan</name>
+											<valuemin>-1</valuemin>
+											<valuemax>1</valuemax>
+											<value>-1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>audio</mediatype>
+									<trackindex>1</trackindex>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306375</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870920</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709201</linkclipref>
+								</link>
+							</clipitem>
+							<clipitem id="DuaLipa.mp4536870922">
+								<name>DuaLipa.mp4</name>
+								<duration>278</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>699</in>
+								<out>977</out>
+								<start>699</start>
+								<end>977</end>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Audio Levels</name>
+										<effectid>audiolevels</effectid>
+										<effectcategory>audiolevels</effectcategory>
+										<effecttype>audiolevels</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>level</parameterid>
+											<name>Level</name>
+											<valuemin>0</valuemin>
+											<valuemax>3,98109</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<filter>
+									<effect>
+										<name>Audio Pan</name>
+										<effectid>audiopan</effectid>
+										<effectcategory>audiopan</effectcategory>
+										<effecttype>audiopan</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>pan</parameterid>
+											<name>Pan</name>
+											<valuemin>-1</valuemin>
+											<valuemax>1</valuemax>
+											<value>-1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>audio</mediatype>
+									<trackindex>1</trackindex>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306377</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870922</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709221</linkclipref>
+								</link>
+							</clipitem>
+							<clipitem id="DuaLipa.mp4536870924">
+								<name>DuaLipa.mp4</name>
+								<duration>257</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>977</in>
+								<out>1234</out>
+								<start>977</start>
+								<end>1234</end>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Audio Levels</name>
+										<effectid>audiolevels</effectid>
+										<effectcategory>audiolevels</effectcategory>
+										<effecttype>audiolevels</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>level</parameterid>
+											<name>Level</name>
+											<valuemin>0</valuemin>
+											<valuemax>3,98109</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<filter>
+									<effect>
+										<name>Audio Pan</name>
+										<effectid>audiopan</effectid>
+										<effectcategory>audiopan</effectcategory>
+										<effecttype>audiopan</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>pan</parameterid>
+											<name>Pan</name>
+											<valuemin>-1</valuemin>
+											<valuemax>1</valuemax>
+											<value>-1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>audio</mediatype>
+									<trackindex>1</trackindex>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306379</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870924</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709241</linkclipref>
+								</link>
+							</clipitem>
+						</track>
+						<track>
+							<clipitem id="DuaLipa.mp45368709141">
+								<name>DuaLipa.mp4</name>
+								<duration>214</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>0</in>
+								<out>214</out>
+								<start>0</start>
+								<end>214</end>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Audio Levels</name>
+										<effectid>audiolevels</effectid>
+										<effectcategory>audiolevels</effectcategory>
+										<effecttype>audiolevels</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>level</parameterid>
+											<name>Level</name>
+											<valuemin>0</valuemin>
+											<valuemax>3,98109</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<filter>
+									<effect>
+										<name>Audio Pan</name>
+										<effectid>audiopan</effectid>
+										<effectcategory>audiopan</effectcategory>
+										<effecttype>audiopan</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>pan</parameterid>
+											<name>Pan</name>
+											<valuemin>-1</valuemin>
+											<valuemax>1</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>audio</mediatype>
+									<trackindex>2</trackindex>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306369</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870914</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709141</linkclipref>
+								</link>
+							</clipitem>
+							<clipitem id="DuaLipa.mp45368709161">
+								<name>DuaLipa.mp4</name>
+								<duration>114</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>214</in>
+								<out>328</out>
+								<start>214</start>
+								<end>328</end>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Audio Levels</name>
+										<effectid>audiolevels</effectid>
+										<effectcategory>audiolevels</effectcategory>
+										<effecttype>audiolevels</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>level</parameterid>
+											<name>Level</name>
+											<valuemin>0</valuemin>
+											<valuemax>3,98109</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<filter>
+									<effect>
+										<name>Audio Pan</name>
+										<effectid>audiopan</effectid>
+										<effectcategory>audiopan</effectcategory>
+										<effecttype>audiopan</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>pan</parameterid>
+											<name>Pan</name>
+											<valuemin>-1</valuemin>
+											<valuemax>1</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>audio</mediatype>
+									<trackindex>2</trackindex>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306371</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870916</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709161</linkclipref>
+								</link>
+							</clipitem>
+							<clipitem id="DuaLipa.mp45368709181">
+								<name>DuaLipa.mp4</name>
+								<duration>150</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>328</in>
+								<out>478</out>
+								<start>328</start>
+								<end>478</end>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Audio Levels</name>
+										<effectid>audiolevels</effectid>
+										<effectcategory>audiolevels</effectcategory>
+										<effecttype>audiolevels</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>level</parameterid>
+											<name>Level</name>
+											<valuemin>0</valuemin>
+											<valuemax>3,98109</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<filter>
+									<effect>
+										<name>Audio Pan</name>
+										<effectid>audiopan</effectid>
+										<effectcategory>audiopan</effectcategory>
+										<effecttype>audiopan</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>pan</parameterid>
+											<name>Pan</name>
+											<valuemin>-1</valuemin>
+											<valuemax>1</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>audio</mediatype>
+									<trackindex>2</trackindex>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306373</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870918</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709181</linkclipref>
+								</link>
+							</clipitem>
+							<clipitem id="DuaLipa.mp45368709201">
+								<name>DuaLipa.mp4</name>
+								<duration>221</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>478</in>
+								<out>699</out>
+								<start>478</start>
+								<end>699</end>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Audio Levels</name>
+										<effectid>audiolevels</effectid>
+										<effectcategory>audiolevels</effectcategory>
+										<effecttype>audiolevels</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>level</parameterid>
+											<name>Level</name>
+											<valuemin>0</valuemin>
+											<valuemax>3,98109</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<filter>
+									<effect>
+										<name>Audio Pan</name>
+										<effectid>audiopan</effectid>
+										<effectcategory>audiopan</effectcategory>
+										<effecttype>audiopan</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>pan</parameterid>
+											<name>Pan</name>
+											<valuemin>-1</valuemin>
+											<valuemax>1</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>audio</mediatype>
+									<trackindex>2</trackindex>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306375</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870920</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709201</linkclipref>
+								</link>
+							</clipitem>
+							<clipitem id="DuaLipa.mp45368709221">
+								<name>DuaLipa.mp4</name>
+								<duration>278</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>699</in>
+								<out>977</out>
+								<start>699</start>
+								<end>977</end>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Audio Levels</name>
+										<effectid>audiolevels</effectid>
+										<effectcategory>audiolevels</effectcategory>
+										<effecttype>audiolevels</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>level</parameterid>
+											<name>Level</name>
+											<valuemin>0</valuemin>
+											<valuemax>3,98109</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<filter>
+									<effect>
+										<name>Audio Pan</name>
+										<effectid>audiopan</effectid>
+										<effectcategory>audiopan</effectcategory>
+										<effecttype>audiopan</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>pan</parameterid>
+											<name>Pan</name>
+											<valuemin>-1</valuemin>
+											<valuemax>1</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>audio</mediatype>
+									<trackindex>2</trackindex>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306377</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870922</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709221</linkclipref>
+								</link>
+							</clipitem>
+							<clipitem id="DuaLipa.mp45368709241">
+								<name>DuaLipa.mp4</name>
+								<duration>257</duration>
+								<rate>
+									<ntsc>FALSE</ntsc>
+									<timebase>25</timebase>
+								</rate>
+								<in>977</in>
+								<out>1234</out>
+								<start>977</start>
+								<end>1234</end>
+								<masterclipid>DuaLipa.mp4</masterclipid>
+								<logginginfo>
+									<scene />
+									<shottake />
+									<lognote />
+									<good>FALSE</good>
+								</logginginfo>
+								<labels>
+									<label2 />
+								</labels>
+								<comments>
+									<mastercomment1 />
+									<mastercomment2 />
+									<mastercomment3 />
+									<mastercomment4 />
+								</comments>
+								<file id="DuaLipa" />
+								<filter>
+									<effect>
+										<name>Audio Levels</name>
+										<effectid>audiolevels</effectid>
+										<effectcategory>audiolevels</effectcategory>
+										<effecttype>audiolevels</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>level</parameterid>
+											<name>Level</name>
+											<valuemin>0</valuemin>
+											<valuemax>3,98109</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<filter>
+									<effect>
+										<name>Audio Pan</name>
+										<effectid>audiopan</effectid>
+										<effectcategory>audiopan</effectcategory>
+										<effecttype>audiopan</effecttype>
+										<mediatype>audio</mediatype>
+										<parameter>
+											<parameterid>pan</parameterid>
+											<name>Pan</name>
+											<valuemin>-1</valuemin>
+											<valuemax>1</valuemax>
+											<value>1</value>
+										</parameter>
+									</effect>
+								</filter>
+								<sourcetrack>
+									<mediatype>audio</mediatype>
+									<trackindex>2</trackindex>
+								</sourcetrack>
+								<link>
+									<linkclipref>DuaLipa.mp4805306379</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp4536870924</linkclipref>
+								</link>
+								<link>
+									<linkclipref>DuaLipa.mp45368709241</linkclipref>
+								</link>
+							</clipitem>
+						</track>
+					</audio>
+				</media>
+			</sequence>
+		</children>
+	</project>
+</xmeml>

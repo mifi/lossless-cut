@@ -1,7 +1,8 @@
-import fastXmlParser from 'fast-xml-parser';
+import { XMLParser } from 'fast-xml-parser';
 import i18n from 'i18next';
 
-import csvParse from 'csv-parse';
+import csvParse from 'csv-parse/lib/browser';
+import csvStringify from 'csv-stringify/lib/browser';
 import pify from 'pify';
 import sortBy from 'lodash/sortBy';
 
@@ -9,16 +10,29 @@ import { formatDuration } from './util/duration';
 import { invertSegments, sortSegments } from './segments';
 
 const csvParseAsync = pify(csvParse);
+const csvStringifyAsync = pify(csvStringify);
 
-export async function parseCsv(str) {
-  const rows = await csvParseAsync(str, {});
+export const getTimeFromFrameNum = (detectedFps, frameNum) => frameNum / detectedFps;
+
+export function getFrameCountRaw(detectedFps, sec) {
+  if (detectedFps == null) return undefined;
+  return Math.round(sec * detectedFps);
+}
+
+export async function parseCsv(csvStr, processTime = (t) => t) {
+  const rows = await csvParseAsync(csvStr, {});
   if (rows.length === 0) throw new Error(i18n.t('No rows found'));
   if (!rows.every(row => row.length === 3)) throw new Error(i18n.t('One or more rows does not have 3 columns'));
 
+  function parseTimeVal(str) {
+    if (str === '') return undefined;
+    const parsed = parseFloat(str, 10);
+    return processTime(parsed);
+  }
   const mapped = rows
     .map(([start, end, name]) => ({
-      start: start === '' ? undefined : parseFloat(start, 10),
-      end: end === '' ? undefined : parseFloat(end, 10),
+      start: parseTimeVal(start),
+      end: parseTimeVal(end),
       name,
     }));
 
@@ -50,7 +64,7 @@ export async function parseMplayerEdl(text) {
   const sceneMarkers = allRows.filter((row) => row.type === 2);
   const commercialBreaks = allRows.filter((row) => row.type === 3);
 
-  const inverted = cutAwaySegments.length > 0 ? invertSegments(sortSegments(cutAwaySegments)) : [];
+  const inverted = cutAwaySegments.length > 0 ? invertSegments(sortSegments(cutAwaySegments), true, true) : [];
 
   const map = (segments, name, type) => segments.map(({ start, end }) => ({ start, end, name, tags: { mplayerEdlType: type } }));
 
@@ -88,34 +102,79 @@ export function parseCuesheet(cuesheet) {
   });
 }
 
-
-export function parsePbf(text) {
-  const chapters = text.split('\n').map((line) => {
-    const match = line.match(/^[0-9]+=([0-9]+)\*([^*]+)*/);
+// See https://github.com/mifi/lossless-cut/issues/993#issuecomment-1037090403
+export function parsePbf(buf) {
+  const text = buf.toString('utf16le');
+  const bookmarks = text.split('\n').map((line) => {
+    const match = line.match(/^[0-9]+=([0-9]+)\*([^*]+)*([^*]+)?/);
     if (match) return { time: parseInt(match[1], 10) / 1000, name: match[2] };
     return undefined;
   }).filter((it) => it);
 
   const out = [];
-  chapters.forEach((chapter, i) => {
-    const nextChapter = chapters[i + 1];
-    out.push({ start: chapter.time, end: nextChapter && nextChapter.time, name: chapter.name });
-  });
+
+  for (let i = 0; i < bookmarks.length;) {
+    const bookmark = bookmarks[i];
+    const nextBookmark = bookmarks[i + 1];
+    if (!nextBookmark) {
+      out.push({ start: bookmark.time, end: undefined, name: bookmark.name });
+      i += 1;
+    } else {
+      out.push({ start: bookmark.time, end: nextBookmark && nextBookmark.time, name: bookmark.name });
+      i += nextBookmark.name === ' ' ? 2 : 1;
+    }
+  }
+
   return out;
 }
 
 // https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/FinalCutPro_XML/VersionsoftheInterchangeFormat/VersionsoftheInterchangeFormat.html
 export function parseXmeml(xmlStr) {
-  const xml = fastXmlParser.parse(xmlStr);
+  const xml = new XMLParser().parse(xmlStr);
+
   // TODO maybe support media.audio also?
-  return xml.xmeml.project.children.sequence.media.video.track.clipitem.map((item) => ({ start: item.start / item.rate.timebase, end: item.end / item.rate.timebase }));
+  const { xmeml } = xml;
+  if (!xmeml) throw Error('Root element <xmeml> not found in file');
+
+  let sequence;
+
+  if (xmeml.project?.children?.sequence) {
+    sequence = xmeml.project.children.sequence;
+  } else if (xmeml.sequence) {
+    sequence = xmeml.sequence;
+  } else {
+    throw new Error('No <sequence> element found');
+  }
+
+  if (!sequence?.media?.video?.track) {
+    throw new Error('No <track> element found');
+  }
+
+  const mainTrack = Array.isArray(sequence.media.video.track) ? sequence.media.video.track[0] : sequence.media.video.track;
+
+  return mainTrack.clipitem.map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
 }
 
+export function parseFcpXml(xmlStr) {
+  const xml = new XMLParser({ ignoreAttributes: false }).parse(xmlStr);
+
+  const { fcpxml } = xml;
+  if (!fcpxml) throw Error('Root element <fcpxml> not found in file');
+
+  function parseTime(str) {
+    const match = str.match(/([0-9]+)\/([0-9]+)s/);
+    if (!match) throw new Error('Invalid attribute');
+    return parseInt(match[1], 10) / parseInt(match[2], 10);
+  }
+
+  return fcpxml.library.event.project.sequence.spine['asset-clip'].map((assetClip) => {
+    const start = parseTime(assetClip['@_start']);
+    const duration = parseTime(assetClip['@_duration']);
+    const end = start + duration;
+    return { start, end };
+  });
+}
 export function parseYouTube(str) {
-  const regex = /(?:([0-9]{2,}):)?([0-9]{1,2}):([0-9]{1,2})(?:\.([0-9]{3}))?[^\S\n]+([^\n]*)\n/g;
-
-  const lines = [];
-
   function parseLine(match) {
     if (!match) return undefined;
     const [, hourStr, minStr, secStr, msStr, name] = match;
@@ -129,11 +188,10 @@ export function parseYouTube(str) {
     return { time, name };
   }
 
-  let m;
-  // eslint-disable-next-line no-cond-assign
-  while ((m = regex.exec(`${str}\n`))) {
-    lines.push(parseLine(m));
-  }
+  const lines = str.split('\n').map((lineStr) => {
+    const match = lineStr.match(/(?:([0-9]{1,}):)?([0-9]{1,2}):([0-9]{1,2})(?:\.([0-9]{3}))?[\s-]+([^\n]*)$/);
+    return parseLine(match);
+  }).filter((line) => line);
 
   const linesSorted = sortBy(lines, (l) => l.time);
 
@@ -151,4 +209,38 @@ export function formatYouTube(segments) {
     const namePart = segment.name ? ` ${segment.name}` : '';
     return `${timeStr}${namePart}`;
   }).join('\n');
+}
+
+// because null/undefined is also valid values (start/end of timeline)
+const safeFormatDuration = (duration) => (duration != null ? formatDuration({ seconds: duration }) : '');
+
+export const formatSegmentsTimes = (cutSegments) => cutSegments.map(({ start, end, name }) => [
+  safeFormatDuration(start),
+  safeFormatDuration(end),
+  name,
+]);
+
+export async function formatCsvFrames({ cutSegments, getFrameCount }) {
+  const safeFormatFrameCount = (seconds) => (seconds != null ? getFrameCount(seconds) : '');
+
+  const formatted = cutSegments.map(({ start, end, name }) => [
+    safeFormatFrameCount(start),
+    safeFormatFrameCount(end),
+    name,
+  ]);
+
+  return csvStringifyAsync(formatted);
+}
+
+export async function formatCsvSeconds(cutSegments) {
+  const rows = cutSegments.map(({ start, end, name }) => [start, end, name]);
+  return csvStringifyAsync(rows);
+}
+
+export async function formatCsvHuman(cutSegments) {
+  return csvStringifyAsync(formatSegmentsTimes(cutSegments));
+}
+
+export async function formatTsv(cutSegments) {
+  return csvStringifyAsync(formatSegmentsTimes(cutSegments), { delimiter: '\t' });
 }

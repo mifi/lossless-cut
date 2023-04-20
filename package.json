@@ -3,27 +3,33 @@
   "productName": "LosslessCut",
   "description": "The swiss army knife of lossless video/audio editing",
   "copyright": "Copyright © 2021 ${author}",
-  "version": "3.39.0",
+  "version": "3.55.2",
   "main": "public/electron.js",
   "homepage": "./",
   "scripts": {
-    "start": "concurrently -k \"cross-env BROWSER=none PORT=3001 DISABLE_ESLINT_PLUGIN=true react-scripts start\" \"wait-on http://localhost:3001 && electron .\"",
-    "icon-gen": "mkdirp icon-build && svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512 && mkdirp icns-build && icon-gen -i src/icon.svg -o ./icns-build --icns --icns-sizes 512,1024 && mkdirp build-resources/appx && npx svg2png src/icon.svg --output=build-resources/appx/StoreLogo.png --width=50 --height=50 && npx svg2png src/icon.svg --output=build-resources/appx/Square150x150Logo.png --width=300 --height=300 && npx svg2png src/icon.svg --output=build-resources/appx/Square44x44Logo.png --width=44 --height=44 && npx svg2png src/icon.svg --output=build-resources/appx/Wide310x150Logo.png --width=620 --height=300",
-    "download-ffmpeg": "mkdir -p ffmpeg-mac && wget https://github.com/mifi/ffmpeg-build-script/releases/download/n4.3.1/ffmpeg -O ffmpeg-mac/ffmpeg && wget https://github.com/mifi/ffmpeg-build-script/releases/download/n4.3.1/ffprobe -O ffmpeg-mac/ffprobe && chmod +x ffmpeg-mac/ffmpeg && chmod +x ffmpeg-mac/ffprobe",
-    "build": "yarn icon-gen && react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "lint": "eslint --ext .jsx --ext .js .",
+    "start": "concurrently -k \"npm run start:frontend\" \"npm run start:electron\"",
+    "start:frontend": "cross-env vite --port 3001",
+    "start:electron": "wait-on tcp:3001 && electron .",
+    "icon-gen": "mkdirp icon-build build-resources/appx && node script/icon-gen.mjs",
+    "download-ffmpeg-darwin-x64": "mkdirp ffmpeg/darwin-x64 && cd ffmpeg/darwin-x64 && wget https://github.com/mifi/ffmpeg-build-script/releases/download/5.1.2/ffmpeg -O ffmpeg && wget https://github.com/mifi/ffmpeg-build-script/releases/download/5.1.2/ffprobe -O ffprobe && chmod +x ffmpeg && chmod +x ffprobe",
+    "download-ffmpeg-darwin-arm64": "mkdirp ffmpeg/darwin-arm64 && cd ffmpeg/darwin-arm64 && wget https://github.com/mifi/ffmpeg-builds/releases/download/5.1.2/ffmpeg-darwin-arm64-v5.1.2 -O ffmpeg && wget https://github.com/mifi/ffmpeg-builds/releases/download/5.1.2/ffprobe-darwin-arm64-v5.1.2 -O ffprobe && chmod +x ffmpeg && chmod +x ffprobe",
+    "download-ffmpeg-linux-x64": "mkdirp ffmpeg/linux-x64 && cd ffmpeg/linux-x64 && wget https://github.com/mifi/ffmpeg-builds/releases/download/5.1.2/linux-x64-v5.1.1.tar.xz -O ffmpeg-ffprobe.xz && tar -xv --strip-components=1 -f ffmpeg-ffprobe.xz ffmpeg-5.1.1-amd64-static/ffmpeg ffmpeg-5.1.1-amd64-static/ffprobe",
+    "download-ffmpeg-win32-x64": "mkdirp ffmpeg/win32-x64 && cd ffmpeg/win32-x64 && npx download-cli https://github.com/mifi/ffmpeg-builds/releases/download/5.1.2/win32-x64-v5.1.2.7z --out . --filename ffmpeg-ffprobe.7z && 7z x ffmpeg-ffprobe.7z && npx shx mv ffmpeg-5.1.2-essentials_build/bin/ffmpeg.exe ./ && npx shx mv ffmpeg-5.1.2-essentials_build/bin/ffprobe.exe ./",
+    "build": "yarn icon-gen && vite build --outDir vite-dist",
+    "test": "vitest",
+    "lint": "eslint --ext .jsx --ext .js . --ext .mjs",
     "pack-mac": "electron-builder --mac -m dmg",
     "prepack-mac": "yarn build",
-    "pack-mas-dev": "electron-builder --mac -m mas-dev -c.mas.provisioningProfile=LosslessCut_Dev.provisionprofile",
+    "pack-mas-dev": "electron-builder --mac -m mas-dev -c.mas.provisioningProfile=LosslessCut_Dev.provisionprofile -c.mas.identity='Apple Development: Mikael Finstad (JH4PH8B3C8)'",
     "prepack-mas-dev": "yarn build",
     "pack-win": "electron-builder --win",
     "prepack-win": "yarn build",
     "postinstall": "patch-package && electron-builder install-app-deps",
+    "version": "node script/postversion.mjs && git add no.mifi.losslesscut.appdata.xml",
     "pack-linux": "electron-builder --linux",
     "prepack-linux": "yarn build",
-    "scan-i18n": "i18next-scanner --config i18next-scanner.config.js"
+    "scan-i18n": "i18next --config i18next-parser.config.mjs",
+    "generate-licenses": "yarn licenses generate-disclaimer > licenses.txt && echo '\n\nffmpeg is licensed under GPL v2+:\n\nhttp://www.gnu.org/licenses/old-licenses/gpl-2.0.html' >> licenses.txt"
   },
   "author": {
     "name": "Mikael Finstad",
@@ -36,135 +42,133 @@
   },
   "license": "GPL-2.0-only",
   "devDependencies": {
-    "@types/jest": "^26.0.20",
-    "axios": "^0.21.1",
+    "@fontsource/open-sans": "^4.5.14",
+    "@radix-ui/react-switch": "^1.0.1",
+    "@types/sortablejs": "^1.15.0",
+    "@vitejs/plugin-react": "^3.1.0",
     "color": "^3.1.0",
     "concurrently": "^6.0.0",
     "cross-env": "^7.0.3",
     "csv-parse": "^4.15.3",
     "csv-stringify": "^5.6.2",
-    "electron": "8",
-    "electron-builder": "22.10.4",
-    "electron-builder-notarize": "1.1.2",
-    "electron-devtools-installer": "^3.1.1",
-    "eslint": "^7.23.0",
-    "eslint-config-airbnb": "^18.2.1",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-jsx-a11y": "^6.4.1",
-    "eslint-plugin-react": "^7.23.1",
-    "eslint-plugin-react-hooks": "^4.2.0",
-    "evergreen-ui": "^6.4.0",
-    "fast-xml-parser": "^3.17.4",
-    "file-url": "^3.0.0",
-    "framer-motion": "1",
-    "hammerjs": "^2.0.8",
-    "i18next-scanner": "^3.0.0",
-    "icon-gen": "^2.0.0",
-    "lodash": "^4.17.19",
+    "electron": "23",
+    "electron-builder": "^23.6.0",
+    "electron-builder-notarize": "^1.4.0",
+    "electron-devtools-installer": "^3.2.0",
+    "eslint": "^7.32.0 || ^8.2.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-react": "^7.28.0",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "evergreen-ui": "^6.13.1",
+    "fast-xml-parser": "^4.0.3",
+    "framer-motion": "^9.0.3",
+    "i18next-parser": "^7.6.0",
+    "icon-gen": "^3.0.0",
+    "ky": "^0.33.1",
     "mkdirp": "^1.0.3",
-    "moment": "^2.18.1",
-    "p-map": "^4.0.0",
+    "moment": "^2.29.4",
+    "mousetrap": "^1.6.5",
+    "p-map": "^5.5.0",
     "patch-package": "^6.2.1",
     "pify": "^5.0.0",
-    "pretty-ms": "^7.0.1",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-hammerjs": "^1.0.1",
-    "react-i18next": "^11.3.3",
+    "pretty-bytes": "^6.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-i18next": "^12.1.5",
     "react-icons": "^4.1.0",
-    "react-lottie-player": "^1.3.3",
-    "react-scripts": "^4.0.3",
-    "react-sortable-hoc": "^2.0.0",
-    "react-sortablejs": "^6.0.0",
+    "react-lottie-player": "^1.5.0",
+    "react-sortablejs": "^6.1.4",
     "react-syntax-highlighter": "^15.4.3",
-    "react-use": "^13.26.1",
+    "react-use": "^17.4.0",
     "scroll-into-view-if-needed": "^2.2.28",
+    "sharp": "^0.30.5",
     "smpte-timecode": "^1.2.3",
     "sortablejs": "^1.13.0",
-    "strong-data-uri": "^1.0.5",
-    "svg2png": "^4.1.1",
     "sweetalert2": "^11.0.0",
-    "sweetalert2-react-content": "^4.0.0",
+    "sweetalert2-react-content": "^5.0.7",
     "use-debounce": "^5.1.0",
     "use-trace-update": "^1.3.0",
     "uuid": "^8.3.2",
-    "wait-on": "^5.3.0"
+    "vite": "^4.1.1",
+    "vitest": "^0.28.5",
+    "wait-on": "^7.0.1"
   },
   "dependencies": {
-    "array-move": "^3.0.1",
+    "@electron/remote": "^2.0.9",
+    "@radix-ui/colors": "^0.1.8",
     "cue-parser": "^0.3.0",
-    "electron-is-dev": "1",
+    "data-uri-to-buffer": "^4.0.0",
+    "electron-is-dev": "^2.0.0",
     "electron-store": "5.1.1",
-    "electron-unhandled": "^3.0.2",
+    "electron-unhandled": "^4.0.1",
     "execa": "^5.0.0",
-    "ffmpeg-ffprobe-static": "4.3.1-rc.2",
-    "file-type": "^12.4.0",
+    "file-type": "16",
+    "file-url": "^3.0.0",
     "fs-extra": "^8.1.0",
     "github-api": "^3.2.2",
-    "i18next": "^19.8.5",
-    "i18next-electron-language-detector": "^0.0.10",
-    "i18next-fs-backend": "^1.0.1",
-    "json5": "^2.1.3",
+    "i18next": "^22.4.10",
+    "i18next-fs-backend": "^2.1.1",
+    "json5": "^2.2.2",
+    "lodash": "^4.17.19",
     "mime-types": "^2.1.14",
-    "mousetrap": "^1.6.5",
-    "open": "^7.0.3",
-    "read-chunk": "^2.0.0",
     "semver": "^7.1.3",
     "string-to-stream": "^1.1.1",
     "strtok3": "^6.0.0",
-    "trash": "^7.1.1"
+    "winston": "^3.8.1",
+    "yargs-parser": "^21.0.0"
   },
   "eslintConfig": {
     "extends": "react-app"
-  },
-  "browserslist": {
-    "production": [
-      "electron 8.0"
-    ],
-    "development": [
-      "electron 8.0"
-    ]
   },
   "build": {
     "directories": {
       "buildResources": "build-resources"
     },
+    "extraMetadata": {
+      "main": "vite-dist/electron.js"
+    },
     "files": [
-      "build/**/*",
-      "!node_modules/ffmpeg-ffprobe-static/ffmpeg",
-      "!node_modules/ffmpeg-ffprobe-static/ffprobe"
+      "vite-dist/**/*"
     ],
     "asar": {
       "smartUnpack": false
     },
     "appId": "no.mifi.losslesscut",
-    "artifactName": "${productName}-${os}.${ext}",
+    "artifactName": "${productName}-${os}-${arch}.${ext}",
     "afterSign": "electron-builder-notarize",
     "mac": {
       "hardenedRuntime": true,
       "appId": "no.mifi.losslesscut-mac",
       "category": "public.app-category.productivity",
       "target": [
-        "mas",
-        "dmg"
-      ],
-      "asarUnpack": [
-        "node_modules/trash/**"
+        {
+          "target": "mas",
+          "arch": "universal"
+        },
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
       ],
       "electronLanguages": [
         "en"
       ],
       "extraResources": [
         {
-          "from": "ffmpeg-mac/ffmpeg",
+          "from": "ffmpeg/darwin-${arch}/ffmpeg",
           "to": "ffmpeg"
         },
         {
-          "from": "ffmpeg-mac/ffprobe",
+          "from": "ffmpeg/darwin-${arch}/ffprobe",
           "to": "ffprobe"
         }
       ],
-      "icon": "icns-build/app.icns",
+      "icon": "icon-build/app.icns",
       "fileAssociations": [
         {
           "ext": [
@@ -268,22 +272,26 @@
       "entitlementsInherit": "entitlements.mas.inherit.plist",
       "provisioningProfile": "LosslessCut_Mac_App_Store_provisioning_profile.provisionprofile",
       "binaries": [
-        "dist/mas/LosslessCut.app/Contents/Resources/ffmpeg",
-        "dist/mas/LosslessCut.app/Contents/Resources/ffprobe",
-        "dist/mas/LosslessCut.app/Contents/Resources/app.asar.unpacked/node_modules/trash/lib/macos-trash"
+        "Contents/Resources/ffmpeg",
+        "Contents/Resources/ffprobe"
       ]
     },
     "win": {
       "target": [
-        "portable",
-        "zip",
+        "7z",
         "appx"
       ],
       "extraResources": [
-        "node_modules/ffmpeg-ffprobe-static/ffmpeg.exe",
-        "node_modules/ffmpeg-ffprobe-static/ffprobe.exe"
+        {
+          "from": "ffmpeg/win32-${arch}/ffmpeg.exe",
+          "to": "ffmpeg.exe"
+        },
+        {
+          "from": "ffmpeg/win32-${arch}/ffprobe.exe",
+          "to": "ffprobe.exe"
+        }
       ],
-      "icon": "icon-build/app-512.png",
+      "icon": "icon-build/app.ico",
       "fileAssociations": [
         {
           "ext": [
@@ -390,14 +398,38 @@
     "linux": {
       "executableName": "losslesscut",
       "extraResources": [
-        "node_modules/ffmpeg-ffprobe-static/ffmpeg",
-        "node_modules/ffmpeg-ffprobe-static/ffprobe"
+        {
+          "from": "ffmpeg/linux-${arch}/ffmpeg",
+          "to": "ffmpeg"
+        },
+        {
+          "from": "ffmpeg/linux-${arch}/ffprobe",
+          "to": "ffprobe"
+        }
       ],
+      "category": "AudioVideo",
       "icon": "icon-build/app-512.png",
       "target": [
-        "tar.bz2",
-        "AppImage",
-        "snap"
+        {
+          "arch": "x64",
+          "target": "tar.bz2"
+        },
+        {
+          "arch": "x64",
+          "target": "AppImage"
+        },
+        {
+          "arch": "x64",
+          "target": "snap"
+        },
+        {
+          "arch": "arm64",
+          "target": "tar.bz2"
+        },
+        {
+          "arch": "armv7l",
+          "target": "tar.bz2"
+        }
       ]
     },
     "snap": {
@@ -406,5 +438,6 @@
         "removable-media"
       ]
     }
-  }
+  },
+  "packageManager": "yarn@3.3.0"
 }

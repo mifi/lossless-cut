@@ -1,0 +1,1055 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fcpxml>
+<fcpxml version="1.9">
+    <resources>
+        <format width="720" name="FFVideoFormat720x576p25" frameDuration="1/25s" height="576" id="r0"/>
+        <asset start="0/1s" hasVideo="1" name="input.mov" hasAudio="1" duration="346/25s" id="r1" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="346/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="56/5s" id="r2" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="626/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="4/25s" id="r3" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="126/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="756/25s" id="r4" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="1386/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="338/25s" id="r5" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="1724/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="322/25s" id="r6" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="2046/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="332/25s" id="r7" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="2378/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r8" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="2379/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="3/25s" id="r9" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="2382/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="436/25s" id="r10" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="2818/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="692/25s" id="r11" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="702/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="174/25s" id="r12" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="3684/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="588/25s" id="r13" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="4272/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="146/25s" id="r14" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="4418/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="484/25s" id="r15" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="4902/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="922/25s" id="r16" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="5824/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="824/25s" id="r17" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="6648/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="396/25s" id="r18" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="7044/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="136/5s" id="r19" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="7724/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="318/25s" id="r20" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="8042/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="788/25s" id="r21" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="1766/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="572/25s" id="r22" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="9402/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="148/5s" id="r23" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="10142/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="162/25s" id="r24" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="10304/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="278/25s" id="r25" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="10582/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="186/25s" id="r26" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="10768/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="226/25s" id="r27" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="10994/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="422/25s" id="r28" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="11416/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="902/25s" id="r29" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="12318/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="468/25s" id="r30" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="12786/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="54/5s" id="r31" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="13056/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="52/25s" id="r32" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="13108/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="474/25s" id="r33" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="13582/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="694/25s" id="r34" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="14276/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="132/25s" id="r35" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="14408/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="904/25s" id="r36" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="15312/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="342/25s" id="r37" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="15654/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="2/25s" id="r38" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="15656/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="194/5s" id="r39" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="16626/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="726/25s" id="r40" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="17352/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1722/25s" id="r41" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="19074/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="546/25s" id="r42" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="3924/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="494/25s" id="r43" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="20114/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="224/25s" id="r44" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="20338/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="441/25s" id="r45" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="20779/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="2439/25s" id="r46" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="23218/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="308/25s" id="r47" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="23526/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="132/25s" id="r48" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="23658/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="562/25s" id="r49" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="4844/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="334/25s" id="r50" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="24554/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="3226/25s" id="r51" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="5556/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="146/25s" id="r52" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="27926/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="639/25s" id="r53" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="5713/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r54" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="28566/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r55" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="28567/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="191/5s" id="r56" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="29522/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="308/25s" id="r57" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="5966/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="488/25s" id="r58" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="30318/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="524/25s" id="r59" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="30842/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="752/25s" id="r60" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="31594/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="124/5s" id="r61" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="32214/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="139/25s" id="r62" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="32353/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r63" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="32354/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r64" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="6471/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r65" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="32356/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r66" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="32357/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="2/25s" id="r67" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="32359/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="2/25s" id="r68" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="32361/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r69" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="32362/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="309/25s" id="r70" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="32671/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r71" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="32672/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r72" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="32673/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r73" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="32674/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="802/25s" id="r74" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="33476/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="106/5s" id="r75" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="34006/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="142/25s" id="r76" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="34148/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="424/25s" id="r77" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="34572/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="96/5s" id="r78" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="35052/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="386/25s" id="r79" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="35438/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="266/25s" id="r80" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="35704/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1298/25s" id="r81" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="37002/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="404/25s" id="r82" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="37406/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="152/5s" id="r83" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="38166/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="28/5s" id="r84" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="38306/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="10/1s" id="r85" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="38556/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="302/25s" id="r86" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="38858/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="54/5s" id="r87" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="39128/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="758/25s" id="r88" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="39886/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="172/25s" id="r89" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="40058/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="10/1s" id="r90" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="40308/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="898/25s" id="r91" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="41206/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="488/25s" id="r92" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="41694/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="604/25s" id="r93" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="42298/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="346/25s" id="r94" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="42644/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="134/25s" id="r95" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="42778/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="397/25s" id="r96" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="1727/1s" hasVideo="1" name="input.mov" hasAudio="1" duration="23/1s" id="r97" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="1750/1s" hasVideo="1" name="input.mov" hasAudio="1" duration="28/1s" id="r98" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="1778/1s" hasVideo="1" name="input.mov" hasAudio="1" duration="48/5s" id="r99" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="8938/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="184/25s" id="r100" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="44874/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1034/25s" id="r101" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="45908/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1738/25s" id="r102" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="47646/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r103" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="47647/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="81/25s" id="r104" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="47728/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="686/25s" id="r105" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="48414/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="132/25s" id="r106" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="48546/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="316/25s" id="r107" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="48862/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="344/25s" id="r108" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="49206/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="94/25s" id="r109" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="1972/1s" hasVideo="1" name="input.mov" hasAudio="1" duration="264/25s" id="r110" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="49564/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="12/1s" id="r111" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="49864/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="64/25s" id="r112" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="49928/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="4181/25s" id="r113" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="54109/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="401/25s" id="r114" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="10902/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="472/25s" id="r115" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="54982/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="318/25s" id="r116" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="2212/1s" hasVideo="1" name="input.mov" hasAudio="1" duration="644/25s" id="r117" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="55944/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1978/25s" id="r118" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="57922/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="384/25s" id="r119" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="58306/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="402/5s" id="r120" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="60316/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="6498/25s" id="r121" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="66814/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1267/25s" id="r122" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="68081/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r123" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="68082/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="2/25s" id="r124" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="68084/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r125" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="13617/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="41/25s" id="r126" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="68126/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r127" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="68127/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r128" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="68128/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="8/25s" id="r129" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="68136/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1544/25s" id="r130" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="13936/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="484/25s" id="r131" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="70164/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="8/1s" id="r132" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="70364/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="946/25s" id="r133" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="14262/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="62/5s" id="r134" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="14324/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="262/25s" id="r135" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="71882/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="284/25s" id="r136" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="72166/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="292/25s" id="r137" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="72458/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1098/25s" id="r138" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="73556/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1344/25s" id="r139" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="2996/1s" hasVideo="1" name="input.mov" hasAudio="1" duration="122/25s" id="r140" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="75022/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="644/25s" id="r141" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="75666/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="732/25s" id="r142" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="76398/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="34/5s" id="r143" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="76568/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="654/25s" id="r144" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="77222/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="172/25s" id="r145" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="77394/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="78/5s" id="r146" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="77784/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="34/5s" id="r147" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="77954/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="192/25s" id="r148" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="78146/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="136/25s" id="r149" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="78282/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="8/1s" id="r150" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="78482/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="872/25s" id="r151" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="79354/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="88/25s" id="r152" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="79442/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1/25s" id="r153" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="79443/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="77/5s" id="r154" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="79828/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="628/25s" id="r155" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="80456/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="438/25s" id="r156" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="80894/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="356/25s" id="r157" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="3250/1s" hasVideo="1" name="input.mov" hasAudio="1" duration="344/25s" id="r158" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="81594/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="88/25s" id="r159" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="81682/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="142/25s" id="r160" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="81824/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1574/25s" id="r161" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="83398/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="4096/25s" id="r162" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="87494/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="3524/25s" id="r163" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="91018/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="381/25s" id="r164" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="91399/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="2/25s" id="r165" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="91401/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="303/25s" id="r166" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="91704/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="1916/25s" id="r167" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="18724/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="26/1s" id="r168" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="18854/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="64/5s" id="r169" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="18918/5s" hasVideo="1" name="input.mov" hasAudio="1" duration="252/25s" id="r170" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="94842/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="524/25s" id="r171" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="95366/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="102/5s" id="r172" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+        <asset start="95876/25s" hasVideo="1" name="input.mov" hasAudio="1" duration="222/25s" id="r173" audioSources="1" format="r0" audioChannels="2">
+            <media-rep kind="original-media" src="file:///Users/Per/Movies/Test/input.mov"/>
+        </asset>
+    </resources>
+    <library>
+        <event name="Timeline 1 (Resolve)">
+            <project name="Timeline 1 (Resolve)">
+                <sequence tcStart="3600/1s" tcFormat="NDF" duration="96098/25s" format="r0">
+                    <spine>
+                        <asset-clip start="0/1s" name="input.mov" enabled="1" tcFormat="NDF" duration="346/25s" offset="3600/1s" format="r0" ref="r1">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="346/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="56/5s" offset="90346/25s" format="r0" ref="r2">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="626/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="4/25s" offset="90626/25s" format="r0" ref="r3">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="126/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="756/25s" offset="18126/5s" format="r0" ref="r4">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="1386/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="338/25s" offset="91386/25s" format="r0" ref="r5">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="1724/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="322/25s" offset="91724/25s" format="r0" ref="r6">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="2046/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="332/25s" offset="92046/25s" format="r0" ref="r7">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="2378/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="92378/25s" format="r0" ref="r8">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="2379/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="3/25s" offset="92379/25s" format="r0" ref="r9">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="2382/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="436/25s" offset="92382/25s" format="r0" ref="r10">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="2818/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="692/25s" offset="92818/25s" format="r0" ref="r11">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="702/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="174/25s" offset="18702/5s" format="r0" ref="r12">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="3684/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="588/25s" offset="93684/25s" format="r0" ref="r13">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="4272/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="146/25s" offset="94272/25s" format="r0" ref="r14">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="4418/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="484/25s" offset="94418/25s" format="r0" ref="r15">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="4902/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="922/25s" offset="94902/25s" format="r0" ref="r16">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="5824/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="824/25s" offset="95824/25s" format="r0" ref="r17">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="6648/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="396/25s" offset="96648/25s" format="r0" ref="r18">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="7044/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="136/5s" offset="97044/25s" format="r0" ref="r19">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="7724/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="318/25s" offset="97724/25s" format="r0" ref="r20">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="8042/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="788/25s" offset="98042/25s" format="r0" ref="r21">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="1766/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="572/25s" offset="19766/5s" format="r0" ref="r22">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="9402/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="148/5s" offset="99402/25s" format="r0" ref="r23">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="10142/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="162/25s" offset="100142/25s" format="r0" ref="r24">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="10304/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="278/25s" offset="100304/25s" format="r0" ref="r25">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="10582/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="186/25s" offset="100582/25s" format="r0" ref="r26">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="10768/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="226/25s" offset="100768/25s" format="r0" ref="r27">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="10994/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="422/25s" offset="100994/25s" format="r0" ref="r28">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="11416/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="902/25s" offset="101416/25s" format="r0" ref="r29">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="12318/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="468/25s" offset="102318/25s" format="r0" ref="r30">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="12786/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="54/5s" offset="102786/25s" format="r0" ref="r31">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="13056/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="52/25s" offset="103056/25s" format="r0" ref="r32">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="13108/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="474/25s" offset="103108/25s" format="r0" ref="r33">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="13582/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="694/25s" offset="103582/25s" format="r0" ref="r34">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="14276/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="132/25s" offset="104276/25s" format="r0" ref="r35">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="14408/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="904/25s" offset="104408/25s" format="r0" ref="r36">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="15312/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="342/25s" offset="105312/25s" format="r0" ref="r37">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="15654/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="2/25s" offset="105654/25s" format="r0" ref="r38">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="15656/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="194/5s" offset="105656/25s" format="r0" ref="r39">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="16626/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="726/25s" offset="106626/25s" format="r0" ref="r40">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="17352/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1722/25s" offset="107352/25s" format="r0" ref="r41">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="19074/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="546/25s" offset="109074/25s" format="r0" ref="r42">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="3924/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="494/25s" offset="21924/5s" format="r0" ref="r43">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="20114/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="224/25s" offset="110114/25s" format="r0" ref="r44">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="20338/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="441/25s" offset="110338/25s" format="r0" ref="r45">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="20779/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="2439/25s" offset="110779/25s" format="r0" ref="r46">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="23218/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="308/25s" offset="113218/25s" format="r0" ref="r47">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="23526/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="132/25s" offset="113526/25s" format="r0" ref="r48">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="23658/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="562/25s" offset="113658/25s" format="r0" ref="r49">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="4844/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="334/25s" offset="22844/5s" format="r0" ref="r50">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="24554/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="3226/25s" offset="114554/25s" format="r0" ref="r51">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="5556/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="146/25s" offset="23556/5s" format="r0" ref="r52">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="27926/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="639/25s" offset="117926/25s" format="r0" ref="r53">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="5713/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="23713/5s" format="r0" ref="r54">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="28566/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="118566/25s" format="r0" ref="r55">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="28567/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="191/5s" offset="118567/25s" format="r0" ref="r56">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="29522/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="308/25s" offset="119522/25s" format="r0" ref="r57">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="5966/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="488/25s" offset="23966/5s" format="r0" ref="r58">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="30318/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="524/25s" offset="120318/25s" format="r0" ref="r59">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="30842/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="752/25s" offset="120842/25s" format="r0" ref="r60">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="31594/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="124/5s" offset="121594/25s" format="r0" ref="r61">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="32214/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="139/25s" offset="122214/25s" format="r0" ref="r62">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="32353/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="122353/25s" format="r0" ref="r63">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="32354/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="122354/25s" format="r0" ref="r64">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="6471/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="24471/5s" format="r0" ref="r65">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="32356/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="122356/25s" format="r0" ref="r66">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="32357/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="2/25s" offset="122357/25s" format="r0" ref="r67">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="32359/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="2/25s" offset="122359/25s" format="r0" ref="r68">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="32361/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="122361/25s" format="r0" ref="r69">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="32362/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="309/25s" offset="122362/25s" format="r0" ref="r70">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="32671/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="122671/25s" format="r0" ref="r71">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="32672/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="122672/25s" format="r0" ref="r72">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="32673/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="122673/25s" format="r0" ref="r73">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="32674/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="802/25s" offset="122674/25s" format="r0" ref="r74">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="33476/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="106/5s" offset="123476/25s" format="r0" ref="r75">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="34006/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="142/25s" offset="124006/25s" format="r0" ref="r76">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="34148/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="424/25s" offset="124148/25s" format="r0" ref="r77">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="34572/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="96/5s" offset="124572/25s" format="r0" ref="r78">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="35052/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="386/25s" offset="125052/25s" format="r0" ref="r79">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="35438/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="266/25s" offset="125438/25s" format="r0" ref="r80">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="35704/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1298/25s" offset="125704/25s" format="r0" ref="r81">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="37002/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="404/25s" offset="127002/25s" format="r0" ref="r82">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="37406/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="152/5s" offset="127406/25s" format="r0" ref="r83">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="38166/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="28/5s" offset="128166/25s" format="r0" ref="r84">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="38306/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="10/1s" offset="128306/25s" format="r0" ref="r85">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="38556/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="302/25s" offset="128556/25s" format="r0" ref="r86">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="38858/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="54/5s" offset="128858/25s" format="r0" ref="r87">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="39128/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="758/25s" offset="129128/25s" format="r0" ref="r88">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="39886/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="172/25s" offset="129886/25s" format="r0" ref="r89">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="40058/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="10/1s" offset="130058/25s" format="r0" ref="r90">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="40308/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="898/25s" offset="130308/25s" format="r0" ref="r91">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="41206/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="488/25s" offset="131206/25s" format="r0" ref="r92">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="41694/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="604/25s" offset="131694/25s" format="r0" ref="r93">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="42298/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="346/25s" offset="132298/25s" format="r0" ref="r94">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="42644/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="134/25s" offset="132644/25s" format="r0" ref="r95">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="42778/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="397/25s" offset="132778/25s" format="r0" ref="r96">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="1727/1s" name="input.mov" enabled="1" tcFormat="NDF" duration="23/1s" offset="5327/1s" format="r0" ref="r97">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="1750/1s" name="input.mov" enabled="1" tcFormat="NDF" duration="28/1s" offset="5350/1s" format="r0" ref="r98">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="1778/1s" name="input.mov" enabled="1" tcFormat="NDF" duration="48/5s" offset="5378/1s" format="r0" ref="r99">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="8938/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="184/25s" offset="26938/5s" format="r0" ref="r100">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="44874/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1034/25s" offset="134874/25s" format="r0" ref="r101">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="45908/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1738/25s" offset="135908/25s" format="r0" ref="r102">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="47646/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="137646/25s" format="r0" ref="r103">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="47647/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="81/25s" offset="137647/25s" format="r0" ref="r104">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="47728/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="686/25s" offset="137728/25s" format="r0" ref="r105">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="48414/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="132/25s" offset="138414/25s" format="r0" ref="r106">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="48546/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="316/25s" offset="138546/25s" format="r0" ref="r107">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="48862/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="344/25s" offset="138862/25s" format="r0" ref="r108">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="49206/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="94/25s" offset="139206/25s" format="r0" ref="r109">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="1972/1s" name="input.mov" enabled="1" tcFormat="NDF" duration="264/25s" offset="5572/1s" format="r0" ref="r110">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="49564/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="12/1s" offset="139564/25s" format="r0" ref="r111">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="49864/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="64/25s" offset="139864/25s" format="r0" ref="r112">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="49928/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="4181/25s" offset="139928/25s" format="r0" ref="r113">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="54109/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="401/25s" offset="144109/25s" format="r0" ref="r114">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="10902/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="472/25s" offset="28902/5s" format="r0" ref="r115">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="54982/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="318/25s" offset="144982/25s" format="r0" ref="r116">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="2212/1s" name="input.mov" enabled="1" tcFormat="NDF" duration="644/25s" offset="5812/1s" format="r0" ref="r117">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="55944/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1978/25s" offset="145944/25s" format="r0" ref="r118">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="57922/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="384/25s" offset="147922/25s" format="r0" ref="r119">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="58306/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="402/5s" offset="148306/25s" format="r0" ref="r120">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="60316/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="6498/25s" offset="150316/25s" format="r0" ref="r121">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="66814/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1267/25s" offset="156814/25s" format="r0" ref="r122">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="68081/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="158081/25s" format="r0" ref="r123">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="68082/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="2/25s" offset="158082/25s" format="r0" ref="r124">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="68084/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="158084/25s" format="r0" ref="r125">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="13617/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="41/25s" offset="31617/5s" format="r0" ref="r126">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="68126/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="158126/25s" format="r0" ref="r127">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="68127/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="158127/25s" format="r0" ref="r128">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="68128/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="8/25s" offset="158128/25s" format="r0" ref="r129">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="68136/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1544/25s" offset="158136/25s" format="r0" ref="r130">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="13936/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="484/25s" offset="31936/5s" format="r0" ref="r131">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="70164/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="8/1s" offset="160164/25s" format="r0" ref="r132">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="70364/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="946/25s" offset="160364/25s" format="r0" ref="r133">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="14262/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="62/5s" offset="32262/5s" format="r0" ref="r134">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="14324/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="262/25s" offset="32324/5s" format="r0" ref="r135">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="71882/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="284/25s" offset="161882/25s" format="r0" ref="r136">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="72166/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="292/25s" offset="162166/25s" format="r0" ref="r137">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="72458/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1098/25s" offset="162458/25s" format="r0" ref="r138">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="73556/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1344/25s" offset="163556/25s" format="r0" ref="r139">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="2996/1s" name="input.mov" enabled="1" tcFormat="NDF" duration="122/25s" offset="6596/1s" format="r0" ref="r140">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="75022/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="644/25s" offset="165022/25s" format="r0" ref="r141">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="75666/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="732/25s" offset="165666/25s" format="r0" ref="r142">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="76398/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="34/5s" offset="166398/25s" format="r0" ref="r143">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="76568/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="654/25s" offset="166568/25s" format="r0" ref="r144">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="77222/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="172/25s" offset="167222/25s" format="r0" ref="r145">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="77394/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="78/5s" offset="167394/25s" format="r0" ref="r146">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="77784/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="34/5s" offset="167784/25s" format="r0" ref="r147">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="77954/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="192/25s" offset="167954/25s" format="r0" ref="r148">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="78146/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="136/25s" offset="168146/25s" format="r0" ref="r149">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="78282/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="8/1s" offset="168282/25s" format="r0" ref="r150">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="78482/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="872/25s" offset="168482/25s" format="r0" ref="r151">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="79354/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="88/25s" offset="169354/25s" format="r0" ref="r152">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="79442/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1/25s" offset="169442/25s" format="r0" ref="r153">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="79443/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="77/5s" offset="169443/25s" format="r0" ref="r154">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="79828/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="628/25s" offset="169828/25s" format="r0" ref="r155">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="80456/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="438/25s" offset="170456/25s" format="r0" ref="r156">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="80894/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="356/25s" offset="170894/25s" format="r0" ref="r157">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="3250/1s" name="input.mov" enabled="1" tcFormat="NDF" duration="344/25s" offset="6850/1s" format="r0" ref="r158">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="81594/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="88/25s" offset="171594/25s" format="r0" ref="r159">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="81682/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="142/25s" offset="171682/25s" format="r0" ref="r160">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="81824/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1574/25s" offset="171824/25s" format="r0" ref="r161">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="83398/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="4096/25s" offset="173398/25s" format="r0" ref="r162">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="87494/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="3524/25s" offset="177494/25s" format="r0" ref="r163">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="91018/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="381/25s" offset="181018/25s" format="r0" ref="r164">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="91399/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="2/25s" offset="181399/25s" format="r0" ref="r165">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="91401/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="303/25s" offset="181401/25s" format="r0" ref="r166">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="91704/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="1916/25s" offset="181704/25s" format="r0" ref="r167">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="18724/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="26/1s" offset="36724/5s" format="r0" ref="r168">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="18854/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="64/5s" offset="36854/5s" format="r0" ref="r169">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="18918/5s" name="input.mov" enabled="1" tcFormat="NDF" duration="252/25s" offset="36918/5s" format="r0" ref="r170">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="94842/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="524/25s" offset="184842/25s" format="r0" ref="r171">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="95366/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="102/5s" offset="185366/25s" format="r0" ref="r172">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                        <asset-clip start="95876/25s" name="input.mov" enabled="1" tcFormat="NDF" duration="222/25s" offset="185876/25s" format="r0" ref="r173">
+                            <adjust-transform position="0 0" anchor="0 0" scale="1 1"/>
+                        </asset-clip>
+                    </spine>
+                </sequence>
+            </project>
+        </event>
+    </library>
+</fcpxml>

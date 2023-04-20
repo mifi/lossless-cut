@@ -1,31 +1,35 @@
-import csvStringify from 'csv-stringify';
-import pify from 'pify';
 import JSON5 from 'json5';
 import i18n from 'i18next';
 
-import { parseCuesheet, parseXmeml, parseCsv, parsePbf, parseMplayerEdl } from './edlFormats';
-import { formatDuration } from './util/duration';
-import { askForYouTubeInput } from './dialogs';
+import { parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, getTimeFromFrameNum } from './edlFormats';
+import { askForYouTubeInput, showOpenDialog } from './dialogs';
+import { getOutPath } from './util';
 
 const fs = window.require('fs-extra');
 const cueParser = window.require('cue-parser');
 const { basename } = window.require('path');
 
-const electron = window.require('electron'); // eslint-disable-line
-const { dialog } = electron.remote;
+const { dialog } = window.require('@electron/remote');
 
-const csvStringifyAsync = pify(csvStringify);
-
-export async function loadCsv(path) {
+export async function loadCsvSeconds(path) {
   return parseCsv(await fs.readFile(path, 'utf-8'));
+}
+
+export async function loadCsvFrames(path, fps) {
+  if (!fps) throw new Error('The loaded file has an unknown framerate');
+  return parseCsv(await fs.readFile(path, 'utf-8'), (frameNum) => getTimeFromFrameNum(fps, frameNum));
 }
 
 export async function loadXmeml(path) {
   return parseXmeml(await fs.readFile(path, 'utf-8'));
 }
 
+export async function loadFcpXml(path) {
+  return parseFcpXml(await fs.readFile(path, 'utf-8'));
+}
+
 export async function loadPbf(path) {
-  return parsePbf(await fs.readFile(path, 'utf-8'));
+  return parsePbf(await fs.readFile(path));
 }
 
 export async function loadMplayerEdl(path) {
@@ -37,23 +41,19 @@ export async function loadCue(path) {
 }
 
 export async function saveCsv(path, cutSegments) {
-  const rows = cutSegments.map(({ start, end, name }) => [start, end, name]);
-  const str = await csvStringifyAsync(rows);
-  await fs.writeFile(path, str);
+  await fs.writeFile(path, await formatCsvSeconds(cutSegments));
 }
 
-const formatDurationStr = (duration) => (duration != null ? formatDuration({ seconds: duration }) : '');
-
-const mapSegments = (segments) => segments.map(({ start, end, name }) => [formatDurationStr(start), formatDurationStr(end), name]);
-
 export async function saveCsvHuman(path, cutSegments) {
-  const str = await csvStringifyAsync(mapSegments(cutSegments));
-  await fs.writeFile(path, str);
+  await fs.writeFile(path, await formatCsvHuman(cutSegments));
+}
+
+export async function saveCsvFrames({ path, cutSegments, getFrameCount }) {
+  await fs.writeFile(path, await formatCsvFrames({ cutSegments, getFrameCount }));
 }
 
 export async function saveTsv(path, cutSegments) {
-  const str = await csvStringifyAsync(mapSegments(cutSegments), { delimiter: '\t' });
-  await fs.writeFile(path, str);
+  await fs.writeFile(path, await formatTsv(cutSegments));
 }
 
 export async function saveLlcProject({ savePath, filePath, cutSegments }) {
@@ -69,9 +69,12 @@ export async function loadLlcProject(path) {
   return JSON5.parse(await fs.readFile(path));
 }
 
-export async function readEdlFile({ type, path }) {
-  if (type === 'csv') return loadCsv(path);
+
+export async function readEdlFile({ type, path, fps }) {
+  if (type === 'csv') return loadCsvSeconds(path);
+  if (type === 'csv-frames') return loadCsvFrames(path, fps);
   if (type === 'xmeml') return loadXmeml(path);
+  if (type === 'fcpxml') return loadFcpXml(path);
   if (type === 'cue') return loadCue(path);
   if (type === 'pbf') return loadPbf(path);
   if (type === 'mplayer') return loadMplayerEdl(path);
@@ -82,23 +85,24 @@ export async function readEdlFile({ type, path }) {
   throw new Error('Invalid EDL type');
 }
 
-export async function readEdl(type) {
+export async function askForEdlImport({ type, fps }) {
   if (type === 'youtube') return askForYouTubeInput();
 
   let filters;
-  if (type === 'csv') filters = [{ name: i18n.t('CSV files'), extensions: ['csv'] }];
+  if (type === 'csv' || type === 'csv-frames') filters = [{ name: i18n.t('CSV files'), extensions: ['csv'] }];
   else if (type === 'xmeml') filters = [{ name: i18n.t('XML files'), extensions: ['xml'] }];
+  else if (type === 'fcpxml') filters = [{ name: i18n.t('FCPXML files'), extensions: ['fcpxml'] }];
   else if (type === 'cue') filters = [{ name: i18n.t('CUE files'), extensions: ['cue'] }];
   else if (type === 'pbf') filters = [{ name: i18n.t('PBF files'), extensions: ['pbf'] }];
   else if (type === 'mplayer') filters = [{ name: i18n.t('MPlayer EDL'), extensions: ['*'] }];
   else if (type === 'llc') filters = [{ name: i18n.t('LosslessCut project'), extensions: ['llc'] }];
 
-  const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'], filters });
+  const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'], filters });
   if (canceled || filePaths.length < 1) return [];
-  return readEdlFile({ type, path: filePaths[0] });
+  return readEdlFile({ type, path: filePaths[0], fps });
 }
 
-export async function exportEdlFile({ type, cutSegments, filePath }) {
+export async function exportEdlFile({ type, cutSegments, customOutDir, filePath, getFrameCount }) {
   let filters;
   let ext;
   if (type === 'csv') {
@@ -110,16 +114,22 @@ export async function exportEdlFile({ type, cutSegments, filePath }) {
   } else if (type === 'csv-human') {
     ext = 'csv';
     filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
+  } else if (type === 'csv-frames') {
+    ext = 'csv';
+    filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
   } else if (type === 'llc') {
     ext = 'llc';
     filters = [{ name: i18n.t('LosslessCut project'), extensions: [ext, 'llc'] }];
   }
 
-  const { canceled, filePath: savePath } = await dialog.showSaveDialog({ defaultPath: `${new Date().getTime()}.${ext}`, filters });
+  const defaultPath = getOutPath({ filePath, customOutDir, fileName: `${basename(filePath)}.${ext}` });
+
+  const { canceled, filePath: savePath } = await dialog.showSaveDialog({ defaultPath, filters });
   if (canceled || !savePath) return;
   console.log('Saving', type, savePath);
   if (type === 'csv') await saveCsv(savePath, cutSegments);
   else if (type === 'tsv-human') await saveTsv(savePath, cutSegments);
   else if (type === 'csv-human') await saveCsvHuman(savePath, cutSegments);
+  else if (type === 'csv-frames') await saveCsvFrames({ path: savePath, cutSegments, getFrameCount });
   else if (type === 'llc') await saveLlcProject({ savePath, filePath, cutSegments });
 }

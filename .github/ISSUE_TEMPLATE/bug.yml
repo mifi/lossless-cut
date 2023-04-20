@@ -1,0 +1,67 @@
+name: 🐛 Bug report
+description: Describe a bug in LosslessCut (not related to a specific file or file type).
+body:
+  - type: checkboxes
+    id: initial-checklist
+    attributes:
+      label: I have a lot of issues to go through, so in order to make it easier for me to help you, I ask that you please try these things first
+      options:
+        - label: Try with the [newest version from GitHub](https://github.com/mifi/lossless-cut/releases/latest)
+          required: true
+        - label: Read the [documentation](https://github.com/mifi/lossless-cut) and [FAQ, Known issues, Troubleshooting](https://github.com/mifi/lossless-cut/blob/master/issues.md)
+          required: true
+        - label: Search for your problem under [Issues](https://github.com/mifi/lossless-cut/issues) or [Discussions](https://github.com/mifi/lossless-cut/discussions)
+          required: true
+        - label: If you have a problem only with a particular file (or file type), [use this form instead](https://github.com/mifi/lossless-cut/issues/new?assignees=&labels=&template=file-issue.yml)
+          required: true
+        - label: Windows 7, 8 and 8.1 are [no longer supported](https://github.com/mifi/lossless-cut/discussions/1476). **This is not a question about Windows 8.1 or older.**
+          required: true
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: Which operating system are you running?
+      options:
+        - I don't want to say
+        - MacOS 13
+        - MacOS 12
+        - MacOS 11
+        - MacOS 10
+        - Windows 11
+        - Windows 10
+        - Windows 8.1
+        - Windows 8
+        - Windows 7
+        - Windows Vista
+        - Linux
+        - Other (please specify)
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: How would I reproduce the problem? Please describe step-by-step what you're doing from starting up LosslessCut until the problem occurs. You can attach screenshots if needed.
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What should happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual behavior
+      description: What happens instead?
+    validations:
+      required: true
+  - type: textarea
+    id: share-log
+    attributes:
+      label: Share log
+      description: 'If you have a problem or an unexpected bug or crash, please open developer tools after starting LosslessCut and before doing the failing operation. Then share the output from the javascript Console. (Menu: Tools > Toggle Developer Tools)'
+    validations:
+      required: false
