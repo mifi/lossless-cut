@@ -187,7 +187,7 @@ const ConcatDialog = memo(({
       >
         <div style={containerStyle}>
           <div style={{ whiteSpace: 'pre-wrap', fontSize: 14, marginBottom: 10 }}>
-            {t('This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).')}
+            {t('This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallel (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution, etc).')}
           </div>
 
           <div>
