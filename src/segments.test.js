@@ -1,6 +1,6 @@
-import { it, expect } from 'vitest';
+import { test, it, expect } from 'vitest';
 
-import { convertSegmentsToChapters, partitionIntoOverlappingRanges, getSegApparentStart, getSegApparentEnd } from './segments';
+import { convertSegmentsToChapters, partitionIntoOverlappingRanges, getSegApparentStart, getSegApparentEnd, formatSegNum } from './segments';
 
 it('converts segments to chapters with gaps', () => {
   expect(convertSegmentsToChapters([
@@ -108,4 +108,9 @@ it('detects overlapping segments, undefined end', () => {
   ], getSegApparentStart, (seg) => getSegApparentEnd(seg, 2))).toEqual([
     [{ start: 1, end: undefined }, { start: 1.5, end: undefined }],
   ]);
+});
+
+test('formatSegNum', () => {
+  expect(formatSegNum(0, 9)).toBe('1');
+  expect(formatSegNum(0, 10)).toBe('01');
 });

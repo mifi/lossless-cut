@@ -1,7 +1,8 @@
 import dataUriToBuffer from 'data-uri-to-buffer';
 import pMap from 'p-map';
 
-import { getSuffixedOutPath, getOutDir, transferTimestamps, getSuffixedFileName, getOutPath, escapeRegExp, getNumDigits } from '../util';
+import { getSuffixedOutPath, getOutDir, transferTimestamps, getSuffixedFileName, getOutPath, escapeRegExp } from '../util';
+import { getNumDigits } from '../segments';
 
 import { captureFrame as ffmpegCaptureFrame, captureFrames as ffmpegCaptureFrames } from '../ffmpeg';
 
