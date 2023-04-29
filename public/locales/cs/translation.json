@@ -68,7 +68,7 @@
     "Remove": "Odstranit",
     "Keep": "Ponechat",
     "Choose cutting mode: Remove or keep selected segments from video when exporting?": "Nakládání se segmenty: Ponechat nebo odstranit z nového videa",
-    "Keyframe cut mode": "Režim střihu",
+    "Keyframe cut mode": "Klíčové snímky (režim střihu)",
     "Separate": "Samostatně",
     "Auto merge": "Automaticky spojit",
     "Auto merge segments to one file during export or export to separate files?": "Spojit při exportu segmenty do jednoho souboru, nebo exportovat jako samostatné soubory?",
