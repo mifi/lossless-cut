@@ -747,5 +747,10 @@
     "FFmpeg capture method might sometimes capture more correct colors, but the captured snapshot might be off by one or more frames, relative to the preview.": "FFmpeg の撮影方式では、時々さらに正確な色を取得できますが、撮影したスナップショットがプレビューよりも1フレーム以上ずれていることがあります。",
     "The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}": "このプロジェクトが参照しているメディアは、このプロジェクトファイルと同じフォルダにありません: {{mediaFileName}}",
     "Input has {{numStreamsTotal}} tracks": "入力元は{{numStreamsTotal}}トラックを含む",
-    "Keeping {{numStreamsToCopy}} tracks": "{{numStreamsToCopy}}トラック保持"
+    "Keeping {{numStreamsToCopy}} tracks": "{{numStreamsToCopy}}トラック保持",
+    "Combine selected segments": "選択したセグメントを結合",
+    "Copy selected segments times to clipboard": "選択したセグメントの時間をクリップボードにコピー",
+    "Prefer strong colors": "色を強調",
+    "User interface": "ユーザーインターフェース",
+    "Title": "題"
 }
