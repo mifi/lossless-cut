@@ -4430,14 +4430,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-xml-parser@npm:^4.0.3":
-  version: 4.0.3
-  resolution: "fast-xml-parser@npm:4.0.3"
+"fast-xml-parser@npm:^4.2.4":
+  version: 4.2.4
+  resolution: "fast-xml-parser@npm:4.2.4"
   dependencies:
     strnum: ^1.0.5
   bin:
     fxparser: src/cli/cli.js
-  checksum: 100bb20bcc6aa1543fa277c81f64ad109abec80accacf0bf6bea61f5e847b5c8b734321da609dc10aea68ed68e380447ff3a27196942e137ef39e6e7eb6c053f
+  checksum: d3b4d0c0152c09f98def792769fca6bb3fa1d597f9745d9564451c239089bd86bdf573c9263b4944860028cb7edb81752d64399c1aff8b87c9225ecef96905f7
   languageName: node
   linkType: hard
 
@@ -6435,7 +6435,7 @@ __metadata:
     eslint-plugin-react-hooks: ^4.3.0
     evergreen-ui: ^6.13.1
     execa: ^5.0.0
-    fast-xml-parser: ^4.0.3
+    fast-xml-parser: ^4.2.4
     file-type: 16
     file-url: ^3.0.0
     framer-motion: ^9.0.3
