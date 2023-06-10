@@ -232,3 +232,10 @@ export function playOnlyCurrentSegment({ playbackMode, currentTime, playingSegme
 
   return {};
 }
+
+export const getNumDigits = (value) => Math.floor(value > 0 ? Math.log10(value) : 0) + 1;
+
+export function formatSegNum(segIndex, numSegments) {
+  const numDigits = getNumDigits(numSegments);
+  return `${segIndex + 1}`.padStart(numDigits, '0');
+}

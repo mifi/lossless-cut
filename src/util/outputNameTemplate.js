@@ -1,9 +1,9 @@
 import i18n from 'i18next';
 import lodashTemplate from 'lodash/template';
 
-import { isMac, isWindows, hasDuplicates, filenamify, getOutFileExtension, getNumDigits } from '../util';
+import { isMac, isWindows, hasDuplicates, filenamify, getOutFileExtension } from '../util';
 import isDev from '../isDev';
-import { getSegmentTags } from '../segments';
+import { getSegmentTags, formatSegNum } from '../segments';
 
 
 export const segNumVariable = 'SEG_NUM';
@@ -89,17 +89,12 @@ function interpolateSegmentFileName({ template, epochMs, inputFileNameWithoutExt
   return compiled(data);
 }
 
-function formatSegNum(segIndex, segments) {
-  const numDigits = getNumDigits(segments);
-  return `${segIndex + 1}`.padStart(numDigits, '0');
-}
-
 export function generateOutSegFileNames({ segments, template, forceSafeOutputFileName, formatTimecode, isCustomFormatSelected, fileFormat, filePath, safeOutputFileName, maxLabelLength }) {
   const epochMs = Date.now();
 
   return segments.map((segment, i) => {
     const { start, end, name = '' } = segment;
-    const segNum = formatSegNum(i, segments);
+    const segNum = formatSegNum(i, segments.length);
 
     // Fields that did not come from the source file's name must be sanitized, because they may contain characters that are not supported by the target operating/file system
     // however we disable this when the user has chosen to (safeOutputFileName === false)
