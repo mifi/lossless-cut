@@ -92,10 +92,6 @@ const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, g
 
   function onDoubleClick() {
     if (invertCutSegments) return;
-    if (!selected) {
-      onToggleSegmentSelected(seg);
-      return;
-    }
     jumpSegStart();
   }
 
