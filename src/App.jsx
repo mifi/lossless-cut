@@ -430,7 +430,7 @@ const App = memo(() => {
     onPlayingChange(false);
     playbackModeRef.current = undefined;
   }, []);
-  const onSartPlaying = useCallback(() => onPlayingChange(true), []);
+  const onStartPlaying = useCallback(() => onPlayingChange(true), []);
   const onDurationChange = useCallback((e) => {
     // Some files report duration infinity first, then proper duration later
     // Sometimes after seeking to end of file, duration might change
@@ -1710,7 +1710,7 @@ const App = memo(() => {
     try {
       setWorking(i18n.t('Loading file'));
 
-      // Import segments for for already opened file
+      // Import segments for already opened file
       const edlFormats = { csv: 'csv', pbf: 'pbf', edl: 'mplayer', cue: 'cue', xml: 'xmeml', fcpxml: 'fcpxml' };
       const matchingExt = Object.keys(edlFormats).find((ext) => filePathLowerCase.endsWith(`.${ext}`));
       if (matchingExt) {
@@ -2222,7 +2222,7 @@ const App = memo(() => {
                     ref={videoRef}
                     style={videoStyle}
                     src={fileUri}
-                    onPlay={onSartPlaying}
+                    onPlay={onStartPlaying}
                     onPause={onStopPlaying}
                     onDurationChange={onDurationChange}
                     onTimeUpdate={onTimeUpdate}
