@@ -189,7 +189,7 @@ export function parseYouTube(str) {
   }
 
   const lines = str.split('\n').map((lineStr) => {
-    const match = lineStr.match(/(?:([0-9]{1,}):)?([0-9]{1,2}):([0-9]{1,2})(?:\.([0-9]{3}))?[\s-]+([^\n]*)$/);
+    const match = lineStr.match(/(?:([0-9]{1,}):)?([0-9]{1,2}):([0-9]{1,2})(?:\.([0-9]{3}))?[\s-:]+([^\n]*)$/);
     return parseLine(match);
   }).filter((line) => line);
 
