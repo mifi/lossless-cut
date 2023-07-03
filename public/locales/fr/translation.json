@@ -408,5 +408,6 @@
     "Accurate time but could leave an empty portion at the beginning of the video. Equiv to": "Heure précise mais pourrait laisser une partie vide au début de la vidéo. Equivaut à",
     "Add the file to the batch list": "Ajouter le fichier à la liste des lots",
     "Are you sure?": "Êtes-vous sûr ?",
-    "⌘ Cmd / ⊞ Win": "⌘ Cmd / ⊞ Win"
+    "⌘ Cmd / ⊞ Win": "⌘ Cmd / ⊞ Win",
+    "Chapters": "Chapitres"
 }
