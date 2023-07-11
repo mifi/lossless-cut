@@ -4430,14 +4430,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-xml-parser@npm:^4.2.4":
-  version: 4.2.4
-  resolution: "fast-xml-parser@npm:4.2.4"
+"fast-xml-parser@npm:^4.2.5":
+  version: 4.2.5
+  resolution: "fast-xml-parser@npm:4.2.5"
   dependencies:
     strnum: ^1.0.5
   bin:
     fxparser: src/cli/cli.js
-  checksum: d3b4d0c0152c09f98def792769fca6bb3fa1d597f9745d9564451c239089bd86bdf573c9263b4944860028cb7edb81752d64399c1aff8b87c9225ecef96905f7
+  checksum: d32b22005504eeb207249bf40dc82d0994b5bb9ca9dcc731d335a1f425e47fe085b3cace3cf9d32172dd1a5544193c49e8615ca95b4bf95a4a4920a226b06d80
   languageName: node
   linkType: hard
 
@@ -6442,7 +6442,7 @@ __metadata:
     eslint-plugin-react-hooks: ^4.3.0
     evergreen-ui: ^6.13.1
     execa: ^7.1.1
-    fast-xml-parser: ^4.2.4
+    fast-xml-parser: ^4.2.5
     file-type: 16
     file-url: ^3.0.0
     framer-motion: ^9.0.3
@@ -6472,7 +6472,7 @@ __metadata:
     react-syntax-highlighter: ^15.4.3
     react-use: ^17.4.0
     scroll-into-view-if-needed: ^2.2.28
-    semver: ^7.1.3
+    semver: ^7.5.2
     sharp: ^0.30.5
     smpte-timecode: ^1.2.3
     sortablejs: ^1.13.0
@@ -8535,7 +8535,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.1.3, semver@npm:^7.2.1, semver@npm:^7.3.2, semver@npm:^7.3.5, semver@npm:^7.3.7":
+"semver@npm:^7.2.1, semver@npm:^7.3.2, semver@npm:^7.3.5, semver@npm:^7.3.7":
   version: 7.3.7
   resolution: "semver@npm:7.3.7"
   dependencies:
@@ -8543,6 +8543,17 @@ __metadata:
   bin:
     semver: bin/semver.js
   checksum: 2fa3e877568cd6ce769c75c211beaed1f9fce80b28338cadd9d0b6c40f2e2862bafd62c19a6cff42f3d54292b7c623277bcab8816a2b5521cf15210d43e75232
+  languageName: node
+  linkType: hard
+
+"semver@npm:^7.5.2":
+  version: 7.5.3
+  resolution: "semver@npm:7.5.3"
+  dependencies:
+    lru-cache: ^6.0.0
+  bin:
+    semver: bin/semver.js
+  checksum: 9d58db16525e9f749ad0a696a1f27deabaa51f66e91d2fa2b0db3de3e9644e8677de3b7d7a03f4c15bc81521e0c3916d7369e0572dbde250d9bedf5194e2a8a7
   languageName: node
   linkType: hard
 
