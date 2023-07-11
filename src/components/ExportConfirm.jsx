@@ -60,7 +60,7 @@ const ExportConfirm = memo(({
   }, []);
 
   const onMovFastStartHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Enable this to allow faster playback of the resulting file. This may cause processing to take a little longer') });
+    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Enabling this will allow faster playback of the exported file. This makes processing use 3 times as much export I/O, which is negligible for small files but might slow down exporting of large files.') });
   }, []);
 
   const onOutFmtHelpPress = useCallback(() => {
