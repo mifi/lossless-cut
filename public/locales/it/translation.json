@@ -723,5 +723,16 @@
     "Combine selected segments": "Combina i segmenti selezionati",
     "Copy selected segments times to clipboard": "Copia i tempi dei segmenti selezionati negli Appunti",
     "Prefer strong colors": "Preferisci i colori forti",
-    "User interface": "Interfaccia utente"
+    "User interface": "Interfaccia utente",
+    "Segments to chapters": "Segmenti a capitoli",
+    "Segments to chapters mode is active, this means that the file will not be cut. Instead chapters will be created from the segments.": "La modalità Segmenti a capitoli è attiva, ciò significa che il file non verrà tagliato. Invece i capitoli verranno creati in base ai segmenti.",
+    "Common subtitle formats:": "Formati sottotitoli comuni:",
+    "Common video/audio formats:": "Formati video/audio comuni:",
+    "<0>If you&apos;re having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></0><1>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</1>": "<0>Se hai un problema o una domanda su LosslessCut, per prima cosa controlla i collegamenti nel menu <1>Aiuto</1>. Se non riesci a trovare alcuna soluzione, puoi porre una domanda nelle <3>discussioni GitHub</3> o su <5>Discord.</5></0><1>Se ritieni di aver trovato un bug in LosslessCut , puoi <1>segnalare il bug</1>.</1>",
+    "All other formats:": "Tutti gli altri formati:",
+    "Common audio formats:": "Formati audio comuni:",
+    "Enabling this will allow faster playback of the exported file. This makes processing use 3 times as much export I/O, which is negligible for small files but might slow down exporting of large files.": "L'abilitazione consentirà una riproduzione più rapida del file esportato. Ciò fa sì che l'elaborazione usi 3 volte più I/O per l'esportazione, il che è trascurabile per i file di piccole dimensioni ma potrebbe rallentare l'esportazione di file di grandi dimensioni.",
+    "Feature request": "Richiesta funzionalità",
+    "Output file name template results in duplicate file names (you are trying to export multiple files with the same name). You can fix this for example by adding the \"{{segNumVariable}}\" variable.": "Il modello nome file destinazione genera nomi file duplicati (stai tentando di esportare più file con lo stesso nome). Puoi risolvere questo problema, ad esempio, aggiungendo la variabile \"{{segNumVariable}}\".",
+    "Mini-waveform has been enabled. Click again to enable full-screen waveform": "La mini-forma d'onda è stata abilitata. Fai nuovamente clic per abilitare la forma d'onda a schermo intero"
 }
