@@ -755,5 +755,16 @@
     "Seek to timecode": "Перейти к тайм-коду",
     "Video FPS": "Видео кадров в секунду (FPS)",
     "Smart cut (experimental):": "Умная обрезка (экспериментально):",
-    "Slow down playback more": "Замедлить воспроизведение еще"
+    "Slow down playback more": "Замедлить воспроизведение еще",
+    "<0>If you&apos;re having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></0><1>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</1>": "<0>Если у вас возникла проблема или вопрос о LosslessCut, сначала посмотрите ссылки в меню <1>Справка</1>. Если вы не можете найти какое-либо решение, можно задать вопрос в обсуждениях на <3>GitHub</3> или в <5>Discord.</5></0><1>Если вы считаете, что нашли ошибку в LosslessCut , можете <1>сообщить об ошибке</1>.</1>",
+    "All other formats:": "Все остальные форматы:",
+    "Common audio formats:": "Распространенные аудиоформаты:",
+    "Common video/audio formats:": "Распространенные форматы видео/аудио:",
+    "Segments to chapters mode is active, this means that the file will not be cut. Instead chapters will be created from the segments.": "Активен режим Сегменты в главы, это означает, что файл не будет обрезан. Вместо этого главы будут созданы из сегментов.",
+    "Common subtitle formats:": "Распространенные форматы субтитров:",
+    "Feature request": "Запрос функции",
+    "Output file name template results in duplicate file names (you are trying to export multiple files with the same name). You can fix this for example by adding the \"{{segNumVariable}}\" variable.": "Шаблон имени выходного файла приводит к дублированию имен файлов (вы пытаетесь экспортировать несколько файлов с одним и тем же именем). Это можно исправить, например, добавив переменную \"{{segNumVariable}}\".",
+    "Enabling this will allow faster playback of the exported file. This makes processing use 3 times as much export I/O, which is negligible for small files but might slow down exporting of large files.": "Включение этого параметра позволит ускорить воспроизведение экспортированного файла. Это приводит к тому, что при обработке используется в 3 раза больше операций ввода-вывода при экспорте, что незначительно для небольших файлов, но может замедлить экспорт больших файлов.",
+    "Mini-waveform has been enabled. Click again to enable full-screen waveform": "Мини-форма волны была включена. Нажмите еще раз, чтобы включить полноэкранный режим волны",
+    "Segments to chapters": "Сегменты в главы"
 }
