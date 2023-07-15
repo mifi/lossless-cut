@@ -743,7 +743,7 @@
     "Invert selected segments": "セグメントの選択を反転",
     "Show informational notifications": "情報を伝える通知を表示",
     "⌘ Cmd / ⊞ Win": "⌘ Cmd / ⊞ Win",
-    "Export mode for {{segments}} segments": "{{segments}}セグメントの出力種別",
+    "Export mode for {{segments}} segments": "{{segments}}個のセグメントの出力種別",
     "FFmpeg capture method might sometimes capture more correct colors, but the captured snapshot might be off by one or more frames, relative to the preview.": "FFmpeg の撮影方式では、時々さらに正確な色を取得できますが、撮影したスナップショットがプレビューよりも1フレーム以上ずれていることがあります。",
     "The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}": "このプロジェクトが参照しているメディアは、このプロジェクトファイルと同じフォルダにありません: {{mediaFileName}}",
     "Input has {{numStreamsTotal}} tracks": "入力元は{{numStreamsTotal}}トラックを含む",
@@ -752,5 +752,16 @@
     "Copy selected segments times to clipboard": "選択したセグメントの時間をクリップボードにコピー",
     "Prefer strong colors": "色を強調",
     "User interface": "ユーザーインターフェース",
-    "Title": "題"
+    "Title": "題",
+    "Common audio formats:": "一般的な音声形式:",
+    "Segments to chapters": "セグメントをチャプターに",
+    "Feature request": "機能要望",
+    "<0>If you&apos;re having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></0><1>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</1>": "<0>LosslessCut に問題や質問があれば、<1>ヘルプ</1>メニュー内のリンクを最初にご覧ください。それでも分からなければ、<3>GitHub の discussions</3> や <5>Discord</5> から質問してください。</0><1>LosslessCut のバグを発見したなら<1>バグ報告する</1>こともできます。</1>",
+    "All other formats:": "ほかのすべての形式:",
+    "Segments to chapters mode is active, this means that the file will not be cut. Instead chapters will be created from the segments.": "「セグメントをチャプターに」が有効なら、ファイルを切り取らず、代わりに、セグメントからチャプターを作成します。",
+    "Output file name template results in duplicate file names (you are trying to export multiple files with the same name). You can fix this for example by adding the \"{{segNumVariable}}\" variable.": "出力ファイル名のテンプレートで生成した結果、ファイル名が重複します (複数の同じ名前のファイルを出力しようとしています)。修正するには、例えば、変数の {{segNumVariable}} を追加することもできます。",
+    "Common video/audio formats:": "一般的な動画/音声形式:",
+    "Mini-waveform has been enabled. Click again to enable full-screen waveform": "ミニ波形が有効になりました。拡大波形にするには、再びクリックします",
+    "Common subtitle formats:": "一般的な字幕形式:",
+    "Enabling this will allow faster playback of the exported file. This makes processing use 3 times as much export I/O, which is negligible for small files but might slow down exporting of large files.": "有効なら、出力したファイルはより高速に再生されます。出力I/Oを3倍にして処理するため、小さなファイルでの影響ではわずかですが、大きなファイルの出力では遅くなることがあります。"
 }
