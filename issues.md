@@ -10,6 +10,8 @@
   - I have limited time and I have a lot of projects to work on, so I cannot promise any timeline. I will usually prioritize the issues with the most likes, [see here for a list of the most popular issues](https://github.com/mifi/lossless-cut/issues/691).
 - How to *cut away* a middle part of a video?
   - Enable "advanced view" and then click the Yin Yang symbol. It will invert the segments.
+- Where is application data, settings and temp files stored?
+  - Electron's [appData](https://www.electronjs.org/docs/api/app#appgetpathname) folder.
 
 ## App Stores and GitHub difference
 
