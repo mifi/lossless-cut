@@ -22,7 +22,7 @@ const buttonBaseStyle = {
 const neutralButtonColor = 'var(--gray8)';
 
 
-const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onRemoveSelected, onLabelSelectedSegments, onReorderPress, onLabelPress, selected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectAllSegments, jumpSegStart, jumpSegEnd, addSegment, onViewSegmentTags, onExtractSegmentFramesAsImages, onInvertSelectedSegments }) => {
+const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onRemoveSelected, onLabelSelectedSegments, onReorderPress, onLabelPress, selected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectAllSegments, jumpSegStart, jumpSegEnd, addSegment, onViewSegmentTags, onExtractSegmentFramesAsImages, onInvertSelectedSegments, onDuplicateSegmentClick }) => {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
 
@@ -39,6 +39,7 @@ const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, g
       { label: t('Add segment'), click: addSegment },
       { label: t('Label segment'), click: onLabelPress },
       { label: t('Remove segment'), click: onRemovePress },
+      { label: t('Duplicate segment'), click: () => onDuplicateSegmentClick(seg) },
 
       { type: 'separator' },
 
@@ -64,7 +65,7 @@ const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, g
       { label: t('Segment tags'), click: () => onViewSegmentTags(index) },
       { label: t('Extract frames as image files'), click: () => onExtractSegmentFramesAsImages(index) },
     ];
-  }, [invertCutSegments, t, jumpSegStart, jumpSegEnd, addSegment, onLabelPress, onRemovePress, onLabelSelectedSegments, onRemoveSelected, onReorderPress, onSelectSingleSegment, seg, onSelectAllSegments, onDeselectAllSegments, onSelectSegmentsByLabel, onInvertSelectedSegments, updateOrder, onViewSegmentTags, index, onExtractSegmentFramesAsImages]);
+  }, [invertCutSegments, t, jumpSegStart, jumpSegEnd, addSegment, onLabelPress, onRemovePress, onLabelSelectedSegments, onRemoveSelected, onReorderPress, onDuplicateSegmentClick, seg, onSelectSingleSegment, onSelectAllSegments, onDeselectAllSegments, onSelectSegmentsByLabel, onInvertSelectedSegments, updateOrder, onViewSegmentTags, index, onExtractSegmentFramesAsImages]);
 
   useContextMenu(ref, contextMenuTemplate);
 
@@ -147,7 +148,7 @@ const SegmentList = memo(({
   currentSegIndex,
   updateSegOrder, updateSegOrders, addSegment, removeCutSegment, onRemoveSelected,
   onLabelSegment, currentCutSeg, segmentAtCursor, toggleSegmentsList, splitCurrentSegment,
-  selectedSegments, isSegmentSelected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectAllSegments, onSelectSegmentsByLabel, onExtractSegmentFramesAsImages, onLabelSelectedSegments, onInvertSelectedSegments,
+  selectedSegments, isSegmentSelected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectAllSegments, onSelectSegmentsByLabel, onExtractSegmentFramesAsImages, onLabelSelectedSegments, onInvertSelectedSegments, onDuplicateSegmentClick,
   jumpSegStart, jumpSegEnd, onViewSegmentTags,
 }) => {
   const { t } = useTranslation();
@@ -311,6 +312,7 @@ const SegmentList = memo(({
                 onExtractSegmentFramesAsImages={onExtractSegmentFramesAsImages}
                 onLabelSelectedSegments={onLabelSelectedSegments}
                 onInvertSelectedSegments={onInvertSelectedSegments}
+                onDuplicateSegmentClick={onDuplicateSegmentClick}
               />
             );
           })}

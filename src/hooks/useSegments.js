@@ -330,6 +330,27 @@ export default ({
     }
   }, [currentCutSeg.start, currentCutSeg.end, getRelevantTime, duration, cutSegments, createIndexedSegment, setCutSegments, setCurrentSegIndex]);
 
+  const duplicateSegment = useCallback((segment) => {
+    try {
+      // Cannot duplicate if seg is not finished
+      if (segment.start === undefined && segment.end === undefined) return;
+
+      const cutSegmentsNew = [
+        ...cutSegments,
+        createIndexedSegment({ segment: { start: segment.start, end: segment.end, name: segment.name }, incrementCount: true }),
+      ];
+
+      setCutSegments(cutSegmentsNew);
+      setCurrentSegIndex(cutSegmentsNew.length - 1);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [createIndexedSegment, cutSegments, setCutSegments]);
+
+  const duplicateCurrentSegment = useCallback(() => {
+    duplicateSegment(currentCutSeg);
+  }, [currentCutSeg, duplicateSegment]);
+
   const setCutStart = useCallback(() => {
     if (!checkFileOpened()) return;
 
@@ -484,6 +505,8 @@ export default ({
     updateSegOrders,
     reorderSegsByStartTime,
     addSegment,
+    duplicateCurrentSegment,
+    duplicateSegment,
     setCutStart,
     setCutEnd,
     onLabelSegment,
