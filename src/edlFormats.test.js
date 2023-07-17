@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { it, expect } from 'vitest';
+import { it, describe, expect } from 'vitest';
 
 
 import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, getTimeFromFrameNum, formatCsvFrames, getFrameCountRaw, parsePbf } from './edlFormats';
@@ -24,37 +24,47 @@ const expectYouTube1 = [
   { start: 10074, end: undefined, name: 'Short - hour and hyphen' },
 ];
 
-it('parseYoutube', () => {
-  const str = `
-Jump to chapters:
-0:00 00:01 Test 1
-00:01 "Test 2":
-00:02 00:57 double
-00:01:01 Test 3
-01:01:01.012 Test - 4
-00:01:01.012 Test 5
-   01:01.012 Test 6
-  :01:02.012 Test 7
-2:47:54 - Short - hour and hyphen
-00:57:01.0123 Invalid 2
-00:57:01. Invalid 3
-01:15: Invalid 4
-0132 Invalid 5
-00:03
-00:04     
-00:05 
-`;
-  const edl = parseYouTube(str);
-  expect(edl).toEqual(expectYouTube1);
-});
+describe('parseYouTube', () => {
+  it('parses different cases', () => {
+    const str = `
+  Jump to chapters:
+  0:00 00:01 Test 1
+  00:01 "Test 2":
+  00:02 00:57 double
+  00:01:01 Test 3
+  01:01:01.012 Test - 4
+  00:01:01.012 Test 5
+     01:01.012 Test 6
+    :01:02.012 Test 7
+  2:47:54 - Short - hour and hyphen
+  00:57:01.0123 Invalid 2
+  00:57:01. Invalid 3
+  01:15:: Invalid 4
+  0132 Invalid 5
+  00:03
+  00:04     
+  00:05 
+  `;
+    const edl = parseYouTube(str);
+    expect(edl).toEqual(expectYouTube1);
+  });
 
-it('parseYouTube eol', () => {
-  const str = ' 00:00 Test 1\n00:01 Test 2';
-  const edl = parseYouTube(str);
-  expect(edl).toEqual([
-    { start: 0, end: 1, name: 'Test 1' },
-    { start: 1, end: undefined, name: 'Test 2' },
-  ]);
+  it('eol', () => {
+    const str = ' 00:00 Test 1\n00:01 Test 2';
+    const edl = parseYouTube(str);
+    expect(edl).toEqual([
+      { start: 0, end: 1, name: 'Test 1' },
+      { start: 1, end: undefined, name: 'Test 2' },
+    ]);
+  });
+
+  it('colon after time', () => {
+    const str = ' 00:00: Test 1';
+    const edl = parseYouTube(str);
+    expect(edl).toEqual([
+      { start: 0, end: undefined, name: 'Test 1' },
+    ]);
+  });
 });
 
 it('formatYouTube', () => {
