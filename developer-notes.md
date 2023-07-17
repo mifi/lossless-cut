@@ -27,9 +27,7 @@ npm run download-ffmpeg-linux-x64
 npm run download-ffmpeg-win32-x64
 ```
 
-NOTE: For Windows, you may have to install [7z](https://www.7-zip.org/download.html), and then put the 7z folder in your PATH
-- Type `edit the system environment variables` into Windows Search bar, and then see below screenshot for next steps:
-- ![image](https://github.com/solderq35/hitruns/assets/82061589/29f2a1bc-1e0a-4400-8358-bfc91725985b)
+For Windows, you may have to install [7z](https://www.7-zip.org/download.html), and then put the 7z folder in your `PATH`.
 
 ### Running
 
