@@ -545,7 +545,7 @@ const Notices = ({ notices }) => notices.map((msg) => <ListItem key={msg} icon={
 const Warnings = ({ warnings }) => warnings.map((msg) => <ListItem key={msg} icon={WarningSignIcon} iconColor="warning">{msg}</ListItem>);
 const OutputIncorrectSeeHelpMenu = () => <ListItem icon={HelpIcon}>{i18n.t('If output does not look right, see the Help menu.')}</ListItem>;
 
-export async function openCutFinishedToast({ filePath, warnings, notices }) {
+export async function openExportFinishedToast({ filePath, warnings, notices }) {
   const hasWarnings = warnings.length > 0;
   const html = (
     <UnorderedList>
@@ -557,7 +557,7 @@ export async function openCutFinishedToast({ filePath, warnings, notices }) {
     </UnorderedList>
   );
 
-  await openDirToast({ filePath, html, width: 800, position: 'center', timer: 30000 });
+  await openDirToast({ filePath, html, width: 800, position: 'center', timer: hasWarnings ? undefined : 30000 });
 }
 
 export async function openConcatFinishedToast({ filePath, warnings, notices }) {

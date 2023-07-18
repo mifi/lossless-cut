@@ -73,7 +73,7 @@ import { formatDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
 import { askExtractFramesAsImages } from './dialogs/extractFrames';
 import { askForHtml5ifySpeed } from './dialogs/html5ify';
-import { askForOutDir, askForImportChapters, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openCutFinishedToast, openConcatFinishedToast, showOpenDialog } from './dialogs';
+import { askForOutDir, askForImportChapters, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openExportFinishedToast, openConcatFinishedToast, showOpenDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, playOnlyCurrentSegment } from './segments';
@@ -1174,7 +1174,7 @@ const App = memo(() => {
       if (areWeCutting) notices.push(i18n.t('Cutpoints may be inaccurate.'));
 
       const revealPath = concatOutPath || outFiles[0];
-      if (!hideAllNotifications) openCutFinishedToast({ filePath: revealPath, warnings, notices });
+      if (!hideAllNotifications) openExportFinishedToast({ filePath: revealPath, warnings, notices });
 
       if (cleanupChoices.cleanupAfterExport) await cleanupFiles(cleanupChoices);
     } catch (err) {
