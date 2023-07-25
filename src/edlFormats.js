@@ -261,14 +261,16 @@ export function parseDvAnalyzerSummaryTxt(txt) {
       const s = parseInt(match[3], 10);
       const ms = parseInt(match[4], 10);
       const total = s + ((m + (h * 60)) * 60) + (ms / 1000);
-      times.push({ time: total, name: `${match[7]} - ${match[8]}` });
+      const recordedStart = match[7];
+      const recordedEnd = match[8];
+      times.push({ time: total, name: recordedStart, tags: { recordedStart, recordedEnd } });
     }
     if (/^Absolute time\s+DV timecode range\s+Recorded date\/time range\s+Frame range\s*$/.test(line)) headerFound = true;
   }
 
-  const edl = times.map(({ time, name }, i) => {
+  const edl = times.map(({ time, name, tags }, i) => {
     const nextTime = times[i + 1];
-    return { start: time, end: nextTime?.time, name };
+    return { start: time, end: nextTime?.time, name, tags };
   });
 
   return edl;
