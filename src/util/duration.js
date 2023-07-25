@@ -1,10 +1,23 @@
 import padStart from 'lodash/padStart';
 
-export function formatDuration({ seconds: secondsIn, fileNameFriendly, showMs = true, shorten = false, fps }) {
-  const seconds = secondsIn || 0;
-  const secondsAbs = Math.abs(seconds);
-  const minutes = Math.floor((secondsAbs / 60) % 60);
-  const hours = Math.floor(secondsAbs / 60 / 60);
+export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, showFraction = true, shorten = false, fps }) {
+  const totalSeconds = totalSecondsIn || 0;
+  const totalSecondsAbs = Math.abs(totalSeconds);
+  const sign = totalSeconds < 0 ? '-' : '';
+
+  const unitsPerSec = fps != null ? fps : 1000;
+
+  // round to integer for our current unit
+  const totalUnits = Math.round(totalSecondsAbs * unitsPerSec);
+
+  const seconds = Math.floor(totalUnits / unitsPerSec);
+  const secondsPadded = padStart(seconds % 60, 2, '0');
+  const minutes = Math.floor((totalUnits / 1000 / 60)) % 60;
+  const hours = Math.floor(totalUnits / 1000 / 60 / 60);
+
+  const minutesPadded = shorten && hours === 0 ? `${minutes}` : padStart(minutes, 2, '0');
+
+  const remainder = totalUnits % unitsPerSec;
 
   // Be nice to filenames and use .
   const delim = fileNameFriendly ? '.' : ':';
@@ -15,21 +28,13 @@ export function formatDuration({ seconds: secondsIn, fileNameFriendly, showMs = 
     hoursPart = `${hoursPadded}${delim}`;
   }
 
-  const minutesPadded = shorten && hours === 0 ? `${minutes}` : padStart(minutes, 2, '0');
-
-  const secondsAbsFloored = Math.floor(secondsAbs);
-  const secondsPadded = padStart(secondsAbsFloored % 60, 2, '0');
-  const ms = secondsAbs - secondsAbsFloored;
-  let msPart = '';
-  if (showMs && !(shorten && ms === 0)) {
-    const msPadded = fps != null
-      ? padStart(Math.round(ms * fps), 2, '0')
-      : padStart(Math.round(ms * 1000), 3, '0');
-    msPart = `.${msPadded}`;
+  let fraction = '';
+  if (showFraction && !(shorten && remainder === 0)) {
+    const numDigits = fps != null ? 2 : 3;
+    fraction = `.${padStart(remainder, numDigits, '0')}`;
   }
 
-  const sign = secondsIn < 0 ? '-' : '';
-  return `${sign}${hoursPart}${minutesPadded}${delim}${secondsPadded}${msPart}`;
+  return `${sign}${hoursPart}${minutesPadded}${delim}${secondsPadded}${fraction}`;
 }
 
 export const isExactDurationMatch = (str) => /^-?\d{2}:\d{2}:\d{2}.\d{3}$/.test(str);

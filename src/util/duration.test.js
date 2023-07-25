@@ -12,8 +12,8 @@ it('should format duration properly', () => {
   expect(formatDuration({ seconds: 10000 })).toBe('02:46:40.000');
   expect(formatDuration({ seconds: 10000, shorten: true })).toBe('2:46:40');
   expect(formatDuration({ seconds: 10000.5, shorten: true })).toBe('2:46:40.500');
-  expect(formatDuration({ seconds: 101.5, showMs: false })).toBe('00:01:41');
-  expect(formatDuration({ seconds: 101.5, showMs: false, shorten: true })).toBe('1:41');
+  expect(formatDuration({ seconds: 101.5, showFraction: false })).toBe('00:01:41');
+  expect(formatDuration({ seconds: 101.5, showFraction: false, shorten: true })).toBe('1:41');
 });
 
 it('should format and parse duration with correct rounding', () => {
@@ -39,4 +39,15 @@ it('should format and parse duration with correct rounding', () => {
   expect(formatDuration({ seconds: parseDuration('1') })).toBe('00:00:01.000');
   expect(formatDuration({ seconds: parseDuration('-1') })).toBe('-00:00:01.000');
   expect(formatDuration({ seconds: parseDuration('01') })).toBe('00:00:01.000');
+  expect(formatDuration({ seconds: parseDuration('01:00:00.000') })).toBe('01:00:00.000');
+});
+
+it('should handle issue 1603', () => {
+  expect(formatDuration({ seconds: 1 })).toBe('00:00:01.000');
+  expect(formatDuration({ seconds: 0.999999 })).toBe('00:00:01.000');
+  expect(formatDuration({ seconds: 0.999 })).toBe('00:00:00.999');
+  expect(formatDuration({ seconds: 59.999 })).toBe('00:00:59.999');
+  expect(formatDuration({ seconds: 59.9999 })).toBe('00:01:00.000');
+  expect(formatDuration({ seconds: 3599.999 })).toBe('00:59:59.999');
+  expect(formatDuration({ seconds: 3599.9999 })).toBe('01:00:00.000');
 });

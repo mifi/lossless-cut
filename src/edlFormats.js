@@ -205,7 +205,7 @@ export function parseYouTube(str) {
 
 export function formatYouTube(segments) {
   return segments.map((segment) => {
-    const timeStr = formatDuration({ seconds: segment.start, showMs: false, shorten: true });
+    const timeStr = formatDuration({ seconds: segment.start, showFraction: false, shorten: true });
     const namePart = segment.name ? ` ${segment.name}` : '';
     return `${timeStr}${namePart}`;
   }).join('\n');
