@@ -100,6 +100,12 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
                 mainWindow.webContents.send('importEdlFile', 'pbf');
               },
             },
+            {
+              label: esc(t('DV Analyzer Summary.txt')),
+              click() {
+                mainWindow.webContents.send('importEdlFile', 'dv-analyzer-summary-txt');
+              },
+            },
           ],
         },
         {

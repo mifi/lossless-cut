@@ -1,7 +1,7 @@
 import JSON5 from 'json5';
 import i18n from 'i18next';
 
-import { parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, getTimeFromFrameNum } from './edlFormats';
+import { parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, getTimeFromFrameNum, parseDvAnalyzerSummaryTxt } from './edlFormats';
 import { askForYouTubeInput, showOpenDialog } from './dialogs';
 import { getOutPath } from './util';
 
@@ -26,6 +26,10 @@ export async function loadXmeml(path) {
 
 export async function loadFcpXml(path) {
   return parseFcpXml(await fs.readFile(path, 'utf-8'));
+}
+
+export async function loadDvAnalyzerSummaryTxt(path) {
+  return parseDvAnalyzerSummaryTxt(await fs.readFile(path, 'utf-8'));
 }
 
 export async function loadPbf(path) {
@@ -75,6 +79,7 @@ export async function readEdlFile({ type, path, fps }) {
   if (type === 'csv-frames') return loadCsvFrames(path, fps);
   if (type === 'xmeml') return loadXmeml(path);
   if (type === 'fcpxml') return loadFcpXml(path);
+  if (type === 'dv-analyzer-summary-txt') return loadDvAnalyzerSummaryTxt(path);
   if (type === 'cue') return loadCue(path);
   if (type === 'pbf') return loadPbf(path);
   if (type === 'mplayer') return loadMplayerEdl(path);
@@ -95,6 +100,7 @@ export async function askForEdlImport({ type, fps }) {
   else if (type === 'cue') filters = [{ name: i18n.t('CUE files'), extensions: ['cue'] }];
   else if (type === 'pbf') filters = [{ name: i18n.t('PBF files'), extensions: ['pbf'] }];
   else if (type === 'mplayer') filters = [{ name: i18n.t('MPlayer EDL'), extensions: ['*'] }];
+  else if (type === 'dv-analyzer-summary-txt') filters = [{ name: i18n.t('DV Analyzer Summary.txt'), extensions: ['txt'] }];
   else if (type === 'llc') filters = [{ name: i18n.t('LosslessCut project'), extensions: ['llc'] }];
 
   const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'], filters });

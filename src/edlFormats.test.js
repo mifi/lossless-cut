@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { it, describe, expect } from 'vitest';
 
 
-import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, getTimeFromFrameNum, formatCsvFrames, getFrameCountRaw, parsePbf } from './edlFormats';
+import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, getTimeFromFrameNum, formatCsvFrames, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt } from './edlFormats';
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -216,4 +216,9 @@ it('parses pbf', async () => {
   expect(parsePbf(await readFixture('test2.pbf', null))).toMatchSnapshot();
   expect(parsePbf(await readFixture('test3.pbf', null))).toMatchSnapshot();
   expect(parsePbf(await readFixture('potplayer bookmark format utf16le issue 867.pbf', null))).toMatchSnapshot();
+});
+
+// https://github.com/mifi/lossless-cut/issues/1664
+it('parses DV Analyzer Summary.txt', async () => {
+  expect(parseDvAnalyzerSummaryTxt(await readFixture('DV Analyzer Summary.txt', 'utf-8'))).toMatchSnapshot();
 });

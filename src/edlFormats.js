@@ -244,3 +244,32 @@ export async function formatCsvHuman(cutSegments) {
 export async function formatTsv(cutSegments) {
   return csvStringifyAsync(formatSegmentsTimes(cutSegments), { delimiter: '\t' });
 }
+
+export function parseDvAnalyzerSummaryTxt(txt) {
+  const lines = txt.split(/\r?\n/);
+
+  let headerFound = false;
+
+  const times = [];
+  // eslint-disable-next-line no-restricted-syntax
+  for (const line of lines) {
+    if (headerFound) {
+      const match = line.match(/^(\d{2}):(\d{2}):(\d{2}).(\d{3})\s+([^\s]+)\s+-\s+([^\s]+)\s+([^\s]+\s+[^\s]+)\s+-\s+([^\s]+\s+[^\s]+)/);
+      if (!match) break;
+      const h = parseInt(match[1], 10);
+      const m = parseInt(match[2], 10);
+      const s = parseInt(match[3], 10);
+      const ms = parseInt(match[4], 10);
+      const total = s + ((m + (h * 60)) * 60) + (ms / 1000);
+      times.push({ time: total, name: `${match[7]} - ${match[8]}` });
+    }
+    if (/^Absolute time\s+DV timecode range\s+Recorded date\/time range\s+Frame range\s*$/.test(line)) headerFound = true;
+  }
+
+  const edl = times.map(({ time, name }, i) => {
+    const nextTime = times[i + 1];
+    return { start: time, end: nextTime?.time, name };
+  });
+
+  return edl;
+}
