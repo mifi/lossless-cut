@@ -64,15 +64,16 @@ function handleProgress(process, durationIn, onProgress, customMatcher = () => {
       }
 
       const timeStr = match[1];
-      console.log(timeStr);
+      // console.log(timeStr);
       const match2 = timeStr.match(/^(\d+):(\d+):(\d+)\.(\d+)$/);
+      if (!match2) throw new Error(`Invalid time from ffmpeg progress ${timeStr}`);
 
       const h = parseInt(match2[1], 10);
       const m = parseInt(match2[2], 10);
       const s = parseInt(match2[3], 10);
       const cs = parseInt(match2[4], 10);
       const time = (((h * 60) + m) * 60 + s) + cs / 100;
-      console.log(time);
+      // console.log(time);
 
       const progressTime = Math.max(0, time);
       // console.log(progressTime);
@@ -83,7 +84,7 @@ function handleProgress(process, durationIn, onProgress, customMatcher = () => {
       const progress = duration ? Math.min(progressTime / duration, 1) : 0; // sometimes progressTime will be greater than cutDuration
       onProgress(progress);
     } catch (err) {
-      console.log('Failed to parse ffmpeg progress line', err);
+      console.log('Failed to parse ffmpeg progress line:', err.message);
     }
   });
 }
