@@ -16,6 +16,7 @@ const logger = require('./logger');
 const menu = require('./menu');
 const configStore = require('./configStore');
 const { frontendBuildDir } = require('./util');
+const attachContextMenu = require('./contextMenu');
 
 const { checkNewVersion } = require('./update-checker');
 
@@ -107,6 +108,8 @@ function createWindow() {
   });
 
   remote.enable(mainWindow.webContents);
+
+  attachContextMenu(mainWindow);
 
 
   if (isDev) mainWindow.loadURL('http://localhost:3001');
