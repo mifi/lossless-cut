@@ -42,12 +42,22 @@ it('should format and parse duration with correct rounding', () => {
   expect(formatDuration({ seconds: parseDuration('01:00:00.000') })).toBe('01:00:00.000');
 });
 
-it('should handle issue 1603', () => {
+// https://github.com/mifi/lossless-cut/issues/1603
+it('should round up properly', () => {
+  const fps = 30;
+  const halfFrame = (1 / fps) / 2;
   expect(formatDuration({ seconds: 1 })).toBe('00:00:01.000');
+  expect(formatDuration({ seconds: 1, fps })).toBe('00:00:01.00');
   expect(formatDuration({ seconds: 0.999999 })).toBe('00:00:01.000');
+  expect(formatDuration({ seconds: 1 - halfFrame + 0.001, fps })).toBe('00:00:01.00');
   expect(formatDuration({ seconds: 0.999 })).toBe('00:00:00.999');
+  expect(formatDuration({ seconds: 1 - halfFrame - 0.001, fps })).toBe('00:00:00.29');
   expect(formatDuration({ seconds: 59.999 })).toBe('00:00:59.999');
+  expect(formatDuration({ seconds: 60 - halfFrame - 0.001, fps })).toBe('00:00:59.29');
   expect(formatDuration({ seconds: 59.9999 })).toBe('00:01:00.000');
+  expect(formatDuration({ seconds: (60 - halfFrame) + 0.001, fps })).toBe('00:01:00.00');
   expect(formatDuration({ seconds: 3599.999 })).toBe('00:59:59.999');
+  expect(formatDuration({ seconds: (3600 - halfFrame) - 0.001, fps })).toBe('00:59:59.29');
   expect(formatDuration({ seconds: 3599.9999 })).toBe('01:00:00.000');
+  expect(formatDuration({ seconds: (3600 - halfFrame) + 0.001, fps })).toBe('01:00:00.00');
 });

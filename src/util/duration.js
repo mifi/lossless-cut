@@ -12,8 +12,8 @@ export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, show
 
   const seconds = Math.floor(totalUnits / unitsPerSec);
   const secondsPadded = padStart(seconds % 60, 2, '0');
-  const minutes = Math.floor((totalUnits / 1000 / 60)) % 60;
-  const hours = Math.floor(totalUnits / 1000 / 60 / 60);
+  const minutes = Math.floor(totalUnits / unitsPerSec / 60) % 60;
+  const hours = Math.floor(totalUnits / unitsPerSec / 60 / 60);
 
   const minutesPadded = shorten && hours === 0 ? `${minutes}` : padStart(minutes, 2, '0');
 
