@@ -716,7 +716,7 @@ const App = memo(() => {
 
   const {
     concatFiles, html5ifyDummy, cutMultiple, autoConcatCutSegments, html5ify, fixInvalidDuration,
-  } = useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut });
+  } = useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut, enableOverwriteOutput });
 
   const html5ifyAndLoad = useCallback(async (cod, fp, speed, hv, ha) => {
     const usesDummyVideo = ['fastest-audio', 'fastest-audio-remux', 'fastest'].includes(speed);
@@ -1130,7 +1130,6 @@ const App = memo(() => {
         dispositionByStreamId,
         chapters: chaptersToAdd,
         detectedFps,
-        enableOverwriteOutput,
       });
 
       let concatOutPath;
@@ -1158,6 +1157,8 @@ const App = memo(() => {
 
       const notices = [];
       const warnings = [];
+
+      if (!enableOverwriteOutput) warnings.push(i18n.t('Overwrite output setting is disabled and some files might have been skipped.'));
 
       if (!exportConfirmEnabled) notices.push(i18n.t('Export options are not shown. You can enable export options by clicking the icon right next to the export button.'));
 
@@ -1188,10 +1189,6 @@ const App = memo(() => {
     } catch (err) {
       if (err.killed === true) {
         // assume execa killed (aborted by user)
-        return;
-      }
-      if (err instanceof RefuseOverwriteError) {
-        showRefuseToOverwrite();
         return;
       }
 
