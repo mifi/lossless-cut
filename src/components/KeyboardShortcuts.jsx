@@ -189,6 +189,10 @@ const KeyboardShortcuts = memo(({
           name: t('Decrease audio volume'),
           category: playbackCategory,
         },
+        reloadFile: {
+          name: t('Reload current media'),
+          category: playbackCategory,
+        },
 
         // selectivePlaybackCategory
         togglePlayOnlyCurrentSegment: {

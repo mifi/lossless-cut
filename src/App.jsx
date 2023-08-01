@@ -147,6 +147,7 @@ const App = memo(() => {
   const [activeSubtitleStreamIndex, setActiveSubtitleStreamIndex] = useState();
   const [hideCanvasPreview, setHideCanvasPreview] = useState(false);
   const [exportConfirmVisible, setExportConfirmVisible] = useState(false);
+  const [cacheBuster, setCacheBuster] = useState(0);
 
   const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
 
@@ -385,7 +386,17 @@ const App = memo(() => {
 
   const usingPreviewFile = !!previewFilePath;
   const effectiveFilePath = previewFilePath || filePath;
-  const fileUri = effectiveFilePath ? filePathToUrl(effectiveFilePath) : '';
+  const fileUri = useMemo(() => {
+    if (!effectiveFilePath) return '';
+    const uri = filePathToUrl(effectiveFilePath);
+    // https://github.com/mifi/lossless-cut/issues/1674
+    if (cacheBuster !== 0) {
+      const qs = new URLSearchParams();
+      qs.set('t', cacheBuster);
+      return `${uri}?${qs.toString()}`;
+    }
+    return uri;
+  }, [cacheBuster, effectiveFilePath]);
 
   const projectSuffix = 'proj.llc';
   const oldProjectSuffix = 'llc-edl.csv';
@@ -439,6 +450,12 @@ const App = memo(() => {
     onPlayingChange(false);
     playbackModeRef.current = undefined;
   }, []);
+
+  const onVideoAbort = useCallback(() => {
+    setPlaying(false); // we want to preserve current time https://github.com/mifi/lossless-cut/issues/1674#issuecomment-1658937716
+    playbackModeRef.current = undefined;
+  }, []);
+
   const onSartPlaying = useCallback(() => onPlayingChange(true), []);
   const onDurationChange = useCallback((e) => {
     // Some files report duration infinity first, then proper duration later
@@ -817,6 +834,9 @@ const App = memo(() => {
     if (!filePath || playing) return;
 
     const video = videoRef.current;
+
+    if (Math.abs(commandedTimeRef.current - video.currentTime) > 1) video.currentTime = commandedTimeRef.current;
+
     if (resetPlaybackRate) video.playbackRate = 1;
     video.play().catch((err) => {
       showPlaybackFailedMessage();
@@ -1909,6 +1929,7 @@ const App = memo(() => {
       increaseVolume: () => setPlaybackVolume((val) => Math.min(1, val + 0.07)),
       decreaseVolume: () => setPlaybackVolume((val) => Math.max(0, val - 0.07)),
       copySegmentsToClipboard,
+      reloadFile: () => setCacheBuster((v) => v + 1),
     };
 
     function tryMainActions() {
@@ -2230,6 +2251,7 @@ const App = memo(() => {
                     src={fileUri}
                     onPlay={onSartPlaying}
                     onPause={onStopPlaying}
+                    onAbort={onVideoAbort}
                     onDurationChange={onDurationChange}
                     onTimeUpdate={onTimeUpdate}
                     onError={onVideoError}
