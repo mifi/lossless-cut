@@ -585,7 +585,7 @@
     "Please confirm that you want to extract all {{numFrames}} frames as separate images": "Prosím potvrďte že chcete extrahovat všech {{numFrames}} snímků jako samostatné obrázky",
     "Store project file (.llc) in the working directory or next to loaded media file?": "Uložit soubor projektu (.llc) v pracovním adresáři a nebo u načteného mediálního souboru",
     "Smart cut (experimental):": "Přesný střih (experimentální):",
-    "This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).": "Může být použito ke spojení souborů v sériích, např. jeden za druhým:\n[soubor1][soubor2][soubor3]\nNemůže být použito ke spojení stop paralelně (např. přidání audio stopy souběžně k video stopě).\nUjistěte se, že všechny soubory mají přesně ty samé kodeky & parametry kodeků (fps, rozlišení atd).",
+    "This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).": "Může být použito ke spojení souborů v sériích, např. jeden za druhým:\n[soubor1][soubor2][soubor3]\nNemůže být použito ke spojení stop paralelně (např. přidání audio stopy souběžně k video stopě).\nUjistěte se, že všechny soubory mají přesně ty samé kodeky & parametry kodeků (fps, rozlišení, atd).",
     "About LosslessCut": "O LosslessCut",
     "Increase audio volume": "Zvýšit hlasitost zvuku",
     "Shift all segments on timeline": "Posunout všechny segmenty na časové ose",
@@ -768,5 +768,16 @@
     "Copy selected segments times to clipboard": "Kopírovat časy vybraných segmentů do schránky",
     "Prefer strong colors": "Upřednostnit výrazné barvy",
     "Title": "Název",
-    "User interface": "Uživatelské rozhraní"
+    "User interface": "Uživatelské rozhraní",
+    "Common audio formats:": "Obvyklé zvukové formáty:",
+    "<0>If you&apos;re having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></0><1>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</1>": "<0>Pokud máte problém nebo dotaz ohledně LosslessCut, nejprve prosím zkontrolujte odkazy v nabídce <1>Nápověda</1>. Pokud nemůžete najít řešení, můžete se zeptat na <3>GitHub discussions</3> nebo na <5>Discordu.</5></0><1>Pokud věříte, že jste našli chybu v LosslessCut, můžete <1>chybu nahlásit</1>.</1>",
+    "All other formats:": "Všechny další formáty:",
+    "Common subtitle formats:": "Obvyklé formáty titulků:",
+    "Common video/audio formats:": "Obvyklé formáty videa/zvuku:",
+    "Feature request": "Žádost o funkci",
+    "Mini-waveform has been enabled. Click again to enable full-screen waveform": "Malá zvuková vlna byla zapnuta. Klikněte znovu pro zapnutí velké vlny",
+    "Segments to chapters": "Segmenty na kapitoly",
+    "Segments to chapters mode is active, this means that the file will not be cut. Instead chapters will be created from the segments.": "Režim segmentů na kapitoly je aktivní, soubor tedy nebude stříhán. Místo toho budou ze segmentů vytvořeny kapitoly.",
+    "Enabling this will allow faster playback of the exported file. This makes processing use 3 times as much export I/O, which is negligible for small files but might slow down exporting of large files.": "Zapnutím umožníte rychlejší přehrávání exportovaného souboru. Zpracování při exportu bude ale vyžadovat 3x více operací I/O, což je zanedbatelné u malých souborů ale u velkých dojde ke zpomalení.",
+    "Output file name template results in duplicate file names (you are trying to export multiple files with the same name). You can fix this for example by adding the \"{{segNumVariable}}\" variable.": "Výstupní šablona jména souboru má za následek duplicitní jména (snažíte se exportovat více souborů se stejným jménem). Opravíte to například přidáním proměnné \"{{segNumVariable}}\"."
 }
