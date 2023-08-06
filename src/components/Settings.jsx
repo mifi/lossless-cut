@@ -267,7 +267,7 @@ const Settings = memo(({
             <KeyCell>{t('File names of extracted video frames')}</KeyCell>
             <td>
               <Button iconBefore={captureFrameFileNameFormat === 'timestamp' ? TimeIcon : NumericalIcon} onClick={() => setCaptureFrameFileNameFormat((existing) => (existing === 'timestamp' ? 'index' : 'timestamp'))}>
-                {captureFrameFileNameFormat === 'timestamp' ? t('Frame timestamp') : t('File number')}
+                {captureFrameFileNameFormat === 'timestamp' ? t('Frame timestamp') : t('Frame number')}
               </Button>
             </td>
           </Row>
