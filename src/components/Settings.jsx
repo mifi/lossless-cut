@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo, useState } from 'react';
 import { FaYinYang, FaKeyboard } from 'react-icons/fa';
 import { GlobeIcon, CleanIcon, CogIcon, Button, NumericalIcon, FolderCloseIcon, DocumentIcon, TimeIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
@@ -35,8 +35,10 @@ const Settings = memo(({
   onKeyboardShortcutsDialogRequested,
   askForCleanupChoices,
   toggleStoreProjectInWorkingDir,
+  simpleMode,
 }) => {
   const { t } = useTranslation();
+  const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
 
   const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, enableOverwriteOutput, setEnableOverwriteOutput, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey, captureFrameMethod, setCaptureFrameMethod, captureFrameQuality, setCaptureFrameQuality, captureFrameFileNameFormat, setCaptureFrameFileNameFormat, enableNativeHevc, setEnableNativeHevc, enableUpdateCheck, setEnableUpdateCheck, allowMultipleInstances, setAllowMultipleInstances, preferStrongColors, setPreferStrongColors, treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, setTreatOutputFileModifiedTimeAsStart } = useUserSettings();
 
@@ -78,7 +80,15 @@ const Settings = memo(({
             <th style={{ width: 300 }}>{t('Current setting')}</th>
           </tr>
         </thead>
+
         <tbody>
+          <Row>
+            <KeyCell>{t('Show advanced settings')}</KeyCell>
+            <td>
+              <Switch checked={showAdvanced} onCheckedChange={setShowAdvanced} />
+            </td>
+          </Row>
+
           <Row>
             <KeyCell><GlobeIcon style={{ verticalAlign: 'middle', marginRight: '.5em' }} /> App language</KeyCell>
             <td>
@@ -88,6 +98,67 @@ const Settings = memo(({
               </Select>
             </td>
           </Row>
+
+
+          {showAdvanced && (
+            <Row>
+              <KeyCell>
+                {t('Auto save project file?')}<br />
+              </KeyCell>
+              <td>
+                <Switch checked={autoSaveProjectFile} onCheckedChange={setAutoSaveProjectFile} />
+              </td>
+            </Row>
+          )}
+
+          {showAdvanced && (
+            <Row>
+              <KeyCell>{t('Store project file (.llc) in the working directory or next to loaded media file?')}</KeyCell>
+              <td>
+                <Button iconBefore={storeProjectInWorkingDir ? FolderCloseIcon : DocumentIcon} disabled={!autoSaveProjectFile} onClick={toggleStoreProjectInWorkingDir}>
+                  {storeProjectInWorkingDir ? t('Store in working directory') : t('Store next to media file')}
+                </Button>
+              </td>
+            </Row>
+          )}
+
+          {showAdvanced && !isMasBuild && (
+            <Row>
+              <KeyCell>
+                {t('Custom FFmpeg directory (experimental)')}<br />
+                <div style={detailsStyle}>
+                  {t('This allows you to specify custom FFmpeg and FFprobe binaries to use. Make sure the "ffmpeg" and "ffprobe" executables exist in the same directory, and then select the directory.')}
+                </div>
+              </KeyCell>
+              <td>
+                <Button iconBefore={CogIcon} onClick={changeCustomFfPath}>
+                  {customFfPath ? t('Using external ffmpeg') : t('Using built-in ffmpeg')}
+                </Button>
+                <div>{customFfPath}</div>
+              </td>
+            </Row>
+          )}
+
+          {showAdvanced && !isStoreBuild && (
+            <Row>
+              <KeyCell>{t('Check for updates on startup?')}</KeyCell>
+              <td>
+                <Switch checked={enableUpdateCheck} onCheckedChange={setEnableUpdateCheck} />
+              </td>
+            </Row>
+          )}
+
+          {showAdvanced && (
+            <Row>
+              <KeyCell>{t('Allow multiple instances of LosslessCut to run concurrently? (experimental)')}</KeyCell>
+              <td>
+                <Switch checked={allowMultipleInstances} onCheckedChange={setAllowMultipleInstances} />
+              </td>
+            </Row>
+          )}
+
+
+          <Header title={t('Options affecting exported files')} />
 
           <Row>
             <KeyCell>
@@ -119,23 +190,131 @@ const Settings = memo(({
             </td>
           </Row>
 
+          {showAdvanced && (
+            <Row>
+              <KeyCell>{t('Set file modification date/time of output files to:')}</KeyCell>
+              <td>
+                <Select value={treatOutputFileModifiedTimeAsStart ?? 'disabled'} onChange={(e) => setTreatOutputFileModifiedTimeAsStart(e.target.value === 'disabled' ? null : (e.target.value === 'true'))}>
+                  <option value="disabled">{t('Current time')}</option>
+                  <option value="true">{t('Source file\'s time plus segment start cut time')}</option>
+                  <option value="false">{t('Source file\'s time minus segment end cut time')}</option>
+                </Select>
+              </td>
+            </Row>
+          )}
+
+          {showAdvanced && (
+            <Row>
+              <KeyCell>{t('Treat source file modification date/time as:')}</KeyCell>
+              <td>
+                <Select disabled={treatOutputFileModifiedTimeAsStart == null} value={treatInputFileModifiedTimeAsStart} onChange={(e) => setTreatInputFileModifiedTimeAsStart((e.target.value === 'true'))}>
+                  <option value="true">{t('Start of video')}</option>
+                  <option value="false">{t('End of video')}</option>
+                </Select>
+              </td>
+            </Row>
+          )}
+
           <Row>
             <KeyCell>
-              {t('Auto save project file?')}<br />
+              {t('Keyframe cut mode')}<br />
+              <div style={detailsStyle}>
+                {keyframeCut ? (
+                  <>
+                    {t('Cut at the nearest keyframe (not accurate time.) Equiv to')}:<br />
+                    <code className="highlighted">ffmpeg -ss -i ...</code>
+                  </>
+                ) : (
+                  <>
+                    {t('Accurate time but could leave an empty portion at the beginning of the video. Equiv to')}:<br />
+                    <code className="highlighted">ffmpeg -i -ss ...</code>
+                  </>
+                )}
+              </div>
             </KeyCell>
             <td>
-              <Switch checked={autoSaveProjectFile} onCheckedChange={setAutoSaveProjectFile} />
+              <Switch checked={keyframeCut} onCheckedChange={() => toggleKeyframeCut()} />
             </td>
           </Row>
 
           <Row>
-            <KeyCell>{t('Store project file (.llc) in the working directory or next to loaded media file?')}</KeyCell>
+            <KeyCell>{t('Overwrite files when exporting, if a file with the same name as the output file name exists?')}</KeyCell>
             <td>
-              <Button iconBefore={storeProjectInWorkingDir ? FolderCloseIcon : DocumentIcon} disabled={!autoSaveProjectFile} onClick={toggleStoreProjectInWorkingDir}>
-                {storeProjectInWorkingDir ? t('Store in working directory') : t('Store next to media file')}
+              <Switch checked={enableOverwriteOutput} onCheckedChange={setEnableOverwriteOutput} />
+            </td>
+          </Row>
+
+          <Row>
+            <KeyCell>{t('Cleanup files after export?')}</KeyCell>
+            <td>
+              <Button iconBefore={<CleanIcon />} onClick={askForCleanupChoices}>{t('Change preferences')}</Button>
+            </td>
+          </Row>
+
+          {showAdvanced && (
+            <Row>
+              <KeyCell>{t('Enable experimental ffmpeg features flag?')}</KeyCell>
+              <td>
+                <Switch checked={ffmpegExperimental} onCheckedChange={setFfmpegExperimental} />
+              </td>
+            </Row>
+          )}
+
+          {showAdvanced && (
+            <Row>
+              <KeyCell>
+                {t('Extract unprocessable tracks to separate files or discard them?')}<br />
+                <div style={detailsStyle}>
+                  {t('(data tracks such as GoPro GPS, telemetry etc. are not copied over by default because ffmpeg cannot cut them, thus they will cause the media duration to stay the same after cutting video/audio)')}
+                </div>
+              </KeyCell>
+              <td>
+                <AutoExportToggler />
+              </td>
+            </Row>
+          )}
+
+
+          <Header title={t('Snapshots and frame extraction')} />
+
+          <Row>
+            <KeyCell>
+              {t('Snapshot capture format')}
+            </KeyCell>
+            <td>
+              <CaptureFormatButton showIcon />
+            </td>
+          </Row>
+
+          <Row>
+            <KeyCell>
+              {t('Snapshot capture method')}
+              <div style={detailsStyle}>{t('FFmpeg capture method might sometimes capture more correct colors, but the captured snapshot might be off by one or more frames, relative to the preview.')}</div>
+            </KeyCell>
+            <td>
+              <Button onClick={() => setCaptureFrameMethod((existing) => (existing === 'ffmpeg' ? 'videotag' : 'ffmpeg'))}>
+                {captureFrameMethod === 'ffmpeg' ? t('FFmpeg') : t('HTML video tag')}
               </Button>
             </td>
           </Row>
+
+          <Row>
+            <KeyCell>{t('Snapshot capture quality')}</KeyCell>
+            <td>
+              <input type="range" min={1} max={1000} style={{ width: 200 }} value={Math.round(captureFrameQuality * 1000)} onChange={(e) => setCaptureFrameQuality(Math.max(Math.min(1, parseInt(e.target.value, 10) / 1000)), 0)} /><br />
+              {Math.round(captureFrameQuality * 100)}%
+            </td>
+          </Row>
+
+          <Row>
+            <KeyCell>{t('File names of extracted video frames')}</KeyCell>
+            <td>
+              <Button iconBefore={captureFrameFileNameFormat === 'timestamp' ? TimeIcon : NumericalIcon} onClick={() => setCaptureFrameFileNameFormat((existing) => (existing === 'timestamp' ? 'index' : 'timestamp'))}>
+                {captureFrameFileNameFormat === 'timestamp' ? t('Frame timestamp') : t('Frame number')}
+              </Button>
+            </td>
+          </Row>
+
 
           <Header title={t('Keyboard, mouse and input')} />
 
@@ -185,104 +364,35 @@ const Settings = memo(({
             </td>
           </Row>
 
-          <Header title={t('Options affecting exported files')} />
+          <Header title={t('User interface')} />
 
-          <Row>
-            <KeyCell>{t('Set file modification date/time of output files to:')}</KeyCell>
-            <td>
-              <Select value={treatOutputFileModifiedTimeAsStart ?? 'disabled'} onChange={(e) => setTreatOutputFileModifiedTimeAsStart(e.target.value === 'disabled' ? null : (e.target.value === 'true'))}>
-                <option value="disabled">{t('Current time')}</option>
-                <option value="true">{t('Source file\'s time plus segment start cut time')}</option>
-                <option value="false">{t('Source file\'s time minus segment end cut time')}</option>
-              </Select>
-            </td>
-          </Row>
+          {showAdvanced && (
+            <Row>
+              <KeyCell>{t('Auto load timecode from file as an offset in the timeline?')}</KeyCell>
+              <td>
+                <Switch checked={autoLoadTimecode} onCheckedChange={setAutoLoadTimecode} />
+              </td>
+            </Row>
+          )}
 
-          <Row>
-            <KeyCell>{t('Treat source file modification date/time as:')}</KeyCell>
-            <td>
-              <Select disabled={treatOutputFileModifiedTimeAsStart == null} value={treatInputFileModifiedTimeAsStart} onChange={(e) => setTreatInputFileModifiedTimeAsStart((e.target.value === 'true'))}>
-                <option value="true">{t('Start of video')}</option>
-                <option value="false">{t('End of video')}</option>
-              </Select>
-            </td>
-          </Row>
+          {showAdvanced && (
+            <Row>
+              <KeyCell>{t('Enable HEVC / H265 hardware decoding (you may need to turn this off if you have problems with HEVC files)')}</KeyCell>
+              <td>
+                <Switch checked={enableNativeHevc} onCheckedChange={setEnableNativeHevc} />
+              </td>
+            </Row>
+          )}
 
-          <Row>
-            <KeyCell>
-              {t('Keyframe cut mode')}<br />
-              <div style={detailsStyle}>
-                {keyframeCut ? (
-                  <>
-                    {t('Cut at the nearest keyframe (not accurate time.) Equiv to')}:<br />
-                    <code className="highlighted">ffmpeg -ss -i ...</code>
-                  </>
-                ) : (
-                  <>
-                    {t('Accurate time but could leave an empty portion at the beginning of the video. Equiv to')}:<br />
-                    <code className="highlighted">ffmpeg -i -ss ...</code>
-                  </>
-                )}
-              </div>
-            </KeyCell>
-            <td>
-              <Switch checked={keyframeCut} onCheckedChange={() => toggleKeyframeCut()} />
-            </td>
-          </Row>
 
-          <Row>
-            <KeyCell>{t('Overwrite files when exporting, if a file with the same name as the output file name exists?')}</KeyCell>
-            <td>
-              <Switch checked={enableOverwriteOutput} onCheckedChange={setEnableOverwriteOutput} />
-            </td>
-          </Row>
-
-          <Row>
-            <KeyCell>{t('Cleanup files after export?')}</KeyCell>
-            <td>
-              <Button iconBefore={<CleanIcon />} onClick={askForCleanupChoices}>{t('Change preferences')}</Button>
-            </td>
-          </Row>
-
-          <Header title={t('Snapshots and frame extraction')} />
-
-          <Row>
-            <KeyCell>
-              {t('Snapshot capture format')}
-            </KeyCell>
-            <td>
-              <CaptureFormatButton showIcon />
-            </td>
-          </Row>
-
-          <Row>
-            <KeyCell>
-              {t('Snapshot capture method')}
-              <div style={detailsStyle}>{t('FFmpeg capture method might sometimes capture more correct colors, but the captured snapshot might be off by one or more frames, relative to the preview.')}</div>
-            </KeyCell>
-            <td>
-              <Button onClick={() => setCaptureFrameMethod((existing) => (existing === 'ffmpeg' ? 'videotag' : 'ffmpeg'))}>
-                {captureFrameMethod === 'ffmpeg' ? t('FFmpeg') : t('HTML video tag')}
-              </Button>
-            </td>
-          </Row>
-
-          <Row>
-            <KeyCell>{t('Snapshot capture quality')}</KeyCell>
-            <td>
-              <input type="range" min={1} max={1000} style={{ width: 200 }} value={Math.round(captureFrameQuality * 1000)} onChange={(e) => setCaptureFrameQuality(Math.max(Math.min(1, parseInt(e.target.value, 10) / 1000)), 0)} /><br />
-              {Math.round(captureFrameQuality * 100)}%
-            </td>
-          </Row>
-
-          <Row>
-            <KeyCell>{t('File names of extracted video frames')}</KeyCell>
-            <td>
-              <Button iconBefore={captureFrameFileNameFormat === 'timestamp' ? TimeIcon : NumericalIcon} onClick={() => setCaptureFrameFileNameFormat((existing) => (existing === 'timestamp' ? 'index' : 'timestamp'))}>
-                {captureFrameFileNameFormat === 'timestamp' ? t('Frame timestamp') : t('Frame number')}
-              </Button>
-            </td>
-          </Row>
+          {showAdvanced && (
+            <Row>
+              <KeyCell>{t('Try to automatically convert to supported format when opening unsupported file?')}</KeyCell>
+              <td>
+                <Switch checked={enableAutoHtml5ify} onCheckedChange={setEnableAutoHtml5ify} />
+              </td>
+            </Row>
+          )}
 
           <Row>
             <KeyCell>{t('In timecode show')}</KeyCell>
@@ -290,6 +400,13 @@ const Settings = memo(({
               <Button iconBefore={timecodeFormat === 'frameCount' ? NumericalIcon : TimeIcon} onClick={onTimecodeFormatClick}>
                 {timecodeFormatOptions[timecodeFormat]}
               </Button>
+            </td>
+          </Row>
+
+          <Row>
+            <KeyCell>{t('Prefer strong colors')}</KeyCell>
+            <td>
+              <Switch checked={preferStrongColors} onCheckedChange={setPreferStrongColors} />
             </td>
           </Row>
 
@@ -320,90 +437,6 @@ const Settings = memo(({
             <KeyCell>{t('Ask about importing chapters from opened file?')}</KeyCell>
             <td>
               <Switch checked={enableAskForImportChapters} onCheckedChange={setEnableAskForImportChapters} />
-            </td>
-          </Row>
-
-          <Header title={t('User interface')} />
-
-          <Row>
-            <KeyCell>{t('Prefer strong colors')}</KeyCell>
-            <td>
-              <Switch checked={preferStrongColors} onCheckedChange={setPreferStrongColors} />
-            </td>
-          </Row>
-
-          <Header title={t('Advanced options')} />
-
-          {!isMasBuild && (
-            <Row>
-              <KeyCell>
-                {t('Custom FFmpeg directory (experimental)')}<br />
-                <div style={detailsStyle}>
-                  {t('This allows you to specify custom FFmpeg and FFprobe binaries to use. Make sure the "ffmpeg" and "ffprobe" executables exist in the same directory, and then select the directory.')}
-                </div>
-              </KeyCell>
-              <td>
-                <Button iconBefore={CogIcon} onClick={changeCustomFfPath}>
-                  {customFfPath ? t('Using external ffmpeg') : t('Using built-in ffmpeg')}
-                </Button>
-                <div>{customFfPath}</div>
-              </td>
-            </Row>
-          )}
-
-          {!isStoreBuild && (
-            <Row>
-              <KeyCell>{t('Check for updates on startup?')}</KeyCell>
-              <td>
-                <Switch checked={enableUpdateCheck} onCheckedChange={setEnableUpdateCheck} />
-              </td>
-            </Row>
-          )}
-
-          <Row>
-            <KeyCell>{t('Allow multiple instances of LosslessCut to run concurrently? (experimental)')}</KeyCell>
-            <td>
-              <Switch checked={allowMultipleInstances} onCheckedChange={setAllowMultipleInstances} />
-            </td>
-          </Row>
-
-          <Row>
-            <KeyCell>{t('Enable HEVC / H265 hardware decoding (you may need to turn this off if you have problems with HEVC files)')}</KeyCell>
-            <td>
-              <Switch checked={enableNativeHevc} onCheckedChange={setEnableNativeHevc} />
-            </td>
-          </Row>
-
-          <Row>
-            <KeyCell>{t('Enable experimental ffmpeg features flag?')}</KeyCell>
-            <td>
-              <Switch checked={ffmpegExperimental} onCheckedChange={setFfmpegExperimental} />
-            </td>
-          </Row>
-
-          <Row>
-            <KeyCell>{t('Auto load timecode from file as an offset in the timeline?')}</KeyCell>
-            <td>
-              <Switch checked={autoLoadTimecode} onCheckedChange={setAutoLoadTimecode} />
-            </td>
-          </Row>
-
-          <Row>
-            <KeyCell>{t('Try to automatically convert to supported format when opening unsupported file?')}</KeyCell>
-            <td>
-              <Switch checked={enableAutoHtml5ify} onCheckedChange={setEnableAutoHtml5ify} />
-            </td>
-          </Row>
-
-          <Row>
-            <KeyCell>
-              {t('Extract unprocessable tracks to separate files or discard them?')}<br />
-              <div style={detailsStyle}>
-                {t('(data tracks such as GoPro GPS, telemetry etc. are not copied over by default because ffmpeg cannot cut them, thus they will cause the media duration to stay the same after cutting video/audio)')}
-              </div>
-            </KeyCell>
-            <td>
-              <AutoExportToggler />
             </td>
           </Row>
         </tbody>
