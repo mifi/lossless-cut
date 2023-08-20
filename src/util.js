@@ -163,6 +163,7 @@ export function getExtensionForFormat(format) {
     matroska: 'mkv',
     ipod: 'm4a',
     adts: 'aac',
+    mpegts: 'ts',
   }[format];
 
   return ext || format;
