@@ -31,7 +31,7 @@ export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, show
   let fraction = '';
   if (showFraction && !(shorten && remainder === 0)) {
     const numDigits = fps != null ? 2 : 3;
-    fraction = `.${padStart(remainder, numDigits, '0')}`;
+    fraction = `.${padStart(Math.floor(remainder), numDigits, '0')}`;
   }
 
   return `${sign}${hoursPart}${minutesPadded}${delim}${secondsPadded}${fraction}`;

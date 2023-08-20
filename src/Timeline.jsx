@@ -55,7 +55,7 @@ const CommandedTime = memo(({ commandedTimePercent }) => {
 const Timeline = memo(({
   durationSafe, startTimeOffset, playerTime, commandedTime, relevantTime,
   zoom, neighbouringKeyFrames, seekAbs, apparentCutSegments,
-  setCurrentSegIndex, currentSegIndexSafe, inverseCutSegments, formatTimecode,
+  setCurrentSegIndex, currentSegIndexSafe, inverseCutSegments, formatTimecode, formatTimeAndFrames,
   waveforms, shouldShowWaveform, shouldShowKeyframes, thumbnails,
   onZoomWindowStartTimeChange, waveformEnabled, showThumbnails,
   playing, isFileOpened, onWheel, commandedTimeRef, goToTimecode, isSegmentSelected,
@@ -330,7 +330,7 @@ const Timeline = memo(({
 
       <div style={{ position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 2 }}>
         <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' }}>
-          {formatTimecode({ seconds: displayTime })}{isZoomed ? ` ${displayTimePercent}` : ''}
+          {formatTimeAndFrames(displayTime)}{isZoomed ? ` ${displayTimePercent}` : ''}
         </div>
       </div>
     </div>

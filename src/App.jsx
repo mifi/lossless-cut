@@ -378,6 +378,16 @@ const App = memo(() => {
     return formatDuration({ seconds, shorten, fileNameFriendly });
   }, [detectedFps, timecodeFormat, getFrameCount]);
 
+  const formatTimeAndFrames = useCallback((seconds) => {
+    const frameCount = getFrameCount(seconds);
+
+    const timeStr = timecodeFormat === 'timecodeWithFramesFraction'
+      ? formatDuration({ seconds, fps: detectedFps })
+      : formatDuration({ seconds });
+
+    return `${timeStr} (${frameCount ?? '0'})`;
+  }, [detectedFps, timecodeFormat, getFrameCount]);
+
   const { captureFrameFromTag, captureFrameFromFfmpeg, captureFramesRange } = useFrameCapture({ formatTimecode, treatOutputFileModifiedTimeAsStart });
 
   // const getSafeCutTime = useCallback((cutTime, next) => ffmpeg.getSafeCutTime(neighbouringFrames, cutTime, next), [neighbouringFrames]);
@@ -2365,6 +2375,7 @@ const App = memo(() => {
                 currentSegIndexSafe={currentSegIndexSafe}
                 inverseCutSegments={inverseCutSegments}
                 formatTimecode={formatTimecode}
+                formatTimeAndFrames={formatTimeAndFrames}
                 onZoomWindowStartTimeChange={setZoomWindowStartTime}
                 playing={playing}
                 isFileOpened={isFileOpened}

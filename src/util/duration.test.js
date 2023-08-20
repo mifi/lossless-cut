@@ -7,6 +7,7 @@ it('should format duration properly', () => {
   expect(formatDuration({ seconds: 1.5, fps: 30, shorten: true })).toBe('0:01.15');
   expect(formatDuration({ seconds: 1.5, fps: 30, fileNameFriendly: true })).toBe('00.00.01.15');
   expect(formatDuration({ seconds: -1.5, fps: 30 })).toBe('-00:00:01.15');
+  expect(formatDuration({ seconds: 32.670476, fps: 23.976 })).toBe('00:00:32.15');
   expect(formatDuration({ seconds: 101.5 })).toBe('00:01:41.500');
   expect(formatDuration({ seconds: 101.5, shorten: true })).toBe('1:41.500');
   expect(formatDuration({ seconds: 10000 })).toBe('02:46:40.000');
