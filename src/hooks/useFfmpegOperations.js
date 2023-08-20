@@ -7,6 +7,7 @@ import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir,
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileMeta, cutEncodeSmartPart, getExperimentalArgs, html5ify as ffmpegHtml5ify, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { getSmartCutParams } from '../smartcut';
+import { isDurationValid } from '../segments';
 
 const { join, resolve, dirname } = window.require('path');
 const { pathExists } = window.require('fs-extra');
@@ -55,11 +56,7 @@ const tryDeleteFiles = async (paths) => pMap(paths, (path) => {
   unlink(path).catch((err) => console.error('Failed to delete', path, err));
 }, { concurrency: 5 });
 
-function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut, enableOverwriteOutput }) {
-  const optionalTransferTimestamps = useCallback(async (...args) => {
-    if (enableTransferTimestamps) await transferTimestamps(...args);
-  }, [enableTransferTimestamps]);
-
+function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput }) {
   const shouldSkipExistingFile = useCallback(async (path) => {
     const skip = !enableOverwriteOutput && await pathExists(path);
     if (skip) console.log('Not overwriting existing file', path);
@@ -165,13 +162,13 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut,
       const result = await runFfmpegConcat({ ffmpegArgs, concatTxt, totalDuration, onProgress });
       logStdoutStderr(result);
 
-      await optionalTransferTimestamps(metadataFromPath, outPath);
+      await transferTimestamps({ inPath: metadataFromPath, outPath, treatOutputFileModifiedTimeAsStart });
 
       return { haveExcludedStreams: excludedStreamIds.length > 0 };
     } finally {
       if (chaptersPath) await tryDeleteFiles([chaptersPath]);
     }
-  }, [optionalTransferTimestamps, shouldSkipExistingFile]);
+  }, [shouldSkipExistingFile, treatOutputFileModifiedTimeAsStart]);
 
   const cutSingle = useCallback(async ({
     keyframeCut: ssBeforeInput, avoidNegativeTs, copyFileStreams, cutFrom, cutTo, chaptersPath, onProgress, outPath,
@@ -319,8 +316,8 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut,
     const result = await runFfmpegWithProgress({ ffmpegArgs, duration: cutDuration, onProgress });
     logStdoutStderr(result);
 
-    await optionalTransferTimestamps(filePath, outPath, cutFrom);
-  }, [filePath, optionalTransferTimestamps, shouldSkipExistingFile]);
+    await transferTimestamps({ inPath: filePath, outPath, cutFrom, cutTo, treatInputFileModifiedTimeAsStart, duration: isDurationValid(videoDuration) ? videoDuration : undefined, treatOutputFileModifiedTimeAsStart });
+  }, [filePath, shouldSkipExistingFile, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   const cutMultiple = useCallback(async ({
     outputDir, customOutDir, segments, outSegFileNames, videoDuration, rotation, detectedFps,
@@ -459,9 +456,9 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut,
   const html5ify = useCallback(async ({ customOutDir, filePath: filePathArg, speed, hasAudio, hasVideo, onProgress }) => {
     const outPath = getHtml5ifiedPath(customOutDir, filePathArg, speed);
     await ffmpegHtml5ify({ filePath: filePathArg, outPath, speed, hasAudio, hasVideo, onProgress });
-    await optionalTransferTimestamps(filePathArg, outPath);
+    await transferTimestamps({ inPath: filePathArg, outPath, treatOutputFileModifiedTimeAsStart });
     return outPath;
-  }, [optionalTransferTimestamps]);
+  }, [treatOutputFileModifiedTimeAsStart]);
 
   // This is just used to load something into the player with correct length,
   // so user can seek and then we render frames using ffmpeg
@@ -483,8 +480,8 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut,
     const result = await runFfmpegWithProgress({ ffmpegArgs, duration, onProgress });
     logStdoutStderr(result);
 
-    await optionalTransferTimestamps(filePathArg, outPath);
-  }, [optionalTransferTimestamps]);
+    await transferTimestamps({ inPath: filePathArg, outPath, treatOutputFileModifiedTimeAsStart });
+  }, [treatOutputFileModifiedTimeAsStart]);
 
   // https://stackoverflow.com/questions/34118013/how-to-determine-webm-duration-using-ffprobe
   const fixInvalidDuration = useCallback(async ({ fileFormat, customOutDir, duration, onProgress }) => {
@@ -508,10 +505,10 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps, needSmartCut,
     const result = await runFfmpegWithProgress({ ffmpegArgs, duration, onProgress });
     logStdoutStderr(result);
 
-    await optionalTransferTimestamps(filePath, outPath);
+    await transferTimestamps({ inPath: filePath, outPath, treatOutputFileModifiedTimeAsStart });
 
     return outPath;
-  }, [filePath, optionalTransferTimestamps]);
+  }, [filePath, treatOutputFileModifiedTimeAsStart]);
 
   return {
     cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, autoConcatCutSegments,

@@ -106,7 +106,8 @@ const defaults = {
   outSegTemplate: undefined,
   keyboardSeekAccFactor: 1.03,
   keyboardNormalSeekSpeed: 1,
-  enableTransferTimestamps: true,
+  treatInputFileModifiedTimeAsStart: true,
+  treatOutputFileModifiedTimeAsStart: true,
   outFormatLocked: undefined,
   safeOutputFileName: true,
   windowBounds: undefined,
@@ -150,6 +151,19 @@ async function getCustomStoragePath() {
 
 let store;
 
+function get(key) {
+  return store.get(key);
+}
+
+function set(key, val) {
+  if (val === undefined) store.delete(key);
+  else store.set(key, val);
+}
+
+function reset(key) {
+  set(key, defaults[key]);
+}
+
 async function init() {
   const customStoragePath = await getCustomStoragePath();
   if (customStoragePath) logger.info('customStoragePath', customStoragePath);
@@ -165,20 +179,15 @@ async function init() {
     }
   }
 
+  // migrate old configs:
+  const enableTransferTimestamps = store.get('enableTransferTimestamps'); // todo remove after a while
+  if (enableTransferTimestamps != null) {
+    logger.info('Migrating enableTransferTimestamps');
+    store.delete('enableTransferTimestamps');
+    set('treatOutputFileModifiedTimeAsStart', enableTransferTimestamps ? true : undefined);
+  }
+
   throw new Error('Timed out while creating config store');
-}
-
-function get(key) {
-  return store.get(key);
-}
-
-function set(key, val) {
-  if (val === undefined) store.delete(key);
-  else store.set(key, val);
-}
-
-function reset(key) {
-  set(key, defaults[key]);
 }
 
 module.exports = {

@@ -89,10 +89,27 @@ export async function dirExists(dirPath) {
   return (await pathExists(dirPath)) && (await fsExtra.lstat(dirPath)).isDirectory();
 }
 
-export async function transferTimestamps(inPath, outPath, offset = 0) {
+export async function transferTimestamps({ inPath, outPath, cutFrom = 0, cutTo = 0, duration = 0, treatInputFileModifiedTimeAsStart = true, treatOutputFileModifiedTimeAsStart }) {
+  if (treatOutputFileModifiedTimeAsStart == null) return; // null means disabled;
+
+  // see https://github.com/mifi/lossless-cut/issues/1017#issuecomment-1049097115
+  function calculateTime(fileTime) {
+    if (treatInputFileModifiedTimeAsStart && treatOutputFileModifiedTimeAsStart) {
+      return fileTime + cutFrom;
+    }
+    if (!treatInputFileModifiedTimeAsStart && !treatOutputFileModifiedTimeAsStart) {
+      return fileTime - duration + cutTo;
+    }
+    if (treatInputFileModifiedTimeAsStart && !treatOutputFileModifiedTimeAsStart) {
+      return fileTime + cutTo;
+    }
+    // if (!treatInputFileModifiedTimeAsStart && treatOutputFileModifiedTimeAsStart) {
+    return fileTime - duration + cutFrom;
+  }
+
   try {
     const { atime, mtime } = await stat(inPath);
-    await fsExtra.utimes(outPath, (atime.getTime() / 1000) + offset, (mtime.getTime() / 1000) + offset);
+    await fsExtra.utimes(outPath, calculateTime((atime.getTime() / 1000)), calculateTime((mtime.getTime() / 1000)));
   } catch (err) {
     console.error('Failed to set output file modified time', err);
   }

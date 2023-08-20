@@ -97,8 +97,12 @@ export default () => {
   useEffect(() => safeSetConfig({ keyboardSeekAccFactor }), [keyboardSeekAccFactor]);
   const [keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed] = useState(safeGetConfigInitial('keyboardNormalSeekSpeed'));
   useEffect(() => safeSetConfig({ keyboardNormalSeekSpeed }), [keyboardNormalSeekSpeed]);
-  const [enableTransferTimestamps, setEnableTransferTimestamps] = useState(safeGetConfigInitial('enableTransferTimestamps'));
-  useEffect(() => safeSetConfig({ enableTransferTimestamps }), [enableTransferTimestamps]);
+
+  const [treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart] = useState(safeGetConfigInitial('treatInputFileModifiedTimeAsStart'));
+  useEffect(() => safeSetConfig({ treatInputFileModifiedTimeAsStart }), [treatInputFileModifiedTimeAsStart]);
+  const [treatOutputFileModifiedTimeAsStart, setTreatOutputFileModifiedTimeAsStart] = useState(safeGetConfigInitial('treatOutputFileModifiedTimeAsStart'));
+  useEffect(() => safeSetConfig({ treatOutputFileModifiedTimeAsStart }), [treatOutputFileModifiedTimeAsStart]);
+
   const [outFormatLocked, setOutFormatLocked] = useState(safeGetConfigInitial('outFormatLocked'));
   useEffect(() => safeSetConfig({ outFormatLocked }), [outFormatLocked]);
   const [safeOutputFileName, setSafeOutputFileName] = useState(safeGetConfigInitial('safeOutputFileName'));
@@ -211,8 +215,10 @@ export default () => {
     setKeyboardSeekAccFactor,
     keyboardNormalSeekSpeed,
     setKeyboardNormalSeekSpeed,
-    enableTransferTimestamps,
-    setEnableTransferTimestamps,
+    treatInputFileModifiedTimeAsStart,
+    setTreatInputFileModifiedTimeAsStart,
+    treatOutputFileModifiedTimeAsStart,
+    setTreatOutputFileModifiedTimeAsStart,
     outFormatLocked,
     setOutFormatLocked,
     safeOutputFileName,

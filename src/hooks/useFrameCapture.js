@@ -23,7 +23,7 @@ function getFrameFromVideo(video, format, quality) {
   return dataUriToBuffer(dataUri);
 }
 
-export default ({ formatTimecode }) => {
+export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }) => {
   async function captureFramesRange({ customOutDir, filePath, fps, fromTime, toTime, estimatedMaxNumFiles, captureFormat, quality, filter, onProgress, outputTimestamps }) {
     const getSuffix = (prefix) => `${prefix}.${captureFormat}`;
 
@@ -71,17 +71,17 @@ export default ({ formatTimecode }) => {
     return outPaths[0];
   }
 
-  async function captureFrameFromFfmpeg({ customOutDir, filePath, fromTime, captureFormat, enableTransferTimestamps, quality }) {
+  async function captureFrameFromFfmpeg({ customOutDir, filePath, fromTime, captureFormat, quality }) {
     const time = formatTimecode({ seconds: fromTime, fileNameFriendly: true });
     const nameSuffix = `${time}.${captureFormat}`;
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix });
     await ffmpegCaptureFrame({ timestamp: fromTime, videoPath: filePath, outPath, quality });
 
-    if (enableTransferTimestamps) await transferTimestamps(filePath, outPath, fromTime);
+    await transferTimestamps({ inPath: filePath, outPath, cutFrom: fromTime, treatOutputFileModifiedTimeAsStart });
     return outPath;
   }
 
-  async function captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, enableTransferTimestamps, quality }) {
+  async function captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, quality }) {
     const buf = getFrameFromVideo(video, captureFormat, quality);
 
     const ext = mime.extension(buf.type);
@@ -90,7 +90,7 @@ export default ({ formatTimecode }) => {
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `${time}.${ext}` });
     await fs.writeFile(outPath, buf);
 
-    if (enableTransferTimestamps) await transferTimestamps(filePath, outPath, currentTime);
+    await transferTimestamps({ inPath: filePath, outPath, cutFrom: currentTime, treatOutputFileModifiedTimeAsStart });
     return outPath;
   }
 
