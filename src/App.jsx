@@ -1827,9 +1827,9 @@ const App = memo(() => {
   const toggleLoopSelectedSegments = useCallback(() => togglePlay({ resetPlaybackRate: true, playbackMode: 'loop-selected-segments' }), [togglePlay]);
 
   const copySegmentsToClipboard = useCallback(async () => {
-    if (!checkFileOpened()) return;
+    if (!isFileOpened) return;
     electron.clipboard.writeText(await formatTsv(selectedSegments));
-  }, [checkFileOpened, selectedSegments]);
+  }, [isFileOpened, selectedSegments]);
 
   const onKeyPress = useCallback(({ action, keyup }) => {
     function seekReset() {
