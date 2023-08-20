@@ -593,11 +593,11 @@ const App = memo(() => {
 
   const copyFileStreams = useMemo(() => Object.entries(copyStreamIdsByFile).map(([path, streamIdsMap]) => ({
     path,
-    streamIds: Object.keys(streamIdsMap).filter(index => streamIdsMap[index]).map((streamIdStr) => parseInt(streamIdStr, 10)),
+    streamIds: Object.entries(streamIdsMap).filter(([, shouldCopy]) => shouldCopy).map(([streamIdStr]) => parseInt(streamIdStr, 10)),
   })), [copyStreamIdsByFile]);
 
   // total number of streams to copy for ALL files
-  const numStreamsToCopy = copyFileStreams.reduce((acc, { streamIds }) => acc + streamIds.length, 0);
+  const numStreamsToCopy = useMemo(() => copyFileStreams.reduce((acc, { streamIds }) => acc + streamIds.length, 0), [copyFileStreams]);
 
   const allFilesMeta = useMemo(() => ({
     ...externalFilesMeta,
