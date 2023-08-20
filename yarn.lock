@@ -5454,6 +5454,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"immer@npm:^10.0.2":
+  version: 10.0.2
+  resolution: "immer@npm:10.0.2"
+  checksum: 525a3b14210d02ae420c3b9f6ca14f7e9bcf625611d1356e773e7739f14c7c8de50dac442e6c7de3a6e24a782f7b792b6b8666bc0b3f00269d21a95f8f68ca84
+  languageName: node
+  linkType: hard
+
 "import-fresh@npm:^3.0.0, import-fresh@npm:^3.2.1":
   version: 3.3.0
   resolution: "import-fresh@npm:3.3.0"
@@ -6452,6 +6459,7 @@ __metadata:
     i18next-fs-backend: ^2.1.1
     i18next-parser: ^7.6.0
     icon-gen: ^3.0.0
+    immer: ^10.0.2
     json5: ^2.2.2
     ky: ^0.33.1
     lodash: ^4.17.19

@@ -7,6 +7,7 @@ import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out thi
 import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
+import { produce } from 'immer';
 
 import fromPairs from 'lodash/fromPairs';
 import sortBy from 'lodash/sortBy';
@@ -130,8 +131,7 @@ const App = memo(() => {
   const [filePath, setFilePath] = useState('');
   const [externalFilesMeta, setExternalFilesMeta] = useState({});
   const [customTagsByFile, setCustomTagsByFile] = useState({});
-  const [customTagsByStreamId, setCustomTagsByStreamId] = useState({});
-  const [dispositionByStreamId, setDispositionByStreamId] = useState({});
+  const [paramsByStreamId, setParamsByStreamId] = useState(new Map());
   const [detectedFps, setDetectedFps] = useState();
   const [mainFileMeta, setMainFileMeta] = useState({ streams: [], formatData: {} });
   const [mainVideoStream, setMainVideoStream] = useState();
@@ -698,8 +698,7 @@ const App = memo(() => {
     setFilePath(''); // Setting video src="" prevents memory leak in chromium
     setExternalFilesMeta({});
     setCustomTagsByFile({});
-    setCustomTagsByStreamId({});
-    setDispositionByStreamId({});
+    setParamsByStreamId(new Map());
     setDetectedFps();
     setMainFileMeta({ streams: [], formatData: [] });
     setMainVideoStream();
@@ -1146,8 +1145,7 @@ const App = memo(() => {
         movFastStart,
         avoidNegativeTs,
         customTagsByFile,
-        customTagsByStreamId,
-        dispositionByStreamId,
+        paramsByStreamId,
         chapters: chaptersToAdd,
         detectedFps,
       });
@@ -1229,7 +1227,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, customTagsByStreamId, dispositionByStreamId, detectedFps, enableOverwriteOutput, willMerge, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, hideAllNotifications, cleanupChoices, cleanupFiles, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
+  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, hideAllNotifications, cleanupChoices, cleanupFiles, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath || workingRef.current || segmentsToExport.length < 1) return;
@@ -1675,13 +1673,21 @@ const App = memo(() => {
     return fileMeta;
   }, [allFilesMeta, setCopyStreamIdsForPath]);
 
+  const updateStreamParams = useCallback((fileId, streamId, setter) => setParamsByStreamId(produce((draft) => {
+    if (!draft.has(fileId)) draft.set(fileId, new Map());
+    const fileMap = draft.get(fileId);
+    if (!fileMap.has(streamId)) fileMap.set(streamId, new Map());
+
+    setter(fileMap.get(streamId));
+  })), [setParamsByStreamId]);
+
   const addFileAsCoverArt = useCallback(async (path) => {
     const fileMeta = await addStreamSourceFile(path);
     if (!fileMeta) return false;
     const firstIndex = fileMeta.streams[0].index;
-    setDispositionByStreamId((old) => ({ ...old, [path]: { [firstIndex]: 'attached_pic' } }));
+    updateStreamParams(path, firstIndex, (params) => params.set('disposition', 'attached_pic'));
     return true;
-  }, [addStreamSourceFile]);
+  }, [addStreamSourceFile, updateStreamParams]);
 
   const captureSnapshotAsCoverArt = useCallback(async () => {
     if (!filePath) return;
@@ -2436,10 +2442,8 @@ const App = memo(() => {
                   nonCopiedExtraStreams={nonCopiedExtraStreams}
                   customTagsByFile={customTagsByFile}
                   setCustomTagsByFile={setCustomTagsByFile}
-                  customTagsByStreamId={customTagsByStreamId}
-                  setCustomTagsByStreamId={setCustomTagsByStreamId}
-                  dispositionByStreamId={dispositionByStreamId}
-                  setDispositionByStreamId={setDispositionByStreamId}
+                  paramsByStreamId={paramsByStreamId}
+                  updateStreamParams={updateStreamParams}
                 />
               )}
             </Sheet>

@@ -172,7 +172,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
   const cutSingle = useCallback(async ({
     keyframeCut: ssBeforeInput, avoidNegativeTs, copyFileStreams, cutFrom, cutTo, chaptersPath, onProgress, outPath,
-    videoDuration, rotation, allFilesMeta, outFormat, appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, customTagsByStreamId, dispositionByStreamId, videoTimebase,
+    videoDuration, rotation, allFilesMeta, outFormat, appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, paramsByStreamId, videoTimebase,
   }) => {
     if (await shouldSkipExistingFile(outPath)) return;
 
@@ -231,48 +231,48 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       return streamCount + copiedStreamIndex;
     }
 
-    function lessDeepMap(root, fn) {
-      let ret = [];
-      Object.entries(root).forEach(([path, streamsMap]) => (
-        Object.entries(streamsMap || {}).forEach(([streamId, value]) => {
-          ret = [...ret, ...fn(path, streamId, value)];
-        })));
-
-      return ret;
-    }
-
-    // The structure is deep! file -> stream -> key -> value Example: { 'file.mp4': { 0: { key: 'value' } } }
-    const deepMap = (root, fn) => lessDeepMap(root, (path, streamId, tagsMap) => {
-      let ret = [];
-      Object.entries(tagsMap || {}).forEach(([key, value]) => {
-        ret = [...ret, ...fn(path, streamId, key, value)];
-      });
-      return ret;
-    });
-
     const customTagsArgs = [
       // Main file metadata:
       ...flatMap(Object.entries(customTagsByFile[filePath] || []), ([key, value]) => ['-metadata', `${key}=${value}`]),
-
-      // Example: { 'file.mp4': { 0: { tag_name: 'Tag Value' } } }
-      ...deepMap(customTagsByStreamId, (path, streamId, tag, value) => {
-        const outputIndex = mapInputStreamIndexToOutputIndex(path, parseInt(streamId, 10));
-        if (outputIndex == null) return [];
-        return [`-metadata:s:${outputIndex}`, `${tag}=${value}`];
-      }),
     ];
 
     const mapStreamsArgs = getMapStreamsArgs({ copyFileStreams: copyFileStreamsFiltered, allFilesMeta, outFormat });
 
-    // Example: { 'file.mp4': { 0: { attached_pic: 1 } } }
-    const customDispositionArgs = lessDeepMap(dispositionByStreamId, (path, streamId, disposition) => {
-      if (disposition == null) return [];
-      const outputIndex = mapInputStreamIndexToOutputIndex(path, parseInt(streamId, 10));
-      if (outputIndex == null) return [];
-      // 0 means delete the disposition for this stream
-      const dispositionArg = disposition === deleteDispositionValue ? '0' : disposition;
-      return [`-disposition:${outputIndex}`, String(dispositionArg)];
-    });
+    const customParamsArgs = (() => {
+      const ret = [];
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [fileId, fileParams] of paramsByStreamId.entries()) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const [streamId, streamParams] of fileParams.entries()) {
+          const outputIndex = mapInputStreamIndexToOutputIndex(fileId, parseInt(streamId, 10));
+          if (outputIndex != null) {
+            const disposition = streamParams.get('disposition');
+            if (disposition != null) {
+              // "0" means delete the disposition for this stream
+              const dispositionArg = disposition === deleteDispositionValue ? '0' : disposition;
+              ret.push(`-disposition:${outputIndex}`, String(dispositionArg));
+            }
+
+            if (streamParams.get('bsfH264Mp4toannexb')) {
+              ret.push(`-bsf:${outputIndex}`, String('h264_mp4toannexb'));
+            }
+            if (streamParams.get('bsfHevcMp4toannexb')) {
+              ret.push(`-bsf:${outputIndex}`, String('hevc_mp4toannexb'));
+            }
+
+            // custom stream metadata tags
+            const customTags = streamParams.get('customTags');
+            if (customTags != null) {
+              // eslint-disable-next-line no-restricted-syntax
+              for (const [tag, value] of Object.entries(customTags)) {
+                ret.push(`-metadata:s:${outputIndex}`, `${tag}=${value}`);
+              }
+            }
+          }
+        }
+      }
+      return ret;
+    })();
 
     const ffmpegArgs = [
       '-hide_banner',
@@ -294,7 +294,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       ...customTagsArgs,
 
-      ...customDispositionArgs,
+      ...customParamsArgs,
 
       // See https://github.com/mifi/lossless-cut/issues/170
       '-ignore_unknown',
@@ -323,10 +323,10 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     outputDir, customOutDir, segments, outSegFileNames, videoDuration, rotation, detectedFps,
     onProgress: onTotalProgress, keyframeCut, copyFileStreams, allFilesMeta, outFormat,
     appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, avoidNegativeTs,
-    customTagsByFile, customTagsByStreamId, dispositionByStreamId, chapters, preserveMetadataOnMerge,
+    customTagsByFile, paramsByStreamId, chapters, preserveMetadataOnMerge,
   }) => {
     console.log('customTagsByFile', customTagsByFile);
-    console.log('customTagsByStreamId', customTagsByStreamId);
+    console.log('paramsByStreamId', paramsByStreamId);
 
     const singleProgresses = {};
     function onSingleProgress(id, singleProgress) {
@@ -353,7 +353,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         // old fashioned way
         const outPath = await makeSegmentOutPath();
         await cutSingle({
-          cutFrom: desiredCutFrom, cutTo, chaptersPath, outPath, copyFileStreams, keyframeCut, avoidNegativeTs, videoDuration, rotation, allFilesMeta, outFormat, appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, customTagsByStreamId, dispositionByStreamId, onProgress: (progress) => onSingleProgress(i, progress),
+          cutFrom: desiredCutFrom, cutTo, chaptersPath, outPath, copyFileStreams, keyframeCut, avoidNegativeTs, videoDuration, rotation, allFilesMeta, outFormat, appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, paramsByStreamId, onProgress: (progress) => onSingleProgress(i, progress),
         });
         return outPath;
       }
@@ -404,7 +404,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       // for smart cut we need to use keyframe cut here, and no avoid_negative_ts
       await cutSingle({
-        cutFrom: encodeCutTo, cutTo, chaptersPath, outPath: smartCutMainPartOutPath, copyFileStreams: copyFileStreamsFiltered, keyframeCut: true, avoidNegativeTs: false, videoDuration, rotation, allFilesMeta, outFormat, appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, customTagsByStreamId, dispositionByStreamId, videoTimebase, onProgress: onCutProgress,
+        cutFrom: encodeCutTo, cutTo, chaptersPath, outPath: smartCutMainPartOutPath, copyFileStreams: copyFileStreamsFiltered, keyframeCut: true, avoidNegativeTs: false, videoDuration, rotation, allFilesMeta, outFormat, appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, paramsByStreamId, videoTimebase, onProgress: onCutProgress,
       });
 
       // OK, just return the single cut file (we may need smart cut in other segments though)

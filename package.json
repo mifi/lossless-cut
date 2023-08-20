@@ -66,6 +66,7 @@
     "framer-motion": "^9.0.3",
     "i18next-parser": "^7.6.0",
     "icon-gen": "^3.0.0",
+    "immer": "^10.0.2",
     "ky": "^0.33.1",
     "luxon": "^3.3.0",
     "mkdirp": "^1.0.3",

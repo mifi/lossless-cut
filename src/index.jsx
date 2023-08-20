@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MotionConfig } from 'framer-motion';
+import { enableMapSet } from 'immer';
 
 import 'sweetalert2/dist/sweetalert2.css';
 
@@ -23,6 +24,8 @@ import './i18n';
 
 import './main.css';
 
+
+enableMapSet();
 
 const { app } = window.require('@electron/remote');
 

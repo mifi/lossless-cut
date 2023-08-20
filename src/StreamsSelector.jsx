@@ -1,10 +1,10 @@
-import React, { memo, useState, useMemo, useCallback } from 'react';
+import React, { memo, useState, useMemo, useCallback, useRef, useEffect } from 'react';
 
 import { FaImage, FaCheckCircle, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
 import { FiEdit, FiCheck, FiTrash } from 'react-icons/fi';
 import { MdSubtitles } from 'react-icons/md';
-import { BookIcon, TextInput, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, Heading, SortAscIcon, SortDescIcon, Dialog, Button, PlusIcon, ForkIcon, WarningSignIcon } from 'evergreen-ui';
+import { Checkbox, BookIcon, TextInput, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, Heading, SortAscIcon, SortDescIcon, Dialog, Button, PlusIcon, ForkIcon, WarningSignIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 import prettyBytes from 'pretty-bytes';
 
@@ -22,10 +22,10 @@ const activeColor = '#429777';
 const dispositionOptions = ['default', 'dub', 'original', 'comment', 'lyrics', 'karaoke', 'forced', 'hearing_impaired', 'visual_impaired', 'clean_effects', 'attached_pic', 'captions', 'descriptions', 'dependent', 'metadata'];
 const unchangedDispositionValue = 'llc_disposition_unchanged';
 
-const TagEditor = memo(({ existingTags, customTags, onTagChange, onTagReset }) => {
+const TagEditor = memo(({ existingTags, customTags, editingTag, setEditingTag, onTagChange, onTagReset }) => {
   const { t } = useTranslation();
+  const ref = useRef();
 
-  const [editingTag, setEditingTag] = useState();
   const [editingTagVal, setEditingTagVal] = useState();
   const [newTag, setNewTag] = useState();
 
@@ -35,7 +35,7 @@ const TagEditor = memo(({ existingTags, customTags, onTagChange, onTagReset }) =
     onTagReset(editingTag);
     setEditingTag();
     setNewTag();
-  }, [editingTag, onTagReset]);
+  }, [editingTag, onTagReset, setEditingTag]);
 
   function onEditClick(tag) {
     if (newTag) {
@@ -60,13 +60,19 @@ const TagEditor = memo(({ existingTags, customTags, onTagChange, onTagReset }) =
     onEditClick();
   }
 
-  const onAddPress = useCallback(async () => {
+  const onAddPress = useCallback(async (e) => {
+    e.preventDefault();
+    e.target.blur();
     const tag = await askForMetadataKey();
     if (!tag || Object.keys(mergedTags).includes(tag)) return;
     setEditingTag(tag);
     setEditingTagVal('');
     setNewTag(tag);
-  }, [mergedTags]);
+  }, [mergedTags, setEditingTag]);
+
+  useEffect(() => {
+    ref.current?.focus();
+  }, [editingTag]);
 
   return (
     <>
@@ -85,7 +91,7 @@ const TagEditor = memo(({ existingTags, customTags, onTagChange, onTagReset }) =
                 <td style={{ paddingTop: 5, paddingBottom: 5 }}>
                   {editingThis ? (
                     <form style={{ display: 'inline' }} onSubmit={onSubmit}>
-                      <TextInput placeholder={t('Enter value')} value={editingTagVal || ''} onChange={(e) => setEditingTagVal(e.target.value)} />
+                      <TextInput ref={ref} placeholder={t('Enter value')} value={editingTagVal || ''} onChange={(e) => setEditingTagVal(e.target.value)} />
                     </form>
                   ) : (
                     <span style={{ color: thisTagCustom ? activeColor : undefined, fontWeight: thisTagCustom ? 'bold' : undefined }}>{mergedTags[tag]}</span>
@@ -105,6 +111,8 @@ const TagEditor = memo(({ existingTags, customTags, onTagChange, onTagReset }) =
 });
 
 const EditFileDialog = memo(({ editingFile, allFilesMeta, customTagsByFile, setCustomTagsByFile }) => {
+  const [editingTag, setEditingTag] = useState();
+
   const { formatData } = allFilesMeta[editingFile];
   const existingTags = formatData.tags || {};
   const customTags = customTagsByFile[editingFile] || {};
@@ -120,14 +128,13 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, customTagsByFile, setC
     });
   }, [editingFile, setCustomTagsByFile]);
 
-  return <TagEditor existingTags={existingTags} customTags={customTags} onTagChange={onTagChange} onTagReset={onTagReset} />;
+  return <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagChange={onTagChange} onTagReset={onTagReset} />;
 });
 
 const getStreamDispositionsObj = (stream) => ((stream && stream.disposition) || {});
-const getStreamCustomDisposition = (dispositionByStreamId, file, streamId) => (dispositionByStreamId[file] || {})[streamId];
 
-function getStreamEffectiveDisposition(dispositionByStreamId, file, stream) {
-  const customDisposition = getStreamCustomDisposition(dispositionByStreamId, file, stream.index);
+function getStreamEffectiveDisposition(paramsByStreamId, fileId, stream) {
+  const customDisposition = paramsByStreamId.get(fileId)?.get(stream.index)?.get('disposition');
   const existingDispositionsObj = getStreamDispositionsObj(stream);
 
   if (customDisposition) return customDisposition;
@@ -135,47 +142,75 @@ function getStreamEffectiveDisposition(dispositionByStreamId, file, stream) {
 }
 
 
-const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, allFilesMeta, customTagsByStreamId, setCustomTagsByStreamId }) => {
+const StreamParametersEditor = ({ stream, streamParams, updateStreamParams }) => {
+  const { t } = useTranslation();
+
+  const ui = [];
+  // https://github.com/mifi/lossless-cut/issues/1680#issuecomment-1682915193
+  if (stream.codec_name === 'h264') {
+    ui.push(
+      <Checkbox key="bsfH264Mp4toannexb" checked={!!streamParams.get('bsfH264Mp4toannexb')} label={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'h264_mp4toannexb' })} onChange={(e) => updateStreamParams((params) => params.set('bsfH264Mp4toannexb', e.target.checked))} />,
+    );
+  }
+  if (stream.codec_name === 'hevc') {
+    ui.push(
+      <Checkbox key="bsfHevcMp4toannexb" checked={!!streamParams.get('bsfHevcMp4toannexb')} label={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_mp4toannexb' })} onChange={(e) => updateStreamParams((params) => params.set('bsfHevcMp4toannexb', e.target.checked))} />,
+    );
+  }
+
+  return (
+    <div style={{ marginBottom: '1em' }}>
+      {ui.length > 0
+        ? ui
+        : t('No editable parameters for this stream.')}
+    </div>
+  );
+};
+
+const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, setEditingStream, allFilesMeta, paramsByStreamId, updateStreamParams }) => {
+  const { t } = useTranslation();
+  const [editingTag, setEditingTag] = useState();
+
   const { streams } = allFilesMeta[editingFile];
   const editingStream = useMemo(() => streams.find((s) => s.index === editingStreamId), [streams, editingStreamId]);
 
   const existingTags = useMemo(() => (editingStream && editingStream.tags) || {}, [editingStream]);
-  const customTags = useMemo(() => (customTagsByStreamId[editingFile] || {})[editingStreamId] || {}, [customTagsByStreamId, editingFile, editingStreamId]);
+
+  const streamParams = useMemo(() => paramsByStreamId.get(editingFile)?.get(editingStreamId) ?? new Map(), [editingFile, editingStreamId, paramsByStreamId]);
+  const customTags = useMemo(() => streamParams.get('customTags') ?? {}, [streamParams]);
 
   const onTagChange = useCallback((tag, value) => {
-    setCustomTagsByStreamId((old) => ({
-      ...old,
-      [editingFile]: {
-        ...old[editingFile],
-        [editingStreamId]: {
-          ...(old[editingFile] || {})[editingStreamId],
-          [tag]: value,
-        },
-      },
-    }));
-  }, [editingFile, editingStreamId, setCustomTagsByStreamId]);
+    updateStreamParams(editingFile, editingStreamId, (params) => {
+      if (!params.has('customTags')) params.set('customTags', {});
+      const tags = params.get('customTags');
+      tags[tag] = value;
+    });
+  }, [editingFile, editingStreamId, updateStreamParams]);
 
   const onTagReset = useCallback((tag) => {
-    setCustomTagsByStreamId((old) => {
-      const { [tag]: deleted, ...rest } = (old[editingFile] || {})[editingStreamId] || {};
-
-      return {
-        ...old,
-        [editingFile]: {
-          ...old[editingFile],
-          [editingStreamId]: rest,
-        },
-      };
+    updateStreamParams(editingFile, editingStreamId, (params) => {
+      if (!params.has('customTags')) return;
+      // eslint-disable-next-line no-param-reassign
+      delete params.get('customTags')[tag];
     });
-  }, [editingFile, editingStreamId, setCustomTagsByStreamId]);
-
-  if (!editingStream) return null;
+  }, [editingFile, editingStreamId, updateStreamParams]);
 
   return (
-    <>
-      <Heading>Tags</Heading>
-      <TagEditor existingTags={existingTags} customTags={customTags} onTagChange={onTagChange} onTagReset={onTagReset} />
-    </>
+    <Dialog
+      title={t('Edit track {{trackNum}} metadata', { trackNum: editingStream && (editingStream.index + 1) })}
+      isShown={!!editingStream}
+      hasCancel={false}
+      isConfirmDisabled={editingTag != null}
+      confirmLabel={t('Done')}
+      onCloseComplete={() => setEditingStream()}
+    >
+      <div style={{ color: 'black' }}>
+        <Heading>Parameters</Heading>
+        <StreamParametersEditor stream={editingStream} streamParams={streamParams} updateStreamParams={(setter) => updateStreamParams(editingFile, editingStreamId, setter)} />
+        <Heading>Tags</Heading>
+        <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagChange={onTagChange} onTagReset={onTagReset} />
+      </div>
+    </Dialog>
   );
 });
 
@@ -183,10 +218,10 @@ function onInfoClick(json, title) {
   showJson5Dialog({ title, json });
 }
 
-const Stream = memo(({ dispositionByStreamId, setDispositionByStreamId, filePath, stream, onToggle, batchSetCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress }) => {
+const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress, paramsByStreamId, updateStreamParams }) => {
   const { t } = useTranslation();
 
-  const effectiveDisposition = useMemo(() => getStreamEffectiveDisposition(dispositionByStreamId, filePath, stream), [dispositionByStreamId, filePath, stream]);
+  const effectiveDisposition = useMemo(() => getStreamEffectiveDisposition(paramsByStreamId, filePath, stream), [filePath, paramsByStreamId, stream]);
 
   const bitrate = parseInt(stream.bit_rate, 10);
   const streamDuration = parseInt(stream.duration, 10);
@@ -230,14 +265,8 @@ const Stream = memo(({ dispositionByStreamId, setDispositionByStreamId, filePath
       newDisposition = deleteDispositionValue; // needs a separate value (not a real disposition)
     } // else unchanged (undefined)
 
-    setDispositionByStreamId((old) => ({
-      ...old,
-      [filePath]: {
-        ...old[filePath],
-        [stream.index]: newDisposition,
-      },
-    }));
-  }, [filePath, setDispositionByStreamId, stream.index]);
+    updateStreamParams(filePath, stream.index, (params) => params.set('disposition', newDisposition));
+  }, [filePath, updateStreamParams, stream.index]);
 
   const codecTag = stream.codec_tag !== '0x0000' && stream.codec_tag_string;
 
@@ -353,8 +382,7 @@ const StreamsSelector = memo(({
   mainFilePath, mainFileFormatData, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId,
   setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta,
   showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams,
-  customTagsByFile, setCustomTagsByFile, customTagsByStreamId, setCustomTagsByStreamId,
-  dispositionByStreamId, setDispositionByStreamId,
+  customTagsByFile, setCustomTagsByFile, paramsByStreamId, updateStreamParams,
 }) => {
   const [editingFile, setEditingFile] = useState();
   const [editingStream, setEditingStream] = useState();
@@ -404,8 +432,6 @@ const StreamsSelector = memo(({
           <tbody>
             {mainFileStreams.map((stream) => (
               <Stream
-                dispositionByStreamId={dispositionByStreamId}
-                setDispositionByStreamId={setDispositionByStreamId}
                 key={stream.index}
                 filePath={mainFilePath}
                 stream={stream}
@@ -415,6 +441,8 @@ const StreamsSelector = memo(({
                 setEditingStream={setEditingStream}
                 fileDuration={getFormatDuration(mainFileFormatData)}
                 onExtractStreamPress={() => onExtractStreamPress(stream.index)}
+                paramsByStreamId={paramsByStreamId}
+                updateStreamParams={updateStreamParams}
               />
             ))}
           </tbody>
@@ -430,8 +458,6 @@ const StreamsSelector = memo(({
             <tbody>
               {streams.map((stream) => (
                 <Stream
-                  dispositionByStreamId={dispositionByStreamId}
-                  setDispositionByStreamId={setDispositionByStreamId}
                   key={stream.index}
                   filePath={path}
                   stream={stream}
@@ -440,6 +466,8 @@ const StreamsSelector = memo(({
                   batchSetCopyStreamIds={(filter, enabled) => batchSetCopyStreamIdsForPath(path, streams, filter, enabled)}
                   setEditingStream={setEditingStream}
                   fileDuration={getFormatDuration(formatData)}
+                  paramsByStreamId={paramsByStreamId}
+                  updateStreamParams={updateStreamParams}
                 />
               ))}
             </tbody>
@@ -483,15 +511,15 @@ const StreamsSelector = memo(({
         <EditFileDialog editingFile={editingFile} allFilesMeta={allFilesMeta} customTagsByFile={customTagsByFile} setCustomTagsByFile={setCustomTagsByFile} />
       </Dialog>
 
-      <Dialog
-        title={t('Edit track {{trackNum}} metadata', { trackNum: editingStream && (editingStream.streamId + 1) })}
-        isShown={!!editingStream}
-        hasCancel={false}
-        confirmLabel={t('Done')}
-        onCloseComplete={() => setEditingStream()}
-      >
-        <EditStreamDialog editingStream={editingStream} allFilesMeta={allFilesMeta} customTagsByStreamId={customTagsByStreamId} setCustomTagsByStreamId={setCustomTagsByStreamId} />
-      </Dialog>
+      {editingStream != null && (
+        <EditStreamDialog
+          editingStream={editingStream}
+          setEditingStream={setEditingStream}
+          allFilesMeta={allFilesMeta}
+          paramsByStreamId={paramsByStreamId}
+          updateStreamParams={updateStreamParams}
+        />
+      )}
     </>
   );
 });
