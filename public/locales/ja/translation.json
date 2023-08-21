@@ -763,5 +763,14 @@
     "Common video/audio formats:": "一般的な動画/音声形式:",
     "Mini-waveform has been enabled. Click again to enable full-screen waveform": "ミニ波形が有効になりました。拡大波形にするには、再びクリックします",
     "Common subtitle formats:": "一般的な字幕形式:",
-    "Enabling this will allow faster playback of the exported file. This makes processing use 3 times as much export I/O, which is negligible for small files but might slow down exporting of large files.": "有効なら、出力したファイルはより高速に再生されます。出力I/Oを3倍にして処理するため、小さなファイルでの影響ではわずかですが、大きなファイルの出力では遅くなることがあります。"
+    "Enabling this will allow faster playback of the exported file. This makes processing use 3 times as much export I/O, which is negligible for small files but might slow down exporting of large files.": "有効なら、出力したファイルはより高速に再生されます。出力I/Oを3倍にして処理するため、小さなファイルでの影響ではわずかですが、大きなファイルの出力では遅くなることがあります。",
+    "Duplicate current segment": "現在のセグメントを複製",
+    "Duplicate segment": "セグメントの複製",
+    "DV Analyzer Summary.txt": "DV Analyzer Summary.txt",
+    "Frame number": "フレーム数",
+    "Overwrite output setting is disabled and some files might have been skipped.": "出力時に上書きする設定が無効なので、一部のファイルをスキップした可能性があります。",
+    "No editable parameters for this stream.": "このストリームに編集可能な変数はありません。",
+    "Treat source file modification date/time as:": "入力ファイルの更新日時の処理:",
+    "Reload current media": "現在のメディアを再読み込み",
+    "Show advanced settings": "高度な設定を表示"
 }
