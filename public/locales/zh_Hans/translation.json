@@ -800,5 +800,19 @@
     "Mini-waveform has been enabled. Click again to enable full-screen waveform": "微型波形已启用。再次单击以启用全屏波形",
     "Segments to chapters": "从片段到章节",
     "Enabling this will allow faster playback of the exported file. This makes processing use 3 times as much export I/O, which is negligible for small files but might slow down exporting of large files.": "启用此选项将允许更快地播放导出的文件。这使得处理使用的导出 I/O 量是其 3 倍，这对于小文件来说可以忽略不计，但可能会减慢大文件的导出速度。",
-    "<0>If you&apos;re having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></0><1>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</1>": "<0>如果您对无损切割有疑问，请先查看<1>帮助</1>菜单中的链接。如果找不到任何解决方案，您可以在 <3>GitHub 讨论</3> 或 <5>Discord.</5></0 上提问><1>如果您认为自己在无损切割中发现了错误，您可以<1>报告错误</1>.</1>"
+    "<0>If you&apos;re having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></0><1>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</1>": "<0>如果您对无损切割有疑问，请先查看<1>帮助</1>菜单中的链接。如果找不到任何解决方案，您可以在 <3>GitHub 讨论</3> 或 <5>Discord.</5></0 上提问><1>如果您认为自己在无损切割中发现了错误，您可以<1>报告错误</1>.</1>",
+    "Reload current media": "重新加载当前媒体",
+    "Show advanced settings": "显示高级设置",
+    "Treat source file modification date/time as:": "将源文件修改日期/时间视为：",
+    "Duplicate current segment": "复制当前段",
+    "DV Analyzer Summary.txt": "DV分析器摘要.txt",
+    "End of video": "视频结束",
+    "Frame number": "帧号",
+    "No editable parameters for this stream.": "此流没有可编辑的参数。",
+    "Overwrite output setting is disabled and some files might have been skipped.": "覆盖输出设置已禁用，某些文件可能已被跳过。",
+    "Source file's time minus segment end cut time": "源文件的时间减去分段结束切割时间",
+    "Duplicate segment": "重复的段",
+    "Enable \"{{filterName}}\" bitstream filter.": "启用\"{{filterName}}\" 位流筛选器。",
+    "Source file's time plus segment start cut time": "源文件的时间加上分段开始剪切时间",
+    "Start of video": "视频开始"
 }
