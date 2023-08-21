@@ -10,7 +10,6 @@ const yargsParser = require('yargs-parser');
 const JSON5 = require('json5');
 const remote = require('@electron/remote/main');
 const { stat } = require('fs/promises');
-const ffmpeg = require('./ffmpeg');
 
 const logger = require('./logger');
 const menu = require('./menu');
