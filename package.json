@@ -51,9 +51,9 @@
     "cross-env": "^7.0.3",
     "csv-parse": "^4.15.3",
     "csv-stringify": "^5.6.2",
-    "electron": "23",
-    "electron-builder": "^23.6.0",
-    "electron-builder-notarize": "^1.4.0",
+    "electron": "^26.0.0",
+    "electron-builder": "^24.6.3",
+    "electron-builder-notarize": "^1.5.1",
     "electron-devtools-installer": "^3.2.0",
     "eslint": "^7.32.0 || ^8.2.0",
     "eslint-config-airbnb": "^19.0.4",
@@ -97,7 +97,7 @@
     "wait-on": "^7.0.1"
   },
   "dependencies": {
-    "@electron/remote": "^2.0.9",
+    "@electron/remote": "^2.0.10",
     "@radix-ui/colors": "^0.1.8",
     "cue-parser": "^0.3.0",
     "data-uri-to-buffer": "^4.0.0",
