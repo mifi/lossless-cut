@@ -2,15 +2,9 @@ const { join } = require('path');
 const isDev = require('electron-is-dev');
 const readline = require('readline');
 const stringToStream = require('string-to-stream');
+const execa = require('execa');
 
 const { platform, arch, isWindows, isMac, isLinux } = require('./util');
-
-const execaPromise = import('execa');
-
-let execa;
-execaPromise.then((execaNew) => {
-  ({ execa } = execaNew);
-}).catch((err) => console.error(err));
 
 
 const runningFfmpegs = new Set();
@@ -507,7 +501,6 @@ function encodeLiveRawStream({ path, inWidth, inHeight, seekTo, streamIndex }) {
 const runFfmpeg = async (...args) => runFfmpegProcess(...args);
 
 module.exports = {
-  whenImported: execaPromise,
   setCustomFfPath,
   abortFfmpegs,
   getFfmpegPath,

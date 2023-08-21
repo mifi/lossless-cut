@@ -257,8 +257,6 @@ const readyPromise = app.whenReady();
 
 (async () => {
   try {
-    await ffmpeg.whenImported;
-
     logger.info('Initializing config store');
     await configStore.init();
 
