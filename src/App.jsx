@@ -485,7 +485,14 @@ const App = memo(() => {
 
   const { ensureWritableOutDir, ensureAccessToSourceDir } = useDirectoryAccess({ setCustomOutDir });
 
-  const toggleCaptureFormat = useCallback(() => setCaptureFormat(f => (f === 'png' ? 'jpeg' : 'png')), [setCaptureFormat]);
+  const toggleCaptureFormat = useCallback(() => setCaptureFormat((f) => {
+    const captureFormats = ['jpeg', 'png', 'webp'];
+    let index = captureFormats.indexOf(f);
+    if (index === -1) index = 0;
+    index += 1;
+    if (index >= captureFormats.length) index = 0;
+    return captureFormats[index];
+  }), [setCaptureFormat]);
 
   const toggleKeyframeCut = useCallback((showMessage) => setKeyframeCut((val) => {
     const newVal = !val;
