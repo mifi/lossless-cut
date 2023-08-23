@@ -114,6 +114,8 @@ EXIF/metadata can be preserved (see Export Options dialog), but it doesn't alway
 exiftool -tagsFromFile original-source-file.mp4 -all:all -overwrite_original exported-from-losslesscut.mp4
 ```
 
+More info [#1027](https://github.com/mifi/lossless-cut/issues/1027)
+
 ## Proprietary data tracks list
 
 When exporting, LosslessCut may be unable to process certain proprietary tracks. For example `tmcd`, `fdsc` and `gpmd` added by GoPro. These can however be losslessly exported to separate files if you want to keep this data for later.
