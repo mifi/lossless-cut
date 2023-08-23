@@ -1,7 +1,7 @@
 # FAQ
 
 - **Can LosslessCut crop, resize, stretch, mirror, overlay text/images, watermark, blur, redact, re-encode, speed-up/slow-down, create GIF, slideshow, burn subtitles, color grading, fade/transition between video clips, fade/combine/mix/merge audio tracks or change audio volume?**
-  - No, these are all lossy operations (meaning you have to re-encode the file), but in the future I may start to implement such features. [See this issue for more information.](https://github.com/mifi/lossless-cut/issues/372)
+  - No, these are all lossy operations (meaning you *have* to re-encode the file), but in the future I may start to implement such features. [See this issue for more information.](https://github.com/mifi/lossless-cut/issues/372)
 - Can LosslessCut be batched/automated using a CLI or API?
   - While it was never designed for advanced batching/automation, it does have a [basic CLI](./cli.md), and there are a few feature requests regarding this: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868).
 - Is there a keyboard shortcut to do X?
@@ -28,20 +28,29 @@ They have exactly the same in-app features, except for a few platform limitation
 If the video exports successfully without any error from LosslessCut, but it does not look as expected when playing back, please try this:
 
 - Try both `Keyframe cut` vs `Normal cut` (do not use `Smart Cut` if you have any problem)
-- Disable unnecessary tracks from the **Tracks panel**. First try to disable all tracks except the main track (e.g. video) and if that succeeds, then work your way by enabling more tracks and see which one is causing the problem. Sometimes LosslessCut (ffmpeg) is unable to cut certain tracks at all.
+- Disable unnecessary tracks from the **Tracks panel**. First try to disable all tracks except the main track (e.g. video) and if that succeeds, then work your way by enabling more tracks and see which one is causing the problem. Sometimes LosslessCut (ffmpeg) is unable to cut certain tracks at all, and this could lead to a strange output (e.g. wrong output duration or black parts).
 - Select a different **output format** (`matroska` and `mov` support a lot of codecs.)
-- Try to enable the **Experimental Flag** under **Settings**
 - Try the same operation with a different file (same codec or different codec) and see whether it's a problem with just one particular file.
+- Enable the **Experimental Flag** under **Settings** before trying again.
 
 ## Cutting times are not accurate
 
-Start cut time will be "rounded" to the nearest **previous** keyframe. This means that you often have **move the start cut time to few frames after** the desired keyframe.
-- Lossless cutting is not an exact science. For some files, it just works. For others, you may need to trial and error depending on the codec, keyframes etc to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
-- Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. You may need to try both, depending on the video. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` means `-ss` *before* `-i` and `Normal cut` means `-ss` *after* `-i`.
-- If you're seeing a blank video at the beginning of the resulting file, try `Keyframe cut` instead.
-- You may try to enable the new "Smart cut" mode to remedy this inaccuracy. However it is very experimental and may not work for most files.
-- Try to set the **start**-cutpoint a few frames **before or after** the nearest keyframe (may also solve audio sync issues).
-- Alternatively, try to change `avoid_negative_ts` (in export options).
+Each segment's *start cut time* will be "rounded" to the nearest **previous** keyframe. This means that you often have **move the start cut time to few frames after** the desired keyframe.
+- Lossless cutting is not an exact science. For some files, it just works. For others, you may need to trial and error to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
+- Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. Most common video files need `Keyframe cut`, but you may need to try both. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` corresponds to `-ss` *before* `-i` and `Normal cut` is `-ss` *after* `-i`.
+- Try to change `avoid_negative_ts` (in export options).
+- Try also to set the **start**-cutpoint a few frames **before or after** the nearest keyframe (may also solve audio sync issues).
+- You may try to enable the new "Smart cut" mode to allow cutting between keyframes. However it is very experimental and may not work for many files.
+
+### Starts from wrong keyframe
+
+For some files, when you place segment start cutpoints at keyframes, and you export, it will instead cut from the keyframe **before** the keyframe that you wanted. This is because with some videos, ffmpeg struggles to find the nearest previous keyframe, see [#1216](https://github.com/mifi/lossless-cut/issues/1216). To workaround this, you can try to shift your segments' **start**-cutpoints forward by a few frames, so that ffmpeg correctly cuts from the *previous* keyframe. You can do this for all segments before exporting as follows:
+
+- Menu: "Edit" -> "Segments" -> "Shift all segments on timeline"
+- Enter `00:00:00.200` (or a larger value if it doesn't help)
+- When asked about Start or End timestamps, Select **Start**
+
+This will effectively shift all start times of segments by 6 frames (`6/30=0.2` for 30fps video).
 
 ## Cut file has same length as input
 
@@ -95,15 +104,19 @@ Some codecs are not natively supported, so they will preview with low quality pl
 
 ## MPEG TS / MTS
 
-MPEG TS (`.mts`/`.ts`) files have a tendency to be a bit problematic. It may help to **first** remux them to another format like MP4/MKV. Then you can open the MP4/MKV file an work on that. Also disable non-needed tracks.
+MPEG TS (`.mts`/`.ts`) files have a tendency to be a bit problematic. It may help to **first** remux them to another format like MP4/MKV. Then you can open the MP4/MKV file an work on that. Also disable non-needed tracks. In LosslessCut you can remux files by simply opening them, select a different output format, and export without editing the timeline (segments).
 
 ## EXIF / metadata
 
-EXIF/metadata can be preserved (see Export Options dialog), but it doesn't always output compliant files, so use it carefully.
+EXIF/metadata can be preserved (see Export Options dialog), but it doesn't always output compliant files, so use it carefully. Alternatively you can use [exiftool](https://exiftool.org/) after exporting with LosslessCut to transfer metadata, for example:
 
-## When exporting you may lose some proprietary data tracks
+```bash
+exiftool -tagsFromFile original-source-file.mp4 -all:all -overwrite_original exported-from-losslesscut.mp4
+```
 
-For example `tmcd`, `fdsc` and `gpmd` added by GoPro. These can however be losslessly exported to separate files if you want to keep this data for later.
+## Proprietary data tracks list
+
+When exporting, LosslessCut may be unable to process certain proprietary tracks. For example `tmcd`, `fdsc` and `gpmd` added by GoPro. These can however be losslessly exported to separate files if you want to keep this data for later.
 
 ## Multiple LosslessCut instances
 
