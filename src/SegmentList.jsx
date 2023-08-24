@@ -63,7 +63,7 @@ const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, g
       { type: 'separator' },
 
       { label: t('Segment tags'), click: () => onViewSegmentTags(index) },
-      { label: t('Extract frames as image files'), click: () => onExtractSegmentFramesAsImages(index) },
+      { label: t('Extract frames as image files'), click: () => onExtractSegmentFramesAsImages([seg.segId]) },
     ];
   }, [invertCutSegments, t, jumpSegStart, jumpSegEnd, addSegment, onLabelPress, onRemovePress, onLabelSelectedSegments, onRemoveSelected, onReorderPress, onDuplicateSegmentClick, seg, onSelectSingleSegment, onSelectAllSegments, onDeselectAllSegments, onSelectSegmentsByLabel, onInvertSelectedSegments, updateOrder, onViewSegmentTags, index, onExtractSegmentFramesAsImages]);
 

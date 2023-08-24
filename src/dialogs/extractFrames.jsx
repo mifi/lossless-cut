@@ -4,9 +4,9 @@ import Swal from '../swal';
 
 
 // eslint-disable-next-line import/prefer-default-export
-export async function askExtractFramesAsImages({ segmentNumFrames, fps }) {
+export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps }) {
   const { value: captureChoice } = await Swal.fire({
-    text: i18n.t('Extract frames of the selected segment as images?'),
+    text: i18n.t(plural ? 'Extract frames of the selected segments as images' : 'Extract frames of the current segment as images'),
     icon: 'question',
     input: 'radio',
     inputValue: 'thumbnailFilter',
@@ -24,7 +24,7 @@ export async function askExtractFramesAsImages({ segmentNumFrames, fps }) {
   if (!captureChoice) return undefined;
 
   let filter;
-  let estimatedMaxNumFiles = segmentNumFrames;
+  let estimatedMaxNumFiles = segmentsNumFrames;
 
   if (captureChoice === 'thumbnailFilter') {
     const { value } = await Swal.fire({
@@ -40,7 +40,7 @@ export async function askExtractFramesAsImages({ segmentNumFrames, fps }) {
     if (Number.isNaN(intervalFrames) || intervalFrames < 1 || intervalFrames > 1000) return undefined; // a too large value uses a lot of memory
 
     filter = `thumbnail=${intervalFrames}`;
-    estimatedMaxNumFiles = Math.round(segmentNumFrames / intervalFrames);
+    estimatedMaxNumFiles = Math.round(segmentsNumFrames / intervalFrames);
   }
 
   if (captureChoice === 'selectNthSec' || captureChoice === 'selectNthFrame') {
@@ -74,7 +74,7 @@ export async function askExtractFramesAsImages({ segmentNumFrames, fps }) {
     }
 
     filter = `select=not(mod(n\\,${nthFrame}))`;
-    estimatedMaxNumFiles = Math.round(segmentNumFrames / nthFrame);
+    estimatedMaxNumFiles = Math.round(segmentsNumFrames / nthFrame);
   }
   if (captureChoice === 'selectScene') {
     const { value } = await Swal.fire({

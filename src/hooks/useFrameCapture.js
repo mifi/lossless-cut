@@ -51,7 +51,6 @@ export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }) => {
     const matches = files.map((fileName) => {
       const escapedRegexp = escapeRegExp(getSuffixedFileName(filePath, tmpSuffix));
       const regexp = `^${escapedRegexp}(\\d+)`;
-      console.log(regexp);
       const match = fileName.match(new RegExp(regexp));
       if (!match) return undefined;
       const frameNum = parseInt(match[1], 10);

@@ -1276,19 +1276,34 @@ const App = memo(() => {
     }
   }, [filePath, getRelevantTime, usingPreviewFile, captureFrameMethod, captureFrameFromFfmpeg, customOutDir, captureFormat, captureFrameQuality, captureFrameFromTag, hideAllNotifications]);
 
-  const extractSegmentFramesAsImages = useCallback(async (index) => {
+  const extractSegmentFramesAsImages = useCallback(async (segIds) => {
     if (!filePath || detectedFps == null || workingRef.current) return;
-    const { start, end } = apparentCutSegments[index];
-    const segmentNumFrames = getFrameCount(end - start);
-    const captureFramesResponse = await askExtractFramesAsImages({ segmentNumFrames, fps: detectedFps });
+    const segments = apparentCutSegments.filter((seg) => segIds.includes(seg.segId));
+    const segmentsNumFrames = segments.reduce((acc, { start, end }) => acc + getFrameCount(end - start) ?? 0, 0);
+    const captureFramesResponse = await askExtractFramesAsImages({ segmentsNumFrames, plural: segments.length > 1, fps: detectedFps });
     if (captureFramesResponse == null) return;
 
     try {
       setWorking(i18n.t('Extracting frames'));
+      console.log('Extracting frames as images', { segIds, captureFramesResponse });
 
       setCutProgress(0);
-      const outPath = await captureFramesRange({ customOutDir, filePath, fps: detectedFps, fromTime: start, toTime: end, estimatedMaxNumFiles: captureFramesResponse.estimatedMaxNumFiles, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, outputTimestamps: captureFrameFileNameFormat === 'timestamp', onProgress: setCutProgress });
-      if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: outPath, text: i18n.t('Frames extracted to: {{path}}', { path: outputDir }) });
+
+      let lastOutPath;
+      let totalProgress = 0;
+
+      const onProgress = (progress) => {
+        totalProgress += progress;
+        setCutProgress(totalProgress / segments.length);
+      };
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const segment of segments) {
+        const { start, end } = segment;
+        // eslint-disable-next-line no-await-in-loop
+        lastOutPath = await captureFramesRange({ customOutDir, filePath, fps: detectedFps, fromTime: start, toTime: end, estimatedMaxNumFiles: captureFramesResponse.estimatedMaxNumFiles, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, outputTimestamps: captureFrameFileNameFormat === 'timestamp', onProgress });
+      }
+      if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: lastOutPath, text: i18n.t('Frames extracted to: {{path}}', { path: outputDir }) });
     } catch (err) {
       handleError(err);
     } finally {
@@ -1297,7 +1312,8 @@ const App = memo(() => {
     }
   }, [apparentCutSegments, captureFormat, captureFrameFileNameFormat, captureFrameQuality, captureFramesRange, customOutDir, detectedFps, filePath, getFrameCount, hideAllNotifications, outputDir, setWorking]);
 
-  const extractCurrentSegmentFramesAsImages = useCallback(() => extractSegmentFramesAsImages(currentSegIndexSafe), [currentSegIndexSafe, extractSegmentFramesAsImages]);
+  const extractCurrentSegmentFramesAsImages = useCallback(() => extractSegmentFramesAsImages([currentCutSeg?.segId]), [currentCutSeg?.segId, extractSegmentFramesAsImages]);
+  const extractSelectedSegmentsFramesAsImages = useCallback(() => extractSegmentFramesAsImages(selectedSegments.map((seg) => seg.segId)), [extractSegmentFramesAsImages, selectedSegments]);
 
   const changePlaybackRate = useCallback((dir, rateMultiplier) => {
     if (canvasPlayerEnabled) {
@@ -1920,6 +1936,7 @@ const App = memo(() => {
       toggleLastCommands: () => { toggleLastCommands(); return false; },
       export: onExportPress,
       extractCurrentSegmentFramesAsImages,
+      extractSelectedSegmentsFramesAsImages,
       reorderSegsByStartTime,
       invertAllSegments,
       fillSegmentsGaps,
@@ -1995,7 +2012,7 @@ const App = memo(() => {
     if (match) return bubble;
 
     return true; // bubble the event
-  }, [addSegment, alignSegmentTimesToKeyframes, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, combineOverlappingSegments, combineSelectedSegments, concatCurrentBatch, concatDialogVisible, convertFormatBatch, copySegmentsToClipboard, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, duplicateCurrentSegment, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, invertSelectedSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, toggleLoopSelectedSegments, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addSegment, alignSegmentTimesToKeyframes, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeExportConfirm, combineOverlappingSegments, combineSelectedSegments, concatCurrentBatch, concatDialogVisible, convertFormatBatch, copySegmentsToClipboard, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, duplicateCurrentSegment, exportConfirmVisible, extractAllStreams, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, invertSelectedSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, keyboardShortcutsVisible, onExportConfirm, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, toggleLoopSelectedSegments, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   useKeyboard({ keyBindings, onKeyPress });
 
