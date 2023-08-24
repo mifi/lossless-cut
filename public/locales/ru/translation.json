@@ -776,5 +776,9 @@
     "Enable \"{{filterName}}\" bitstream filter.": "Включить фильтр битового потока \"{{filterName}}\".",
     "No editable parameters for this stream.": "Для этого потока нет редактируемых параметров.",
     "Reload current media": "Перезагрузить текущий носитель",
-    "Show advanced settings": "Показать дополнительные настройки"
+    "Show advanced settings": "Показать дополнительные настройки",
+    "Source file's time minus segment end cut time": "Время исходного файла минус время окончания обрезки сегмента",
+    "Source file's time plus segment start cut time": "Время исходного файла плюс время начала обрезки сегмента",
+    "Start of video": "Начало видео",
+    "Treat source file modification date/time as:": "Рассматривать дату/время изменения исходного файла как:"
 }
