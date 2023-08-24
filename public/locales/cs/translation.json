@@ -779,5 +779,19 @@
     "Segments to chapters": "Segmenty na kapitoly",
     "Segments to chapters mode is active, this means that the file will not be cut. Instead chapters will be created from the segments.": "Režim segmentů na kapitoly je aktivní, soubor tedy nebude stříhán. Místo toho budou ze segmentů vytvořeny kapitoly.",
     "Enabling this will allow faster playback of the exported file. This makes processing use 3 times as much export I/O, which is negligible for small files but might slow down exporting of large files.": "Zapnutím umožníte rychlejší přehrávání exportovaného souboru. Zpracování při exportu bude ale vyžadovat 3x více operací I/O, což je zanedbatelné u malých souborů ale u velkých dojde ke zpomalení.",
-    "Output file name template results in duplicate file names (you are trying to export multiple files with the same name). You can fix this for example by adding the \"{{segNumVariable}}\" variable.": "Výstupní šablona jména souboru má za následek duplicitní jména (snažíte se exportovat více souborů se stejným jménem). Opravíte to například přidáním proměnné \"{{segNumVariable}}\"."
+    "Output file name template results in duplicate file names (you are trying to export multiple files with the same name). You can fix this for example by adding the \"{{segNumVariable}}\" variable.": "Výstupní šablona jména souboru má za následek duplicitní jména (snažíte se exportovat více souborů se stejným jménem). Opravíte to například přidáním proměnné \"{{segNumVariable}}\".",
+    "Duplicate segment": "Duplikovat segment",
+    "DV Analyzer Summary.txt": "DV Analyzer Summary.txt",
+    "Enable \"{{filterName}}\" bitstream filter.": "Zapnout bitstream filtr \"{{filterName}}\".",
+    "End of video": "Konec videa",
+    "Frame number": "Číslo snímku",
+    "Overwrite output setting is disabled and some files might have been skipped.": "Volba přepsání výstupu je vypnutá a některé soubory mohly být vynechány.",
+    "Duplicate current segment": "Duplikovat aktuální segment",
+    "No editable parameters for this stream.": "Žádné upravitelné parametry tohoto streamu.",
+    "Show advanced settings": "Zobrazit pokročilá nastavení",
+    "Reload current media": "Znovu načíst aktuální média",
+    "Source file's time minus segment end cut time": "Čas zdrojového souboru mínus čas konce segmentu",
+    "Source file's time plus segment start cut time": "Čas zdrojového souboru plus čas začátku segmentu",
+    "Start of video": "Začátek videa",
+    "Treat source file modification date/time as:": "Nakládat s datem/časem úpravy zdrojového souboru jako:"
 }
