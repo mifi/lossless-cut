@@ -766,5 +766,15 @@
     "Output file name template results in duplicate file names (you are trying to export multiple files with the same name). You can fix this for example by adding the \"{{segNumVariable}}\" variable.": "Шаблон имени выходного файла приводит к дублированию имен файлов (вы пытаетесь экспортировать несколько файлов с одним и тем же именем). Это можно исправить, например, добавив переменную \"{{segNumVariable}}\".",
     "Enabling this will allow faster playback of the exported file. This makes processing use 3 times as much export I/O, which is negligible for small files but might slow down exporting of large files.": "Включение этого параметра позволит ускорить воспроизведение экспортированного файла. Это приводит к тому, что при обработке используется в 3 раза больше операций ввода-вывода при экспорте, что незначительно для небольших файлов, но может замедлить экспорт больших файлов.",
     "Mini-waveform has been enabled. Click again to enable full-screen waveform": "Мини-форма волны была включена. Нажмите еще раз, чтобы включить полноэкранный режим волны",
-    "Segments to chapters": "Сегменты в главы"
+    "Segments to chapters": "Сегменты в главы",
+    "DV Analyzer Summary.txt": "DV Analyzer Summary.txt",
+    "End of video": "Конец видео",
+    "Frame number": "Номер кадра",
+    "Overwrite output setting is disabled and some files might have been skipped.": "Настройка перезаписи вывода отключена, поэтому некоторые файлы могли быть пропущены.",
+    "Duplicate current segment": "Дублировать текущий сегмент",
+    "Duplicate segment": "Дублировать сегмент",
+    "Enable \"{{filterName}}\" bitstream filter.": "Включить фильтр битового потока \"{{filterName}}\".",
+    "No editable parameters for this stream.": "Для этого потока нет редактируемых параметров.",
+    "Reload current media": "Перезагрузить текущий носитель",
+    "Show advanced settings": "Показать дополнительные настройки"
 }
