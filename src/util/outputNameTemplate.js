@@ -7,6 +7,7 @@ import { getSegmentTags, formatSegNum } from '../segments';
 
 
 export const segNumVariable = 'SEG_NUM';
+export const segSuffixVariable = 'SEG_SUFFIX';
 
 const { parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize } = window.require('path');
 
@@ -89,12 +90,12 @@ function interpolateSegmentFileName({ template, epochMs, inputFileNameWithoutExt
   return compiled(data);
 }
 
-export function generateOutSegFileNames({ segments, template, forceSafeOutputFileName, formatTimecode, isCustomFormatSelected, fileFormat, filePath, safeOutputFileName, maxLabelLength }) {
+export function generateOutSegFileNames({ segments, template, forceSafeOutputFileName, formatTimecode, isCustomFormatSelected, fileFormat, filePath, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding }) {
   const epochMs = Date.now();
 
   return segments.map((segment, i) => {
     const { start, end, name = '' } = segment;
-    const segNum = formatSegNum(i, segments.length);
+    const segNum = formatSegNum(i, segments.length, outputFileNameMinZeroPadding);
 
     // Fields that did not come from the source file's name must be sanitized, because they may contain characters that are not supported by the target operating/file system
     // however we disable this when the user has chosen to (safeOutputFileName === false)

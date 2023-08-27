@@ -113,4 +113,7 @@ it('detects overlapping segments, undefined end', () => {
 test('formatSegNum', () => {
   expect(formatSegNum(0, 9)).toBe('1');
   expect(formatSegNum(0, 10)).toBe('01');
+
+  expect(formatSegNum(0, 10, 2)).toBe('01');
+  expect(formatSegNum(0, 10, 3)).toBe('001');
 });

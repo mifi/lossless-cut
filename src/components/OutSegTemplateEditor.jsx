@@ -1,27 +1,31 @@
-import React, { memo, useState, useEffect, useCallback, useRef } from 'react';
+import React, { memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { WarningSignIcon, ErrorIcon, Button, IconButton, TickIcon, ResetIcon } from 'evergreen-ui';
 import withReactContent from 'sweetalert2-react-content';
 import { IoIosHelpCircle } from 'react-icons/io';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import Swal from '../swal';
 import HighlightedText from './HighlightedText';
-import { defaultOutSegTemplate, segNumVariable } from '../util/outputNameTemplate';
+import { defaultOutSegTemplate, segNumVariable, segSuffixVariable } from '../util/outputNameTemplate';
 import useUserSettings from '../hooks/useUserSettings';
+import Switch from './Switch';
+import Select from './Select';
 
 const ReactSwal = withReactContent(Swal);
 
 const electron = window.require('electron');
 
-// eslint-disable-next-line no-template-curly-in-string
-const extVar = '${EXT}';
+const formatVariable = (variable) => `\${${variable}}`;
+
+const extVar = formatVariable('EXT');
 
 const inputStyle = { flexGrow: 1, fontFamily: 'inherit', fontSize: '.8em', backgroundColor: 'var(--gray3)', color: 'var(--gray12)', border: '1px solid var(--gray7)', appearance: 'none' };
 
 const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe, getOutSegError }) => {
-  const { safeOutputFileName, toggleSafeOutputFileName } = useUserSettings();
+  const { safeOutputFileName, toggleSafeOutputFileName, outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding } = useUserSettings();
 
   const [text, setText] = useState(outSegTemplate);
   const [debouncedText] = useDebounce(text, 500);
@@ -32,6 +36,8 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
   const inputRef = useRef();
 
   const { t } = useTranslation();
+
+  const hasTextNumericPaddedValue = useMemo(() => [segNumVariable, segSuffixVariable].some((v) => debouncedText.includes(formatVariable(v))), [debouncedText]);
 
   useEffect(() => {
     if (debouncedText == null) return;
@@ -92,44 +98,63 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
     const startPos = input.selectionStart;
     const endPos = input.selectionEnd;
 
-    const newValue = `${text.slice(0, startPos)}${`\${${variable}}${text.slice(endPos)}`}`;
+    const newValue = `${text.slice(0, startPos)}${`${formatVariable(variable)}${text.slice(endPos)}`}`;
     setText(newValue);
   }, [text]);
 
   return (
-    <>
-      <div>
-        <div>{outSegFileNames != null && t('Output name(s):', { count: outSegFileNames.length })}</div>
+    <motion.div animate={{ margin: needToShow ? '1.5em 0' : 0, maxWidth: 600 }}>
+      <div>{outSegFileNames != null && t('Output name(s):', { count: outSegFileNames.length })}</div>
 
-        {outSegFileNames != null && <HighlightedText role="button" onClick={onShowClick} style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>{outSegFileNames[currentSegIndexSafe] || outSegFileNames[0] || '-'}</HighlightedText>}
-      </div>
+      {outSegFileNames != null && <HighlightedText role="button" onClick={onShowClick} style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>{outSegFileNames[currentSegIndexSafe] || outSegFileNames[0] || '-'}</HighlightedText>}
 
-      {needToShow && (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 5, marginTop: 10 }}>
-            <input type="text" ref={inputRef} style={inputStyle} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
+      <AnimatePresence>
+        {needToShow && (
+          <motion.div
+            key="1"
+            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+            animate={{ opacity: 1, height: 'auto', marginTop: '1em' }}
+            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.2em' }}>
+              <input type="text" ref={inputRef} style={inputStyle} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
 
-            {outSegFileNames != null && <Button height={20} onClick={onAllSegmentsPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
-            <Button title={t('Whether or not to sanitize output file names (sanitizing removes special characters)')} marginLeft={5} height={20} onClick={toggleSafeOutputFileName} intent={safeOutputFileName ? 'success' : 'danger'}>{safeOutputFileName ? t('Sanitize') : t('No sanitize')}</Button>
-            <IconButton title={t('Reset')} icon={ResetIcon} height={20} onClick={reset} marginLeft={5} intent="danger" />
-            <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" />
-          </div>
-          <div style={{ maxWidth: 600 }}>
+              {outSegFileNames != null && <Button height={20} onClick={onAllSegmentsPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
+
+              <IconButton title={t('Reset')} icon={ResetIcon} height={20} onClick={reset} marginLeft={5} intent="danger" />
+              <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" />
+            </div>
+
+            <div style={{ fontSize: '.8em', color: 'var(--gray11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
+              {`${i18n.t('Variables')}:`}
+
+              <IoIosHelpCircle fontSize="1.3em" color="var(--gray12)" role="button" cursor="pointer" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/import-export.md#customising-exported-file-names')} />
+              {['FILENAME', 'CUT_FROM', 'CUT_TO', segNumVariable, 'SEG_LABEL', segSuffixVariable, 'EXT', 'SEG_TAGS.XX', 'EPOCH_MS'].map((variable) => (
+                <span key={variable} role="button" style={{ cursor: 'pointer', marginRight: '.2em', textDecoration: 'underline', textDecorationStyle: 'dashed', fontSize: '.9em' }} onClick={() => onVariableClick(variable)}>{variable}</span>
+              ))}
+            </div>
+
             {error != null && <div style={{ marginBottom: '1em' }}><ErrorIcon color="var(--red9)" size={14} verticalAlign="baseline" /> {i18n.t('There is an error in the file name template:')} {error}</div>}
 
             {isMissingExtension && <div style={{ marginBottom: '1em' }}><WarningSignIcon color="var(--amber9)" /> {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVar })}</div>}
 
-            <div style={{ fontSize: '.8em', color: 'var(--gray11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center' }}>
-              {`${i18n.t('Variables')}:`}
-              <IoIosHelpCircle fontSize="1.3em" color="var(--gray12)" role="button" cursor="pointer" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/import-export.md#customising-exported-file-names')} />
-              {['FILENAME', 'CUT_FROM', 'CUT_TO', segNumVariable, 'SEG_LABEL', 'SEG_SUFFIX', 'EXT', 'SEG_TAGS.XX', 'EPOCH_MS'].map((variable) => (
-                <span key={variable} role="button" style={{ cursor: 'pointer', marginRight: '.2em' }} onClick={() => onVariableClick(variable)}>{variable}</span>
-              ))}
+            <div title={t('Whether or not to sanitize output file names (sanitizing removes special characters)')} style={{ marginBottom: '.3em' }}>
+              <Switch checked={safeOutputFileName} onCheckedChange={toggleSafeOutputFileName} style={{ verticalAlign: 'middle', marginRight: '.5em' }} />
+              <span>{t('Sanitize file names')}</span>
             </div>
-          </div>
-        </>
-      )}
-    </>
+
+            {hasTextNumericPaddedValue && (
+              <div style={{ marginBottom: '.3em' }}>
+                <Select value={outputFileNameMinZeroPadding} onChange={(e) => setOutputFileNameMinZeroPadding(parseInt(e.target.value, 10))} style={{ marginRight: '1em' }}>
+                  {Array.from({ length: 10 }).map((v, i) => i + 1).map((v) => <option key={v} value={v}>{v}</option>)}
+                </Select>
+                Minimum numeric padded length
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 });
 

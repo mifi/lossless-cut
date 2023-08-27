@@ -235,7 +235,7 @@ export function playOnlyCurrentSegment({ playbackMode, currentTime, playingSegme
 
 export const getNumDigits = (value) => Math.floor(value > 0 ? Math.log10(value) : 0) + 1;
 
-export function formatSegNum(segIndex, numSegments) {
+export function formatSegNum(segIndex, numSegments, minLength = 0) {
   const numDigits = getNumDigits(numSegments);
-  return `${segIndex + 1}`.padStart(numDigits, '0');
+  return `${segIndex + 1}`.padStart(Math.max(numDigits, minLength), '0');
 }

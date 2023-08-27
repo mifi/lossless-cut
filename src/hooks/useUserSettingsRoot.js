@@ -141,7 +141,8 @@ export default () => {
   useEffect(() => safeSetConfig({ darkMode }), [darkMode]);
   const [preferStrongColors, setPreferStrongColors] = useState(safeGetConfigInitial('preferStrongColors'));
   useEffect(() => safeSetConfig({ preferStrongColors }), [preferStrongColors]);
-
+  const [outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding] = useState(safeGetConfigInitial('outputFileNameMinZeroPadding'));
+  useEffect(() => safeSetConfig({ outputFileNameMinZeroPadding }), [outputFileNameMinZeroPadding]);
 
   const resetKeyBindings = useCallback(() => {
     configStore.reset('keyBindings');
@@ -258,5 +259,7 @@ export default () => {
     setDarkMode,
     preferStrongColors,
     setPreferStrongColors,
+    outputFileNameMinZeroPadding,
+    setOutputFileNameMinZeroPadding,
   };
 };
