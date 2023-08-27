@@ -238,13 +238,6 @@ const Settings = memo(({
           </Row>
 
           <Row>
-            <KeyCell>{t('Overwrite files when exporting, if a file with the same name as the output file name exists?')}</KeyCell>
-            <td>
-              <Switch checked={enableOverwriteOutput} onCheckedChange={setEnableOverwriteOutput} />
-            </td>
-          </Row>
-
-          <Row>
             <KeyCell>{t('Cleanup files after export?')}</KeyCell>
             <td>
               <Button iconBefore={<CleanIcon />} onClick={askForCleanupChoices}>{t('Change preferences')}</Button>

@@ -40,7 +40,7 @@ const ExportConfirm = memo(({
 }) => {
   const { t } = useTranslation();
 
-  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, movFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, togglePreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode } = useUserSettings();
+  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, movFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, togglePreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput } = useUserSettings();
 
   const isMov = ffmpegIsMov(outFormat);
   const isIpod = outFormat === 'ipod';
@@ -54,6 +54,8 @@ const ExportConfirm = memo(({
     'merge+separate': t('Auto merge segments to one file after export, but keep segments too'),
     separate: t('Export to separate files'),
   })[effectiveExportMode], [effectiveExportMode, t]);
+
+  const showHelpText = useCallback(({ icon = 'info', timer = 10000, text }) => toast.fire({ icon, timer, text }), []);
 
   const onPreserveMovDataHelpPress = useCallback(() => {
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Preserve all MOV/MP4 metadata tags (e.g. EXIF, GPS position etc.) from source file? Note that some players have trouble playing back files where all metadata is preserved, like iTunes and other Apple software') });
@@ -195,6 +197,25 @@ const ExportConfirm = memo(({
                         </td>
                       </tr>
                     )}
+
+                    <tr>
+                      <td>
+                        {t('Overwrite existing files')}
+                      </td>
+                      <td>
+                        <Switch checked={enableOverwriteOutput} onCheckedChange={setEnableOverwriteOutput} />
+                      </td>
+                      <td>
+                        <HelpIcon onClick={() => showHelpText({ text: t('Overwrite files when exporting, if a file with the same name as the output file name exists?') })} />
+                      </td>
+                    </tr>
+
+                    <div>
+                      <div>{}</div>
+                      <td>
+
+                      </td>
+                    </div>
                   </tbody>
                 </table>
                 <h3 style={{ marginBottom: '.5em' }}>{t('Advanced options')}</h3>
