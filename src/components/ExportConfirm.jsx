@@ -209,13 +209,6 @@ const ExportConfirm = memo(({
                         <HelpIcon onClick={() => showHelpText({ text: t('Overwrite files when exporting, if a file with the same name as the output file name exists?') })} />
                       </td>
                     </tr>
-
-                    <div>
-                      <div>{}</div>
-                      <td>
-
-                      </td>
-                    </div>
                   </tbody>
                 </table>
                 <h3 style={{ marginBottom: '.5em' }}>{t('Advanced options')}</h3>

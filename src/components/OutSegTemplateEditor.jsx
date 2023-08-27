@@ -103,7 +103,7 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
   }, [text]);
 
   return (
-    <motion.div animate={{ margin: needToShow ? '1.5em 0' : 0, maxWidth: 600 }}>
+    <motion.div style={{ maxWidth: 600 }} animate={{ margin: needToShow ? '1.5em 0' : 0 }}>
       <div>{outSegFileNames != null && t('Output name(s):', { count: outSegFileNames.length })}</div>
 
       {outSegFileNames != null && <HighlightedText role="button" onClick={onShowClick} style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>{outSegFileNames[currentSegIndexSafe] || outSegFileNames[0] || '-'}</HighlightedText>}
@@ -138,11 +138,6 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
 
             {isMissingExtension && <div style={{ marginBottom: '1em' }}><WarningSignIcon color="var(--amber9)" /> {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVar })}</div>}
 
-            <div title={t('Whether or not to sanitize output file names (sanitizing removes special characters)')} style={{ marginBottom: '.3em' }}>
-              <Switch checked={safeOutputFileName} onCheckedChange={toggleSafeOutputFileName} style={{ verticalAlign: 'middle', marginRight: '.5em' }} />
-              <span>{t('Sanitize file names')}</span>
-            </div>
-
             {hasTextNumericPaddedValue && (
               <div style={{ marginBottom: '.3em' }}>
                 <Select value={outputFileNameMinZeroPadding} onChange={(e) => setOutputFileNameMinZeroPadding(parseInt(e.target.value, 10))} style={{ marginRight: '1em' }}>
@@ -151,6 +146,13 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
                 Minimum numeric padded length
               </div>
             )}
+
+            <div title={t('Whether or not to sanitize output file names (sanitizing removes special characters)')} style={{ marginBottom: '.3em' }}>
+              <Switch checked={safeOutputFileName} onCheckedChange={toggleSafeOutputFileName} style={{ verticalAlign: 'middle', marginRight: '.5em' }} />
+              <span>{t('Sanitize file names')}</span>
+
+              {!safeOutputFileName && <WarningSignIcon color="var(--amber9)" style={{ marginLeft: '.5em' }} />}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
