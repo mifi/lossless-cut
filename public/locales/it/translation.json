@@ -734,5 +734,19 @@
     "Enabling this will allow faster playback of the exported file. This makes processing use 3 times as much export I/O, which is negligible for small files but might slow down exporting of large files.": "L'abilitazione consentirà una riproduzione più rapida del file esportato. Ciò fa sì che l'elaborazione usi 3 volte più I/O per l'esportazione, il che è trascurabile per i file di piccole dimensioni ma potrebbe rallentare l'esportazione di file di grandi dimensioni.",
     "Feature request": "Richiesta funzionalità",
     "Output file name template results in duplicate file names (you are trying to export multiple files with the same name). You can fix this for example by adding the \"{{segNumVariable}}\" variable.": "Il modello nome file destinazione genera nomi file duplicati (stai tentando di esportare più file con lo stesso nome). Puoi risolvere questo problema, ad esempio, aggiungendo la variabile \"{{segNumVariable}}\".",
-    "Mini-waveform has been enabled. Click again to enable full-screen waveform": "La mini-forma d'onda è stata abilitata. Fai nuovamente clic per abilitare la forma d'onda a schermo intero"
+    "Mini-waveform has been enabled. Click again to enable full-screen waveform": "La mini-forma d'onda è stata abilitata. Fai nuovamente clic per abilitare la forma d'onda a schermo intero",
+    "Duplicate current segment": "Duplica segmento attuale",
+    "Reload current media": "Ricarica media attuale",
+    "Duplicate segment": "Segmento duplicato",
+    "DV Analyzer Summary.txt": "Riepilogo analizzatore DV.txt",
+    "Enable \"{{filterName}}\" bitstream filter.": "Abilita filtro bitstream \"{{filterName}}\".",
+    "End of video": "Fine del video",
+    "Frame number": "Numero fotogramma",
+    "No editable parameters for this stream.": "Nessun parametro modificabile per questo stream.",
+    "Overwrite output setting is disabled and some files might have been skipped.": "L'impostazione di sovrascrittura dell'output è disabilitata e alcuni file potrebbero essere stati ignorati.",
+    "Show advanced settings": "Visualizza impostazioni avanzate",
+    "Source file's time minus segment end cut time": "Durata file sorgente meno durata fine taglio segmento",
+    "Source file's time plus segment start cut time": "Durata file sorgente più durata taglio iniziale segmento",
+    "Start of video": "Inizio del video",
+    "Treat source file modification date/time as:": "Tratta data/ora modifica file sorgente come:"
 }
