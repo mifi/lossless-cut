@@ -284,18 +284,29 @@ function getFffmpegJpegQuality(quality) {
   return Math.min(Math.max(qMin, quality, Math.round((1 - quality) * (qMax - qMin) + qMin)), qMax);
 }
 
-async function captureFrames({ from, to, videoPath, outPathTemplate, quality, filter, framePts, onProgress }) {
-  const ffmpegQuality = getFffmpegJpegQuality(quality);
+function getQualityOpts({ captureFormat, quality }) {
+  if (captureFormat === 'jpeg') return ['-q:v', getFffmpegJpegQuality(quality)];
+  if (captureFormat === 'webp') return ['-q:v', Math.max(0, Math.min(100, Math.round(quality * 100)))];
+  return [];
+}
 
+function getCodecOpts(captureFormat) {
+  if (captureFormat === 'webp') return ['-c:v', 'libwebp']; // else we get only a single file for webp https://github.com/mifi/lossless-cut/issues/1693
+  return [];
+}
+
+async function captureFrames({ from, to, videoPath, outPathTemplate, quality, filter, framePts, onProgress, captureFormat }) {
   const args = [
     '-ss', from,
     '-i', videoPath,
     '-t', Math.max(0, to - from),
-    '-q:v', ffmpegQuality,
+    ...getQualityOpts({ captureFormat, quality }),
     ...(filter != null ? ['-vf', filter] : []),
     // https://superuser.com/questions/1336285/use-ffmpeg-for-thumbnail-selections
     ...(framePts ? ['-frame_pts', '1'] : []),
     '-vsync', '0', // else we get a ton of duplicates (thumbnail filter)
+    ...getCodecOpts(captureFormat),
+    '-f', 'image2',
     '-y', outPathTemplate,
   ];
 

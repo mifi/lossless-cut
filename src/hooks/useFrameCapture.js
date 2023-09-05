@@ -34,7 +34,7 @@ export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }) => {
       const outPathTemplate = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: nameTemplateSuffix });
       const firstFileOutPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix });
 
-      await ffmpegCaptureFrames({ from: fromTime, to: toTime, videoPath: filePath, outPathTemplate, quality, filter, onProgress });
+      await ffmpegCaptureFrames({ from: fromTime, to: toTime, videoPath: filePath, outPathTemplate, captureFormat, quality, filter, onProgress });
 
       return firstFileOutPath;
     }
@@ -42,7 +42,7 @@ export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }) => {
     // see https://github.com/mifi/lossless-cut/issues/1139
     const tmpSuffix = 'llc-tmp-frame-capture-';
     const outPathTemplate = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: getSuffix(`${tmpSuffix}%d`) });
-    await ffmpegCaptureFrames({ from: fromTime, to: toTime, videoPath: filePath, outPathTemplate, quality, filter, framePts: true, onProgress });
+    await ffmpegCaptureFrames({ from: fromTime, to: toTime, videoPath: filePath, outPathTemplate, captureFormat, quality, filter, framePts: true, onProgress });
 
     const outDir = getOutDir(customOutDir, filePath);
     const files = await readdir(outDir);
