@@ -440,6 +440,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   const autoConcatCutSegments = useCallback(async ({ customOutDir, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge, appendFfmpegCommandLog, mergedOutFilePath }) => {
     const outDir = getOutDir(customOutDir, filePath);
 
+    if (await shouldSkipExistingFile(mergedOutFilePath)) return;
+
     const chapters = await createChaptersFromSegments({ segmentPaths, chapterNames });
 
     const metadataFromPath = segmentPaths[0];
@@ -447,7 +449,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const { streams } = await readFileMeta(metadataFromPath);
     await concatFiles({ paths: segmentPaths, outDir, outPath: mergedOutFilePath, metadataFromPath, outFormat, includeAllStreams: true, streams, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge, appendFfmpegCommandLog });
     if (autoDeleteMergedSegments) await tryDeleteFiles(segmentPaths);
-  }, [concatFiles, filePath]);
+  }, [concatFiles, filePath, shouldSkipExistingFile]);
 
   const html5ify = useCallback(async ({ customOutDir, filePath: filePathArg, speed, hasAudio, hasVideo, onProgress }) => {
     const outPath = getHtml5ifiedPath(customOutDir, filePathArg, speed);
