@@ -67,7 +67,7 @@ import {
   getOutPath, getSuffixedOutPath, handleError, getOutDir,
   isMasBuild, isStoreBuild, dragPreventer,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle,
+  deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName,
 } from './util';
 import { toast, errorToast } from './swal';
 import { formatDuration } from './util/duration';
@@ -148,6 +148,7 @@ const App = memo(() => {
   const [hideCanvasPreview, setHideCanvasPreview] = useState(false);
   const [exportConfirmVisible, setExportConfirmVisible] = useState(false);
   const [cacheBuster, setCacheBuster] = useState(0);
+  const [customMergedOutFileName, setMergedOutFileName] = useState();
 
   const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
 
@@ -731,6 +732,7 @@ const App = memo(() => {
     setActiveSubtitleStreamIndex();
     setHideCanvasPreview(false);
     setExportConfirmVisible(false);
+    setMergedOutFileName();
 
     cancelRenderThumbnails();
   }, [cutSegmentsHistory, clearSegments, setFileFormat, setDetectedFileFormat, setDeselectedSegmentIds, cancelRenderThumbnails]);
@@ -983,7 +985,7 @@ const App = memo(() => {
     if (sendErrorReport) openSendConcatReportDialogWithState(err, reportState);
   }, [fileFormat, openSendConcatReportDialogWithState]);
 
-  const userConcatFiles = useCallback(async ({ paths, includeAllStreams, streams, fileFormat: outFormat, fileName: outFileName, clearBatchFilesAfterConcat }) => {
+  const userConcatFiles = useCallback(async ({ paths, includeAllStreams, streams, fileFormat: outFormat, outFileName, clearBatchFilesAfterConcat }) => {
     if (workingRef.current) return;
     try {
       setConcatDialogVisible(false);
@@ -1109,6 +1111,16 @@ const App = memo(() => {
 
   const willMerge = segmentsToExport.length > 1 && autoMerge;
 
+  const mergedOutFileName = useMemo(() => {
+    if (customMergedOutFileName != null) return customMergedOutFileName;
+    const ext = getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath });
+    return getSuffixedFileName(filePath, `cut-merged-${new Date().getTime()}${ext}`);
+  }, [customMergedOutFileName, fileFormat, filePath, isCustomFormatSelected]);
+
+  const mergedOutFilePath = useMemo(() => (
+    getOutPath({ customOutDir, filePath, fileName: mergedOutFileName })
+  ), [customOutDir, filePath, mergedOutFileName]);
+
   const onExportConfirm = useCallback(async () => {
     if (numStreamsToCopy === 0) {
       errorToast(i18n.t('No tracks selected for export'));
@@ -1167,17 +1179,15 @@ const App = memo(() => {
         detectedFps,
       });
 
-      let concatOutPath;
       if (willMerge) {
         setCutProgress(0);
         setWorking(i18n.t('Merging'));
 
         const chapterNames = segmentsToChapters && !invertCutSegments ? segmentsToExport.map((s) => s.name) : undefined;
 
-        concatOutPath = await autoConcatCutSegments({
+        await autoConcatCutSegments({
           customOutDir,
           outFormat: fileFormat,
-          isCustomFormatSelected,
           segmentPaths: outFiles,
           ffmpegExperimental,
           preserveMovData,
@@ -1187,6 +1197,7 @@ const App = memo(() => {
           autoDeleteMergedSegments,
           preserveMetadataOnMerge,
           appendFfmpegCommandLog,
+          mergedOutFilePath,
         });
       }
 
@@ -1217,7 +1228,7 @@ const App = memo(() => {
 
       if (areWeCutting) notices.push(i18n.t('Cutpoints may be inaccurate.'));
 
-      const revealPath = concatOutPath || outFiles[0];
+      const revealPath = willMerge ? mergedOutFilePath : outFiles[0];
       if (!hideAllNotifications) openExportFinishedToast({ filePath: revealPath, warnings, notices });
 
       if (cleanupChoices.cleanupAfterExport) await cleanupFiles(cleanupChoices);
@@ -1244,7 +1255,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, hideAllNotifications, cleanupChoices, cleanupFiles, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, isCustomFormatSelected, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
+  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, mergedOutFilePath, hideAllNotifications, cleanupChoices, cleanupFiles, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath || workingRef.current || segmentsToExport.length < 1) return;
@@ -2483,7 +2494,7 @@ const App = memo(() => {
               )}
             </Sheet>
 
-            <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegmentsOrInverse={nonFilteredSegmentsOrInverse} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} needSmartCut={needSmartCut} />
+            <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegmentsOrInverse={nonFilteredSegmentsOrInverse} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} needSmartCut={needSmartCut} mergedOutFileName={mergedOutFileName} setMergedOutFileName={setMergedOutFileName} />
 
             <LastCommandsSheet
               visible={lastCommandsVisible}

@@ -155,7 +155,7 @@ const ConcatDialog = memo(({
 
   const onOutputFormatUserChange = useCallback((newFormat) => setFileFormat(newFormat), [setFileFormat]);
 
-  const onConcatClick = useCallback(() => onConcat({ paths, includeAllStreams, streams: fileMeta.streams, fileName: outFileName, fileFormat, clearBatchFilesAfterConcat }), [clearBatchFilesAfterConcat, fileFormat, fileMeta, includeAllStreams, onConcat, outFileName, paths]);
+  const onConcatClick = useCallback(() => onConcat({ paths, includeAllStreams, streams: fileMeta.streams, outFileName, fileFormat, clearBatchFilesAfterConcat }), [clearBatchFilesAfterConcat, fileFormat, fileMeta, includeAllStreams, onConcat, outFileName, paths]);
 
   return (
     <>

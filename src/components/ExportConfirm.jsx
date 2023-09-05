@@ -15,6 +15,7 @@ import OutSegTemplateEditor from './OutSegTemplateEditor';
 import HighlightedText, { highlightedTextStyle } from './HighlightedText';
 import Select from './Select';
 import Switch from './Switch';
+import MergedOutFileName from './MergedOutFileName';
 
 import { primaryTextColor } from '../colors';
 import { withBlur } from '../util';
@@ -36,7 +37,7 @@ const ExportConfirm = memo(({
   areWeCutting, selectedSegments, segmentsToExport, willMerge, visible, onClosePress, onExportConfirm,
   outFormat, renderOutFmt, outputDir, numStreamsTotal, numStreamsToCopy, onShowStreamsSelectorClick, outSegTemplate,
   setOutSegTemplate, generateOutSegFileNames, filePath, currentSegIndexSafe, getOutSegError, nonFilteredSegmentsOrInverse,
-  mainCopiedThumbnailStreams, needSmartCut,
+  mainCopiedThumbnailStreams, needSmartCut, mergedOutFileName, setMergedOutFileName,
 }) => {
   const { t } = useTranslation();
 
@@ -194,6 +195,20 @@ const ExportConfirm = memo(({
                         </td>
                         <td>
                           <HelpIcon onClick={onOutSegTemplateHelpPress} />
+                        </td>
+                      </tr>
+                    )}
+
+                    {willMerge && (
+                      <tr>
+                        <td>
+                          {t('Merged output file name:')}
+                        </td>
+                        <td>
+                          <MergedOutFileName mergedOutFileName={mergedOutFileName} setMergedOutFileName={setMergedOutFileName} />
+                        </td>
+                        <td>
+                          <HelpIcon onClick={() => showHelpText({ text: t('Name of the merged/concatenated output file when concatenating multiple segments.') })} />
                         </td>
                       </tr>
                     )}

@@ -13,6 +13,7 @@ import { defaultOutSegTemplate, segNumVariable, segSuffixVariable } from '../uti
 import useUserSettings from '../hooks/useUserSettings';
 import Switch from './Switch';
 import Select from './Select';
+import TextInput from './TextInput';
 
 const ReactSwal = withReactContent(Swal);
 
@@ -21,8 +22,6 @@ const electron = window.require('electron');
 const formatVariable = (variable) => `\${${variable}}`;
 
 const extVar = formatVariable('EXT');
-
-const inputStyle = { flexGrow: 1, fontFamily: 'inherit', fontSize: '.8em', backgroundColor: 'var(--gray3)', color: 'var(--gray12)', border: '1px solid var(--gray7)', appearance: 'none' };
 
 const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe, getOutSegError }) => {
   const { safeOutputFileName, toggleSafeOutputFileName, outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding } = useUserSettings();
@@ -117,7 +116,7 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
             exit={{ opacity: 0, height: 0, marginTop: 0 }}
           >
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.2em' }}>
-              <input type="text" ref={inputRef} style={inputStyle} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
+              <TextInput ref={inputRef} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
 
               {outSegFileNames != null && <Button height={20} onClick={onAllSegmentsPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
 

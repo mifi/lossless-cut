@@ -437,9 +437,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     }
   }, [concatFiles, cutSingle, filePath, needSmartCut, shouldSkipExistingFile]);
 
-  const autoConcatCutSegments = useCallback(async ({ customOutDir, isCustomFormatSelected, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge, appendFfmpegCommandLog }) => {
-    const ext = getOutFileExtension({ isCustomFormatSelected, outFormat, filePath });
-    const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `cut-merged-${new Date().getTime()}${ext}` });
+  const autoConcatCutSegments = useCallback(async ({ customOutDir, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge, appendFfmpegCommandLog, mergedOutFilePath }) => {
     const outDir = getOutDir(customOutDir, filePath);
 
     const chapters = await createChaptersFromSegments({ segmentPaths, chapterNames });
@@ -447,10 +445,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const metadataFromPath = segmentPaths[0];
     // need to re-read streams because may have changed
     const { streams } = await readFileMeta(metadataFromPath);
-    await concatFiles({ paths: segmentPaths, outDir, outPath, metadataFromPath, outFormat, includeAllStreams: true, streams, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge, appendFfmpegCommandLog });
+    await concatFiles({ paths: segmentPaths, outDir, outPath: mergedOutFilePath, metadataFromPath, outFormat, includeAllStreams: true, streams, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge, appendFfmpegCommandLog });
     if (autoDeleteMergedSegments) await tryDeleteFiles(segmentPaths);
-
-    return outPath;
   }, [concatFiles, filePath]);
 
   const html5ify = useCallback(async ({ customOutDir, filePath: filePathArg, speed, hasAudio, hasVideo, onProgress }) => {
