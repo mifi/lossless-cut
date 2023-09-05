@@ -2,6 +2,7 @@ import React, { memo, useCallback, useMemo, useState } from 'react';
 import { FaYinYang, FaKeyboard } from 'react-icons/fa';
 import { GlobeIcon, CleanIcon, CogIcon, Button, NumericalIcon, FolderCloseIcon, DocumentIcon, TimeIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 
 import CaptureFormatButton from './CaptureFormatButton';
 import AutoExportToggler from './AutoExportToggler';
@@ -16,8 +17,16 @@ import Select from './Select';
 import { getModifierKeyNames } from '../hooks/useTimelineScroll';
 
 
-// eslint-disable-next-line react/jsx-props-no-spreading
-const Row = (props) => <tr {...props} />;
+const Row = (props) => (
+  <motion.tr
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    {...props}
+    transition={{ duration: 0.5, ease: 'easeIn' }}
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+  />
+);
 // eslint-disable-next-line react/jsx-props-no-spreading
 const KeyCell = (props) => <td {...props} />;
 
@@ -98,7 +107,6 @@ const Settings = memo(({
               </Select>
             </td>
           </Row>
-
 
           {showAdvanced && (
             <Row>
