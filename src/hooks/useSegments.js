@@ -6,7 +6,7 @@ import pMap from 'p-map';
 
 import sortBy from 'lodash/sortBy';
 
-import { blackDetect, silenceDetect, detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToSegments, findKeyframeNearTime } from '../ffmpeg';
+import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToSegments, findKeyframeNearTime } from '../ffmpeg';
 import { handleError, shuffleArray } from '../util';
 import { errorToast } from '../swal';
 import { showParametersDialog } from '../dialogs/parameters';
@@ -14,6 +14,10 @@ import { createNumSegments as createNumSegmentsDialog, createFixedDurationSegmen
 import { createSegment, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2 } from '../segments';
 import * as ffmpegParameters from '../ffmpeg-parameters';
 import { maxSegmentsAllowed } from '../util/constants';
+
+const remote = window.require('@electron/remote');
+
+const { blackDetect, silenceDetect } = remote.require('./ffmpeg');
 
 
 export default ({

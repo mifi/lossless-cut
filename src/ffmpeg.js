@@ -13,7 +13,7 @@ const { pathExists } = window.require('fs-extra');
 
 const remote = window.require('@electron/remote');
 
-const { renderWaveformPng, mapTimesToSegments, detectSceneChanges, detectIntervals, captureFrames, captureFrame, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, html5ify, getDuration, abortFfmpegs, runFfmpeg, runFfprobe, getFfmpegPath, setCustomFfPath } = remote.require('./ffmpeg');
+const { renderWaveformPng, mapTimesToSegments, detectSceneChanges, captureFrames, captureFrame, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, html5ify, getDuration, abortFfmpegs, runFfmpeg, runFfprobe, getFfmpegPath, setCustomFfPath } = remote.require('./ffmpeg');
 
 
 export { renderWaveformPng, mapTimesToSegments, detectSceneChanges, captureFrames, captureFrame, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, html5ify, getDuration, abortFfmpegs, runFfprobe, getFfmpegPath, setCustomFfPath };
@@ -481,40 +481,6 @@ export async function renderThumbnails({ filePath, from, duration, onThumbnail }
     url = await renderThumbnail(filePath, time);
     onThumbnail({ time, url });
   }, { concurrency: 2 });
-}
-
-
-const mapFilterOptions = (options) => Object.entries(options).map(([key, value]) => `${key}=${value}`).join(':');
-
-export async function blackDetect({ filePath, filterOptions, onProgress, from, to }) {
-  function matchLineTokens(line) {
-    const match = line.match(/^[blackdetect\s*@\s*0x[0-9a-f]+] black_start:([\d\\.]+) black_end:([\d\\.]+) black_duration:[\d\\.]+/);
-    if (!match) return {};
-    return {
-      start: parseFloat(match[1]),
-      end: parseFloat(match[2]),
-    };
-  }
-  const customArgs = ['-vf', `blackdetect=${mapFilterOptions(filterOptions)}`, '-an'];
-  return detectIntervals({ filePath, onProgress, from, to, matchLineTokens, customArgs });
-}
-
-export async function silenceDetect({ filePath, filterOptions, onProgress, from, to }) {
-  function matchLineTokens(line) {
-    const match = line.match(/^[silencedetect\s*@\s*0x[0-9a-f]+] silence_end: ([\d\\.]+)[|\s]+silence_duration: ([\d\\.]+)/);
-    if (!match) return {};
-    const end = parseFloat(match[1]);
-    const silenceDuration = parseFloat(match[2]);
-    if (Number.isNaN(end) || Number.isNaN(silenceDuration)) return {};
-    const start = end - silenceDuration;
-    if (start < 0 || end <= 0 || start >= end) return {};
-    return {
-      start,
-      end,
-    };
-  }
-  const customArgs = ['-af', `silencedetect=${mapFilterOptions(filterOptions)}`, '-vn'];
-  return detectIntervals({ filePath, onProgress, from, to, matchLineTokens, customArgs });
 }
 
 export async function extractWaveform({ filePath, outPath }) {
