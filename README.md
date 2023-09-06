@@ -83,6 +83,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Losslessly split a video into one file per scene (note you probably have to shift segments, see [#330](https://github.com/mifi/lossless-cut/issues/330).)
 - Cut away silent parts of an audio/video
 - Split video into segments to for example respect Twitter's 140 second limit
+- Annotate each segment with one or more tags, then use those tags to organize your segments or use it to create an output folder structure or hierarchy for your segments.
 
 ### Export cut times as YouTube Chapters
 1. Export with Merge and "Create chapters from merged segments" enabled

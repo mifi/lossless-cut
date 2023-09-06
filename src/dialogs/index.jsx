@@ -505,6 +505,26 @@ export async function selectSegmentsByLabelDialog(currentName) {
   return value;
 }
 
+export async function selectSegmentsByTagDialog() {
+  const { value: value1 } = await Swal.fire({
+    showCancelButton: true,
+    title: i18n.t('Select segments by tag'),
+    text: i18n.t('Enter tag name (in the next dialog you\'ll enter tag value)'),
+    input: 'text',
+  });
+  if (!value1) return undefined;
+
+  const { value: value2 } = await Swal.fire({
+    showCancelButton: true,
+    title: i18n.t('Select segments by tag'),
+    text: i18n.t('Enter tag value'),
+    input: 'text',
+  });
+  if (!value2) return undefined;
+
+  return { tagName: value1, tagValue: value2 };
+}
+
 export async function showEditableJsonDialog({ text, title, inputLabel, inputValue, inputValidator }) {
   const { value } = await Swal.fire({
     input: 'textarea',

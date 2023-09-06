@@ -10,7 +10,7 @@ import { blackDetect, silenceDetect, detectSceneChanges as ffmpegDetectSceneChan
 import { handleError, shuffleArray } from '../util';
 import { errorToast } from '../swal';
 import { showParametersDialog } from '../dialogs/parameters';
-import { createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, showEditableJsonDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog } from '../dialogs';
+import { createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, showEditableJsonDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, selectSegmentsByTagDialog } from '../dialogs';
 import { createSegment, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2 } from '../segments';
 import * as ffmpegParameters from '../ffmpeg-parameters';
 import { maxSegmentsAllowed } from '../util/constants';
@@ -436,18 +436,31 @@ export default ({
     if (segments) loadCutSegments(segments);
   }, [checkFileOpened, duration, loadCutSegments]);
 
-  const onSelectSegmentsByLabel = useCallback(async () => {
-    const { name } = currentCutSeg;
-    const value = await selectSegmentsByLabelDialog(name);
-    if (value == null) return;
-    const segmentsToEnable = cutSegments.filter((seg) => (seg.name || '') === value);
+  const enableSegments = useCallback((segmentsToEnable) => {
     if (segmentsToEnable.length === 0 || segmentsToEnable.length === cutSegments.length) return; // no point
     setDeselectedSegmentIds((existing) => {
       const ret = { ...existing };
       segmentsToEnable.forEach(({ segId }) => { ret[segId] = false; });
       return ret;
     });
-  }, [currentCutSeg, cutSegments]);
+  }, [cutSegments.length]);
+
+  const onSelectSegmentsByLabel = useCallback(async () => {
+    const { name } = currentCutSeg;
+    const value = await selectSegmentsByLabelDialog(name);
+    if (value == null) return;
+    const segmentsToEnable = cutSegments.filter((seg) => (seg.name || '') === value);
+    enableSegments(segmentsToEnable);
+  }, [currentCutSeg, cutSegments, enableSegments]);
+
+  const onSelectSegmentsByTag = useCallback(async () => {
+    const value = await selectSegmentsByTagDialog();
+    if (value == null) return;
+    const { tagName, tagValue } = value;
+    const segmentsToEnable = cutSegments.filter((seg) => getSegmentTags(seg)[tagName] === tagValue);
+    enableSegments(segmentsToEnable);
+  }, [cutSegments, enableSegments]);
+
 
   const onLabelSelectedSegments = useCallback(async () => {
     if (selectedSegmentsRaw.length < 1) return;
@@ -540,6 +553,7 @@ export default ({
     invertSelectedSegments,
     removeSelectedSegments,
     onSelectSegmentsByLabel,
+    onSelectSegmentsByTag,
     toggleSegmentSelected,
     selectOnlySegment,
     setCutTime,
