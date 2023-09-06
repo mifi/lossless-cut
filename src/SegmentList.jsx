@@ -14,6 +14,7 @@ import useUserSettings from './hooks/useUserSettings';
 import { saveColor, controlsBackground, primaryTextColor, darkModeTransition } from './colors';
 import { useSegColors } from './contexts';
 import { mySpring } from './animations';
+import { getSegmentTags } from './segments';
 
 const buttonBaseStyle = {
   margin: '0 3px', borderRadius: 3, color: 'white', cursor: 'pointer',
@@ -108,6 +109,8 @@ const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, g
 
   const cursor = invertCutSegments ? undefined : 'grab';
 
+  const tags = useMemo(() => getSegmentTags(seg), [seg]);
+
   return (
     <motion.div
       ref={ref}
@@ -126,7 +129,13 @@ const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, g
         <span style={{ cursor, fontSize: Math.min(310 / timeStr.length, 14), whiteSpace: 'nowrap' }}>{timeStr}</span>
       </div>
 
-      <div style={{ fontSize: 12, color: primaryTextColor }}>{seg.name}</div>
+      <div style={{ fontSize: 12 }}>
+        {seg.name && <span style={{ color: primaryTextColor, marginRight: '.3em' }}>{seg.name}</span>}
+        {Object.entries(tags).map(([name, value]) => (
+          <span style={{ fontSize: 11, backgroundColor: 'var(--gray5)', color: 'var(--gray12)', borderRadius: '.4em', padding: '0 .2em', marginRight: '.1em' }} key={name}>{name}:<b>{value}</b></span>
+        ))}
+      </div>
+
       <div style={{ fontSize: 13 }}>
         {t('Duration')} {formatTimecode({ seconds: duration, shorten: true })}
       </div>
