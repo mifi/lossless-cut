@@ -123,7 +123,7 @@ const defaults = {
   enableNativeHevc: true,
   enableUpdateCheck: true,
   cleanupChoices: {
-    trashTmpFiles: true, askForCleanup: true,
+    trashTmpFiles: true, askForCleanup: true, closeFile: true,
   },
   allowMultipleInstances: false,
   darkMode: true,
@@ -165,10 +165,7 @@ function reset(key) {
   set(key, defaults[key]);
 }
 
-async function init() {
-  const customStoragePath = await getCustomStoragePath();
-  if (customStoragePath) logger.info('customStoragePath', customStoragePath);
-
+async function tryCreateStore({ customStoragePath }) {
   for (let i = 0; i < 5; i += 1) {
     try {
       store = new Store({ defaults, cwd: customStoragePath });
@@ -180,6 +177,15 @@ async function init() {
     }
   }
 
+  throw new Error('Timed out while creating config store');
+}
+
+async function init() {
+  const customStoragePath = await getCustomStoragePath();
+  if (customStoragePath) logger.info('customStoragePath', customStoragePath);
+
+  await tryCreateStore({ customStoragePath });
+
   // migrate old configs:
   const enableTransferTimestamps = store.get('enableTransferTimestamps'); // todo remove after a while
   if (enableTransferTimestamps != null) {
@@ -188,7 +194,13 @@ async function init() {
     set('treatOutputFileModifiedTimeAsStart', enableTransferTimestamps ? true : undefined);
   }
 
-  throw new Error('Timed out while creating config store');
+  const cleanupChoices = store.get('cleanupChoices'); // todo remove after a while
+  if (cleanupChoices != null) {
+    if (cleanupChoices.closeFile == null) {
+      logger.info('Migrating cleanupChoices.closeFile');
+      set('cleanupChoices', { ...cleanupChoices, closeFile: true });
+    }
+  }
 }
 
 module.exports = {

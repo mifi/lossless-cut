@@ -1054,10 +1054,12 @@ const App = memo(() => {
     // Store paths before we reset state
     const savedPaths = { previewFilePath, sourceFilePath: filePath, projectFilePath: projectFileSavePath };
 
-    batchListRemoveFile(savedPaths.sourceFilePath);
+    if (cleanupChoices2.closeFile) {
+      batchListRemoveFile(savedPaths.sourceFilePath);
 
-    // close the file
-    resetState();
+      // close the file
+      resetState();
+    }
 
     try {
       setWorking(i18n.t('Cleaning up'));
@@ -1082,9 +1084,7 @@ const App = memo(() => {
     return trashResponse;
   }, [cleanupChoices, setCleanupChoices]);
 
-  const cleanupFilesDialog = useCallback(async () => {
-    if (!isFileOpened) return;
-
+  const cleanupFilesWithDialog = useCallback(async () => {
     let response = cleanupChoices;
     if (cleanupChoices.askForCleanup) {
       response = await askForCleanupChoices();
@@ -1092,14 +1092,19 @@ const App = memo(() => {
       if (!response) return; // Canceled
     }
 
+    await cleanupFiles(response);
+  }, [askForCleanupChoices, cleanupChoices, cleanupFiles]);
+
+  const cleanupFilesDialog = useCallback(async () => {
+    if (!isFileOpened) return;
     if (workingRef.current) return;
 
     try {
-      await cleanupFiles(response);
+      await cleanupFilesWithDialog();
     } finally {
       setWorking();
     }
-  }, [isFileOpened, cleanupChoices, askForCleanupChoices, cleanupFiles, setWorking]);
+  }, [cleanupFilesWithDialog, isFileOpened, setWorking]);
 
   const generateOutSegFileNames = useCallback(({ segments = segmentsToExport, template, forceSafeOutputFileName }) => (
     generateOutSegFileNamesRaw({ segments, template, forceSafeOutputFileName, formatTimecode, isCustomFormatSelected, fileFormat, filePath, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding })
@@ -1231,7 +1236,7 @@ const App = memo(() => {
       const revealPath = willMerge ? mergedOutFilePath : outFiles[0];
       if (!hideAllNotifications) openExportFinishedToast({ filePath: revealPath, warnings, notices });
 
-      if (cleanupChoices.cleanupAfterExport) await cleanupFiles(cleanupChoices);
+      if (cleanupChoices.cleanupAfterExport) await cleanupFilesWithDialog();
     } catch (err) {
       if (err.killed === true) {
         // assume execa killed (aborted by user)
@@ -1255,7 +1260,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, mergedOutFilePath, hideAllNotifications, cleanupChoices, cleanupFiles, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
+  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, mergedOutFilePath, hideAllNotifications, cleanupChoices, cleanupFilesWithDialog, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath || workingRef.current || segmentsToExport.length < 1) return;

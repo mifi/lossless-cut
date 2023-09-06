@@ -336,28 +336,39 @@ const CleanupChoices = ({ cleanupChoicesInitial, onChange: onChangeProp }) => {
 
   const getVal = (key) => !!choices[key];
 
-  const onChange = (key, val) => setChoices((c) => {
-    const newChoices = { ...c, [key]: val };
+  const onChange = (key, val) => setChoices((oldChoices) => {
+    const newChoices = { ...oldChoices, [key]: val };
+    if ((newChoices.trashSourceFile || newChoices.trashTmpFiles) && !newChoices.closeFile) {
+      newChoices.closeFile = true;
+    }
     onChangeProp(newChoices);
     return newChoices;
   });
+
+  const trashTmpFiles = getVal('trashTmpFiles');
+  const trashSourceFile = getVal('trashSourceFile');
+  const trashProjectFile = getVal('trashProjectFile');
+  const deleteIfTrashFails = getVal('deleteIfTrashFails');
+  const closeFile = getVal('closeFile');
+  const askForCleanup = getVal('askForCleanup');
+  const cleanupAfterExport = getVal('cleanupAfterExport');
 
   return (
     <div style={{ textAlign: 'left' }}>
       <p>{i18n.t('What do you want to do after exporting a file or when pressing the "delete source file" button?')}</p>
 
-      <Checkbox label={i18n.t('Close currently opened file')} checked disabled />
+      <Checkbox label={i18n.t('Close currently opened file')} checked={closeFile} disabled={trashSourceFile || trashTmpFiles} onChange={(e) => onChange('closeFile', e.target.checked)} />
 
       <div style={{ marginTop: 25 }}>
-        <Checkbox label={i18n.t('Trash auto-generated files')} checked={getVal('trashTmpFiles')} onChange={(e) => onChange('trashTmpFiles', e.target.checked)} />
-        <Checkbox label={i18n.t('Trash project LLC file')} checked={getVal('trashProjectFile')} onChange={(e) => onChange('trashProjectFile', e.target.checked)} />
-        <Checkbox label={i18n.t('Trash original source file')} checked={getVal('trashSourceFile')} onChange={(e) => onChange('trashSourceFile', e.target.checked)} />
-        <Checkbox label={i18n.t('Permanently delete the files if trash fails?')} disabled={!(getVal('trashTmpFiles') || getVal('trashProjectFile') || getVal('trashSourceFile'))} checked={getVal('deleteIfTrashFails')} onChange={(e) => onChange('deleteIfTrashFails', e.target.checked)} />
+        <Checkbox label={i18n.t('Trash auto-generated files')} checked={trashTmpFiles} onChange={(e) => onChange('trashTmpFiles', e.target.checked)} />
+        <Checkbox label={i18n.t('Trash original source file')} checked={trashSourceFile} onChange={(e) => onChange('trashSourceFile', e.target.checked)} />
+        <Checkbox label={i18n.t('Trash project LLC file')} checked={trashProjectFile} onChange={(e) => onChange('trashProjectFile', e.target.checked)} />
+        <Checkbox label={i18n.t('Permanently delete the files if trash fails?')} disabled={!(trashTmpFiles || trashProjectFile || trashSourceFile)} checked={deleteIfTrashFails} onChange={(e) => onChange('deleteIfTrashFails', e.target.checked)} />
       </div>
 
       <div style={{ marginTop: 25 }}>
-        <Checkbox label={i18n.t('Show this dialog every time?')} checked={getVal('askForCleanup')} onChange={(e) => onChange('askForCleanup', e.target.checked)} />
-        <Checkbox label={i18n.t('Do all of this automatically after exporting a file?')} checked={getVal('cleanupAfterExport')} onChange={(e) => onChange('cleanupAfterExport', e.target.checked)} />
+        <Checkbox label={i18n.t('Show this dialog every time?')} checked={askForCleanup} onChange={(e) => onChange('askForCleanup', e.target.checked)} />
+        <Checkbox label={i18n.t('Do all of this automatically after exporting a file?')} checked={cleanupAfterExport} onChange={(e) => onChange('cleanupAfterExport', e.target.checked)} />
       </div>
     </div>
   );
