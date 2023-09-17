@@ -2,8 +2,6 @@
 
 - **Can LosslessCut crop, resize, stretch, mirror, overlay text/images, watermark, blur, redact, re-encode, create GIF, slideshow, burn subtitles, color grading, fade/transition between video clips, fade/combine/mix/merge audio tracks or change audio volume?**
   - No, these are all lossy operations (meaning you *have* to re-encode the file), but in the future I may start to implement such features. [See this issue for more information.](https://github.com/mifi/lossless-cut/issues/372)
-- Can i speed-up/slow-down video?
-  - Not yet, but see this issue: [#1712](https://github.com/mifi/lossless-cut/issues/1712)
 - Can LosslessCut be batched/automated using a CLI or API?
   - While it was never designed for advanced batching/automation, it does have a [basic CLI](./cli.md), and there are a few feature requests regarding this: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868).
 - Is there a keyboard shortcut to do X?

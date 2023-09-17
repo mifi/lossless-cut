@@ -2,7 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
-import { IoIosCamera, IoMdKey } from 'react-icons/io';
+import { IoIosCamera, IoMdKey, IoMdSpeedometer } from 'react-icons/io';
 import { FaYinYang, FaTrashAlt, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey, FaSun } from 'react-icons/fa';
 import { GiSoundWaves } from 'react-icons/gi';
 // import useTraceUpdate from 'use-trace-update';
@@ -22,6 +22,7 @@ import { getSegColor as getSegColorRaw } from './util/colors';
 import { useSegColors } from './contexts';
 import { formatDuration, parseDuration, isExactDurationMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
+import { askForPlaybackRate } from './dialogs';
 
 const { clipboard } = window.require('electron');
 
@@ -144,6 +145,7 @@ const BottomBar = memo(({
   keyframesEnabled, toggleKeyframesEnabled, seekClosestKeyframe, detectedFps, isFileOpened, selectedSegments,
   darkMode, setDarkMode,
   toggleEnableThumbnails, toggleWaveformMode, waveformMode, showThumbnails,
+  outputPlaybackRate, setOutputPlaybackRate,
 }) => {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
@@ -191,6 +193,11 @@ const BottomBar = memo(({
   useEffect(() => {
     checkAppPath();
   }, []);
+
+  const handleChangePlaybackRateClick = useCallback(async () => {
+    const newRate = await askForPlaybackRate({ detectedFps, outputPlaybackRate });
+    if (newRate != null) setOutputPlaybackRate(newRate);
+  }, [detectedFps, outputPlaybackRate, setOutputPlaybackRate]);
 
   function renderJumpCutpointButton(direction) {
     const newIndex = currentSegIndexSafe + direction;
@@ -383,7 +390,11 @@ const BottomBar = memo(({
               ))}
             </Select>
 
-            {detectedFps != null && <div title={t('Video FPS')} style={{ color: 'var(--gray11)', fontSize: '.7em', marginLeft: 6 }}>{detectedFps.toFixed(3)}</div>}
+            {detectedFps != null && (
+              <div title={t('Video FPS')} role="button" onClick={handleChangePlaybackRateClick} style={{ color: 'var(--gray11)', fontSize: '.7em', marginLeft: 6 }}>{(detectedFps * outputPlaybackRate).toFixed(3)}</div>
+            )}
+
+            <IoMdSpeedometer title={t('Change FPS')} style={{ padding: '0 .2em', fontSize: '1.3em' }} role="button" onClick={handleChangePlaybackRateClick} />
           </>
         )}
 

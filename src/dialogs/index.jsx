@@ -605,3 +605,33 @@ export async function openConcatFinishedToast({ filePath, warnings, notices }) {
 
   await openDirToast({ filePath, html, width: 800, position: 'center', timer: 30000 });
 }
+
+export async function askForPlaybackRate({ detectedFps, outputPlaybackRate }) {
+  const fps = detectedFps || 1;
+  const currentFps = fps * outputPlaybackRate;
+
+  function parseValue(v) {
+    const newFps = parseFloat(v);
+    if (!Number.isNaN(newFps)) {
+      return newFps / fps;
+    }
+    return undefined;
+  }
+
+  const { value } = await Swal.fire({
+    title: i18n.t('Change FPS'),
+    input: 'text',
+    inputValue: currentFps.toFixed(5),
+    text: i18n.t('This option lets you losslessly change the speed at which media players will play back the exported file. For example if you double the FPS, the playback speed will double (and duration will halve), however all the frames will be intact and played back (but faster). Be careful not to set it too high, as the player might not be able to keep up (playback CPU usage will increase proportionally to the speed!)'),
+    showCancelButton: true,
+    inputValidator: (v) => {
+      const parsed = parseValue(v);
+      if (parsed != null) return undefined;
+      return i18n.t('Please enter a valid number.');
+    },
+  });
+
+  if (!value) return undefined;
+
+  return parseValue(value);
+}

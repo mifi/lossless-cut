@@ -57,6 +57,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Customizable keyboard hotkeys
 - Black scene detection, silent audio detection, and scene change detection
 - Divide timeline into segments with length L or into N segments or even randomized segments!
+- Speed up / slow down video or audio file ([changing FPS](https://github.com/mifi/lossless-cut/issues/1712))
 - [Basic CLI support](cli.md)
 
 ## Example lossless use cases

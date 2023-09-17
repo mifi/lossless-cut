@@ -149,6 +149,7 @@ const App = memo(() => {
   const [exportConfirmVisible, setExportConfirmVisible] = useState(false);
   const [cacheBuster, setCacheBuster] = useState(0);
   const [customMergedOutFileName, setMergedOutFileName] = useState();
+  const [outputPlaybackRate, setOutputPlaybackRateState] = useState(1);
 
   const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
 
@@ -202,6 +203,11 @@ const App = memo(() => {
   }, [language]);
 
   const videoRef = useRef();
+
+  const setOutputPlaybackRate = useCallback((v) => {
+    setOutputPlaybackRateState(v);
+    if (videoRef.current) videoRef.current.playbackRate = v;
+  }, []);
 
   const isFileOpened = !!filePath;
 
@@ -733,6 +739,7 @@ const App = memo(() => {
     setHideCanvasPreview(false);
     setExportConfirmVisible(false);
     setMergedOutFileName();
+    setOutputPlaybackRateState(1);
 
     cancelRenderThumbnails();
   }, [cutSegmentsHistory, clearSegments, setFileFormat, setDetectedFileFormat, setDeselectedSegmentIds, cancelRenderThumbnails]);
@@ -751,7 +758,7 @@ const App = memo(() => {
 
   const {
     concatFiles, html5ifyDummy, cutMultiple, autoConcatCutSegments, html5ify, fixInvalidDuration,
-  } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput });
+  } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate });
 
   const html5ifyAndLoad = useCallback(async (cod, fp, speed, hv, ha) => {
     const usesDummyVideo = ['fastest-audio', 'fastest-audio-remux', 'fastest'].includes(speed);
@@ -855,12 +862,12 @@ const App = memo(() => {
 
     if (Math.abs(commandedTimeRef.current - video.currentTime) > 1) video.currentTime = commandedTimeRef.current;
 
-    if (resetPlaybackRate) video.playbackRate = 1;
+    if (resetPlaybackRate) video.playbackRate = outputPlaybackRate;
     video.play().catch((err) => {
       showPlaybackFailedMessage();
       console.error(err);
     });
-  }, [filePath, playing]);
+  }, [filePath, outputPlaybackRate, playing]);
 
   const togglePlay = useCallback(({ resetPlaybackRate, playbackMode } = {}) => {
     playbackModeRef.current = undefined;
@@ -2469,6 +2476,8 @@ const App = memo(() => {
                 isFileOpened={isFileOpened}
                 darkMode={darkMode}
                 setDarkMode={setDarkMode}
+                outputPlaybackRate={outputPlaybackRate}
+                setOutputPlaybackRate={setOutputPlaybackRate}
               />
             </div>
 

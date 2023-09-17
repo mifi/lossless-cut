@@ -56,12 +56,14 @@ const tryDeleteFiles = async (paths) => pMap(paths, (path) => {
   unlink(path).catch((err) => console.error('Failed to delete', path, err));
 }, { concurrency: 5 });
 
-function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput }) {
+function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate }) {
   const shouldSkipExistingFile = useCallback(async (path) => {
     const skip = !enableOverwriteOutput && await pathExists(path);
     if (skip) console.log('Not overwriting existing file', path);
     return skip;
   }, [enableOverwriteOutput]);
+
+  const getOutputPlaybackRateArgs = useCallback(() => (outputPlaybackRate !== 1 ? ['-itsscale', 1 / outputPlaybackRate] : []), [outputPlaybackRate]);
 
   const concatFiles = useCallback(async ({ paths, outDir, outPath, metadataFromPath, includeAllStreams, streams, outFormat, ffmpegExperimental, onProgress = () => {}, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge, videoTimebase, appendFfmpegCommandLog }) => {
     if (await shouldSkipExistingFile(outPath)) return { haveExcludedStreams: false };
@@ -279,6 +281,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       // No progress if we set loglevel warning :(
       // '-loglevel', 'warning',
 
+      ...getOutputPlaybackRateArgs(outputPlaybackRate),
+
       ...inputArgs,
 
       ...mapStreamsArgs,
@@ -317,7 +321,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     logStdoutStderr(result);
 
     await transferTimestamps({ inPath: filePath, outPath, cutFrom, cutTo, treatInputFileModifiedTimeAsStart, duration: isDurationValid(videoDuration) ? videoDuration : undefined, treatOutputFileModifiedTimeAsStart });
-  }, [filePath, shouldSkipExistingFile, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
+  }, [filePath, getOutputPlaybackRateArgs, outputPlaybackRate, shouldSkipExistingFile, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   const cutMultiple = useCallback(async ({
     outputDir, customOutDir, segments, outSegFileNames, videoDuration, rotation, detectedFps,
