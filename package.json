@@ -51,7 +51,7 @@
     "cross-env": "^7.0.3",
     "csv-parse": "^4.15.3",
     "csv-stringify": "^5.6.2",
-    "electron": "^26.0.0",
+    "electron": "^26.2.1",
     "electron-builder": "^24.6.3",
     "electron-builder-notarize": "^1.5.1",
     "electron-devtools-installer": "^3.2.0",
