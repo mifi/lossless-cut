@@ -2,18 +2,19 @@ import i18n from 'i18next';
 import pMap from 'p-map';
 import ky from 'ky';
 import prettyBytes from 'pretty-bytes';
+import sortBy from 'lodash/sortBy';
 
 import isDev from './isDev';
 import Swal, { toast } from './swal';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
 const fsExtra = window.require('fs-extra');
-const { stat } = window.require('fs/promises');
+const { stat, readdir } = window.require('fs/promises');
 const os = window.require('os');
 const { ipcRenderer } = window.require('electron');
 const remote = window.require('@electron/remote');
 
-const { readdir, unlink } = fsExtra;
+const { unlink } = fsExtra;
 
 
 const trashFile = async (path) => ipcRenderer.invoke('tryTrashItem', path);
@@ -351,4 +352,20 @@ export function setDocumentTitle({ filePath, working, cutProgress }) {
     if (cutProgress != null) parts.push(`${(cutProgress * 100).toFixed(1)}%`);
   }
   setDocumentExtraTitle(parts.length > 0 ? parts.join(' ') : undefined);
+}
+
+export function mustDisallowVob() {
+  // Because Apple is being nazi about the ability to open "copy protected DVD files"
+  if (isMasBuild) {
+    toast.fire({ icon: 'error', text: 'Unfortunately .vob files are not supported in the App Store version of LosslessCut due to Apple restrictions' });
+    return true;
+  }
+  return false;
+}
+
+export async function readVideoTs(videoTsPath) {
+  const files = await readdir(videoTsPath);
+  const relevantFiles = files.filter((file) => /VTS_\d+_\d+\.vob/i.test(file) && !/VTS_\d+_00\.vob/i.test(file)); // skip menu
+  const ret = sortBy(relevantFiles).map((file) => join(videoTsPath, file));
+  if (ret.length === 0) throw new Error('No VTS vob files found in folder');
 }

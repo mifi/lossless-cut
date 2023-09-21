@@ -65,9 +65,9 @@ import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlIm
 import { formatYouTube, getFrameCountRaw, formatTsv } from './edlFormats';
 import {
   getOutPath, getSuffixedOutPath, handleError, getOutDir,
-  isMasBuild, isStoreBuild, dragPreventer,
+  isStoreBuild, dragPreventer,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName,
+  deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName, mustDisallowVob, readVideoTs,
 } from './util';
 import { toast, errorToast } from './swal';
 import { formatDuration } from './util/duration';
@@ -1564,12 +1564,8 @@ const App = memo(() => {
       }
       path = mediaFilePath;
     }
-    // Because Apple is being nazi about the ability to open "copy protected DVD files"
-    const disallowVob = isMasBuild;
-    if (disallowVob && /\.vob$/i.test(path)) {
-      toast.fire({ icon: 'error', text: 'Unfortunately .vob files are not supported in the App Store version of LosslessCut due to Apple restrictions' });
-      return;
-    }
+
+    if (/\.vob$/i.test(path) && mustDisallowVob()) return;
 
     await loadMedia({ filePath: path, projectPath });
   }, [ensureAccessToSourceDir, loadMedia]);
@@ -1771,13 +1767,20 @@ const App = memo(() => {
     });
   }, []);
 
-  const userOpenFiles = useCallback(async (filePaths) => {
+  const userOpenFiles = useCallback(async (filePathsIn) => {
+    let filePaths = filePathsIn;
     if (!filePaths || filePaths.length < 1) return;
 
     console.log('userOpenFiles');
     console.log(filePaths.join('\n'));
 
     [lastOpenedPath] = filePaths;
+
+    if (filePaths.length === 1 && basename(filePaths[0]) === 'VIDEO_TS') {
+      if (mustDisallowVob()) return;
+      filePaths = await readVideoTs(filePaths[0]);
+    }
+
 
     if (filePaths.length > 1) {
       if (alwaysConcatMultipleFiles) {
@@ -1792,8 +1795,6 @@ const App = memo(() => {
     // filePaths.length is now 1
     const firstFilePath = filePaths[0];
 
-    const filePathLowerCase = firstFilePath.toLowerCase();
-
     if (workingRef.current) return;
     try {
       setWorking(i18n.t('Loading file'));
@@ -1806,6 +1807,7 @@ const App = memo(() => {
         return;
       }
 
+      const filePathLowerCase = firstFilePath.toLowerCase();
       const isLlcProject = filePathLowerCase.endsWith('.llc');
 
       // Need to ask the user what to do if more than one option
