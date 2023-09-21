@@ -365,7 +365,8 @@ export function mustDisallowVob() {
 
 export async function readVideoTs(videoTsPath) {
   const files = await readdir(videoTsPath);
-  const relevantFiles = files.filter((file) => /VTS_\d+_\d+\.vob/i.test(file) && !/VTS_\d+_00\.vob/i.test(file)); // skip menu
+  const relevantFiles = files.filter((file) => /^VTS_\d+_\d+\.vob$/i.test(file) && !/^VTS_\d+_00\.vob$/i.test(file)); // skip menu
   const ret = sortBy(relevantFiles).map((file) => join(videoTsPath, file));
   if (ret.length === 0) throw new Error('No VTS vob files found in folder');
+  return ret;
 }

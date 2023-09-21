@@ -1776,7 +1776,8 @@ const App = memo(() => {
 
     [lastOpenedPath] = filePaths;
 
-    if (filePaths.length === 1 && basename(filePaths[0]) === 'VIDEO_TS') {
+    // https://en.wikibooks.org/wiki/Inside_DVD-Video/Directory_Structure
+    if (filePaths.length === 1 && /^VIDEO_TS$/i.test(basename(filePaths[0]))) {
       if (mustDisallowVob()) return;
       filePaths = await readVideoTs(filePaths[0]);
     }
