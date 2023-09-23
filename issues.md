@@ -21,6 +21,12 @@ LosslessCut version in the App Stores is often a few versions behind the latest 
 
 They have exactly the same in-app features, except for a few platform limitations: Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps run in a sandbox, and therefore need to prompt for output directory before allowing writing files.
 
+# Primer / noob guide: Video & audio formats & codecs
+
+Here's a little primer about video and audio formats for those not familiar. A common mistake people have when dealing with audio and video files, is to confuse *formats*, *codecs*, and *file names*. In short: A file's media format is a *container* that holds one or more *codecs* (audio/video/subtitle) inside of it. For example `.mov` is a *container format*, and `H265`/`HEVC` is a *codec*. Some formats support some particular codecs inside of them, while others support other codecs. The most common formats are arguably Matriska (often `.mkv`) and MP4/MOV (often `.mp4`/`.mov`) as well as their derivatives. Example: If you have a file named `My video.mp4`, this file most likely (but not necessarily) has the *format* `MP4`. Note that the extension of a file (in this case `.mp4`) doesn't really mean anything, and the file could in reality for example have the `MOV` format, or the extension could be `.txt`. Inside `My video.mp4` there are multiple tracks/streams, each with their own *codec*. In this example, let's say that it contains one `H264` track and one `AAC` track. In LosslessCut you can view and add/delete/modify these tracks.
+
+**Remuxing**: If you change the output format in LosslessCut and export a file, you are *remuxing* the tracks/codecs into a different container format. When you do this, the operation is in theory lossless, meaning you will not lose any codec data and the different tracks will remain exactly the same, even though the format is now different (but some format metadata might get lost due to incompatibilities between container formats). There are limitations: Some popular codecs like VP8 or VP9 are not supported in popular formats like MP4, and some popular formats like Matroska (`.mkv`) are not natively supported in popular video players like iPhone or QuickTime.
+
 # Common / known issues & troubleshooting
 
 ## The exported video has a problem
@@ -30,14 +36,14 @@ If the video exports successfully without any error from LosslessCut, but it doe
 - Try both `Keyframe cut` vs `Normal cut` (do not use `Smart Cut` if you have any problem)
 - Disable unnecessary tracks from the **Tracks panel**. First try to disable all tracks except the main track (e.g. video) and if that succeeds, then work your way by enabling more tracks and see which one is causing the problem. Sometimes LosslessCut (ffmpeg) is unable to cut certain tracks at all, and this could lead to a strange output (e.g. wrong output duration or black parts).
 - Select a different **output format** (`matroska` and `mov` support a lot of codecs.)
-- Try the same operation with a different file (same codec or different codec) and see whether it's a problem with just one particular file.
+- Try the same operation with a different file (same codec or different codec) and see whether it's a problem with just that one particular file.
 - Enable the **Experimental Flag** under **Settings** before trying again.
 
 ## Cutting times are not accurate
 
-Each segment's *start cut time* will be "rounded" to the nearest **previous** keyframe. This means that you often have **move the start cut time to few frames after** the desired keyframe.
+Each segment's *start cut time* normally (but not always) will be "rounded" to the nearest **previous** keyframe. This means that you often have to move the **start cut time** to **few frames after** the desired keyframe.
 - Lossless cutting is not an exact science. For some files, it just works. For others, you may need to trial and error to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
-- Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. Most common video files need `Keyframe cut`, but you may need to try both. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `Keyframe cut` corresponds to `-ss` *before* `-i` and `Normal cut` is `-ss` *after* `-i`.
+- Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. Most common video files need `Keyframe cut`, but you may need to try both. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. In `ffmpeg`, `Keyframe cut` corresponds to `-ss` *before* `-i` and `Normal cut` is `-ss` *after* `-i`.
 - Try to change `avoid_negative_ts` (in export options).
 - Try also to set the **start**-cutpoint a few frames **before or after** the nearest keyframe (may also solve audio sync issues).
 - You may try to enable the new "Smart cut" mode to allow cutting between keyframes. However it is very experimental and may not work for many files.
@@ -56,23 +62,23 @@ This will effectively shift all start times of segments by 6 frames (`6/30=0.2` 
 
 If you cut a file, but the duration of the exported file is the same as input file's duration, try to disable all tracks except for the video track and see if that helps. Sometimes a file contains some tracks that LosslessCut is unable to cut. It will then leave them as is, while cutting the other tracks. This may lead to incorrect output duration. Try also changing `avoid_negative_ts` (in export options).
 
-If you are trying to cut a FLAC file but your output has the same duration as input, you might have run into [this ffmpeg issue](https://github.com/mifi/lossless-cut/discussions/1320).
+If you are trying to cut a FLAC file but your output has the same duration as input, you might have run into [this ffmpeg limitation](https://github.com/mifi/lossless-cut/discussions/1320).
 
 ## Merge / concat results in corrupt or broken parts
 
-Try to change `avoid_negative_ts` (in export options). Also try to disable tracks (see above).
-
-## Merge / concat results in incorrect duration, sped up or slowed down segments
-
 This can happen when trying to merge files that are not compatible. Make sure they have the exact same codec parameters before merging. If you are sure they are the same, you can try to first running each of the files separately through LosslessCut before merging the outputs:
-1. First open each file separately and just export without cutting anything.
-2. Merge the exported files.
+1. First open each file separately and just export without cutting anything
+  - Changing format to `mp4` is [known to fix certain issues like `Non-monotonous DTS in output stream`](https://github.com/mifi/lossless-cut/issues/1713#issuecomment-1726325218)
+  - If you're seeing incorrect output duration, sped up or slowed down segments, then changing format to TS is [known to give the files a common timebase](https://github.com/mifi/lossless-cut/issues/455), which sometimes makes it possible to merge them.
+3. Then merge the exported files.
 
-This might "clean up" certain parameters in the files, to make them more compatible for merging. In particular it could give them the same timebase, which is known to help. Changing format (remuxing) to TS first is known to give the files a common timebase, which makes it possible to merge them. For more info see [#455](https://github.com/mifi/lossless-cut/issues/455).
+Doing this first might "clean up" certain parameters in the files, to make them more compatible for merging. If this doesn't work, you can also try to change `avoid_negative_ts` (in export options). Also try to disable most tracks (see above).
+
+### Incorrect output duration, sped up or slowed down segments
 
 ## Smart cut not working
 
-Smart cut is experimental, but if you're having problems, check out [this issue](https://github.com/mifi/lossless-cut/issues/126).
+Smart cut is experimental, so don't expect too much. But if you're having problems, check out [this issue](https://github.com/mifi/lossless-cut/issues/126).
 
 ## My file changes from MP4 to MOV
 
@@ -80,7 +86,7 @@ Some MP4 files ffmpeg is not able to export as MP4 and therefore needs to use MO
 
 ## Output file name is missing characters
 
-If the output file name has special characters that get replaced by underscore (`_`), try to turn off ["Sanitize"](https://github.com/mifi/lossless-cut/issues/889) in the "Output file names" editor in the "Export options" dialog.
+If the output file name has special characters that get replaced by underscore (`_`), try to turn off ["Sanitize"](https://github.com/mifi/lossless-cut/issues/889) in the "Output file names" editor in the "Export options" dialog. Note that this will cause special characters like `/` to be preserved. Some characters are not supported in some operating systems, so be careful. using `/` or `\` can be used to create a folder structure from your segments when exported.
 
 ## Linux specific issues
 
@@ -100,7 +106,7 @@ If the output file name has special characters that get replaced by underscore (
 
 ## Low quality / blurry playback and no audio
 
-Some codecs are not natively supported, so they will preview with low quality playback and no audio. You may convert these files to a supported codec from the File menu, see [#88](https://github.com/mifi/lossless-cut/issues/88).
+Some formats or codecs are not natively supported, so they will preview with low quality playback and no audio. You may convert these files to a supported codec from the File menu, see [#88](https://github.com/mifi/lossless-cut/issues/88).
 
 ## MPEG TS / MTS
 
