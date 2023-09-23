@@ -74,8 +74,6 @@ This can happen when trying to merge files that are not compatible. Make sure th
 
 Doing this first might "clean up" certain parameters in the files, to make them more compatible for merging. If this doesn't work, you can also try to change `avoid_negative_ts` (in export options). Also try to disable most tracks (see above).
 
-### Incorrect output duration, sped up or slowed down segments
-
 ## Smart cut not working
 
 Smart cut is experimental, so don't expect too much. But if you're having problems, check out [this issue](https://github.com/mifi/lossless-cut/issues/126).
