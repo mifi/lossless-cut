@@ -49,7 +49,7 @@ const Settings = memo(({
   const { t } = useTranslation();
   const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
 
-  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey, captureFrameMethod, setCaptureFrameMethod, captureFrameQuality, setCaptureFrameQuality, captureFrameFileNameFormat, setCaptureFrameFileNameFormat, enableNativeHevc, setEnableNativeHevc, enableUpdateCheck, setEnableUpdateCheck, allowMultipleInstances, setAllowMultipleInstances, preferStrongColors, setPreferStrongColors, treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, setTreatOutputFileModifiedTimeAsStart } = useUserSettings();
+  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, ffmpegExperimental, setFfmpegExperimental, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey, captureFrameMethod, setCaptureFrameMethod, captureFrameQuality, setCaptureFrameQuality, captureFrameFileNameFormat, setCaptureFrameFileNameFormat, enableNativeHevc, setEnableNativeHevc, enableUpdateCheck, setEnableUpdateCheck, allowMultipleInstances, setAllowMultipleInstances, preferStrongColors, setPreferStrongColors, treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, setTreatOutputFileModifiedTimeAsStart, exportConfirmEnabled, toggleExportConfirmEnabled } = useUserSettings();
 
   const onLangChange = useCallback((e) => {
     const { value } = e.target;
@@ -414,16 +414,16 @@ const Settings = memo(({
           <Header title={t('Prompts and dialogs')} />
 
           <Row>
-            <KeyCell>{t('Show informational notifications')}</KeyCell>
+            <KeyCell>{t('Show export options screen before exporting?')}</KeyCell>
             <td>
-              <Switch checked={!hideNotifications} onCheckedChange={(v) => setHideNotifications(v ? undefined : 'all')} />
+              <Switch checked={exportConfirmEnabled} onCheckedChange={toggleExportConfirmEnabled} />
             </td>
           </Row>
 
           <Row>
-            <KeyCell>{t('Ask about what to do when opening a new file when another file is already already open?')}</KeyCell>
+            <KeyCell>{t('Show informational notifications')}</KeyCell>
             <td>
-              <Switch checked={enableAskForFileOpenAction} onCheckedChange={setEnableAskForFileOpenAction} />
+              <Switch checked={!hideNotifications} onCheckedChange={(v) => setHideNotifications(v ? undefined : 'all')} />
             </td>
           </Row>
 
@@ -434,12 +434,23 @@ const Settings = memo(({
             </td>
           </Row>
 
-          <Row>
-            <KeyCell>{t('Ask about importing chapters from opened file?')}</KeyCell>
-            <td>
-              <Switch checked={enableAskForImportChapters} onCheckedChange={setEnableAskForImportChapters} />
-            </td>
-          </Row>
+          {showAdvanced && (
+            <Row>
+              <KeyCell>{t('Ask about what to do when opening a new file when another file is already already open?')}</KeyCell>
+              <td>
+                <Switch checked={enableAskForFileOpenAction} onCheckedChange={setEnableAskForFileOpenAction} />
+              </td>
+            </Row>
+          )}
+
+          {showAdvanced && (
+            <Row>
+              <KeyCell>{t('Ask about importing chapters from opened file?')}</KeyCell>
+              <td>
+                <Switch checked={enableAskForImportChapters} onCheckedChange={setEnableAskForImportChapters} />
+              </td>
+            </Row>
+          )}
         </tbody>
       </table>
     </>
