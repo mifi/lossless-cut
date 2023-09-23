@@ -26,7 +26,7 @@ function getFfPath(cmd) {
   const exeName = isWindows ? `${cmd}.exe` : cmd;
 
   if (customFfPath) return join(customFfPath, exeName);
-  if (isDev) return join('ffmpeg', `${platform}-${arch}`, exeName);
+  if (isDev) return join('ffmpeg', `${platform}-${arch}/lib`, exeName);
   return join(process.resourcesPath, exeName);
 }
 
