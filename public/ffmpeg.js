@@ -26,9 +26,9 @@ function getFfPath(cmd) {
   const exeName = isWindows ? `${cmd}.exe` : cmd;
 
   if (customFfPath) return join(customFfPath, exeName);
-  
+
   if (isDev) {
-    const components = ['ffmpeg'];
+    const components = ['ffmpeg', `${platform}-${arch}`];
     if (isWindows || isLinux) components.push('lib');
     components.push(exeName);
     return join(...components);
