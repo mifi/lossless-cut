@@ -292,7 +292,9 @@ export async function checkAppPath() {
     const pathSeg = pathMatch[1];
     if (pathSeg.startsWith(`57275${mf}.${llc}_`)) return;
     // this will report the path and may return a msg
-    const response = await ky(`https://losslesscut-analytics.mifi.no/${pathSeg.length}/${btoa(pathSeg)}`).json();
+    const url = `https://losslesscut-analytics.mifi.no/${pathSeg.length}/${encodeURIComponent(btoa(pathSeg))}`;
+    // console.log('Reporting app', pathSeg, url);
+    const response = await ky(url).json();
     if (response.invalid) toast.fire({ timer: 60000, icon: 'error', title: response.title, text: response.text });
   } catch (err) {
     if (isDev) console.warn(err.message);
