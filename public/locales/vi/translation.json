@@ -570,5 +570,6 @@
     "Video FPS": "FPS Video",
     "View and edit segment tags in JSON5 format:": "Xem và chỉnh sửa các thẻ phân đoạn ở định dạng JSON5:",
     "Whether or not to sanitize output file names (sanitizing removes special characters)": "Có hay không khử sạch tên tệp đầu ra (khử sạch xóa các ký tự đặc biệt)",
-    "You are running version {{version}}": "Bạn đang chạy phiên bản {{version}}"
+    "You are running version {{version}}": "Bạn đang chạy phiên bản {{version}}",
+    "Shift": ""
 }
