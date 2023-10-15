@@ -201,7 +201,11 @@ function initApp() {
     if (!Array.isArray(additionalData?.argv)) return;
 
     const argv2 = parseCliArgs(additionalData.argv);
-    if (argv2._) openFilesEventually(argv2._);
+
+    logger.info('second-instance', argv2);
+
+    if (argv2._ && argv2._.length > 0) openFilesEventually(argv2._);
+    else if (argv2.keyboardAction) mainWindow.webContents.send('apiKeyboardAction', argv2.keyboardAction);
   });
 
   // Quit when all windows are closed.
@@ -317,6 +321,10 @@ function focusWindow() {
   }
 }
 
+function quitApp() {
+  electron.app.quit();
+}
+
 const hasDisabledNetworking = () => !!disableNetworking;
 
-module.exports = { focusWindow, isDev, hasDisabledNetworking };
+module.exports = { focusWindow, isDev, hasDisabledNetworking, quitApp };

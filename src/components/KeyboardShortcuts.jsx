@@ -504,6 +504,10 @@ const KeyboardShortcuts = memo(({
           name: t('Close current screen'),
           category: otherCategory,
         },
+        quit: {
+          name: t('Quit LosslessCut'),
+          category: otherCategory,
+        },
       },
     };
   }, [currentCutSeg, t]);
@@ -585,9 +589,11 @@ const KeyboardShortcuts = memo(({
 
               return (
                 <div key={action} style={rowStyle}>
-                  {beforeContent}
-
-                  <Text title={action} marginRight={10}>{actionName}</Text>
+                  <div>
+                    {beforeContent}
+                    <Text title={action} marginRight={10}>{actionName}</Text>
+                    <div style={{ fontSize: '.8em', opacity: 0.4 }} title={t('API action name: {{action}}', { action })}>{action}</div>
+                  </div>
 
                   <div style={{ flexGrow: 1 }} />
 

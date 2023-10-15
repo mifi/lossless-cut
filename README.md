@@ -167,7 +167,7 @@ Unsupported files can still be converted to a supported format/codec from the `F
 
 ## [Import / export](import-export.md)
 
-## [Command line interface (CLI)](cli.md)
+## [Command line interface (CLI) / API](cli.md)
 
 ## [Known issues, limitations, troubleshooting, FAQ](issues.md)
 
