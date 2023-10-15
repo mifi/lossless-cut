@@ -1139,6 +1139,15 @@ const App = memo(() => {
       return;
     }
 
+    if (segmentsToExport.length < 1) {
+      return;
+    }
+
+    if (haveInvalidSegs) {
+      errorToast(i18n.t('Start time must be before end time'));
+      return;
+    }
+
     setStreamsSelectorShown(false);
     setExportConfirmVisible(false);
 
@@ -1267,19 +1276,17 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [numStreamsToCopy, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, segmentsToExport, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, mergedOutFilePath, hideAllNotifications, cleanupChoices, cleanupFilesWithDialog, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
+  }, [numStreamsToCopy, segmentsToExport, haveInvalidSegs, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, mergedOutFilePath, hideAllNotifications, cleanupChoices.cleanupAfterExport, cleanupFilesWithDialog, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
-    if (!filePath || workingRef.current || segmentsToExport.length < 1) return;
+    if (!filePath) return;
 
-    if (haveInvalidSegs) {
-      errorToast(i18n.t('Start time must be before end time'));
-      return;
+    if (!exportConfirmEnabled || exportConfirmVisible) {
+      await onExportConfirm();
+    } else {
+      setExportConfirmVisible(true);
     }
-
-    if (exportConfirmEnabled) setExportConfirmVisible(true);
-    else await onExportConfirm();
-  }, [filePath, haveInvalidSegs, segmentsToExport, exportConfirmEnabled, onExportConfirm]);
+  }, [filePath, exportConfirmEnabled, exportConfirmVisible, onExportConfirm]);
 
   const captureSnapshot = useCallback(async () => {
     if (!filePath) return;
@@ -1997,10 +2004,11 @@ const App = memo(() => {
       copySegmentsToClipboard,
       reloadFile: () => setCacheBuster((v) => v + 1),
       quit: () => quitApp(),
+      closeCurrentFile: () => { closeFileWithConfirm(); },
     };
 
     return mainActions[action];
-  }, [addSegment, alignSegmentTimesToKeyframes, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, combineOverlappingSegments, combineSelectedSegments, concatCurrentBatch, convertFormatBatch, copySegmentsToClipboard, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, duplicateCurrentSegment, extractAllStreams, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, invertSelectedSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyframeCut, toggleLastCommands, toggleLoopSelectedSegments, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addSegment, alignSegmentTimesToKeyframes, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeFileWithConfirm, combineOverlappingSegments, combineSelectedSegments, concatCurrentBatch, convertFormatBatch, copySegmentsToClipboard, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, duplicateCurrentSegment, extractAllStreams, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, invertSelectedSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyframeCut, toggleLastCommands, toggleLoopSelectedSegments, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   const onKeyPress = useCallback(({ action, keyup }) => {
     function tryMainActions() {
@@ -2153,18 +2161,21 @@ const App = memo(() => {
       }
     }
 
-    function tryKeyboardAction(action) {
-      const fn = getKeyboardAction({ action });
-      if (!fn) {
-        console.error('Action not found:', action);
-        return;
+    async function tryApiKeyboardAction(event, { id, action }) {
+      console.log('API keyboard action:', action);
+      try {
+        const fn = getKeyboardAction({ action });
+        if (!fn) throw new Error(`Action not found: ${action}`);
+        await fn();
+      } finally {
+        // todo correlation ids
+        event.sender.send('apiKeyboardActionResponse', { id });
       }
-      fn();
     }
 
     const actions = {
       openFiles: (event, filePaths) => { userOpenFiles(filePaths.map(resolvePathIfNeeded)); },
-      apiKeyboardAction: (event, action) => tryKeyboardAction(action),
+      apiKeyboardAction: tryApiKeyboardAction,
       openFilesDialog,
       closeCurrentFile: () => { closeFileWithConfirm(); },
       closeBatchFiles: () => { closeBatch(); },

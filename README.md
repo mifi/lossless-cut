@@ -58,7 +58,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Black scene detection, silent audio detection, and scene change detection
 - Divide timeline into segments with length L or into N segments or even randomized segments!
 - Speed up / slow down video or audio file ([changing FPS](https://github.com/mifi/lossless-cut/issues/1712))
-- [Basic CLI support](cli.md)
+- Basic [CLI](cli.md) and [HTTP API](api.md)
 
 ## Example lossless use cases
 
@@ -167,7 +167,7 @@ Unsupported files can still be converted to a supported format/codec from the `F
 
 ## [Import / export](import-export.md)
 
-## [Command line interface (CLI) / API](cli.md)
+## [Command line interface (CLI)](cli.md) & [HTTP API](api.md)
 
 ## [Known issues, limitations, troubleshooting, FAQ](issues.md)
 

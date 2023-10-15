@@ -16,6 +16,7 @@ const menu = require('./menu');
 const configStore = require('./configStore');
 const { frontendBuildDir } = require('./util');
 const attachContextMenu = require('./contextMenu');
+const HttpServer = require('./httpServer');
 
 const { checkNewVersion } = require('./update-checker');
 
@@ -61,6 +62,22 @@ let newVersion;
 let disableNetworking;
 
 const openFiles = (paths) => mainWindow.webContents.send('openFiles', paths);
+
+let apiKeyboardActionRequestsId = 0;
+const apiKeyboardActionRequests = new Map();
+
+async function sendApiKeyboardAction(action) {
+  try {
+    const id = apiKeyboardActionRequestsId;
+    apiKeyboardActionRequestsId += 1;
+    mainWindow.webContents.send('apiKeyboardAction', { id, action });
+    await new Promise((resolve) => {
+      apiKeyboardActionRequests.set(id, resolve);
+    });
+  } catch (err) {
+    logger.error('sendApiKeyboardAction', err);
+  }
+}
 
 // https://github.com/electron/electron/issues/526#issuecomment-563010533
 function getSizeOptions() {
@@ -205,7 +222,7 @@ function initApp() {
     logger.info('second-instance', argv2);
 
     if (argv2._ && argv2._.length > 0) openFilesEventually(argv2._);
-    else if (argv2.keyboardAction) mainWindow.webContents.send('apiKeyboardAction', argv2.keyboardAction);
+    else if (argv2.keyboardAction) sendApiKeyboardAction(argv2.keyboardAction);
   });
 
   // Quit when all windows are closed.
@@ -249,6 +266,10 @@ function initApp() {
     }
     await shell.trashItem(path);
   });
+
+  ipcMain.on('apiKeyboardActionResponse', (e, { id }) => {
+    apiKeyboardActionRequests.get(id)?.();
+  });
 }
 
 
@@ -289,6 +310,15 @@ const readyPromise = app.whenReady();
         configStore.set(key, value);
       });
     }
+
+    const { httpApi } = argv;
+
+    if (httpApi != null) {
+      const port = typeof httpApi === 'number' ? httpApi : 8080;
+      const { startHttpServer } = HttpServer({ port, onKeyboardAction: sendApiKeyboardAction });
+      await startHttpServer();
+    }
+
 
     if (isDev) {
       const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies

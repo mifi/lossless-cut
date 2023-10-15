@@ -504,6 +504,10 @@ const KeyboardShortcuts = memo(({
           name: t('Close current screen'),
           category: otherCategory,
         },
+        closeCurrentFile: {
+          name: t('Close current file'),
+          category: otherCategory,
+        },
         quit: {
           name: t('Quit LosslessCut'),
           category: otherCategory,
