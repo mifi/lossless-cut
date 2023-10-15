@@ -36,7 +36,7 @@ const HelpIcon = ({ onClick, style }) => <IoIosHelpCircle size={20} role="button
 const ExportConfirm = memo(({
   areWeCutting, selectedSegments, segmentsToExport, willMerge, visible, onClosePress, onExportConfirm,
   outFormat, renderOutFmt, outputDir, numStreamsTotal, numStreamsToCopy, onShowStreamsSelectorClick, outSegTemplate,
-  setOutSegTemplate, generateOutSegFileNames, filePath, currentSegIndexSafe, getOutSegError, nonFilteredSegmentsOrInverse,
+  setOutSegTemplate, generateOutSegFileNames, filePath, currentSegIndexSafe, nonFilteredSegmentsOrInverse,
   mainCopiedThumbnailStreams, needSmartCut, mergedOutFileName, setMergedOutFileName,
 }) => {
   const { t } = useTranslation();
@@ -191,7 +191,7 @@ const ExportConfirm = memo(({
                     {canEditTemplate && (
                       <tr>
                         <td colSpan={2}>
-                          <OutSegTemplateEditor filePath={filePath} outSegTemplate={outSegTemplate} setOutSegTemplate={setOutSegTemplate} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} />
+                          <OutSegTemplateEditor filePath={filePath} outSegTemplate={outSegTemplate} setOutSegTemplate={setOutSegTemplate} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} />
                         </td>
                         <td>
                           <HelpIcon onClick={onOutSegTemplateHelpPress} />

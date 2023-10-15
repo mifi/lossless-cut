@@ -78,7 +78,7 @@ import { askForOutDir, askForImportChapters, promptTimeOffset, askForFileOpenAct
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, playOnlyCurrentSegment } from './segments';
-import { getOutSegError as getOutSegErrorRaw, generateOutSegFileNames as generateOutSegFileNamesRaw, defaultOutSegTemplate } from './util/outputNameTemplate';
+import { generateOutSegFileNames as generateOutSegFileNamesRaw, defaultOutSegTemplate } from './util/outputNameTemplate';
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 import BigWaveform from './components/BigWaveform';
 
@@ -1114,10 +1114,8 @@ const App = memo(() => {
   }, [cleanupFilesWithDialog, isFileOpened, setWorking]);
 
   const generateOutSegFileNames = useCallback(({ segments = segmentsToExport, template, forceSafeOutputFileName }) => (
-    generateOutSegFileNamesRaw({ segments, template, forceSafeOutputFileName, formatTimecode, isCustomFormatSelected, fileFormat, filePath, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding })
-  ), [fileFormat, filePath, formatTimecode, isCustomFormatSelected, maxLabelLength, outputFileNameMinZeroPadding, safeOutputFileName, segmentsToExport]);
-
-  const getOutSegError = useCallback((fileNames) => getOutSegErrorRaw({ fileNames, filePath, outputDir, safeOutputFileName }), [filePath, outputDir, safeOutputFileName]);
+    generateOutSegFileNamesRaw({ segments, template, forceSafeOutputFileName, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding })
+  ), [fileFormat, filePath, formatTimecode, isCustomFormatSelected, maxLabelLength, outputDir, outputFileNameMinZeroPadding, safeOutputFileName, segmentsToExport]);
 
   const closeExportConfirm = useCallback(() => setExportConfirmVisible(false), []);
 
@@ -1168,10 +1166,9 @@ const App = memo(() => {
 
       console.log('outSegTemplateOrDefault', outSegTemplateOrDefault);
 
-      let outSegFileNames = generateOutSegFileNames({ segments: segmentsToExport, template: outSegTemplateOrDefault });
-      if (getOutSegError(outSegFileNames) != null) {
+      const { outSegFileNames, outSegError } = generateOutSegFileNames({ segments: segmentsToExport, template: outSegTemplateOrDefault });
+      if (outSegError != null) {
         console.warn('Output segments file name invalid, using default instead', outSegFileNames);
-        outSegFileNames = generateOutSegFileNames({ segments: segmentsToExport, template: defaultOutSegTemplate, forceSafeOutputFileName: true });
       }
 
       // throw (() => { const err = new Error('test'); err.code = 'ENOENT'; return err; })();
@@ -1276,7 +1273,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [numStreamsToCopy, segmentsToExport, haveInvalidSegs, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, getOutSegError, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, mergedOutFilePath, hideAllNotifications, cleanupChoices.cleanupAfterExport, cleanupFilesWithDialog, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
+  }, [numStreamsToCopy, segmentsToExport, haveInvalidSegs, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, mergedOutFilePath, hideAllNotifications, cleanupChoices.cleanupAfterExport, cleanupFilesWithDialog, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath) return;
@@ -2538,7 +2535,7 @@ const App = memo(() => {
               )}
             </Sheet>
 
-            <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegmentsOrInverse={nonFilteredSegmentsOrInverse} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} getOutSegError={getOutSegError} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} needSmartCut={needSmartCut} mergedOutFileName={mergedOutFileName} setMergedOutFileName={setMergedOutFileName} />
+            <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegmentsOrInverse={nonFilteredSegmentsOrInverse} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} needSmartCut={needSmartCut} mergedOutFileName={mergedOutFileName} setMergedOutFileName={setMergedOutFileName} />
 
             <LastCommandsSheet
               visible={lastCommandsVisible}

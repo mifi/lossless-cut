@@ -42,9 +42,8 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
     if (debouncedText == null) return;
 
     try {
-      const newOutSegFileNames = generateOutSegFileNames({ template: debouncedText });
+      const { outSegFileNames: newOutSegFileNames, outSegError } = generateOutSegFileNames({ template: debouncedText });
       setOutSegFileNames(newOutSegFileNames);
-      const outSegError = getOutSegError(newOutSegFileNames);
       if (outSegError) {
         setError(outSegError);
         setValidText();
