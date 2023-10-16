@@ -127,13 +127,13 @@ If you find LosslessCut useful, I'm very thankful for [your support](https://git
 
 If you want to test the very latest and greatest bleeding-edge version. 1. Go to [Actions](https://github.com/mifi/lossless-cut/actions/workflows/build.yml), 2. click on the latest *Build/release*, 3. scroll all the way down to *Artifacts*. **Note:** these builds may be totally broken!
 
+## [Supported operating systems](./requirements.md)
+
 ## Supported formats
 
-Since LosslessCut is based on Chromium and uses the HTML5 video player, not all FFmpeg supported formats will be supported smoothly.
-The following formats/codecs should generally work: MP4, MOV, WebM, MKV, OGG, WAV, MP3, AAC, H264, Theora, VP8, VP9
-For more information about supported formats / codecs, see https://www.chromium.org/audio-video.
+LosslessCut uses Chromium's HTML5 video player, and not all FFmpeg supported formats and codecs are natively supported. Generally, the following formats should work: `MP4`, `MOV`, `WebM`, `Matroska`, `OGG` and `WAV`. The following audio codecs: `FLAC`, `MP3`, `Opus`, `PCM`, `Vorbis` and `AAC`. Video codecs: `H264`, `AV1`, `Theora`, `VP8`, `VP9` and `H265` (needs hardware decoder). More information about [Chromium supported formats / codecs](https://www.chromium.org/audio-video). [What's the difference between a codec and a format?](./issues.md#primer-video--audio-formats-vs-codecs)
 
-Unsupported files can still be converted to a supported format/codec from the `File` menu. (Try the "fastest" option first.) A low quality version of the file (with/without audio) will then be created and opened in the player. The actual cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that FFmpeg is able to decode.
+Codecs and formats not listed above can still be converted to a supported format/codec from the `File` menu. (Try the `fastest` option first.) A low quality version of the file (with/without audio) will then be created and opened in the player. The actual cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that FFmpeg is able to decode.
 
 ## Video demos
 
