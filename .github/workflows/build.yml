@@ -93,7 +93,7 @@ jobs:
 #          windows_certs_password: ${{ secrets.windows_certs_password }}
         env:
           # https://github.com/electron-userland/electron-builder/issues/7683
-          APPLE_ID: 1505323402
+          APPLE_ID: ${{ secrets.apple_id }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.apple_app_specific_password }}
           # TODO use appleApiKey, appleApiKeyId and appleApiIssuer from https://github.com/electron/notarize
           # once electron-builder supports those: https://github.com/electron-userland/electron-builder/blob/7c7db837bdf650228594a30114975f1581c37130/packages/app-builder-lib/src/macPackager.ts#L489
