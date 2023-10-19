@@ -52,8 +52,7 @@
     "csv-parse": "^4.15.3",
     "csv-stringify": "^5.6.2",
     "electron": "^27.0.0",
-    "electron-builder": "^24.6.3",
-    "electron-builder-notarize": "^1.5.1",
+    "electron-builder": "^24.6.4",
     "electron-devtools-installer": "^3.2.0",
     "eslint": "^7.32.0 || ^8.2.0",
     "eslint-config-airbnb": "^19.0.4",
@@ -141,11 +140,13 @@
     },
     "appId": "no.mifi.losslesscut",
     "artifactName": "${productName}-${os}-${arch}.${ext}",
-    "afterSign": "electron-builder-notarize",
     "mac": {
       "hardenedRuntime": true,
       "appId": "no.mifi.losslesscut-mac",
       "category": "public.app-category.productivity",
+      "notarize": {
+        "teamId": "46F6T3M669"
+      },
       "target": [
         {
           "target": "mas",

@@ -8,7 +8,7 @@ import { readFile } from 'fs/promises';
 const args = process.argv.slice(2);
 
 const filePath = args[0];
-const apiKey = args[1];
+const apiKeyId = args[1];
 const apiIssuer = args[2];
 const appleId = args[3];
 const bundleId = args[4];
@@ -54,13 +54,13 @@ Example JSON response:
 */
 
 async function runAttempt() {
-  // const xcrunArgs = ['altool', '--list-apps', '--output-format', 'json', '--apiKey', apiKey, '--apiIssuer', apiIssuer];
+  // const xcrunArgs = ['altool', '--list-apps', '--output-format', 'json', '--apiKey', apiKeyId, '--apiIssuer', apiIssuer];
 
   const xcrunArgs = [
     'altool',
     '--output-format', 'json',
     '--upload-package', filePath, '--type', 'macos',
-    '--apiKey', apiKey, '--apiIssuer', apiIssuer,
+    '--apiKey', apiKeyId, '--apiIssuer', apiIssuer,
     '--asc-public-id', ascPublicId,
     '--apple-id', appleId,
     '--bundle-id', bundleId,
