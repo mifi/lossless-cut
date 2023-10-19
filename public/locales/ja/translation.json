@@ -777,5 +777,9 @@
     "End of video": "動画の終了日時として",
     "Enable \"{{filterName}}\" bitstream filter.": "{{filterName}} ビットストリームフィルターを使用する。",
     "Source file's time plus segment start cut time": "入力ファイル日時 + セグメント切り取り開始時間",
-    "Start of video": "動画の開始日時として"
+    "Start of video": "動画の開始日時として",
+    "Change FPS": "FPSを変更",
+    "Close current file": "現在のファイルを閉じる",
+    "Please enter a valid number.": "有効な数字を入力してください。",
+    "Enter tag value": "タグの値を入力"
 }
