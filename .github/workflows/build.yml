@@ -83,7 +83,7 @@ jobs:
           # release the app after building
           release: ${{ env.is_tag == 'true' }}
 
-          max_attempts: 2
+          max_attempts: 1
 
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
