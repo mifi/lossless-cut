@@ -274,7 +274,7 @@ export function willPlayerProperlyHandleVideo({ streams, hevcPlaybackSupported }
   // https://github.com/mifi/lossless-cut/issues/975
   // https://github.com/mifi/lossless-cut/issues/1407
   // https://github.com/mifi/lossless-cut/issues/1505 https://samples.ffmpeg.org/archive/video/mjpeg/mov+mjpeg+pcm_u8++MPlayerRC1PlaybackCrash_david@pastornet.net.au.mov
-  const chromiumSilentlyFailCodecs = ['prores', 'mpeg4', 'tscc2', 'dvvideo', 'mjpeg'];
+  const chromiumSilentlyFailCodecs = ['prores', 'mpeg4', 'mpeg2video', 'tscc2', 'dvvideo', 'mjpeg'];
   if (!hevcPlaybackSupported) chromiumSilentlyFailCodecs.push('hevc');
   return realVideoStreams.some((stream) => !chromiumSilentlyFailCodecs.includes(stream.codec_name));
 }
