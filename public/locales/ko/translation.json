@@ -784,5 +784,7 @@
     "Close current file": "현재 파일 닫기",
     "Please enter a valid number.": "값 이름을 입력하세요.",
     "Enter tag name (in the next dialog you'll enter tag value)": "태그 이름 입력 (다음 대화 상자에서 태그 값 입력)",
-    "Enter tag value": "태그 값 입력"
+    "Enter tag value": "태그 값 입력",
+    "This option lets you losslessly change the speed at which media players will play back the exported file. For example if you double the FPS, the playback speed will double (and duration will halve), however all the frames will be intact and played back (but faster). Be careful not to set it too high, as the player might not be able to keep up (playback CPU usage will increase proportionally to the speed!)": "이 옵션은 미디어 플레이어가 내보낸 파일을 재생하는 속도를 무손실로 변경할 수 있습니다. 예를 들어 FPS를 두 배로 늘리면 재생 속도도 두 배로 늘어나지만(길이는 절반으로 줄어듦) 모든 프레임은 그대로 유지되고 재생됩니다.(그러나 더 빨라짐). 너무 높게 설정하면 플레이어가 따라가지 못할 수 있으니 너무 높게 설정하지 않도록 주의하세요. (재생 CPU 사용량은 속도에 비례하여 증가합니다!)",
+    "Sanitize file names": "파일 이름 검사"
 }
