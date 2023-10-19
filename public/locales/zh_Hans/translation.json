@@ -814,5 +814,19 @@
     "Duplicate segment": "重复的段",
     "Enable \"{{filterName}}\" bitstream filter.": "启用\"{{filterName}}\" 位流筛选器。",
     "Source file's time plus segment start cut time": "源文件的时间加上分段开始剪切时间",
-    "Start of video": "视频开始"
+    "Start of video": "视频开始",
+    "Extract frames from current segment as image files": "从当前片段中提取帧作为图像文件",
+    "Name of the merged/concatenated output file when concatenating multiple segments.": "连接多个片段时合并/连接的输出文件的名称。",
+    "API action name: {{action}}": "API操作名称: {{action}}",
+    "Merged output file name:": "合并的输出文件名：",
+    "Select segments by tag": "按标记选择片段",
+    "Quit LosslessCut": "退出LosslessCut",
+    "This option lets you losslessly change the speed at which media players will play back the exported file. For example if you double the FPS, the playback speed will double (and duration will halve), however all the frames will be intact and played back (but faster). Be careful not to set it too high, as the player might not be able to keep up (playback CPU usage will increase proportionally to the speed!)": "此选项允许您无损地更改媒体播放器播放导出文件的速度。例如，如果将FPS增加一倍，播放速度将增加一倍（持续时间将减半），但所有帧都将保持原样并播放（但速度更快）。注意不要设置得太高，因为播放器可能无法跟上（播放CPU的使用量将随速度成比例增加！）",
+    "Extract frames from selected segments as image files": "从选定片段中提取帧作为图像文件",
+    "Change FPS": "更改FPS",
+    "Close current file": "关闭当前文件",
+    "Please enter a valid number.": "请输入一个有效的数字。",
+    "Enter tag name (in the next dialog you'll enter tag value)": "输入标记名称（在下一个对话框中输入标记值）",
+    "Sanitize file names": "清除文件名",
+    "Enter tag value": "输入标记值"
 }
