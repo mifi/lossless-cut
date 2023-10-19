@@ -269,6 +269,7 @@
     },
     "mas": {
       "hardenedRuntime": false,
+      "notarize": false,
       "entitlements": "entitlements.mas.plist",
       "entitlementsInherit": "entitlements.mas.inherit.plist",
       "provisioningProfile": "LosslessCut_Mac_App_Store_provisioning_profile.provisionprofile",
