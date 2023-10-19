@@ -480,18 +480,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@electron/notarize@npm:2.1.0":
-  version: 2.1.0
-  resolution: "@electron/notarize@npm:2.1.0"
+"@electron/notarize@npm:^1.2.3":
+  version: 1.2.4
+  resolution: "@electron/notarize@npm:1.2.4"
   dependencies:
     debug: ^4.1.1
     fs-extra: ^9.0.1
-    promise-retry: ^2.0.1
-  checksum: ac58f39f4b2370ea929837cef50ebeedb4108ed9bd2a3fef0b89254891014a745da2db703b18b8e0d097a17000cc8fa984bcff3f087368986cb4a59753365a2f
+  checksum: 3aa19fb247f9297b96a25f1a082f552e0c78a726ddfc98de9cdd4e4b092fc36fe07d680b762dd5a2bceda97b1044d3a0e6d9eadc5022f7c329a1fcf081133c9b
   languageName: node
   linkType: hard
 
-"@electron/osx-sign@npm:1.0.5":
+"@electron/osx-sign@npm:^1.0.4":
   version: 1.0.5
   resolution: "@electron/osx-sign@npm:1.0.5"
   dependencies:
@@ -517,9 +516,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@electron/universal@npm:1.4.1":
-  version: 1.4.1
-  resolution: "@electron/universal@npm:1.4.1"
+"@electron/universal@npm:1.3.4":
+  version: 1.3.4
+  resolution: "@electron/universal@npm:1.3.4"
   dependencies:
     "@electron/asar": ^3.2.1
     "@malept/cross-spawn-promise": ^1.1.0
@@ -528,7 +527,7 @@ __metadata:
     fs-extra: ^9.0.1
     minimatch: ^3.0.4
     plist: ^3.0.4
-  checksum: 257f3a25a4f940ccbe601a0f3a2a925a28657bc3c5fc46018980b771825834665d184e5ce75cfa0b8639525a0bdbb7f0bc02e69e2d4fb044add64638db4d48a4
+  checksum: 2abc051d9ad3faa87406a72829817dc8d432018ad19cde021b265947e2733190ef7024d50e80690f2bfbcde363332dc3ff6c366ecc6d30e63a826e4c2cf6728a
   languageName: node
   linkType: hard
 
@@ -1967,15 +1966,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"app-builder-lib@npm:24.7.0":
-  version: 24.7.0
-  resolution: "app-builder-lib@npm:24.7.0"
+"app-builder-lib@npm:24.6.3":
+  version: 24.6.3
+  resolution: "app-builder-lib@npm:24.6.3"
   dependencies:
     7zip-bin: ~5.1.1
     "@develar/schema-utils": ~2.6.5
-    "@electron/notarize": 2.1.0
-    "@electron/osx-sign": 1.0.5
-    "@electron/universal": 1.4.1
+    "@electron/notarize": ^1.2.3
+    "@electron/osx-sign": ^1.0.4
+    "@electron/universal": 1.3.4
     "@malept/flatpak-bundler": ^0.4.0
     "@types/fs-extra": 9.0.13
     async-exit-hook: ^2.0.1
@@ -1999,7 +1998,7 @@ __metadata:
     semver: ^7.3.8
     tar: ^6.1.12
     temp-file: ^3.4.0
-  checksum: fa42b782fb396a002f72398eb9264d22d85fb9caf062d5246a9f5e23b03f0daa206753fae2129fb71ed6f9aad5f67180158959f2db88b31d78bfffe9735c503a
+  checksum: 5268895465d491a8cb48b0a8ee9dce8cfbb47f2ee56f4be219aead726df0a01e9086f7d9aeea1410a52a79448a2b749948987b6465d615444f65bf53ae2116bd
   languageName: node
   linkType: hard
 
@@ -3430,11 +3429,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dmg-builder@npm:24.7.0":
-  version: 24.7.0
-  resolution: "dmg-builder@npm:24.7.0"
+"dmg-builder@npm:24.6.3":
+  version: 24.6.3
+  resolution: "dmg-builder@npm:24.6.3"
   dependencies:
-    app-builder-lib: 24.7.0
+    app-builder-lib: 24.6.3
     builder-util: 24.5.0
     builder-util-runtime: 9.2.1
     dmg-license: ^1.0.11
@@ -3444,7 +3443,7 @@ __metadata:
   dependenciesMeta:
     dmg-license:
       optional: true
-  checksum: f080a01a60f87ce21709854d1e2e4515add20bc6245bed20720fa4dffa27c81e18e0ab8ab76e97256390d0717722f0355c7618877297264ba94ea7e38cd247a4
+  checksum: a3bd6901ee73f4e17c582d394347dbcc1c08bc9d05fba2bfe1ec1c616d13c0e7ffd436d586f5cd698a93060cf2ea49794356f5352ff75e533fc8ff97966070bc
   languageName: node
   linkType: hard
 
@@ -3606,15 +3605,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-builder@npm:^24.6.4":
-  version: 24.7.0
-  resolution: "electron-builder@npm:24.7.0"
+"electron-builder@npm:24.6.3":
+  version: 24.6.3
+  resolution: "electron-builder@npm:24.6.3"
   dependencies:
-    app-builder-lib: 24.7.0
+    app-builder-lib: 24.6.3
     builder-util: 24.5.0
     builder-util-runtime: 9.2.1
     chalk: ^4.1.2
-    dmg-builder: 24.7.0
+    dmg-builder: 24.6.3
     fs-extra: ^10.1.0
     is-ci: ^3.0.0
     lazy-val: ^1.0.5
@@ -3624,7 +3623,7 @@ __metadata:
   bin:
     electron-builder: cli.js
     install-app-deps: install-app-deps.js
-  checksum: cbebcaf2003c20f313ee0bb6a26855ce1bf78fa506073c6ffa57474c39a7649e61cc77eb45c064e6dcbd695926c1447d52b273b5b3b948dc3ca0a2cd4da4a8ad
+  checksum: b5a9758353143f6d96318b893010eee2886d36d0aef264e68dc7b2d825738b2785e73708db3ceff9c82a3e66e5c3a3170954660fb8b533b735e11aad3a92b2e8
   languageName: node
   linkType: hard
 
@@ -6566,7 +6565,7 @@ __metadata:
     cue-parser: ^0.3.0
     data-uri-to-buffer: ^4.0.0
     electron: ^27.0.0
-    electron-builder: ^24.6.4
+    electron-builder: 24.6.3
     electron-devtools-installer: ^3.2.0
     electron-is-dev: ^2.0.0
     electron-store: 5.1.1
