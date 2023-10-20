@@ -1998,7 +1998,7 @@ __metadata:
 
 "app-builder-lib@patch:app-builder-lib@npm%3A24.8.0#./.yarn/patches/app-builder-lib-npm-24.8.0-51e1f5cd3f.patch::locator=lossless-cut%40workspace%3A.":
   version: 24.8.0
-  resolution: "app-builder-lib@patch:app-builder-lib@npm%3A24.8.0#./.yarn/patches/app-builder-lib-npm-24.8.0-51e1f5cd3f.patch::version=24.8.0&hash=fcafc1&locator=lossless-cut%40workspace%3A."
+  resolution: "app-builder-lib@patch:app-builder-lib@npm%3A24.8.0#./.yarn/patches/app-builder-lib-npm-24.8.0-51e1f5cd3f.patch::version=24.8.0&hash=ed7dfa&locator=lossless-cut%40workspace%3A."
   dependencies:
     7zip-bin: ~5.1.1
     "@develar/schema-utils": ~2.6.5
@@ -2028,7 +2028,7 @@ __metadata:
     semver: ^7.3.8
     tar: ^6.1.12
     temp-file: ^3.4.0
-  checksum: 4d5508391b0bc34bf22b8b4608183bfcfb65e23f43e2cbc7187ace3820f962eaa77c5a046202a19f24c9fe83103f25f438586f2fe4e04b067408a0c97ed6cea4
+  checksum: 955974c64fc49f3b67f764be76b977eaf5f0ac7231ae7886a47f1b2b45789cb56c6592999422d8b2f25430496f66332f77d2ef08a1986b71274694d37c91c773
   languageName: node
   linkType: hard
 
@@ -9745,11 +9745,11 @@ __metadata:
 
 "typescript@patch:typescript@^4.0.2#~builtin<compat/typescript>, typescript@patch:typescript@^4.2.4#~builtin<compat/typescript>":
   version: 4.9.5
-  resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=d73830"
+  resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=289587"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 2eee5c37cad4390385db5db5a8e81470e42e8f1401b0358d7390095d6f681b410f2c4a0c496c6ff9ebd775423c7785cdace7bcdad76c7bee283df3d9718c0f20
+  checksum: 1f8f3b6aaea19f0f67cba79057674ba580438a7db55057eb89cc06950483c5d632115c14077f6663ea76fd09fce3c190e6414bb98582ec80aa5a4eaf345d5b68
   languageName: node
   linkType: hard
 
