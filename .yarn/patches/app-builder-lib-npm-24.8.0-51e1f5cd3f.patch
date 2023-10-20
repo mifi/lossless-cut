@@ -1,0 +1,12 @@
+diff --git a/out/macPackager.js b/out/macPackager.js
+index 30787ba358acb9277a63df05c839a0caeea8ad91..a7d2189924ec4108e07112d51f4eadd181b89b89 100644
+--- a/out/macPackager.js
++++ b/out/macPackager.js
+@@ -402,6 +402,7 @@ class MacPackager extends platformPackager_1.PlatformPackager {
+         return true;
+     }
+     async notarizeIfProvided(appPath) {
++        if (this.platform.nodeName !== 'darwin') return;
+         const notarizeOptions = this.platformSpecificBuildOptions.notarize;
+         if (notarizeOptions === false) {
+             builder_util_1.log.info({ reason: "`notarizeOptions` is explicitly set to false" }, "skipped macOS notarization");

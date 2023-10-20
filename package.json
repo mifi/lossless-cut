@@ -432,5 +432,8 @@
       ]
     }
   },
-  "packageManager": "yarn@3.3.0"
+  "packageManager": "yarn@3.3.0",
+  "resolutions": {
+    "app-builder-lib@24.8.0": "patch:app-builder-lib@npm%3A24.8.0#./.yarn/patches/app-builder-lib-npm-24.8.0-51e1f5cd3f.patch"
+  }
 }
