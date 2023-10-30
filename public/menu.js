@@ -265,6 +265,12 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
           },
         },
         {
+          label: esc(t('Split segment at cursor')),
+          click() {
+            mainWindow.webContents.send('splitCurrentSegment');
+          },
+        },
+        {
           label: esc(t('Invert all segments on timeline')),
           click() {
             mainWindow.webContents.send('invertAllSegments');
