@@ -217,18 +217,6 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
       label: esc(t('Segments')),
       submenu: [
         {
-          label: esc(t('Clear all segments')),
-          click() {
-            mainWindow.webContents.send('clearSegments');
-          },
-        },
-        {
-          label: esc(t('Reorder segments by start time')),
-          click() {
-            mainWindow.webContents.send('reorderSegsByStartTime');
-          },
-        },
-        {
           label: esc(t('Create num segments')),
           click() {
             mainWindow.webContents.send('createNumSegments');
@@ -246,18 +234,24 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
             mainWindow.webContents.send('createRandomSegments');
           },
         },
+
+        { type: 'separator' },
+
         {
-          label: esc(t('Invert all segments on timeline')),
+          label: esc(t('Reorder segments by start time')),
           click() {
-            mainWindow.webContents.send('invertAllSegments');
+            mainWindow.webContents.send('reorderSegsByStartTime');
           },
         },
         {
-          label: esc(t('Fill gaps between segments')),
+          label: esc(t('Shuffle segments order')),
           click() {
-            mainWindow.webContents.send('fillSegmentsGaps');
+            mainWindow.webContents.send('shuffleSegments');
           },
         },
+
+        { type: 'separator' },
+
         {
           label: esc(t('Combine overlapping segments')),
           click() {
@@ -271,11 +265,20 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
           },
         },
         {
-          label: esc(t('Shuffle segments order')),
+          label: esc(t('Invert all segments on timeline')),
           click() {
-            mainWindow.webContents.send('shuffleSegments');
+            mainWindow.webContents.send('invertAllSegments');
           },
         },
+        {
+          label: esc(t('Fill gaps between segments')),
+          click() {
+            mainWindow.webContents.send('fillSegmentsGaps');
+          },
+        },
+
+        { type: 'separator' },
+
         {
           label: esc(t('Shift all segments on timeline')),
           click() {
@@ -286,6 +289,15 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
           label: esc(t('Align segment times to keyframes')),
           click() {
             mainWindow.webContents.send('alignSegmentTimesToKeyframes');
+          },
+        },
+
+        { type: 'separator' },
+
+        {
+          label: esc(t('Clear all segments')),
+          click() {
+            mainWindow.webContents.send('clearSegments');
           },
         },
       ],
