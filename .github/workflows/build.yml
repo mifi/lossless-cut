@@ -92,7 +92,7 @@ jobs:
 #          windows_certs: ${{ secrets.windows_certs }}
 #          windows_certs_password: ${{ secrets.windows_certs_password }}
         env:
-          APPLE_API_KEY: ${{ secrets.api_key }}
+          APPLE_API_KEY: ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
           APPLE_API_KEY_ID: ${{ secrets.api_key_id }}
           APPLE_API_KEY_ISSUER: ${{ secrets.api_key_issuer_id }}
 
