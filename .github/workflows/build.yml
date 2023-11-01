@@ -51,6 +51,7 @@ jobs:
 
       - name: Prepare Apple API key
         # Import Apple API key for uploading to Mac App Store
+        # as well as for notarization
         # 'altool --help': '--apiKey' will search the following directories in sequence for a private key file with the name of:
         # 'AuthKey_<api_key>.p8': './private_keys', '~/private_keys', '~/.private_keys', and '~/.appstoreconnect/private_keys'.
         if: startsWith(matrix.os, 'macos')
