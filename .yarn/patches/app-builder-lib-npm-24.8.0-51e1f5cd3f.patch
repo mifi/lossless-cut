@@ -1,5 +1,5 @@
 diff --git a/out/macPackager.js b/out/macPackager.js
-index 30787ba358acb9277a63df05c839a0caeea8ad91..aa131c6397d274486117f7693d409729ba4d3ca1 100644
+index 30787ba358acb9277a63df05c839a0caeea8ad91..726c7fe36637ca351ecfce363f564a8e87bf351a 100644
 --- a/out/macPackager.js
 +++ b/out/macPackager.js
 @@ -276,7 +276,7 @@ class MacPackager extends platformPackager_1.PlatformPackager {
@@ -11,3 +11,50 @@ index 30787ba358acb9277a63df05c839a0caeea8ad91..aa131c6397d274486117f7693d409729
          return true;
      }
      async getOptionsForFile(appPath, isMas, customSignOptions) {
+@@ -407,24 +407,36 @@ class MacPackager extends platformPackager_1.PlatformPackager {
+             builder_util_1.log.info({ reason: "`notarizeOptions` is explicitly set to false" }, "skipped macOS notarization");
+             return;
+         }
++
++        let options;
++        // option 1: app-specific password
+         const appleId = process.env.APPLE_ID;
+         const appleIdPassword = process.env.APPLE_APP_SPECIFIC_PASSWORD;
+-        if (!appleId && !appleIdPassword) {
++        // option 2: API key
++        const appleApiKey = process.env.APPLE_API_KEY;
++        const appleApiKeyId = process.env.APPLE_API_KEY_ID;
++        const appleApiIssuer = process.env.APPLE_API_ISSUER;
++        if (appleId || appleIdPassword) {
++            if (!appleId) {
++                throw new builder_util_1.InvalidConfigurationError(`APPLE_ID env var needs to be set`);
++            }
++            if (!appleIdPassword) {
++                throw new builder_util_1.InvalidConfigurationError(`APPLE_APP_SPECIFIC_PASSWORD env var needs to be set`);
++            }
++    
++            options = this.generateNotarizeOptions({ appPath, appleId, appleIdPassword });
++        } else if (appleApiKey || appleApiKeyId || appleApiIssuer) {
++            options = this.generateNotarizeOptions({ appleApiKey, appleApiKeyId, appleApiIssuer });
++        } else {
+             // if no credentials provided, skip silently
+             return;
+         }
+-        if (!appleId) {
+-            throw new builder_util_1.InvalidConfigurationError(`APPLE_ID env var needs to be set`);
+-        }
+-        if (!appleIdPassword) {
+-            throw new builder_util_1.InvalidConfigurationError(`APPLE_APP_SPECIFIC_PASSWORD env var needs to be set`);
+-        }
+-        const options = this.generateNotarizeOptions(appPath, appleId, appleIdPassword);
+         await (0, notarize_1.notarize)(options);
++
+         builder_util_1.log.info(null, "notarization successful");
+     }
+-    generateNotarizeOptions(appPath, appleId, appleIdPassword) {
+-        const baseOptions = { appPath, appleId, appleIdPassword };
++    generateNotarizeOptions({ appPath, appleId, appleIdPassword, appleApiKey, appleApiKeyId, appleApiIssuer }) {
++        const baseOptions = { appPath, appleId, appleIdPassword, appleApiKey, appleApiKeyId, appleApiIssuer };
+         const options = this.platformSpecificBuildOptions.notarize;
+         if (typeof options === "boolean") {
+             const proj = {
