@@ -143,9 +143,7 @@
       "hardenedRuntime": true,
       "appId": "no.mifi.losslesscut-mac",
       "category": "public.app-category.productivity",
-      "notarize": {
-        "teamId": "46F6T3M669"
-      },
+      "notarize": true,
       "target": [
         {
           "target": "mas",
