@@ -1,5 +1,5 @@
 diff --git a/out/macPackager.js b/out/macPackager.js
-index 30787ba358acb9277a63df05c839a0caeea8ad91..726c7fe36637ca351ecfce363f564a8e87bf351a 100644
+index 30787ba358acb9277a63df05c839a0caeea8ad91..a9e5efe7e442607f1a44c658cbf6f78093387f40 100644
 --- a/out/macPackager.js
 +++ b/out/macPackager.js
 @@ -276,7 +276,7 @@ class MacPackager extends platformPackager_1.PlatformPackager {
@@ -35,7 +35,7 @@ index 30787ba358acb9277a63df05c839a0caeea8ad91..726c7fe36637ca351ecfce363f564a8e
 +    
 +            options = this.generateNotarizeOptions({ appPath, appleId, appleIdPassword });
 +        } else if (appleApiKey || appleApiKeyId || appleApiIssuer) {
-+            options = this.generateNotarizeOptions({ appleApiKey, appleApiKeyId, appleApiIssuer });
++            options = this.generateNotarizeOptions({ appPath, appleApiKey, appleApiKeyId, appleApiIssuer });
 +        } else {
              // if no credentials provided, skip silently
              return;
