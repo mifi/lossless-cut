@@ -1998,7 +1998,7 @@ __metadata:
 
 "app-builder-lib@patch:app-builder-lib@npm%3A24.8.0#./.yarn/patches/app-builder-lib-npm-24.8.0-51e1f5cd3f.patch::locator=lossless-cut%40workspace%3A.":
   version: 24.8.0
-  resolution: "app-builder-lib@patch:app-builder-lib@npm%3A24.8.0#./.yarn/patches/app-builder-lib-npm-24.8.0-51e1f5cd3f.patch::version=24.8.0&hash=6f8a5c&locator=lossless-cut%40workspace%3A."
+  resolution: "app-builder-lib@patch:app-builder-lib@npm%3A24.8.0#./.yarn/patches/app-builder-lib-npm-24.8.0-51e1f5cd3f.patch::version=24.8.0&hash=eaba3b&locator=lossless-cut%40workspace%3A."
   dependencies:
     7zip-bin: ~5.1.1
     "@develar/schema-utils": ~2.6.5
@@ -2028,7 +2028,7 @@ __metadata:
     semver: ^7.3.8
     tar: ^6.1.12
     temp-file: ^3.4.0
-  checksum: 3ce09b3cb8425ecbab5911c0d73f4efe61d0f98267d0e63883a480e8a202f89fa2dbb8577e31809676ed1bf11c75a22694054601a76b7ba8477fbf624d824f32
+  checksum: a32596b0508cd000a5318808a5d5e64dd470fb7a34ef12cf6b51d0817cf528e9f5183b8c928bb3ba855a8188eaea66eacdb800ed72102ba60e003fbe91733057
   languageName: node
   linkType: hard
 
