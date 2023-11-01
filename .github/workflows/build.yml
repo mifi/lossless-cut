@@ -92,13 +92,9 @@ jobs:
 #          windows_certs: ${{ secrets.windows_certs }}
 #          windows_certs_password: ${{ secrets.windows_certs_password }}
         env:
-          # https://github.com/electron-userland/electron-builder/issues/7683
-          APPLE_ID: ${{ secrets.apple_id }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.apple_app_specific_password }}
-          # TODO use appleApiKey, appleApiKeyId and appleApiIssuer from https://github.com/electron/notarize
-          # once electron-builder supports those: https://github.com/electron-userland/electron-builder/blob/7c7db837bdf650228594a30114975f1581c37130/packages/app-builder-lib/src/macPackager.ts#L489
-          #API_KEY_ID: ${{ secrets.api_key_id }}
-          #API_KEY_ISSUER_ID: ${{ secrets.api_key_issuer_id }}
+          APPLE_API_KEY: ${{ secrets.api_key }}
+          APPLE_API_KEY_ID: ${{ secrets.api_key_id }}
+          APPLE_API_KEY_ISSUER: ${{ secrets.api_key_issuer_id }}
 
       - name: Upload to Mac App Store
         if: startsWith(matrix.os, 'macos') && env.is_tag == 'true'
