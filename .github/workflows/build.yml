@@ -50,10 +50,7 @@ jobs:
           echo -n "$PROVISIONING_PROFILE_BASE64" | base64 --decode > LosslessCut_Mac_App_Store_provisioning_profile.provisionprofile
 
       - name: Prepare Apple API key
-        # Import Apple API key for uploading to Mac App Store
-        # as well as for notarization
-        # 'altool --help': '--apiKey' will search the following directories in sequence for a private key file with the name of:
-        # 'AuthKey_<api_key>.p8': './private_keys', '~/private_keys', '~/.private_keys', and '~/.appstoreconnect/private_keys'.
+        # Import Apple API key for uploading to Mac App Store and for notarization
         if: startsWith(matrix.os, 'macos')
         run: |
           mkdir -p ~/.appstoreconnect/private_keys/
