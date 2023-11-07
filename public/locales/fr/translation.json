@@ -738,5 +738,20 @@
     "What do you want to do after exporting a file or when pressing the \"delete source file\" button?": "Que voulez-vous faire après avoir exporté un fichier ou après l'appui sur le bouton \"supprimer le fichier source\" ?",
     "Unable to delete file: {{message}}": "Impossible de supprimer le fichier : {{message}}",
     "Try both <1>Normal cut</1> and <3>Keyframe cut</3>": "Essayez à la fois la <1>Découpe normale</1> et la <3>Découpe sur image clé</3>",
-    "Timeline keyboard seek speed": "Vitesse de la recherche de clavier sur la ligne temporelle"
+    "Timeline keyboard seek speed": "Vitesse de la recherche de clavier sur la ligne temporelle",
+    "Overwrite existing files": "Écraser les fichiers existants",
+    "Extract frames from current segment as image files": "Extraire les trames du segment courant en tant qu'images",
+    "Name of the merged/concatenated output file when concatenating multiple segments.": "Nom du fichier fusionné/concaténé lors de la concaténation de plusieurs segments.",
+    "API action name: {{action}}": "Nom d'action API : {{action}}",
+    "Merged output file name:": "Nom du fichier fusionné :",
+    "Select segments by tag": "Sélectionner les segments par leurs balise",
+    "Quit LosslessCut": "Quitter LosslessCut",
+    "This option lets you losslessly change the speed at which media players will play back the exported file. For example if you double the FPS, the playback speed will double (and duration will halve), however all the frames will be intact and played back (but faster). Be careful not to set it too high, as the player might not be able to keep up (playback CPU usage will increase proportionally to the speed!)": "Cette option vous permet de modifier la vitesse à laquelle les lecteurs multimédias liront le fichier exporté sans perte. Par exemple, si vous doublez les FPS, la vitesse de lecture doublera (et la durée sera divisée par deux), mais toutes les images seront intactes et lues (mais plus rapidement). Attention à ne pas mettre une valeur trop élevée car le lecteur pourrait ne pas être en mesure de suivre (l'utilisation CPU pour la lecture augmentera proportionnellement à la vitesse !)",
+    "Extract frames from selected segments as image files": "Extraire les trames des segments sélectionnés en tant qu'images",
+    "Change FPS": "Changer les FPS",
+    "Close current file": "Fermer le fichier courant",
+    "Please enter a valid number.": "Veuillez entrer un chiffre valide.",
+    "Enter tag name (in the next dialog you'll enter tag value)": "Entrer le nom de la balise (saisissez la valeur de la balise dans la prochaine boîte de dialogue)",
+    "Sanitize file names": "Nettoyer les noms de fichiers",
+    "Enter tag value": "Entrer la valeur de la balise"
 }
