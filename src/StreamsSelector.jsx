@@ -1,117 +1,28 @@
-import React, { memo, useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import React, { memo, useState, useMemo, useCallback } from 'react';
 
 import { FaImage, FaCheckCircle, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
-import { FiEdit, FiCheck, FiTrash } from 'react-icons/fi';
 import { MdSubtitles } from 'react-icons/md';
-import { Checkbox, BookIcon, TextInput, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, Heading, SortAscIcon, SortDescIcon, Dialog, Button, PlusIcon, ForkIcon, WarningSignIcon } from 'evergreen-ui';
+import { Checkbox, BookIcon, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, Heading, SortAscIcon, SortDescIcon, Dialog, Button, ForkIcon, WarningSignIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 import prettyBytes from 'pretty-bytes';
 
 import AutoExportToggler from './components/AutoExportToggler';
 import Select from './components/Select';
-import { askForMetadataKey, showJson5Dialog } from './dialogs';
+import { showJson5Dialog } from './dialogs';
 import { formatDuration } from './util/duration';
 import { getStreamFps } from './ffmpeg';
 import { deleteDispositionValue } from './util';
 import { getActiveDisposition, attachedPicDisposition } from './util/streams';
+import TagEditor from './components/TagEditor';
 
-
-const activeColor = '#429777';
 
 const dispositionOptions = ['default', 'dub', 'original', 'comment', 'lyrics', 'karaoke', 'forced', 'hearing_impaired', 'visual_impaired', 'clean_effects', 'attached_pic', 'captions', 'descriptions', 'dependent', 'metadata'];
 const unchangedDispositionValue = 'llc_disposition_unchanged';
 
-const TagEditor = memo(({ existingTags, customTags, editingTag, setEditingTag, onTagChange, onTagReset }) => {
+
+const EditFileDialog = memo(({ editingFile, allFilesMeta, customTagsByFile, setCustomTagsByFile, editingTag, setEditingTag }) => {
   const { t } = useTranslation();
-  const ref = useRef();
-
-  const [editingTagVal, setEditingTagVal] = useState();
-  const [newTag, setNewTag] = useState();
-
-  const mergedTags = useMemo(() => ({ ...existingTags, ...customTags, ...(newTag ? { [newTag]: '' } : {}) }), [customTags, existingTags, newTag]);
-
-  const onResetClick = useCallback(() => {
-    onTagReset(editingTag);
-    setEditingTag();
-    setNewTag();
-  }, [editingTag, onTagReset, setEditingTag]);
-
-  function onEditClick(tag) {
-    if (newTag) {
-      onTagChange(editingTag, editingTagVal);
-      setEditingTag();
-      setNewTag();
-    } else if (editingTag != null) {
-      if (editingTagVal !== existingTags[editingTag]) {
-        onTagChange(editingTag, editingTagVal);
-        setEditingTag();
-      } else { // If not actually changed, no need to update
-        onResetClick();
-      }
-    } else {
-      setEditingTag(tag);
-      setEditingTagVal(mergedTags[tag]);
-    }
-  }
-
-  function onSubmit(e) {
-    e.preventDefault();
-    onEditClick();
-  }
-
-  const onAddPress = useCallback(async (e) => {
-    e.preventDefault();
-    e.target.blur();
-    const tag = await askForMetadataKey();
-    if (!tag || Object.keys(mergedTags).includes(tag)) return;
-    setEditingTag(tag);
-    setEditingTagVal('');
-    setNewTag(tag);
-  }, [mergedTags, setEditingTag]);
-
-  useEffect(() => {
-    ref.current?.focus();
-  }, [editingTag]);
-
-  return (
-    <>
-      <table style={{ color: 'black' }}>
-        <tbody>
-          {Object.keys(mergedTags).map((tag) => {
-            const editingThis = tag === editingTag;
-            const Icon = editingThis ? FiCheck : FiEdit;
-            const thisTagCustom = customTags[tag] != null;
-            const thisTagNew = existingTags[tag] == null;
-
-            return (
-              <tr key={tag}>
-                <td style={{ paddingRight: 20, color: thisTagNew ? activeColor : 'rgba(0,0,0,0.6)' }}>{tag}</td>
-
-                <td style={{ paddingTop: 5, paddingBottom: 5 }}>
-                  {editingThis ? (
-                    <form style={{ display: 'inline' }} onSubmit={onSubmit}>
-                      <TextInput ref={ref} placeholder={t('Enter value')} value={editingTagVal || ''} onChange={(e) => setEditingTagVal(e.target.value)} />
-                    </form>
-                  ) : (
-                    <span style={{ color: thisTagCustom ? activeColor : undefined, fontWeight: thisTagCustom ? 'bold' : undefined }}>{mergedTags[tag]}</span>
-                  )}
-                  {(editingTag == null || editingThis) && <Icon title={t('Edit')} role="button" size={17} style={{ paddingLeft: 5, verticalAlign: 'middle', color: activeColor }} onClick={() => onEditClick(tag)} />}
-                  {editingThis && <FiTrash title={t('Reset')} role="button" size={18} style={{ paddingLeft: 5, verticalAlign: 'middle' }} onClick={onResetClick} />}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-
-      <Button style={{ marginTop: 10 }} iconBefore={PlusIcon} onClick={onAddPress}>{t('Add metadata')}</Button>
-    </>
-  );
-});
-
-const EditFileDialog = memo(({ editingFile, allFilesMeta, customTagsByFile, setCustomTagsByFile }) => {
-  const [editingTag, setEditingTag] = useState();
 
   const { formatData } = allFilesMeta[editingFile];
   const existingTags = formatData.tags || {};
@@ -128,7 +39,7 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, customTagsByFile, setC
     });
   }, [editingFile, setCustomTagsByFile]);
 
-  return <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagChange={onTagChange} onTagReset={onTagReset} />;
+  return <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagChange={onTagChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} addTagText={t('Enter metadata key')} />;
 });
 
 const getStreamDispositionsObj = (stream) => ((stream && stream.disposition) || {});
@@ -208,7 +119,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
         <Heading>Parameters</Heading>
         <StreamParametersEditor stream={editingStream} streamParams={streamParams} updateStreamParams={(setter) => updateStreamParams(editingFile, editingStreamId, setter)} />
         <Heading>Tags</Heading>
-        <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagChange={onTagChange} onTagReset={onTagReset} />
+        <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagChange={onTagChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} addTagText={t('Enter metadata key')} />
       </div>
     </Dialog>
   );
@@ -387,6 +298,7 @@ const StreamsSelector = memo(({
   const [editingFile, setEditingFile] = useState();
   const [editingStream, setEditingStream] = useState();
   const { t } = useTranslation();
+  const [editingTag, setEditingTag] = useState();
 
   function getFormatDuration(formatData) {
     if (!formatData || !formatData.duration) return undefined;
@@ -507,8 +419,9 @@ const StreamsSelector = memo(({
         hasCancel={false}
         confirmLabel={t('Done')}
         onCloseComplete={() => setEditingFile()}
+        isConfirmDisabled={editingTag != null}
       >
-        <EditFileDialog editingFile={editingFile} allFilesMeta={allFilesMeta} customTagsByFile={customTagsByFile} setCustomTagsByFile={setCustomTagsByFile} />
+        <EditFileDialog editingFile={editingFile} editingTag={editingTag} setEditingTag={setEditingTag} allFilesMeta={allFilesMeta} customTagsByFile={customTagsByFile} setCustomTagsByFile={setCustomTagsByFile} />
       </Dialog>
 
       {editingStream != null && (

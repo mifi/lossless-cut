@@ -310,13 +310,13 @@ export async function askForAlignSegments() {
   };
 }
 
-export async function askForMetadataKey() {
+export async function askForMetadataKey({ title, text }) {
   const { value } = await Swal.fire({
-    title: i18n.t('Add metadata'),
-    text: i18n.t('Enter metadata key'),
+    title,
+    text,
     input: 'text',
     showCancelButton: true,
-    inputPlaceholder: 'metadata_key',
+    inputPlaceholder: 'key',
     inputValidator: (v) => v.includes('=') && i18n.t('Invalid character(s) found in key'),
   });
   return value;
@@ -523,20 +523,6 @@ export async function selectSegmentsByTagDialog() {
   if (!value2) return undefined;
 
   return { tagName: value1, tagValue: value2 };
-}
-
-export async function showEditableJsonDialog({ text, title, inputLabel, inputValue, inputValidator }) {
-  const { value } = await Swal.fire({
-    input: 'textarea',
-    inputLabel,
-    text,
-    title,
-    inputPlaceholder: JSON5.stringify({ exampleTag: 'Example value' }, null, 2),
-    inputValue,
-    showCancelButton: true,
-    inputValidator,
-  });
-  return value;
 }
 
 export function showJson5Dialog({ title, json }) {

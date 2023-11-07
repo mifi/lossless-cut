@@ -1,7 +1,6 @@
 import { useCallback, useRef, useMemo, useState } from 'react';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import i18n from 'i18next';
-import JSON5 from 'json5';
 import pMap from 'p-map';
 
 import sortBy from 'lodash/sortBy';
@@ -10,7 +9,7 @@ import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToS
 import { handleError, shuffleArray } from '../util';
 import { errorToast } from '../swal';
 import { showParametersDialog } from '../dialogs/parameters';
-import { createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, showEditableJsonDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, selectSegmentsByTagDialog } from '../dialogs';
+import { createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, selectSegmentsByTagDialog } from '../dialogs';
 import { createSegment, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2 } from '../segments';
 import * as ffmpegParameters from '../ffmpeg-parameters';
 import { maxSegmentsAllowed } from '../util/constants';
@@ -273,22 +272,6 @@ export default ({
     }
   }, [filePath, mainVideoStream, modifySelectedSegmentTimes, setWorking, workingRef]);
 
-  const onViewSegmentTags = useCallback(async (index) => {
-    const segment = cutSegments[index];
-    function inputValidator(jsonStr) {
-      try {
-        const json = JSON5.parse(jsonStr);
-        if (!(typeof json === 'object' && Object.values(json).every((val) => typeof val === 'string'))) throw new Error();
-        return undefined;
-      } catch (err) {
-        return i18n.t('Invalid JSON');
-      }
-    }
-    const tags = getSegmentTags(segment);
-    const newTagsStr = await showEditableJsonDialog({ title: i18n.t('Segment tags'), text: i18n.t('View and edit segment tags in JSON5 format:'), inputValue: Object.keys(tags).length > 0 ? JSON5.stringify(tags, null, 2) : '', inputValidator });
-    if (newTagsStr != null) updateSegAtIndex(index, { tags: JSON5.parse(newTagsStr) });
-  }, [cutSegments, updateSegAtIndex]);
-
   const updateSegOrder = useCallback((index, newOrder) => {
     if (newOrder > cutSegments.length - 1 || newOrder < 0) return;
     const newSegments = [...cutSegments];
@@ -465,7 +448,6 @@ export default ({
     enableSegments(segmentsToEnable);
   }, [cutSegments, enableSegments]);
 
-
   const onLabelSelectedSegments = useCallback(async () => {
     if (selectedSegmentsRaw.length < 1) return;
     const { name } = selectedSegmentsRaw[0];
@@ -517,7 +499,6 @@ export default ({
     combineSelectedSegments,
     shiftAllSegmentTimes,
     alignSegmentTimesToKeyframes,
-    onViewSegmentTags,
     updateSegOrder,
     updateSegOrders,
     reorderSegsByStartTime,
@@ -561,5 +542,6 @@ export default ({
     toggleSegmentSelected,
     selectOnlySegment,
     setCutTime,
+    updateSegAtIndex,
   };
 };

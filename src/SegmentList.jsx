@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useRef, useCallback } from 'react';
+import React, { memo, useMemo, useRef, useCallback, useState } from 'react';
 import { FaYinYang, FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaRegCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
 import { motion } from 'framer-motion';
@@ -7,6 +7,7 @@ import { ReactSortable } from 'react-sortablejs';
 import isEqual from 'lodash/isEqual';
 import useDebounce from 'react-use/lib/useDebounce';
 import scrollIntoView from 'scroll-into-view-if-needed';
+import { Dialog } from 'evergreen-ui';
 
 import Swal from './swal';
 import useContextMenu from './hooks/useContextMenu';
@@ -15,6 +16,7 @@ import { saveColor, controlsBackground, primaryTextColor, darkModeTransition } f
 import { useSegColors } from './contexts';
 import { mySpring } from './animations';
 import { getSegmentTags } from './segments';
+import TagEditor from './components/TagEditor';
 
 const buttonBaseStyle = {
   margin: '0 3px', borderRadius: 3, color: 'white', cursor: 'pointer',
@@ -23,7 +25,7 @@ const buttonBaseStyle = {
 const neutralButtonColor = 'var(--gray8)';
 
 
-const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onRemoveSelected, onLabelSelectedSegments, onReorderPress, onLabelPress, selected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectSegmentsByTag, onSelectAllSegments, jumpSegStart, jumpSegEnd, addSegment, onViewSegmentTags, onExtractSegmentFramesAsImages, onInvertSelectedSegments, onDuplicateSegmentClick }) => {
+const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, getFrameCount, updateOrder, invertCutSegments, onClick, onRemovePress, onRemoveSelected, onLabelSelectedSegments, onReorderPress, onLabelPress, selected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectSegmentsByTag, onSelectAllSegments, jumpSegStart, jumpSegEnd, addSegment, onEditSegmentTags, onExtractSegmentFramesAsImages, onInvertSelectedSegments, onDuplicateSegmentClick }) => {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
 
@@ -64,10 +66,10 @@ const Segment = memo(({ darkMode, seg, index, currentSegIndex, formatTimecode, g
 
       { type: 'separator' },
 
-      { label: t('Segment tags'), click: () => onViewSegmentTags(index) },
+      { label: t('Segment tags'), click: () => onEditSegmentTags(index) },
       { label: t('Extract frames as image files'), click: () => onExtractSegmentFramesAsImages([seg.segId]) },
     ];
-  }, [invertCutSegments, t, jumpSegStart, jumpSegEnd, addSegment, onLabelPress, onRemovePress, onLabelSelectedSegments, onRemoveSelected, onReorderPress, onDuplicateSegmentClick, seg, onSelectSingleSegment, onSelectAllSegments, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectSegmentsByTag, onInvertSelectedSegments, updateOrder, onViewSegmentTags, index, onExtractSegmentFramesAsImages]);
+  }, [invertCutSegments, t, jumpSegStart, jumpSegEnd, addSegment, onLabelPress, onRemovePress, onLabelSelectedSegments, onRemoveSelected, onReorderPress, onDuplicateSegmentClick, seg, onSelectSingleSegment, onSelectAllSegments, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectSegmentsByTag, onInvertSelectedSegments, updateOrder, onEditSegmentTags, index, onExtractSegmentFramesAsImages]);
 
   useContextMenu(ref, contextMenuTemplate);
 
@@ -159,7 +161,7 @@ const SegmentList = memo(({
   updateSegOrder, updateSegOrders, addSegment, removeCutSegment, onRemoveSelected,
   onLabelSegment, currentCutSeg, segmentAtCursor, toggleSegmentsList, splitCurrentSegment,
   selectedSegments, isSegmentSelected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectAllSegments, onSelectSegmentsByLabel, onSelectSegmentsByTag, onExtractSegmentFramesAsImages, onLabelSelectedSegments, onInvertSelectedSegments, onDuplicateSegmentClick,
-  jumpSegStart, jumpSegEnd, onViewSegmentTags,
+  jumpSegStart, jumpSegEnd, updateSegAtIndex,
 }) => {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
@@ -269,69 +271,111 @@ const SegmentList = memo(({
     );
   }
 
+  const [editingSegmentTagsSegmentIndex, setEditingSegmentTagsSegmentIndex] = useState();
+  const [editingSegmentTags, setEditingSegmentTags] = useState();
+  const [editingTag, setEditingTag] = useState();
+
+  const onTagChange = useCallback((tag, value) => setEditingSegmentTags((existingTags) => ({
+    ...existingTags,
+    [tag]: value,
+  })), []);
+
+  const onTagReset = useCallback((tag) => setEditingSegmentTags(({ [tag]: deleted, ...rest }) => rest), []);
+
+  const onEditSegmentTags = useCallback((index) => {
+    setEditingSegmentTagsSegmentIndex(index);
+    setEditingSegmentTags(getSegmentTags(apparentCutSegments[index]));
+  }, [apparentCutSegments]);
+
+  const onSegmentTagsCloseComplete = useCallback(() => {
+    setEditingSegmentTagsSegmentIndex();
+    setEditingSegmentTags();
+  }, []);
+
+  const onSegmentTagsConfirm = useCallback(() => {
+    updateSegAtIndex(editingSegmentTagsSegmentIndex, { tags: editingSegmentTags });
+    onSegmentTagsCloseComplete();
+  }, [editingSegmentTags, editingSegmentTagsSegmentIndex, onSegmentTagsCloseComplete, updateSegAtIndex]);
+
   return (
-    <motion.div
-      style={{ width, background: controlsBackground, borderLeft: '1px solid var(--gray7)', color: 'var(--gray11)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
-      initial={{ x: width }}
-      animate={{ x: 0 }}
-      exit={{ x: width }}
-      transition={mySpring}
-    >
-      <div style={{ fontSize: 14, padding: '0 5px', color: 'var(--gray12)' }} className="no-user-select">
-        <FaAngleRight
-          title={t('Close sidebar')}
-          size={20}
-          style={{ verticalAlign: 'middle', color: 'var(--gray11)', cursor: 'pointer', padding: 2 }}
-          role="button"
-          onClick={toggleSegmentsList}
-        />
+    <>
+      <Dialog
+        title={t('Edit segment tags')}
+        isShown={editingSegmentTagsSegmentIndex != null}
+        hasCancel={false}
+        isConfirmDisabled={editingTag != null}
+        confirmLabel={t('Save')}
+        onConfirm={onSegmentTagsConfirm}
+        onCloseComplete={onSegmentTagsCloseComplete}
+      >
+        <div style={{ color: 'black' }}>
+          <TagEditor customTags={editingSegmentTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagChange={onTagChange} onTagReset={onTagReset} addTagTitle={t('Add segment tag')} addTagText={t('Enter tag key')} />
+        </div>
+      </Dialog>
 
-        {header}
-      </div>
+      <motion.div
+        style={{ width, background: controlsBackground, borderLeft: '1px solid var(--gray7)', color: 'var(--gray11)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
+        initial={{ x: width }}
+        animate={{ x: 0 }}
+        exit={{ x: width }}
+        transition={mySpring}
+      >
+        <div style={{ fontSize: 14, padding: '0 5px', color: 'var(--gray12)' }} className="no-user-select">
+          <FaAngleRight
+            title={t('Close sidebar')}
+            size={20}
+            style={{ verticalAlign: 'middle', color: 'var(--gray11)', cursor: 'pointer', padding: 2 }}
+            role="button"
+            onClick={toggleSegmentsList}
+          />
 
-      <div style={{ padding: '0 10px', overflowY: 'scroll', flexGrow: 1 }} className="hide-scrollbar">
-        <ReactSortable list={sortableList} setList={setSortableList} disabled={!!invertCutSegments} handle=".segment-handle">
-          {sortableList.map(({ id, seg }, index) => {
-            const selected = !invertCutSegments && isSegmentSelected({ segId: seg.segId });
-            return (
-              <Segment
-                key={id}
-                darkMode={darkMode}
-                seg={seg}
-                index={index}
-                selected={selected}
-                onClick={onSegClick}
-                addSegment={addSegment}
-                onRemoveSelected={onRemoveSelected}
-                onRemovePress={() => removeCutSegment(index)}
-                onReorderPress={() => onReorderSegs(index)}
-                onLabelPress={() => onLabelSegment(index)}
-                jumpSegStart={() => jumpSegStart(index)}
-                jumpSegEnd={() => jumpSegEnd(index)}
-                updateOrder={(dir) => updateSegOrder(index, index + dir)}
-                getFrameCount={getFrameCount}
-                formatTimecode={formatTimecode}
-                currentSegIndex={currentSegIndex}
-                invertCutSegments={invertCutSegments}
-                onSelectSingleSegment={onSelectSingleSegment}
-                onToggleSegmentSelected={onToggleSegmentSelected}
-                onDeselectAllSegments={onDeselectAllSegments}
-                onSelectAllSegments={onSelectAllSegments}
-                onViewSegmentTags={onViewSegmentTags}
-                onSelectSegmentsByLabel={onSelectSegmentsByLabel}
-                onSelectSegmentsByTag={onSelectSegmentsByTag}
-                onExtractSegmentFramesAsImages={onExtractSegmentFramesAsImages}
-                onLabelSelectedSegments={onLabelSelectedSegments}
-                onInvertSelectedSegments={onInvertSelectedSegments}
-                onDuplicateSegmentClick={onDuplicateSegmentClick}
-              />
-            );
-          })}
-        </ReactSortable>
-      </div>
+          {header}
+        </div>
 
-      {segments.length > 0 && renderFooter()}
-    </motion.div>
+        <div style={{ padding: '0 10px', overflowY: 'scroll', flexGrow: 1 }} className="hide-scrollbar">
+          <ReactSortable list={sortableList} setList={setSortableList} disabled={!!invertCutSegments} handle=".segment-handle">
+            {sortableList.map(({ id, seg }, index) => {
+              const selected = !invertCutSegments && isSegmentSelected({ segId: seg.segId });
+              return (
+                <Segment
+                  key={id}
+                  darkMode={darkMode}
+                  seg={seg}
+                  index={index}
+                  selected={selected}
+                  onClick={onSegClick}
+                  addSegment={addSegment}
+                  onRemoveSelected={onRemoveSelected}
+                  onRemovePress={() => removeCutSegment(index)}
+                  onReorderPress={() => onReorderSegs(index)}
+                  onLabelPress={() => onLabelSegment(index)}
+                  jumpSegStart={() => jumpSegStart(index)}
+                  jumpSegEnd={() => jumpSegEnd(index)}
+                  updateOrder={(dir) => updateSegOrder(index, index + dir)}
+                  getFrameCount={getFrameCount}
+                  formatTimecode={formatTimecode}
+                  currentSegIndex={currentSegIndex}
+                  invertCutSegments={invertCutSegments}
+                  onSelectSingleSegment={onSelectSingleSegment}
+                  onToggleSegmentSelected={onToggleSegmentSelected}
+                  onDeselectAllSegments={onDeselectAllSegments}
+                  onSelectAllSegments={onSelectAllSegments}
+                  onEditSegmentTags={onEditSegmentTags}
+                  onSelectSegmentsByLabel={onSelectSegmentsByLabel}
+                  onSelectSegmentsByTag={onSelectSegmentsByTag}
+                  onExtractSegmentFramesAsImages={onExtractSegmentFramesAsImages}
+                  onLabelSelectedSegments={onLabelSelectedSegments}
+                  onInvertSelectedSegments={onInvertSelectedSegments}
+                  onDuplicateSegmentClick={onDuplicateSegmentClick}
+                />
+              );
+            })}
+          </ReactSortable>
+        </div>
+
+        {segments.length > 0 && renderFooter()}
+      </motion.div>
+    </>
   );
 });
 
