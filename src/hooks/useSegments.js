@@ -258,7 +258,7 @@ export default ({
         async function align(key) {
           const time = newSegment[key];
           const keyframe = await findKeyframeNearTime({ filePath, streamIndex: mainVideoStream.index, time, mode });
-          if (!keyframe == null) throw new Error(`Cannot find any keyframe within 60 seconds of frame ${time}`);
+          if (keyframe == null) throw new Error(`Cannot find any keyframe within 60 seconds of frame ${time}`);
           newSegment[key] = keyframe;
         }
         if (startOrEnd.includes('start')) await align('start');

@@ -54,7 +54,7 @@
     "electron": "^27.0.0",
     "electron-builder": "^24.6.4",
     "electron-devtools-installer": "^3.2.0",
-    "eslint": "^7.32.0 || ^8.2.0",
+    "eslint": "^8.53.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-jsx-a11y": "^6.5.1",

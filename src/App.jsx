@@ -1306,7 +1306,7 @@ const App = memo(() => {
   const extractSegmentFramesAsImages = useCallback(async (segIds) => {
     if (!filePath || detectedFps == null || workingRef.current) return;
     const segments = apparentCutSegments.filter((seg) => segIds.includes(seg.segId));
-    const segmentsNumFrames = segments.reduce((acc, { start, end }) => acc + getFrameCount(end - start) ?? 0, 0);
+    const segmentsNumFrames = segments.reduce((acc, { start, end }) => acc + (getFrameCount(end - start) ?? 0), 0);
     const captureFramesResponse = await askExtractFramesAsImages({ segmentsNumFrames, plural: segments.length > 1, fps: detectedFps });
     if (captureFramesResponse == null) return;
 
