@@ -43,7 +43,7 @@ export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, s
   if (Number.isNaN(videoBitrate)) {
     console.warn('Unable to detect input bitrate');
     const stats = await stat(path);
-    videoBitrate = stats.size / videoDuration;
+    videoBitrate = (stats.size * 8) / videoDuration;
   }
 
   // to account for inaccuracies and quality loss
