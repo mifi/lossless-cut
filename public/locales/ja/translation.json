@@ -707,7 +707,7 @@
     "Loop/pause (only current segment)": "ループ/停止 (現在のセグメントのみ)",
     "Play/pause (only current segment)": "再生/停止 (現在のセグメントのみ)",
     "Show this dialog every time?": "このダイアログを毎回表示する",
-    "What do you want to do after exporting a file or when pressing the \"delete source file\" button?": "ファイルの出力後や「入力ファイルの削除」ボタンを押した際に行う処理はどれですか？",
+    "What do you want to do after exporting a file or when pressing the \"delete source file\" button?": "ファイルの出力後や「入力ファイルの削除」ボタンを押した際に行いたい処理は？",
     "Loop/pause (only beginning and end of current segment)": "再生/停止 (現在のセグメントの先頭と末端のみ)",
     "Permanently delete the files if trash fails?": "ゴミ箱への移動が失敗したらファイルを完全に削除",
     "Press confirm to grant LosslessCut access to write the project file (due to App Sandbox restrictions).": "確認を押すと、LosslessCut にプロジェクトファイルの書き込み権限を与えます（App Sandbox の制限のため）。",
@@ -781,5 +781,15 @@
     "Change FPS": "FPSを変更",
     "Close current file": "現在のファイルを閉じる",
     "Please enter a valid number.": "有効な数字を入力してください。",
-    "Enter tag value": "タグの値を入力"
+    "Enter tag value": "タグの値を入力",
+    "Extract frames from current segment as image files": "現在のセグメントから画像ファイルとしてフレームを抽出",
+    "Name of the merged/concatenated output file when concatenating multiple segments.": "複数のセグメントを連結する結合/連結後の出力ファイルの名前。",
+    "API action name: {{action}}": "API 操作名: {{action}}",
+    "Merged output file name:": "結合後の出力ファイル名:",
+    "Select segments by tag": "タグからセグメントを選択",
+    "Quit LosslessCut": "LosslessCut を終了",
+    "This option lets you losslessly change the speed at which media players will play back the exported file. For example if you double the FPS, the playback speed will double (and duration will halve), however all the frames will be intact and played back (but faster). Be careful not to set it too high, as the player might not be able to keep up (playback CPU usage will increase proportionally to the speed!)": "このオプションは、出力されたファイルをメディアプレーヤーが再生する速度をロスレスで変更できます。例えばFPSを2倍にすると、再生速度は2倍になりますが (再生時間は半分になります)、すべてのフレームはそのまま再生されます (速度は速くなります)。高すぎると、プレーヤーがついていけなくなる可能性があります (再生によるCPU使用率は速度に比例して増加します！)",
+    "Extract frames from selected segments as image files": "選択したセグメントから画像ファイルとしてフレームを抽出",
+    "Enter tag name (in the next dialog you'll enter tag value)": "タグ名を入力 (次にタグの値を入力できます)",
+    "Sanitize file names": "ファイル名の整形"
 }
