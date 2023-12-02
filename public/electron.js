@@ -267,6 +267,8 @@ function initApp() {
     await shell.trashItem(path);
   });
 
+  ipcMain.handle('showItemInFolder', (e, path) => shell.showItemInFolder(path));
+
   ipcMain.on('apiKeyboardActionResponse', (e, { id }) => {
     apiKeyboardActionRequests.get(id)?.();
   });

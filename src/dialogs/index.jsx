@@ -11,10 +11,9 @@ import { parseDuration, formatDuration } from '../util/duration';
 import Swal, { swalToastOptions, toast } from '../swal';
 import { parseYouTube } from '../edlFormats';
 import CopyClipboardButton from '../components/CopyClipboardButton';
-import { isWindows } from '../util';
+import { isWindows, showItemInFolder } from '../util';
 
 const { dialog } = window.require('@electron/remote');
-const { shell } = window.require('electron');
 
 const ReactSwal = withReactContent(Swal);
 
@@ -571,7 +570,7 @@ export async function openDirToast({ filePath, text, html, ...props }) {
     html,
     ...props,
   });
-  if (value) shell.showItemInFolder(filePath);
+  if (value) showItemInFolder(filePath);
 }
 
 const UnorderedList = ({ children }) => <ul style={{ paddingLeft: '1em' }}>{children}</ul>;

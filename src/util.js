@@ -19,6 +19,9 @@ const { unlink } = fsExtra;
 
 const trashFile = async (path) => ipcRenderer.invoke('tryTrashItem', path);
 
+export const showItemInFolder = async (path) => ipcRenderer.invoke('showItemInFolder', path);
+
+
 export function getFileDir(filePath) {
   return filePath ? dirname(filePath) : undefined;
 }
