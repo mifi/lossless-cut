@@ -1,7 +1,7 @@
 import JSON5 from 'json5';
 import i18n from 'i18next';
 
-import { parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, getTimeFromFrameNum, parseDvAnalyzerSummaryTxt } from './edlFormats';
+import { parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, parseCsvTime, getFrameValParser, parseDvAnalyzerSummaryTxt } from './edlFormats';
 import { askForYouTubeInput, showOpenDialog } from './dialogs';
 import { getOutPath } from './util';
 
@@ -12,12 +12,12 @@ const { basename } = window.require('path');
 const { dialog } = window.require('@electron/remote');
 
 export async function loadCsvSeconds(path) {
-  return parseCsv(await fs.readFile(path, 'utf-8'));
+  return parseCsv(await fs.readFile(path, 'utf-8'), parseCsvTime);
 }
 
 export async function loadCsvFrames(path, fps) {
   if (!fps) throw new Error('The loaded file has an unknown framerate');
-  return parseCsv(await fs.readFile(path, 'utf-8'), (frameNum) => getTimeFromFrameNum(fps, frameNum));
+  return parseCsv(await fs.readFile(path, 'utf-8'), getFrameValParser(fps));
 }
 
 export async function loadXmeml(path) {

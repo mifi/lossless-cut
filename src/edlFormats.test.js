@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { it, describe, expect } from 'vitest';
 
 
-import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, getTimeFromFrameNum, formatCsvFrames, formatCsvHuman, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt } from './edlFormats';
+import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, parseCsvTime, getFrameValParser, formatCsvFrames, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt } from './edlFormats';
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -16,10 +16,13 @@ const expectYouTube1 = [
   { start: 1, end: 2, name: '"Test 2":' },
   { start: 2, end: 4, name: '00:57 double' },
   { start: 4, end: 5, name: '' },
-  { start: 5, end: 61, name: '' },
+  { start: 5, end: 6, name: '' },
+  { start: 6, end: 6.01, name: '6 label' },
+  { start: 6.01, end: 61, name: '6.01 label' },
   { start: 61, end: 61.012, name: 'Test 3' },
   { start: 61.012, end: 62.012, name: 'Test 6' },
-  { start: 62.012, end: 3661.012, name: 'Test 7' },
+  { start: 62.012, end: 132, name: 'Test 7' },
+  { start: 132, end: 3661.012, name: 'Integer' },
   { start: 3661.012, end: 10074, name: 'Test - 4' },
   { start: 10074, end: undefined, name: 'Short - hour and hyphen' },
 ];
@@ -40,10 +43,12 @@ describe('parseYouTube', () => {
   00:57:01.0123 Invalid 2
   00:57:01. Invalid 3
   01:15:: Invalid 4
-  0132 Invalid 5
+  0132 Integer
   00:03
   00:04     
   00:05 
+  6 6 label
+  6.01 6.01 label
   `;
     const edl = parseYouTube(str);
     expect(edl).toEqual(expectYouTube1);
@@ -91,9 +96,12 @@ it('formatYouTube 2', () => {
     '0:02 00:57 double',
     '0:04',
     '0:05',
+    '0:06 6 label',
+    '0:06 6.01 label',
     '1:01 Test 3',
     '1:01 Test 6',
     '1:02 Test 7',
+    '2:12 Integer',
     '1:01:01 Test - 4',
     '2:47:54 Short - hour and hyphen',
   ]);
@@ -195,7 +203,7 @@ const csvFramesStr = `\
 
 it('parses csv with frames', async () => {
   const fps = 30;
-  const parsed = await parseCsv(csvFramesStr, (frameCount) => getTimeFromFrameNum(fps, frameCount));
+  const parsed = await parseCsv(csvFramesStr, getFrameValParser(fps));
 
   expect(parsed).toEqual([
     { end: 5.166666666666667, name: 'EP106_SQ010_SH0010', start: 0 },
@@ -213,22 +221,24 @@ it('parses csv with frames', async () => {
 
 const csvTimestampStr = `\
 00:01:54.612,00:03:09.053,A
-00:05:00.448,00:07:56.194,B
+  00:05:00.448,00:07:56.194,B  
 00:09:27.075,00:11:44.264,C
+0,1,D
+1.01,1.99,E
+0:2,0:3,F
 `;
 
 it('parses csv with timestamps', async () => {
-  const fps = 30;
-  const parsed = await parseCsv(csvTimestampStr);
+  const parsed = await parseCsv(csvTimestampStr, parseCsvTime);
 
   expect(parsed).toEqual([
-    { end: 189.053, name: 'A', start: 114.612},
-    { end: 476.194, name: 'B', start: 300.448},
-    { end: 704.264, name: 'C', start: 567.075},
+    { end: 189.053, name: 'A', start: 114.612 },
+    { end: 476.194, name: 'B', start: 300.448 },
+    { end: 704.264, name: 'C', start: 567.075 },
+    { end: 1, name: 'D', start: 0 },
+    { end: 1.99, name: 'E', start: 1.01 },
+    { start: 2, name: 'F', end: 3 },
   ]);
-
-  const formatted = await formatCsvHuman(parsed);
-  expect(formatted).toEqual(csvTimestampStr);
 });
 
 it('parses pbf', async () => {

@@ -19,28 +19,42 @@ export function getFrameCountRaw(detectedFps, sec) {
   return Math.round(sec * detectedFps);
 }
 
-export async function parseCsv(csvStr, processTime = (t) => t) {
+function parseTime(str) {
+  const timeMatch = str.match(/^[^0-9]*(?:(?:([0-9]{1,}):)?([0-9]{1,2}):)?([0-9]{1,})(?:\.([0-9]{1,3}))?:?/);
+  if (!timeMatch) return undefined;
+
+  const rest = str.substring(timeMatch[0].length);
+
+  const [, hourStr, minStr, secStr, msStr] = timeMatch;
+  const hour = hourStr != null ? parseInt(hourStr, 10) : 0;
+  const min = minStr != null ? parseInt(minStr, 10) : 0;
+  const sec = parseFloat(msStr != null ? `${secStr}.${msStr}` : secStr);
+
+  const time = (((hour * 60) + min) * 60 + sec);
+  return { time, rest };
+}
+
+export function parseCsvTime(str) {
+  const parsed = parseTime(str.trim());
+  return parsed?.time;
+}
+
+export const getFrameValParser = (fps) => (str) => {
+  if (str === '') return undefined;
+  const frameCount = parseFloat(str);
+  return getTimeFromFrameNum(fps, frameCount);
+};
+
+export async function parseCsv(csvStr, parseTimeFn) {
   const rows = await csvParseAsync(csvStr, {});
   if (rows.length === 0) throw new Error(i18n.t('No rows found'));
   if (!rows.every(row => row.length === 3)) throw new Error(i18n.t('One or more rows does not have 3 columns'));
 
-  function parseTimeVal(str) {
-    if (str === '') return undefined;
-    let timestampMatch = str.match(/^(\d{1,2}):(\d{1,2}):(\d{1,2})(?:\.(\d{1,3}))?$/);
-    let parsed = undefined;
-    if (timestampMatch && timestampMatch.length === 5) {
-      let [, h, m, s, ms] = timestampMatch;
-      parsed = parseInt(h, 10) * 60 + parseInt(m, 10) * 60 + parseInt(s, 10) + parseInt(ms, 10) / 1000;
-    } else {
-      parsed = parseFloat(str, 10);
-    }
-    return processTime(parsed);
-  }
   const mapped = rows
     .map(([start, end, name]) => ({
-      start: parseTimeVal(start),
-      end: parseTimeVal(end),
-      name,
+      start: parseTimeFn(start),
+      end: parseTimeFn(end),
+      name: name.trim(),
     }));
 
   if (!mapped.every(({ start, end }) => (
@@ -92,7 +106,7 @@ export function parseCuesheet(cuesheet) {
 
   const { tracks } = cuesheet.files[0];
 
-  function parseTime(track) {
+  function getTime(track) {
     const index = track.indexes[0];
     if (!index) return undefined;
     const { time } = index;
@@ -103,9 +117,9 @@ export function parseCuesheet(cuesheet) {
 
   return tracks.map((track, i) => {
     const nextTrack = tracks[i + 1];
-    const end = nextTrack && parseTime(nextTrack);
+    const end = nextTrack && getTime(nextTrack);
 
-    return { name: track.title, start: parseTime(track), end, tags: { performer: track.performer, title: track.title } };
+    return { name: track.title, start: getTime(track), end, tags: { performer: track.performer, title: track.title } };
   });
 }
 
@@ -168,37 +182,36 @@ export function parseFcpXml(xmlStr) {
   const { fcpxml } = xml;
   if (!fcpxml) throw Error('Root element <fcpxml> not found in file');
 
-  function parseTime(str) {
+  function getTime(str) {
     const match = str.match(/([0-9]+)\/([0-9]+)s/);
     if (!match) throw new Error('Invalid attribute');
     return parseInt(match[1], 10) / parseInt(match[2], 10);
   }
 
   return fcpxml.library.event.project.sequence.spine['asset-clip'].map((assetClip) => {
-    const start = parseTime(assetClip['@_start']);
-    const duration = parseTime(assetClip['@_duration']);
+    const start = getTime(assetClip['@_start']);
+    const duration = getTime(assetClip['@_duration']);
     const end = start + duration;
     return { start, end };
   });
 }
-export function parseYouTube(str) {
-  function parseLine(match) {
-    if (!match) return undefined;
-    const [, hourStr, minStr, secStr, msStr, name] = match;
-    const hour = hourStr != null ? parseInt(hourStr, 10) : 0;
-    const min = parseInt(minStr, 10);
-    const sec = parseInt(secStr, 10);
-    const ms = msStr != null ? parseInt(msStr, 10) : 0;
 
-    const time = (((hour * 60) + min) * 60 + sec) + ms / 1000;
+export function parseYouTube(str) {
+  function parseLine(lineStr) {
+    const timeParsed = parseTime(lineStr);
+    if (timeParsed == null) return undefined;
+
+    const { time, rest } = timeParsed;
+
+    const nameMatch = rest.match(/^[\s-]+([^\n]*)$/);
+    if (!nameMatch) return undefined;
+
+    const [, name] = nameMatch;
 
     return { time, name };
   }
 
-  const lines = str.split('\n').map((lineStr) => {
-    const match = lineStr.match(/^[^0-9]*(?:([0-9]{1,}):)?([0-9]{1,2}):([0-9]{1,2})(?:\.([0-9]{3}))?:?[\s-]+([^\n]*)$/);
-    return parseLine(match);
-  }).filter((line) => line);
+  const lines = str.split('\n').map(parseLine).filter((line) => line);
 
   const linesSorted = sortBy(lines, (l) => l.time);
 
