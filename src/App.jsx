@@ -311,7 +311,7 @@ const App = memo(() => {
   }, [seekRel, zoomedDuration]);
 
   const shortStep = useCallback((direction) => {
-    // If we don't know fps, just assume 30 (for example if audio file)
+    // If we don't know fps, just assume 30 (for example if unknown audio file)
     const fps = detectedFps || 30;
 
     // try to align with frame
@@ -1492,8 +1492,15 @@ const App = memo(() => {
 
       // throw new Error('test');
 
+      // eslint-disable-next-line no-inner-declarations
+      function getFps() {
+        if (haveVideoStream) return getStreamFps(videoStream);
+        if (haveAudioStream) return getStreamFps(audioStream);
+        return undefined;
+      }
+
       if (timecode) setStartTimeOffset(timecode);
-      setDetectedFps(haveVideoStream ? getStreamFps(videoStream) : undefined);
+      setDetectedFps(getFps());
       if (!haveVideoStream) setWaveformMode('big-waveform');
       setMainFileMeta({ streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters });
       setMainVideoStream(videoStream);

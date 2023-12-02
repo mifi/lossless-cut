@@ -523,12 +523,36 @@ export function isProblematicAvc1(outFormat, streams) {
   return isMov(outFormat) && streams.some((s) => s.codec_name === 'h264' && s.codec_tag === '0x31637661' && s.codec_tag_string === 'avc1' && s.pix_fmt === 'yuv422p10le');
 }
 
-export function getStreamFps(stream) {
+function parseFfprobeFps(stream) {
   const match = typeof stream.avg_frame_rate === 'string' && stream.avg_frame_rate.match(/^([0-9]+)\/([0-9]+)$/);
-  if (stream.codec_type === 'video' && match) {
-    const num = parseInt(match[1], 10);
-    const den = parseInt(match[2], 10);
-    if (den > 0) return num / den;
+  if (!match) return undefined;
+  const num = parseInt(match[1], 10);
+  const den = parseInt(match[2], 10);
+  if (den > 0) return num / den;
+  return undefined;
+}
+
+export function getStreamFps(stream) {
+  if (stream.codec_type === 'video') {
+    const fps = parseFfprobeFps(stream);
+    return fps;
+  }
+  if (stream.codec_type === 'audio') {
+    if (typeof stream.sample_rate === 'string') {
+      const sampleRate = parseInt(stream.sample_rate, 10);
+      if (!Number.isNaN(sampleRate) && sampleRate > 0) {
+        if (stream.codec_name === 'mp3') {
+          // https://github.com/mifi/lossless-cut/issues/1754#issuecomment-1774107468
+          const frameSize = 1152;
+          return sampleRate / frameSize;
+        }
+        if (stream.codec_name === 'aac') {
+          // https://stackoverflow.com/questions/59173435/aac-packet-size
+          const frameSize = 1024;
+          return sampleRate / frameSize;
+        }
+      }
+    }
   }
   return undefined;
 }
