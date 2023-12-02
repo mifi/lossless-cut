@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HelpIcon, TickCircleIcon, WarningSignIcon, InfoSignIcon, Checkbox } from 'evergreen-ui';
+import { ArrowRightIcon, HelpIcon, TickCircleIcon, WarningSignIcon, InfoSignIcon, Checkbox } from 'evergreen-ui';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
 import withReactContent from 'sweetalert2-react-content';
@@ -97,16 +97,35 @@ export async function askForFfPath(defaultPath) {
 }
 
 export async function askForFileOpenAction(inputOptions) {
-  const { value } = await Swal.fire({
-    text: i18n.t('You opened a new file. What do you want to do?'),
-    icon: 'question',
-    input: 'radio',
-    inputValue: 'open',
-    showCancelButton: true,
-    customClass: { input: 'swal2-losslesscut-radio' },
-    inputOptions,
-    inputValidator: (v) => !v && i18n.t('You need to choose something!'),
+  let value;
+  function onClick(key) {
+    value = key;
+    Swal.close();
+  }
+
+  const swal = ReactSwal.fire({
+    html: (
+      <div style={{ textAlign: 'left' }}>
+        <div style={{ marginBottom: '1em' }}>{i18n.t('You opened a new file. What do you want to do?')}</div>
+
+        {Object.entries(inputOptions).map(([key, text]) => (
+          <button type="button" key={key} onClick={() => onClick(key)} className="button-unstyled" style={{ display: 'block', marginBottom: '.5em' }}>
+            <ArrowRightIcon color="rgba(0,0,0,0.5)" verticalAlign="middle" /> {text}
+          </button>
+        ))}
+
+        <button type="button" onClick={() => onClick()} className="button-unstyled" style={{ display: 'block', marginTop: '.5em' }}>
+          <ArrowRightIcon color="rgba(150,0,0,1)" /> {i18n.t('Cancel')}
+        </button>
+
+      </div>
+    ),
+    showCancelButton: false,
+    showConfirmButton: false,
+    showCloseButton: false,
   });
+
+  await swal;
 
   return value;
 }
