@@ -26,7 +26,14 @@ export async function parseCsv(csvStr, processTime = (t) => t) {
 
   function parseTimeVal(str) {
     if (str === '') return undefined;
-    const parsed = parseFloat(str, 10);
+    let timestampMatch = str.match(/^(\d{1,2}):(\d{1,2}):(\d{1,2})(?:\.(\d{1,3}))?$/);
+    let parsed = undefined;
+    if (timestampMatch && timestampMatch.length === 5) {
+      let [, h, m, s, ms] = timestampMatch;
+      parsed = parseInt(h, 10) * 60 + parseInt(m, 10) * 60 + parseInt(s, 10) + parseInt(ms, 10) / 1000;
+    } else {
+      parsed = parseFloat(str, 10);
+    }
     return processTime(parsed);
   }
   const mapped = rows

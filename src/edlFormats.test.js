@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { it, describe, expect } from 'vitest';
 
 
-import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, getTimeFromFrameNum, formatCsvFrames, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt } from './edlFormats';
+import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, getTimeFromFrameNum, formatCsvFrames, formatCsvHuman, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt } from './edlFormats';
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -209,6 +209,26 @@ it('parses csv with frames', async () => {
     getFrameCount: (sec) => getFrameCountRaw(fps, sec),
   });
   expect(formatted).toEqual(csvFramesStr);
+});
+
+const csvTimestampStr = `\
+00:01:54.612,00:03:09.053,A
+00:05:00.448,00:07:56.194,B
+00:09:27.075,00:11:44.264,C
+`;
+
+it('parses csv with timestamps', async () => {
+  const fps = 30;
+  const parsed = await parseCsv(csvTimestampStr);
+
+  expect(parsed).toEqual([
+    { end: 189.053, name: 'A', start: 114.612},
+    { end: 476.194, name: 'B', start: 300.448},
+    { end: 704.264, name: 'C', start: 567.075},
+  ]);
+
+  const formatted = await formatCsvHuman(parsed);
+  expect(formatted).toEqual(csvTimestampStr);
 });
 
 it('parses pbf', async () => {
