@@ -53,7 +53,7 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
           label: esc(t('Import project')),
           submenu: [
             {
-              label: esc(t('Times in seconds / Timestamps (CSV)')),
+              label: esc(t('Times in seconds (CSV)')),
               click() {
                 mainWindow.webContents.send('importEdlFile', 'csv');
               },
