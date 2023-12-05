@@ -132,7 +132,7 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
               ))}
             </div>
 
-            {error != null && <div style={{ marginBottom: '1em' }}><ErrorIcon color="var(--red9)" size={14} verticalAlign="baseline" /> {i18n.t('There is an error in the file name template:')} {error}</div>}
+            {error != null && <div style={{ marginBottom: '1em' }}><ErrorIcon color="var(--red9)" size={14} verticalAlign="baseline" /> {error}</div>}
 
             {isMissingExtension && (
               <div style={{ marginBottom: '1em' }}>

@@ -17,14 +17,14 @@ function getOutSegError({ fileNames, filePath, outputDir, safeOutputFileName }) 
   // eslint-disable-next-line no-restricted-syntax
   for (const fileName of fileNames) {
     if (!filePath) {
-      error = 'No file path';
+      error = i18n.t('No file is loaded');
       break;
     }
 
     const invalidChars = new Set();
 
     // https://stackoverflow.com/questions/1976007/what-characters-are-forbidden-in-windows-and-linux-directory-names
-    // note that we allow path separators!
+    // note that we allow path separators in some cases (see below)
     if (isWindows) {
       ['<', '>', ':', '"', '|', '?', '*'].forEach((char) => invalidChars.add(char));
     } else if (isMac) {
@@ -32,12 +32,22 @@ function getOutSegError({ fileNames, filePath, outputDir, safeOutputFileName }) 
       [':'].forEach((char) => invalidChars.add(char));
     }
 
-    if (safeOutputFileName) invalidChars.add(pathSep);
+    if (safeOutputFileName) {
+      if (isWindows) {
+        // Only when sanitize is "off" shall we allow slashes (you're on your own)
+        invalidChars.add('/');
+        invalidChars.add('\\');
+      } else {
+        invalidChars.add(pathSep);
+      }
+    }
 
-    const outPath = pathNormalize(pathJoin(outputDir, fileName));
-    const sameAsInputPath = outPath === pathNormalize(filePath);
+    const inPathNormalized = pathNormalize(filePath);
+    const outPathNormalized = pathNormalize(pathJoin(outputDir, fileName));
+    const sameAsInputPath = outPathNormalized === inPathNormalized;
     const windowsMaxPathLength = 259;
     const shouldCheckPathLength = isWindows || isDev;
+    const shouldCheckFileEnd = isWindows || isDev;
 
     if (fileName.length === 0) {
       error = i18n.t('At least one resulting file name has no length');
@@ -51,7 +61,13 @@ function getOutSegError({ fileNames, filePath, outputDir, safeOutputFileName }) 
       error = i18n.t('At least one resulting file name is the same as the input path');
       break;
     }
-    if (shouldCheckPathLength && outPath.length >= windowsMaxPathLength) {
+    if (shouldCheckFileEnd && /[\s.]$/.test(fileName)) {
+      // Filenames cannot end in a space or dot on windows
+      // https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
+      error = i18n.t('At least one resulting file name ends with a whitespace character or a dot, which is not allowed.');
+      break;
+    }
+    if (shouldCheckPathLength && outPathNormalized.length >= windowsMaxPathLength) {
       error = i18n.t('At least one resulting file will have a too long path');
       break;
     }
