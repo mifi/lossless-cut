@@ -120,7 +120,7 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
               {outSegFileNames != null && <Button height={20} onClick={onAllSegmentsPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
 
               <IconButton title={t('Reset')} icon={ResetIcon} height={20} onClick={reset} marginLeft={5} intent="danger" />
-              <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" />
+              <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" appearance="primary" />
             </div>
 
             <div style={{ fontSize: '.8em', color: 'var(--gray11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
@@ -134,11 +134,16 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
 
             {error != null && <div style={{ marginBottom: '1em' }}><ErrorIcon color="var(--red9)" size={14} verticalAlign="baseline" /> {i18n.t('There is an error in the file name template:')} {error}</div>}
 
-            {isMissingExtension && <div style={{ marginBottom: '1em' }}><WarningSignIcon color="var(--amber9)" /> {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVar })}</div>}
+            {isMissingExtension && (
+              <div style={{ marginBottom: '1em' }}>
+                <WarningSignIcon verticalAlign="middle" color="var(--amber9)" />{' '}
+                {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVar })}
+              </div>
+            )}
 
             {hasTextNumericPaddedValue && (
               <div style={{ marginBottom: '.3em' }}>
-                <Select value={outputFileNameMinZeroPadding} onChange={(e) => setOutputFileNameMinZeroPadding(parseInt(e.target.value, 10))} style={{ marginRight: '1em' }}>
+                <Select value={outputFileNameMinZeroPadding} onChange={(e) => setOutputFileNameMinZeroPadding(parseInt(e.target.value, 10))} style={{ marginRight: '1em', fontSize: '1em' }}>
                   {Array.from({ length: 10 }).map((v, i) => i + 1).map((v) => <option key={v} value={v}>{v}</option>)}
                 </Select>
                 Minimum numeric padded length
@@ -149,7 +154,7 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
               <Switch checked={safeOutputFileName} onCheckedChange={toggleSafeOutputFileName} style={{ verticalAlign: 'middle', marginRight: '.5em' }} />
               <span>{t('Sanitize file names')}</span>
 
-              {!safeOutputFileName && <WarningSignIcon color="var(--amber9)" style={{ marginLeft: '.5em' }} />}
+              {!safeOutputFileName && <WarningSignIcon color="var(--amber9)" style={{ marginLeft: '.5em', verticalAlign: 'middle' }} />}
             </div>
           </motion.div>
         )}

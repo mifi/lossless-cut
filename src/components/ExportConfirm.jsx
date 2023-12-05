@@ -29,9 +29,9 @@ const boxStyle = { margin: '15px 15px 50px 15px', borderRadius: 10, padding: '10
 
 const outDirStyle = { ...highlightedTextStyle, wordBreak: 'break-all', cursor: 'pointer' };
 
-const warningStyle = { color: 'var(--red11)', fontSize: '80%' };
+const warningStyle = { color: 'var(--red11)', fontSize: '80%', marginBottom: '.5em' };
 
-const HelpIcon = ({ onClick, style }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', color: primaryTextColor, verticalAlign: 'middle', marginLeft: 5, ...style }} />;
+const HelpIcon = ({ onClick, style }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', color: primaryTextColor, verticalAlign: 'middle', ...style }} />;
 
 const ExportConfirm = memo(({
   areWeCutting, selectedSegments, segmentsToExport, willMerge, visible, onClosePress, onExportConfirm,
@@ -41,7 +41,7 @@ const ExportConfirm = memo(({
 }) => {
   const { t } = useTranslation();
 
-  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, movFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, togglePreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput } = useUserSettings();
+  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, movFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, togglePreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental } = useUserSettings();
 
   const isMov = ffmpegIsMov(outFormat);
   const isIpod = outFormat === 'ipod';
@@ -109,6 +109,10 @@ const ExportConfirm = memo(({
     toast.fire({ icon: 'info', timer: 10000, text: `${avoidNegativeTs}: ${texts[avoidNegativeTs]}` });
   }, [avoidNegativeTs]);
 
+  const onFfmpegExperimentalHelpPress = useCallback(() => {
+    toast.fire({ icon: 'info', timer: 10000, text: t('Enable experimental ffmpeg features flag?') });
+  }, [t]);
+
   const canEditTemplate = !willMerge || !autoDeleteMergedSegments;
 
   // https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container
@@ -148,10 +152,14 @@ const ExportConfirm = memo(({
                         <ExportModeButton selectedSegments={selectedSegments} />
                       </td>
                       <td>
-                        {effectiveExportMode === 'sesgments_to_chapters' && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" title={i18n.t('Segments to chapters mode is active, this means that the file will not be cut. Instead chapters will be created from the segments.')} />}
-                        <HelpIcon onClick={onExportModeHelpPress} />
+                        {effectiveExportMode === 'sesgments_to_chapters' ? (
+                          <WarningSignIcon verticalAlign="middle" color="warning" title={i18n.t('Segments to chapters mode is active, this means that the file will not be cut. Instead chapters will be created from the segments.')} />
+                        ) : (
+                          <HelpIcon onClick={onExportModeHelpPress} />
+                        )}
                       </td>
                     </tr>
+
                     <tr>
                       <td>
                         {t('Output container format:')}
@@ -163,6 +171,7 @@ const ExportConfirm = memo(({
                         <HelpIcon onClick={onOutFmtHelpPress} />
                       </td>
                     </tr>
+
                     <tr>
                       <td>
                         <Trans>Input has {{ numStreamsTotal }} tracks</Trans>
@@ -174,10 +183,14 @@ const ExportConfirm = memo(({
                         <HighlightedText style={{ cursor: 'pointer' }} onClick={onShowStreamsSelectorClick}><Trans>Keeping {{ numStreamsToCopy }} tracks</Trans></HighlightedText>
                       </td>
                       <td>
-                        {areWeCuttingProblematicStreams && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" />}
-                        <HelpIcon onClick={onTracksHelpPress} />
+                        {areWeCuttingProblematicStreams ? (
+                          <WarningSignIcon verticalAlign="middle" color="warning" />
+                        ) : (
+                          <HelpIcon onClick={onTracksHelpPress} />
+                        )}
                       </td>
                     </tr>
+
                     <tr>
                       <td>
                         {t('Save output to path:')}
@@ -226,6 +239,7 @@ const ExportConfirm = memo(({
                     </tr>
                   </tbody>
                 </table>
+
                 <h3 style={{ marginBottom: '.5em' }}>{t('Advanced options')}</h3>
 
                 <table className={styles.options}>
@@ -243,6 +257,7 @@ const ExportConfirm = memo(({
                             <HelpIcon onClick={onSegmentsToChaptersHelpPress} />
                           </td>
                         </tr>
+
                         <tr>
                           <td>
                             {t('Preserve original metadata when merging? (slow)')}
@@ -274,10 +289,14 @@ const ExportConfirm = memo(({
                             <Switch checked={enableSmartCut} onCheckedChange={() => setEnableSmartCut((v) => !v)} />
                           </td>
                           <td>
-                            {needSmartCut && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" title={i18n.t('Experimental functionality has been activated!')} />}
-                            <HelpIcon onClick={onSmartCutHelpPress} />
+                            {needSmartCut ? (
+                              <WarningSignIcon verticalAlign="middle" color="warning" title={i18n.t('Experimental functionality has been activated!')} />
+                            ) : (
+                              <HelpIcon onClick={onSmartCutHelpPress} />
+                            )}
                           </td>
                         </tr>
+
                         {!needSmartCut && (
                           <tr>
                             <td>
@@ -288,8 +307,11 @@ const ExportConfirm = memo(({
                               <Switch checked={keyframeCut} onCheckedChange={() => toggleKeyframeCut()} />
                             </td>
                             <td>
-                              {!keyframeCut && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" />}
-                              <HelpIcon onClick={onKeyframeCutHelpPress} />
+                              {!keyframeCut ? (
+                                <WarningSignIcon verticalAlign="middle" color="warning" />
+                              ) : (
+                                <HelpIcon onClick={onKeyframeCutHelpPress} />
+                              )}
                             </td>
                           </tr>
                         )}
@@ -304,11 +326,17 @@ const ExportConfirm = memo(({
                           </td>
                           <td>
                             <MovFastStartButton />
+                            {isIpod && !movFastStart && <div style={warningStyle}>{t('For the ipod format, it is recommended to activate this option')}</div>}
                           </td>
                           <td>
-                            <HelpIcon onClick={onMovFastStartHelpPress} /> {isIpod && !movFastStart && <span style={warningStyle}>{t('For the ipod format, it is recommended to activate this option')}</span>}
+                            {isIpod && !movFastStart ? (
+                              <WarningSignIcon verticalAlign="middle" color="warning" />
+                            ) : (
+                              <HelpIcon onClick={onMovFastStartHelpPress} />
+                            )}
                           </td>
                         </tr>
+
                         <tr>
                           <td>
                             {t('Preserve all MP4/MOV metadata?')}
@@ -318,8 +346,11 @@ const ExportConfirm = memo(({
                             <PreserveMovDataButton />
                           </td>
                           <td>
-                            {isIpod && preserveMovData && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" />}
-                            <HelpIcon onClick={onPreserveMovDataHelpPress} />
+                            {isIpod && preserveMovData ? (
+                              <WarningSignIcon verticalAlign="middle" color="warning" />
+                            ) : (
+                              <HelpIcon onClick={onPreserveMovDataHelpPress} />
+                            )}
                           </td>
                         </tr>
                       </>
@@ -340,11 +371,26 @@ const ExportConfirm = memo(({
                           </Select>
                         </td>
                         <td>
-                          {!['make_zero', 'auto'].includes(avoidNegativeTs) && <WarningSignIcon verticalAlign="middle" color="warning" marginLeft=".3em" />}
-                          <HelpIcon onClick={onAvoidNegativeTsHelpPress} />
+                          {!['make_zero', 'auto'].includes(avoidNegativeTs) ? (
+                            <WarningSignIcon verticalAlign="middle" color="warning" />
+                          ) : (
+                            <HelpIcon onClick={onAvoidNegativeTsHelpPress} />
+                          )}
                         </td>
                       </tr>
                     )}
+
+                    <tr>
+                      <td>
+                        {t('"ffmpeg" experimental flag')}
+                      </td>
+                      <td>
+                        <Switch checked={ffmpegExperimental} onCheckedChange={setFfmpegExperimental} />
+                      </td>
+                      <td>
+                        <HelpIcon onClick={onFfmpegExperimentalHelpPress} />
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -357,7 +403,7 @@ const ExportConfirm = memo(({
               animate={{ opacity: 1, translateX: 0 }}
               exit={{ opacity: 0, translateX: 50 }}
               transition={{ duration: 0.4, easings: ['easeOut'] }}
-              style={{ display: 'flex', alignItems: 'flex-end' }}
+              style={{ display: 'flex', alignItems: 'flex-end', background: 'rgba(0,0,0,0.5)' }}
             >
               <ToggleExportConfirm size={25} />
               <div style={{ fontSize: 13, marginLeft: 3, marginRight: 7, maxWidth: 120, lineHeight: '100%', color: exportConfirmEnabled ? 'var(--gray12)' : 'var(--gray11)', cursor: 'pointer' }} role="button" onClick={toggleExportConfirmEnabled}>{t('Show this page before exporting?')}</div>

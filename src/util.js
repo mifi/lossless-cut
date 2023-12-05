@@ -144,7 +144,7 @@ export function filenamify(name) {
 export function withBlur(cb) {
   return (e) => {
     cb(e);
-    e.target.blur();
+    e.target?.blur();
   };
 }
 
