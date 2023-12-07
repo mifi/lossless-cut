@@ -729,5 +729,10 @@
     "Please enter a valid number.": "Wprowadź poprawny numer.",
     "Enter tag name (in the next dialog you'll enter tag value)": "Wprowadź nazwę tagu (w następnym oknie dialogowym wprowadź wartość tagu)",
     "Sanitize file names": "Oczyść nazwy plików",
-    "Enter tag value": "Wpisz wartość tagu"
+    "Enter tag value": "Wpisz wartość tagu",
+    "Enter tag key": "Wprowadź klucz tagu",
+    "empty": "pusty",
+    "Delete": "Usuń",
+    "Add segment tag": "Dodaj tag segmentu",
+    "Edit segment tags": "Edytuj tagi segmentu"
 }
