@@ -751,5 +751,14 @@
     "<0>If you&apos;re having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></0><1>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</1>": "<0>如果您對無損切割有疑問，請先查看<1>幫助</1>選單中的連結。如果找不到任何解決方案，您可以在 <3>GitHub 討論</3> 或 <5>Discord.</5></0 上提問><1>如果您認為自己在無損切割中發現了錯誤，您可以<1>報告錯誤</1>.</1>",
     "Common audio formats:": "常見的音訊格式：",
     "All other formats:": "所有其他格式：",
-    "Common subtitle formats:": "常見的字幕格式："
+    "Common subtitle formats:": "常見的字幕格式：",
+    "API action name: {{action}}": "API操作名稱: {{action}}",
+    "Enter tag key": "輸入標記鍵",
+    "Change FPS": "更改FPS",
+    "Close current file": "關閉當前檔案",
+    "Enter tag value": "輸入標記值",
+    "empty": "空的",
+    "Delete": "刪除",
+    "Add segment tag": "新增段標記",
+    "Edit segment tags": "編輯段標記"
 }
