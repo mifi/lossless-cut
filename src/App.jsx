@@ -171,13 +171,19 @@ const App = memo(() => {
   const [selectedBatchFiles, setSelectedBatchFiles] = useState([]);
 
   // Store "working" in a ref so we can avoid race conditions
-  const workingRef = useRef(working);
+  const workingRef = useRef(!!working);
   const setWorking = useCallback((val) => {
-    workingRef.current = val;
-    setWorkingState(val);
+    workingRef.current = !!val;
+    setWorkingState(val ? { text: val.text, abortController: val.abortController } : undefined);
   }, []);
 
-  useEffect(() => setDocumentTitle({ filePath, working, cutProgress }), [cutProgress, filePath, working]);
+  const handleAbortWorkingClick = useCallback(() => {
+    console.log('User clicked abort');
+    abortFfmpegs(); // todo use abortcontroller for this also
+    working?.abortController?.abort();
+  }, [working?.abortController]);
+
+  useEffect(() => setDocumentTitle({ filePath, working: working?.text, cutProgress }), [cutProgress, filePath, working?.text]);
 
   const zoom = Math.floor(zoomUnrounded);
 
@@ -593,7 +599,7 @@ const App = memo(() => {
     const subtitleStream = index != null && subtitleStreams.find((s) => s.index === index);
     if (!subtitleStream || workingRef.current) return;
     try {
-      setWorking(i18n.t('Loading subtitle'));
+      setWorking({ text: i18n.t('Loading subtitle') });
       const url = await extractSubtitleTrack(filePath, index);
       setSubtitlesByStreamId((old) => ({ ...old, [index]: { url, lang: subtitleStream.tags && subtitleStream.tags.language } }));
       setActiveSubtitleStreamIndex(index);
@@ -805,7 +811,7 @@ const App = memo(() => {
 
     if (workingRef.current) return;
     try {
-      setWorking(i18n.t('Batch converting to supported format'));
+      setWorking({ text: i18n.t('Batch converting to supported format') });
       setCutProgress(0);
 
       // eslint-disable-next-line no-restricted-syntax
@@ -841,7 +847,7 @@ const App = memo(() => {
 
   const html5ifyAndLoadWithPreferences = useCallback(async (cod, fp, speed, hv, ha) => {
     if (!enableAutoHtml5ify) return;
-    setWorking(i18n.t('Converting to supported format'));
+    setWorking({ text: i18n.t('Converting to supported format') });
     await html5ifyAndLoad(cod, fp, getConvertToSupportedFormat(speed), hv, ha);
   }, [enableAutoHtml5ify, setWorking, html5ifyAndLoad, getConvertToSupportedFormat]);
 
@@ -996,7 +1002,7 @@ const App = memo(() => {
     if (workingRef.current) return;
     try {
       setConcatDialogVisible(false);
-      setWorking(i18n.t('Merging'));
+      setWorking({ text: i18n.t('Merging') });
 
       const firstPath = paths[0];
       if (!firstPath) return;
@@ -1069,7 +1075,8 @@ const App = memo(() => {
     }
 
     try {
-      setWorking(i18n.t('Cleaning up'));
+      const abortController = new AbortController();
+      setWorking({ text: i18n.t('Cleaning up'), abortController });
       console.log('Cleaning up files', cleanupChoices2);
 
       const pathsToDelete = [];
@@ -1077,7 +1084,7 @@ const App = memo(() => {
       if (cleanupChoices2.trashProjectFile && savedPaths.projectFilePath) pathsToDelete.push(savedPaths.projectFilePath);
       if (cleanupChoices2.trashSourceFile && savedPaths.sourceFilePath) pathsToDelete.push(savedPaths.sourceFilePath);
 
-      await deleteFiles(pathsToDelete, cleanupChoices2.deleteIfTrashFails);
+      await deleteFiles({ paths: pathsToDelete, deleteIfTrashFails: cleanupChoices2.deleteIfTrashFails, signal: abortController.signal });
     } catch (err) {
       errorToast(i18n.t('Unable to delete file: {{message}}', { message: err.message }));
       console.error(err);
@@ -1151,7 +1158,7 @@ const App = memo(() => {
 
     if (workingRef.current) return;
     try {
-      setWorking(i18n.t('Exporting'));
+      setWorking({ text: i18n.t('Exporting') });
 
       // Special segments-to-chapters mode:
       let chaptersToAdd;
@@ -1199,7 +1206,7 @@ const App = memo(() => {
 
       if (willMerge) {
         setCutProgress(0);
-        setWorking(i18n.t('Merging'));
+        setWorking({ text: i18n.t('Merging') });
 
         const chapterNames = segmentsToChapters && !invertCutSegments ? segmentsToExport.map((s) => s.name) : undefined;
 
@@ -1235,7 +1242,7 @@ const App = memo(() => {
       if (exportExtraStreams) {
         try {
           setCutProgress(); // If extracting extra streams takes a long time, prevent loader from being stuck at 100%
-          setWorking(i18n.t('Extracting {{count}} unprocessable tracks', { count: nonCopiedExtraStreams.length }));
+          setWorking({ text: i18n.t('Extracting {{count}} unprocessable tracks', { count: nonCopiedExtraStreams.length }) });
           await extractStreams({ filePath, customOutDir, streams: nonCopiedExtraStreams, enableOverwriteOutput });
           notices.push(i18n.t('Unprocessable streams were exported as separate files.'));
         } catch (err) {
@@ -1311,7 +1318,7 @@ const App = memo(() => {
     if (captureFramesResponse == null) return;
 
     try {
-      setWorking(i18n.t('Extracting frames'));
+      setWorking({ text: i18n.t('Extracting frames') });
       console.log('Extracting frames as images', { segIds, captureFramesResponse });
 
       setCutProgress(0);
@@ -1411,7 +1418,7 @@ const App = memo(() => {
       }
     }
 
-    setWorking(i18n.t('Loading file'));
+    setWorking({ text: i18n.t('Loading file') });
     try {
       // Need to check if file is actually readable
       const pathReadAccessErrorCode = await getPathReadAccessError(fp);
@@ -1586,7 +1593,7 @@ const App = memo(() => {
     if (workingRef.current) return;
     if (filePath === path) return;
     try {
-      setWorking(i18n.t('Loading file'));
+      setWorking({ text: i18n.t('Loading file') });
       await userOpenSingleFile({ path });
     } catch (err) {
       handleError(err);
@@ -1645,7 +1652,7 @@ const App = memo(() => {
 
     if (workingRef.current) return;
     try {
-      setWorking(i18n.t('Extracting all streams'));
+      setWorking({ text: i18n.t('Extracting all streams') });
       setStreamsSelectorShown(false);
       const extractedPaths = await extractStreams({ customOutDir, filePath, streams: mainCopiedStreams, enableOverwriteOutput });
       if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: extractedPaths[0], text: i18n.t('All streams have been extracted as separate files') });
@@ -1685,7 +1692,7 @@ const App = memo(() => {
 
     if (workingRef.current) return;
     try {
-      setWorking(i18n.t('Converting to supported format'));
+      setWorking({ text: i18n.t('Converting to supported format') });
       await html5ifyAndLoad(customOutDir, filePath, selectedOption, hasVideo, hasAudio);
     } catch (err) {
       errorToast(i18n.t('Failed to convert file. Try a different conversion'));
@@ -1712,7 +1719,7 @@ const App = memo(() => {
   const tryFixInvalidDuration = useCallback(async () => {
     if (!checkFileOpened() || workingRef.current) return;
     try {
-      setWorking(i18n.t('Fixing file duration'));
+      setWorking({ text: i18n.t('Fixing file duration') });
       setCutProgress(0);
       const path = await fixInvalidDuration({ fileFormat, customOutDir, duration, onProgress: setCutProgress });
       if (!hideAllNotifications) toast.fire({ icon: 'info', text: i18n.t('Duration has been fixed') });
@@ -1809,7 +1816,7 @@ const App = memo(() => {
 
     if (workingRef.current) return;
     try {
-      setWorking(i18n.t('Loading file'));
+      setWorking({ text: i18n.t('Loading file') });
 
       // Import segments for for already opened file
       const matchingImportProjectType = getImportProjectType(firstFilePath);
@@ -2075,7 +2082,7 @@ const App = memo(() => {
 
     if (workingRef.current) return;
     try {
-      setWorking(i18n.t('Extracting track'));
+      setWorking({ text: i18n.t('Extracting track') });
       // setStreamsSelectorShown(false);
       const extractedPaths = await extractStreams({ customOutDir, filePath, streams: mainStreams.filter((s) => s.index === index), enableOverwriteOutput });
       if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: extractedPaths[0], text: i18n.t('Track has been extracted') });
@@ -2111,7 +2118,7 @@ const App = memo(() => {
 
       if (workingRef.current) return;
       try {
-        setWorking(i18n.t('Converting to supported format'));
+        setWorking({ text: i18n.t('Converting to supported format') });
 
         console.log('Trying to create preview');
 
@@ -2388,7 +2395,7 @@ const App = memo(() => {
                 )}
 
                 <AnimatePresence>
-                  {working && <Working text={working} cutProgress={cutProgress} onAbortClick={() => abortFfmpegs()} />}
+                  {working && <Working text={working.text} cutProgress={cutProgress} onAbortClick={handleAbortWorkingClick} />}
                 </AnimatePresence>
 
                 {tunerVisible && <ValueTuners type={tunerVisible} onFinished={() => setTunerVisible()} />}

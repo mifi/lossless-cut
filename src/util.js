@@ -3,6 +3,7 @@ import pMap from 'p-map';
 import ky from 'ky';
 import prettyBytes from 'pretty-bytes';
 import sortBy from 'lodash/sortBy';
+import pRetry from 'p-retry';
 
 import isDev from './isDev';
 import Swal, { toast } from './swal';
@@ -234,14 +235,19 @@ export function getHtml5ifiedPath(cod, fp, type) {
   return getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${type}.${ext}` });
 }
 
-export async function deleteFiles(paths, deleteIfTrashFails) {
+export async function deleteFiles({ paths, deleteIfTrashFails, signal }) {
   const failedToTrashFiles = [];
+
+  // const testFail = isDev;
+  const testFail = false;
 
   // eslint-disable-next-line no-restricted-syntax
   for (const path of paths) {
     try {
+      if (testFail) throw new Error('test trash failure');
       // eslint-disable-next-line no-await-in-loop
       await trashFile(path);
+      signal.throwIfAborted();
     } catch (err) {
       console.error(err);
       failedToTrashFiles.push(path);
@@ -260,7 +266,19 @@ export async function deleteFiles(paths, deleteIfTrashFails) {
     if (!value) return;
   }
 
-  await pMap(failedToTrashFiles, async (path) => unlink(path), { concurrency: 1 });
+  // Retry because sometimes it fails on windows #272 #1797
+  await pMap(failedToTrashFiles, async (path) => {
+    await pRetry(async () => {
+      if (testFail) throw new Error('test delete failure');
+      await unlink(path);
+    }, {
+      retries: 3,
+      signal,
+      onFailedAttempt: async () => {
+        console.warn('Retrying delete', path);
+      },
+    });
+  }, { concurrency: 1 });
 }
 
 export const deleteDispositionValue = 'llc_disposition_remove';

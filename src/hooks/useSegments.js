@@ -84,7 +84,7 @@ export default ({
     if (!filePath) return;
     if (workingRef.current) return;
     try {
-      setWorking(workingText);
+      setWorking({ text: workingText });
       setCutProgress(0);
 
       const newSegments = await fn();
@@ -250,7 +250,7 @@ export default ({
     try {
       const response = await askForAlignSegments();
       if (response == null) return;
-      setWorking(i18n.t('Aligning segments to keyframes'));
+      setWorking({ text: i18n.t('Aligning segments to keyframes') });
       const { mode, startOrEnd } = response;
       await modifySelectedSegmentTimes(async (segment) => {
         const newSegment = { ...segment };

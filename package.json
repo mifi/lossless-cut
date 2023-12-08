@@ -71,6 +71,7 @@
     "mkdirp": "^1.0.3",
     "mousetrap": "^1.6.5",
     "p-map": "^5.5.0",
+    "p-retry": "^6.1.0",
     "pify": "^5.0.0",
     "pretty-bytes": "^6.0.0",
     "react": "^18.2.0",

@@ -1703,6 +1703,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/retry@npm:0.12.2":
+  version: 0.12.2
+  resolution: "@types/retry@npm:0.12.2"
+  checksum: e5675035717b39ce4f42f339657cae9637cf0c0051cf54314a6a2c44d38d91f6544be9ddc0280587789b6afd056be5d99dbe3e9f4df68c286c36321579b1bf4a
+  languageName: node
+  linkType: hard
+
 "@types/scheduler@npm:*":
   version: 0.16.2
   resolution: "@types/scheduler@npm:0.16.2"
@@ -5964,6 +5971,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-network-error@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "is-network-error@npm:1.0.0"
+  checksum: 2ca2b4b2d420015e0237abe28ebf316fcd26a82304b07432abf155759a3bee6895609ac91e692a72ad61b7fc902c3283b2dece61e1ddb05a6257777a8573e468
+  languageName: node
+  linkType: hard
+
 "is-number-object@npm:^1.0.4":
   version: 1.0.6
   resolution: "is-number-object@npm:1.0.6"
@@ -6597,6 +6611,7 @@ __metadata:
     morgan: ^1.10.0
     mousetrap: ^1.6.5
     p-map: ^5.5.0
+    p-retry: ^6.1.0
     pify: ^5.0.0
     pretty-bytes: ^6.0.0
     react: ^18.2.0
@@ -7543,6 +7558,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"p-retry@npm:^6.1.0":
+  version: 6.1.0
+  resolution: "p-retry@npm:6.1.0"
+  dependencies:
+    "@types/retry": 0.12.2
+    is-network-error: ^1.0.0
+    retry: ^0.13.1
+  checksum: 1083b2b72672205680f8a736583e31dce5d4ae472996cd06f4a33cd7ea11798d7712c202d253eb8afbdc80abf52f049651989c59f2e2ccca529e6b64d722b1f7
+  languageName: node
+  linkType: hard
+
 "p-try@npm:^1.0.0":
   version: 1.0.0
   resolution: "p-try@npm:1.0.0"
@@ -8481,6 +8507,13 @@ __metadata:
   version: 0.12.0
   resolution: "retry@npm:0.12.0"
   checksum: 623bd7d2e5119467ba66202d733ec3c2e2e26568074923bc0585b6b99db14f357e79bdedb63cab56cec47491c4a0da7e6021a7465ca6dc4f481d3898fdd3158c
+  languageName: node
+  linkType: hard
+
+"retry@npm:^0.13.1":
+  version: 0.13.1
+  resolution: "retry@npm:0.13.1"
+  checksum: 47c4d5be674f7c13eee4cfe927345023972197dbbdfba5d3af7e461d13b44de1bfd663bfc80d2f601f8ef3fc8164c16dd99655a221921954a65d044a2fc1233b
   languageName: node
   linkType: hard
 
