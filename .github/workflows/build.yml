@@ -36,7 +36,7 @@ jobs:
           cache: 'yarn'
 
        # Because of timeout issue https://github.com/yarnpkg/yarn/issues/4890
-      - run: yarn install --network-timeout 1000000
+      - run: yarn install --immutable --network-timeout 1000000
 
       - name: Install and login to Snapcraft
         uses: samuelmeuli/action-snapcraft@v2
