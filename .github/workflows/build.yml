@@ -32,7 +32,7 @@ jobs:
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: 'yarn'
 
        # Because of timeout issue https://github.com/yarnpkg/yarn/issues/4890
