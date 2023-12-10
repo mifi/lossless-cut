@@ -42,7 +42,11 @@ jobs:
         uses: samuelmeuli/action-snapcraft@v2
         if: startsWith(matrix.os, 'ubuntu')
 
-      - name: Save provisioning profile
+      - name: (Linux) Install flatpak dependencies
+        run: sudo apt-get install -y flatpak flatpak-builder
+        if: startsWith(matrix.os, 'ubuntu')
+
+      - name: (MacOS) Save provisioning profile
         if: startsWith(matrix.os, 'macos')
         env:
           PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
