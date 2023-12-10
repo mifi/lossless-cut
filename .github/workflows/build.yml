@@ -12,6 +12,7 @@ on:
 jobs:
   release:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
 
     env:
       is_tag: ${{ startsWith(github.ref, 'refs/tags/v') }}
