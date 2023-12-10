@@ -38,7 +38,7 @@ jobs:
        # Because of timeout issue https://github.com/yarnpkg/yarn/issues/4890
       - run: yarn install --immutable --network-timeout 1000000
 
-      - name: Install and login to Snapcraft
+      - name: (Linux) Install and login to Snapcraft
         uses: samuelmeuli/action-snapcraft@v2
         if: startsWith(matrix.os, 'ubuntu')
 
@@ -49,24 +49,24 @@ jobs:
         run: |
           echo -n "$PROVISIONING_PROFILE_BASE64" | base64 --decode > LosslessCut_Mac_App_Store_provisioning_profile.provisionprofile
 
-      - name: Prepare Apple API key
+      - name: (MacOS) Prepare Apple API key
         # Import Apple API key for uploading to Mac App Store and for notarization
         if: startsWith(matrix.os, 'macos')
         run: |
           mkdir -p ~/.appstoreconnect/private_keys/
           echo '${{ secrets.api_key }}' > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
 
-      - name: Download ffmpeg for Mac
+      - name: (MacOS) Download ffmpeg
         if: startsWith(matrix.os, 'macos')
         run: |
           yarn download-ffmpeg-darwin-x64
           yarn download-ffmpeg-darwin-arm64
 
-      - name: Download ffmpeg for Windows
+      - name: (Windows) Download ffmpeg
         if: startsWith(matrix.os, 'windows')
         run: yarn download-ffmpeg-win32-x64
 
-      - name: Download ffmpeg for Linux
+      - name: (Linux) Download ffmpeg
         if: startsWith(matrix.os, 'ubuntu')
         run: yarn download-ffmpeg-linux-x64
 
@@ -94,12 +94,13 @@ jobs:
           APPLE_API_KEY_ID: ${{ secrets.api_key_id }}
           APPLE_API_ISSUER: ${{ secrets.api_key_issuer_id }}
 
-      - name: Upload to Mac App Store
+      - name: (MacOS) Upload to Mac App Store
         if: startsWith(matrix.os, 'macos') && env.is_tag == 'true'
         run: |
           node script/xcrun-wrapper.mjs dist/mas-universal/LosslessCut-mac-universal.pkg ${{ secrets.api_key_id }} ${{ secrets.api_key_issuer_id }} 1505323402 no.mifi.losslesscut-mac
 
-      - uses: actions/upload-artifact@v3
+      - name: (MacOS) Upload artifacts
+        uses: actions/upload-artifact@v3
         if: startsWith(matrix.os, 'macos') && env.is_tag == 'false'
         with:
           name: MacOS
@@ -107,14 +108,16 @@ jobs:
             dist/LosslessCut-mac-arm64.dmg
             dist/LosslessCut-mac-x64.dmg
 
-      - uses: actions/upload-artifact@v3
+      - name: (Windows) Upload artifacts
+        uses: actions/upload-artifact@v3
         if: startsWith(matrix.os, 'windows') && env.is_tag == 'false'
         with:
           name: Windows
           path: |
             dist/LosslessCut-win-x64.7z
 
-      - uses: actions/upload-artifact@v3
+      - name: (Linux) Upload artifacts
+        uses: actions/upload-artifact@v3
         if: startsWith(matrix.os, 'ubuntu') && env.is_tag == 'false'
         with:
           name: Linux
