@@ -333,7 +333,7 @@ const StreamsSelector = memo(({
 
   return (
     <>
-      <p style={{ margin: '.5em 1em' }}>{t('Click to select which tracks to keep when exporting:')}</p>
+      <p style={{ margin: '.5em 2em .5em 1em' }}>{t('Click to select which tracks to keep when exporting:')}</p>
 
       <div style={fileStyle}>
         {/* We only support editing main file metadata for now */}
