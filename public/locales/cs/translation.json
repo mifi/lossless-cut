@@ -807,5 +807,10 @@
     "Please enter a valid number.": "Zadejte prosím platné číslo.",
     "Enter tag name (in the next dialog you'll enter tag value)": "Zadejte jméno štítku (v dalším dialogu zadáte hodnotu štítku)",
     "Sanitize file names": "Sanitizovat/opravit názvy souborů",
-    "Enter tag value": "Zadejte hodnotu štítku"
+    "Enter tag value": "Zadejte hodnotu štítku",
+    "Enter tag key": "Zadejte klíč segmentu",
+    "empty": "prázdné",
+    "Delete": "Smazat",
+    "Add segment tag": "Přidat štítek segmentu",
+    "Edit segment tags": "Upravit štítky segmentu"
 }
