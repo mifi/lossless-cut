@@ -866,7 +866,8 @@ const App = memo(() => {
 
     const video = videoRef.current;
 
-    if (Math.abs(commandedTimeRef.current - video.currentTime) > 1) video.currentTime = commandedTimeRef.current;
+    // This was added to re-sync time if file gets reloaded #1674 - but I had to remove this because it broke loop-selected-segments https://github.com/mifi/lossless-cut/discussions/1785#discussioncomment-7852134
+    // if (Math.abs(commandedTimeRef.current - video.currentTime) > 1) video.currentTime = commandedTimeRef.current;
 
     if (resetPlaybackRate) video.playbackRate = outputPlaybackRate;
     video.play().catch((err) => {
