@@ -210,7 +210,7 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
       </td>
 
       <td style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <IconButton icon={InfoSignIcon} title={t('Track {{trackNum}} info', { trackNum: stream.index + 1 })} onClick={() => onInfoClick(stream, t('Track {{trackNum}} info', { trackNum: stream.index + 1 }))} appearance="minimal" iconSize={18} />
+        <IconButton icon={InfoSignIcon} title={t('Track {{num}} info', { num: stream.index + 1 })} onClick={() => onInfoClick(stream, t('Track {{num}} info', { num: stream.index + 1 }))} appearance="minimal" iconSize={18} />
 
         <Popover
           position={Position.BOTTOM_LEFT}
