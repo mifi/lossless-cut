@@ -131,6 +131,12 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
     } else if (outFormat === 'webm' && stream.codec_name === 'mov_text') {
       // Only WebVTT subtitles are supported for WebM.
       addCodecArgs('webvtt');
+    } else if (outFormat === 'srt') { // not technically lossless but why not
+      addCodecArgs('srt');
+    } else if (outFormat === 'ass') { // not technically lossless but why not
+      addCodecArgs('ass');
+    } else if (outFormat === 'webvtt') { // not technically lossless but why not
+      addCodecArgs('webvtt');
     } else {
       addCodecArgs('copy');
     }

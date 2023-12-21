@@ -111,3 +111,33 @@ test('getStreamIdsToCopy, includeAllStreams false', () => {
   expect(streamIdsToCopy).toEqual([2, 1, 7]);
   expect(excludedStreamIds).toEqual([0, 3, 4, 5, 6]);
 });
+
+test('srt output', () => {
+  expect(getMapStreamsArgs({
+    allFilesMeta: { [path]: { streams: [{ index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text' }] } },
+    copyFileStreams: [{ path, streamIds: [0] }],
+    outFormat: 'srt',
+  })).toEqual([
+    '-map', '0:0', '-c:0', 'srt',
+  ]);
+});
+
+test('webvtt output', () => {
+  expect(getMapStreamsArgs({
+    allFilesMeta: { [path]: { streams: [{ index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text' }] } },
+    copyFileStreams: [{ path, streamIds: [0] }],
+    outFormat: 'webvtt',
+  })).toEqual([
+    '-map', '0:0', '-c:0', 'webvtt',
+  ]);
+});
+
+test('ass output', () => {
+  expect(getMapStreamsArgs({
+    allFilesMeta: { [path]: { streams: [{ index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text' }] } },
+    copyFileStreams: [{ path, streamIds: [0] }],
+    outFormat: 'ass',
+  })).toEqual([
+    '-map', '0:0', '-c:0', 'ass',
+  ]);
+});
