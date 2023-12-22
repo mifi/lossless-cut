@@ -107,7 +107,7 @@ const CreateBinding = memo(({
 const rowStyle = { display: 'flex', alignItems: 'center', margin: '6px 0' };
 
 const KeyboardShortcuts = memo(({
-  keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg,
+  keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg, mainActions,
 }) => {
   const { t } = useTranslation();
 
@@ -191,6 +191,10 @@ const KeyboardShortcuts = memo(({
         },
         reloadFile: {
           name: t('Reload current media'),
+          category: playbackCategory,
+        },
+        html5ify: {
+          name: t('Convert to supported format'),
           category: playbackCategory,
         },
 
@@ -327,6 +331,10 @@ const KeyboardShortcuts = memo(({
           name: t('Align segment times to keyframes'),
           category: segmentsAndCutpointsCategory,
         },
+        createSegmentsFromKeyframes: {
+          name: t('Create segments from keyframes'),
+          category: segmentsAndCutpointsCategory,
+        },
         createFixedDurationSegments: {
           name: t('Create fixed duration segments'),
           category: segmentsAndCutpointsCategory,
@@ -337,6 +345,18 @@ const KeyboardShortcuts = memo(({
         },
         createRandomSegments: {
           name: t('Create random segments'),
+          category: segmentsAndCutpointsCategory,
+        },
+        detectBlackScenes: {
+          name: t('Detect black scenes'),
+          category: segmentsAndCutpointsCategory,
+        },
+        detectSilentScenes: {
+          name: t('Detect silent scenes'),
+          category: segmentsAndCutpointsCategory,
+        },
+        detectSceneChanges: {
+          name: t('Detect scene changes'),
           category: segmentsAndCutpointsCategory,
         },
         shuffleSegments: {
@@ -390,6 +410,10 @@ const KeyboardShortcuts = memo(({
         },
         extractAllStreams: {
           name: t('Extract all tracks'),
+          category: streamsCategory,
+        },
+        showStreamsSelector: {
+          name: t('Edit tracks / metadata tags'),
           category: streamsCategory,
         },
 
@@ -500,6 +524,26 @@ const KeyboardShortcuts = memo(({
           name: t('Copy selected segments times to clipboard'),
           category: otherCategory,
         },
+        askSetStartTimeOffset: {
+          name: t('Set custom start offset/timecode'),
+          category: otherCategory,
+        },
+        toggleSettings: {
+          name: t('Settings'),
+          category: otherCategory,
+        },
+        openSendReportDialog: {
+          name: t('Report an error'),
+          category: otherCategory,
+        },
+        openFilesDialog: {
+          name: t('Open'),
+          category: otherCategory,
+        },
+        exportEdlYouTube: {
+          name: t('Start times as YouTube Chapters'),
+          category: otherCategory,
+        },
         closeActiveScreen: {
           name: t('Close current screen'),
           category: otherCategory,
@@ -574,6 +618,9 @@ const KeyboardShortcuts = memo(({
     });
   }, [setKeyBindings]);
 
+  const missingAction = Object.keys(mainActions).find((key) => actionsMap[key] == null);
+  if (missingAction) throw new Error(`Action missing: ${missingAction}`);
+
   return (
     <>
       <div style={{ color: 'black' }}>
@@ -631,7 +678,7 @@ const KeyboardShortcuts = memo(({
 });
 
 const KeyboardShortcutsDialog = memo(({
-  isShown, onHide, keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg,
+  isShown, onHide, keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg, mainActions,
 }) => {
   const { t } = useTranslation();
 
@@ -645,7 +692,7 @@ const KeyboardShortcutsDialog = memo(({
       onConfirm={onHide}
       topOffset="3vh"
     >
-      {isShown ? <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} /> : <div />}
+      {isShown ? <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} mainActions={mainActions} /> : <div />}
     </Dialog>
   );
 });

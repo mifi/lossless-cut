@@ -67,7 +67,8 @@ import {
   getOutPath, getSuffixedOutPath, handleError, getOutDir,
   isStoreBuild, dragPreventer,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName, mustDisallowVob, readVideoTs,
+  deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName, mustDisallowVob, readVideoTs, getImportProjectType,
+  calcShouldShowWaveform, calcShouldShowKeyframes,
 } from './util';
 import { toast, errorToast } from './swal';
 import { formatDuration } from './util/duration';
@@ -93,24 +94,12 @@ const remote = window.require('@electron/remote');
 const { focusWindow, hasDisabledNetworking, quitApp } = remote.require('./electron');
 
 
-const calcShouldShowWaveform = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
-const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
-
-
 const videoStyle = { width: '100%', height: '100%', objectFit: 'contain' };
 const bottomStyle = { background: controlsBackground, transition: darkModeTransition };
 
-let lastOpenedPath;
 const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
 hevcPlaybackSupportedPromise.catch((err) => console.error(err));
 
-function getImportProjectType(filePath) {
-  if (filePath.endsWith('Summary.txt')) return 'dv-analyzer-summary-txt';
-  const edlFormatForExtension = { csv: 'csv', pbf: 'pbf', edl: 'mplayer', cue: 'cue', xml: 'xmeml', fcpxml: 'fcpxml' };
-  const matchingExt = Object.keys(edlFormatForExtension).find((ext) => filePath.toLowerCase().endsWith(`.${ext}`));
-  if (!matchingExt) return undefined;
-  return edlFormatForExtension[matchingExt];
-}
 
 const App = memo(() => {
   // Per project state
@@ -154,6 +143,7 @@ const App = memo(() => {
   const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
 
   // State per application launch
+  const lastOpenedPathRef = useRef();
   const [waveformMode, setWaveformMode] = useState();
   const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
   const [keyframesEnabled, setKeyframesEnabled] = useState(true);
@@ -1793,7 +1783,7 @@ const App = memo(() => {
     console.log('userOpenFiles');
     console.log(filePaths.join('\n'));
 
-    [lastOpenedPath] = filePaths;
+    [lastOpenedPathRef.current] = filePaths;
 
     // https://en.wikibooks.org/wiki/Inside_DVD-Video/Directory_Structure
     if (filePaths.length === 1 && /^VIDEO_TS$/i.test(basename(filePaths[0]))) {
@@ -1888,12 +1878,12 @@ const App = memo(() => {
   }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, isFileOpened, batchFiles.length, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile, filePath]);
 
   const openFilesDialog = useCallback(async () => {
-    const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile', 'multiSelections'], defaultPath: lastOpenedPath });
+    const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile', 'multiSelections'], defaultPath: lastOpenedPathRef.current });
     if (canceled) return;
     userOpenFiles(filePaths);
   }, [userOpenFiles]);
 
-  const concatCurrentBatch = useCallback(() => {
+  const concatBatch = useCallback(() => {
     if (batchFiles.length < 2) {
       openFilesDialog();
       return;
@@ -1909,14 +1899,20 @@ const App = memo(() => {
     electron.clipboard.writeText(await formatTsv(selectedSegments));
   }, [isFileOpened, selectedSegments]);
 
-  const getKeyboardAction = useCallback(({ action, keyup }) => {
+  const mainActions = useMemo(() => {
+    async function exportEdlYouTube() {
+      if (!checkFileOpened()) return;
+
+      await openYouTubeChaptersDialog(formatYouTube(apparentCutSegments));
+    }
+
     function seekReset() {
       seekAccelerationRef.current = 1;
     }
 
-    // NOTE: Do not change these keys because users have bound keys by these names
-    // For actions, see also KeyboardShortcuts.jsx
-    const mainActions = {
+    return {
+      // NOTE: Do not change these keys because users have bound keys by these names in their config files
+      // For actions, see also KeyboardShortcuts.jsx
       togglePlayNoResetSpeed: () => togglePlay(),
       togglePlayResetSpeed: () => togglePlay({ resetPlaybackRate: true }),
       togglePlayOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, playbackMode: 'play-segment-once' }),
@@ -1938,7 +1934,7 @@ const App = memo(() => {
       splitCurrentSegment,
       increaseRotation,
       goToTimecode,
-      seekBackwards() {
+      seekBackwards({ keyup }) {
         if (keyup) {
           seekReset();
           return;
@@ -1946,7 +1942,7 @@ const App = memo(() => {
         seekRel(keyboardNormalSeekSpeed * seekAccelerationRef.current * -1);
         seekAccelerationRef.current *= keyboardSeekAccFactor;
       },
-      seekForwards() {
+      seekForwards({ keyup }) {
         if (keyup) {
           seekReset();
           return;
@@ -1998,7 +1994,7 @@ const App = memo(() => {
       extractAllStreams,
       convertFormatCurrentFile: () => userHtml5ifyCurrentFile(),
       convertFormatBatch,
-      concatBatch: concatCurrentBatch,
+      concatBatch,
       toggleKeyframeCutMode: () => toggleKeyframeCut(true),
       toggleCaptureFormat,
       toggleStripAudio,
@@ -2017,16 +2013,28 @@ const App = memo(() => {
       reloadFile: () => setCacheBuster((v) => v + 1),
       quit: () => quitApp(),
       closeCurrentFile: () => { closeFileWithConfirm(); },
+      exportEdlYouTube,
+      showStreamsSelector: handleShowStreamsSelectorClick,
+      askSetStartTimeOffset,
+      html5ify: () => userHtml5ifyCurrentFile({ ignoreRememberedValue: true }),
+      openFilesDialog,
+      toggleKeyboardShortcuts,
+      toggleSettings,
+      openSendReportDialog: () => { openSendReportDialogWithState(); },
+      detectBlackScenes,
+      detectSilentScenes,
+      detectSceneChanges,
+      createSegmentsFromKeyframes,
     };
+  }, [addSegment, alignSegmentTimesToKeyframes, apparentCutSegments, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, checkFileOpened, cleanupFilesDialog, clearSegments, closeBatch, closeFileWithConfirm, combineOverlappingSegments, combineSelectedSegments, concatBatch, convertFormatBatch, copySegmentsToClipboard, createFixedDurationSegments, createNumSegments, createRandomSegments, createSegmentsFromKeyframes, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, detectBlackScenes, detectSceneChanges, detectSilentScenes, duplicateCurrentSegment, extractAllStreams, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, fillSegmentsGaps, goToTimecode, handleShowStreamsSelectorClick, increaseRotation, invertAllSegments, invertSelectedSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, onExportPress, onLabelSegment, openFilesDialog, openSendReportDialogWithState, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, toggleLoopSelectedSegments, togglePlay, toggleSegmentsList, toggleSettings, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
-    return mainActions[action];
-  }, [addSegment, alignSegmentTimesToKeyframes, askSetStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, cleanupFilesDialog, clearSegments, closeBatch, closeFileWithConfirm, combineOverlappingSegments, combineSelectedSegments, concatCurrentBatch, convertFormatBatch, copySegmentsToClipboard, createFixedDurationSegments, createNumSegments, createRandomSegments, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, duplicateCurrentSegment, extractAllStreams, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, fillSegmentsGaps, goToTimecode, increaseRotation, invertAllSegments, invertSelectedSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, onExportPress, onLabelSegment, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyframeCut, toggleLastCommands, toggleLoopSelectedSegments, togglePlay, toggleSegmentsList, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  const getKeyboardAction = useCallback((action) => mainActions[action], [mainActions]);
 
   const onKeyPress = useCallback(({ action, keyup }) => {
     function tryMainActions() {
-      const fn = getKeyboardAction({ action, keyup });
+      const fn = getKeyboardAction(action);
       if (!fn) return { match: false };
-      const bubble = fn();
+      const bubble = fn({ keyup });
       return { match: true, bubble };
     }
 
@@ -2146,7 +2154,7 @@ const App = memo(() => {
   }, [fileUri, usingPreviewFile, filePath, setWorking, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, showUnsupportedFileMessage]);
 
   useEffect(() => {
-    async function exportEdlFile2(e, type) {
+    async function tryExportEdlFile(type) {
       if (!checkFileOpened()) return;
       try {
         await exportEdlFile({ type, cutSegments: selectedSegments, customOutDir, filePath, getFrameCount });
@@ -2156,13 +2164,7 @@ const App = memo(() => {
       }
     }
 
-    async function exportEdlYouTube() {
-      if (!checkFileOpened()) return;
-
-      await openYouTubeChaptersDialog(formatYouTube(apparentCutSegments));
-    }
-
-    async function importEdlFile(e, type) {
+    async function importEdlFile(type) {
       if (!checkFileOpened()) return;
 
       try {
@@ -2176,67 +2178,53 @@ const App = memo(() => {
     async function tryApiKeyboardAction(event, { id, action }) {
       console.log('API keyboard action:', action);
       try {
-        const fn = getKeyboardAction({ action });
+        const fn = getKeyboardAction(action);
         if (!fn) throw new Error(`Action not found: ${action}`);
-        await fn();
+        await fn({ keyup: false });
+      } catch (err) {
+        handleError(err);
       } finally {
         // todo correlation ids
         event.sender.send('apiKeyboardActionResponse', { id });
       }
     }
 
-    const actions = {
-      openFiles: (event, filePaths) => { userOpenFiles(filePaths.map(resolvePathIfNeeded)); },
-      apiKeyboardAction: tryApiKeyboardAction,
-      openFilesDialog,
-      closeCurrentFile: () => { closeFileWithConfirm(); },
-      closeBatchFiles: () => { closeBatch(); },
-      html5ify: () => userHtml5ifyCurrentFile({ ignoreRememberedValue: true }),
-      askSetStartTimeOffset,
-      extractAllStreams,
-      showStreamsSelector: handleShowStreamsSelectorClick,
+    const actionsWithArgs = {
+      openFiles: (filePaths) => { userOpenFiles(filePaths.map(resolvePathIfNeeded)); },
+      // todo separate actions per type and move them into mainActions?
       importEdlFile,
-      exportEdlFile: exportEdlFile2,
-      exportEdlYouTube,
-      toggleLastCommands,
-      toggleKeyboardShortcuts,
-      toggleSettings,
-      openSendReportDialog: () => { openSendReportDialogWithState(); },
-      clearSegments,
-      shuffleSegments,
-      createNumSegments,
-      createFixedDurationSegments,
-      createRandomSegments,
-      invertAllSegments,
-      fillSegmentsGaps,
-      combineOverlappingSegments,
-      combineSelectedSegments,
-      splitCurrentSegment,
-      fixInvalidDuration: tryFixInvalidDuration,
-      reorderSegsByStartTime,
-      concatCurrentBatch,
-      detectBlackScenes,
-      detectSilentScenes,
-      detectSceneChanges,
-      createSegmentsFromKeyframes,
-      shiftAllSegmentTimes,
-      alignSegmentTimesToKeyframes,
+      exportEdlFile: tryExportEdlFile,
     };
 
-    const actionsWithCatch = Object.entries(actions).map(([key, action]) => [
-      key,
-      async (...args) => {
-        try {
-          await action(...args);
-        } catch (err) {
-          handleError(err);
-        }
-      },
-    ]);
+    async function actionWithCatch(fn) {
+      try {
+        await fn();
+      } catch (err) {
+        handleError(err);
+      }
+    }
+
+    const actionsWithCatch = [
+      // actions with arguments:
+      ...Object.entries(actionsWithArgs).map(([key, fn]) => [
+        key,
+        async (event, ...args) => actionWithCatch(() => fn(...args)),
+      ]),
+      // all main actions (no arguments, except keyup which we don't support):
+      ...Object.entries(mainActions).map(([key, fn]) => [
+        key,
+        async () => actionWithCatch(() => fn({ keyup: false })),
+      ]),
+    ];
 
     actionsWithCatch.forEach(([key, action]) => electron.ipcRenderer.on(key, action));
-    return () => actionsWithCatch.forEach(([key, action]) => electron.ipcRenderer.removeListener(key, action));
-  }, [alignSegmentTimesToKeyframes, apparentCutSegments, askSetStartTimeOffset, checkFileOpened, clearSegments, closeBatch, closeFileWithConfirm, combineOverlappingSegments, combineSelectedSegments, concatCurrentBatch, createFixedDurationSegments, createNumSegments, createRandomSegments, createSegmentsFromKeyframes, customOutDir, cutSegments, detectBlackScenes, detectSceneChanges, detectSilentScenes, detectedFps, extractAllStreams, fileFormat, filePath, fillSegmentsGaps, getFrameCount, getKeyboardAction, handleShowStreamsSelectorClick, invertAllSegments, loadCutSegments, loadMedia, openFilesDialog, openSendReportDialogWithState, reorderSegsByStartTime, selectedSegments, setWorking, shiftAllSegmentTimes, shuffleSegments, splitCurrentSegment, toggleKeyboardShortcuts, toggleLastCommands, toggleSettings, tryFixInvalidDuration, userHtml5ifyCurrentFile, userOpenFiles]);
+    electron.ipcRenderer.on('apiKeyboardAction', tryApiKeyboardAction);
+
+    return () => {
+      actionsWithCatch.forEach(([key, action]) => electron.ipcRenderer.off(key, action));
+      electron.ipcRenderer.off('apiKeyboardAction', tryApiKeyboardAction);
+    };
+  }, [checkFileOpened, customOutDir, detectedFps, filePath, getFrameCount, getKeyboardAction, loadCutSegments, mainActions, selectedSegments, userOpenFiles]);
 
   const showAddStreamSourceDialog = useCallback(async () => {
     try {
@@ -2337,7 +2325,7 @@ const App = memo(() => {
                     onBatchFileSelect={onBatchFileSelect}
                     batchListRemoveFile={batchListRemoveFile}
                     closeBatch={closeBatch}
-                    onMergeFilesClick={concatCurrentBatch}
+                    onMergeFilesClick={concatBatch}
                     onBatchConvertToSupportedFormatClick={convertFormatBatch}
                   />
                 )}
@@ -2571,7 +2559,7 @@ const App = memo(() => {
 
             <ConcatDialog isShown={batchFiles.length > 0 && concatDialogVisible} onHide={() => setConcatDialogVisible(false)} paths={batchFilePaths} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} />
 
-            <KeyboardShortcuts isShown={keyboardShortcutsVisible} onHide={() => setKeyboardShortcutsVisible(false)} keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} />
+            <KeyboardShortcuts isShown={keyboardShortcutsVisible} onHide={() => setKeyboardShortcutsVisible(false)} keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} mainActions={mainActions} />
           </div>
         </ThemeProvider>
       </UserSettingsContext.Provider>

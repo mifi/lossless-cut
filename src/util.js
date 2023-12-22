@@ -7,6 +7,7 @@ import pRetry from 'p-retry';
 
 import isDev from './isDev';
 import Swal, { toast } from './swal';
+import { ffmpegExtractWindow } from './util/constants';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
 const fsExtra = window.require('fs-extra');
@@ -393,3 +394,14 @@ export async function readVideoTs(videoTsPath) {
   if (ret.length === 0) throw new Error('No VTS vob files found in folder');
   return ret;
 }
+
+export function getImportProjectType(filePath) {
+  if (filePath.endsWith('Summary.txt')) return 'dv-analyzer-summary-txt';
+  const edlFormatForExtension = { csv: 'csv', pbf: 'pbf', edl: 'mplayer', cue: 'cue', xml: 'xmeml', fcpxml: 'fcpxml' };
+  const matchingExt = Object.keys(edlFormatForExtension).find((ext) => filePath.toLowerCase().endsWith(`.${ext}`));
+  if (!matchingExt) return undefined;
+  return edlFormatForExtension[matchingExt];
+}
+
+export const calcShouldShowWaveform = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
+export const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);

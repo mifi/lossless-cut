@@ -33,7 +33,7 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
         {
           label: esc(t('Close batch')),
           async click() {
-            mainWindow.webContents.send('closeBatchFiles');
+            mainWindow.webContents.send('closeBatch');
           },
         },
         { type: 'separator' },
@@ -331,7 +331,7 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
         {
           label: esc(t('Merge/concatenate files')),
           click() {
-            mainWindow.webContents.send('concatCurrentBatch');
+            mainWindow.webContents.send('concatBatch');
           },
         },
         {
