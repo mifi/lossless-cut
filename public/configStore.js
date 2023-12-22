@@ -65,7 +65,7 @@ const defaultKeyBindings = [
   { keys: 'ctrl+c', action: 'copySegmentsToClipboard' },
   { keys: 'command+c', action: 'copySegmentsToClipboard' },
 
-  { key: 'f', action: 'toggleFullscreenVideo' },
+  { keys: 'f', action: 'toggleFullscreenVideo' },
 
   { keys: 'enter', action: 'labelCurrentSegment' },
 
