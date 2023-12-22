@@ -833,5 +833,10 @@
     "empty": "空的",
     "Delete": "删除",
     "Add segment tag": "添加段标记",
-    "Edit segment tags": "编辑段标记"
+    "Edit segment tags": "编辑段标记",
+    "\"ffmpeg\" experimental flag": "\"ffmpeg\" 实验标志",
+    "No file is loaded": "未加载任何文件",
+    "Discard all tracks": "放弃所有轨道",
+    "Keep all tracks": "保留所有轨道",
+    "At least one resulting file name ends with a whitespace character or a dot, which is not allowed.": "至少有一个生成的文件名以空白字符或点结尾，这是不允许的。"
 }
