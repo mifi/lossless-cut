@@ -142,9 +142,9 @@ const BottomBar = memo(({
   setCurrentSegIndex,
   jumpTimelineStart, jumpTimelineEnd, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime, currentApparentCutSeg,
   playing, shortStep, togglePlay, toggleLoopSelectedSegments, hasAudio,
-  keyframesEnabled, toggleKeyframesEnabled, seekClosestKeyframe, detectedFps, isFileOpened, selectedSegments,
+  keyframesEnabled, toggleShowKeyframes, seekClosestKeyframe, detectedFps, isFileOpened, selectedSegments,
   darkMode, setDarkMode,
-  toggleEnableThumbnails, toggleWaveformMode, waveformMode, showThumbnails,
+  toggleShowThumbnails, toggleWaveformMode, waveformMode, showThumbnails,
   outputPlaybackRate, setOutputPlaybackRate,
 }) => {
   const { t } = useTranslation();
@@ -249,7 +249,7 @@ const BottomBar = memo(({
                     style={{ padding: '0 .2em', color: showThumbnails ? primaryTextColor : undefined }}
                     role="button"
                     title={t('Show thumbnails')}
-                    onClick={toggleEnableThumbnails}
+                    onClick={toggleShowThumbnails}
                   />
 
                   <FaKey
@@ -257,7 +257,7 @@ const BottomBar = memo(({
                     style={{ padding: '0 .2em', color: keyframesEnabled ? primaryTextColor : undefined }}
                     role="button"
                     title={t('Show keyframes')}
-                    onClick={toggleKeyframesEnabled}
+                    onClick={toggleShowKeyframes}
                   />
                 </>
               )}

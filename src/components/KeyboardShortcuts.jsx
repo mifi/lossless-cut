@@ -524,6 +524,18 @@ const KeyboardShortcuts = memo(({
           name: t('Copy selected segments times to clipboard'),
           category: otherCategory,
         },
+        toggleWaveformMode: {
+          name: t('Show waveform'),
+          category: otherCategory,
+        },
+        toggleShowThumbnails: {
+          name: t('Show thumbnails'),
+          category: otherCategory,
+        },
+        toggleShowKeyframes: {
+          name: t('Show keyframes'),
+          category: otherCategory,
+        },
         toggleSettings: {
           name: t('Settings'),
           category: otherCategory,
@@ -614,8 +626,8 @@ const KeyboardShortcuts = memo(({
     });
   }, [setKeyBindings]);
 
-  const missingAction = Object.keys(mainActions).find((key) => actionsMap[key] == null);
-  if (missingAction) throw new Error(`Action missing: ${missingAction}`);
+  const missingActions = Object.keys(mainActions).filter((key) => actionsMap[key] == null);
+  if (missingActions.length > 0) throw new Error(`Action(s) missing: ${missingActions.join(',')}`);
 
   return (
     <>

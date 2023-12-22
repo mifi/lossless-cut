@@ -214,7 +214,7 @@ const App = memo(() => {
     }
   }, [detectedFileFormat, outFormatLocked, setFileFormat, setOutFormatLocked]);
 
-  const toggleEnableThumbnails = useCallback(() => setThumbnailsEnabled((v) => !v), []);
+  const toggleShowThumbnails = useCallback(() => setThumbnailsEnabled((v) => !v), []);
 
   const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => {
     const newVal = !v;
@@ -226,7 +226,7 @@ const App = memo(() => {
 
   const togglePreserveMetadataOnMerge = useCallback(() => setPreserveMetadataOnMerge((v) => !v), [setPreserveMetadataOnMerge]);
 
-  const toggleKeyframesEnabled = useCallback(() => {
+  const toggleShowKeyframes = useCallback(() => {
     setKeyframesEnabled((old) => {
       const enabled = !old;
       if (enabled && !calcShouldShowKeyframes(zoomedDuration)) {
@@ -2024,8 +2024,11 @@ const App = memo(() => {
       detectSilentScenes,
       detectSceneChanges,
       createSegmentsFromKeyframes,
+      toggleWaveformMode,
+      toggleShowThumbnails,
+      toggleShowKeyframes,
     };
-  }, [addSegment, alignSegmentTimesToKeyframes, apparentCutSegments, askStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, checkFileOpened, cleanupFilesDialog, clearSegments, closeBatch, closeFileWithConfirm, combineOverlappingSegments, combineSelectedSegments, concatBatch, convertFormatBatch, copySegmentsToClipboard, createFixedDurationSegments, createNumSegments, createRandomSegments, createSegmentsFromKeyframes, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, detectBlackScenes, detectSceneChanges, detectSilentScenes, duplicateCurrentSegment, extractAllStreams, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, fillSegmentsGaps, goToTimecode, handleShowStreamsSelectorClick, increaseRotation, invertAllSegments, invertSelectedSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, onExportPress, onLabelSegment, openFilesDialog, openSendReportDialogWithState, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, toggleLoopSelectedSegments, togglePlay, toggleSegmentsList, toggleSettings, toggleStreamsSelector, toggleStripAudio, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addSegment, alignSegmentTimesToKeyframes, apparentCutSegments, askStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, checkFileOpened, cleanupFilesDialog, clearSegments, closeBatch, closeFileWithConfirm, combineOverlappingSegments, combineSelectedSegments, concatBatch, convertFormatBatch, copySegmentsToClipboard, createFixedDurationSegments, createNumSegments, createRandomSegments, createSegmentsFromKeyframes, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, detectBlackScenes, detectSceneChanges, detectSilentScenes, duplicateCurrentSegment, extractAllStreams, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, fillSegmentsGaps, goToTimecode, handleShowStreamsSelectorClick, increaseRotation, invertAllSegments, invertSelectedSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, onExportPress, onLabelSegment, openFilesDialog, openSendReportDialogWithState, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleShowKeyframes, toggleLastCommands, toggleLoopSelectedSegments, togglePlay, toggleSegmentsList, toggleSettings, toggleShowThumbnails, toggleStreamsSelector, toggleStripAudio, toggleWaveformMode, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   const getKeyboardAction = useCallback((action) => mainActions[action], [mainActions]);
 
@@ -2190,7 +2193,7 @@ const App = memo(() => {
 
     const actionsWithArgs = {
       openFiles: (filePaths) => { userOpenFiles(filePaths.map(resolvePathIfNeeded)); },
-      // todo separate actions per type and move them into mainActions?
+      // todo separate actions per type and move them into mainActions? https://github.com/mifi/lossless-cut/issues/254#issuecomment-932649424
       importEdlFile,
       exportEdlFile: tryExportEdlFile,
     };
@@ -2494,12 +2497,12 @@ const App = memo(() => {
                 seekClosestKeyframe={seekClosestKeyframe}
                 togglePlay={togglePlay}
                 showThumbnails={showThumbnails}
-                toggleEnableThumbnails={toggleEnableThumbnails}
+                toggleShowThumbnails={toggleShowThumbnails}
                 toggleWaveformMode={toggleWaveformMode}
                 waveformMode={waveformMode}
                 hasAudio={hasAudio}
                 keyframesEnabled={keyframesEnabled}
-                toggleKeyframesEnabled={toggleKeyframesEnabled}
+                toggleShowKeyframes={toggleShowKeyframes}
                 detectedFps={detectedFps}
                 toggleLoopSelectedSegments={toggleLoopSelectedSegments}
                 isFileOpened={isFileOpened}
