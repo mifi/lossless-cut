@@ -78,7 +78,7 @@ For per-platform build/signing setup, see [this article](https://mifi.no/blog/au
 
 - Commit changes
 - `npm version ...`
-- `git push && git push --tags`
+- `git push --follow-tags`
 - Wait for build and draft in Github actions
 - Open draft in github and add Release notes
 - For files `LosslessCut-mac-universal.pkg` and `LosslessCut-win-x64.appx` add prefix `-DO-NOT-DOWNLOAD`
