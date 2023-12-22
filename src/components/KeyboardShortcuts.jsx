@@ -524,10 +524,6 @@ const KeyboardShortcuts = memo(({
           name: t('Copy selected segments times to clipboard'),
           category: otherCategory,
         },
-        askSetStartTimeOffset: {
-          name: t('Set custom start offset/timecode'),
-          category: otherCategory,
-        },
         toggleSettings: {
           name: t('Settings'),
           category: otherCategory,
@@ -540,7 +536,7 @@ const KeyboardShortcuts = memo(({
           name: t('Open'),
           category: otherCategory,
         },
-        exportEdlYouTube: {
+        exportYouTube: {
           name: t('Start times as YouTube Chapters'),
           category: otherCategory,
         },

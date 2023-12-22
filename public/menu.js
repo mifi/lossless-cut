@@ -138,7 +138,7 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
             {
               label: esc(t('Start times as YouTube Chapters')),
               click() {
-                mainWindow.webContents.send('exportEdlYouTube');
+                mainWindow.webContents.send('exportYouTube');
               },
             },
           ],
@@ -337,7 +337,7 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
         {
           label: esc(t('Set custom start offset/timecode')),
           click() {
-            mainWindow.webContents.send('askSetStartTimeOffset');
+            mainWindow.webContents.send('setStartTimeOffset');
           },
         },
         {
