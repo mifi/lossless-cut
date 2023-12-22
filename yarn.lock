@@ -6622,6 +6622,7 @@ __metadata:
     react-sortablejs: "npm:^6.1.4"
     react-syntax-highlighter: "npm:^15.4.3"
     react-use: "npm:^17.4.0"
+    screenfull: "npm:^6.0.2"
     scroll-into-view-if-needed: "npm:^2.2.28"
     semver: "npm:^7.5.2"
     sharp: "npm:^0.32.6"
@@ -8702,6 +8703,13 @@ __metadata:
   version: 5.2.0
   resolution: "screenfull@npm:5.2.0"
   checksum: b8b4b8010f48889341ad1981ca9e6e02db1f10dec686244d95bd2bfde47451059f5ba4c744449913b10f021f14f79d374987a873b6086eb488295962ba50381e
+  languageName: node
+  linkType: hard
+
+"screenfull@npm:^6.0.2":
+  version: 6.0.2
+  resolution: "screenfull@npm:6.0.2"
+  checksum: 13ad07683538a94a0dac99533ddf54755c9c10890850f726872a9dace69ad09457451b2e467efcbb270f19f201bbb9b6911ab7b12618222648a093f369be6fd2
   languageName: node
   linkType: hard
 
