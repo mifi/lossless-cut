@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" clip-rule="evenodd" viewBox="0 0 1024 1024">
+  <defs>
+    <filter id="a" height="130%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10"/>
+      <feOffset result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA slope=".5" type="linear"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#a)" transform="matrix(1.7 0 0 1.7 52.9 67.9)">
+    <path fill="#14b0bf" d="M27.2 378.2V133.8c0-66.3 40.3-115.3 115.3-115.3h244.4c74.9 0 115.2 49 115.2 115.3v244.4c0 66.3-40.3 115.3-115.2 115.3H142.5c-75 0-115.3-49-115.3-115.3Z"/>
+    <path fill="#3387b5" d="m110.6 215-8.8-49.8 306-54 94.3 95v172c0 66.3-40.3 115.3-115.2 115.3H212l-93.7-93.8a20.3 20.3 0 0 1-7.7-15.8V215.1h2.6l-.1-.5-2.5.5Z"/>
+    <path fill="#0f303f" fill-rule="nonzero" d="M420 381.8c0 11.2-9.2 20.3-20.4 20.3H130.4a20.4 20.4 0 0 1-20.3-20.3v-148c0-11.2 9.1-20.4 20.3-20.4h269.2c11.2 0 20.3 9.2 20.3 20.3v148Z"/>
+    <path fill="#fff" d="M110.1 213.4h310v50.5H110z"/>
+    <path fill="#0f303f" fill-rule="nonzero" d="m160.6 220.3-36.9 37.4h37.4l36.9-37.4h-37.4Zm155.3 0-36.8 37.4h37.3l36.9-37.4h-37.4Zm-103.5 0-36.9 37.4H213l36.9-37.4h-37.4Zm51.8 0-37 37.4h37.5l36.8-37.4h-37.3Zm103.5 0-36.9 37.4h37.4l36.9-37.4h-37.4Zm51.8 0-36.9 37.4H420v-37.4h-.4Zm-309.4 0v37.4h.2l36.9-37.4H110Z"/>
+    <path fill="#fff" d="m101.3 163.7 305.2-53.8 8.7 49.7-305.1 53.8z"/>
+    <path fill="#0f303f" fill-rule="nonzero" d="m321 132 42.9 30.3 36.8-6.5-42.8-30.3-36.8 6.4Zm-152.9 27 42.8 30.3 36.8-6.5-42.8-30.4-36.8 6.5Zm102-18 42.8 30.3 36.8-6.5-42.8-30.4L270 141Zm-51 9 42.8 30.3 36.8-6.5-42.8-30.4-36.8 6.5Zm-102 17.9 42.8 30.4 36.8-6.5-42.8-30.4-36.8 6.5Zm-14.6 2.6 6.5 36.8 36.7-6.5-42.8-30.4h-.4ZM371.1 123l42.8 30.4h.2l-6.5-36.8-36.5 6.4Z"/>
+    <path fill="#fdc00f" fill-rule="nonzero" d="M399.2 317.4v-36.6H129.7v103.3h269.5v-66.7Zm-4-32.5v32.5H294v-32.5H395Zm-105.7 0v32.5H181.7v-32.5h107.8Zm-155.7 95v-95h43.3v95h-43.3Zm47.9 0v-58h107.8v58H181.7Zm213.4 0H294v-58H395v58Z"/>
+  </g>
+</svg>
