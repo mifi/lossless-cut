@@ -61,6 +61,8 @@ export async function askForYouTubeInput() {
     },
   });
 
+  if (value == null) return [];
+
   return parseYouTube(value);
 }
 
