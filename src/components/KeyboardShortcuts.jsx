@@ -416,6 +416,10 @@ const KeyboardShortcuts = memo(({
           name: t('Edit tracks / metadata tags'),
           category: streamsCategory,
         },
+        showIncludeExternalStreamsDialog: {
+          name: t('Include more tracks from other file'),
+          category: streamsCategory,
+        },
 
         // zoomOperationsCategory
         timelineZoomIn: {

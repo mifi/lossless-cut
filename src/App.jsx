@@ -1899,6 +1899,17 @@ const App = memo(() => {
     electron.clipboard.writeText(await formatTsv(selectedSegments));
   }, [isFileOpened, selectedSegments]);
 
+  const showIncludeExternalStreamsDialog = useCallback(async () => {
+    try {
+      const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'] });
+      if (canceled || filePaths.length < 1) return;
+      await addStreamSourceFile(filePaths[0]);
+    } catch (err) {
+      handleError(err);
+    }
+  }, [addStreamSourceFile]);
+
+
   const mainActions = useMemo(() => {
     async function exportYouTube() {
       if (!checkFileOpened()) return;
@@ -2027,8 +2038,9 @@ const App = memo(() => {
       toggleWaveformMode,
       toggleShowThumbnails,
       toggleShowKeyframes,
+      showIncludeExternalStreamsDialog,
     };
-  }, [addSegment, alignSegmentTimesToKeyframes, apparentCutSegments, askStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, checkFileOpened, cleanupFilesDialog, clearSegments, closeBatch, closeFileWithConfirm, combineOverlappingSegments, combineSelectedSegments, concatBatch, convertFormatBatch, copySegmentsToClipboard, createFixedDurationSegments, createNumSegments, createRandomSegments, createSegmentsFromKeyframes, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, detectBlackScenes, detectSceneChanges, detectSilentScenes, duplicateCurrentSegment, extractAllStreams, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, fillSegmentsGaps, goToTimecode, handleShowStreamsSelectorClick, increaseRotation, invertAllSegments, invertSelectedSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, onExportPress, onLabelSegment, openFilesDialog, openSendReportDialogWithState, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleShowKeyframes, toggleLastCommands, toggleLoopSelectedSegments, togglePlay, toggleSegmentsList, toggleSettings, toggleShowThumbnails, toggleStreamsSelector, toggleStripAudio, toggleWaveformMode, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addSegment, alignSegmentTimesToKeyframes, apparentCutSegments, askStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, checkFileOpened, cleanupFilesDialog, clearSegments, closeBatch, closeFileWithConfirm, combineOverlappingSegments, combineSelectedSegments, concatBatch, convertFormatBatch, copySegmentsToClipboard, createFixedDurationSegments, createNumSegments, createRandomSegments, createSegmentsFromKeyframes, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, detectBlackScenes, detectSceneChanges, detectSilentScenes, duplicateCurrentSegment, extractAllStreams, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, fillSegmentsGaps, goToTimecode, handleShowStreamsSelectorClick, increaseRotation, invertAllSegments, invertSelectedSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, onExportPress, onLabelSegment, openFilesDialog, openSendReportDialogWithState, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, showIncludeExternalStreamsDialog, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, toggleLoopSelectedSegments, togglePlay, toggleSegmentsList, toggleSettings, toggleShowKeyframes, toggleShowThumbnails, toggleStreamsSelector, toggleStripAudio, toggleWaveformMode, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   const getKeyboardAction = useCallback((action) => mainActions[action], [mainActions]);
 
@@ -2227,16 +2239,6 @@ const App = memo(() => {
       electron.ipcRenderer.off('apiKeyboardAction', tryApiKeyboardAction);
     };
   }, [checkFileOpened, customOutDir, detectedFps, filePath, getFrameCount, getKeyboardAction, loadCutSegments, mainActions, selectedSegments, userOpenFiles]);
-
-  const showAddStreamSourceDialog = useCallback(async () => {
-    try {
-      const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'] });
-      if (canceled || filePaths.length < 1) return;
-      await addStreamSourceFile(filePaths[0]);
-    } catch (err) {
-      handleError(err);
-    }
-  }, [addStreamSourceFile]);
 
   useEffect(() => {
     async function onDrop(ev) {
@@ -2522,7 +2524,7 @@ const App = memo(() => {
                   allFilesMeta={allFilesMeta}
                   externalFilesMeta={externalFilesMeta}
                   setExternalFilesMeta={setExternalFilesMeta}
-                  showAddStreamSourceDialog={showAddStreamSourceDialog}
+                  showAddStreamSourceDialog={showIncludeExternalStreamsDialog}
                   mainFileStreams={mainStreams}
                   isCopyingStreamId={isCopyingStreamId}
                   toggleCopyStreamId={toggleCopyStreamId}
