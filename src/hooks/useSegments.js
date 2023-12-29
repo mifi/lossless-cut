@@ -452,6 +452,7 @@ export default ({
     if (selectedSegmentsRaw.length < 1) return;
     const { name } = selectedSegmentsRaw[0];
     const value = await labelSegmentDialog({ currentName: name, maxLength: maxLabelLength });
+    if (value == null) return;
     setCutSegments((existingSegments) => existingSegments.map((existingSegment) => {
       if (selectedSegmentsRaw.some((seg) => seg.segId === existingSegment.segId)) return { ...existingSegment, name: value };
       return existingSegment;
