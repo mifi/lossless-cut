@@ -295,3 +295,54 @@ export function parseDvAnalyzerSummaryTxt(txt) {
 
   return edl;
 }
+
+// http://www.textfiles.com/uploads/kds-srt.txt
+export function parseSrt(text) {
+  const ret = [];
+
+  // working state
+  let subtitleIndexAt;
+  let start;
+  let end;
+  let lines = [];
+
+  const flush = () => {
+    if (start != null && end != null && lines.length > 0) {
+      ret.push({ start, end, name: lines.join('\r\n'), tags: { index: subtitleIndexAt } });
+    }
+    start = undefined;
+    end = undefined;
+    subtitleIndexAt = undefined;
+    lines = [];
+  };
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const lineRaw of text.trim().split('\r\n')) {
+    const line = lineRaw.trim();
+    if (line === '') {
+      flush();
+    } else if (subtitleIndexAt != null && subtitleIndexAt > 0) {
+      const match = line.match(/^(\d+:\d+:\d+[,.]\d+\s+)-->(\s+\d+:\d+:\d+[,.]\d+)$/);
+      if (match) {
+        const fixComma = (v) => v.replace(/,/g, '.');
+        start = parseTime(fixComma(match[1]))?.time;
+        end = parseTime(fixComma(match[2]))?.time;
+      } else if (start != null && end != null) {
+        lines.push(line);
+      }
+    } else if (/^\d+$/.test(line)) {
+      const parsedIndex = parseInt(line, 10);
+      if (!Number.isNaN(parsedIndex) && parsedIndex > 0) {
+        subtitleIndexAt = parsedIndex;
+      }
+    }
+  }
+
+  flush();
+
+  return ret;
+}
+
+export function formatSrt(segments) {
+  return segments.reduce((acc, segment, index) => `${acc}${index > 0 ? '\r\n' : ''}${index + 1}\r\n${formatDuration({ seconds: segment.start }).replace(/\./g, ',')} --> ${formatDuration({ seconds: segment.end }).replace(/\./g, ',')}\r\n${segment.name || '-'}\r\n`, '');
+}

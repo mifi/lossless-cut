@@ -101,6 +101,12 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
               },
             },
             {
+              label: esc(t('Subtitles (SRT)')),
+              click() {
+                mainWindow.webContents.send('importEdlFile', 'srt');
+              },
+            },
+            {
               label: esc(t('DV Analyzer Summary.txt')),
               click() {
                 mainWindow.webContents.send('importEdlFile', 'dv-analyzer-summary-txt');
@@ -133,6 +139,12 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
               label: esc(t('Timestamps (TSV/TXT)')),
               click() {
                 mainWindow.webContents.send('exportEdlFile', 'tsv-human');
+              },
+            },
+            {
+              label: esc(t('Subtitles (SRT)')),
+              click() {
+                mainWindow.webContents.send('exportEdlFile', 'srt');
               },
             },
             {

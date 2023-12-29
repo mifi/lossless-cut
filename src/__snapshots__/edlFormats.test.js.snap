@@ -1,5 +1,17 @@
 // Vitest Snapshot v1
 
+exports[`format srt 1`] = `
+"1
+00:00:02,000 --> 00:00:06,000
+First subtitle
+
+2
+00:00:28,967 --> 01:30:30,950
+Subtitle 2 line 1
+Subtitle 2 line 2
+"
+`;
+
 exports[`parses DV Analyzer Summary.txt 1`] = `
 [
   {
@@ -1009,6 +1021,28 @@ exports[`parses pbf 4`] = `
     "end": 476.194,
     "name": "B",
     "start": 300.448,
+  },
+]
+`;
+
+exports[`parses srt 1`] = `
+[
+  {
+    "end": 6,
+    "name": "First subtitle",
+    "start": 2,
+    "tags": {
+      "index": 1,
+    },
+  },
+  {
+    "end": 5430.95,
+    "name": "Subtitle 2 line 1
+Subtitle 2 line 2",
+    "start": 28.967,
+    "tags": {
+      "index": 2,
+    },
   },
 ]
 `;

@@ -509,7 +509,7 @@ export async function labelSegmentDialog({ currentName, maxLength }) {
     showCancelButton: true,
     title: i18n.t('Label current segment'),
     inputValue: currentName,
-    input: 'text',
+    input: currentName.includes('\n') ? 'textarea' : 'text',
     inputValidator: (v) => (v.length > maxLength ? `${i18n.t('Max length')} ${maxLength}` : undefined),
   });
   return value;

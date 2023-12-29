@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { it, describe, expect } from 'vitest';
 
 
-import { parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, parseCsvTime, getFrameValParser, formatCsvFrames, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt } from './edlFormats';
+import { parseSrt, formatSrt, parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, parseCsvTime, getFrameValParser, formatCsvFrames, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt } from './edlFormats';
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -246,6 +246,14 @@ it('parses pbf', async () => {
   expect(parsePbf(await readFixture('test2.pbf', null))).toMatchSnapshot();
   expect(parsePbf(await readFixture('test3.pbf', null))).toMatchSnapshot();
   expect(parsePbf(await readFixture('potplayer bookmark format utf16le issue 867.pbf', null))).toMatchSnapshot();
+});
+
+it('parses srt', async () => {
+  expect(parseSrt(await readFixture('sample.srt'))).toMatchSnapshot();
+});
+
+it('format srt', async () => {
+  expect(formatSrt(parseSrt(await readFixture('sample.srt')))).toMatchSnapshot();
 });
 
 // https://github.com/mifi/lossless-cut/issues/1664

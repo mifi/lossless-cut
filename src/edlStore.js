@@ -1,7 +1,7 @@
 import JSON5 from 'json5';
 import i18n from 'i18next';
 
-import { parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, parseCsvTime, getFrameValParser, parseDvAnalyzerSummaryTxt } from './edlFormats';
+import { parseSrt, formatSrt, parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, parseCsvTime, getFrameValParser, parseDvAnalyzerSummaryTxt } from './edlFormats';
 import { askForYouTubeInput, showOpenDialog } from './dialogs';
 import { getOutPath } from './util';
 
@@ -44,6 +44,10 @@ export async function loadCue(path) {
   return parseCuesheet(cueParser.parse(path));
 }
 
+export async function loadSrt(path) {
+  return parseSrt(await fs.readFile(path, 'utf-8'));
+}
+
 export async function saveCsv(path, cutSegments) {
   await fs.writeFile(path, await formatCsvSeconds(cutSegments));
 }
@@ -59,6 +63,11 @@ export async function saveCsvFrames({ path, cutSegments, getFrameCount }) {
 export async function saveTsv(path, cutSegments) {
   await fs.writeFile(path, await formatTsv(cutSegments));
 }
+
+export async function saveSrt(path, cutSegments) {
+  await fs.writeFile(path, await formatSrt(cutSegments));
+}
+
 
 export async function saveLlcProject({ savePath, filePath, cutSegments }) {
   const projectData = {
@@ -83,6 +92,7 @@ export async function readEdlFile({ type, path, fps }) {
   if (type === 'cue') return loadCue(path);
   if (type === 'pbf') return loadPbf(path);
   if (type === 'mplayer') return loadMplayerEdl(path);
+  if (type === 'srt') return loadSrt(path);
   if (type === 'llc') {
     const project = await loadLlcProject(path);
     return project.cutSegments;
@@ -101,6 +111,7 @@ export async function askForEdlImport({ type, fps }) {
   else if (type === 'pbf') filters = [{ name: i18n.t('PBF files'), extensions: ['pbf'] }];
   else if (type === 'mplayer') filters = [{ name: i18n.t('MPlayer EDL'), extensions: ['*'] }];
   else if (type === 'dv-analyzer-summary-txt') filters = [{ name: i18n.t('DV Analyzer Summary.txt'), extensions: ['txt'] }];
+  else if (type === 'srt') filters = [{ name: i18n.t('Subtitles (SRT)'), extensions: ['srt'] }];
   else if (type === 'llc') filters = [{ name: i18n.t('LosslessCut project'), extensions: ['llc'] }];
 
   const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'], filters });
@@ -123,6 +134,9 @@ export async function exportEdlFile({ type, cutSegments, customOutDir, filePath,
   } else if (type === 'csv-frames') {
     ext = 'csv';
     filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
+  } else if (type === 'srt') {
+    ext = 'srt';
+    filters = [{ name: i18n.t('Subtitles (SRT)'), extensions: [ext, 'txt'] }];
   } else if (type === 'llc') {
     ext = 'llc';
     filters = [{ name: i18n.t('LosslessCut project'), extensions: [ext, 'llc'] }];
@@ -138,4 +152,5 @@ export async function exportEdlFile({ type, cutSegments, customOutDir, filePath,
   else if (type === 'csv-human') await saveCsvHuman(savePath, cutSegments);
   else if (type === 'csv-frames') await saveCsvFrames({ path: savePath, cutSegments, getFrameCount });
   else if (type === 'llc') await saveLlcProject({ savePath, filePath, cutSegments });
+  else if (type === 'srt') await saveSrt(savePath, cutSegments);
 }

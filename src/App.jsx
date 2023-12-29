@@ -1825,8 +1825,10 @@ const App = memo(() => {
       const inputOptions = {
         open: isFileOpened ? i18n.t('Open the file instead of the current one') : i18n.t('Open the file'),
       };
+
       if (isFileOpened) {
         if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
+        else if (filePathLowerCase.endsWith('.srt')) inputOptions.subtitles = i18n.t('Convert subtitiles into segments');
         else inputOptions.tracks = i18n.t('Include all tracks from the new file');
       }
 
@@ -1842,6 +1844,10 @@ const App = memo(() => {
         }
         if (openFileResponse === 'project') {
           await loadEdlFile({ path: firstFilePath, type: 'llc' });
+          return;
+        }
+        if (openFileResponse === 'subtitles') {
+          await loadEdlFile({ path: firstFilePath, type: 'srt' });
           return;
         }
         if (openFileResponse === 'tracks') {
@@ -1861,6 +1867,7 @@ const App = memo(() => {
           if (batchPaths.size > 1) setConcatDialogVisible(true);
           return;
         }
+
         // Dialog canceled:
         return;
       }
