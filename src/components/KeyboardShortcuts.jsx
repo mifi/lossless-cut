@@ -7,6 +7,7 @@ import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
 import uniq from 'lodash/uniq';
 
+import Swal from '../swal';
 import SetCutpointButton from './SetCutpointButton';
 import SegmentCutpointButton from './SegmentCutpointButton';
 
@@ -293,6 +294,10 @@ const KeyboardShortcuts = memo(({
         },
         labelCurrentSegment: {
           name: t('Label current segment'),
+          category: segmentsAndCutpointsCategory,
+        },
+        editCurrentSegmentTags: {
+          name: t('Edit current segment tags'),
           category: segmentsAndCutpointsCategory,
         },
         splitCurrentSegment: {
@@ -622,8 +627,9 @@ const KeyboardShortcuts = memo(({
     console.log('new key binding', action, keysStr);
 
     setKeyBindings((existingBindings) => {
-      const haveDuplicate = existingBindings.some((existingBinding) => existingBinding.keys === keysStr);
-      if (haveDuplicate) {
+      const duplicate = existingBindings.find((existingBinding) => existingBinding.keys === keysStr);
+      if (duplicate) {
+        Swal.fire({ icon: 'error', title: t('Duplicate keyboard combination'), text: t('Combination is already bound to "{{alreadyBoundKey}}"', { alreadyBoundKey: actionsMap[duplicate.action]?.name }) });
         console.log('trying to add duplicate');
         return existingBindings;
       }
@@ -632,7 +638,7 @@ const KeyboardShortcuts = memo(({
       setCreatingBinding();
       return [...existingBindings, { action, keys: keysStr }];
     });
-  }, [setKeyBindings]);
+  }, [actionsMap, setKeyBindings, t]);
 
   const missingActions = Object.keys(mainActions).filter((key) => actionsMap[key] == null);
   if (missingActions.length > 0) throw new Error(`Action(s) missing: ${missingActions.join(',')}`);

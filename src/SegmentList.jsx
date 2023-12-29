@@ -162,6 +162,7 @@ const SegmentList = memo(({
   onLabelSegment, currentCutSeg, segmentAtCursor, toggleSegmentsList, splitCurrentSegment,
   selectedSegments, isSegmentSelected, onSelectSingleSegment, onToggleSegmentSelected, onDeselectAllSegments, onSelectAllSegments, onSelectSegmentsByLabel, onSelectSegmentsByTag, onExtractSegmentFramesAsImages, onLabelSelectedSegments, onInvertSelectedSegments, onDuplicateSegmentClick,
   jumpSegStart, jumpSegEnd, updateSegAtIndex,
+  editingSegmentTags, editingSegmentTagsSegmentIndex, setEditingSegmentTags, setEditingSegmentTagsSegmentIndex, onEditSegmentTags,
 }) => {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
@@ -271,26 +272,19 @@ const SegmentList = memo(({
     );
   }
 
-  const [editingSegmentTagsSegmentIndex, setEditingSegmentTagsSegmentIndex] = useState();
-  const [editingSegmentTags, setEditingSegmentTags] = useState();
   const [editingTag, setEditingTag] = useState();
 
   const onTagChange = useCallback((tag, value) => setEditingSegmentTags((existingTags) => ({
     ...existingTags,
     [tag]: value,
-  })), []);
+  })), [setEditingSegmentTags]);
 
-  const onTagReset = useCallback((tag) => setEditingSegmentTags(({ [tag]: deleted, ...rest }) => rest), []);
-
-  const onEditSegmentTags = useCallback((index) => {
-    setEditingSegmentTagsSegmentIndex(index);
-    setEditingSegmentTags(getSegmentTags(apparentCutSegments[index]));
-  }, [apparentCutSegments]);
+  const onTagReset = useCallback((tag) => setEditingSegmentTags(({ [tag]: deleted, ...rest }) => rest), [setEditingSegmentTags]);
 
   const onSegmentTagsCloseComplete = useCallback(() => {
     setEditingSegmentTagsSegmentIndex();
     setEditingSegmentTags();
-  }, []);
+  }, [setEditingSegmentTags, setEditingSegmentTagsSegmentIndex]);
 
   const onSegmentTagsConfirm = useCallback(() => {
     updateSegAtIndex(editingSegmentTagsSegmentIndex, { tags: editingSegmentTags });

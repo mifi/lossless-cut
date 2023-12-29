@@ -79,7 +79,7 @@ import { askForHtml5ifySpeed } from './dialogs/html5ify';
 import { askForOutDir, askForImportChapters, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openExportFinishedToast, openConcatFinishedToast, showOpenDialog } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
-import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, playOnlyCurrentSegment } from './segments';
+import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, playOnlyCurrentSegment, getSegmentTags } from './segments';
 import { generateOutSegFileNames as generateOutSegFileNamesRaw, defaultOutSegTemplate } from './util/outputNameTemplate';
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 import BigWaveform from './components/BigWaveform';
@@ -156,6 +156,8 @@ const App = memo(() => {
   const [keyboardShortcutsVisible, setKeyboardShortcutsVisible] = useState(false);
   const [mifiLink, setMifiLink] = useState();
   const [alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles] = useState(false);
+  const [editingSegmentTagsSegmentIndex, setEditingSegmentTagsSegmentIndex] = useState();
+  const [editingSegmentTags, setEditingSegmentTags] = useState();
 
   // Batch state / concat files
   const [batchFiles, setBatchFiles] = useState([]);
@@ -1933,6 +1935,15 @@ const App = memo(() => {
     }
   }, []);
 
+  const onEditSegmentTags = useCallback((index) => {
+    setEditingSegmentTagsSegmentIndex(index);
+    setEditingSegmentTags(getSegmentTags(apparentCutSegments[index]));
+  }, [apparentCutSegments]);
+
+  const editCurrentSegmentTags = useCallback(() => {
+    onEditSegmentTags(currentSegIndexSafe);
+  }, [currentSegIndexSafe, onEditSegmentTags]);
+
   const mainActions = useMemo(() => {
     async function exportYouTube() {
       if (!checkFileOpened()) return;
@@ -2036,6 +2047,7 @@ const App = memo(() => {
       deselectAllSegments,
       selectAllSegments,
       selectOnlyCurrentSegment,
+      editCurrentSegmentTags,
       toggleCurrentSegmentSelected,
       invertSelectedSegments,
       removeSelectedSegments,
@@ -2064,7 +2076,7 @@ const App = memo(() => {
       showIncludeExternalStreamsDialog,
       toggleFullscreenVideo,
     };
-  }, [addSegment, alignSegmentTimesToKeyframes, apparentCutSegments, askStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, checkFileOpened, cleanupFilesDialog, clearSegments, closeBatch, closeFileWithConfirm, combineOverlappingSegments, combineSelectedSegments, concatBatch, convertFormatBatch, copySegmentsToClipboard, createFixedDurationSegments, createNumSegments, createRandomSegments, createSegmentsFromKeyframes, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, detectBlackScenes, detectSceneChanges, detectSilentScenes, duplicateCurrentSegment, extractAllStreams, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, fillSegmentsGaps, goToTimecode, handleShowStreamsSelectorClick, increaseRotation, invertAllSegments, invertSelectedSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, onExportPress, onLabelSegment, openFilesDialog, openSendReportDialogWithState, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, showIncludeExternalStreamsDialog, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleFullscreenVideo, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, toggleLoopSelectedSegments, togglePlay, toggleSegmentsList, toggleSettings, toggleShowKeyframes, toggleShowThumbnails, toggleStreamsSelector, toggleStripAudio, toggleWaveformMode, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
+  }, [addSegment, alignSegmentTimesToKeyframes, apparentCutSegments, askStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, checkFileOpened, cleanupFilesDialog, clearSegments, closeBatch, closeFileWithConfirm, combineOverlappingSegments, combineSelectedSegments, concatBatch, convertFormatBatch, copySegmentsToClipboard, createFixedDurationSegments, createNumSegments, createRandomSegments, createSegmentsFromKeyframes, currentSegIndexSafe, cutSegmentsHistory, deselectAllSegments, detectBlackScenes, detectSceneChanges, detectSilentScenes, duplicateCurrentSegment, editCurrentSegmentTags, extractAllStreams, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, fillSegmentsGaps, goToTimecode, handleShowStreamsSelectorClick, increaseRotation, invertAllSegments, invertSelectedSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, onExportPress, onLabelSegment, openFilesDialog, openSendReportDialogWithState, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, showIncludeExternalStreamsDialog, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleFullscreenVideo, toggleKeyboardShortcuts, toggleKeyframeCut, toggleLastCommands, toggleLoopSelectedSegments, togglePlay, toggleSegmentsList, toggleSettings, toggleShowKeyframes, toggleShowThumbnails, toggleStreamsSelector, toggleStripAudio, toggleWaveformMode, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   const getKeyboardAction = useCallback((action) => mainActions[action], [mainActions]);
 
@@ -2455,6 +2467,11 @@ const App = memo(() => {
                     onSelectSegmentsByTag={onSelectSegmentsByTag}
                     onLabelSelectedSegments={onLabelSelectedSegments}
                     updateSegAtIndex={updateSegAtIndex}
+                    editingSegmentTags={editingSegmentTags}
+                    editingSegmentTagsSegmentIndex={editingSegmentTagsSegmentIndex}
+                    setEditingSegmentTags={setEditingSegmentTags}
+                    setEditingSegmentTagsSegmentIndex={setEditingSegmentTagsSegmentIndex}
+                    onEditSegmentTags={onEditSegmentTags}
                   />
                 )}
               </AnimatePresence>

@@ -24,7 +24,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
     setNewTag();
   }, [editingTag, onTagReset, setEditingTag]);
 
-  function onEditClick(tag) {
+  const onEditClick = useCallback((tag) => {
     if (newTag) {
       onTagChange(editingTag, editingTagVal);
       setEditingTag();
@@ -40,7 +40,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
       setEditingTag(tag);
       setEditingTagVal(mergedTags[tag]);
     }
-  }
+  }, [editingTag, editingTagVal, existingTags, mergedTags, newTag, onResetClick, onTagChange, setEditingTag]);
 
   function onSubmit(e) {
     e.preventDefault();
@@ -50,12 +50,18 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   const onAddPress = useCallback(async (e) => {
     e.preventDefault();
     e.target.blur();
+
+    if (newTag || editingTag != null) {
+      // save any unsaved edit
+      onEditClick();
+    }
+
     const tag = await askForMetadataKey({ title: addTagTitle, text: addTagText });
     if (!tag || Object.keys(mergedTags).includes(tag)) return;
     setEditingTag(tag);
     setEditingTagVal('');
     setNewTag(tag);
-  }, [addTagText, addTagTitle, mergedTags, setEditingTag]);
+  }, [addTagText, addTagTitle, editingTag, mergedTags, newTag, onEditClick, setEditingTag]);
 
   useEffect(() => {
     ref.current?.focus();
@@ -92,7 +98,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
         </tbody>
       </table>
 
-      <Button style={{ marginTop: 10 }} iconBefore={PlusIcon} onClick={onAddPress}>{t('Add metadata')}</Button>
+      <Button style={{ marginTop: 10 }} iconBefore={PlusIcon} onClick={onAddPress}>{addTagTitle}</Button>
     </>
   );
 }
