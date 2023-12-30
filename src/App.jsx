@@ -138,7 +138,7 @@ const App = memo(() => {
   const [hideCanvasPreview, setHideCanvasPreview] = useState(false);
   const [exportConfirmVisible, setExportConfirmVisible] = useState(false);
   const [cacheBuster, setCacheBuster] = useState(0);
-  const [customMergedOutFileName, setMergedOutFileName] = useState();
+  const [mergedOutFileName, setMergedOutFileName] = useState();
   const [outputPlaybackRate, setOutputPlaybackRateState] = useState(1);
 
   const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
@@ -703,6 +703,14 @@ const App = memo(() => {
   const { neighbouringKeyFrames, findNearestKeyFrameTime } = useKeyframes({ keyframesEnabled, filePath, commandedTime, mainVideoStream, detectedFps, ffmpegExtractWindow });
   const { waveforms } = useWaveform({ darkMode, filePath, relevantTime, waveformEnabled, mainAudioStream, shouldShowWaveform, ffmpegExtractWindow, durationSafe });
 
+  const resetMergedOutFileName = useCallback(() => {
+    const ext = getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath });
+    const outFileName = getSuffixedFileName(filePath, `cut-merged-${new Date().getTime()}${ext}`);
+    setMergedOutFileName(outFileName);
+  }, [fileFormat, filePath, isCustomFormatSelected]);
+
+  useEffect(() => resetMergedOutFileName(), [resetMergedOutFileName]);
+
   const resetState = useCallback(() => {
     console.log('State reset');
     const video = videoRef.current;
@@ -743,11 +751,11 @@ const App = memo(() => {
     setActiveSubtitleStreamIndex();
     setHideCanvasPreview(false);
     setExportConfirmVisible(false);
-    setMergedOutFileName();
+    resetMergedOutFileName();
     setOutputPlaybackRateState(1);
 
     cancelRenderThumbnails();
-  }, [cutSegmentsHistory, clearSegments, setFileFormat, setDetectedFileFormat, setDeselectedSegmentIds, cancelRenderThumbnails]);
+  }, [cutSegmentsHistory, clearSegments, setFileFormat, setDetectedFileFormat, setDeselectedSegmentIds, resetMergedOutFileName, cancelRenderThumbnails]);
 
 
   const showUnsupportedFileMessage = useCallback(() => {
@@ -1128,12 +1136,6 @@ const App = memo(() => {
 
   const willMerge = segmentsToExport.length > 1 && autoMerge;
 
-  const mergedOutFileName = useMemo(() => {
-    if (customMergedOutFileName != null) return customMergedOutFileName;
-    const ext = getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath });
-    return getSuffixedFileName(filePath, `cut-merged-${new Date().getTime()}${ext}`);
-  }, [customMergedOutFileName, fileFormat, filePath, isCustomFormatSelected]);
-
   const mergedOutFilePath = useMemo(() => (
     getOutPath({ customOutDir, filePath, fileName: mergedOutFileName })
   ), [customOutDir, filePath, mergedOutFileName]);
@@ -1257,6 +1259,8 @@ const App = memo(() => {
       if (!hideAllNotifications) openExportFinishedToast({ filePath: revealPath, warnings, notices });
 
       if (cleanupChoices.cleanupAfterExport) await cleanupFilesWithDialog();
+
+      resetMergedOutFileName();
     } catch (err) {
       if (err.killed === true) {
         // assume execa killed (aborted by user)
@@ -1280,7 +1284,7 @@ const App = memo(() => {
       setWorking();
       setCutProgress();
     }
-  }, [numStreamsToCopy, segmentsToExport, haveInvalidSegs, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, mergedOutFilePath, hideAllNotifications, cleanupChoices.cleanupAfterExport, cleanupFilesWithDialog, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
+  }, [numStreamsToCopy, segmentsToExport, haveInvalidSegs, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, mergedOutFilePath, hideAllNotifications, cleanupChoices.cleanupAfterExport, cleanupFilesWithDialog, resetMergedOutFileName, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath) return;
