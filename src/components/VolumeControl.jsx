@@ -2,6 +2,7 @@ import React, { memo, useState, useCallback, useRef, useEffect } from 'react';
 import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
+
 const VolumeControl = memo(({ playbackVolume, setPlaybackVolume, usingDummyVideo }) => {
   const [volumeControlVisible, setVolumeControlVisible] = useState(false);
   const timeoutRef = useRef();

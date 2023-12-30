@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { FaAngleLeft, FaWindowClose } from 'react-icons/fa';
+import { FaAngleLeft, FaWindowClose, FaPlay } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ThemeProvider } from 'evergreen-ui';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
@@ -202,6 +202,7 @@ const App = memo(() => {
   }, [language]);
 
   const videoRef = useRef();
+  const videoContainerRef = useRef();
 
   const setOutputPlaybackRate = useCallback((v) => {
     setOutputPlaybackRateState(v);
@@ -1934,7 +1935,7 @@ const App = memo(() => {
         console.warn('No video tag to full screen');
         return;
       }
-      await screenfull.toggle(videoRef.current, { navigationUI: 'hide' });
+      await screenfull.toggle(videoContainerRef.current, { navigationUI: 'hide' });
     } catch (err) {
       console.error('Failed to toggle fullscreen', err);
     }
@@ -2209,6 +2210,13 @@ const App = memo(() => {
     }
   }, [fileUri, usingPreviewFile, filePath, setWorking, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, showUnsupportedFileMessage]);
 
+  const onVideoFocus = useCallback((e) => {
+    // prevent video element from stealing focus in fullscreen mode https://github.com/mifi/lossless-cut/issues/543#issuecomment-1868167775
+    e.target.blur();
+  }, []);
+
+  const onVideoClick = useCallback(() => togglePlay(), [togglePlay]);
+
   useEffect(() => {
     async function tryExportEdlFile(type) {
       if (!checkFileOpened()) return;
@@ -2378,13 +2386,14 @@ const App = memo(() => {
               </AnimatePresence>
 
               {/* Middle part: */}
-              <div style={{ position: 'relative', flexGrow: 1, overflow: 'hidden' }}>
+              <div style={{ position: 'relative', flexGrow: 1, overflow: 'hidden' }} ref={videoContainerRef}>
                 {!isFileOpened && <NoFileLoaded mifiLink={mifiLink} currentCutSeg={currentCutSeg} onClick={openFilesDialog} darkMode={darkMode} />}
 
                 <div className="no-user-select" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, visibility: !isFileOpened || !hasVideo || bigWaveformEnabled ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
                   {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
                   <video
                     className="main-player"
+                    tabIndex={-1}
                     muted={playbackVolume === 0}
                     ref={videoRef}
                     style={videoStyle}
@@ -2395,7 +2404,9 @@ const App = memo(() => {
                     onDurationChange={onDurationChange}
                     onTimeUpdate={onTimeUpdate}
                     onError={onVideoError}
+                    onClick={onVideoClick}
                     onDoubleClick={toggleFullscreenVideo}
+                    onFocusCapture={onVideoFocus}
                   >
                     {renderSubtitles()}
                   </video>
@@ -2406,7 +2417,7 @@ const App = memo(() => {
                 {bigWaveformEnabled && <BigWaveform waveforms={waveforms} relevantTime={relevantTime} playing={playing} durationSafe={durationSafe} zoom={zoomUnrounded} seekRel={seekRel} />}
 
                 {isRotationSet && !hideCanvasPreview && (
-                  <div style={{ position: 'absolute', top: 0, right: 0, left: 0, marginTop: '1em', marginLeft: '1em', color: 'white', display: 'flex', alignItems: 'center' }}>
+                  <div style={{ position: 'absolute', top: 0, right: 0, left: 0, marginTop: '1em', marginLeft: '1em', color: 'white', opacity: 0.7, display: 'flex', alignItems: 'center' }}>
                     <MdRotate90DegreesCcw size={26} style={{ marginRight: 5 }} />
                     {t('Rotation preview')}
                     {!canvasPlayerRequired && <FaWindowClose role="button" style={{ cursor: 'pointer', verticalAlign: 'middle', padding: 10 }} onClick={() => setHideCanvasPreview(true)} />}
@@ -2414,21 +2425,31 @@ const App = memo(() => {
                 )}
 
                 {isFileOpened && (
-                  <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, marginBottom: 10, display: 'flex', alignItems: 'center' }}>
-                    <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} usingDummyVideo={usingDummyVideo} />
+                  <>
+                    <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, marginBottom: 10, display: 'flex', alignItems: 'center' }}>
+                      <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} usingDummyVideo={usingDummyVideo} />
 
-                    {subtitleStreams.length > 0 && <SubtitleControl subtitleStreams={subtitleStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} onActiveSubtitleChange={onActiveSubtitleChange} />}
+                      {subtitleStreams.length > 0 && <SubtitleControl subtitleStreams={subtitleStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} onActiveSubtitleChange={onActiveSubtitleChange} />}
 
-                    {!showRightBar && (
-                      <FaAngleLeft
-                        title={t('Show sidebar')}
-                        size={30}
-                        role="button"
-                        style={{ marginRight: 10, color: 'var(--gray12)', opacity: 0.7 }}
-                        onClick={toggleSegmentsList}
-                      />
-                    )}
-                  </div>
+                      {!showRightBar && (
+                        <FaAngleLeft
+                          title={t('Show sidebar')}
+                          size={30}
+                          role="button"
+                          style={{ marginRight: 10, color: 'var(--gray12)', opacity: 0.7 }}
+                          onClick={toggleSegmentsList}
+                        />
+                      )}
+                    </div>
+
+                    <AnimatePresence>
+                      {!playing && !bigWaveformEnabled && (
+                        <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 0.7, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} transition={{ duration: 0.15 }} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                          <FaPlay size="5vw" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </>
                 )}
 
                 <AnimatePresence>
