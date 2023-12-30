@@ -450,7 +450,7 @@ const App = memo(() => {
         lastSaveOperation.current = debouncedSaveOperation;
       } catch (err) {
         errorToast(i18n.t('Unable to save project file'));
-        console.error('Failed to save CSV', err);
+        console.error('Failed to save project file', err);
       }
     }
     save();
