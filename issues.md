@@ -110,7 +110,7 @@ Some formats or codecs are not natively supported, so they will preview with low
 
 ## MPEG TS / MTS
 
-MPEG TS (`.mts`/`.ts`) files have a tendency to be a bit problematic. It may help to **first** remux them to another format like MP4/MKV. Then you can open the MP4/MKV file an work on that. Also disable non-needed tracks. In LosslessCut you can remux files by simply opening them, select a different output format, and export without editing the timeline (segments).
+MPEG TS (`.mts`/`.ts`) files have a tendency to be a [bit problematic](https://github.com/mifi/lossless-cut/issues/1839). It may help to **first** remux them to another format like MP4/MKV. Then you can open the MP4/MKV file an work on that. Also disable non-needed tracks. In LosslessCut you can remux files by simply opening them, select a different output format, and export without editing the timeline (segments).
 
 ## EXIF / metadata
 
