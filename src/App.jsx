@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { FaAngleLeft, FaWindowClose, FaPlay } from 'react-icons/fa';
+import { FaAngleLeft, FaWindowClose } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { ThemeProvider } from 'evergreen-ui';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useDebounce } from 'use-debounce';
@@ -2429,31 +2429,21 @@ const App = memo(() => {
                 )}
 
                 {isFileOpened && (
-                  <>
-                    <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, marginBottom: 10, display: 'flex', alignItems: 'center' }}>
-                      <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} usingDummyVideo={usingDummyVideo} />
+                  <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, marginBottom: 10, display: 'flex', alignItems: 'center' }}>
+                    <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} usingDummyVideo={usingDummyVideo} />
 
-                      {subtitleStreams.length > 0 && <SubtitleControl subtitleStreams={subtitleStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} onActiveSubtitleChange={onActiveSubtitleChange} />}
+                    {subtitleStreams.length > 0 && <SubtitleControl subtitleStreams={subtitleStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} onActiveSubtitleChange={onActiveSubtitleChange} />}
 
-                      {!showRightBar && (
-                        <FaAngleLeft
-                          title={t('Show sidebar')}
-                          size={30}
-                          role="button"
-                          style={{ marginRight: 10, color: 'var(--gray12)', opacity: 0.7 }}
-                          onClick={toggleSegmentsList}
-                        />
-                      )}
-                    </div>
-
-                    <AnimatePresence>
-                      {!playing && !bigWaveformEnabled && (
-                        <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 0.7, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} transition={{ duration: 0.15 }} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                          <FaPlay size="5vw" />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </>
+                    {!showRightBar && (
+                      <FaAngleLeft
+                        title={t('Show sidebar')}
+                        size={30}
+                        role="button"
+                        style={{ marginRight: 10, color: 'var(--gray12)', opacity: 0.7 }}
+                        onClick={toggleSegmentsList}
+                      />
+                    )}
+                  </div>
                 )}
 
                 <AnimatePresence>
