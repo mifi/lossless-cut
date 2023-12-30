@@ -513,6 +513,10 @@ const KeyboardShortcuts = memo(({
           name: t('Keep or discard audio tracks'),
           category: otherCategory,
         },
+        toggleStripThumbnail: {
+          name: t('Keep or discard thumbnail tracks'),
+          category: otherCategory,
+        },
         increaseRotation: {
           name: t('Change rotation'),
           category: otherCategory,
