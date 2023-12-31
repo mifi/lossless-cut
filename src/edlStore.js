@@ -5,39 +5,39 @@ import { parseSrt, formatSrt, parseCuesheet, parseXmeml, parseFcpXml, parseCsv, 
 import { askForYouTubeInput, showOpenDialog } from './dialogs';
 import { getOutPath } from './util';
 
-const fs = window.require('fs-extra');
+const { readFile, writeFile } = window.require('fs/promises');
 const cueParser = window.require('cue-parser');
 const { basename } = window.require('path');
 
 const { dialog } = window.require('@electron/remote');
 
 export async function loadCsvSeconds(path) {
-  return parseCsv(await fs.readFile(path, 'utf-8'), parseCsvTime);
+  return parseCsv(await readFile(path, 'utf-8'), parseCsvTime);
 }
 
 export async function loadCsvFrames(path, fps) {
   if (!fps) throw new Error('The loaded file has an unknown framerate');
-  return parseCsv(await fs.readFile(path, 'utf-8'), getFrameValParser(fps));
+  return parseCsv(await readFile(path, 'utf-8'), getFrameValParser(fps));
 }
 
 export async function loadXmeml(path) {
-  return parseXmeml(await fs.readFile(path, 'utf-8'));
+  return parseXmeml(await readFile(path, 'utf-8'));
 }
 
 export async function loadFcpXml(path) {
-  return parseFcpXml(await fs.readFile(path, 'utf-8'));
+  return parseFcpXml(await readFile(path, 'utf-8'));
 }
 
 export async function loadDvAnalyzerSummaryTxt(path) {
-  return parseDvAnalyzerSummaryTxt(await fs.readFile(path, 'utf-8'));
+  return parseDvAnalyzerSummaryTxt(await readFile(path, 'utf-8'));
 }
 
 export async function loadPbf(path) {
-  return parsePbf(await fs.readFile(path));
+  return parsePbf(await readFile(path));
 }
 
 export async function loadMplayerEdl(path) {
-  return parseMplayerEdl(await fs.readFile(path, 'utf-8'));
+  return parseMplayerEdl(await readFile(path, 'utf-8'));
 }
 
 export async function loadCue(path) {
@@ -45,29 +45,28 @@ export async function loadCue(path) {
 }
 
 export async function loadSrt(path) {
-  return parseSrt(await fs.readFile(path, 'utf-8'));
+  return parseSrt(await readFile(path, 'utf-8'));
 }
 
 export async function saveCsv(path, cutSegments) {
-  await fs.writeFile(path, await formatCsvSeconds(cutSegments));
+  await writeFile(path, await formatCsvSeconds(cutSegments));
 }
 
 export async function saveCsvHuman(path, cutSegments) {
-  await fs.writeFile(path, await formatCsvHuman(cutSegments));
+  await writeFile(path, await formatCsvHuman(cutSegments));
 }
 
 export async function saveCsvFrames({ path, cutSegments, getFrameCount }) {
-  await fs.writeFile(path, await formatCsvFrames({ cutSegments, getFrameCount }));
+  await writeFile(path, await formatCsvFrames({ cutSegments, getFrameCount }));
 }
 
 export async function saveTsv(path, cutSegments) {
-  await fs.writeFile(path, await formatTsv(cutSegments));
+  await writeFile(path, await formatTsv(cutSegments));
 }
 
 export async function saveSrt(path, cutSegments) {
-  await fs.writeFile(path, await formatSrt(cutSegments));
+  await writeFile(path, await formatSrt(cutSegments));
 }
-
 
 export async function saveLlcProject({ savePath, filePath, cutSegments }) {
   const projectData = {
@@ -75,11 +74,11 @@ export async function saveLlcProject({ savePath, filePath, cutSegments }) {
     mediaFileName: basename(filePath),
     cutSegments: cutSegments.map(({ start, end, name, tags }) => ({ start, end, name, tags })),
   };
-  await fs.writeFile(savePath, JSON5.stringify(projectData, null, 2));
+  await writeFile(savePath, JSON5.stringify(projectData, null, 2));
 }
 
 export async function loadLlcProject(path) {
-  return JSON5.parse(await fs.readFile(path));
+  return JSON5.parse(await readFile(path));
 }
 
 

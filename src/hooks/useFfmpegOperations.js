@@ -3,7 +3,7 @@ import flatMap from 'lodash/flatMap';
 import sum from 'lodash/sum';
 import pMap from 'p-map';
 
-import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath } from '../util';
+import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileMeta, cutEncodeSmartPart, getExperimentalArgs, html5ify as ffmpegHtml5ify, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { getSmartCutParams } from '../smartcut';
@@ -11,7 +11,7 @@ import { isDurationValid } from '../segments';
 
 const { join, resolve, dirname } = window.require('path');
 const { pathExists } = window.require('fs-extra');
-const { writeFile, unlink, mkdir } = window.require('fs/promises');
+const { writeFile, mkdir } = window.require('fs/promises');
 
 async function writeChaptersFfmetadata(outDir, chapters) {
   if (!chapters || chapters.length === 0) return undefined;
@@ -52,9 +52,9 @@ function getMatroskaFlags() {
 
 const getChaptersInputArgs = (ffmetadataPath) => (ffmetadataPath ? ['-f', 'ffmetadata', '-i', ffmetadataPath] : []);
 
-const tryDeleteFiles = async (paths) => pMap(paths, (path) => {
-  unlink(path).catch((err) => console.error('Failed to delete', path, err));
-}, { concurrency: 5 });
+async function tryDeleteFiles(paths) {
+  return pMap(paths, (path) => unlinkWithRetry(path).catch((err) => console.error('Failed to delete', path, err)), { concurrency: 5 });
+}
 
 function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate }) {
   const shouldSkipExistingFile = useCallback(async (path) => {

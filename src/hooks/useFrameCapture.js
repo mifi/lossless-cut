@@ -1,14 +1,13 @@
 import dataUriToBuffer from 'data-uri-to-buffer';
 import pMap from 'p-map';
 
-import { getSuffixedOutPath, getOutDir, transferTimestamps, getSuffixedFileName, getOutPath, escapeRegExp } from '../util';
+import { getSuffixedOutPath, getOutDir, transferTimestamps, getSuffixedFileName, getOutPath, escapeRegExp, fsOperationWithRetry } from '../util';
 import { getNumDigits } from '../segments';
 
 import { captureFrame as ffmpegCaptureFrame, captureFrames as ffmpegCaptureFrames } from '../ffmpeg';
 
-const fs = window.require('fs-extra');
 const mime = window.require('mime-types');
-const { rename, readdir } = window.require('fs/promises');
+const { rename, readdir, writeFile } = window.require('fs/promises');
 
 
 function getFrameFromVideo(video, format, quality) {
@@ -63,7 +62,7 @@ export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }) => {
       const duration = formatTimecode({ seconds: fromTime + (frameNum / fps), fileNameFriendly: true });
       const renameFromPath = getOutPath({ customOutDir, filePath, fileName });
       const renameToPath = getOutPath({ customOutDir, filePath, fileName: getSuffixedFileName(filePath, getSuffix(duration, captureFormat)) });
-      await rename(renameFromPath, renameToPath);
+      await fsOperationWithRetry(async () => rename(renameFromPath, renameToPath));
       return renameToPath;
     }, { concurrency: 1 });
 
@@ -87,7 +86,7 @@ export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }) => {
     const time = formatTimecode({ seconds: currentTime, fileNameFriendly: true });
 
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `${time}.${ext}` });
-    await fs.writeFile(outPath, buf);
+    await writeFile(outPath, buf);
 
     await transferTimestamps({ inPath: filePath, outPath, cutFrom: currentTime, treatOutputFileModifiedTimeAsStart });
     return outPath;

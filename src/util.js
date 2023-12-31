@@ -11,12 +11,10 @@ import { ffmpegExtractWindow } from './util/constants';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
 const fsExtra = window.require('fs-extra');
-const { stat, readdir } = window.require('fs/promises');
+const { stat, readdir, utimes, unlink } = window.require('fs/promises');
 const os = window.require('os');
 const { ipcRenderer } = window.require('electron');
 const remote = window.require('@electron/remote');
-
-const { unlink } = fsExtra;
 
 
 const trashFile = async (path) => ipcRenderer.invoke('tryTrashItem', path);
@@ -95,6 +93,30 @@ export async function dirExists(dirPath) {
   return (await pathExists(dirPath)) && (await fsExtra.lstat(dirPath)).isDirectory();
 }
 
+// const testFailFsOperation = isDev;
+const testFailFsOperation = false;
+
+// Retry because sometimes write operations fail on windows due to the file being locked for various reasons (often anti-virus) #272 #1797 #1704
+export async function fsOperationWithRetry(operation, { signal, retries = 10, minTimeout = 100, maxTimeout = 2000, ...opts }) {
+  return pRetry(async () => {
+    if (testFailFsOperation && Math.random() > 0.3) throw Object.assign(new Error('test delete failure'), { code: 'EPERM' });
+    await operation();
+  }, {
+    retries,
+    signal,
+    minTimeout,
+    maxTimeout,
+    // mimic fs.rm `maxRetries` https://nodejs.org/api/fs.html#fspromisesrmpath-options
+    shouldRetry: (err) => err instanceof Error && 'code' in err && ['EBUSY', 'EMFILE', 'ENFILE', 'EPERM'].includes(err.code),
+    ...opts,
+  });
+}
+
+// example error: index-18074aaf.js:166 Failed to delete C:\Users\USERNAME\Desktop\RC\New folder\2023-12-27 21-45-22 (GMT p5)-merged-1703933052361-00.01.04.915-00.01.07.424-seg1.mp4 Error: EPERM: operation not permitted, unlink 'C:\Users\USERNAME\Desktop\RC\New folder\2023-12-27 21-45-22 (GMT p5)-merged-1703933052361-00.01.04.915-00.01.07.424-seg1.mp4'
+export const unlinkWithRetry = async (path, options) => fsOperationWithRetry(async () => unlink(path), { ...options, onFailedAttempt: (error) => console.warn('Retrying delete', path, error.attemptNumber) });
+// example error: index-18074aaf.js:160 Error: EPERM: operation not permitted, utime 'C:\Users\USERNAME\Desktop\RC\New folder\2023-12-27 21-45-22 (GMT p5)-merged-1703933052361-cut-merged-1703933070237.mp4'
+export const utimesWithRetry = async (path, atime, mtime, options) => fsOperationWithRetry(async () => utimes(path, atime, mtime), { ...options, onFailedAttempt: (error) => console.warn('Retrying utimes', path, error.attemptNumber) });
+
 export async function transferTimestamps({ inPath, outPath, cutFrom = 0, cutTo = 0, duration = 0, treatInputFileModifiedTimeAsStart = true, treatOutputFileModifiedTimeAsStart }) {
   if (treatOutputFileModifiedTimeAsStart == null) return; // null means disabled;
 
@@ -115,7 +137,7 @@ export async function transferTimestamps({ inPath, outPath, cutFrom = 0, cutTo =
 
   try {
     const { atime, mtime } = await stat(inPath);
-    await fsExtra.utimes(outPath, calculateTime((atime.getTime() / 1000)), calculateTime((mtime.getTime() / 1000)));
+    await utimesWithRetry(outPath, calculateTime((atime.getTime() / 1000)), calculateTime((mtime.getTime() / 1000)));
   } catch (err) {
     console.error('Failed to set output file modified time', err);
   }
@@ -239,13 +261,10 @@ export function getHtml5ifiedPath(cod, fp, type) {
 export async function deleteFiles({ paths, deleteIfTrashFails, signal }) {
   const failedToTrashFiles = [];
 
-  // const testFail = isDev;
-  const testFail = false;
-
   // eslint-disable-next-line no-restricted-syntax
   for (const path of paths) {
     try {
-      if (testFail) throw new Error('test trash failure');
+      if (testFailFsOperation) throw new Error('test trash failure');
       // eslint-disable-next-line no-await-in-loop
       await trashFile(path);
       signal.throwIfAborted();
@@ -267,19 +286,7 @@ export async function deleteFiles({ paths, deleteIfTrashFails, signal }) {
     if (!value) return;
   }
 
-  // Retry because sometimes it fails on windows #272 #1797
-  await pMap(failedToTrashFiles, async (path) => {
-    await pRetry(async () => {
-      if (testFail) throw new Error('test delete failure');
-      await unlink(path);
-    }, {
-      retries: 3,
-      signal,
-      onFailedAttempt: async () => {
-        console.warn('Retrying delete', path);
-      },
-    });
-  }, { concurrency: 1 });
+  await pMap(failedToTrashFiles, async (path) => unlinkWithRetry(path, { signal }), { concurrency: 5 });
 }
 
 export const deleteDispositionValue = 'llc_disposition_remove';
