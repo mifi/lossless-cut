@@ -5,7 +5,7 @@ const { getOneRawFrame, encodeLiveRawStream } = require('./ffmpeg');
 
 let aborters = [];
 
-async function command({ path, inWidth, inHeight, streamIndex, seekTo: commandedTime, onFrame, playing }) {
+async function command({ path, inWidth, inHeight, streamIndex, seekTo: commandedTime, onRawFrame, onJpegFrame, playing }) {
   let process;
   let aborted = false;
 
@@ -40,14 +40,15 @@ async function command({ path, inWidth, inHeight, streamIndex, seekTo: commanded
         // eslint-disable-next-line no-await-in-loop
         await tokenizer.readBuffer(rgbaImage, { length: size });
         if (aborted) return;
-        onFrame(rgbaImage, width, height);
+        // eslint-disable-next-line no-await-in-loop
+        await onRawFrame(rgbaImage, width, height);
       }
     } else {
       const { process: processIn, width, height } = getOneRawFrame({ path, inWidth, inHeight, streamIndex, seekTo: commandedTime, outSize: 1000 });
       process = processIn;
-      const { stdout: rgbaImage } = await process;
+      const { stdout: jpegImage } = await process;
       if (aborted) return;
-      onFrame(rgbaImage, width, height);
+      onJpegFrame(jpegImage, width, height);
     }
   } catch (err) {
     if (!err.killed) console.warn(err.message);

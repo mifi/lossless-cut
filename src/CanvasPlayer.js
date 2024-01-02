@@ -5,7 +5,7 @@ const { command, abortAll } = remote.require('./canvasPlayer');
 export default ({ path, width: inWidth, height: inHeight, streamIndex, getCanvas }) => {
   let terminated;
 
-  function drawOnCanvas(rgbaImage, width, height) {
+  async function drawRawFrame(rgbaImage, width, height) {
     const canvas = getCanvas();
     if (!canvas || rgbaImage.length === 0) return;
 
@@ -18,16 +18,31 @@ export default ({ path, width: inWidth, height: inHeight, streamIndex, getCanvas
     ctx.putImageData(new ImageData(Uint8ClampedArray.from(rgbaImage), width, height), 0, 0);
   }
 
+  function drawJpegFrame(jpegImage, width, height) {
+    const canvas = getCanvas();
+    if (!canvas) return;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext('2d');
+
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    img.onerror = (error) => console.error('Canvas JPEG image error', error);
+    img.src = `data:image/jpeg;base64,${jpegImage.toString('base64')}`;
+  }
+
   function pause(seekTo) {
     if (terminated) return;
     abortAll();
-    command({ path, inWidth, inHeight, streamIndex, seekTo, onFrame: drawOnCanvas, playing: false });
+    command({ path, inWidth, inHeight, streamIndex, seekTo, onJpegFrame: drawJpegFrame, onRawFrame: drawRawFrame, playing: false });
   }
 
   function play(playFrom) {
     if (terminated) return;
     abortAll();
-    command({ path, inWidth, inHeight, streamIndex, seekTo: playFrom, onFrame: drawOnCanvas, playing: true });
+    command({ path, inWidth, inHeight, streamIndex, seekTo: playFrom, onJpegFrame: drawJpegFrame, onRawFrame: drawRawFrame, playing: true });
   }
 
   function terminate() {

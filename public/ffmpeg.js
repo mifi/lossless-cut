@@ -485,20 +485,54 @@ async function html5ify({ outPath, filePath: filePathArg, speed, hasAudio, hasVi
   console.log(stdout);
 }
 
-function createRawFfmpeg({ fps = 25, path, inWidth, inHeight, seekTo, oneFrameOnly, execaOpts, streamIndex, outSize = 320 }) {
-  // const fps = 25; // TODO
-
+function calcSize({ inWidth, inHeight, outSize }) {
   const aspectRatio = inWidth / inHeight;
 
-  let newWidth;
-  let newHeight;
   if (inWidth > inHeight) {
-    newWidth = outSize;
-    newHeight = Math.floor(newWidth / aspectRatio);
-  } else {
-    newHeight = outSize;
-    newWidth = Math.floor(newHeight * aspectRatio);
+    return {
+      newWidth: outSize,
+      newHeight: Math.floor(outSize / aspectRatio),
+    };
   }
+  return {
+    newHeight: outSize,
+    newWidth: Math.floor(outSize * aspectRatio),
+  };
+}
+
+function getOneRawFrame({ path, inWidth, inHeight, seekTo, streamIndex, outSize }) {
+  const { newWidth, newHeight } = calcSize({ inWidth, inHeight, outSize });
+
+  const args = [
+    '-hide_banner', '-loglevel', 'error',
+
+    '-ss', seekTo,
+
+    '-noautorotate',
+
+    '-i', path,
+
+    '-vf', `scale=${newWidth}:${newHeight}:flags=lanczos`,
+    '-map', `0:${streamIndex}`,
+    '-vcodec', 'mjpeg',
+
+    '-frames:v', '1',
+
+    '-f', 'image2pipe',
+    '-',
+  ];
+
+  // console.log(args);
+
+  return {
+    process: runFfmpegProcess(args, { encoding: 'buffer' }, { logCli: true }),
+    width: newWidth,
+    height: newHeight,
+  };
+}
+
+function encodeLiveRawStream({ path, inWidth, inHeight, seekTo, streamIndex, fps = 25 }) {
+  const { newWidth, newHeight } = calcSize({ inWidth, inHeight, outSize: 320 });
 
   const args = [
     '-hide_banner', '-loglevel', 'panic',
@@ -516,8 +550,6 @@ function createRawFfmpeg({ fps = 25, path, inWidth, inHeight, seekTo, oneFrameOn
     '-vcodec', 'rawvideo',
     '-pix_fmt', 'rgba',
 
-    ...(oneFrameOnly ? ['-frames:v', '1'] : []),
-
     '-f', 'image2pipe',
     '-',
   ];
@@ -525,26 +557,10 @@ function createRawFfmpeg({ fps = 25, path, inWidth, inHeight, seekTo, oneFrameOn
   // console.log(args);
 
   return {
-    process: runFfmpegProcess(args, execaOpts, { logCli: false }),
+    process: runFfmpegProcess(args, { encoding: null, buffer: false }, { logCli: true }),
     width: newWidth,
     height: newHeight,
     channels: 4,
-  };
-}
-
-function getOneRawFrame({ path, inWidth, inHeight, seekTo, streamIndex, outSize }) {
-  const { process, width, height, channels } = createRawFfmpeg({ path, inWidth, inHeight, seekTo, streamIndex, oneFrameOnly: true, execaOpts: { encoding: null }, outSize });
-  return { process, width, height, channels };
-}
-
-function encodeLiveRawStream({ path, inWidth, inHeight, seekTo, streamIndex }) {
-  const { process, width, height, channels } = createRawFfmpeg({ path, inWidth, inHeight, seekTo, streamIndex, execaOpts: { encoding: null, buffer: false } });
-
-  return {
-    process,
-    width,
-    height,
-    channels,
   };
 }
 
