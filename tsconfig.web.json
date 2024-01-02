@@ -1,0 +1,15 @@
+{
+  "extends": ["@tsconfig/strictest", "@tsconfig/vite-react/tsconfig.json"],
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": false, // todo
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "noImplicitAny": false, // todo
+    "checkJs": false, // todo
+    "allowJs": true, // todo
+  },
+  "include": [
+    "src/**/*",
+  ],
+}

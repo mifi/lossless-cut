@@ -102,7 +102,7 @@ const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
 hevcPlaybackSupportedPromise.catch((err) => console.error(err));
 
 
-const App = memo(() => {
+function App() {
   // Per project state
   const [commandedTime, setCommandedTime] = useState(0);
   const [ffmpegCommandLog, setFfmpegCommandLog] = useState([]);
@@ -2633,6 +2633,6 @@ const App = memo(() => {
       </UserSettingsContext.Provider>
     </SegColorsContext.Provider>
   );
-});
+}
 
-export default App;
+export default memo(App);

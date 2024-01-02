@@ -16,5 +16,6 @@ jobs:
           cache: 'yarn'
 
       - run: yarn
-      - run: npm run lint
-      - run: npm test
+      - run: yarn lint
+      - run: yarn test
+      - run: yarn tsc

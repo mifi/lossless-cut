@@ -108,7 +108,7 @@ export function getActiveDisposition(disposition) {
 
 export const isMov = (format) => ['ismv', 'ipod', 'mp4', 'mov'].includes(format);
 
-function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => {} }) {
+function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined }) {
   let args = [];
 
   function addArgs(...newArgs) {

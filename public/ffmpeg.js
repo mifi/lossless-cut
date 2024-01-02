@@ -47,7 +47,7 @@ function abortFfmpegs() {
   });
 }
 
-function handleProgress(process, durationIn, onProgress, customMatcher = () => {}) {
+function handleProgress(process, durationIn, onProgress, customMatcher = () => undefined) {
   if (!onProgress) return;
   onProgress(0);
 
