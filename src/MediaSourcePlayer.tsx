@@ -265,8 +265,9 @@ function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStr
     : { startTime: playerTime, playing, eventId }
   ), [commandedTime, eventId, playerTime, playing]);
 
-  const [debouncedState] = useDebounce(state, 200, {
+  const [debouncedState] = useDebounce(state, 300, {
     equalityFn: (a, b) => a.startTime === b.startTime && a.playing === b.playing && a.eventId === b.eventId,
+    leading: true,
   });
 
   useEffect(() => {
