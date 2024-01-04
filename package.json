@@ -126,7 +126,6 @@
     "morgan": "^1.10.0",
     "semver": "^7.5.2",
     "string-to-stream": "^1.1.1",
-    "strtok3": "^6.0.0",
     "winston": "^3.8.1",
     "yargs-parser": "^21.0.0"
   },

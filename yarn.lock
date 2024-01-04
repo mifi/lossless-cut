@@ -6879,7 +6879,6 @@ __metadata:
     smpte-timecode: "npm:^1.2.3"
     sortablejs: "npm:^1.13.0"
     string-to-stream: "npm:^1.1.1"
-    strtok3: "npm:^6.0.0"
     sweetalert2: "npm:^11.0.0"
     sweetalert2-react-content: "npm:^5.0.7"
     typescript: "npm:^5.3.3"
@@ -7974,13 +7973,6 @@ __metadata:
   version: 1.1.1
   resolution: "pathval@npm:1.1.1"
   checksum: b50a4751068aa3a5428f5a0b480deecedc6f537666a3630a0c2ae2d5e7c0f4bf0ee77b48404441ec1220bef0c91625e6030b3d3cf5a32ab0d9764018d1d9dbb6
-  languageName: node
-  linkType: hard
-
-"peek-readable@npm:^4.0.1":
-  version: 4.0.2
-  resolution: "peek-readable@npm:4.0.2"
-  checksum: 54d085b796781f32898bafc2ef0cd55b63022c2187d96e3101d9e8d585627cecafdd5beb8807b04aee9c22b0261c4b72ed77945bb5454c361b433bcab20c2069
   languageName: node
   linkType: hard
 
@@ -9646,16 +9638,6 @@ __metadata:
   version: 1.0.5
   resolution: "strnum@npm:1.0.5"
   checksum: d3117975db8372d4d7b2c07601ed2f65bf21cc48d741f37a8617b76370d228f2ec26336e53791ebc3638264d23ca54e6c241f57f8c69bd4941c63c79440525ca
-  languageName: node
-  linkType: hard
-
-"strtok3@npm:^6.0.0":
-  version: 6.2.4
-  resolution: "strtok3@npm:6.2.4"
-  dependencies:
-    "@tokenizer/token": "npm:^0.3.0"
-    peek-readable: "npm:^4.0.1"
-  checksum: b92f2510830e96df4dcf055f2761a2b4930bc440c16de7f53aecf1006a5362f5fa9af1e68ba9572971012f34634c96e9675a1a5bbb6ed0ea6ff0a728be64644f
   languageName: node
   linkType: hard
 

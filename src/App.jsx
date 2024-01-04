@@ -31,7 +31,7 @@ import useDirectoryAccess, { DirectoryAccessDeclinedError } from './hooks/useDir
 import { UserSettingsContext, SegColorsContext } from './contexts';
 
 import NoFileLoaded from './NoFileLoaded';
-import Canvas from './Canvas';
+import MediaSourcePlayer from './MediaSourcePlayer';
 import TopMenu from './TopMenu';
 import Sheet from './components/Sheet';
 import LastCommandsSheet from './LastCommandsSheet';
@@ -69,7 +69,7 @@ import {
   isStoreBuild, dragPreventer,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
   deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName, mustDisallowVob, readVideoTs, getImportProjectType,
-  calcShouldShowWaveform, calcShouldShowKeyframes,
+  calcShouldShowWaveform, calcShouldShowKeyframes, mediaSourceQualities,
 } from './util';
 import { toast, errorToast } from './swal';
 import { formatDuration } from './util/duration';
@@ -158,6 +158,9 @@ function App() {
   const [alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles] = useState(false);
   const [editingSegmentTagsSegmentIndex, setEditingSegmentTagsSegmentIndex] = useState();
   const [editingSegmentTags, setEditingSegmentTags] = useState();
+  const [mediaSourceQuality, setMediaSourceQuality] = useState(0);
+
+  const incrementMediaSourceQuality = useCallback(() => setMediaSourceQuality((v) => (v + 1) % mediaSourceQualities.length), []);
 
   // Batch state / concat files
   const [batchFiles, setBatchFiles] = useState([]);
@@ -325,10 +328,10 @@ function App() {
   const effectiveRotation = useMemo(() => (isRotationSet ? rotation : (mainVideoStream && mainVideoStream.tags && mainVideoStream.tags.rotate && parseInt(mainVideoStream.tags.rotate, 10))), [isRotationSet, mainVideoStream, rotation]);
 
   const zoomRel = useCallback((rel) => setZoom((z) => Math.min(Math.max(z + (rel * (1 + (z / 10))), 1), zoomMax)), []);
-  const canvasPlayerRequired = !!(mainVideoStream && usingDummyVideo);
-  const canvasPlayerWanted = !!(mainVideoStream && isRotationSet && !hideCanvasPreview);
+  const canvasPlayerRequired = usingDummyVideo;
   // Allow user to disable it
-  const canvasPlayerEnabled = (canvasPlayerRequired || canvasPlayerWanted);
+  const canvasPlayerWanted = isRotationSet && !hideCanvasPreview;
+  const canvasPlayerEnabled = canvasPlayerRequired || canvasPlayerWanted;
 
   useEffect(() => {
     // Reset the user preference when the state changes to true
@@ -759,7 +762,7 @@ function App() {
 
 
   const showUnsupportedFileMessage = useCallback(() => {
-    if (!hideAllNotifications) toast.fire({ timer: 13000, text: i18n.t('File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview with audio.') });
+    if (!hideAllNotifications) toast.fire({ timer: 13000, text: i18n.t('File is not natively supported. Preview playback may be slow and of low quality, but the final export will be lossless. You may convert the file from the menu for a better preview.') });
   }, [hideAllNotifications]);
 
   const showPreviewFileLoadedMessage = useCallback((fileName) => {
@@ -774,7 +777,7 @@ function App() {
   } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate });
 
   const html5ifyAndLoad = useCallback(async (cod, fp, speed, hv, ha) => {
-    const usesDummyVideo = ['fastest-audio', 'fastest-audio-remux', 'fastest'].includes(speed);
+    const usesDummyVideo = speed === 'fastest';
     console.log('html5ifyAndLoad', { speed, hasVideo: hv, hasAudio: ha, usesDummyVideo });
 
     async function doHtml5ify() {
@@ -813,7 +816,7 @@ function App() {
     let i = 0;
     const setTotalProgress = (fileProgress = 0) => setCutProgress((i + fileProgress) / filePaths.length);
 
-    const { selectedOption: speed } = await askForHtml5ifySpeed({ allowedOptions: ['fastest-audio', 'fastest-audio-remux', 'fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'] });
+    const { selectedOption: speed } = await askForHtml5ifySpeed({ allowedOptions: ['fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'] });
     if (!speed) return;
 
     if (workingRef.current) return;
@@ -1678,13 +1681,12 @@ function App() {
 
     let selectedOption = rememberConvertToSupportedFormat;
     if (selectedOption == null || ignoreRememberedValue) {
-      const allHtml5ifyOptions = ['fastest', 'fastest-audio', 'fastest-audio-remux', 'fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'];
-      let relevantOptions = [];
-      if (hasAudio && hasVideo) relevantOptions = [...allHtml5ifyOptions];
-      else if (hasAudio) relevantOptions = [...relevantOptions, 'fast-audio-remux', 'slow-audio', 'slowest'];
-      else if (hasVideo) relevantOptions = [...relevantOptions, 'fastest', 'fast', 'slow', 'slowest'];
+      let allowedOptions = [];
+      if (hasAudio && hasVideo) allowedOptions = ['fastest', 'fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'];
+      else if (hasAudio) allowedOptions = ['fast-audio-remux', 'slow-audio', 'slowest'];
+      else if (hasVideo) allowedOptions = ['fastest', 'fast', 'slow', 'slowest'];
 
-      const userResponse = await askForHtml5ifySpeed({ allowedOptions: allHtml5ifyOptions.filter((option) => relevantOptions.includes(option)), showRemember: true, initialOption: selectedOption });
+      const userResponse = await askForHtml5ifySpeed({ allowedOptions, showRemember: true, initialOption: selectedOption });
       console.log('Choice', userResponse);
       ({ selectedOption } = userResponse);
       if (!selectedOption) return;
@@ -2194,13 +2196,8 @@ function App() {
 
         if (!isDurationValid(await getDuration(filePath))) throw new Error('Invalid duration');
 
-        if (hasVideo) {
-          // "fastest" is the most likely type not to fail for video (but it is muted).
+        if (hasVideo || hasAudio) {
           await html5ifyAndLoadWithPreferences(customOutDir, filePath, 'fastest', hasVideo, hasAudio);
-          showUnsupportedFileMessage();
-        } else if (hasAudio) {
-          // For audio do a fast re-encode
-          await html5ifyAndLoadWithPreferences(customOutDir, filePath, 'fastest-audio', hasVideo, hasAudio);
           showUnsupportedFileMessage();
         }
       } catch (err) {
@@ -2398,7 +2395,7 @@ function App() {
                   <video
                     className="main-player"
                     tabIndex={-1}
-                    muted={playbackVolume === 0}
+                    muted={playbackVolume === 0 || canvasPlayerEnabled}
                     ref={videoRef}
                     style={videoStyle}
                     src={fileUri}
@@ -2415,7 +2412,7 @@ function App() {
                     {renderSubtitles()}
                   </video>
 
-                  {canvasPlayerEnabled && <Canvas rotate={effectiveRotation} filePath={filePath} width={mainVideoStream.width} height={mainVideoStream.height} streamIndex={mainVideoStream.index} playerTime={playerTime} commandedTime={commandedTime} playing={playing} eventId={canvasPlayerEventId} />}
+                  {canvasPlayerEnabled && (mainVideoStream != null || mainAudioStream != null) && <MediaSourcePlayer rotate={effectiveRotation} filePath={filePath} videoStream={mainVideoStream} audioStream={mainAudioStream} playerTime={playerTime} commandedTime={commandedTime} playing={playing} eventId={canvasPlayerEventId} masterVideoRef={videoRef} mediaSourceQuality={mediaSourceQuality} />}
                 </div>
 
                 {bigWaveformEnabled && <BigWaveform waveforms={waveforms} relevantTime={relevantTime} playing={playing} durationSafe={durationSafe} zoom={zoomUnrounded} seekRel={seekRel} />}
@@ -2430,9 +2427,11 @@ function App() {
 
                 {isFileOpened && (
                   <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, marginBottom: 10, display: 'flex', alignItems: 'center' }}>
-                    <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} usingDummyVideo={usingDummyVideo} />
+                    {!canvasPlayerEnabled && <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} />}
 
-                    {subtitleStreams.length > 0 && <SubtitleControl subtitleStreams={subtitleStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} onActiveSubtitleChange={onActiveSubtitleChange} />}
+                    {!canvasPlayerEnabled && subtitleStreams.length > 0 && <SubtitleControl subtitleStreams={subtitleStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} onActiveSubtitleChange={onActiveSubtitleChange} />}
+
+                    {canvasPlayerEnabled && <div style={{ color: 'white', opacity: 0.7, padding: '.5em' }} role="button" onClick={() => incrementMediaSourceQuality()} title={t('Select preview playback quality')}>{mediaSourceQualities[mediaSourceQuality]}</div>}
 
                     {!showRightBar && (
                       <FaAngleLeft

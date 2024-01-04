@@ -222,7 +222,7 @@ export const html5dummySuffix = 'dummy';
 
 export async function findExistingHtml5FriendlyFile(fp, cod) {
   // The order is the priority we will search:
-  const suffixes = ['slowest', 'slow-audio', 'slow', 'fast-audio-remux', 'fast-audio', 'fast', 'fastest-audio', 'fastest-audio-remux', html5dummySuffix];
+  const suffixes = ['slowest', 'slow-audio', 'slow', 'fast-audio-remux', 'fast-audio', 'fast', html5dummySuffix];
   const prefix = getSuffixedFileName(fp, html5ifiedPrefix);
 
   const outDir = getOutDir(cod, fp);
@@ -248,7 +248,7 @@ export async function findExistingHtml5FriendlyFile(fp, cod) {
 
   return {
     path: join(outDir, entry),
-    usingDummyVideo: ['fastest-audio', 'fastest-audio-remux', html5dummySuffix].includes(suffix),
+    usingDummyVideo: suffix === html5dummySuffix,
   };
 }
 
@@ -412,3 +412,5 @@ export function getImportProjectType(filePath) {
 
 export const calcShouldShowWaveform = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
 export const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
+
+export const mediaSourceQualities = ['HD', 'SD', 'OG']; // OG is original

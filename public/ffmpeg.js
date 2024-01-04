@@ -386,8 +386,8 @@ async function html5ify({ outPath, filePath: filePathArg, speed, hasAudio, hasVi
   let audio;
   if (hasAudio) {
     if (speed === 'slowest') audio = 'hq';
-    else if (['slow-audio', 'fast-audio', 'fastest-audio'].includes(speed)) audio = 'lq';
-    else if (['fast-audio-remux', 'fastest-audio-remux'].includes(speed)) audio = 'copy';
+    else if (['slow-audio', 'fast-audio'].includes(speed)) audio = 'lq';
+    else if (['fast-audio-remux'].includes(speed)) audio = 'copy';
   }
 
   let video;
@@ -485,24 +485,7 @@ async function html5ify({ outPath, filePath: filePathArg, speed, hasAudio, hasVi
   console.log(stdout);
 }
 
-function calcSize({ inWidth, inHeight, outSize }) {
-  const aspectRatio = inWidth / inHeight;
-
-  if (inWidth > inHeight) {
-    return {
-      newWidth: outSize,
-      newHeight: Math.floor(outSize / aspectRatio),
-    };
-  }
-  return {
-    newHeight: outSize,
-    newWidth: Math.floor(outSize * aspectRatio),
-  };
-}
-
-function getOneRawFrame({ path, inWidth, inHeight, seekTo, streamIndex, outSize }) {
-  const { newWidth, newHeight } = calcSize({ inWidth, inHeight, outSize });
-
+function readOneJpegFrame({ path, seekTo, videoStreamIndex }) {
   const args = [
     '-hide_banner', '-loglevel', 'error',
 
@@ -512,8 +495,7 @@ function getOneRawFrame({ path, inWidth, inHeight, seekTo, streamIndex, outSize 
 
     '-i', path,
 
-    '-vf', `scale=${newWidth}:${newHeight}:flags=lanczos`,
-    '-map', `0:${streamIndex}`,
+    '-map', `0:${videoStreamIndex}`,
     '-vcodec', 'mjpeg',
 
     '-frames:v', '1',
@@ -524,20 +506,36 @@ function getOneRawFrame({ path, inWidth, inHeight, seekTo, streamIndex, outSize 
 
   // console.log(args);
 
-  return {
-    process: runFfmpegProcess(args, { encoding: 'buffer' }, { logCli: true }),
-    width: newWidth,
-    height: newHeight,
-  };
+  return runFfmpegProcess(args, { encoding: 'buffer' }, { logCli: true });
 }
 
-function encodeLiveRawStream({ path, inWidth, inHeight, seekTo, streamIndex, fps = 25 }) {
-  const { newWidth, newHeight } = calcSize({ inWidth, inHeight, outSize: 320 });
+const enableLog = false;
+const encode = true;
 
+function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIndex, seekTo, size, fps }) {
+  function getVideoFilters() {
+    if (videoStreamIndex == null) return [];
+
+    const filters = [];
+    if (fps != null) filters.push(`fps=${fps}`);
+    if (size != null) filters.push(`scale=${size}:${size}:flags=lanczos:force_original_aspect_ratio=decrease`);
+    if (filters.length === 0) return [];
+    return ['-vf', filters.join(',')];
+  }
+
+  // https://stackoverflow.com/questions/16658873/how-to-minimize-the-delay-in-a-live-streaming-with-ffmpeg
+  // https://unix.stackexchange.com/questions/25372/turn-off-buffering-in-pipe
   const args = [
-    '-hide_banner', '-loglevel', 'panic',
+    '-hide_banner',
+    ...(enableLog ? [] : ['-loglevel', 'error']),
 
-    '-re',
+    // https://stackoverflow.com/questions/30868854/flush-latency-issue-with-fragmented-mp4-creation-in-ffmpeg
+    '-fflags', '+nobuffer+flush_packets+discardcorrupt',
+    '-avioflags', 'direct',
+    // '-flags', 'low_delay', // this seems to ironically give a *higher* delay
+    '-flush_packets', '1',
+
+    '-vsync', 'passthrough',
 
     '-ss', seekTo,
 
@@ -545,23 +543,33 @@ function encodeLiveRawStream({ path, inWidth, inHeight, seekTo, streamIndex, fps
 
     '-i', path,
 
-    '-vf', `fps=${fps},scale=${newWidth}:${newHeight}:flags=lanczos`,
-    '-map', `0:${streamIndex}`,
-    '-vcodec', 'rawvideo',
-    '-pix_fmt', 'rgba',
+    ...(videoStreamIndex != null ? ['-map', `0:${videoStreamIndex}`] : ['-vn']),
 
-    '-f', 'image2pipe',
-    '-',
+    ...(audioStreamIndex != null ? ['-map', `0:${audioStreamIndex}`] : ['-an']),
+
+    ...(encode ? [
+      ...(videoStreamIndex != null ? [
+        ...getVideoFilters(),
+
+        '-pix_fmt', 'yuv420p', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '10',
+        '-g', '1', // reduces latency and buffering
+      ] : []),
+
+      ...(audioStreamIndex != null ? [
+        '-ac', '2', '-c:a', 'aac', '-b:a', '128k',
+      ] : []),
+
+      // May alternatively use webm/vp8 https://stackoverflow.com/questions/24152810/encoding-ffmpeg-to-mpeg-dash-or-webm-with-keyframe-clusters-for-mediasource
+    ] : [
+      '-c', 'copy',
+    ]),
+
+    '-f', 'mp4', '-movflags', '+frag_keyframe+empty_moov+default_base_moof', '-',
   ];
 
-  // console.log(args);
+  if (enableLog) console.log(getFfCommandLine('ffmpeg', args));
 
-  return {
-    process: runFfmpegProcess(args, { encoding: null, buffer: false }, { logCli: true }),
-    width: newWidth,
-    height: newHeight,
-    channels: 4,
-  };
+  return execa(getFfmpegPath(), args, { encoding: null, buffer: false, stderr: enableLog ? 'inherit' : 'pipe' });
 }
 
 // Don't pass complex objects over the bridge
@@ -583,8 +591,8 @@ module.exports = {
   getFfCommandLine,
   html5ify,
   getDuration,
-  getOneRawFrame,
-  encodeLiveRawStream,
+  readOneJpegFrame,
   blackDetect,
   silenceDetect,
+  createMediaSourceProcess,
 };
