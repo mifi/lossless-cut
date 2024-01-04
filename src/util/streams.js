@@ -289,7 +289,7 @@ export function isAudioDefinitelyNotSupported(streams) {
   const audioStreams = getAudioStreams(streams);
   if (audioStreams.length === 0) return false;
   // TODO this could be improved
-  return audioStreams.every(stream => ['ac3'].includes(stream.codec_name));
+  return audioStreams.every((stream) => ['ac3', 'eac3'].includes(stream.codec_name));
 }
 
 export function getVideoTimebase(videoStream) {
