@@ -356,29 +356,44 @@ const ExportConfirm = memo(({
                       </>
                     )}
 
-                    {!needSmartCut && (
-                      <tr>
-                        <td>
-                          &quot;avoid_negative_ts&quot;
-                          {!['make_zero', 'auto'].includes(avoidNegativeTs) && <div style={warningStyle}>{t('It\'s generally recommended to set this to one of: {{values}}', { values: '"auto", "make_zero"' })}</div>}
-                        </td>
-                        <td>
-                          <Select value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value)} style={{ height: 20, marginLeft: 5 }}>
-                            <option value="auto">auto</option>
-                            <option value="make_zero">make_zero</option>
-                            <option value="make_non_negative">make_non_negative</option>
-                            <option value="disabled">disabled</option>
-                          </Select>
-                        </td>
-                        <td>
-                          {!['make_zero', 'auto'].includes(avoidNegativeTs) ? (
-                            <WarningSignIcon verticalAlign="middle" color="warning" />
-                          ) : (
-                            <HelpIcon onClick={onAvoidNegativeTsHelpPress} />
-                          )}
-                        </td>
-                      </tr>
-                    )}
+                    {!needSmartCut && (() => {
+                      const avoidNegativeTsWarn = (() => {
+                        if (willMerge) {
+                          if (avoidNegativeTs !== 'make_non_negative') {
+                            return t('When merging, it\'s generally recommended to set this to "make_non_negative"');
+                          }
+                          return undefined;
+                        }
+                        if (!['make_zero', 'auto'].includes(avoidNegativeTs)) {
+                          return t('It\'s generally recommended to set this to one of: {{values}}', { values: '"auto", "make_zero"' });
+                        }
+                        return undefined;
+                      })();
+
+                      return (
+                        <tr>
+                          <td>
+                            {`"${'avoid_negative_ts'}"`}
+                            {avoidNegativeTsWarn != null && <div style={warningStyle}>{avoidNegativeTsWarn}</div>}
+                          </td>
+                          <td>
+                            <Select value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value)} style={{ height: 20, marginLeft: 5 }}>
+                              <option value="auto">auto</option>
+                              <option value="make_zero">make_zero</option>
+                              <option value="make_non_negative">make_non_negative</option>
+                              <option value="disabled">disabled</option>
+                            </Select>
+                          </td>
+                          <td>
+                            {avoidNegativeTsWarn != null ? (
+                              <WarningSignIcon verticalAlign="middle" color="warning" />
+                            ) : (
+                              <HelpIcon onClick={onAvoidNegativeTsHelpPress} />
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })()}
 
                     <tr>
                       <td>
