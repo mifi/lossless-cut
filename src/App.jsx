@@ -68,7 +68,7 @@ import {
   getOutPath, getSuffixedOutPath, handleError, getOutDir,
   isStoreBuild, dragPreventer,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName, mustDisallowVob, readVideoTs, getImportProjectType,
+  deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName, mustDisallowVob, readVideoTs, readDirRecursively, getImportProjectType,
   calcShouldShowWaveform, calcShouldShowKeyframes,
 } from './util';
 import { toast, errorToast } from './swal';
@@ -88,6 +88,7 @@ import isDev from './isDev';
 
 const electron = window.require('electron');
 const { exists } = window.require('fs-extra');
+const { lstat } = window.require('fs/promises');
 const filePathToUrl = window.require('file-url');
 const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('path');
 
@@ -1798,12 +1799,28 @@ function App() {
 
     [lastOpenedPathRef.current] = filePaths;
 
-    // https://en.wikibooks.org/wiki/Inside_DVD-Video/Directory_Structure
-    if (filePaths.length === 1 && /^VIDEO_TS$/i.test(basename(filePaths[0]))) {
-      if (mustDisallowVob()) return;
-      filePaths = await readVideoTs(filePaths[0]);
+    // first check if it is a single directory, and if so, read it recursively
+    if (filePaths.length === 1) {
+      const firstFilePath = filePaths[0];
+      const firstFileStat = await lstat(firstFilePath);
+      if (firstFileStat.isDirectory()) {
+        console.log('Reading directory...');
+        filePaths = await readDirRecursively(firstFilePath);
+      }
     }
 
+    // Only allow opening regular files
+    // eslint-disable-next-line no-restricted-syntax
+    for (const path of filePaths) {
+      // eslint-disable-next-line no-await-in-loop
+      const fileStat = await lstat(path);
+
+      if (!fileStat.isFile()) {
+        errorToast(i18n.t('Cannot open anything else than regular files'));
+        console.warn('Not a file:', path);
+        return;
+      }
+    }
 
     if (filePaths.length > 1) {
       if (alwaysConcatMultipleFiles) {
@@ -1817,6 +1834,12 @@ function App() {
 
     // filePaths.length is now 1
     const firstFilePath = filePaths[0];
+
+    // https://en.wikibooks.org/wiki/Inside_DVD-Video/Directory_Structure
+    if (/^VIDEO_TS$/i.test(basename(firstFilePath))) {
+      if (mustDisallowVob()) return;
+      filePaths = await readVideoTs(firstFilePath);
+    }
 
     if (workingRef.current) return;
     try {
@@ -1898,7 +1921,7 @@ function App() {
   }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, isFileOpened, batchFiles.length, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile, filePath]);
 
   const openFilesDialog = useCallback(async () => {
-    const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile', 'multiSelections'], defaultPath: lastOpenedPathRef.current });
+    const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile', 'openDirectory', 'multiSelections'], defaultPath: lastOpenedPathRef.current });
     if (canceled) return;
     userOpenFiles(filePaths);
   }, [userOpenFiles]);
