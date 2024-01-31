@@ -1176,8 +1176,8 @@ function App() {
 
       console.log('outSegTemplateOrDefault', outSegTemplateOrDefault);
 
-      const { outSegFileNames, outSegError } = generateOutSegFileNames({ segments: segmentsToExport, template: outSegTemplateOrDefault });
-      if (outSegError != null) {
+      const { outSegFileNames, outSegProblems } = generateOutSegFileNames({ segments: segmentsToExport, template: outSegTemplateOrDefault });
+      if (outSegProblems.error != null) {
         console.warn('Output segments file name invalid, using default instead', outSegFileNames);
       }
 

@@ -23,13 +23,13 @@ const formatVariable = (variable) => `\${${variable}}`;
 
 const extVar = formatVariable('EXT');
 
-const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe, getOutSegError }) => {
+const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe }) => {
   const { safeOutputFileName, toggleSafeOutputFileName, outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding } = useUserSettings();
 
   const [text, setText] = useState(outSegTemplate);
   const [debouncedText] = useDebounce(text, 500);
   const [validText, setValidText] = useState();
-  const [error, setError] = useState();
+  const [outSegProblems, setOutSegProblems] = useState({ error: undefined, sameAsInputFileNameWarning: false });
   const [outSegFileNames, setOutSegFileNames] = useState();
   const [shown, setShown] = useState();
   const inputRef = useRef();
@@ -42,22 +42,16 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
     if (debouncedText == null) return;
 
     try {
-      const { outSegFileNames: newOutSegFileNames, outSegError } = generateOutSegFileNames({ template: debouncedText });
-      setOutSegFileNames(newOutSegFileNames);
-      if (outSegError) {
-        setError(outSegError);
-        setValidText();
-        return;
-      }
-
-      setValidText(debouncedText);
-      setError();
+      const outSegs = generateOutSegFileNames({ template: debouncedText });
+      setOutSegFileNames(outSegs.outSegFileNames);
+      setOutSegProblems(outSegs.outSegProblems);
+      setValidText(outSegs.outSegProblems.error == null ? debouncedText : undefined);
     } catch (err) {
       console.error(err);
       setValidText();
-      setError(err.message);
+      setOutSegProblems({ error: err.message });
     }
-  }, [debouncedText, generateOutSegFileNames, getOutSegError, t]);
+  }, [debouncedText, generateOutSegFileNames, t]);
 
   // eslint-disable-next-line no-template-curly-in-string
   const isMissingExtension = validText != null && !validText.endsWith(extVar);
@@ -80,8 +74,8 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
   }, [setOutSegTemplate]);
 
   const onHideClick = useCallback(() => {
-    if (error == null) setShown(false);
-  }, [error]);
+    if (outSegProblems.error == null) setShown(false);
+  }, [outSegProblems.error]);
 
   const onShowClick = useCallback(() => {
     if (!shown) setShown(true);
@@ -89,7 +83,7 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
 
   const onTextChange = useCallback((e) => setText(e.target.value), []);
 
-  const needToShow = shown || error != null;
+  const needToShow = shown || outSegProblems.error != null || outSegProblems.sameAsInputFileNameWarning;
 
   const onVariableClick = useCallback((variable) => {
     const input = inputRef.current;
@@ -132,7 +126,18 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
               ))}
             </div>
 
-            {error != null && <div style={{ marginBottom: '1em' }}><ErrorIcon color="var(--red9)" size={14} verticalAlign="baseline" /> {error}</div>}
+            {outSegProblems.error != null && (
+              <div style={{ marginBottom: '1em' }}>
+                <ErrorIcon color="var(--red9)" size={14} verticalAlign="baseline" /> {outSegProblems.error}
+              </div>
+            )}
+
+            {outSegProblems.error == null && outSegProblems.sameAsInputFileNameWarning && (
+              <div style={{ marginBottom: '1em' }}>
+                <WarningSignIcon verticalAlign="middle" color="var(--amber9)" />{' '}
+                {i18n.t('Output file name is the same as the source file name. This increases the risk of accidentally overwriting or deleting source files!')}
+              </div>
+            )}
 
             {isMissingExtension && (
               <div style={{ marginBottom: '1em' }}>
