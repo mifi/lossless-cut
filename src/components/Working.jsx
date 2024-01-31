@@ -9,7 +9,7 @@ import loadingLottie from '../7077-magic-flow.json';
 
 
 const Working = memo(({ text, cutProgress, onAbortClick }) => (
-  <div style={{ position: 'absolute', zIndex: 1, bottom: 0, top: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+  <div style={{ position: 'absolute', bottom: 0, top: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
     <motion.div
       style={{ background: primaryColor, boxShadow: `${primaryColor} 0px 0px 20px 25px`, borderRadius: 60, paddingBottom: 5, color: 'white', fontSize: 14, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
       initial={{ opacity: 0, scale: 0 }}

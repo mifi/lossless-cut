@@ -412,7 +412,7 @@ const ExportConfirm = memo(({
             </div>
           </motion.div>
 
-          <div style={{ zIndex: 11, position: 'fixed', right: 0, bottom: 0, display: 'flex', alignItems: 'center', margin: 5 }}>
+          <div style={{ position: 'fixed', right: 0, bottom: 0, display: 'flex', alignItems: 'center', margin: 5 }}>
             <motion.div
               initial={{ opacity: 0, translateX: 50 }}
               animate={{ opacity: 1, translateX: 0 }}

@@ -8,7 +8,7 @@ const LastCommandsSheet = memo(({ visible, onTogglePress, ffmpegCommandLog }) =>
   const { t } = useTranslation();
 
   return (
-    <Sheet visible={visible} onClosePress={onTogglePress} style={{ paddingTop: '2em' }}>
+    <Sheet visible={visible} onClosePress={onTogglePress}>
       <h2>{t('Last ffmpeg commands')}</h2>
 
       {ffmpegCommandLog.length > 0 ? (

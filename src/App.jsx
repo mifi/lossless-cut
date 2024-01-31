@@ -1293,6 +1293,7 @@ function App() {
       await onExportConfirm();
     } else {
       setExportConfirmVisible(true);
+      setStreamsSelectorShown(false);
     }
   }, [filePath, exportConfirmEnabled, exportConfirmVisible, onExportConfirm]);
 
@@ -1646,7 +1647,6 @@ function App() {
 
   const handleShowStreamsSelectorClick = useCallback(() => {
     setStreamsSelectorShown(true);
-    setExportConfirmVisible(false);
   }, []);
 
   const extractAllStreams = useCallback(async () => {
@@ -2579,7 +2579,9 @@ function App() {
               />
             </div>
 
-            <Sheet visible={streamsSelectorShown} onClosePress={() => setStreamsSelectorShown(false)} style={{ padding: '1em 0' }}>
+            <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegmentsOrInverse={nonFilteredSegmentsOrInverse} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} needSmartCut={needSmartCut} mergedOutFileName={mergedOutFileName} setMergedOutFileName={setMergedOutFileName} />
+
+            <Sheet visible={streamsSelectorShown} onClosePress={() => setStreamsSelectorShown(false)} maxWidth={1000}>
               {mainStreams && (
                 <StreamsSelector
                   mainFilePath={filePath}
@@ -2607,15 +2609,13 @@ function App() {
               )}
             </Sheet>
 
-            <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegmentsOrInverse={nonFilteredSegmentsOrInverse} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} needSmartCut={needSmartCut} mergedOutFileName={mergedOutFileName} setMergedOutFileName={setMergedOutFileName} />
-
             <LastCommandsSheet
               visible={lastCommandsVisible}
               onTogglePress={toggleLastCommands}
               ffmpegCommandLog={ffmpegCommandLog}
             />
 
-            <Sheet visible={settingsVisible} onClosePress={toggleSettings} style={{ padding: '1em 0' }}>
+            <Sheet visible={settingsVisible} onClosePress={toggleSettings}>
               <Settings
                 onTunerRequested={onTunerRequested}
                 onKeyboardShortcutsDialogRequested={toggleKeyboardShortcuts}
