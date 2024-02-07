@@ -650,5 +650,19 @@
     "Export mode": "Modus voor exporteren",
     "Export mode for {{segments}} segments": "Modus voor exporteren van {{segments}} segmenten",
     "Enter parameters": "Parameters ingeven",
-    "Extract frames as image files": "Frames uitpakken als afbeeldingsbestanden"
+    "Extract frames as image files": "Frames uitpakken als afbeeldingsbestanden",
+    "All other formats:": "Alle andere formaten:",
+    "Common audio formats:": "Veelgebruikte audioformaten:",
+    "\"ffmpeg\" experimental flag": "\"ffmpeg\" experimentele functies",
+    "Add segment tag": "Segmenttag toevoegen",
+    "At least one resulting file name ends with a whitespace character or a dot, which is not allowed.": "Ten minste één resulterende bestandsnaam eindigt op een spatie of een punt, wat niet is toegestaan.",
+    "Common subtitle formats:": "Veelgebruikte ondertitelingsformaten:",
+    "Delete": "Verwijderen",
+    "Discard all tracks": "Alle tracks weggooien",
+    "Duplicate segment": "Segment dupliceren",
+    "Edit segment tags": "Segmenttags bewerken",
+    "Change FPS": "FPS aanpassen",
+    "Close current file": "Huidig bestand sluiten",
+    "Common video/audio formats:": "Veelgebruikte video-/audioformaten:",
+    "Duplicate current segment": "Huidig segment dupliceren"
 }
