@@ -734,5 +734,10 @@
     "empty": "pusty",
     "Delete": "Usuń",
     "Add segment tag": "Dodaj tag segmentu",
-    "Edit segment tags": "Edytuj tagi segmentu"
+    "Edit segment tags": "Edytuj tagi segmentu",
+    "\"ffmpeg\" experimental flag": "\"ffmpeg\" eksperymentalna flaga",
+    "At least one resulting file name ends with a whitespace character or a dot, which is not allowed.": "Co najmniej jedna wynikowa nazwa pliku kończy się spacją lub kropką, co jest niedozwolone.",
+    "Discard all tracks": "Odrzuć wszystkie utwory",
+    "Keep all tracks": "Zachowaj wszystkie utwory",
+    "No file is loaded": "Nie załadowano żadnego pliku"
 }
