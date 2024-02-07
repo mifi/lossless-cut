@@ -14,7 +14,7 @@ const { stat } = require('fs/promises');
 const logger = require('./logger');
 const menu = require('./menu');
 const configStore = require('./configStore');
-const { frontendBuildDir } = require('./util');
+const { frontendBuildDir, isLinux, isWindows } = require('./util');
 const attachContextMenu = require('./contextMenu');
 const HttpServer = require('./httpServer');
 
@@ -33,18 +33,31 @@ unhandled({
 });
 
 const appName = 'LosslessCut';
+const copyrightYear = 2024;
+
+const appVersion = app.getVersion();
 
 app.name = appName;
 
-const isStoreBuild = process.windowsStore || process.mas;
+const isStoreBuild = true || process.mas;
 
 const showVersion = !isStoreBuild;
 
-const aboutPanelOptions = { applicationName: appName };
+/** @type import('electron').AboutPanelOptionsOptions */
+const aboutPanelOptions = {
+  applicationName: appName,
+  copyright: `Copyright © ${copyrightYear} Mikael Finstad ❤️ 🇳🇴`,
+  version: '', // not very useful (MacOS only, and same as applicationVersion)
+};
+
+// https://github.com/electron/electron/issues/18918
+// https://github.com/mifi/lossless-cut/issues/1537
+if (isLinux) {
+  aboutPanelOptions.version = appVersion;
+}
 if (!showVersion) {
-  // version will be wrong in Store builds
-  aboutPanelOptions.applicationVersion = '';
-  aboutPanelOptions.version = '';
+  // https://github.com/mifi/lossless-cut/issues/1882
+  aboutPanelOptions.applicationVersion = `${true ? 'Microsoft Store' : 'App Store'} edition, based on GitHub v${appVersion}`;
 }
 
 // https://www.electronjs.org/docs/latest/api/app#appsetaboutpaneloptionsoptions
