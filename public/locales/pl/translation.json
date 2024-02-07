@@ -597,7 +597,7 @@
     "Try with a <1>Different file</1>": "Spróbuj z <1>innym plikiem</1>",
     "Auto merge segments to one file after export, but keep segments too": "Automatyczne scalanie segmentów do jednego pliku po wyeksportowaniu, ale także zachowywanie segmentów",
     "{{durationMsFormatted}} ms, {{frameCount}} frames": "{{durationMsFormatted}} ms, {{frameCount}} klatek",
-    "Please confirm that you want to extract all tracks as separate files": "Potwierdź, że chcesz wyodrębnić wszystkie utwory jako osobne pliki",
+    "Please confirm that you want to extract all tracks as separate files": "Potwierdź, że chcesz wyodrębnić wszystkie ścieżki jako osobne pliki",
     "PBF files": "Pliki PBF",
     "Combination is invalid": "Łączenie jest nieprawidłowe",
     "Confirm quit": "Potwierdź wyjście",
@@ -621,7 +621,7 @@
     "You do not have permission to access this file": "Nie masz uprawnień dostępu do tego pliku",
     "Edit tracks / metadata tags": "Edytuj tagi utworów/metadane",
     "No binding": "Bez zobowiązań",
-    "Some extra tracks have been discarded. You can change this option before merging.": "Niektóre dodatkowe utwory zostały usunięte. Opcję tę można zmienić przed scaleniem.",
+    "Some extra tracks have been discarded. You can change this option before merging.": "Niektóre dodatkowe ścieżki zostały usunięte. Opcję tę można zmienić przed scaleniem.",
     "Help": "Pomoc",
     "Detecting black scenes": "Wykrywanie czarnych scen",
     "Align segment times to keyframes": "Wyrównaj czasy segmentów do klatek kluczowych",
@@ -737,7 +737,7 @@
     "Edit segment tags": "Edytuj tagi segmentu",
     "\"ffmpeg\" experimental flag": "\"ffmpeg\" eksperymentalna flaga",
     "At least one resulting file name ends with a whitespace character or a dot, which is not allowed.": "Co najmniej jedna wynikowa nazwa pliku kończy się spacją lub kropką, co jest niedozwolone.",
-    "Discard all tracks": "Odrzuć wszystkie utwory",
-    "Keep all tracks": "Zachowaj wszystkie utwory",
+    "Discard all tracks": "Odrzuć wszystkie ścieżki",
+    "Keep all tracks": "Zachowaj wszystkie ścieżki",
     "No file is loaded": "Nie załadowano żadnego pliku"
 }
