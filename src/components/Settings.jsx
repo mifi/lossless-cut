@@ -78,11 +78,11 @@ const Settings = memo(({
 
   return (
     <>
-      <div style={{ margin: '0 2em' }}>
+      <div style={{ padding: '1.5em 2em' }}>
         <div>{t('Hover mouse over buttons in the main interface to see which function they have')}</div>
       </div>
 
-      <table style={{ marginTop: 20 }} className={styles.settings}>
+      <table className={styles.settings}>
         <thead>
           <tr className={styles.header}>
             <th>{t('Settings')}</th>
