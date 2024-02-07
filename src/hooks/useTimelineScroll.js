@@ -11,11 +11,13 @@ export const keyMap = {
 };
 
 export const getModifierKeyNames = () => ({
-  ctrl: t('Ctrl'),
-  shift: t('Shift'),
-  alt: t('Alt'),
-  meta: t('⌘ Cmd / ⊞ Win'),
+  ctrl: [t('Ctrl')],
+  shift: [t('Shift')],
+  alt: [t('Alt')],
+  meta: [t('⌘ Cmd'), t('⊞ Win')],
 });
+
+export const getModifier = (key) => getModifierKeyNames()[key];
 
 function useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, invertTimelineScroll, zoomRel, seekRel }) {
   const onWheel = useCallback((e) => {

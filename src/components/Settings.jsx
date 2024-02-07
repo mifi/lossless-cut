@@ -321,8 +321,8 @@ const Settings = memo(({
             <KeyCell>{t('Mouse wheel zoom modifier key')}</KeyCell>
             <td>
               <Select value={mouseWheelZoomModifierKey} onChange={(e) => setMouseWheelZoomModifierKey(e.target.value)}>
-                {Object.entries(getModifierKeyNames()).map(([key, value]) => (
-                  <option key={key} value={key}>{value}</option>
+                {Object.entries(getModifierKeyNames()).map(([key, values]) => (
+                  <option key={key} value={key}>{values.join(' / ')}</option>
                 ))}
               </Select>
             </td>

@@ -14,6 +14,8 @@ const ValueTuners = memo(({ type, onFinished }) => {
       title: t('Timeline trackpad/wheel sensitivity'),
       value: wheelSensitivity,
       setValue: setWheelSensitivity,
+      min: 0,
+      max: 4,
       default: 0.2,
     },
     keyboardNormalSeekSpeed: {
