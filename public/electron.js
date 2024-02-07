@@ -39,7 +39,7 @@ const appVersion = app.getVersion();
 
 app.name = appName;
 
-const isStoreBuild = true || process.mas;
+const isStoreBuild = process.windowsStore || process.mas;
 
 const showVersion = !isStoreBuild;
 
@@ -57,7 +57,7 @@ if (isLinux) {
 }
 if (!showVersion) {
   // https://github.com/mifi/lossless-cut/issues/1882
-  aboutPanelOptions.applicationVersion = `${true ? 'Microsoft Store' : 'App Store'} edition, based on GitHub v${appVersion}`;
+  aboutPanelOptions.applicationVersion = `${process.windowsStore ? 'Microsoft Store' : 'App Store'} edition, based on GitHub v${appVersion}`;
 }
 
 // https://www.electronjs.org/docs/latest/api/app#appsetaboutpaneloptionsoptions
