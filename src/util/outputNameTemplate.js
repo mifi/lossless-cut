@@ -9,10 +9,11 @@ import { getSegmentTags, formatSegNum } from '../segments';
 export const segNumVariable = 'SEG_NUM';
 export const segSuffixVariable = 'SEG_SUFFIX';
 
-const { parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize } = window.require('path');
+const { parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, basename } = window.require('path');
 
-function getOutSegError({ fileNames, filePath, outputDir, safeOutputFileName }) {
+function getOutSegProblems({ fileNames, filePath, outputDir, safeOutputFileName }) {
   let error;
+  let sameAsInputFileNameWarning = false;
 
   // eslint-disable-next-line no-restricted-syntax
   for (const fileName of fileNames) {
@@ -49,6 +50,10 @@ function getOutSegError({ fileNames, filePath, outputDir, safeOutputFileName }) 
     const shouldCheckPathLength = isWindows || isDev;
     const shouldCheckFileEnd = isWindows || isDev;
 
+    if (basename(filePath) === fileName) {
+      sameAsInputFileNameWarning = true; // just an extra warning in case sameAsInputPath doesn't work
+    }
+
     if (fileName.length === 0) {
       error = i18n.t('At least one resulting file name has no length');
       break;
@@ -73,11 +78,14 @@ function getOutSegError({ fileNames, filePath, outputDir, safeOutputFileName }) 
     }
   }
 
-  if (error != null) return error;
+  if (error == null && hasDuplicates(fileNames)) {
+    error = i18n.t('Output file name template results in duplicate file names (you are trying to export multiple files with the same name). You can fix this for example by adding the "{{segNumVariable}}" variable.', { segNumVariable });
+  }
 
-  if (hasDuplicates(fileNames)) return i18n.t('Output file name template results in duplicate file names (you are trying to export multiple files with the same name). You can fix this for example by adding the "{{segNumVariable}}" variable.', { segNumVariable });
-
-  return undefined;
+  return {
+    error,
+    sameAsInputFileNameWarning,
+  };
 }
 
 // This is used as a fallback and so it has to always generate unique file names
@@ -155,10 +163,10 @@ export function generateOutSegFileNames({ segments, template: desiredTemplate, f
 
   let outSegFileNames = generate({ template: desiredTemplate, forceSafeOutputFileName: false });
 
-  const outSegError = getOutSegError({ fileNames: outSegFileNames, filePath, outputDir, safeOutputFileName });
-  if (outSegError != null) {
+  const outSegProblems = getOutSegProblems({ fileNames: outSegFileNames, filePath, outputDir, safeOutputFileName });
+  if (outSegProblems.error != null) {
     outSegFileNames = generate({ template: defaultOutSegTemplate, forceSafeOutputFileName: true });
   }
 
-  return { outSegFileNames, outSegError };
+  return { outSegFileNames, outSegProblems };
 }

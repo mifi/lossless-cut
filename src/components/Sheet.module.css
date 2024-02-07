@@ -1,11 +1,9 @@
 .sheet {
-  padding: 1em 2em;
   position: fixed;
   left: 0;
   right: 0;
   top: 0;
   bottom: 0;
-  z-index: 10;
   background: var(--whiteA11);
   color: var(--gray12);
   backdrop-filter: blur(30px);

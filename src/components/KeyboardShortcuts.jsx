@@ -7,9 +7,11 @@ import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
 import uniq from 'lodash/uniq';
 
+import useUserSettings from '../hooks/useUserSettings';
 import Swal from '../swal';
 import SetCutpointButton from './SetCutpointButton';
 import SegmentCutpointButton from './SegmentCutpointButton';
+import { getModifier } from '../hooks/useTimelineScroll';
 
 
 const renderKeys = (keys) => keys.map((key, i) => (
@@ -105,12 +107,14 @@ const CreateBinding = memo(({
   );
 });
 
-const rowStyle = { display: 'flex', alignItems: 'center', margin: '6px 0' };
+const rowStyle = { display: 'flex', alignItems: 'center', margin: '.2em 0', borderBottom: '1px solid rgba(0,0,0,0.1)', paddingBottom: '.5em' };
 
 const KeyboardShortcuts = memo(({
   keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg, mainActions,
 }) => {
   const { t } = useTranslation();
+
+  const { mouseWheelZoomModifierKey } = useUserSettings();
 
   const { actionsMap, extraLinesPerCategory } = useMemo(() => {
     const playbackCategory = t('Playback');
@@ -136,8 +140,9 @@ const KeyboardShortcuts = memo(({
           <div key="2" style={{ ...rowStyle, alignItems: 'center' }}>
             <Text>{t('Pan timeline')}</Text>
             <div style={{ flexGrow: 1 }} />
+            {getModifier(mouseWheelZoomModifierKey).map((v) => <kbd key={v} style={{ marginRight: '.7em' }}>{v}</kbd>)}
             <FaMouse style={{ marginRight: 3 }} />
-            <Text>{t('Mouse scroll/wheel left/right')}</Text>
+            <Text>{t('Mouse scroll/wheel up/down')}</Text>
           </div>,
         ],
       },
@@ -649,7 +654,7 @@ const KeyboardShortcuts = memo(({
 
   return (
     <>
-      <div style={{ color: 'black' }}>
+      <div style={{ color: 'black', marginBottom: '1em' }}>
         <div>
           <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search" width="100%" />
         </div>
@@ -691,7 +696,7 @@ const KeyboardShortcuts = memo(({
               );
             })}
 
-            {extraLinesPerCategory[category]}
+            {extraLinesPerCategory[category] && <div style={{ marginTop: '.8em' }}>{extraLinesPerCategory[category]}</div>}
           </div>
         ))}
       </div>

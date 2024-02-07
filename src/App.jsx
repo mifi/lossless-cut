@@ -68,7 +68,7 @@ import {
   getOutPath, getSuffixedOutPath, handleError, getOutDir,
   isStoreBuild, dragPreventer,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName, mustDisallowVob, readVideoTs, getImportProjectType,
+  deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName, mustDisallowVob, readVideoTs, readDirRecursively, getImportProjectType,
   calcShouldShowWaveform, calcShouldShowKeyframes, mediaSourceQualities,
 } from './util';
 import { toast, errorToast } from './swal';
@@ -88,6 +88,7 @@ import isDev from './isDev';
 
 const electron = window.require('electron');
 const { exists } = window.require('fs-extra');
+const { lstat } = window.require('fs/promises');
 const filePathToUrl = window.require('file-url');
 const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('path');
 
@@ -1178,8 +1179,8 @@ function App() {
 
       console.log('outSegTemplateOrDefault', outSegTemplateOrDefault);
 
-      const { outSegFileNames, outSegError } = generateOutSegFileNames({ segments: segmentsToExport, template: outSegTemplateOrDefault });
-      if (outSegError != null) {
+      const { outSegFileNames, outSegProblems } = generateOutSegFileNames({ segments: segmentsToExport, template: outSegTemplateOrDefault });
+      if (outSegProblems.error != null) {
         console.warn('Output segments file name invalid, using default instead', outSegFileNames);
       }
 
@@ -1296,6 +1297,7 @@ function App() {
       await onExportConfirm();
     } else {
       setExportConfirmVisible(true);
+      setStreamsSelectorShown(false);
     }
   }, [filePath, exportConfirmEnabled, exportConfirmVisible, onExportConfirm]);
 
@@ -1649,7 +1651,6 @@ function App() {
 
   const handleShowStreamsSelectorClick = useCallback(() => {
     setStreamsSelectorShown(true);
-    setExportConfirmVisible(false);
   }, []);
 
   const extractAllStreams = useCallback(async () => {
@@ -1800,12 +1801,28 @@ function App() {
 
     [lastOpenedPathRef.current] = filePaths;
 
-    // https://en.wikibooks.org/wiki/Inside_DVD-Video/Directory_Structure
-    if (filePaths.length === 1 && /^VIDEO_TS$/i.test(basename(filePaths[0]))) {
-      if (mustDisallowVob()) return;
-      filePaths = await readVideoTs(filePaths[0]);
+    // first check if it is a single directory, and if so, read it recursively
+    if (filePaths.length === 1) {
+      const firstFilePath = filePaths[0];
+      const firstFileStat = await lstat(firstFilePath);
+      if (firstFileStat.isDirectory()) {
+        console.log('Reading directory...');
+        filePaths = await readDirRecursively(firstFilePath);
+      }
     }
 
+    // Only allow opening regular files
+    // eslint-disable-next-line no-restricted-syntax
+    for (const path of filePaths) {
+      // eslint-disable-next-line no-await-in-loop
+      const fileStat = await lstat(path);
+
+      if (!fileStat.isFile()) {
+        errorToast(i18n.t('Cannot open anything else than regular files'));
+        console.warn('Not a file:', path);
+        return;
+      }
+    }
 
     if (filePaths.length > 1) {
       if (alwaysConcatMultipleFiles) {
@@ -1819,6 +1836,12 @@ function App() {
 
     // filePaths.length is now 1
     const firstFilePath = filePaths[0];
+
+    // https://en.wikibooks.org/wiki/Inside_DVD-Video/Directory_Structure
+    if (/^VIDEO_TS$/i.test(basename(firstFilePath))) {
+      if (mustDisallowVob()) return;
+      filePaths = await readVideoTs(firstFilePath);
+    }
 
     if (workingRef.current) return;
     try {
@@ -1900,7 +1923,7 @@ function App() {
   }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, isFileOpened, batchFiles.length, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile, filePath]);
 
   const openFilesDialog = useCallback(async () => {
-    const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile', 'multiSelections'], defaultPath: lastOpenedPathRef.current });
+    const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile', 'openDirectory', 'multiSelections'], defaultPath: lastOpenedPathRef.current });
     if (canceled) return;
     userOpenFiles(filePaths);
   }, [userOpenFiles]);
@@ -2578,7 +2601,9 @@ function App() {
               />
             </div>
 
-            <Sheet visible={streamsSelectorShown} onClosePress={() => setStreamsSelectorShown(false)} style={{ padding: '1em 0' }}>
+            <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegmentsOrInverse={nonFilteredSegmentsOrInverse} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} needSmartCut={needSmartCut} mergedOutFileName={mergedOutFileName} setMergedOutFileName={setMergedOutFileName} />
+
+            <Sheet visible={streamsSelectorShown} onClosePress={() => setStreamsSelectorShown(false)} maxWidth={1000}>
               {mainStreams && (
                 <StreamsSelector
                   mainFilePath={filePath}
@@ -2606,15 +2631,13 @@ function App() {
               )}
             </Sheet>
 
-            <ExportConfirm filePath={filePath} areWeCutting={areWeCutting} nonFilteredSegmentsOrInverse={nonFilteredSegmentsOrInverse} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} needSmartCut={needSmartCut} mergedOutFileName={mergedOutFileName} setMergedOutFileName={setMergedOutFileName} />
-
             <LastCommandsSheet
               visible={lastCommandsVisible}
               onTogglePress={toggleLastCommands}
               ffmpegCommandLog={ffmpegCommandLog}
             />
 
-            <Sheet visible={settingsVisible} onClosePress={toggleSettings} style={{ padding: '1em 0' }}>
+            <Sheet visible={settingsVisible} onClosePress={toggleSettings}>
               <Settings
                 onTunerRequested={onTunerRequested}
                 onKeyboardShortcutsDialogRequested={toggleKeyboardShortcuts}

@@ -11,7 +11,7 @@ import { ffmpegExtractWindow } from './util/constants';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
 const fsExtra = window.require('fs-extra');
-const { stat, readdir, utimes, unlink } = window.require('fs/promises');
+const { stat, lstat, readdir, utimes, unlink } = window.require('fs/promises');
 const os = window.require('os');
 const { ipcRenderer } = window.require('electron');
 const remote = window.require('@electron/remote');
@@ -90,7 +90,7 @@ export async function getPathReadAccessError(pathIn) {
 }
 
 export async function dirExists(dirPath) {
-  return (await pathExists(dirPath)) && (await fsExtra.lstat(dirPath)).isDirectory();
+  return (await pathExists(dirPath)) && (await lstat(dirPath)).isDirectory();
 }
 
 // const testFailFsOperation = isDev;
@@ -399,6 +399,22 @@ export async function readVideoTs(videoTsPath) {
   const relevantFiles = files.filter((file) => /^VTS_\d+_\d+\.vob$/i.test(file) && !/^VTS_\d+_00\.vob$/i.test(file)); // skip menu
   const ret = sortBy(relevantFiles).map((file) => join(videoTsPath, file));
   if (ret.length === 0) throw new Error('No VTS vob files found in folder');
+  return ret;
+}
+
+export async function readDirRecursively(dirPath) {
+  const files = await readdir(dirPath, { recursive: true });
+  const ret = (await pMap(files, async (path) => {
+    if (['.DS_Store'].includes(basename(path))) return [];
+
+    const absPath = join(dirPath, path);
+    const fileStat = await lstat(absPath); // readdir also returns directories...
+    if (!fileStat.isFile()) return [];
+
+    return [absPath];
+  }, { concurrency: 5 })).flat();
+
+  if (ret.length === 0) throw new Error('No files found in folder');
   return ret;
 }
 

@@ -35,12 +35,6 @@ For Windows, you may have to install [7z](https://www.7-zip.org/download.html), 
 npm start
 ```
 
-### Building for production
-
-See:
-- https://www.electron.build/
-- https://github.com/mifi/lossless-cut/blob/master/.github/workflows/build.yml
-
 ## Building mas-dev (Mac App Store) build locally
 
 This will sign using the development provisioning profile:
@@ -62,7 +56,7 @@ NOTE: when MAS (dev) build, Application Support will instead be here:
 rm -rf ~/Library/Containers/no.mifi.losslesscut-mac
 ```
 
-## Windows Store
+## Windows Store notes
 
 Windows store version is built as a Desktop Bridge app (with `runFullTrust` capability). This means the app has access to essentially everything the user has access to, and even `internetClient` is redundant.
 
@@ -76,13 +70,21 @@ For per-platform build/signing setup, see [this article](https://mifi.no/blog/au
 
 ### Release new version
 
-- Commit changes
+- If Mac App Store / Windows Store
+  - Checkout branch `stores`
+  - Merge `master` into `stores`
 - `npm version ...`
 - `git push --follow-tags`
 - Wait for build and draft in Github actions
 - Open draft in github and add Release notes
 - For files `LosslessCut-mac-universal.pkg` and `LosslessCut-win-x64.appx` add prefix `-DO-NOT-DOWNLOAD`
-- Release the draft
+- If intended as Github, release the draft
+- If store-only release, release the draft as **pre-release**
+
+### After release
+
+- If Mac App Store / Windows Store
+  - Merge `stores` into `master`
 - Bump [snap version](https://snapcraft.io/losslesscut/listing)
 - `npm run scan-i18n` to get the newest English strings and push so weblate gets them
 

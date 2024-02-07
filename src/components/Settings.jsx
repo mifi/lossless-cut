@@ -78,11 +78,11 @@ const Settings = memo(({
 
   return (
     <>
-      <div style={{ margin: '0 2em' }}>
+      <div style={{ padding: '1.5em 2em' }}>
         <div>{t('Hover mouse over buttons in the main interface to see which function they have')}</div>
       </div>
 
-      <table style={{ marginTop: 20 }} className={styles.settings}>
+      <table className={styles.settings}>
         <thead>
           <tr className={styles.header}>
             <th>{t('Settings')}</th>
@@ -321,8 +321,8 @@ const Settings = memo(({
             <KeyCell>{t('Mouse wheel zoom modifier key')}</KeyCell>
             <td>
               <Select value={mouseWheelZoomModifierKey} onChange={(e) => setMouseWheelZoomModifierKey(e.target.value)}>
-                {Object.entries(getModifierKeyNames()).map(([key, value]) => (
-                  <option key={key} value={key}>{value}</option>
+                {Object.entries(getModifierKeyNames()).map(([key, values]) => (
+                  <option key={key} value={key}>{values.join(' / ')}</option>
                 ))}
               </Select>
             </td>
