@@ -49,6 +49,7 @@ Each segment's *start cut time* normally (but not always) will be "rounded" to t
 - Try to change `avoid_negative_ts` (in export options).
 - Try also to set the **start**-cutpoint a few frames **before or after** the nearest keyframe (may also solve audio sync issues).
 - You may try to enable the new "Smart cut" mode to allow cutting between keyframes. However it is very experimental and may not work for many files.
+- Currently, the only way to review the exported file (to check the actual cutpoints) is to run the export (possibly with only one segment enabled to speed up) and then manually check the output file. See also [#1887](https://github.com/mifi/lossless-cut/issues/1887)
 
 ### Starts from wrong keyframe
 
