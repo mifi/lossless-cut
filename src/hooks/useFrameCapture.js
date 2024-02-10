@@ -1,5 +1,6 @@
 import dataUriToBuffer from 'data-uri-to-buffer';
 import pMap from 'p-map';
+import { useCallback } from 'react';
 
 import { getSuffixedOutPath, getOutDir, transferTimestamps, getSuffixedFileName, getOutPath, escapeRegExp, fsOperationWithRetry } from '../util';
 import { getNumDigits } from '../segments';
@@ -23,7 +24,7 @@ function getFrameFromVideo(video, format, quality) {
 }
 
 export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }) => {
-  async function captureFramesRange({ customOutDir, filePath, fps, fromTime, toTime, estimatedMaxNumFiles, captureFormat, quality, filter, onProgress, outputTimestamps }) {
+  const captureFramesRange = useCallback(async ({ customOutDir, filePath, fps, fromTime, toTime, estimatedMaxNumFiles, captureFormat, quality, filter, onProgress, outputTimestamps }) => {
     const getSuffix = (prefix) => `${prefix}.${captureFormat}`;
 
     if (!outputTimestamps) {
@@ -67,9 +68,9 @@ export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }) => {
     }, { concurrency: 1 });
 
     return outPaths[0];
-  }
+  }, [formatTimecode]);
 
-  async function captureFrameFromFfmpeg({ customOutDir, filePath, fromTime, captureFormat, quality }) {
+  const captureFrameFromFfmpeg = useCallback(async ({ customOutDir, filePath, fromTime, captureFormat, quality }) => {
     const time = formatTimecode({ seconds: fromTime, fileNameFriendly: true });
     const nameSuffix = `${time}.${captureFormat}`;
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix });
@@ -77,9 +78,9 @@ export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }) => {
 
     await transferTimestamps({ inPath: filePath, outPath, cutFrom: fromTime, treatOutputFileModifiedTimeAsStart });
     return outPath;
-  }
+  }, [formatTimecode, treatOutputFileModifiedTimeAsStart]);
 
-  async function captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, quality }) {
+  const captureFrameFromTag = useCallback(async ({ customOutDir, filePath, currentTime, captureFormat, video, quality }) => {
     const buf = getFrameFromVideo(video, captureFormat, quality);
 
     const ext = mime.extension(buf.type);
@@ -90,7 +91,7 @@ export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }) => {
 
     await transferTimestamps({ inPath: filePath, outPath, cutFrom: currentTime, treatOutputFileModifiedTimeAsStart });
     return outPath;
-  }
+  }, [formatTimecode, treatOutputFileModifiedTimeAsStart]);
 
   return {
     captureFramesRange,

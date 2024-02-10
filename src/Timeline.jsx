@@ -52,6 +52,11 @@ const CommandedTime = memo(({ commandedTimePercent }) => {
   );
 });
 
+const timelineHeight = 36;
+
+const timeWrapperStyle = { position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' };
+const timeStyle = { background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' };
+
 const Timeline = memo(({
   durationSafe, startTimeOffset, playerTime, commandedTime, relevantTime,
   zoom, neighbouringKeyFrames, seekAbs, apparentCutSegments,
@@ -61,8 +66,6 @@ const Timeline = memo(({
   playing, isFileOpened, onWheel, commandedTimeRef, goToTimecode, isSegmentSelected,
 }) => {
   const { t } = useTranslation();
-
-  const timelineHeight = 36;
 
   const { invertCutSegments } = useUserSettings();
 
@@ -328,8 +331,8 @@ const Timeline = memo(({
         </div>
       </div>
 
-      <div style={{ position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-        <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' }}>
+      <div style={timeWrapperStyle}>
+        <div style={timeStyle}>
           {formatTimeAndFrames(displayTime)}{isZoomed ? ` ${displayTimePercent}` : ''}
         </div>
       </div>
