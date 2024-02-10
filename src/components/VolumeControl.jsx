@@ -3,7 +3,7 @@ import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
 
-const VolumeControl = memo(({ playbackVolume, setPlaybackVolume, usingDummyVideo }) => {
+const VolumeControl = memo(({ playbackVolume, setPlaybackVolume }) => {
   const [volumeControlVisible, setVolumeControlVisible] = useState(false);
   const timeoutRef = useRef();
   const { t } = useTranslation();
@@ -29,8 +29,7 @@ const VolumeControl = memo(({ playbackVolume, setPlaybackVolume, usingDummyVideo
     }
   }, [volumeControlVisible, setPlaybackVolume, playbackVolume]);
 
-  // TODO fastest-audio/fastest-audio-remux currently shows as muted
-  const VolumeIcon = playbackVolume === 0 || usingDummyVideo ? FaVolumeMute : FaVolumeUp;
+  const VolumeIcon = playbackVolume === 0 ? FaVolumeMute : FaVolumeUp;
 
   return (
     <>

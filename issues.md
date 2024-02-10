@@ -105,9 +105,9 @@ If the output file name has special characters that get replaced by underscore (
 
 # Known limitations
 
-## Low quality / blurry playback and no audio
+## Low quality / blurry playback
 
-Some formats or codecs are not natively supported, so they will preview with low quality playback and no audio. You may convert these files to a supported codec from the File menu, see [#88](https://github.com/mifi/lossless-cut/issues/88).
+Some formats or codecs are not natively supported, so they will play back with a lower quality. You may convert these files to a supported codec from the File menu, see [#88](https://github.com/mifi/lossless-cut/issues/88).
 
 ## MPEG TS / MTS
 

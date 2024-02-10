@@ -1,67 +1,102 @@
-const strtok3 = require('strtok3');
+const logger = require('./logger');
+const { createMediaSourceProcess, readOneJpegFrame } = require('./ffmpeg');
 
-const { getOneRawFrame, encodeLiveRawStream } = require('./ffmpeg');
 
+function createMediaSourceStream({ path, videoStreamIndex, audioStreamIndex, seekTo, size, fps }) {
+  const abortController = new AbortController();
+  logger.info('Starting preview process', { videoStreamIndex, audioStreamIndex, seekTo });
+  const process = createMediaSourceProcess({ path, videoStreamIndex, audioStreamIndex, seekTo, size, fps });
 
-let aborters = [];
+  abortController.signal.onabort = () => {
+    logger.info('Aborting preview process', { videoStreamIndex, audioStreamIndex, seekTo });
+    process.kill('SIGKILL');
+  };
 
-async function command({ path, inWidth, inHeight, streamIndex, seekTo: commandedTime, onRawFrame, onJpegFrame, playing }) {
-  let process;
-  let aborted = false;
+  process.stdout.pause();
 
-  function killProcess() {
-    if (process) {
-      process.kill();
-      process = undefined;
-    }
+  async function readChunk() {
+    return new Promise((resolve, reject) => {
+      let cleanup;
+
+      const onClose = () => {
+        cleanup();
+        resolve(null);
+      };
+      const onData = (chunk) => {
+        process.stdout.pause();
+        cleanup();
+        resolve(chunk);
+      };
+      const onError = (err) => {
+        cleanup();
+        reject(err);
+      };
+      cleanup = () => {
+        process.stdout.off('data', onData);
+        process.stdout.off('error', onError);
+        process.stdout.off('close', onClose);
+      };
+
+      process.stdout.once('data', onData);
+      process.stdout.once('error', onError);
+      process.stdout.once('close', onClose);
+
+      process.stdout.resume();
+    });
   }
 
   function abort() {
-    aborted = true;
-    killProcess();
-    aborters = aborters.filter(((aborter) => aborter !== abort));
+    abortController.abort();
   }
-  aborters.push(abort);
 
-  try {
-    if (playing) {
-      const { process: processIn, channels, width, height } = encodeLiveRawStream({ path, inWidth, inHeight, streamIndex, seekTo: commandedTime });
-      process = processIn;
+  let stderr = Buffer.alloc(0);
+  process.stderr?.on('data', (chunk) => {
+    stderr = Buffer.concat([stderr, chunk]);
+  });
 
-      // process.stderr.on('data', data => console.log(data.toString('utf-8')));
-
-      const tokenizer = await strtok3.fromStream(process.stdout);
-      if (aborted) return;
-
-      const size = width * height * channels;
-      const rgbaImage = Buffer.allocUnsafe(size);
-
-      while (!aborted) {
-        // eslint-disable-next-line no-await-in-loop
-        await tokenizer.readBuffer(rgbaImage, { length: size });
-        if (aborted) return;
-        // eslint-disable-next-line no-await-in-loop
-        await onRawFrame(rgbaImage, width, height);
+  (async () => {
+    try {
+      await process;
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
       }
-    } else {
-      const { process: processIn, width, height } = getOneRawFrame({ path, inWidth, inHeight, streamIndex, seekTo: commandedTime, outSize: 1000 });
-      process = processIn;
-      const { stdout: jpegImage } = await process;
-      if (aborted) return;
-      onJpegFrame(jpegImage, width, height);
+
+      if (!err.killed) {
+        console.warn(err.message);
+        console.warn(stderr.toString('utf-8'));
+      }
     }
-  } catch (err) {
-    if (!err.killed) console.warn(err.message);
-  } finally {
-    killProcess();
-  }
+  })();
+
+  return { abort, readChunk };
 }
 
-function abortAll() {
-  aborters.forEach((aborter) => aborter());
+function readOneJpegFrameWrapper({ path, seekTo, videoStreamIndex }) {
+  const abortController = new AbortController();
+  const process = readOneJpegFrame({ path, seekTo, videoStreamIndex });
+
+  abortController.signal.onabort = () => process.kill('SIGKILL');
+
+  function abort() {
+    abortController.abort();
+  }
+
+  const promise = (async () => {
+    try {
+      const { stdout } = await process;
+      return stdout;
+    } catch (err) {
+      logger.error('renderOneJpegFrame', err.shortMessage);
+      throw new Error('Failed to render JPEG frame');
+    }
+  })();
+
+  return { promise, abort };
 }
+
 
 module.exports = {
-  command,
-  abortAll,
+  createMediaSourceStream,
+  readOneJpegFrame: readOneJpegFrameWrapper,
 };
