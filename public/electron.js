@@ -134,7 +134,6 @@ function createWindow() {
       webSecurity: !isDev,
     },
     backgroundColor: darkMode ? '#333' : '#fff',
-    autoHideMenuBar: isWindows, // https://github.com/mifi/lossless-cut/issues/543#issuecomment-1872945955
   });
 
   remote.enable(mainWindow.webContents);
