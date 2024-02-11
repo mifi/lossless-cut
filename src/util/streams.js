@@ -223,6 +223,56 @@ export const getAudioStreams = (streams) => streams.filter(stream => stream.code
 export const getRealVideoStreams = (streams) => streams.filter(stream => stream.codec_type === 'video' && !isStreamThumbnail(stream));
 export const getSubtitleStreams = (streams) => streams.filter(stream => stream.codec_type === 'subtitle');
 
+// videoTracks/audioTracks seems to be 1-indexed, while ffmpeg is 0-indexes
+const getHtml5TrackId = (ffmpegTrackIndex) => String(ffmpegTrackIndex + 1);
+
+const getHtml5VideoTracks = (video) => [...(video.videoTracks ?? [])];
+const getHtml5AudioTracks = (video) => [...(video.audioTracks ?? [])];
+
+export const getVideoTrackForStreamIndex = (video, index) => getHtml5VideoTracks(video).find((videoTrack) => videoTrack.id === getHtml5TrackId(index));
+export const getAudioTrackForStreamIndex = (video, index) => getHtml5AudioTracks(video).find((audioTrack) => audioTrack.id === getHtml5TrackId(index));
+
+function resetVideoTrack(video) {
+  console.log('Resetting video track');
+  getHtml5VideoTracks(video).forEach((track, index) => {
+    // eslint-disable-next-line no-param-reassign
+    track.selected = index === 0;
+  });
+}
+
+function resetAudioTrack(video) {
+  console.log('Resetting audio track');
+  getHtml5AudioTracks(video).forEach((track, index) => {
+    // eslint-disable-next-line no-param-reassign
+    track.enabled = index === 0;
+  });
+}
+
+// https://github.com/mifi/lossless-cut/issues/256
+export function enableVideoTrack(video, index) {
+  if (index == null) {
+    resetVideoTrack(video);
+    return;
+  }
+  console.log('Enabling video track', index);
+  getHtml5VideoTracks(video).forEach((track) => {
+    // eslint-disable-next-line no-param-reassign
+    track.selected = track.id === getHtml5TrackId(index);
+  });
+}
+
+export function enableAudioTrack(video, index) {
+  if (index == null) {
+    resetAudioTrack(video);
+    return;
+  }
+  console.log('Enabling audio track', index);
+  getHtml5AudioTracks(video).forEach((track) => {
+    // eslint-disable-next-line no-param-reassign
+    track.enabled = track.id === getHtml5TrackId(index);
+  });
+}
+
 export function getStreamIdsToCopy({ streams, includeAllStreams }) {
   if (includeAllStreams) {
     return {

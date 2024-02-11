@@ -12,7 +12,7 @@ const ReactSwal = withReactContent(Swal);
 // eslint-disable-next-line import/prefer-default-export
 export async function askForHtml5ifySpeed({ allowedOptions, showRemember, initialOption }) {
   const availOptions = {
-    fastest: i18n.t('Fastest: Low playback speed'),
+    fastest: i18n.t('Fastest: FFmpeg-assisted playback'),
     fast: i18n.t('Fast: Full quality remux (no audio), likely to fail'),
     'fast-audio-remux': i18n.t('Fast: Full quality remux, likely to fail'),
     'fast-audio': i18n.t('Fast: Remux video, encode audio (fails if unsupported video codec)'),

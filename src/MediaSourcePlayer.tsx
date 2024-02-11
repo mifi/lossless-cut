@@ -5,7 +5,7 @@ import { useDebounce } from 'use-debounce';
 import isDev from './isDev';
 
 const remote = window.require('@electron/remote');
-const { createMediaSourceStream, readOneJpegFrame } = remote.require('./canvasPlayer');
+const { createMediaSourceStream, readOneJpegFrame } = remote.require('./compatPlayer');
 
 
 async function startPlayback({ path, video, videoStreamIndex, audioStreamIndex, seekTo, signal, playSafe, onCanPlay, getTargetTime, size, fps }: {
@@ -251,7 +251,7 @@ async function createPauseImage({ path, seekTo, videoStreamIndex, canvas, signal
   drawJpegFrame(canvas, jpegImage);
 }
 
-function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStream, commandedTime, playing, eventId, masterVideoRef, mediaSourceQuality }) {
+function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStream, commandedTime, playing, eventId, masterVideoRef, mediaSourceQuality, playbackVolume }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [loading, setLoading] = useState(true);
@@ -327,6 +327,10 @@ function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStr
     return () => abortController.abort();
     // Important that we also have eventId in the deps, so that we can restart the preview when the eventId changes
   }, [debouncedState.startTime, debouncedState.eventId, filePath, masterVideoRef, playSafe, debouncedState.playing, videoStream, mediaSourceQuality, audioStream?.index]);
+
+  useEffect(() => {
+    if (videoRef.current) videoRef.current.volume = playbackVolume;
+  }, [playbackVolume]);
 
   const onFocus = useCallback((e) => {
     // prevent video element from stealing focus in fullscreen mode https://github.com/mifi/lossless-cut/issues/543#issuecomment-1868167775

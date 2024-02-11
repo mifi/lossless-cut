@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import sortBy from 'lodash/sortBy';
-import useThrottle from 'react-use/lib/useThrottle';
+import { useThrottle } from '@uidotdev/usehooks';
 import { waveformColorDark, waveformColorLight } from '../colors';
 
 import { renderWaveformPng } from '../ffmpeg';
@@ -8,7 +8,7 @@ import { renderWaveformPng } from '../ffmpeg';
 const maxWaveforms = 100;
 // const maxWaveforms = 3; // testing
 
-export default ({ darkMode, filePath, relevantTime, durationSafe, waveformEnabled, mainAudioStream, shouldShowWaveform, ffmpegExtractWindow }) => {
+export default ({ darkMode, filePath, relevantTime, durationSafe, waveformEnabled, audioStream, shouldShowWaveform, ffmpegExtractWindow }) => {
   const creatingWaveformPromise = useRef();
   const [waveforms, setWaveforms] = useState([]);
   const waveformsRef = useRef();
@@ -22,18 +22,23 @@ export default ({ darkMode, filePath, relevantTime, durationSafe, waveformEnable
   const timeThrottled = useThrottle(relevantTime, 1000);
 
   useEffect(() => {
+    waveformsRef.current = [];
+    setWaveforms([]);
+  }, [filePath, audioStream, setWaveforms]);
+
+  useEffect(() => {
     let aborted = false;
 
     (async () => {
       const waveformStartTime = Math.floor(timeThrottled / ffmpegExtractWindow) * ffmpegExtractWindow;
 
       const alreadyHaveWaveformAtTime = (waveformsRef.current || []).some((waveform) => waveform.from === waveformStartTime);
-      const shouldRun = filePath && mainAudioStream && timeThrottled != null && shouldShowWaveform && waveformEnabled && !alreadyHaveWaveformAtTime && !creatingWaveformPromise.current;
+      const shouldRun = filePath && audioStream && timeThrottled != null && shouldShowWaveform && waveformEnabled && !alreadyHaveWaveformAtTime && !creatingWaveformPromise.current;
       if (!shouldRun) return;
 
       try {
         const safeExtractDuration = Math.min(waveformStartTime + ffmpegExtractWindow, durationSafe) - waveformStartTime;
-        const promise = renderWaveformPng({ filePath, start: waveformStartTime, duration: safeExtractDuration, color: waveformColor });
+        const promise = renderWaveformPng({ filePath, start: waveformStartTime, duration: safeExtractDuration, color: waveformColor, streamIndex: audioStream.index });
         creatingWaveformPromise.current = promise;
         const { buffer, ...newWaveform } = await promise;
         if (aborted) return;
@@ -59,7 +64,7 @@ export default ({ darkMode, filePath, relevantTime, durationSafe, waveformEnable
     return () => {
       aborted = true;
     };
-  }, [filePath, timeThrottled, waveformEnabled, mainAudioStream, shouldShowWaveform, ffmpegExtractWindow, durationSafe, waveformColor, setWaveforms]);
+  }, [filePath, timeThrottled, waveformEnabled, audioStream, shouldShowWaveform, ffmpegExtractWindow, durationSafe, waveformColor, setWaveforms]);
 
   const lastWaveformsRef = useRef([]);
   useEffect(() => {
@@ -70,7 +75,6 @@ export default ({ darkMode, filePath, relevantTime, durationSafe, waveformEnable
     lastWaveformsRef.current = waveforms;
   }, [waveforms]);
 
-  useEffect(() => setWaveforms([]), [filePath, setWaveforms]);
   useEffect(() => () => setWaveforms([]), [setWaveforms]);
 
   return { waveforms };

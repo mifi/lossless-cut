@@ -7,14 +7,14 @@ import { readFramesAroundTime, findNearestKeyFrameTime as ffmpegFindNearestKeyFr
 const maxKeyframes = 1000;
 // const maxKeyframes = 100;
 
-export default ({ keyframesEnabled, filePath, commandedTime, mainVideoStream, detectedFps, ffmpegExtractWindow }) => {
+export default ({ keyframesEnabled, filePath, commandedTime, videoStream, detectedFps, ffmpegExtractWindow }) => {
   const readingKeyframesPromise = useRef();
   const [neighbouringKeyFramesMap, setNeighbouringKeyFrames] = useState({});
   const neighbouringKeyFrames = useMemo(() => Object.values(neighbouringKeyFramesMap), [neighbouringKeyFramesMap]);
 
   const findNearestKeyFrameTime = useCallback(({ time, direction }) => ffmpegFindNearestKeyFrameTime({ frames: neighbouringKeyFrames, time, direction, fps: detectedFps }), [neighbouringKeyFrames, detectedFps]);
 
-  useEffect(() => setNeighbouringKeyFrames({}), [filePath]);
+  useEffect(() => setNeighbouringKeyFrames({}), [filePath, videoStream]);
 
   useDebounceOld(() => {
     let aborted = false;
@@ -22,11 +22,11 @@ export default ({ keyframesEnabled, filePath, commandedTime, mainVideoStream, de
     (async () => {
       // See getIntervalAroundTime
       // We still want to calculate keyframes even if not shouldShowKeyframes because maybe we want to be able to step to the closest keyframe
-      const shouldRun = keyframesEnabled && filePath && mainVideoStream && commandedTime != null && !readingKeyframesPromise.current;
+      const shouldRun = keyframesEnabled && filePath && videoStream && commandedTime != null && !readingKeyframesPromise.current;
       if (!shouldRun) return;
 
       try {
-        const promise = readFramesAroundTime({ filePath, aroundTime: commandedTime, streamIndex: mainVideoStream.index, window: ffmpegExtractWindow });
+        const promise = readFramesAroundTime({ filePath, aroundTime: commandedTime, streamIndex: videoStream.index, window: ffmpegExtractWindow });
         readingKeyframesPromise.current = promise;
         const newFrames = await promise;
         if (aborted) return;
@@ -53,7 +53,7 @@ export default ({ keyframesEnabled, filePath, commandedTime, mainVideoStream, de
     return () => {
       aborted = true;
     };
-  }, 500, [keyframesEnabled, filePath, commandedTime, mainVideoStream, ffmpegExtractWindow]);
+  }, 500, [keyframesEnabled, filePath, commandedTime, videoStream, ffmpegExtractWindow]);
 
   return {
     neighbouringKeyFrames, findNearestKeyFrameTime,

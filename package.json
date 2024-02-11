@@ -50,6 +50,7 @@
     "@types/sortablejs": "^1.15.0",
     "@typescript-eslint/eslint-plugin": "^6.17.0",
     "@typescript-eslint/parser": "^6.17.0",
+    "@uidotdev/usehooks": "^2.4.1",
     "@vitejs/plugin-react": "^3.1.0",
     "color": "^3.1.0",
     "concurrently": "^6.0.0",

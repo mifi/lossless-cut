@@ -463,9 +463,9 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   }, [treatOutputFileModifiedTimeAsStart]);
 
   // This is just used to load something into the player with correct length,
-  // so user can seek and then we render frames using ffmpeg
+  // so user can seek and then we render frames using ffmpeg & MediaSource
   const html5ifyDummy = useCallback(async ({ filePath: filePathArg, outPath, onProgress }) => {
-    console.log('Making HTML5 friendly dummy', { filePathArg, outPath });
+    console.log('Making ffmpeg-assisted dummy file', { filePathArg, outPath });
 
     const duration = await getDuration(filePathArg);
 

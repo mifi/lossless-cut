@@ -148,7 +148,7 @@ async function runFfprobe(args, { timeout = isDev ? 10000 : 30000 } = {}) {
   }
 }
 
-async function renderWaveformPng({ filePath, start, duration, color }) {
+async function renderWaveformPng({ filePath, start, duration, color, streamIndex }) {
   const args1 = [
     '-hide_banner',
     '-i', filePath,
@@ -156,7 +156,7 @@ async function renderWaveformPng({ filePath, start, duration, color }) {
     '-t', duration,
     '-c', 'copy',
     '-vn',
-    '-map', 'a:0',
+    '-map', `0:${streamIndex}`,
     '-f', 'matroska', // mpegts doesn't support vorbis etc
     '-',
   ];
@@ -397,7 +397,7 @@ async function html5ify({ outPath, filePath: filePathArg, speed, hasAudio, hasVi
     else video = 'copy';
   }
 
-  console.log('Making HTML5 friendly version', { filePathArg, outPath, video, audio });
+  console.log('Making HTML5 friendly version', { filePathArg, outPath, speed, video, audio });
 
   let videoArgs;
   let audioArgs;

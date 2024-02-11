@@ -43,7 +43,7 @@ import BottomBar from './BottomBar';
 import ExportConfirm from './components/ExportConfirm';
 import ValueTuners from './components/ValueTuners';
 import VolumeControl from './components/VolumeControl';
-import SubtitleControl from './components/SubtitleControl';
+import PlaybackStreamSelector from './components/PlaybackStreamSelector';
 import BatchFilesList from './components/BatchFilesList';
 import ConcatDialog from './components/ConcatDialog';
 import KeyboardShortcuts from './components/KeyboardShortcuts';
@@ -61,7 +61,7 @@ import {
   getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
   RefuseOverwriteError, abortFfmpegs,
 } from './ffmpeg';
-import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback, isStreamThumbnail } from './util/streams';
+import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback, isStreamThumbnail, getSubtitleStreams, getVideoTrackForStreamIndex, getAudioTrackForStreamIndex, enableVideoTrack, enableAudioTrack } from './util/streams';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube, getFrameCountRaw, formatTsv } from './edlFormats';
 import {
@@ -112,7 +112,7 @@ function App() {
   const [working, setWorkingState] = useState();
   const [usingDummyVideo, setUsingDummyVideo] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [canvasPlayerEventId, setCanvasPlayerEventId] = useState(0);
+  const [compatPlayerEventId, setCompatPlayerEventId] = useState(0);
   const playbackModeRef = useRef();
   const [playerTime, setPlayerTime] = useState();
   const [duration, setDuration] = useState();
@@ -125,8 +125,6 @@ function App() {
   const [paramsByStreamId, setParamsByStreamId] = useState(new Map());
   const [detectedFps, setDetectedFps] = useState();
   const [mainFileMeta, setMainFileMeta] = useState({ streams: [], formatData: {} });
-  const [mainVideoStream, setMainVideoStream] = useState();
-  const [mainAudioStream, setMainAudioStream] = useState();
   const [copyStreamIdsByFile, setCopyStreamIdsByFile] = useState({});
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
   const [concatDialogVisible, setConcatDialogVisible] = useState(false);
@@ -135,8 +133,10 @@ function App() {
   const [shortestFlag, setShortestFlag] = useState(false);
   const [zoomWindowStartTime, setZoomWindowStartTime] = useState(0);
   const [subtitlesByStreamId, setSubtitlesByStreamId] = useState({});
+  const [activeVideoStreamIndex, setActiveVideoStreamIndex] = useState();
+  const [activeAudioStreamIndex, setActiveAudioStreamIndex] = useState();
   const [activeSubtitleStreamIndex, setActiveSubtitleStreamIndex] = useState();
-  const [hideCanvasPreview, setHideCanvasPreview] = useState(false);
+  const [hideMediaSourcePlayer, setHideMediaSourcePlayer] = useState(false);
   const [exportConfirmVisible, setExportConfirmVisible] = useState(false);
   const [cacheBuster, setCacheBuster] = useState(0);
   const [mergedOutFileName, setMergedOutFileName] = useState();
@@ -292,7 +292,7 @@ function App() {
 
     video.currentTime = outVal;
     setCommandedTime(outVal);
-    setCanvasPlayerEventId((id) => id + 1); // To make sure that we can seek even to the same commanded time that we are already add (e.g. loop current segment)
+    setCompatPlayerEventId((id) => id + 1); // To make sure that we can seek even to the same commanded time that we are already add (e.g. loop current segment)
   }, []);
 
   const userSeekAbs = useCallback((val) => {
@@ -324,20 +324,43 @@ function App() {
     userSeekAbs(nextFrame / fps);
   }, [detectedFps, userSeekAbs]);
 
-  // 360 means we don't modify rotation
+  const mainStreams = useMemo(() => mainFileMeta.streams, [mainFileMeta.streams]);
+  const mainFileFormatData = useMemo(() => mainFileMeta.formatData, [mainFileMeta.formatData]);
+  const mainFileChapters = useMemo(() => mainFileMeta.chapters, [mainFileMeta.chapters]);
+
+  const isCopyingStreamId = useCallback((path, streamId) => (
+    !!(copyStreamIdsByFile[path] || {})[streamId]
+  ), [copyStreamIdsByFile]);
+
+  const checkCopyingAnyTrackOfType = useCallback((filter) => mainStreams.some(stream => isCopyingStreamId(filePath, stream.index) && filter(stream)), [filePath, isCopyingStreamId, mainStreams]);
+  const copyAnyAudioTrack = useMemo(() => checkCopyingAnyTrackOfType((stream) => stream.codec_type === 'audio'), [checkCopyingAnyTrackOfType]);
+
+  const subtitleStreams = useMemo(() => getSubtitleStreams(mainStreams), [mainStreams]);
+  const videoStreams = useMemo(() => getRealVideoStreams(mainStreams), [mainStreams]);
+  const audioStreams = useMemo(() => getAudioStreams(mainStreams), [mainStreams]);
+
+  const mainVideoStream = useMemo(() => videoStreams[0], [videoStreams]);
+  const mainAudioStream = useMemo(() => audioStreams[0], [audioStreams]);
+
+  const activeVideoStream = useMemo(() => (activeVideoStreamIndex != null ? videoStreams.find((stream) => stream.index === activeVideoStreamIndex) : undefined) ?? mainVideoStream, [activeVideoStreamIndex, mainVideoStream, videoStreams]);
+  const activeAudioStream = useMemo(() => (activeAudioStreamIndex != null ? audioStreams.find((stream) => stream.index === activeAudioStreamIndex) : undefined) ?? mainAudioStream, [activeAudioStreamIndex, audioStreams, mainAudioStream]);
+  const activeSubtitle = useMemo(() => subtitlesByStreamId[activeSubtitleStreamIndex], [activeSubtitleStreamIndex, subtitlesByStreamId]);
+
+  // 360 means we don't modify rotation gtrgt
   const isRotationSet = rotation !== 360;
-  const effectiveRotation = useMemo(() => (isRotationSet ? rotation : (mainVideoStream && mainVideoStream.tags && mainVideoStream.tags.rotate && parseInt(mainVideoStream.tags.rotate, 10))), [isRotationSet, mainVideoStream, rotation]);
+  const effectiveRotation = useMemo(() => (isRotationSet ? rotation : (activeVideoStream?.tags?.rotate && parseInt(activeVideoStream.tags.rotate, 10))), [isRotationSet, activeVideoStream, rotation]);
 
   const zoomRel = useCallback((rel) => setZoom((z) => Math.min(Math.max(z + (rel * (1 + (z / 10))), 1), zoomMax)), []);
-  const canvasPlayerRequired = usingDummyVideo;
-  // Allow user to disable it
-  const canvasPlayerWanted = isRotationSet && !hideCanvasPreview;
-  const canvasPlayerEnabled = canvasPlayerRequired || canvasPlayerWanted;
+  const compatPlayerRequired = usingDummyVideo;
+  const compatPlayerWanted = (isRotationSet || activeVideoStreamIndex != null || activeAudioStreamIndex != null) && !hideMediaSourcePlayer;
+  const compatPlayerEnabled = (compatPlayerRequired || compatPlayerWanted) && (activeVideoStream != null || activeAudioStream != null);
+
+  const shouldShowPlaybackStreamSelector = videoStreams.length > 1 || audioStreams.length > 1 || (compatPlayerEnabled && subtitleStreams.length > 0);
 
   useEffect(() => {
     // Reset the user preference when the state changes to true
-    if (canvasPlayerEnabled) setHideCanvasPreview(false);
-  }, [canvasPlayerEnabled]);
+    if (compatPlayerEnabled) setHideMediaSourcePlayer(false);
+  }, [compatPlayerEnabled]);
 
   const comfortZoom = isDurationValid(duration) ? Math.max(duration / 100, 1) : undefined;
   const timelineToggleComfortZoom = useCallback(() => {
@@ -366,7 +389,7 @@ function App() {
 
   const {
     cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, createNumSegments, createFixedDurationSegments, createRandomSegments, apparentCutSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, currentApparentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, isSegmentSelected, setCutTime, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, onSelectSegmentsByTag, toggleSegmentSelected, selectOnlySegment, getApparentCutSegmentById, selectedSegments, selectedSegmentsOrInverse, nonFilteredSegmentsOrInverse, segmentsToExport, duplicateCurrentSegment, duplicateSegment, updateSegAtIndex,
-  } = useSegments({ filePath, workingRef, setWorking, setCutProgress, mainVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly });
+  } = useSegments({ filePath, workingRef, setWorking, setCutProgress, videoStream: activeVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly });
 
   const jumpSegStart = useCallback((index) => userSeekAbs(apparentCutSegments[index].start), [apparentCutSegments, userSeekAbs]);
   const jumpSegEnd = useCallback((index) => userSeekAbs(apparentCutSegments[index].end), [apparentCutSegments, userSeekAbs]);
@@ -488,7 +511,7 @@ function App() {
 
   const increaseRotation = useCallback(() => {
     setRotation((r) => (r + 90) % 450);
-    setHideCanvasPreview(false);
+    setHideMediaSourcePlayer(false);
     // Matroska is known not to work, so we warn user. See https://github.com/mifi/lossless-cut/discussions/661
     const supportsRotation = !['matroska', 'webm'].includes(fileFormat);
     if (!supportsRotation && !hideAllNotifications) toast.fire({ text: i18n.t('Lossless rotation might not work with this file format. You may try changing to MP4') });
@@ -572,20 +595,6 @@ function App() {
     },
   }), [preferStrongColors]);
 
-  const isCopyingStreamId = useCallback((path, streamId) => (
-    !!(copyStreamIdsByFile[path] || {})[streamId]
-  ), [copyStreamIdsByFile]);
-
-  const mainStreams = useMemo(() => mainFileMeta.streams, [mainFileMeta.streams]);
-  const mainFileFormatData = useMemo(() => mainFileMeta.formatData, [mainFileMeta.formatData]);
-  const mainFileChapters = useMemo(() => mainFileMeta.chapters, [mainFileMeta.chapters]);
-
-  const checkCopyingAnyTrackOfType = useCallback((filter) => mainStreams.some(stream => isCopyingStreamId(filePath, stream.index) && filter(stream)), [filePath, isCopyingStreamId, mainStreams]);
-  const copyAnyAudioTrack = useMemo(() => checkCopyingAnyTrackOfType((stream) => stream.codec_type === 'audio'), [checkCopyingAnyTrackOfType]);
-
-  const subtitleStreams = useMemo(() => mainStreams.filter((stream) => stream.codec_type === 'subtitle'), [mainStreams]);
-  const activeSubtitle = useMemo(() => subtitlesByStreamId[activeSubtitleStreamIndex], [activeSubtitleStreamIndex, subtitlesByStreamId]);
-
   const onActiveSubtitleChange = useCallback(async (index) => {
     if (index == null) {
       setActiveSubtitleStreamIndex();
@@ -608,6 +617,17 @@ function App() {
       setWorking();
     }
   }, [setWorking, subtitleStreams, subtitlesByStreamId, filePath]);
+
+  const onActiveVideoStreamChange = useCallback((index) => {
+    setHideMediaSourcePlayer(index == null || getVideoTrackForStreamIndex(videoRef.current, index) != null);
+    enableVideoTrack(videoRef.current, index);
+    setActiveVideoStreamIndex(index);
+  }, []);
+  const onActiveAudioStreamChange = useCallback((index) => {
+    setHideMediaSourcePlayer(index == null || getAudioTrackForStreamIndex(videoRef.current, index) != null);
+    enableAudioTrack(videoRef.current, index);
+    setActiveAudioStreamIndex(index);
+  }, []);
 
   const mainCopiedStreams = useMemo(() => mainStreams.filter((stream) => isCopyingStreamId(filePath, stream.index)), [filePath, isCopyingStreamId, mainStreams]);
   const mainCopiedThumbnailStreams = useMemo(() => mainCopiedStreams.filter(isStreamThumbnail), [mainCopiedStreams]);
@@ -658,8 +678,8 @@ function App() {
     setThumbnails(v => [...v, thumbnail]);
   }
 
-  const hasAudio = !!mainAudioStream;
-  const hasVideo = !!mainVideoStream;
+  const hasAudio = !!activeAudioStream;
+  const hasVideo = !!activeVideoStream;
 
   const waveformEnabled = hasAudio && ['waveform', 'big-waveform'].includes(waveformMode);
   const bigWaveformEnabled = waveformEnabled && waveformMode === 'big-waveform';
@@ -704,8 +724,8 @@ function App() {
   const shouldShowKeyframes = keyframesEnabled && hasVideo && calcShouldShowKeyframes(zoomedDuration);
   const shouldShowWaveform = calcShouldShowWaveform(zoomedDuration);
 
-  const { neighbouringKeyFrames, findNearestKeyFrameTime } = useKeyframes({ keyframesEnabled, filePath, commandedTime, mainVideoStream, detectedFps, ffmpegExtractWindow });
-  const { waveforms } = useWaveform({ darkMode, filePath, relevantTime, waveformEnabled, mainAudioStream, shouldShowWaveform, ffmpegExtractWindow, durationSafe });
+  const { neighbouringKeyFrames, findNearestKeyFrameTime } = useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream: activeVideoStream, detectedFps, ffmpegExtractWindow });
+  const { waveforms } = useWaveform({ darkMode, filePath, relevantTime, waveformEnabled, audioStream: activeAudioStream, shouldShowWaveform, ffmpegExtractWindow, durationSafe });
 
   const resetMergedOutFileName = useCallback(() => {
     const ext = getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath });
@@ -727,7 +747,7 @@ function App() {
     setUsingDummyVideo(false);
     setPlaying(false);
     playbackModeRef.current = undefined;
-    setCanvasPlayerEventId(0);
+    setCompatPlayerEventId(0);
     setDuration();
     cutSegmentsHistory.go(0);
     clearSegments();
@@ -742,8 +762,6 @@ function App() {
     setParamsByStreamId(new Map());
     setDetectedFps();
     setMainFileMeta({ streams: [], formatData: [] });
-    setMainVideoStream();
-    setMainAudioStream();
     setCopyStreamIdsByFile({});
     setStreamsSelectorShown(false);
     setZoom(1);
@@ -752,8 +770,10 @@ function App() {
     setZoomWindowStartTime(0);
     setDeselectedSegmentIds({});
     setSubtitlesByStreamId({});
+    setActiveAudioStreamIndex();
+    setActiveVideoStreamIndex();
     setActiveSubtitleStreamIndex();
-    setHideCanvasPreview(false);
+    setHideMediaSourcePlayer(false);
     setExportConfirmVisible(false);
     resetMergedOutFileName();
     setOutputPlaybackRateState(1);
@@ -1359,7 +1379,7 @@ function App() {
   const extractSelectedSegmentsFramesAsImages = useCallback(() => extractSegmentFramesAsImages(selectedSegments.map((seg) => seg.segId)), [extractSegmentFramesAsImages, selectedSegments]);
 
   const changePlaybackRate = useCallback((dir, rateMultiplier) => {
-    if (canvasPlayerEnabled) {
+    if (compatPlayerEnabled) {
       toast.fire({ title: i18n.t('Unable to change playback rate right now'), timer: 1000 });
       return;
     }
@@ -1372,7 +1392,7 @@ function App() {
       toast.fire({ title: `${i18n.t('Playback rate:')} ${Math.round(newRate * 100)}%`, timer: 1000 });
       video.playbackRate = newRate;
     }
-  }, [playing, canvasPlayerEnabled]);
+  }, [playing, compatPlayerEnabled]);
 
   const segmentAtCursor = useMemo(() => {
     const segmentsAtCursorIndexes = findSegmentsAtCursor(apparentCutSegments, commandedTime);
@@ -1455,11 +1475,8 @@ function App() {
 
       const timecode = autoLoadTimecode ? getTimecodeFromStreams(fileMeta.streams) : undefined;
 
-      const videoStreams = getRealVideoStreams(fileMeta.streams);
-      const audioStreams = getAudioStreams(fileMeta.streams);
-
-      const videoStream = videoStreams[0];
-      const audioStream = audioStreams[0];
+      const [videoStream] = getRealVideoStreams(fileMeta.streams);
+      const [audioStream] = getAudioStreams(fileMeta.streams);
 
       const haveVideoStream = !!videoStream;
       const haveAudioStream = !!audioStream;
@@ -1519,8 +1536,6 @@ function App() {
       setDetectedFps(getFps());
       if (!haveVideoStream) setWaveformMode('big-waveform');
       setMainFileMeta({ streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters });
-      setMainVideoStream(videoStream);
-      setMainAudioStream(audioStream);
       setCopyStreamIdsForPath(fp, () => copyStreamIdsForPathNew);
       setFileFormat(outFormatLocked || fileFormatNew);
       setDetectedFileFormat(fileFormatNew);
@@ -2409,7 +2424,7 @@ function App() {
                 )}
               </AnimatePresence>
 
-              {/* Middle part: */}
+              {/* Middle part (also shown in fullscreen): */}
               <div style={{ position: 'relative', flexGrow: 1, overflow: 'hidden' }} ref={videoContainerRef}>
                 {!isFileOpened && <NoFileLoaded mifiLink={mifiLink} currentCutSeg={currentCutSeg} onClick={openFilesDialog} darkMode={darkMode} />}
 
@@ -2418,7 +2433,7 @@ function App() {
                   <video
                     className="main-player"
                     tabIndex={-1}
-                    muted={playbackVolume === 0 || canvasPlayerEnabled}
+                    muted={playbackVolume === 0 || compatPlayerEnabled}
                     ref={videoRef}
                     style={videoStyle}
                     src={fileUri}
@@ -2435,26 +2450,35 @@ function App() {
                     {renderSubtitles()}
                   </video>
 
-                  {canvasPlayerEnabled && (mainVideoStream != null || mainAudioStream != null) && <MediaSourcePlayer rotate={effectiveRotation} filePath={filePath} videoStream={mainVideoStream} audioStream={mainAudioStream} playerTime={playerTime} commandedTime={commandedTime} playing={playing} eventId={canvasPlayerEventId} masterVideoRef={videoRef} mediaSourceQuality={mediaSourceQuality} />}
+                  {compatPlayerEnabled && <MediaSourcePlayer rotate={effectiveRotation} filePath={filePath} videoStream={activeVideoStream} audioStream={activeAudioStream} playerTime={playerTime} commandedTime={commandedTime} playing={playing} eventId={compatPlayerEventId} masterVideoRef={videoRef} mediaSourceQuality={mediaSourceQuality} playbackVolume={playbackVolume} />}
                 </div>
 
                 {bigWaveformEnabled && <BigWaveform waveforms={waveforms} relevantTime={relevantTime} playing={playing} durationSafe={durationSafe} zoom={zoomUnrounded} seekRel={seekRel} />}
 
-                {isRotationSet && !hideCanvasPreview && (
-                  <div style={{ position: 'absolute', top: 0, right: 0, left: 0, marginTop: '1em', marginLeft: '1em', color: 'white', opacity: 0.7, display: 'flex', alignItems: 'center' }}>
-                    <MdRotate90DegreesCcw size={26} style={{ marginRight: 5 }} />
-                    {t('Rotation preview')}
-                    {!canvasPlayerRequired && <FaWindowClose role="button" style={{ cursor: 'pointer', verticalAlign: 'middle', padding: 10 }} onClick={() => setHideCanvasPreview(true)} />}
+                {compatPlayerEnabled && (
+                  <div style={{ position: 'absolute', top: 0, right: 0, left: 0, marginTop: '1em', marginLeft: '1em', color: 'white', opacity: 0.7, display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
+                    {isRotationSet ? (
+                      <>
+                        <MdRotate90DegreesCcw size={26} style={{ marginRight: 5 }} />
+                        {t('Rotation preview')}
+                      </>
+                    ) : (
+                      <>
+                        {t('FFmpeg-assisted playback')}
+                      </>
+                    )}
+
+                    {!compatPlayerRequired && <FaWindowClose role="button" style={{ cursor: 'pointer', pointerEvents: 'initial', verticalAlign: 'middle', padding: 10 }} onClick={() => setHideMediaSourcePlayer(true)} />}
                   </div>
                 )}
 
                 {isFileOpened && (
                   <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, marginBottom: 10, display: 'flex', alignItems: 'center' }}>
-                    {!canvasPlayerEnabled && <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} />}
+                    <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} />
 
-                    {!canvasPlayerEnabled && subtitleStreams.length > 0 && <SubtitleControl subtitleStreams={subtitleStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} onActiveSubtitleChange={onActiveSubtitleChange} />}
+                    {shouldShowPlaybackStreamSelector && <PlaybackStreamSelector subtitleStreams={subtitleStreams} videoStreams={videoStreams} audioStreams={audioStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} activeVideoStreamIndex={activeVideoStreamIndex} activeAudioStreamIndex={activeAudioStreamIndex} onActiveSubtitleChange={onActiveSubtitleChange} onActiveVideoStreamChange={onActiveVideoStreamChange} onActiveAudioStreamChange={onActiveAudioStreamChange} />}
 
-                    {canvasPlayerEnabled && <div style={{ color: 'white', opacity: 0.7, padding: '.5em' }} role="button" onClick={() => incrementMediaSourceQuality()} title={t('Select preview playback quality')}>{mediaSourceQualities[mediaSourceQuality]}</div>}
+                    {compatPlayerEnabled && <div style={{ color: 'white', opacity: 0.7, padding: '.5em' }} role="button" onClick={() => incrementMediaSourceQuality()} title={t('Select playback quality')}>{mediaSourceQualities[mediaSourceQuality]}</div>}
 
                     {!showRightBar && (
                       <FaAngleLeft

@@ -20,7 +20,7 @@ const { blackDetect, silenceDetect } = remote.require('./ffmpeg');
 
 
 export default ({
-  filePath, workingRef, setWorking, setCutProgress, mainVideoStream,
+  filePath, workingRef, setWorking, setCutProgress, videoStream,
   duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly,
 }) => {
   // Segment related state
@@ -138,11 +138,11 @@ export default ({
   }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, filePath, setCutProgress]);
 
   const createSegmentsFromKeyframes = useCallback(async () => {
-    if (!mainVideoStream) return;
-    const keyframes = (await readFrames({ filePath, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end, streamIndex: mainVideoStream.index })).filter((frame) => frame.keyframe);
+    if (!videoStream) return;
+    const keyframes = (await readFrames({ filePath, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end, streamIndex: videoStream.index })).filter((frame) => frame.keyframe);
     const newSegments = mapTimesToSegments(keyframes.map((keyframe) => keyframe.time));
     loadCutSegments(newSegments, true);
-  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, filePath, loadCutSegments, mainVideoStream]);
+  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, filePath, loadCutSegments, videoStream]);
 
   const removeSegments = useCallback((removeSegmentIds) => {
     setCutSegments((existingSegments) => {
@@ -246,7 +246,7 @@ export default ({
   }, [modifySelectedSegmentTimes]);
 
   const alignSegmentTimesToKeyframes = useCallback(async () => {
-    if (!mainVideoStream || workingRef.current) return;
+    if (!videoStream || workingRef.current) return;
     try {
       const response = await askForAlignSegments();
       if (response == null) return;
@@ -257,7 +257,7 @@ export default ({
 
         async function align(key) {
           const time = newSegment[key];
-          const keyframe = await findKeyframeNearTime({ filePath, streamIndex: mainVideoStream.index, time, mode });
+          const keyframe = await findKeyframeNearTime({ filePath, streamIndex: videoStream.index, time, mode });
           if (keyframe == null) throw new Error(`Cannot find any keyframe within 60 seconds of frame ${time}`);
           newSegment[key] = keyframe;
         }
@@ -270,7 +270,7 @@ export default ({
     } finally {
       setWorking();
     }
-  }, [filePath, mainVideoStream, modifySelectedSegmentTimes, setWorking, workingRef]);
+  }, [filePath, videoStream, modifySelectedSegmentTimes, setWorking, workingRef]);
 
   const updateSegOrder = useCallback((index, newOrder) => {
     if (newOrder > cutSegments.length - 1 || newOrder < 0) return;

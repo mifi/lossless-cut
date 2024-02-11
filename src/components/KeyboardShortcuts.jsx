@@ -588,7 +588,7 @@ const KeyboardShortcuts = memo(({
         },
       },
     };
-  }, [currentCutSeg, t]);
+  }, [currentCutSeg, mouseWheelZoomModifierKey, t]);
 
   useEffect(() => {
     // cleanup invalid bindings, to prevent renamed actions from blocking user to rebind

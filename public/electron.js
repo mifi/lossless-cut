@@ -26,6 +26,11 @@ require('./i18n');
 
 const { app, ipcMain, shell, BrowserWindow, nativeTheme } = electron;
 
+// https://chromestatus.com/feature/5748496434987008
+// https://peter.sh/experiments/chromium-command-line-switches/
+// https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5
+app.commandLine.appendSwitch('enable-blink-features', 'AudioVideoTracks');
+
 remote.initialize();
 
 unhandled({
