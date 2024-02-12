@@ -1,6 +1,8 @@
 {
   "extends": ["@tsconfig/strictest", "@tsconfig/vite-react/tsconfig.json"],
   "compilerOptions": {
+    "plugins": [{ "name": "typescript-plugin-css-modules" }],
+
     "exactOptionalPropertyTypes": false, // todo
     "noUncheckedIndexedAccess": true,
     "noEmit": true,

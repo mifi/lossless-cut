@@ -39,6 +39,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 0, // todo
     'import/extensions': 0, // doesn't work with TS https://github.com/import-js/eslint-plugin-import/issues/2111
     'react/jsx-filename-extension': ['error', { extensions: ['.jsx', '.tsx'] }],
+    'react/require-default-props': 0,
   },
   parserOptions: {
     ecmaVersion: 2022,
