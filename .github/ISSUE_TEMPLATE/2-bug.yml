@@ -4,9 +4,9 @@ body:
   - type: checkboxes
     id: initial-checklist
     attributes:
-      label: I have a lot of issues to go through, so in order to make it easier for me to help you, I ask that you please try these things first
+      label: From maintainer @mifi: I have a lot of issues to go through, and every issue I have to read gives me less time to implement new features, so I ask that you please try these things first:
       options:
-        - label: Try with the [newest version from GitHub](https://github.com/mifi/lossless-cut/releases/latest) (also it might have been fixed in latest [nightly build](https://github.com/mifi/lossless-cut#nightly-builds-))
+        - label: Try with the [newest version from GitHub](https://github.com/mifi/lossless-cut/releases/latest) (also it might have already been fixed in latest [nightly build](https://github.com/mifi/lossless-cut#nightly-builds-))
           required: true
         - label: Read the [documentation](https://github.com/mifi/lossless-cut) and [FAQ, Known issues, Troubleshooting](https://github.com/mifi/lossless-cut/blob/master/issues.md)
           required: true
@@ -41,7 +41,7 @@ body:
     id: steps-to-reproduce
     attributes:
       label: Steps to reproduce
-      description: How would I reproduce the problem? Please describe step-by-step what you're doing from starting up LosslessCut until the problem occurs. You can attach screenshots if needed.
+      description: How would I reproduce the problem? Please describe step-by-step what you're doing from starting up LosslessCut until the problem occurs. You can attach screenshots or screencasts if needed.
     validations:
       required: true
   - type: textarea
@@ -61,7 +61,7 @@ body:
   - type: textarea
     id: share-log
     attributes:
-      label: Share log
+      label: Share log from developer tools
       description: 'If you have a problem or an unexpected bug or crash, please open developer tools after starting LosslessCut and before doing the failing operation. Then share the output from the javascript Console. (Menu: Tools > Toggle Developer Tools)'
     validations:
       required: false

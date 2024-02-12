@@ -18,6 +18,6 @@ body:
     id: feature-description
     attributes:
       label: Description
-      description: A clear and concise description of what you want you would like to be added or improved in LosslessCut. You can attach screenshots if needed.
+      description: A clear and concise description of what you want you would like to be added or improved in LosslessCut. You can attach screenshots or screencasts if needed.
     validations:
       required: true

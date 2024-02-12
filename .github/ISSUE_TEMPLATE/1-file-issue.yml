@@ -8,7 +8,7 @@ body:
   - type: checkboxes
     id: initial-checklist
     attributes:
-      label: I have a lot of issues to go through, so in order to make it easier for me to help you, I ask that you please try these things first
+      label: From maintainer @mifi: I have a lot of issues to go through, and every issue I have to read gives me less time to implement new features, so I ask that you please try these things first:
       options:
         - label: Try with a different kind of file to confirm that the problem is related to just this file.
           required: true
@@ -22,7 +22,7 @@ body:
     id: steps-to-reproduce
     attributes:
       label: Steps to reproduce
-      description: How would I reproduce the problem? Please describe step-by-step what you're doing from starting up LosslessCut until the problem occurs. You can attach screenshots if needed.
+      description: How would I reproduce the problem? Please describe step-by-step what you're doing from starting up LosslessCut until the problem occurs. You can attach screenshots or screencasts if needed.
     validations:
       required: true
   - type: textarea
@@ -56,7 +56,7 @@ body:
   - type: textarea
     id: share-log
     attributes:
-      label: Share log
-      description: 'Please open developer tools after starting LosslessCut and before doing the failing operation. Then share any relevant output from the javascript Console. (Menu: Tools > Toggle Developer Tools)'
+      label: Share log from developer tools
+      description: 'Please open developer tools after starting LosslessCut and before performing the relevant operation. Then share any relevant output from the javascript Console. (Menu: Tools > Toggle Developer Tools)'
     validations:
       required: false

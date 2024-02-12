@@ -35,7 +35,7 @@ For Windows, you may have to install [7z](https://www.7-zip.org/download.html), 
 npm start
 ```
 
-## Building mas-dev (Mac App Store) build locally
+## `mas-dev` (Mac App Store) local build
 
 This will sign using the development provisioning profile:
 
