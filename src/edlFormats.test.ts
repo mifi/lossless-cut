@@ -9,7 +9,8 @@ import { parseSrt, formatSrt, parseYouTube, formatYouTube, parseMplayerEdl, pars
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const readFixture = async (name, encoding = 'utf-8') => fs.readFile(join(__dirname, 'fixtures', name), encoding);
+const readFixture = async (name: string, encoding: BufferEncoding = 'utf-8') => fs.readFile(join(__dirname, 'fixtures', name), encoding);
+const readFixtureBinary = async (name: string) => fs.readFile(join(__dirname, 'fixtures', name), null);
 
 const expectYouTube1 = [
   { start: 0, end: 1, name: '00:01 Test 1' },
@@ -242,10 +243,10 @@ it('parses csv with timestamps', async () => {
 });
 
 it('parses pbf', async () => {
-  expect(parsePbf(await readFixture('test1.pbf', null))).toMatchSnapshot();
-  expect(parsePbf(await readFixture('test2.pbf', null))).toMatchSnapshot();
-  expect(parsePbf(await readFixture('test3.pbf', null))).toMatchSnapshot();
-  expect(parsePbf(await readFixture('potplayer bookmark format utf16le issue 867.pbf', null))).toMatchSnapshot();
+  expect(parsePbf(await readFixtureBinary('test1.pbf'))).toMatchSnapshot();
+  expect(parsePbf(await readFixtureBinary('test2.pbf'))).toMatchSnapshot();
+  expect(parsePbf(await readFixtureBinary('test3.pbf'))).toMatchSnapshot();
+  expect(parsePbf(await readFixtureBinary('potplayer bookmark format utf16le issue 867.pbf'))).toMatchSnapshot();
 });
 
 it('parses srt', async () => {

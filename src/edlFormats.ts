@@ -299,7 +299,7 @@ export function parseDvAnalyzerSummaryTxt(txt: string) {
 
 // http://www.textfiles.com/uploads/kds-srt.txt
 export function parseSrt(text: string) {
-  const ret: { start?: number, end?: number, name: string, tags: Record<string, string> }[] = [];
+  const ret: { start?: number, end?: number, name: string, tags: Record<string, string | number | undefined> }[] = [];
 
   // working state
   let subtitleIndexAt: number | undefined;
@@ -309,7 +309,7 @@ export function parseSrt(text: string) {
 
   const flush = () => {
     if (start != null && end != null && lines.length > 0) {
-      ret.push({ start, end, name: lines.join('\r\n'), tags: { index: String(subtitleIndexAt) } });
+      ret.push({ start, end, name: lines.join('\r\n'), tags: { index: subtitleIndexAt } });
     }
     start = undefined;
     end = undefined;

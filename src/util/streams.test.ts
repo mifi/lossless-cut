@@ -84,7 +84,7 @@ test('getMapStreamsArgs, smart cut', () => {
       if (streamIndex === 2) {
         return [
           `-c:${outputIndex}`, 'h264',
-          `-b:${outputIndex}`, 123456789,
+          `-b:${outputIndex}`, '123456789',
         ];
       }
       return undefined;
@@ -94,7 +94,7 @@ test('getMapStreamsArgs, smart cut', () => {
     '-c:0', 'copy',
     '-map', '0:2',
     '-c:1', 'h264',
-    '-b:1', 123456789,
+    '-b:1', '123456789',
     '-map', '0:4',
     '-c:2', 'copy',
     '-map', '0:5',

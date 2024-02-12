@@ -108,8 +108,10 @@ export function getActiveDisposition(disposition) {
 
 export const isMov = (format) => ['ismv', 'ipod', 'mp4', 'mov'].includes(format);
 
+type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
+
 function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined }: {
-  stream, outputIndex: number, outFormat: string, manuallyCopyDisposition?: boolean, getVideoArgs?: (a: { streamIndex: number, outputIndex: number }) => string[] | undefined
+  stream, outputIndex: number, outFormat: string, manuallyCopyDisposition?: boolean, getVideoArgs?: GetVideoArgsFn
 }) {
   let args: string[] = [];
 
@@ -190,7 +192,9 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
   return args;
 }
 
-export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition, getVideoArgs }) {
+export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition, getVideoArgs }: {
+  startIndex?: number, outFormat: string, allFilesMeta, copyFileStreams: { streamIds: number[], path: string }[], manuallyCopyDisposition?: boolean, getVideoArgs?: GetVideoArgsFn,
+}) {
   let args: string[] = [];
   let outputIndex = startIndex;
 
