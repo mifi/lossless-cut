@@ -7198,7 +7198,7 @@ __metadata:
     morgan: "npm:^1.10.0"
     mousetrap: "npm:^1.6.5"
     p-map: "npm:^5.5.0"
-    p-retry: "npm:^6.1.0"
+    p-retry: "npm:^6.2.0"
     pify: "npm:^5.0.0"
     pretty-bytes: "npm:^6.0.0"
     react: "npm:^18.2.0"
@@ -8228,14 +8228,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"p-retry@npm:^6.1.0":
-  version: 6.1.0
-  resolution: "p-retry@npm:6.1.0"
+"p-retry@npm:^6.2.0":
+  version: 6.2.0
+  resolution: "p-retry@npm:6.2.0"
   dependencies:
     "@types/retry": "npm:0.12.2"
     is-network-error: "npm:^1.0.0"
     retry: "npm:^0.13.1"
-  checksum: 5366014084c62f3a3acf5f95d0b7ad36817973e57d4a6638c3d1ad35fc710432840b1acc5b3f30b2943407b1532808a57a08cb5835199fdb02157ccc516b96e8
+  checksum: 1a5ac16828c96c03c354f78d643dfc7aa8f8b998e1b60e27533da2c75e5cabfb1c7f88ce312e813e09a80b056011fbb372d384132e9c92d27d052bd7c282a978
   languageName: node
   linkType: hard
 

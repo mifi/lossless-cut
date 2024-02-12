@@ -109,8 +109,6 @@ export async function fsOperationWithRetry(operation, { signal, retries = 10, mi
     minTimeout,
     maxTimeout,
     // mimic fs.rm `maxRetries` https://nodejs.org/api/fs.html#fspromisesrmpath-options
-    // todo
-    // @ts-expect-error I think error in the types
     shouldRetry: (err) => err instanceof Error && 'code' in err && typeof err.code === 'string' && ['EBUSY', 'EMFILE', 'ENFILE', 'EPERM'].includes(err.code),
     ...opts,
   });
