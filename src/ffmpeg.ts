@@ -54,7 +54,7 @@ export async function readFrames({ filePath, from, to, streamIndex }) {
   const packetsFiltered = JSON.parse(stdout).packets
     .map(p => ({
       keyframe: p.flags[0] === 'K',
-      time: parseFloat(p.pts_time, 10),
+      time: parseFloat(p.pts_time),
       createdAt: new Date(),
     }))
     .filter(p => !Number.isNaN(p.time));
@@ -299,9 +299,7 @@ export async function readFileMeta(filePath) {
   } catch (err) {
     // Windows will throw error with code ENOENT if format detection fails.
     if (isExecaFailure(err)) {
-      const err2 = new Error(`Unsupported file: ${err.message}`);
-      err2.code = 'LLC_FFPROBE_UNSUPPORTED_FILE';
-      throw err2;
+      throw Object.assign(new Error(`Unsupported file: ${err.message}`), { code: 'LLC_FFPROBE_UNSUPPORTED_FILE' });
     }
     throw err;
   }
@@ -340,7 +338,10 @@ function getPreferredCodecFormat(stream) {
   return undefined;
 }
 
-async function extractNonAttachmentStreams({ customOutDir, filePath, streams, enableOverwriteOutput }) {
+async function extractNonAttachmentStreams({ customOutDir, filePath, streams, enableOverwriteOutput }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  customOutDir?: string, filePath: string, streams: any[], enableOverwriteOutput?: boolean,
+}) {
   if (streams.length === 0) return [];
 
   const outStreams = streams.map((s) => ({
@@ -354,7 +355,7 @@ async function extractNonAttachmentStreams({ customOutDir, filePath, streams, en
   // console.log(outStreams);
 
 
-  let streamArgs = [];
+  let streamArgs: string[] = [];
   const outPaths = await pMap(outStreams, async ({ index, codec, type, format: { format, ext } }) => {
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
     if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
@@ -379,12 +380,15 @@ async function extractNonAttachmentStreams({ customOutDir, filePath, streams, en
   return outPaths;
 }
 
-async function extractAttachmentStreams({ customOutDir, filePath, streams, enableOverwriteOutput }) {
+async function extractAttachmentStreams({ customOutDir, filePath, streams, enableOverwriteOutput }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  customOutDir?: string, filePath: string, streams: any[], enableOverwriteOutput?: boolean,
+}) {
   if (streams.length === 0) return [];
 
   console.log('Extracting', streams.length, 'attachment streams');
 
-  let streamArgs = [];
+  let streamArgs: string[] = [];
   const outPaths = await pMap(streams, async ({ index, codec_name: codec, codec_type: type }) => {
     const ext = codec || 'bin';
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
@@ -411,7 +415,7 @@ async function extractAttachmentStreams({ customOutDir, filePath, streams, enabl
   } catch (err) {
     // Unfortunately ffmpeg will exit with code 1 even though it's a success
     // Note: This is kind of hacky:
-    if (err.exitCode === 1 && typeof err.stderr === 'string' && err.stderr.includes('At least one output file must be specified')) return outPaths;
+    if (err instanceof Error && 'exitCode' in err && 'stderr' in err && err.exitCode === 1 && typeof err.stderr === 'string' && err.stderr.includes('At least one output file must be specified')) return outPaths;
     throw err;
   }
   return outPaths;
@@ -474,7 +478,7 @@ export async function renderThumbnails({ filePath, from, duration, onThumbnail }
   const numThumbs = Math.floor(Math.min(Math.max(3 / (endTime - startTime), 3), 10));
   // console.log(numThumbs);
 
-  const thumbTimes = Array(numThumbs - 1).fill().map((unused, i) => (from + ((duration * (i + 1)) / (numThumbs))));
+  const thumbTimes = Array(numThumbs - 1).fill(undefined).map((_unused, i) => (from + ((duration * (i + 1)) / (numThumbs))));
   // console.log(thumbTimes);
 
   await pMap(thumbTimes, async (time) => {
@@ -487,12 +491,12 @@ export async function extractWaveform({ filePath, outPath }) {
   const numSegs = 10;
   const duration = 60 * 60;
   const maxLen = 0.1;
-  const segments = Array(numSegs).fill().map((unused, i) => [i * (duration / numSegs), Math.min(duration / numSegs, maxLen)]);
+  const segments = Array(numSegs).fill(undefined).map((_unused, i) => [i * (duration / numSegs), Math.min(duration / numSegs, maxLen)] as const);
 
   // https://superuser.com/questions/681885/how-can-i-remove-multiple-segments-from-a-video-using-ffmpeg
   let filter = segments.map(([from, len], i) => `[0:a]atrim=start=${from}:end=${from + len},asetpts=PTS-STARTPTS[a${i}]`).join(';');
   filter += ';';
-  filter += segments.map((arr, i) => `[a${i}]`).join('');
+  filter += segments.map((_arr, i) => `[a${i}]`).join('');
   filter += `concat=n=${segments.length}:v=0:a=1[out]`;
 
   console.time('ffmpeg');
@@ -592,18 +596,20 @@ export async function runFfmpegStartupCheck() {
 }
 
 // https://superuser.com/questions/543589/information-about-ffmpeg-command-line-options
-export const getExperimentalArgs = (ffmpegExperimental) => (ffmpegExperimental ? ['-strict', 'experimental'] : []);
+export const getExperimentalArgs = (ffmpegExperimental: boolean) => (ffmpegExperimental ? ['-strict', 'experimental'] : []);
 
-export const getVideoTimescaleArgs = (videoTimebase) => (videoTimebase != null ? ['-video_track_timescale', videoTimebase] : []);
+export const getVideoTimescaleArgs = (videoTimebase: number) => (videoTimebase != null ? ['-video_track_timescale', String(videoTimebase)] : []);
 
 // inspired by https://gist.github.com/fernandoherreradelasheras/5eca67f4200f1a7cc8281747da08496e
-export async function cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate, videoTimebase, allFilesMeta, copyFileStreams, videoStreamIndex, ffmpegExperimental }) {
-  function getVideoArgs({ streamIndex, outputIndex }) {
+export async function cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate, videoTimebase, allFilesMeta, copyFileStreams, videoStreamIndex, ffmpegExperimental }: {
+  filePath: string, cutFrom: number, cutTo: number, outPath: string, outFormat: string, videoCodec: string, videoBitrate: number, videoTimebase: number, allFilesMeta, copyFileStreams, videoStreamIndex: number, ffmpegExperimental: boolean,
+}) {
+  function getVideoArgs({ streamIndex, outputIndex }: { streamIndex: number, outputIndex: number }) {
     if (streamIndex !== videoStreamIndex) return undefined;
 
     const args = [
       `-c:${outputIndex}`, videoCodec,
-      `-b:${outputIndex}`, videoBitrate,
+      `-b:${outputIndex}`, String(videoBitrate),
     ];
 
     // seems like ffmpeg handles this itself well when encoding same source file

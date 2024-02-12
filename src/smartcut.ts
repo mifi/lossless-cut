@@ -5,15 +5,20 @@ import { readKeyframesAroundTime, findNextKeyframe, findKeyframeAtExactTime } fr
 const { stat } = window.require('fs-extra');
 
 
+const mapVideoCodec = (codec: string) => codec;
+// const mapVideoCodec = (codec: string) => ({ av1: 'libsvtav1' }[codec] ?? codec);
+
 // eslint-disable-next-line import/prefer-default-export
-export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, streams }) {
+export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, streams }: {
+  path: string, videoDuration: number, desiredCutFrom: number, streams,
+}) {
   const videoStreams = getRealVideoStreams(streams);
   if (videoStreams.length === 0) throw new Error('Smart cut only works on videos');
   if (videoStreams.length > 1) throw new Error('Can only smart cut video with exactly one video stream');
 
   const videoStream = videoStreams[0];
 
-  const readKeyframes = async (window) => readKeyframesAroundTime({ filePath: path, streamIndex: videoStream.index, aroundTime: desiredCutFrom, window });
+  const readKeyframes = async (window: number) => readKeyframesAroundTime({ filePath: path, streamIndex: videoStream.index, aroundTime: desiredCutFrom, window });
 
   let keyframes = await readKeyframes(10);
 
@@ -50,8 +55,11 @@ export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, s
   // see discussion https://github.com/mifi/lossless-cut/issues/126#issuecomment-1602266688
   videoBitrate = Math.floor(videoBitrate * 1.2);
 
-  const { codec_name: videoCodec } = videoStream;
-  if (videoCodec == null) throw new Error('Unable to determine codec for smart cut');
+  const { codec_name: detectedVideoCodec } = videoStream;
+  if (detectedVideoCodec == null) throw new Error('Unable to determine codec for smart cut');
+
+  const videoCodec = mapVideoCodec(detectedVideoCodec);
+  console.log({ detectedVideoCodec, videoCodec });
 
   const timebase = getVideoTimebase(videoStream);
   if (timebase == null) console.warn('Unable to determine timebase', videoStream.time_base);
