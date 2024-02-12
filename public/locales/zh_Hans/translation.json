@@ -239,7 +239,7 @@
     "Trash it": "删除",
     "Are you sure you want to move the source file to trash?": "您确定要将源文件移动到回收站吗?",
     "Converting to supported format": "格式转换中",
-    "Unable to playback this file. Try to convert to supported format from the menu": "无法播放该文件。尝试在菜单中转换到受支持的格式。",
+    "Unable to playback this file. Try to convert to supported format from the menu": "无法播放此文件。尝试先从菜单转换到程序所支持的格式",
     "File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview.": "不支持该文件。预览时可能没有音频或质量较低。但最终的输出是无损的音频。您可以从菜单中转换它以获得更好的预览。",
     "Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut": "将在准确的位置切割，但可能在文件开头产生空白部分。你可能需要在下一个关键帧的前几帧设置切割点来实现精确切割。",
     "Keyframe cut disabled": "已关闭关键帧切割（精确模式）",
@@ -828,5 +828,15 @@
     "Please enter a valid number.": "请输入一个有效的数字。",
     "Enter tag name (in the next dialog you'll enter tag value)": "输入标记名称（在下一个对话框中输入标记值）",
     "Sanitize file names": "清除文件名",
-    "Enter tag value": "输入标记值"
+    "Enter tag value": "输入标记值",
+    "Enter tag key": "输入标记键",
+    "empty": "空的",
+    "Delete": "删除",
+    "Add segment tag": "添加段标记",
+    "Edit segment tags": "编辑段标记",
+    "\"ffmpeg\" experimental flag": "\"ffmpeg\" 实验标志",
+    "No file is loaded": "未加载任何文件",
+    "Discard all tracks": "放弃所有轨道",
+    "Keep all tracks": "保留所有轨道",
+    "At least one resulting file name ends with a whitespace character or a dot, which is not allowed.": "至少有一个生成的文件名以空白字符或点结尾，这是不允许的。"
 }
