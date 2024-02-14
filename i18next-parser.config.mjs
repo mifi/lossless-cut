@@ -1,5 +1,5 @@
 export default {
-  input: ['src/**/*.{js,jsx}', 'public/*.js'],
+  input: ['src/**/*.{js,jsx,ts,tsx}', 'public/*.{js,ts}'],
 
   output: 'public/locales/$LOCALE/$NAMESPACE.json',
   indentation: 4,

@@ -110,7 +110,7 @@ const ExportConfirm = memo(({
   }, [avoidNegativeTs]);
 
   const onCutFromAdjustmentFramesHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Shift all segment start times forward by a number of frames before cutting in order to avoid starting at the wrong keyframe.') });
+    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('This option allows you to shift all segment start times forward by one or more frames before cutting. This can be useful if the output video starts from the wrong (preceding) keyframe.') });
   }, []);
 
   const onFfmpegExperimentalHelpPress = useCallback(() => {
