@@ -41,7 +41,7 @@ const ExportConfirm = memo(({
 }) => {
   const { t } = useTranslation();
 
-  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, movFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, togglePreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental } = useUserSettings();
+  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, movFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, togglePreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames } = useUserSettings();
 
   const isMov = ffmpegIsMov(outFormat);
   const isIpod = outFormat === 'ipod';
@@ -108,6 +108,10 @@ const ExportConfirm = memo(({
     };
     toast.fire({ icon: 'info', timer: 10000, text: `${avoidNegativeTs}: ${texts[avoidNegativeTs]}` });
   }, [avoidNegativeTs]);
+
+  const onCutFromAdjustmentFramesHelpPress = useCallback(() => {
+    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Shift all segment start times forward by a number of frames before cutting in order to avoid starting at the wrong keyframe.') });
+  }, []);
 
   const onFfmpegExperimentalHelpPress = useCallback(() => {
     toast.fire({ icon: 'info', timer: 10000, text: t('Enable experimental ffmpeg features flag?') });
@@ -316,6 +320,22 @@ const ExportConfirm = memo(({
                           </tr>
                         )}
                       </>
+                    )}
+
+                    {areWeCutting && (
+                      <tr>
+                        <td>
+                          {t('Shift all start times')}
+                        </td>
+                        <td>
+                          <Select value={cutFromAdjustmentFrames} onChange={(e) => setCutFromAdjustmentFrames(Number(e.target.value))} style={{ height: 20, marginLeft: 5 }}>
+                            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => <option key={v} value={v}>{t('+{{numFrames}} frames', { numFrames: v, count: v })}</option>)}
+                          </Select>
+                        </td>
+                        <td>
+                          <HelpIcon onClick={onCutFromAdjustmentFramesHelpPress} />
+                        </td>
+                      </tr>
                     )}
 
                     {isMov && (

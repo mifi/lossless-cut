@@ -28,3 +28,16 @@ export interface Waveform {
 }
 
 export type FfmpegCommandLog = { command: string, time: Date }[];
+
+export interface Thumbnail {
+  time: number
+  url: string
+}
+
+// todo types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type FfprobeStream = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type FfprobeFormat = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type FfprobeChapter = any;

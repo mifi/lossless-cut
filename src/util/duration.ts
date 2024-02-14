@@ -13,11 +13,11 @@ export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, show
   const totalUnits = Math.round(totalSecondsAbs * unitsPerSec);
 
   const seconds = Math.floor(totalUnits / unitsPerSec);
-  const secondsPadded = padStart(seconds % 60, 2, '0');
+  const secondsPadded = padStart(String(seconds % 60), 2, '0');
   const minutes = Math.floor(totalUnits / unitsPerSec / 60) % 60;
   const hours = Math.floor(totalUnits / unitsPerSec / 60 / 60);
 
-  const minutesPadded = shorten && hours === 0 ? `${minutes}` : padStart(minutes, 2, '0');
+  const minutesPadded = shorten && hours === 0 ? `${minutes}` : padStart(String(minutes), 2, '0');
 
   const remainder = totalUnits % unitsPerSec;
 
@@ -26,14 +26,14 @@ export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, show
 
   let hoursPart = '';
   if (!shorten || hours !== 0) {
-    const hoursPadded = shorten ? `${hours}` : padStart(hours, 2, '0');
+    const hoursPadded = shorten ? `${hours}` : padStart(String(hours), 2, '0');
     hoursPart = `${hoursPadded}${delim}`;
   }
 
   let fraction = '';
   if (showFraction && !(shorten && remainder === 0)) {
     const numDigits = fps != null ? 2 : 3;
-    fraction = `.${padStart(Math.floor(remainder), numDigits, '0')}`;
+    fraction = `.${padStart(String(Math.floor(remainder)), numDigits, '0')}`;
   }
 
   return `${sign}${hoursPart}${minutesPadded}${delim}${secondsPadded}${fraction}`;

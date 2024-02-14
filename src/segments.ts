@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import sortBy from 'lodash/sortBy';
 import minBy from 'lodash/minBy';
 import maxBy from 'lodash/maxBy';
-import { InverseSegment } from './types';
+import { InverseSegment, SegmentBase } from './types';
 
 
 export const isDurationValid = (duration?: number): duration is number => duration != null && Number.isFinite(duration) && duration > 0;
@@ -66,7 +66,7 @@ export function partitionIntoOverlappingRanges(array, getSegmentStart = (seg) =>
     return getSegmentEnd(array2[0]);
   }
 
-  const ret: number[][] = [];
+  const ret: SegmentBase[][] = [];
   let g = 0;
   ret[g] = [array[0]];
 
@@ -95,14 +95,14 @@ export function combineOverlappingSegments(existingSegments, getSegApparentEnd2)
       return {
         ...existingSegment,
         // but use the segment with the highest "end" value as the end value.
-        end: sortBy(partOfPartition, (segment) => segment.end)[partOfPartition.length - 1].end,
+        end: sortBy(partOfPartition, (segment) => segment.end)[partOfPartition.length - 1]!.end,
       };
     }
     return undefined; // then remove all other segments in this partition group
   }).filter((segment) => segment);
 }
 
-export function combineSelectedSegments(existingSegments, getSegApparentEnd2, isSegmentSelected) {
+export function combineSelectedSegments<T extends SegmentBase>(existingSegments: T[], getSegApparentEnd2, isSegmentSelected) {
   const selectedSegments = existingSegments.filter(isSegmentSelected);
   const firstSegment = minBy(selectedSegments, (seg) => getSegApparentStart(seg));
   const lastSegment = maxBy(selectedSegments, (seg) => getSegApparentEnd2(seg));
@@ -112,7 +112,7 @@ export function combineSelectedSegments(existingSegments, getSegApparentEnd2, is
       return {
         ...firstSegment,
         start: firstSegment.start,
-        end: lastSegment.end,
+        end: lastSegment!.end,
       };
     }
     if (isSegmentSelected(existingSegment)) return undefined; // remove other selected segments

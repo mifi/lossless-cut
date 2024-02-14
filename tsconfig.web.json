@@ -3,6 +3,8 @@
   "compilerOptions": {
     "plugins": [{ "name": "typescript-plugin-css-modules" }],
 
+    "lib": ["es2023", "DOM", "DOM.Iterable"],
+
     "exactOptionalPropertyTypes": false, // todo
     "noUncheckedIndexedAccess": true,
     "noEmit": true,

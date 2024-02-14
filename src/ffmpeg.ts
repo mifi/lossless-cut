@@ -48,10 +48,21 @@ function getIntervalAroundTime(time, window) {
   };
 }
 
+interface Keyframe {
+  time: number,
+  createdAt: Date,
+}
+
+interface Frame extends Keyframe {
+  keyframe: boolean
+}
+
 export async function readFrames({ filePath, from, to, streamIndex }) {
   const intervalsArgs = from != null && to != null ? ['-read_intervals', `${from}%${to}`] : [];
   const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', streamIndex, '-show_entries', 'packet=pts_time,flags', '-of', 'json', filePath]);
-  const packetsFiltered = JSON.parse(stdout).packets
+  // todo types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const packetsFiltered: Frame[] = (JSON.parse(stdout).packets as any[])
     .map(p => ({
       keyframe: p.flags[0] === 'K',
       time: parseFloat(p.pts_time),
@@ -73,12 +84,14 @@ export async function readKeyframesAroundTime({ filePath, streamIndex, aroundTim
   return frames.filter((frame) => frame.keyframe);
 }
 
-export const findKeyframeAtExactTime = (keyframes, time) => keyframes.find((keyframe) => Math.abs(keyframe.time - time) < 0.000001);
-export const findNextKeyframe = (keyframes, time) => keyframes.find((keyframe) => keyframe.time >= time); // (assume they are already sorted)
-const findPreviousKeyframe = (keyframes, time) => keyframes.findLast((keyframe) => keyframe.time <= time);
-const findNearestKeyframe = (keyframes, time) => minBy(keyframes, (keyframe) => Math.abs(keyframe.time - time));
+export const findKeyframeAtExactTime = (keyframes: Keyframe[], time: number) => keyframes.find((keyframe) => Math.abs(keyframe.time - time) < 0.000001);
+export const findNextKeyframe = (keyframes: Keyframe[], time: number) => keyframes.find((keyframe) => keyframe.time >= time); // (assume they are already sorted)
+const findPreviousKeyframe = (keyframes: Keyframe[], time: number) => keyframes.findLast((keyframe) => keyframe.time <= time);
+const findNearestKeyframe = (keyframes: Keyframe[], time: number) => minBy(keyframes, (keyframe) => Math.abs(keyframe.time - time));
 
-function findKeyframe(keyframes, time, mode) {
+export type FindKeyframeMode = 'nearest' | 'before' | 'after';
+
+function findKeyframe(keyframes: Keyframe[], time: number, mode: FindKeyframeMode) {
   switch (mode) {
     case 'nearest': return findNearestKeyframe(keyframes, time);
     case 'before': return findPreviousKeyframe(keyframes, time);
@@ -87,7 +100,7 @@ function findKeyframe(keyframes, time, mode) {
   }
 }
 
-export async function findKeyframeNearTime({ filePath, streamIndex, time, mode }) {
+export async function findKeyframeNearTime({ filePath, streamIndex, time, mode }: { filePath: string, streamIndex: number, time: number, mode: FindKeyframeMode }) {
   let keyframes = await readKeyframesAroundTime({ filePath, streamIndex, aroundTime: time, window: 10 });
   let nearByKeyframe = findKeyframe(keyframes, time, mode);
 

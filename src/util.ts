@@ -18,9 +18,9 @@ const { ipcRenderer } = window.require('electron');
 const remote = window.require('@electron/remote');
 
 
-const trashFile = async (path) => ipcRenderer.invoke('tryTrashItem', path);
+const trashFile = async (path: string) => ipcRenderer.invoke('tryTrashItem', path);
 
-export const showItemInFolder = async (path) => ipcRenderer.invoke('showItemInFolder', path);
+export const showItemInFolder = async (path: string) => ipcRenderer.invoke('showItemInFolder', path);
 
 
 export function getFileDir(filePath?: string) {
@@ -33,25 +33,25 @@ export function getOutDir(customOutDir?: string, filePath?: string) {
   return undefined;
 }
 
-function getFileBaseName(filePath) {
+function getFileBaseName(filePath?: string) {
   if (!filePath) return undefined;
   const parsed = parsePath(filePath);
   return parsed.name;
 }
 
-export function getOutPath({ customOutDir, filePath, fileName }) {
+export function getOutPath({ customOutDir, filePath, fileName }: { customOutDir?: string, filePath?: string, fileName?: string }) {
   if (!filePath) return undefined;
   return join(getOutDir(customOutDir, filePath), fileName);
 }
 
-export const getSuffixedFileName = (filePath, nameSuffix) => `${getFileBaseName(filePath)}-${nameSuffix}`;
+export const getSuffixedFileName = (filePath: string | undefined, nameSuffix: string) => `${getFileBaseName(filePath)}-${nameSuffix}`;
 
-export function getSuffixedOutPath({ customOutDir, filePath, nameSuffix }) {
+export function getSuffixedOutPath({ customOutDir, filePath, nameSuffix }: { customOutDir?: string, filePath?: string, nameSuffix: string }) {
   if (!filePath) return undefined;
   return getOutPath({ customOutDir, filePath, fileName: getSuffixedFileName(filePath, nameSuffix) });
 }
 
-export async function havePermissionToReadFile(filePath) {
+export async function havePermissionToReadFile(filePath: string) {
   try {
     const fd = await fsExtra.open(filePath, 'r');
     try {
@@ -120,6 +120,8 @@ export const unlinkWithRetry = async (path, options) => fsOperationWithRetry(asy
 // example error: index-18074aaf.js:160 Error: EPERM: operation not permitted, utime 'C:\Users\USERNAME\Desktop\RC\New folder\2023-12-27 21-45-22 (GMT p5)-merged-1703933052361-cut-merged-1703933070237.mp4'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const utimesWithRetry = async (path: string, atime: number, mtime: number, options?: any) => fsOperationWithRetry(async () => utimes(path, atime, mtime), { ...options, onFailedAttempt: (error) => console.warn('Retrying utimes', path, error.attemptNumber) });
+
+export const getFrameDuration = (fps?: number) => 1 / (fps ?? 30);
 
 export async function transferTimestamps({ inPath, outPath, cutFrom = 0, cutTo = 0, duration = 0, treatInputFileModifiedTimeAsStart = true, treatOutputFileModifiedTimeAsStart }) {
   if (treatOutputFileModifiedTimeAsStart == null) return; // null means disabled;

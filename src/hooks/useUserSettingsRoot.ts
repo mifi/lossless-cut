@@ -11,8 +11,8 @@ const configStore = remote.require('./configStore');
 export default () => {
   const firstUpdateRef = useRef(true);
 
-  function safeSetConfig(keyValue) {
-    const [key, value] = Object.entries(keyValue)[0];
+  function safeSetConfig(keyValue: Record<string, string>) {
+    const [key, value] = Object.entries(keyValue)[0]!;
 
     // Prevent flood-saving all config during mount
     if (firstUpdateRef.current) return;
@@ -26,7 +26,7 @@ export default () => {
     }
   }
 
-  function safeGetConfig(key) {
+  function safeGetConfig(key: string) {
     const rawVal = configStore.get(key);
     if (rawVal === undefined) return undefined;
     // NOTE: Need to clone any non-primitive in renderer, or it will become very slow
@@ -37,7 +37,7 @@ export default () => {
   // From https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
   // If the initial state is the result of an expensive computation, you may provide a function instead, which will be executed only on the initial render
   // Without this there was a huge performance issue https://github.com/mifi/lossless-cut/issues/1097
-  const safeGetConfigInitial = (...args) => () => safeGetConfig(...args);
+  const safeGetConfigInitial = (key: string) => () => safeGetConfig(key);
 
   const [captureFormat, setCaptureFormat] = useState(safeGetConfigInitial('captureFormat'));
   useEffect(() => safeSetConfig({ captureFormat }), [captureFormat]);
@@ -143,6 +143,8 @@ export default () => {
   useEffect(() => safeSetConfig({ preferStrongColors }), [preferStrongColors]);
   const [outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding] = useState(safeGetConfigInitial('outputFileNameMinZeroPadding'));
   useEffect(() => safeSetConfig({ outputFileNameMinZeroPadding }), [outputFileNameMinZeroPadding]);
+  const [cutFromAdjustmentFrames, setCutFromAdjustmentFrames] = useState(safeGetConfigInitial('cutFromAdjustmentFrames'));
+  useEffect(() => safeSetConfig({ cutFromAdjustmentFrames }), [cutFromAdjustmentFrames]);
 
   const resetKeyBindings = useCallback(() => {
     configStore.reset('keyBindings');
@@ -261,5 +263,7 @@ export default () => {
     setPreferStrongColors,
     outputFileNameMinZeroPadding,
     setOutputFileNameMinZeroPadding,
+    cutFromAdjustmentFrames,
+    setCutFromAdjustmentFrames,
   };
 };

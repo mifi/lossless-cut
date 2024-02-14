@@ -85,7 +85,7 @@ import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './uti
 import BigWaveform from './components/BigWaveform';
 
 import isDev from './isDev';
-import { EdlFileType, FfmpegCommandLog, Html5ifyMode, TunerType } from './types';
+import { EdlFileType, FfmpegCommandLog, FfprobeChapter, FfprobeFormat, FfprobeStream, Html5ifyMode, Thumbnail, TunerType } from './types';
 
 const electron = window.require('electron');
 const { exists } = window.require('fs-extra');
@@ -125,12 +125,12 @@ function App() {
   const [customTagsByFile, setCustomTagsByFile] = useState({});
   const [paramsByStreamId, setParamsByStreamId] = useState(new Map());
   const [detectedFps, setDetectedFps] = useState<number>();
-  const [mainFileMeta, setMainFileMeta] = useState<{ streams: any[], formatData: any, chapters?: any }>({ streams: [], formatData: {} });
+  const [mainFileMeta, setMainFileMeta] = useState<{ streams: FfprobeStream[], formatData: FfprobeFormat, chapters?: FfprobeChapter[] }>({ streams: [], formatData: {} });
   const [copyStreamIdsByFile, setCopyStreamIdsByFile] = useState<Record<string, Record<string, boolean>>>({});
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
   const [concatDialogVisible, setConcatDialogVisible] = useState(false);
   const [zoomUnrounded, setZoom] = useState(1);
-  const [thumbnails, setThumbnails] = useState<{ from: number, url: string }[]>([]);
+  const [thumbnails, setThumbnails] = useState<Thumbnail[]>([]);
   const [shortestFlag, setShortestFlag] = useState(false);
   const [zoomWindowStartTime, setZoomWindowStartTime] = useState(0);
   const [subtitlesByStreamId, setSubtitlesByStreamId] = useState<Record<string, { url: string, lang?: string }>>({});
@@ -191,7 +191,7 @@ function App() {
   const allUserSettings = useUserSettingsRoot();
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, setCleanupChoices, darkMode, setDarkMode, preferStrongColors, outputFileNameMinZeroPadding,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, setCleanupChoices, darkMode, setDarkMode, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames,
   } = allUserSettings;
 
   useEffect(() => {
@@ -345,7 +345,7 @@ function App() {
 
   const activeVideoStream = useMemo(() => (activeVideoStreamIndex != null ? videoStreams.find((stream) => stream.index === activeVideoStreamIndex) : undefined) ?? mainVideoStream, [activeVideoStreamIndex, mainVideoStream, videoStreams]);
   const activeAudioStream = useMemo(() => (activeAudioStreamIndex != null ? audioStreams.find((stream) => stream.index === activeAudioStreamIndex) : undefined) ?? mainAudioStream, [activeAudioStreamIndex, audioStreams, mainAudioStream]);
-  const activeSubtitle = useMemo(() => activeSubtitleStreamIndex != null ? subtitlesByStreamId[activeSubtitleStreamIndex] : undefined, [activeSubtitleStreamIndex, subtitlesByStreamId]);
+  const activeSubtitle = useMemo(() => (activeSubtitleStreamIndex != null ? subtitlesByStreamId[activeSubtitleStreamIndex] : undefined), [activeSubtitleStreamIndex, subtitlesByStreamId]);
 
   // 360 means we don't modify rotation gtrgt
   const isRotationSet = rotation !== 360;
@@ -673,7 +673,7 @@ function App() {
   const toggleStripAudio = useCallback(() => toggleStripStream((stream) => stream.codec_type === 'audio'), [toggleStripStream]);
   const toggleStripThumbnail = useCallback(() => toggleStripStream(isStreamThumbnail), [toggleStripStream]);
 
-  const thumnailsRef = useRef<{ from: number, url: string }[]>([]);
+  const thumnailsRef = useRef<Thumbnail[]>([]);
   const thumnailsRenderingPromiseRef = useRef<Promise<void>>();
 
   function addThumbnail(thumbnail) {
@@ -798,7 +798,7 @@ function App() {
 
   const {
     concatFiles, html5ifyDummy, cutMultiple, autoConcatCutSegments, html5ify, fixInvalidDuration,
-  } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate });
+  } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames });
 
   const html5ifyAndLoad = useCallback(async (cod, fp, speed, hv, ha) => {
     const usesDummyVideo = speed === 'fastest';
@@ -867,6 +867,7 @@ function App() {
         setTotalProgress();
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}`, timer: null as any as undefined, showConfirmButton: true });
     } catch (err) {
       errorToast(i18n.t('Failed to batch convert to supported format'));
@@ -1078,10 +1079,10 @@ function App() {
           // assume execa killed (aborted by user)
           return;
         }
-  
+
         if ('stdout' in err) console.error('stdout:', err.stdout);
         if ('stderr' in err) console.error('stderr:', err.stderr);
-  
+
         if (isExecaFailure(err)) {
           if (isOutOfSpaceError(err)) {
             showDiskFull();
@@ -1296,10 +1297,10 @@ function App() {
           // assume execa killed (aborted by user)
           return;
         }
-  
+
         if ('stdout' in err) console.error('stdout:', err.stdout);
         if ('stderr' in err) console.error('stderr:', err.stderr);
-  
+
         if (isExecaFailure(err)) {
           if (isOutOfSpaceError(err)) {
             showDiskFull();
@@ -2305,6 +2306,8 @@ function App() {
       }
     }
 
+    // todo
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const actionsWithArgs: Record<string, (...args: any[]) => void> = {
       openFiles: (filePaths: string[]) => { userOpenFiles(filePaths.map(resolvePathIfNeeded)); },
       // todo separate actions per type and move them into mainActions? https://github.com/mifi/lossless-cut/issues/254#issuecomment-932649424
@@ -2320,6 +2323,7 @@ function App() {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const actionsWithCatch: Readonly<[string, (event: unknown, ...a: any) => Promise<void>]>[] = [
       // actions with arguments:
       ...Object.entries(actionsWithArgs).map(([key, fn]) => [

@@ -27,7 +27,7 @@ export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, s
     console.log('Start cut is already on exact keyframe', keyframeAtExactTime.time);
 
     return {
-      cutFrom: keyframeAtExactTime.time,
+      losslessCutFrom: keyframeAtExactTime.time,
       videoStreamIndex: videoStream.index,
       segmentNeedsSmartCut: false,
     };
@@ -69,7 +69,7 @@ export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, s
   // const videoProfile = parseProfile(videoStream);
 
   return {
-    cutFrom: nextKeyframe.time,
+    losslessCutFrom: nextKeyframe.time,
     videoStreamIndex: videoStream.index,
     segmentNeedsSmartCut: true,
     videoCodec,

@@ -159,7 +159,7 @@ export function generateOutSegFileNames({ segments, template: desiredTemplate, f
       return [
         ...rest,
         // If sanitation is enabled, make sure filename (last seg of the path) is not too long
-        safeOutputFileName ? lastSeg.substring(0, 200) : lastSeg,
+        safeOutputFileName ? lastSeg!.substring(0, 200) : lastSeg,
       ].join(pathSep);
     });
   }

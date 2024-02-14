@@ -131,6 +131,7 @@ const defaults = {
   darkMode: true,
   preferStrongColors: false,
   outputFileNameMinZeroPadding: 1,
+  cutFromAdjustmentFrames: 0,
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645
