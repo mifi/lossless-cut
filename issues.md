@@ -53,7 +53,7 @@ Each segment's *start cut time* normally (but not always) will be "rounded" to t
 
 ### Starts from wrong keyframe
 
-For some files, when you place segment start cutpoints at keyframes, and you export, it will instead cut from the keyframe **before** the keyframe that you wanted. This is because with some videos, ffmpeg struggles to find the nearest previous keyframe, see [#1216](https://github.com/mifi/lossless-cut/issues/1216). To workaround this, you can try to shift your segments' **start**-cutpoints forward by a few frames, so that ffmpeg correctly cuts from the *previous* keyframe. You can do this for all segments before exporting as follows:
+For some files, when you place segment start cutpoints at keyframes, and you export, it will instead cut from the keyframe **before** the keyframe that you wanted. This is because with some videos, ffmpeg struggles to find the nearest previous keyframe, see [#1216](https://github.com/mifi/lossless-cut/issues/1216). To workaround this, you can try to shift your segments' **start**-cutpoints forward by a few frames, so that ffmpeg correctly cuts from the *previous* keyframe. You can also enable the Export Option "Shift all start times" by +1, +2, +3 frames or so.
 
 - Menu: "Edit" -> "Segments" -> "Shift all segments on timeline"
 - Enter `00:00:00.200` (or a larger value if it doesn't help)
@@ -79,7 +79,7 @@ Doing this first might "clean up" certain parameters in the files, to make them 
 
 ## Smart cut not working
 
-Smart cut is experimental, so don't expect too much. But if you're having problems, check out [this issue](https://github.com/mifi/lossless-cut/issues/126).
+Smart cut is experimental, so don't expect too much. But if you're having problems, check out [this issue](https://github.com/mifi/lossless-cut/issues/126). If Smart Cut gives you repeated (duplicate) segments, you can try to enable the Export Option "Shift all start times".
 
 ## My file changes from MP4 to MOV
 
