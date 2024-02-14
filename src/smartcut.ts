@@ -5,8 +5,7 @@ import { readKeyframesAroundTime, findNextKeyframe, findKeyframeAtExactTime } fr
 const { stat } = window.require('fs-extra');
 
 
-const mapVideoCodec = (codec: string) => codec;
-// const mapVideoCodec = (codec: string) => ({ av1: 'libsvtav1' }[codec] ?? codec);
+const mapVideoCodec = (codec: string) => ({ av1: 'libsvtav1' }[codec] ?? codec);
 
 // eslint-disable-next-line import/prefer-default-export
 export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, streams }: {
