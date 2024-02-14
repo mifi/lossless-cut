@@ -8,7 +8,7 @@ body:
   - type: checkboxes
     id: initial-checklist
     attributes:
-      label: From maintainer @mifi: I have a lot of issues to go through, and every issue I have to read gives me less time to implement new features, so I ask that you please try these things first:
+      label: The fewer issues I have to read, the more new features I will have time to implement, so I ask that you please try these things first
       options:
         - label: Try with a different kind of file to confirm that the problem is related to just this file.
           required: true

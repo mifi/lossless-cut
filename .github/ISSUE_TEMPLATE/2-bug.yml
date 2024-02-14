@@ -4,7 +4,7 @@ body:
   - type: checkboxes
     id: initial-checklist
     attributes:
-      label: From maintainer @mifi: I have a lot of issues to go through, and every issue I have to read gives me less time to implement new features, so I ask that you please try these things first:
+      label: The fewer issues I have to read, the more new features I will have time to implement, so I ask that you please try these things first
       options:
         - label: Try with the [newest version from GitHub](https://github.com/mifi/lossless-cut/releases/latest) (also it might have already been fixed in latest [nightly build](https://github.com/mifi/lossless-cut#nightly-builds-))
           required: true

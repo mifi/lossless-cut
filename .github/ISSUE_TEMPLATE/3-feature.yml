@@ -4,7 +4,7 @@ body:
   - type: checkboxes
     id: initial-checklist
     attributes:
-      label: I have a lot of issues to go through, so in order to make it easier for me to help you, I ask that you please try these things first
+      label: The fewer issues I have to read, the more new features I will have time to implement, so I ask that you please try these things first
       options:
         - label: Check out all the menus and keyboard shortcuts. Maybe the feature already exists?
           required: true
