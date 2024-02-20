@@ -1,4 +1,4 @@
-import React, { memo, useRef, useMemo, useCallback, useEffect, useState } from 'react';
+import { memo, useRef, useMemo, useCallback, useEffect, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import debounce from 'lodash/debounce';
 import { useTranslation } from 'react-i18next';

@@ -1,4 +1,4 @@
-import React, { memo, useRef, useState, useMemo, useCallback, useEffect } from 'react';
+import { memo, useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, TrashIcon, TickIcon, EditIcon, PlusIcon, Button, IconButton } from 'evergreen-ui';
 

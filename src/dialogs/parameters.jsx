@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button, TextInputField, LinkIcon } from 'evergreen-ui';
 import i18n from 'i18next';
 import withReactContent from 'sweetalert2-react-content';

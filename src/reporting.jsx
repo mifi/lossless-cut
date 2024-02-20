@@ -1,4 +1,3 @@
-import React from 'react';
 import withReactContent from 'sweetalert2-react-content';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';

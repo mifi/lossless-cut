@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { Trans } from 'react-i18next';
 
 import { openSendReportDialog } from './reporting';

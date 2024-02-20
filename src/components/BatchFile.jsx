@@ -1,4 +1,4 @@
-import React, { memo, useRef, useMemo } from 'react';
+import { memo, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaAngleRight, FaFile } from 'react-icons/fa';
 

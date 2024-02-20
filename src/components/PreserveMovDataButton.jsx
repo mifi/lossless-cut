@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 import { withBlur } from '../util';
 import useUserSettings from '../hooks/useUserSettings';

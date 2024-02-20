@@ -4,7 +4,7 @@ import i18n from 'i18next';
 import { getOutDir, getFileDir, checkDirWriteAccess, dirExists, isMasBuild } from '../util';
 import { askForOutDir, askForInputDir } from '../dialogs';
 import { errorToast } from '../swal';
-// eslint-disable-next-line no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import isDev from '../isDev';
 
 export class DirectoryAccessDeclinedError extends Error {
