@@ -1,14 +1,11 @@
 {
   "extends": ["@tsconfig/strictest", "@tsconfig/vite-react/tsconfig.json"],
   "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "plugins": [{ "name": "typescript-plugin-css-modules" }],
-
-    "lib": ["es2023", "DOM", "DOM.Iterable"],
+    "noEmit": true,
 
     "exactOptionalPropertyTypes": false, // todo
-    "noUncheckedIndexedAccess": true,
-    "noEmit": true,
-    "isolatedModules": true,
     "noImplicitAny": false, // todo
     "checkJs": false, // todo
     "allowJs": true, // todo
