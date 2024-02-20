@@ -1,3 +1,4 @@
+// eslint-disable-line unicorn/filename-case
 import { describe, it, expect } from 'vitest';
 
 import { adjustRate, DEFAULT_PLAYBACK_RATE } from './rate-calculator';

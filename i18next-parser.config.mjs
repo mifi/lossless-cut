@@ -1,3 +1,4 @@
+// eslint-disable-line unicorn/filename-case
 export default {
   input: ['src/**/*.{js,jsx,ts,tsx}', 'public/*.{js,ts}'],
 

@@ -126,7 +126,7 @@ export function generateOutSegFileNames({ segments, template: desiredTemplate, f
 
       // Fields that did not come from the source file's name must be sanitized, because they may contain characters that are not supported by the target operating/file system
       // however we disable this when the user has chosen to (safeOutputFileName === false)
-      const filenamifyOrNot = (fileName) => (safeOutputFileName || forceSafeOutputFileName ? filenamify(fileName) : fileName).substr(0, maxLabelLength);
+      const filenamifyOrNot = (fileName) => (safeOutputFileName || forceSafeOutputFileName ? filenamify(fileName) : fileName).slice(0, Math.max(0, maxLabelLength));
 
       function getSegSuffix() {
         if (name) return `-${filenamifyOrNot(name)}`;
@@ -159,7 +159,7 @@ export function generateOutSegFileNames({ segments, template: desiredTemplate, f
       return [
         ...rest,
         // If sanitation is enabled, make sure filename (last seg of the path) is not too long
-        safeOutputFileName ? lastSeg!.substring(0, 200) : lastSeg,
+        safeOutputFileName ? lastSeg!.slice(0, 200) : lastSeg,
       ].join(pathSep);
     });
   }

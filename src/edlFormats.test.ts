@@ -9,7 +9,7 @@ import { parseSrt, formatSrt, parseYouTube, formatYouTube, parseMplayerEdl, pars
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const readFixture = async (name: string, encoding: BufferEncoding = 'utf-8') => fs.readFile(join(__dirname, 'fixtures', name), encoding);
+const readFixture = async (name: string, encoding: BufferEncoding = 'utf8') => fs.readFile(join(__dirname, 'fixtures', name), encoding);
 const readFixtureBinary = async (name: string) => fs.readFile(join(__dirname, 'fixtures', name), null);
 
 const expectYouTube1 = [
@@ -259,5 +259,5 @@ it('format srt', async () => {
 
 // https://github.com/mifi/lossless-cut/issues/1664
 it('parses DV Analyzer Summary.txt', async () => {
-  expect(parseDvAnalyzerSummaryTxt(await readFixture('DV Analyzer Summary.txt', 'utf-8'))).toMatchSnapshot();
+  expect(parseDvAnalyzerSummaryTxt(await readFixture('DV Analyzer Summary.txt', 'utf8'))).toMatchSnapshot();
 });

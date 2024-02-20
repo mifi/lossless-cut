@@ -7,6 +7,7 @@ function createMediaSourceStream({ path, videoStreamIndex, audioStreamIndex, see
   logger.info('Starting preview process', { videoStreamIndex, audioStreamIndex, seekTo });
   const process = createMediaSourceProcess({ path, videoStreamIndex, audioStreamIndex, seekTo, size, fps });
 
+  // eslint-disable-next-line unicorn/prefer-add-event-listener
   abortController.signal.onabort = () => {
     logger.info('Aborting preview process', { videoStreamIndex, audioStreamIndex, seekTo });
     process.kill('SIGKILL');
@@ -64,7 +65,7 @@ function createMediaSourceStream({ path, videoStreamIndex, audioStreamIndex, see
 
       if (!err.killed) {
         console.warn(err.message);
-        console.warn(stderr.toString('utf-8'));
+        console.warn(stderr.toString('utf8'));
       }
     }
   })();
@@ -76,6 +77,7 @@ function readOneJpegFrameWrapper({ path, seekTo, videoStreamIndex }) {
   const abortController = new AbortController();
   const process = readOneJpegFrame({ path, seekTo, videoStreamIndex });
 
+  // eslint-disable-next-line unicorn/prefer-add-event-listener
   abortController.signal.onabort = () => process.kill('SIGKILL');
 
   function abort() {

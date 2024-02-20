@@ -99,11 +99,11 @@ export function combineOverlappingSegments(existingSegments, getSegApparentEnd2)
       };
     }
     return undefined; // then remove all other segments in this partition group
-  }).filter((segment) => segment);
+  }).filter(Boolean);
 }
 
 export function combineSelectedSegments<T extends SegmentBase>(existingSegments: T[], getSegApparentEnd2, isSegmentSelected) {
-  const selectedSegments = existingSegments.filter(isSegmentSelected);
+  const selectedSegments = existingSegments.filter((segment) => isSegmentSelected(segment));
   const firstSegment = minBy(selectedSegments, (seg) => getSegApparentStart(seg));
   const lastSegment = maxBy(selectedSegments, (seg) => getSegApparentEnd2(seg));
 
@@ -117,18 +117,18 @@ export function combineSelectedSegments<T extends SegmentBase>(existingSegments:
     }
     if (isSegmentSelected(existingSegment)) return undefined; // remove other selected segments
     return existingSegment;
-  }).filter((segment) => segment);
+  }).filter(Boolean);
 }
 
 export function hasAnySegmentOverlap(sortedSegments) {
-  if (sortedSegments.length < 1) return false;
+  if (sortedSegments.length === 0) return false;
 
   const overlappingGroups = partitionIntoOverlappingRanges(sortedSegments);
   return overlappingGroups.length > 0;
 }
 
 export function invertSegments(sortedCutSegments, includeFirstSegment: boolean, includeLastSegment: boolean, duration?: number) {
-  if (sortedCutSegments.length < 1) return undefined;
+  if (sortedCutSegments.length === 0) return undefined;
 
   if (hasAnySegmentOverlap(sortedCutSegments)) return undefined;
 
@@ -157,7 +157,7 @@ export function invertSegments(sortedCutSegments, includeFirstSegment: boolean, 
   });
 
   if (includeLastSegment) {
-    const lastSeg = sortedCutSegments[sortedCutSegments.length - 1];
+    const lastSeg = sortedCutSegments.at(-1);
     if (duration == null || lastSeg.end < duration) {
       const inverted: InverseSegment = {
         start: lastSeg.end,
@@ -175,7 +175,7 @@ export function invertSegments(sortedCutSegments, includeFirstSegment: boolean, 
 
 // because chapters need to be contiguous, we need to insert gaps in-between
 export function convertSegmentsToChapters(sortedSegments) {
-  if (sortedSegments.length < 1) return [];
+  if (sortedSegments.length === 0) return [];
   if (hasAnySegmentOverlap(sortedSegments)) throw new Error('Segments cannot overlap');
 
   sortedSegments.map((segment) => ({ start: segment.start, end: segment.end, name: segment.name }));

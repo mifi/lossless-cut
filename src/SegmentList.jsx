@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useRef, useCallback, useState } from 'react';
+import { memo, useMemo, useRef, useCallback, useState } from 'react';
 import { FaYinYang, FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaRegCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
 import { motion } from 'framer-motion';
@@ -186,13 +186,9 @@ const SegmentList = memo(({
 
   let header = t('Segments to export:');
   if (segments.length === 0) {
-    if (invertCutSegments) {
-      header = (
-        <Trans>You have enabled the &quot;invert segments&quot; mode <FaYinYang style={{ verticalAlign: 'middle' }} /> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <FaYinYang style={{ verticalAlign: 'middle', color: primaryTextColor }} /> symbol below to disable this mode. Alternatively you may combine overlapping segments from the menu.</Trans>
-      );
-    } else {
-      header = t('No segments to export.');
-    }
+    header = invertCutSegments ? (
+      <Trans>You have enabled the &quot;invert segments&quot; mode <FaYinYang style={{ verticalAlign: 'middle' }} /> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <FaYinYang style={{ verticalAlign: 'middle', color: primaryTextColor }} /> symbol below to disable this mode. Alternatively you may combine overlapping segments from the menu.</Trans>
+    ) : t('No segments to export.');
   }
 
   const onReorderSegs = useCallback(async (index) => {
@@ -285,6 +281,7 @@ const SegmentList = memo(({
     [tag]: value,
   })), [setEditingSegmentTags]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const onTagReset = useCallback((tag) => setEditingSegmentTags(({ [tag]: deleted, ...rest }) => rest), [setEditingSegmentTags]);
 
   const onSegmentTagsCloseComplete = useCallback(() => {

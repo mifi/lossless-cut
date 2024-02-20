@@ -1,4 +1,5 @@
 const Store = require('electron-store');
+// eslint-disable-next-line import/no-extraneous-dependencies
 const electron = require('electron');
 const os = require('os');
 const { join, dirname } = require('path');
@@ -175,7 +176,7 @@ async function tryCreateStore({ customStoragePath }) {
       return;
     } catch (err) {
       // eslint-disable-next-line no-await-in-loop
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 2000));
       logger.error('Failed to create config store, retrying', err);
     }
   }
@@ -198,11 +199,9 @@ async function init() {
   }
 
   const cleanupChoices = store.get('cleanupChoices'); // todo remove after a while
-  if (cleanupChoices != null) {
-    if (cleanupChoices.closeFile == null) {
-      logger.info('Migrating cleanupChoices.closeFile');
-      set('cleanupChoices', { ...cleanupChoices, closeFile: true });
-    }
+  if (cleanupChoices != null && cleanupChoices.closeFile == null) {
+    logger.info('Migrating cleanupChoices.closeFile');
+    set('cleanupChoices', { ...cleanupChoices, closeFile: true });
   }
 }
 

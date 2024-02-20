@@ -245,6 +245,7 @@ const Timeline = memo(({
       style={{ position: 'relative', borderTop: '1px solid var(--gray7)', borderBottom: '1px solid var(--gray7)' }}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
+      // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
       onMouseOut={onMouseOut}
     >
       {(waveformEnabled && !shouldShowWaveform) && (

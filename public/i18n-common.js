@@ -1,6 +1,8 @@
+// eslint-disable-line unicorn/filename-case
 // intentionally disabled because I don't know the quality of the languages, so better to default to english
 // const LanguageDetector = window.require('i18next-electron-language-detector');
 const isDev = require('electron-is-dev');
+// eslint-disable-next-line import/no-extraneous-dependencies
 const { app } = require('electron');
 const { join } = require('path');
 

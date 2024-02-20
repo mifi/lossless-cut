@@ -117,7 +117,7 @@ export default ({
   const currentCutSeg = useMemo(() => cutSegments[currentSegIndexSafe], [currentSegIndexSafe, cutSegments]);
   const currentApparentCutSeg = useMemo(() => apparentCutSegments[currentSegIndexSafe], [apparentCutSegments, currentSegIndexSafe]);
 
-  const selectedSegmentsRaw = useMemo(() => apparentCutSegments.filter(isSegmentSelected), [apparentCutSegments, isSegmentSelected]);
+  const selectedSegmentsRaw = useMemo(() => apparentCutSegments.filter((segment) => isSegmentSelected(segment)), [apparentCutSegments, isSegmentSelected]);
 
   const detectBlackScenes = useCallback(async () => {
     const filterOptions = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters: ffmpegParameters.blackdetect(), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#blackdetect' });
@@ -170,7 +170,7 @@ export default ({
   }, [apparentCutSegments, duration, haveInvalidSegs]);
 
   const invertAllSegments = useCallback(() => {
-    if (inverseCutSegments.length < 1) {
+    if (inverseCutSegments.length === 0) {
       errorToast(i18n.t('Make sure you have no overlapping segments.'));
       return;
     }
@@ -180,7 +180,7 @@ export default ({
   }, [inverseCutSegments, setCutSegments]);
 
   const fillSegmentsGaps = useCallback(() => {
-    if (inverseCutSegments.length < 1) {
+    if (inverseCutSegments.length === 0) {
       errorToast(i18n.t('Make sure you have no overlapping segments.'));
       return;
     }
@@ -227,7 +227,7 @@ export default ({
       return newSegment;
     }, { concurrency });
     newSegments = newSegments.filter((segment) => segment.end > segment.start);
-    if (newSegments.length < 1) setCutSegments(createInitialCutSegments());
+    if (newSegments.length === 0) setCutSegments(createInitialCutSegments());
     else setCutSegments(newSegments);
   }, [apparentCutSegments, createInitialCutSegments, duration, isSegmentSelected, setCutSegments]);
 
@@ -449,7 +449,7 @@ export default ({
   }, [cutSegments, enableSegments]);
 
   const onLabelSelectedSegments = useCallback(async () => {
-    if (selectedSegmentsRaw.length < 1) return;
+    if (selectedSegmentsRaw.length === 0) return;
     const { name } = selectedSegmentsRaw[0];
     const value = await labelSegmentDialog({ currentName: name, maxLength: maxLabelLength });
     if (value == null) return;

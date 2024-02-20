@@ -43,7 +43,8 @@ export const isExactDurationMatch = (str) => /^-?\d{2}:\d{2}:\d{2}.\d{3}$/.test(
 
 // See also parseYoutube
 export function parseDuration(str) {
-  const match = str.replace(/\s/g, '').match(/^(-?)(?:(?:(\d{1,}):)?(\d{1,2}):)?(\d{1,2}(?:[.,]\d{1,3})?)$/);
+  // eslint-disable-next-line unicorn/better-regex
+  const match = str.replaceAll(/\s/g, '').match(/^(-?)(?:(?:(\d{1,}):)?(\d{1,2}):)?(\d{1,2}(?:[.,]\d{1,3})?)$/);
 
   if (!match) return undefined;
 

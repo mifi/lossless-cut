@@ -27,7 +27,7 @@ import { askForPlaybackRate } from './dialogs';
 const { clipboard } = window.require('electron');
 
 
-const zoomOptions = Array(13).fill().map((unused, z) => 2 ** z);
+const zoomOptions = Array.from({ length: 13 }).fill().map((unused, z) => 2 ** z);
 
 const leftRightWidth = 100;
 
@@ -35,7 +35,7 @@ const InvertCutModeButton = memo(({ invertCutSegments, setInvertCutSegments }) =
   const { t } = useTranslation();
 
   const onYinYangClick = useCallback(() => {
-    setInvertCutSegments(v => {
+    setInvertCutSegments((v) => {
       const newVal = !v;
       if (newVal) toast.fire({ title: t('When you export, selected segments on the timeline will be REMOVED - the surrounding areas will be KEPT') });
       else toast.fire({ title: t('When you export, selected segments on the timeline will be KEPT - the surrounding areas will be REMOVED.') });
@@ -154,7 +154,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
         style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? 'var(--red11)' : 'var(--gray12)' }}
         type="text"
         title={isStart ? t('Manually input current segment\'s start time') : t('Manually input current segment\'s end time')}
-        onChange={e => handleCutTimeInput(e.target.value)}
+        onChange={(e) => handleCutTimeInput(e.target.value)}
         onPaste={handleCutTimePaste}
         onBlur={() => setCutTimeManual()}
         onContextMenu={handleContextMenu}
@@ -392,9 +392,9 @@ const BottomBar = memo(({
 
             <div role="button" style={{ marginRight: 5, marginLeft: 10 }} title={t('Zoom')} onClick={timelineToggleComfortZoom}>{Math.floor(zoom)}x</div>
 
-            <Select style={{ height: 20, flexBasis: 85, flexGrow: 0 }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur(e => setZoom(parseInt(e.target.value, 10)))}>
+            <Select style={{ height: 20, flexBasis: 85, flexGrow: 0 }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur((e) => setZoom(parseInt(e.target.value, 10)))}>
               <option key="" value="" disabled>{t('Zoom')}</option>
-              {zoomOptions.map(val => (
+              {zoomOptions.map((val) => (
                 <option key={val} value={String(val)}>{t('Zoom')} {val}x</option>
               ))}
             </Select>

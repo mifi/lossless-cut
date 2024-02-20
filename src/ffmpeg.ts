@@ -19,7 +19,12 @@ const { renderWaveformPng, mapTimesToSegments, detectSceneChanges, captureFrames
 export { renderWaveformPng, mapTimesToSegments, detectSceneChanges, captureFrames, captureFrame, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, html5ify, getDuration, abortFfmpegs, runFfprobe, getFfmpegPath, setCustomFfPath };
 
 
-export class RefuseOverwriteError extends Error {}
+export class RefuseOverwriteError extends Error {
+  constructor() {
+    super();
+    this.name = 'RefuseOverwriteError';
+  }
+}
 
 export function logStdoutStderr({ stdout, stderr }) {
   if (stdout.length > 0) {
@@ -63,12 +68,12 @@ export async function readFrames({ filePath, from, to, streamIndex }) {
   // todo types
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const packetsFiltered: Frame[] = (JSON.parse(stdout).packets as any[])
-    .map(p => ({
+    .map((p) => ({
       keyframe: p.flags[0] === 'K',
       time: parseFloat(p.pts_time),
       createdAt: new Date(),
     }))
-    .filter(p => !Number.isNaN(p.time));
+    .filter((p) => !Number.isNaN(p.time));
 
   return sortBy(packetsFiltered, 'time');
 }
@@ -93,10 +98,18 @@ export type FindKeyframeMode = 'nearest' | 'before' | 'after';
 
 function findKeyframe(keyframes: Keyframe[], time: number, mode: FindKeyframeMode) {
   switch (mode) {
-    case 'nearest': return findNearestKeyframe(keyframes, time);
-    case 'before': return findPreviousKeyframe(keyframes, time);
-    case 'after': return findNextKeyframe(keyframes, time);
-    default: return undefined;
+    case 'nearest': {
+      return findNearestKeyframe(keyframes, time);
+    }
+    case 'before': {
+      return findPreviousKeyframe(keyframes, time);
+    }
+    case 'after': {
+      return findNextKeyframe(keyframes, time);
+    }
+    default: {
+      return undefined;
+    }
   }
 }
 
@@ -125,7 +138,7 @@ export function getSafeCutTime(frames, cutTime, nextMode) {
   if (frames.length < 2) throw new Error(i18n.t('Less than 2 frames found'));
 
   if (nextMode) {
-    index = frames.findIndex(f => f.keyframe && f.time >= cutTime - sigma);
+    index = frames.findIndex((f) => f.keyframe && f.time >= cutTime - sigma);
     if (index === -1) throw new Error(i18n.t('Failed to find next keyframe'));
     if (index >= frames.length - 1) throw new Error(i18n.t('We are on the last frame'));
     const { time } = frames[index];
@@ -136,12 +149,13 @@ export function getSafeCutTime(frames, cutTime, nextMode) {
   }
 
   const findReverseIndex = (arr, cb) => {
+    // eslint-disable-next-line unicorn/no-array-callback-reference
     const ret = [...arr].reverse().findIndex(cb);
     if (ret === -1) return -1;
     return arr.length - 1 - ret;
   };
 
-  index = findReverseIndex(frames, f => f.time <= cutTime + sigma);
+  index = findReverseIndex(frames, (f) => f.time <= cutTime + sigma);
   if (index === -1) throw new Error(i18n.t('Failed to find any prev frame'));
   if (index === 0) throw new Error(i18n.t('We are on the first frame'));
 
@@ -155,7 +169,7 @@ export function getSafeCutTime(frames, cutTime, nextMode) {
   }
 
   // We are not on a frame before keyframe, look for preceding keyframe instead
-  index = findReverseIndex(frames, f => f.keyframe && f.time <= cutTime + sigma);
+  index = findReverseIndex(frames, (f) => f.keyframe && f.time <= cutTime + sigma);
   if (index === -1) throw new Error(i18n.t('Failed to find any prev keyframe'));
   if (index === 0) throw new Error(i18n.t('We are on the first keyframe'));
 
@@ -165,9 +179,9 @@ export function getSafeCutTime(frames, cutTime, nextMode) {
 
 export function findNearestKeyFrameTime({ frames, time, direction, fps }) {
   const sigma = fps ? (1 / fps) : 0.1;
-  const keyframes = frames.filter(f => f.keyframe && (direction > 0 ? f.time > time + sigma : f.time < time - sigma));
+  const keyframes = frames.filter((f) => f.keyframe && (direction > 0 ? f.time > time + sigma : f.time < time - sigma));
   if (keyframes.length === 0) return undefined;
-  const nearestKeyFrame = sortBy(keyframes, keyframe => (direction > 0 ? keyframe.time - time : time - keyframe.time))[0];
+  const nearestKeyFrame = sortBy(keyframes, (keyframe) => (direction > 0 ? keyframe.time - time : time - keyframe.time))[0];
   if (!nearestKeyFrame) return undefined;
   return nearestKeyFrame.time;
 }
@@ -186,7 +200,7 @@ export async function tryMapChaptersToEdl(chapters) {
         end,
         name,
       };
-    }).filter((it) => it);
+    }).filter(Boolean);
   } catch (err) {
     console.error('Failed to read chapters from file', err);
     return [];
@@ -218,6 +232,7 @@ export async function createChaptersFromSegments({ segmentPaths, chapterNames })
 function mapDefaultFormat({ streams, requestedFormat }) {
   if (requestedFormat === 'mp4') {
     // Only MOV supports these codecs, so default to MOV instead https://github.com/mifi/lossless-cut/issues/948
+    // eslint-disable-next-line unicorn/no-lonely-if
     if (streams.some((stream) => pcmAudioCodecs.includes(stream.codec_name))) {
       return 'mov';
     }
@@ -230,7 +245,7 @@ function mapDefaultFormat({ streams, requestedFormat }) {
 }
 
 async function determineOutputFormat(ffprobeFormatsStr, filePath) {
-  const ffprobeFormats = (ffprobeFormatsStr || '').split(',').map((str) => str.trim()).filter((str) => str);
+  const ffprobeFormats = (ffprobeFormatsStr || '').split(',').map((str) => str.trim()).filter(Boolean);
   if (ffprobeFormats.length === 0) {
     console.warn('ffprobe returned unknown formats', ffprobeFormatsStr);
     return undefined;
@@ -256,19 +271,30 @@ async function determineOutputFormat(ffprobeFormatsStr, filePath) {
   // https://www.ftyps.com/
   // https://exiftool.org/TagNames/QuickTime.html
   switch (fileTypeResponse.mime) {
-    case 'video/x-matroska': return 'matroska';
-    case 'video/webm': return 'webm';
-    case 'video/quicktime': return 'mov';
-    case 'video/3gpp2': return '3g2';
-    case 'video/3gpp': return '3gp';
+    case 'video/x-matroska': {
+      return 'matroska';
+    }
+    case 'video/webm': {
+      return 'webm';
+    }
+    case 'video/quicktime': {
+      return 'mov';
+    }
+    case 'video/3gpp2': {
+      return '3g2';
+    }
+    case 'video/3gpp': {
+      return '3gp';
+    }
 
     // These two cmds produce identical output, so we assume that encoding "ipod" means encoding m4a
     // ffmpeg -i example.aac -c copy OutputFile2.m4a
     // ffmpeg -i example.aac -c copy -f ipod OutputFile.m4a
     // See also https://github.com/mifi/lossless-cut/issues/28
     case 'audio/x-m4a':
-    case 'audio/mp4':
+    case 'audio/mp4': {
       return 'ipod';
+    }
     case 'image/avif':
     case 'image/heif':
     case 'image/heif-sequence':
@@ -276,8 +302,9 @@ async function determineOutputFormat(ffprobeFormatsStr, filePath) {
     case 'image/heic-sequence':
     case 'video/x-m4v':
     case 'video/mp4':
-    case 'image/x-canon-cr3':
+    case 'image/x-canon-cr3': {
       return 'mp4';
+    }
 
     default: {
       console.warn('file-type returned unknown format', ffprobeFormats, fileTypeResponse.mime);
@@ -303,7 +330,7 @@ export async function readFileMeta(filePath) {
     try {
       // https://github.com/mifi/lossless-cut/issues/1342
       parsedJson = JSON.parse(stdout);
-    } catch (err) {
+    } catch {
       console.log('ffprobe stdout', stdout);
       throw new Error('ffprobe returned malformed data');
     }
@@ -482,16 +509,16 @@ export async function extractSubtitleTrack(filePath, streamId) {
 
 export async function renderThumbnails({ filePath, from, duration, onThumbnail }) {
   // Time first render to determine how many to render
-  const startTime = new Date().getTime() / 1000;
+  const startTime = Date.now() / 1000;
   let url = await renderThumbnail(filePath, from);
-  const endTime = new Date().getTime() / 1000;
+  const endTime = Date.now() / 1000;
   onThumbnail({ time: from, url });
 
   // Aim for max 3 sec to render all
   const numThumbs = Math.floor(Math.min(Math.max(3 / (endTime - startTime), 3), 10));
   // console.log(numThumbs);
 
-  const thumbTimes = Array(numThumbs - 1).fill(undefined).map((_unused, i) => (from + ((duration * (i + 1)) / (numThumbs))));
+  const thumbTimes = Array.from({ length: numThumbs - 1 }).fill(undefined).map((_unused, i) => (from + ((duration * (i + 1)) / (numThumbs))));
   // console.log(thumbTimes);
 
   await pMap(thumbTimes, async (time) => {
@@ -504,7 +531,7 @@ export async function extractWaveform({ filePath, outPath }) {
   const numSegs = 10;
   const duration = 60 * 60;
   const maxLen = 0.1;
-  const segments = Array(numSegs).fill(undefined).map((_unused, i) => [i * (duration / numSegs), Math.min(duration / numSegs, maxLen)] as const);
+  const segments = Array.from({ length: numSegs }).fill(undefined).map((_unused, i) => [i * (duration / numSegs), Math.min(duration / numSegs, maxLen)] as const);
 
   // https://superuser.com/questions/681885/how-can-i-remove-multiple-segments-from-a-video-using-ffmpeg
   let filter = segments.map(([from, len], i) => `[0:a]atrim=start=${from}:end=${from + len},asetpts=PTS-STARTPTS[a${i}]`).join(';');
@@ -541,7 +568,7 @@ export function isProblematicAvc1(outFormat, streams) {
 }
 
 function parseFfprobeFps(stream) {
-  const match = typeof stream.avg_frame_rate === 'string' && stream.avg_frame_rate.match(/^([0-9]+)\/([0-9]+)$/);
+  const match = typeof stream.avg_frame_rate === 'string' && stream.avg_frame_rate.match(/^(\d+)\/(\d+)$/);
   if (!match) return undefined;
   const num = parseInt(match[1], 10);
   const den = parseInt(match[2], 10);
@@ -555,6 +582,7 @@ export function getStreamFps(stream) {
     return fps;
   }
   if (stream.codec_type === 'audio') {
+    // eslint-disable-next-line unicorn/no-lonely-if
     if (typeof stream.sample_rate === 'string') {
       const sampleRate = parseInt(stream.sample_rate, 10);
       if (!Number.isNaN(sampleRate) && sampleRate > 0) {
@@ -595,7 +623,7 @@ export function getTimecodeFromStreams(streams) {
         return true;
       }
       return undefined;
-    } catch (err) {
+    } catch {
       // console.warn('Failed to parse timecode from file streams', err);
       return undefined;
     }

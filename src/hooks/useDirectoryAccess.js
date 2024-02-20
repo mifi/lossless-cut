@@ -7,7 +7,12 @@ import { errorToast } from '../swal';
 // eslint-disable-next-line no-unused-vars
 import isDev from '../isDev';
 
-export class DirectoryAccessDeclinedError extends Error {}
+export class DirectoryAccessDeclinedError extends Error {
+  constructor() {
+    super();
+    this.name = 'DirectoryAccessDeclinedError';
+  }
+}
 
 // MacOS App Store sandbox doesn't allow reading/writing anywhere,
 // except those exact file paths that have been explicitly drag-dropped into LosslessCut or opened using the opener dialog

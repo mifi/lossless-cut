@@ -1,7 +1,7 @@
 import React, { memo, useCallback } from 'react';
 import { IoIosSettings } from 'react-icons/io';
 import { FaLock, FaUnlock } from 'react-icons/fa';
-import { IconButton, CrossIcon, ListIcon, VolumeUpIcon, VolumeOffIcon } from 'evergreen-ui';
+import { CrossIcon, ListIcon, VolumeUpIcon, VolumeOffIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 import Button from './components/Button';
 

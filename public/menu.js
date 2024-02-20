@@ -1,9 +1,10 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 const electron = require('electron');
 const { t } = require('i18next');
 
 // menu-safe i18n.t:
 // https://github.com/mifi/lossless-cut/issues/1456
-const esc = (val) => val.replace(/&/g, '&&');
+const esc = (val) => val.replaceAll('&', '&&');
 
 const { Menu } = electron;
 

@@ -52,14 +52,14 @@ const BigWaveform = memo(({ waveforms, relevantTime, playing, durationSafe, zoom
 
 
   useEffect(() => {
-    const startTime = new Date().getTime();
+    const startTime = Date.now();
 
     if (playing) {
       let raf;
       // eslint-disable-next-line no-inner-declarations
       function render() {
         raf = window.requestAnimationFrame(() => {
-          setSmoothTime(relevantTime + (new Date().getTime() - startTime) / 1000);
+          setSmoothTime(relevantTime + (Date.now() - startTime) / 1000);
           render();
         });
       }

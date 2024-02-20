@@ -13,24 +13,24 @@ const { basename } = window.require('path');
 const { dialog } = window.require('@electron/remote');
 
 export async function loadCsvSeconds(path) {
-  return parseCsv(await readFile(path, 'utf-8'), parseCsvTime);
+  return parseCsv(await readFile(path, 'utf8'), parseCsvTime);
 }
 
 export async function loadCsvFrames(path, fps) {
   if (!fps) throw new Error('The loaded file has an unknown framerate');
-  return parseCsv(await readFile(path, 'utf-8'), getFrameValParser(fps));
+  return parseCsv(await readFile(path, 'utf8'), getFrameValParser(fps));
 }
 
 export async function loadXmeml(path) {
-  return parseXmeml(await readFile(path, 'utf-8'));
+  return parseXmeml(await readFile(path, 'utf8'));
 }
 
 export async function loadFcpXml(path) {
-  return parseFcpXml(await readFile(path, 'utf-8'));
+  return parseFcpXml(await readFile(path, 'utf8'));
 }
 
 export async function loadDvAnalyzerSummaryTxt(path) {
-  return parseDvAnalyzerSummaryTxt(await readFile(path, 'utf-8'));
+  return parseDvAnalyzerSummaryTxt(await readFile(path, 'utf8'));
 }
 
 export async function loadPbf(path) {
@@ -38,7 +38,7 @@ export async function loadPbf(path) {
 }
 
 export async function loadMplayerEdl(path) {
-  return parseMplayerEdl(await readFile(path, 'utf-8'));
+  return parseMplayerEdl(await readFile(path, 'utf8'));
 }
 
 export async function loadCue(path) {
@@ -46,7 +46,7 @@ export async function loadCue(path) {
 }
 
 export async function loadSrt(path) {
-  return parseSrt(await readFile(path, 'utf-8'));
+  return parseSrt(await readFile(path, 'utf8'));
 }
 
 export async function saveCsv(path, cutSegments) {
@@ -103,6 +103,7 @@ export async function askForEdlImport({ type, fps }: { type: EdlImportType, fps?
   if (type === 'youtube') return askForYouTubeInput();
 
   let filters;
+  // eslint-disable-next-line unicorn/prefer-switch
   if (type === 'csv' || type === 'csv-frames') filters = [{ name: i18n.t('CSV files'), extensions: ['csv'] }];
   else if (type === 'xmeml') filters = [{ name: i18n.t('XML files'), extensions: ['xml'] }];
   else if (type === 'fcpxml') filters = [{ name: i18n.t('FCPXML files'), extensions: ['fcpxml'] }];
@@ -114,7 +115,7 @@ export async function askForEdlImport({ type, fps }: { type: EdlImportType, fps?
   else if (type === 'llc') filters = [{ name: i18n.t('LosslessCut project'), extensions: ['llc'] }];
 
   const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'], filters });
-  if (canceled || filePaths.length < 1) return [];
+  if (canceled || filePaths.length === 0) return [];
   return readEdlFile({ type, path: filePaths[0], fps });
 }
 
@@ -123,6 +124,7 @@ export async function exportEdlFile({ type, cutSegments, customOutDir, filePath,
 }) {
   let filters;
   let ext;
+  // eslint-disable-next-line unicorn/prefer-switch
   if (type === 'csv') {
     ext = 'csv';
     filters = [{ name: i18n.t('CSV files'), extensions: [ext, 'txt'] }];
@@ -148,6 +150,7 @@ export async function exportEdlFile({ type, cutSegments, customOutDir, filePath,
   const { canceled, filePath: savePath } = await dialog.showSaveDialog({ defaultPath, filters });
   if (canceled || !savePath) return;
   console.log('Saving', type, savePath);
+  // eslint-disable-next-line unicorn/prefer-switch
   if (type === 'csv') await saveCsv(savePath, cutSegments);
   else if (type === 'tsv-human') await saveTsv(savePath, cutSegments);
   else if (type === 'csv-human') await saveCsvHuman(savePath, cutSegments);

@@ -21,10 +21,10 @@ export function getFrameCountRaw(detectedFps: number | undefined, sec: number) {
 }
 
 function parseTime(str: string) {
-  const timeMatch = str.match(/^[^0-9]*(?:(?:([0-9]{1,}):)?([0-9]{1,2}):)?([0-9]{1,})(?:\.([0-9]{1,3}))?:?/);
+  const timeMatch = str.match(/^\D*(?:(?:(\d+):)?(\d{1,2}):)?(\d+)(?:\.(\d{1,3}))?:?/);
   if (!timeMatch) return undefined;
 
-  const rest = str.substring(timeMatch[0].length);
+  const rest = str.slice(timeMatch[0].length);
 
   const [, hourStr, minStr, secStr, msStr] = timeMatch;
   const hour = hourStr != null ? parseInt(hourStr, 10) : 0;
@@ -49,7 +49,7 @@ export const getFrameValParser = (fps) => (str) => {
 export async function parseCsv(csvStr, parseTimeFn) {
   const rows = await csvParseAsync(csvStr, {});
   if (rows.length === 0) throw new Error(i18n.t('No rows found'));
-  if (!rows.every(row => row.length === 3)) throw new Error(i18n.t('One or more rows does not have 3 columns'));
+  if (!rows.every((row) => row.length === 3)) throw new Error(i18n.t('One or more rows does not have 3 columns'));
 
   const mapped = rows
     .map(([start, end, name]) => ({
@@ -71,7 +71,7 @@ export async function parseCsv(csvStr, parseTimeFn) {
 
 export async function parseMplayerEdl(text) {
   const allRows = text.split('\n').map((line) => {
-    const match = line.match(/^\s*([^\s]+)\s+([^\s]+)\s+([0123])\s*$/);
+    const match = line.match(/^\s*(\S+)\s+(\S+)\s+([0-3])\s*$/);
     if (!match) return undefined;
     const start = parseFloat(match[1]);
     const end = parseFloat(match[2]);
@@ -79,7 +79,7 @@ export async function parseMplayerEdl(text) {
     if (Number.isNaN(start) || Number.isNaN(end)) return undefined;
     if (start < 0 || end < 0 || start >= end) return undefined;
     return { start, end, type };
-  }).filter((it) => it);
+  }).filter(Boolean);
 
   const cutAwaySegments = allRows.filter((row) => row.type === 0);
   const muteSegments = allRows.filter((row) => row.type === 1);
@@ -128,10 +128,10 @@ export function parseCuesheet(cuesheet) {
 export function parsePbf(buf: Buffer) {
   const text = buf.toString('utf16le');
   const bookmarks = text.split('\n').map((line) => {
-    const match = line.match(/^[0-9]+=([0-9]+)\*([^*]+)*([^*]+)?/);
+    const match = line.match(/^\d+=(\d+)\*([^*]+)*([^*]+)?/);
     if (match) return { time: parseInt(match[1]!, 10) / 1000, name: match[2] };
     return undefined;
-  }).filter((it) => it);
+  }).filter(Boolean);
 
   const out: Segment[] = [];
 
@@ -156,7 +156,7 @@ export function parseXmeml(xmlStr) {
 
   // TODO maybe support media.audio also?
   const { xmeml } = xml;
-  if (!xmeml) throw Error('Root element <xmeml> not found in file');
+  if (!xmeml) throw new Error('Root element <xmeml> not found in file');
 
   let sequence;
 
@@ -181,10 +181,10 @@ export function parseFcpXml(xmlStr) {
   const xml = new XMLParser({ ignoreAttributes: false }).parse(xmlStr);
 
   const { fcpxml } = xml;
-  if (!fcpxml) throw Error('Root element <fcpxml> not found in file');
+  if (!fcpxml) throw new Error('Root element <fcpxml> not found in file');
 
   function getTime(str) {
-    const match = str.match(/([0-9]+)\/([0-9]+)s/);
+    const match = str.match(/(\d+)\/(\d+)s/);
     if (!match) throw new Error('Invalid attribute');
     return parseInt(match[1], 10) / parseInt(match[2], 10);
   }
@@ -212,7 +212,7 @@ export function parseYouTube(str) {
     return { time, name };
   }
 
-  const lines = str.split('\n').map(parseLine).filter((line) => line);
+  const lines = str.split('\n').map((line) => parseLine(line)).filter(Boolean);
 
   const linesSorted = sortBy(lines, (l) => l.time);
 
@@ -275,7 +275,7 @@ export function parseDvAnalyzerSummaryTxt(txt: string) {
   // eslint-disable-next-line no-restricted-syntax
   for (const line of lines) {
     if (headerFound) {
-      const match = line.match(/^(\d{2}):(\d{2}):(\d{2}).(\d{3})\s+([^\s]+)\s+-\s+([^\s]+)\s+([^\s]+\s+[^\s]+)\s+-\s+([^\s]+\s+[^\s]+)/);
+      const match = line.match(/^(\d{2}):(\d{2}):(\d{2}).(\d{3})\s+(\S+)\s+-\s+(\S+)\s+(\S+\s+\S+)\s+-\s+(\S+\s+\S+)/);
       if (!match) break;
       const h = parseInt(match[1]!, 10);
       const m = parseInt(match[2]!, 10);
@@ -325,7 +325,7 @@ export function parseSrt(text: string) {
     } else if (subtitleIndexAt != null && subtitleIndexAt > 0) {
       const match = line.match(/^(\d+:\d+:\d+[,.]\d+\s+)-->(\s+\d+:\d+:\d+[,.]\d+)$/);
       if (match) {
-        const fixComma = (v) => v.replace(/,/g, '.');
+        const fixComma = (v) => v.replaceAll(',', '.');
         start = parseTime(fixComma(match[1]))?.time;
         end = parseTime(fixComma(match[2]))?.time;
       } else if (start != null && end != null) {
@@ -345,5 +345,5 @@ export function parseSrt(text: string) {
 }
 
 export function formatSrt(segments) {
-  return segments.reduce((acc, segment, index) => `${acc}${index > 0 ? '\r\n' : ''}${index + 1}\r\n${formatDuration({ seconds: segment.start }).replace(/\./g, ',')} --> ${formatDuration({ seconds: segment.end }).replace(/\./g, ',')}\r\n${segment.name || '-'}\r\n`, '');
+  return segments.reduce((acc, segment, index) => `${acc}${index > 0 ? '\r\n' : ''}${index + 1}\r\n${formatDuration({ seconds: segment.start }).replaceAll('.', ',')} --> ${formatDuration({ seconds: segment.end }).replaceAll('.', ',')}\r\n${segment.name || '-'}\r\n`, '');
 }

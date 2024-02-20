@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 // Also document.addEventListener needs custom handling of modifier keys or C will be triggered by CTRL+C, etc
 import Mousetrap from 'mousetrap';
 
-const keyupActions = ['seekBackwards', 'seekForwards'];
+const keyupActions = new Set(['seekBackwards', 'seekForwards']);
 
 export default ({ keyBindings, onKeyPress: onKeyPressProp }) => {
   const onKeyPressRef = useRef();
@@ -25,7 +25,7 @@ export default ({ keyBindings, onKeyPress: onKeyPressProp }) => {
     keyBindings.forEach(({ action, keys }) => {
       mousetrap.bind(keys, () => onKeyPress({ action }));
 
-      if (keyupActions.includes(action)) {
+      if (keyupActions.has(action)) {
         mousetrap.bind(keys, () => onKeyPress({ action, keyup: true }), 'keyup');
       }
     });

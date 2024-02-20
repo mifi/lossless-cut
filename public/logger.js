@@ -1,6 +1,7 @@
 const winston = require('winston');
 const util = require('util');
 const isDev = require('electron-is-dev');
+// eslint-disable-next-line import/no-extraneous-dependencies
 const { app } = require('electron');
 const { join } = require('path');
 

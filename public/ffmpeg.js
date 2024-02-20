@@ -18,8 +18,7 @@ function setCustomFfPath(path) {
 }
 
 function getFfCommandLine(cmd, args) {
-  const mapArg = arg => (/[^0-9a-zA-Z-_]/.test(arg) ? `'${arg}'` : arg);
-  return `${cmd} ${args.map(mapArg).join(' ')}`;
+  return `${cmd} ${args.map((arg) => (/[^\w-]/.test(arg) ? `'${arg}'` : arg)).join(' ')}`;
 }
 
 function getFfPath(cmd) {
@@ -56,8 +55,10 @@ function handleProgress(process, durationIn, onProgress, customMatcher = () => u
     // console.log('progress', line);
 
     try {
+      // eslint-disable-next-line unicorn/better-regex
       let match = line.match(/frame=\s*[^\s]+\s+fps=\s*[^\s]+\s+q=\s*[^\s]+\s+(?:size|Lsize)=\s*[^\s]+\s+time=\s*([^\s]+)\s+/);
       // Audio only looks like this: "line size=  233422kB time=01:45:50.68 bitrate= 301.1kbits/s speed= 353x    "
+      // eslint-disable-next-line unicorn/better-regex
       if (!match) match = line.match(/(?:size|Lsize)=\s*[^\s]+\s+time=\s*([^\s]+)\s+/);
       if (!match) {
         customMatcher(line);
@@ -108,7 +109,7 @@ function runFfmpegProcess(args, customExecaOptions, { logCli = true } = {}) {
     runningFfmpegs.add(process);
     try {
       await process;
-    } catch (err) {
+    } catch {
       // ignored here
     } finally {
       runningFfmpegs.delete(process);
@@ -246,10 +247,11 @@ async function detectSceneChanges({ filePath, minChange, onProgress, from, to })
   handleProgress(process, to - from, onProgress);
   const rl = readline.createInterface({ input: process.stdout });
   rl.on('line', (line) => {
+    // eslint-disable-next-line unicorn/better-regex
     const match = line.match(/^frame:\d+\s+pts:\d+\s+pts_time:([\d.]+)/);
     if (!match) return;
     const time = parseFloat(match[1]);
-    if (Number.isNaN(time) || time <= times[times.length - 1]) return;
+    if (Number.isNaN(time) || time <= times.at(-1)) return;
     times.push(time);
   });
 
@@ -288,6 +290,7 @@ const mapFilterOptions = (options) => Object.entries(options).map(([key, value])
 
 async function blackDetect({ filePath, filterOptions, onProgress, from, to }) {
   function matchLineTokens(line) {
+    // eslint-disable-next-line unicorn/better-regex
     const match = line.match(/^[blackdetect\s*@\s*0x[0-9a-f]+] black_start:([\d\\.]+) black_end:([\d\\.]+) black_duration:[\d\\.]+/);
     if (!match) return {};
     return {
@@ -301,6 +304,7 @@ async function blackDetect({ filePath, filterOptions, onProgress, from, to }) {
 
 async function silenceDetect({ filePath, filterOptions, onProgress, from, to }) {
   function matchLineTokens(line) {
+    // eslint-disable-next-line unicorn/better-regex
     const match = line.match(/^[silencedetect\s*@\s*0x[0-9a-f]+] silence_end: ([\d\\.]+)[|\s]+silence_duration: ([\d\\.]+)/);
     if (!match) return {};
     const end = parseFloat(match[1]);
@@ -409,6 +413,7 @@ async function html5ify({ outPath, filePath: filePathArg, speed, hasAudio, hasVi
 
   switch (video) {
     case 'hq': {
+      // eslint-disable-next-line unicorn/prefer-ternary
       if (isMac) {
         videoArgs = ['-vf', 'format=yuv420p', '-allow_sw', '1', '-vcodec', 'h264', '-b:v', '15M'];
       } else {
@@ -423,6 +428,7 @@ async function html5ify({ outPath, filePath: filePathArg, speed, hasAudio, hasVi
       break;
     }
     case 'lq': {
+      // eslint-disable-next-line unicorn/prefer-ternary
       if (isMac) {
         videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
       } else {
@@ -443,6 +449,7 @@ async function html5ify({ outPath, filePath: filePathArg, speed, hasAudio, hasVi
 
   switch (audio) {
     case 'hq': {
+      // eslint-disable-next-line unicorn/prefer-ternary
       if (isMac) {
         audioArgs = ['-acodec', 'aac_at', '-b:a', '192k'];
       } else {
@@ -451,6 +458,7 @@ async function html5ify({ outPath, filePath: filePathArg, speed, hasAudio, hasVi
       break;
     }
     case 'lq': {
+      // eslint-disable-next-line unicorn/prefer-ternary
       if (isMac) {
         audioArgs = ['-acodec', 'aac_at', '-ar', '44100', '-ac', '2', '-b:a', '96k'];
       } else {

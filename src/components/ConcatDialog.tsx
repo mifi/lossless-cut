@@ -25,12 +25,16 @@ const rowStyle: CSSProperties = {
 };
 
 const ConcatDialog = memo(({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles }: {
+  // todo
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isShown: boolean, onHide: () => void, paths: string[], onConcat: (a: { paths: string[], includeAllStreams: boolean, streams: any, outFileName: string, fileFormat: string, clearBatchFilesAfterConcat: boolean }) => Promise<void>, alwaysConcatMultipleFiles: boolean, setAlwaysConcatMultipleFiles: (a: boolean) => void,
 }) => {
   const { t } = useTranslation();
   const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge } = useUserSettings();
 
   const [includeAllStreams, setIncludeAllStreams] = useState(false);
+  // todo
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [fileMeta, setFileMeta] = useState<{ format: any, streams: any, chapters: any }>();
   const [allFilesMetaCache, setAllFilesMetaCache] = useState({});
   const [clearBatchFilesAfterConcat, setClearBatchFilesAfterConcat] = useState(false);
@@ -62,7 +66,7 @@ const ConcatDialog = memo(({ isShown, onHide, paths, onConcat, alwaysConcatMulti
       setFileMeta(fileMetaNew);
       setFileFormat(fileFormatNew);
       setDetectedFileFormat(fileFormatNew);
-      setUniqueSuffix(new Date().getTime());
+      setUniqueSuffix(Date.now());
     })().catch(console.error);
 
     return () => {

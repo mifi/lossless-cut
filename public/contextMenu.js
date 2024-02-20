@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 const { Menu } = require('electron');
 
 // https://github.com/electron/electron/issues/4068#issuecomment-274159726

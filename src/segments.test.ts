@@ -84,7 +84,7 @@ it('detects overlapping segments', () => {
   ]);
 
   expect(partitionIntoOverlappingRanges([
-    { start: 9, end: 10.50 },
+    { start: 9, end: 10.5 },
     { start: 11, end: 12 },
     { start: 11.5, end: 12.5 },
     { start: 11.5, end: 13 },

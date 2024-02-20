@@ -1,3 +1,4 @@
+// eslint-disable-line unicorn/filename-case
 const GitHub = require('github-api');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const electron = require('electron');

@@ -1,14 +1,14 @@
 // https://www.ffmpeg.org/doxygen/3.2/libavutil_2utils_8c_source.html#l00079
-const defaultProcessedCodecTypes = [
+const defaultProcessedCodecTypes = new Set([
   'video',
   'audio',
   'subtitle',
   'attachment',
-];
+]);
 
-const unprocessableCodecs = [
+const unprocessableCodecs = new Set([
   'dvb_teletext', // ffmpeg doesn't seem to support this https://github.com/mifi/lossless-cut/issues/1343
-];
+]);
 
 // taken from `ffmpeg -codecs`
 export const pcmAudioCodecs = [
@@ -122,6 +122,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
     addArgs(`-c:${outputIndex}`, codec);
   }
 
+  // eslint-disable-next-line unicorn/prefer-switch
   if (stream.codec_type === 'subtitle') {
     // mp4/mov only supports mov_text, so convert it https://stackoverflow.com/a/17584272/6519037
     // https://github.com/mifi/lossless-cut/issues/418
@@ -135,6 +136,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
     } else if (outFormat === 'webm' && stream.codec_name === 'mov_text') {
       // Only WebVTT subtitles are supported for WebM.
       addCodecArgs('webvtt');
+    // eslint-disable-next-line unicorn/prefer-switch
     } else if (outFormat === 'srt') { // not technically lossless but why not
       addCodecArgs('srt');
     } else if (outFormat === 'ass') { // not technically lossless but why not
@@ -171,6 +173,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
 
     if (isMov(outFormat)) {
       // 0x31766568 see https://github.com/mifi/lossless-cut/issues/1444
+      // eslint-disable-next-line unicorn/prefer-switch, unicorn/no-lonely-if
       if (['0x0000', '0x31637668', '0x31766568'].includes(stream.codec_tag) && stream.codec_name === 'hevc') {
         addArgs(`-tag:${outputIndex}`, 'hvc1');
       }
@@ -214,8 +217,8 @@ export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, cop
 }
 
 export function shouldCopyStreamByDefault(stream) {
-  if (!defaultProcessedCodecTypes.includes(stream.codec_type)) return false;
-  if (unprocessableCodecs.includes(stream.codec_name)) return false;
+  if (!defaultProcessedCodecTypes.has(stream.codec_type)) return false;
+  if (unprocessableCodecs.has(stream.codec_name)) return false;
   return true;
 }
 
@@ -225,9 +228,9 @@ export function isStreamThumbnail(stream) {
   return stream && stream.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
 }
 
-export const getAudioStreams = (streams) => streams.filter(stream => stream.codec_type === 'audio');
-export const getRealVideoStreams = (streams) => streams.filter(stream => stream.codec_type === 'video' && !isStreamThumbnail(stream));
-export const getSubtitleStreams = (streams) => streams.filter(stream => stream.codec_type === 'subtitle');
+export const getAudioStreams = (streams) => streams.filter((stream) => stream.codec_type === 'audio');
+export const getRealVideoStreams = (streams) => streams.filter((stream) => stream.codec_type === 'video' && !isStreamThumbnail(stream));
+export const getSubtitleStreams = (streams) => streams.filter((stream) => stream.codec_type === 'subtitle');
 
 // videoTracks/audioTracks seems to be 1-indexed, while ffmpeg is 0-indexes
 const getHtml5TrackId = (ffmpegTrackIndex: number) => String(ffmpegTrackIndex + 1);

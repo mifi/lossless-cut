@@ -1,3 +1,4 @@
+// eslint-disable-line unicorn/filename-case
 import i18n from 'i18next';
 
 export const blackdetect = () => ({

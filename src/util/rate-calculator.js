@@ -1,3 +1,4 @@
+// eslint-disable-line unicorn/filename-case
 import clamp from 'lodash/clamp';
 
 /**
@@ -24,12 +25,12 @@ export function adjustRate(playbackRate, direction, multiplier) {
   // stop along the way at 1.0. This could happen if the current playbackRate was reached
   // using a different multiplier (e.g., holding the shift key).
   // https://github.com/mifi/lossless-cut/issues/447#issuecomment-766339083
-  if ((newRate > 1.0 && playbackRate < 1.0) || (newRate < 1.0 && playbackRate > 1.0)) {
-    newRate = 1.0;
+  if ((newRate > 1 && playbackRate < 1) || (newRate < 1 && playbackRate > 1)) {
+    newRate = 1;
   }
   // And, clean up any rounding errors that get us to almost 1.0 (e.g., treat 1.00001 as 1)
   if ((newRate > (m ** (-1 / 2))) && (newRate < (m ** (1 / 2)))) {
-    newRate = 1.0;
+    newRate = 1;
   }
   return clamp(newRate, 0.1, 16);
 }

@@ -94,7 +94,7 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndex, 
       return undefined;
     }
 
-    if (sourceBuffer.buffered.length < 1) {
+    if (sourceBuffer.buffered.length === 0) {
       return undefined;
     }
 
@@ -239,7 +239,9 @@ function drawJpegFrame(canvas: HTMLCanvasElement, jpegImage: Buffer) {
     console.error('Canvas context is null');
     return;
   }
+  // eslint-disable-next-line unicorn/prefer-add-event-listener
   img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  // eslint-disable-next-line unicorn/prefer-add-event-listener
   img.onerror = (error) => console.error('Canvas JPEG image error', error);
   img.src = `data:image/jpeg;base64,${jpegImage.toString('base64')}`;
 }

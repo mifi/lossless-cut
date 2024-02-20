@@ -1,4 +1,4 @@
-import React, { memo, useState, useMemo, useCallback } from 'react';
+import { memo, useState, useMemo, useCallback } from 'react';
 
 import { FaImage, FaCheckCircle, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
@@ -34,6 +34,7 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, customTagsByFile, setC
 
   const onTagReset = useCallback((tag) => {
     setCustomTagsByFile((old) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [tag]: deleted, ...rest } = old[editingFile] || {};
       return { ...old, [editingFile]: rest };
     });
@@ -101,7 +102,8 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
   const onTagReset = useCallback((tag) => {
     updateStreamParams(editingFile, editingStreamId, (params) => {
       if (!params.has('customTags')) return;
-      // eslint-disable-next-line no-param-reassign
+      // todo
+      // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-dynamic-delete
       delete params.get('customTags')[tag];
     });
   }, [editingFile, editingStreamId, updateStreamParams]);
@@ -140,6 +142,7 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
 
   let Icon;
   let codecTypeHuman;
+  // eslint-disable-next-line unicorn/prefer-switch
   if (stream.codec_type === 'audio') {
     Icon = copyStream ? FaVolumeUp : FaVolumeMute;
     codecTypeHuman = t('audio');
@@ -310,6 +313,7 @@ const StreamsSelector = memo(({
   async function removeFile(path) {
     setCopyStreamIdsForPath(path, () => ({}));
     setExternalFilesMeta((old) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [path]: val, ...rest } = old;
       return rest;
     });
@@ -318,6 +322,7 @@ const StreamsSelector = memo(({
   async function batchSetCopyStreamIdsForPath(path, streams, filter, enabled) {
     setCopyStreamIdsForPath(path, (old) => {
       const ret = { ...old };
+      // eslint-disable-next-line unicorn/no-array-callback-reference
       streams.filter(filter).forEach(({ index }) => {
         ret[index] = enabled;
       });

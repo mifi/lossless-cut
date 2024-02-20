@@ -24,7 +24,7 @@ const renderKeys = (keys) => keys.map((key, i) => (
 // From https://craig.is/killing/mice
 // For modifier keys you can use shift, ctrl, alt, or meta.
 // You can substitute option for alt and command for meta.
-const allModifiers = ['shift', 'ctrl', 'alt', 'meta'];
+const allModifiers = new Set(['shift', 'ctrl', 'alt', 'meta']);
 function fixKeys(keys) {
   const replaced = keys.map((key) => {
     if (key === 'option') return 'alt';
@@ -32,10 +32,10 @@ function fixKeys(keys) {
     return key;
   });
   const uniqed = uniq(replaced);
-  const nonModifierKeys = keys.filter((key) => !allModifiers.includes(key));
+  const nonModifierKeys = keys.filter((key) => !allModifiers.has(key));
   if (nonModifierKeys.length === 0) return []; // only modifiers is invalid
   if (nonModifierKeys.length > 1) return []; // can only have one non-modifier
-  return orderBy(uniqed, [key => key !== 'shift', key => key !== 'ctrl', key => key !== 'alt', key => key !== 'meta', key => key]);
+  return orderBy(uniqed, [(key) => key !== 'shift', (key) => key !== 'ctrl', (key) => key !== 'alt', (key) => key !== 'meta', (key) => key]);
 }
 
 const CreateBinding = memo(({

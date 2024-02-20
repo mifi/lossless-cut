@@ -1,3 +1,4 @@
+// eslint-disable-line unicorn/filename-case
 import sharp from 'sharp';
 import icongen from 'icon-gen';
 

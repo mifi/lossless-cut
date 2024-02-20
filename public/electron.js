@@ -1,6 +1,7 @@
 process.traceDeprecation = true;
 process.traceProcessWarnings = true;
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 const electron = require('electron');
 const isDev = require('electron-is-dev');
 const unhandled = require('electron-unhandled');
@@ -14,7 +15,7 @@ const { stat } = require('fs/promises');
 const logger = require('./logger');
 const menu = require('./menu');
 const configStore = require('./configStore');
-const { frontendBuildDir, isLinux, isWindows } = require('./util');
+const { frontendBuildDir, isLinux } = require('./util');
 const attachContextMenu = require('./contextMenu');
 const HttpServer = require('./httpServer');
 
@@ -298,6 +299,7 @@ function initApp() {
 // Call this immediately, to make sure we don't miss it (race condition)
 const readyPromise = app.whenReady();
 
+// eslint-disable-next-line unicorn/prefer-top-level-await
 (async () => {
   try {
     logger.info('Initializing config store');
@@ -343,8 +345,8 @@ const readyPromise = app.whenReady();
       const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies
 
       installExtension(REACT_DEVELOPER_TOOLS)
-        .then(name => logger.info('Added Extension', name))
-        .catch(err => logger.error('Failed to add extension', err));
+        .then((name) => logger.info('Added Extension', name))
+        .catch((err) => logger.error('Failed to add extension', err));
     }
 
     createWindow();

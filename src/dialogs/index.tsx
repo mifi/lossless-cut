@@ -222,7 +222,8 @@ async function askForSegmentDuration(fileDuration) {
 // https://github.com/mifi/lossless-cut/issues/1153
 async function askForSegmentsRandomDurationRange() {
   function parse(str) {
-    const match = str.replace(/\s/g, '').match(/^duration([\d.]+)to([\d.]+),gap([-\d.]+)to([-\d.]+)$/i);
+    // eslint-disable-next-line unicorn/better-regex
+    const match = str.replaceAll(/\s/g, '').match(/^duration([\d.]+)to([\d.]+),gap([-\d.]+)to([-\d.]+)$/i);
     if (!match) return undefined;
     const values = match.slice(1);
     const parsed = values.map((val) => parseFloat(val));
@@ -275,7 +276,7 @@ export async function askForShiftSegments() {
     let parseableValue = value;
     let sign = 1;
     if (parseableValue[0] === '-') {
-      parseableValue = parseableValue.substring(1);
+      parseableValue = parseableValue.slice(1);
       sign = -1;
     }
     const duration = parseDuration(parseableValue);

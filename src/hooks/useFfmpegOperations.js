@@ -16,7 +16,7 @@ const { writeFile, mkdir } = window.require('fs/promises');
 async function writeChaptersFfmetadata(outDir, chapters) {
   if (!chapters || chapters.length === 0) return undefined;
 
-  const path = join(outDir, `ffmetadata-${new Date().getTime()}.txt`);
+  const path = join(outDir, `ffmetadata-${Date.now()}.txt`);
 
   const ffmetadata = chapters.map(({ start, end, name }) => (
     `[CHAPTER]\nTIMEBASE=1/1000\nSTART=${Math.floor(start * 1000)}\nEND=${Math.floor(end * 1000)}\ntitle=${name || ''}`
@@ -37,7 +37,7 @@ function getMovFlags({ preserveMovData, movFastStart }) {
   if (movFastStart) flags.push('+faststart');
 
   if (flags.length === 0) return [];
-  return flatMap(flags, flag => ['-movflags', flag]);
+  return flatMap(flags, (flag) => ['-movflags', flag]);
 }
 
 function getMatroskaFlags() {
@@ -153,7 +153,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       // https://superuser.com/questions/787064/filename-quoting-in-ffmpeg-concat
       // Must add "file:" or we get "Impossible to open 'pipe:xyz.mp4'" on newer ffmpeg versions
       // https://superuser.com/questions/718027/ffmpeg-concat-doesnt-work-with-absolute-path
-      const concatTxt = paths.map(file => `file 'file:${resolve(file).replace(/'/g, "'\\''")}'`).join('\n');
+      const concatTxt = paths.map((file) => `file 'file:${resolve(file).replaceAll('\'', "'\\''")}'`).join('\n');
 
       const ffmpegCommandLine = getFfCommandLine('ffmpeg', ffmpegArgs);
 

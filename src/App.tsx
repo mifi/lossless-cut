@@ -101,6 +101,7 @@ const videoStyle: CSSProperties = { width: '100%', height: '100%', objectFit: 'c
 const bottomStyle: CSSProperties = { background: controlsBackground, transition: darkModeTransition };
 
 const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
+// eslint-disable-next-line unicorn/prefer-top-level-await
 hevcPlaybackSupportedPromise.catch((err) => console.error(err));
 
 
@@ -256,7 +257,7 @@ function App() {
     });
   }, []);
 
-  const toggleSegmentsList = useCallback(() => setShowRightBar(v => !v), []);
+  const toggleSegmentsList = useCallback(() => setShowRightBar((v) => !v), []);
 
   const toggleCopyStreamId = useCallback((path, index) => {
     setCopyStreamIdsForPath(path, (old) => ({ ...old, [index]: !old[index] }));
@@ -333,7 +334,7 @@ function App() {
     !!(copyStreamIdsByFile[path] || {})[streamId]
   ), [copyStreamIdsByFile]);
 
-  const checkCopyingAnyTrackOfType = useCallback((filter) => mainStreams.some(stream => isCopyingStreamId(filePath, stream.index) && filter(stream)), [filePath, isCopyingStreamId, mainStreams]);
+  const checkCopyingAnyTrackOfType = useCallback((filter) => mainStreams.some((stream) => isCopyingStreamId(filePath, stream.index) && filter(stream)), [filePath, isCopyingStreamId, mainStreams]);
   const copyAnyAudioTrack = useMemo(() => checkCopyingAnyTrackOfType((stream) => stream.codec_type === 'audio'), [checkCopyingAnyTrackOfType]);
 
   const subtitleStreams = useMemo(() => getSubtitleStreams(mainStreams), [mainStreams]);
@@ -633,7 +634,7 @@ function App() {
   }, []);
 
   const mainCopiedStreams = useMemo(() => mainStreams.filter((stream) => isCopyingStreamId(filePath, stream.index)), [filePath, isCopyingStreamId, mainStreams]);
-  const mainCopiedThumbnailStreams = useMemo(() => mainCopiedStreams.filter(isStreamThumbnail), [mainCopiedStreams]);
+  const mainCopiedThumbnailStreams = useMemo(() => mainCopiedStreams.filter((stream) => isStreamThumbnail(stream)), [mainCopiedStreams]);
 
   // Streams that are not copy enabled by default
   const extraStreams = useMemo(() => mainStreams.filter((stream) => !shouldCopyStreamByDefault(stream)), [mainStreams]);
@@ -678,7 +679,7 @@ function App() {
 
   function addThumbnail(thumbnail) {
     // console.log('Rendered thumbnail', thumbnail.url);
-    setThumbnails(v => [...v, thumbnail]);
+    setThumbnails((v) => [...v, thumbnail]);
   }
 
   const hasAudio = !!activeAudioStream;
@@ -710,7 +711,7 @@ function App() {
   // Cleanup removed thumbnails
   useEffect(() => {
     thumnailsRef.current.forEach((thumbnail) => {
-      if (!thumbnails.some(t => t.url === thumbnail.url)) URL.revokeObjectURL(thumbnail.url);
+      if (!thumbnails.some((t) => t.url === thumbnail.url)) URL.revokeObjectURL(thumbnail.url);
     });
     thumnailsRef.current = thumbnails;
   }, [thumbnails]);
@@ -719,7 +720,7 @@ function App() {
   const subtitlesByStreamIdRef = useRef({});
   useEffect(() => {
     Object.values(thumnailsRef.current).forEach(({ url }) => {
-      if (!Object.values(subtitlesByStreamId).some(t => t.url === url)) URL.revokeObjectURL(url);
+      if (!Object.values(subtitlesByStreamId).some((t) => t.url === url)) URL.revokeObjectURL(url);
     });
     subtitlesByStreamIdRef.current = subtitlesByStreamId;
   }, [subtitlesByStreamId]);
@@ -732,7 +733,7 @@ function App() {
 
   const resetMergedOutFileName = useCallback(() => {
     const ext = getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath });
-    const outFileName = getSuffixedFileName(filePath, `cut-merged-${new Date().getTime()}${ext}`);
+    const outFileName = getSuffixedFileName(filePath, `cut-merged-${Date.now()}${ext}`);
     setMergedOutFileName(outFileName);
   }, [fileFormat, filePath, isCustomFormatSelected]);
 
@@ -833,7 +834,7 @@ function App() {
   }, [html5ify, html5ifyDummy]);
 
   const convertFormatBatch = useCallback(async () => {
-    if (batchFiles.length < 1) return;
+    if (batchFiles.length === 0) return;
     const filePaths = batchFiles.map((f) => f.path);
 
     const failedFiles: string[] = [];
@@ -1008,7 +1009,7 @@ function App() {
       externalFilesMeta,
       mainStreams,
       copyStreamIdsByFile,
-      cutSegments: cutSegments.map(s => ({ start: s.start, end: s.end })),
+      cutSegments: cutSegments.map((s) => ({ start: s.start, end: s.end })),
       mainFileFormatData,
       rotation,
       shortestFlag,
@@ -1176,7 +1177,7 @@ function App() {
       return;
     }
 
-    if (segmentsToExport.length < 1) {
+    if (segmentsToExport.length === 0) {
       return;
     }
 
@@ -1526,6 +1527,7 @@ function App() {
         await html5ifyAndLoadWithPreferences(cod, fp, 'fastest', haveVideoStream, haveAudioStream);
       }
 
+      // eslint-disable-next-line unicorn/prefer-ternary
       if (projectPath) {
         await loadEdlFile({ path: projectPath, type: 'llc' });
       } else {
@@ -1565,16 +1567,14 @@ function App() {
       // https://github.com/mifi/lossless-cut/issues/515
       setFilePath(fp);
     } catch (err) {
-      if (err) {
-        if (err instanceof DirectoryAccessDeclinedError) return;
-      }
+      if (err instanceof DirectoryAccessDeclinedError) return;
       resetState();
       throw err;
     }
   }, [storeProjectInWorkingDir, setWorking, loadEdlFile, getEdlFilePath, getEdlFilePathOld, enableAskForImportChapters, ensureAccessToSourceDir, loadCutSegments, autoLoadTimecode, enableNativeHevc, ensureWritableOutDir, customOutDir, resetState, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat, html5ifyAndLoadWithPreferences, showPreviewFileLoadedMessage, showUnsupportedFileMessage, hideAllNotifications]);
 
-  const toggleLastCommands = useCallback(() => setLastCommandsVisible(val => !val), []);
-  const toggleSettings = useCallback(() => setSettingsVisible(val => !val), []);
+  const toggleLastCommands = useCallback(() => setLastCommandsVisible((val) => !val), []);
+  const toggleSettings = useCallback(() => setSettingsVisible((val) => !val), []);
 
   const seekClosestKeyframe = useCallback((direction) => {
     const time = findNearestKeyFrameTime({ time: getRelevantTime(), direction });
@@ -1822,7 +1822,7 @@ function App() {
 
   const userOpenFiles = useCallback(async (filePathsIn) => {
     let filePaths = filePathsIn;
-    if (!filePaths || filePaths.length < 1) return;
+    if (!filePaths || filePaths.length === 0) return;
 
     console.log('userOpenFiles');
     console.log(filePaths.join('\n'));
@@ -1866,7 +1866,7 @@ function App() {
     const firstFilePath = filePaths[0];
 
     // https://en.wikibooks.org/wiki/Inside_DVD-Video/Directory_Structure
-    if (/^VIDEO_TS$/i.test(basename(firstFilePath))) {
+    if (/^video_ts$/i.test(basename(firstFilePath))) {
       if (mustDisallowVob()) return;
       filePaths = await readVideoTs(firstFilePath);
     }
@@ -1975,7 +1975,7 @@ function App() {
   const showIncludeExternalStreamsDialog = useCallback(async () => {
     try {
       const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'] });
-      if (canceled || filePaths.length < 1) return;
+      if (canceled || filePaths.length === 0) return;
       await addStreamSourceFile(filePaths[0]);
     } catch (err) {
       handleError(err);
@@ -2031,9 +2031,9 @@ function App() {
       play: () => play(),
       pause,
       reducePlaybackRate: () => changePlaybackRate(-1),
-      reducePlaybackRateMore: () => changePlaybackRate(-1, 2.0),
+      reducePlaybackRateMore: () => changePlaybackRate(-1, 2),
       increasePlaybackRate: () => changePlaybackRate(1),
-      increasePlaybackRateMore: () => changePlaybackRate(1, 2.0),
+      increasePlaybackRateMore: () => changePlaybackRate(1, 2),
       timelineToggleComfortZoom,
       captureSnapshot,
       captureSnapshotAsCoverArt,
@@ -2191,7 +2191,9 @@ function App() {
   useKeyboard({ keyBindings, onKeyPress });
 
   useEffect(() => {
+    // eslint-disable-next-line unicorn/prefer-add-event-listener
     document.ondragover = dragPreventer;
+    // eslint-disable-next-line unicorn/prefer-add-event-listener
     document.ondragend = dragPreventer;
 
     electron.ipcRenderer.send('renderer-ready');
@@ -2309,7 +2311,7 @@ function App() {
     // todo
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const actionsWithArgs: Record<string, (...args: any[]) => void> = {
-      openFiles: (filePaths: string[]) => { userOpenFiles(filePaths.map(resolvePathIfNeeded)); },
+      openFiles: (filePaths: string[]) => { userOpenFiles(filePaths.map((p) => resolvePathIfNeeded(p))); },
       // todo separate actions per type and move them into mainActions? https://github.com/mifi/lossless-cut/issues/254#issuecomment-932649424
       importEdlFile,
       exportEdlFile: tryExportEdlFile,
@@ -2351,7 +2353,7 @@ function App() {
       ev.preventDefault();
       if (!ev.dataTransfer) return;
       const { files } = ev.dataTransfer;
-      const filePaths = Array.from(files).map(f => f.path);
+      const filePaths = [...files].map((f) => f.path);
 
       focusWindow();
 
@@ -2382,7 +2384,7 @@ function App() {
   useEffect(() => {
     const keyScrollPreventer = (e) => {
       // https://stackoverflow.com/questions/8916620/disable-arrow-key-scrolling-in-users-browser
-      if (e.target === document.body && [32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+      if (e.target === document.body && [32, 37, 38, 39, 40].includes(e.keyCode)) {
         e.preventDefault();
       }
     };
@@ -2393,7 +2395,7 @@ function App() {
 
   const showLeftBar = batchFiles.length > 0;
 
-  const thumbnailsSorted = useMemo(() => sortBy(thumbnails, thumbnail => thumbnail.time), [thumbnails]);
+  const thumbnailsSorted = useMemo(() => sortBy(thumbnails, (thumbnail) => thumbnail.time), [thumbnails]);
 
   const { t } = useTranslation();
 

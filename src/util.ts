@@ -163,12 +163,12 @@ export function handleError(arg1: unknown, arg2?: unknown) {
   toast.fire({
     icon: 'error',
     title: msg || i18n.t('An error has occurred.'),
-    text: errorMsg ? errorMsg.substring(0, 300) : undefined,
+    text: errorMsg ? errorMsg.slice(0, 300) : undefined,
   });
 }
 
 export function filenamify(name) {
-  return name.replace(/[^0-9a-zA-Z_\-.]/g, '_');
+  return name.replaceAll(/[^\w.-]/g, '_');
 }
 
 export function withBlur(cb) {
@@ -248,7 +248,7 @@ export async function findExistingHtml5FriendlyFile(fp, cod) {
   matches = [...matches, ...nonMatches];
 
   // console.log(matches);
-  if (matches.length < 1) return undefined;
+  if (matches.length === 0) return undefined;
 
   const { suffix, entry } = matches[0]!;
 
@@ -318,7 +318,7 @@ export async function checkAppPath() {
     // eslint-disable-next-line no-useless-concat, one-var, one-var-declaration-per-line
     const mf = 'mi' + 'fi.no', llc = 'Los' + 'slessC' + 'ut';
     const appPath = isDev ? 'C:\\Program Files\\WindowsApps\\37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84' : remote.app.getAppPath();
-    const pathMatch = appPath.replace(/\\/g, '/').match(/Windows ?Apps\/([^/]+)/); // find the first component after WindowsApps
+    const pathMatch = appPath.replaceAll('\\', '/').match(/Windows ?Apps\/([^/]+)/); // find the first component after WindowsApps
     // example pathMatch: 37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84
     if (!pathMatch) {
       console.warn('Unknown path match', appPath);
@@ -358,7 +358,8 @@ export function shuffleArray(arrayIn) {
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
 export function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+  // eslint-disable-next-line unicorn/better-regex
+  return string.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
 export const readFileSize = async (path) => (await stat(path)).size;
@@ -377,8 +378,7 @@ export function checkFileSizes(inputSize, outputSize) {
 
 function setDocumentExtraTitle(extra) {
   const baseTitle = 'LosslessCut';
-  if (extra != null) document.title = `${baseTitle} - ${extra}`;
-  else document.title = baseTitle;
+  document.title = extra != null ? `${baseTitle} - ${extra}` : baseTitle;
 }
 
 export function setDocumentTitle({ filePath, working, cutProgress }: { filePath: string, working?: string, cutProgress?: number }) {
@@ -402,7 +402,7 @@ export function mustDisallowVob() {
 
 export async function readVideoTs(videoTsPath) {
   const files = await readdir(videoTsPath);
-  const relevantFiles = files.filter((file) => /^VTS_\d+_\d+\.vob$/i.test(file) && !/^VTS_\d+_00\.vob$/i.test(file)); // skip menu
+  const relevantFiles = files.filter((file) => /^vts_\d+_\d+\.vob$/i.test(file) && !/^vts_\d+_00\.vob$/i.test(file)); // skip menu
   const ret = sortBy(relevantFiles).map((file) => join(videoTsPath, file));
   if (ret.length === 0) throw new Error('No VTS vob files found in folder');
   return ret;

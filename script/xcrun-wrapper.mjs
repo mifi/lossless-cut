@@ -1,3 +1,4 @@
+// eslint-disable-line unicorn/filename-case
 import execa from 'execa';
 import { readFile } from 'fs/promises';
 

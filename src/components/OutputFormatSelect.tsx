@@ -27,7 +27,7 @@ const OutputFormatSelect = memo(({ style, detectedFileFormat, fileFormat, onOutp
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <Select style={style} value={fileFormat || ''} title={i18n.t('Output container format:')} onChange={withBlur(e => onOutputFormatUserChange(e.target.value))}>
+    <Select style={style} value={fileFormat || ''} title={i18n.t('Output container format:')} onChange={withBlur((e) => onOutputFormatUserChange(e.target.value))}>
       <option key="disabled1" value="" disabled>{i18n.t('Output container format:')}</option>
 
       {detectedFileFormat && (
