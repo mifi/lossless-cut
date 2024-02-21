@@ -255,7 +255,7 @@ const Timeline = memo(({
       )}
 
       <div
-        style={{ overflowX: 'scroll' }}
+        style={{ overflowX: 'scroll', overflowY: 'hidden' }}
         className="hide-scrollbar"
         onWheel={onWheel}
         onScroll={onTimelineScroll}
