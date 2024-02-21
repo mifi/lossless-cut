@@ -1,8 +1,8 @@
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 import sortBy from 'lodash/sortBy';
 import minBy from 'lodash/minBy';
 import maxBy from 'lodash/maxBy';
-import { InverseSegment, SegmentBase } from './types';
+import { ApparentSegmentBase, InverseSegment, PlaybackMode, SegmentBase } from './types';
 
 
 export const isDurationValid = (duration?: number): duration is number => duration != null && Number.isFinite(duration) && duration > 0;
@@ -11,7 +11,7 @@ export const createSegment = (props?: { start?: number, end?: number, name?: str
   start: props?.start,
   end: props?.end,
   name: props?.name || '',
-  segId: uuidv4(),
+  segId: nanoid(),
   segColorIndex: props?.segColorIndex,
 
   // `tags` is an optional object (key-value). Values must always be string
@@ -23,12 +23,12 @@ export const createSegment = (props?: { start?: number, end?: number, name?: str
 
 // Because segments could have undefined start / end
 // (meaning extend to start of timeline or end duration)
-export function getSegApparentStart(seg) {
+export function getSegApparentStart(seg: SegmentBase) {
   const time = seg.start;
   return time !== undefined ? time : 0;
 }
 
-export function getSegApparentEnd(seg, duration) {
+export function getSegApparentEnd(seg: SegmentBase, duration?: number) {
   const time = seg.end;
   if (time !== undefined) return time;
   if (isDurationValid(duration)) return duration;
@@ -45,14 +45,14 @@ export const getCleanCutSegments = (cs) => cs.map((seg) => ({
 export function findSegmentsAtCursor(apparentSegments, currentTime) {
   const indexes: number[] = [];
   apparentSegments.forEach((segment, index) => {
-    if (segment.start < currentTime && segment.end > currentTime) indexes.push(index);
+    if (segment.start <= currentTime && segment.end >= currentTime) indexes.push(index);
   });
   return indexes;
 }
 
 export const getSegmentTags = (segment) => (segment.tags || {});
 
-export const sortSegments = (segments) => sortBy(segments, 'start');
+export const sortSegments = <T>(segments: T[]) => sortBy(segments, 'start');
 
 // https://stackoverflow.com/a/30472982/6519037
 export function partitionIntoOverlappingRanges(array, getSegmentStart = (seg) => seg.start, getSegmentEnd = (seg) => seg.end) {
@@ -107,17 +107,19 @@ export function combineSelectedSegments<T extends SegmentBase>(existingSegments:
   const firstSegment = minBy(selectedSegments, (seg) => getSegApparentStart(seg));
   const lastSegment = maxBy(selectedSegments, (seg) => getSegApparentEnd2(seg));
 
-  return existingSegments.map((existingSegment) => {
+  return existingSegments.flatMap((existingSegment) => {
     if (existingSegment === firstSegment) {
-      return {
+      return [{
         ...firstSegment,
         start: firstSegment.start,
         end: lastSegment!.end,
-      };
+      }];
     }
-    if (isSegmentSelected(existingSegment)) return undefined; // remove other selected segments
-    return existingSegment;
-  }).filter(Boolean);
+
+    if (isSegmentSelected(existingSegment)) return []; // remove other selected segments
+
+    return [existingSegment];
+  });
 }
 
 export function hasAnySegmentOverlap(sortedSegments) {
@@ -185,7 +187,7 @@ export function convertSegmentsToChapters(sortedSegments) {
   return sortSegments([...sortedSegments, ...(invertedSegments ?? [])]);
 }
 
-export function playOnlyCurrentSegment({ playbackMode, currentTime, playingSegment }) {
+export function playOnlyCurrentSegment({ playbackMode, currentTime, playingSegment }: { playbackMode: PlaybackMode, currentTime: number, playingSegment: ApparentSegmentBase }) {
   switch (playbackMode) {
     case 'loop-segment-start-end': {
       const maxSec = 3; // max time each side (start/end)
@@ -195,27 +197,24 @@ export function playOnlyCurrentSegment({ playbackMode, currentTime, playingSegme
       const endWindowStart = playingSegment.end - sec / 2;
 
       if (currentTime >= playingSegment.end) {
-        return { seek: playingSegment.start };
+        return { seekTo: playingSegment.start };
       }
       if (currentTime < endWindowStart && currentTime >= startWindowEnd) {
-        return { seek: endWindowStart };
+        return { seekTo: endWindowStart };
       }
       break;
     }
 
     case 'loop-segment': {
       if (currentTime >= playingSegment.end) {
-        return { seek: playingSegment.start };
+        return { seekTo: playingSegment.start };
       }
       break;
     }
 
     case 'play-segment-once': {
       if (currentTime >= playingSegment.end) {
-        return {
-          seek: playingSegment.end,
-          stop: true,
-        };
+        return { seekTo: playingSegment.end, exit: true };
       }
       break;
     }

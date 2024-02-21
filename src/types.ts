@@ -1,6 +1,19 @@
 export interface SegmentBase {
-  start?: number,
-  end?: number,
+  start?: number | undefined,
+  end?: number | undefined,
+}
+
+export interface ApparentSegmentBase {
+  start: number,
+  end: number,
+}
+
+
+export interface StateSegment extends SegmentBase {
+  name: string;
+  segId: string;
+  segColorIndex?: number | undefined;
+  tags?: Record<string, string> | undefined;
 }
 
 export interface Segment extends SegmentBase {
@@ -10,6 +23,8 @@ export interface Segment extends SegmentBase {
 export interface InverseSegment extends SegmentBase {
   segId?: string,
 }
+
+export type PlaybackMode = 'loop-segment-start-end' | 'loop-segment' | 'play-segment-once' | 'loop-selected-segments';
 
 export type Html5ifyMode = 'fastest' | 'fast-audio-remux' | 'fast-audio' | 'fast' | 'slow' | 'slow-audio' | 'slowest';
 

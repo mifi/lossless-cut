@@ -85,7 +85,7 @@ import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './uti
 import BigWaveform from './components/BigWaveform';
 
 import isDev from './isDev';
-import { EdlFileType, FfmpegCommandLog, FfprobeChapter, FfprobeFormat, FfprobeStream, Html5ifyMode, Thumbnail, TunerType } from './types';
+import { EdlFileType, FfmpegCommandLog, FfprobeChapter, FfprobeFormat, FfprobeStream, Html5ifyMode, PlaybackMode, StateSegment, Thumbnail, TunerType } from './types';
 
 const electron = window.require('electron');
 const { exists } = window.require('fs-extra');
@@ -111,11 +111,11 @@ function App() {
   const [ffmpegCommandLog, setFfmpegCommandLog] = useState<FfmpegCommandLog>([]);
 
   const [previewFilePath, setPreviewFilePath] = useState<string>();
-  const [working, setWorkingState] = useState<{ text: string, abortController: AbortController }>();
+  const [working, setWorkingState] = useState<{ text: string, abortController?: AbortController }>();
   const [usingDummyVideo, setUsingDummyVideo] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [compatPlayerEventId, setCompatPlayerEventId] = useState(0);
-  const playbackModeRef = useRef<{ playbackMode: 'loop-selected-segments', segId: string }>();
+  const playbackModeRef = useRef<PlaybackMode>();
   const [playerTime, setPlayerTime] = useState<number>();
   const [duration, setDuration] = useState<number>();
   const [rotation, setRotation] = useState(360);
@@ -171,7 +171,7 @@ function App() {
 
   // Store "working" in a ref so we can avoid race conditions
   const workingRef = useRef(!!working);
-  const setWorking = useCallback((val) => {
+  const setWorking = useCallback((val: { text: string, abortController?: AbortController } | undefined) => {
     workingRef.current = !!val;
     setWorkingState(val ? { text: val.text, abortController: val.abortController } : undefined);
   }, []);
@@ -297,34 +297,10 @@ function App() {
     setCompatPlayerEventId((id) => id + 1); // To make sure that we can seek even to the same commanded time that we are already add (e.g. loop current segment)
   }, []);
 
-  const userSeekAbs = useCallback((val: number) => {
-    playbackModeRef.current = undefined; // If the user seeks, we clear any custom playback mode
-    return seekAbs(val);
-  }, [seekAbs]);
-
   const commandedTimeRef = useRef(commandedTime);
   useEffect(() => {
     commandedTimeRef.current = commandedTime;
   }, [commandedTime]);
-
-  const seekRel = useCallback((val: number) => {
-    userSeekAbs(videoRef.current!.currentTime + val);
-  }, [userSeekAbs]);
-
-  const seekRelPercent = useCallback((val) => {
-    if (!isDurationValid(zoomedDuration)) return;
-    seekRel(val * zoomedDuration);
-  }, [seekRel, zoomedDuration]);
-
-  const shortStep = useCallback((direction) => {
-    // If we don't know fps, just assume 30 (for example if unknown audio file)
-    const fps = detectedFps || 30;
-
-    // try to align with frame
-    const currentTimeNearestFrameNumber = getFrameCountRaw(fps, videoRef.current!.currentTime);
-    const nextFrame = currentTimeNearestFrameNumber + direction;
-    userSeekAbs(nextFrame / fps);
-  }, [detectedFps, userSeekAbs]);
 
   const mainStreams = useMemo(() => mainFileMeta.streams, [mainFileMeta.streams]);
   const mainFileFormatData = useMemo(() => mainFileMeta.formatData, [mainFileMeta.formatData]);
@@ -374,8 +350,6 @@ function App() {
     });
   }, [comfortZoom]);
 
-  const onTimelineWheel = useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, invertTimelineScroll, zoomRel, seekRel });
-
   // Relevant time is the player's playback position if we're currently playing - if not, it's the user's commanded time.
   const relevantTime = useMemo(() => (playing ? playerTime : commandedTime) || 0, [commandedTime, playerTime, playing]);
   // The reason why we also have a getter is because it can be used when we need to get the time, but don't want to re-render for every time update (which can be heavy!)
@@ -393,8 +367,45 @@ function App() {
     cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, createNumSegments, createFixedDurationSegments, createRandomSegments, apparentCutSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, currentApparentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, isSegmentSelected, setCutTime, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, onSelectSegmentsByTag, toggleSegmentSelected, selectOnlySegment, getApparentCutSegmentById, selectedSegments, selectedSegmentsOrInverse, nonFilteredSegmentsOrInverse, segmentsToExport, duplicateCurrentSegment, duplicateSegment, updateSegAtIndex,
   } = useSegments({ filePath, workingRef, setWorking, setCutProgress, videoStream: activeVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly });
 
-  const jumpSegStart = useCallback((index) => userSeekAbs(apparentCutSegments[index].start), [apparentCutSegments, userSeekAbs]);
-  const jumpSegEnd = useCallback((index) => userSeekAbs(apparentCutSegments[index].end), [apparentCutSegments, userSeekAbs]);
+
+  const segmentAtCursor = useMemo(() => {
+    const segmentsAtCursorIndexes = findSegmentsAtCursor(apparentCutSegments, commandedTime);
+    const firstSegmentAtCursorIndex = segmentsAtCursorIndexes[0];
+
+    if (firstSegmentAtCursorIndex == null) return undefined;
+    return cutSegments[firstSegmentAtCursorIndex];
+  }, [apparentCutSegments, commandedTime, cutSegments]);
+
+  const segmentAtCursorRef = useRef<StateSegment>();
+  useEffect(() => {
+    segmentAtCursorRef.current = segmentAtCursor;
+  }, [segmentAtCursor]);
+
+  const userSeekAbs = useCallback((val: number) => seekAbs(val), [seekAbs]);
+
+  const seekRel = useCallback((val: number) => {
+    userSeekAbs(videoRef.current!.currentTime + val);
+  }, [userSeekAbs]);
+
+  const seekRelPercent = useCallback((val) => {
+    if (!isDurationValid(zoomedDuration)) return;
+    seekRel(val * zoomedDuration);
+  }, [seekRel, zoomedDuration]);
+
+  const onTimelineWheel = useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, invertTimelineScroll, zoomRel, seekRel });
+
+  const shortStep = useCallback((direction) => {
+    // If we don't know fps, just assume 30 (for example if unknown audio file)
+    const fps = detectedFps || 30;
+
+    // try to align with frame
+    const currentTimeNearestFrameNumber = getFrameCountRaw(fps, videoRef.current!.currentTime);
+    const nextFrame = currentTimeNearestFrameNumber + direction;
+    userSeekAbs(nextFrame / fps);
+  }, [detectedFps, userSeekAbs]);
+
+  const jumpSegStart = useCallback((index) => userSeekAbs(apparentCutSegments[index]!.start), [apparentCutSegments, userSeekAbs]);
+  const jumpSegEnd = useCallback((index) => userSeekAbs(apparentCutSegments[index]!.end), [apparentCutSegments, userSeekAbs]);
   const jumpCutStart = useCallback(() => jumpSegStart(currentSegIndexSafe), [currentSegIndexSafe, jumpSegStart]);
   const jumpCutEnd = useCallback(() => jumpSegEnd(currentSegIndexSafe), [currentSegIndexSafe, jumpSegEnd]);
   const jumpTimelineStart = useCallback(() => userSeekAbs(0), [userSeekAbs]);
@@ -494,7 +505,6 @@ function App() {
 
   const onStopPlaying = useCallback(() => {
     onPlayingChange(false);
-    playbackModeRef.current = undefined;
   }, []);
 
   const onVideoAbort = useCallback(() => {
@@ -889,8 +899,8 @@ function App() {
 
   const showPlaybackFailedMessage = () => errorToast(i18n.t('Unable to playback this file. Try to convert to supported format from the menu'));
 
-  const getNewJumpIndex = (oldIndex, direction) => Math.max(oldIndex + direction, 0);
-  const jumpSeg = useCallback((direction) => setCurrentSegIndex((old) => Math.min(getNewJumpIndex(old, direction), cutSegments.length - 1)), [cutSegments, setCurrentSegIndex]);
+  const getNewJumpIndex = (oldIndex: number, direction: -1 | 1) => Math.max(oldIndex + direction, 0);
+  const jumpSeg = useCallback((direction: -1 | 1) => setCurrentSegIndex((old) => Math.min(getNewJumpIndex(old, direction), cutSegments.length - 1)), [cutSegments, setCurrentSegIndex]);
 
   const pause = useCallback(() => {
     if (!filePath || !playing) return;
@@ -908,54 +918,58 @@ function App() {
     if (resetPlaybackRate) video!.playbackRate = outputPlaybackRate;
     video?.play().catch((err) => {
       showPlaybackFailedMessage();
-      console.error(err);
+      console.error(err, Object.entries(err));
     });
   }, [filePath, outputPlaybackRate, playing]);
 
-  const togglePlay = useCallback(({ resetPlaybackRate, playbackMode } = {}) => {
-    playbackModeRef.current = undefined;
+  const togglePlay = useCallback(({ resetPlaybackRate, requestPlaybackMode }: { resetPlaybackRate?: boolean, requestPlaybackMode?: PlaybackMode } | undefined = {}) => {
+    playbackModeRef.current = requestPlaybackMode;
+
     if (playing) {
       pause();
       return;
     }
-    if (playbackMode != null) {
-      if (playbackMode === 'loop-selected-segments') {
-        const firstSelectedSegment = selectedSegments[0];
-        playbackModeRef.current = { segId: firstSelectedSegment.segId, playbackMode };
-        const index = apparentCutSegments.indexOf(firstSelectedSegment);
-        if (index >= 0) setCurrentSegIndex(index);
-        seekAbs(firstSelectedSegment.start);
-      } else {
-        playbackModeRef.current = { segId: currentApparentCutSeg.segId, playbackMode };
-        seekAbs(currentApparentCutSeg.start);
+
+    if (playbackModeRef.current != null) {
+      const isSomeSelectedSegmentAtCursor = selectedSegments.some((selectedSegment) => selectedSegment.segId === segmentAtCursorRef.current?.segId);
+      if (!isSomeSelectedSegmentAtCursor) { // if a segment is already at cursor, don't do anything
+        if (playbackModeRef.current === 'loop-selected-segments') {
+          const firstSelectedSegment = selectedSegments[0];
+          if (firstSelectedSegment == null) throw new Error();
+          const index = apparentCutSegments.indexOf(firstSelectedSegment);
+          if (index >= 0) setCurrentSegIndex(index);
+          seekAbs(firstSelectedSegment.start);
+        } else {
+          seekAbs(currentApparentCutSeg.start);
+        }
       }
     }
     play(resetPlaybackRate);
-  }, [playing, play, pause, selectedSegments, apparentCutSegments, setCurrentSegIndex, seekAbs, currentApparentCutSeg.segId, currentApparentCutSeg.start]);
+  }, [playing, play, pause, selectedSegments, apparentCutSegments, setCurrentSegIndex, seekAbs, currentApparentCutSeg.start]);
 
   const onTimeUpdate = useCallback((e) => {
     const { currentTime } = e.target;
     if (playerTime === currentTime) return;
     setPlayerTime(currentTime);
 
-    if (playbackModeRef.current != null) {
-      const { segId, playbackMode } = playbackModeRef.current;
-      const playingSegment = getApparentCutSegmentById(segId);
+    const playbackMode = playbackModeRef.current;
+    if (playbackMode != null && segmentAtCursorRef.current != null) { // todo and is currently playing?
+      const playingSegment = getApparentCutSegmentById(segmentAtCursorRef.current.segId);
 
       if (playingSegment != null) {
-        const { seek, stop, nextSegment } = playOnlyCurrentSegment({ playbackMode, currentTime, playingSegment });
-        // console.log({ seek, stop, nextSegment });
-
-        if (nextSegment != null) {
+        const nextAction = playOnlyCurrentSegment({ playbackMode, currentTime, playingSegment });
+        // console.log(nextAction);
+        if (nextAction.nextSegment) {
           const index = selectedSegments.indexOf(playingSegment);
           let newIndex = getNewJumpIndex(index >= 0 ? index : 0, 1);
           if (newIndex > selectedSegments.length - 1) newIndex = 0; // have reached end of last segment, start over
           const nextSelectedSegment = selectedSegments[newIndex];
           if (nextSelectedSegment != null) seekAbs(nextSelectedSegment.start);
-          playbackModeRef.current.segId = nextSelectedSegment.segId;
         }
-        if (seek != null) seekAbs(seek);
-        if (stop) {
+        if (nextAction.seekTo != null) {
+          seekAbs(nextAction.seekTo);
+        }
+        if (nextAction.exit) {
           playbackModeRef.current = undefined;
           pause();
         }
@@ -1241,6 +1255,7 @@ function App() {
         setCutProgress(0);
         setWorking({ text: i18n.t('Merging') });
 
+        // @ts-expect-error name only exists for invertCutSegments = false
         const chapterNames = segmentsToChapters && !invertCutSegments ? segmentsToExport.map((s) => s.name) : undefined;
 
         await autoConcatCutSegments({
@@ -1402,14 +1417,6 @@ function App() {
       video!.playbackRate = newRate;
     }
   }, [playing, compatPlayerEnabled]);
-
-  const segmentAtCursor = useMemo(() => {
-    const segmentsAtCursorIndexes = findSegmentsAtCursor(apparentCutSegments, commandedTime);
-    const firstSegmentAtCursorIndex = segmentsAtCursorIndexes[0];
-
-    if (firstSegmentAtCursorIndex == null) return undefined;
-    return cutSegments[firstSegmentAtCursorIndex];
-  }, [apparentCutSegments, commandedTime, cutSegments]);
 
   const loadEdlFile = useCallback(async ({ path, type, append }: { path: string, type: EdlFileType, append?: boolean }) => {
     console.log('Loading EDL file', type, path, append);
@@ -1965,7 +1972,7 @@ function App() {
     setConcatDialogVisible(true);
   }, [batchFiles.length, openFilesDialog]);
 
-  const toggleLoopSelectedSegments = useCallback(() => togglePlay({ resetPlaybackRate: true, playbackMode: 'loop-selected-segments' }), [togglePlay]);
+  const toggleLoopSelectedSegments = useCallback(() => togglePlay({ resetPlaybackRate: true, requestPlaybackMode: 'loop-selected-segments' }), [togglePlay]);
 
   const copySegmentsToClipboard = useCallback(async () => {
     if (!isFileOpened) return;
@@ -2024,9 +2031,9 @@ function App() {
       // For actions, see also KeyboardShortcuts.jsx
       togglePlayNoResetSpeed: () => togglePlay(),
       togglePlayResetSpeed: () => togglePlay({ resetPlaybackRate: true }),
-      togglePlayOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, playbackMode: 'play-segment-once' }),
-      toggleLoopOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, playbackMode: 'loop-segment' }),
-      toggleLoopStartEndOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, playbackMode: 'loop-segment-start-end' }),
+      togglePlayOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, requestPlaybackMode: 'play-segment-once' }),
+      toggleLoopOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, requestPlaybackMode: 'loop-segment' }),
+      toggleLoopStartEndOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, requestPlaybackMode: 'loop-segment-start-end' }),
       toggleLoopSelectedSegments,
       play: () => play(),
       pause,
@@ -2067,6 +2074,8 @@ function App() {
       seekNextFrame: () => shortStep(1),
       jumpPrevSegment: () => jumpSeg(-1),
       jumpNextSegment: () => jumpSeg(1),
+      jumpFirstSegment: () => setCurrentSegIndex(0),
+      jumpLastSegment: () => setCurrentSegIndex(cutSegments.length - 1),
       jumpCutStart,
       jumpCutEnd,
       jumpTimelineStart,

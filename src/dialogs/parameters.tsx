@@ -10,14 +10,18 @@ const { shell } = window.require('electron');
 
 const ReactSwal = withReactContent(Swal);
 
+export interface ParameterDialogParameter { value: string, label?: string, hint?: string }
+export type ParameterDialogParameters = Record<string, ParameterDialogParameter>;
 
-const ParametersInput = ({ description, parameters: parametersIn, onChange, onSubmit, docUrl }) => {
-  const firstInputRef = useRef();
+const ParametersInput = ({ description, parameters: parametersIn, onChange, onSubmit, docUrl }: {
+  description?: string, parameters: ParameterDialogParameters, onChange: (a: ParameterDialogParameters) => void, onSubmit: () => void, docUrl?: string,
+}) => {
+  const firstInputRef = useRef<HTMLInputElement>(null);
   const [parameters, setParameters] = useState(parametersIn);
 
-  const getParameter = (key) => parameters[key]?.value;
+  const getParameter = (key: string) => parameters[key]?.value;
 
-  const handleChange = (key, value) => setParameters((existing) => {
+  const handleChange = (key: string, value: string) => setParameters((existing) => {
     const newParameters = { ...existing, [key]: { ...existing[key], value } };
     onChange(newParameters);
     return newParameters;
@@ -29,7 +33,7 @@ const ParametersInput = ({ description, parameters: parametersIn, onChange, onSu
   }, [onSubmit]);
 
   useEffect(() => {
-    firstInputRef.current?.focus?.();
+    firstInputRef.current?.focus();
   }, []);
 
   return (
@@ -50,7 +54,7 @@ const ParametersInput = ({ description, parameters: parametersIn, onChange, onSu
 };
 
 // eslint-disable-next-line import/prefer-default-export
-export async function showParametersDialog({ title, description, parameters: parametersIn, docUrl }) {
+export async function showParametersDialog({ title, description, parameters: parametersIn, docUrl }: { title?: string, description?: string, parameters: ParameterDialogParameters, docUrl?: string }) {
   let parameters = parametersIn;
   let resolve1;
 

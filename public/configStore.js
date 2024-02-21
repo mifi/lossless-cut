@@ -45,11 +45,13 @@ const defaultKeyBindings = [
   { keys: 'ctrl+home', action: 'jumpTimelineStart' },
   { keys: 'ctrl+end', action: 'jumpTimelineEnd' },
 
+  { keys: 'pageup', action: 'jumpFirstSegment' },
   { keys: 'up', action: 'jumpPrevSegment' },
   { keys: 'ctrl+up', action: 'timelineZoomIn' },
   { keys: 'command+up', action: 'timelineZoomIn' },
   { keys: 'shift+up', action: 'batchPreviousFile' },
 
+  { keys: 'pagedown', action: 'jumpLastSegment' },
   { keys: 'down', action: 'jumpNextSegment' },
   { keys: 'ctrl+down', action: 'timelineZoomOut' },
   { keys: 'command+down', action: 'timelineZoomOut' },

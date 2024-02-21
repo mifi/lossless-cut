@@ -120,7 +120,7 @@ export async function askForEdlImport({ type, fps }: { type: EdlImportType, fps?
 }
 
 export async function exportEdlFile({ type, cutSegments, customOutDir, filePath, getFrameCount }: {
-  type: EdlExportType, cutSegments: Segment, customOutDir?: string, filePath?: string, getFrameCount: (a: number) => number | undefined,
+  type: EdlExportType, cutSegments: Segment[], customOutDir?: string, filePath?: string, getFrameCount: (a: number) => number | undefined,
 }) {
   let filters;
   let ext;
