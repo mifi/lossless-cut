@@ -196,6 +196,17 @@ This project is maintained by me alone. The project will always remain free and 
 - [Thanks to everyone for supporting](https://mifi.no/thanks/) my open source work 🙌
 - Thanks to translators who helped translate the app. [You can too!](translation.md)
 
+## Contributors
+<a href="https://github.com/mifi/lossless-cut/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=mifi/lossless-cut&max=400&columns=20" width="100%"/>
+</a>
+
+## Star History
+
+<a href="https://star-history.com/#mifi/lossless-cut">
+  <img src="https://api.star-history.com/svg?repos=mifi/lossless-cut&type=Date" alt="Star History Chart" width="100%" />
+</a>
+
 ## More software
 
 - I made a command line video editor with slick transitions and lots of colors! [editly](https://github.com/mifi/editly)
