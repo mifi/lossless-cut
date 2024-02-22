@@ -1,7 +1,6 @@
 <div align="center">
 	<br>
-	<br>
-  <p><a href="https://mifi.no/losslesscut/"><img src="src/icon.svg" width="130" alt="LosslessCut" /></a></p>
+  <p><a href="https://mifi.no/losslesscut/"><img src="src/icon.svg" width="120" alt="LosslessCut" /></a></p>
   <p><b>LosslessCut</b></p>
   The swiss army knife of lossless video/audio editing
 	<br>
@@ -189,23 +188,14 @@ This project is maintained by me alone. The project will always remain free and 
 - [Hacker News](https://news.ycombinator.com/item?id=33969490)
 - Are you using LosslessCut for some interesting project and want your link here? Reach out!
 
+<img src="https://api.star-history.com/svg?repos=mifi/lossless-cut&type=Date" alt="Star History Chart" width="400px" />
+
 ## Attributions
 - App icon made by [Dimi Kazak](http://www.flaticon.com/authors/dimi-kazak "Dimi Kazak") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0")
 - [Lottie animation](https://lottiefiles.com/7077-magic-flow)
 - Thanks to Adi Abinun for his UI sketch work, inspiration and guidance
 - [Thanks to everyone for supporting](https://mifi.no/thanks/) my open source work 🙌
 - Thanks to translators who helped translate the app. [You can too!](translation.md)
-
-## Contributors
-<a href="https://github.com/mifi/lossless-cut/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=mifi/lossless-cut&max=400&columns=20" width="100%"/>
-</a>
-
-## Star History
-
-<a href="https://star-history.com/#mifi/lossless-cut">
-  <img src="https://api.star-history.com/svg?repos=mifi/lossless-cut&type=Date" alt="Star History Chart" width="100%" />
-</a>
 
 ## More software
 
