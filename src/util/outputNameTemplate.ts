@@ -1,22 +1,25 @@
 import i18n from 'i18next';
 import lodashTemplate from 'lodash/template';
+import { PlatformPath } from 'path';
 
 import { isMac, isWindows, hasDuplicates, filenamify, getOutFileExtension } from '../util';
 import isDev from '../isDev';
 import { getSegmentTags, formatSegNum } from '../segments';
-import { Segment } from '../types';
+import { SegmentToExport } from '../types';
 
 
 export const segNumVariable = 'SEG_NUM';
 export const segSuffixVariable = 'SEG_SUFFIX';
 
-const { parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, basename } = window.require('path');
+const { parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, basename }: PlatformPath = window.require('path');
 
-function getOutSegProblems({ fileNames, filePath, outputDir, safeOutputFileName }) {
-  let error;
+
+function getOutSegProblems({ fileNames, filePath, outputDir, safeOutputFileName }: {
+  fileNames: string[], filePath: string, outputDir: string, safeOutputFileName: boolean
+}) {
+  let error: string | undefined;
   let sameAsInputFileNameWarning = false;
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const fileName of fileNames) {
     if (!filePath) {
       error = i18n.t('No file is loaded');
@@ -115,7 +118,7 @@ function interpolateSegmentFileName({ template, epochMs, inputFileNameWithoutExt
 }
 
 export function generateOutSegFileNames({ segments, template: desiredTemplate, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding }: {
-  segments: Segment[], template: string, formatTimecode: (a: { seconds?: number, shorten?: boolean, fileNameFriendly?: boolean }) => string, isCustomFormatSelected: boolean, fileFormat?: string, filePath: string, outputDir: string, safeOutputFileName: string, maxLabelLength: number, outputFileNameMinZeroPadding: number,
+  segments: SegmentToExport[], template: string, formatTimecode: (a: { seconds?: number, shorten?: boolean, fileNameFriendly?: boolean }) => string, isCustomFormatSelected: boolean, fileFormat: string, filePath: string, outputDir: string, safeOutputFileName: boolean, maxLabelLength: number, outputFileNameMinZeroPadding: number,
 }) {
   function generate({ template, forceSafeOutputFileName }) {
     const epochMs = Date.now();
@@ -126,7 +129,7 @@ export function generateOutSegFileNames({ segments, template: desiredTemplate, f
 
       // Fields that did not come from the source file's name must be sanitized, because they may contain characters that are not supported by the target operating/file system
       // however we disable this when the user has chosen to (safeOutputFileName === false)
-      const filenamifyOrNot = (fileName) => (safeOutputFileName || forceSafeOutputFileName ? filenamify(fileName) : fileName).slice(0, Math.max(0, maxLabelLength));
+      const filenamifyOrNot = (fileName: string) => (safeOutputFileName || forceSafeOutputFileName ? filenamify(fileName) : fileName).slice(0, Math.max(0, maxLabelLength));
 
       function getSegSuffix() {
         if (name) return `-${filenamifyOrNot(name)}`;

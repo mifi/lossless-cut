@@ -21,7 +21,7 @@ const { blackDetect, silenceDetect } = remote.require('./ffmpeg');
 
 
 export default ({ filePath, workingRef, setWorking, setCutProgress, videoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly }: {
-  filePath: string, workingRef: MutableRefObject<boolean>, setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void, setCutProgress: (a: number | undefined) => void, videoStream, duration?: number, getRelevantTime: () => number, maxLabelLength: number, checkFileOpened: () => boolean, invertCutSegments: boolean, segmentsToChaptersOnly: boolean,
+  filePath?: string, workingRef: MutableRefObject<boolean>, setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void, setCutProgress: (a: number | undefined) => void, videoStream, duration?: number, getRelevantTime: () => number, maxLabelLength: number, checkFileOpened: () => boolean, invertCutSegments: boolean, segmentsToChaptersOnly: boolean,
 }) => {
   // Segment related state
   const segCounterRef = useRef(0);
@@ -266,6 +266,7 @@ export default ({ filePath, workingRef, setWorking, setCutProgress, videoStream,
 
         async function align(key) {
           const time = newSegment[key];
+          if (filePath == null) throw new Error();
           const keyframe = await findKeyframeNearTime({ filePath, streamIndex: videoStream.index, time, mode });
           if (keyframe == null) throw new Error(`Cannot find any keyframe within 60 seconds of frame ${time}`);
           newSegment[key] = keyframe;

@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid';
 import sortBy from 'lodash/sortBy';
 import minBy from 'lodash/minBy';
 import maxBy from 'lodash/maxBy';
-import { ApparentSegmentBase, InverseSegment, PlaybackMode, SegmentBase } from './types';
+import { ApparentCutSegment, ApparentSegmentBase, InverseSegment, PlaybackMode, SegmentBase, SegmentTags } from './types';
 
 
 export const isDurationValid = (duration?: number): duration is number => duration != null && Number.isFinite(duration) && duration > 0;
@@ -50,7 +50,7 @@ export function findSegmentsAtCursor(apparentSegments, currentTime) {
   return indexes;
 }
 
-export const getSegmentTags = (segment) => (segment.tags || {});
+export const getSegmentTags = (segment: { tags?: SegmentTags | undefined }) => (segment.tags || {});
 
 export const sortSegments = <T>(segments: T[]) => sortBy(segments, 'start');
 
@@ -129,7 +129,7 @@ export function hasAnySegmentOverlap(sortedSegments) {
   return overlappingGroups.length > 0;
 }
 
-export function invertSegments(sortedCutSegments, includeFirstSegment: boolean, includeLastSegment: boolean, duration?: number) {
+export function invertSegments(sortedCutSegments: ApparentCutSegment[], includeFirstSegment: boolean, includeLastSegment: boolean, duration?: number) {
   if (sortedCutSegments.length === 0) return undefined;
 
   if (hasAnySegmentOverlap(sortedCutSegments)) return undefined;
@@ -137,7 +137,7 @@ export function invertSegments(sortedCutSegments, includeFirstSegment: boolean, 
   const ret: InverseSegment[] = [];
 
   if (includeFirstSegment) {
-    const firstSeg = sortedCutSegments[0];
+    const firstSeg = sortedCutSegments[0]!;
     if (firstSeg.start > 0) {
       ret.push({
         start: 0,
@@ -149,7 +149,7 @@ export function invertSegments(sortedCutSegments, includeFirstSegment: boolean, 
 
   sortedCutSegments.forEach((cutSegment, i) => {
     if (i === 0) return;
-    const previousSeg = sortedCutSegments[i - 1];
+    const previousSeg = sortedCutSegments[i - 1]!;
     const inverted: InverseSegment = {
       start: previousSeg.end,
       end: cutSegment.start,

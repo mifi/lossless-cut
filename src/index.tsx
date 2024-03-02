@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { MotionConfig } from 'framer-motion';
 import { enableMapSet } from 'immer';
 import * as Electron from 'electron';
+import Remote from '@electron/remote';
 
 import 'sweetalert2/dist/sweetalert2.css';
 
@@ -28,7 +29,10 @@ import './main.css';
 
 declare global {
   interface Window {
-    require: (module: 'electron') => typeof Electron;
+    require: <T extends string>(module: T) => T extends '@electron/remote' ? typeof Remote :
+      T extends 'electron' ? typeof Electron :
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      any;
   }
 }
 

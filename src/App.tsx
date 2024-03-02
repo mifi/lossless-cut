@@ -85,7 +85,7 @@ import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './uti
 import BigWaveform from './components/BigWaveform';
 
 import isDev from './isDev';
-import { EdlFileType, FfmpegCommandLog, FfprobeChapter, FfprobeFormat, FfprobeStream, Html5ifyMode, PlaybackMode, StateSegment, Thumbnail, TunerType } from './types';
+import { EdlFileType, FfmpegCommandLog, FfprobeChapter, FfprobeFormat, FfprobeStream, Html5ifyMode, PlaybackMode, SegmentToExport, StateSegment, Thumbnail, TunerType } from './types';
 
 const electron = window.require('electron');
 const { exists } = window.require('fs-extra');
@@ -121,7 +121,7 @@ function App() {
   const [rotation, setRotation] = useState(360);
   const [cutProgress, setCutProgress] = useState<number>();
   const [startTimeOffset, setStartTimeOffset] = useState(0);
-  const [filePath, setFilePath] = useState('');
+  const [filePath, setFilePath] = useState<string>();
   const [externalFilesMeta, setExternalFilesMeta] = useState({});
   const [customTagsByFile, setCustomTagsByFile] = useState({});
   const [paramsByStreamId, setParamsByStreamId] = useState(new Map());
@@ -444,7 +444,7 @@ function App() {
   const usingPreviewFile = !!previewFilePath;
   const effectiveFilePath = previewFilePath || filePath;
   const fileUri = useMemo(() => {
-    if (!effectiveFilePath) return '';
+    if (!effectiveFilePath) return ''; // Setting video src="" prevents memory leak in chromium
     const uri = filePathToUrl(effectiveFilePath);
     // https://github.com/mifi/lossless-cut/issues/1674
     if (cacheBuster !== 0) {
@@ -458,10 +458,10 @@ function App() {
   const projectSuffix = 'proj.llc';
   const oldProjectSuffix = 'llc-edl.csv';
   // New LLC format can be stored along with input file or in working dir (customOutDir)
-  const getEdlFilePath = useCallback((fp: string, cod?: string) => getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: projectSuffix }), []);
+  const getEdlFilePath = useCallback((fp?: string, cod?: string) => getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: projectSuffix }), []);
   // Old versions of LosslessCut used CSV files and stored them always in customOutDir:
   const getEdlFilePathOld = useCallback((fp, cod) => getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: oldProjectSuffix }), []);
-  const getProjectFileSavePath = useCallback((storeProjectInWorkingDirIn) => getEdlFilePath(filePath, storeProjectInWorkingDirIn ? customOutDir : undefined), [getEdlFilePath, filePath, customOutDir]);
+  const getProjectFileSavePath = useCallback((storeProjectInWorkingDirIn: boolean) => getEdlFilePath(filePath, storeProjectInWorkingDirIn ? customOutDir : undefined), [getEdlFilePath, filePath, customOutDir]);
   const projectFileSavePath = useMemo(() => getProjectFileSavePath(storeProjectInWorkingDir), [getProjectFileSavePath, storeProjectInWorkingDir]);
 
   const currentSaveOperation = useMemo(() => {
@@ -664,7 +664,7 @@ function App() {
 
   const allFilesMeta = useMemo(() => ({
     ...externalFilesMeta,
-    [filePath]: mainFileMeta,
+    ...(filePath ? { [filePath]: mainFileMeta } : {}),
   }), [externalFilesMeta, filePath, mainFileMeta]);
 
   // total number of streams for ALL files
@@ -742,6 +742,7 @@ function App() {
   const { waveforms } = useWaveform({ darkMode, filePath, relevantTime, waveformEnabled, audioStream: activeAudioStream, shouldShowWaveform, ffmpegExtractWindow, durationSafe });
 
   const resetMergedOutFileName = useCallback(() => {
+    if (fileFormat == null || filePath == null) return;
     const ext = getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath });
     const outFileName = getSuffixedFileName(filePath, `cut-merged-${Date.now()}${ext}`);
     setMergedOutFileName(outFileName);
@@ -770,7 +771,7 @@ function App() {
     setRotation(360);
     setCutProgress(undefined);
     setStartTimeOffset(0);
-    setFilePath(''); // Setting video src="" prevents memory leak in chromium
+    setFilePath(undefined);
     setExternalFilesMeta({});
     setCustomTagsByFile({});
     setParamsByStreamId(new Map());
@@ -1173,16 +1174,17 @@ function App() {
     }
   }, [cleanupFilesWithDialog, isFileOpened, setWorking]);
 
-  const generateOutSegFileNames = useCallback(({ segments = segmentsToExport, template }) => (
-    generateOutSegFileNamesRaw({ segments, template, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding })
-  ), [fileFormat, filePath, formatTimecode, isCustomFormatSelected, maxLabelLength, outputDir, outputFileNameMinZeroPadding, safeOutputFileName, segmentsToExport]);
+  const generateOutSegFileNames = useCallback(({ segments = segmentsToExport, template }: { segments?: SegmentToExport[], template: string }) => {
+    if (fileFormat == null || outputDir == null || filePath == null) throw new Error();
+    return generateOutSegFileNamesRaw({ segments, template, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding });
+  }, [fileFormat, filePath, formatTimecode, isCustomFormatSelected, maxLabelLength, outputDir, outputFileNameMinZeroPadding, safeOutputFileName, segmentsToExport]);
 
   const closeExportConfirm = useCallback(() => setExportConfirmVisible(false), []);
 
   const willMerge = segmentsToExport.length > 1 && autoMerge;
 
   const mergedOutFilePath = useMemo(() => (
-    getOutPath({ customOutDir, filePath, fileName: mergedOutFileName })
+    mergedOutFileName != null ? getOutPath({ customOutDir, filePath, fileName: mergedOutFileName }) : undefined
   ), [customOutDir, filePath, mergedOutFileName]);
 
   const onExportConfirm = useCallback(async () => {
@@ -1351,6 +1353,7 @@ function App() {
     try {
       const currentTime = getRelevantTime();
       const video = videoRef.current;
+      if (video == null) throw new Error();
       const useFffmpeg = usingPreviewFile || captureFrameMethod === 'ffmpeg';
       const outPath = useFffmpeg
         ? await captureFrameFromFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, quality: captureFrameQuality })
@@ -1376,10 +1379,10 @@ function App() {
 
       setCutProgress(0);
 
-      let lastOutPath;
+      let lastOutPath: string | undefined;
       let totalProgress = 0;
 
-      const onProgress = (progress) => {
+      const onProgress = (progress: number) => {
         totalProgress += progress;
         setCutProgress(totalProgress / segments.length);
       };
@@ -1387,10 +1390,11 @@ function App() {
       // eslint-disable-next-line no-restricted-syntax
       for (const segment of segments) {
         const { start, end } = segment;
+        if (filePath == null) throw new Error();
         // eslint-disable-next-line no-await-in-loop
         lastOutPath = await captureFramesRange({ customOutDir, filePath, fps: detectedFps, fromTime: start, toTime: end, estimatedMaxNumFiles: captureFramesResponse.estimatedMaxNumFiles, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, outputTimestamps: captureFrameFileNameFormat === 'timestamp', onProgress });
       }
-      if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: lastOutPath, text: i18n.t('Frames extracted to: {{path}}', { path: outputDir }) });
+      if (!hideAllNotifications && lastOutPath != null) openDirToast({ icon: 'success', filePath: lastOutPath, text: i18n.t('Frames extracted to: {{path}}', { path: outputDir }) });
     } catch (err) {
       handleError(err);
     } finally {
@@ -1693,8 +1697,8 @@ function App() {
     try {
       setWorking({ text: i18n.t('Extracting all streams') });
       setStreamsSelectorShown(false);
-      const extractedPaths = await extractStreams({ customOutDir, filePath, streams: mainCopiedStreams, enableOverwriteOutput });
-      if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: extractedPaths[0], text: i18n.t('All streams have been extracted as separate files') });
+      const [firstExtractedPath] = await extractStreams({ customOutDir, filePath, streams: mainCopiedStreams, enableOverwriteOutput });
+      if (!hideAllNotifications && firstExtractedPath != null) openDirToast({ icon: 'success', filePath: firstExtractedPath, text: i18n.t('All streams have been extracted as separate files') });
     } catch (err) {
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
@@ -1982,8 +1986,9 @@ function App() {
   const showIncludeExternalStreamsDialog = useCallback(async () => {
     try {
       const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'] });
-      if (canceled || filePaths.length === 0) return;
-      await addStreamSourceFile(filePaths[0]);
+      const [firstFilePath] = filePaths;
+      if (canceled || firstFilePath == null) return;
+      await addStreamSourceFile(firstFilePath);
     } catch (err) {
       handleError(err);
     }
@@ -2008,7 +2013,9 @@ function App() {
 
   const onEditSegmentTags = useCallback((index: number) => {
     setEditingSegmentTagsSegmentIndex(index);
-    setEditingSegmentTags(getSegmentTags(apparentCutSegments[index]));
+    const seg = apparentCutSegments[index];
+    if (seg == null) throw new Error();
+    setEditingSegmentTags(getSegmentTags(seg));
   }, [apparentCutSegments]);
 
   const editCurrentSegmentTags = useCallback(() => {
@@ -2219,8 +2226,8 @@ function App() {
     try {
       setWorking({ text: i18n.t('Extracting track') });
       // setStreamsSelectorShown(false);
-      const extractedPaths = await extractStreams({ customOutDir, filePath, streams: mainStreams.filter((s) => s.index === index), enableOverwriteOutput });
-      if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: extractedPaths[0], text: i18n.t('Track has been extracted') });
+      const [firstExtractedPath] = await extractStreams({ customOutDir, filePath, streams: mainStreams.filter((s) => s.index === index), enableOverwriteOutput });
+      if (!hideAllNotifications && firstExtractedPath != null) openDirToast({ icon: 'success', filePath: firstExtractedPath, text: i18n.t('Track has been extracted') });
     } catch (err) {
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();

@@ -432,6 +432,7 @@ async function extractAttachmentStreams({ customOutDir, filePath, streams, enabl
   const outPaths = await pMap(streams, async ({ index, codec_name: codec, codec_type: type }) => {
     const ext = codec || 'bin';
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
+    if (outPath == null) throw new Error();
     if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
 
     streamArgs = [

@@ -13,7 +13,7 @@ const { join, resolve, dirname } = window.require('path');
 const { pathExists } = window.require('fs-extra');
 const { writeFile, mkdir } = window.require('fs/promises');
 
-async function writeChaptersFfmetadata(outDir, chapters) {
+async function writeChaptersFfmetadata(outDir: string, chapters: { start: number, end: number, name?: string }[]) {
   if (!chapters || chapters.length === 0) return undefined;
 
   const path = join(outDir, `ffmetadata-${Date.now()}.txt`);
@@ -26,8 +26,8 @@ async function writeChaptersFfmetadata(outDir, chapters) {
   return path;
 }
 
-function getMovFlags({ preserveMovData, movFastStart }) {
-  const flags = [];
+function getMovFlags({ preserveMovData, movFastStart }: { preserveMovData: boolean, movFastStart: boolean }) {
+  const flags: string[] = [];
 
   // https://video.stackexchange.com/a/26084/29486
   // https://github.com/mifi/lossless-cut/issues/331#issuecomment-623401794
@@ -52,7 +52,7 @@ function getMatroskaFlags() {
 
 const getChaptersInputArgs = (ffmetadataPath) => (ffmetadataPath ? ['-f', 'ffmetadata', '-i', ffmetadataPath] : []);
 
-async function tryDeleteFiles(paths) {
+async function tryDeleteFiles(paths: string[]) {
   return pMap(paths, (path) => unlinkWithRetry(path).catch((err) => console.error('Failed to delete', path, err)), { concurrency: 5 });
 }
 
@@ -80,12 +80,12 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     }
 
     try {
-      let inputArgs = [];
+      let inputArgs: string[] = [];
       let inputIndex = 0;
 
       // Keep track of input index to be used later
       // eslint-disable-next-line no-inner-declarations
-      function addInput(args) {
+      function addInput(args: string[]) {
         inputArgs = [...inputArgs, ...args];
         const retIndex = inputIndex;
         inputIndex += 1;
@@ -245,10 +245,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const mapStreamsArgs = getMapStreamsArgs({ copyFileStreams: copyFileStreamsFiltered, allFilesMeta, outFormat });
 
     const customParamsArgs = (() => {
-      const ret = [];
-      // eslint-disable-next-line no-restricted-syntax
+      const ret: string[] = [];
       for (const [fileId, fileParams] of paramsByStreamId.entries()) {
-        // eslint-disable-next-line no-restricted-syntax
         for (const [streamId, streamParams] of fileParams.entries()) {
           const outputIndex = mapInputStreamIndexToOutputIndex(fileId, parseInt(streamId, 10));
           if (outputIndex != null) {
@@ -269,7 +267,6 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
             // custom stream metadata tags
             const customTags = streamParams.get('customTags');
             if (customTags != null) {
-              // eslint-disable-next-line no-restricted-syntax
               for (const [tag, value] of Object.entries(customTags)) {
                 ret.push(`-metadata:s:${outputIndex}`, `${tag}=${value}`);
               }
@@ -285,7 +282,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       // No progress if we set loglevel warning :(
       // '-loglevel', 'warning',
 
-      ...getOutputPlaybackRateArgs(outputPlaybackRate),
+      ...getOutputPlaybackRateArgs(),
 
       ...inputArgs,
 
@@ -325,7 +322,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     logStdoutStderr(result);
 
     await transferTimestamps({ inPath: filePath, outPath, cutFrom, cutTo, treatInputFileModifiedTimeAsStart, duration: isDurationValid(videoDuration) ? videoDuration : undefined, treatOutputFileModifiedTimeAsStart });
-  }, [cutFromAdjustmentFrames, filePath, getOutputPlaybackRateArgs, outputPlaybackRate, shouldSkipExistingFile, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
+  }, [cutFromAdjustmentFrames, filePath, getOutputPlaybackRateArgs, shouldSkipExistingFile, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   const cutMultiple = useCallback(async ({
     outputDir, customOutDir, segments, outSegFileNames, videoDuration, rotation, detectedFps,
@@ -388,6 +385,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       // eslint-disable-next-line no-shadow
       async function cutEncodeSmartPartWrapper({ cutFrom, cutTo, outPath }) {
         if (await shouldSkipExistingFile(outPath)) return;
+        if (videoCodec == null || videoBitrate == null || videoTimebase == null) throw new Error();
         await cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate, videoStreamIndex, videoTimebase, allFilesMeta, copyFileStreams: copyFileStreamsFiltered, ffmpegExperimental });
       }
 

@@ -9,19 +9,32 @@ export interface ApparentSegmentBase {
 }
 
 
+export type SegmentTags = Record<string, string>;
+
 export interface StateSegment extends SegmentBase {
   name: string;
   segId: string;
   segColorIndex?: number | undefined;
-  tags?: Record<string, string> | undefined;
+  tags?: SegmentTags | undefined;
 }
 
 export interface Segment extends SegmentBase {
   name?: string,
 }
 
-export interface InverseSegment extends SegmentBase {
+export interface ApparentCutSegment extends ApparentSegmentBase {
+  segId?: string | undefined,
+  tags?: SegmentTags | undefined;
+}
+
+export interface InverseSegment extends ApparentSegmentBase {
   segId?: string,
+}
+
+export interface SegmentToExport extends ApparentSegmentBase {
+  name?: string | undefined;
+  segId?: string | undefined;
+  tags?: SegmentTags | undefined;
 }
 
 export type PlaybackMode = 'loop-segment-start-end' | 'loop-segment' | 'play-segment-once' | 'loop-selected-segments';

@@ -9,11 +9,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import Swal from '../swal';
 import HighlightedText from './HighlightedText';
-import { defaultOutSegTemplate, segNumVariable, segSuffixVariable } from '../util/outputNameTemplate';
+import { defaultOutSegTemplate, segNumVariable, segSuffixVariable, generateOutSegFileNames as generateOutSegFileNamesRaw } from '../util/outputNameTemplate';
 import useUserSettings from '../hooks/useUserSettings';
 import Switch from './Switch';
 import Select from './Select';
 import TextInput from './TextInput';
+import { SegmentToExport } from '../types';
 
 const ReactSwal = withReactContent(Swal);
 
@@ -23,16 +24,18 @@ const formatVariable = (variable) => `\${${variable}}`;
 
 const extVar = formatVariable('EXT');
 
-const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe }) => {
+const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe }: {
+  outSegTemplate: string, setOutSegTemplate: (text: string) => void, generateOutSegFileNames: (a: { segments?: SegmentToExport[], template: string }) => ReturnType<typeof generateOutSegFileNamesRaw>, currentSegIndexSafe: number,
+}) => {
   const { safeOutputFileName, toggleSafeOutputFileName, outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding } = useUserSettings();
 
   const [text, setText] = useState(outSegTemplate);
   const [debouncedText] = useDebounce(text, 500);
-  const [validText, setValidText] = useState();
-  const [outSegProblems, setOutSegProblems] = useState({ error: undefined, sameAsInputFileNameWarning: false });
-  const [outSegFileNames, setOutSegFileNames] = useState();
-  const [shown, setShown] = useState();
-  const inputRef = useRef();
+  const [validText, setValidText] = useState<string>();
+  const [outSegProblems, setOutSegProblems] = useState<{ error?: string, sameAsInputFileNameWarning?: boolean }>({ error: undefined, sameAsInputFileNameWarning: false });
+  const [outSegFileNames, setOutSegFileNames] = useState<string[]>();
+  const [shown, setShown] = useState<boolean>();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { t } = useTranslation();
 
@@ -48,21 +51,25 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
       setValidText(outSegs.outSegProblems.error == null ? debouncedText : undefined);
     } catch (err) {
       console.error(err);
-      setValidText();
-      setOutSegProblems({ error: err.message });
+      setValidText(undefined);
+      setOutSegProblems({ error: err instanceof Error ? err.message : String(err) });
     }
   }, [debouncedText, generateOutSegFileNames, t]);
 
   // eslint-disable-next-line no-template-curly-in-string
   const isMissingExtension = validText != null && !validText.endsWith(extVar);
 
-  const onAllSegmentsPreviewPress = () => ReactSwal.fire({
-    title: t('Resulting segment file names', { count: outSegFileNames.length }),
-    html: (
-      <div style={{ textAlign: 'left', overflowY: 'auto', maxHeight: 400 }}>
-        {outSegFileNames.map((f) => <div key={f} style={{ marginBottom: 7 }}>{f}</div>)}
-      </div>
-    ) });
+  const onAllSegmentsPreviewPress = useCallback(() => {
+    if (outSegFileNames == null) return;
+    ReactSwal.fire({
+      title: t('Resulting segment file names', { count: outSegFileNames.length }),
+      html: (
+        <div style={{ textAlign: 'left', overflowY: 'auto', maxHeight: 400 }}>
+          {outSegFileNames.map((f) => <div key={f} style={{ marginBottom: 7 }}>{f}</div>)}
+        </div>
+      ),
+    });
+  }, [outSegFileNames, t]);
 
   useEffect(() => {
     if (validText != null) setOutSegTemplate(validText);
@@ -83,12 +90,14 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
 
   const onTextChange = useCallback((e) => setText(e.target.value), []);
 
-  const needToShow = shown || outSegProblems.error != null || outSegProblems.sameAsInputFileNameWarning;
+  const gotImportantMessage = outSegProblems.error != null || outSegProblems.sameAsInputFileNameWarning;
+  const needToShow = shown || gotImportantMessage;
 
   const onVariableClick = useCallback((variable) => {
     const input = inputRef.current;
-    const startPos = input.selectionStart;
-    const endPos = input.selectionEnd;
+    const startPos = input!.selectionStart;
+    const endPos = input!.selectionEnd;
+    if (startPos == null || endPos == null) return;
 
     const newValue = `${text.slice(0, startPos)}${`${formatVariable(variable)}${text.slice(endPos)}`}`;
     setText(newValue);
@@ -114,7 +123,7 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
               {outSegFileNames != null && <Button height={20} onClick={onAllSegmentsPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
 
               <IconButton title={t('Reset')} icon={ResetIcon} height={20} onClick={reset} marginLeft={5} intent="danger" />
-              <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" appearance="primary" />
+              {!gotImportantMessage && <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" appearance="primary" />}
             </div>
 
             <div style={{ fontSize: '.8em', color: 'var(--gray11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
@@ -149,7 +158,7 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
             {hasTextNumericPaddedValue && (
               <div style={{ marginBottom: '.3em' }}>
                 <Select value={outputFileNameMinZeroPadding} onChange={(e) => setOutputFileNameMinZeroPadding(parseInt(e.target.value, 10))} style={{ marginRight: '1em', fontSize: '1em' }}>
-                  {Array.from({ length: 10 }).map((v, i) => i + 1).map((v) => <option key={v} value={v}>{v}</option>)}
+                  {Array.from({ length: 10 }).map((_v, i) => i + 1).map((v) => <option key={v} value={v}>{v}</option>)}
                 </Select>
                 Minimum numeric padded length
               </div>

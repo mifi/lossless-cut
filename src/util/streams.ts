@@ -106,7 +106,7 @@ export function getActiveDisposition(disposition) {
   return existingActiveDispositionEntry[0]; // return the key
 }
 
-export const isMov = (format) => ['ismv', 'ipod', 'mp4', 'mov'].includes(format);
+export const isMov = (format: string) => ['ismv', 'ipod', 'mp4', 'mov'].includes(format);
 
 type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
 

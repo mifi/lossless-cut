@@ -115,8 +115,9 @@ export async function askForEdlImport({ type, fps }: { type: EdlImportType, fps?
   else if (type === 'llc') filters = [{ name: i18n.t('LosslessCut project'), extensions: ['llc'] }];
 
   const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'], filters });
-  if (canceled || filePaths.length === 0) return [];
-  return readEdlFile({ type, path: filePaths[0], fps });
+  const [firstFilePath] = filePaths;
+  if (canceled || firstFilePath == null) return [];
+  return readEdlFile({ type, path: firstFilePath, fps });
 }
 
 export async function exportEdlFile({ type, cutSegments, customOutDir, filePath, getFrameCount }: {

@@ -3,17 +3,21 @@ import pMap from 'p-map';
 import ky from 'ky';
 import prettyBytes from 'pretty-bytes';
 import sortBy from 'lodash/sortBy';
-import pRetry from 'p-retry';
+import pRetry, { Options } from 'p-retry';
 import { ExecaError } from 'execa';
+import type * as FsPromises from 'fs/promises';
+import type * as Os from 'os';
+import type * as FsExtra from 'fs-extra';
+import type { PlatformPath } from 'path';
 
 import isDev from './isDev';
 import Swal, { toast } from './swal';
 import { ffmpegExtractWindow } from './util/constants';
 
-const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
-const fsExtra = window.require('fs-extra');
-const { stat, lstat, readdir, utimes, unlink } = window.require('fs/promises');
-const os = window.require('os');
+const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename }: PlatformPath = window.require('path');
+const fsExtra: typeof FsExtra = window.require('fs-extra');
+const { stat, lstat, readdir, utimes, unlink }: typeof FsPromises = window.require('fs/promises');
+const os: typeof Os = window.require('os');
 const { ipcRenderer } = window.require('electron');
 const remote = window.require('@electron/remote');
 
@@ -27,9 +31,10 @@ export function getFileDir(filePath?: string) {
   return filePath ? dirname(filePath) : undefined;
 }
 
-export function getOutDir(customOutDir?: string, filePath?: string) {
-  if (customOutDir) return customOutDir;
-  if (filePath) return getFileDir(filePath);
+export function getOutDir<T1 extends string | undefined, T2 extends string | undefined>(customOutDir?: T1, filePath?: T2): T1 extends string ? string : T2 extends string ? string : undefined;
+export function getOutDir(customOutDir?: string | undefined, filePath?: string | undefined) {
+  if (customOutDir != null) return customOutDir;
+  if (filePath != null) return getFileDir(filePath);
   return undefined;
 }
 
@@ -39,15 +44,17 @@ function getFileBaseName(filePath?: string) {
   return parsed.name;
 }
 
-export function getOutPath({ customOutDir, filePath, fileName }: { customOutDir?: string, filePath?: string, fileName?: string }) {
-  if (!filePath) return undefined;
+export function getOutPath<T extends string | undefined>(a: { customOutDir?: string, filePath?: T, fileName: string }): T extends string ? string : undefined;
+export function getOutPath({ customOutDir, filePath, fileName }: { customOutDir?: string, filePath?: string | undefined, fileName: string }) {
+  if (filePath == null) return undefined;
   return join(getOutDir(customOutDir, filePath), fileName);
 }
 
 export const getSuffixedFileName = (filePath: string | undefined, nameSuffix: string) => `${getFileBaseName(filePath)}-${nameSuffix}`;
 
-export function getSuffixedOutPath({ customOutDir, filePath, nameSuffix }: { customOutDir?: string, filePath?: string, nameSuffix: string }) {
-  if (!filePath) return undefined;
+export function getSuffixedOutPath<T extends string | undefined>(a: { customOutDir?: string, filePath?: T, nameSuffix: string }): T extends string ? string : undefined;
+export function getSuffixedOutPath({ customOutDir, filePath, nameSuffix }: { customOutDir?: string, filePath?: string | undefined, nameSuffix: string }) {
+  if (filePath == null) return undefined;
   return getOutPath({ customOutDir, filePath, fileName: getSuffixedFileName(filePath, nameSuffix) });
 }
 
@@ -100,7 +107,7 @@ export async function dirExists(dirPath) {
 const testFailFsOperation = false;
 
 // Retry because sometimes write operations fail on windows due to the file being locked for various reasons (often anti-virus) #272 #1797 #1704
-export async function fsOperationWithRetry(operation, { signal, retries = 10, minTimeout = 100, maxTimeout = 2000, ...opts }) {
+export async function fsOperationWithRetry(operation, { signal, retries = 10, minTimeout = 100, maxTimeout = 2000, ...opts }: Options & { retries?: number, minTimeout?: number, maxTimeout?: number } = {}) {
   return pRetry(async () => {
     if (testFailFsOperation && Math.random() > 0.3) throw Object.assign(new Error('test delete failure'), { code: 'EPERM' });
     await operation();
@@ -116,10 +123,9 @@ export async function fsOperationWithRetry(operation, { signal, retries = 10, mi
 }
 
 // example error: index-18074aaf.js:166 Failed to delete C:\Users\USERNAME\Desktop\RC\New folder\2023-12-27 21-45-22 (GMT p5)-merged-1703933052361-00.01.04.915-00.01.07.424-seg1.mp4 Error: EPERM: operation not permitted, unlink 'C:\Users\USERNAME\Desktop\RC\New folder\2023-12-27 21-45-22 (GMT p5)-merged-1703933052361-00.01.04.915-00.01.07.424-seg1.mp4'
-export const unlinkWithRetry = async (path, options) => fsOperationWithRetry(async () => unlink(path), { ...options, onFailedAttempt: (error) => console.warn('Retrying delete', path, error.attemptNumber) });
+export const unlinkWithRetry = async (path: string, options?: Options) => fsOperationWithRetry(async () => unlink(path), { ...options, onFailedAttempt: (error) => console.warn('Retrying delete', path, error.attemptNumber) });
 // example error: index-18074aaf.js:160 Error: EPERM: operation not permitted, utime 'C:\Users\USERNAME\Desktop\RC\New folder\2023-12-27 21-45-22 (GMT p5)-merged-1703933052361-cut-merged-1703933070237.mp4'
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const utimesWithRetry = async (path: string, atime: number, mtime: number, options?: any) => fsOperationWithRetry(async () => utimes(path, atime, mtime), { ...options, onFailedAttempt: (error) => console.warn('Retrying utimes', path, error.attemptNumber) });
+export const utimesWithRetry = async (path: string, atime: number, mtime: number, options?: Options) => fsOperationWithRetry(async () => utimes(path, atime, mtime), { ...options, onFailedAttempt: (error) => console.warn('Retrying utimes', path, error.attemptNumber) });
 
 export const getFrameDuration = (fps?: number) => 1 / (fps ?? 30);
 
@@ -192,7 +198,7 @@ export const arch = os.arch();
 export const isWindows = platform === 'win32';
 export const isMac = platform === 'darwin';
 
-export function getExtensionForFormat(format) {
+export function getExtensionForFormat(format: string) {
   const ext = {
     matroska: 'mkv',
     ipod: 'm4a',
@@ -203,7 +209,9 @@ export function getExtensionForFormat(format) {
   return ext || format;
 }
 
-export function getOutFileExtension({ isCustomFormatSelected, outFormat, filePath }) {
+export function getOutFileExtension({ isCustomFormatSelected, outFormat, filePath }: {
+  isCustomFormatSelected?: boolean, outFormat: string, filePath: string,
+}) {
   if (!isCustomFormatSelected) {
     const ext = extname(filePath);
     // QuickTime is quirky about the file extension of mov files (has to be .mov)
@@ -232,11 +240,12 @@ export async function findExistingHtml5FriendlyFile(fp, cod) {
   const prefix = getSuffixedFileName(fp, html5ifiedPrefix);
 
   const outDir = getOutDir(cod, fp);
+  if (outDir == null) throw new Error();
   const dirEntries = await readdir(outDir);
 
   const html5ifiedDirEntries = dirEntries.filter((entry) => entry.startsWith(prefix));
 
-  let matches: { entry: string, suffix: string }[] = [];
+  let matches: { entry: string, suffix?: string }[] = [];
   suffixes.forEach((suffix) => {
     const entryWithSuffix = html5ifiedDirEntries.find((entry) => new RegExp(`${suffix}\\..*$`).test(entry.replace(prefix, '')));
     if (entryWithSuffix) matches = [...matches, { entry: entryWithSuffix, suffix }];
@@ -325,6 +334,7 @@ export async function checkAppPath() {
       return;
     }
     const pathSeg = pathMatch[1];
+    if (pathSeg == null) return;
     if (pathSeg.startsWith(`57275${mf}.${llc}_`)) return;
     // this will report the path and may return a msg
     const url = `https://losslesscut-analytics.mifi.no/${pathSeg.length}/${encodeURIComponent(btoa(pathSeg))}`;
@@ -381,7 +391,7 @@ function setDocumentExtraTitle(extra) {
   document.title = extra != null ? `${baseTitle} - ${extra}` : baseTitle;
 }
 
-export function setDocumentTitle({ filePath, working, cutProgress }: { filePath: string, working?: string, cutProgress?: number }) {
+export function setDocumentTitle({ filePath, working, cutProgress }: { filePath?: string, working?: string, cutProgress?: number }) {
   const parts: string[] = [];
   if (filePath) parts.push(basename(filePath));
   if (working) {
