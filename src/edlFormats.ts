@@ -5,15 +5,16 @@ import csvParse from 'csv-parse/lib/browser';
 import csvStringify from 'csv-stringify/lib/browser';
 import pify from 'pify';
 import sortBy from 'lodash/sortBy';
+import type { ICueSheet, ITrack } from 'cue-parser/lib/types';
 
 import { formatDuration } from './util/duration';
 import { invertSegments, sortSegments } from './segments';
-import { Segment } from './types';
+import { Segment, SegmentBase } from './types';
 
 const csvParseAsync = pify(csvParse);
 const csvStringifyAsync = pify(csvStringify);
 
-export const getTimeFromFrameNum = (detectedFps, frameNum) => frameNum / detectedFps;
+export const getTimeFromFrameNum = (detectedFps: number, frameNum: number) => frameNum / detectedFps;
 
 export function getFrameCountRaw(detectedFps: number | undefined, sec: number) {
   if (detectedFps == null) return undefined;
@@ -35,19 +36,19 @@ function parseTime(str: string) {
   return { time, rest };
 }
 
-export function parseCsvTime(str) {
+export function parseCsvTime(str: string) {
   const parsed = parseTime(str.trim());
   return parsed?.time;
 }
 
-export const getFrameValParser = (fps) => (str) => {
+export const getFrameValParser = (fps: number) => (str: string) => {
   if (str === '') return undefined;
   const frameCount = parseFloat(str);
   return getTimeFromFrameNum(fps, frameCount);
 };
 
-export async function parseCsv(csvStr, parseTimeFn) {
-  const rows = await csvParseAsync(csvStr, {});
+export async function parseCsv(csvStr: string, parseTimeFn: (a: string) => number | undefined) {
+  const rows = await csvParseAsync(csvStr, {}) as [string, string, string][];
   if (rows.length === 0) throw new Error(i18n.t('No rows found'));
   if (!rows.every((row) => row.length === 3)) throw new Error(i18n.t('One or more rows does not have 3 columns'));
 
@@ -69,29 +70,29 @@ export async function parseCsv(csvStr, parseTimeFn) {
   return mapped;
 }
 
-export async function parseMplayerEdl(text) {
-  const allRows = text.split('\n').map((line) => {
+export async function parseMplayerEdl(text: string) {
+  const allRows = text.split('\n').flatMap((line) => {
     const match = line.match(/^\s*(\S+)\s+(\S+)\s+([0-3])\s*$/);
-    if (!match) return undefined;
-    const start = parseFloat(match[1]);
-    const end = parseFloat(match[2]);
-    const type = parseInt(match[3], 10);
-    if (Number.isNaN(start) || Number.isNaN(end)) return undefined;
-    if (start < 0 || end < 0 || start >= end) return undefined;
-    return { start, end, type };
-  }).filter(Boolean);
+    if (!match) return [];
+    const start = parseFloat(match[1]!);
+    const end = parseFloat(match[2]!);
+    const type = parseInt(match[3]!, 10);
+    if (Number.isNaN(start) || Number.isNaN(end)) return [];
+    if (start < 0 || end < 0 || start >= end) return [];
+    return [{ start, end, type }];
+  });
 
   const cutAwaySegments = allRows.filter((row) => row.type === 0);
   const muteSegments = allRows.filter((row) => row.type === 1);
   const sceneMarkers = allRows.filter((row) => row.type === 2);
   const commercialBreaks = allRows.filter((row) => row.type === 3);
 
-  const inverted = cutAwaySegments.length > 0 ? invertSegments(sortSegments(cutAwaySegments), true, true) : [];
+  const inverted = invertSegments(sortSegments(cutAwaySegments), true, true);
 
-  const map = (segments, name, type) => segments.map(({ start, end }) => ({ start, end, name, tags: { mplayerEdlType: type } }));
+  const map = (segments: SegmentBase[], name: string, type: 0 | 1 | 2 | 3) => segments.map(({ start, end }) => ({ start, end, name, tags: { mplayerEdlType: String(type) } }));
 
   const out = [
-    ...map(inverted || [], 'Cut', 0),
+    ...map(inverted, 'Cut', 0),
     ...map(muteSegments, 'Mute', 1),
     ...map(sceneMarkers, 'Scene Marker', 2),
     ...map(commercialBreaks, 'Commercial Break', 3),
@@ -100,15 +101,15 @@ export async function parseMplayerEdl(text) {
   return out;
 }
 
-export function parseCuesheet(cuesheet) {
+export function parseCuesheet(cuesheet: ICueSheet) {
   // There are 75 such frames per second of audio.
   // https://en.wikipedia.org/wiki/Cue_sheet_(computing)
   const fps = 75;
 
-  const { tracks } = cuesheet.files[0];
+  const { tracks } = cuesheet.files![0]!;
 
-  function getTime(track) {
-    const index = track.indexes[0];
+  function getTime(track: ITrack) {
+    const index = track.indexes![0];
     if (!index) return undefined;
     const { time } = index;
     if (!time) return undefined;
@@ -116,8 +117,8 @@ export function parseCuesheet(cuesheet) {
     return (time.min * 60) + time.sec + time.frame / fps;
   }
 
-  return tracks.map((track, i) => {
-    const nextTrack = tracks[i + 1];
+  return tracks!.map((track, i) => {
+    const nextTrack = tracks![i + 1];
     const end = nextTrack && getTime(nextTrack);
 
     return { name: track.title, start: getTime(track), end, tags: { performer: track.performer, title: track.title } };
@@ -151,7 +152,7 @@ export function parsePbf(buf: Buffer) {
 }
 
 // https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/FinalCutPro_XML/VersionsoftheInterchangeFormat/VersionsoftheInterchangeFormat.html
-export function parseXmeml(xmlStr) {
+export function parseXmeml(xmlStr: string) {
   const xml = new XMLParser().parse(xmlStr);
 
   // TODO maybe support media.audio also?
@@ -172,24 +173,27 @@ export function parseXmeml(xmlStr) {
     throw new Error('No <track> element found');
   }
 
-  const mainTrack = Array.isArray(sequence.media.video.track) ? sequence.media.video.track[0] : sequence.media.video.track;
+  // todo
+  const mainTrack: { clipitem: { in: number, out: number, rate: { timebase: number } }[] } = Array.isArray(sequence.media.video.track) ? sequence.media.video.track[0] : sequence.media.video.track;
 
   return mainTrack.clipitem.map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
 }
 
-export function parseFcpXml(xmlStr) {
+export function parseFcpXml(xmlStr: string) {
   const xml = new XMLParser({ ignoreAttributes: false }).parse(xmlStr);
 
   const { fcpxml } = xml;
   if (!fcpxml) throw new Error('Root element <fcpxml> not found in file');
 
-  function getTime(str) {
+  function getTime(str: string) {
     const match = str.match(/(\d+)\/(\d+)s/);
     if (!match) throw new Error('Invalid attribute');
-    return parseInt(match[1], 10) / parseInt(match[2], 10);
+    return parseInt(match[1]!, 10) / parseInt(match[2]!, 10);
   }
 
-  return fcpxml.library.event.project.sequence.spine['asset-clip'].map((assetClip) => {
+  // todo
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (fcpxml.library.event.project.sequence.spine['asset-clip'] as any[]).map((assetClip) => {
     const start = getTime(assetClip['@_start']);
     const duration = getTime(assetClip['@_duration']);
     const end = start + duration;
@@ -197,8 +201,8 @@ export function parseFcpXml(xmlStr) {
   });
 }
 
-export function parseYouTube(str) {
-  function parseLine(lineStr) {
+export function parseYouTube(str: string) {
+  function parseLine(lineStr: string) {
     const timeParsed = parseTime(lineStr);
     if (timeParsed == null) return undefined;
 
@@ -212,13 +216,13 @@ export function parseYouTube(str) {
     return { time, name };
   }
 
-  const lines = str.split('\n').map((line) => parseLine(line)).filter(Boolean);
+  const lines = str.split('\n').map((line) => parseLine(line)).flatMap((line) => (line ? [line] : []));
 
   const linesSorted = sortBy(lines, (l) => l.time);
 
   const edl = linesSorted.map((line, i) => {
     const nextLine = linesSorted[i + 1];
-    return { start: line.time, end: nextLine && nextLine.time, name: line.name };
+    return { start: line.time, end: nextLine?.time, name: line.name };
   });
 
   return edl.filter((ed) => ed.start !== ed.end);
@@ -299,7 +303,7 @@ export function parseDvAnalyzerSummaryTxt(txt: string) {
 
 // http://www.textfiles.com/uploads/kds-srt.txt
 export function parseSrt(text: string) {
-  const ret: { start?: number, end?: number, name: string, tags: Record<string, string | number | undefined> }[] = [];
+  const ret: { start?: number, end?: number, name: string, tags: Record<string, string | undefined> }[] = [];
 
   // working state
   let subtitleIndexAt: number | undefined;
@@ -309,7 +313,7 @@ export function parseSrt(text: string) {
 
   const flush = () => {
     if (start != null && end != null && lines.length > 0) {
-      ret.push({ start, end, name: lines.join('\r\n'), tags: { index: subtitleIndexAt } });
+      ret.push({ start, end, name: lines.join('\r\n'), tags: { index: subtitleIndexAt != null ? String(subtitleIndexAt) : undefined } });
     }
     start = undefined;
     end = undefined;

@@ -9,7 +9,7 @@ export interface ApparentSegmentBase {
 }
 
 
-export type SegmentTags = Record<string, string>;
+export type SegmentTags = Record<string, unknown>;
 
 export interface StateSegment extends SegmentBase {
   name: string;
@@ -25,10 +25,6 @@ export interface Segment extends SegmentBase {
 export interface ApparentCutSegment extends ApparentSegmentBase {
   segId?: string | undefined,
   tags?: SegmentTags | undefined;
-}
-
-export interface InverseSegment extends ApparentSegmentBase {
-  segId?: string,
 }
 
 export interface SegmentToExport extends ApparentSegmentBase {

@@ -135,30 +135,30 @@ it('parseMplayerEdl', async () => {
     { start: 0,
       end: 5.3,
       name: 'Cut',
-      tags: { mplayerEdlType: 0 },
+      tags: { mplayerEdlType: '0' },
     },
     { start: 7.1,
       end: undefined,
       name: 'Cut',
-      tags: { mplayerEdlType: 0 },
+      tags: { mplayerEdlType: '0' },
     },
     {
       end: 16.7,
       start: 15,
       name: 'Mute',
-      tags: { mplayerEdlType: 1 },
+      tags: { mplayerEdlType: '1' },
     },
     {
       end: 255.3,
       start: 1,
       name: 'Scene Marker',
-      tags: { mplayerEdlType: 2 },
+      tags: { mplayerEdlType: '2' },
     },
     {
       end: 822,
       start: 420,
       name: 'Commercial Break',
-      tags: { mplayerEdlType: 3 },
+      tags: { mplayerEdlType: '3' },
     },
   ]);
 });
@@ -171,7 +171,7 @@ it('parseMplayerEdl, starting at 0', async () => {
     end: undefined,
     name: 'Cut',
     tags: {
-      mplayerEdlType: 0,
+      mplayerEdlType: '0',
     },
   }]);
 });

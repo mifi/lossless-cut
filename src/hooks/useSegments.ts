@@ -13,7 +13,7 @@ import { createNumSegments as createNumSegmentsDialog, createFixedDurationSegmen
 import { createSegment, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2 } from '../segments';
 import * as ffmpegParameters from '../ffmpeg-parameters';
 import { maxSegmentsAllowed } from '../util/constants';
-import { StateSegment } from '../types';
+import { ApparentSegmentBase, SegmentBase, StateSegment } from '../types';
 
 const remote = window.require('@electron/remote');
 
@@ -57,7 +57,7 @@ export default ({ filePath, workingRef, setWorking, setCutProgress, videoStream,
 
   const shuffleSegments = useCallback(() => setCutSegments((oldSegments) => shuffleArray(oldSegments)), [setCutSegments]);
 
-  const loadCutSegments = useCallback((edl, append = false) => {
+  const loadCutSegments = useCallback((edl: SegmentBase[], append: boolean | undefined = false) => {
     const validEdl = edl.filter((row) => (
       (row.start === undefined || row.end === undefined || row.start < row.end)
       && (row.start === undefined || row.start >= 0)
@@ -98,7 +98,7 @@ export default ({ filePath, workingRef, setWorking, setCutProgress, videoStream,
     }
   }, [filePath, workingRef, setWorking, setCutProgress, loadCutSegments]);
 
-  const getSegApparentEnd = useCallback((seg) => getSegApparentEnd2(seg, duration), [duration]);
+  const getSegApparentEnd = useCallback((seg: SegmentBase) => getSegApparentEnd2(seg, duration), [duration]);
 
   const getApparentCutSegments = useCallback((segments: StateSegment[]) => segments.map((cutSegment) => ({
     ...cutSegment,
@@ -173,8 +173,8 @@ export default ({ filePath, workingRef, setWorking, setCutProgress, videoStream,
   }, [cutSegments, removeSegments]);
 
   const inverseCutSegments = useMemo(() => {
-    const inverted = !haveInvalidSegs && isDurationValid(duration) ? invertSegments(sortSegments(apparentCutSegments), true, true, duration) : undefined;
-    return inverted || [];
+    if (haveInvalidSegs || !isDurationValid(duration)) return [];
+    return invertSegments(sortSegments(apparentCutSegments), true, true, duration) as (ApparentSegmentBase & { segId?: string })[]; // todo i don't know how to improve these types
   }, [apparentCutSegments, duration, haveInvalidSegs]);
 
   const invertAllSegments = useCallback(() => {

@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid';
 import sortBy from 'lodash/sortBy';
 import minBy from 'lodash/minBy';
 import maxBy from 'lodash/maxBy';
-import { ApparentCutSegment, ApparentSegmentBase, InverseSegment, PlaybackMode, SegmentBase, SegmentTags } from './types';
+import { ApparentSegmentBase, PlaybackMode, SegmentBase, SegmentTags } from './types';
 
 
 export const isDurationValid = (duration?: number): duration is number => duration != null && Number.isFinite(duration) && duration > 0;
@@ -50,32 +50,50 @@ export function findSegmentsAtCursor(apparentSegments, currentTime) {
   return indexes;
 }
 
-export const getSegmentTags = (segment: { tags?: SegmentTags | undefined }) => (segment.tags || {});
+// in the past we had non-string tags
+export const getSegmentTags = (segment: { tags?: SegmentTags | undefined }) => (
+  Object.fromEntries(Object.entries(segment.tags || {}).flatMap(([tag, value]) => (value != null ? [[tag, String(value)]] : [])))
+);
 
 export const sortSegments = <T>(segments: T[]) => sortBy(segments, 'start');
 
 // https://stackoverflow.com/a/30472982/6519037
-export function partitionIntoOverlappingRanges(array, getSegmentStart = (seg) => seg.start, getSegmentEnd = (seg) => seg.end) {
-  function getMaxEnd(array2) {
+export function partitionIntoOverlappingRanges<T extends SegmentBase | ApparentSegmentBase>(
+  array: T[],
+  getSegmentStart = getSegApparentStart,
+  getSegmentEnd = (seg: T) => {
+    if (seg.end == null) throw new Error('Unknown end of segment');
+    return seg.end;
+  },
+) {
+  const [firstItem] = array;
+  if (firstItem == null) throw new Error('No segments');
+
+  const ret: T[][] = [
+    [firstItem],
+  ];
+
+  const getMaxEnd = (array2: T[]) => {
     // note: this also mutates array2
     array2.sort((a, b) => {
       if (getSegmentEnd(a) < getSegmentEnd(b)) return 1;
       if (getSegmentEnd(a) > getSegmentEnd(b)) return -1;
       return 0;
     });
+    if (array2[0] == null) throw new Error();
     return getSegmentEnd(array2[0]);
-  }
+  };
 
-  const ret: SegmentBase[][] = [];
-  let g = 0;
-  ret[g] = [array[0]];
-
-  for (let i = 1; i < array.length; i += 1) {
-    if (getSegmentStart(array[i]) >= getSegmentStart(array[i - 1]) && getSegmentStart(array[i]) < getMaxEnd(ret[g])) {
-      ret[g]!.push(array[i]);
+  for (let i = 1, g = 0; i < array.length; i += 1) {
+    const item = array[i]!;
+    const start = getSegmentStart(item);
+    const prevStart = getSegmentStart(array[i - 1]!);
+    if (start == null || prevStart == null) throw new Error();
+    if (start >= prevStart && start < getMaxEnd(ret[g]!)) {
+      ret[g]!.push(item);
     } else {
       g += 1;
-      ret[g] = [array[i]];
+      ret[g] = [item];
     }
   }
 
@@ -122,23 +140,24 @@ export function combineSelectedSegments<T extends SegmentBase>(existingSegments:
   });
 }
 
-export function hasAnySegmentOverlap(sortedSegments) {
+export function hasAnySegmentOverlap(sortedSegments: SegmentBase[]) {
   if (sortedSegments.length === 0) return false;
 
   const overlappingGroups = partitionIntoOverlappingRanges(sortedSegments);
   return overlappingGroups.length > 0;
 }
 
-export function invertSegments(sortedCutSegments: ApparentCutSegment[], includeFirstSegment: boolean, includeLastSegment: boolean, duration?: number) {
-  if (sortedCutSegments.length === 0) return undefined;
+// eslint-disable-next-line space-before-function-paren
+export function invertSegments(sortedCutSegments: (SegmentBase & { segId?: string | undefined })[], includeFirstSegment: boolean, includeLastSegment: boolean, duration?: number) {
+  if (sortedCutSegments.length === 0) return [];
 
-  if (hasAnySegmentOverlap(sortedCutSegments)) return undefined;
+  if (hasAnySegmentOverlap(sortedCutSegments)) return [];
 
-  const ret: InverseSegment[] = [];
+  const ret: typeof sortedCutSegments = [];
 
   if (includeFirstSegment) {
     const firstSeg = sortedCutSegments[0]!;
-    if (firstSeg.start > 0) {
+    if (firstSeg.start != null && firstSeg.start > 0) {
       ret.push({
         start: 0,
         end: firstSeg.start,
@@ -150,7 +169,7 @@ export function invertSegments(sortedCutSegments: ApparentCutSegment[], includeF
   sortedCutSegments.forEach((cutSegment, i) => {
     if (i === 0) return;
     const previousSeg = sortedCutSegments[i - 1]!;
-    const inverted: InverseSegment = {
+    const inverted: typeof sortedCutSegments[number] = {
       start: previousSeg.end,
       end: cutSegment.start,
     };
@@ -159,9 +178,9 @@ export function invertSegments(sortedCutSegments: ApparentCutSegment[], includeF
   });
 
   if (includeLastSegment) {
-    const lastSeg = sortedCutSegments.at(-1);
-    if (duration == null || lastSeg.end < duration) {
-      const inverted: InverseSegment = {
+    const lastSeg = sortedCutSegments.at(-1)!;
+    if (duration == null || (lastSeg.end != null && lastSeg.end < duration)) {
+      const inverted: typeof sortedCutSegments[number] = {
         start: lastSeg.end,
         end: duration,
       };
@@ -184,7 +203,7 @@ export function convertSegmentsToChapters(sortedSegments) {
   const invertedSegments = invertSegments(sortedSegments, true, false);
 
   // inverted segments will be "gap" segments. Merge together with normal segments
-  return sortSegments([...sortedSegments, ...(invertedSegments ?? [])]);
+  return sortSegments([...sortedSegments, ...invertedSegments]);
 }
 
 export function playOnlyCurrentSegment({ playbackMode, currentTime, playingSegment }: { playbackMode: PlaybackMode, currentTime: number, playingSegment: ApparentSegmentBase }) {

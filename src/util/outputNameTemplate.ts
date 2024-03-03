@@ -120,7 +120,7 @@ function interpolateSegmentFileName({ template, epochMs, inputFileNameWithoutExt
 export function generateOutSegFileNames({ segments, template: desiredTemplate, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding }: {
   segments: SegmentToExport[], template: string, formatTimecode: (a: { seconds?: number, shorten?: boolean, fileNameFriendly?: boolean }) => string, isCustomFormatSelected: boolean, fileFormat: string, filePath: string, outputDir: string, safeOutputFileName: boolean, maxLabelLength: number, outputFileNameMinZeroPadding: number,
 }) {
-  function generate({ template, forceSafeOutputFileName }) {
+  function generate({ template, forceSafeOutputFileName }: { template: string, forceSafeOutputFileName: boolean }) {
     const epochMs = Date.now();
 
     return segments.map((segment, i) => {

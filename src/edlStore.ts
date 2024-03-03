@@ -1,59 +1,60 @@
 import JSON5 from 'json5';
 import i18n from 'i18next';
+import type { parse as CueParse } from 'cue-parser';
 
 import { parseSrt, formatSrt, parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, parseCsvTime, getFrameValParser, parseDvAnalyzerSummaryTxt } from './edlFormats';
 import { askForYouTubeInput, showOpenDialog } from './dialogs';
 import { getOutPath } from './util';
-import { EdlExportType, EdlFileType, EdlImportType, Segment } from './types';
+import { EdlExportType, EdlFileType, EdlImportType, Segment, StateSegment } from './types';
 
 const { readFile, writeFile } = window.require('fs/promises');
-const cueParser = window.require('cue-parser');
+const cueParser: { parse: typeof CueParse } = window.require('cue-parser');
 const { basename } = window.require('path');
 
 const { dialog } = window.require('@electron/remote');
 
-export async function loadCsvSeconds(path) {
+export async function loadCsvSeconds(path: string) {
   return parseCsv(await readFile(path, 'utf8'), parseCsvTime);
 }
 
-export async function loadCsvFrames(path, fps) {
+export async function loadCsvFrames(path: string, fps?: number) {
   if (!fps) throw new Error('The loaded file has an unknown framerate');
   return parseCsv(await readFile(path, 'utf8'), getFrameValParser(fps));
 }
 
-export async function loadXmeml(path) {
+export async function loadXmeml(path: string) {
   return parseXmeml(await readFile(path, 'utf8'));
 }
 
-export async function loadFcpXml(path) {
+export async function loadFcpXml(path: string) {
   return parseFcpXml(await readFile(path, 'utf8'));
 }
 
-export async function loadDvAnalyzerSummaryTxt(path) {
+export async function loadDvAnalyzerSummaryTxt(path: string) {
   return parseDvAnalyzerSummaryTxt(await readFile(path, 'utf8'));
 }
 
-export async function loadPbf(path) {
+export async function loadPbf(path: string) {
   return parsePbf(await readFile(path));
 }
 
-export async function loadMplayerEdl(path) {
+export async function loadMplayerEdl(path: string) {
   return parseMplayerEdl(await readFile(path, 'utf8'));
 }
 
-export async function loadCue(path) {
+export async function loadCue(path: string) {
   return parseCuesheet(cueParser.parse(path));
 }
 
-export async function loadSrt(path) {
+export async function loadSrt(path: string) {
   return parseSrt(await readFile(path, 'utf8'));
 }
 
-export async function saveCsv(path, cutSegments) {
+export async function saveCsv(path: string, cutSegments) {
   await writeFile(path, await formatCsvSeconds(cutSegments));
 }
 
-export async function saveCsvHuman(path, cutSegments) {
+export async function saveCsvHuman(path: string, cutSegments) {
   await writeFile(path, await formatCsvHuman(cutSegments));
 }
 
@@ -61,11 +62,11 @@ export async function saveCsvFrames({ path, cutSegments, getFrameCount }) {
   await writeFile(path, await formatCsvFrames({ cutSegments, getFrameCount }));
 }
 
-export async function saveTsv(path, cutSegments) {
+export async function saveTsv(path: string, cutSegments) {
   await writeFile(path, await formatTsv(cutSegments));
 }
 
-export async function saveSrt(path, cutSegments) {
+export async function saveSrt(path: string, cutSegments) {
   await writeFile(path, await formatSrt(cutSegments));
 }
 
@@ -78,8 +79,18 @@ export async function saveLlcProject({ savePath, filePath, cutSegments }) {
   await writeFile(savePath, JSON5.stringify(projectData, null, 2));
 }
 
-export async function loadLlcProject(path) {
-  return JSON5.parse(await readFile(path));
+export async function loadLlcProject(path: string) {
+  const parsed = JSON5.parse(await readFile(path)) as unknown;
+  if (parsed == null || typeof parsed !== 'object') throw new Error('Invalid LLC file');
+  let mediaFileName: string | undefined;
+  if ('mediaFileName' in parsed && typeof parsed.mediaFileName === 'string') {
+    mediaFileName = parsed.mediaFileName;
+  }
+  if (!('cutSegments' in parsed) || !Array.isArray(parsed.cutSegments)) throw new Error('Invalid LLC file');
+  return {
+    mediaFileName,
+    cutSegments: parsed.cutSegments as StateSegment[], // todo validate more
+  };
 }
 
 export async function readEdlFile({ type, path, fps }: { type: EdlFileType, path: string, fps?: number }) {

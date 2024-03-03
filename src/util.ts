@@ -173,7 +173,7 @@ export function handleError(arg1: unknown, arg2?: unknown) {
   });
 }
 
-export function filenamify(name) {
+export function filenamify(name: string) {
   return name.replaceAll(/[^\w.-]/g, '_');
 }
 
