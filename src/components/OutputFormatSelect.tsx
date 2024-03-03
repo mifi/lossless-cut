@@ -16,7 +16,7 @@ function renderFormatOptions(formats) {
 }
 
 const OutputFormatSelect = memo(({ style, detectedFileFormat, fileFormat, onOutputFormatUserChange }: {
-  style: CSSProperties, detectedFileFormat?: string, fileFormat?: string, onOutputFormatUserChange: (a: string) => void,
+  style: CSSProperties, detectedFileFormat?: string | undefined, fileFormat?: string | undefined, onOutputFormatUserChange: (a: string) => void,
 }) => {
   const commonVideoAudioFormatsExceptDetectedFormat = useMemo(() => commonVideoAudioFormats.filter((f) => f !== detectedFileFormat), [detectedFileFormat]);
   const commonAudioFormatsExceptDetectedFormat = useMemo(() => commonAudioFormats.filter((f) => f !== detectedFileFormat), [detectedFileFormat]);

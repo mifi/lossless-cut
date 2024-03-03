@@ -5,7 +5,7 @@ import useUserSettings from '../hooks/useUserSettings';
 import { SegmentBase } from '../types';
 
 const SegmentCutpointButton = ({ currentCutSeg, side, Icon, onClick, title, style }: {
-  currentCutSeg: SegmentBase, side: 'start' | 'end', Icon, onClick?: () => void, title?: string, style?: CSSProperties
+  currentCutSeg: SegmentBase, side: 'start' | 'end', Icon, onClick?: (() => void) | undefined, title?: string | undefined, style?: CSSProperties | undefined
 }) => {
   const { darkMode } = useUserSettings();
   const { getSegColor } = useSegColors();

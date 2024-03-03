@@ -44,16 +44,16 @@ function getFileBaseName(filePath?: string) {
   return parsed.name;
 }
 
-export function getOutPath<T extends string | undefined>(a: { customOutDir?: string, filePath?: T, fileName: string }): T extends string ? string : undefined;
-export function getOutPath({ customOutDir, filePath, fileName }: { customOutDir?: string, filePath?: string | undefined, fileName: string }) {
+export function getOutPath<T extends string | undefined>(a: { customOutDir?: string | undefined, filePath?: T | undefined, fileName: string }): T extends string ? string : undefined;
+export function getOutPath({ customOutDir, filePath, fileName }: { customOutDir?: string | undefined, filePath?: string | undefined, fileName: string }) {
   if (filePath == null) return undefined;
   return join(getOutDir(customOutDir, filePath), fileName);
 }
 
 export const getSuffixedFileName = (filePath: string | undefined, nameSuffix: string) => `${getFileBaseName(filePath)}-${nameSuffix}`;
 
-export function getSuffixedOutPath<T extends string | undefined>(a: { customOutDir?: string, filePath?: T, nameSuffix: string }): T extends string ? string : undefined;
-export function getSuffixedOutPath({ customOutDir, filePath, nameSuffix }: { customOutDir?: string, filePath?: string | undefined, nameSuffix: string }) {
+export function getSuffixedOutPath<T extends string | undefined>(a: { customOutDir?: string | undefined, filePath?: T | undefined, nameSuffix: string }): T extends string ? string : undefined;
+export function getSuffixedOutPath({ customOutDir, filePath, nameSuffix }: { customOutDir?: string | undefined, filePath?: string | undefined, nameSuffix: string }) {
   if (filePath == null) return undefined;
   return getOutPath({ customOutDir, filePath, fileName: getSuffixedFileName(filePath, nameSuffix) });
 }
@@ -107,10 +107,11 @@ export async function dirExists(dirPath) {
 const testFailFsOperation = false;
 
 // Retry because sometimes write operations fail on windows due to the file being locked for various reasons (often anti-virus) #272 #1797 #1704
-export async function fsOperationWithRetry(operation, { signal, retries = 10, minTimeout = 100, maxTimeout = 2000, ...opts }: Options & { retries?: number, minTimeout?: number, maxTimeout?: number } = {}) {
+export async function fsOperationWithRetry(operation, { signal, retries = 10, minTimeout = 100, maxTimeout = 2000, ...opts }: Options & { retries?: number | undefined, minTimeout?: number | undefined, maxTimeout?: number | undefined } = {}) {
   return pRetry(async () => {
     if (testFailFsOperation && Math.random() > 0.3) throw Object.assign(new Error('test delete failure'), { code: 'EPERM' });
     await operation();
+    // @ts-expect-error todo
   }, {
     retries,
     signal,
@@ -391,7 +392,7 @@ function setDocumentExtraTitle(extra) {
   document.title = extra != null ? `${baseTitle} - ${extra}` : baseTitle;
 }
 
-export function setDocumentTitle({ filePath, working, cutProgress }: { filePath?: string, working?: string, cutProgress?: number }) {
+export function setDocumentTitle({ filePath, working, cutProgress }: { filePath?: string | undefined, working?: string | undefined, cutProgress?: number | undefined }) {
   const parts: string[] = [];
   if (filePath) parts.push(basename(filePath));
   if (working) {

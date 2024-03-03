@@ -26,7 +26,7 @@ function getFrameFromVideo(video, format, quality) {
 
 export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }) => {
   const captureFramesRange = useCallback(async ({ customOutDir, filePath, fps, fromTime, toTime, estimatedMaxNumFiles, captureFormat, quality, filter, onProgress, outputTimestamps }: {
-    customOutDir, filePath: string, fps: number, fromTime: number, toTime: number, estimatedMaxNumFiles: number, captureFormat: string, quality: number, filter?: string, onProgress: (a: number) => void, outputTimestamps: boolean
+    customOutDir, filePath: string, fps: number, fromTime: number, toTime: number, estimatedMaxNumFiles: number, captureFormat: string, quality: number, filter?: string | undefined, onProgress: (a: number) => void, outputTimestamps: boolean
   }) => {
     const getSuffix = (prefix: string) => `${prefix}.${captureFormat}`;
 

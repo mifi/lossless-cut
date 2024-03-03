@@ -1,7 +1,7 @@
 import padStart from 'lodash/padStart';
 
 export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, showFraction = true, shorten = false, fps }: {
-  seconds?: number, fileNameFriendly?: boolean, showFraction?: boolean, shorten?: boolean, fps?: number,
+  seconds?: number | undefined, fileNameFriendly?: boolean | undefined, showFraction?: boolean | undefined, shorten?: boolean | undefined, fps?: number | undefined,
 }) {
   const totalSeconds = totalSecondsIn || 0;
   const totalSecondsAbs = Math.abs(totalSeconds);

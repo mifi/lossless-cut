@@ -17,12 +17,12 @@ const PlaybackStreamSelector = memo(({
   subtitleStreams,
   videoStreams,
   audioStreams,
-  activeSubtitleStreamIndex?: number,
-  activeVideoStreamIndex?: number,
-  activeAudioStreamIndex?: number,
-  onActiveSubtitleChange: (a?: number) => void,
-  onActiveVideoStreamChange: (a?: number) => void,
-  onActiveAudioStreamChange: (a?: number) => void,
+  activeSubtitleStreamIndex?: number | undefined,
+  activeVideoStreamIndex?: number | undefined,
+  activeAudioStreamIndex?: number | undefined,
+  onActiveSubtitleChange: (a?: number | undefined) => void,
+  onActiveVideoStreamChange: (a?: number | undefined) => void,
+  onActiveAudioStreamChange: (a?: number | undefined) => void,
 }) => {
   const [controlVisible, setControlVisible] = useState(false);
   const timeoutRef = useRef<number>();

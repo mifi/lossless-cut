@@ -111,7 +111,7 @@ export const isMov = (format: string) => ['ismv', 'ipod', 'mp4', 'mov'].includes
 type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
 
 function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined }: {
-  stream, outputIndex: number, outFormat: string, manuallyCopyDisposition?: boolean, getVideoArgs?: GetVideoArgsFn
+  stream, outputIndex: number, outFormat: string, manuallyCopyDisposition?: boolean | undefined, getVideoArgs?: GetVideoArgsFn | undefined
 }) {
   let args: string[] = [];
 

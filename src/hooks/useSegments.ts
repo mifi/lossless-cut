@@ -21,7 +21,7 @@ const { blackDetect, silenceDetect } = remote.require('./ffmpeg');
 
 
 export default ({ filePath, workingRef, setWorking, setCutProgress, videoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly }: {
-  filePath?: string, workingRef: MutableRefObject<boolean>, setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void, setCutProgress: (a: number | undefined) => void, videoStream, duration?: number, getRelevantTime: () => number, maxLabelLength: number, checkFileOpened: () => boolean, invertCutSegments: boolean, segmentsToChaptersOnly: boolean,
+  filePath?: string | undefined, workingRef: MutableRefObject<boolean>, setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void, setCutProgress: (a: number | undefined) => void, videoStream, duration?: number | undefined, getRelevantTime: () => number, maxLabelLength: number, checkFileOpened: () => boolean, invertCutSegments: boolean, segmentsToChaptersOnly: boolean,
 }) => {
   // Segment related state
   const segCounterRef = useRef(0);

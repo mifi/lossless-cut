@@ -19,7 +19,7 @@ export interface StateSegment extends SegmentBase {
 }
 
 export interface Segment extends SegmentBase {
-  name?: string,
+  name?: string | undefined,
 }
 
 export interface ApparentCutSegment extends ApparentSegmentBase {

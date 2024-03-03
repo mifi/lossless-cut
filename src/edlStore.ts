@@ -93,7 +93,7 @@ export async function loadLlcProject(path: string) {
   };
 }
 
-export async function readEdlFile({ type, path, fps }: { type: EdlFileType, path: string, fps?: number }) {
+export async function readEdlFile({ type, path, fps }: { type: EdlFileType, path: string, fps?: number | undefined }) {
   if (type === 'csv') return loadCsvSeconds(path);
   if (type === 'csv-frames') return loadCsvFrames(path, fps);
   if (type === 'xmeml') return loadXmeml(path);
@@ -110,7 +110,7 @@ export async function readEdlFile({ type, path, fps }: { type: EdlFileType, path
   throw new Error('Invalid EDL type');
 }
 
-export async function askForEdlImport({ type, fps }: { type: EdlImportType, fps?: number }) {
+export async function askForEdlImport({ type, fps }: { type: EdlImportType, fps?: number | undefined }) {
   if (type === 'youtube') return askForYouTubeInput();
 
   let filters;
@@ -132,7 +132,7 @@ export async function askForEdlImport({ type, fps }: { type: EdlImportType, fps?
 }
 
 export async function exportEdlFile({ type, cutSegments, customOutDir, filePath, getFrameCount }: {
-  type: EdlExportType, cutSegments: Segment[], customOutDir?: string, filePath?: string, getFrameCount: (a: number) => number | undefined,
+  type: EdlExportType, cutSegments: Segment[], customOutDir?: string | undefined, filePath?: string | undefined, getFrameCount: (a: number) => number | undefined,
 }) {
   let filters;
   let ext;

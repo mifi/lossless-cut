@@ -19,7 +19,8 @@ const { dialog } = window.require('@electron/remote');
 
 const ReactSwal = withReactContent(Swal);
 
-export async function promptTimeOffset({ initialValue, title, text }: { initialValue?: string, title: string, text?: string }) {
+export async function promptTimeOffset({ initialValue, title, text }: { initialValue?: string | undefined, title: string, text?: string | undefined }) {
+  // @ts-expect-error todo
   const { value } = await Swal.fire({
     title,
     text,
@@ -44,6 +45,7 @@ export async function promptTimeOffset({ initialValue, title, text }: { initialV
 export const showOpenDialog = async ({
   filters = isWindows ? [{ name: i18n.t('All Files'), extensions: ['*'] }] : undefined,
   ...props
+  // @ts-expect-error todo
 }) => dialog.showOpenDialog({ ...props, filters });
 
 export async function askForYouTubeInput() {
@@ -468,6 +470,7 @@ export async function showExportFailedDialog({ fileFormat, safeOutputFileName })
     </div>
   );
 
+  // @ts-expect-error todo
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { value } = await ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, timer: null as any as undefined, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
   return value;
@@ -489,6 +492,7 @@ export async function showConcatFailedDialog({ fileFormat }) {
     </div>
   );
 
+  // @ts-expect-error todo
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { value } = await ReactSwal.fire({ title: i18n.t('Unable to merge files'), html, timer: null as any as undefined, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
   return value;
@@ -569,6 +573,7 @@ export function showJson5Dialog({ title, json }) {
 export async function openDirToast({ filePath, text, html, ...props }: SweetAlertOptions & { filePath: string }) {
   const swal = text ? toast : ReactSwal;
 
+  // @ts-expect-error todo
   const { value } = await swal.fire({
     ...swalToastOptions,
     showConfirmButton: true,
@@ -583,6 +588,7 @@ export async function openDirToast({ filePath, text, html, ...props }: SweetAler
 }
 
 const UnorderedList = ({ children }) => <ul style={{ paddingLeft: '1em' }}>{children}</ul>;
+// @ts-expect-error todo
 const ListItem = ({ icon: Icon, iconColor, children, style }: { icon: IconComponent, iconColor?: string, children: ReactNode, style?: CSSProperties }) => <li style={{ listStyle: 'none', ...style }}>{Icon && <Icon color={iconColor} size={14} marginRight=".3em" />} {children}</li>;
 
 const Notices = ({ notices }) => notices.map((msg) => <ListItem key={msg} icon={InfoSignIcon} iconColor="info">{msg}</ListItem>);
@@ -601,6 +607,7 @@ export async function openExportFinishedToast({ filePath, warnings, notices }) {
     </UnorderedList>
   );
 
+  // @ts-expect-error todo
   await openDirToast({ filePath, html, width: 800, position: 'center', timer: hasWarnings ? undefined : 30000 });
 }
 

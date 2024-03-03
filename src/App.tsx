@@ -111,7 +111,7 @@ function App() {
   const [ffmpegCommandLog, setFfmpegCommandLog] = useState<FfmpegCommandLog>([]);
 
   const [previewFilePath, setPreviewFilePath] = useState<string>();
-  const [working, setWorkingState] = useState<{ text: string, abortController?: AbortController }>();
+  const [working, setWorkingState] = useState<{ text: string, abortController?: AbortController | undefined }>();
   const [usingDummyVideo, setUsingDummyVideo] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [compatPlayerEventId, setCompatPlayerEventId] = useState(0);
@@ -879,6 +879,7 @@ function App() {
         setTotalProgress();
       }
 
+      // @ts-expect-error todo
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}`, timer: null as any as undefined, showConfirmButton: true });
     } catch (err) {

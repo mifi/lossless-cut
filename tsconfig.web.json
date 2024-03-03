@@ -5,7 +5,6 @@
     "plugins": [{ "name": "typescript-plugin-css-modules" }],
     "noEmit": true,
 
-    "exactOptionalPropertyTypes": false, // todo
     "noImplicitAny": false, // todo
     "checkJs": false, // todo
     "allowJs": true, // todo

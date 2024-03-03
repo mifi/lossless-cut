@@ -11,7 +11,7 @@ const CaptureFormatButton = memo(({ showIcon = false, ...props }: { showIcon?: b
   const { captureFormat, toggleCaptureFormat } = useUserSettings();
   return (
     <Button
-      iconBefore={showIcon ? <FaImage /> : undefined}
+      iconBefore={showIcon ? <FaImage /> : null}
       title={t('Capture frame format')}
       onClick={withBlur(toggleCaptureFormat)}
       // eslint-disable-next-line react/jsx-props-no-spreading

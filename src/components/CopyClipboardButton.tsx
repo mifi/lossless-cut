@@ -1,12 +1,12 @@
-import { CSSProperties, memo, useCallback } from 'react';
+import { memo, useCallback } from 'react';
 import { FaClipboard } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
-import { motion, useAnimation } from 'framer-motion';
+import { MotionStyle, motion, useAnimation } from 'framer-motion';
 
 const electron = window.require('electron');
 const { clipboard } = electron;
 
-const CopyClipboardButton = memo(({ text, style }: { text: string, style?: CSSProperties }) => {
+const CopyClipboardButton = memo(({ text, style }: { text: string, style?: MotionStyle }) => {
   const { t } = useTranslation();
 
   const animation = useAnimation();

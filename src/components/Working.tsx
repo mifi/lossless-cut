@@ -9,7 +9,7 @@ import loadingLottie from '../7077-magic-flow.json';
 
 
 const Working = memo(({ text, cutProgress, onAbortClick }: {
-  text: string, cutProgress?: number, onAbortClick: () => void
+  text: string, cutProgress?: number | undefined, onAbortClick: () => void
 }) => (
   <div style={{ position: 'absolute', bottom: 0, top: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
     <motion.div

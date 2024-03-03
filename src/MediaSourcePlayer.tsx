@@ -11,15 +11,15 @@ const { createMediaSourceStream, readOneJpegFrame } = remote.require('./compatPl
 async function startPlayback({ path, video, videoStreamIndex, audioStreamIndex, seekTo, signal, playSafe, onCanPlay, getTargetTime, size, fps }: {
   path: string,
   video: HTMLVideoElement,
-  videoStreamIndex?: number,
-  audioStreamIndex?: number,
+  videoStreamIndex?: number | undefined,
+  audioStreamIndex?: number | undefined,
   seekTo: number,
   signal: AbortSignal,
   playSafe: () => void,
   onCanPlay: () => void,
   getTargetTime: () => number,
-  size?: number,
-  fps?: number,
+  size?: number | undefined,
+  fps?: number | undefined,
 }) {
   let canPlay = false;
   let bufferEndTime: number | undefined;

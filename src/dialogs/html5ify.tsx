@@ -12,7 +12,7 @@ const ReactSwal = withReactContent(Swal);
 
 // eslint-disable-next-line import/prefer-default-export
 export async function askForHtml5ifySpeed({ allowedOptions, showRemember, initialOption }: {
-  allowedOptions: Html5ifyMode[], showRemember?: boolean, initialOption?: Html5ifyMode
+  allowedOptions: Html5ifyMode[], showRemember?: boolean | undefined, initialOption?: Html5ifyMode | undefined
 }) {
   const availOptions: Record<Html5ifyMode, string> = {
     fastest: i18n.t('Fastest: FFmpeg-assisted playback'),

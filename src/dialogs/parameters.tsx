@@ -14,7 +14,7 @@ export interface ParameterDialogParameter { value: string, label?: string, hint?
 export type ParameterDialogParameters = Record<string, ParameterDialogParameter>;
 
 const ParametersInput = ({ description, parameters: parametersIn, onChange, onSubmit, docUrl }: {
-  description?: string, parameters: ParameterDialogParameters, onChange: (a: ParameterDialogParameters) => void, onSubmit: () => void, docUrl?: string,
+  description?: string | undefined, parameters: ParameterDialogParameters, onChange: (a: ParameterDialogParameters) => void, onSubmit: () => void, docUrl?: string | undefined,
 }) => {
   const firstInputRef = useRef<HTMLInputElement>(null);
   const [parameters, setParameters] = useState(parametersIn);
@@ -67,6 +67,7 @@ export async function showParametersDialog({ title, description, parameters: par
   };
 
   const promise2 = (async () => {
+    // @ts-expect-error todo
     const { isConfirmed } = await ReactSwal.fire({
       title,
       html: <ParametersInput description={description} parameters={parameters} onChange={(newParameters) => { parameters = newParameters; }} onSubmit={handleSubmit} docUrl={docUrl} />,
