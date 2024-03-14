@@ -322,7 +322,7 @@ export function parseSrt(text: string) {
   };
 
   // eslint-disable-next-line no-restricted-syntax
-  for (const lineRaw of text.trim().split('\r\n')) {
+  for (const lineRaw of text.trim().split(/\r?\n/)) {
     const line = lineRaw.trim();
     if (line === '') {
       flush();
