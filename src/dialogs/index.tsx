@@ -101,7 +101,7 @@ export async function askForFfPath(defaultPath) {
   return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
 }
 
-export async function askForFileOpenAction(inputOptions) {
+export async function askForFileOpenAction(inputOptions: Record<string, string>) {
   let value;
   function onClick(key?: string) {
     value = key;

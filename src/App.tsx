@@ -1905,8 +1905,8 @@ function App() {
 
       if (isFileOpened) {
         if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
-        else if (filePathLowerCase.endsWith('.srt')) inputOptions.subtitles = i18n.t('Convert subtitiles into segments');
-        else inputOptions.tracks = i18n.t('Include all tracks from the new file');
+        if (filePathLowerCase.endsWith('.srt')) inputOptions.subtitles = i18n.t('Convert subtitiles into segments');
+        inputOptions.tracks = i18n.t('Include all tracks from the new file');
       }
 
       if (batchFiles.length > 0) inputOptions.addToBatch = i18n.t('Add the file to the batch list');
