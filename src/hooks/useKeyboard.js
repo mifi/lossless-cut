@@ -4,7 +4,9 @@ import { useEffect, useRef } from 'react';
 // Also document.addEventListener needs custom handling of modifier keys or C will be triggered by CTRL+C, etc
 import Mousetrap from 'mousetrap';
 
-const keyupActions = new Set(['seekBackwards', 'seekForwards']);
+// for all dialog actions (e.g. detectSceneChanges) we must use keyup, or we risk having the button press inserted into the dialog's input element right after the dialog opens
+// todo use keyup for most events?
+const keyupActions = new Set(['seekBackwards', 'seekForwards', 'detectBlackScenes', 'detectSilentScenes', 'detectSceneChanges']);
 
 export default ({ keyBindings, onKeyPress: onKeyPressProp }) => {
   const onKeyPressRef = useRef();

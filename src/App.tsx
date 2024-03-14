@@ -2148,9 +2148,15 @@ function App() {
       toggleKeyboardShortcuts,
       toggleSettings,
       openSendReportDialog: () => { openSendReportDialogWithState(); },
-      detectBlackScenes,
-      detectSilentScenes,
-      detectSceneChanges,
+      detectBlackScenes: ({ keyup }) => {
+        if (keyup) detectBlackScenes();
+      },
+      detectSilentScenes: ({ keyup }) => {
+        if (keyup) detectSilentScenes();
+      },
+      detectSceneChanges: ({ keyup }) => {
+        if (keyup) detectSceneChanges();
+      },
       createSegmentsFromKeyframes,
       toggleWaveformMode,
       toggleShowThumbnails,
