@@ -73,7 +73,7 @@ export async function havePermissionToReadFile(filePath: string) {
   return true;
 }
 
-export async function checkDirWriteAccess(dirPath) {
+export async function checkDirWriteAccess(dirPath: string) {
   try {
     await fsExtra.access(dirPath, fsExtra.constants.W_OK);
   } catch (err) {
@@ -86,7 +86,7 @@ export async function checkDirWriteAccess(dirPath) {
   return true;
 }
 
-export async function pathExists(pathIn) {
+export async function pathExists(pathIn: string) {
   return fsExtra.pathExists(pathIn);
 }
 
@@ -99,7 +99,7 @@ export async function getPathReadAccessError(pathIn: string) {
   }
 }
 
-export async function dirExists(dirPath) {
+export async function dirExists(dirPath: string) {
   return (await pathExists(dirPath)) && (await lstat(dirPath)).isDirectory();
 }
 
@@ -107,7 +107,7 @@ export async function dirExists(dirPath) {
 const testFailFsOperation = false;
 
 // Retry because sometimes write operations fail on windows due to the file being locked for various reasons (often anti-virus) #272 #1797 #1704
-export async function fsOperationWithRetry(operation, { signal, retries = 10, minTimeout = 100, maxTimeout = 2000, ...opts }: Options & { retries?: number | undefined, minTimeout?: number | undefined, maxTimeout?: number | undefined } = {}) {
+export async function fsOperationWithRetry(operation: () => Promise<unknown>, { signal, retries = 10, minTimeout = 100, maxTimeout = 2000, ...opts }: Options & { retries?: number | undefined, minTimeout?: number | undefined, maxTimeout?: number | undefined } = {}) {
   return pRetry(async () => {
     if (testFailFsOperation && Math.random() > 0.3) throw Object.assign(new Error('test delete failure'), { code: 'EPERM' });
     await operation();
@@ -130,11 +130,13 @@ export const utimesWithRetry = async (path: string, atime: number, mtime: number
 
 export const getFrameDuration = (fps?: number) => 1 / (fps ?? 30);
 
-export async function transferTimestamps({ inPath, outPath, cutFrom = 0, cutTo = 0, duration = 0, treatInputFileModifiedTimeAsStart = true, treatOutputFileModifiedTimeAsStart }) {
+export async function transferTimestamps({ inPath, outPath, cutFrom = 0, cutTo = 0, duration = 0, treatInputFileModifiedTimeAsStart = true, treatOutputFileModifiedTimeAsStart }: {
+  inPath: string, outPath: string, cutFrom?: number | undefined, cutTo?: number | undefined, duration?: number | undefined, treatInputFileModifiedTimeAsStart?: boolean, treatOutputFileModifiedTimeAsStart: boolean | null | undefined
+}) {
   if (treatOutputFileModifiedTimeAsStart == null) return; // null means disabled;
 
   // see https://github.com/mifi/lossless-cut/issues/1017#issuecomment-1049097115
-  function calculateTime(fileTime) {
+  function calculateTime(fileTime: number) {
     if (treatInputFileModifiedTimeAsStart && treatOutputFileModifiedTimeAsStart) {
       return fileTime + cutFrom;
     }

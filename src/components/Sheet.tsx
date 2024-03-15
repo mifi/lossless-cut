@@ -17,7 +17,7 @@ const Sheet = memo(({ visible, onClosePress, children, maxWidth = 800, style }: 
           initial={{ scale: 0, opacity: 0.5 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
-          className={styles.sheet}
+          className={styles['sheet']}
         >
           <div style={{ margin: 'auto', maxWidth, height: '100%', position: 'relative' }}>
             <div style={{ overflowY: 'scroll', height: '100%', ...style }}>

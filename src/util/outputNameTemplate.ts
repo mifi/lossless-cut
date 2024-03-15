@@ -5,7 +5,7 @@ import { PlatformPath } from 'path';
 import { isMac, isWindows, hasDuplicates, filenamify, getOutFileExtension } from '../util';
 import isDev from '../isDev';
 import { getSegmentTags, formatSegNum } from '../segments';
-import { SegmentToExport } from '../types';
+import { FormatTimecode, SegmentToExport } from '../types';
 
 
 export const segNumVariable = 'SEG_NUM';
@@ -118,7 +118,7 @@ function interpolateSegmentFileName({ template, epochMs, inputFileNameWithoutExt
 }
 
 export function generateOutSegFileNames({ segments, template: desiredTemplate, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding }: {
-  segments: SegmentToExport[], template: string, formatTimecode: (a: { seconds?: number, shorten?: boolean, fileNameFriendly?: boolean }) => string, isCustomFormatSelected: boolean, fileFormat: string, filePath: string, outputDir: string, safeOutputFileName: boolean, maxLabelLength: number, outputFileNameMinZeroPadding: number,
+  segments: SegmentToExport[], template: string, formatTimecode: FormatTimecode, isCustomFormatSelected: boolean, fileFormat: string, filePath: string, outputDir: string, safeOutputFileName: boolean, maxLabelLength: number, outputFileNameMinZeroPadding: number,
 }) {
   function generate({ template, forceSafeOutputFileName }: { template: string, forceSafeOutputFileName: boolean }) {
     const epochMs = Date.now();

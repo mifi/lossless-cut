@@ -2,13 +2,15 @@
   "extends": ["@tsconfig/strictest", "@tsconfig/vite-react/tsconfig.json"],
   "compilerOptions": {
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
-    "plugins": [{ "name": "typescript-plugin-css-modules" }],
     "noEmit": true,
 
     "noImplicitAny": false, // todo
     "checkJs": false, // todo
     "allowJs": true, // todo
   },
+  "references": [
+    { "path": "./tsconfig.main.json" },
+  ],
   "include": [
     "src/**/*",
   ],

@@ -2,10 +2,10 @@ import { CSSProperties, useMemo } from 'react';
 
 import { useSegColors } from '../contexts';
 import useUserSettings from '../hooks/useUserSettings';
-import { SegmentBase } from '../types';
+import { SegmentBase, SegmentColorIndex } from '../types';
 
 const SegmentCutpointButton = ({ currentCutSeg, side, Icon, onClick, title, style }: {
-  currentCutSeg: SegmentBase, side: 'start' | 'end', Icon, onClick?: (() => void) | undefined, title?: string | undefined, style?: CSSProperties | undefined
+  currentCutSeg: SegmentBase & SegmentColorIndex, side: 'start' | 'end', Icon, onClick?: (() => void) | undefined, title?: string | undefined, style?: CSSProperties | undefined
 }) => {
   const { darkMode } = useUserSettings();
   const { getSegColor } = useSegColors();

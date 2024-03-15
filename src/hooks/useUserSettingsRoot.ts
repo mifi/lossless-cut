@@ -1,18 +1,21 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import i18n from 'i18next';
+import { StoreGetConfig, StoreResetConfig, StoreSetConfig, Config } from '../../types';
 
 import { errorToast } from '../swal';
 import isDev from '../isDev';
 
 const remote = window.require('@electron/remote');
 
-const configStore = remote.require('./configStore');
+const configStore: { get: StoreGetConfig, set: StoreSetConfig, reset: StoreResetConfig } = remote.require('./configStore');
 
 export default () => {
   const firstUpdateRef = useRef(true);
 
-  function safeSetConfig(keyValue: Record<string, string>) {
-    const [key, value] = Object.entries(keyValue)[0]!;
+  function safeSetConfig<T extends keyof Config>(keyValue: Record<T, Config[T]>) {
+    const entry = Object.entries(keyValue)[0]!;
+    const key = entry[0] as T;
+    const value = entry[1] as Config[T];
 
     // Prevent flood-saving all config during mount
     if (firstUpdateRef.current) return;
@@ -26,18 +29,19 @@ export default () => {
     }
   }
 
-  function safeGetConfig(key: string) {
+  function safeGetConfig<T extends keyof Config>(key: T) {
     const rawVal = configStore.get(key);
-    if (rawVal === undefined) return undefined;
+    if (rawVal === undefined) return undefined as typeof rawVal;
     // NOTE: Need to clone any non-primitive in renderer, or it will become very slow
     // I think because Electron is proxying objects over the bridge
-    return JSON.parse(JSON.stringify(rawVal));
+    const cloned: typeof rawVal = JSON.parse(JSON.stringify(rawVal));
+    return cloned;
   }
 
   // From https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
   // If the initial state is the result of an expensive computation, you may provide a function instead, which will be executed only on the initial render
   // Without this there was a huge performance issue https://github.com/mifi/lossless-cut/issues/1097
-  const safeGetConfigInitial = (key: string) => () => safeGetConfig(key);
+  const safeGetConfigInitial = <T extends keyof Config>(key: T) => () => safeGetConfig(key);
 
   const [captureFormat, setCaptureFormat] = useState(safeGetConfigInitial('captureFormat'));
   useEffect(() => safeSetConfig({ captureFormat }), [captureFormat]);

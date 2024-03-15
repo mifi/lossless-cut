@@ -442,5 +442,6 @@ module.exports = ({ app, mainWindow, newVersion, isStoreBuild }) => {
     });
   }
 
+  // @ts-expect-error todo
   Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
 };

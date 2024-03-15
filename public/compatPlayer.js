@@ -63,7 +63,9 @@ function createMediaSourceStream({ path, videoStreamIndex, audioStreamIndex, see
         return;
       }
 
-      if (!err.killed) {
+      // @ts-expect-error todo
+      if (!(err.killed)) {
+        // @ts-expect-error todo
         console.warn(err.message);
         console.warn(stderr.toString('utf8'));
       }
@@ -89,6 +91,7 @@ function readOneJpegFrameWrapper({ path, seekTo, videoStreamIndex }) {
       const { stdout } = await process;
       return stdout;
     } catch (err) {
+      // @ts-expect-error todo
       logger.error('renderOneJpegFrame', err.shortMessage);
       throw new Error('Failed to render JPEG frame');
     }

@@ -1,9 +1,16 @@
+import type { MenuItem, MenuItemConstructorOptions } from 'electron';
+
+
 export interface SegmentBase {
   start?: number | undefined,
   end?: number | undefined,
 }
 
-export interface ApparentSegmentBase {
+export interface SegmentColorIndex {
+  segColorIndex: number,
+}
+
+export interface ApparentSegmentBase extends SegmentColorIndex {
   start: number,
   end: number,
 }
@@ -11,10 +18,11 @@ export interface ApparentSegmentBase {
 
 export type SegmentTags = Record<string, unknown>;
 
-export interface StateSegment extends SegmentBase {
+export type EditingSegmentTags = Record<string, SegmentTags>
+
+export interface StateSegment extends SegmentBase, SegmentColorIndex {
   name: string;
   segId: string;
-  segColorIndex?: number | undefined;
   tags?: SegmentTags | undefined;
 }
 
@@ -23,15 +31,25 @@ export interface Segment extends SegmentBase {
 }
 
 export interface ApparentCutSegment extends ApparentSegmentBase {
-  segId?: string | undefined,
+  name: string;
+  segId: string,
   tags?: SegmentTags | undefined;
 }
 
-export interface SegmentToExport extends ApparentSegmentBase {
+export interface SegmentToExport {
+  start: number,
+  end: number,
   name?: string | undefined;
   segId?: string | undefined;
   tags?: SegmentTags | undefined;
 }
+
+export interface InverseCutSegment {
+  start: number,
+  end: number,
+  segId: string;
+}
+
 
 export type PlaybackMode = 'loop-segment-start-end' | 'loop-segment' | 'play-segment-once' | 'loop-selected-segments';
 
@@ -65,3 +83,11 @@ export type FfprobeStream = any;
 export type FfprobeFormat = any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FfprobeChapter = any;
+
+export type FormatTimecode = (a: { seconds: number, shorten?: boolean | undefined, fileNameFriendly?: boolean | undefined }) => string;
+
+export type GetFrameCount = (sec: number) => number | undefined;
+
+export type UpdateSegAtIndex = (index: number, newProps: Partial<StateSegment>) => void;
+
+export type ContextMenuTemplate = (MenuItemConstructorOptions | MenuItem)[];

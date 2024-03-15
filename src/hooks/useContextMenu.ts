@@ -1,12 +1,13 @@
 import { RefObject, useEffect } from 'react';
-import type { MenuItem, MenuItemConstructorOptions } from 'electron';
 
 import useNativeMenu from './useNativeMenu';
+import { ContextMenuTemplate } from '../types';
+
 
 // https://github.com/transflow/use-electron-context-menu
 export default function useContextMenu(
   ref: RefObject<HTMLElement>,
-  template: (MenuItemConstructorOptions | MenuItem)[],
+  template: ContextMenuTemplate,
 ) {
   const { openMenu, closeMenu } = useNativeMenu(template);
 

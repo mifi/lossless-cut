@@ -6,7 +6,7 @@ module.exports = (window) => {
   const selectionMenu = Menu.buildFromTemplate([
     { role: 'copy' },
     { type: 'separator' },
-    { role: 'selectall' },
+    { role: 'selectAll' },
   ]);
 
   const inputMenu = Menu.buildFromTemplate([
@@ -17,10 +17,10 @@ module.exports = (window) => {
     { role: 'copy' },
     { role: 'paste' },
     { type: 'separator' },
-    { role: 'selectall' },
+    { role: 'selectAll' },
   ]);
 
-  window.webContents.on('context-menu', (e, props) => {
+  window.webContents.on('context-menu', (_e, props) => {
     const { selectionText, isEditable } = props;
     if (isEditable) {
       inputMenu.popup(window);

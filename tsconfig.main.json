@@ -1,0 +1,21 @@
+{
+  "extends": ["@tsconfig/strictest"],
+  "compilerOptions": {
+    "composite": true,
+
+    "emitDeclarationOnly": true,
+    "outDir": "ts-dist",
+    "tsBuildInfoFile": "ts-dist/tsconfig.tsbuildinfo",
+    "lib": ["es2023"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+
+    "noImplicitAny": false, // todo
+    "checkJs": true, // todo
+    "allowJs": true, // todo
+  },
+  "include": [
+    "public/**/*", "types.ts",
+  ],
+}

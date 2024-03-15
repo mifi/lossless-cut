@@ -20,7 +20,7 @@ module.exports = ({ port, onKeyboardAction }) => {
 
   const apiRouter = express.Router();
 
-  app.get('/', (req, res) => res.send(`See ${homepage}`));
+  app.get('/', (_req, res) => res.send(`See ${homepage}`));
 
   app.use('/api', apiRouter);
 
@@ -38,6 +38,7 @@ module.exports = ({ port, onKeyboardAction }) => {
     const host = '127.0.0.1';
     server.listen(port, host, () => {
       logger.info('HTTP API listening on', `http://${host}:${port}/`);
+      // @ts-expect-error tod
       resolve();
     });
 

@@ -2,12 +2,14 @@ import { useCallback } from 'react';
 import flatMap from 'lodash/flatMap';
 import sum from 'lodash/sum';
 import pMap from 'p-map';
+import invariant from 'tiny-invariant';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileMeta, cutEncodeSmartPart, getExperimentalArgs, html5ify as ffmpegHtml5ify, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { getSmartCutParams } from '../smartcut';
 import { isDurationValid } from '../segments';
+import { FfprobeStream } from '../types';
 
 const { join, resolve, dirname } = window.require('path');
 const { pathExists } = window.require('fs-extra');
@@ -65,7 +67,9 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
   const getOutputPlaybackRateArgs = useCallback(() => (outputPlaybackRate !== 1 ? ['-itsscale', 1 / outputPlaybackRate] : []), [outputPlaybackRate]);
 
-  const concatFiles = useCallback(async ({ paths, outDir, outPath, metadataFromPath, includeAllStreams, streams, outFormat, ffmpegExperimental, onProgress = () => undefined, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge, videoTimebase, appendFfmpegCommandLog }) => {
+  const concatFiles = useCallback(async ({ paths, outDir, outPath, metadataFromPath, includeAllStreams, streams, outFormat, ffmpegExperimental, onProgress = () => undefined, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge, videoTimebase, appendFfmpegCommandLog }: {
+    paths: string[], outDir: string | undefined, outPath: string, metadataFromPath: string, includeAllStreams: boolean, streams: FfprobeStream, outFormat: string, ffmpegExperimental: boolean, onProgress?: (a: number) => void, preserveMovData: boolean, movFastStart: boolean, chapters: { start: number, end: number, name: string | undefined }[] | undefined, preserveMetadataOnMerge: boolean, videoTimebase?: number | undefined, appendFfmpegCommandLog: (a: string) => void,
+  }) => {
     if (await shouldSkipExistingFile(outPath)) return { haveExcludedStreams: false };
 
     console.log('Merging files', { paths }, 'to', outPath);
@@ -76,6 +80,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     let chaptersPath;
     if (chapters) {
       const chaptersWithNames = chapters.map((chapter, i) => ({ ...chapter, name: chapter.name || `Chapter ${i + 1}` }));
+      invariant(outDir != null);
       chaptersPath = await writeChaptersFfmetadata(outDir, chaptersWithNames);
     }
 
@@ -356,6 +361,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       if (!needSmartCut) {
         const outPath = await makeSegmentOutPath();
+        // @ts-expect-error todo
         await losslessCutSingle({
           cutFrom: desiredCutFrom, cutTo, chaptersPath, outPath, copyFileStreams, keyframeCut, avoidNegativeTs, videoDuration, rotation, allFilesMeta, outFormat, appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, paramsByStreamId, onProgress: (progress) => onSingleProgress(i, progress),
         });
@@ -409,6 +415,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       }
 
       // for smart cut we need to use keyframe cut here, and no avoid_negative_ts
+      // @ts-expect-error todo
       await losslessCutSingle({
         cutFrom: losslessCutFrom, cutTo, chaptersPath, outPath: losslessPartOutPath, copyFileStreams: copyFileStreamsFiltered, keyframeCut: true, avoidNegativeTs: false, videoDuration, rotation, allFilesMeta, outFormat, appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, paramsByStreamId, videoTimebase, onProgress: onCutProgress,
       });
@@ -466,6 +473,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   const html5ify = useCallback(async ({ customOutDir, filePath: filePathArg, speed, hasAudio, hasVideo, onProgress }) => {
     const outPath = getHtml5ifiedPath(customOutDir, filePathArg, speed);
     await ffmpegHtml5ify({ filePath: filePathArg, outPath, speed, hasAudio, hasVideo, onProgress });
+    invariant(outPath != null);
     await transferTimestamps({ inPath: filePathArg, outPath, treatOutputFileModifiedTimeAsStart });
     return outPath;
   }, [treatOutputFileModifiedTimeAsStart]);
@@ -494,9 +502,10 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   }, [treatOutputFileModifiedTimeAsStart]);
 
   // https://stackoverflow.com/questions/34118013/how-to-determine-webm-duration-using-ffprobe
-  const fixInvalidDuration = useCallback(async ({ fileFormat, customOutDir, duration, onProgress }) => {
+  const fixInvalidDuration = useCallback(async ({ fileFormat, customOutDir, duration, onProgress }: { fileFormat: string, customOutDir?: string | undefined, duration: number | undefined, onProgress }) => {
     const ext = getOutFileExtension({ outFormat: fileFormat, filePath });
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `reformatted${ext}` });
+    invariant(outPath != null);
 
     const ffmpegArgs = [
       '-hide_banner',

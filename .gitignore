@@ -17,3 +17,4 @@ node_modules
 /doc
 /ffmpeg
 /app.log
+/ts-dist

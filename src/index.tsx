@@ -44,7 +44,7 @@ const { app } = window.require('@electron/remote');
 console.log('Version', app.getVersion());
 
 
-const container = document.getElementById('root');
+const container = document.getElementById('root')!;
 const root = createRoot(container);
 root.render(
   <StrictMode>

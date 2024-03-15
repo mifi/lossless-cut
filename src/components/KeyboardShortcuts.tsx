@@ -1,4 +1,4 @@
-import { memo, Fragment, useEffect, useMemo, useCallback, useState } from 'react';
+import { memo, Fragment, useEffect, useMemo, useCallback, useState, ReactNode, SetStateAction, Dispatch } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SearchInput, PlusIcon, InlineAlert, UndoIcon, Paragraph, TakeActionIcon, IconButton, Button, DeleteIcon, AddIcon, Heading, Text, Dialog } from 'evergreen-ui';
 import { FaMouse, FaPlus, FaStepForward, FaStepBackward } from 'react-icons/fa';
@@ -12,9 +12,15 @@ import Swal from '../swal';
 import SetCutpointButton from './SetCutpointButton';
 import SegmentCutpointButton from './SegmentCutpointButton';
 import { getModifier } from '../hooks/useTimelineScroll';
+import { KeyBinding, KeyboardAction } from '../../types';
+import { StateSegment } from '../types';
 
 
-const renderKeys = (keys) => keys.map((key, i) => (
+type Category = string;
+
+type ActionsMap = Record<KeyboardAction, { name: string, category?: Category, before?: ReactNode }>;
+
+const renderKeys = (keys: string[]) => keys.map((key, i) => (
   <Fragment key={key}>
     {i > 0 && <FaPlus size={8} style={{ marginLeft: 4, marginRight: 4, color: 'rgba(0,0,0,0.5)' }} />}
     <kbd>{key.toUpperCase()}</kbd>
@@ -25,7 +31,7 @@ const renderKeys = (keys) => keys.map((key, i) => (
 // For modifier keys you can use shift, ctrl, alt, or meta.
 // You can substitute option for alt and command for meta.
 const allModifiers = new Set(['shift', 'ctrl', 'alt', 'meta']);
-function fixKeys(keys) {
+function fixKeys(keys: string[]) {
   const replaced = keys.map((key) => {
     if (key === 'option') return 'alt';
     if (key === 'command') return 'meta';
@@ -40,10 +46,12 @@ function fixKeys(keys) {
 
 const CreateBinding = memo(({
   actionsMap, action, setCreatingBinding, onNewKeyBindingConfirmed,
+}: {
+  actionsMap: ActionsMap, action: KeyboardAction | undefined, setCreatingBinding: Dispatch<SetStateAction<KeyboardAction | undefined>>, onNewKeyBindingConfirmed: (a: KeyboardAction, keys: string[]) => void,
 }) => {
   const { t } = useTranslation();
 
-  const [keysDown, setKeysDown] = useState([]);
+  const [keysDown, setKeysDown] = useState<string[]>([]);
 
   const validKeysDown = useMemo(() => fixKeys(keysDown), [keysDown]);
 
@@ -55,13 +63,13 @@ const CreateBinding = memo(({
     }
   }, [isShown]);
 
-  const addKeyDown = useCallback((character) => setKeysDown((old) => [...new Set([...old, character])]), []);
+  const addKeyDown = useCallback((character: string) => setKeysDown((old) => [...new Set([...old, character])]), []);
 
   useEffect(() => {
     if (!isShown) return undefined;
 
     const mousetrap = new Mousetrap();
-    function handleKey(character, modifiers, e) {
+    function handleKey(character: string, _modifiers: unknown, e: { type: string, preventDefault: () => void }) {
       if (['keydown', 'keypress'].includes(e.type)) {
         addKeyDown(character);
       }
@@ -83,9 +91,9 @@ const CreateBinding = memo(({
       isShown={action != null}
       confirmLabel={t('Save')}
       cancelLabel={t('Cancel')}
-      onCloseComplete={() => setCreatingBinding()}
-      onConfirm={() => onNewKeyBindingConfirmed(action, keysDown)}
-      onCancel={() => setCreatingBinding()}
+      onCloseComplete={() => setCreatingBinding(undefined)}
+      onConfirm={() => action != null && onNewKeyBindingConfirmed(action, keysDown)}
+      onCancel={() => setCreatingBinding(undefined)}
     >
       {isShown ? (
         <div style={{ color: 'black' }}>
@@ -110,13 +118,15 @@ const CreateBinding = memo(({
 const rowStyle = { display: 'flex', alignItems: 'center', margin: '.2em 0', borderBottom: '1px solid rgba(0,0,0,0.1)', paddingBottom: '.5em' };
 
 const KeyboardShortcuts = memo(({
-  keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg, mainActions,
+  keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg,
+}: {
+  keyBindings: KeyBinding[], setKeyBindings: Dispatch<SetStateAction<KeyBinding[]>>, resetKeyBindings: () => void, currentCutSeg: StateSegment,
 }) => {
   const { t } = useTranslation();
 
   const { mouseWheelZoomModifierKey } = useUserSettings();
 
-  const { actionsMap, extraLinesPerCategory } = useMemo(() => {
+  const { actionsMap, extraLinesPerCategory } = useMemo<{ actionsMap: ActionsMap, extraLinesPerCategory: Record<Category, ReactNode> }>(() => {
     const playbackCategory = t('Playback');
     const selectivePlaybackCategory = t('Playback/preview segments only');
     const seekingCategory = t('Seeking');
@@ -594,7 +604,7 @@ const KeyboardShortcuts = memo(({
           name: t('Quit LosslessCut'),
           category: otherCategory,
         },
-      },
+      } satisfies ActionsMap,
     };
   }, [currentCutSeg, mouseWheelZoomModifierKey, t]);
 
@@ -608,10 +618,11 @@ const KeyboardShortcuts = memo(({
     }
   }, [actionsMap, keyBindings, setKeyBindings]);
 
-  const [creatingBinding, setCreatingBinding] = useState();
+  const [creatingBinding, setCreatingBinding] = useState<KeyboardAction>();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const actionEntries = useMemo(() => Object.entries(actionsMap).filter(([, { name }]) => !searchQuery || name.toLowerCase().includes(searchQuery.toLowerCase())), [actionsMap, searchQuery]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const actionEntries = useMemo(() => (Object.entries(actionsMap) as any as [keyof typeof actionsMap, typeof actionsMap[keyof typeof actionsMap]][]).filter(([, { name }]) => !searchQuery || name.toLowerCase().includes(searchQuery.toLowerCase())), [actionsMap, searchQuery]);
 
   const categoriesWithActions = useMemo(() => Object.entries(groupBy(actionEntries, ([, { category }]) => category)), [actionEntries]);
 
@@ -631,13 +642,13 @@ const KeyboardShortcuts = memo(({
     resetKeyBindings();
   }, [resetKeyBindings, t]);
 
-  const onAddBindingClick = useCallback((action) => {
+  const onAddBindingClick = useCallback((action: KeyboardAction) => {
     setCreatingBinding(action);
   }, []);
 
   const stringifyKeys = (keys) => keys.join('+');
 
-  const onNewKeyBindingConfirmed = useCallback((action, keys) => {
+  const onNewKeyBindingConfirmed = useCallback((action: KeyboardAction, keys: string[]) => {
     const fixedKeys = fixKeys(keys);
     if (fixedKeys.length === 0) return;
     const keysStr = stringifyKeys(fixedKeys);
@@ -652,13 +663,10 @@ const KeyboardShortcuts = memo(({
       }
 
       console.log('saving key binding');
-      setCreatingBinding();
+      setCreatingBinding(undefined);
       return [...existingBindings, { action, keys: keysStr }];
     });
   }, [actionsMap, setKeyBindings, t]);
-
-  const missingActions = Object.keys(mainActions).filter((key) => actionsMap[key] == null);
-  if (missingActions.length > 0) throw new Error(`Action(s) missing: ${missingActions.join(',')}`);
 
   return (
     <>
@@ -717,7 +725,9 @@ const KeyboardShortcuts = memo(({
 });
 
 const KeyboardShortcutsDialog = memo(({
-  isShown, onHide, keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg, mainActions,
+  isShown, onHide, keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg,
+}: {
+  isShown: boolean, onHide: () => void, keyBindings: KeyBinding[], setKeyBindings: Dispatch<SetStateAction<KeyBinding[]>>, resetKeyBindings: () => void, currentCutSeg: StateSegment,
 }) => {
   const { t } = useTranslation();
 
@@ -731,7 +741,7 @@ const KeyboardShortcutsDialog = memo(({
       onConfirm={onHide}
       topOffset="3vh"
     >
-      {isShown ? <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} mainActions={mainActions} /> : <div />}
+      {isShown ? <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} /> : <div />}
     </Dialog>
   );
 });

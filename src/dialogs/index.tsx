@@ -70,7 +70,7 @@ export async function askForYouTubeInput() {
   return parseYouTube(value);
 }
 
-export async function askForInputDir(defaultPath) {
+export async function askForInputDir(defaultPath?: string | undefined) {
   const { filePaths } = await showOpenDialog({
     properties: ['openDirectory', 'createDirectory'],
     defaultPath,
@@ -81,7 +81,7 @@ export async function askForInputDir(defaultPath) {
   return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
 }
 
-export async function askForOutDir(defaultPath) {
+export async function askForOutDir(defaultPath?: string | undefined) {
   const { filePaths } = await showOpenDialog({
     properties: ['openDirectory', 'createDirectory'],
     defaultPath,
@@ -92,7 +92,7 @@ export async function askForOutDir(defaultPath) {
   return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
 }
 
-export async function askForFfPath(defaultPath) {
+export async function askForFfPath(defaultPath?: string | undefined) {
   const { filePaths } = await showOpenDialog({
     properties: ['openDirectory'],
     defaultPath,

@@ -4,12 +4,20 @@ import { useEffect, useRef } from 'react';
 // Also document.addEventListener needs custom handling of modifier keys or C will be triggered by CTRL+C, etc
 import Mousetrap from 'mousetrap';
 
+import { KeyBinding, KeyboardAction } from '../../types';
+
+
 // for all dialog actions (e.g. detectSceneChanges) we must use keyup, or we risk having the button press inserted into the dialog's input element right after the dialog opens
 // todo use keyup for most events?
-const keyupActions = new Set(['seekBackwards', 'seekForwards', 'detectBlackScenes', 'detectSilentScenes', 'detectSceneChanges']);
+const keyupActions = new Set<KeyboardAction>(['seekBackwards', 'seekForwards', 'detectBlackScenes', 'detectSilentScenes', 'detectSceneChanges']);
 
-export default ({ keyBindings, onKeyPress: onKeyPressProp }) => {
-  const onKeyPressRef = useRef();
+interface StoredAction { action: KeyboardAction, keyup?: boolean }
+
+export default ({ keyBindings, onKeyPress: onKeyPressProp }: {
+  keyBindings: KeyBinding[],
+  onKeyPress: ((a: { action: KeyboardAction, keyup?: boolean | undefined }) => boolean) | ((a: { action: KeyboardAction, keyup?: boolean | undefined }) => void),
+}) => {
+  const onKeyPressRef = useRef<(a: StoredAction) => void>();
 
   // optimization to prevent re-binding all the time:
   useEffect(() => {
@@ -19,8 +27,8 @@ export default ({ keyBindings, onKeyPress: onKeyPressProp }) => {
   useEffect(() => {
     const mousetrap = new Mousetrap();
 
-    function onKeyPress(...args) {
-      if (onKeyPressRef.current) return onKeyPressRef.current(...args);
+    function onKeyPress(params: StoredAction) {
+      if (onKeyPressRef.current) return onKeyPressRef.current(params);
       return true;
     }
 

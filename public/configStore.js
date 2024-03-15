@@ -10,6 +10,7 @@ const logger = require('./logger');
 const { app } = electron;
 
 
+/** @type {import('../types').KeyBinding[]} */
 const defaultKeyBindings = [
   { keys: 'plus', action: 'addSegment' },
   { keys: 'space', action: 'togglePlayResetSpeed' },
@@ -80,6 +81,7 @@ const defaultKeyBindings = [
   { keys: 'alt+down', action: 'decreaseVolume' },
 ];
 
+/** @type {import('../types').Config} */
 const defaults = {
   captureFormat: 'jpeg',
   customOutDir: undefined,
@@ -128,13 +130,14 @@ const defaults = {
   enableNativeHevc: true,
   enableUpdateCheck: true,
   cleanupChoices: {
-    trashTmpFiles: true, askForCleanup: true, closeFile: true,
+    trashTmpFiles: true, askForCleanup: true, closeFile: true, cleanupAfterExport: false,
   },
   allowMultipleInstances: false,
   darkMode: true,
   preferStrongColors: false,
   outputFileNameMinZeroPadding: 1,
   cutFromAdjustmentFrames: 0,
+  invertTimelineScroll: undefined,
 };
 
 // For portable app: https://github.com/mifi/lossless-cut/issues/645
@@ -146,7 +149,7 @@ async function getCustomStoragePath() {
     // https://github.com/mifi/lossless-cut/issues/645#issuecomment-1001363314
     // https://stackoverflow.com/questions/46307797/how-to-get-the-original-path-of-a-portable-electron-app
     // https://github.com/electron-userland/electron-builder/blob/master/docs/configuration/nsis.md
-    const customStorageDir = process.env.PORTABLE_EXECUTABLE_DIR || dirname(app.getPath('exe'));
+    const customStorageDir = process.env['PORTABLE_EXECUTABLE_DIR'] || dirname(app.getPath('exe'));
     const customConfigPath = join(customStorageDir, 'config.json');
     if (await pathExists(customConfigPath)) return customStorageDir;
     return undefined;
@@ -158,15 +161,18 @@ async function getCustomStoragePath() {
 
 let store;
 
+/** @type {import('../types').StoreGetConfig} */
 function get(key) {
   return store.get(key);
 }
 
+/** @type {import('../types').StoreSetConfig} */
 function set(key, val) {
   if (val === undefined) store.delete(key);
   else store.set(key, val);
 }
 
+/** @type {import('../types').StoreResetConfig} */
 function reset(key) {
   set(key, defaults[key]);
 }

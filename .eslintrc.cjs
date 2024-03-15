@@ -18,10 +18,7 @@ module.exports = {
         browser: true,
       },
       rules: {
-        'import/no-extraneous-dependencies': ['error', {
-          devDependencies: true,
-          optionalDependencies: false,
-        }],
+        'import/no-extraneous-dependencies': 0,
       },
     },
     {

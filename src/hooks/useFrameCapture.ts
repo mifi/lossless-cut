@@ -7,12 +7,14 @@ import { getSuffixedOutPath, getOutDir, transferTimestamps, getSuffixedFileName,
 import { getNumDigits } from '../segments';
 
 import { captureFrame as ffmpegCaptureFrame, captureFrames as ffmpegCaptureFrames } from '../ffmpeg';
+import { FormatTimecode } from '../types';
+import { CaptureFormat } from '../../types';
 
 const mime = window.require('mime-types');
 const { rename, readdir, writeFile }: typeof FsPromises = window.require('fs/promises');
 
 
-function getFrameFromVideo(video, format, quality) {
+function getFrameFromVideo(video: HTMLVideoElement, format: CaptureFormat, quality: number) {
   const canvas = document.createElement('canvas');
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
@@ -24,7 +26,7 @@ function getFrameFromVideo(video, format, quality) {
   return dataUriToBuffer(dataUri);
 }
 
-export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }) => {
+export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }: { formatTimecode: FormatTimecode, treatOutputFileModifiedTimeAsStart?: boolean | undefined | null }) => {
   const captureFramesRange = useCallback(async ({ customOutDir, filePath, fps, fromTime, toTime, estimatedMaxNumFiles, captureFormat, quality, filter, onProgress, outputTimestamps }: {
     customOutDir, filePath: string, fps: number, fromTime: number, toTime: number, estimatedMaxNumFiles: number, captureFormat: string, quality: number, filter?: string | undefined, onProgress: (a: number) => void, outputTimestamps: boolean
   }) => {
@@ -74,7 +76,7 @@ export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }) => {
   }, [formatTimecode]);
 
   const captureFrameFromFfmpeg = useCallback(async ({ customOutDir, filePath, fromTime, captureFormat, quality }: {
-    customOutDir?: string, filePath?: string, fromTime: number, captureFormat: string, quality: number,
+    customOutDir?: string | undefined, filePath: string, fromTime: number, captureFormat: CaptureFormat, quality: number,
   }) => {
     const time = formatTimecode({ seconds: fromTime, fileNameFriendly: true });
     const nameSuffix = `${time}.${captureFormat}`;
@@ -86,7 +88,7 @@ export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }) => {
   }, [formatTimecode, treatOutputFileModifiedTimeAsStart]);
 
   const captureFrameFromTag = useCallback(async ({ customOutDir, filePath, currentTime, captureFormat, video, quality }: {
-    customOutDir?: string, filePath?: string, currentTime: number, captureFormat: string, video: HTMLVideoElement, quality: number,
+    customOutDir?: string | undefined, filePath: string, currentTime: number, captureFormat: CaptureFormat, video: HTMLVideoElement, quality: number,
   }) => {
     const buf = getFrameFromVideo(video, captureFormat, quality);
 

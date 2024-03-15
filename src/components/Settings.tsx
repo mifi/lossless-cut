@@ -1,8 +1,9 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { CSSProperties, ChangeEventHandler, memo, useCallback, useMemo, useState } from 'react';
 import { FaYinYang, FaKeyboard } from 'react-icons/fa';
 import { GlobeIcon, CleanIcon, CogIcon, Button, NumericalIcon, FolderCloseIcon, DocumentIcon, TimeIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
+import { HTMLMotionProps, motion } from 'framer-motion';
+import invariant from 'tiny-invariant';
 
 import CaptureFormatButton from './CaptureFormatButton';
 import AutoExportToggler from './AutoExportToggler';
@@ -10,7 +11,7 @@ import Switch from './Switch';
 import useUserSettings from '../hooks/useUserSettings';
 import { askForFfPath } from '../dialogs';
 import { isMasBuild, isStoreBuild } from '../util';
-import { langNames } from '../util/constants';
+import { LanguageKey, TimecodeFormat, langNames } from '../../types';
 import styles from './Settings.module.css';
 import Select from './Select';
 
@@ -18,7 +19,7 @@ import { getModifierKeyNames } from '../hooks/useTimelineScroll';
 import { TunerType } from '../types';
 
 
-const Row = (props) => (
+const Row = (props: HTMLMotionProps<'tr'>) => (
   <motion.tr
     // eslint-disable-next-line react/jsx-props-no-spreading
     {...props}
@@ -31,14 +32,14 @@ const Row = (props) => (
 // eslint-disable-next-line react/jsx-props-no-spreading
 const KeyCell = (props) => <td {...props} />;
 
-const Header = ({ title }) => (
-  <Row className={styles.header}>
+const Header = ({ title }: { title: string }) => (
+  <Row className={styles['header']}>
     <th>{title}</th>
     <th />
   </Row>
 );
 
-const detailsStyle = { opacity: 0.75, fontSize: '.9em', marginTop: '.3em' };
+const detailsStyle: CSSProperties = { opacity: 0.75, fontSize: '.9em', marginTop: '.3em' };
 
 const Settings = memo(({
   onTunerRequested,
@@ -58,24 +59,26 @@ const Settings = memo(({
 
   const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, autoLoadTimecode, setAutoLoadTimecode, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey, captureFrameMethod, setCaptureFrameMethod, captureFrameQuality, setCaptureFrameQuality, captureFrameFileNameFormat, setCaptureFrameFileNameFormat, enableNativeHevc, setEnableNativeHevc, enableUpdateCheck, setEnableUpdateCheck, allowMultipleInstances, setAllowMultipleInstances, preferStrongColors, setPreferStrongColors, treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, setTreatOutputFileModifiedTimeAsStart, exportConfirmEnabled, toggleExportConfirmEnabled } = useUserSettings();
 
-  const onLangChange = useCallback((e) => {
+  const onLangChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
     const { value } = e.target;
     const l = value !== '' ? value : undefined;
-    setLanguage(l);
+    setLanguage(l as LanguageKey | undefined);
   }, [setLanguage]);
 
-  const timecodeFormatOptions = useMemo(() => ({
+  const timecodeFormatOptions = useMemo<Record<TimecodeFormat, string>>(() => ({
     frameCount: t('Frame counts'),
     timecodeWithDecimalFraction: t('Millisecond fractions'),
     timecodeWithFramesFraction: t('Frame fractions'),
   }), [t]);
 
   const onTimecodeFormatClick = useCallback(() => {
-    const keys = Object.keys(timecodeFormatOptions);
+    const keys = Object.keys(timecodeFormatOptions) as TimecodeFormat[];
     let index = keys.indexOf(timecodeFormat);
     if (index === -1 || index >= keys.length - 1) index = 0;
     else index += 1;
-    setTimecodeFormat(keys[index]);
+    const newKey = keys[index];
+    invariant(newKey != null);
+    setTimecodeFormat(newKey);
   }, [setTimecodeFormat, timecodeFormat, timecodeFormatOptions]);
 
   const changeCustomFfPath = useCallback(async () => {
@@ -89,9 +92,9 @@ const Settings = memo(({
         <div>{t('Hover mouse over buttons in the main interface to see which function they have')}</div>
       </div>
 
-      <table className={styles.settings}>
+      <table className={styles['settings']}>
         <thead>
-          <tr className={styles.header}>
+          <tr className={styles['header']}>
             <th>{t('Settings')}</th>
             <th style={{ width: 300 }}>{t('Current setting')}</th>
           </tr>
@@ -209,7 +212,7 @@ const Settings = memo(({
             <Row>
               <KeyCell>{t('Set file modification date/time of output files to:')}</KeyCell>
               <td>
-                <Select value={treatOutputFileModifiedTimeAsStart ?? 'disabled'} onChange={(e) => setTreatOutputFileModifiedTimeAsStart(e.target.value === 'disabled' ? null : (e.target.value === 'true'))}>
+                <Select value={treatOutputFileModifiedTimeAsStart ? String(treatOutputFileModifiedTimeAsStart) : 'disabled'} onChange={(e) => setTreatOutputFileModifiedTimeAsStart(e.target.value === 'disabled' ? null : (e.target.value === 'true'))}>
                   <option value="disabled">{t('Current time')}</option>
                   <option value="true">{t('Source file\'s time plus segment start cut time')}</option>
                   <option value="false">{t('Source file\'s time minus segment end cut time')}</option>
@@ -222,7 +225,7 @@ const Settings = memo(({
             <Row>
               <KeyCell>{t('Treat source file modification date/time as:')}</KeyCell>
               <td>
-                <Select disabled={treatOutputFileModifiedTimeAsStart == null} value={treatInputFileModifiedTimeAsStart} onChange={(e) => setTreatInputFileModifiedTimeAsStart((e.target.value === 'true'))}>
+                <Select disabled={treatOutputFileModifiedTimeAsStart == null} value={String(treatInputFileModifiedTimeAsStart)} onChange={(e) => setTreatInputFileModifiedTimeAsStart((e.target.value === 'true'))}>
                   <option value="true">{t('Start of video')}</option>
                   <option value="false">{t('End of video')}</option>
                 </Select>
@@ -300,7 +303,7 @@ const Settings = memo(({
           <Row>
             <KeyCell>{t('Snapshot capture quality')}</KeyCell>
             <td>
-              <input type="range" min={1} max={1000} style={{ width: 200 }} value={Math.round(captureFrameQuality * 1000)} onChange={(e) => setCaptureFrameQuality(Math.max(Math.min(1, parseInt(e.target.value, 10) / 1000)), 0)} /><br />
+              <input type="range" min={1} max={1000} style={{ width: 200 }} value={Math.round(captureFrameQuality * 1000)} onChange={(e) => setCaptureFrameQuality(Math.max(Math.min(1, parseInt(e.target.value, 10) / 1000), 0))} /><br />
               {Math.round(captureFrameQuality * 100)}%
             </td>
           </Row>
@@ -359,7 +362,7 @@ const Settings = memo(({
           <Row>
             <KeyCell>{t('Invert timeline trackpad/wheel direction?')}</KeyCell>
             <td>
-              <Switch checked={invertTimelineScroll} onCheckedChange={setInvertTimelineScroll} />
+              <Switch checked={invertTimelineScroll ?? false} onCheckedChange={setInvertTimelineScroll} />
             </td>
           </Row>
 

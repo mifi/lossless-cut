@@ -133,7 +133,6 @@ function createWindow() {
     ...getSizeOptions(),
     darkTheme: true,
     webPreferences: {
-      enableRemoteModule: true,
       contextIsolation: false,
       nodeIntegration: true,
       // https://github.com/electron/electron/issues/5107
@@ -226,15 +225,17 @@ function initApp() {
   // However when users start your app in command line, the system's single instance mechanism will be bypassed, and you have to use this method to ensure single instance.
   // This can be tested with one terminal: npx electron .
   // and another terminal: npx electron . path/to/file.mp4
-  app.on('second-instance', (event, commandLine, workingDirectory, additionalData) => {
+  app.on('second-instance', (_event, _commandLine, _workingDirectory, additionalData) => {
     // Someone tried to run a second instance, we should focus our window.
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
     }
 
+    // @ts-expect-error todo
     if (!Array.isArray(additionalData?.argv)) return;
 
+    // @ts-expect-error todo
     const argv2 = parseCliArgs(additionalData.argv);
 
     logger.info('second-instance', argv2);
@@ -268,26 +269,27 @@ function initApp() {
     event.preventDefault(); // recommended in docs https://www.electronjs.org/docs/latest/api/app#event-open-file-macos
   });
 
-  ipcMain.on('setAskBeforeClose', (e, val) => {
+  ipcMain.on('setAskBeforeClose', (_e, val) => {
     askBeforeClose = val;
   });
 
-  ipcMain.on('setLanguage', (e, language) => {
+  ipcMain.on('setLanguage', (_e, language) => {
     i18n.changeLanguage(language).then(() => updateMenu()).catch((err) => logger.error('Failed to set language', err));
   });
 
-  ipcMain.handle('tryTrashItem', async (e, path) => {
+  ipcMain.handle('tryTrashItem', async (_e, path) => {
     try {
       await stat(path);
     } catch (err) {
+      // @ts-expect-error todo
       if (err.code === 'ENOENT') return;
     }
     await shell.trashItem(path);
   });
 
-  ipcMain.handle('showItemInFolder', (e, path) => shell.showItemInFolder(path));
+  ipcMain.handle('showItemInFolder', (_e, path) => shell.showItemInFolder(path));
 
-  ipcMain.on('apiKeyboardActionResponse', (e, { id }) => {
+  ipcMain.on('apiKeyboardActionResponse', (_e, { id }) => {
     apiKeyboardActionRequests.get(id)?.();
   });
 }

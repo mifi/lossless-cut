@@ -2,23 +2,27 @@ import { nanoid } from 'nanoid';
 import sortBy from 'lodash/sortBy';
 import minBy from 'lodash/minBy';
 import maxBy from 'lodash/maxBy';
-import { ApparentSegmentBase, PlaybackMode, SegmentBase, SegmentTags } from './types';
+import { ApparentSegmentBase, PlaybackMode, SegmentBase, SegmentTags, StateSegment } from './types';
 
 
 export const isDurationValid = (duration?: number): duration is number => duration != null && Number.isFinite(duration) && duration > 0;
 
-export const createSegment = (props?: { start?: number, end?: number, name?: string, tags?: unknown, segColorIndex?: number }) => ({
+export const createSegment = (props?: { start?: number | undefined, end?: number | undefined, name?: string | undefined, tags?: unknown | undefined }): Omit<StateSegment, 'segColorIndex'> => ({
   start: props?.start,
   end: props?.end,
   name: props?.name || '',
   segId: nanoid(),
-  segColorIndex: props?.segColorIndex,
 
   // `tags` is an optional object (key-value). Values must always be string
   // See https://github.com/mifi/lossless-cut/issues/879
   tags: props?.tags != null && typeof props.tags === 'object'
     ? Object.fromEntries(Object.entries(props.tags).map(([key, value]) => [key, String(value)]))
     : undefined,
+});
+
+export const addSegmentColorIndex = (segment: Omit<StateSegment, 'segColorIndex'>, segColorIndex: number): StateSegment => ({
+  ...segment,
+  segColorIndex,
 });
 
 // Because segments could have undefined start / end
@@ -35,7 +39,7 @@ export function getSegApparentEnd(seg: SegmentBase, duration?: number) {
   return 0; // Haven't gotten duration yet - what do to ¯\_(ツ)_/¯
 }
 
-export const getCleanCutSegments = (cs) => cs.map((seg) => ({
+export const getCleanCutSegments = (cs: Pick<StateSegment, 'start' | 'end' | 'name' | 'tags'>[]) => cs.map((seg) => ({
   start: seg.start,
   end: seg.end,
   name: seg.name,

@@ -61,6 +61,7 @@ function handleProgress(process, durationIn, onProgress, customMatcher = () => u
       // eslint-disable-next-line unicorn/better-regex
       if (!match) match = line.match(/(?:size|Lsize)=\s*[^\s]+\s+time=\s*([^\s]+)\s+/);
       if (!match) {
+        // @ts-expect-error todo
         customMatcher(line);
         return;
       }
@@ -86,11 +87,13 @@ function handleProgress(process, durationIn, onProgress, customMatcher = () => u
       const progress = duration ? Math.min(progressTime / duration, 1) : 0; // sometimes progressTime will be greater than cutDuration
       onProgress(progress);
     } catch (err) {
+      // @ts-expect-error todo
       console.log('Failed to parse ffmpeg progress line:', err.message);
     }
   });
 }
 
+// @ts-expect-error todo
 function getExecaOptions({ env, ...customExecaOptions } = {}) {
   const execaOptions = { ...customExecaOptions, env: { ...env } };
   // https://github.com/mifi/lossless-cut/issues/1143#issuecomment-1500883489
@@ -251,6 +254,7 @@ async function detectSceneChanges({ filePath, minChange, onProgress, from, to })
     const match = line.match(/^frame:\d+\s+pts:\d+\s+pts_time:([\d.]+)/);
     if (!match) return;
     const time = parseFloat(match[1]);
+    // @ts-expect-error todo
     if (Number.isNaN(time) || time <= times.at(-1)) return;
     times.push(time);
   });
@@ -280,6 +284,7 @@ async function detectIntervals({ filePath, customArgs, onProgress, from, to, mat
     if (start == null || end == null || Number.isNaN(start) || Number.isNaN(end)) return;
     segments.push({ start, end });
   }
+  // @ts-expect-error todo
   handleProgress(process, to - from, onProgress, customMatcher);
 
   await process;

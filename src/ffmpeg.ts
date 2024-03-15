@@ -207,7 +207,7 @@ export async function tryMapChaptersToEdl(chapters) {
   }
 }
 
-export async function createChaptersFromSegments({ segmentPaths, chapterNames }) {
+export async function createChaptersFromSegments({ segmentPaths, chapterNames }: { segmentPaths: string[], chapterNames?: string[] }) {
   if (!chapterNames) return undefined;
   try {
     const durations = await pMap(segmentPaths, (segmentPath) => getDuration(segmentPath), { concurrency: 3 });
@@ -640,7 +640,7 @@ export async function runFfmpegStartupCheck() {
 // https://superuser.com/questions/543589/information-about-ffmpeg-command-line-options
 export const getExperimentalArgs = (ffmpegExperimental: boolean) => (ffmpegExperimental ? ['-strict', 'experimental'] : []);
 
-export const getVideoTimescaleArgs = (videoTimebase: number) => (videoTimebase != null ? ['-video_track_timescale', String(videoTimebase)] : []);
+export const getVideoTimescaleArgs = (videoTimebase: number | undefined) => (videoTimebase != null ? ['-video_track_timescale', String(videoTimebase)] : []);
 
 // inspired by https://gist.github.com/fernandoherreradelasheras/5eca67f4200f1a7cc8281747da08496e
 export async function cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate, videoTimebase, allFilesMeta, copyFileStreams, videoStreamIndex, ffmpegExperimental }: {

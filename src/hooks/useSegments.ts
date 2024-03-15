@@ -10,25 +10,25 @@ import { handleError, shuffleArray } from '../util';
 import { errorToast } from '../swal';
 import { showParametersDialog } from '../dialogs/parameters';
 import { createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, selectSegmentsByTagDialog } from '../dialogs';
-import { createSegment, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2 } from '../segments';
+import { createSegment, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2, addSegmentColorIndex } from '../segments';
 import * as ffmpegParameters from '../ffmpeg-parameters';
 import { maxSegmentsAllowed } from '../util/constants';
-import { ApparentSegmentBase, SegmentBase, StateSegment } from '../types';
+import { SegmentBase, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
 
 const remote = window.require('@electron/remote');
 
 const { blackDetect, silenceDetect } = remote.require('./ffmpeg');
 
 
-export default ({ filePath, workingRef, setWorking, setCutProgress, videoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly }: {
+function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly }: {
   filePath?: string | undefined, workingRef: MutableRefObject<boolean>, setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void, setCutProgress: (a: number | undefined) => void, videoStream, duration?: number | undefined, getRelevantTime: () => number, maxLabelLength: number, checkFileOpened: () => boolean, invertCutSegments: boolean, segmentsToChaptersOnly: boolean,
-}) => {
+}) {
   // Segment related state
   const segCounterRef = useRef(0);
 
-  const createIndexedSegment = useCallback(({ segment, incrementCount } = {}) => {
+  const createIndexedSegment = useCallback(({ segment, incrementCount }: { segment?: Parameters<typeof createSegment>[0], incrementCount?: boolean } = {}) => {
     if (incrementCount) segCounterRef.current += 1;
-    const ret = createSegment({ segColorIndex: segCounterRef.current, ...segment });
+    const ret = addSegmentColorIndex(createSegment(segment), segCounterRef.current);
     return ret;
   }, []);
 
@@ -40,7 +40,7 @@ export default ({ filePath, workingRef, setWorking, setCutProgress, videoStream,
   );
 
   const [currentSegIndex, setCurrentSegIndex] = useState(0);
-  const [deselectedSegmentIds, setDeselectedSegmentIds] = useState({});
+  const [deselectedSegmentIds, setDeselectedSegmentIds] = useState<Record<string, boolean>>({});
 
   const isSegmentSelected = useCallback(({ segId }: { segId: string }) => !deselectedSegmentIds[segId], [deselectedSegmentIds]);
 
@@ -174,7 +174,15 @@ export default ({ filePath, workingRef, setWorking, setCutProgress, videoStream,
 
   const inverseCutSegments = useMemo(() => {
     if (haveInvalidSegs || !isDurationValid(duration)) return [];
-    return invertSegments(sortSegments(apparentCutSegments), true, true, duration) as (ApparentSegmentBase & { segId?: string })[]; // todo i don't know how to improve these types
+    return invertSegments(sortSegments(apparentCutSegments), true, true, duration).map(({ segId, start, end }) => {
+      // this is workaround to please TS
+      if (segId == null || start == null || end == null) throw new Error(`Encountered inverted segment with nullish value ${JSON.stringify({ segId, start, end })}`);
+      return {
+        segId,
+        start,
+        end,
+      };
+    });
   }, [apparentCutSegments, duration, haveInvalidSegs]);
 
   const invertAllSegments = useCallback(() => {
@@ -183,7 +191,7 @@ export default ({ filePath, workingRef, setWorking, setCutProgress, videoStream,
       return;
     }
     // don't reset segColorIndex (which represent colors) when inverting
-    const newInverseCutSegments = inverseCutSegments.map((inverseSegment, index) => createSegment({ ...inverseSegment, segColorIndex: index }));
+    const newInverseCutSegments = inverseCutSegments.map((inverseSegment, index) => addSegmentColorIndex(createSegment(inverseSegment), index));
     setCutSegments(newInverseCutSegments);
   }, [inverseCutSegments, setCutSegments]);
 
@@ -204,10 +212,12 @@ export default ({ filePath, workingRef, setWorking, setCutProgress, videoStream,
     setCutSegments((existingSegments) => combineSelectedSegments2(existingSegments, getSegApparentEnd2, isSegmentSelected));
   }, [isSegmentSelected, setCutSegments]);
 
-  const updateSegAtIndex = useCallback((index, newProps) => {
+  const updateSegAtIndex = useCallback<UpdateSegAtIndex>((index, newProps) => {
     if (index < 0) return;
     const cutSegmentsNew = [...cutSegments];
-    cutSegmentsNew.splice(index, 1, { ...cutSegments[index], ...newProps });
+    const existing = cutSegments[index];
+    if (existing == null) throw new Error();
+    cutSegmentsNew.splice(index, 1, { ...existing, ...newProps });
     setCutSegments(cutSegmentsNew);
   }, [setCutSegments, cutSegments]);
 
@@ -479,7 +489,7 @@ export default ({ filePath, workingRef, setWorking, setCutProgress, videoStream,
   const selectedSegmentsOrInverse = useMemo(() => (invertCutSegments ? inverseCutSegments : selectedSegments), [inverseCutSegments, invertCutSegments, selectedSegments]);
   const nonFilteredSegmentsOrInverse = useMemo(() => (invertCutSegments ? inverseCutSegments : apparentCutSegments), [invertCutSegments, inverseCutSegments, apparentCutSegments]);
 
-  const segmentsToExport = useMemo(() => {
+  const segmentsToExport = useMemo<SegmentToExport[]>(() => {
     // segmentsToChaptersOnly is a special mode where all segments will be simply written out as chapters to one file: https://github.com/mifi/lossless-cut/issues/993#issuecomment-1037927595
     // Chapters export mode: Emulate a single segment with no cuts (full timeline)
     if (segmentsToChaptersOnly) return [{ start: 0, end: getSegApparentEnd({}) }];
@@ -558,4 +568,8 @@ export default ({ filePath, workingRef, setWorking, setCutProgress, videoStream,
     setCutTime,
     updateSegAtIndex,
   };
-};
+}
+
+export type UseSegments = ReturnType<typeof useSegments>;
+
+export default useSegments;
