@@ -1,4 +1,4 @@
-import { memo, Fragment, useEffect, useMemo, useCallback, useState, ReactNode, SetStateAction, Dispatch } from 'react';
+import { memo, Fragment, useEffect, useMemo, useCallback, useState, ReactNode, SetStateAction, Dispatch, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SearchInput, PlusIcon, InlineAlert, UndoIcon, Paragraph, TakeActionIcon, IconButton, Button, DeleteIcon, AddIcon, Heading, Text, Dialog } from 'evergreen-ui';
 import { FaMouse, FaPlus, FaStepForward, FaStepBackward } from 'react-icons/fa';
@@ -621,8 +621,21 @@ const KeyboardShortcuts = memo(({
   const [creatingBinding, setCreatingBinding] = useState<KeyboardAction>();
   const [searchQuery, setSearchQuery] = useState('');
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const actionEntries = useMemo(() => (Object.entries(actionsMap) as any as [keyof typeof actionsMap, typeof actionsMap[keyof typeof actionsMap]][]).filter(([, { name }]) => !searchQuery || name.toLowerCase().includes(searchQuery.toLowerCase())), [actionsMap, searchQuery]);
+  const actionEntries = useMemo(() => (Object.entries(actionsMap) as any as [keyof typeof actionsMap, typeof actionsMap[keyof typeof actionsMap]][]).filter(([, { name, category }]) => {
+    const searchQueryTrimmed = searchQuery.toLowerCase().trim();
+    return (
+      !searchQuery
+      || name.toLowerCase().includes(searchQueryTrimmed)
+      || (category != null && category.toLowerCase().includes(searchQueryTrimmed))
+    );
+  }), [actionsMap, searchQuery]);
 
   const categoriesWithActions = useMemo(() => Object.entries(groupBy(actionEntries, ([, { category }]) => category)), [actionEntries]);
 
@@ -646,7 +659,7 @@ const KeyboardShortcuts = memo(({
     setCreatingBinding(action);
   }, []);
 
-  const stringifyKeys = (keys) => keys.join('+');
+  const stringifyKeys = (keys: string[]) => keys.join('+');
 
   const onNewKeyBindingConfirmed = useCallback((action: KeyboardAction, keys: string[]) => {
     const fixedKeys = fixKeys(keys);
@@ -672,7 +685,7 @@ const KeyboardShortcuts = memo(({
     <>
       <div style={{ color: 'black', marginBottom: '1em' }}>
         <div>
-          <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search" width="100%" />
+          <SearchInput ref={searchInputRef} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search" width="100%" />
         </div>
 
         {categoriesWithActions.map(([category, actionsInCategory]) => (
