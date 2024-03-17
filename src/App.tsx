@@ -923,8 +923,11 @@ function App() {
 
     if (resetPlaybackRate) video!.playbackRate = outputPlaybackRate;
     video?.play().catch((err) => {
+      if (err instanceof Error && err.name === 'AbortError' && 'code' in err && err.code === 20) { // Probably "DOMException: The play() request was interrupted by a call to pause()."
+        console.error(err);
+      } else {
       showPlaybackFailedMessage();
-      console.error(err, Object.entries(err));
+      }
     });
   }, [filePath, outputPlaybackRate, playing]);
 
