@@ -1653,19 +1653,24 @@ function App() {
     }
   }, [userOpenSingleFile, setWorking, filePath]);
 
-  const batchFileJump = useCallback((direction) => {
+  const batchFileJump = useCallback((direction: number, alsoOpen: boolean) => {
     if (batchFiles.length === 0) return;
+
+    let newSelectedBatchFiles: string[];
     if (selectedBatchFiles.length === 0) {
-      setSelectedBatchFiles([batchFiles[0]!.path]);
-      return;
+      newSelectedBatchFiles = [batchFiles[0]!.path];
+    } else {
+      const selectedFilePath = selectedBatchFiles[direction > 0 ? selectedBatchFiles.length - 1 : 0];
+      const pathIndex = batchFiles.findIndex(({ path }) => path === selectedFilePath);
+      if (pathIndex === -1) return;
+      const nextFile = batchFiles[pathIndex + direction];
+      if (!nextFile) return;
+      newSelectedBatchFiles = [nextFile.path];
     }
-    const selectedFilePath = selectedBatchFiles[direction > 0 ? selectedBatchFiles.length - 1 : 0];
-    const pathIndex = batchFiles.findIndex(({ path }) => path === selectedFilePath);
-    if (pathIndex === -1) return;
-    const nextFile = batchFiles[pathIndex + direction];
-    if (!nextFile) return;
-    setSelectedBatchFiles([nextFile.path]);
-  }, [batchFiles, selectedBatchFiles]);
+
+    setSelectedBatchFiles(newSelectedBatchFiles);
+    if (alsoOpen) batchOpenSingleFile(newSelectedBatchFiles[0]);
+  }, [batchFiles, batchOpenSingleFile, selectedBatchFiles]);
 
   const batchOpenSelectedFile = useCallback(() => {
     if (selectedBatchFiles.length === 0) return;
@@ -2032,7 +2037,7 @@ function App() {
 
   type MainKeyboardAction = Exclude<KeyboardAction, 'closeActiveScreen' | 'toggleKeyboardShortcuts'>;
 
-  const mainActions = useMemo<Record<MainKeyboardAction, ((a: { keyup?: boolean | undefined }) => boolean) | ((a: { keyup?: boolean | undefined }) => void)>>(() => {
+  const mainActions = useMemo(() => {
     async function exportYouTube() {
       if (!checkFileOpened()) return;
 
@@ -2043,7 +2048,7 @@ function App() {
       seekAccelerationRef.current = 1;
     }
 
-    return {
+    const ret: Record<MainKeyboardAction, ((a: { keyup?: boolean | undefined }) => boolean) | ((a: { keyup?: boolean | undefined }) => void)> = {
       // NOTE: Do not change these keys because users have bound keys by these names in their config files
       // For actions, see also KeyboardShortcuts.jsx
       togglePlayNoResetSpeed: () => togglePlay(),
@@ -2099,8 +2104,10 @@ function App() {
       jumpTimelineEnd,
       timelineZoomIn: () => { zoomRel(1); return false; },
       timelineZoomOut: () => { zoomRel(-1); return false; },
-      batchPreviousFile: () => batchFileJump(-1),
-      batchNextFile: () => batchFileJump(1),
+      batchPreviousFile: () => batchFileJump(-1, false),
+      batchNextFile: () => batchFileJump(1, false),
+      batchOpenPreviousFile: () => batchFileJump(-1, true),
+      batchOpenNextFile: () => batchFileJump(1, true),
       batchOpenSelectedFile,
       closeBatch,
       removeCurrentSegment: () => removeCutSegment(currentSegIndexSafe),
@@ -2172,6 +2179,8 @@ function App() {
       showIncludeExternalStreamsDialog,
       toggleFullscreenVideo,
     };
+
+    return ret;
   }, [addSegment, alignSegmentTimesToKeyframes, apparentCutSegments, askStartTimeOffset, batchFileJump, batchOpenSelectedFile, captureSnapshot, captureSnapshotAsCoverArt, changePlaybackRate, checkFileOpened, cleanupFilesDialog, clearSegments, closeBatch, closeFileWithConfirm, combineOverlappingSegments, combineSelectedSegments, concatBatch, convertFormatBatch, copySegmentsToClipboard, createFixedDurationSegments, createNumSegments, createRandomSegments, createSegmentsFromKeyframes, currentSegIndexSafe, cutSegments.length, cutSegmentsHistory, deselectAllSegments, detectBlackScenes, detectSceneChanges, detectSilentScenes, duplicateCurrentSegment, editCurrentSegmentTags, extractAllStreams, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, fillSegmentsGaps, goToTimecode, handleShowStreamsSelectorClick, increaseRotation, invertAllSegments, invertSelectedSegments, jumpCutEnd, jumpCutStart, jumpSeg, jumpTimelineEnd, jumpTimelineStart, keyboardNormalSeekSpeed, keyboardSeekAccFactor, onExportPress, onLabelSegment, openFilesDialog, openSendReportDialogWithState, pause, play, removeCutSegment, removeSelectedSegments, reorderSegsByStartTime, seekClosestKeyframe, seekRel, seekRelPercent, selectAllSegments, selectOnlyCurrentSegment, setCurrentSegIndex, setCutEnd, setCutStart, setPlaybackVolume, shiftAllSegmentTimes, shortStep, showIncludeExternalStreamsDialog, shuffleSegments, splitCurrentSegment, timelineToggleComfortZoom, toggleCaptureFormat, toggleCurrentSegmentSelected, toggleFullscreenVideo, toggleKeyframeCut, toggleLastCommands, toggleLoopSelectedSegments, togglePlay, toggleSegmentsList, toggleSettings, toggleShowKeyframes, toggleShowThumbnails, toggleStreamsSelector, toggleStripAudio, toggleStripThumbnail, toggleWaveformMode, tryFixInvalidDuration, userHtml5ifyCurrentFile, zoomRel]);
 
   const getKeyboardAction = useCallback((action: MainKeyboardAction) => mainActions[action], [mainActions]);

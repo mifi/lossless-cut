@@ -51,12 +51,14 @@ const defaultKeyBindings = [
   { keys: 'ctrl+up', action: 'timelineZoomIn' },
   { keys: 'command+up', action: 'timelineZoomIn' },
   { keys: 'shift+up', action: 'batchPreviousFile' },
+  { keys: 'ctrl+shift+up', action: 'batchOpenPreviousFile' },
 
   { keys: 'pagedown', action: 'jumpLastSegment' },
   { keys: 'down', action: 'jumpNextSegment' },
   { keys: 'ctrl+down', action: 'timelineZoomOut' },
   { keys: 'command+down', action: 'timelineZoomOut' },
   { keys: 'shift+down', action: 'batchNextFile' },
+  { keys: 'ctrl+shift+down', action: 'batchOpenNextFile' },
 
   { keys: 'shift+enter', action: 'batchOpenSelectedFile' },
 

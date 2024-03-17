@@ -126,7 +126,7 @@ const KeyboardShortcuts = memo(({
 
   const { mouseWheelZoomModifierKey } = useUserSettings();
 
-  const { actionsMap, extraLinesPerCategory } = useMemo<{ actionsMap: ActionsMap, extraLinesPerCategory: Record<Category, ReactNode> }>(() => {
+  const { actionsMap, extraLinesPerCategory } = useMemo(() => {
     const playbackCategory = t('Playback');
     const selectivePlaybackCategory = t('Playback/preview segments only');
     const seekingCategory = t('Seeking');
@@ -137,474 +137,488 @@ const KeyboardShortcuts = memo(({
     const otherCategory = t('Other operations');
     const streamsCategory = t('Tracks');
 
-    return {
-      extraLinesPerCategory: {
-        [zoomOperationsCategory]: [
-          <div key="1" style={{ ...rowStyle, alignItems: 'center' }}>
-            <Text>{t('Zoom in/out timeline')}</Text>
-            <div style={{ flexGrow: 1 }} />
-            <FaMouse style={{ marginRight: 3 }} />
-            <Text>{t('Mouse scroll/wheel up/down')}</Text>
-          </div>,
-
-          <div key="2" style={{ ...rowStyle, alignItems: 'center' }}>
-            <Text>{t('Pan timeline')}</Text>
-            <div style={{ flexGrow: 1 }} />
-            {getModifier(mouseWheelZoomModifierKey).map((v) => <kbd key={v} style={{ marginRight: '.7em' }}>{v}</kbd>)}
-            <FaMouse style={{ marginRight: 3 }} />
-            <Text>{t('Mouse scroll/wheel up/down')}</Text>
-          </div>,
-        ],
+    // eslint-disable-next-line no-shadow
+    const actionsMap: ActionsMap = {
+      toggleLastCommands: {
+        name: t('Last ffmpeg commands'),
       },
-      actionsMap: {
-        toggleLastCommands: {
-          name: t('Last ffmpeg commands'),
-        },
-        toggleKeyboardShortcuts: {
-          name: t('Keyboard & mouse shortcuts'),
-        },
+      toggleKeyboardShortcuts: {
+        name: t('Keyboard & mouse shortcuts'),
+      },
 
-        // playbackCategory
-        togglePlayResetSpeed: {
-          name: t('Play/pause'),
-          category: playbackCategory,
-        },
-        togglePlayNoResetSpeed: {
-          name: t('Play/pause (no reset speed)'),
-          category: playbackCategory,
-        },
-        play: {
-          name: t('Play'),
-          category: playbackCategory,
-        },
-        pause: {
-          name: t('Pause'),
-          category: playbackCategory,
-        },
-        increasePlaybackRate: {
-          name: t('Speed up playback'),
-          category: playbackCategory,
-        },
-        reducePlaybackRate: {
-          name: t('Slow down playback'),
-          category: playbackCategory,
-        },
-        increasePlaybackRateMore: {
-          name: t('Speed up playback more'),
-          category: playbackCategory,
-        },
-        reducePlaybackRateMore: {
-          name: t('Slow down playback more'),
-          category: playbackCategory,
-        },
-        increaseVolume: {
-          name: t('Increase audio volume'),
-          category: playbackCategory,
-        },
-        decreaseVolume: {
-          name: t('Decrease audio volume'),
-          category: playbackCategory,
-        },
-        reloadFile: {
-          name: t('Reload current media'),
-          category: playbackCategory,
-        },
-        html5ify: {
-          name: t('Convert to supported format'),
-          category: playbackCategory,
-        },
+      // playbackCategory
+      togglePlayResetSpeed: {
+        name: t('Play/pause'),
+        category: playbackCategory,
+      },
+      togglePlayNoResetSpeed: {
+        name: t('Play/pause (no reset speed)'),
+        category: playbackCategory,
+      },
+      play: {
+        name: t('Play'),
+        category: playbackCategory,
+      },
+      pause: {
+        name: t('Pause'),
+        category: playbackCategory,
+      },
+      increasePlaybackRate: {
+        name: t('Speed up playback'),
+        category: playbackCategory,
+      },
+      reducePlaybackRate: {
+        name: t('Slow down playback'),
+        category: playbackCategory,
+      },
+      increasePlaybackRateMore: {
+        name: t('Speed up playback more'),
+        category: playbackCategory,
+      },
+      reducePlaybackRateMore: {
+        name: t('Slow down playback more'),
+        category: playbackCategory,
+      },
+      increaseVolume: {
+        name: t('Increase audio volume'),
+        category: playbackCategory,
+      },
+      decreaseVolume: {
+        name: t('Decrease audio volume'),
+        category: playbackCategory,
+      },
+      reloadFile: {
+        name: t('Reload current media'),
+        category: playbackCategory,
+      },
+      html5ify: {
+        name: t('Convert to supported format'),
+        category: playbackCategory,
+      },
 
-        // selectivePlaybackCategory
-        togglePlayOnlyCurrentSegment: {
-          name: t('Play current segment once'),
-          category: selectivePlaybackCategory,
-        },
-        toggleLoopOnlyCurrentSegment: {
-          name: t('Loop current segment'),
-          category: selectivePlaybackCategory,
-        },
-        toggleLoopStartEndOnlyCurrentSegment: {
-          name: t('Loop beginning and end of current segment'),
-          category: selectivePlaybackCategory,
-        },
-        toggleLoopSelectedSegments: {
-          name: t('Play selected segments in order'),
-          category: selectivePlaybackCategory,
-        },
+      // selectivePlaybackCategory
+      togglePlayOnlyCurrentSegment: {
+        name: t('Play current segment once'),
+        category: selectivePlaybackCategory,
+      },
+      toggleLoopOnlyCurrentSegment: {
+        name: t('Loop current segment'),
+        category: selectivePlaybackCategory,
+      },
+      toggleLoopStartEndOnlyCurrentSegment: {
+        name: t('Loop beginning and end of current segment'),
+        category: selectivePlaybackCategory,
+      },
+      toggleLoopSelectedSegments: {
+        name: t('Play selected segments in order'),
+        category: selectivePlaybackCategory,
+      },
 
-        // seekingCategory
-        seekPreviousFrame: {
-          name: t('Step backward 1 frame'),
-          category: seekingCategory,
-        },
-        seekNextFrame: {
-          name: t('Step forward 1 frame'),
-          category: seekingCategory,
-        },
-        seekBackwards: {
-          name: t('Seek backward 1 sec'),
-          category: seekingCategory,
-        },
-        seekForwards: {
-          name: t('Seek forward 1 sec'),
-          category: seekingCategory,
-        },
-        seekBackwardsKeyframe: {
-          name: t('Seek previous keyframe'),
-          category: seekingCategory,
-        },
-        seekForwardsKeyframe: {
-          name: t('Seek next keyframe'),
-          category: seekingCategory,
-        },
-        seekBackwardsPercent: {
-          name: t('Seek backward 1% of timeline at current zoom'),
-          category: seekingCategory,
-        },
-        seekForwardsPercent: {
-          name: t('Seek forward 1% of timeline at current zoom'),
-          category: seekingCategory,
-        },
-        jumpCutStart: {
-          name: t('Jump to current segment\'s start time'),
-          category: seekingCategory,
-          before: <SegmentCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} style={{ verticalAlign: 'middle', marginRight: 5 }} />,
-        },
-        jumpCutEnd: {
-          name: t('Jump to current segment\'s end time'),
-          category: seekingCategory,
-          before: <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} style={{ verticalAlign: 'middle', marginRight: 5 }} />,
-        },
-        jumpTimelineStart: {
-          name: t('Jump to start of video'),
-          category: seekingCategory,
-        },
-        jumpTimelineEnd: {
-          name: t('Jump to end of video'),
-          category: seekingCategory,
-        },
-        goToTimecode: {
-          name: t('Seek to timecode'),
-          category: seekingCategory,
-        },
+      // seekingCategory
+      seekPreviousFrame: {
+        name: t('Step backward 1 frame'),
+        category: seekingCategory,
+      },
+      seekNextFrame: {
+        name: t('Step forward 1 frame'),
+        category: seekingCategory,
+      },
+      seekBackwards: {
+        name: t('Seek backward 1 sec'),
+        category: seekingCategory,
+      },
+      seekForwards: {
+        name: t('Seek forward 1 sec'),
+        category: seekingCategory,
+      },
+      seekBackwardsKeyframe: {
+        name: t('Seek previous keyframe'),
+        category: seekingCategory,
+      },
+      seekForwardsKeyframe: {
+        name: t('Seek next keyframe'),
+        category: seekingCategory,
+      },
+      seekBackwardsPercent: {
+        name: t('Seek backward 1% of timeline at current zoom'),
+        category: seekingCategory,
+      },
+      seekForwardsPercent: {
+        name: t('Seek forward 1% of timeline at current zoom'),
+        category: seekingCategory,
+      },
+      jumpCutStart: {
+        name: t('Jump to current segment\'s start time'),
+        category: seekingCategory,
+        before: <SegmentCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} style={{ verticalAlign: 'middle', marginRight: 5 }} />,
+      },
+      jumpCutEnd: {
+        name: t('Jump to current segment\'s end time'),
+        category: seekingCategory,
+        before: <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} style={{ verticalAlign: 'middle', marginRight: 5 }} />,
+      },
+      jumpTimelineStart: {
+        name: t('Jump to start of video'),
+        category: seekingCategory,
+      },
+      jumpTimelineEnd: {
+        name: t('Jump to end of video'),
+        category: seekingCategory,
+      },
+      goToTimecode: {
+        name: t('Seek to timecode'),
+        category: seekingCategory,
+      },
 
-        // segmentsAndCutpointsCategory
-        addSegment: {
-          name: t('Add cut segment'),
-          category: segmentsAndCutpointsCategory,
-        },
-        removeCurrentSegment: {
-          name: t('Remove current segment'),
-          category: segmentsAndCutpointsCategory,
-        },
-        setCutStart: {
-          name: t('Start current segment at current time'),
-          category: segmentsAndCutpointsCategory,
-          before: <SetCutpointButton currentCutSeg={currentCutSeg} side="start" style={{ verticalAlign: 'middle', marginRight: 5 }} />,
-        },
-        setCutEnd: {
-          name: t('End current segment at current time'),
-          category: segmentsAndCutpointsCategory,
-          before: <SetCutpointButton currentCutSeg={currentCutSeg} side="end" style={{ verticalAlign: 'middle', marginRight: 5 }} />,
-        },
-        labelCurrentSegment: {
-          name: t('Label current segment'),
-          category: segmentsAndCutpointsCategory,
-        },
-        editCurrentSegmentTags: {
-          name: t('Edit current segment tags'),
-          category: segmentsAndCutpointsCategory,
-        },
-        splitCurrentSegment: {
-          name: t('Split segment at cursor'),
-          category: segmentsAndCutpointsCategory,
-        },
-        duplicateCurrentSegment: {
-          name: t('Duplicate current segment'),
-          category: segmentsAndCutpointsCategory,
-        },
-        jumpPrevSegment: {
-          name: t('Jump to previous segment'),
-          category: segmentsAndCutpointsCategory,
-        },
-        jumpNextSegment: {
-          name: t('Jump to next segment'),
-          category: segmentsAndCutpointsCategory,
-        },
-        jumpFirstSegment: {
-          name: t('Jump to first segment'),
-          category: segmentsAndCutpointsCategory,
-        },
-        jumpLastSegment: {
-          name: t('Jump to last segment'),
-          category: segmentsAndCutpointsCategory,
-        },
-        reorderSegsByStartTime: {
-          name: t('Reorder segments by start time'),
-          category: segmentsAndCutpointsCategory,
-        },
-        invertAllSegments: {
-          name: t('Invert all segments on timeline'),
-          category: segmentsAndCutpointsCategory,
-        },
-        fillSegmentsGaps: {
-          name: t('Fill gaps between segments'),
-          category: segmentsAndCutpointsCategory,
-        },
-        shiftAllSegmentTimes: {
-          name: t('Shift all segments on timeline'),
-          category: segmentsAndCutpointsCategory,
-        },
-        alignSegmentTimesToKeyframes: {
-          name: t('Align segment times to keyframes'),
-          category: segmentsAndCutpointsCategory,
-        },
-        createSegmentsFromKeyframes: {
-          name: t('Create segments from keyframes'),
-          category: segmentsAndCutpointsCategory,
-        },
-        createFixedDurationSegments: {
-          name: t('Create fixed duration segments'),
-          category: segmentsAndCutpointsCategory,
-        },
-        createNumSegments: {
-          name: t('Create num segments'),
-          category: segmentsAndCutpointsCategory,
-        },
-        createRandomSegments: {
-          name: t('Create random segments'),
-          category: segmentsAndCutpointsCategory,
-        },
-        detectBlackScenes: {
-          name: t('Detect black scenes'),
-          category: segmentsAndCutpointsCategory,
-        },
-        detectSilentScenes: {
-          name: t('Detect silent scenes'),
-          category: segmentsAndCutpointsCategory,
-        },
-        detectSceneChanges: {
-          name: t('Detect scene changes'),
-          category: segmentsAndCutpointsCategory,
-        },
-        shuffleSegments: {
-          name: t('Shuffle segments order'),
-          category: segmentsAndCutpointsCategory,
-        },
-        combineOverlappingSegments: {
-          name: t('Combine overlapping segments'),
-          category: segmentsAndCutpointsCategory,
-        },
-        combineSelectedSegments: {
-          name: t('Combine selected segments'),
-        },
-        clearSegments: {
-          name: t('Clear all segments'),
-          category: segmentsAndCutpointsCategory,
-        },
-        toggleSegmentsList: {
-          name: t('Show sidebar'),
-          category: segmentsAndCutpointsCategory,
-        },
-        selectOnlyCurrentSegment: {
-          name: t('Select only this segment'),
-          category: segmentsAndCutpointsCategory,
-        },
-        deselectAllSegments: {
-          name: t('Deselect all segments'),
-          category: segmentsAndCutpointsCategory,
-        },
-        selectAllSegments: {
-          name: t('Select all segments'),
-          category: segmentsAndCutpointsCategory,
-        },
-        toggleCurrentSegmentSelected: {
-          name: t('Toggle current segment selected'),
-          category: segmentsAndCutpointsCategory,
-        },
-        invertSelectedSegments: {
-          name: t('Invert selected segments'),
-          category: segmentsAndCutpointsCategory,
-        },
-        removeSelectedSegments: {
-          name: t('Remove selected segments'),
-          category: segmentsAndCutpointsCategory,
-        },
+      // segmentsAndCutpointsCategory
+      addSegment: {
+        name: t('Add cut segment'),
+        category: segmentsAndCutpointsCategory,
+      },
+      removeCurrentSegment: {
+        name: t('Remove current segment'),
+        category: segmentsAndCutpointsCategory,
+      },
+      setCutStart: {
+        name: t('Start current segment at current time'),
+        category: segmentsAndCutpointsCategory,
+        before: <SetCutpointButton currentCutSeg={currentCutSeg} side="start" style={{ verticalAlign: 'middle', marginRight: 5 }} />,
+      },
+      setCutEnd: {
+        name: t('End current segment at current time'),
+        category: segmentsAndCutpointsCategory,
+        before: <SetCutpointButton currentCutSeg={currentCutSeg} side="end" style={{ verticalAlign: 'middle', marginRight: 5 }} />,
+      },
+      labelCurrentSegment: {
+        name: t('Label current segment'),
+        category: segmentsAndCutpointsCategory,
+      },
+      editCurrentSegmentTags: {
+        name: t('Edit current segment tags'),
+        category: segmentsAndCutpointsCategory,
+      },
+      splitCurrentSegment: {
+        name: t('Split segment at cursor'),
+        category: segmentsAndCutpointsCategory,
+      },
+      duplicateCurrentSegment: {
+        name: t('Duplicate current segment'),
+        category: segmentsAndCutpointsCategory,
+      },
+      jumpPrevSegment: {
+        name: t('Jump to previous segment'),
+        category: segmentsAndCutpointsCategory,
+      },
+      jumpNextSegment: {
+        name: t('Jump to next segment'),
+        category: segmentsAndCutpointsCategory,
+      },
+      jumpFirstSegment: {
+        name: t('Jump to first segment'),
+        category: segmentsAndCutpointsCategory,
+      },
+      jumpLastSegment: {
+        name: t('Jump to last segment'),
+        category: segmentsAndCutpointsCategory,
+      },
+      reorderSegsByStartTime: {
+        name: t('Reorder segments by start time'),
+        category: segmentsAndCutpointsCategory,
+      },
+      invertAllSegments: {
+        name: t('Invert all segments on timeline'),
+        category: segmentsAndCutpointsCategory,
+      },
+      fillSegmentsGaps: {
+        name: t('Fill gaps between segments'),
+        category: segmentsAndCutpointsCategory,
+      },
+      shiftAllSegmentTimes: {
+        name: t('Shift all segments on timeline'),
+        category: segmentsAndCutpointsCategory,
+      },
+      alignSegmentTimesToKeyframes: {
+        name: t('Align segment times to keyframes'),
+        category: segmentsAndCutpointsCategory,
+      },
+      createSegmentsFromKeyframes: {
+        name: t('Create segments from keyframes'),
+        category: segmentsAndCutpointsCategory,
+      },
+      createFixedDurationSegments: {
+        name: t('Create fixed duration segments'),
+        category: segmentsAndCutpointsCategory,
+      },
+      createNumSegments: {
+        name: t('Create num segments'),
+        category: segmentsAndCutpointsCategory,
+      },
+      createRandomSegments: {
+        name: t('Create random segments'),
+        category: segmentsAndCutpointsCategory,
+      },
+      detectBlackScenes: {
+        name: t('Detect black scenes'),
+        category: segmentsAndCutpointsCategory,
+      },
+      detectSilentScenes: {
+        name: t('Detect silent scenes'),
+        category: segmentsAndCutpointsCategory,
+      },
+      detectSceneChanges: {
+        name: t('Detect scene changes'),
+        category: segmentsAndCutpointsCategory,
+      },
+      shuffleSegments: {
+        name: t('Shuffle segments order'),
+        category: segmentsAndCutpointsCategory,
+      },
+      combineOverlappingSegments: {
+        name: t('Combine overlapping segments'),
+        category: segmentsAndCutpointsCategory,
+      },
+      combineSelectedSegments: {
+        name: t('Combine selected segments'),
+      },
+      clearSegments: {
+        name: t('Clear all segments'),
+        category: segmentsAndCutpointsCategory,
+      },
+      toggleSegmentsList: {
+        name: t('Show sidebar'),
+        category: segmentsAndCutpointsCategory,
+      },
+      selectOnlyCurrentSegment: {
+        name: t('Select only this segment'),
+        category: segmentsAndCutpointsCategory,
+      },
+      deselectAllSegments: {
+        name: t('Deselect all segments'),
+        category: segmentsAndCutpointsCategory,
+      },
+      selectAllSegments: {
+        name: t('Select all segments'),
+        category: segmentsAndCutpointsCategory,
+      },
+      toggleCurrentSegmentSelected: {
+        name: t('Toggle current segment selected'),
+        category: segmentsAndCutpointsCategory,
+      },
+      invertSelectedSegments: {
+        name: t('Invert selected segments'),
+        category: segmentsAndCutpointsCategory,
+      },
+      removeSelectedSegments: {
+        name: t('Remove selected segments'),
+        category: segmentsAndCutpointsCategory,
+      },
 
-        // streamsCategory
-        toggleStreamsSelector: {
-          name: t('Edit tracks / metadata tags'),
-          category: streamsCategory,
-        },
-        extractAllStreams: {
-          name: t('Extract all tracks'),
-          category: streamsCategory,
-        },
-        showStreamsSelector: {
-          name: t('Edit tracks / metadata tags'),
-          category: streamsCategory,
-        },
-        showIncludeExternalStreamsDialog: {
-          name: t('Include more tracks from other file'),
-          category: streamsCategory,
-        },
+      // streamsCategory
+      toggleStreamsSelector: {
+        name: t('Edit tracks / metadata tags'),
+        category: streamsCategory,
+      },
+      extractAllStreams: {
+        name: t('Extract all tracks'),
+        category: streamsCategory,
+      },
+      showStreamsSelector: {
+        name: t('Edit tracks / metadata tags'),
+        category: streamsCategory,
+      },
+      showIncludeExternalStreamsDialog: {
+        name: t('Include more tracks from other file'),
+        category: streamsCategory,
+      },
 
-        // zoomOperationsCategory
-        timelineZoomIn: {
-          name: t('Zoom in timeline'),
-          category: zoomOperationsCategory,
-        },
-        timelineZoomOut: {
-          name: t('Zoom out timeline'),
-          category: zoomOperationsCategory,
-        },
-        timelineToggleComfortZoom: {
-          name: t('Toggle zoom between 1x and a calculated comfortable zoom level'),
-          category: zoomOperationsCategory,
-        },
+      // zoomOperationsCategory
+      timelineZoomIn: {
+        name: t('Zoom in timeline'),
+        category: zoomOperationsCategory,
+      },
+      timelineZoomOut: {
+        name: t('Zoom out timeline'),
+        category: zoomOperationsCategory,
+      },
+      timelineToggleComfortZoom: {
+        name: t('Toggle zoom between 1x and a calculated comfortable zoom level'),
+        category: zoomOperationsCategory,
+      },
 
-        // outputCategory
-        export: {
-          name: t('Export segment(s)'),
-          category: outputCategory,
-        },
-        captureSnapshot: {
-          name: t('Capture snapshot'),
-          category: outputCategory,
-        },
-        captureSnapshotAsCoverArt: {
-          name: t('Set current frame as cover art'),
-          category: outputCategory,
-        },
-        extractCurrentSegmentFramesAsImages: {
-          name: t('Extract frames from current segment as image files'),
-          category: outputCategory,
-        },
-        extractSelectedSegmentsFramesAsImages: {
-          name: t('Extract frames from selected segments as image files'),
-          category: outputCategory,
-        },
-        cleanupFilesDialog: {
-          name: t('Delete source file'),
-          category: outputCategory,
-        },
-        convertFormatBatch: {
-          name: t('Batch convert files to supported format'),
-          category: outputCategory,
-        },
-        convertFormatCurrentFile: {
-          name: t('Convert current file to supported format'),
-          category: outputCategory,
-        },
-        fixInvalidDuration: {
-          name: t('Fix incorrect duration'),
-          category: outputCategory,
-        },
+      // outputCategory
+      export: {
+        name: t('Export segment(s)'),
+        category: outputCategory,
+      },
+      captureSnapshot: {
+        name: t('Capture snapshot'),
+        category: outputCategory,
+      },
+      captureSnapshotAsCoverArt: {
+        name: t('Set current frame as cover art'),
+        category: outputCategory,
+      },
+      extractCurrentSegmentFramesAsImages: {
+        name: t('Extract frames from current segment as image files'),
+        category: outputCategory,
+      },
+      extractSelectedSegmentsFramesAsImages: {
+        name: t('Extract frames from selected segments as image files'),
+        category: outputCategory,
+      },
+      cleanupFilesDialog: {
+        name: t('Delete source file'),
+        category: outputCategory,
+      },
+      convertFormatBatch: {
+        name: t('Batch convert files to supported format'),
+        category: outputCategory,
+      },
+      convertFormatCurrentFile: {
+        name: t('Convert current file to supported format'),
+        category: outputCategory,
+      },
+      fixInvalidDuration: {
+        name: t('Fix incorrect duration'),
+        category: outputCategory,
+      },
 
-        // batchFilesCategory
-        batchPreviousFile: {
-          name: t('Previous file'),
-          category: batchFilesCategory,
-        },
-        batchNextFile: {
-          name: t('Next file'),
-          category: batchFilesCategory,
-        },
-        batchOpenSelectedFile: {
-          name: t('Open selected file'),
-          category: batchFilesCategory,
-        },
-        closeBatch: {
-          name: t('Close batch'),
-          category: batchFilesCategory,
-        },
-        concatBatch: {
-          name: t('Merge/concatenate files'),
-          category: batchFilesCategory,
-        },
+      // batchFilesCategory
+      batchPreviousFile: {
+        name: t('Previous file'),
+        category: batchFilesCategory,
+      },
+      batchOpenPreviousFile: {
+        name: t('Open previous file'),
+        category: batchFilesCategory,
+      },
+      batchNextFile: {
+        name: t('Next file'),
+        category: batchFilesCategory,
+      },
+      batchOpenNextFile: {
+        name: t('Open next file'),
+        category: batchFilesCategory,
+      },
+      batchOpenSelectedFile: {
+        name: t('Open selected file'),
+        category: batchFilesCategory,
+      },
+      closeBatch: {
+        name: t('Close batch'),
+        category: batchFilesCategory,
+      },
+      concatBatch: {
+        name: t('Merge/concatenate files'),
+        category: batchFilesCategory,
+      },
 
-        // otherCategory
-        toggleKeyframeCutMode: {
-          name: t('Cut mode'),
-          category: otherCategory,
-        },
-        toggleCaptureFormat: {
-          name: t('Capture frame format'),
-          category: otherCategory,
-        },
-        toggleStripAudio: {
-          name: t('Keep or discard audio tracks'),
-          category: otherCategory,
-        },
-        toggleStripThumbnail: {
-          name: t('Keep or discard thumbnail tracks'),
-          category: otherCategory,
-        },
-        increaseRotation: {
-          name: t('Change rotation'),
-          category: otherCategory,
-        },
-        setStartTimeOffset: {
-          name: t('Set custom start offset/timecode'),
-          category: otherCategory,
-        },
-        undo: {
-          name: t('Undo'),
-          category: otherCategory,
-        },
-        redo: {
-          name: t('Redo'),
-          category: otherCategory,
-        },
-        copySegmentsToClipboard: {
-          name: t('Copy selected segments times to clipboard'),
-          category: otherCategory,
-        },
-        toggleWaveformMode: {
-          name: t('Show waveform'),
-          category: otherCategory,
-        },
-        toggleShowThumbnails: {
-          name: t('Show thumbnails'),
-          category: otherCategory,
-        },
-        toggleShowKeyframes: {
-          name: t('Show keyframes'),
-          category: otherCategory,
-        },
-        toggleFullscreenVideo: {
-          name: 'Toggle full screen video',
-          category: otherCategory,
-        },
-        toggleSettings: {
-          name: t('Settings'),
-          category: otherCategory,
-        },
-        openSendReportDialog: {
-          name: t('Report an error'),
-          category: otherCategory,
-        },
-        openFilesDialog: {
-          name: t('Open'),
-          category: otherCategory,
-        },
-        exportYouTube: {
-          name: t('Start times as YouTube Chapters'),
-          category: otherCategory,
-        },
-        closeActiveScreen: {
-          name: t('Close current screen'),
-          category: otherCategory,
-        },
-        closeCurrentFile: {
-          name: t('Close current file'),
-          category: otherCategory,
-        },
-        quit: {
-          name: t('Quit LosslessCut'),
-          category: otherCategory,
-        },
-      } satisfies ActionsMap,
+      // otherCategory
+      toggleKeyframeCutMode: {
+        name: t('Cut mode'),
+        category: otherCategory,
+      },
+      toggleCaptureFormat: {
+        name: t('Capture frame format'),
+        category: otherCategory,
+      },
+      toggleStripAudio: {
+        name: t('Keep or discard audio tracks'),
+        category: otherCategory,
+      },
+      toggleStripThumbnail: {
+        name: t('Keep or discard thumbnail tracks'),
+        category: otherCategory,
+      },
+      increaseRotation: {
+        name: t('Change rotation'),
+        category: otherCategory,
+      },
+      setStartTimeOffset: {
+        name: t('Set custom start offset/timecode'),
+        category: otherCategory,
+      },
+      undo: {
+        name: t('Undo'),
+        category: otherCategory,
+      },
+      redo: {
+        name: t('Redo'),
+        category: otherCategory,
+      },
+      copySegmentsToClipboard: {
+        name: t('Copy selected segments times to clipboard'),
+        category: otherCategory,
+      },
+      toggleWaveformMode: {
+        name: t('Show waveform'),
+        category: otherCategory,
+      },
+      toggleShowThumbnails: {
+        name: t('Show thumbnails'),
+        category: otherCategory,
+      },
+      toggleShowKeyframes: {
+        name: t('Show keyframes'),
+        category: otherCategory,
+      },
+      toggleFullscreenVideo: {
+        name: 'Toggle full screen video',
+        category: otherCategory,
+      },
+      toggleSettings: {
+        name: t('Settings'),
+        category: otherCategory,
+      },
+      openSendReportDialog: {
+        name: t('Report an error'),
+        category: otherCategory,
+      },
+      openFilesDialog: {
+        name: t('Open'),
+        category: otherCategory,
+      },
+      exportYouTube: {
+        name: t('Start times as YouTube Chapters'),
+        category: otherCategory,
+      },
+      closeActiveScreen: {
+        name: t('Close current screen'),
+        category: otherCategory,
+      },
+      closeCurrentFile: {
+        name: t('Close current file'),
+        category: otherCategory,
+      },
+      quit: {
+        name: t('Quit LosslessCut'),
+        category: otherCategory,
+      },
+    };
+
+    // eslint-disable-next-line no-shadow
+    const extraLinesPerCategory: Record<Category, ReactNode> = {
+      [zoomOperationsCategory]: [
+        <div key="1" style={{ ...rowStyle, alignItems: 'center' }}>
+          <Text>{t('Zoom in/out timeline')}</Text>
+          <div style={{ flexGrow: 1 }} />
+          <FaMouse style={{ marginRight: 3 }} />
+          <Text>{t('Mouse scroll/wheel up/down')}</Text>
+        </div>,
+
+        <div key="2" style={{ ...rowStyle, alignItems: 'center' }}>
+          <Text>{t('Pan timeline')}</Text>
+          <div style={{ flexGrow: 1 }} />
+          {getModifier(mouseWheelZoomModifierKey).map((v) => <kbd key={v} style={{ marginRight: '.7em' }}>{v}</kbd>)}
+          <FaMouse style={{ marginRight: 3 }} />
+          <Text>{t('Mouse scroll/wheel up/down')}</Text>
+        </div>,
+      ],
+    };
+
+    return {
+      extraLinesPerCategory,
+      actionsMap,
     };
   }, [currentCutSeg, mouseWheelZoomModifierKey, t]);
 
