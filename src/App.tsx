@@ -940,8 +940,9 @@ function App() {
     }
 
     if (playbackModeRef.current != null) {
-      const isSomeSelectedSegmentAtCursor = selectedSegments.some((selectedSegment) => selectedSegment.segId === segmentAtCursorRef.current?.segId);
-      if (!isSomeSelectedSegmentAtCursor) { // if a segment is already at cursor, don't do anything
+      const selectedSegmentAtCursor = selectedSegments.find((selectedSegment) => selectedSegment.segId === segmentAtCursorRef.current?.segId);
+      const isSomeSegmentAtCursor = selectedSegmentAtCursor != null && commandedTimeRef.current != null && selectedSegmentAtCursor.end - commandedTimeRef.current > 0.1;
+      if (!isSomeSegmentAtCursor) { // if a segment is already at cursor, don't do anything
         if (playbackModeRef.current === 'loop-selected-segments') {
           const firstSelectedSegment = selectedSegments[0];
           if (firstSelectedSegment == null) throw new Error();
