@@ -79,7 +79,7 @@ const Segment = memo(({
   onEditSegmentTags: (i: number) => void,
   onExtractSegmentFramesAsImages: (segIds: string[]) => Promise<void>,
   onInvertSelectedSegments: UseSegments['invertSelectedSegments'],
-  onDuplicateSegmentClick: UseSegments['duplicateSegment']
+  onDuplicateSegmentClick: UseSegments['duplicateSegment'],
 }) => {
   const { invertCutSegments, darkMode } = useUserSettings();
   const { t } = useTranslation();

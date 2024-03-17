@@ -352,10 +352,12 @@ function App() {
     });
   }, [comfortZoom]);
 
+  const playingRef = useRef(false);
+
   // Relevant time is the player's playback position if we're currently playing - if not, it's the user's commanded time.
   const relevantTime = useMemo(() => (playing ? playerTime : commandedTime) || 0, [commandedTime, playerTime, playing]);
   // The reason why we also have a getter is because it can be used when we need to get the time, but don't want to re-render for every time update (which can be heavy!)
-  const getRelevantTime = useCallback(() => (playing ? videoRef.current!.currentTime : commandedTimeRef.current) || 0, [playing]);
+  const getRelevantTime = useCallback(() => (playingRef.current ? videoRef.current!.currentTime : commandedTimeRef.current) || 0, []);
 
   const maxLabelLength = safeOutputFileName ? 100 : 500;
 
@@ -499,6 +501,7 @@ function App() {
   }, [debouncedSaveOperation, autoSaveProjectFile]);
 
   function onPlayingChange(val) {
+    playingRef.current = val;
     setPlaying(val);
     if (!val) {
       setCommandedTime(videoRef.current!.currentTime);
@@ -765,6 +768,7 @@ function App() {
     setPreviewFilePath(undefined);
     setUsingDummyVideo(false);
     setPlaying(false);
+    playingRef.current = false;
     playbackModeRef.current = undefined;
     setCompatPlayerEventId(0);
     setDuration(undefined);
@@ -909,12 +913,12 @@ function App() {
   const jumpSeg = useCallback((direction: -1 | 1) => setCurrentSegIndex((old) => Math.min(getNewJumpIndex(old, direction), cutSegments.length - 1)), [cutSegments, setCurrentSegIndex]);
 
   const pause = useCallback(() => {
-    if (!filePath || !playing) return;
+    if (!filePath || !playingRef.current) return;
     videoRef.current!.pause();
-  }, [filePath, playing]);
+  }, [filePath]);
 
   const play = useCallback((resetPlaybackRate?: boolean) => {
-    if (!filePath || playing) return;
+    if (!filePath || playingRef.current) return;
 
     const video = videoRef.current;
 
@@ -926,15 +930,15 @@ function App() {
       if (err instanceof Error && err.name === 'AbortError' && 'code' in err && err.code === 20) { // Probably "DOMException: The play() request was interrupted by a call to pause()."
         console.error(err);
       } else {
-      showPlaybackFailedMessage();
+        showPlaybackFailedMessage();
       }
     });
-  }, [filePath, outputPlaybackRate, playing]);
+  }, [filePath, outputPlaybackRate]);
 
   const togglePlay = useCallback(({ resetPlaybackRate, requestPlaybackMode }: { resetPlaybackRate?: boolean, requestPlaybackMode?: PlaybackMode } | undefined = {}) => {
     playbackModeRef.current = requestPlaybackMode;
 
-    if (playing) {
+    if (playingRef.current) {
       pause();
       return;
     }
@@ -955,7 +959,7 @@ function App() {
       }
     }
     play(resetPlaybackRate);
-  }, [playing, play, pause, selectedSegments, apparentCutSegments, setCurrentSegIndex, seekAbs, currentApparentCutSeg.start]);
+  }, [play, pause, selectedSegments, apparentCutSegments, setCurrentSegIndex, seekAbs, currentApparentCutSeg.start]);
 
   const onTimeUpdate = useCallback((e) => {
     const { currentTime } = e.target;
@@ -1424,14 +1428,14 @@ function App() {
     }
 
     const video = videoRef.current;
-    if (!playing) {
+    if (!playingRef.current) {
       video!.play();
     } else {
       const newRate = adjustRate(video!.playbackRate, dir, rateMultiplier);
       toast.fire({ title: `${i18n.t('Playback rate:')} ${Math.round(newRate * 100)}%`, timer: 1000 });
       video!.playbackRate = newRate;
     }
-  }, [playing, compatPlayerEnabled]);
+  }, [compatPlayerEnabled]);
 
   const loadEdlFile = useCallback(async ({ path, type, append }: { path: string, type: EdlFileType, append?: boolean }) => {
     console.log('Loading EDL file', type, path, append);
