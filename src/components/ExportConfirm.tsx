@@ -1,10 +1,11 @@
-import { memo, useCallback, useMemo } from 'react';
+import { CSSProperties, memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WarningSignIcon, CrossIcon } from 'evergreen-ui';
 import { FaRegCheckCircle } from 'react-icons/fa';
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
 import { IoIosHelpCircle } from 'react-icons/io';
+import { SweetAlertIcon } from 'sweetalert2';
 
 import ExportButton from './ExportButton';
 import ExportModeButton from './ExportModeButton';
@@ -23,21 +24,66 @@ import { toast } from '../swal';
 import { isMov as ffmpegIsMov } from '../util/streams';
 import useUserSettings from '../hooks/useUserSettings';
 import styles from './ExportConfirm.module.css';
+import { InverseCutSegment, SegmentToExport } from '../types';
+import { GenerateOutSegFileNames } from '../util/outputNameTemplate';
+import { FFprobeStream } from '../../ffprobe';
+import { AvoidNegativeTs } from '../../types';
 
 
-const boxStyle = { margin: '15px 15px 50px 15px', borderRadius: 10, padding: '10px 20px', minHeight: 500, position: 'relative' };
+const boxStyle: CSSProperties = { margin: '15px 15px 50px 15px', borderRadius: 10, padding: '10px 20px', minHeight: 500, position: 'relative' };
 
-const outDirStyle = { ...highlightedTextStyle, wordBreak: 'break-all', cursor: 'pointer' };
+const outDirStyle: CSSProperties = { ...highlightedTextStyle, wordBreak: 'break-all', cursor: 'pointer' };
 
-const warningStyle = { color: 'var(--red11)', fontSize: '80%', marginBottom: '.5em' };
+const warningStyle: CSSProperties = { color: 'var(--red11)', fontSize: '80%', marginBottom: '.5em' };
 
-const HelpIcon = ({ onClick, style }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', color: primaryTextColor, verticalAlign: 'middle', ...style }} />;
+const HelpIcon = ({ onClick, style }: { onClick: () => void, style?: CSSProperties }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', color: primaryTextColor, verticalAlign: 'middle', ...style }} />;
 
 const ExportConfirm = memo(({
-  areWeCutting, selectedSegments, segmentsToExport, willMerge, visible, onClosePress, onExportConfirm,
-  outFormat, renderOutFmt, outputDir, numStreamsTotal, numStreamsToCopy, onShowStreamsSelectorClick, outSegTemplate,
-  setOutSegTemplate, generateOutSegFileNames, filePath, currentSegIndexSafe, nonFilteredSegmentsOrInverse,
-  mainCopiedThumbnailStreams, needSmartCut, mergedOutFileName, setMergedOutFileName,
+  areWeCutting,
+  selectedSegments,
+  segmentsToExport,
+  willMerge,
+  visible,
+  onClosePress,
+  onExportConfirm,
+  outFormat,
+  renderOutFmt,
+  outputDir,
+  numStreamsTotal,
+  numStreamsToCopy,
+  onShowStreamsSelectorClick,
+  outSegTemplate,
+  setOutSegTemplate,
+  generateOutSegFileNames,
+  currentSegIndexSafe,
+  nonFilteredSegmentsOrInverse,
+  mainCopiedThumbnailStreams,
+  needSmartCut,
+  mergedOutFileName,
+  setMergedOutFileName,
+} : {
+  areWeCutting: boolean,
+  selectedSegments: InverseCutSegment[],
+  segmentsToExport: SegmentToExport[],
+  willMerge: boolean,
+  visible: boolean,
+  onClosePress: () => void,
+  onExportConfirm: () => void,
+  outFormat: string | undefined,
+  renderOutFmt: (style: CSSProperties) => JSX.Element,
+  outputDir: string,
+  numStreamsTotal: number,
+  numStreamsToCopy: number,
+  onShowStreamsSelectorClick: () => void,
+  outSegTemplate: string,
+  setOutSegTemplate: (a: string) => void,
+  generateOutSegFileNames: GenerateOutSegFileNames,
+  currentSegIndexSafe: number,
+  nonFilteredSegmentsOrInverse: InverseCutSegment[],
+  mainCopiedThumbnailStreams: FFprobeStream[],
+  needSmartCut: boolean,
+  mergedOutFileName: string | undefined,
+  setMergedOutFileName: (a: string) => void,
 }) => {
   const { t } = useTranslation();
 
@@ -50,13 +96,13 @@ const ExportConfirm = memo(({
   const areWeCuttingProblematicStreams = areWeCutting && mainCopiedThumbnailStreams.length > 0;
 
   const exportModeDescription = useMemo(() => ({
-    sesgments_to_chapters: t('Don\'t cut the file, but instead export an unmodified original which has chapters generated from segments'),
+    segments_to_chapters: t('Don\'t cut the file, but instead export an unmodified original which has chapters generated from segments'),
     merge: t('Auto merge segments to one file after export'),
     'merge+separate': t('Auto merge segments to one file after export, but keep segments too'),
     separate: t('Export to separate files'),
   })[effectiveExportMode], [effectiveExportMode, t]);
 
-  const showHelpText = useCallback(({ icon = 'info', timer = 10000, text }) => toast.fire({ icon, timer, text }), []);
+  const showHelpText = useCallback(({ icon = 'info', timer = 10000, text }: { icon?: SweetAlertIcon, timer?: number, text: string }) => toast.fire({ icon, timer, text }), []);
 
   const onPreserveMovDataHelpPress = useCallback(() => {
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Preserve all MOV/MP4 metadata tags (e.g. EXIF, GPS position etc.) from source file? Note that some players have trouble playing back files where all metadata is preserved, like iTunes and other Apple software') });
@@ -128,16 +174,16 @@ const ExportConfirm = memo(({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className={styles.sheet}
+            className={styles['sheet']}
             transition={{ duration: 0.3, easings: ['easeOut'] }}
           >
             <div style={{ margin: 'auto' }}>
-              <div style={boxStyle} className={styles.box}>
+              <div style={boxStyle} className={styles['box']}>
                 <CrossIcon size={24} style={{ position: 'absolute', right: 0, top: 0, padding: 15, boxSizing: 'content-box', cursor: 'pointer' }} role="button" onClick={onClosePress} />
 
                 <h2 style={{ marginTop: 0, marginBottom: '.5em' }}>{t('Export options')}</h2>
 
-                <table className={styles.options}>
+                <table className={styles['options']}>
                   <tbody>
                     {selectedSegments.length !== nonFilteredSegmentsOrInverse.length && (
                       <tr>
@@ -156,7 +202,7 @@ const ExportConfirm = memo(({
                         <ExportModeButton selectedSegments={selectedSegments} />
                       </td>
                       <td>
-                        {effectiveExportMode === 'sesgments_to_chapters' ? (
+                        {effectiveExportMode === 'segments_to_chapters' ? (
                           <WarningSignIcon verticalAlign="middle" color="warning" title={i18n.t('Segments to chapters mode is active, this means that the file will not be cut. Instead chapters will be created from the segments.')} />
                         ) : (
                           <HelpIcon onClick={onExportModeHelpPress} />
@@ -208,7 +254,7 @@ const ExportConfirm = memo(({
                     {canEditTemplate && (
                       <tr>
                         <td colSpan={2}>
-                          <OutSegTemplateEditor filePath={filePath} outSegTemplate={outSegTemplate} setOutSegTemplate={setOutSegTemplate} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} />
+                          <OutSegTemplateEditor outSegTemplate={outSegTemplate} setOutSegTemplate={setOutSegTemplate} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} />
                         </td>
                         <td>
                           <HelpIcon onClick={onOutSegTemplateHelpPress} />
@@ -246,7 +292,7 @@ const ExportConfirm = memo(({
 
                 <h3 style={{ marginBottom: '.5em' }}>{t('Advanced options')}</h3>
 
-                <table className={styles.options}>
+                <table className={styles['options']}>
                   <tbody>
                     {willMerge && (
                       <>
@@ -397,11 +443,11 @@ const ExportConfirm = memo(({
                             {avoidNegativeTsWarn != null && <div style={warningStyle}>{avoidNegativeTsWarn}</div>}
                           </td>
                           <td>
-                            <Select value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value)} style={{ height: 20, marginLeft: 5 }}>
-                              <option value="auto">auto</option>
-                              <option value="make_zero">make_zero</option>
-                              <option value="make_non_negative">make_non_negative</option>
-                              <option value="disabled">disabled</option>
+                            <Select value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value as AvoidNegativeTs)} style={{ height: 20, marginLeft: 5 }}>
+                              <option value={'auto' as AvoidNegativeTs}>auto</option>
+                              <option value={'make_zero' satisfies AvoidNegativeTs}>make_zero</option>
+                              <option value={'make_non_negative' satisfies AvoidNegativeTs}>make_non_negative</option>
+                              <option value={'disabled' satisfies AvoidNegativeTs}>disabled</option>
                             </Select>
                           </td>
                           <td>

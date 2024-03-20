@@ -3,17 +3,23 @@ import sortBy from 'lodash/sortBy';
 import i18n from 'i18next';
 import Timecode from 'smpte-timecode';
 import minBy from 'lodash/minBy';
+import invariant from 'tiny-invariant';
 
 import { pcmAudioCodecs, getMapStreamsArgs, isMov } from './util/streams';
 import { getSuffixedOutPath, isExecaFailure } from './util';
 import { isDurationValid } from './segments';
+import { Waveform } from '../types';
+import { FFprobeProbeResult, FFprobeStream } from '../ffprobe';
 
 const FileType = window.require('file-type');
 const { pathExists } = window.require('fs-extra');
 
 const remote = window.require('@electron/remote');
 
-const { renderWaveformPng, mapTimesToSegments, detectSceneChanges, captureFrames, captureFrame, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, html5ify, getDuration, abortFfmpegs, runFfmpeg, runFfprobe, getFfmpegPath, setCustomFfPath } = remote.require('./ffmpeg');
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ffmpeg: { renderWaveformPng: (a: any) => Promise<Waveform>, mapTimesToSegments, detectSceneChanges, captureFrames, captureFrame, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, html5ify, getDuration, abortFfmpegs, runFfmpeg, runFfprobe, getFfmpegPath, setCustomFfPath } = remote.require('./ffmpeg');
+
+const { renderWaveformPng, mapTimesToSegments, detectSceneChanges, captureFrames, captureFrame, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, html5ify, getDuration, abortFfmpegs, runFfmpeg, runFfprobe, getFfmpegPath, setCustomFfPath } = ffmpeg;
 
 
 export { renderWaveformPng, mapTimesToSegments, detectSceneChanges, captureFrames, captureFrame, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, html5ify, getDuration, abortFfmpegs, runFfprobe, getFfmpegPath, setCustomFfPath };
@@ -326,7 +332,7 @@ export async function readFileMeta(filePath) {
       '-of', 'json', '-show_chapters', '-show_format', '-show_entries', 'stream', '-i', filePath, '-hide_banner',
     ]);
 
-    let parsedJson;
+    let parsedJson: FFprobeProbeResult;
     try {
       // https://github.com/mifi/lossless-cut/issues/1342
       parsedJson = JSON.parse(stdout);
@@ -334,7 +340,8 @@ export async function readFileMeta(filePath) {
       console.log('ffprobe stdout', stdout);
       throw new Error('ffprobe returned malformed data');
     }
-    const { streams = [], format = {}, chapters = [] } = parsedJson;
+    const { streams = [], format, chapters = [] } = parsedJson;
+    invariant(format != null);
     return { format, streams, chapters };
   } catch (err) {
     // Windows will throw error with code ENOENT if format detection fails.
@@ -379,8 +386,7 @@ function getPreferredCodecFormat(stream) {
 }
 
 async function extractNonAttachmentStreams({ customOutDir, filePath, streams, enableOverwriteOutput }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  customOutDir?: string, filePath: string, streams: any[], enableOverwriteOutput?: boolean,
+  customOutDir?: string, filePath: string, streams: FFprobeStream[], enableOverwriteOutput?: boolean,
 }) {
   if (streams.length === 0) return [];
 
@@ -421,8 +427,7 @@ async function extractNonAttachmentStreams({ customOutDir, filePath, streams, en
 }
 
 async function extractAttachmentStreams({ customOutDir, filePath, streams, enableOverwriteOutput }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  customOutDir?: string, filePath: string, streams: any[], enableOverwriteOutput?: boolean,
+  customOutDir?: string, filePath: string, streams: FFprobeStream[], enableOverwriteOutput?: boolean,
 }) {
   if (streams.length === 0) return [];
 

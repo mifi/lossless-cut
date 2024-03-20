@@ -1,18 +1,20 @@
-import { memo, useMemo } from 'react';
+import { CSSProperties, memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { withBlur } from '../util';
 import useUserSettings from '../hooks/useUserSettings';
 import Select from './Select';
+import { ExportMode } from '../types';
 
-const ExportModeButton = memo(({ selectedSegments, style }) => {
+
+const ExportModeButton = memo(({ selectedSegments, style }: { selectedSegments: unknown[], style?: CSSProperties }) => {
   const { t } = useTranslation();
 
   const { effectiveExportMode, setAutoMerge, setAutoDeleteMergedSegments, setSegmentsToChaptersOnly } = useUserSettings();
 
-  function onChange(newMode) {
+  function onChange(newMode: ExportMode) {
     switch (newMode) {
-      case 'sesgments_to_chapters': {
+      case 'segments_to_chapters': {
         setAutoMerge(false);
         setAutoDeleteMergedSegments(false);
         setSegmentsToChaptersOnly(true);
@@ -41,10 +43,10 @@ const ExportModeButton = memo(({ selectedSegments, style }) => {
   }
 
   const selectableModes = useMemo(() => [
-    'separate',
-    ...(selectedSegments.length >= 2 || effectiveExportMode === 'merge' ? ['merge'] : []),
-    ...(selectedSegments.length >= 2 || effectiveExportMode === 'merge+separate' ? ['merge+separate'] : []),
-    'sesgments_to_chapters',
+    'separate' as const,
+    ...(selectedSegments.length >= 2 || effectiveExportMode === 'merge' ? ['merge'] as const : []),
+    ...(selectedSegments.length >= 2 || effectiveExportMode === 'merge+separate' ? ['merge+separate'] as const : []),
+    'segments_to_chapters' as const,
   ], [effectiveExportMode, selectedSegments.length]);
 
   return (
@@ -58,7 +60,7 @@ const ExportModeButton = memo(({ selectedSegments, style }) => {
 
       {selectableModes.map((mode) => {
         const titles = {
-          sesgments_to_chapters: t('Segments to chapters'),
+          segments_to_chapters: t('Segments to chapters'),
           merge: t('Merge cuts'),
           'merge+separate': t('Merge & Separate'),
           separate: t('Separate files'),

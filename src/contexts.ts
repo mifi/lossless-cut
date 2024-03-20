@@ -2,9 +2,9 @@ import React, { useContext } from 'react';
 import Color from 'color';
 
 import useUserSettingsRoot from './hooks/useUserSettingsRoot';
-import { SegmentColorIndex } from './types';
+import { ExportMode, SegmentColorIndex } from './types';
 
-type UserSettingsContextType = ReturnType<typeof useUserSettingsRoot> & {
+export type UserSettingsContextType = ReturnType<typeof useUserSettingsRoot> & {
   toggleCaptureFormat: () => void,
   changeOutDir: () => Promise<void>,
   toggleKeyframeCut: (showMessage?: boolean) => void,
@@ -15,7 +15,7 @@ type UserSettingsContextType = ReturnType<typeof useUserSettingsRoot> & {
   togglePreserveMetadataOnMerge: () => void,
   toggleSimpleMode: () => void,
   toggleSafeOutputFileName: () => void,
-  effectiveExportMode: string,
+  effectiveExportMode: ExportMode,
 }
 
 interface SegColorsContextType {

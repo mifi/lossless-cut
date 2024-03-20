@@ -5,9 +5,12 @@ import { useTranslation } from 'react-i18next';
 
 import { primaryColor } from '../colors';
 import useUserSettings from '../hooks/useUserSettings';
+import { SegmentToExport } from '../types';
 
 
-const ExportButton = memo(({ segmentsToExport, areWeCutting, onClick, size = 1 }) => {
+const ExportButton = memo(({ segmentsToExport, areWeCutting, onClick, size = 1 }: {
+  segmentsToExport: SegmentToExport[], areWeCutting: boolean, onClick: () => void, size?: number | undefined,
+}) => {
   const CutIcon = areWeCutting ? FiScissors : FaFileExport;
 
   const { t } = useTranslation();

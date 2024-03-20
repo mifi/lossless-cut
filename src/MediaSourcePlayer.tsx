@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState, useCallback, useMemo, memo, CSSProperties } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, memo, CSSProperties, RefObject } from 'react';
 import { Spinner } from 'evergreen-ui';
 import { useDebounce } from 'use-debounce';
 
 import isDev from './isDev';
+import { ChromiumHTMLVideoElement } from './types';
+import { FFprobeStream } from '../ffprobe';
 
 const remote = window.require('@electron/remote');
 const { createMediaSourceStream, readOneJpegFrame } = remote.require('./compatPlayer');
@@ -10,7 +12,7 @@ const { createMediaSourceStream, readOneJpegFrame } = remote.require('./compatPl
 
 async function startPlayback({ path, video, videoStreamIndex, audioStreamIndex, seekTo, signal, playSafe, onCanPlay, getTargetTime, size, fps }: {
   path: string,
-  video: HTMLVideoElement,
+  video: ChromiumHTMLVideoElement,
   videoStreamIndex?: number | undefined,
   audioStreamIndex?: number | undefined,
   seekTo: number,
@@ -253,7 +255,9 @@ async function createPauseImage({ path, seekTo, videoStreamIndex, canvas, signal
   drawJpegFrame(canvas, jpegImage);
 }
 
-function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStream, commandedTime, playing, eventId, masterVideoRef, mediaSourceQuality, playbackVolume }) {
+function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStream, commandedTime, playing, eventId, masterVideoRef, mediaSourceQuality, playbackVolume }: {
+  rotate: number | undefined, filePath: string, playerTime: number, videoStream: FFprobeStream | undefined, audioStream: FFprobeStream | undefined, commandedTime: number, playing: boolean, eventId: number, masterVideoRef: RefObject<HTMLVideoElement>, mediaSourceQuality: number, playbackVolume: number,
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [loading, setLoading] = useState(true);
@@ -292,7 +296,7 @@ function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStr
     }
 
     const onCanPlay = () => setLoading(false);
-    const getTargetTime = () => masterVideoRef.current.currentTime - debouncedState.startTime;
+    const getTargetTime = () => masterVideoRef.current!.currentTime - debouncedState.startTime;
 
     const abortController = new AbortController();
 

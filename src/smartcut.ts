@@ -1,6 +1,7 @@
 import { getRealVideoStreams, getVideoTimebase } from './util/streams';
 
 import { readKeyframesAroundTime, findNextKeyframe, findKeyframeAtExactTime } from './ffmpeg';
+import { FFprobeStream } from '../ffprobe';
 
 const { stat } = window.require('fs-extra');
 
@@ -9,13 +10,14 @@ const mapVideoCodec = (codec: string) => ({ av1: 'libsvtav1' }[codec] ?? codec);
 
 // eslint-disable-next-line import/prefer-default-export
 export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, streams }: {
-  path: string, videoDuration: number, desiredCutFrom: number, streams,
+  path: string, videoDuration: number, desiredCutFrom: number, streams: FFprobeStream[],
 }) {
   const videoStreams = getRealVideoStreams(streams);
-  if (videoStreams.length === 0) throw new Error('Smart cut only works on videos');
   if (videoStreams.length > 1) throw new Error('Can only smart cut video with exactly one video stream');
 
-  const videoStream = videoStreams[0];
+  const [videoStream] = videoStreams;
+
+  if (videoStream == null) throw new Error('Smart cut only works on videos');
 
   const readKeyframes = async (window: number) => readKeyframesAroundTime({ filePath: path, streamIndex: videoStream.index, aroundTime: desiredCutFrom, window });
 
@@ -43,7 +45,7 @@ export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, s
 
   console.log('Smart cut from keyframe', { keyframe: nextKeyframe.time, desiredCutFrom });
 
-  let videoBitrate = parseInt(videoStream.bit_rate, 10);
+  let videoBitrate = parseInt(videoStream.bit_rate!, 10);
   if (Number.isNaN(videoBitrate)) {
     console.warn('Unable to detect input bitrate');
     const stats = await stat(path);

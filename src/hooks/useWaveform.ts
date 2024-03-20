@@ -4,14 +4,19 @@ import { useThrottle } from '@uidotdev/usehooks';
 import { waveformColorDark, waveformColorLight } from '../colors';
 
 import { renderWaveformPng } from '../ffmpeg';
+import { RenderableWaveform } from '../types';
+import { FFprobeStream } from '../../ffprobe';
+
 
 const maxWaveforms = 100;
 // const maxWaveforms = 3; // testing
 
-export default ({ darkMode, filePath, relevantTime, durationSafe, waveformEnabled, audioStream, shouldShowWaveform, ffmpegExtractWindow }) => {
-  const creatingWaveformPromise = useRef();
-  const [waveforms, setWaveforms] = useState([]);
-  const waveformsRef = useRef();
+export default ({ darkMode, filePath, relevantTime, durationSafe, waveformEnabled, audioStream, ffmpegExtractWindow }: {
+  darkMode: boolean, filePath: string | undefined, relevantTime: number, durationSafe: number, waveformEnabled: boolean, audioStream: FFprobeStream | undefined, ffmpegExtractWindow: number,
+}) => {
+  const creatingWaveformPromise = useRef<Promise<unknown>>();
+  const [waveforms, setWaveforms] = useState<RenderableWaveform[]>([]);
+  const waveformsRef = useRef<RenderableWaveform[]>();
 
   useEffect(() => {
     waveformsRef.current = waveforms;
@@ -33,7 +38,7 @@ export default ({ darkMode, filePath, relevantTime, durationSafe, waveformEnable
       const waveformStartTime = Math.floor(timeThrottled / ffmpegExtractWindow) * ffmpegExtractWindow;
 
       const alreadyHaveWaveformAtTime = (waveformsRef.current || []).some((waveform) => waveform.from === waveformStartTime);
-      const shouldRun = filePath && audioStream && timeThrottled != null && shouldShowWaveform && waveformEnabled && !alreadyHaveWaveformAtTime && !creatingWaveformPromise.current;
+      const shouldRun = filePath && audioStream && timeThrottled != null && waveformEnabled && !alreadyHaveWaveformAtTime && !creatingWaveformPromise.current;
       if (!shouldRun) return;
 
       try {
@@ -64,9 +69,9 @@ export default ({ darkMode, filePath, relevantTime, durationSafe, waveformEnable
     return () => {
       aborted = true;
     };
-  }, [filePath, timeThrottled, waveformEnabled, audioStream, shouldShowWaveform, ffmpegExtractWindow, durationSafe, waveformColor, setWaveforms]);
+  }, [filePath, timeThrottled, waveformEnabled, audioStream, ffmpegExtractWindow, durationSafe, waveformColor, setWaveforms]);
 
-  const lastWaveformsRef = useRef([]);
+  const lastWaveformsRef = useRef<RenderableWaveform[]>([]);
   useEffect(() => {
     const removedWaveforms = lastWaveformsRef.current.filter((wf) => !waveforms.includes(wf));
     // Cleanup old

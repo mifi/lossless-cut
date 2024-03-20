@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { CSSProperties, ReactNode, memo, useCallback } from 'react';
 import { IoIosSettings } from 'react-icons/io';
 import { FaLock, FaUnlock } from 'react-icons/fa';
 import { CrossIcon, ListIcon, VolumeUpIcon, VolumeOffIcon } from 'evergreen-ui';
@@ -16,9 +16,31 @@ const outFmtStyle = { height: 20, maxWidth: 100 };
 const exportModeStyle = { flexGrow: 0, flexBasis: 140 };
 
 const TopMenu = memo(({
-  filePath, fileFormat, copyAnyAudioTrack, toggleStripAudio,
-  renderOutFmt, numStreamsToCopy, numStreamsTotal, setStreamsSelectorShown, toggleSettings,
-  selectedSegments, isCustomFormatSelected, clearOutDir,
+  filePath,
+  fileFormat,
+  copyAnyAudioTrack,
+  toggleStripAudio,
+  renderOutFmt,
+  numStreamsToCopy,
+  numStreamsTotal,
+  setStreamsSelectorShown,
+  toggleSettings,
+  selectedSegments,
+  isCustomFormatSelected,
+  clearOutDir,
+}: {
+  filePath: string | undefined,
+  fileFormat: string | undefined,
+  copyAnyAudioTrack: boolean,
+  toggleStripAudio: () => void,
+  renderOutFmt: (style: CSSProperties) => ReactNode,
+  numStreamsToCopy: number,
+  numStreamsTotal: number,
+  setStreamsSelectorShown: (v: boolean) => void,
+  toggleSettings: () => void,
+  selectedSegments,
+  isCustomFormatSelected,
+  clearOutDir,
 }) => {
   const { t } = useTranslation();
   const { customOutDir, changeOutDir, simpleMode, outFormatLocked, setOutFormatLocked } = useUserSettings();
@@ -40,7 +62,7 @@ const TopMenu = memo(({
       {filePath && (
         <>
           <Button onClick={withBlur(() => setStreamsSelectorShown(true))}>
-            <ListIcon size="1em" verticalAlign="middle" marginRight=".3em" />
+            <ListIcon size={'1em' as unknown as number} verticalAlign="middle" marginRight=".3em" />
             {t('Tracks')} ({numStreamsToCopy}/{numStreamsTotal})
           </Button>
 
@@ -49,9 +71,9 @@ const TopMenu = memo(({
             onClick={withBlur(toggleStripAudio)}
           >
             {copyAnyAudioTrack ? (
-              <><VolumeUpIcon size="1em" verticalAlign="middle" marginRight=".3em" />{t('Keep audio')}</>
+              <><VolumeUpIcon size={'1em' as unknown as number} verticalAlign="middle" marginRight=".3em" />{t('Keep audio')}</>
             ) : (
-              <><VolumeOffIcon size="1em" verticalAlign="middle" marginRight=".3em" />{t('Discard audio')}</>
+              <><VolumeOffIcon size={'1em' as unknown as number} verticalAlign="middle" marginRight=".3em" />{t('Discard audio')}</>
             )}
           </Button>
         </>

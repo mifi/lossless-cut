@@ -1,10 +1,10 @@
 import { memo, useEffect, useState, useCallback, useRef } from 'react';
 import { ffmpegExtractWindow } from '../util/constants';
-import { Waveform } from '../types';
+import { RenderableWaveform } from '../types';
 
 
 const BigWaveform = memo(({ waveforms, relevantTime, playing, durationSafe, zoom, seekRel }: {
-  waveforms: Waveform[], relevantTime: number, playing: boolean, durationSafe: number, zoom: number, seekRel: (a: number) => void,
+  waveforms: RenderableWaveform[], relevantTime: number, playing: boolean, durationSafe: number, zoom: number, seekRel: (a: number) => void,
 }) => {
   const windowSize = ffmpegExtractWindow * 2;
   const windowStart = Math.max(0, relevantTime - windowSize);

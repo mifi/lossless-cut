@@ -39,6 +39,8 @@ export type LanguageKey = keyof typeof langNames;
 
 export type TimecodeFormat = 'timecodeWithDecimalFraction' | 'frameCount' | 'timecodeWithFramesFraction';
 
+export type AvoidNegativeTs = 'make_zero' | 'auto' | 'make_non_negative' | 'disabled';
+
 export interface Config {
   captureFormat: CaptureFormat,
   customOutDir: string | undefined,
@@ -61,7 +63,7 @@ export interface Config {
   ffmpegExperimental: boolean,
   preserveMovData: boolean,
   movFastStart: boolean,
-  avoidNegativeTs: 'make_zero' | 'auto' | 'make_non_negative' | 'disabled',
+  avoidNegativeTs: AvoidNegativeTs,
   hideNotifications: 'all' | undefined,
   autoLoadTimecode: boolean,
   segmentsToChapters: boolean,
@@ -100,3 +102,11 @@ export interface Config {
 export type StoreGetConfig = <T extends keyof Config>(key: T) => Config[T];
 export type StoreSetConfig = <T extends keyof Config>(key: T, value: Config[T]) => void;
 export type StoreResetConfig = <T extends keyof Config>(key: T) => void;
+
+export interface Waveform {
+  buffer: Buffer,
+  from: number,
+  to: number,
+  duration: number,
+  createdAt: Date,
+}

@@ -1,17 +1,39 @@
 import { test, expect } from 'vitest';
 
-import { getMapStreamsArgs, getStreamIdsToCopy } from './streams';
+import { LiteFFprobeStream, getMapStreamsArgs, getStreamIdsToCopy } from './streams';
+import { FFprobeStreamDisposition } from '../../ffprobe';
 
 
-const streams1 = [
-  { index: 0, codec_type: 'video', codec_tag: '0x0000', codec_name: 'mjpeg', disposition: { attached_pic: 1 } },
-  { index: 1, codec_type: 'audio', codec_tag: '0x6134706d', codec_name: 'aac' },
-  { index: 2, codec_type: 'video', codec_tag: '0x31637661', codec_name: 'h264' },
-  { index: 3, codec_type: 'video', codec_tag: '0x0000', codec_name: 'hevc' },
-  { index: 4, codec_type: 'audio', codec_tag: '0x6134706d', codec_name: 'aac' },
-  { index: 5, codec_type: 'attachment', codec_tag: '0x0000', codec_name: 'ttf' },
-  { index: 6, codec_type: 'data', codec_tag: '0x64636d74' },
-  { index: 7, codec_type: 'subtitle', codec_tag: '0x0000', codec_name: 'subrip' },
+const makeDisposition = (override?: Partial<FFprobeStreamDisposition>): FFprobeStreamDisposition => ({
+  default: 0,
+  dub: 0,
+  original: 0,
+  comment: 0,
+  lyrics: 0,
+  karaoke: 0,
+  forced: 0,
+  hearing_impaired: 0,
+  visual_impaired: 0,
+  clean_effects: 0,
+  attached_pic: 0,
+  timed_thumbnails: 0,
+  captions: 0,
+  descriptions: 0,
+  metadata: 0,
+  dependent: 0,
+  still_image: 0,
+  ...override,
+});
+
+const streams1: LiteFFprobeStream[] = [
+  { index: 0, codec_type: 'video', codec_tag: '0x0000', codec_name: 'mjpeg', disposition: makeDisposition({ attached_pic: 1 }) },
+  { index: 1, codec_type: 'audio', codec_tag: '0x6134706d', codec_name: 'aac', disposition: makeDisposition() },
+  { index: 2, codec_type: 'video', codec_tag: '0x31637661', codec_name: 'h264', disposition: makeDisposition() },
+  { index: 3, codec_type: 'video', codec_tag: '0x0000', codec_name: 'hevc', disposition: makeDisposition() },
+  { index: 4, codec_type: 'audio', codec_tag: '0x6134706d', codec_name: 'aac', disposition: makeDisposition() },
+  { index: 5, codec_type: 'attachment', codec_tag: '0x0000', codec_name: 'ttf', disposition: makeDisposition() },
+  { index: 6, codec_type: 'data', codec_tag: '0x64636d74', codec_name: '', disposition: makeDisposition() },
+  { index: 7, codec_type: 'subtitle', codec_tag: '0x0000', codec_name: 'subrip', disposition: makeDisposition() },
 ];
 
 const path = '/path/to/file';

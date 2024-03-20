@@ -176,3 +176,5 @@ export function generateOutSegFileNames({ segments, template: desiredTemplate, f
 
   return { outSegFileNames, outSegProblems };
 }
+
+export type GenerateOutSegFileNames = (a: { segments?: SegmentToExport[], template: string }) => ReturnType<typeof generateOutSegFileNames>;

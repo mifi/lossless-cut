@@ -152,6 +152,7 @@ async function runFfprobe(args, { timeout = isDev ? 10000 : 30000 } = {}) {
   }
 }
 
+/** @type {(a: any) => Promise<import('../types').Waveform>} */
 async function renderWaveformPng({ filePath, start, duration, color, streamIndex }) {
   const args1 = [
     '-hide_banner',

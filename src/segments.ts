@@ -46,7 +46,7 @@ export const getCleanCutSegments = (cs: Pick<StateSegment, 'start' | 'end' | 'na
   tags: seg.tags,
 }));
 
-export function findSegmentsAtCursor(apparentSegments, currentTime) {
+export function findSegmentsAtCursor(apparentSegments: ApparentSegmentBase[], currentTime: number) {
   const indexes: number[] = [];
   apparentSegments.forEach((segment, index) => {
     if (segment.start <= currentTime && segment.end >= currentTime) indexes.push(index);

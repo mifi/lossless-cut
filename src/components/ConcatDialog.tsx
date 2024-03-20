@@ -13,6 +13,7 @@ import OutputFormatSelect from './OutputFormatSelect';
 import useUserSettings from '../hooks/useUserSettings';
 import { isMov } from '../util/streams';
 import { getOutFileExtension, getSuffixedFileName } from '../util';
+import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../ffprobe';
 
 const { basename } = window.require('path');
 
@@ -25,18 +26,14 @@ const rowStyle: CSSProperties = {
 };
 
 const ConcatDialog = memo(({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles }: {
-  // todo
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  isShown: boolean, onHide: () => void, paths: string[], onConcat: (a: { paths: string[], includeAllStreams: boolean, streams: any, outFileName: string, fileFormat: string, clearBatchFilesAfterConcat: boolean }) => Promise<void>, alwaysConcatMultipleFiles: boolean, setAlwaysConcatMultipleFiles: (a: boolean) => void,
+  isShown: boolean, onHide: () => void, paths: string[], onConcat: (a: { paths: string[], includeAllStreams: boolean, streams: FFprobeStream[], outFileName: string, fileFormat: string, clearBatchFilesAfterConcat: boolean }) => Promise<void>, alwaysConcatMultipleFiles: boolean, setAlwaysConcatMultipleFiles: (a: boolean) => void,
 }) => {
   const { t } = useTranslation();
   const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge } = useUserSettings();
 
   const [includeAllStreams, setIncludeAllStreams] = useState(false);
-  // todo
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [fileMeta, setFileMeta] = useState<{ format: any, streams: any, chapters: any }>();
-  const [allFilesMetaCache, setAllFilesMetaCache] = useState({});
+  const [fileMeta, setFileMeta] = useState<{ format: FFprobeFormat, streams: FFprobeStream[], chapters: FFprobeChapter[] }>();
+  const [allFilesMetaCache, setAllFilesMetaCache] = useState<Record<string, {format: FFprobeFormat, streams: FFprobeStream[], chapters: FFprobeChapter[] }>>({});
   const [clearBatchFilesAfterConcat, setClearBatchFilesAfterConcat] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [enableReadFileMeta, setEnableReadFileMeta] = useState(false);
@@ -88,21 +85,23 @@ const ConcatDialog = memo(({ isShown, onHide, paths, onConcat, alwaysConcatMulti
 
   const allFilesMeta = useMemo(() => {
     if (paths.length === 0) return undefined;
-    const filtered = paths.map((path) => [path, allFilesMetaCache[path]]).filter(([, it]) => it);
+    const filtered = paths.flatMap((path) => (allFilesMetaCache[path] ? [[path, allFilesMetaCache[path]!] as const] : []));
     return filtered.length === paths.length ? filtered : undefined;
   }, [allFilesMetaCache, paths]);
 
   const isOutFileNameValid = outFileName != null && outFileName.length > 0;
 
   const problemsByFile = useMemo(() => {
-    if (!allFilesMeta) return [];
+    if (!allFilesMeta) return {};
     const allFilesMetaExceptFirstFile = allFilesMeta.slice(1);
     const [, firstFileMeta] = allFilesMeta[0]!;
-    const errors = {};
-    function addError(path, error) {
+    const errors: Record<string, string[]> = {};
+
+    function addError(path: string, error: string) {
       if (!errors[path]) errors[path] = [];
-      errors[path].push(error);
+      errors[path]!.push(error);
     }
+
     allFilesMetaExceptFirstFile.forEach(([path, { streams }]) => {
       streams.forEach((stream, i) => {
         const referenceStream = firstFileMeta.streams[i];
@@ -123,7 +122,7 @@ const ConcatDialog = memo(({ isShown, onHide, paths, onConcat, alwaysConcatMulti
     return errors;
   }, [allFilesMeta]);
 
-  const onProblemsByFileClick = useCallback((path) => {
+  const onProblemsByFileClick = useCallback((path: string) => {
     ReactSwal.fire({
       title: i18n.t('Mismatches detected'),
       html: (

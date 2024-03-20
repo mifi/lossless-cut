@@ -9,12 +9,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import Swal from '../swal';
 import HighlightedText from './HighlightedText';
-import { defaultOutSegTemplate, segNumVariable, segSuffixVariable, generateOutSegFileNames as generateOutSegFileNamesRaw } from '../util/outputNameTemplate';
+import { defaultOutSegTemplate, segNumVariable, segSuffixVariable, GenerateOutSegFileNames } from '../util/outputNameTemplate';
 import useUserSettings from '../hooks/useUserSettings';
 import Switch from './Switch';
 import Select from './Select';
 import TextInput from './TextInput';
-import { SegmentToExport } from '../types';
 
 const ReactSwal = withReactContent(Swal);
 
@@ -25,7 +24,7 @@ const formatVariable = (variable) => `\${${variable}}`;
 const extVar = formatVariable('EXT');
 
 const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe }: {
-  outSegTemplate: string, setOutSegTemplate: (text: string) => void, generateOutSegFileNames: (a: { segments?: SegmentToExport[], template: string }) => ReturnType<typeof generateOutSegFileNamesRaw>, currentSegIndexSafe: number,
+  outSegTemplate: string, setOutSegTemplate: (text: string) => void, generateOutSegFileNames: GenerateOutSegFileNames, currentSegIndexSafe: number,
 }) => {
   const { safeOutputFileName, toggleSafeOutputFileName, outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding } = useUserSettings();
 

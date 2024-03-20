@@ -1,6 +1,14 @@
 import type { MenuItem, MenuItemConstructorOptions } from 'electron';
 
 
+export interface ChromiumHTMLVideoElement extends HTMLVideoElement {
+  videoTracks?: { id: string, selected: boolean }[]
+}
+export interface ChromiumHTMLAudioElement extends HTMLAudioElement {
+  audioTracks?: { id: string, enabled: boolean }[]
+}
+
+
 export interface SegmentBase {
   start?: number | undefined,
   end?: number | undefined,
@@ -63,9 +71,10 @@ export type EdlExportType = 'csv' | 'tsv-human' | 'csv-human' | 'csv-frames' | '
 
 export type TunerType = 'wheelSensitivity' | 'keyboardNormalSeekSpeed' | 'keyboardSeekAccFactor';
 
-export interface Waveform {
+export interface RenderableWaveform {
   from: number,
   to: number,
+  duration: number,
   url: string,
 }
 
@@ -76,14 +85,6 @@ export interface Thumbnail {
   url: string
 }
 
-// todo types
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type FfprobeStream = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type FfprobeFormat = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type FfprobeChapter = any;
-
 export type FormatTimecode = (a: { seconds: number, shorten?: boolean | undefined, fileNameFriendly?: boolean | undefined }) => string;
 
 export type GetFrameCount = (sec: number) => number | undefined;
@@ -91,3 +92,5 @@ export type GetFrameCount = (sec: number) => number | undefined;
 export type UpdateSegAtIndex = (index: number, newProps: Partial<StateSegment>) => void;
 
 export type ContextMenuTemplate = (MenuItemConstructorOptions | MenuItem)[];
+
+export type ExportMode = 'segments_to_chapters' | 'merge' | 'merge+separate' | 'separate';

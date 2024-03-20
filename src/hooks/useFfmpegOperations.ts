@@ -9,7 +9,7 @@ import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, 
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { getSmartCutParams } from '../smartcut';
 import { isDurationValid } from '../segments';
-import { FfprobeStream } from '../types';
+import { FFprobeStream } from '../../ffprobe';
 
 const { join, resolve, dirname } = window.require('path');
 const { pathExists } = window.require('fs-extra');
@@ -68,7 +68,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   const getOutputPlaybackRateArgs = useCallback(() => (outputPlaybackRate !== 1 ? ['-itsscale', 1 / outputPlaybackRate] : []), [outputPlaybackRate]);
 
   const concatFiles = useCallback(async ({ paths, outDir, outPath, metadataFromPath, includeAllStreams, streams, outFormat, ffmpegExperimental, onProgress = () => undefined, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge, videoTimebase, appendFfmpegCommandLog }: {
-    paths: string[], outDir: string | undefined, outPath: string, metadataFromPath: string, includeAllStreams: boolean, streams: FfprobeStream, outFormat: string, ffmpegExperimental: boolean, onProgress?: (a: number) => void, preserveMovData: boolean, movFastStart: boolean, chapters: { start: number, end: number, name: string | undefined }[] | undefined, preserveMetadataOnMerge: boolean, videoTimebase?: number | undefined, appendFfmpegCommandLog: (a: string) => void,
+    paths: string[], outDir: string | undefined, outPath: string, metadataFromPath: string, includeAllStreams: boolean, streams: FFprobeStream[], outFormat: string, ffmpegExperimental: boolean, onProgress?: (a: number) => void, preserveMovData: boolean, movFastStart: boolean, chapters: { start: number, end: number, name: string | undefined }[] | undefined, preserveMetadataOnMerge: boolean, videoTimebase?: number | undefined, appendFfmpegCommandLog: (a: string) => void,
   }) => {
     if (await shouldSkipExistingFile(outPath)) return { haveExcludedStreams: false };
 

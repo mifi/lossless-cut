@@ -1,3 +1,6 @@
+import { FFprobeStream, FFprobeStreamDisposition } from '../../ffprobe';
+import { ChromiumHTMLAudioElement, ChromiumHTMLVideoElement } from '../types';
+
 // https://www.ffmpeg.org/doxygen/3.2/libavutil_2utils_8c_source.html#l00079
 const defaultProcessedCodecTypes = new Set([
   'video',
@@ -99,19 +102,19 @@ export const pcmAudioCodecs = [
   'pcm_vidc',
 ];
 
-export function getActiveDisposition(disposition) {
+export function getActiveDisposition(disposition: FFprobeStreamDisposition | undefined) {
   if (disposition == null) return undefined;
   const existingActiveDispositionEntry = Object.entries(disposition).find(([, value]) => value === 1);
   if (!existingActiveDispositionEntry) return undefined;
   return existingActiveDispositionEntry[0]; // return the key
 }
 
-export const isMov = (format: string) => ['ismv', 'ipod', 'mp4', 'mov'].includes(format);
+export const isMov = (format: string | undefined) => format != null && ['ismv', 'ipod', 'mp4', 'mov'].includes(format);
 
 type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
 
 function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined }: {
-  stream, outputIndex: number, outFormat: string, manuallyCopyDisposition?: boolean | undefined, getVideoArgs?: GetVideoArgsFn | undefined
+  stream: FFprobeStream, outputIndex: number, outFormat: string, manuallyCopyDisposition?: boolean | undefined, getVideoArgs?: GetVideoArgsFn | undefined
 }) {
   let args: string[] = [];
 
@@ -216,7 +219,7 @@ export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, cop
   return args;
 }
 
-export function shouldCopyStreamByDefault(stream) {
+export function shouldCopyStreamByDefault(stream: FFprobeStream) {
   if (!defaultProcessedCodecTypes.has(stream.codec_type)) return false;
   if (unprocessableCodecs.has(stream.codec_name)) return false;
   return true;
@@ -224,24 +227,26 @@ export function shouldCopyStreamByDefault(stream) {
 
 export const attachedPicDisposition = 'attached_pic';
 
-export function isStreamThumbnail(stream) {
+export type LiteFFprobeStream = Pick<FFprobeStream, 'index' | 'codec_type' | 'codec_tag' | 'codec_name' | 'disposition'>;
+
+export function isStreamThumbnail(stream: LiteFFprobeStream) {
   return stream && stream.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
 }
 
-export const getAudioStreams = (streams) => streams.filter((stream) => stream.codec_type === 'audio');
-export const getRealVideoStreams = (streams) => streams.filter((stream) => stream.codec_type === 'video' && !isStreamThumbnail(stream));
-export const getSubtitleStreams = (streams) => streams.filter((stream) => stream.codec_type === 'subtitle');
+export const getAudioStreams = <T extends LiteFFprobeStream>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'audio');
+export const getRealVideoStreams = <T extends LiteFFprobeStream>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'video' && !isStreamThumbnail(stream));
+export const getSubtitleStreams = <T extends LiteFFprobeStream>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'subtitle');
 
 // videoTracks/audioTracks seems to be 1-indexed, while ffmpeg is 0-indexes
 const getHtml5TrackId = (ffmpegTrackIndex: number) => String(ffmpegTrackIndex + 1);
 
-const getHtml5VideoTracks = (video) => [...(video.videoTracks ?? [])];
-const getHtml5AudioTracks = (video) => [...(video.audioTracks ?? [])];
+const getHtml5VideoTracks = (video: ChromiumHTMLVideoElement) => [...(video.videoTracks ?? [])];
+const getHtml5AudioTracks = (audio: ChromiumHTMLAudioElement) => [...(audio.audioTracks ?? [])];
 
-export const getVideoTrackForStreamIndex = (video: HTMLVideoElement, index) => getHtml5VideoTracks(video).find((videoTrack) => videoTrack.id === getHtml5TrackId(index));
-export const getAudioTrackForStreamIndex = (video: HTMLVideoElement, index) => getHtml5AudioTracks(video).find((audioTrack) => audioTrack.id === getHtml5TrackId(index));
+export const getVideoTrackForStreamIndex = (video: ChromiumHTMLVideoElement, index) => getHtml5VideoTracks(video).find((videoTrack) => videoTrack.id === getHtml5TrackId(index));
+export const getAudioTrackForStreamIndex = (audio: ChromiumHTMLAudioElement, index) => getHtml5AudioTracks(audio).find((audioTrack) => audioTrack.id === getHtml5TrackId(index));
 
-function resetVideoTrack(video) {
+function resetVideoTrack(video: ChromiumHTMLVideoElement) {
   console.log('Resetting video track');
   getHtml5VideoTracks(video).forEach((track, index) => {
     // eslint-disable-next-line no-param-reassign
@@ -249,7 +254,7 @@ function resetVideoTrack(video) {
   });
 }
 
-function resetAudioTrack(video) {
+function resetAudioTrack(video: ChromiumHTMLVideoElement) {
   console.log('Resetting audio track');
   getHtml5AudioTracks(video).forEach((track, index) => {
     // eslint-disable-next-line no-param-reassign
@@ -258,7 +263,7 @@ function resetAudioTrack(video) {
 }
 
 // https://github.com/mifi/lossless-cut/issues/256
-export function enableVideoTrack(video, index) {
+export function enableVideoTrack(video: ChromiumHTMLVideoElement, index: number | undefined) {
   if (index == null) {
     resetVideoTrack(video);
     return;
@@ -270,7 +275,7 @@ export function enableVideoTrack(video, index) {
   });
 }
 
-export function enableAudioTrack(video, index) {
+export function enableAudioTrack(video: ChromiumHTMLVideoElement, index: number | undefined) {
   if (index == null) {
     resetAudioTrack(video);
     return;
@@ -282,7 +287,7 @@ export function enableAudioTrack(video, index) {
   });
 }
 
-export function getStreamIdsToCopy({ streams, includeAllStreams }) {
+export function getStreamIdsToCopy({ streams, includeAllStreams }: { streams: LiteFFprobeStream[], includeAllStreams: boolean }) {
   if (includeAllStreams) {
     return {
       streamIdsToCopy: streams.map((stream) => stream.index),
@@ -299,9 +304,9 @@ export function getStreamIdsToCopy({ streams, includeAllStreams }) {
   const videoStreams = getRealVideoStreams(streams);
   const audioStreams = getAudioStreams(streams);
   const subtitleStreams = getSubtitleStreams(streams);
-  if (videoStreams.length > 0) streamIdsToCopy.push(videoStreams[0].index);
-  if (audioStreams.length > 0) streamIdsToCopy.push(audioStreams[0].index);
-  if (subtitleStreams.length > 0) streamIdsToCopy.push(subtitleStreams[0].index);
+  if (videoStreams.length > 0) streamIdsToCopy.push(videoStreams[0]!.index);
+  if (audioStreams.length > 0) streamIdsToCopy.push(audioStreams[0]!.index);
+  if (subtitleStreams.length > 0) streamIdsToCopy.push(subtitleStreams[0]!.index);
 
   const excludedStreamIds = streams.filter((s) => !streamIdsToCopy.includes(s.index)).map((s) => s.index);
   return { streamIdsToCopy, excludedStreamIds };
@@ -329,7 +334,9 @@ export async function doesPlayerSupportHevcPlayback() {
 // so we will detect these codecs and convert to dummy
 // "properly handle" here means either play it back or give a playback error if the video codec is not supported
 // todo maybe improve https://github.com/mifi/lossless-cut/issues/88#issuecomment-1363828563
-export function willPlayerProperlyHandleVideo({ streams, hevcPlaybackSupported }) {
+export function willPlayerProperlyHandleVideo({ streams, hevcPlaybackSupported }: {
+  streams: FFprobeStream[], hevcPlaybackSupported: boolean,
+}) {
   const realVideoStreams = getRealVideoStreams(streams);
   // If audio-only format, assume all is OK
   if (realVideoStreams.length === 0) return true;
@@ -344,17 +351,17 @@ export function willPlayerProperlyHandleVideo({ streams, hevcPlaybackSupported }
   return realVideoStreams.some((stream) => !chromiumSilentlyFailCodecs.includes(stream.codec_name));
 }
 
-export function isAudioDefinitelyNotSupported(streams) {
+export function isAudioDefinitelyNotSupported(streams: FFprobeStream[]) {
   const audioStreams = getAudioStreams(streams);
   if (audioStreams.length === 0) return false;
   // TODO this could be improved
   return audioStreams.every((stream) => ['ac3', 'eac3'].includes(stream.codec_name));
 }
 
-export function getVideoTimebase(videoStream) {
+export function getVideoTimebase(videoStream: FFprobeStream) {
   const timebaseMatch = videoStream.time_base && videoStream.time_base.split('/');
   if (timebaseMatch) {
-    const timebaseParsed = parseInt(timebaseMatch[1], 10);
+    const timebaseParsed = parseInt(timebaseMatch[1]!, 10);
     if (!Number.isNaN(timebaseParsed)) return timebaseParsed;
   }
   return undefined;
