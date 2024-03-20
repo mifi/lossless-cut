@@ -1,14 +1,17 @@
 import { memo, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, MotionStyle } from 'framer-motion';
 import { FaTrashAlt } from 'react-icons/fa';
 
 import { mySpring } from './animations';
 import useUserSettings from './hooks/useUserSettings';
 import { useSegColors } from './contexts';
+import { ApparentCutSegment, FormatTimecode } from './types';
 
 
 const TimelineSeg = memo(({
   seg, duration, isActive, segNum, onSegClick, invertCutSegments, formatTimecode, selected,
+} : {
+  seg: ApparentCutSegment, duration: number, isActive: boolean, segNum: number, onSegClick: (a: number) => void, invertCutSegments: boolean, formatTimecode: FormatTimecode, selected: boolean,
 }) => {
   const { darkMode } = useUserSettings();
   const { getSegColor } = useSegColors();
@@ -34,7 +37,7 @@ const TimelineSeg = memo(({
   }, [darkMode, invertCutSegments, isActive, segColor, selected]);
   const markerBorderRadius = 5;
 
-  const wrapperStyle = {
+  const wrapperStyle: MotionStyle = {
     position: 'absolute',
     top: 0,
     bottom: 0,
@@ -59,7 +62,7 @@ const TimelineSeg = memo(({
 
   const onThisSegClick = () => onSegClick(segNum);
 
-  const title = [];
+  const title: string[] = [];
   if (cutEnd > cutStart) title.push(`${formatTimecode({ seconds: cutEnd - cutStart, shorten: true })}`);
   if (name) title.push(name);
 

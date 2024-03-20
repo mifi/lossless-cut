@@ -24,41 +24,59 @@ export default ({ darkMode, filePath, relevantTime, durationSafe, waveformEnable
 
   const waveformColor = darkMode ? waveformColorDark : waveformColorLight;
 
-  const timeThrottled = useThrottle(relevantTime, 1000);
-
   useEffect(() => {
     waveformsRef.current = [];
     setWaveforms([]);
   }, [filePath, audioStream, setWaveforms]);
 
+  const waveformStartTime = Math.floor(relevantTime / ffmpegExtractWindow) * ffmpegExtractWindow;
+  const safeExtractDuration = Math.min(waveformStartTime + ffmpegExtractWindow, durationSafe) - waveformStartTime;
+
+  const waveformStartTimeThrottled = useThrottle(waveformStartTime, 1000);
+
   useEffect(() => {
     let aborted = false;
 
     (async () => {
-      const waveformStartTime = Math.floor(timeThrottled / ffmpegExtractWindow) * ffmpegExtractWindow;
-
-      const alreadyHaveWaveformAtTime = (waveformsRef.current || []).some((waveform) => waveform.from === waveformStartTime);
-      const shouldRun = filePath && audioStream && timeThrottled != null && waveformEnabled && !alreadyHaveWaveformAtTime && !creatingWaveformPromise.current;
+      const alreadyHaveWaveformAtTime = (waveformsRef.current ?? []).some((waveform) => waveform.from === waveformStartTimeThrottled);
+      const shouldRun = !!filePath && audioStream && waveformEnabled && !alreadyHaveWaveformAtTime && !creatingWaveformPromise.current;
       if (!shouldRun) return;
 
       try {
-        const safeExtractDuration = Math.min(waveformStartTime + ffmpegExtractWindow, durationSafe) - waveformStartTime;
-        const promise = renderWaveformPng({ filePath, start: waveformStartTime, duration: safeExtractDuration, color: waveformColor, streamIndex: audioStream.index });
+        const promise = renderWaveformPng({ filePath, start: waveformStartTimeThrottled, duration: safeExtractDuration, color: waveformColor, streamIndex: audioStream.index });
         creatingWaveformPromise.current = promise;
-        const { buffer, ...newWaveform } = await promise;
-        if (aborted) return;
 
         setWaveforms((currentWaveforms) => {
           const waveformsByCreatedAt = sortBy(currentWaveforms, 'createdAt');
           return [
             // cleanup old
             ...(currentWaveforms.length >= maxWaveforms ? waveformsByCreatedAt.slice(1) : waveformsByCreatedAt),
+            // add new
             {
-              ...newWaveform,
-              url: URL.createObjectURL(new Blob([buffer], { type: 'image/png' })),
+              from: waveformStartTimeThrottled,
+              to: waveformStartTimeThrottled + safeExtractDuration,
+              duration: safeExtractDuration,
+              createdAt: new Date(),
             },
           ];
         });
+
+        const { buffer } = await promise;
+
+        if (aborted) {
+          setWaveforms((currentWaveforms) => currentWaveforms.filter((w) => w.from !== waveformStartTimeThrottled));
+          return;
+        }
+
+        setWaveforms((currentWaveforms) => currentWaveforms.map((w) => {
+          if (w.from !== waveformStartTimeThrottled) {
+            return w;
+          }
+          return {
+            ...w,
+            url: URL.createObjectURL(new Blob([buffer], { type: 'image/png' })),
+          };
+        }));
       } catch (err) {
         console.error('Failed to render waveform', err);
       } finally {
@@ -69,14 +87,16 @@ export default ({ darkMode, filePath, relevantTime, durationSafe, waveformEnable
     return () => {
       aborted = true;
     };
-  }, [filePath, timeThrottled, waveformEnabled, audioStream, ffmpegExtractWindow, durationSafe, waveformColor, setWaveforms]);
+  }, [audioStream, filePath, safeExtractDuration, waveformColor, waveformEnabled, waveformStartTimeThrottled]);
 
   const lastWaveformsRef = useRef<RenderableWaveform[]>([]);
   useEffect(() => {
     const removedWaveforms = lastWaveformsRef.current.filter((wf) => !waveforms.includes(wf));
     // Cleanup old
     // if (removedWaveforms.length > 0) console.log('cleanup waveforms', removedWaveforms.length);
-    removedWaveforms.forEach((waveform) => URL.revokeObjectURL(waveform.url));
+    removedWaveforms.forEach((waveform) => {
+      if (waveform.url != null) URL.revokeObjectURL(waveform.url);
+    });
     lastWaveformsRef.current = waveforms;
   }, [waveforms]);
 

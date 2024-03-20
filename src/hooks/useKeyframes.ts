@@ -2,14 +2,17 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import sortBy from 'lodash/sortBy';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 
-import { readFramesAroundTime, findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime } from '../ffmpeg';
+import { readFramesAroundTime, findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime, Frame } from '../ffmpeg';
+import { FFprobeStream } from '../../ffprobe';
 
 const maxKeyframes = 1000;
 // const maxKeyframes = 100;
 
-export default ({ keyframesEnabled, filePath, commandedTime, videoStream, detectedFps, ffmpegExtractWindow }) => {
-  const readingKeyframesPromise = useRef();
-  const [neighbouringKeyFramesMap, setNeighbouringKeyFrames] = useState({});
+export default ({ keyframesEnabled, filePath, commandedTime, videoStream, detectedFps, ffmpegExtractWindow }: {
+  keyframesEnabled: boolean, filePath: string | undefined, commandedTime: number, videoStream: FFprobeStream | undefined, detectedFps: number | undefined, ffmpegExtractWindow: number,
+}) => {
+  const readingKeyframesPromise = useRef<Promise<unknown>>();
+  const [neighbouringKeyFramesMap, setNeighbouringKeyFrames] = useState<Record<string, Frame>>({});
   const neighbouringKeyFrames = useMemo(() => Object.values(neighbouringKeyFramesMap), [neighbouringKeyFramesMap]);
 
   const findNearestKeyFrameTime = useCallback(({ time, direction }) => ffmpegFindNearestKeyFrameTime({ frames: neighbouringKeyFrames, time, direction, fps: detectedFps }), [neighbouringKeyFrames, detectedFps]);
@@ -22,7 +25,7 @@ export default ({ keyframesEnabled, filePath, commandedTime, videoStream, detect
     (async () => {
       // See getIntervalAroundTime
       // We still want to calculate keyframes even if not shouldShowKeyframes because maybe we want to be able to step to the closest keyframe
-      const shouldRun = keyframesEnabled && filePath && videoStream && commandedTime != null && !readingKeyframesPromise.current;
+      const shouldRun = keyframesEnabled && filePath != null && videoStream && commandedTime != null && !readingKeyframesPromise.current;
       if (!shouldRun) return;
 
       try {
@@ -37,7 +40,7 @@ export default ({ keyframesEnabled, filePath, commandedTime, videoStream, detect
           if (existingFrames.length >= maxKeyframes) {
             existingFrames = sortBy(existingFrames, 'createdAt').slice(newKeyFrames.length);
           }
-          const toObj = (map) => Object.fromEntries(map.map((frame) => [frame.time, frame]));
+          const toObj = (map: Frame[]) => Object.fromEntries(map.map((frame) => [frame.time, frame]));
           return {
             ...toObj(existingFrames),
             ...toObj(newKeyFrames),

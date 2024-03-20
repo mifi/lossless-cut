@@ -1,5 +1,7 @@
 // Taken from: https://github.com/facebookarchive/fixed-data-table/blob/master/src/vendor_upstream/dom/normalizeWheel.js
 
+import { WheelEvent } from 'react';
+
 /**
  * Copyright (c) 2015, Facebook, Inc.
  * All rights reserved.
@@ -117,17 +119,18 @@ const PAGE_HEIGHT = 800;
  *         Firefox v4/Win7  |     undefined    |       3
  *
  */
-export default function normalizeWheel(/* object */ event) /* object */ {
+export default function normalizeWheel(/* object */ event: WheelEvent<Element>) /* object */ {
   let sX = 0; let sY = 0; // spinX, spinY
   let pX = 0; let pY = 0; // pixelX, pixelY
 
   // Legacy
   if ('detail' in event) { sY = event.detail; }
-  if ('wheelDelta' in event) { sY = -event.wheelDelta / 120; }
-  if ('wheelDeltaY' in event) { sY = -event.wheelDeltaY / 120; }
-  if ('wheelDeltaX' in event) { sX = -event.wheelDeltaX / 120; }
+  if ('wheelDelta' in event) { sY = -(event.wheelDelta as number) / 120; }
+  if ('wheelDeltaY' in event) { sY = -(event.wheelDeltaY as number) / 120; }
+  if ('wheelDeltaX' in event) { sX = -(event.wheelDeltaX as number) / 120; }
 
   // side scrolling on FF with DOMMouseScroll
+  // @ts-expect-error todo
   if ('axis' in event && event.axis === event.HORIZONTAL_AXIS) {
     sX = sY;
     sY = 0;
@@ -139,7 +142,7 @@ export default function normalizeWheel(/* object */ event) /* object */ {
   if ('deltaY' in event) { pY = event.deltaY; }
   if ('deltaX' in event) { pX = event.deltaX; }
 
-  if ((pX || pY) && event.deltaMode) {
+  if ((pX || pY) && 'deltaMode' in event && event.deltaMode) {
     if (event.deltaMode === 1) { // delta in LINE units
       pX *= LINE_HEIGHT;
       pY *= LINE_HEIGHT;

@@ -5,11 +5,11 @@ import Timecode from 'smpte-timecode';
 import minBy from 'lodash/minBy';
 import invariant from 'tiny-invariant';
 
-import { pcmAudioCodecs, getMapStreamsArgs, isMov } from './util/streams';
+import { pcmAudioCodecs, getMapStreamsArgs, isMov, LiteFFprobeStream } from './util/streams';
 import { getSuffixedOutPath, isExecaFailure } from './util';
 import { isDurationValid } from './segments';
 import { Waveform } from '../types';
-import { FFprobeProbeResult, FFprobeStream } from '../ffprobe';
+import { FFprobeChapter, FFprobeFormat, FFprobeProbeResult, FFprobeStream } from '../ffprobe';
 
 const FileType = window.require('file-type');
 const { pathExists } = window.require('fs-extra');
@@ -64,11 +64,13 @@ interface Keyframe {
   createdAt: Date,
 }
 
-interface Frame extends Keyframe {
+export interface Frame extends Keyframe {
   keyframe: boolean
 }
 
-export async function readFrames({ filePath, from, to, streamIndex }) {
+export async function readFrames({ filePath, from, to, streamIndex }: {
+  filePath: string, from?: number | undefined, to?: number | undefined, streamIndex: number,
+}) {
   const intervalsArgs = from != null && to != null ? ['-read_intervals', `${from}%${to}`] : [];
   const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', streamIndex, '-show_entries', 'packet=pts_time,flags', '-of', 'json', filePath]);
   // todo types
@@ -183,7 +185,7 @@ export function getSafeCutTime(frames, cutTime, nextMode) {
   return frames[index - 1].time;
 }
 
-export function findNearestKeyFrameTime({ frames, time, direction, fps }) {
+export function findNearestKeyFrameTime({ frames, time, direction, fps }: { frames: Frame[], time: number, direction: number, fps: number | undefined }) {
   const sigma = fps ? (1 / fps) : 0.1;
   const keyframes = frames.filter((f) => f.keyframe && (direction > 0 ? f.time > time + sigma : f.time < time - sigma));
   if (keyframes.length === 0) return undefined;
@@ -192,7 +194,7 @@ export function findNearestKeyFrameTime({ frames, time, direction, fps }) {
   return nearestKeyFrame.time;
 }
 
-export async function tryMapChaptersToEdl(chapters) {
+export async function tryMapChaptersToEdl(chapters: FFprobeChapter[]) {
   try {
     return chapters.map((chapter) => {
       const start = parseFloat(chapter.start_time);
@@ -206,7 +208,7 @@ export async function tryMapChaptersToEdl(chapters) {
         end,
         name,
       };
-    }).filter(Boolean);
+    }).flatMap((it) => (it ? [it] : []));
   } catch (err) {
     console.error('Failed to read chapters from file', err);
     return [];
@@ -235,7 +237,7 @@ export async function createChaptersFromSegments({ segmentPaths, chapterNames }:
  * Therefore we have to map between detected input format and encode format
  * See also ffmpeg -formats
  */
-function mapDefaultFormat({ streams, requestedFormat }) {
+function mapDefaultFormat({ streams, requestedFormat }: { streams: FFprobeStream[], requestedFormat: string | undefined }) {
   if (requestedFormat === 'mp4') {
     // Only MOV supports these codecs, so default to MOV instead https://github.com/mifi/lossless-cut/issues/948
     // eslint-disable-next-line unicorn/no-lonely-if
@@ -250,7 +252,7 @@ function mapDefaultFormat({ streams, requestedFormat }) {
   return requestedFormat;
 }
 
-async function determineOutputFormat(ffprobeFormatsStr, filePath) {
+async function determineOutputFormat(ffprobeFormatsStr: string | undefined, filePath: string) {
   const ffprobeFormats = (ffprobeFormatsStr || '').split(',').map((str) => str.trim()).filter(Boolean);
   if (ffprobeFormats.length === 0) {
     console.warn('ffprobe returned unknown formats', ffprobeFormatsStr);
@@ -262,7 +264,7 @@ async function determineOutputFormat(ffprobeFormatsStr, filePath) {
 
   // If ffprobe returned a list of formats, try to be a bit smarter about it.
   // This should only be the case for matroska and mov. See `ffmpeg -formats`
-  if (!['matroska', 'mov'].includes(firstFfprobeFormat)) {
+  if (firstFfprobeFormat == null || !['matroska', 'mov'].includes(firstFfprobeFormat)) {
     console.warn('Unknown ffprobe format list', ffprobeFormats);
     return firstFfprobeFormat;
   }
@@ -319,14 +321,14 @@ async function determineOutputFormat(ffprobeFormatsStr, filePath) {
   }
 }
 
-export async function getSmarterOutFormat({ filePath, fileMeta: { format, streams } }) {
+export async function getSmarterOutFormat({ filePath, fileMeta: { format, streams } }: { filePath: string, fileMeta: { format: FFprobeFormat, streams: FFprobeStream[] } }) {
   const formatsStr = format.format_name;
   const assumedFormat = await determineOutputFormat(formatsStr, filePath);
 
   return mapDefaultFormat({ streams, requestedFormat: assumedFormat });
 }
 
-export async function readFileMeta(filePath) {
+export async function readFileMeta(filePath: string) {
   try {
     const { stdout } = await runFfprobe([
       '-of', 'json', '-show_chapters', '-show_format', '-show_entries', 'stream', '-i', filePath, '-hide_banner',
@@ -352,7 +354,7 @@ export async function readFileMeta(filePath) {
   }
 }
 
-function getPreferredCodecFormat(stream) {
+function getPreferredCodecFormat(stream: LiteFFprobeStream) {
   const map = {
     mp3: { format: 'mp3', ext: 'mp3' },
     opus: { format: 'opus', ext: 'opus' },
@@ -386,7 +388,7 @@ function getPreferredCodecFormat(stream) {
 }
 
 async function extractNonAttachmentStreams({ customOutDir, filePath, streams, enableOverwriteOutput }: {
-  customOutDir?: string, filePath: string, streams: FFprobeStream[], enableOverwriteOutput?: boolean,
+  customOutDir?: string | undefined, filePath: string, streams: FFprobeStream[], enableOverwriteOutput: boolean | undefined,
 }) {
   if (streams.length === 0) return [];
 
@@ -427,7 +429,7 @@ async function extractNonAttachmentStreams({ customOutDir, filePath, streams, en
 }
 
 async function extractAttachmentStreams({ customOutDir, filePath, streams, enableOverwriteOutput }: {
-  customOutDir?: string, filePath: string, streams: FFprobeStream[], enableOverwriteOutput?: boolean,
+  customOutDir?: string | undefined, filePath: string, streams: FFprobeStream[], enableOverwriteOutput: boolean | undefined,
 }) {
   if (streams.length === 0) return [];
 
@@ -468,7 +470,9 @@ async function extractAttachmentStreams({ customOutDir, filePath, streams, enabl
 }
 
 // https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
-export async function extractStreams({ filePath, customOutDir, streams, enableOverwriteOutput }) {
+export async function extractStreams({ filePath, customOutDir, streams, enableOverwriteOutput }: {
+  filePath: string, customOutDir: string | undefined, streams: FFprobeStream[], enableOverwriteOutput?: boolean | undefined,
+}) {
   const attachmentStreams = streams.filter((s) => s.codec_type === 'attachment');
   const nonAttachmentStreams = streams.filter((s) => s.codec_type !== 'attachment');
 
@@ -481,7 +485,7 @@ export async function extractStreams({ filePath, customOutDir, streams, enableOv
   ];
 }
 
-async function renderThumbnail(filePath, timestamp) {
+async function renderThumbnail(filePath: string, timestamp: number) {
   const args = [
     '-ss', timestamp,
     '-i', filePath,
@@ -498,7 +502,7 @@ async function renderThumbnail(filePath, timestamp) {
   return URL.createObjectURL(blob);
 }
 
-export async function extractSubtitleTrack(filePath, streamId) {
+export async function extractSubtitleTrack(filePath: string, streamId: number) {
   const args = [
     '-hide_banner',
     '-i', filePath,
@@ -513,7 +517,9 @@ export async function extractSubtitleTrack(filePath, streamId) {
   return URL.createObjectURL(blob);
 }
 
-export async function renderThumbnails({ filePath, from, duration, onThumbnail }) {
+export async function renderThumbnails({ filePath, from, duration, onThumbnail }: {
+  filePath: string, from: number, duration: number, onThumbnail: (a: { time: number, url: string }) => void,
+}) {
   // Time first render to determine how many to render
   const startTime = Date.now() / 1000;
   let url = await renderThumbnail(filePath, from);
@@ -533,7 +539,7 @@ export async function renderThumbnails({ filePath, from, duration, onThumbnail }
   }, { concurrency: 2 });
 }
 
-export async function extractWaveform({ filePath, outPath }) {
+export async function extractWaveform({ filePath, outPath }: { filePath: string, outPath: string }) {
   const numSegs = 10;
   const duration = 60 * 60;
   const maxLen = 0.1;
@@ -560,29 +566,29 @@ export async function extractWaveform({ filePath, outPath }) {
   console.timeEnd('ffmpeg');
 }
 
-export function isIphoneHevc(format, streams) {
+export function isIphoneHevc(format: FFprobeFormat, streams: FFprobeStream[]) {
   if (!streams.some((s) => s.codec_name === 'hevc')) return false;
   const makeTag = format.tags && format.tags['com.apple.quicktime.make'];
   const modelTag = format.tags && format.tags['com.apple.quicktime.model'];
   return (makeTag === 'Apple' && modelTag.startsWith('iPhone'));
 }
 
-export function isProblematicAvc1(outFormat, streams) {
+export function isProblematicAvc1(outFormat: string | undefined, streams: FFprobeStream[]) {
   // it seems like this only happens for files that are also 4.2.2 10bit (yuv422p10le)
   // https://trac.ffmpeg.org/wiki/Chroma%20Subsampling
   return isMov(outFormat) && streams.some((s) => s.codec_name === 'h264' && s.codec_tag === '0x31637661' && s.codec_tag_string === 'avc1' && s.pix_fmt === 'yuv422p10le');
 }
 
-function parseFfprobeFps(stream) {
+function parseFfprobeFps(stream: FFprobeStream) {
   const match = typeof stream.avg_frame_rate === 'string' && stream.avg_frame_rate.match(/^(\d+)\/(\d+)$/);
   if (!match) return undefined;
-  const num = parseInt(match[1], 10);
-  const den = parseInt(match[2], 10);
+  const num = parseInt(match[1]!, 10);
+  const den = parseInt(match[2]!, 10);
   if (den > 0) return num / den;
   return undefined;
 }
 
-export function getStreamFps(stream) {
+export function getStreamFps(stream: FFprobeStream) {
   if (stream.codec_type === 'video') {
     const fps = parseFfprobeFps(stream);
     return fps;
@@ -609,7 +615,7 @@ export function getStreamFps(stream) {
 }
 
 
-function parseTimecode(str, frameRate) {
+function parseTimecode(str: string, frameRate?: number | undefined) {
   // console.log(str, frameRate);
   const t = Timecode(str, frameRate ? parseFloat(frameRate.toFixed(3)) : undefined);
   if (!t) return undefined;
@@ -617,15 +623,15 @@ function parseTimecode(str, frameRate) {
   return Number.isFinite(seconds) ? seconds : undefined;
 }
 
-export function getTimecodeFromStreams(streams) {
+export function getTimecodeFromStreams(streams: FFprobeStream[]) {
   console.log('Trying to load timecode');
   let foundTimecode;
   streams.find((stream) => {
     try {
-      if (stream.tags && stream.tags.timecode) {
+      if (stream.tags && stream.tags['timecode']) {
         const fps = getStreamFps(stream);
-        foundTimecode = parseTimecode(stream.tags.timecode, fps);
-        console.log('Loaded timecode', stream.tags.timecode, 'from stream', stream.index);
+        foundTimecode = parseTimecode(stream.tags['timecode'], fps);
+        console.log('Loaded timecode', stream.tags['timecode'], 'from stream', stream.index);
         return true;
       }
       return undefined;

@@ -5,7 +5,7 @@ import { FaTrashAlt, FaSave } from 'react-icons/fa';
 import { mySpring } from './animations';
 import { saveColor } from './colors';
 
-const BetweenSegments = memo(({ start, end, duration, invertCutSegments }) => {
+const BetweenSegments = memo(({ start, end, duration, invertCutSegments }: { start: number, end: number, duration: number, invertCutSegments: boolean }) => {
   const left = `${(start / duration) * 100}%`;
 
   return (

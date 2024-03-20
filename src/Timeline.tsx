@@ -1,8 +1,9 @@
-import { memo, useRef, useMemo, useCallback, useEffect, useState } from 'react';
+import { memo, useRef, useMemo, useCallback, useEffect, useState, MutableRefObject, CSSProperties, WheelEventHandler } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import debounce from 'lodash/debounce';
 import { useTranslation } from 'react-i18next';
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
+import invariant from 'tiny-invariant';
 
 import TimelineSeg from './TimelineSeg';
 import BetweenSegments from './BetweenSegments';
@@ -11,11 +12,18 @@ import useUserSettings from './hooks/useUserSettings';
 
 
 import { timelineBackground, darkModeTransition } from './colors';
+import { Frame } from './ffmpeg';
+import { ApparentCutSegment, FormatTimecode, InverseCutSegment, RenderableWaveform, Thumbnail } from './types';
+
+
+type CalculateTimelinePercent = (time: number) => string | undefined;
 
 const currentTimeWidth = 1;
 
-const Waveform = memo(({ waveform, calculateTimelinePercent, durationSafe }) => {
-  const [style, setStyle] = useState({ display: 'none' });
+const Waveform = memo(({ waveform, calculateTimelinePercent, durationSafe }: {
+  waveform: RenderableWaveform, calculateTimelinePercent: CalculateTimelinePercent, durationSafe: number,
+}) => {
+  const [style, setStyle] = useState<CSSProperties>({ display: 'none' });
 
   const leftPos = calculateTimelinePercent(waveform.from);
 
@@ -27,12 +35,17 @@ const Waveform = memo(({ waveform, calculateTimelinePercent, durationSafe }) => 
       position: 'absolute', height: '100%', left: leftPos, width: `${((toTruncated - waveform.from) / durationSafe) * 100}%`,
     });
   }
+
+  if (waveform.url == null) return null;
+
   return (
     <img src={waveform.url} draggable={false} style={style} alt="" onLoad={onLoad} />
   );
 });
 
-const Waveforms = memo(({ calculateTimelinePercent, durationSafe, waveforms, zoom, height }) => (
+const Waveforms = memo(({ calculateTimelinePercent, durationSafe, waveforms, zoom, height }: {
+  calculateTimelinePercent: CalculateTimelinePercent, durationSafe: number, waveforms: RenderableWaveform[], zoom: number, height: number,
+}) => (
   <div style={{ height, width: `${zoom * 100}%`, position: 'relative' }}>
     {waveforms.map((waveform) => (
       <Waveform key={`${waveform.from}-${waveform.to}`} waveform={waveform} calculateTimelinePercent={calculateTimelinePercent} durationSafe={durationSafe} />
@@ -40,9 +53,9 @@ const Waveforms = memo(({ calculateTimelinePercent, durationSafe, waveforms, zoo
   </div>
 ));
 
-const CommandedTime = memo(({ commandedTimePercent }) => {
+const CommandedTime = memo(({ commandedTimePercent }: { commandedTimePercent: string }) => {
   const color = 'var(--gray12)';
-  const commonStyle = { left: commandedTimePercent, position: 'absolute', pointerEvents: 'none' };
+  const commonStyle: CSSProperties = { left: commandedTimePercent, position: 'absolute', pointerEvents: 'none' };
   return (
     <>
       <FaCaretDown style={{ ...commonStyle, top: 0, color, fontSize: 14, marginLeft: -7, marginTop: -6 }} />
@@ -54,27 +67,76 @@ const CommandedTime = memo(({ commandedTimePercent }) => {
 
 const timelineHeight = 36;
 
-const timeWrapperStyle = { position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' };
-const timeStyle = { background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' };
+const timeWrapperStyle: CSSProperties = { position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' };
+const timeStyle: CSSProperties = { background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' };
 
 const Timeline = memo(({
-  durationSafe, startTimeOffset, playerTime, commandedTime, relevantTime,
-  zoom, neighbouringKeyFrames, seekAbs, apparentCutSegments,
-  setCurrentSegIndex, currentSegIndexSafe, inverseCutSegments, formatTimecode, formatTimeAndFrames,
-  waveforms, shouldShowWaveform, shouldShowKeyframes, thumbnails,
-  onZoomWindowStartTimeChange, waveformEnabled, showThumbnails,
-  playing, isFileOpened, onWheel, commandedTimeRef, goToTimecode, isSegmentSelected,
+  durationSafe,
+  startTimeOffset,
+  playerTime,
+  commandedTime,
+  relevantTime,
+  zoom,
+  neighbouringKeyFrames,
+  seekAbs,
+  apparentCutSegments,
+  setCurrentSegIndex,
+  currentSegIndexSafe,
+  inverseCutSegments,
+  formatTimecode,
+  formatTimeAndFrames,
+  waveforms,
+  shouldShowWaveform,
+  shouldShowKeyframes,
+  thumbnails,
+  onZoomWindowStartTimeChange,
+  waveformEnabled,
+  showThumbnails,
+  playing,
+  isFileOpened,
+  onWheel,
+  commandedTimeRef,
+  goToTimecode,
+  isSegmentSelected,
+} : {
+  durationSafe: number,
+  startTimeOffset: number,
+  playerTime: number | undefined,
+  commandedTime: number,
+  relevantTime: number,
+  zoom: number,
+  neighbouringKeyFrames: Frame[],
+  seekAbs: (a: number) => void,
+  apparentCutSegments: ApparentCutSegment[],
+  setCurrentSegIndex: (a: number) => void,
+  currentSegIndexSafe: number,
+  inverseCutSegments: InverseCutSegment[],
+  formatTimecode: FormatTimecode,
+  formatTimeAndFrames: (a: number) => string,
+  waveforms: RenderableWaveform[],
+  shouldShowWaveform: boolean,
+  shouldShowKeyframes: boolean,
+  thumbnails: Thumbnail[],
+  onZoomWindowStartTimeChange: (a: number) => void,
+  waveformEnabled: boolean,
+  showThumbnails: boolean,
+  playing: boolean,
+  isFileOpened: boolean,
+  onWheel: WheelEventHandler,
+  commandedTimeRef: MutableRefObject<number>,
+  goToTimecode: () => void,
+  isSegmentSelected: (a: { segId: string }) => boolean,
 }) => {
   const { t } = useTranslation();
 
   const { invertCutSegments } = useUserSettings();
 
-  const timelineScrollerRef = useRef();
-  const timelineScrollerSkipEventRef = useRef();
-  const timelineScrollerSkipEventDebounce = useRef();
-  const timelineWrapperRef = useRef();
+  const timelineScrollerRef = useRef<HTMLDivElement>(null);
+  const timelineScrollerSkipEventRef = useRef<boolean>(false);
+  const timelineScrollerSkipEventDebounce = useRef<() => void>();
+  const timelineWrapperRef = useRef<HTMLDivElement>(null);
 
-  const [hoveringTime, setHoveringTime] = useState();
+  const [hoveringTime, setHoveringTime] = useState<number>();
 
   const displayTime = (hoveringTime != null && isFileOpened && !playing ? hoveringTime : relevantTime) + startTimeOffset;
   const displayTimePercent = useMemo(() => `${Math.round((displayTime / durationSafe) * 100)}%`, [displayTime, durationSafe]);
@@ -99,12 +161,12 @@ const Timeline = memo(({
   const timeOfInterestPosPixels = useMemo(() => {
     // https://github.com/mifi/lossless-cut/issues/676
     const pos = calculateTimelinePos(relevantTime);
-    if (pos != null && timelineScrollerRef.current) return pos * zoom * timelineScrollerRef.current.offsetWidth;
+    if (pos != null && timelineScrollerRef.current) return pos * zoom * timelineScrollerRef.current!.offsetWidth;
     return undefined;
   }, [calculateTimelinePos, relevantTime, zoom]);
 
   const calcZoomWindowStartTime = useCallback(() => (timelineScrollerRef.current
-    ? (timelineScrollerRef.current.scrollLeft / (timelineScrollerRef.current.offsetWidth * zoom)) * durationSafe
+    ? (timelineScrollerRef.current.scrollLeft / (timelineScrollerRef.current!.offsetWidth * zoom)) * durationSafe
     : 0), [durationSafe, zoom]);
 
   // const zoomWindowStartTime = calcZoomWindowStartTime(duration, zoom);
@@ -117,7 +179,7 @@ const Timeline = memo(({
 
   function suppressScrollerEvents() {
     timelineScrollerSkipEventRef.current = true;
-    timelineScrollerSkipEventDebounce.current();
+    timelineScrollerSkipEventDebounce.current?.();
   }
 
   const scrollLeftMotion = useMotionValue(0);
@@ -127,7 +189,7 @@ const Timeline = memo(({
   useEffect(() => {
     spring.on('change', (value) => {
       if (timelineScrollerSkipEventRef.current) return; // Don't animate while zooming
-      timelineScrollerRef.current.scrollLeft = value;
+      timelineScrollerRef.current!.scrollLeft = value;
     });
   }, [spring]);
 
@@ -135,8 +197,9 @@ const Timeline = memo(({
   useEffect(() => {
     if (timeOfInterestPosPixels == null || timelineScrollerSkipEventRef.current) return;
 
+    invariant(timelineScrollerRef.current != null);
     if (timeOfInterestPosPixels > timelineScrollerRef.current.scrollLeft + timelineScrollerRef.current.offsetWidth) {
-      const timelineWidth = timelineWrapperRef.current.offsetWidth;
+      const timelineWidth = timelineWrapperRef.current!.offsetWidth;
       const scrollLeft = timeOfInterestPosPixels - (timelineScrollerRef.current.offsetWidth * 0.1);
       scrollLeftMotion.set(Math.min(scrollLeft, timelineWidth - timelineScrollerRef.current.offsetWidth));
     } else if (timeOfInterestPosPixels < timelineScrollerRef.current.scrollLeft) {
@@ -150,6 +213,7 @@ const Timeline = memo(({
     suppressScrollerEvents();
 
     if (isZoomed) {
+      invariant(timelineScrollerRef.current != null);
       const zoomedTargetWidth = timelineScrollerRef.current.offsetWidth * zoom;
 
       const scrollLeft = Math.max((commandedTimeRef.current / durationSafe) * zoomedTargetWidth - timelineScrollerRef.current.offsetWidth / 2, 0);
@@ -163,6 +227,7 @@ const Timeline = memo(({
     const cancelWheel = (event) => event.preventDefault();
 
     const scroller = timelineScrollerRef.current;
+    invariant(scroller != null);
     scroller.addEventListener('wheel', cancelWheel, { passive: false });
 
     return () => {
@@ -186,6 +251,7 @@ const Timeline = memo(({
 
   const getMouseTimelinePos = useCallback((e) => {
     const target = timelineWrapperRef.current;
+    invariant(target != null);
     const rect = target.getBoundingClientRect();
     const relX = e.pageX - (rect.left + document.body.scrollLeft);
     return (relX / target.offsetWidth) * durationSafe;
@@ -196,7 +262,7 @@ const Timeline = memo(({
   const handleScrub = useCallback((e) => seekAbs((getMouseTimelinePos(e))), [seekAbs, getMouseTimelinePos]);
 
   useEffect(() => {
-    setHoveringTime();
+    setHoveringTime(undefined);
   }, [relevantTime]);
 
   const onMouseDown = useCallback((e) => {
@@ -231,7 +297,7 @@ const Timeline = memo(({
     e.preventDefault();
   }, [getMouseTimelinePos]);
 
-  const onMouseOut = useCallback(() => setHoveringTime(), []);
+  const onMouseOut = useCallback(() => setHoveringTime(undefined), []);
 
   const contextMenuTemplate = useMemo(() => [
     { label: t('Seek to timecode'), click: goToTimecode },

@@ -2,6 +2,7 @@ import { useCallback, useRef, useMemo, useState, MutableRefObject } from 'react'
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import i18n from 'i18next';
 import pMap from 'p-map';
+import invariant from 'tiny-invariant';
 
 import sortBy from 'lodash/sortBy';
 
@@ -109,7 +110,7 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
   // These are segments guaranteed to have a start and end time
   const apparentCutSegments = useMemo(() => getApparentCutSegments(cutSegments), [cutSegments, getApparentCutSegments]);
 
-  const getApparentCutSegmentById = useCallback((id) => apparentCutSegments.find((s) => s.segId === id), [apparentCutSegments]);
+  const getApparentCutSegmentById = useCallback((id: string) => apparentCutSegments.find((s) => s.segId === id), [apparentCutSegments]);
 
   const haveInvalidSegs = useMemo(() => apparentCutSegments.some((cutSegment) => cutSegment.start >= cutSegment.end), [apparentCutSegments]);
 
@@ -147,6 +148,7 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
 
   const createSegmentsFromKeyframes = useCallback(async () => {
     if (!videoStream) return;
+    invariant(filePath != null);
     const keyframes = (await readFrames({ filePath, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end, streamIndex: videoStream.index })).filter((frame) => frame.keyframe);
     const newSegments = mapTimesToSegments(keyframes.map((keyframe) => keyframe.time));
     loadCutSegments(newSegments, true);

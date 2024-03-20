@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { WheelEventHandler, useCallback } from 'react';
 import { t } from 'i18next';
 
 import normalizeWheel from './normalizeWheel';
@@ -19,8 +19,10 @@ export const getModifierKeyNames = () => ({
 
 export const getModifier = (key) => getModifierKeyNames()[key];
 
-function useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, invertTimelineScroll, zoomRel, seekRel }) {
-  const onWheel = useCallback((e) => {
+function useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, invertTimelineScroll, zoomRel, seekRel }: {
+  wheelSensitivity: number, mouseWheelZoomModifierKey: string, invertTimelineScroll?: boolean | undefined, zoomRel: (a: number) => void, seekRel: (a: number) => void,
+}) {
+  const onWheel = useCallback<WheelEventHandler<Element>>((e) => {
     const { pixelX, pixelY } = normalizeWheel(e);
     // console.log({ spinX, spinY, pixelX, pixelY });
 

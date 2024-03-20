@@ -201,10 +201,6 @@ async function renderWaveformPng({ filePath, start, duration, color, streamIndex
 
     return {
       buffer: stdout,
-      from: start,
-      to: start + duration,
-      duration,
-      createdAt: new Date(),
     };
   } catch (err) {
     if (ps1) ps1.kill();

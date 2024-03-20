@@ -72,10 +72,11 @@ export type EdlExportType = 'csv' | 'tsv-human' | 'csv-human' | 'csv-frames' | '
 export type TunerType = 'wheelSensitivity' | 'keyboardNormalSeekSpeed' | 'keyboardSeekAccFactor';
 
 export interface RenderableWaveform {
+  createdAt: Date,
   from: number,
   to: number,
   duration: number,
-  url: string,
+  url?: string,
 }
 
 export type FfmpegCommandLog = { command: string, time: Date }[];

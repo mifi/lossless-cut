@@ -430,7 +430,7 @@ function App() {
     return formatDuration({ seconds, shorten, fileNameFriendly });
   }, [detectedFps, timecodeFormat, getFrameCount]);
 
-  const formatTimeAndFrames = useCallback((seconds) => {
+  const formatTimeAndFrames = useCallback((seconds: number) => {
     const frameCount = getFrameCount(seconds);
 
     const timeStr = timecodeFormat === 'timecodeWithFramesFraction'
@@ -628,6 +628,7 @@ function App() {
     if (!subtitleStream || workingRef.current) return;
     try {
       setWorking({ text: i18n.t('Loading subtitle') });
+      invariant(filePath != null);
       const url = await extractSubtitleTrack(filePath, index);
       setSubtitlesByStreamId((old) => ({ ...old, [index]: { url, lang: subtitleStream.tags && subtitleStream.tags.language } }));
       setActiveSubtitleStreamIndex(index);
@@ -713,6 +714,8 @@ function App() {
 
       try {
         setThumbnails([]);
+        invariant(filePath != null);
+        invariant(zoomedDuration != null);
         const promise = ffmpegRenderThumbnails({ filePath, from: zoomWindowStartTime, duration: zoomedDuration, onThumbnail: addThumbnail });
         thumnailsRenderingPromiseRef.current = promise;
         await promise;
@@ -1205,6 +1208,8 @@ function App() {
   ), [customOutDir, filePath, mergedOutFileName]);
 
   const onExportConfirm = useCallback(async () => {
+    invariant(filePath != null);
+
     if (numStreamsToCopy === 0) {
       errorToast(i18n.t('No tracks selected for export'));
       return;
@@ -1453,7 +1458,7 @@ function App() {
 
     const storeProjectInSourceDir = !storeProjectInWorkingDir;
 
-    async function tryFindAndLoadProjectFile({ chapters, cod }) {
+    async function tryFindAndLoadProjectFile({ chapters, cod }: { chapters, cod: string | undefined }) {
       try {
         // First try to open from from working dir
         if (await tryOpenProjectPath(getEdlFilePath(fp, cod), 'llc')) return;
@@ -2620,7 +2625,6 @@ function App() {
 
             <div className="no-user-select" style={bottomStyle}>
               <Timeline
-                // @ts-expect-error todo
                 shouldShowKeyframes={shouldShowKeyframes}
                 waveforms={waveforms}
                 shouldShowWaveform={shouldShowWaveform}
@@ -2631,7 +2635,6 @@ function App() {
                 playerTime={playerTime}
                 commandedTime={commandedTime}
                 relevantTime={relevantTime}
-                getRelevantTime={getRelevantTime}
                 commandedTimeRef={commandedTimeRef}
                 startTimeOffset={startTimeOffset}
                 zoom={zoom}

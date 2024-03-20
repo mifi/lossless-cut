@@ -105,8 +105,4 @@ export type StoreResetConfig = <T extends keyof Config>(key: T) => void;
 
 export interface Waveform {
   buffer: Buffer,
-  from: number,
-  to: number,
-  duration: number,
-  createdAt: Date,
 }

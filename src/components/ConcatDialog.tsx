@@ -5,6 +5,7 @@ import { AiOutlineMergeCells } from 'react-icons/ai';
 import { FaQuestionCircle, FaExclamationTriangle } from 'react-icons/fa';
 import i18n from 'i18next';
 import withReactContent from 'sweetalert2-react-content';
+import invariant from 'tiny-invariant';
 
 import Swal from '../swal';
 import { readFileMeta, getSmarterOutFormat } from '../ffmpeg';
@@ -57,6 +58,7 @@ const ConcatDialog = memo(({ isShown, onHide, paths, onConcat, alwaysConcatMulti
       setFileFormat(undefined);
       setDetectedFileFormat(undefined);
       setOutFileName(undefined);
+      invariant(firstPath != null);
       const fileMetaNew = await readFileMeta(firstPath);
       const fileFormatNew = await getSmarterOutFormat({ filePath: firstPath, fileMeta: fileMetaNew });
       if (aborted) return;

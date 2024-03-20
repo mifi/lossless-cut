@@ -1,4 +1,6 @@
-import { memo, useEffect, useState, useCallback, useRef } from 'react';
+import { memo, useEffect, useState, useCallback, useRef, CSSProperties } from 'react';
+import { Spinner } from 'evergreen-ui';
+
 import { ffmpegExtractWindow } from '../util/constants';
 import { RenderableWaveform } from '../types';
 
@@ -90,22 +92,36 @@ const BigWaveform = memo(({ waveforms, relevantTime, playing, durationSafe, zoom
         const leftPercent = `${left * 100}%`;
         const widthPercent = `${width * 100}%`;
 
+        const style: CSSProperties = {
+          pointerEvents: 'none',
+          backgroundColor: 'var(--gray3)',
+          position: 'absolute',
+          height: '100%',
+          width: widthPercent,
+          left: leftPercent,
+          borderLeft: waveform.from === 0 ? '1px solid var(--gray11)' : undefined,
+          borderRight: waveform.to >= durationSafe ? '1px solid var(--gray11)' : undefined,
+        };
+
+        if (waveform.url == null) {
+          return (
+            <div
+              key={`${waveform.from}-${waveform.to}`}
+              draggable={false}
+              style={{ ...style, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Spinner />
+            </div>
+          );
+        }
+
         return (
           <img
             key={`${waveform.from}-${waveform.to}`}
             src={waveform.url}
             draggable={false}
             alt=""
-            style={{
-              pointerEvents: 'none',
-              backgroundColor: 'var(--gray3)',
-              position: 'absolute',
-              height: '100%',
-              width: widthPercent,
-              left: leftPercent,
-              borderLeft: waveform.from === 0 ? '1px solid var(--gray11)' : undefined,
-              borderRight: waveform.to >= durationSafe ? '1px solid var(--gray11)' : undefined,
-            }}
+            style={style}
           />
         );
       })}
