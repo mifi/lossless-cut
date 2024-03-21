@@ -12,7 +12,7 @@ module.exports = {
 
   overrides: [
     {
-      files: ['./src/**/*.{js,cjs,mjs,jsx,ts,tsx,mts}'],
+      files: ['./src/renderer/**/*.{js,cjs,mjs,jsx,ts,tsx,mts}'],
       env: {
         node: false,
         browser: true,
@@ -22,7 +22,13 @@ module.exports = {
       },
     },
     {
-      files: ['./script/**/*.{js,cjs,mjs,jsx,ts,tsx,mts}', 'vite.config.js'],
+      files: ['./src/preload/**/*.{js,cjs,jsx,ts,tsx}'],
+      env: {
+        browser: true,
+      },
+    },
+    {
+      files: ['./script/**/*.{js,cjs,mjs,jsx,ts,tsx,mts}', 'electron.vite.config.js'],
       rules: {
         'import/no-extraneous-dependencies': ['error', {
           devDependencies: true,

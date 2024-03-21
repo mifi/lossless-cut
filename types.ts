@@ -99,10 +99,13 @@ export interface Config {
   invertTimelineScroll: boolean | undefined,
 }
 
-export type StoreGetConfig = <T extends keyof Config>(key: T) => Config[T];
-export type StoreSetConfig = <T extends keyof Config>(key: T, value: Config[T]) => void;
-export type StoreResetConfig = <T extends keyof Config>(key: T) => void;
-
 export interface Waveform {
   buffer: Buffer,
 }
+
+export interface ApiKeyboardActionRequest {
+  id: number
+  action: string
+}
+
+export type Html5ifyMode = 'fastest' | 'fast-audio-remux' | 'fast-audio' | 'fast' | 'slow' | 'slow-audio' | 'slowest';

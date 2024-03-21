@@ -1,0 +1,9 @@
+{
+  "extends": ["@tsconfig/strictest", "@tsconfig/node18/tsconfig.json"],
+  "compilerOptions": {
+    "noEmit": true,
+  },
+  "include": [
+    "script/**/*",
+  ],
+}

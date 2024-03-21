@@ -11,7 +11,7 @@ node_modules
 !.yarn/versions
 
 /dist
-/vite-dist
+/out
 /icon-build
 /build-resources
 /doc

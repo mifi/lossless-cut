@@ -1,6 +1,6 @@
 <div align="center">
 	<br>
-  <p><a href="https://mifi.no/losslesscut/"><img src="src/icon.svg" width="120" alt="LosslessCut" /></a></p>
+  <p><a href="https://mifi.no/losslesscut/"><img src="src/renderer/src/icon.svg" width="120" alt="LosslessCut" /></a></p>
   <p><b>LosslessCut</b></p>
   The swiss army knife of lossless video/audio editing
 	<br>

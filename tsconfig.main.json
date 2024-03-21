@@ -10,12 +10,9 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-
-    "noImplicitAny": false, // todo
-    "checkJs": true, // todo
-    "allowJs": true, // todo
   },
   "include": [
-    "public/**/*", "types.ts",
+    "src/main/**/*",
+    "types.ts",
   ],
 }

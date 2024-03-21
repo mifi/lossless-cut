@@ -1,5 +1,5 @@
 {
   "search.exclude": {
-    "/public/locales/**": true,
+    "/src/main/locales/**": true,
   }
 }

@@ -41,11 +41,11 @@ Master language is English.
 To test new weblate translations you made in the app itself, you need to:
 1. Download the translation for your language from Weblate: **Files -> Download translation**
 2. Rename the downloaded `.json` file to: `translation.json`
-3. Create a [folder structure](https://github.com/mifi/lossless-cut/tree/master/public/locales) somewhere on your computer that looks like this:
+3. Create a [folder structure](https://github.com/mifi/lossless-cut/tree/master/src/main/locales) somewhere on your computer that looks like this:
 ```
 translations/locales/localeCode
 ```
-You can find a list of the available [`localeCode`s here](https://github.com/mifi/lossless-cut/tree/master/public/locales). In our example we will use `nb_NO` (Norwegian) with this path:
+You can find a list of the available [`localeCode`s here](https://github.com/mifi/lossless-cut/tree/master/src/main/locales). In our example we will use `nb_NO` (Norwegian) with this path:
 ```
 /Users/mifi/Desktop/translations/locales/nb_NO
 ```

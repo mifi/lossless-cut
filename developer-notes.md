@@ -6,10 +6,6 @@ This app is built using Electron.
 Make sure you have at least Node v16. The app uses ffmpeg from PATH when developing.
 
 ```bash
-npm install -g yarn
-```
-
-```bash
 git clone https://github.com/mifi/lossless-cut.git
 cd lossless-cut
 yarn

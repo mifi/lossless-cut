@@ -12,6 +12,6 @@
     { "path": "./tsconfig.main.json" },
   ],
   "include": [
-    "src/**/*",
+    "src/renderer/**/*",
   ],
 }
