@@ -1850,7 +1850,7 @@ function App() {
       if (append) {
         const newUniquePaths = newPaths.filter((newPath) => !existingFiles.some(({ path: existingPath }) => newPath === existingPath));
         const [firstNewUniquePath] = newUniquePaths;
-        if (firstNewUniquePath == null) throw new Error();
+        if (firstNewUniquePath == null) return existingFiles;
         setSelectedBatchFiles([firstNewUniquePath]);
         return [...existingFiles, ...mapPathsToFiles(newUniquePaths)];
       }
@@ -2391,10 +2391,10 @@ function App() {
         key,
         async (_event: unknown, ...args: unknown[]) => actionWithCatch(() => fn(...args)),
       ] as const),
-      // all main actions (no arguments, except keyup which we don't support):
+      // all main actions (no arguments, so simulate keyup):
       ...Object.entries(mainActions).map(([key, fn]) => [
         key,
-        async () => actionWithCatch(() => fn({ keyup: false })),
+        async () => actionWithCatch(() => fn({ keyup: true })),
       ] as const),
     ];
 
