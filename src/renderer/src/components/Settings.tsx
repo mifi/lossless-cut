@@ -1,6 +1,6 @@
 import { CSSProperties, ChangeEventHandler, memo, useCallback, useMemo, useState } from 'react';
 import { FaYinYang, FaKeyboard } from 'react-icons/fa';
-import { GlobeIcon, CleanIcon, CogIcon, Button, NumericalIcon, FolderCloseIcon, DocumentIcon, TimeIcon } from 'evergreen-ui';
+import { GlobeIcon, CleanIcon, CogIcon, Button, NumericalIcon, FolderCloseIcon, DocumentIcon, TimeIcon, CrossIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 import { HTMLMotionProps, motion } from 'framer-motion';
 import invariant from 'tiny-invariant';
@@ -47,12 +47,14 @@ const Settings = memo(({
   askForCleanupChoices,
   toggleStoreProjectInWorkingDir,
   simpleMode,
+  clearOutDir,
 }: {
   onTunerRequested: (type: TunerType) => void,
   onKeyboardShortcutsDialogRequested: () => void,
   askForCleanupChoices: () => Promise<void>,
   toggleStoreProjectInWorkingDir: () => Promise<void>,
   simpleMode: boolean,
+  clearOutDir: () => Promise<void>,
 }) => {
   const { t } = useTranslation();
   const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
@@ -205,6 +207,15 @@ const Settings = memo(({
                 {customOutDir ? t('Custom working directory') : t('Same directory as input file')}...
               </Button>
               <div>{customOutDir}</div>
+              {customOutDir && (
+                <Button
+                  height={20}
+                  iconBefore={CrossIcon}
+                  onClick={clearOutDir}
+                >
+                  {t('Clear working directory')}
+                </Button>
+              )}
             </td>
           </Row>
 
