@@ -2749,6 +2749,7 @@ function App() {
                 askForCleanupChoices={askForCleanupChoices}
                 toggleStoreProjectInWorkingDir={toggleStoreProjectInWorkingDir}
                 simpleMode={simpleMode}
+                clearOutDir={clearOutDir}
               />
             </Sheet>
 
