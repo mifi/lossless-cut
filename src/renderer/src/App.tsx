@@ -70,7 +70,7 @@ import {
   isStoreBuild, dragPreventer,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
   deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName, mustDisallowVob, readVideoTs, readDirRecursively, getImportProjectType,
-  calcShouldShowWaveform, calcShouldShowKeyframes, mediaSourceQualities, isWindows,
+  calcShouldShowWaveform, calcShouldShowKeyframes, mediaSourceQualities,
 } from './util';
 import { toast, errorToast } from './swal';
 import { formatDuration } from './util/duration';
@@ -89,14 +89,13 @@ import isDev from './isDev';
 import { ChromiumHTMLVideoElement, EdlFileType, FfmpegCommandLog, FormatTimecode, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, Thumbnail, TunerType } from './types';
 import { CaptureFormat, KeyboardAction, Html5ifyMode } from '../../../types';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
-import filePathToUrl from './util/fileUri';
 
 const electron = window.require('electron');
 const { exists } = window.require('fs-extra');
 const { lstat } = window.require('fs/promises');
 const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('path');
 
-const { focusWindow, hasDisabledNetworking, quitApp } = window.require('@electron/remote').require('./index.js');
+const { focusWindow, hasDisabledNetworking, quitApp, pathToFileURL } = window.require('@electron/remote').require('./index.js');
 
 
 const videoStyle: CSSProperties = { width: '100%', height: '100%', objectFit: 'contain' };
@@ -449,7 +448,7 @@ function App() {
   const effectiveFilePath = previewFilePath || filePath;
   const fileUri = useMemo(() => {
     if (!effectiveFilePath) return ''; // Setting video src="" prevents memory leak in chromium
-    const uri = filePathToUrl(effectiveFilePath, isWindows);
+    const uri = pathToFileURL(effectiveFilePath).href;
     // https://github.com/mifi/lossless-cut/issues/1674
     if (cacheBuster !== 0) {
       const qs = new URLSearchParams();

@@ -39,6 +39,8 @@ export * as configStore from './configStore.js';
 
 export { isLinux, isWindows, isMac, platform } from './util.js';
 
+export { pathToFileURL } from 'node:url';
+
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz
 // todo This should not be necessary anymore since v23.0.0
