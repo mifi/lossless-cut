@@ -12,6 +12,9 @@ jobs:
         os: [ubuntu-latest, windows-latest]
 
     steps:
+      # Windows fix. See https://github.com/actions/checkout/issues/226
+      - run: git config --global core.autocrlf false
+
       - uses: actions/checkout@v2
 
       - uses: actions/setup-node@v2
