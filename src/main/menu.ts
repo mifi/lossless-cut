@@ -3,6 +3,7 @@ import electron, { BrowserWindow } from 'electron';
 import { t } from 'i18next';
 
 import { homepage, getReleaseUrl, licensesPage } from './constants.js';
+import { logFilePath } from './logger.js';
 
 
 // menu-safe i18n.t:
@@ -422,6 +423,11 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
         {
           label: esc(t('Feature request')),
           click() { electron.shell.openExternal('https://github.com/mifi/lossless-cut/issues'); },
+        },
+        { type: 'separator' },
+        {
+          label: esc(t('Log file')),
+          click() { electron.shell.openPath(logFilePath); },
         },
         { type: 'separator' },
         {
