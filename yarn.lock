@@ -5804,13 +5804,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-url@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "file-url@npm:3.0.0"
-  checksum: f15c1bdd81df1a09238f3411f877274d7849703df837ec327c4d1df631314f60036cb700a59d826d8c96b79ff66429d3c758480005e1899c00961541b98d5bfe
-  languageName: node
-  linkType: hard
-
 "filelist@npm:^1.0.1":
   version: 1.0.4
   resolution: "filelist@npm:1.0.4"
@@ -7956,7 +7949,6 @@ __metadata:
     express-async-handler: "npm:^1.2.0"
     fast-xml-parser: "npm:^4.2.5"
     file-type: "npm:16"
-    file-url: "npm:^3.0.0"
     framer-motion: "npm:^9.0.3"
     fs-extra: "npm:^8.1.0"
     i18next: "npm:^22.4.10"

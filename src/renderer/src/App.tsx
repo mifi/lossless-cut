@@ -70,7 +70,7 @@ import {
   isStoreBuild, dragPreventer,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
   deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName, mustDisallowVob, readVideoTs, readDirRecursively, getImportProjectType,
-  calcShouldShowWaveform, calcShouldShowKeyframes, mediaSourceQualities,
+  calcShouldShowWaveform, calcShouldShowKeyframes, mediaSourceQualities, isWindows,
 } from './util';
 import { toast, errorToast } from './swal';
 import { formatDuration } from './util/duration';
@@ -89,11 +89,11 @@ import isDev from './isDev';
 import { ChromiumHTMLVideoElement, EdlFileType, FfmpegCommandLog, FormatTimecode, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, Thumbnail, TunerType } from './types';
 import { CaptureFormat, KeyboardAction, Html5ifyMode } from '../../../types';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
+import filePathToUrl from './util/fileUri';
 
 const electron = window.require('electron');
 const { exists } = window.require('fs-extra');
 const { lstat } = window.require('fs/promises');
-const filePathToUrl = window.require('file-url');
 const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('path');
 
 const { focusWindow, hasDisabledNetworking, quitApp } = window.require('@electron/remote').require('./index.js');
@@ -449,7 +449,7 @@ function App() {
   const effectiveFilePath = previewFilePath || filePath;
   const fileUri = useMemo(() => {
     if (!effectiveFilePath) return ''; // Setting video src="" prevents memory leak in chromium
-    const uri = filePathToUrl(effectiveFilePath);
+    const uri = filePathToUrl(effectiveFilePath, isWindows);
     // https://github.com/mifi/lossless-cut/issues/1674
     if (cacheBuster !== 0) {
       const qs = new URLSearchParams();

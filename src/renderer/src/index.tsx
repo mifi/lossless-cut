@@ -42,7 +42,6 @@ declare global {
     require: <T extends string>(module: T) => (
       T extends '@electron/remote' ? TypedRemote :
       T extends 'electron' ? typeof Electron :
-      T extends 'file-url' ? typeof import('file-url') :
       // todo more
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       any
