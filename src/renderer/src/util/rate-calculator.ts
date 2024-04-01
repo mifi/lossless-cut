@@ -17,7 +17,7 @@ export const DEFAULT_PLAYBACK_RATE = (2 ** (1 / 3));
  * @param {number} [multiplier] rate multiplier, defaults to {@link DEFAULT_PLAYBACK_RATE}
  * @returns a new playback rate
  */
-export function adjustRate(playbackRate, direction, multiplier) {
+export function adjustRate(playbackRate: number, direction: number, multiplier?: number) {
   const m = multiplier || DEFAULT_PLAYBACK_RATE;
   const factor = direction > 0 ? m : (1 / m);
   let newRate = playbackRate * factor;
