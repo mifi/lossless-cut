@@ -239,7 +239,7 @@
     "Trash it": "删除",
     "Are you sure you want to move the source file to trash?": "您确定要将源文件移动到回收站吗?",
     "Converting to supported format": "格式转换中",
-    "Unable to playback this file. Try to convert to supported format from the menu": "无法播放此文件。尝试先从菜单转换到程序所支持的格式",
+    "Unable to playback this file. Try to convert to supported format from the menu": "无法播放此文件。尝试从菜单转换到程序所支持的格式。",
     "File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview.": "不支持该文件。预览时可能没有音频或质量较低。但最终的输出是无损的音频。您可以从菜单中转换它以获得更好的预览。",
     "Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut": "将在准确的位置切割，但可能在文件开头产生空白部分。你可能需要在下一个关键帧的前几帧设置切割点来实现精确切割。",
     "Keyframe cut disabled": "已关闭关键帧切割（精确模式）",
