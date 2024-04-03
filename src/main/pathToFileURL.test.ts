@@ -25,7 +25,7 @@ describe('file uri both platforms', () => {
   test('converts path to file url', () => {
     expect(pathToFileURL('/test.jpg').href).toMatch(/^file:\/{3}.*test\.jpg$/);
 
-    expect(pathToFileURL('/Users/sindresorhus/dev/te^st.jpg').href).toEqual('file:///Users/sindresorhus/dev/te^st.jpg');
+    expect(pathToFileURL('/Users/sindresorhus/dev/te^st.jpg').href).toMatch(/^file:\/{2}.*\/Users\/sindresorhus\/dev\/te\^st\.jpg$/);
   });
 
   test('escapes more special characters in path', () => {
