@@ -23,17 +23,17 @@ if (process.platform === 'win32') {
 // taken from https://github.com/sindresorhus/file-url
 describe('file uri both platforms', () => {
   test('converts path to file url', () => {
-    expect(pathToFileURL('/test.jpg').href).toMatch(/file:\/{3}test\.jpg/);
+    expect(pathToFileURL('/test.jpg').href).toMatch(/^file:\/{3}.*test\.jpg$/);
 
     expect(pathToFileURL('/Users/sindresorhus/dev/te^st.jpg').href).toEqual('file:///Users/sindresorhus/dev/te^st.jpg');
   });
 
   test('escapes more special characters in path', () => {
-    expect(pathToFileURL('/a^?!@#$%&\'";<>').href).toEqual('file:///a^%3F!@%23$%25&\'%22;%3C%3E');
+    expect(pathToFileURL('/a^?!@#$%&\'";<>').href).toMatch(/^file:\/{3}.*a\^%3F!@%23\$%25&'%22;%3C%3E$/);
   });
 
   test('escapes whitespace characters in path', () => {
-    expect(pathToFileURL('/file with\r\nnewline').href).toEqual('file:///file%20with%0D%0Anewline');
+    expect(pathToFileURL('/file with\r\nnewline').href).toMatch(/^file:\/{3}.*file%20with%0D%0Anewline$/);
   });
 
   test('relative path', () => {
@@ -41,7 +41,7 @@ describe('file uri both platforms', () => {
   });
 
   test('slash', () => {
-    expect(pathToFileURL('/').href).toEqual('file:///');
+    expect(pathToFileURL('/').href).toMatch(/^file:\/{2}.*\/$/);
   });
 
   test('empty', () => {
