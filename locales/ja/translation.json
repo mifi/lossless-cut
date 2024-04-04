@@ -821,5 +821,7 @@
     "Select playback quality": "再生品質を選択",
     "Subtitles (SRT)": "字幕 (SRT)",
     "Shift all start times": "すべての時間を進める",
-    "Video track": "映像トラック"
+    "Video track": "映像トラック",
+    "+{{numFrames}} frames_other": "+{{numFrames}} ﾌﾚｰﾑ",
+    "+{{numFrames}} frames_one": "+{{numFrames}} ﾌﾚｰﾑ"
 }
