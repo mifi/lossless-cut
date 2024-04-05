@@ -12,6 +12,8 @@
   - Enable "advanced view" and then click the Yin Yang symbol. It will invert the segments.
 - Where is application data, settings and temp files stored?
   - Electron's [appData](https://www.electronjs.org/docs/api/app#appgetpathname) folder.
+- Can I export and replace the input file in-place?
+  - No, but you can export and automatically delete the input file.
 
 ## App Stores and GitHub difference
 
