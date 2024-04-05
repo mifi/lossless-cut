@@ -26,7 +26,7 @@ LosslessCut file1.mp4 file2.mkv
 ```
 
 ## Override settings (experimental)
-See [available settings](https://github.com/mifi/lossless-cut/blob/master/src/main/configStore.js). Note that this is subject to change in newer versions. ⚠️ If you specify incorrect values it could corrupt your configuration file. You may use JSON or JSON5. Example:
+See [available settings](https://github.com/mifi/lossless-cut/blob/master/src/main/configStore.ts). Note that this is subject to change in newer versions. ⚠️ If you specify incorrect values it could corrupt your configuration file. You may use JSON or JSON5. Example:
 ```bash
 LosslessCut --settings-json '{captureFormat:"jpeg", "keyframeCut":true}'
 ```
