@@ -71,37 +71,38 @@ export async function parseCsv(csvStr: string, parseTimeFn: (a: string) => numbe
 }
 
 export async function parseCutlist(clStr: string) {
-
   // first parse INI-File into "iniValue" object
   const regex = {
-    section: /^\s*\[\s*([^\]]*)\s*\]\s*$/,
+    section: /^\s*\[\s*([^\]]*)\s*]\s*$/,
     param: /^\s*([^=]+?)\s*=\s*(.*?)\s*$/,
-    comment: /^\s*;.*$/
+    comment: /^\s*;.*$/,
   };
   const iniValue = {};
-  const lines = clStr.split(/[\r\n]+/);
+  const lines = clStr.split(/[\n\r]+/);
   let section:string|null|undefined = null;
-  lines.forEach(function(line){
-      if(regex.comment.test(line)){
-          return;
-      }else if(regex.param.test(line)){
-          const match = line.match(regex.param) || [];
-          if(match[1]){
-            if(section){
-              iniValue[section][match[1]] = match[2];
-            }else{ 
-              iniValue[match[1]] = match[2];
-            }
-          }
-      }else if(regex.section.test(line)){
-          const match = line.match(regex.section) || [];
-          if(match[1]){
-            iniValue[match[1]] = {};
-            section = match[1];
-          }
-      }else if(line.length == 0 && section){
-          section = null;
-      };
+  lines.forEach((line) => {
+    if (regex.comment.test(line)) {
+      return;
+    } if (regex.param.test(line)) {
+      const match = line.match(regex.param) || [];
+      const [, m1, m2] = match;
+      if (m1) {
+        if (section) {
+          iniValue[section][m1] = m2;
+        } else {
+          iniValue[m1] = m2;
+        }
+      }
+    } else if (regex.section.test(line)) {
+      const match = line.match(regex.section) || [];
+      const [, m1] = match;
+      if (m1) {
+        iniValue[m1] = {};
+        section = m1;
+      }
+    } else if (line.length === 0 && section) {
+      section = null;
+    }
   });
 
   // end INI-File parse
@@ -109,20 +110,20 @@ export async function parseCutlist(clStr: string) {
   let found = true;
   let i = 0;
   const cutArr:{start:number, end:number, name:string}[] = [];
-  while(found) {
-    const cutEntry = iniValue['Cut'+i];
+  while (found) {
+    const cutEntry = iniValue[`Cut${i}`];
     if (cutEntry) {
-        const start = parseFloat(cutEntry.Start);
-        const end = Math.round((start + parseFloat(cutEntry.Duration) + Number.EPSILON) * 100) / 100 
-        cutArr.push({
-          start: start,
-          end: end,
-          name: `Cut ${i}`,
-        });
+      const start = parseFloat(cutEntry.Start);
+      const end = Math.round((start + parseFloat(cutEntry.Duration) + Number.EPSILON) * 100) / 100;
+      cutArr.push({
+        start,
+        end,
+        name: `Cut ${i}`,
+      });
     } else {
-        found = false;
+      found = false;
     }
-    i++;
+    i += 1;
   }
 
   if (!cutArr.every(({ start, end }) => (
