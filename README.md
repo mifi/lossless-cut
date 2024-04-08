@@ -111,6 +111,8 @@ For Linux these are some alternatives:
 
 <a href="https://snapcraft.io/losslesscut"><img src="https://snapcraft.io/static/images/badges/en/snap-store-black.svg" alt="Snapcraft" height="50"/></a> <a href="https://flathub.org/apps/details/no.mifi.losslesscut"><img src="https://flathub.org/assets/badges/flathub-badge-en.png" alt="Flathub" height="50"/></a>
 
+On Gentoo Linux you can emerge [media-video/lossless-cut](https://gpo.zugaina.org/Overlays/guru/media-video/lossless-cut) from Guru overlay.
+
 If you prefer to download the executables manually, this will of course always be free:
 
 - Mac OS X: [Intel DMG](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac-x64.dmg) / [Apple Silicon DMG](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac-arm64.dmg) (note that universal.pkg **does not work**)
