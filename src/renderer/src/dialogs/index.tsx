@@ -46,7 +46,7 @@ export const showOpenDialog = async ({
   filters = isWindows ? [{ name: i18n.t('All Files'), extensions: ['*'] }] : undefined,
   ...props
   // @ts-expect-error todo
-}) => dialog.showOpenDialog({ ...props, filters });
+}: Parameters<typeof dialog.showOpenDialog>[0]) => dialog.showOpenDialog({ ...props, filters });
 
 export async function askForYouTubeInput() {
   const example = i18n.t('YouTube video description\n00:00 Intro\n00:01 Chapter 2\n00:00:02.123 Chapter 3');
@@ -73,7 +73,7 @@ export async function askForYouTubeInput() {
 export async function askForInputDir(defaultPath?: string | undefined) {
   const { filePaths } = await showOpenDialog({
     properties: ['openDirectory', 'createDirectory'],
-    defaultPath,
+    defaultPath: defaultPath!,
     title: i18n.t('Please confirm folder'),
     message: i18n.t('Press confirm to grant LosslessCut access to write the project file (due to App Sandbox restrictions).'),
     buttonLabel: i18n.t('Confirm'),
@@ -84,7 +84,7 @@ export async function askForInputDir(defaultPath?: string | undefined) {
 export async function askForOutDir(defaultPath?: string | undefined) {
   const { filePaths } = await showOpenDialog({
     properties: ['openDirectory', 'createDirectory'],
-    defaultPath,
+    defaultPath: defaultPath!,
     title: i18n.t('Where do you want to save output files?'),
     message: i18n.t('Where do you want to save output files? Make sure there is enough free space in this folder'),
     buttonLabel: i18n.t('Select output folder'),
@@ -95,7 +95,7 @@ export async function askForOutDir(defaultPath?: string | undefined) {
 export async function askForFfPath(defaultPath?: string | undefined) {
   const { filePaths } = await showOpenDialog({
     properties: ['openDirectory'],
-    defaultPath,
+    defaultPath: defaultPath!,
     title: i18n.t('Select custom FFmpeg directory'),
   });
   return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;

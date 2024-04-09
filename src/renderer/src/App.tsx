@@ -107,6 +107,8 @@ hevcPlaybackSupportedPromise.catch((err) => console.error(err));
 
 
 function App() {
+  const { t } = useTranslation();
+
   // Per project state
   const [commandedTime, setCommandedTime] = useState(0);
   const [ffmpegCommandLog, setFfmpegCommandLog] = useState<FfmpegCommandLog>([]);
@@ -730,7 +732,7 @@ function App() {
   // Cleanup removed thumbnails
   useEffect(() => {
     thumnailsRef.current.forEach((thumbnail) => {
-      if (!thumbnails.some((t) => t.url === thumbnail.url)) URL.revokeObjectURL(thumbnail.url);
+      if (!thumbnails.some((nextThumbnail) => nextThumbnail.url === thumbnail.url)) URL.revokeObjectURL(thumbnail.url);
     });
     thumnailsRef.current = thumbnails;
   }, [thumbnails]);
@@ -739,7 +741,7 @@ function App() {
   const subtitlesByStreamIdRef = useRef({});
   useEffect(() => {
     Object.values(thumnailsRef.current).forEach(({ url }) => {
-      if (!Object.values(subtitlesByStreamId).some((t) => t.url === url)) URL.revokeObjectURL(url);
+      if (!Object.values(subtitlesByStreamId).some((existingThumbnail) => existingThumbnail.url === url)) URL.revokeObjectURL(url);
     });
     subtitlesByStreamIdRef.current = subtitlesByStreamId;
   }, [subtitlesByStreamId]);
@@ -1992,10 +1994,10 @@ function App() {
   }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, isFileOpened, batchFiles.length, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile, filePath]);
 
   const openFilesDialog = useCallback(async () => {
-    const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile', 'openDirectory', 'multiSelections'], defaultPath: lastOpenedPathRef.current });
+    const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile', 'openDirectory', 'multiSelections'], defaultPath: lastOpenedPathRef.current!, title: t('Open file') });
     if (canceled) return;
     userOpenFiles(filePaths);
-  }, [userOpenFiles]);
+  }, [t, userOpenFiles]);
 
   const concatBatch = useCallback(() => {
     if (batchFiles.length < 2) {
@@ -2454,8 +2456,6 @@ function App() {
   const showLeftBar = batchFiles.length > 0;
 
   const thumbnailsSorted = useMemo(() => sortBy(thumbnails, (thumbnail) => thumbnail.time), [thumbnails]);
-
-  const { t } = useTranslation();
 
   function renderSubtitles() {
     if (!activeSubtitle) return null;
