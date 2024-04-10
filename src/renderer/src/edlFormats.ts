@@ -79,7 +79,7 @@ export async function parseCutlist(clStr: string) {
   };
   const iniValue = {};
   const lines = clStr.split(/[\n\r]+/);
-  let section:string|null|undefined = null;
+  let section: string | null | undefined = null;
   lines.forEach((line) => {
     if (regex.comment.test(line)) {
       return;
@@ -109,7 +109,7 @@ export async function parseCutlist(clStr: string) {
 
   let found = true;
   let i = 0;
-  const cutArr:{start:number, end:number, name:string}[] = [];
+  const cutArr: { start: number, end: number, name: string }[] = [];
   while (found) {
     const cutEntry = iniValue[`Cut${i}`];
     if (cutEntry) {
