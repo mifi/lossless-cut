@@ -70,6 +70,73 @@ export async function parseCsv(csvStr: string, parseTimeFn: (a: string) => numbe
   return mapped;
 }
 
+export async function parseCutlist(clStr: string) {
+  // first parse INI-File into "iniValue" object
+  const regex = {
+    section: /^\s*\[\s*([^\]]*)\s*]\s*$/,
+    param: /^\s*([^=]+?)\s*=\s*(.*?)\s*$/,
+    comment: /^\s*;.*$/,
+  };
+  const iniValue = {};
+  const lines = clStr.split(/[\n\r]+/);
+  let section:string|null|undefined = null;
+  lines.forEach((line) => {
+    if (regex.comment.test(line)) {
+      return;
+    } if (regex.param.test(line)) {
+      const match = line.match(regex.param) || [];
+      const [, m1, m2] = match;
+      if (m1) {
+        if (section) {
+          iniValue[section][m1] = m2;
+        } else {
+          iniValue[m1] = m2;
+        }
+      }
+    } else if (regex.section.test(line)) {
+      const match = line.match(regex.section) || [];
+      const [, m1] = match;
+      if (m1) {
+        iniValue[m1] = {};
+        section = m1;
+      }
+    } else if (line.length === 0 && section) {
+      section = null;
+    }
+  });
+
+  // end INI-File parse
+
+  let found = true;
+  let i = 0;
+  const cutArr:{start:number, end:number, name:string}[] = [];
+  while (found) {
+    const cutEntry = iniValue[`Cut${i}`];
+    if (cutEntry) {
+      const start = parseFloat(cutEntry.Start);
+      const end = Math.round((start + parseFloat(cutEntry.Duration) + Number.EPSILON) * 100) / 100;
+      cutArr.push({
+        start,
+        end,
+        name: `Cut ${i}`,
+      });
+    } else {
+      found = false;
+    }
+    i += 1;
+  }
+
+  if (!cutArr.every(({ start, end }) => (
+    (start === undefined || !Number.isNaN(start))
+    && (end === undefined || !Number.isNaN(end))
+  ))) {
+    console.log(cutArr);
+    throw new Error(i18n.t('Invalid start or end value. Must contain a number of seconds'));
+  }
+
+  return cutArr;
+}
+
 export async function parseMplayerEdl(text: string) {
   const allRows = text.split('\n').flatMap((line) => {
     const match = line.match(/^\s*(\S+)\s+(\S+)\s+([0-3])\s*$/);

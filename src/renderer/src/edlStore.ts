@@ -2,7 +2,7 @@ import JSON5 from 'json5';
 import i18n from 'i18next';
 import type { parse as CueParse } from 'cue-parser';
 
-import { parseSrt, formatSrt, parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, parseCsvTime, getFrameValParser, parseDvAnalyzerSummaryTxt } from './edlFormats';
+import { parseSrt, formatSrt, parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parseCutlist, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, parseCsvTime, getFrameValParser, parseDvAnalyzerSummaryTxt } from './edlFormats';
 import { askForYouTubeInput, showOpenDialog } from './dialogs';
 import { getOutPath } from './util';
 import { EdlExportType, EdlFileType, EdlImportType, Segment, StateSegment } from './types';
@@ -20,6 +20,10 @@ export async function loadCsvSeconds(path: string) {
 export async function loadCsvFrames(path: string, fps?: number) {
   if (!fps) throw new Error('The loaded file has an unknown framerate');
   return parseCsv(await readFile(path, 'utf8'), getFrameValParser(fps));
+}
+
+export async function loadCutlistSeconds(path: string) {
+  return parseCutlist(await readFile(path, 'utf8'));
 }
 
 export async function loadXmeml(path: string) {
@@ -96,6 +100,7 @@ export async function loadLlcProject(path: string) {
 export async function readEdlFile({ type, path, fps }: { type: EdlFileType, path: string, fps?: number | undefined }) {
   if (type === 'csv') return loadCsvSeconds(path);
   if (type === 'csv-frames') return loadCsvFrames(path, fps);
+  if (type === 'cutlist') return loadCutlistSeconds(path);
   if (type === 'xmeml') return loadXmeml(path);
   if (type === 'fcpxml') return loadFcpXml(path);
   if (type === 'dv-analyzer-summary-txt') return loadDvAnalyzerSummaryTxt(path);

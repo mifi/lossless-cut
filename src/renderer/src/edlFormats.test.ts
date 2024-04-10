@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { it, describe, expect } from 'vitest';
 
 
-import { parseSrt, formatSrt, parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, parseCsvTime, getFrameValParser, formatCsvFrames, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt } from './edlFormats';
+import { parseSrt, formatSrt, parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, parseCsvTime, getFrameValParser, formatCsvFrames, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt, parseCutlist } from './edlFormats';
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -239,6 +239,62 @@ it('parses csv with timestamps', async () => {
     { end: 1, name: 'D', start: 0 },
     { end: 1.99, name: 'E', start: 1.01 },
     { start: 2, name: 'F', end: 3 },
+  ]);
+});
+
+const cutlistStr = `
+[General]
+Application=SomeApplication.exe
+Version=0.0.0.1
+FramesPerSecond=25
+IntendedCutApplicationName=SomeApplication
+IntendedCutApplication=SomeApplication.exe
+VDUseSmartRendering=1
+IntendedCutApplicationVersion=1.7.8
+comment1=The following parts of the movie will be kept, the rest will be cut out.
+comment2=All values are given in seconds.
+NoOfCuts=2
+ApplyToFile=Some_File_Name.avi
+OriginalFileSizeBytes=123456
+
+[Cut0]
+Start=849.12
+StartFrame=21228
+Duration=1881.84
+DurationFrames=47046
+
+[Cut1]
+Start=3147.72
+StartFrame=78693
+Duration=944.6
+DurationFrames=23615
+
+[Info]
+Author=AuthorName
+RatingByAuthor=0
+EPGError=0
+ActualContent=
+MissingBeginning=0
+MissingEnding=0
+MissingVideo=0
+MissingAudio=0
+OtherError=0
+OtherErrorDescription=
+SuggestedMovieName=
+UserComment=cutted with XXXX
+
+[Meta]
+CutlistId=12345
+GeneratedOn=1900-01-01 00:00:01
+GeneratedBy=cutlist v0.0.0
+`;
+
+it('parses cutlist', async () => {
+  const parsed = await parseCutlist(cutlistStr);
+
+  expect(parsed).toEqual([
+    { end: 2730.96, name: 'Cut 0', start: 849.12 },
+    { end: 4092.32, name: 'Cut 1', start: 3147.72 },
   ]);
 });
 

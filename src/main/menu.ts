@@ -70,6 +70,12 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
               },
             },
             {
+              label: esc(t('Cutlist')),
+              click() {
+                mainWindow.webContents.send('importEdlFile', 'cutlist');
+              },
+            },
+            {
               label: esc(t('EDL (MPlayer)')),
               click() {
                 mainWindow.webContents.send('importEdlFile', 'mplayer');
