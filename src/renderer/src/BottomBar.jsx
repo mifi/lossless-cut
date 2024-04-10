@@ -20,7 +20,7 @@ import { withBlur, mirrorTransform, checkAppPath } from './util';
 import { toast } from './swal';
 import { getSegColor as getSegColorRaw } from './util/colors';
 import { useSegColors } from './contexts';
-import { formatDuration, parseDuration, isExactDurationMatch } from './util/duration';
+import { isExactDurationMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
 import { askForPlaybackRate } from './dialogs';
 
@@ -63,7 +63,7 @@ const InvertCutModeButton = memo(({ invertCutSegments, setInvertCutSegments }) =
 });
 
 
-const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, seekAbs, currentCutSeg, currentApparentCutSeg, isStart }) => {
+const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, seekAbs, currentCutSeg, currentApparentCutSeg, isStart, formatTimecode, parseTimecode }) => {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
 
@@ -102,19 +102,19 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
     e.preventDefault();
 
     // Don't proceed if not a valid time value
-    const timeWithOffset = parseDuration(cutTimeManual);
+    const timeWithOffset = parseTimecode(cutTimeManual);
     if (timeWithOffset === undefined) return;
 
     trySetTime(timeWithOffset);
-  }, [cutTimeManual, trySetTime]);
+  }, [cutTimeManual, parseTimecode, trySetTime]);
 
   const parseAndSetCutTime = useCallback((text) => {
     // Don't proceed if not a valid time value
-    const timeWithOffset = parseDuration(text);
+    const timeWithOffset = parseTimecode(text);
     if (timeWithOffset === undefined) return;
 
     trySetTime(timeWithOffset);
-  }, [trySetTime]);
+  }, [parseTimecode, trySetTime]);
 
   function handleCutTimeInput(text) {
     setCutTimeManual(text);
@@ -160,7 +160,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
         onContextMenu={handleContextMenu}
         value={isCutTimeManualSet()
           ? cutTimeManual
-          : formatDuration({ seconds: cutTime + startTimeOffset })}
+          : formatTimecode({ seconds: cutTime + startTimeOffset })}
       />
     </form>
   );
@@ -178,6 +178,7 @@ const BottomBar = memo(({
   darkMode, setDarkMode,
   toggleShowThumbnails, toggleWaveformMode, waveformMode, showThumbnails,
   outputPlaybackRate, setOutputPlaybackRate,
+  formatTimecode, parseTimecode,
 }) => {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
@@ -308,7 +309,7 @@ const BottomBar = memo(({
 
         <SetCutpointButton currentCutSeg={currentCutSeg} side="start" onClick={setCutStart} title={t('Start current segment at current time')} style={{ marginRight: 5 }} />
 
-        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} currentApparentCutSeg={currentApparentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentApparentCutSeg.start} setCutTime={setCutTime} isStart />}
+        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} currentApparentCutSeg={currentApparentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentApparentCutSeg.start} setCutTime={setCutTime} isStart formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
 
         <IoMdKey
           size={25}
@@ -353,7 +354,7 @@ const BottomBar = memo(({
           onClick={() => seekClosestKeyframe(1)}
         />
 
-        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} currentApparentCutSeg={currentApparentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentApparentCutSeg.end} setCutTime={setCutTime} />}
+        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} currentApparentCutSeg={currentApparentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentApparentCutSeg.end} setCutTime={setCutTime} formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
 
         <SetCutpointButton currentCutSeg={currentCutSeg} side="end" onClick={setCutEnd} title={t('End current segment at current time')} style={{ marginLeft: 5 }} />
 

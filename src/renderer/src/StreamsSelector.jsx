@@ -10,7 +10,6 @@ import prettyBytes from 'pretty-bytes';
 import AutoExportToggler from './components/AutoExportToggler';
 import Select from './components/Select';
 import { showJson5Dialog } from './dialogs';
-import { formatDuration } from './util/duration';
 import { getStreamFps } from './ffmpeg';
 import { deleteDispositionValue } from './util';
 import { getActiveDisposition, attachedPicDisposition } from './util/streams';
@@ -131,7 +130,7 @@ function onInfoClick(json, title) {
   showJson5Dialog({ title, json });
 }
 
-const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress, paramsByStreamId, updateStreamParams }) => {
+const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress, paramsByStreamId, updateStreamParams, formatTimecode }) => {
   const { t } = useTranslation();
 
   const effectiveDisposition = useMemo(() => getStreamEffectiveDisposition(paramsByStreamId, filePath, stream), [filePath, paramsByStreamId, stream]);
@@ -192,7 +191,7 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
       </td>
       <td style={{ maxWidth: '3em', overflow: 'hidden' }} title={stream.codec_name}>{stream.codec_name} {codecTag}</td>
       <td>
-        {!Number.isNaN(duration) && `${formatDuration({ seconds: duration, shorten: true })}`}
+        {!Number.isNaN(duration) && `${formatTimecode({ seconds: duration, shorten: true })}`}
         {stream.nb_frames != null ? <div>{stream.nb_frames}f</div> : null}
       </td>
       <td>{!Number.isNaN(bitrate) && (stream.codec_type === 'audio' ? `${Math.round(bitrate / 1000)} kbps` : prettyBytes(bitrate, { bits: true }))}</td>
@@ -297,6 +296,7 @@ const StreamsSelector = memo(({
   setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta,
   showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams,
   customTagsByFile, setCustomTagsByFile, paramsByStreamId, updateStreamParams,
+  formatTimecode,
 }) => {
   const [editingFile, setEditingFile] = useState();
   const [editingStream, setEditingStream] = useState();
@@ -360,6 +360,7 @@ const StreamsSelector = memo(({
                 onExtractStreamPress={() => onExtractStreamPress(stream.index)}
                 paramsByStreamId={paramsByStreamId}
                 updateStreamParams={updateStreamParams}
+                formatTimecode={formatTimecode}
               />
             ))}
           </tbody>
@@ -385,6 +386,7 @@ const StreamsSelector = memo(({
                   fileDuration={getFormatDuration(formatData)}
                   paramsByStreamId={paramsByStreamId}
                   updateStreamParams={updateStreamParams}
+                  formatTimecode={formatTimecode}
                 />
               ))}
             </tbody>

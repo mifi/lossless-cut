@@ -14,13 +14,13 @@ import { createNumSegments as createNumSegmentsDialog, createFixedDurationSegmen
 import { createSegment, findSegmentsAtCursor, sortSegments, invertSegments, getSegmentTags, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2, addSegmentColorIndex } from '../segments';
 import * as ffmpegParameters from '../ffmpeg-parameters';
 import { maxSegmentsAllowed } from '../util/constants';
-import { SegmentBase, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
+import { ParseTimecode, SegmentBase, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
 
 const { ffmpeg: { blackDetect, silenceDetect } } = window.require('@electron/remote').require('./index.js');
 
 
-function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly }: {
-  filePath?: string | undefined, workingRef: MutableRefObject<boolean>, setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void, setCutProgress: (a: number | undefined) => void, videoStream, duration?: number | undefined, getRelevantTime: () => number, maxLabelLength: number, checkFileOpened: () => boolean, invertCutSegments: boolean, segmentsToChaptersOnly: boolean,
+function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode }: {
+  filePath?: string | undefined, workingRef: MutableRefObject<boolean>, setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void, setCutProgress: (a: number | undefined) => void, videoStream, duration?: number | undefined, getRelevantTime: () => number, maxLabelLength: number, checkFileOpened: () => boolean, invertCutSegments: boolean, segmentsToChaptersOnly: boolean, timecodePlaceholder: string, parseTimecode: ParseTimecode,
 }) {
   // Segment related state
   const segCounterRef = useRef(0);
@@ -259,7 +259,7 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
   }, [apparentCutSegments, createInitialCutSegments, duration, isSegmentSelected, setCutSegments]);
 
   const shiftAllSegmentTimes = useCallback(async () => {
-    const shift = await askForShiftSegments();
+    const shift = await askForShiftSegments({ inputPlaceholder: timecodePlaceholder, parseTimecode });
     if (shift == null) return;
 
     const { shiftAmount, shiftKeys } = shift;
@@ -270,7 +270,7 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
       });
       return newSegment;
     });
-  }, [modifySelectedSegmentTimes]);
+  }, [modifySelectedSegmentTimes, parseTimecode, timecodePlaceholder]);
 
   const alignSegmentTimesToKeyframes = useCallback(async () => {
     if (!videoStream || workingRef.current) return;
@@ -444,9 +444,9 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
 
   const createFixedDurationSegments = useCallback(async () => {
     if (!checkFileOpened() || !isDurationValid(duration)) return;
-    const segments = await createFixedDurationSegmentsDialog(duration);
+    const segments = await createFixedDurationSegmentsDialog({ fileDuration: duration, inputPlaceholder: timecodePlaceholder, parseTimecode });
     if (segments) loadCutSegments(segments);
-  }, [checkFileOpened, duration, loadCutSegments]);
+  }, [checkFileOpened, duration, loadCutSegments, parseTimecode, timecodePlaceholder]);
 
   const createRandomSegments = useCallback(async () => {
     if (!checkFileOpened() || !isDurationValid(duration)) return;

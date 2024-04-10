@@ -85,6 +85,7 @@ export interface Thumbnail {
 }
 
 export type FormatTimecode = (a: { seconds: number, shorten?: boolean | undefined, fileNameFriendly?: boolean | undefined }) => string;
+export type ParseTimecode = (val: string) => number | undefined;
 
 export type GetFrameCount = (sec: number) => number | undefined;
 

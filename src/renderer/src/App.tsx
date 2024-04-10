@@ -70,10 +70,10 @@ import {
   isStoreBuild, dragPreventer,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
   deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName, mustDisallowVob, readVideoTs, readDirRecursively, getImportProjectType,
-  calcShouldShowWaveform, calcShouldShowKeyframes, mediaSourceQualities,
+  calcShouldShowWaveform, calcShouldShowKeyframes, mediaSourceQualities, getFrameDuration,
 } from './util';
 import { toast, errorToast } from './swal';
-import { formatDuration } from './util/duration';
+import { formatDuration, parseDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
 import { askExtractFramesAsImages } from './dialogs/extractFrames';
 import { askForHtml5ifySpeed } from './dialogs/html5ify';
@@ -86,7 +86,7 @@ import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './uti
 import BigWaveform from './components/BigWaveform';
 
 import isDev from './isDev';
-import { ChromiumHTMLVideoElement, EdlFileType, FfmpegCommandLog, FormatTimecode, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, Thumbnail, TunerType } from './types';
+import { ChromiumHTMLVideoElement, EdlFileType, FfmpegCommandLog, FormatTimecode, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, Thumbnail, TunerType } from './types';
 import { CaptureFormat, KeyboardAction, Html5ifyMode } from '../../../types';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 
@@ -368,9 +368,46 @@ function App() {
     return false;
   }, [isFileOpened]);
 
+  const getFrameCount = useCallback((sec: number) => getFrameCountRaw(detectedFps, sec), [detectedFps]);
+  const frameCountToDuration = useCallback((frames: number) => getFrameDuration(detectedFps) * frames, [detectedFps]);
+
+  const formatTimecode = useCallback<FormatTimecode>(({ seconds, shorten, fileNameFriendly }) => {
+    if (timecodeFormat === 'frameCount') {
+      const frameCount = getFrameCount(seconds);
+      return frameCount != null ? String(frameCount) : '';
+    }
+    if (timecodeFormat === 'timecodeWithFramesFraction') {
+      return formatDuration({ seconds, shorten, fileNameFriendly, fps: detectedFps });
+    }
+    return formatDuration({ seconds, shorten, fileNameFriendly });
+  }, [detectedFps, timecodeFormat, getFrameCount]);
+
+  const timecodePlaceholder = useMemo(() => formatTimecode({ seconds: 0, shorten: false }), [formatTimecode]);
+
+  const parseTimecode = useCallback<ParseTimecode>((val: string) => {
+    if (timecodeFormat === 'frameCount') {
+      const parsed = parseInt(val, 10);
+      return frameCountToDuration(parsed);
+    }
+    if (timecodeFormat === 'timecodeWithFramesFraction') {
+      return parseDuration(val, detectedFps);
+    }
+    return parseDuration(val);
+  }, [detectedFps, frameCountToDuration, timecodeFormat]);
+
+  const formatTimeAndFrames = useCallback((seconds: number) => {
+    const frameCount = getFrameCount(seconds);
+
+    const timeStr = timecodeFormat === 'timecodeWithFramesFraction'
+      ? formatDuration({ seconds, fps: detectedFps })
+      : formatDuration({ seconds });
+
+    return `${timeStr} (${frameCount ?? '0'})`;
+  }, [detectedFps, timecodeFormat, getFrameCount]);
+
   const {
     cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, createNumSegments, createFixedDurationSegments, createRandomSegments, apparentCutSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, currentApparentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, isSegmentSelected, setCutTime, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, onSelectSegmentsByTag, toggleSegmentSelected, selectOnlySegment, getApparentCutSegmentById, selectedSegments, selectedSegmentsOrInverse, nonFilteredSegmentsOrInverse, segmentsToExport, duplicateCurrentSegment, duplicateSegment, updateSegAtIndex,
-  } = useSegments({ filePath, workingRef, setWorking, setCutProgress, videoStream: activeVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly });
+  } = useSegments({ filePath, workingRef, setWorking, setCutProgress, videoStream: activeVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode });
 
 
   const segmentAtCursor = useMemo(() => {
@@ -415,30 +452,6 @@ function App() {
   const jumpCutEnd = useCallback(() => jumpSegEnd(currentSegIndexSafe), [currentSegIndexSafe, jumpSegEnd]);
   const jumpTimelineStart = useCallback(() => userSeekAbs(0), [userSeekAbs]);
   const jumpTimelineEnd = useCallback(() => userSeekAbs(durationSafe), [durationSafe, userSeekAbs]);
-
-
-  const getFrameCount = useCallback((sec: number) => getFrameCountRaw(detectedFps, sec), [detectedFps]);
-
-  const formatTimecode = useCallback<FormatTimecode>(({ seconds, shorten, fileNameFriendly }) => {
-    if (timecodeFormat === 'frameCount') {
-      const frameCount = getFrameCount(seconds);
-      return frameCount != null ? String(frameCount) : '';
-    }
-    if (timecodeFormat === 'timecodeWithFramesFraction') {
-      return formatDuration({ seconds, fps: detectedFps, shorten, fileNameFriendly });
-    }
-    return formatDuration({ seconds, shorten, fileNameFriendly });
-  }, [detectedFps, timecodeFormat, getFrameCount]);
-
-  const formatTimeAndFrames = useCallback((seconds: number) => {
-    const frameCount = getFrameCount(seconds);
-
-    const timeStr = timecodeFormat === 'timecodeWithFramesFraction'
-      ? formatDuration({ seconds, fps: detectedFps })
-      : formatDuration({ seconds });
-
-    return `${timeStr} (${frameCount ?? '0'})`;
-  }, [detectedFps, timecodeFormat, getFrameCount]);
 
   const { captureFrameFromTag, captureFrameFromFfmpeg, captureFramesRange } = useFrameCapture({ formatTimecode, treatOutputFileModifiedTimeAsStart });
 
@@ -1703,14 +1716,16 @@ function App() {
   const goToTimecode = useCallback(async () => {
     if (!filePath) return;
     const timeCode = await promptTimeOffset({
-      initialValue: formatDuration({ seconds: commandedTimeRef.current }),
+      initialValue: formatTimecode({ seconds: commandedTimeRef.current }),
       title: i18n.t('Seek to timecode'),
+      inputPlaceholder: timecodePlaceholder,
+      parseTimecode,
     });
 
     if (timeCode === undefined) return;
 
     userSeekAbs(timeCode);
-  }, [filePath, userSeekAbs]);
+  }, [filePath, formatTimecode, parseTimecode, timecodePlaceholder, userSeekAbs]);
 
   const toggleStreamsSelector = useCallback(() => setStreamsSelectorShown((v) => !v), []);
 
@@ -1776,15 +1791,17 @@ function App() {
 
   const askStartTimeOffset = useCallback(async () => {
     const newStartTimeOffset = await promptTimeOffset({
-      initialValue: startTimeOffset !== undefined ? formatDuration({ seconds: startTimeOffset }) : undefined,
+      initialValue: startTimeOffset !== undefined ? formatTimecode({ seconds: startTimeOffset }) : undefined,
       title: i18n.t('Set custom start time offset'),
       text: i18n.t('Instead of video apparently starting at 0, you can offset by a specified value. This only applies to the preview inside LosslessCut and does not modify the file in any way. (Useful for viewing/cutting videos according to timecodes)'),
+      inputPlaceholder: timecodePlaceholder,
+      parseTimecode,
     });
 
     if (newStartTimeOffset === undefined) return;
 
     setStartTimeOffset(newStartTimeOffset);
-  }, [startTimeOffset]);
+  }, [formatTimecode, parseTimecode, startTimeOffset, timecodePlaceholder]);
 
   const toggleKeyboardShortcuts = useCallback(() => setKeyboardShortcutsVisible((v) => !v), []);
 
@@ -2701,6 +2718,8 @@ function App() {
                 setDarkMode={setDarkMode}
                 outputPlaybackRate={outputPlaybackRate}
                 setOutputPlaybackRate={setOutputPlaybackRate}
+                formatTimecode={formatTimecode}
+                parseTimecode={parseTimecode}
               />
             </div>
 
@@ -2731,6 +2750,7 @@ function App() {
                   setCustomTagsByFile={setCustomTagsByFile}
                   paramsByStreamId={paramsByStreamId}
                   updateStreamParams={updateStreamParams}
+                  formatTimecode={formatTimecode}
                 />
               )}
             </Sheet>

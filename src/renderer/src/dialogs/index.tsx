@@ -8,18 +8,18 @@ import { tomorrow as syntaxStyle } from 'react-syntax-highlighter/dist/esm/style
 import JSON5 from 'json5';
 import { SweetAlertOptions } from 'sweetalert2';
 
-import { parseDuration, formatDuration } from '../util/duration';
+import { formatDuration } from '../util/duration';
 import Swal, { swalToastOptions, toast } from '../swal';
 import { parseYouTube } from '../edlFormats';
 import CopyClipboardButton from '../components/CopyClipboardButton';
 import { isWindows, showItemInFolder } from '../util';
-import { SegmentBase } from '../types';
+import { ParseTimecode, SegmentBase } from '../types';
 
 const { dialog } = window.require('@electron/remote');
 
 const ReactSwal = withReactContent(Swal);
 
-export async function promptTimeOffset({ initialValue, title, text }: { initialValue?: string | undefined, title: string, text?: string | undefined }) {
+export async function promptTimeOffset({ initialValue, title, text, inputPlaceholder, parseTimecode }: { initialValue?: string | undefined, title: string, text?: string | undefined, inputPlaceholder: string, parseTimecode: ParseTimecode }) {
   // @ts-expect-error todo
   const { value } = await Swal.fire({
     title,
@@ -27,16 +27,16 @@ export async function promptTimeOffset({ initialValue, title, text }: { initialV
     input: 'text',
     inputValue: initialValue || '',
     showCancelButton: true,
-    inputPlaceholder: '00:00:00.000',
+    inputPlaceholder,
   });
 
   if (value === undefined) {
     return undefined;
   }
 
-  const duration = parseDuration(value);
+  const duration = parseTimecode(value);
   // Invalid, try again
-  if (duration === undefined) return promptTimeOffset({ initialValue: value, title, text });
+  if (duration === undefined) return promptTimeOffset({ initialValue: value, title, text, inputPlaceholder, parseTimecode });
 
   return duration;
 }
@@ -200,25 +200,27 @@ export async function createNumSegments(fileDuration) {
 
 const exampleDuration = '00:00:05.123';
 
-async function askForSegmentDuration(fileDuration) {
+async function askForSegmentDuration({ fileDuration, inputPlaceholder, parseTimecode }: {
+  fileDuration: number, inputPlaceholder: string, parseTimecode: ParseTimecode,
+}) {
   const { value } = await Swal.fire({
     input: 'text',
     showCancelButton: true,
-    inputValue: '00:00:00.000',
+    inputValue: inputPlaceholder,
     text: i18n.t('Divide timeline into a number of segments with the specified length'),
     inputValidator: (v) => {
-      const duration = parseDuration(v);
+      const duration = parseTimecode(v);
       if (duration != null) {
         const numSegments = Math.ceil(fileDuration / duration);
         if (duration > 0 && duration < fileDuration && numSegments <= maxSegments) return null;
       }
-      return i18n.t('Please input a valid duration. Example: {{example}}', { example: exampleDuration });
+      return i18n.t('Please input a valid duration. Example: {{example}}', { example: inputPlaceholder });
     },
   });
 
   if (value == null) return undefined;
 
-  return parseDuration(value);
+  return parseTimecode(value);
 }
 
 // https://github.com/mifi/lossless-cut/issues/1153
@@ -273,15 +275,15 @@ async function askForSegmentsStartOrEnd(text) {
   return value === 'both' ? ['start', 'end'] : [value];
 }
 
-export async function askForShiftSegments() {
-  function parseValue(value) {
+export async function askForShiftSegments({ inputPlaceholder, parseTimecode }: { inputPlaceholder: string, parseTimecode: ParseTimecode }) {
+  function parseValue(value: string) {
     let parseableValue = value;
     let sign = 1;
     if (parseableValue[0] === '-') {
       parseableValue = parseableValue.slice(1);
       sign = -1;
     }
-    const duration = parseDuration(parseableValue);
+    const duration = parseTimecode(parseableValue);
     if (duration != null && duration > 0) {
       return duration * sign;
     }
@@ -291,7 +293,7 @@ export async function askForShiftSegments() {
   const { value } = await Swal.fire({
     input: 'text',
     showCancelButton: true,
-    inputValue: '00:00:00.000',
+    inputValue: inputPlaceholder,
     text: i18n.t('Shift all segments on the timeline by this amount. Negative values will be shifted back, while positive value will be shifted forward in time.'),
     inputValidator: (v) => {
       const parsed = parseValue(v);
@@ -417,8 +419,10 @@ export async function showCleanupFilesDialog(cleanupChoicesIn) {
   return undefined;
 }
 
-export async function createFixedDurationSegments(fileDuration) {
-  const segmentDuration = await askForSegmentDuration(fileDuration);
+export async function createFixedDurationSegments({ fileDuration, inputPlaceholder, parseTimecode }: {
+  fileDuration: number, inputPlaceholder: string, parseTimecode: ParseTimecode,
+}) {
+  const segmentDuration = await askForSegmentDuration({ fileDuration, inputPlaceholder, parseTimecode });
   if (segmentDuration == null) return undefined;
   const edl: SegmentBase[] = [];
   for (let start = 0; start < fileDuration; start += segmentDuration) {
