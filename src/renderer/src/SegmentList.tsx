@@ -400,11 +400,11 @@ const SegmentList = memo(({
     );
   }
 
-  const [editingTag, setEditingTag] = useState();
+  const [editingTag, setEditingTag] = useState<string>();
 
-  const onTagChange = useCallback((tag: string, value: string) => setEditingSegmentTags((existingTags) => ({
+  const onTagsChange = useCallback((keyValues: Record<string, string>) => setEditingSegmentTags((existingTags) => ({
     ...existingTags,
-    [tag]: value,
+    ...keyValues,
   })), [setEditingSegmentTags]);
 
   const onTagReset = useCallback((tag: string) => setEditingSegmentTags((tags) => {
@@ -437,7 +437,7 @@ const SegmentList = memo(({
         onCloseComplete={onSegmentTagsCloseComplete}
       >
         <div style={{ color: 'black' }}>
-          <TagEditor customTags={editingSegmentTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagChange={onTagChange} onTagReset={onTagReset} addTagTitle={t('Add segment tag')} addTagText={t('Enter tag key')} />
+          <TagEditor customTags={editingSegmentTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add segment tag')} addTagText={t('Enter tag key')} />
         </div>
       </Dialog>
 

@@ -23,7 +23,6 @@ const CopyClipboardButton = memo(({ text, style }: { text: string, style?: Motio
     <motion.span animate={animation} style={{ display: 'inline-block', cursor: 'pointer', ...style }}>
       <FaClipboard title={t('Copy to clipboard')} onClick={onClick} />
     </motion.span>
-
   );
 });
 

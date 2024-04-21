@@ -136,7 +136,8 @@
     "semver": "^7.5.2",
     "string-to-stream": "^3.0.1",
     "winston": "^3.8.1",
-    "yargs-parser": "^21.1.1"
+    "yargs-parser": "^21.1.1",
+    "zod": "^3.22.5"
   },
   "build": {
     "directories": {

@@ -339,8 +339,8 @@ export async function askForAlignSegments() {
   };
 }
 
-export async function askForMetadataKey({ title, text }) {
-  const { value } = await Swal.fire({
+export async function askForMetadataKey({ title, text }: { title: string, text: string }) {
+  const { value } = await Swal.fire<string>({
     title,
     text,
     input: 'text',
@@ -352,7 +352,7 @@ export async function askForMetadataKey({ title, text }) {
 }
 
 export async function confirmExtractAllStreamsDialog() {
-  const { value } = await Swal.fire({
+  const { value } = await Swal.fire<string>({
     text: i18n.t('Please confirm that you want to extract all tracks as separate files'),
     showCancelButton: true,
     confirmButtonText: i18n.t('Extract all tracks'),

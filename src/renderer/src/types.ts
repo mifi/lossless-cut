@@ -1,4 +1,5 @@
 import type { MenuItem, MenuItemConstructorOptions } from 'electron';
+import { z } from 'zod';
 
 
 export interface ChromiumHTMLVideoElement extends HTMLVideoElement {
@@ -23,8 +24,9 @@ export interface ApparentSegmentBase extends SegmentColorIndex {
   end: number,
 }
 
+export const segmentTagsSchema = z.record(z.string(), z.string());
 
-export type SegmentTags = Record<string, unknown>;
+export type SegmentTags = z.infer<typeof segmentTagsSchema>
 
 export type EditingSegmentTags = Record<string, SegmentTags>
 

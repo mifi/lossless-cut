@@ -49,7 +49,7 @@ export const swalToastOptions: SweetAlertOptions = {
 
 export const toast = Swal.mixin(swalToastOptions);
 
-export const errorToast = (text) => toast.fire({
+export const errorToast = (text: string) => toast.fire({
   icon: 'error',
   text,
 });
