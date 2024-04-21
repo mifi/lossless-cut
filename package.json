@@ -133,7 +133,7 @@
     "lodash": "^4.17.19",
     "mime-types": "^2.1.14",
     "morgan": "^1.10.0",
-    "semver": "^7.5.2",
+    "semver": "^7.6.0",
     "string-to-stream": "^3.0.1",
     "winston": "^3.8.1",
     "yargs-parser": "^21.1.1",
