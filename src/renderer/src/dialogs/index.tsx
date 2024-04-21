@@ -560,7 +560,7 @@ export async function selectSegmentsByTagDialog() {
   return { tagName: value1, tagValue: value2 };
 }
 
-export function showJson5Dialog({ title, json }) {
+export function showJson5Dialog({ title, json }: { title: string, json: unknown }) {
   const html = (
     <SyntaxHighlighter language="javascript" style={syntaxStyle} customStyle={{ textAlign: 'left', maxHeight: 300, overflowY: 'auto', fontSize: 14 }}>
       {JSON5.stringify(json, null, 2)}

@@ -251,7 +251,8 @@ export interface FFprobeStreamDisposition {
 /**
  * The "tags" field on an FFprobe response stream object
  */
-export interface FFprobeStreamTags {
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type FFprobeStreamTags = {
   /**
    * The track's language (usually represented using a 3 letter language code, e.g.: "eng")
    */
@@ -283,6 +284,9 @@ export interface FFprobeStreamTags {
   comment?: string
 
   rotate?: string,
+
+  // https://github.com/mifi/lossless-cut/issues/1530
+  title?: string,
 }
 
 /**

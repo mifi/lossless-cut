@@ -1,4 +1,4 @@
-import { memo, useState, useMemo, useCallback } from 'react';
+import { memo, useState, useMemo, useCallback, Dispatch, SetStateAction, CSSProperties, ReactNode, ChangeEventHandler } from 'react';
 
 import { FaImage, FaCheckCircle, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
@@ -14,24 +14,34 @@ import { getStreamFps } from './ffmpeg';
 import { deleteDispositionValue } from './util';
 import { getActiveDisposition, attachedPicDisposition } from './util/streams';
 import TagEditor from './components/TagEditor';
+import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
+import { CustomTagsByFile, FilesMeta, FormatTimecode, ParamsByStreamId, StreamParams } from './types';
 
 
 const dispositionOptions = ['default', 'dub', 'original', 'comment', 'lyrics', 'karaoke', 'forced', 'hearing_impaired', 'visual_impaired', 'clean_effects', 'attached_pic', 'captions', 'descriptions', 'dependent', 'metadata'];
 const unchangedDispositionValue = 'llc_disposition_unchanged';
 
+type UpdateStreamParams = (fileId: string, streamId: number, setter: (a: StreamParams) => void) => void;
 
-const EditFileDialog = memo(({ editingFile, allFilesMeta, customTagsByFile, setCustomTagsByFile, editingTag, setEditingTag }) => {
+interface EditingStream {
+  streamId: number;
+  path: string;
+}
+
+const EditFileDialog = memo(({ editingFile, allFilesMeta, customTagsByFile, setCustomTagsByFile, editingTag, setEditingTag }: {
+  editingFile: string, allFilesMeta: FilesMeta, customTagsByFile: CustomTagsByFile, setCustomTagsByFile: Dispatch<SetStateAction<CustomTagsByFile>>, editingTag: string | undefined, setEditingTag: (tag: string | undefined) => void
+}) => {
   const { t } = useTranslation();
 
-  const { formatData } = allFilesMeta[editingFile];
+  const { formatData } = allFilesMeta[editingFile]!;
   const existingTags = formatData.tags || {};
   const customTags = customTagsByFile[editingFile] || {};
 
-  const onTagChange = useCallback((tag, value) => {
-    setCustomTagsByFile((old) => ({ ...old, [editingFile]: { ...old[editingFile], [tag]: value } }));
+  const onTagsChange = useCallback((keyValues: Record<string, string>) => {
+    setCustomTagsByFile((old) => ({ ...old, [editingFile]: { ...old[editingFile], ...keyValues } }));
   }, [editingFile, setCustomTagsByFile]);
 
-  const onTagReset = useCallback((tag) => {
+  const onTagReset = useCallback((tag: string) => {
     setCustomTagsByFile((old) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [tag]: deleted, ...rest } = old[editingFile] || {};
@@ -39,13 +49,13 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, customTagsByFile, setC
     });
   }, [editingFile, setCustomTagsByFile]);
 
-  return <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagChange={onTagChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} addTagText={t('Enter metadata key')} />;
+  return <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} addTagText={t('Enter metadata key')} />;
 });
 
-const getStreamDispositionsObj = (stream) => ((stream && stream.disposition) || {});
+const getStreamDispositionsObj = (stream: FFprobeStream) => ((stream && stream.disposition) || {});
 
-function getStreamEffectiveDisposition(paramsByStreamId, fileId, stream) {
-  const customDisposition = paramsByStreamId.get(fileId)?.get(stream.index)?.get('disposition');
+function getStreamEffectiveDisposition(paramsByStreamId: ParamsByStreamId, fileId: string, stream: FFprobeStream) {
+  const customDisposition = paramsByStreamId.get(fileId)?.get(stream.index)?.disposition;
   const existingDispositionsObj = getStreamDispositionsObj(stream);
 
   if (customDisposition) return customDisposition;
@@ -53,19 +63,23 @@ function getStreamEffectiveDisposition(paramsByStreamId, fileId, stream) {
 }
 
 
-const StreamParametersEditor = ({ stream, streamParams, updateStreamParams }) => {
+function StreamParametersEditor({ stream, streamParams, updateStreamParams }: {
+  stream: FFprobeStream, streamParams: StreamParams, updateStreamParams: (setter: (a: StreamParams) => void) => void,
+}) {
   const { t } = useTranslation();
 
-  const ui = [];
+  const ui: ReactNode[] = [];
   // https://github.com/mifi/lossless-cut/issues/1680#issuecomment-1682915193
   if (stream.codec_name === 'h264') {
     ui.push(
-      <Checkbox key="bsfH264Mp4toannexb" checked={!!streamParams.get('bsfH264Mp4toannexb')} label={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'h264_mp4toannexb' })} onChange={(e) => updateStreamParams((params) => params.set('bsfH264Mp4toannexb', e.target.checked))} />,
+      // eslint-disable-next-line no-param-reassign
+      <Checkbox key="bsfH264Mp4toannexb" checked={!!streamParams.bsfH264Mp4toannexb} label={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'h264_mp4toannexb' })} onChange={(e) => updateStreamParams((params) => { params.bsfH264Mp4toannexb = e.target.checked; })} />,
     );
   }
   if (stream.codec_name === 'hevc') {
     ui.push(
-      <Checkbox key="bsfHevcMp4toannexb" checked={!!streamParams.get('bsfHevcMp4toannexb')} label={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_mp4toannexb' })} onChange={(e) => updateStreamParams((params) => params.set('bsfHevcMp4toannexb', e.target.checked))} />,
+      // eslint-disable-next-line no-param-reassign
+      <Checkbox key="bsfHevcMp4toannexb" checked={!!streamParams.bsfHevcMp4toannexb} label={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_mp4toannexb' })} onChange={(e) => updateStreamParams((params) => { params.bsfHevcMp4toannexb = e.target.checked; })} />,
     );
   }
 
@@ -76,34 +90,39 @@ const StreamParametersEditor = ({ stream, streamParams, updateStreamParams }) =>
         : t('No editable parameters for this stream.')}
     </div>
   );
-};
+}
 
-const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, setEditingStream, allFilesMeta, paramsByStreamId, updateStreamParams }) => {
+const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, setEditingStream, allFilesMeta, paramsByStreamId, updateStreamParams }: {
+  editingStream: EditingStream, setEditingStream: Dispatch<SetStateAction<EditingStream | undefined>>, allFilesMeta: FilesMeta, paramsByStreamId: ParamsByStreamId, updateStreamParams: UpdateStreamParams,
+}) => {
   const { t } = useTranslation();
-  const [editingTag, setEditingTag] = useState();
+  const [editingTag, setEditingTag] = useState<string>();
 
-  const { streams } = allFilesMeta[editingFile];
+  const { streams } = allFilesMeta[editingFile]!;
   const editingStream = useMemo(() => streams.find((s) => s.index === editingStreamId), [streams, editingStreamId]);
 
   const existingTags = useMemo(() => (editingStream && editingStream.tags) || {}, [editingStream]);
 
-  const streamParams = useMemo(() => paramsByStreamId.get(editingFile)?.get(editingStreamId) ?? new Map(), [editingFile, editingStreamId, paramsByStreamId]);
-  const customTags = useMemo(() => streamParams.get('customTags') ?? {}, [streamParams]);
+  const streamParams = useMemo(() => paramsByStreamId.get(editingFile)?.get(editingStreamId) ?? {}, [editingFile, editingStreamId, paramsByStreamId]);
+  const customTags = useMemo(() => streamParams.customTags, [streamParams]);
 
-  const onTagChange = useCallback((tag, value) => {
+  const onTagsChange = useCallback((keyValues: Record<string, string>) => {
     updateStreamParams(editingFile, editingStreamId, (params) => {
-      if (!params.has('customTags')) params.set('customTags', {});
-      const tags = params.get('customTags');
-      tags[tag] = value;
+      // eslint-disable-next-line no-param-reassign
+      if (params.customTags == null) params.customTags = {};
+      const tags = params.customTags;
+      Object.entries(keyValues).forEach(([tag, value]) => {
+        tags[tag] = value;
+      });
     });
   }, [editingFile, editingStreamId, updateStreamParams]);
 
-  const onTagReset = useCallback((tag) => {
+  const onTagReset = useCallback((tag: string) => {
     updateStreamParams(editingFile, editingStreamId, (params) => {
-      if (!params.has('customTags')) return;
+      if (params.customTags == null) return;
       // todo
       // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-dynamic-delete
-      delete params.get('customTags')[tag];
+      delete params.customTags[tag];
     });
   }, [editingFile, editingStreamId, updateStreamParams]);
 
@@ -114,32 +133,34 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
       hasCancel={false}
       isConfirmDisabled={editingTag != null}
       confirmLabel={t('Done')}
-      onCloseComplete={() => setEditingStream()}
+      onCloseComplete={() => setEditingStream(undefined)}
     >
       <div style={{ color: 'black' }}>
         <Heading>Parameters</Heading>
-        <StreamParametersEditor stream={editingStream} streamParams={streamParams} updateStreamParams={(setter) => updateStreamParams(editingFile, editingStreamId, setter)} />
+        {editingStream != null && <StreamParametersEditor stream={editingStream} streamParams={streamParams} updateStreamParams={(setter) => updateStreamParams(editingFile, editingStreamId, setter)} />}
         <Heading>Tags</Heading>
-        <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagChange={onTagChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} addTagText={t('Enter metadata key')} />
+        <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} addTagText={t('Enter metadata key')} />
       </div>
     </Dialog>
   );
 });
 
-function onInfoClick(json, title) {
+function onInfoClick(json: unknown, title: string) {
   showJson5Dialog({ title, json });
 }
 
-const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress, paramsByStreamId, updateStreamParams, formatTimecode }) => {
+const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress, paramsByStreamId, updateStreamParams, formatTimecode }: {
+  filePath: string, stream: FFprobeStream, onToggle: (a: number) => void, batchSetCopyStreamIds: (filter: (a: FFprobeStream) => boolean, enabled: boolean) => void, copyStream: boolean, fileDuration: number | undefined, setEditingStream: (a: EditingStream) => void, onExtractStreamPress?: () => void, paramsByStreamId: ParamsByStreamId, updateStreamParams: UpdateStreamParams, formatTimecode: FormatTimecode,
+}) => {
   const { t } = useTranslation();
 
   const effectiveDisposition = useMemo(() => getStreamEffectiveDisposition(paramsByStreamId, filePath, stream), [filePath, paramsByStreamId, stream]);
 
-  const bitrate = parseInt(stream.bit_rate, 10);
+  const bitrate = parseInt(stream.bit_rate!, 10);
   const streamDuration = parseInt(stream.duration, 10);
   const duration = !Number.isNaN(streamDuration) ? streamDuration : fileDuration;
 
-  let Icon;
+  let Icon: typeof FaBan;
   let codecTypeHuman;
   // eslint-disable-next-line unicorn/prefer-switch
   if (stream.codec_type === 'audio') {
@@ -170,15 +191,18 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
 
   const onClick = () => onToggle && onToggle(stream.index);
 
-  const onDispositionChange = useCallback((e) => {
-    let newDisposition;
+  const onDispositionChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
+    let newDisposition: string;
     if (dispositionOptions.includes(e.target.value)) {
       newDisposition = e.target.value;
     } else if (e.target.value === deleteDispositionValue) {
       newDisposition = deleteDispositionValue; // needs a separate value (not a real disposition)
     } // else unchanged (undefined)
 
-    updateStreamParams(filePath, stream.index, (params) => params.set('disposition', newDisposition));
+    updateStreamParams(filePath, stream.index, (params) => {
+      // eslint-disable-next-line no-param-reassign
+      params.disposition = newDisposition;
+    });
   }, [filePath, updateStreamParams, stream.index]);
 
   const codecTag = stream.codec_tag !== '0x0000' && stream.codec_tag_string;
@@ -191,7 +215,7 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
       </td>
       <td style={{ maxWidth: '3em', overflow: 'hidden' }} title={stream.codec_name}>{stream.codec_name} {codecTag}</td>
       <td>
-        {!Number.isNaN(duration) && `${formatTimecode({ seconds: duration, shorten: true })}`}
+        {duration != null && !Number.isNaN(duration) && `${formatTimecode({ seconds: duration, shorten: true })}`}
         {stream.nb_frames != null ? <div>{stream.nb_frames}f</div> : null}
       </td>
       <td>{!Number.isNaN(bitrate) && (stream.codec_type === 'audio' ? `${Math.round(bitrate / 1000)} kbps` : prettyBytes(bitrate, { bits: true }))}</td>
@@ -247,7 +271,9 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
   );
 });
 
-const FileHeading = ({ path, formatData, chapters, onTrashClick, onEditClick, setCopyAllStreams, onExtractAllStreamsPress }) => {
+function FileHeading({ path, formatData, chapters, onTrashClick, onEditClick, setCopyAllStreams, onExtractAllStreamsPress }: {
+  path: string, formatData: FFprobeFormat | undefined, chapters?: FFprobeChapter[] | undefined, onTrashClick?: (() => void) | undefined, onEditClick?: (() => void) | undefined, setCopyAllStreams: (a: boolean) => void, onExtractAllStreamsPress?: () => Promise<void>,
+}) {
   const { t } = useTranslation();
 
   return (
@@ -265,11 +291,11 @@ const FileHeading = ({ path, formatData, chapters, onTrashClick, onEditClick, se
       {onExtractAllStreamsPress && <IconButton iconSize={16} title={t('Export each track as individual files')} icon={ForkIcon} onClick={onExtractAllStreamsPress} appearance="minimal" />}
     </div>
   );
-};
+}
 
-const thStyle = { borderBottom: '1px solid var(--gray6)', paddingBottom: '.5em' };
+const thStyle: CSSProperties = { borderBottom: '1px solid var(--gray6)', paddingBottom: '.5em' };
 
-const Thead = () => {
+function Thead() {
   const { t } = useTranslation();
   return (
     <thead style={{ color: 'var(--gray12)', textAlign: 'left', fontSize: '.9em' }}>
@@ -286,31 +312,50 @@ const Thead = () => {
       </tr>
     </thead>
   );
-};
+}
 
-const tableStyle = { fontSize: 14, width: '100%', borderCollapse: 'collapse' };
-const fileStyle = { margin: '1.5em 1em 1.5em 1em', padding: 5, overflowX: 'auto' };
+const tableStyle: CSSProperties = { fontSize: 14, width: '100%', borderCollapse: 'collapse' };
+const fileStyle: CSSProperties = { margin: '1.5em 1em 1.5em 1em', padding: 5, overflowX: 'auto' };
 
-const StreamsSelector = memo(({
-  mainFilePath, mainFileFormatData, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId,
-  setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta,
-  showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams,
-  customTagsByFile, setCustomTagsByFile, paramsByStreamId, updateStreamParams,
-  formatTimecode,
-}) => {
-  const [editingFile, setEditingFile] = useState();
-  const [editingStream, setEditingStream] = useState();
+
+function StreamsSelector({
+  mainFilePath, mainFileFormatData, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId, setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta, showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, customTagsByFile, setCustomTagsByFile, paramsByStreamId, updateStreamParams, formatTimecode,
+}: {
+  mainFilePath: string,
+  mainFileFormatData: FFprobeFormat | undefined,
+  mainFileStreams: FFprobeStream[],
+  mainFileChapters: FFprobeChapter[] | undefined,
+  isCopyingStreamId: (path: string | undefined, streamId: number) => boolean,
+  toggleCopyStreamId: (path: string, index: number) => void,
+  setCopyStreamIdsForPath: (path: string, cb: (a: Record<string, boolean>) => Record<string, boolean>) => void,
+  onExtractStreamPress: (index: number) => void,
+  onExtractAllStreamsPress: () => Promise<void>,
+  allFilesMeta: FilesMeta,
+  externalFilesMeta: FilesMeta,
+  setExternalFilesMeta: Dispatch<SetStateAction<FilesMeta>>,
+  showAddStreamSourceDialog: () => Promise<void>,
+  shortestFlag: boolean,
+  setShortestFlag: Dispatch<SetStateAction<boolean>>,
+  nonCopiedExtraStreams: FFprobeStream[],
+  customTagsByFile: CustomTagsByFile,
+  setCustomTagsByFile: Dispatch<SetStateAction<CustomTagsByFile>>,
+  paramsByStreamId: ParamsByStreamId,
+  updateStreamParams: UpdateStreamParams,
+  formatTimecode: FormatTimecode,
+}) {
+  const [editingFile, setEditingFile] = useState<string>();
+  const [editingStream, setEditingStream] = useState<EditingStream>();
+  const [editingTag, setEditingTag] = useState<string>();
   const { t } = useTranslation();
-  const [editingTag, setEditingTag] = useState();
 
-  function getFormatDuration(formatData) {
+  function getFormatDuration(formatData: FFprobeFormat | undefined) {
     if (!formatData || !formatData.duration) return undefined;
-    const parsed = parseFloat(formatData.duration, 10);
+    const parsed = parseFloat(formatData.duration);
     if (Number.isNaN(parsed)) return undefined;
     return parsed;
   }
 
-  async function removeFile(path) {
+  function removeFile(path: string) {
     setCopyStreamIdsForPath(path, () => ({}));
     setExternalFilesMeta((old) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -319,7 +364,7 @@ const StreamsSelector = memo(({
     });
   }
 
-  async function batchSetCopyStreamIdsForPath(path, streams, filter, enabled) {
+  function batchSetCopyStreamIdsForPath(path: string, streams: FFprobeStream[], filter: (a: FFprobeStream) => boolean, enabled: boolean) {
     setCopyStreamIdsForPath(path, (old) => {
       const ret = { ...old };
       // eslint-disable-next-line unicorn/no-array-callback-reference
@@ -330,7 +375,7 @@ const StreamsSelector = memo(({
     });
   }
 
-  async function setCopyAllStreamsForPath(path, enabled) {
+  function setCopyAllStreamsForPath(path: string, enabled: boolean) {
     setCopyStreamIdsForPath(path, (old) => Object.fromEntries(Object.entries(old).map(([streamId]) => [streamId, enabled])));
   }
 
@@ -354,7 +399,7 @@ const StreamsSelector = memo(({
                 stream={stream}
                 copyStream={isCopyingStreamId(mainFilePath, stream.index)}
                 onToggle={(streamId) => toggleCopyStreamId(mainFilePath, streamId)}
-                batchSetCopyStreamIds={(filter, enabled) => batchSetCopyStreamIdsForPath(mainFilePath, mainFileStreams, filter, enabled)}
+                batchSetCopyStreamIds={(filter: (a: FFprobeStream) => boolean, enabled: boolean) => batchSetCopyStreamIdsForPath(mainFilePath, mainFileStreams, filter, enabled)}
                 setEditingStream={setEditingStream}
                 fileDuration={getFormatDuration(mainFileFormatData)}
                 onExtractStreamPress={() => onExtractStreamPress(stream.index)}
@@ -381,7 +426,7 @@ const StreamsSelector = memo(({
                   stream={stream}
                   copyStream={isCopyingStreamId(path, stream.index)}
                   onToggle={(streamId) => toggleCopyStreamId(path, streamId)}
-                  batchSetCopyStreamIds={(filter, enabled) => batchSetCopyStreamIdsForPath(path, streams, filter, enabled)}
+                  batchSetCopyStreamIds={(filter: (a: FFprobeStream) => boolean, enabled: boolean) => batchSetCopyStreamIdsForPath(path, streams, filter, enabled)}
                   setEditingStream={setEditingStream}
                   fileDuration={getFormatDuration(formatData)}
                   paramsByStreamId={paramsByStreamId}
@@ -425,10 +470,12 @@ const StreamsSelector = memo(({
         isShown={editingFile != null}
         hasCancel={false}
         confirmLabel={t('Done')}
-        onCloseComplete={() => setEditingFile()}
+        onCloseComplete={() => setEditingFile(undefined)}
         isConfirmDisabled={editingTag != null}
       >
-        <EditFileDialog editingFile={editingFile} editingTag={editingTag} setEditingTag={setEditingTag} allFilesMeta={allFilesMeta} customTagsByFile={customTagsByFile} setCustomTagsByFile={setCustomTagsByFile} />
+        <div style={{ color: 'black' }}>
+          {editingFile != null && <EditFileDialog editingFile={editingFile} editingTag={editingTag} setEditingTag={setEditingTag} allFilesMeta={allFilesMeta} customTagsByFile={customTagsByFile} setCustomTagsByFile={setCustomTagsByFile} />}
+        </div>
       </Dialog>
 
       {editingStream != null && (
@@ -442,6 +489,6 @@ const StreamsSelector = memo(({
       )}
     </>
   );
-});
+}
 
-export default StreamsSelector;
+export default memo(StreamsSelector);

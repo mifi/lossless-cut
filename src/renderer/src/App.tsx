@@ -86,7 +86,7 @@ import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './uti
 import BigWaveform from './components/BigWaveform';
 
 import isDev from './isDev';
-import { ChromiumHTMLVideoElement, EdlFileType, FfmpegCommandLog, FormatTimecode, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, Thumbnail, TunerType } from './types';
+import { ChromiumHTMLVideoElement, CustomTagsByFile, EdlFileType, FfmpegCommandLog, FilesMeta, FormatTimecode, ParamsByStreamId, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, Thumbnail, TunerType } from './types';
 import { CaptureFormat, KeyboardAction, Html5ifyMode } from '../../../types';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 
@@ -125,9 +125,9 @@ function App() {
   const [cutProgress, setCutProgress] = useState<number>();
   const [startTimeOffset, setStartTimeOffset] = useState(0);
   const [filePath, setFilePath] = useState<string>();
-  const [externalFilesMeta, setExternalFilesMeta] = useState<Record<string, { streams: FFprobeStream[], formatData: FFprobeFormat, chapters: FFprobeChapter[] }>>({});
-  const [customTagsByFile, setCustomTagsByFile] = useState({});
-  const [paramsByStreamId, setParamsByStreamId] = useState(new Map());
+  const [externalFilesMeta, setExternalFilesMeta] = useState<FilesMeta>({});
+  const [customTagsByFile, setCustomTagsByFile] = useState<CustomTagsByFile>({});
+  const [paramsByStreamId, setParamsByStreamId] = useState<ParamsByStreamId>(new Map());
   const [detectedFps, setDetectedFps] = useState<number>();
   const [mainFileMeta, setMainFileMeta] = useState<{ streams: FFprobeStream[], formatData: FFprobeFormat, chapters: FFprobeChapter[] }>();
   const [copyStreamIdsByFile, setCopyStreamIdsByFile] = useState<Record<string, Record<string, boolean>>>({});
@@ -253,7 +253,7 @@ function App() {
     setFfmpegCommandLog((old) => [...old, { command, time: new Date() }]);
   }
 
-  const setCopyStreamIdsForPath = useCallback((path, cb) => {
+  const setCopyStreamIdsForPath = useCallback<Parameters<typeof StreamsSelector>[0]['setCopyStreamIdsForPath']>((path, cb) => {
     setCopyStreamIdsByFile((old) => {
       const oldIds = old[path] || {};
       return ({ ...old, [path]: cb(oldIds) });
@@ -262,7 +262,7 @@ function App() {
 
   const toggleSegmentsList = useCallback(() => setShowRightBar((v) => !v), []);
 
-  const toggleCopyStreamId = useCallback((path, index) => {
+  const toggleCopyStreamId = useCallback((path: string, index: number) => {
     setCopyStreamIdsForPath(path, (old) => ({ ...old, [index]: !old[index] }));
   }, [setCopyStreamIdsForPath]);
 
@@ -309,8 +309,8 @@ function App() {
   const mainFileFormatData = useMemo(() => mainFileMeta?.formatData, [mainFileMeta?.formatData]);
   const mainFileChapters = useMemo(() => mainFileMeta?.chapters, [mainFileMeta?.chapters]);
 
-  const isCopyingStreamId = useCallback((path, streamId) => (
-    !!(copyStreamIdsByFile[path] || {})[streamId]
+  const isCopyingStreamId = useCallback((path: string | undefined, streamId: number) => (
+    !!((path != null && copyStreamIdsByFile[path]) || {})[streamId]
   ), [copyStreamIdsByFile]);
 
   const checkCopyingAnyTrackOfType = useCallback((filter: (s: FFprobeStream) => boolean) => mainStreams.some((stream) => isCopyingStreamId(filePath, stream.index) && filter(stream)), [filePath, isCopyingStreamId, mainStreams]);
@@ -694,6 +694,7 @@ function App() {
 
   const toggleStripStream = useCallback((filter) => {
     const copyingAnyTrackOfType = checkCopyingAnyTrackOfType(filter);
+    invariant(filePath != null);
     setCopyStreamIdsForPath(filePath, (old) => {
       const newCopyStreamIds = { ...old };
       mainStreams.forEach((stream) => {
@@ -763,7 +764,7 @@ function App() {
   const shouldShowWaveform = calcShouldShowWaveform(zoomedDuration);
 
   const { neighbouringKeyFrames, findNearestKeyFrameTime } = useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream: activeVideoStream, detectedFps, ffmpegExtractWindow });
-  const { waveforms } = useWaveform({ darkMode, filePath, relevantTime, waveformEnabled, audioStream: activeAudioStream, ffmpegExtractWindow, durationSafe });
+  const { waveforms } = useWaveform({ darkMode, filePath, relevantTime, waveformEnabled, audioStream: activeAudioStream, ffmpegExtractWindow, duration });
 
   const resetMergedOutFileName = useCallback(() => {
     if (fileFormat == null || filePath == null) return;
@@ -1833,19 +1834,23 @@ function App() {
     return fileMeta;
   }, [allFilesMeta, setCopyStreamIdsForPath]);
 
-  const updateStreamParams = useCallback((fileId, streamId, setter) => setParamsByStreamId(produce((draft) => {
+  const updateStreamParams = useCallback<Parameters<typeof StreamsSelector>[0]['updateStreamParams']>((fileId, streamId, setter) => setParamsByStreamId(produce((draft) => {
     if (!draft.has(fileId)) draft.set(fileId, new Map());
     const fileMap = draft.get(fileId);
-    if (!fileMap.has(streamId)) fileMap.set(streamId, new Map());
+    invariant(fileMap != null);
+    if (!fileMap.has(streamId)) fileMap.set(streamId, {});
 
-    setter(fileMap.get(streamId));
+    const params = fileMap.get(streamId);
+    invariant(params != null);
+    setter(params);
   })), [setParamsByStreamId]);
 
   const addFileAsCoverArt = useCallback(async (path: string) => {
     const fileMeta = await addStreamSourceFile(path);
     if (!fileMeta) return false;
     const firstIndex = fileMeta.streams[0]!.index;
-    updateStreamParams(path, firstIndex, (params) => params.set('disposition', 'attached_pic'));
+    // eslint-disable-next-line no-param-reassign
+    updateStreamParams(path, firstIndex, (params) => { params.disposition = 'attached_pic'; });
     return true;
   }, [addStreamSourceFile, updateStreamParams]);
 
@@ -2280,7 +2285,7 @@ function App() {
     electron.ipcRenderer.send('setAskBeforeClose', askBeforeClose && isFileOpened);
   }, [askBeforeClose, isFileOpened]);
 
-  const extractSingleStream = useCallback(async (index) => {
+  const extractSingleStream = useCallback(async (index: number) => {
     if (!filePath) return;
 
     if (workingRef.current) return;
@@ -2596,7 +2601,7 @@ function App() {
               </div>
 
               <AnimatePresence>
-                {showRightBar && isFileOpened && (
+                {showRightBar && isFileOpened && filePath != null && (
                   <SegmentList
                     width={rightBarWidth}
                     currentSegIndex={currentSegIndexSafe}
@@ -2726,9 +2731,8 @@ function App() {
             <ExportConfirm areWeCutting={areWeCutting} nonFilteredSegmentsOrInverse={nonFilteredSegmentsOrInverse} selectedSegments={selectedSegmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} needSmartCut={needSmartCut} mergedOutFileName={mergedOutFileName} setMergedOutFileName={setMergedOutFileName} />
 
             <Sheet visible={streamsSelectorShown} onClosePress={() => setStreamsSelectorShown(false)} maxWidth={1000}>
-              {mainStreams && (
+              {mainStreams && filePath != null && (
                 <StreamsSelector
-                  // @ts-expect-error todo
                   mainFilePath={filePath}
                   mainFileFormatData={mainFileFormatData}
                   mainFileChapters={mainFileChapters}
@@ -2742,7 +2746,6 @@ function App() {
                   setCopyStreamIdsForPath={setCopyStreamIdsForPath}
                   onExtractAllStreamsPress={extractAllStreams}
                   onExtractStreamPress={extractSingleStream}
-                  areWeCutting={areWeCutting}
                   shortestFlag={shortestFlag}
                   setShortestFlag={setShortestFlag}
                   nonCopiedExtraStreams={nonCopiedExtraStreams}

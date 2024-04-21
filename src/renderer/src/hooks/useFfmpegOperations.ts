@@ -11,6 +11,7 @@ import { getSmartCutParams } from '../smartcut';
 import { isDurationValid } from '../segments';
 import { FFprobeStream } from '../../../../ffprobe';
 import { Html5ifyMode } from '../../../../types';
+import { ParamsByStreamId } from '../types';
 
 const { join, resolve, dirname } = window.require('path');
 const { pathExists } = window.require('fs-extra');
@@ -181,6 +182,9 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   const losslessCutSingle = useCallback(async ({
     keyframeCut: ssBeforeInput, avoidNegativeTs, copyFileStreams, cutFrom, cutTo, chaptersPath, onProgress, outPath,
     videoDuration, rotation, allFilesMeta, outFormat, appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, paramsByStreamId, videoTimebase, detectedFps,
+  }: {
+    keyframeCut: boolean, avoidNegativeTs: boolean, copyFileStreams, cutFrom, cutTo, chaptersPath, onProgress, outPath,
+    videoDuration, rotation, allFilesMeta, outFormat, appendFfmpegCommandLog, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, paramsByStreamId: ParamsByStreamId, videoTimebase, detectedFps,
   }) => {
     if (await shouldSkipExistingFile(outPath)) return;
 
@@ -227,7 +231,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     // This function tries to calculate the output stream index needed for -metadata:s:x and -disposition:x arguments
     // It is based on the assumption that copyFileStreamsFiltered contains the order of the input files (and their respective streams orders) sent to ffmpeg, to hopefully calculate the same output stream index values that ffmpeg does internally.
     // It also takes into account previously added files that have been removed and disabled streams.
-    function mapInputStreamIndexToOutputIndex(inputFilePath, inputFileStreamIndex) {
+    function mapInputStreamIndexToOutputIndex(inputFilePath: string, inputFileStreamIndex: number) {
       let streamCount = 0;
       // Count copied streams of all files until this input file
       const foundFile = copyFileStreamsFiltered.find(({ path: path2, streamIds }) => {
@@ -254,24 +258,24 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       const ret: string[] = [];
       for (const [fileId, fileParams] of paramsByStreamId.entries()) {
         for (const [streamId, streamParams] of fileParams.entries()) {
-          const outputIndex = mapInputStreamIndexToOutputIndex(fileId, parseInt(streamId, 10));
+          const outputIndex = mapInputStreamIndexToOutputIndex(fileId, streamId);
           if (outputIndex != null) {
-            const disposition = streamParams.get('disposition');
+            const { disposition } = streamParams;
             if (disposition != null) {
               // "0" means delete the disposition for this stream
               const dispositionArg = disposition === deleteDispositionValue ? '0' : disposition;
               ret.push(`-disposition:${outputIndex}`, String(dispositionArg));
             }
 
-            if (streamParams.get('bsfH264Mp4toannexb')) {
+            if (streamParams.bsfH264Mp4toannexb) {
               ret.push(`-bsf:${outputIndex}`, String('h264_mp4toannexb'));
             }
-            if (streamParams.get('bsfHevcMp4toannexb')) {
+            if (streamParams.bsfHevcMp4toannexb) {
               ret.push(`-bsf:${outputIndex}`, String('hevc_mp4toannexb'));
             }
 
             // custom stream metadata tags
-            const customTags = streamParams.get('customTags');
+            const { customTags } = streamParams;
             if (customTags != null) {
               for (const [tag, value] of Object.entries(customTags)) {
                 ret.push(`-metadata:s:${outputIndex}`, `${tag}=${value}`);

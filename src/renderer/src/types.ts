@@ -1,5 +1,6 @@
 import type { MenuItem, MenuItemConstructorOptions } from 'electron';
 import { z } from 'zod';
+import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 
 
 export interface ChromiumHTMLVideoElement extends HTMLVideoElement {
@@ -96,3 +97,19 @@ export type UpdateSegAtIndex = (index: number, newProps: Partial<StateSegment>) 
 export type ContextMenuTemplate = (MenuItemConstructorOptions | MenuItem)[];
 
 export type ExportMode = 'segments_to_chapters' | 'merge' | 'merge+separate' | 'separate';
+
+export type FilesMeta = Record<string, {
+  streams: FFprobeStream[];
+  formatData: FFprobeFormat;
+  chapters: FFprobeChapter[];
+}>
+
+export type CustomTagsByFile = Record<string, Record<string, string>>;
+
+export interface StreamParams {
+  customTags?: Record<string, string>,
+  disposition?: string,
+  bsfH264Mp4toannexb?: boolean,
+  bsfHevcMp4toannexb?: boolean,
+}
+export type ParamsByStreamId = Map<string, Map<number, StreamParams>>;
