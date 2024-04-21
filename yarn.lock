@@ -7603,18 +7603,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json5@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "json5@npm:2.2.0"
-  dependencies:
-    minimist: "npm:^1.2.5"
-  bin:
-    json5: lib/cli.js
-  checksum: d72ea87423a250c7912e4f28fc489d210a7becbae38e6d1d82efd02b5fe1cd1b61a3a9eacd21771fb50c3fa975e262af3df975b43f20b64b0e77af793c1d44aa
-  languageName: node
-  linkType: hard
-
-"json5@npm:^2.2.2, json5@npm:^2.2.3":
+"json5@npm:^2.2.0, json5@npm:^2.2.2, json5@npm:^2.2.3":
   version: 2.2.3
   resolution: "json5@npm:2.2.3"
   bin:
@@ -7956,7 +7945,6 @@ __metadata:
     i18next-parser: "npm:^7.6.0"
     icon-gen: "npm:^4.0.0"
     immer: "npm:^10.0.2"
-    json5: "npm:^2.2.2"
     ky: "npm:^0.33.1"
     lodash: "npm:^4.17.19"
     luxon: "npm:^3.3.0"
