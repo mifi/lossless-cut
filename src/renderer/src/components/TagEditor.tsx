@@ -44,19 +44,21 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
     }
   }, [onTagsChange]);
 
+  const saveTag = useCallback(() => {
+    invariant(editingTag != null);
+    invariant(editingTagVal != null);
+    const editingValTransformed = editingTag === 'language' ? editingTagVal.toLowerCase() : editingTagVal;
+    onTagsChange({ [editingTag]: editingValTransformed });
+    setEditingTag(undefined);
+  }, [editingTag, editingTagVal, onTagsChange, setEditingTag]);
+
   const onEditClick = useCallback((tag?: string) => {
     if (newTag) {
-      invariant(editingTag != null);
-      invariant(editingTagVal != null);
-      onTagsChange({ [editingTag]: editingTagVal });
-      setEditingTag(undefined);
+      saveTag();
       setNewTag(undefined);
     } else if (editingTag != null) {
       if (editingTagVal !== existingTags[editingTag]) {
-        invariant(editingTag != null);
-        invariant(editingTagVal != null);
-        onTagsChange({ [editingTag]: editingTagVal });
-        setEditingTag(undefined);
+        saveTag();
       } else { // If not actually changed, no need to update
         onResetClick();
       }
@@ -64,7 +66,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
       setEditingTag(tag);
       setEditingTagVal(tag && String(mergedTags[tag]));
     }
-  }, [editingTag, editingTagVal, existingTags, mergedTags, newTag, onResetClick, onTagsChange, setEditingTag]);
+  }, [editingTag, editingTagVal, existingTags, mergedTags, newTag, onResetClick, saveTag, setEditingTag]);
 
   function onSubmit(e) {
     e.preventDefault();
@@ -108,7 +110,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
                 <td style={{ display: 'flex', alignItems: 'center' }}>
                   {editingThis ? (
                     <form style={{ display: 'inline' }} onSubmit={onSubmit}>
-                      <TextInput ref={ref} placeholder={t('Enter value')} value={editingTagVal || ''} onChange={(e) => setEditingTagVal(e.target.value)} />
+                      <TextInput ref={ref} placeholder={t('Enter value')} value={editingTagVal || ''} onChange={(e) => setEditingTagVal(e.target.value)} style={{ textTransform: editingTag === 'language' ? 'lowercase' : undefined }} />
                     </form>
                   ) : (
                     <span style={{ padding: '.5em 0', color: thisTagCustom ? activeColor : undefined, fontWeight: thisTagCustom ? 'bold' : undefined }}>{mergedTags[tag] ? String(mergedTags[tag]) : `<${t('empty')}>`}</span>
