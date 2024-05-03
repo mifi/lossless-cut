@@ -17,21 +17,21 @@ const NoFileLoaded = memo(({ mifiLink, currentCutSeg, onClick, darkMode }: {
   return (
     <div
       className="no-user-select"
-      style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, border: '1.5vmin dashed var(--gray3)', color: 'var(--gray12)', margin: '5vmin', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}
+      style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, border: '.7em dashed var(--gray3)', color: 'var(--gray12)', margin: '2em', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}
       role="button"
       onClick={onClick}
     >
-      <div style={{ fontSize: '6vmin', textTransform: 'uppercase', color: 'var(--gray11)' }}>{t('DROP FILE(S)')}</div>
+      <div style={{ fontSize: '2em', textTransform: 'uppercase', color: 'var(--gray11)', marginBottom: '.2em' }}>{t('DROP FILE(S)')}</div>
 
-      <div style={{ fontSize: '2.5vmin', color: 'var(--gray11)', marginBottom: '.3em' }}>
+      <div style={{ fontSize: '1.3em', color: 'var(--gray11)', marginBottom: '.1em' }}>
         <Trans>See <b>Help</b> menu for help</Trans>
       </div>
 
-      <div style={{ fontSize: '2.5vmin', color: 'var(--gray11)' }}>
+      <div style={{ fontSize: '1.3em', color: 'var(--gray11)' }}>
         <Trans><SetCutpointButton currentCutSeg={currentCutSeg} side="start" style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSeg} side="end" style={{ verticalAlign: 'middle' }} /> or <kbd>I</kbd> <kbd>O</kbd> to set cutpoints</Trans>
       </div>
 
-      <div style={{ fontSize: '2.5vmin', color: 'var(--gray11)' }} role="button" onClick={(e) => e.stopPropagation()}>
+      <div style={{ fontSize: '1.3em', color: 'var(--gray11)' }} role="button" onClick={(e) => e.stopPropagation()}>
         {simpleMode ? (
           <Trans><SimpleModeButton style={{ verticalAlign: 'middle' }} size={16} /> to show advanced view</Trans>
         ) : (
@@ -40,7 +40,7 @@ const NoFileLoaded = memo(({ mifiLink, currentCutSeg, onClick, darkMode }: {
       </div>
 
       {mifiLink && typeof mifiLink === 'object' && 'loadUrl' in mifiLink && typeof mifiLink.loadUrl === 'string' && mifiLink.loadUrl ? (
-        <div style={{ position: 'relative', margin: '3vmin', width: '60vmin', height: '20vmin' }}>
+        <div style={{ position: 'relative', margin: '.3em', width: '24em', height: '8em' }}>
           <iframe src={`${mifiLink.loadUrl}#dark=${darkMode ? 'true' : 'false'}`} title="iframe" style={{ background: 'rgba(0,0,0,0)', border: 'none', pointerEvents: 'none', width: '100%', height: '100%', position: 'absolute' }} />
           {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus */}
           <div style={{ width: '100%', height: '100%', position: 'absolute', cursor: 'pointer' }} role="button" onClick={(e) => { e.stopPropagation(); if ('targetUrl' in mifiLink && typeof mifiLink.targetUrl === 'string') electron.shell.openExternal(mifiLink.targetUrl); }} />
