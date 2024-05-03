@@ -62,8 +62,9 @@ function getOutSegProblems({ fileNames, filePath, outputDir, safeOutputFileName 
       error = i18n.t('At least one resulting file name has no length');
       break;
     }
-    if ([...fileName].some((char) => invalidChars.has(char))) {
-      error = i18n.t('At least one resulting file name contains invalid characters');
+    const matchingInvalidChars = new Set([...fileName].filter((char) => invalidChars.has(char)));
+    if (matchingInvalidChars.size > 0) {
+      error = i18n.t('At least one resulting file name contains invalid character(s): {{invalidChars}}', { invalidChars: `"${[...matchingInvalidChars].join('", "')}"` });
       break;
     }
     if (sameAsInputPath) {
