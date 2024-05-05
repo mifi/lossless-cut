@@ -14,6 +14,8 @@
   - Electron's [appData](https://www.electronjs.org/docs/api/app#appgetpathname) folder.
 - Can I export and replace the input file in-place?
   - No, but you can export and automatically delete the input file.
+- Can you publish through [winget](https://github.com/mifi/lossless-cut/issues/1279), [Flatpak](https://github.com/mifi/lossless-cut/pull/1813), [Docker](https://github.com/mifi/lossless-cut/issues/1086) or other software mangers?
+  - In general I don't want to maintain more build systems, but I could be open to linking to externally maintained build systems.
 
 ## App Stores and GitHub difference
 
