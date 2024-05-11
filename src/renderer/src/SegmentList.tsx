@@ -318,7 +318,6 @@ const SegmentList = memo(({
 
   const onReorderSegs = useCallback(async (index: number) => {
     if (apparentCutSegments.length < 2) return;
-    // @ts-expect-error todo
     const { value } = await Swal.fire({
       title: `${t('Change order of segment')} ${index + 1}`,
       text: `Please enter a number from 1 to ${apparentCutSegments.length} to be the new order for the current segment`,

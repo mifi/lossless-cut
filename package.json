@@ -106,7 +106,7 @@
     "sharp": "^0.32.6",
     "smpte-timecode": "^1.2.3",
     "sortablejs": "^1.13.0",
-    "sweetalert2": "^11.0.0",
+    "sweetalert2": "^11.11.0",
     "sweetalert2-react-content": "^5.0.7",
     "tiny-invariant": "^1.3.3",
     "tsx": "^4.7.1",

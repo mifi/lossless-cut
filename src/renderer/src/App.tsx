@@ -905,9 +905,7 @@ function App() {
         setTotalProgress();
       }
 
-      // @ts-expect-error todo
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}`, timer: null as any as undefined, showConfirmButton: true });
+      if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}`, timer: null as unknown as undefined, showConfirmButton: true });
     } catch (err) {
       errorToast(i18n.t('Failed to batch convert to supported format'));
       console.error('Failed to html5ify', err);

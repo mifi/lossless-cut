@@ -66,7 +66,6 @@ export async function showParametersDialog({ title, description, parameters: par
   };
 
   const promise2 = (async () => {
-    // @ts-expect-error todo
     const { isConfirmed } = await ReactSwal.fire({
       title,
       html: <ParametersInput description={description} parameters={parameters} onChange={(newParameters) => { parameters = newParameters; }} onSubmit={handleSubmit} docUrl={docUrl} />,

@@ -20,7 +20,6 @@ const { dialog } = window.require('@electron/remote');
 const ReactSwal = withReactContent(Swal);
 
 export async function promptTimeOffset({ initialValue, title, text, inputPlaceholder, parseTimecode }: { initialValue?: string | undefined, title: string, text?: string | undefined, inputPlaceholder: string, parseTimecode: ParseTimecode }) {
-  // @ts-expect-error todo
   const { value } = await Swal.fire({
     title,
     text,
@@ -474,9 +473,7 @@ export async function showExportFailedDialog({ fileFormat, safeOutputFileName })
     </div>
   );
 
-  // @ts-expect-error todo
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { value } = await ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, timer: null as any as undefined, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
+  const { value } = await ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, timer: null as unknown as undefined, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
   return value;
 }
 
@@ -496,9 +493,7 @@ export async function showConcatFailedDialog({ fileFormat }) {
     </div>
   );
 
-  // @ts-expect-error todo
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { value } = await ReactSwal.fire({ title: i18n.t('Unable to merge files'), html, timer: null as any as undefined, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
+  const { value } = await ReactSwal.fire({ title: i18n.t('Unable to merge files'), html, timer: null as unknown as undefined, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
   return value;
 }
 
@@ -611,7 +606,6 @@ export async function openExportFinishedToast({ filePath, warnings, notices }) {
     </UnorderedList>
   );
 
-  // @ts-expect-error todo
   await openDirToast({ filePath, html, width: 800, position: 'center', timer: hasWarnings ? undefined : 30000 });
 }
 
