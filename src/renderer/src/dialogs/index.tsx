@@ -25,6 +25,9 @@ export async function promptTimeOffset({ initialValue, title, text, inputPlaceho
     text,
     input: 'text',
     inputValue: initialValue || '',
+    didOpen: () => {
+      Swal.getInput()!.select();
+    },
     showCancelButton: true,
     inputPlaceholder,
   });
