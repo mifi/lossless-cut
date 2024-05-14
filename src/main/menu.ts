@@ -29,6 +29,12 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
           },
         },
         {
+          label: esc(t('Open folder')),
+          async click() {
+            mainWindow.webContents.send('openDirDialog');
+          },
+        },
+        {
           label: esc(t('Close')),
           accelerator: 'CmdOrCtrl+W',
           async click() {

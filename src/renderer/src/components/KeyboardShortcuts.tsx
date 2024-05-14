@@ -594,6 +594,10 @@ const KeyboardShortcuts = memo(({
         name: t('Open'),
         category: otherCategory,
       },
+      openDirDialog: {
+        name: t('Open folder'),
+        category: otherCategory,
+      },
       exportYouTube: {
         name: t('Start times as YouTube Chapters'),
         category: otherCategory,
