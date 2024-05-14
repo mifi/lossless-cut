@@ -2,7 +2,7 @@
 export default {
   input: ['src/renderer/**/*.{js,jsx,ts,tsx}', 'src/main/*.{js,ts}'],
 
-  output: 'src/main/locales/$LOCALE/$NAMESPACE.json',
+  output: 'locales/$LOCALE/$NAMESPACE.json',
   indentation: 4,
 
   sort: true,
