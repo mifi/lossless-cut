@@ -37,7 +37,7 @@ LosslessCut --settings-json '{captureFormat:"jpeg", "keyframeCut":true}'
 - `--disable-networking` Turn off all network requests.
 - `--http-api` Start the [HTTP server with an API](./api.md) to control LosslessCut, optionally specifying a port (default `8080`).
 - `--keyboard-action` Run a keyboard action (see below.)
-- `--custom-config-dir` Path to a directory where the `config.json` file will be stored and loaded from.
+- `--config-dir` Path to a directory where the `config.json` file will be stored and loaded from.
 
 ## Controlling a running instance (experimental)
 
