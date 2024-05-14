@@ -99,6 +99,10 @@ export default () => {
   useEffect(() => safeSetConfig({ keyboardSeekAccFactor }), [keyboardSeekAccFactor]);
   const [keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed] = useState(safeGetConfigInitial('keyboardNormalSeekSpeed'));
   useEffect(() => safeSetConfig({ keyboardNormalSeekSpeed }), [keyboardNormalSeekSpeed]);
+  const [keyboardSeekSpeed2, setKeyboardSeekSpeed2] = useState(safeGetConfigInitial('keyboardSeekSpeed2'));
+  useEffect(() => safeSetConfig({ keyboardSeekSpeed2 }), [keyboardSeekSpeed2]);
+  const [keyboardSeekSpeed3, setKeyboardSeekSpeed3] = useState(safeGetConfigInitial('keyboardSeekSpeed3'));
+  useEffect(() => safeSetConfig({ keyboardSeekSpeed3 }), [keyboardSeekSpeed3]);
 
   const [treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart] = useState(safeGetConfigInitial('treatInputFileModifiedTimeAsStart'));
   useEffect(() => safeSetConfig({ treatInputFileModifiedTimeAsStart }), [treatInputFileModifiedTimeAsStart]);
@@ -220,6 +224,10 @@ export default () => {
     setKeyboardSeekAccFactor,
     keyboardNormalSeekSpeed,
     setKeyboardNormalSeekSpeed,
+    keyboardSeekSpeed2,
+    setKeyboardSeekSpeed2,
+    keyboardSeekSpeed3,
+    setKeyboardSeekSpeed3,
     treatInputFileModifiedTimeAsStart,
     setTreatInputFileModifiedTimeAsStart,
     treatOutputFileModifiedTimeAsStart,

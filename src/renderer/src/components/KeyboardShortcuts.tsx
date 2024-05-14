@@ -224,11 +224,27 @@ const KeyboardShortcuts = memo(({
         category: seekingCategory,
       },
       seekBackwards: {
-        name: t('Seek backward 1 sec'),
+        name: t('Backward seek'),
         category: seekingCategory,
       },
       seekForwards: {
-        name: t('Seek forward 1 sec'),
+        name: t('Forward seek'),
+        category: seekingCategory,
+      },
+      seekBackwards2: {
+        name: t('Backward seek (longer)'),
+        category: seekingCategory,
+      },
+      seekForwards2: {
+        name: t('Forward seek (longer)'),
+        category: seekingCategory,
+      },
+      seekBackwards3: {
+        name: t('Backward seek (longest)'),
+        category: seekingCategory,
+      },
+      seekForwards3: {
+        name: t('Forward seek (longest)'),
         category: seekingCategory,
       },
       seekBackwardsKeyframe: {

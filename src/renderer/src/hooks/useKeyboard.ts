@@ -9,7 +9,7 @@ import { KeyBinding, KeyboardAction } from '../../../../types';
 
 // for all dialog actions (e.g. detectSceneChanges) we must use keyup, or we risk having the button press inserted into the dialog's input element right after the dialog opens
 // todo use keyup for most events?
-const keyupActions = new Set<KeyboardAction>(['seekBackwards', 'seekForwards', 'detectBlackScenes', 'detectSilentScenes', 'detectSceneChanges']);
+const keyupActions = new Set<KeyboardAction>(['seekBackwards', 'seekForwards', 'seekBackwards2', 'seekForwards2', 'seekBackwards3', 'seekForwards3', 'detectBlackScenes', 'detectSilentScenes', 'detectSceneChanges']);
 
 interface StoredAction { action: KeyboardAction, keyup?: boolean }
 

@@ -357,9 +357,23 @@ const Settings = memo(({
           </Row>
 
           <Row>
-            <KeyCell>{t('Timeline keyboard seek speed')}</KeyCell>
+            <KeyCell>{t('Timeline keyboard seek interval')}</KeyCell>
             <td>
               <Button iconBefore={CogIcon} onClick={() => onTunerRequested('keyboardNormalSeekSpeed')}>{t('Change value')}</Button>
+            </td>
+          </Row>
+
+          <Row>
+            <KeyCell>{t('Timeline keyboard seek interval (longer)')}</KeyCell>
+            <td>
+              <Button iconBefore={CogIcon} onClick={() => onTunerRequested('keyboardSeekSpeed2')}>{t('Change value')}</Button>
+            </td>
+          </Row>
+
+          <Row>
+            <KeyCell>{t('Timeline keyboard seek interval (longest)')}</KeyCell>
+            <td>
+              <Button iconBefore={CogIcon} onClick={() => onTunerRequested('keyboardSeekSpeed3')}>{t('Change value')}</Button>
             </td>
           </Row>
 

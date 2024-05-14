@@ -32,12 +32,14 @@ const defaultKeyBindings: KeyBinding[] = [
   { keys: 'g', action: 'goToTimecode' },
 
   { keys: 'left', action: 'seekBackwards' },
+  { keys: 'ctrl+shift+left', action: 'seekBackwards2' },
   { keys: 'ctrl+left', action: 'seekBackwardsPercent' },
   { keys: 'command+left', action: 'seekBackwardsPercent' },
   { keys: 'alt+left', action: 'seekBackwardsKeyframe' },
   { keys: 'shift+left', action: 'jumpCutStart' },
 
   { keys: 'right', action: 'seekForwards' },
+  { keys: 'ctrl+shift+right', action: 'seekForwards2' },
   { keys: 'ctrl+right', action: 'seekForwardsPercent' },
   { keys: 'command+right', action: 'seekForwardsPercent' },
   { keys: 'alt+right', action: 'seekForwardsKeyframe' },
@@ -114,6 +116,8 @@ const defaults: Config = {
   outSegTemplate: undefined,
   keyboardSeekAccFactor: 1.03,
   keyboardNormalSeekSpeed: 1,
+  keyboardSeekSpeed2: 10,
+  keyboardSeekSpeed3: 60,
   treatInputFileModifiedTimeAsStart: true,
   treatOutputFileModifiedTimeAsStart: true,
   outFormatLocked: undefined,

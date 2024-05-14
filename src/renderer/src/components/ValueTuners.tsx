@@ -7,7 +7,7 @@ import { TunerType } from '../types';
 
 const ValueTuners = memo(({ type, onFinished }: { type: TunerType, onFinished: () => void }) => {
   const { t } = useTranslation();
-  const { wheelSensitivity, setWheelSensitivity, keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed, keyboardSeekAccFactor, setKeyboardSeekAccFactor } = useUserSettings();
+  const { wheelSensitivity, setWheelSensitivity, keyboardNormalSeekSpeed, keyboardSeekSpeed2, setKeyboardSeekSpeed2, keyboardSeekSpeed3, setKeyboardSeekSpeed3, setKeyboardNormalSeekSpeed, keyboardSeekAccFactor, setKeyboardSeekAccFactor } = useUserSettings();
 
   // NOTE default values are duplicated in src/main/configStore.js
   const types = {
@@ -20,12 +20,28 @@ const ValueTuners = memo(({ type, onFinished }: { type: TunerType, onFinished: (
       default: 0.2,
     },
     keyboardNormalSeekSpeed: {
-      title: t('Timeline keyboard seek speed'),
+      title: t('Timeline keyboard seek interval'),
       value: keyboardNormalSeekSpeed,
       setValue: setKeyboardNormalSeekSpeed,
       min: 0,
-      max: 100,
+      max: 120,
       default: 1,
+    },
+    keyboardSeekSpeed2: {
+      title: t('Timeline keyboard seek interval (longer)'),
+      value: keyboardSeekSpeed2,
+      setValue: setKeyboardSeekSpeed2,
+      min: 0,
+      max: 600,
+      default: 10,
+    },
+    keyboardSeekSpeed3: {
+      title: t('Timeline keyboard seek interval (longest)'),
+      value: keyboardSeekSpeed3,
+      setValue: setKeyboardSeekSpeed3,
+      min: 0,
+      max: 3600,
+      default: 60,
     },
     keyboardSeekAccFactor: {
       title: t('Timeline keyboard seek acceleration'),
