@@ -231,7 +231,10 @@ function parseCliArgs(rawArgv = process.argv) {
   // dev: First 2 args are electron and the index.js
   const argsWithoutAppName = rawArgv.length > ignoreFirstArgs ? rawArgv.slice(ignoreFirstArgs) : [];
 
-  return yargsParser(argsWithoutAppName, { boolean: ['allow-multiple-instances', 'disable-networking'], string: ['settings-json'] });
+  return yargsParser(argsWithoutAppName, {
+    boolean: ['allow-multiple-instances', 'disable-networking'],
+    string: ['settings-json', 'custom-config-dir'],
+  });
 }
 
 const argv = parseCliArgs();
@@ -330,7 +333,7 @@ const readyPromise = app.whenReady();
 (async () => {
   try {
     logger.info('Initializing config store');
-    await configStore.init();
+    await configStore.init({ customConfigDir: argv['customConfigDir'] });
 
     const allowMultipleInstances = configStore.get('allowMultipleInstances');
 
