@@ -86,7 +86,7 @@ import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './uti
 import BigWaveform from './components/BigWaveform';
 
 import isDev from './isDev';
-import { ChromiumHTMLVideoElement, CustomTagsByFile, EdlFileType, FfmpegCommandLog, FilesMeta, FormatTimecode, ParamsByStreamId, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, Thumbnail, TunerType } from './types';
+import { Chapter, ChromiumHTMLVideoElement, CustomTagsByFile, EdlFileType, FfmpegCommandLog, FilesMeta, FormatTimecode, ParamsByStreamId, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, Thumbnail, TunerType } from './types';
 import { CaptureFormat, KeyboardAction, Html5ifyMode } from '../../../types';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 
@@ -249,9 +249,9 @@ function App() {
     });
   }, [zoomedDuration]);
 
-  function appendFfmpegCommandLog(command: string) {
+  const appendFfmpegCommandLog = useCallback((command: string) => {
     setFfmpegCommandLog((old) => [...old, { command, time: new Date() }]);
-  }
+  }, []);
 
   const setCopyStreamIdsForPath = useCallback<Parameters<typeof StreamsSelector>[0]['setCopyStreamIdsForPath']>((path, cb) => {
     setCopyStreamIdsByFile((old) => {
@@ -836,9 +836,9 @@ function App() {
 
   const {
     concatFiles, html5ifyDummy, cutMultiple, autoConcatCutSegments, html5ify, fixInvalidDuration,
-  } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames });
+  } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, appendFfmpegCommandLog });
 
-  const html5ifyAndLoad = useCallback(async (cod, fp, speed, hv, ha) => {
+  const html5ifyAndLoad = useCallback(async (cod: string | undefined, fp: string, speed: Html5ifyMode, hv: boolean, ha: boolean) => {
     const usesDummyVideo = speed === 'fastest';
     console.log('html5ifyAndLoad', { speed, hasVideo: hv, hasAudio: ha, usesDummyVideo });
 
@@ -1107,7 +1107,7 @@ function App() {
       // console.log('merge', paths);
       const metadataFromPath = paths[0];
       invariant(metadataFromPath != null);
-      const { haveExcludedStreams } = await concatFiles({ paths, outPath, outDir, outFormat, metadataFromPath, includeAllStreams, streams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments, appendFfmpegCommandLog });
+      const { haveExcludedStreams } = await concatFiles({ paths, outPath, outDir, outFormat, metadataFromPath, includeAllStreams, streams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
 
       const warnings: string[] = [];
       const notices: string[] = [];
@@ -1244,7 +1244,7 @@ function App() {
       setWorking({ text: i18n.t('Exporting') });
 
       // Special segments-to-chapters mode:
-      let chaptersToAdd;
+      let chaptersToAdd: Chapter[] | undefined;
       if (segmentsToChaptersOnly) {
         const sortedSegments = sortSegments(selectedSegmentsOrInverse);
         if (hasAnySegmentOverlap(sortedSegments)) {
@@ -1274,7 +1274,6 @@ function App() {
         segments: segmentsToExport,
         outSegFileNames,
         onProgress: setCutProgress,
-        appendFfmpegCommandLog,
         shortestFlag,
         ffmpegExperimental,
         preserveMovData,
@@ -1304,7 +1303,6 @@ function App() {
           chapterNames,
           autoDeleteMergedSegments,
           preserveMetadataOnMerge,
-          appendFfmpegCommandLog,
           mergedOutFilePath,
         });
       }

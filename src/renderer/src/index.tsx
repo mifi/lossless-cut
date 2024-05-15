@@ -4,6 +4,7 @@ import { MotionConfig } from 'framer-motion';
 import { enableMapSet } from 'immer';
 import * as Electron from 'electron';
 import Remote from '@electron/remote';
+import type path from 'path';
 
 import 'sweetalert2/dist/sweetalert2.css';
 
@@ -42,6 +43,7 @@ declare global {
     require: <T extends string>(module: T) => (
       T extends '@electron/remote' ? TypedRemote :
       T extends 'electron' ? typeof Electron :
+      T extends 'path' ? typeof path :
       // todo more
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       any

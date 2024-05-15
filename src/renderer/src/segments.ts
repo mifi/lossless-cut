@@ -2,6 +2,8 @@ import { nanoid } from 'nanoid';
 import sortBy from 'lodash/sortBy';
 import minBy from 'lodash/minBy';
 import maxBy from 'lodash/maxBy';
+import invariant from 'tiny-invariant';
+
 import { ApparentSegmentBase, PlaybackMode, SegmentBase, SegmentTags, StateSegment } from './types';
 
 
@@ -199,12 +201,14 @@ export function invertSegments(sortedCutSegments: (SegmentBase & { segId?: strin
 }
 
 // because chapters need to be contiguous, we need to insert gaps in-between
-export function convertSegmentsToChapters(sortedSegments) {
+export function convertSegmentsToChapters(sortedSegments: { start: number, end: number, name?: string | undefined }[]) {
   if (sortedSegments.length === 0) return [];
   if (hasAnySegmentOverlap(sortedSegments)) throw new Error('Segments cannot overlap');
 
-  sortedSegments.map((segment) => ({ start: segment.start, end: segment.end, name: segment.name }));
-  const invertedSegments = invertSegments(sortedSegments, true, false);
+  const invertedSegments = invertSegments(sortedSegments, true, false).map(({ start, end, ...seg }) => {
+    invariant(start != null && end != null); // to please typescript
+    return { ...seg, start, end };
+  });
 
   // inverted segments will be "gap" segments. Merge together with normal segments
   return sortSegments([...sortedSegments, ...invertedSegments]);

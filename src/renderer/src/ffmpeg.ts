@@ -48,11 +48,11 @@ export function logStdoutStderr({ stdout, stderr }: { stdout: Buffer, stderr: Bu
   }
 }
 
-export function isCuttingStart(cutFrom) {
+export function isCuttingStart(cutFrom: number) {
   return cutFrom > 0;
 }
 
-export function isCuttingEnd(cutTo, duration) {
+export function isCuttingEnd(cutTo: number, duration: number | undefined) {
   if (!isDurationValid(duration)) return true;
   return cutTo < duration;
 }
