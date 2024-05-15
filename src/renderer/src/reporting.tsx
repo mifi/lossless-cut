@@ -22,7 +22,7 @@ const linkStyle: CSSProperties = { fontWeight: 'bold', cursor: 'pointer' };
 
 
 // eslint-disable-next-line import/prefer-default-export
-export function openSendReportDialog(err: unknown | undefined, state: unknown) {
+export function openSendReportDialog(err: unknown | undefined, state?: unknown) {
   const reportInstructions = isStoreBuild
     ? (
       <p><Trans>Please send an email to <span style={linkStyle} role="button" onClick={() => electron.shell.openExternal('mailto:losslesscut@mifi.no')}>losslesscut@mifi.no</span> where you describe what you were doing.</Trans></p>
