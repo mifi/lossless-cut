@@ -60,7 +60,7 @@ async function tryDeleteFiles(paths: string[]) {
   return pMap(paths, (path) => unlinkWithRetry(path).catch((err) => console.error('Failed to delete', path, err)), { concurrency: 5 });
 }
 
-function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, appendFfmpegCommandLog }: {
+function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, appendLastCommandsLog }: {
   filePath: string | undefined,
   treatInputFileModifiedTimeAsStart: boolean | null | undefined,
   treatOutputFileModifiedTimeAsStart: boolean | null | undefined,
@@ -68,9 +68,11 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   needSmartCut: boolean,
   outputPlaybackRate: number,
   cutFromAdjustmentFrames: number,
-  appendFfmpegCommandLog: (a: string) => void,
+  appendLastCommandsLog: (a: string) => void,
 }) {
-  const shouldSkipExistingFile = useCallback(async (path) => {
+  const appendFfmpegCommandLog = useCallback((args: string[]) => appendLastCommandsLog(getFfCommandLine('ffmpeg', args)), [appendLastCommandsLog]);
+
+  const shouldSkipExistingFile = useCallback(async (path: string) => {
     const skip = !enableOverwriteOutput && await pathExists(path);
     if (skip) console.log('Not overwriting existing file', path);
     return skip;
@@ -88,7 +90,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const durations = await pMap(paths, getDuration, { concurrency: 1 });
     const totalDuration = sum(durations);
 
-    let chaptersPath;
+    let chaptersPath: string | undefined;
     if (chapters) {
       const chaptersWithNames = chapters.map((chapter, i) => ({ ...chapter, name: chapter.name || `Chapter ${i + 1}` }));
       invariant(outDir != null);
@@ -115,13 +117,13 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         '-i', '-',
       ]);
 
-      let metadataSourceIndex;
+      let metadataSourceIndex: number | undefined;
       if (preserveMetadataOnMerge) {
         // If preserve metadata, add the first file (we will get metadata from this input)
         metadataSourceIndex = addInput(['-i', metadataFromPath]);
       }
 
-      let chaptersInputIndex;
+      let chaptersInputIndex: number | undefined;
       if (chaptersPath) {
         // if chapters, add chapters source file
         chaptersInputIndex = addInput(getChaptersInputArgs(chaptersPath));
@@ -148,9 +150,9 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         // -map_metadata 0 with concat demuxer doesn't transfer metadata from the concat'ed file input (index 0) when merging.
         // So we use the first file file (index 1) for metadata
         // Can only do this if allStreams (-map 0) is set
-        ...(metadataSourceIndex != null ? ['-map_metadata', metadataSourceIndex] : []),
+        ...(metadataSourceIndex != null ? ['-map_metadata', String(metadataSourceIndex)] : []),
 
-        ...(chaptersInputIndex != null ? ['-map_chapters', chaptersInputIndex] : []),
+        ...(chaptersInputIndex != null ? ['-map_chapters', String(chaptersInputIndex)] : []),
 
         ...getMovFlags({ preserveMovData, movFastStart }),
         ...getMatroskaFlags(),
@@ -175,7 +177,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       const fullCommandLine = `echo -e "${concatTxt.replace(/\n/, '\\n')}" | ${ffmpegCommandLine}`;
       console.log(fullCommandLine);
-      appendFfmpegCommandLog(fullCommandLine);
+      appendLastCommandsLog(fullCommandLine);
 
       const result = await runFfmpegConcat({ ffmpegArgs, concatTxt, totalDuration, onProgress });
       logStdoutStderr(result);
@@ -186,7 +188,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     } finally {
       if (chaptersPath) await tryDeleteFiles([chaptersPath]);
     }
-  }, [appendFfmpegCommandLog, shouldSkipExistingFile, treatOutputFileModifiedTimeAsStart]);
+  }, [appendLastCommandsLog, shouldSkipExistingFile, treatOutputFileModifiedTimeAsStart]);
 
   const losslessCutSingle = useCallback(async ({
     keyframeCut: ssBeforeInput, avoidNegativeTs, copyFileStreams, cutFrom, cutTo, chaptersPath, onProgress, outPath,
@@ -334,10 +336,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       '-f', outFormat, '-y', outPath,
     ];
 
-    const ffmpegCommandLine = getFfCommandLine('ffmpeg', ffmpegArgs);
-
-    // console.log(ffmpegCommandLine);
-    appendFfmpegCommandLog(ffmpegCommandLine);
+    appendFfmpegCommandLog(ffmpegArgs);
 
     const result = await runFfmpegWithProgress({ ffmpegArgs, duration: cutDuration, onProgress });
     logStdoutStderr(result);
@@ -434,7 +433,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         if (videoCodec == null || videoBitrate == null || videoTimebase == null) throw new Error();
         invariant(filePath != null);
         invariant(outFormat != null);
-        await cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate, videoStreamIndex, videoTimebase, allFilesMeta, copyFileStreams: copyFileStreamsFiltered, ffmpegExperimental });
+        const args = await cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate, videoStreamIndex, videoTimebase, allFilesMeta, copyFileStreams: copyFileStreamsFiltered, ffmpegExperimental });
+        appendFfmpegCommandLog(args);
       }
 
       // If we are cutting within two keyframes, just encode the whole part and return that
@@ -567,6 +567,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       '-c', 'copy',
       '-y', outPath,
     ];
+
+    appendFfmpegCommandLog(ffmpegArgs);
 
     const result = await runFfmpegWithProgress({ ffmpegArgs, duration, onProgress });
     logStdoutStderr(result);

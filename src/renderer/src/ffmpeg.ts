@@ -705,4 +705,6 @@ export async function cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, ou
   ];
 
   await runFfmpeg(ffmpegArgs);
+
+  return ffmpegArgs;
 }
