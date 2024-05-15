@@ -336,7 +336,7 @@ function App() {
   const compatPlayerWanted = (isRotationSet || activeVideoStreamIndex != null || activeAudioStreamIndex != null) && !hideMediaSourcePlayer;
   const compatPlayerEnabled = (compatPlayerRequired || compatPlayerWanted) && (activeVideoStream != null || activeAudioStream != null);
 
-  const shouldShowPlaybackStreamSelector = videoStreams.length > 1 || audioStreams.length > 1 || (compatPlayerEnabled && subtitleStreams.length > 0);
+  const shouldShowPlaybackStreamSelector = videoStreams.length > 1 || audioStreams.length > 1 || (subtitleStreams.length > 0 && !compatPlayerEnabled);
 
   useEffect(() => {
     // Reset the user preference when the state changes to true
