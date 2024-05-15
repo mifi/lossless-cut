@@ -28,6 +28,15 @@ export class RefuseOverwriteError extends Error {
   }
 }
 
+export function fixRemoteBuffer(buffer: Buffer) {
+  // if we don't do this when creating a Blob, we get:
+  // "Failed to construct 'Blob': The provided ArrayBufferView value must not be resizable."
+  // maybe when moving away from @electron/remote, it's not needed anymore?
+  const buffer2 = Buffer.allocUnsafe(buffer.length);
+  buffer.copy(buffer2);
+  return buffer2;
+}
+
 export function logStdoutStderr({ stdout, stderr }: { stdout: Buffer, stderr: Buffer }) {
   if (stdout.length > 0) {
     console.log('%cSTDOUT:', 'color: green; font-weight: bold');
@@ -492,7 +501,7 @@ async function renderThumbnail(filePath: string, timestamp: number) {
 
   const { stdout } = await runFfmpeg(args);
 
-  const blob = new Blob([stdout], { type: 'image/jpeg' });
+  const blob = new Blob([fixRemoteBuffer(stdout)], { type: 'image/jpeg' });
   return URL.createObjectURL(blob);
 }
 
@@ -507,7 +516,7 @@ export async function extractSubtitleTrack(filePath: string, streamId: number) {
 
   const { stdout } = await runFfmpeg(args);
 
-  const blob = new Blob([stdout], { type: 'text/vtt' });
+  const blob = new Blob([fixRemoteBuffer(stdout)], { type: 'text/vtt' });
   return URL.createObjectURL(blob);
 }
 

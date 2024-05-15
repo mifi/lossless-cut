@@ -3,7 +3,7 @@ import sortBy from 'lodash/sortBy';
 import { useThrottle } from '@uidotdev/usehooks';
 import { waveformColorDark, waveformColorLight } from '../colors';
 
-import { renderWaveformPng } from '../ffmpeg';
+import { fixRemoteBuffer, renderWaveformPng } from '../ffmpeg';
 import { RenderableWaveform } from '../types';
 import { FFprobeStream } from '../../../../ffprobe';
 
@@ -73,12 +73,9 @@ export default ({ darkMode, filePath, relevantTime, duration, waveformEnabled, a
             return w;
           }
 
-          // if we don't do this, we get Failed to construct 'Blob': The provided ArrayBufferView value must not be resizable.
-          const buffer2 = Buffer.allocUnsafe(buffer.length);
-          buffer.copy(buffer2);
           return {
             ...w,
-            url: URL.createObjectURL(new Blob([buffer2], { type: 'image/png' })),
+            url: URL.createObjectURL(new Blob([fixRemoteBuffer(buffer)], { type: 'image/png' })),
           };
         }));
       } catch (err) {
