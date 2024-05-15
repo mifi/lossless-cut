@@ -2435,7 +2435,7 @@ function App() {
       actionsWithCatch.forEach(([key, action]) => electron.ipcRenderer.off(key, action));
       electron.ipcRenderer.off('apiKeyboardAction', tryApiKeyboardAction);
     };
-  }, [checkFileOpened, customOutDir, detectedFps, filePath, getFrameCount, getKeyboardAction, loadCutSegments, mainActions, selectedSegments, userOpenFiles]);
+  }, [checkFileOpened, customOutDir, detectedFps, filePath, getFrameCount, getKeyboardAction, loadCutSegments, mainActions, selectedSegments, toggleKeyboardShortcuts, userOpenFiles]);
 
   useEffect(() => {
     async function onDrop(ev: DragEvent) {
