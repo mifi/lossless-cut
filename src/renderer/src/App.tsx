@@ -2424,6 +2424,8 @@ function App() {
         key,
         async () => actionWithCatch(() => fn({ keyup: true })),
       ] as const),
+      // also called from menu:
+      ['toggleKeyboardShortcuts', async () => actionWithCatch(() => toggleKeyboardShortcuts())],
     ];
 
     actionsWithCatch.forEach(([key, action]) => electron.ipcRenderer.on(key, action));
