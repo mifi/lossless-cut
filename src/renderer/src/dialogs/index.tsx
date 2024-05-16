@@ -434,7 +434,7 @@ export async function createFixedDurationSegments({ fileDuration, inputPlacehold
   return edl;
 }
 
-export async function createRandomSegments(fileDuration) {
+export async function createRandomSegments(fileDuration: number) {
   const response = await askForSegmentsRandomDurationRange();
   if (response == null) return undefined;
 
@@ -451,14 +451,14 @@ export async function createRandomSegments(fileDuration) {
   return edl;
 }
 
-const MovSuggestion = ({ fileFormat }) => (fileFormat === 'mp4' ? <li><Trans>Change output <b>Format</b> from <b>MP4</b> to <b>MOV</b></Trans></li> : null);
+const MovSuggestion = ({ fileFormat }: { fileFormat: string | undefined }) => (fileFormat === 'mp4' ? <li><Trans>Change output <b>Format</b> from <b>MP4</b> to <b>MOV</b></Trans></li> : null);
 const OutputFormatSuggestion = () => <li><Trans>Select a different output <b>Format</b> (<b>matroska</b> and <b>mp4</b> support most codecs)</Trans></li>;
 const WorkingDirectorySuggestion = () => <li><Trans>Set a different <b>Working directory</b></Trans></li>;
 const DifferentFileSuggestion = () => <li><Trans>Try with a <b>Different file</b></Trans></li>;
 const HelpSuggestion = () => <li><Trans>See <b>Help</b></Trans> menu</li>;
 const ErrorReportSuggestion = () => <li><Trans>If nothing helps, you can send an <b>Error report</b></Trans></li>;
 
-export async function showExportFailedDialog({ fileFormat, safeOutputFileName }) {
+export async function showExportFailedDialog({ fileFormat, safeOutputFileName }: { fileFormat: string | undefined, safeOutputFileName: boolean }) {
   const html = (
     <div style={{ textAlign: 'left' }}>
       <Trans>Try one of the following before exporting again:</Trans>
@@ -480,7 +480,7 @@ export async function showExportFailedDialog({ fileFormat, safeOutputFileName })
   return value;
 }
 
-export async function showConcatFailedDialog({ fileFormat }) {
+export async function showConcatFailedDialog({ fileFormat }: { fileFormat: string | undefined }) {
   const html = (
     <div style={{ textAlign: 'left' }}>
       <Trans>Try each of the following before merging again:</Trans>
@@ -517,7 +517,7 @@ export function openYouTubeChaptersDialog(text: string) {
   });
 }
 
-export async function labelSegmentDialog({ currentName, maxLength }) {
+export async function labelSegmentDialog({ currentName, maxLength }: { currentName: string, maxLength: number }) {
   const { value } = await Swal.fire({
     showCancelButton: true,
     title: i18n.t('Label current segment'),
@@ -528,7 +528,7 @@ export async function labelSegmentDialog({ currentName, maxLength }) {
   return value;
 }
 
-export async function selectSegmentsByLabelDialog(currentName) {
+export async function selectSegmentsByLabelDialog(currentName: string) {
   const { value } = await Swal.fire({
     showCancelButton: true,
     title: i18n.t('Select segments by label'),
@@ -538,24 +538,47 @@ export async function selectSegmentsByLabelDialog(currentName) {
   return value;
 }
 
-export async function selectSegmentsByTagDialog() {
-  const { value: value1 } = await Swal.fire({
-    showCancelButton: true,
-    title: i18n.t('Select segments by tag'),
-    text: i18n.t('Enter tag name (in the next dialog you\'ll enter tag value)'),
-    input: 'text',
-  });
-  if (!value1) return undefined;
+export async function selectSegmentsByExprDialog(inputValidator: (v: string) => string | undefined) {
+  const examples = {
+    duration: { name: i18n.t('Segment duration less than 5 seconds'), code: 'segment.duration < 5' },
+    start: { name: i18n.t('Segment starts after 00:60'), code: 'segment.start > 60' },
+    label: { name: i18n.t('Segment label'), code: "equalText(segment.label, 'My label')" },
+    tag: { name: i18n.t('Segment tag value'), code: "equalText(segment.tags.myTag, 'tag value')" },
+  };
 
-  const { value: value2 } = await Swal.fire({
-    showCancelButton: true,
-    title: i18n.t('Select segments by tag'),
-    text: i18n.t('Enter tag value'),
-    input: 'text',
-  });
-  if (!value2) return undefined;
+  function addExample(type: string) {
+    Swal.getInput()!.value = examples[type]?.code ?? '';
+  }
 
-  return { tagName: value1, tagValue: value2 };
+  const { value } = await ReactSwal.fire<string>({
+    showCancelButton: true,
+    title: i18n.t('Select segments by expression'),
+    input: 'text',
+    html: (
+      <div style={{ textAlign: 'left' }}>
+        <div style={{ marginBottom: '1em' }}>
+          {i18n.t('Enter an expression which will be evaluated for each segment. Segments for which the expression evaluates to "true" will be selected. For available syntax, see {{url}}.', { url: 'https://mathjs.org/' })}
+        </div>
+
+        <div><b>{i18n.t('Variables')}:</b></div>
+
+        <div style={{ marginBottom: '1em' }}>
+          segment.label, segment.start, segment.end, segment.duration
+        </div>
+
+        <div><b>{i18n.t('Examples')}:</b></div>
+
+        {Object.entries(examples).map(([key, { name }]) => (
+          <button key={key} type="button" onClick={() => addExample(key)} className="button-unstyled" style={{ display: 'block', marginBottom: '.1em' }}>
+            {name}
+          </button>
+        ))}
+      </div>
+    ),
+    inputPlaceholder: 'segment.duration < 5',
+    inputValidator,
+  });
+  return value;
 }
 
 export function showJson5Dialog({ title, json }: { title: string, json: unknown }) {
@@ -631,7 +654,7 @@ export async function askForPlaybackRate({ detectedFps, outputPlaybackRate }) {
   const fps = detectedFps || 1;
   const currentFps = fps * outputPlaybackRate;
 
-  function parseValue(v) {
+  function parseValue(v: string) {
     const newFps = parseFloat(v);
     if (!Number.isNaN(newFps)) {
       return newFps / fps;
