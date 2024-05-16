@@ -60,7 +60,7 @@ async function tryDeleteFiles(paths: string[]) {
   return pMap(paths, (path) => unlinkWithRetry(path).catch((err) => console.error('Failed to delete', path, err)), { concurrency: 5 });
 }
 
-function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, appendLastCommandsLog }: {
+function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, appendLastCommandsLog, smartCutCustomBitrate }: {
   filePath: string | undefined,
   treatInputFileModifiedTimeAsStart: boolean | null | undefined,
   treatOutputFileModifiedTimeAsStart: boolean | null | undefined,
@@ -69,6 +69,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   outputPlaybackRate: number,
   cutFromAdjustmentFrames: number,
   appendLastCommandsLog: (a: string) => void,
+  smartCutCustomBitrate: number | undefined,
 }) {
   const appendFfmpegCommandLog = useCallback((args: string[]) => appendLastCommandsLog(getFfCommandLine('ffmpeg', args)), [appendLastCommandsLog]);
 
@@ -412,7 +413,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
           return match ? [match] : [];
         });
 
-      const { losslessCutFrom, segmentNeedsSmartCut, videoCodec, videoBitrate, videoStreamIndex, videoTimebase } = await getSmartCutParams({ path: filePath, videoDuration, desiredCutFrom, streams: streamsToCopyFromMainFile });
+      const { losslessCutFrom, segmentNeedsSmartCut, videoCodec, videoBitrate: detectedVideoBitrate, videoStreamIndex, videoTimebase } = await getSmartCutParams({ path: filePath, videoDuration, desiredCutFrom, streams: streamsToCopyFromMainFile });
 
       if (segmentNeedsSmartCut && !detectedFps) throw new Error('Smart cut is not possible when FPS is unknown');
 
@@ -430,10 +431,10 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       // eslint-disable-next-line no-shadow
       async function cutEncodeSmartPartWrapper({ cutFrom, cutTo, outPath }) {
         if (await shouldSkipExistingFile(outPath)) return;
-        if (videoCodec == null || videoBitrate == null || videoTimebase == null) throw new Error();
+        if (videoCodec == null || detectedVideoBitrate == null || videoTimebase == null) throw new Error();
         invariant(filePath != null);
         invariant(outFormat != null);
-        const args = await cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate, videoStreamIndex, videoTimebase, allFilesMeta, copyFileStreams: copyFileStreamsFiltered, ffmpegExperimental });
+        const args = await cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate: smartCutCustomBitrate != null ? smartCutCustomBitrate * 1000 : detectedVideoBitrate, videoStreamIndex, videoTimebase, allFilesMeta, copyFileStreams: copyFileStreamsFiltered, ffmpegExperimental });
         appendFfmpegCommandLog(args);
       }
 
@@ -497,7 +498,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     } finally {
       if (chaptersPath) await tryDeleteFiles([chaptersPath]);
     }
-  }, [needSmartCut, filePath, losslessCutSingle, shouldSkipExistingFile, concatFiles]);
+  }, [needSmartCut, filePath, losslessCutSingle, shouldSkipExistingFile, smartCutCustomBitrate, appendFfmpegCommandLog, concatFiles]);
 
   const autoConcatCutSegments = useCallback(async ({ customOutDir, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge, mergedOutFilePath }) => {
     const outDir = getOutDir(customOutDir, filePath);
@@ -576,7 +577,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     await transferTimestamps({ inPath: filePath, outPath, treatOutputFileModifiedTimeAsStart });
 
     return outPath;
-  }, [filePath, treatOutputFileModifiedTimeAsStart]);
+  }, [appendFfmpegCommandLog, filePath, treatOutputFileModifiedTimeAsStart]);
 
   return {
     cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, autoConcatCutSegments,

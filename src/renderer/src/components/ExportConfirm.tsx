@@ -1,4 +1,4 @@
-import { CSSProperties, memo, useCallback, useMemo } from 'react';
+import { CSSProperties, Dispatch, SetStateAction, memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WarningSignIcon, CrossIcon } from 'evergreen-ui';
 import { FaRegCheckCircle } from 'react-icons/fa';
@@ -28,6 +28,7 @@ import { InverseCutSegment, SegmentToExport } from '../types';
 import { GenerateOutSegFileNames } from '../util/outputNameTemplate';
 import { FFprobeStream } from '../../../../ffprobe';
 import { AvoidNegativeTs } from '../../../../types';
+import TextInput from './TextInput';
 
 
 const boxStyle: CSSProperties = { margin: '15px 15px 50px 15px', borderRadius: 10, padding: '10px 20px', minHeight: 500, position: 'relative' };
@@ -61,6 +62,8 @@ const ExportConfirm = memo(({
   needSmartCut,
   mergedOutFileName,
   setMergedOutFileName,
+  smartCutBitrate,
+  setSmartCutBitrate,
 } : {
   areWeCutting: boolean,
   selectedSegments: InverseCutSegment[],
@@ -84,6 +87,8 @@ const ExportConfirm = memo(({
   needSmartCut: boolean,
   mergedOutFileName: string | undefined,
   setMergedOutFileName: (a: string) => void,
+  smartCutBitrate: number | undefined,
+  setSmartCutBitrate: Dispatch<SetStateAction<number | undefined>>,
 }) => {
   const { t } = useTranslation();
 
@@ -164,6 +169,16 @@ const ExportConfirm = memo(({
   }, [t]);
 
   const canEditTemplate = !willMerge || !autoDeleteMergedSegments;
+
+  const handleSmartCutBitrateToggle = useCallback((checked: boolean) => {
+    setSmartCutBitrate(() => (checked ? undefined : 10000));
+  }, [setSmartCutBitrate]);
+
+  const handleSmartCutBitrateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = parseInt(e.target.value, 10);
+    if (Number.isNaN(v) || v <= 0) return;
+    setSmartCutBitrate(v);
+  }, [setSmartCutBitrate]);
 
   // https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container
   return (
@@ -346,6 +361,26 @@ const ExportConfirm = memo(({
                             )}
                           </td>
                         </tr>
+
+                        {needSmartCut && (
+                          <tr>
+                            <td>
+                              {t('Smart cut auto detect bitrate')}
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                {smartCutBitrate != null && (
+                                  <>
+                                    <TextInput value={smartCutBitrate} onChange={handleSmartCutBitrateChange} style={{ width: '4em', flexGrow: 0, marginRight: '.3em' }} />
+                                    <span style={{ marginRight: '.3em' }}>{t('kbit/s')}</span>
+                                  </>
+                                )}
+                                <span><Switch checked={smartCutBitrate == null} onCheckedChange={handleSmartCutBitrateToggle} /></span>
+                              </div>
+                            </td>
+                            <td />
+                          </tr>
+                        )}
 
                         {!needSmartCut && (
                           <tr>
