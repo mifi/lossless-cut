@@ -9,6 +9,7 @@ import { pcmAudioCodecs, getMapStreamsArgs, isMov, LiteFFprobeStream } from './u
 import { getSuffixedOutPath, isExecaFailure } from './util';
 import { isDurationValid } from './segments';
 import { FFprobeChapter, FFprobeFormat, FFprobeProbeResult, FFprobeStream } from '../../../ffprobe';
+import { parseSrt } from './edlFormats';
 
 const FileType = window.require('file-type');
 const { pathExists } = window.require('fs-extra');
@@ -505,7 +506,20 @@ async function renderThumbnail(filePath: string, timestamp: number) {
   return URL.createObjectURL(blob);
 }
 
-export async function extractSubtitleTrack(filePath: string, streamId: number) {
+export async function extractSubtitleTrackToSegments(filePath: string, streamId: number) {
+  const args = [
+    '-hide_banner',
+    '-i', filePath,
+    '-map', `0:${streamId}`,
+    '-f', 'srt',
+    '-',
+  ];
+
+  const { stdout } = await runFfmpeg(args);
+  return parseSrt(stdout.toString('utf8'));
+}
+
+export async function extractSubtitleTrackVtt(filePath: string, streamId: number) {
   const args = [
     '-hide_banner',
     '-i', filePath,

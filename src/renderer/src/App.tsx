@@ -59,8 +59,8 @@ import {
   readFileMeta, getSmarterOutFormat, renderThumbnails as ffmpegRenderThumbnails,
   extractStreams, setCustomFfPath as ffmpegSetCustomFfPath,
   isIphoneHevc, isProblematicAvc1, tryMapChaptersToEdl,
-  getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrack,
-  RefuseOverwriteError, abortFfmpegs,
+  getDuration, getTimecodeFromStreams, createChaptersFromSegments, extractSubtitleTrackVtt,
+  RefuseOverwriteError, abortFfmpegs, extractSubtitleTrackToSegments,
 } from './ffmpeg';
 import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback, isStreamThumbnail, getSubtitleStreams, getVideoTrackForStreamIndex, getAudioTrackForStreamIndex, enableVideoTrack, enableAudioTrack } from './util/streams';
 import { exportEdlFile, readEdlFile, saveLlcProject, loadLlcProject, askForEdlImport } from './edlStore';
@@ -175,10 +175,11 @@ function App() {
 
   // Store "working" in a ref so we can avoid race conditions
   const workingRef = useRef(!!working);
-  const setWorking = useCallback((val: { text: string, abortController?: AbortController } | undefined) => {
-    workingRef.current = !!val;
+  const setWorking = useCallback((valOrBool: { text: string, abortController?: AbortController } | true | undefined) => {
+    workingRef.current = !!valOrBool;
+    const val = valOrBool === true ? { text: t('Loading') } : valOrBool;
     setWorkingState(val ? { text: val.text, abortController: val.abortController } : undefined);
-  }, []);
+  }, [t]);
 
   const handleAbortWorkingClick = useCallback(() => {
     console.log('User clicked abort');
@@ -643,7 +644,7 @@ function App() {
     try {
       setWorking({ text: i18n.t('Loading subtitle') });
       invariant(filePath != null);
-      const url = await extractSubtitleTrack(filePath, index);
+      const url = await extractSubtitleTrackVtt(filePath, index);
       setSubtitlesByStreamId((old) => ({ ...old, [index]: { url, lang: subtitleStream.tags && subtitleStream.tags.language } }));
       setActiveSubtitleStreamIndex(index);
     } catch (err) {
@@ -1461,6 +1462,17 @@ function App() {
     console.log('Loading EDL file', type, path, append);
     loadCutSegments(await readEdlFile({ type, path }), append);
   }, [loadCutSegments]);
+
+  const loadSubtitleTrackToSegments = useCallback(async (streamId: number) => {
+    invariant(filePath != null);
+    setWorking(true);
+    try {
+      setStreamsSelectorShown(false);
+      loadCutSegments(await extractSubtitleTrackToSegments(filePath, streamId), true);
+    } finally {
+      setWorking(undefined);
+    }
+  }, [filePath, loadCutSegments, setWorking]);
 
   const loadMedia = useCallback(async ({ filePath: fp, projectPath }: { filePath: string, projectPath?: string }) => {
     async function tryOpenProjectPath(path, type) {
@@ -2760,6 +2772,7 @@ function App() {
                   paramsByStreamId={paramsByStreamId}
                   updateStreamParams={updateStreamParams}
                   formatTimecode={formatTimecode}
+                  loadSubtitleTrackToSegments={loadSubtitleTrackToSegments}
                 />
               )}
             </Sheet>

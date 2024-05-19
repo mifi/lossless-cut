@@ -149,8 +149,8 @@ function onInfoClick(json: unknown, title: string) {
   showJson5Dialog({ title, json });
 }
 
-const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress, paramsByStreamId, updateStreamParams, formatTimecode }: {
-  filePath: string, stream: FFprobeStream, onToggle: (a: number) => void, batchSetCopyStreamIds: (filter: (a: FFprobeStream) => boolean, enabled: boolean) => void, copyStream: boolean, fileDuration: number | undefined, setEditingStream: (a: EditingStream) => void, onExtractStreamPress?: () => void, paramsByStreamId: ParamsByStreamId, updateStreamParams: UpdateStreamParams, formatTimecode: FormatTimecode,
+const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress, paramsByStreamId, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments }: {
+  filePath: string, stream: FFprobeStream, onToggle: (a: number) => void, batchSetCopyStreamIds: (filter: (a: FFprobeStream) => boolean, enabled: boolean) => void, copyStream: boolean, fileDuration: number | undefined, setEditingStream: (a: EditingStream) => void, onExtractStreamPress?: () => void, paramsByStreamId: ParamsByStreamId, updateStreamParams: UpdateStreamParams, formatTimecode: FormatTimecode, loadSubtitleTrackToSegments?: (index: number) => void,
 }) => {
   const { t } = useTranslation();
 
@@ -205,6 +205,10 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
     });
   }, [filePath, updateStreamParams, stream.index]);
 
+  const onLoadSubtitleTrackToSegmentsClick = useCallback(() => {
+    loadSubtitleTrackToSegments?.(stream.index);
+  }, [loadSubtitleTrackToSegments, stream.index]);
+
   const codecTag = stream.codec_tag !== '0x0000' && stream.codec_tag_string;
 
   return (
@@ -249,6 +253,11 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
                 {onExtractStreamPress && (
                   <Menu.Item icon={<FaFileExport color="black" />} onClick={onExtractStreamPress}>
                     {t('Extract this track as file')}
+                  </Menu.Item>
+                )}
+                {stream.codec_type === 'subtitle' && (
+                  <Menu.Item icon={<MdSubtitles color="black" />} onClick={onLoadSubtitleTrackToSegmentsClick}>
+                    {t('Create segments from subtitles')}
                   </Menu.Item>
                 )}
               </Menu.Group>
@@ -319,7 +328,7 @@ const fileStyle: CSSProperties = { margin: '1.5em 1em 1.5em 1em', padding: 5, ov
 
 
 function StreamsSelector({
-  mainFilePath, mainFileFormatData, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId, setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta, showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, customTagsByFile, setCustomTagsByFile, paramsByStreamId, updateStreamParams, formatTimecode,
+  mainFilePath, mainFileFormatData, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId, setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta, showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, customTagsByFile, setCustomTagsByFile, paramsByStreamId, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments,
 }: {
   mainFilePath: string,
   mainFileFormatData: FFprobeFormat | undefined,
@@ -342,6 +351,7 @@ function StreamsSelector({
   paramsByStreamId: ParamsByStreamId,
   updateStreamParams: UpdateStreamParams,
   formatTimecode: FormatTimecode,
+  loadSubtitleTrackToSegments: (index: number) => void,
 }) {
   const [editingFile, setEditingFile] = useState<string>();
   const [editingStream, setEditingStream] = useState<EditingStream>();
@@ -406,27 +416,28 @@ function StreamsSelector({
                 paramsByStreamId={paramsByStreamId}
                 updateStreamParams={updateStreamParams}
                 formatTimecode={formatTimecode}
+                loadSubtitleTrackToSegments={loadSubtitleTrackToSegments}
               />
             ))}
           </tbody>
         </table>
       </div>
 
-      {externalFilesEntries.map(([path, { streams, formatData }]) => (
+      {externalFilesEntries.map(([path, { streams: externalFileStreams, formatData }]) => (
         <div key={path} style={fileStyle}>
           <FileHeading path={path} formatData={formatData} onTrashClick={() => removeFile(path)} setCopyAllStreams={(enabled) => setCopyAllStreamsForPath(path, enabled)} />
 
           <table style={tableStyle}>
             <Thead />
             <tbody>
-              {streams.map((stream) => (
+              {externalFileStreams.map((stream) => (
                 <Stream
                   key={stream.index}
                   filePath={path}
                   stream={stream}
                   copyStream={isCopyingStreamId(path, stream.index)}
                   onToggle={(streamId) => toggleCopyStreamId(path, streamId)}
-                  batchSetCopyStreamIds={(filter: (a: FFprobeStream) => boolean, enabled: boolean) => batchSetCopyStreamIdsForPath(path, streams, filter, enabled)}
+                  batchSetCopyStreamIds={(filter: (a: FFprobeStream) => boolean, enabled: boolean) => batchSetCopyStreamIdsForPath(path, externalFileStreams, filter, enabled)}
                   setEditingStream={setEditingStream}
                   fileDuration={getFormatDuration(formatData)}
                   paramsByStreamId={paramsByStreamId}
