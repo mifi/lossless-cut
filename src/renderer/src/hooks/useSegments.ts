@@ -3,7 +3,6 @@ import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import i18n from 'i18next';
 import pMap from 'p-map';
 import invariant from 'tiny-invariant';
-import { evaluate } from 'mathjs';
 import sortBy from 'lodash/sortBy';
 
 import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToSegments, findKeyframeNearTime } from '../ffmpeg';
@@ -15,6 +14,8 @@ import { createSegment, findSegmentsAtCursor, sortSegments, invertSegments, comb
 import * as ffmpegParameters from '../ffmpeg-parameters';
 import { maxSegmentsAllowed } from '../util/constants';
 import { ParseTimecode, SegmentBase, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
+import safeishEval from '../worker/eval';
+import { ScopeSegment } from '../../../../types';
 
 const { ffmpeg: { blackDetect, silenceDetect } } = window.require('@electron/remote').require('./index.js');
 
@@ -472,40 +473,34 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
   }, [currentCutSeg, cutSegments, enableSegments]);
 
   const onSelectSegmentsByExpr = useCallback(async () => {
-    function matchSegment(seg: StateSegment, expr: string) {
+    async function matchSegment(seg: StateSegment, expr: string) {
       const start = getSegApparentStart(seg);
       const end = getSegApparentEnd(seg);
       // must clone tags because scope is mutable (editable by expression)
-      const scopeSegment: { label: string, start: number, end: number, duration: number, tags: Record<string, string> } = { label: seg.name, start, end, duration: end - start, tags: { ...seg.tags } };
-      return evaluate(expr, { segment: scopeSegment }) === true;
+      const scopeSegment: ScopeSegment = { label: seg.name, start, end, duration: end - start, tags: { ...seg.tags } };
+      return (await safeishEval(expr, { segment: scopeSegment })) === true;
     }
 
-    const getSegmentsToEnable = (expr: string) => cutSegments.filter((seg) => {
-      try {
-        return matchSegment(seg, expr);
-      } catch (err) {
-        if (err instanceof TypeError) {
-          return false;
-        }
-        throw err;
-      }
-    });
+    const getSegmentsToEnable = async (expr: string) => (await pMap(cutSegments, async (seg) => (
+      ((await matchSegment(seg, expr)) ? [seg] : [])
+    ), { concurrency: 5 })).flat();
 
-    const value = await selectSegmentsByExprDialog((v: string) => {
+    const value = await selectSegmentsByExprDialog(async (v: string) => {
       try {
-        const segments = getSegmentsToEnable(v);
-        if (segments.length === 0) return i18n.t('No segments matched');
+        if (v.trim().length === 0) return i18n.t('Please enter a JavaScript expression.');
+        const segments = await getSegmentsToEnable(v);
+        if (segments.length === 0) return i18n.t('No segments match this expression.');
         return undefined;
       } catch (err) {
         if (err instanceof Error) {
-          return err.message;
+          return i18n.t('Expression failed: {{errorMessage}}', { errorMessage: err.message });
         }
         throw err;
       }
     });
 
     if (value == null) return;
-    const segmentsToEnable = getSegmentsToEnable(value);
+    const segmentsToEnable = await getSegmentsToEnable(value);
     enableSegments(segmentsToEnable);
   }, [cutSegments, enableSegments, getSegApparentEnd]);
 

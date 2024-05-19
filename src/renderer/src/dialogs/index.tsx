@@ -15,7 +15,7 @@ import CopyClipboardButton from '../components/CopyClipboardButton';
 import { isWindows, showItemInFolder } from '../util';
 import { ParseTimecode, SegmentBase } from '../types';
 
-const { dialog } = window.require('@electron/remote');
+const { dialog, shell } = window.require('@electron/remote');
 
 const ReactSwal = withReactContent(Swal);
 
@@ -538,12 +538,13 @@ export async function selectSegmentsByLabelDialog(currentName: string) {
   return value;
 }
 
-export async function selectSegmentsByExprDialog(inputValidator: (v: string) => string | undefined) {
+export async function selectSegmentsByExprDialog(inputValidator: (v: string) => Promise<string | undefined>) {
   const examples = {
     duration: { name: i18n.t('Segment duration less than 5 seconds'), code: 'segment.duration < 5' },
     start: { name: i18n.t('Segment starts after 00:60'), code: 'segment.start > 60' },
-    label: { name: i18n.t('Segment label'), code: "equalText(segment.label, 'My label')" },
-    tag: { name: i18n.t('Segment tag value'), code: "equalText(segment.tags.myTag, 'tag value')" },
+    label: { name: i18n.t('Segment label (exact)'), code: "segment.label === 'My label'" },
+    regexp: { name: i18n.t('Segment label (regexp)'), code: '/^My label/.test(segment.label)' },
+    tag: { name: i18n.t('Segment tag value'), code: "segment.tags.myTag === 'tag value'" },
   };
 
   function addExample(type: string) {
@@ -557,14 +558,10 @@ export async function selectSegmentsByExprDialog(inputValidator: (v: string) => 
     html: (
       <div style={{ textAlign: 'left' }}>
         <div style={{ marginBottom: '1em' }}>
-          {i18n.t('Enter an expression which will be evaluated for each segment. Segments for which the expression evaluates to "true" will be selected. For available syntax, see {{url}}.', { url: 'https://mathjs.org/' })}
+          <Trans>Enter a JavaScript expression which will be evaluated for each segment. Segments for which the expression evaluates to &quot;true&quot; will be selected. <button type="button" className="button-unstyled" style={{ fontWeight: 'bold' }} onClick={() => shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/expressions.md')}>View available syntax.</button></Trans>
         </div>
 
-        <div><b>{i18n.t('Variables')}:</b></div>
-
-        <div style={{ marginBottom: '1em' }}>
-          segment.label, segment.start, segment.end, segment.duration
-        </div>
+        <div style={{ marginBottom: '1em' }}><b>{i18n.t('Variables')}:</b> segment.label, segment.start, segment.end, segment.duration, segment.tags.*</div>
 
         <div><b>{i18n.t('Examples')}:</b></div>
 
