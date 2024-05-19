@@ -413,6 +413,13 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
     if (value != null) updateSegAtIndex(index, { name: value });
   }, [cutSegments, updateSegAtIndex, maxLabelLength]);
 
+  const focusSegmentAtCursor = useCallback(() => {
+    const relevantTime = getRelevantTime();
+    const [firstSegmentAtCursorIndex] = findSegmentsAtCursor(apparentCutSegments, relevantTime);
+    if (firstSegmentAtCursorIndex == null) return;
+    setCurrentSegIndex(firstSegmentAtCursorIndex);
+  }, [apparentCutSegments, getRelevantTime]);
+
   const splitCurrentSegment = useCallback(() => {
     const relevantTime = getRelevantTime();
     const segmentsAtCursorIndexes = findSegmentsAtCursor(apparentCutSegments, relevantTime);
@@ -566,6 +573,7 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
     setCutEnd,
     onLabelSegment,
     splitCurrentSegment,
+    focusSegmentAtCursor,
     createNumSegments,
     createFixedDurationSegments,
     createRandomSegments,
