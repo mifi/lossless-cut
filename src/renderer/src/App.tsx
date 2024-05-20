@@ -87,7 +87,7 @@ import BigWaveform from './components/BigWaveform';
 
 import isDev from './isDev';
 import { Chapter, ChromiumHTMLVideoElement, CustomTagsByFile, EdlFileType, FfmpegCommandLog, FilesMeta, FormatTimecode, ParamsByStreamId, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, Thumbnail, TunerType } from './types';
-import { CaptureFormat, KeyboardAction, Html5ifyMode } from '../../../types';
+import { CaptureFormat, KeyboardAction, Html5ifyMode, WaveformMode } from '../../../types';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 
 const electron = window.require('electron');
@@ -151,7 +151,7 @@ function App() {
 
   // State per application launch
   const lastOpenedPathRef = useRef<string>();
-  const [waveformMode, setWaveformMode] = useState<'big-waveform' | 'waveform'>();
+  const [waveformMode, setWaveformMode] = useState<WaveformMode>();
   const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
   const [keyframesEnabled, setKeyframesEnabled] = useState(true);
   const [showRightBar, setShowRightBar] = useState(true);
@@ -215,7 +215,7 @@ function App() {
   const videoRef = useRef<ChromiumHTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
-  const setOutputPlaybackRate = useCallback((v) => {
+  const setOutputPlaybackRate = useCallback((v: number) => {
     setOutputPlaybackRateState(v);
     if (videoRef.current) videoRef.current.playbackRate = v;
   }, []);
@@ -1634,7 +1634,7 @@ function App() {
   const toggleLastCommands = useCallback(() => setLastCommandsVisible((val) => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible((val) => !val), []);
 
-  const seekClosestKeyframe = useCallback((direction) => {
+  const seekClosestKeyframe = useCallback((direction: number) => {
     const time = findNearestKeyFrameTime({ time: getRelevantTime(), direction });
     if (time == null) return;
     userSeekAbs(time);

@@ -230,7 +230,7 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
     setCutSegments(cutSegmentsNew);
   }, [setCutSegments, cutSegments]);
 
-  const setCutTime = useCallback((type, time) => {
+  const setCutTime = useCallback((type: 'start' | 'end', time: number) => {
     if (!isDurationValid(duration)) return;
 
     const currentSeg = currentCutSeg;

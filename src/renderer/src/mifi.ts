@@ -17,11 +17,11 @@ export async function loadMifiLink() {
   }
 }
 
-export async function runStartupCheck({ ffmpeg }) {
+export async function runStartupCheck({ ffmpeg }: { ffmpeg: boolean }) {
   try {
     if (ffmpeg) await runFfmpegStartupCheck();
   } catch (err) {
-    if (['EPERM', 'EACCES'].includes(err.code)) {
+    if (err instanceof Error && 'code' in err && typeof err.code === 'string' && ['EPERM', 'EACCES'].includes(err.code)) {
       toast.fire({
         timer: 30000,
         icon: 'error',

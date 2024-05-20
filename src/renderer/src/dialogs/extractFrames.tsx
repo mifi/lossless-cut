@@ -4,8 +4,8 @@ import Swal from '../swal';
 
 
 // eslint-disable-next-line import/prefer-default-export
-export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps }) {
-  const { value: captureChoice } = await Swal.fire({
+export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps }: { segmentsNumFrames: number, plural: boolean, fps: number }) {
+  const { value: captureChoice } = await Swal.fire<string>({
     text: i18n.t(plural ? 'Extract frames of the selected segments as images' : 'Extract frames of the current segment as images'),
     icon: 'question',
     input: 'radio',
@@ -23,7 +23,7 @@ export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps 
 
   if (!captureChoice) return undefined;
 
-  let filter;
+  let filter: string | undefined;
   let estimatedMaxNumFiles = segmentsNumFrames;
 
   if (captureChoice === 'thumbnailFilter') {
@@ -44,7 +44,7 @@ export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps 
   }
 
   if (captureChoice === 'selectNthSec' || captureChoice === 'selectNthFrame') {
-    let nthFrame;
+    let nthFrame: number;
     if (captureChoice === 'selectNthFrame') {
       const { value } = await Swal.fire({
         text: i18n.t('Capture exactly one image every nth frame'),

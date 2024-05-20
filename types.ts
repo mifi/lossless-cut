@@ -112,6 +112,8 @@ export interface ApiKeyboardActionRequest {
 
 export type Html5ifyMode = 'fastest' | 'fast-audio-remux' | 'fast-audio' | 'fast' | 'slow' | 'slow-audio' | 'slowest';
 
+export type WaveformMode = 'big-waveform' | 'waveform';
+
 // This is the contract with the user, see https://github.com/mifi/lossless-cut/blob/master/expressions.md
 export interface ScopeSegment {
   label: string,

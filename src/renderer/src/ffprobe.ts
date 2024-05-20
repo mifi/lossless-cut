@@ -1,6 +1,8 @@
 // This code is for future use (e.g. creating black video to fill in using same codec parameters)
 
-export function parseLevel(videoStream) {
+import { FFprobeStream } from '../../../ffprobe';
+
+export function parseLevel(videoStream: FFprobeStream) {
   const { level: levelNumeric, codec_name: videoCodec } = videoStream;
 
   if (levelNumeric == null || Number.isNaN(levelNumeric)) return undefined;
@@ -9,7 +11,7 @@ export function parseLevel(videoStream) {
     if (levelNumeric === 9) return '1b'; // 13 is 1.3. That are all like that (20 is 2.0, etc) except 1b which is 9.
 
     let level = (levelNumeric / 10).toFixed(1); // https://stackoverflow.com/questions/42619191/what-does-level-mean-in-ffprobe-output
-    if (level >= 0) {
+    if (parseFloat(level) >= 0) {
       if (level.slice(-2) === '.0') level = level.slice(0, -2); // slice off .0
       const validLevels = ['1', '1b', '1.1', '1.2', '1.3', '2', '2.1', '2.2', '3', '3.1', '3.2', '4', '4.1', '4.2', '5', '5.1', '5.2', '6', '6.1', '6.2']; // https://en.wikipedia.org/wiki/Advanced_Video_Coding#Levels
       if (validLevels.includes(level)) return level;
@@ -17,7 +19,7 @@ export function parseLevel(videoStream) {
   } else if (videoCodec === 'hevc') {
     // Note that on MacOS we don't use x265, but videotoolbox
     let level = (levelNumeric / 30).toFixed(1); // https://stackoverflow.com/questions/69983131/whats-the-difference-between-ffprobe-level-and-h-264-level
-    if (level >= 0) {
+    if (parseFloat(level) >= 0) {
       if (level.slice(-2) === '.0') level = level.slice(0, -2); // slice off .0
       const validLevels = ['1', '2', '2.1', '3', '3.1', '4', '4.1', '5', '5.1', '5.2', '6', '6.1', '6.2']; // https://en.wikipedia.org/wiki/High_Efficiency_Video_Coding_tiers_and_levels
       if (validLevels.includes(level)) return level;
