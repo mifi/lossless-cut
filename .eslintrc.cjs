@@ -6,7 +6,6 @@ module.exports = {
     'jsx-a11y/interactive-supports-focus': 0,
     'jsx-a11y/control-has-associated-label': 0,
     'unicorn/prefer-node-protocol': 0, // todo
-    '@typescript-eslint/no-var-requires': 0, // todo
   },
 
   overrides: [

@@ -374,7 +374,8 @@ const readyPromise = app.whenReady();
 
 
     if (isDev) {
-      const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies
+      // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require,import/no-extraneous-dependencies
+      const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer');
 
       installExtension(REACT_DEVELOPER_TOOLS)
         .then((name: string) => logger.info('Added Extension', name))
