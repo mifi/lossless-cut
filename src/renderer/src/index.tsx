@@ -4,7 +4,7 @@ import { MotionConfig } from 'framer-motion';
 import { enableMapSet } from 'immer';
 import * as Electron from 'electron';
 import Remote from '@electron/remote';
-import type path from 'path';
+import type path from 'node:path';
 
 import 'sweetalert2/dist/sweetalert2.css';
 

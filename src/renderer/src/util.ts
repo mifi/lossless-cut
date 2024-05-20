@@ -5,9 +5,9 @@ import prettyBytes from 'pretty-bytes';
 import sortBy from 'lodash/sortBy';
 import pRetry, { Options } from 'p-retry';
 import { ExecaError } from 'execa';
-import type * as FsPromises from 'fs/promises';
+import type * as FsPromises from 'node:fs/promises';
 import type * as FsExtra from 'fs-extra';
-import type { PlatformPath } from 'path';
+import type { PlatformPath } from 'node:path';
 
 import isDev from './isDev';
 import Swal, { toast } from './swal';

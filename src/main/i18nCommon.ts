@@ -2,7 +2,7 @@
 // const LanguageDetector = window.require('i18next-electron-language-detector');
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { app } from 'electron';
-import { join } from 'path';
+import { join } from 'node:path';
 import { InitOptions } from 'i18next';
 
 

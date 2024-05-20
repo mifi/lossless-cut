@@ -1,9 +1,9 @@
-import { join } from 'path';
-import readline from 'readline';
+import { join } from 'node:path';
+import readline from 'node:readline';
 import stringToStream from 'string-to-stream';
 import { BufferEncodingOption, execa, ExecaChildProcess, Options as ExecaOptions } from 'execa';
-import assert from 'assert';
-import { Readable } from 'stream';
+import assert from 'node:assert';
+import { Readable } from 'node:stream';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { app } from 'electron';
 

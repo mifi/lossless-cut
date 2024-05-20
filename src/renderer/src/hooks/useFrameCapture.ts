@@ -1,7 +1,7 @@
 import dataUriToBuffer from 'data-uri-to-buffer';
 import pMap from 'p-map';
 import { useCallback } from 'react';
-import type * as FsPromises from 'fs/promises';
+import type * as FsPromises from 'node:fs/promises';
 
 import { getSuffixedOutPath, getOutDir, transferTimestamps, getSuffixedFileName, getOutPath, escapeRegExp, fsOperationWithRetry } from '../util';
 import { getNumDigits } from '../segments';

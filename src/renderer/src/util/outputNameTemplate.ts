@@ -1,6 +1,6 @@
 import i18n from 'i18next';
 import lodashTemplate from 'lodash/template';
-import { PlatformPath } from 'path';
+import { PlatformPath } from 'node:path';
 
 import { isMac, isWindows, hasDuplicates, filenamify, getOutFileExtension } from '../util';
 import isDev from '../isDev';

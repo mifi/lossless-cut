@@ -1,6 +1,6 @@
 // eslint-disable-line unicorn/filename-case
 import { execa } from 'execa';
-import { readFile } from 'fs/promises';
+import { readFile } from 'node:fs/promises';
 
 // we need a wrapper script because altool tends to error out very often
 // https://developer.apple.com/forums/thread/698477

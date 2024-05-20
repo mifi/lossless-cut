@@ -1,8 +1,8 @@
 import express from 'express';
 import morgan from 'morgan';
-import http from 'http';
+import http from 'node:http';
 import asyncHandler from 'express-async-handler';
-import assert from 'assert';
+import assert from 'node:assert';
 
 import { homepage } from './constants.js';
 import logger from './logger.js';

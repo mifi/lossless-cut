@@ -2529,7 +2529,6 @@ function App() {
               <AnimatePresence>
                 {showLeftBar && (
                   <BatchFilesList
-                    // @ts-expect-error todo
                     selectedBatchFiles={selectedBatchFiles}
                     filePath={filePath}
                     width={leftBarWidth}
@@ -2696,7 +2695,6 @@ function App() {
               />
 
               <BottomBar
-                // @ts-expect-error todo
                 zoom={zoom}
                 setZoom={setZoom}
                 timelineToggleComfortZoom={timelineToggleComfortZoom}

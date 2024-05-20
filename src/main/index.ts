@@ -11,8 +11,8 @@ import debounce from 'lodash/debounce';
 import yargsParser from 'yargs-parser';
 import JSON5 from 'json5';
 import remote from '@electron/remote/main';
-import { stat } from 'fs/promises';
-import assert from 'assert';
+import { stat } from 'node:fs/promises';
+import assert from 'node:assert';
 
 import logger from './logger.js';
 import menu from './menu.js';
