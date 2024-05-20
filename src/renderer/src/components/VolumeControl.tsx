@@ -3,7 +3,7 @@ import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
 
-const VolumeControl = memo(({ playbackVolume, setPlaybackVolume }: { playbackVolume: number, setPlaybackVolume: (a: number) => void }) => {
+function VolumeControl({ playbackVolume, setPlaybackVolume }: { playbackVolume: number, setPlaybackVolume: (a: number) => void }) {
   const [volumeControlVisible, setVolumeControlVisible] = useState(false);
   const timeoutRef = useRef<number>();
   const { t } = useTranslation();
@@ -52,6 +52,6 @@ const VolumeControl = memo(({ playbackVolume, setPlaybackVolume }: { playbackVol
       />
     </>
   );
-});
+}
 
-export default VolumeControl;
+export default memo(VolumeControl);

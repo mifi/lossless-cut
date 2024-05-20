@@ -9,15 +9,15 @@ const commonVideoAudioFormats = ['matroska', 'mov', 'mp4', 'mpegts', 'ogv', 'web
 const commonAudioFormats = ['flac', 'ipod', 'mp3', 'oga', 'ogg', 'opus', 'wav'];
 const commonSubtitleFormats = ['ass', 'srt', 'sup', 'webvtt'];
 
-function renderFormatOptions(formats) {
+function renderFormatOptions(formats: string[]) {
   return formats.map((format) => (
     <option key={format} value={format}>{format} - {allOutFormats[format]}</option>
   ));
 }
 
-const OutputFormatSelect = memo(({ style, detectedFileFormat, fileFormat, onOutputFormatUserChange }: {
+function OutputFormatSelect({ style, detectedFileFormat, fileFormat, onOutputFormatUserChange }: {
   style: CSSProperties, detectedFileFormat?: string | undefined, fileFormat?: string | undefined, onOutputFormatUserChange: (a: string) => void,
-}) => {
+}) {
   const commonVideoAudioFormatsExceptDetectedFormat = useMemo(() => commonVideoAudioFormats.filter((f) => f !== detectedFileFormat), [detectedFileFormat]);
   const commonAudioFormatsExceptDetectedFormat = useMemo(() => commonAudioFormats.filter((f) => f !== detectedFileFormat), [detectedFileFormat]);
   const commonSubtitleFormatsExceptDetectedFormat = useMemo(() => commonSubtitleFormats.filter((f) => f !== detectedFileFormat), [detectedFileFormat]);
@@ -49,6 +49,6 @@ const OutputFormatSelect = memo(({ style, detectedFileFormat, fileFormat, onOutp
       {renderFormatOptions(otherFormats)}
     </Select>
   );
-});
+}
 
-export default OutputFormatSelect;
+export default memo(OutputFormatSelect);

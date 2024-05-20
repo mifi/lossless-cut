@@ -44,6 +44,7 @@ function fixKeys(keys: string[]) {
   return orderBy(uniqed, [(key) => key !== 'shift', (key) => key !== 'ctrl', (key) => key !== 'alt', (key) => key !== 'meta', (key) => key]);
 }
 
+// eslint-disable-next-line react/display-name
 const CreateBinding = memo(({
   actionsMap, action, setCreatingBinding, onNewKeyBindingConfirmed,
 }: {
@@ -117,6 +118,7 @@ const CreateBinding = memo(({
 
 const rowStyle = { display: 'flex', alignItems: 'center', margin: '.2em 0', borderBottom: '1px solid rgba(0,0,0,0.1)', paddingBottom: '.5em' };
 
+// eslint-disable-next-line react/display-name
 const KeyboardShortcuts = memo(({
   keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg,
 }: {
@@ -775,11 +777,11 @@ const KeyboardShortcuts = memo(({
   );
 });
 
-const KeyboardShortcutsDialog = memo(({
+function KeyboardShortcutsDialog({
   isShown, onHide, keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg,
 }: {
   isShown: boolean, onHide: () => void, keyBindings: KeyBinding[], setKeyBindings: Dispatch<SetStateAction<KeyBinding[]>>, resetKeyBindings: () => void, currentCutSeg: StateSegment,
-}) => {
+}) {
   const { t } = useTranslation();
 
   return (
@@ -795,6 +797,6 @@ const KeyboardShortcutsDialog = memo(({
       {isShown ? <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} /> : <div />}
     </Dialog>
   );
-});
+}
 
-export default KeyboardShortcutsDialog;
+export default memo(KeyboardShortcutsDialog);

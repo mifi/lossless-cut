@@ -4,7 +4,7 @@ import { Button, ForkIcon, DisableIcon } from 'evergreen-ui';
 
 import useUserSettings from '../hooks/useUserSettings';
 
-const AutoExportToggler = memo(() => {
+function AutoExportToggler() {
   const { t } = useTranslation();
   const { autoExportExtraStreams, setAutoExportExtraStreams } = useUserSettings();
 
@@ -13,6 +13,6 @@ const AutoExportToggler = memo(() => {
       {autoExportExtraStreams ? t('Extract') : t('Discard')}
     </Button>
   );
-});
+}
 
-export default AutoExportToggler;
+export default memo(AutoExportToggler);

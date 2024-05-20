@@ -20,10 +20,10 @@ const iconStyle = {
   padding: '3px 5px',
 };
 
-const BatchFilesList = memo(({ selectedBatchFiles, filePath, width, batchFiles, setBatchFiles, onBatchFileSelect, batchListRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }) => {
+function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBatchFiles, onBatchFileSelect, batchListRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }) {
   const { t } = useTranslation();
 
-  const [sortDesc, setSortDesc] = useState();
+  const [sortDesc, setSortDesc] = useState<boolean>();
 
   const sortableList = batchFiles.map((batchFile) => ({ id: batchFile.path, batchFile }));
 
@@ -70,6 +70,6 @@ const BatchFilesList = memo(({ selectedBatchFiles, filePath, width, batchFiles, 
       </div>
     </motion.div>
   );
-});
+}
 
-export default BatchFilesList;
+export default memo(BatchFilesList);

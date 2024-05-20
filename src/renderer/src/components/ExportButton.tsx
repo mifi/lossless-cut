@@ -8,9 +8,9 @@ import useUserSettings from '../hooks/useUserSettings';
 import { SegmentToExport } from '../types';
 
 
-const ExportButton = memo(({ segmentsToExport, areWeCutting, onClick, size = 1 }: {
+function ExportButton({ segmentsToExport, areWeCutting, onClick, size = 1 }: {
   segmentsToExport: SegmentToExport[], areWeCutting: boolean, onClick: () => void, size?: number | undefined,
-}) => {
+}) {
   const CutIcon = areWeCutting ? FiScissors : FaFileExport;
 
   const { t } = useTranslation();
@@ -40,6 +40,6 @@ const ExportButton = memo(({ segmentsToExport, areWeCutting, onClick, size = 1 }
       {text}
     </div>
   );
-});
+}
 
-export default ExportButton;
+export default memo(ExportButton);

@@ -5,9 +5,10 @@ import { useTranslation } from 'react-i18next';
 
 import styles from './Sheet.module.css';
 
-const Sheet = memo(({ visible, onClosePress, children, maxWidth = 800, style }: {
+
+function Sheet({ visible, onClosePress, children, maxWidth = 800, style }: {
   visible: boolean, onClosePress: () => void, children: ReactNode, maxWidth?: number, style?: CSSProperties
-}) => {
+}) {
   const { t } = useTranslation();
 
   return (
@@ -30,6 +31,6 @@ const Sheet = memo(({ visible, onClosePress, children, maxWidth = 800, style }: 
       )}
     </AnimatePresence>
   );
-});
+}
 
-export default Sheet;
+export default memo(Sheet);

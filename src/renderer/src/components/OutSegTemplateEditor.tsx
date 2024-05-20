@@ -23,9 +23,9 @@ const formatVariable = (variable) => `\${${variable}}`;
 
 const extVar = formatVariable('EXT');
 
-const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe }: {
+function OutSegTemplateEditor({ outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe }: {
   outSegTemplate: string, setOutSegTemplate: (text: string) => void, generateOutSegFileNames: GenerateOutSegFileNames, currentSegIndexSafe: number,
-}) => {
+}) {
   const { safeOutputFileName, toggleSafeOutputFileName, outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding } = useUserSettings();
 
   const [text, setText] = useState(outSegTemplate);
@@ -174,6 +174,6 @@ const OutSegTemplateEditor = memo(({ outSegTemplate, setOutSegTemplate, generate
       </AnimatePresence>
     </motion.div>
   );
-});
+}
 
-export default OutSegTemplateEditor;
+export default memo(OutSegTemplateEditor);

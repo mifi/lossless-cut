@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next';
 import Switch from './Switch';
 
 
-const ValueTuner = memo(({ style, title, value, setValue, onFinished, resolution = 1000, min: minIn = 0, max: maxIn = 1, resetToDefault }: {
+function ValueTuner({ style, title, value, setValue, onFinished, resolution = 1000, min: minIn = 0, max: maxIn = 1, resetToDefault }: {
   style?: CSSProperties, title: string, value: number, setValue: (string) => void, onFinished: () => void, resolution?: number, min?: number, max?: number, resetToDefault: () => void
-}) => {
+}) {
   const { t } = useTranslation();
 
   const [min, setMin] = useState(minIn);
@@ -49,6 +49,6 @@ const ValueTuner = memo(({ style, title, value, setValue, onFinished, resolution
       </div>
     </div>
   );
-});
+}
 
-export default ValueTuner;
+export default memo(ValueTuner);

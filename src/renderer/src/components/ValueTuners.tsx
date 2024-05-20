@@ -5,7 +5,8 @@ import ValueTuner from './ValueTuner';
 import useUserSettings from '../hooks/useUserSettings';
 import { TunerType } from '../types';
 
-const ValueTuners = memo(({ type, onFinished }: { type: TunerType, onFinished: () => void }) => {
+
+function ValueTuners({ type, onFinished }: { type: TunerType, onFinished: () => void }) {
   const { t } = useTranslation();
   const { wheelSensitivity, setWheelSensitivity, keyboardNormalSeekSpeed, keyboardSeekSpeed2, setKeyboardSeekSpeed2, keyboardSeekSpeed3, setKeyboardSeekSpeed3, setKeyboardNormalSeekSpeed, keyboardSeekAccFactor, setKeyboardSeekAccFactor } = useUserSettings();
 
@@ -57,7 +58,7 @@ const ValueTuners = memo(({ type, onFinished }: { type: TunerType, onFinished: (
   const resetToDefault = () => setValue(defaultValue);
 
   return <ValueTuner title={title} value={value} setValue={setValue} onFinished={onFinished} max={max} min={min} resetToDefault={resetToDefault} />;
-});
+}
 
 
-export default ValueTuners;
+export default memo(ValueTuners);

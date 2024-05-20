@@ -5,9 +5,9 @@ import CopyClipboardButton from './components/CopyClipboardButton';
 import Sheet from './components/Sheet';
 import { FfmpegCommandLog } from './types';
 
-const LastCommandsSheet = memo(({ visible, onTogglePress, ffmpegCommandLog }: {
+function LastCommandsSheet({ visible, onTogglePress, ffmpegCommandLog }: {
   visible: boolean, onTogglePress: () => void, ffmpegCommandLog: FfmpegCommandLog,
-}) => {
+}) {
   const { t } = useTranslation();
 
   return (
@@ -28,6 +28,6 @@ const LastCommandsSheet = memo(({ visible, onTogglePress, ffmpegCommandLog }: {
       )}
     </Sheet>
   );
-});
+}
 
-export default LastCommandsSheet;
+export default memo(LastCommandsSheet);

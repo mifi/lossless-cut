@@ -7,7 +7,7 @@ import Select from './Select';
 import { ExportMode } from '../types';
 
 
-const ExportModeButton = memo(({ selectedSegments, style }: { selectedSegments: unknown[], style?: CSSProperties }) => {
+function ExportModeButton({ selectedSegments, style }: { selectedSegments: unknown[], style?: CSSProperties }) {
   const { t } = useTranslation();
 
   const { effectiveExportMode, setAutoMerge, setAutoDeleteMergedSegments, setSegmentsToChaptersOnly } = useUserSettings();
@@ -75,6 +75,6 @@ const ExportModeButton = memo(({ selectedSegments, style }: { selectedSegments: 
       })}
     </Select>
   );
-});
+}
 
-export default ExportModeButton;
+export default memo(ExportModeButton);

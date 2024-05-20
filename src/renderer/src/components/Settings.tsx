@@ -41,7 +41,7 @@ const Header = ({ title }: { title: string }) => (
 
 const detailsStyle: CSSProperties = { opacity: 0.75, fontSize: '.9em', marginTop: '.3em' };
 
-const Settings = memo(({
+function Settings({
   onTunerRequested,
   onKeyboardShortcutsDialogRequested,
   askForCleanupChoices,
@@ -55,7 +55,7 @@ const Settings = memo(({
   toggleStoreProjectInWorkingDir: () => Promise<void>,
   simpleMode: boolean,
   clearOutDir: () => Promise<void>,
-}) => {
+}) {
   const { t } = useTranslation();
   const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
 
@@ -481,6 +481,6 @@ const Settings = memo(({
       </table>
     </>
   );
-});
+}
 
-export default Settings;
+export default memo(Settings);

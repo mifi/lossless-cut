@@ -5,9 +5,9 @@ import { FaAngleRight, FaFile } from 'react-icons/fa';
 import useContextMenu from '../hooks/useContextMenu';
 import { primaryTextColor } from '../colors';
 
-const BatchFile = memo(({ path, isOpen, isSelected, name, onSelect, onDelete }: {
+function BatchFile({ path, isOpen, isSelected, name, onSelect, onDelete }: {
   path: string, isOpen: boolean, isSelected: boolean, name: string, onSelect: (a: string) => void, onDelete: (a: string) => void
-}) => {
+}) {
   const ref = useRef<HTMLDivElement>(null);
 
   const { t } = useTranslation();
@@ -26,6 +26,6 @@ const BatchFile = memo(({ path, isOpen, isSelected, name, onSelect, onDelete }: 
       {isOpen && <FaAngleRight size={14} style={{ color: 'var(--gray9)', marginRight: -5, flexShrink: 0 }} />}
     </div>
   );
-});
+}
 
-export default BatchFile;
+export default memo(BatchFile);

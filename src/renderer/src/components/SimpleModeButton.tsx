@@ -6,7 +6,7 @@ import { primaryTextColor } from '../colors';
 import useUserSettings from '../hooks/useUserSettings';
 
 
-const SimpleModeButton = memo(({ size = 20, style }: { size?: number, style: CSSProperties }) => {
+function SimpleModeButton({ size = 20, style }: { size?: number, style: CSSProperties }) {
   const { t } = useTranslation();
   const { simpleMode, toggleSimpleMode } = useUserSettings();
 
@@ -18,6 +18,6 @@ const SimpleModeButton = memo(({ size = 20, style }: { size?: number, style: CSS
       onClick={toggleSimpleMode}
     />
   );
-});
+}
 
-export default SimpleModeButton;
+export default memo(SimpleModeButton);

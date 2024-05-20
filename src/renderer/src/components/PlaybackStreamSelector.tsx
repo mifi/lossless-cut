@@ -3,7 +3,7 @@ import { MdSubtitles } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import Select from './Select';
 
-const PlaybackStreamSelector = memo(({
+function PlaybackStreamSelector({
   subtitleStreams,
   videoStreams,
   audioStreams,
@@ -23,7 +23,7 @@ const PlaybackStreamSelector = memo(({
   onActiveSubtitleChange: (a?: number | undefined) => void,
   onActiveVideoStreamChange: (a?: number | undefined) => void,
   onActiveAudioStreamChange: (a?: number | undefined) => void,
-}) => {
+}) {
   const [controlVisible, setControlVisible] = useState(false);
   const timeoutRef = useRef<number>();
 
@@ -105,6 +105,6 @@ const PlaybackStreamSelector = memo(({
       />
     </>
   );
-});
+}
 
-export default PlaybackStreamSelector;
+export default memo(PlaybackStreamSelector);

@@ -5,12 +5,12 @@ import useUserSettings from '../hooks/useUserSettings';
 import Switch from './Switch';
 
 
-const MovFastStartButton = memo(() => {
+function MovFastStartButton() {
   const { movFastStart, toggleMovFastStart } = useUserSettings();
 
   return (
     <Switch checked={movFastStart} onCheckedChange={withBlur(toggleMovFastStart)} />
   );
-});
+}
 
-export default MovFastStartButton;
+export default memo(MovFastStartButton);

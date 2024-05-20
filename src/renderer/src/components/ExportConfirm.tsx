@@ -39,7 +39,7 @@ const warningStyle: CSSProperties = { color: 'var(--orange8)', fontSize: '80%', 
 
 const HelpIcon = ({ onClick, style }: { onClick: () => void, style?: CSSProperties }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', color: primaryTextColor, verticalAlign: 'middle', ...style }} />;
 
-const ExportConfirm = memo(({
+function ExportConfirm({
   areWeCutting,
   selectedSegments,
   segmentsToExport,
@@ -89,7 +89,7 @@ const ExportConfirm = memo(({
   setMergedOutFileName: (a: string) => void,
   smartCutBitrate: number | undefined,
   setSmartCutBitrate: Dispatch<SetStateAction<number | undefined>>,
-}) => {
+}) {
   const { t } = useTranslation();
 
   const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, movFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, togglePreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames } = useUserSettings();
@@ -539,6 +539,6 @@ const ExportConfirm = memo(({
       )}
     </AnimatePresence>
   );
-});
+}
 
-export default ExportConfirm;
+export default memo(ExportConfirm);

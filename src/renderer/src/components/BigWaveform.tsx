@@ -5,9 +5,9 @@ import { ffmpegExtractWindow } from '../util/constants';
 import { RenderableWaveform } from '../types';
 
 
-const BigWaveform = memo(({ waveforms, relevantTime, playing, durationSafe, zoom, seekRel }: {
+function BigWaveform({ waveforms, relevantTime, playing, durationSafe, zoom, seekRel }: {
   waveforms: RenderableWaveform[], relevantTime: number, playing: boolean, durationSafe: number, zoom: number, seekRel: (a: number) => void,
-}) => {
+}) {
   const windowSize = ffmpegExtractWindow * 2;
   const windowStart = Math.max(0, relevantTime - windowSize);
   const windowEnd = relevantTime + windowSize;
@@ -129,6 +129,6 @@ const BigWaveform = memo(({ waveforms, relevantTime, playing, durationSafe, zoom
       <div style={{ pointerEvents: 'none', position: 'absolute', height: '100%', backgroundColor: 'var(--red11)', width: 1, left: '50%', top: 0 }} />
     </div>
   );
-});
+}
 
-export default BigWaveform;
+export default memo(BigWaveform);

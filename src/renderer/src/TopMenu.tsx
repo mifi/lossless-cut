@@ -16,7 +16,7 @@ import { InverseCutSegment } from './types';
 const outFmtStyle = { height: 20, maxWidth: 100 };
 const exportModeStyle = { flexGrow: 0, flexBasis: 140 };
 
-const TopMenu = memo(({
+function TopMenu({
   filePath,
   fileFormat,
   copyAnyAudioTrack,
@@ -42,7 +42,7 @@ const TopMenu = memo(({
   selectedSegments: InverseCutSegment[],
   isCustomFormatSelected: boolean,
   clearOutDir: () => void,
-}) => {
+}) {
   const { t } = useTranslation();
   const { customOutDir, changeOutDir, simpleMode, outFormatLocked, setOutFormatLocked } = useUserSettings();
 
@@ -113,6 +113,6 @@ const TopMenu = memo(({
       <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ marginLeft: 5 }} />
     </div>
   );
-});
+}
 
-export default TopMenu;
+export default memo(TopMenu);

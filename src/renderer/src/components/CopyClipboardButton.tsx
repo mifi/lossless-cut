@@ -6,7 +6,7 @@ import { MotionStyle, motion, useAnimation } from 'framer-motion';
 const electron = window.require('electron');
 const { clipboard } = electron;
 
-const CopyClipboardButton = memo(({ text, style }: { text: string, style?: MotionStyle }) => {
+function CopyClipboardButton({ text, style }: { text: string, style?: MotionStyle }) {
   const { t } = useTranslation();
 
   const animation = useAnimation();
@@ -24,6 +24,6 @@ const CopyClipboardButton = memo(({ text, style }: { text: string, style?: Motio
       <FaClipboard title={t('Copy to clipboard')} onClick={onClick} />
     </motion.span>
   );
-});
+}
 
-export default CopyClipboardButton;
+export default memo(CopyClipboardButton);

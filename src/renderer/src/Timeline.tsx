@@ -20,6 +20,7 @@ type CalculateTimelinePercent = (time: number) => string | undefined;
 
 const currentTimeWidth = 1;
 
+// eslint-disable-next-line react/display-name
 const Waveform = memo(({ waveform, calculateTimelinePercent, durationSafe }: {
   waveform: RenderableWaveform, calculateTimelinePercent: CalculateTimelinePercent, durationSafe: number,
 }) => {
@@ -43,6 +44,7 @@ const Waveform = memo(({ waveform, calculateTimelinePercent, durationSafe }: {
   );
 });
 
+// eslint-disable-next-line react/display-name
 const Waveforms = memo(({ calculateTimelinePercent, durationSafe, waveforms, zoom, height }: {
   calculateTimelinePercent: CalculateTimelinePercent, durationSafe: number, waveforms: RenderableWaveform[], zoom: number, height: number,
 }) => (
@@ -53,6 +55,7 @@ const Waveforms = memo(({ calculateTimelinePercent, durationSafe, waveforms, zoo
   </div>
 ));
 
+// eslint-disable-next-line react/display-name
 const CommandedTime = memo(({ commandedTimePercent }: { commandedTimePercent: string }) => {
   const color = 'var(--gray12)';
   const commonStyle: CSSProperties = { left: commandedTimePercent, position: 'absolute', pointerEvents: 'none' };
@@ -70,7 +73,7 @@ const timelineHeight = 36;
 const timeWrapperStyle: CSSProperties = { position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' };
 const timeStyle: CSSProperties = { background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' };
 
-const Timeline = memo(({
+function Timeline({
   durationSafe,
   startTimeOffset,
   playerTime,
@@ -126,7 +129,7 @@ const Timeline = memo(({
   commandedTimeRef: MutableRefObject<number>,
   goToTimecode: () => void,
   isSegmentSelected: (a: { segId: string }) => boolean,
-}) => {
+}) {
   const { t } = useTranslation();
 
   const { invertCutSegments } = useUserSettings();
@@ -405,6 +408,6 @@ const Timeline = memo(({
       </div>
     </div>
   );
-});
+}
 
-export default Timeline;
+export default memo(Timeline);

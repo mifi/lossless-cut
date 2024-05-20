@@ -8,9 +8,9 @@ import useUserSettings from './hooks/useUserSettings';
 
 const electron = window.require('electron');
 
-const NoFileLoaded = memo(({ mifiLink, currentCutSeg, onClick, darkMode }: {
+function NoFileLoaded({ mifiLink, currentCutSeg, onClick, darkMode }: {
   mifiLink: unknown, currentCutSeg, onClick: () => void, darkMode?: boolean,
-}) => {
+}) {
   const { t } = useTranslation();
   const { simpleMode } = useUserSettings();
 
@@ -48,6 +48,6 @@ const NoFileLoaded = memo(({ mifiLink, currentCutSeg, onClick, darkMode }: {
       ) : undefined}
     </div>
   );
-});
+}
 
-export default NoFileLoaded;
+export default memo(NoFileLoaded);

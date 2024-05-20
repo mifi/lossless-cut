@@ -26,9 +26,9 @@ const rowStyle: CSSProperties = {
   color: 'black', fontSize: 14, margin: '4px 0px', overflowY: 'auto', whiteSpace: 'nowrap',
 };
 
-const ConcatDialog = memo(({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles }: {
+function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles }: {
   isShown: boolean, onHide: () => void, paths: string[], onConcat: (a: { paths: string[], includeAllStreams: boolean, streams: FFprobeStream[], outFileName: string, fileFormat: string, clearBatchFilesAfterConcat: boolean }) => Promise<void>, alwaysConcatMultipleFiles: boolean, setAlwaysConcatMultipleFiles: (a: boolean) => void,
-}) => {
+}) {
   const { t } = useTranslation();
   const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge } = useUserSettings();
 
@@ -238,6 +238,6 @@ const ConcatDialog = memo(({ isShown, onHide, paths, onConcat, alwaysConcatMulti
       </Dialog>
     </>
   );
-});
+}
 
-export default ConcatDialog;
+export default memo(ConcatDialog);

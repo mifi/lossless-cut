@@ -26,6 +26,7 @@ const buttonBaseStyle = {
 
 const neutralButtonColor = 'var(--gray8)';
 
+// eslint-disable-next-line react/display-name
 const Segment = memo(({
   seg,
   index,
@@ -218,7 +219,7 @@ const Segment = memo(({
   );
 });
 
-const SegmentList = memo(({
+function SegmentList({
   width,
   formatTimecode,
   apparentCutSegments,
@@ -294,7 +295,7 @@ const SegmentList = memo(({
   setEditingSegmentTags: Dispatch<SetStateAction<SegmentTags | undefined>>,
   setEditingSegmentTagsSegmentIndex: Dispatch<SetStateAction<number | undefined>>,
   onEditSegmentTags: (index: number) => void,
-}) => {
+}) {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
 
@@ -502,6 +503,6 @@ const SegmentList = memo(({
       </motion.div>
     </>
   );
-});
+}
 
-export default SegmentList;
+export default memo(SegmentList);

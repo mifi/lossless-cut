@@ -6,7 +6,8 @@ import { FaImage } from 'react-icons/fa';
 import useUserSettings from '../hooks/useUserSettings';
 import { withBlur } from '../util';
 
-const CaptureFormatButton = memo(({ showIcon = false, ...props }: { showIcon?: boolean } & ButtonProps) => {
+
+function CaptureFormatButton({ showIcon = false, ...props }: { showIcon?: boolean } & ButtonProps) {
   const { t } = useTranslation();
   const { captureFormat, toggleCaptureFormat } = useUserSettings();
   return (
@@ -20,6 +21,6 @@ const CaptureFormatButton = memo(({ showIcon = false, ...props }: { showIcon?: b
       {captureFormat}
     </Button>
   );
-});
+}
 
-export default CaptureFormatButton;
+export default memo(CaptureFormatButton);

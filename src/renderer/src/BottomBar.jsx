@@ -31,6 +31,7 @@ const zoomOptions = Array.from({ length: 13 }).fill().map((unused, z) => 2 ** z)
 
 const leftRightWidth = 100;
 
+// eslint-disable-next-line react/display-name
 const InvertCutModeButton = memo(({ invertCutSegments, setInvertCutSegments }) => {
   const { t } = useTranslation();
 
@@ -63,6 +64,7 @@ const InvertCutModeButton = memo(({ invertCutSegments, setInvertCutSegments }) =
 });
 
 
+// eslint-disable-next-line react/display-name
 const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, seekAbs, currentCutSeg, currentApparentCutSeg, isStart, formatTimecode, parseTimecode }) => {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
@@ -166,7 +168,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
   );
 });
 
-const BottomBar = memo(({
+function BottomBar({
   zoom, setZoom, timelineToggleComfortZoom,
   isRotationSet, rotation, areWeCutting, increaseRotation, cleanupFilesDialog,
   captureSnapshot, onExportPress, segmentsToExport, hasVideo,
@@ -179,7 +181,7 @@ const BottomBar = memo(({
   toggleShowThumbnails, toggleWaveformMode, waveformMode, showThumbnails,
   outputPlaybackRate, setOutputPlaybackRate,
   formatTimecode, parseTimecode,
-}) => {
+}) {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
 
@@ -458,6 +460,6 @@ const BottomBar = memo(({
       </div>
     </>
   );
-});
+}
 
-export default BottomBar;
+export default memo(BottomBar);
