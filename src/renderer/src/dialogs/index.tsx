@@ -46,9 +46,11 @@ export async function promptTimeOffset({ initialValue, title, text, inputPlaceho
 // https://github.com/mifi/lossless-cut/issues/1495
 export const showOpenDialog = async ({
   filters = isWindows ? [{ name: i18n.t('All Files'), extensions: ['*'] }] : undefined,
+  title,
   ...props
-  // @ts-expect-error todo
-}: Parameters<typeof dialog.showOpenDialog>[0]) => dialog.showOpenDialog({ ...props, filters });
+}: Omit<Parameters<typeof dialog.showOpenDialog>[0], 'title'> & { title: string }) => (
+  dialog.showOpenDialog({ ...props, title, ...(filters != null ? { filters } : {}) })
+);
 
 export async function askForYouTubeInput() {
   const example = i18n.t('YouTube video description\n00:00 Intro\n00:01 Chapter 2\n00:00:02.123 Chapter 3');

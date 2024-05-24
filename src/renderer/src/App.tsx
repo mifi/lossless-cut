@@ -86,7 +86,7 @@ import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './uti
 import BigWaveform from './components/BigWaveform';
 
 import isDev from './isDev';
-import { Chapter, ChromiumHTMLVideoElement, CustomTagsByFile, EdlFileType, FfmpegCommandLog, FilesMeta, FormatTimecode, ParamsByStreamId, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, Thumbnail, TunerType } from './types';
+import { Chapter, ChromiumHTMLVideoElement, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, FormatTimecode, ParamsByStreamId, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, Thumbnail, TunerType } from './types';
 import { CaptureFormat, KeyboardAction, Html5ifyMode, WaveformMode } from '../../../types';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 
@@ -2055,14 +2055,14 @@ function App() {
 
   const showIncludeExternalStreamsDialog = useCallback(async () => {
     try {
-      const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'] });
+      const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'], title: t('Include more tracks from other file') });
       const [firstFilePath] = filePaths;
       if (canceled || firstFilePath == null) return;
       await addStreamSourceFile(firstFilePath);
     } catch (err) {
       handleError(err);
     }
-  }, [addStreamSourceFile]);
+  }, [addStreamSourceFile, t]);
 
   const toggleFullscreenVideo = useCallback(async () => {
     if (!screenfull.isEnabled) {
@@ -2372,7 +2372,7 @@ function App() {
   const onVideoClick = useCallback(() => togglePlay(), [togglePlay]);
 
   useEffect(() => {
-    async function tryExportEdlFile(type) {
+    async function tryExportEdlFile(type: EdlExportType) {
       if (!checkFileOpened()) return;
       try {
         await exportEdlFile({ type, cutSegments: selectedSegments, customOutDir, filePath, getFrameCount });
@@ -2382,7 +2382,7 @@ function App() {
       }
     }
 
-    async function importEdlFile(type) {
+    async function importEdlFile(type: EdlImportType) {
       if (!checkFileOpened()) return;
 
       try {
