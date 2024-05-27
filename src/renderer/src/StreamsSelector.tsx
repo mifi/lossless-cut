@@ -16,6 +16,7 @@ import { getActiveDisposition, attachedPicDisposition } from './util/streams';
 import TagEditor from './components/TagEditor';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 import { CustomTagsByFile, FilesMeta, FormatTimecode, ParamsByStreamId, StreamParams } from './types';
+import useUserSettings from './hooks/useUserSettings';
 
 
 const dispositionOptions = ['default', 'dub', 'original', 'comment', 'lyrics', 'karaoke', 'forced', 'hearing_impaired', 'visual_impaired', 'clean_effects', 'attached_pic', 'captions', 'descriptions', 'dependent', 'metadata'];
@@ -147,13 +148,9 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
   );
 });
 
-function onInfoClick(json: unknown, title: string) {
-  showJson5Dialog({ title, json });
-}
-
 // eslint-disable-next-line react/display-name
-const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress, paramsByStreamId, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments }: {
-  filePath: string, stream: FFprobeStream, onToggle: (a: number) => void, batchSetCopyStreamIds: (filter: (a: FFprobeStream) => boolean, enabled: boolean) => void, copyStream: boolean, fileDuration: number | undefined, setEditingStream: (a: EditingStream) => void, onExtractStreamPress?: () => void, paramsByStreamId: ParamsByStreamId, updateStreamParams: UpdateStreamParams, formatTimecode: FormatTimecode, loadSubtitleTrackToSegments?: (index: number) => void,
+const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress, paramsByStreamId, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments, onInfoClick }: {
+  filePath: string, stream: FFprobeStream, onToggle: (a: number) => void, batchSetCopyStreamIds: (filter: (a: FFprobeStream) => boolean, enabled: boolean) => void, copyStream: boolean, fileDuration: number | undefined, setEditingStream: (a: EditingStream) => void, onExtractStreamPress?: () => void, paramsByStreamId: ParamsByStreamId, updateStreamParams: UpdateStreamParams, formatTimecode: FormatTimecode, loadSubtitleTrackToSegments?: (index: number) => void, onInfoClick: (json: unknown, title: string) => void,
 }) => {
   const { t } = useTranslation();
 
@@ -283,8 +280,8 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
   );
 });
 
-function FileHeading({ path, formatData, chapters, onTrashClick, onEditClick, setCopyAllStreams, onExtractAllStreamsPress }: {
-  path: string, formatData: FFprobeFormat | undefined, chapters?: FFprobeChapter[] | undefined, onTrashClick?: (() => void) | undefined, onEditClick?: (() => void) | undefined, setCopyAllStreams: (a: boolean) => void, onExtractAllStreamsPress?: () => Promise<void>,
+function FileHeading({ path, formatData, chapters, onTrashClick, onEditClick, setCopyAllStreams, onExtractAllStreamsPress, onInfoClick }: {
+  path: string, formatData: FFprobeFormat | undefined, chapters?: FFprobeChapter[] | undefined, onTrashClick?: (() => void) | undefined, onEditClick?: (() => void) | undefined, setCopyAllStreams: (a: boolean) => void, onExtractAllStreamsPress?: () => Promise<void>, onInfoClick: (json: unknown, title: string) => void,
 }) {
   const { t } = useTranslation();
 
@@ -360,6 +357,7 @@ function StreamsSelector({
   const [editingStream, setEditingStream] = useState<EditingStream>();
   const [editingTag, setEditingTag] = useState<string>();
   const { t } = useTranslation();
+  const { darkMode } = useUserSettings();
 
   function getFormatDuration(formatData: FFprobeFormat | undefined) {
     if (!formatData || !formatData.duration) return undefined;
@@ -394,13 +392,17 @@ function StreamsSelector({
 
   const externalFilesEntries = Object.entries(externalFilesMeta);
 
+  const onInfoClick = useCallback((json: unknown, title: string) => {
+    showJson5Dialog({ title, json, darkMode });
+  }, [darkMode]);
+
   return (
     <>
       <p style={{ margin: '.5em 2em .5em 1em' }}>{t('Click to select which tracks to keep when exporting:')}</p>
 
       <div style={fileStyle}>
         {/* We only support editing main file metadata for now */}
-        <FileHeading path={mainFilePath} formatData={mainFileFormatData} chapters={mainFileChapters} onEditClick={() => setEditingFile(mainFilePath)} setCopyAllStreams={(enabled) => setCopyAllStreamsForPath(mainFilePath, enabled)} onExtractAllStreamsPress={onExtractAllStreamsPress} />
+        <FileHeading onInfoClick={onInfoClick} path={mainFilePath} formatData={mainFileFormatData} chapters={mainFileChapters} onEditClick={() => setEditingFile(mainFilePath)} setCopyAllStreams={(enabled) => setCopyAllStreamsForPath(mainFilePath, enabled)} onExtractAllStreamsPress={onExtractAllStreamsPress} />
         <table style={tableStyle}>
           <Thead />
 
@@ -420,6 +422,7 @@ function StreamsSelector({
                 updateStreamParams={updateStreamParams}
                 formatTimecode={formatTimecode}
                 loadSubtitleTrackToSegments={loadSubtitleTrackToSegments}
+                onInfoClick={onInfoClick}
               />
             ))}
           </tbody>
@@ -428,7 +431,7 @@ function StreamsSelector({
 
       {externalFilesEntries.map(([path, { streams: externalFileStreams, formatData }]) => (
         <div key={path} style={fileStyle}>
-          <FileHeading path={path} formatData={formatData} onTrashClick={() => removeFile(path)} setCopyAllStreams={(enabled) => setCopyAllStreamsForPath(path, enabled)} />
+          <FileHeading path={path} formatData={formatData} onTrashClick={() => removeFile(path)} setCopyAllStreams={(enabled) => setCopyAllStreamsForPath(path, enabled)} onInfoClick={onInfoClick} />
 
           <table style={tableStyle}>
             <Thead />
@@ -446,6 +449,7 @@ function StreamsSelector({
                   paramsByStreamId={paramsByStreamId}
                   updateStreamParams={updateStreamParams}
                   formatTimecode={formatTimecode}
+                  onInfoClick={onInfoClick}
                 />
               ))}
             </tbody>

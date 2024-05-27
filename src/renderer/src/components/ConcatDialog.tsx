@@ -1,13 +1,13 @@
 import { memo, useState, useCallback, useEffect, useMemo, CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextInput, IconButton, Alert, Checkbox, Dialog, Button, Paragraph, CogIcon } from 'evergreen-ui';
+import { IconButton, Checkbox as EvergreenCheckbox, Dialog, Paragraph } from 'evergreen-ui';
 import { AiOutlineMergeCells } from 'react-icons/ai';
-import { FaQuestionCircle, FaExclamationTriangle } from 'react-icons/fa';
+import { FaQuestionCircle, FaExclamationTriangle, FaCog } from 'react-icons/fa';
 import i18n from 'i18next';
-import withReactContent from 'sweetalert2-react-content';
 import invariant from 'tiny-invariant';
+import Checkbox from './Checkbox';
 
-import Swal from '../swal';
+import { ReactSwal } from '../swal';
 import { readFileMeta, getSmarterOutFormat } from '../ffmpeg';
 import useFileFormatState from '../hooks/useFileFormatState';
 import OutputFormatSelect from './OutputFormatSelect';
@@ -15,16 +15,22 @@ import useUserSettings from '../hooks/useUserSettings';
 import { isMov } from '../util/streams';
 import { getOutFileExtension, getSuffixedFileName } from '../util';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../../ffprobe';
+import Sheet from './Sheet';
+import TextInput from './TextInput';
+import Button from './Button';
 
 const { basename } = window.require('path');
 
-const ReactSwal = withReactContent(Swal);
-
-const containerStyle: CSSProperties = { color: 'black' };
 
 const rowStyle: CSSProperties = {
-  color: 'black', fontSize: 14, margin: '4px 0px', overflowY: 'auto', whiteSpace: 'nowrap',
+  fontSize: '1em', margin: '4px 0px', overflowY: 'auto', whiteSpace: 'nowrap',
 };
+
+function Alert({ text }: { text: string }) {
+  return (
+    <div style={{ marginBottom: '1em' }}><FaExclamationTriangle style={{ color: 'var(--orange8)', fontSize: '1.3em', verticalAlign: 'middle', marginRight: '.2em' }} /> {text}</div>
+  );
+}
 
 function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles }: {
   isShown: boolean, onHide: () => void, paths: string[], onConcat: (a: { paths: string[], includeAllStreams: boolean, streams: FFprobeStream[], outFileName: string, fileFormat: string, clearBatchFilesAfterConcat: boolean }) => Promise<void>, alwaysConcatMultipleFiles: boolean, setAlwaysConcatMultipleFiles: (a: boolean) => void,
@@ -167,72 +173,65 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
 
   return (
     <>
-      <Dialog
-        title={t('Merge/concatenate files')}
-        shouldCloseOnOverlayClick={false}
-        isShown={isShown}
-        onCloseComplete={onHide}
-        topOffset="3vh"
-        width="90vw"
-        footer={(
-          <>
-            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-              <Checkbox checked={enableReadFileMeta} onChange={(e) => setEnableReadFileMeta(e.target.checked)} label={t('Check compatibility')} marginLeft={10} marginRight={10} />
-              <Button iconBefore={CogIcon} onClick={() => setSettingsVisible(true)}>{t('Options')}</Button>
-              {fileFormat && detectedFileFormat ? (
-                <OutputFormatSelect style={{ height: 30, maxWidth: 180 }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
-              ) : (
-                <Button disabled isLoading>{t('Loading')}</Button>
-              )}
-              <Button iconBefore={<AiOutlineMergeCells />} isLoading={detectedFileFormat == null} disabled={!isOutFileNameValid} appearance="primary" onClick={onConcatClick}>{t('Merge!')}</Button>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-              <Paragraph marginRight=".5em">{t('Output file name')}:</Paragraph>
-              <TextInput value={outFileName || ''} onChange={(e) => setOutFileName(e.target.value)} />
-            </div>
-          </>
-        )}
-      >
-        <div style={containerStyle}>
-          <div style={{ whiteSpace: 'pre-wrap', fontSize: 14, marginBottom: 10 }}>
+      <Sheet visible={isShown} onClosePress={onHide} maxWidth="100%" style={{ padding: '0 2em' }}>
+        <h2>{t('Merge/concatenate files')}</h2>
+
+        <div style={{ marginBottom: '1em' }}>
+          <div style={{ whiteSpace: 'pre-wrap', fontSize: '.9em', marginBottom: '1em' }}>
             {t('This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).')}
           </div>
 
-          <div>
+          <div style={{ backgroundColor: 'var(--gray1)', borderRadius: '.1em' }}>
             {paths.map((path, index) => (
               <div key={path} style={rowStyle} title={path}>
                 <div>
                   {index + 1}
                   {'. '}
-                  <span style={{ color: 'rgba(0,0,0,0.7)' }}>{basename(path)}</span>
-                  {!allFilesMetaCache[path] && <FaQuestionCircle color="#996A13" style={{ marginLeft: 10 }} />}
-                  {problemsByFile[path] && <IconButton appearance="minimal" icon={FaExclamationTriangle} onClick={() => onProblemsByFileClick(path)} title={i18n.t('Mismatches detected')} color="#996A13" style={{ marginLeft: 10 }} />}
+                  <span>{basename(path)}</span>
+                  {!allFilesMetaCache[path] && <FaQuestionCircle style={{ color: 'var(--orange8)', verticalAlign: 'middle', marginLeft: '1em' }} />}
+                  {problemsByFile[path] && <IconButton appearance="minimal" icon={FaExclamationTriangle} onClick={() => onProblemsByFileClick(path)} title={i18n.t('Mismatches detected')} style={{ color: 'var(--orange8)', marginLeft: '1em' }} />}
                 </div>
               </div>
             ))}
           </div>
         </div>
 
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', marginBottom: '.5em', gap: '.5em' }}>
+          <Checkbox checked={enableReadFileMeta} onCheckedChange={(checked) => setEnableReadFileMeta(!!checked)} label={t('Check compatibility')} />
+
+          <Button onClick={() => setSettingsVisible(true)} style={{ height: '1.7em' }}><FaCog style={{ fontSize: '1em', verticalAlign: 'middle' }} /> {t('Options')}</Button>
+
+          {fileFormat && detectedFileFormat && (
+            <OutputFormatSelect style={{ height: '1.7em', maxWidth: '20em' }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
+          )}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end', marginBottom: '1em' }}>
+          <div style={{ marginRight: '.5em' }}>{t('Output file name')}:</div>
+          <TextInput value={outFileName || ''} onChange={(e) => setOutFileName(e.target.value)} />
+          <Button disabled={detectedFileFormat == null || !isOutFileNameValid} onClick={onConcatClick} style={{ fontSize: '1.3em', padding: '0 .3em', marginLeft: '1em' }}><AiOutlineMergeCells style={{ fontSize: '1.4em', verticalAlign: 'middle' }} /> {t('Merge!')}</Button>
+        </div>
+
         {enableReadFileMeta && (!allFilesMeta || Object.values(problemsByFile).length > 0) && (
-          <Alert intent="warning">{t('A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.')}</Alert>
+          <Alert text={t('A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.')} />
         )}
         {!enableReadFileMeta && (
-          <Alert intent="warning">{t('File compatibility check is not enabled, so the merge operation might not produce a valid output. Enable "Check compatibility" below to check file compatibility before merging.')}</Alert>
+          <Alert text={t('File compatibility check is not enabled, so the merge operation might not produce a valid output. Enable "Check compatibility" below to check file compatibility before merging.')} />
         )}
-      </Dialog>
+      </Sheet>
 
       <Dialog isShown={settingsVisible} onCloseComplete={() => setSettingsVisible(false)} title={t('Merge options')} hasCancel={false} confirmLabel={t('Close')}>
-        <Checkbox checked={includeAllStreams} onChange={(e) => setIncludeAllStreams(e.target.checked)} label={`${t('Include all tracks?')} ${t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}`} />
+        <EvergreenCheckbox checked={includeAllStreams} onChange={(e) => setIncludeAllStreams(e.target.checked)} label={`${t('Include all tracks?')} ${t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}`} />
 
-        <Checkbox checked={preserveMetadataOnMerge} onChange={(e) => setPreserveMetadataOnMerge(e.target.checked)} label={t('Preserve original metadata when merging? (slow)')} />
+        <EvergreenCheckbox checked={preserveMetadataOnMerge} onChange={(e) => setPreserveMetadataOnMerge(e.target.checked)} label={t('Preserve original metadata when merging? (slow)')} />
 
-        {fileFormat != null && isMov(fileFormat) && <Checkbox checked={preserveMovData} onChange={(e) => setPreserveMovData(e.target.checked)} label={t('Preserve all MP4/MOV metadata?')} />}
+        {fileFormat != null && isMov(fileFormat) && <EvergreenCheckbox checked={preserveMovData} onChange={(e) => setPreserveMovData(e.target.checked)} label={t('Preserve all MP4/MOV metadata?')} />}
 
-        <Checkbox checked={segmentsToChapters} onChange={(e) => setSegmentsToChapters(e.target.checked)} label={t('Create chapters from merged segments? (slow)')} />
+        <EvergreenCheckbox checked={segmentsToChapters} onChange={(e) => setSegmentsToChapters(e.target.checked)} label={t('Create chapters from merged segments? (slow)')} />
 
-        <Checkbox checked={alwaysConcatMultipleFiles} onChange={(e) => setAlwaysConcatMultipleFiles(e.target.checked)} label={t('Always open this dialog when opening multiple files')} />
+        <EvergreenCheckbox checked={alwaysConcatMultipleFiles} onChange={(e) => setAlwaysConcatMultipleFiles(e.target.checked)} label={t('Always open this dialog when opening multiple files')} />
 
-        <Checkbox checked={clearBatchFilesAfterConcat} onChange={(e) => setClearBatchFilesAfterConcat(e.target.checked)} label={t('Clear batch file list after merge')} />
+        <EvergreenCheckbox checked={clearBatchFilesAfterConcat} onChange={(e) => setClearBatchFilesAfterConcat(e.target.checked)} label={t('Clear batch file list after merge')} />
 
         <Paragraph>{t('Note that also other settings from the normal export dialog apply to this merge function. For more information about all options, see the export dialog.')}</Paragraph>
       </Dialog>

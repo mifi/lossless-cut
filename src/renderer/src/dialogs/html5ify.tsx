@@ -1,13 +1,9 @@
 import { useState, useCallback } from 'react';
-import { Checkbox, RadioGroup, Paragraph } from 'evergreen-ui';
 import i18n from 'i18next';
-import withReactContent from 'sweetalert2-react-content';
 
-import Swal from '../swal';
+import { ReactSwal } from '../swal';
 import { Html5ifyMode } from '../../../../types';
-
-
-const ReactSwal = withReactContent(Swal);
+import Checkbox from '../components/Checkbox';
 
 
 // eslint-disable-next-line import/prefer-default-export
@@ -31,33 +27,50 @@ export async function askForHtml5ifySpeed({ allowedOptions, showRemember, initia
   let selectedOption: Html5ifyMode = initialOption != null && inputOptions[initialOption] ? initialOption : Object.keys(inputOptions)[0]! as Html5ifyMode;
   let rememberChoice = !!initialOption;
 
-  const Html = () => {
+  function AskForHtml5ifySpeed() {
     const [option, setOption] = useState(selectedOption);
     const [remember, setRemember] = useState(rememberChoice);
+
     const onOptionChange = useCallback((e) => {
-      selectedOption = e.target.value;
+      selectedOption = e.currentTarget.value;
       setOption(selectedOption);
     }, []);
-    const onRememberChange = useCallback((e) => {
-      rememberChoice = e.target.checked;
+
+    const onRememberChange = useCallback((checked) => {
+      rememberChoice = checked;
       setRemember(rememberChoice);
     }, []);
+
     return (
       <div style={{ textAlign: 'left' }}>
-        <Paragraph>{i18n.t('These options will let you convert files to a format that is supported by the player. You can try different options and see which works with your file. Note that the conversion is for preview only. When you run an export, the output will still be lossless with full quality')}</Paragraph>
-        <RadioGroup
-          options={Object.entries(inputOptions).map(([value, label]) => ({ label, value }))}
-          value={option}
-          onChange={onOptionChange}
-        />
-        {showRemember && <Checkbox checked={remember} onChange={onRememberChange} label={i18n.t('Use this for all files until LosslessCut is restarted?')} />}
+        <p>{i18n.t('These options will let you convert files to a format that is supported by the player. You can try different options and see which works with your file. Note that the conversion is for preview only. When you run an export, the output will still be lossless with full quality')}</p>
+
+        {Object.entries(inputOptions).map(([value, label]) => {
+          const id = `html5ify-${value}`;
+          return (
+            <div key={value}>
+              <input
+                id={id}
+                type="radio"
+                name="html5ify-speed"
+                value={value}
+                checked={option === value}
+                onChange={onOptionChange}
+              />
+              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+              <label htmlFor={id} style={{ marginLeft: '.5em' }}>{label}</label>
+            </div>
+          );
+        })}
+
+        {showRemember && <Checkbox checked={remember} onCheckedChange={onRememberChange} label={i18n.t('Use this for all files until LosslessCut is restarted?')} style={{ marginTop: '.5em' }} />}
       </div>
     );
-  };
+  }
 
   const { value: response } = await ReactSwal.fire({
     title: i18n.t('Convert to supported format'),
-    html: <Html />,
+    html: <AskForHtml5ifySpeed />,
     showCancelButton: true,
   });
 

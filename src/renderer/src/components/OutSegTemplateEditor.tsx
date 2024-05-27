@@ -3,19 +3,16 @@ import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { WarningSignIcon, ErrorIcon, Button, IconButton, TickIcon, ResetIcon } from 'evergreen-ui';
-import withReactContent from 'sweetalert2-react-content';
 import { IoIosHelpCircle } from 'react-icons/io';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import Swal from '../swal';
+import { ReactSwal } from '../swal';
 import HighlightedText from './HighlightedText';
 import { defaultOutSegTemplate, segNumVariable, segSuffixVariable, GenerateOutSegFileNames } from '../util/outputNameTemplate';
 import useUserSettings from '../hooks/useUserSettings';
 import Switch from './Switch';
 import Select from './Select';
 import TextInput from './TextInput';
-
-const ReactSwal = withReactContent(Swal);
 
 const electron = window.require('electron');
 

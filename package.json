@@ -41,6 +41,7 @@
   "devDependencies": {
     "@fontsource/open-sans": "^4.5.14",
     "@radix-ui/colors": "^0.1.8",
+    "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-switch": "^1.0.1",
     "@tsconfig/node18": "^18.2.2",
     "@tsconfig/strictest": "^2.0.2",
@@ -101,6 +102,7 @@
     "react-syntax-highlighter": "^15.4.3",
     "react-use": "^17.4.0",
     "rimraf": "^5.0.5",
+    "sass": "^1.77.2",
     "screenfull": "^6.0.2",
     "scroll-into-view-if-needed": "^2.2.28",
     "sharp": "^0.32.6",

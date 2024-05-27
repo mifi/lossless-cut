@@ -1,14 +1,14 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Button, TextInputField, LinkIcon } from 'evergreen-ui';
 import i18n from 'i18next';
-import withReactContent from 'sweetalert2-react-content';
+import { FaLink } from 'react-icons/fa';
 
-import Swal from '../swal';
+import Swal, { ReactSwal } from '../swal';
+import Button from '../components/Button';
+import TextInput from '../components/TextInput';
 
 
 const { shell } = window.require('electron');
 
-const ReactSwal = withReactContent(Swal);
 
 export interface ParameterDialogParameter { value: string, label?: string, hint?: string }
 export type ParameterDialogParameters = Record<string, ParameterDialogParameter>;
@@ -37,15 +37,28 @@ const ParametersInput = ({ description, parameters: parametersIn, onChange, onSu
   }, []);
 
   return (
-    <div style={{ textAlign: 'left' }}>
+    <div style={{ textAlign: 'left', padding: '.5em', borderRadius: '.3em' }}>
       {description && <p>{description}</p>}
 
-      {docUrl && <p><Button iconBefore={LinkIcon} onClick={() => shell.openExternal(docUrl)}>Read more</Button></p>}
+      {docUrl && <p><Button onClick={() => shell.openExternal(docUrl)}><FaLink style={{ fontSize: '.8em' }} /> Read more</Button></p>}
 
       <form onSubmit={handleSubmit}>
-        {Object.entries(parametersIn).map(([key, parameter], i) => (
-          <TextInputField ref={i === 0 ? firstInputRef : undefined} key={key} label={parameter.label || key} value={getParameter(key)} onChange={(e) => handleChange(key, e.target.value)} hint={parameter.hint} />
-        ))}
+        {Object.entries(parametersIn).map(([key, parameter], i) => {
+          const id = `parameter-${key}`;
+          return (
+            <div key={key} style={{ marginBottom: '.5em' }}>
+              <label htmlFor={id} style={{ display: 'block', fontFamily: 'monospace', marginBottom: '.3em' }}>{parameter.label || key}</label>
+              <TextInput
+                id={id}
+                ref={i === 0 ? firstInputRef : undefined}
+                value={getParameter(key)}
+                onChange={(e) => handleChange(key, e.target.value)}
+                style={{ marginBottom: '.2em' }}
+              />
+              {parameter.hint && <div style={{ opacity: 0.6, fontSize: '0.8em' }}>{parameter.hint}</div>}
+            </div>
+          );
+        })}
 
         <input type="submit" value="submit" style={{ display: 'none' }} />
       </form>

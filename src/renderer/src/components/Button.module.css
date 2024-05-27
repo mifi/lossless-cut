@@ -9,4 +9,5 @@
   padding: 0 .5em 0 .3em;
   outline: .05em solid var(--gray8);
   border: .05em solid var(--gray7);
+  cursor: pointer;
 }

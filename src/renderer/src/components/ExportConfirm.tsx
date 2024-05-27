@@ -5,7 +5,7 @@ import { FaRegCheckCircle } from 'react-icons/fa';
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
 import { IoIosHelpCircle } from 'react-icons/io';
-import { SweetAlertIcon } from 'sweetalert2';
+import type { SweetAlertIcon } from 'sweetalert2';
 
 import ExportButton from './ExportButton';
 import ExportModeButton from './ExportModeButton';

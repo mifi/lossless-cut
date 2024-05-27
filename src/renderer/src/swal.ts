@@ -1,6 +1,6 @@
-import SwalRaw, { SweetAlertOptions } from 'sweetalert2';
-
-import { primaryColor } from './colors';
+import SwalRaw from 'sweetalert2/dist/sweetalert2.js';
+import type { SweetAlertOptions } from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 
 const { systemPreferences } = window.require('@electron/remote');
@@ -8,7 +8,7 @@ const { systemPreferences } = window.require('@electron/remote');
 const animationSettings = systemPreferences.getAnimationSettings();
 
 let commonSwalOptions: SweetAlertOptions = {
-  confirmButtonColor: primaryColor,
+  target: '#swal2-container-wrapper',
 };
 
 if (animationSettings.prefersReducedMotion) {
@@ -53,3 +53,5 @@ export const errorToast = (text: string) => toast.fire({
   icon: 'error',
   text,
 });
+
+export const ReactSwal = withReactContent(Swal);

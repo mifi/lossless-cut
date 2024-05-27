@@ -7,7 +7,7 @@ import styles from './Sheet.module.css';
 
 
 function Sheet({ visible, onClosePress, children, maxWidth = 800, style }: {
-  visible: boolean, onClosePress: () => void, children: ReactNode, maxWidth?: number, style?: CSSProperties
+  visible: boolean, onClosePress: () => void, children: ReactNode, maxWidth?: number | string, style?: CSSProperties
 }) {
   const { t } = useTranslation();
 

@@ -11,6 +11,8 @@ https://www.radix-ui.com/docs/colors/palette-composition/understanding-the-scale
 @import '@radix-ui/colors/greenDark.css';
 @import '@radix-ui/colors/cyan.css';
 @import '@radix-ui/colors/cyanDark.css';
+@import '@radix-ui/colors/blue.css';
+@import '@radix-ui/colors/blueDark.css';
 @import '@radix-ui/colors/gray.css';
 @import '@radix-ui/colors/grayDark.css';
 @import '@radix-ui/colors/blackA.css';
@@ -82,6 +84,17 @@ code.highlighted {
   cursor: pointer;
 }
 .button-unstyled:focus {
+  outline: revert;
+}
+
+.link-button {
+  all: unset;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: .15em;
+  text-decoration-thickness: .05em;
+}
+.link-button:focus {
   outline: revert;
 }
 

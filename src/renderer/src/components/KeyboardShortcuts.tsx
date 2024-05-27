@@ -1,6 +1,6 @@
 import { memo, Fragment, useEffect, useMemo, useCallback, useState, ReactNode, SetStateAction, Dispatch, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SearchInput, PlusIcon, InlineAlert, UndoIcon, Paragraph, TakeActionIcon, IconButton, Button, DeleteIcon, AddIcon, Heading, Text, Dialog } from 'evergreen-ui';
+import { SearchInput, PlusIcon, InlineAlert, UndoIcon, Paragraph, TakeActionIcon, IconButton, Button, DeleteIcon, AddIcon, Dialog } from 'evergreen-ui';
 import { FaMouse, FaPlus, FaStepForward, FaStepBackward } from 'react-icons/fa';
 import Mousetrap from 'mousetrap';
 import groupBy from 'lodash/groupBy';
@@ -14,6 +14,7 @@ import SegmentCutpointButton from './SegmentCutpointButton';
 import { getModifier } from '../hooks/useTimelineScroll';
 import { KeyBinding, KeyboardAction } from '../../../../types';
 import { StateSegment } from '../types';
+import Sheet from './Sheet';
 
 
 type Category = string;
@@ -22,7 +23,7 @@ type ActionsMap = Record<KeyboardAction, { name: string, category?: Category, be
 
 const renderKeys = (keys: string[]) => keys.map((key, i) => (
   <Fragment key={key}>
-    {i > 0 && <FaPlus size={8} style={{ marginLeft: 4, marginRight: 4, color: 'rgba(0,0,0,0.5)' }} />}
+    {i > 0 && <FaPlus style={{ fontSize: '.4em', opacity: 0.8, marginLeft: '.4em', marginRight: '.4em' }} />}
     <kbd>{key.toUpperCase()}</kbd>
   </Fragment>
 ));
@@ -116,7 +117,7 @@ const CreateBinding = memo(({
   );
 });
 
-const rowStyle = { display: 'flex', alignItems: 'center', margin: '.2em 0', borderBottom: '1px solid rgba(0,0,0,0.1)', paddingBottom: '.5em' };
+const rowStyle = { display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.1)', paddingBottom: '.2em' };
 
 // eslint-disable-next-line react/display-name
 const KeyboardShortcuts = memo(({
@@ -626,18 +627,18 @@ const KeyboardShortcuts = memo(({
     const extraLinesPerCategory: Record<Category, ReactNode> = {
       [zoomOperationsCategory]: [
         <div key="1" style={{ ...rowStyle, alignItems: 'center' }}>
-          <Text>{t('Zoom in/out timeline')}</Text>
+          <span>{t('Zoom in/out timeline')}</span>
           <div style={{ flexGrow: 1 }} />
-          <FaMouse style={{ marginRight: 3 }} />
-          <Text>{t('Mouse scroll/wheel up/down')}</Text>
+          <FaMouse style={{ marginRight: '.3em' }} />
+          <span>{t('Mouse scroll/wheel up/down')}</span>
         </div>,
 
         <div key="2" style={{ ...rowStyle, alignItems: 'center' }}>
-          <Text>{t('Pan timeline')}</Text>
+          <span>{t('Pan timeline')}</span>
           <div style={{ flexGrow: 1 }} />
           {getModifier(mouseWheelZoomModifierKey).map((v) => <kbd key={v} style={{ marginRight: '.7em' }}>{v}</kbd>)}
-          <FaMouse style={{ marginRight: 3 }} />
-          <Text>{t('Mouse scroll/wheel up/down')}</Text>
+          <FaMouse style={{ marginRight: '.3em' }} />
+          <span>{t('Mouse scroll/wheel up/down')}</span>
         </div>,
       ],
     };
@@ -723,14 +724,14 @@ const KeyboardShortcuts = memo(({
 
   return (
     <>
-      <div style={{ color: 'black', marginBottom: '1em' }}>
-        <div>
+      <div style={{ marginBottom: '1em' }}>
+        <div style={{ marginBottom: '1em' }}>
           <SearchInput ref={searchInputRef} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search" width="100%" />
         </div>
 
         {categoriesWithActions.map(([category, actionsInCategory]) => (
           <div key={category}>
-            {category !== 'undefined' && <Heading marginTop={30} marginBottom={14}>{category}</Heading>}
+            {category !== 'undefined' && <div style={{ marginTop: '2em', marginBottom: '.7em', fontSize: '1.4em' }}>{category}</div>}
 
             {actionsInCategory.map(([action, actionObj]) => {
               const actionName = (actionObj && actionObj.name) || action;
@@ -742,8 +743,8 @@ const KeyboardShortcuts = memo(({
                 <div key={action} style={rowStyle}>
                   <div>
                     {beforeContent}
-                    <Text title={action} marginRight={10}>{actionName}</Text>
-                    <div style={{ fontSize: '.8em', opacity: 0.4 }} title={t('API action name: {{action}}', { action })}>{action}</div>
+                    <span title={action} style={{ marginRight: '.5em', opacity: 0.9 }}>{actionName}</span>
+                    <div style={{ fontSize: '.8em', opacity: 0.3 }} title={t('API action name: {{action}}', { action })}>{action}</div>
                   </div>
 
                   <div style={{ flexGrow: 1 }} />
@@ -757,7 +758,7 @@ const KeyboardShortcuts = memo(({
                       </div>
                     ))}
 
-                    {bindingsForThisAction.length === 0 && <Text color="muted">{t('No binding')}</Text>}
+                    {bindingsForThisAction.length === 0 && <span style={{ opacity: 0.8, fontSize: '.8em' }}>{t('No binding')}</span>}
                   </div>
 
                   <IconButton title={t('Bind new key to action')} appearance="minimal" intent="success" icon={AddIcon} onClick={() => onAddBindingClick(action)} />
@@ -785,17 +786,13 @@ function KeyboardShortcutsDialog({
   const { t } = useTranslation();
 
   return (
-    <Dialog
-      title={t('Keyboard & mouse shortcuts')}
-      isShown={isShown}
-      confirmLabel={t('Done')}
-      hasCancel={false}
-      onCloseComplete={onHide}
-      onConfirm={onHide}
-      topOffset="3vh"
-    >
-      {isShown ? <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} /> : <div />}
-    </Dialog>
+    <Sheet visible={isShown} onClosePress={onHide} maxWidth="40em" style={{ padding: '0 2em' }}>
+      <h2>{t('Keyboard & mouse shortcuts')}</h2>
+
+      <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} />
+      <Button onClick={onHide}>{t('Done')}</Button>
+
+    </Sheet>
   );
 }
 
