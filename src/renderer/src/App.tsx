@@ -2508,12 +2508,14 @@ function App() {
 
   // throw new Error('Test error boundary');
 
+  const baseColorStyle = useMemo(() => ({ color: 'var(--gray12)', background: 'var(--gray1)', colorScheme: darkMode ? 'only dark' : 'only light' }), [darkMode]);
+
   return (
     <>
       <SegColorsContext.Provider value={segColorsContext}>
         <UserSettingsContext.Provider value={userSettingsContext}>
           <ThemeProvider value={theme}>
-            <div className={darkMode ? 'dark-theme' : undefined} style={{ display: 'flex', flexDirection: 'column', height: '100vh', color: 'var(--gray12)', background: 'var(--gray1)', transition: darkModeTransition }}>
+            <div className={darkMode ? 'dark-theme' : undefined} style={{ ...baseColorStyle, display: 'flex', flexDirection: 'column', height: '100vh', transition: darkModeTransition }}>
               <TopMenu
                 filePath={filePath}
                 fileFormat={fileFormat}
@@ -2805,7 +2807,7 @@ function App() {
         </UserSettingsContext.Provider>
       </SegColorsContext.Provider>
 
-      <div id="swal2-container-wrapper" className={darkMode ? 'dark-theme' : undefined} style={{ color: 'var(--gray12)', background: 'var(--gray1)' }} />
+      <div id="swal2-container-wrapper" className={darkMode ? 'dark-theme' : undefined} style={baseColorStyle} />
     </>
   );
 }
