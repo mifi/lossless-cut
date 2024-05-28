@@ -6,7 +6,7 @@ const worker = new Worker(workerUrl);
 
 let lastRequestId = 0;
 
-export default async function safeishEval(code: string, context: unknown) {
+export default async function safeishEval(code: string, context: Record<string, unknown>) {
   return new Promise((resolve, reject) => {
     lastRequestId += 1;
     const id = lastRequestId;

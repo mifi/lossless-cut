@@ -1208,7 +1208,7 @@ function App() {
     }
   }, [cleanupFilesWithDialog, isFileOpened, setWorking]);
 
-  const generateOutSegFileNames = useCallback(({ segments = segmentsToExport, template }: { segments?: SegmentToExport[], template: string }) => {
+  const generateOutSegFileNames = useCallback(async ({ segments = segmentsToExport, template }: { segments?: SegmentToExport[], template: string }) => {
     if (fileFormat == null || outputDir == null || filePath == null) throw new Error();
     return generateOutSegFileNamesRaw({ segments, template, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding });
   }, [fileFormat, filePath, formatTimecode, isCustomFormatSelected, maxLabelLength, outputDir, outputFileNameMinZeroPadding, safeOutputFileName, segmentsToExport]);
@@ -1258,7 +1258,7 @@ function App() {
 
       console.log('outSegTemplateOrDefault', outSegTemplateOrDefault);
 
-      const { outSegFileNames, outSegProblems } = generateOutSegFileNames({ segments: segmentsToExport, template: outSegTemplateOrDefault });
+      const { outSegFileNames, outSegProblems } = await generateOutSegFileNames({ segments: segmentsToExport, template: outSegTemplateOrDefault });
       if (outSegProblems.error != null) {
         console.warn('Output segments file name invalid, using default instead', outSegFileNames);
       }

@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { ReactSwal } from '../swal';
 import HighlightedText from './HighlightedText';
-import { defaultOutSegTemplate, segNumVariable, segSuffixVariable, GenerateOutSegFileNames } from '../util/outputNameTemplate';
+import { defaultOutSegTemplate, segNumVariable, segSuffixVariable, GenerateOutSegFileNames, extVariable, segTagsVariable, segNumIntVariable } from '../util/outputNameTemplate';
 import useUserSettings from '../hooks/useUserSettings';
 import Switch from './Switch';
 import Select from './Select';
@@ -18,7 +18,8 @@ const electron = window.require('electron');
 
 const formatVariable = (variable) => `\${${variable}}`;
 
-const extVar = formatVariable('EXT');
+const extVariableFormatted = formatVariable(extVariable);
+const segTagsExample = `${segTagsVariable}.XX`;
 
 function OutSegTemplateEditor({ outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe }: {
   outSegTemplate: string, setOutSegTemplate: (text: string) => void, generateOutSegFileNames: GenerateOutSegFileNames, currentSegIndexSafe: number,
@@ -38,22 +39,33 @@ function OutSegTemplateEditor({ outSegTemplate, setOutSegTemplate, generateOutSe
   const hasTextNumericPaddedValue = useMemo(() => [segNumVariable, segSuffixVariable].some((v) => debouncedText.includes(formatVariable(v))), [debouncedText]);
 
   useEffect(() => {
-    if (debouncedText == null) return;
-
-    try {
-      const outSegs = generateOutSegFileNames({ template: debouncedText });
-      setOutSegFileNames(outSegs.outSegFileNames);
-      setOutSegProblems(outSegs.outSegProblems);
-      setValidText(outSegs.outSegProblems.error == null ? debouncedText : undefined);
-    } catch (err) {
-      console.error(err);
-      setValidText(undefined);
-      setOutSegProblems({ error: err instanceof Error ? err.message : String(err) });
+    if (debouncedText == null) {
+      return undefined;
     }
+
+    const abortController = new AbortController();
+
+    (async () => {
+      try {
+        // console.time('generateOutSegFileNames')
+        const outSegs = await generateOutSegFileNames({ template: debouncedText });
+        // console.timeEnd('generateOutSegFileNames')
+        if (abortController.signal.aborted) return;
+        setOutSegFileNames(outSegs.outSegFileNames);
+        setOutSegProblems(outSegs.outSegProblems);
+        setValidText(outSegs.outSegProblems.error == null ? debouncedText : undefined);
+      } catch (err) {
+        console.error(err);
+        setValidText(undefined);
+        setOutSegProblems({ error: err instanceof Error ? err.message : String(err) });
+      }
+    })();
+
+    return () => abortController.abort();
   }, [debouncedText, generateOutSegFileNames, t]);
 
   // eslint-disable-next-line no-template-curly-in-string
-  const isMissingExtension = validText != null && !validText.endsWith(extVar);
+  const isMissingExtension = validText != null && !validText.endsWith(extVariableFormatted);
 
   const onAllSegmentsPreviewPress = useCallback(() => {
     if (outSegFileNames == null) return;
@@ -89,13 +101,15 @@ function OutSegTemplateEditor({ outSegTemplate, setOutSegTemplate, generateOutSe
   const gotImportantMessage = outSegProblems.error != null || outSegProblems.sameAsInputFileNameWarning;
   const needToShow = shown || gotImportantMessage;
 
-  const onVariableClick = useCallback((variable) => {
+  const onVariableClick = useCallback((variable: string) => {
     const input = inputRef.current;
     const startPos = input!.selectionStart;
     const endPos = input!.selectionEnd;
     if (startPos == null || endPos == null) return;
 
-    const newValue = `${text.slice(0, startPos)}${`${formatVariable(variable)}${text.slice(endPos)}`}`;
+    const toInsert = variable === segTagsExample ? `${segTagsExample} ?? ''` : variable;
+
+    const newValue = `${text.slice(0, startPos)}${`${formatVariable(toInsert)}${text.slice(endPos)}`}`;
     setText(newValue);
   }, [text]);
 
@@ -126,7 +140,7 @@ function OutSegTemplateEditor({ outSegTemplate, setOutSegTemplate, generateOutSe
               {`${i18n.t('Variables')}:`}
 
               <IoIosHelpCircle fontSize="1.3em" color="var(--gray12)" role="button" cursor="pointer" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/import-export.md#customising-exported-file-names')} />
-              {['FILENAME', 'CUT_FROM', 'CUT_TO', segNumVariable, 'SEG_LABEL', segSuffixVariable, 'EXT', 'SEG_TAGS.XX', 'EPOCH_MS'].map((variable) => (
+              {['FILENAME', 'CUT_FROM', 'CUT_TO', segNumVariable, segNumIntVariable, 'SEG_LABEL', segSuffixVariable, extVariable, segTagsExample, 'EPOCH_MS'].map((variable) => (
                 <span key={variable} role="button" style={{ cursor: 'pointer', marginRight: '.2em', textDecoration: 'underline', textDecorationStyle: 'dashed', fontSize: '.9em' }} onClick={() => onVariableClick(variable)}>{variable}</span>
               ))}
             </div>
@@ -147,7 +161,7 @@ function OutSegTemplateEditor({ outSegTemplate, setOutSegTemplate, generateOutSe
             {isMissingExtension && (
               <div style={{ marginBottom: '1em' }}>
                 <WarningSignIcon verticalAlign="middle" color="var(--amber9)" />{' '}
-                {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVar })}
+                {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVariableFormatted })}
               </div>
             )}
 
