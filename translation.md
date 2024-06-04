@@ -29,6 +29,7 @@
 ![](https://hosted.weblate.org/widgets/losslesscut/tr/losslesscut/svg-badge.svg)
 ![](https://hosted.weblate.org/widgets/losslesscut/uk/losslesscut/svg-badge.svg)
 ![](https://hosted.weblate.org/widgets/losslesscut/vi/losslesscut/svg-badge.svg)
+![](https://hosted.weblate.org/widgets/losslesscut/sk/losslesscut/svg-badge.svg)
 
 Thanks to everyone who helped translate the app! 🙌
 
