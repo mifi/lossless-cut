@@ -5,7 +5,7 @@ import pMap from 'p-map';
 import invariant from 'tiny-invariant';
 import sortBy from 'lodash/sortBy';
 
-import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToSegments, findKeyframeNearTime } from '../ffmpeg';
+import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToSegments, findKeyframeNearTime, getStreamFps, getDuration } from '../ffmpeg';
 import { handleError, shuffleArray } from '../util';
 import { errorToast } from '../swal';
 import { showParametersDialog } from '../dialogs/parameters';
@@ -280,18 +280,49 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
       if (response == null) return;
       setWorking({ text: i18n.t('Aligning segments to keyframes') });
       const { mode, startOrEnd } = response;
+
+      if (filePath == null) throw new Error();
+      const frameTime=1/(getStreamFps(videoStream)||1000);
+      const duration=await getDuration(filePath);
+
       await modifySelectedSegmentTimes(async (segment) => {
         const newSegment = { ...segment };
 
-        async function align(key) {
+        async function align(key: string) {
           const time = newSegment[key];
           if (filePath == null) throw new Error();
-          const keyframe = await findKeyframeNearTime({ filePath, streamIndex: videoStream.index, time, mode });
-          if (keyframe == null) throw new Error(`Cannot find any keyframe within 60 seconds of frame ${time}`);
+          let keyframe = await findKeyframeNearTime({ filePath, streamIndex: videoStream.index, time, mode });
+          if (keyframe == null){
+            if(mode!='consistent'){
+              throw new Error(`Cannot find any keyframe within 60 seconds of frame ${time}`);
+            }
+            keyframe=duration;
+          } 
           newSegment[key] = keyframe;
         }
-        if (startOrEnd.includes('start')) await align('start');
-        if (startOrEnd.includes('end')) await align('end');
+        if (startOrEnd.includes('start')){
+          if(mode=='consistent'){
+            newSegment.start+=frameTime*0.3;
+          }
+          await align('start');
+          if(mode=='consistent'){
+            newSegment.start-=frameTime*0.7;
+          }
+        } 
+        if (startOrEnd.includes('end')) {
+          await align('end');
+          if(mode=='consistent'&&newSegment.end!=duration){
+            newSegment.end-=frameTime*0.3;
+          }
+        }
+        if (startOrEnd.includes('start')){
+          newSegment.start=Math.min(newSegment.start,newSegment.end-frameTime*0.99); //don't know how ffmpeg interprets cuts between frames
+        }
+        else {
+          newSegment.end=Math.max(newSegment.start+frameTime*0.99,newSegment.end);
+        }
+
+
         return newSegment;
       });
     } catch (err) {
