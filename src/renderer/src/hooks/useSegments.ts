@@ -282,8 +282,8 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
       const { mode, startOrEnd } = response;
 
       if (filePath == null) throw new Error();
-      const frameTime=1/(getStreamFps(videoStream)||1000);
-      const duration=await getDuration(filePath);
+      const frameTime = 1 / (getStreamFps(videoStream) || 1000);
+      const duration = await getDuration(filePath);
 
       await modifySelectedSegmentTimes(async (segment) => {
         const newSegment = { ...segment };
@@ -292,34 +292,34 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
           const time = newSegment[key];
           if (filePath == null) throw new Error();
           let keyframe = await findKeyframeNearTime({ filePath, streamIndex: videoStream.index, time, mode });
-          if (keyframe == null){
-            if(mode!='consistent'){
+          if (keyframe == null) {
+            if (mode != 'consistent') {
               throw new Error(`Cannot find any keyframe within 60 seconds of frame ${time}`);
             }
-            keyframe=duration;
-          } 
+            keyframe = duration;
+          }
           newSegment[key] = keyframe;
         }
-        if (startOrEnd.includes('start')){
-          if(mode=='consistent'){
-            newSegment.start+=frameTime*0.3;
+        if (startOrEnd.includes('start')) {
+          if (mode == 'consistent') {
+            newSegment.start += frameTime * 0.3;
           }
           await align('start');
-          if(mode=='consistent'){
-            newSegment.start-=frameTime*0.7;
+          if (mode == 'consistent') {
+            newSegment.start -= frameTime * 0.7;
           }
-        } 
+        }
         if (startOrEnd.includes('end')) {
           await align('end');
-          if(mode=='consistent'&&newSegment.end!=duration){
-            newSegment.end-=frameTime*0.3;
+          if (mode == 'consistent' && newSegment.end != duration) {
+            newSegment.end -= frameTime * 0.3;
           }
         }
-        if (startOrEnd.includes('start')){
-          newSegment.start=Math.min(newSegment.start,newSegment.end-frameTime*0.99); //don't know how ffmpeg interprets cuts between frames
+        if (startOrEnd.includes('start')) {
+          newSegment.start = Math.min(newSegment.start, newSegment.end - frameTime * 0.99); //don't know how ffmpeg interprets cuts between frames
         }
         else {
-          newSegment.end=Math.max(newSegment.start+frameTime*0.99,newSegment.end);
+          newSegment.end = Math.max(newSegment.start + frameTime * 0.99, newSegment.end);
         }
 
 
