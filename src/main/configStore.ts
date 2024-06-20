@@ -83,6 +83,7 @@ const defaultKeyBindings: KeyBinding[] = [
 
   { keys: 'alt+up', action: 'increaseVolume' },
   { keys: 'alt+down', action: 'decreaseVolume' },
+  { keys: 'm', action: 'toggleMuted' },
 ];
 
 const defaults: Config = {

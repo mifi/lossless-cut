@@ -3,7 +3,7 @@ import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
 
-function VolumeControl({ playbackVolume, setPlaybackVolume }: { playbackVolume: number, setPlaybackVolume: (a: number) => void }) {
+function VolumeControl({ playbackVolume, setPlaybackVolume, onToggleMutedClick }: { playbackVolume: number, setPlaybackVolume: (a: number) => void, onToggleMutedClick: () => void }) {
   const [volumeControlVisible, setVolumeControlVisible] = useState(false);
   const timeoutRef = useRef<number>();
   const { t } = useTranslation();
@@ -22,12 +22,11 @@ function VolumeControl({ playbackVolume, setPlaybackVolume }: { playbackVolume: 
 
   const onVolumeIconClick = useCallback(() => {
     if (volumeControlVisible) {
-      if (playbackVolume === 0) setPlaybackVolume(1);
-      if (playbackVolume === 1) setPlaybackVolume(0);
+      onToggleMutedClick();
     } else {
       setVolumeControlVisible(true);
     }
-  }, [volumeControlVisible, setPlaybackVolume, playbackVolume]);
+  }, [onToggleMutedClick, volumeControlVisible]);
 
   const VolumeIcon = playbackVolume === 0 ? FaVolumeMute : FaVolumeUp;
 

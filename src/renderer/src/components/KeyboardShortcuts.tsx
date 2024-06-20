@@ -190,6 +190,10 @@ const KeyboardShortcuts = memo(({
         name: t('Decrease audio volume'),
         category: playbackCategory,
       },
+      toggleMuted: {
+        name: t('Mute preview'),
+        category: playbackCategory,
+      },
       reloadFile: {
         name: t('Reload current media'),
         category: playbackCategory,
