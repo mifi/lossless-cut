@@ -642,7 +642,8 @@ export async function openExportFinishedToast({ filePath, warnings, notices }: {
     </UnorderedList>
   );
 
-  await openDirToast({ filePath, html, width: 800, position: 'center', timer: hasWarnings ? undefined : 30000 });
+  // https://github.com/mifi/lossless-cut/issues/2048
+  await openDirToast({ filePath, html, width: 800, position: 'center', timer: undefined });
 }
 
 export async function openConcatFinishedToast({ filePath, warnings, notices }: { filePath: string, warnings: string[], notices: string[] }) {
