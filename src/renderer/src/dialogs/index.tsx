@@ -329,8 +329,9 @@ export async function askForAlignSegments() {
       nearest: i18n.t('Nearest keyframe'),
       before: i18n.t('Previous keyframe'),
       after: i18n.t('Next keyframe'),
+      consistent: i18n.t('True keyframe cut'),
     },
-    inputValue: 'before',
+    inputValue: 'consistent',
     text: i18n.t('Do you want to align segment times to the nearest, previous or next keyframe?'),
   });
 
