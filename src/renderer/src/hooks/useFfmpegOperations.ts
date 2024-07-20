@@ -424,8 +424,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       const copyFileStreamsFiltered = [{
         path: filePath,
-        // with smart cut, we only copy/cut *one* video stream, but *all* other streams (main file only)
-        streamIds: streamsToCopyFromMainFile.filter((stream) => !(stream.codec_type === 'video' && stream.index !== videoStreamIndex)).map((stream) => stream.index),
+        // with smart cut, we only copy/cut *one* video stream, and *all* other non-video streams (main file only)
+        streamIds: streamsToCopyFromMainFile.filter((stream) => stream.index === videoStreamIndex || stream.codec_type !== 'video').map((stream) => stream.index),
       }];
 
       // eslint-disable-next-line no-shadow
