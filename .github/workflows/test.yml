@@ -22,7 +22,8 @@ jobs:
           node-version: 18
           cache: 'yarn'
 
-      - run: yarn
+      - run: yarn install --immutable
+      - run: yarn dedupe --check
       - run: yarn test
       - run: yarn tsc
       - run: yarn lint
