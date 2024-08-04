@@ -9,7 +9,7 @@ import logger from './logger.js';
 
 
 export default ({ port, onKeyboardAction }: {
-  port: number, onKeyboardAction: (a: string) => Promise<void>,
+  port: number, onKeyboardAction: (action: string, args: unknown[]) => Promise<void>,
 }) => {
   const app = express();
 
@@ -26,11 +26,12 @@ export default ({ port, onKeyboardAction }: {
 
   app.use('/api', apiRouter);
 
-  apiRouter.post('/shortcuts/:action', express.json(), asyncHandler(async (req, res) => {
+  apiRouter.post('/action/:action', express.json(), asyncHandler(async (req, res) => {
     // eslint-disable-next-line prefer-destructuring
     const action = req.params['action'];
+    const parameters = req.body as unknown;
     assert(action != null);
-    await onKeyboardAction(action);
+    await onKeyboardAction(action, [parameters]);
     res.end();
   }));
 

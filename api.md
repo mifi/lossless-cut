@@ -14,7 +14,7 @@ LosslessCut --http-api
 
 ## API endpoints
 
-### `POST /api/shortcuts/action`
+### `POST /api/action/:action`
 
 Execute a keyboard shortcut `action`, similar to the `--keyboard-action` CLI option. This is different from the CLI in that most of the actions will wait for the action to finish before responding to the HTTP request (but not all).
 
@@ -25,8 +25,14 @@ Execute a keyboard shortcut `action`, similar to the `--keyboard-action` CLI opt
 Export the currently opened file:
 
 ```bash
-curl -X POST http://localhost:8080/api/shortcuts/export
+curl -X POST http://localhost:8080/api/action/export
 ```
+
+Seek to time:
+```bash
+curl -X POST http://localhost:8080/api/action/goToTimecodeDirect --json '{"time": "09:11"}'
+```
+
 
 ### Batch example
 
@@ -42,7 +48,7 @@ Then run the script in a different terminal:
 for PROJECT in /path/to/folder/with/projects/*.llc
     LosslessCut $PROJECT
     sleep 5 # wait for the file to open
-    curl -X POST http://localhost:8080/api/shortcuts/export
-    curl -X POST http://localhost:8080/api/shortcuts/closeCurrentFile
+    curl -X POST http://localhost:8080/api/action/export
+    curl -X POST http://localhost:8080/api/action/closeCurrentFile
 done
 ```

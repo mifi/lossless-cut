@@ -106,9 +106,10 @@ export interface Waveform {
   buffer: Buffer,
 }
 
-export interface ApiKeyboardActionRequest {
+export interface ApiActionRequest {
   id: number
   action: string
+  args?: unknown[] | undefined,
 }
 
 export type Html5ifyMode = 'fastest' | 'fast-audio-remux' | 'fast-audio' | 'fast' | 'slow' | 'slow-audio' | 'slowest';

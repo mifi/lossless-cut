@@ -27,6 +27,12 @@ export interface ApparentSegmentBase {
 
 export interface ApparentSegmentWithColorIndex extends ApparentSegmentBase, SegmentColorIndex {}
 
+export const openFilesActionArgsSchema = z.tuple([z.string().array()]);
+export type OpenFilesActionArgs = z.infer<typeof openFilesActionArgsSchema>
+
+export const goToTimecodeDirectArgsSchema = z.tuple([z.object({ time: z.string() })]);
+export type GoToTimecodeDirectArgs = z.infer<typeof goToTimecodeDirectArgsSchema>
+
 export const segmentTagsSchema = z.record(z.string(), z.string());
 
 export type SegmentTags = z.infer<typeof segmentTagsSchema>

@@ -27,7 +27,7 @@ import { checkNewVersion } from './updateChecker.js';
 import * as i18nCommon from './i18nCommon.js';
 
 import './i18n.js';
-import { ApiKeyboardActionRequest } from '../../types.js';
+import { ApiActionRequest } from '../../types.js';
 
 export * as ffmpeg from './ffmpeg.js';
 
@@ -107,19 +107,19 @@ let disableNetworking: boolean;
 
 const openFiles = (paths: string[]) => mainWindow!.webContents.send('openFiles', paths);
 
-let apiKeyboardActionRequestsId = 0;
-const apiKeyboardActionRequests = new Map<number, () => void>();
+let apiActionRequestsId = 0;
+const apiActionRequests = new Map<number, () => void>();
 
-async function sendApiKeyboardAction(action: string) {
+async function sendApiAction(action: string, args?: unknown[]) {
   try {
-    const id = apiKeyboardActionRequestsId;
-    apiKeyboardActionRequestsId += 1;
-    mainWindow!.webContents.send('apiKeyboardAction', { id, action } satisfies ApiKeyboardActionRequest);
+    const id = apiActionRequestsId;
+    apiActionRequestsId += 1;
+    mainWindow!.webContents.send('apiAction', { id, action, args } satisfies ApiActionRequest);
     await new Promise<void>((resolve) => {
-      apiKeyboardActionRequests.set(id, resolve);
+      apiActionRequests.set(id, resolve);
     });
   } catch (err) {
-    logger.error('sendApiKeyboardAction', err);
+    logger.error('sendApiAction', err);
   }
 }
 
@@ -269,7 +269,7 @@ function initApp() {
     logger.info('second-instance', argv2);
 
     if (argv2._ && argv2._.length > 0) openFilesEventually(argv2._.map(String));
-    else if (argv2['keyboardAction']) sendApiKeyboardAction(argv2['keyboardAction']);
+    else if (argv2['keyboardAction']) sendApiAction(argv2['keyboardAction']);
   });
 
   // Quit when all windows are closed.
@@ -317,8 +317,8 @@ function initApp() {
 
   ipcMain.handle('showItemInFolder', (_e, path) => shell.showItemInFolder(path));
 
-  ipcMain.on('apiKeyboardActionResponse', (_e, { id }) => {
-    apiKeyboardActionRequests.get(id)?.();
+  ipcMain.on('apiActionResponse', (_e, { id }) => {
+    apiActionRequests.get(id)?.();
   });
 }
 
@@ -367,7 +367,7 @@ const readyPromise = app.whenReady();
 
     if (httpApi != null) {
       const port = typeof httpApi === 'number' ? httpApi : 8080;
-      const { startHttpServer } = HttpServer({ port, onKeyboardAction: sendApiKeyboardAction });
+      const { startHttpServer } = HttpServer({ port, onKeyboardAction: sendApiAction });
       await startHttpServer();
       logger.info('HTTP API listening on port', port);
     }

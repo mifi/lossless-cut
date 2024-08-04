@@ -9,6 +9,7 @@ import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { produce } from 'immer';
 import screenfull from 'screenfull';
+import { IpcRendererEvent } from 'electron';
 
 import fromPairs from 'lodash/fromPairs';
 import sortBy from 'lodash/sortBy';
@@ -87,8 +88,8 @@ import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './uti
 import BigWaveform from './components/BigWaveform';
 
 import isDev from './isDev';
-import { Chapter, ChromiumHTMLVideoElement, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, FormatTimecode, ParamsByStreamId, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, Thumbnail, TunerType } from './types';
-import { CaptureFormat, KeyboardAction, Html5ifyMode, WaveformMode } from '../../../types';
+import { Chapter, ChromiumHTMLVideoElement, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, FormatTimecode, goToTimecodeDirectArgsSchema, openFilesActionArgsSchema, ParamsByStreamId, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, Thumbnail, TunerType } from './types';
+import { CaptureFormat, KeyboardAction, Html5ifyMode, WaveformMode, ApiActionRequest } from '../../../types';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 
 const electron = window.require('electron');
@@ -1734,17 +1735,25 @@ function App() {
 
   const goToTimecode = useCallback(async () => {
     if (!filePath) return;
-    const timeCode = await promptTimeOffset({
+    const timecode = await promptTimeOffset({
       initialValue: formatTimecode({ seconds: commandedTimeRef.current }),
       title: i18n.t('Seek to timecode'),
       inputPlaceholder: timecodePlaceholder,
       parseTimecode,
     });
 
-    if (timeCode === undefined) return;
+    if (timecode === undefined) return;
 
-    userSeekAbs(timeCode);
+    userSeekAbs(timecode);
   }, [filePath, formatTimecode, parseTimecode, timecodePlaceholder, userSeekAbs]);
+
+  const goToTimecodeDirect = useCallback(async ({ time: timeStr }: { time: string }) => {
+    if (!filePath) return;
+    invariant(timeStr != null);
+    const timecode = parseTimecode(timeStr);
+    invariant(timecode != null);
+    userSeekAbs(timecode);
+  }, [filePath, parseTimecode, userSeekAbs]);
 
   const toggleStreamsSelector = useCallback(() => setStreamsSelectorShown((v) => !v), []);
 
@@ -2099,7 +2108,7 @@ function App() {
     onEditSegmentTags(currentSegIndexSafe);
   }, [currentSegIndexSafe, onEditSegmentTags]);
 
-  type MainKeyboardAction = Exclude<KeyboardAction, 'closeActiveScreen' | 'toggleKeyboardShortcuts'>;
+  type MainKeyboardAction = Exclude<KeyboardAction, 'closeActiveScreen' | 'toggleKeyboardShortcuts' | 'goToTimecodeDirect'>;
 
   const mainActions = useMemo(() => {
     async function exportYouTube() {
@@ -2403,28 +2412,7 @@ function App() {
       }
     }
 
-    async function tryApiKeyboardAction(event, { id, action }) {
-      console.log('API keyboard action:', action);
-      try {
-        const fn = getKeyboardAction(action);
-        if (!fn) throw new Error(`Action not found: ${action}`);
-        await fn({ keyup: false });
-      } catch (err) {
-        handleError(err);
-      } finally {
-        // todo correlation ids
-        event.sender.send('apiKeyboardActionResponse', { id });
-      }
-    }
-
-    // todo
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const actionsWithArgs: Record<string, (...args: any[]) => void> = {
-      openFiles: (filePaths: string[]) => { userOpenFiles(filePaths.map((p) => resolvePathIfNeeded(p))); },
-      // todo separate actions per type and move them into mainActions? https://github.com/mifi/lossless-cut/issues/254#issuecomment-932649424
-      importEdlFile,
-      exportEdlFile: tryExportEdlFile,
-    };
+    const openFiles = (filePaths: string[]) => { userOpenFiles(filePaths.map((p) => resolvePathIfNeeded(p))); };
 
     async function actionWithCatch(fn: () => void) {
       try {
@@ -2434,30 +2422,83 @@ function App() {
       }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const actionsWithCatch: Readonly<[string, (event: unknown, ...a: any) => Promise<void>]>[] = [
+    const allActions = [
       // actions with arguments:
-      ...Object.entries(actionsWithArgs).map(([key, fn]) => [
+      [
+        'openFiles',
+        async (...argsRaw: unknown[]) => {
+          await openFiles(...openFilesActionArgsSchema.parse(argsRaw));
+        },
+      ] as const,
+      [
+        'goToTimecodeDirect',
+        async (...argsRaw: unknown[]) => {
+          await goToTimecodeDirect(...goToTimecodeDirectArgsSchema.parse(argsRaw));
+        },
+      ] as const,
+      ...Object.entries({
+        // todo separate actions per type and move them into mainActions? https://github.com/mifi/lossless-cut/issues/254#issuecomment-932649424
+        importEdlFile,
+        exportEdlFile: tryExportEdlFile,
+      }).map(([key, fn]) => [
         key,
-        async (_event: unknown, ...args: unknown[]) => actionWithCatch(() => fn(...args)),
+        async (...args: unknown[]) => {
+          await (fn as (...args2: unknown[]) => Promise<void>)(...args);
+        },
       ] as const),
       // all main actions (no arguments, so simulate keyup):
       ...Object.entries(mainActions).map(([key, fn]) => [
         key,
-        async () => actionWithCatch(() => fn({ keyup: true })),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        async () => {
+          fn({ keyup: true });
+        },
       ] as const),
       // also called from menu:
-      ['toggleKeyboardShortcuts', async () => actionWithCatch(() => toggleKeyboardShortcuts())],
+      [
+        'toggleKeyboardShortcuts',
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        async () => {
+          toggleKeyboardShortcuts();
+        },
+      ] as const,
     ];
 
-    actionsWithCatch.forEach(([key, action]) => electron.ipcRenderer.on(key, action));
-    electron.ipcRenderer.on('apiKeyboardAction', tryApiKeyboardAction);
+    const allActionsMap = Object.fromEntries(allActions);
+
+    const actionsWithCatch = allActions.map(([key, fn]) => [
+      key,
+      (...args: Parameters<typeof fn>) => actionWithCatch(() => fn(...args)),
+    ] as const);
+
+    async function tryApiAction(event: IpcRendererEvent, { id, action, args }: ApiActionRequest) {
+      console.log('API action:', action, args);
+      try {
+        const fn = allActionsMap[action];
+        if (!fn) throw new Error(`Action not found: ${action}`);
+        // todo validate arguments
+        await (args != null ? fn(...args) : fn());
+      } catch (err) {
+        handleError(err);
+      } finally {
+        // todo correlation ids
+        event.sender.send('apiActionResponse', { id });
+      }
+    }
+
+    const ipcActions = actionsWithCatch.map(([key, fn]) => [
+      key,
+      (_event: IpcRendererEvent, ...args: Parameters<typeof fn>) => actionWithCatch(() => fn(...args)),
+    ] as const);
+
+    ipcActions.forEach(([key, action]) => electron.ipcRenderer.on(key, action));
+    electron.ipcRenderer.on('apiAction', tryApiAction);
 
     return () => {
-      actionsWithCatch.forEach(([key, action]) => electron.ipcRenderer.off(key, action));
-      electron.ipcRenderer.off('apiKeyboardAction', tryApiKeyboardAction);
+      ipcActions.forEach(([key, action]) => electron.ipcRenderer.off(key, action));
+      electron.ipcRenderer.off('apiAction', tryApiAction);
     };
-  }, [checkFileOpened, customOutDir, detectedFps, filePath, getFrameCount, getKeyboardAction, loadCutSegments, mainActions, selectedSegments, toggleKeyboardShortcuts, userOpenFiles]);
+  }, [checkFileOpened, customOutDir, detectedFps, filePath, getFrameCount, getKeyboardAction, goToTimecodeDirect, loadCutSegments, mainActions, selectedSegments, toggleKeyboardShortcuts, userOpenFiles]);
 
   useEffect(() => {
     async function onDrop(ev: DragEvent) {
