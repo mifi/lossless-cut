@@ -69,15 +69,16 @@ import {
   getOutPath, getSuffixedOutPath, handleError, getOutDir,
   isStoreBuild, dragPreventer,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, html5ifiedPrefix, html5dummySuffix, findExistingHtml5FriendlyFile,
-  deleteFiles, isOutOfSpaceError, isExecaFailure, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName, mustDisallowVob, readVideoTs, readDirRecursively, getImportProjectType,
-  calcShouldShowWaveform, calcShouldShowKeyframes, mediaSourceQualities, getFrameDuration,
+  deleteFiles, isOutOfSpaceError, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName, mustDisallowVob, readVideoTs, readDirRecursively, getImportProjectType,
+  calcShouldShowWaveform, calcShouldShowKeyframes, mediaSourceQualities, getFrameDuration, isExecaError, getStdioString,
+  isMuxNotSupported,
 } from './util';
 import { toast, errorToast } from './swal';
 import { formatDuration, parseDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
 import { askExtractFramesAsImages } from './dialogs/extractFrames';
 import { askForHtml5ifySpeed } from './dialogs/html5ify';
-import { askForOutDir, askForImportChapters, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openExportFinishedToast, openConcatFinishedToast, showOpenDialog } from './dialogs';
+import { askForOutDir, askForImportChapters, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openExportFinishedToast, openConcatFinishedToast, showOpenDialog, showMuxNotSupported } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, playOnlyCurrentSegment, getSegmentTags } from './segments';
@@ -485,7 +486,7 @@ function App() {
   // New LLC format can be stored along with input file or in working dir (customOutDir)
   const getEdlFilePath = useCallback((fp?: string, cod?: string) => getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: projectSuffix }), []);
   // Old versions of LosslessCut used CSV files and stored them always in customOutDir:
-  const getEdlFilePathOld = useCallback((fp, cod) => getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: oldProjectSuffix }), []);
+  const getEdlFilePathOld = useCallback((fp: string | undefined, cod?: string | undefined) => getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: oldProjectSuffix }), []);
   const getProjectFileSavePath = useCallback((storeProjectInWorkingDirIn: boolean) => getEdlFilePath(filePath, storeProjectInWorkingDirIn ? customOutDir : undefined), [getEdlFilePath, filePath, customOutDir]);
   const projectFileSavePath = useMemo(() => getProjectFileSavePath(storeProjectInWorkingDir), [getProjectFileSavePath, storeProjectInWorkingDir]);
 
@@ -1071,17 +1072,17 @@ function App() {
     openSendReportDialog(err, state);
   }, [commonSettings, copyStreamIdsByFile, cutSegments, effectiveExportMode, externalFilesMeta, fileFormat, filePath, mainFileFormatData, mainStreams, outSegTemplate, rotation, shortestFlag]);
 
-  const openSendConcatReportDialogWithState = useCallback(async (err, reportState) => {
+  const openSendConcatReportDialogWithState = useCallback(async (err: unknown, reportState?: object) => {
     const state = { ...commonSettings, ...reportState };
     openSendReportDialog(err, state);
   }, [commonSettings]);
 
-  const handleExportFailed = useCallback(async (err) => {
+  const handleExportFailed = useCallback(async (err: unknown) => {
     const sendErrorReport = await showExportFailedDialog({ fileFormat, safeOutputFileName });
     if (sendErrorReport) openSendReportDialogWithState(err);
   }, [fileFormat, safeOutputFileName, openSendReportDialogWithState]);
 
-  const handleConcatFailed = useCallback(async (err, reportState) => {
+  const handleConcatFailed = useCallback(async (err: unknown, reportState: object) => {
     const sendErrorReport = await showConcatFailedDialog({ fileFormat });
     if (sendErrorReport) openSendConcatReportDialogWithState(err, reportState);
   }, [fileFormat, openSendConcatReportDialogWithState]);
@@ -1129,24 +1130,26 @@ function App() {
     } catch (err) {
       if (err instanceof DirectoryAccessDeclinedError) return;
 
-      if (err instanceof Error) {
-        if ('killed' in err && err.killed === true) {
+      if (isExecaError(err)) {
+        if (err.killed) {
           // assume execa killed (aborted by user)
           return;
         }
 
-        if ('stdout' in err) console.error('stdout:', err.stdout);
-        if ('stderr' in err) console.error('stderr:', err.stderr);
+        console.log('stdout:', getStdioString(err.stdout));
+        console.error('stderr:', getStdioString(err.stderr));
 
-        if (isExecaFailure(err)) {
-          if (isOutOfSpaceError(err)) {
-            showDiskFull();
-            return;
-          }
-          const reportState = { includeAllStreams, streams, outFormat, outFileName, segmentsToChapters };
-          handleConcatFailed(err, reportState);
+        if (isOutOfSpaceError(err)) {
+          showDiskFull();
           return;
         }
+        if (isMuxNotSupported(err)) {
+          showMuxNotSupported();
+          return;
+        }
+        const reportState = { includeAllStreams, streams, outFormat, outFileName, segmentsToChapters };
+        handleConcatFailed(err, reportState);
+        return;
       }
 
       handleError(err);
@@ -1350,25 +1353,25 @@ function App() {
 
       resetMergedOutFileName();
     } catch (err) {
-      if (err instanceof Error) {
-        if ('killed' in err && err.killed === true) {
+      if (isExecaError(err)) {
+        if (err.killed) {
           // assume execa killed (aborted by user)
           return;
         }
 
-        // @ts-expect-error todo
-        if ('stdout' in err && err.stdout != null) console.error('stdout:', err.stdout.toString('utf8'));
-        // @ts-expect-error todo
-        if ('stderr' in err && err.stderr != null) console.error('stderr:', err.stderr.toString('utf8'));
+        console.log('stdout:', getStdioString(err.stdout));
+        console.error('stderr:', getStdioString(err.stderr));
 
-        if (isExecaFailure(err)) {
-          if (isOutOfSpaceError(err)) {
-            showDiskFull();
-            return;
-          }
-          handleExportFailed(err);
+        if (isOutOfSpaceError(err)) {
+          showDiskFull();
           return;
         }
+        if (isMuxNotSupported(err)) {
+          showMuxNotSupported();
+          return;
+        }
+        handleExportFailed(err);
+        return;
       }
 
       handleError(err);
@@ -1480,8 +1483,8 @@ function App() {
     }
   }, [filePath, loadCutSegments, setWorking]);
 
-  const loadMedia = useCallback(async ({ filePath: fp, projectPath }: { filePath: string, projectPath?: string }) => {
-    async function tryOpenProjectPath(path, type) {
+  const loadMedia = useCallback(async ({ filePath: fp, projectPath }: { filePath: string, projectPath?: string | undefined }) => {
+    async function tryOpenProjectPath(path: string, type: EdlFileType) {
       if (!(await exists(path))) return false;
       await loadEdlFile({ path, type });
       return true;
@@ -1650,7 +1653,7 @@ function App() {
 
   const userOpenSingleFile = useCallback(async ({ path: pathIn, isLlcProject }: { path: string, isLlcProject?: boolean }) => {
     let path = pathIn;
-    let projectPath;
+    let projectPath: string | undefined;
 
     // Open .llc AND media referenced within
     if (isLlcProject) {
@@ -1900,133 +1903,131 @@ function App() {
   }, []);
 
   const userOpenFiles = useCallback(async (filePathsIn?: string[]) => {
-    let filePaths = filePathsIn;
-    if (!filePaths || filePaths.length === 0) return;
-
-    console.log('userOpenFiles');
-    console.log(filePaths.join('\n'));
-
-    lastOpenedPathRef.current = filePaths[0]!;
-
-    // first check if it is a single directory, and if so, read it recursively
-    if (filePaths.length === 1) {
-      const firstFilePath = filePaths[0];
-      const firstFileStat = await lstat(firstFilePath);
-      if (firstFileStat.isDirectory()) {
-        console.log('Reading directory...');
-        filePaths = await readDirRecursively(firstFilePath);
-      }
-    }
-
-    // Only allow opening regular files
-    // eslint-disable-next-line no-restricted-syntax
-    for (const path of filePaths) {
-      // eslint-disable-next-line no-await-in-loop
-      const fileStat = await lstat(path);
-
-      if (!fileStat.isFile()) {
-        errorToast(i18n.t('Cannot open anything else than regular files'));
-        console.warn('Not a file:', path);
-        return;
-      }
-    }
-
-    if (filePaths.length > 1) {
-      if (alwaysConcatMultipleFiles) {
-        batchLoadPaths(filePaths);
-        setConcatDialogVisible(true);
-      } else {
-        batchLoadPaths(filePaths, true);
-      }
-      return;
-    }
-
-    // filePaths.length is now 1
-    const [firstFilePath] = filePaths;
-    invariant(firstFilePath != null);
-
-    // https://en.wikibooks.org/wiki/Inside_DVD-Video/Directory_Structure
-    if (/^video_ts$/i.test(basename(firstFilePath))) {
-      if (mustDisallowVob()) return;
-      filePaths = await readVideoTs(firstFilePath);
-    }
-
-    if (workingRef.current) return;
     try {
-      setWorking({ text: i18n.t('Loading file') });
+      let filePaths = filePathsIn;
+      if (!filePaths || filePaths.length === 0) return;
 
-      // Import segments for for already opened file
-      const matchingImportProjectType = getImportProjectType(firstFilePath);
-      if (matchingImportProjectType) {
-        if (!checkFileOpened()) return;
-        await loadEdlFile({ path: firstFilePath, type: matchingImportProjectType, append: true });
+      console.log('userOpenFiles');
+      console.log(filePaths.join('\n'));
+
+      lastOpenedPathRef.current = filePaths[0]!;
+
+      // first check if it is a single directory, and if so, read it recursively
+      if (filePaths.length === 1) {
+        const firstFilePath = filePaths[0];
+        const firstFileStat = await lstat(firstFilePath);
+        if (firstFileStat.isDirectory()) {
+          console.log('Reading directory...');
+          filePaths = await readDirRecursively(firstFilePath);
+        }
+      }
+
+      // Only allow opening regular files
+      // eslint-disable-next-line no-restricted-syntax
+      for (const path of filePaths) {
+        // eslint-disable-next-line no-await-in-loop
+        const fileStat = await lstat(path);
+
+        if (!fileStat.isFile()) {
+          errorToast(i18n.t('Cannot open anything else than regular files'));
+          console.warn('Not a file:', path);
+          return;
+        }
+      }
+
+      if (filePaths.length > 1) {
+        if (alwaysConcatMultipleFiles) {
+          batchLoadPaths(filePaths);
+          setConcatDialogVisible(true);
+        } else {
+          batchLoadPaths(filePaths, true);
+        }
         return;
       }
 
-      const filePathLowerCase = firstFilePath.toLowerCase();
-      const isLlcProject = filePathLowerCase.endsWith('.llc');
+      // filePaths.length is now 1
+      const [firstFilePath] = filePaths;
+      invariant(firstFilePath != null);
 
-      // Need to ask the user what to do if more than one option
-      const inputOptions: { open: string, project?: string, tracks?: string, subtitles?: string, addToBatch?: string, mergeWithCurrentFile?: string } = {
-        open: isFileOpened ? i18n.t('Open the file instead of the current one') : i18n.t('Open the file'),
-      };
-
-      if (isFileOpened) {
-        if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
-        if (filePathLowerCase.endsWith('.srt')) inputOptions.subtitles = i18n.t('Convert subtitiles into segments');
-        inputOptions.tracks = i18n.t('Include all tracks from the new file');
+      // https://en.wikibooks.org/wiki/Inside_DVD-Video/Directory_Structure
+      if (/^video_ts$/i.test(basename(firstFilePath))) {
+        if (mustDisallowVob()) return;
+        filePaths = await readVideoTs(firstFilePath);
       }
 
-      if (batchFiles.length > 0) inputOptions.addToBatch = i18n.t('Add the file to the batch list');
-      else if (isFileOpened) inputOptions.mergeWithCurrentFile = i18n.t('Merge/concatenate with current file');
+      if (workingRef.current) return;
+      try {
+        setWorking({ text: i18n.t('Loading file') });
 
-      if (Object.keys(inputOptions).length > 1) {
-        const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction(inputOptions) : 'open';
-
-        if (openFileResponse === 'open') {
-          await userOpenSingleFile({ path: firstFilePath, isLlcProject });
-          return;
-        }
-        if (openFileResponse === 'project') {
-          await loadEdlFile({ path: firstFilePath, type: 'llc' });
-          return;
-        }
-        if (openFileResponse === 'subtitles') {
-          await loadEdlFile({ path: firstFilePath, type: 'srt' });
-          return;
-        }
-        if (openFileResponse === 'tracks') {
-          await addStreamSourceFile(firstFilePath);
-          setStreamsSelectorShown(true);
-          return;
-        }
-        if (openFileResponse === 'addToBatch') {
-          batchLoadPaths([firstFilePath], true);
-          return;
-        }
-        if (openFileResponse === 'mergeWithCurrentFile') {
-          const batchPaths = new Set<string>();
-          if (filePath) batchPaths.add(filePath);
-          filePaths.forEach((path) => batchPaths.add(path));
-          batchLoadPaths([...batchPaths]);
-          if (batchPaths.size > 1) setConcatDialogVisible(true);
+        // Import segments for for already opened file
+        const matchingImportProjectType = getImportProjectType(firstFilePath);
+        if (matchingImportProjectType) {
+          if (!checkFileOpened()) return;
+          await loadEdlFile({ path: firstFilePath, type: matchingImportProjectType, append: true });
           return;
         }
 
-        // Dialog canceled:
-        return;
+        const filePathLowerCase = firstFilePath.toLowerCase();
+        const isLlcProject = filePathLowerCase.endsWith('.llc');
+
+        // Need to ask the user what to do if more than one option
+        const inputOptions: { open: string, project?: string, tracks?: string, subtitles?: string, addToBatch?: string, mergeWithCurrentFile?: string } = {
+          open: isFileOpened ? i18n.t('Open the file instead of the current one') : i18n.t('Open the file'),
+        };
+
+        if (isFileOpened) {
+          if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
+          if (filePathLowerCase.endsWith('.srt')) inputOptions.subtitles = i18n.t('Convert subtitiles into segments');
+          inputOptions.tracks = i18n.t('Include all tracks from the new file');
+        }
+
+        if (batchFiles.length > 0) inputOptions.addToBatch = i18n.t('Add the file to the batch list');
+        else if (isFileOpened) inputOptions.mergeWithCurrentFile = i18n.t('Merge/concatenate with current file');
+
+        if (Object.keys(inputOptions).length > 1) {
+          const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction(inputOptions) : 'open';
+
+          if (openFileResponse === 'open') {
+            await userOpenSingleFile({ path: firstFilePath, isLlcProject });
+            return;
+          }
+          if (openFileResponse === 'project') {
+            await loadEdlFile({ path: firstFilePath, type: 'llc' });
+            return;
+          }
+          if (openFileResponse === 'subtitles') {
+            await loadEdlFile({ path: firstFilePath, type: 'srt' });
+            return;
+          }
+          if (openFileResponse === 'tracks') {
+            await addStreamSourceFile(firstFilePath);
+            setStreamsSelectorShown(true);
+            return;
+          }
+          if (openFileResponse === 'addToBatch') {
+            batchLoadPaths([firstFilePath], true);
+            return;
+          }
+          if (openFileResponse === 'mergeWithCurrentFile') {
+            const batchPaths = new Set<string>();
+            if (filePath) batchPaths.add(filePath);
+            filePaths.forEach((path) => batchPaths.add(path));
+            batchLoadPaths([...batchPaths]);
+            if (batchPaths.size > 1) setConcatDialogVisible(true);
+            return;
+          }
+
+          // Dialog canceled:
+          return;
+        }
+
+        await userOpenSingleFile({ path: firstFilePath, isLlcProject });
+      } finally {
+        setWorking(undefined);
       }
-
-      await userOpenSingleFile({ path: firstFilePath, isLlcProject });
     } catch (err) {
       console.error('userOpenFiles', err);
-      if (err instanceof Error && 'code' in err && err.code === 'LLC_FFPROBE_UNSUPPORTED_FILE') {
-        errorToast(i18n.t('Unsupported file'));
-      } else {
-        handleError(i18n.t('Failed to open file'), err);
-      }
-    } finally {
-      setWorking(undefined);
+      handleError(i18n.t('Failed to open file'), err);
     }
   }, [alwaysConcatMultipleFiles, batchLoadPaths, setWorking, isFileOpened, batchFiles.length, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile, filePath]);
 

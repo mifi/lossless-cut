@@ -6,7 +6,7 @@ import minBy from 'lodash/minBy';
 import invariant from 'tiny-invariant';
 
 import { pcmAudioCodecs, getMapStreamsArgs, isMov, LiteFFprobeStream } from './util/streams';
-import { getSuffixedOutPath, isExecaFailure } from './util';
+import { getSuffixedOutPath, isExecaError } from './util';
 import { isDurationValid } from './segments';
 import { FFprobeChapter, FFprobeFormat, FFprobeProbeResult, FFprobeStream } from '../../../ffprobe';
 import { parseSrt } from './edlFormats';
@@ -350,8 +350,7 @@ export async function readFileMeta(filePath: string) {
     invariant(format != null);
     return { format, streams, chapters };
   } catch (err) {
-    // Windows will throw error with code ENOENT if format detection fails.
-    if (isExecaFailure(err)) {
+    if (isExecaError(err)) {
       throw Object.assign(new Error(`Unsupported file: ${err.message}`), { code: 'LLC_FFPROBE_UNSUPPORTED_FILE' });
     }
     throw err;

@@ -145,6 +145,13 @@ export async function showDiskFull() {
   });
 }
 
+export async function showMuxNotSupported() {
+  await Swal.fire({
+    icon: 'error',
+    text: i18n.t('At least one codec is not supported by the selected output file format. Try another output format or try to disable one or more tracks.'),
+  });
+}
+
 export async function showRefuseToOverwrite() {
   await Swal.fire({
     icon: 'warning',

@@ -10,7 +10,7 @@ import type * as FsExtra from 'fs-extra';
 import type { PlatformPath } from 'node:path';
 
 import isDev from './isDev';
-import Swal, { toast } from './swal';
+import Swal, { errorToast, toast } from './swal';
 import { ffmpegExtractWindow } from './util/constants';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename }: PlatformPath = window.require('path');
@@ -162,19 +162,24 @@ export async function transferTimestamps({ inPath, outPath, cutFrom = 0, cutTo =
 export function handleError(arg1: unknown, arg2?: unknown) {
   console.error('handleError', arg1, arg2);
 
-  let msg;
-  let errorMsg;
-  if (typeof arg1 === 'string') msg = arg1;
-  else if (typeof arg2 === 'string') msg = arg2;
+  let err: Error | undefined;
+  let str: string | undefined;
 
-  if (arg1 instanceof Error) errorMsg = arg1.message;
-  if (arg2 instanceof Error) errorMsg = arg2.message;
+  if (typeof arg1 === 'string') str = arg1;
+  else if (typeof arg2 === 'string') str = arg2;
 
-  toast.fire({
-    icon: 'error',
-    title: msg || i18n.t('An error has occurred.'),
-    text: errorMsg ? errorMsg.slice(0, 300) : undefined,
-  });
+  if (arg1 instanceof Error) err = arg1;
+  else if (arg2 instanceof Error) err = arg2;
+
+  if (err != null && 'code' in err && err.code === 'LLC_FFPROBE_UNSUPPORTED_FILE') {
+    errorToast(i18n.t('Unsupported file'));
+  } else {
+    toast.fire({
+      icon: 'error',
+      title: str || i18n.t('An error has occurred.'),
+      text: err?.message ? err?.message.slice(0, 300) : undefined,
+    });
+  }
 }
 
 export function filenamify(name: string) {
@@ -306,18 +311,25 @@ export const deleteDispositionValue = 'llc_disposition_remove';
 
 export const mirrorTransform = 'matrix(-1, 0, 0, 1, 0, 0)';
 
-export function isExecaError(err: unknown): err is Pick<ExecaError, 'stdout' | 'stderr'> {
+export type InvariantExecaError = ExecaError<string> | ExecaError<Buffer> | ExecaError<undefined>;
+
+// note: I don't think we can use instanceof ExecaError because the error has been sent over the main-renderer bridge
+export function isExecaError(err: unknown): err is InvariantExecaError {
   return err instanceof Error && 'stdout' in err && 'stderr' in err;
 }
 
-// I *think* Windows will throw error with code ENOENT if ffprobe/ffmpeg fails (execa), but other OS'es will return this error code if a file is not found, so it would be wrong to attribute it to exec failure.
-// see https://github.com/mifi/lossless-cut/issues/451
-export const isExecaFailure = (err): err is ExecaError => err.exitCode === 1 || (isWindows && err.code === 'ENOENT');
+export const getStdioString = (stdio: string | Buffer | undefined) => (stdio instanceof Buffer ? stdio.toString('utf8') : stdio);
 
 // A bit hacky but it works, unless someone has a file called "No space left on device" ( ͡° ͜ʖ ͡°)
-export const isOutOfSpaceError = (err): err is ExecaError => (
-  err && isExecaFailure(err)
-  && typeof err.stderr === 'string' && err.stderr.includes('No space left on device')
+export const isOutOfSpaceError = (err: InvariantExecaError) => (
+  err.exitCode === 1
+  && !!getStdioString(err.stderr)?.includes('No space left on device')
+);
+
+export const isMuxNotSupported = (err: InvariantExecaError) => (
+  err.exitCode === 1
+  && err.stderr != null
+  && /Could not write header .*incorrect codec parameters .*Invalid argument/.test(getStdioString(err.stderr) ?? '')
 );
 
 export async function checkAppPath() {
