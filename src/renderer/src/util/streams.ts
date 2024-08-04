@@ -155,8 +155,13 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
     // https://forum.doom9.org/showthread.php?t=174718
     // https://github.com/mifi/lossless-cut/issues/476
     // ffmpeg cannot encode pcm_bluray
-    if (outFormat !== 'mpegts' && stream.codec_name === 'pcm_bluray') {
+    if (stream.codec_name === 'pcm_bluray' && outFormat !== 'mpegts') {
       addCodecArgs('pcm_s24le');
+    } else if (stream.codec_name === 'pcm_dvd' && ['matroska', 'mov'].includes(outFormat)) {
+      // https://github.com/mifi/lossless-cut/discussions/2092
+      // coolitnow-partial.vob
+      // https://superuser.com/questions/1272614/use-ffmpeg-to-merge-mpeg2-files-with-pcm-dvd-audio
+      addCodecArgs('pcm_s32le');
     } else if (outFormat === 'dv' && stream.codec_name === 'pcm_s16le' && stream.sample_rate !== '48000') {
       // DV seems to require 48kHz output
       // https://trac.ffmpeg.org/ticket/8352
