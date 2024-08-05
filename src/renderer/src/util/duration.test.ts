@@ -45,6 +45,8 @@ it('should format and parse duration with correct rounding', () => {
   expect(formatDuration({ seconds: parseDuration('00:00:00,00', 30), fps: 30 })).toBe('00:00:00.00');
   expect(formatDuration({ seconds: parseDuration('00:00:00,29', 30), fps: 30 })).toBe('00:00:00.29');
   expect(formatDuration({ seconds: parseDuration('01:00:01,01', 30), fps: 30 })).toBe('01:00:01.01');
+  expect(parseDuration('0', 30)).toBe(0);
+  expect(parseDuration('0,1', 30)).toBe(0.03333333333333333);
 });
 
 // https://github.com/mifi/lossless-cut/issues/1603

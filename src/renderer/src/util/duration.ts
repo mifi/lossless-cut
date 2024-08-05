@@ -40,7 +40,7 @@ export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, show
 }
 
 // todo adapt also to frame counts and frame fractions?
-export const isExactDurationMatch = (str) => /^-?\d{2}:\d{2}:\d{2}.\d{3}$/.test(str);
+export const isExactDurationMatch = (str: string) => /^-?\d{2}:\d{2}:\d{2}.\d{3}$/.test(str);
 
 // See also parseYoutube
 export function parseDuration(str: string, fps?: number) {
@@ -60,7 +60,7 @@ export function parseDuration(str: string, fps?: number) {
     sec = parseFloat(secWithFraction);
   } else {
     const [secStr, framesStr] = secWithFraction.split('.');
-    sec = parseInt(secStr!, 10) + parseInt(framesStr!, 10) / fps;
+    sec = parseInt(secStr!, 10) + (framesStr != null ? parseInt(framesStr, 10) : 0) / fps;
   }
 
   if (min > 59) return undefined;
