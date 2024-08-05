@@ -58,6 +58,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Divide timeline into segments with length L or into N segments or even randomized segments!
 - Speed up / slow down video or audio file ([changing FPS](https://github.com/mifi/lossless-cut/issues/1712))
 - Basic [CLI](cli.md) and [HTTP API](api.md)
+- Show (DJI) embedded GPS track on a map
 
 ## Example lossless use cases
 
