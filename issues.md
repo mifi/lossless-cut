@@ -11,7 +11,7 @@
 - How to *cut away* a middle part of a video?
   - Enable "advanced view" and then click the Yin Yang symbol. It will invert the segments.
 - Where is application data, settings and temp files stored?
-  - Electron's [appData](https://www.electronjs.org/docs/api/app#appgetpathname) folder: `%APPDATA%/LosslessCut` on Windows. `~/Library/Application Support/LosslessCut` on macOS. `$XDG_CONFIG_HOME/LosslessCut` or `~/.config/LosslessCut` on Linux. See also [portable app?](https://github.com/mifi/lossless-cut/issues/645)
+  - Electron's [appData](https://www.electronjs.org/docs/api/app#appgetpathname) folder: `%APPDATA%/LosslessCut` on Windows. `~/Library/Application Support/LosslessCut` on macOS. `$XDG_CONFIG_HOME/LosslessCut` or `~/.config/LosslessCut` on Linux. LosslessCut is **not** a [portable app.](https://github.com/mifi/lossless-cut/issues/645)
 - Can I export and replace the input file in-place?
   - No, but you can export and automatically delete the input file.
 - Can you publish through [winget](https://github.com/mifi/lossless-cut/issues/1279), [Flatpak](https://github.com/mifi/lossless-cut/pull/1813), [Docker](https://github.com/mifi/lossless-cut/issues/1086) or other software mangers?
