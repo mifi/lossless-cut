@@ -79,7 +79,7 @@ import { formatDuration, parseDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
 import { askExtractFramesAsImages } from './dialogs/extractFrames';
 import { askForHtml5ifySpeed } from './dialogs/html5ify';
-import { askForOutDir, askForImportChapters, promptTimeOffset, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openExportFinishedToast, openConcatFinishedToast, showOpenDialog, showMuxNotSupported } from './dialogs';
+import { askForOutDir, askForImportChapters, promptTimecode, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openExportFinishedToast, openConcatFinishedToast, showOpenDialog, showMuxNotSupported } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, playOnlyCurrentSegment, getSegmentTags } from './segments';
@@ -1736,17 +1736,20 @@ function App() {
 
   const goToTimecode = useCallback(async () => {
     if (!filePath) return;
-    const timecode = await promptTimeOffset({
+    const timecode = await promptTimecode({
       initialValue: formatTimecode({ seconds: commandedTimeRef.current }),
       title: i18n.t('Seek to timecode'),
+      text: i18n.t('Use + and - for relative seek'),
+      allowRelative: true,
       inputPlaceholder: timecodePlaceholder,
       parseTimecode,
     });
 
     if (timecode === undefined) return;
 
-    userSeekAbs(timecode);
-  }, [filePath, formatTimecode, parseTimecode, timecodePlaceholder, userSeekAbs]);
+    if (timecode.relDirection != null) seekRel(timecode.duration * timecode.relDirection);
+    else userSeekAbs(timecode.duration);
+  }, [filePath, formatTimecode, parseTimecode, seekRel, timecodePlaceholder, userSeekAbs]);
 
   const goToTimecodeDirect = useCallback(async ({ time: timeStr }: { time: string }) => {
     if (!filePath) return;
@@ -1819,7 +1822,7 @@ function App() {
   }, [customOutDir, filePath, html5ifyAndLoad, hasVideo, hasAudio, rememberConvertToSupportedFormat, setWorking]);
 
   const askStartTimeOffset = useCallback(async () => {
-    const newStartTimeOffset = await promptTimeOffset({
+    const newStartTimeOffset = await promptTimecode({
       initialValue: startTimeOffset !== undefined ? formatTimecode({ seconds: startTimeOffset }) : undefined,
       title: i18n.t('Set custom start time offset'),
       text: i18n.t('Instead of video apparently starting at 0, you can offset by a specified value. This only applies to the preview inside LosslessCut and does not modify the file in any way. (Useful for viewing/cutting videos according to timecodes)'),
@@ -1827,9 +1830,9 @@ function App() {
       parseTimecode,
     });
 
-    if (newStartTimeOffset === undefined) return;
+    if (newStartTimeOffset === undefined || newStartTimeOffset.duration < 0) return;
 
-    setStartTimeOffset(newStartTimeOffset);
+    setStartTimeOffset(newStartTimeOffset.duration);
   }, [formatTimecode, parseTimecode, startTimeOffset, timecodePlaceholder]);
 
   const toggleKeyboardShortcuts = useCallback(() => setKeyboardShortcutsVisible((v) => !v), []);
