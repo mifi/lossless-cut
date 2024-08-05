@@ -370,7 +370,7 @@ export function parseDvAnalyzerSummaryTxt(txt: string) {
 
 // http://www.textfiles.com/uploads/kds-srt.txt
 export function parseSrt(text: string) {
-  const ret: { start?: number, end?: number, name: string, tags: Record<string, string | undefined> }[] = [];
+  const ret: { start: number, end: number, lines: string[], index: number | undefined }[] = [];
 
   // working state
   let subtitleIndexAt: number | undefined;
@@ -380,7 +380,7 @@ export function parseSrt(text: string) {
 
   const flush = () => {
     if (start != null && end != null && lines.length > 0) {
-      ret.push({ start, end, name: lines.join('\r\n'), tags: { index: subtitleIndexAt != null ? String(subtitleIndexAt) : undefined } });
+      ret.push({ start, end, lines, index: subtitleIndexAt });
     }
     start = undefined;
     end = undefined;
@@ -396,7 +396,7 @@ export function parseSrt(text: string) {
     } else if (subtitleIndexAt != null && subtitleIndexAt > 0) {
       const match = line.match(/^(\d+:\d+:\d+[,.]\d+\s+)-->(\s+\d+:\d+:\d+[,.]\d+)$/);
       if (match) {
-        const fixComma = (v) => v.replaceAll(',', '.');
+        const fixComma = (v: string | undefined) => v!.replaceAll(',', '.');
         start = parseTime(fixComma(match[1]))?.time;
         end = parseTime(fixComma(match[2]))?.time;
       } else if (start != null && end != null) {
@@ -413,6 +413,15 @@ export function parseSrt(text: string) {
   flush();
 
   return ret;
+}
+
+export function parseSrtToSegments(text: string) {
+  return parseSrt(text).map(({ start, end, lines, index }) => ({
+    start,
+    end,
+    name: lines.join('\r\n'),
+    tags: { index: index != null ? String(index) : undefined },
+  }));
 }
 
 export function formatSrt(segments) {

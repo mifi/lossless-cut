@@ -3,7 +3,7 @@ import i18n from 'i18next';
 import type { parse as CueParse } from 'cue-parser';
 import invariant from 'tiny-invariant';
 
-import { parseSrt, formatSrt, parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parseCutlist, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, parseCsvTime, getFrameValParser, parseDvAnalyzerSummaryTxt } from './edlFormats';
+import { parseSrtToSegments, formatSrt, parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parseCutlist, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, parseCsvTime, getFrameValParser, parseDvAnalyzerSummaryTxt } from './edlFormats';
 import { askForYouTubeInput, showOpenDialog } from './dialogs';
 import { getOutPath } from './util';
 import { EdlExportType, EdlFileType, EdlImportType, Segment, StateSegment } from './types';
@@ -52,7 +52,7 @@ export async function loadCue(path: string) {
 }
 
 export async function loadSrt(path: string) {
-  return parseSrt(await readFile(path, 'utf8'));
+  return parseSrtToSegments(await readFile(path, 'utf8'));
 }
 
 export async function saveCsv(path: string, cutSegments) {

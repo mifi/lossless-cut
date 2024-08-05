@@ -12,11 +12,12 @@ import Select from './components/Select';
 import { showJson5Dialog } from './dialogs';
 import { getStreamFps } from './ffmpeg';
 import { deleteDispositionValue } from './util';
-import { getActiveDisposition, attachedPicDisposition } from './util/streams';
+import { getActiveDisposition, attachedPicDisposition, isGpsStream } from './util/streams';
 import TagEditor from './components/TagEditor';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 import { CustomTagsByFile, FilesMeta, FormatTimecode, ParamsByStreamId, StreamParams } from './types';
 import useUserSettings from './hooks/useUserSettings';
+import tryShowGpsMap from './gps';
 
 
 const dispositionOptions = ['default', 'dub', 'original', 'comment', 'lyrics', 'karaoke', 'forced', 'hearing_impaired', 'visual_impaired', 'clean_effects', 'attached_pic', 'captions', 'descriptions', 'dependent', 'metadata'];
@@ -209,6 +210,10 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
     loadSubtitleTrackToSegments?.(stream.index);
   }, [loadSubtitleTrackToSegments, stream.index]);
 
+  const onLoadGpsTrackClick = useCallback(async () => {
+    await tryShowGpsMap(filePath, stream.index);
+  }, [filePath, stream.index]);
+
   const codecTag = stream.codec_tag !== '0x0000' && stream.codec_tag_string;
 
   return (
@@ -258,6 +263,11 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
                 {stream.codec_type === 'subtitle' && (
                   <Menu.Item icon={<MdSubtitles color="black" />} onClick={onLoadSubtitleTrackToSegmentsClick}>
                     {t('Create segments from subtitles')}
+                  </Menu.Item>
+                )}
+                {isGpsStream(stream) && (
+                  <Menu.Item icon={<MdSubtitles color="black" />} onClick={onLoadGpsTrackClick}>
+                    {t('Show GPS map')}
                   </Menu.Item>
                 )}
               </Menu.Group>

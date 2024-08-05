@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { it, describe, expect } from 'vitest';
 
 
-import { parseSrt, formatSrt, parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, parseCsvTime, getFrameValParser, formatCsvFrames, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt, parseCutlist } from './edlFormats';
+import { parseSrtToSegments, formatSrt, parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, parseCsvTime, getFrameValParser, formatCsvFrames, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt, parseCutlist } from './edlFormats';
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -306,11 +306,11 @@ it('parses pbf', async () => {
 });
 
 it('parses srt', async () => {
-  expect(parseSrt(await readFixture('sample.srt'))).toMatchSnapshot();
+  expect(parseSrtToSegments(await readFixture('sample.srt'))).toMatchSnapshot();
 });
 
 it('format srt', async () => {
-  expect(formatSrt(parseSrt(await readFixture('sample.srt')))).toMatchSnapshot();
+  expect(formatSrt(parseSrtToSegments(await readFixture('sample.srt')))).toMatchSnapshot();
 });
 
 // https://github.com/mifi/lossless-cut/issues/1664

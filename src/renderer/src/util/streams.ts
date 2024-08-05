@@ -232,7 +232,7 @@ export function shouldCopyStreamByDefault(stream: FFprobeStream) {
 
 export const attachedPicDisposition = 'attached_pic';
 
-export type LiteFFprobeStream = Pick<FFprobeStream, 'index' | 'codec_type' | 'codec_tag' | 'codec_name' | 'disposition'>;
+export type LiteFFprobeStream = Pick<FFprobeStream, 'index' | 'codec_type' | 'codec_tag' | 'codec_name' | 'disposition' | 'tags'>;
 
 export function isStreamThumbnail(stream: LiteFFprobeStream) {
   return stream && stream.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
@@ -241,6 +241,7 @@ export function isStreamThumbnail(stream: LiteFFprobeStream) {
 export const getAudioStreams = <T extends LiteFFprobeStream>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'audio');
 export const getRealVideoStreams = <T extends LiteFFprobeStream>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'video' && !isStreamThumbnail(stream));
 export const getSubtitleStreams = <T extends LiteFFprobeStream>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'subtitle');
+export const isGpsStream = <T extends LiteFFprobeStream>(stream: T) => stream.codec_type === 'subtitle' && stream.tags?.['handler_name'] === '\u0010DJI.Subtitle';
 
 // videoTracks/audioTracks seems to be 1-indexed, while ffmpeg is 0-indexes
 const getHtml5TrackId = (ffmpegTrackIndex: number) => String(ffmpegTrackIndex + 1);

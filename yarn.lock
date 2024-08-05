@@ -19,6 +19,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@adamscybot/react-leaflet-component-marker@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@adamscybot/react-leaflet-component-marker@npm:2.0.0"
+  dependencies:
+    react-is: "npm:^18.0.0"
+    react-reverse-portal: "npm:^2.1.2"
+    type-fest: "npm:^4.10.3"
+  peerDependencies:
+    leaflet: ^1.9.0
+    react: ^18.0.0
+    react-dom: ^18.0.0
+    react-leaflet: ^4.0.0
+  checksum: a5f62246afa519ded23b7f273a3fee36cf6c13782db97add07681234acc01e1e943c33b23ba8aacb73e2481891b14640645d901d55cf6d5322e75dd3dd10c2c8
+  languageName: node
+  linkType: hard
+
 "@ampproject/remapping@npm:^2.2.0, @ampproject/remapping@npm:^2.3.0":
   version: 2.3.0
   resolution: "@ampproject/remapping@npm:2.3.0"
@@ -1617,6 +1633,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-leaflet/core@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@react-leaflet/core@npm:2.1.0"
+  peerDependencies:
+    leaflet: ^1.9.0
+    react: ^18.0.0
+    react-dom: ^18.0.0
+  checksum: 12ce28b85cf6712a1a7b7c49466b941fc619bc7b1535308bc5711a35f7e89eb16298babfd62f6b3a92e64abf94dcf517b2bc460f59fcf20599821bc6ab3b3048
+  languageName: node
+  linkType: hard
+
 "@rollup/rollup-android-arm-eabi@npm:4.19.0":
   version: 4.19.0
   resolution: "@rollup/rollup-android-arm-eabi@npm:4.19.0"
@@ -1954,6 +1981,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/geojson@npm:*":
+  version: 7946.0.14
+  resolution: "@types/geojson@npm:7946.0.14"
+  checksum: ae511bee6488ae3bd5a3a3347aedb0371e997b14225b8983679284e22fa4ebd88627c6e3ff8b08bf4cc35068cb29310c89427311ffc9322c255615821a922e71
+  languageName: node
+  linkType: hard
+
 "@types/hast@npm:^2.0.0":
   version: 2.3.4
   resolution: "@types/hast@npm:2.3.4"
@@ -2004,6 +2038,15 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: e009a2bfb50e90ca9b7c6e8f648f8464067271fd99116f881073fa6fa76dc8d0133181dd65e6614d5fb1220d671d67b0124aef7d97dc02d7e342ab143a47779d
+  languageName: node
+  linkType: hard
+
+"@types/leaflet@npm:^1":
+  version: 1.9.12
+  resolution: "@types/leaflet@npm:1.9.12"
+  dependencies:
+    "@types/geojson": "npm:*"
+  checksum: ff6dce2f613b97bdc3ceb929e6eeaaa8bef8bbafdf9758935b1d679cbaf76360e366080d77e42da58e41aac146434c5d18c70ec919d37e01e0592f0a4f2e967e
   languageName: node
   linkType: hard
 
@@ -7414,6 +7457,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"leaflet@npm:^1.9.4":
+  version: 1.9.4
+  resolution: "leaflet@npm:1.9.4"
+  checksum: 7b6a74d503980961a85bdabebf9d1162c26db0e88195800ceea311682b653d621718f2ada3c9aab903a735af9862c9ae278ba550d4429acbd954d43449cd0d77
+  languageName: node
+  linkType: hard
+
 "levn@npm:^0.4.1":
   version: 0.4.1
   resolution: "levn@npm:0.4.1"
@@ -7552,6 +7602,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "lossless-cut@workspace:."
   dependencies:
+    "@adamscybot/react-leaflet-component-marker": "npm:^2.0.0"
     "@electron/remote": "npm:^2.0.10"
     "@fontsource/open-sans": "npm:^4.5.14"
     "@octokit/core": "npm:5"
@@ -7565,6 +7616,7 @@ __metadata:
     "@types/css-modules": "npm:^1.0.5"
     "@types/eslint": "npm:^8"
     "@types/express": "npm:^4.17.21"
+    "@types/leaflet": "npm:^1"
     "@types/lodash": "npm:^4.14.202"
     "@types/luxon": "npm:^3.4.2"
     "@types/morgan": "npm:^1.9.9"
@@ -7611,6 +7663,7 @@ __metadata:
     immer: "npm:^10.0.2"
     json5: "npm:^2.2.2"
     ky: "npm:^0.33.1"
+    leaflet: "npm:^1.9.4"
     lodash: "npm:^4.17.19"
     luxon: "npm:^3.3.0"
     mime-types: "npm:^2.1.14"
@@ -7626,6 +7679,7 @@ __metadata:
     react-dom: "npm:^18.2.0"
     react-i18next: "npm:^12.1.5"
     react-icons: "npm:^4.1.0"
+    react-leaflet: "npm:^4.2.1"
     react-lottie-player: "npm:^1.5.0"
     react-sortablejs: "npm:^6.1.4"
     react-syntax-highlighter: "npm:^15.4.3"
@@ -9111,6 +9165,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-is@npm:^18.0.0":
+  version: 18.3.1
+  resolution: "react-is@npm:18.3.1"
+  checksum: d5f60c87d285af24b1e1e7eaeb123ec256c3c8bdea7061ab3932e3e14685708221bf234ec50b21e10dd07f008f1b966a2730a0ce4ff67905b3872ff2042aec22
+  languageName: node
+  linkType: hard
+
+"react-leaflet@npm:^4.2.1":
+  version: 4.2.1
+  resolution: "react-leaflet@npm:4.2.1"
+  dependencies:
+    "@react-leaflet/core": "npm:^2.1.0"
+  peerDependencies:
+    leaflet: ^1.9.0
+    react: ^18.0.0
+    react-dom: ^18.0.0
+  checksum: 01cee12dc32e86d0153c989894fdba1c5c50fa41ad8d712352fa616f7b0dd32844aa17bb06c66f7569133675e2946c669090b4c496610cce3fa37c22254ca89f
+  languageName: node
+  linkType: hard
+
 "react-lottie-player@npm:^1.5.0":
   version: 1.5.0
   resolution: "react-lottie-player@npm:1.5.0"
@@ -9128,6 +9202,16 @@ __metadata:
   version: 0.14.2
   resolution: "react-refresh@npm:0.14.2"
   checksum: 512abf97271ab8623486061be04b608c39d932e3709f9af1720b41573415fa4993d0009fa5138b6705b60a98f4102f744d4e26c952b14f41a0e455521c6be4cc
+  languageName: node
+  linkType: hard
+
+"react-reverse-portal@npm:^2.1.2":
+  version: 2.1.2
+  resolution: "react-reverse-portal@npm:2.1.2"
+  peerDependencies:
+    react: ^16.0.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
+  checksum: 4b24fdb1a6727b6585aa63a03ef0e366064f062418555d847ef53645ee3ea91346481897eb90ab5f6b7da2898096da54d6fbde949bc159a8f4296e3b4ba5d904
   languageName: node
   linkType: hard
 
@@ -10951,7 +11035,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^4.23.0":
+"type-fest@npm:^4.10.3, type-fest@npm:^4.23.0":
   version: 4.23.0
   resolution: "type-fest@npm:4.23.0"
   checksum: c411dea83262f9a4453e09ff82e3ac729dd26afc2e68b7a9fe93dd633b1a2bf7bf2bf3e041676497ae8b8411266019b3add91d4fe34b926a82ba09eb41e9e52b
