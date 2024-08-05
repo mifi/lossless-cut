@@ -3,6 +3,8 @@ import { MdSubtitles } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import Select from './Select';
 
+import { FFprobeStream } from '../../../../ffprobe';
+
 function PlaybackStreamSelector({
   subtitleStreams,
   videoStreams,
@@ -14,9 +16,9 @@ function PlaybackStreamSelector({
   onActiveVideoStreamChange,
   onActiveAudioStreamChange,
 }: {
-  subtitleStreams,
-  videoStreams,
-  audioStreams,
+  subtitleStreams: FFprobeStream[],
+  videoStreams: FFprobeStream[],
+  audioStreams: FFprobeStream[],
   activeSubtitleStreamIndex?: number | undefined,
   activeVideoStreamIndex?: number | undefined,
   activeAudioStreamIndex?: number | undefined,
