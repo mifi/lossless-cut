@@ -297,7 +297,7 @@ function App() {
     if (videoRef.current) videoRef.current.volume = playbackVolume;
   }, [playbackVolume]);
 
-  const seekAbs = useCallback((val) => {
+  const seekAbs = useCallback((val: number | undefined) => {
     const video = videoRef.current;
     if (video == null || val == null || Number.isNaN(val)) return;
     let outVal = val;
@@ -438,19 +438,20 @@ function App() {
     userSeekAbs(videoRef.current!.currentTime + val);
   }, [userSeekAbs]);
 
-  const seekRelPercent = useCallback((val) => {
+  const seekRelPercent = useCallback((val: number) => {
     if (!isDurationValid(zoomedDuration)) return;
     seekRel(val * zoomedDuration);
   }, [seekRel, zoomedDuration]);
 
   const onTimelineWheel = useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, invertTimelineScroll, zoomRel, seekRel });
 
-  const shortStep = useCallback((direction) => {
+  const shortStep = useCallback((direction: number) => {
     // If we don't know fps, just assume 30 (for example if unknown audio file)
     const fps = detectedFps || 30;
 
     // try to align with frame
     const currentTimeNearestFrameNumber = getFrameCountRaw(fps, videoRef.current!.currentTime);
+    invariant(currentTimeNearestFrameNumber != null);
     const nextFrame = currentTimeNearestFrameNumber + direction;
     userSeekAbs(nextFrame / fps);
   }, [detectedFps, userSeekAbs]);
