@@ -74,13 +74,21 @@ function handleProgress(process: { stderr: Readable | null }, durationIn: number
 
       const timeStr = match[1];
       // console.log(timeStr);
-      const match2 = timeStr!.match(/^(\d+):(\d+):(\d+)\.(\d+)$/);
+      const match2 = timeStr!.match(/^(-?)(\d+):(\d+):(\d+)\.(\d+)$/);
       if (!match2) throw new Error(`Invalid time from ffmpeg progress ${timeStr}`);
 
-      const h = parseInt(match2[1]!, 10);
-      const m = parseInt(match2[2]!, 10);
-      const s = parseInt(match2[3]!, 10);
-      const cs = parseInt(match2[4]!, 10);
+      const sign = match2[1];
+
+      if (sign === '-') {
+        // For some reason, ffmpeg sometimes gives a negative progress, e.g. "-00:00:06.46"
+        // let's just ignore that
+        return;
+      }
+
+      const h = parseInt(match2[2]!, 10);
+      const m = parseInt(match2[3]!, 10);
+      const s = parseInt(match2[4]!, 10);
+      const cs = parseInt(match2[5]!, 10);
       const time = (((h * 60) + m) * 60 + s) + cs / 100;
       // console.log(time);
 
