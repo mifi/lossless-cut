@@ -70,7 +70,7 @@
     "csv-stringify": "^5.6.2",
     "data-uri-to-buffer": "^4.0.0",
     "electron": "^31.3.1",
-    "electron-builder": "^24.6.4",
+    "electron-builder": "^24.13.3",
     "electron-devtools-installer": "^3.2.0",
     "electron-vite": "^2.3.0",
     "eslint": "^8.2.0",
@@ -455,8 +455,5 @@
       ]
     }
   },
-  "packageManager": "yarn@4.0.2",
-  "resolutions": {
-    "app-builder-lib@24.8.0": "patch:app-builder-lib@npm%3A24.8.0#./.yarn/patches/app-builder-lib-npm-24.8.0-51e1f5cd3f.patch"
-  }
+  "packageManager": "yarn@4.0.2"
 }
