@@ -1,4 +1,3 @@
-/// <reference types="electron-vite/node" />
 process.traceDeprecation = true;
 process.traceProcessWarnings = true;
 
