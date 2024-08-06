@@ -25,7 +25,7 @@ module.exports = {
       },
     },
     {
-      files: ['./script/**/*.{js,cjs,mjs,jsx,ts,tsx,mts}', 'electron.vite.config.js'],
+      files: ['./script/**/*.{js,cjs,mjs,jsx,ts,tsx,mts}', 'electron.vite.config.ts'],
       rules: {
         'import/no-extraneous-dependencies': ['error', {
           devDependencies: true,
