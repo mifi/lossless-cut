@@ -81,6 +81,8 @@ export default () => {
   useEffect(() => safeSetConfig({ ffmpegExperimental }), [ffmpegExperimental]);
   const [hideNotifications, setHideNotifications] = useState(safeGetConfigInitial('hideNotifications'));
   useEffect(() => safeSetConfig({ hideNotifications }), [hideNotifications]);
+  const [hideOsNotifications, setHideOsNotifications] = useState(safeGetConfigInitial('hideOsNotifications'));
+  useEffect(() => safeSetConfig({ hideOsNotifications }), [hideOsNotifications]);
   const [autoLoadTimecode, setAutoLoadTimecode] = useState(safeGetConfigInitial('autoLoadTimecode'));
   useEffect(() => safeSetConfig({ autoLoadTimecode }), [autoLoadTimecode]);
   const [autoDeleteMergedSegments, setAutoDeleteMergedSegments] = useState(safeGetConfigInitial('autoDeleteMergedSegments'));
@@ -206,6 +208,8 @@ export default () => {
     setFfmpegExperimental,
     hideNotifications,
     setHideNotifications,
+    hideOsNotifications,
+    setHideOsNotifications,
     autoLoadTimecode,
     setAutoLoadTimecode,
     autoDeleteMergedSegments,

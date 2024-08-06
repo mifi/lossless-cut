@@ -3,7 +3,7 @@ process.traceProcessWarnings = true;
 
 /* eslint-disable import/first */
 // eslint-disable-next-line import/no-extraneous-dependencies
-import electron, { AboutPanelOptionsOptions, BrowserWindow, BrowserWindowConstructorOptions, nativeTheme, shell, app, ipcMain } from 'electron';
+import electron, { AboutPanelOptionsOptions, BrowserWindow, BrowserWindowConstructorOptions, nativeTheme, shell, app, ipcMain, Notification, NotificationConstructorOptions } from 'electron';
 import i18n from 'i18next';
 import debounce from 'lodash/debounce';
 import yargsParser from 'yargs-parser';
@@ -408,3 +408,10 @@ export function quitApp() {
 export const hasDisabledNetworking = () => !!disableNetworking;
 
 export const setProgressBar = (v: number) => mainWindow?.setProgressBar(v);
+
+export function sendOsNotification(options: NotificationConstructorOptions) {
+  if (!Notification.isSupported()) return;
+  const notification = new Notification(options);
+  notification.on('failed', (_e, error) => logger.warn('Notification failed', error));
+  notification.show();
+}

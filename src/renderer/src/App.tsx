@@ -17,6 +17,7 @@ import flatMap from 'lodash/flatMap';
 import isEqual from 'lodash/isEqual';
 import sum from 'lodash/sum';
 import invariant from 'tiny-invariant';
+import { SweetAlertOptions } from 'sweetalert2';
 
 import theme from './theme';
 import useTimelineScroll from './hooks/useTimelineScroll';
@@ -97,7 +98,7 @@ const { exists } = window.require('fs-extra');
 const { lstat } = window.require('fs/promises');
 const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('path');
 
-const { focusWindow, hasDisabledNetworking, quitApp, pathToFileURL, setProgressBar } = window.require('@electron/remote').require('./index.js');
+const { focusWindow, hasDisabledNetworking, quitApp, pathToFileURL, setProgressBar, sendOsNotification } = window.require('@electron/remote').require('./index.js');
 
 
 const videoStyle: CSSProperties = { width: '100%', height: '100%', objectFit: 'contain' };
@@ -201,7 +202,7 @@ function App() {
   const allUserSettings = useUserSettingsRoot();
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, setCleanupChoices, darkMode, setDarkMode, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMovData, setPreserveMovData, movFastStart, setMovFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, hideOsNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, setCleanupChoices, darkMode, setDarkMode, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames,
   } = allUserSettings;
 
   useEffect(() => {
@@ -240,11 +241,25 @@ function App() {
 
   const toggleShowThumbnails = useCallback(() => setThumbnailsEnabled((v) => !v), []);
 
+  const hideAllNotifications = hideNotifications === 'all';
+
+  const showNotification = useCallback((opts: SweetAlertOptions) => {
+    if (!hideAllNotifications) {
+      toast.fire(opts);
+    }
+  }, [hideAllNotifications]);
+
+  const showOsNotification = useCallback((text: string) => {
+    if (hideOsNotifications == null) {
+      sendOsNotification({ title: text });
+    }
+  }, [hideOsNotifications]);
+
   const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => {
     const newVal = !v;
-    toast.fire({ text: newVal ? i18n.t('Export options will be shown before exporting.') : i18n.t('Export options will not be shown before exporting.') });
+    showNotification({ text: newVal ? i18n.t('Export options will be shown before exporting.') : i18n.t('Export options will not be shown before exporting.') });
     return newVal;
-  }), [setExportConfirmEnabled]);
+  }), [setExportConfirmEnabled, showNotification]);
 
   const toggleSegmentsToChapters = useCallback(() => setSegmentsToChapters((v) => !v), [setSegmentsToChapters]);
 
@@ -254,11 +269,11 @@ function App() {
     setKeyframesEnabled((old) => {
       const enabled = !old;
       if (enabled && !calcShouldShowKeyframes(zoomedDuration)) {
-        toast.fire({ text: i18n.t('Key frames will show on the timeline. You need to zoom in to view them') });
+        showNotification({ text: i18n.t('Key frames will show on the timeline. You need to zoom in to view them') });
       }
       return enabled;
     });
-  }, [zoomedDuration]);
+  }, [showNotification, zoomedDuration]);
 
   const appendLastCommandsLog = useCallback((command: string) => {
     setFfmpegCommandLog((old) => [...old, { command, time: new Date() }]);
@@ -277,23 +292,21 @@ function App() {
     setCopyStreamIdsForPath(path, (old) => ({ ...old, [index]: !old[index] }));
   }, [setCopyStreamIdsForPath]);
 
-  const hideAllNotifications = hideNotifications === 'all';
-
   const toggleWaveformMode = useCallback(() => {
     if (waveformMode === 'waveform') {
       setWaveformMode('big-waveform');
     } else if (waveformMode === 'big-waveform') {
       setWaveformMode(undefined);
     } else {
-      if (!hideAllNotifications) toast.fire({ text: i18n.t('Mini-waveform has been enabled. Click again to enable full-screen waveform') });
+      showNotification({ text: i18n.t('Mini-waveform has been enabled. Click again to enable full-screen waveform') });
       setWaveformMode('waveform');
     }
-  }, [hideAllNotifications, waveformMode]);
+  }, [showNotification, waveformMode]);
 
   const toggleSafeOutputFileName = useCallback(() => setSafeOutputFileName((v) => {
-    if (v && !hideAllNotifications) toast.fire({ icon: 'info', text: i18n.t('Output file name will not be sanitized, and any special characters will be preserved. This may cause the export to fail and can cause other funny issues. Use at your own risk!') });
+    if (v) showNotification({ icon: 'info', text: i18n.t('Output file name will not be sanitized, and any special characters will be preserved. This may cause the export to fail and can cause other funny issues. Use at your own risk!') });
     return !v;
-  }), [setSafeOutputFileName, hideAllNotifications]);
+  }), [setSafeOutputFileName, showNotification]);
 
   useEffect(() => {
     if (videoRef.current) videoRef.current.volume = playbackVolume;
@@ -557,8 +570,8 @@ function App() {
     setHideMediaSourcePlayer(false);
     // Matroska is known not to work, so we warn user. See https://github.com/mifi/lossless-cut/discussions/661
     const supportsRotation = !(fileFormat != null && ['matroska', 'webm'].includes(fileFormat));
-    if (!supportsRotation && !hideAllNotifications) toast.fire({ text: i18n.t('Lossless rotation might not work with this file format. You may try changing to MP4') });
-  }, [hideAllNotifications, fileFormat]);
+    if (!supportsRotation) showNotification({ text: i18n.t('Lossless rotation might not work with this file format. You may try changing to MP4') });
+  }, [fileFormat, showNotification]);
 
   const { ensureWritableOutDir, ensureAccessToSourceDir } = useDirectoryAccess({ setCustomOutDir });
 
@@ -575,23 +588,23 @@ function App() {
 
   const toggleKeyframeCut = useCallback((showMessage?: boolean) => setKeyframeCut((val) => {
     const newVal = !val;
-    if (showMessage && !hideAllNotifications) {
-      if (newVal) toast.fire({ title: i18n.t('Keyframe cut enabled'), text: i18n.t('Will now cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files.') });
-      else toast.fire({ title: i18n.t('Keyframe cut disabled'), text: i18n.t('Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut'), timer: 7000 });
+    if (showMessage) {
+      if (newVal) showNotification({ title: i18n.t('Keyframe cut enabled'), text: i18n.t('Will now cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files.') });
+      else showNotification({ title: i18n.t('Keyframe cut disabled'), text: i18n.t('Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut'), timer: 7000 });
     }
     return newVal;
-  }), [hideAllNotifications, setKeyframeCut]);
+  }), [showNotification, setKeyframeCut]);
 
   const togglePreserveMovData = useCallback(() => setPreserveMovData((val) => !val), [setPreserveMovData]);
 
   const toggleMovFastStart = useCallback(() => setMovFastStart((val) => !val), [setMovFastStart]);
 
   const toggleSimpleMode = useCallback(() => setSimpleMode((v) => {
-    if (!hideAllNotifications) toast.fire({ text: v ? i18n.t('Advanced view has been enabled. You will now also see non-essential buttons and functions') : i18n.t('Advanced view disabled. You will now see only the most essential buttons and functions') });
+    showNotification({ text: v ? i18n.t('Advanced view has been enabled. You will now also see non-essential buttons and functions') : i18n.t('Advanced view disabled. You will now see only the most essential buttons and functions') });
     const newValue = !v;
     if (newValue) setInvertCutSegments(false);
     return newValue;
-  }), [hideAllNotifications, setInvertCutSegments, setSimpleMode]);
+  }), [setInvertCutSegments, setSimpleMode, showNotification]);
 
   const effectiveExportMode = useMemo(() => {
     if (segmentsToChaptersOnly) return 'segments_to_chapters';
@@ -836,12 +849,12 @@ function App() {
 
 
   const showUnsupportedFileMessage = useCallback(() => {
-    if (!hideAllNotifications) toast.fire({ timer: 13000, text: i18n.t('File is not natively supported. Preview playback may be slow and of low quality, but the final export will be lossless. You may convert the file from the menu for a better preview.') });
-  }, [hideAllNotifications]);
+    showNotification({ timer: 13000, text: i18n.t('File is not natively supported. Preview playback may be slow and of low quality, but the final export will be lossless. You may convert the file from the menu for a better preview.') });
+  }, [showNotification]);
 
   const showPreviewFileLoadedMessage = useCallback((fileName) => {
-    if (!hideAllNotifications) toast.fire({ icon: 'info', text: i18n.t('Loaded existing preview file: {{ fileName }}', { fileName }) });
-  }, [hideAllNotifications]);
+    showNotification({ icon: 'info', text: i18n.t('Loaded existing preview file: {{ fileName }}', { fileName }) });
+  }, [showNotification]);
 
   const areWeCutting = useMemo(() => segmentsToExport.some(({ start, end }) => isCuttingStart(start) || isCuttingEnd(end, duration)), [duration, segmentsToExport]);
   const needSmartCut = !!(areWeCutting && enableSmartCut);
@@ -1130,8 +1143,14 @@ function App() {
 
       if (clearBatchFilesAfterConcat) closeBatch();
       if (!includeAllStreams && haveExcludedStreams) notices.push(i18n.t('Some extra tracks have been discarded. You can change this option before merging.'));
-      if (!hideAllNotifications) openConcatFinishedToast({ filePath: outPath, notices, warnings });
+
+      if (!hideAllNotifications) {
+        showOsNotification(i18n.t('Merge finished'));
+        openConcatFinishedToast({ filePath: outPath, notices, warnings });
+      }
     } catch (err) {
+      showOsNotification(i18n.t('Failed to merge'));
+
       if (err instanceof DirectoryAccessDeclinedError) return;
 
       if (isExecaError(err)) {
@@ -1161,7 +1180,7 @@ function App() {
       setWorking(undefined);
       setCutProgress(undefined);
     }
-  }, [setWorking, ensureWritableOutDir, customOutDir, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, hideAllNotifications, handleConcatFailed]);
+  }, [setWorking, ensureWritableOutDir, customOutDir, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, hideAllNotifications, showOsNotification, handleConcatFailed]);
 
   const cleanupFiles = useCallback(async (cleanupChoices2) => {
     // Store paths before we reset state
@@ -1351,7 +1370,10 @@ function App() {
 
       const revealPath = willMerge ? mergedOutFilePath : outFiles[0];
       invariant(revealPath != null);
-      if (!hideAllNotifications) openExportFinishedToast({ filePath: revealPath, warnings, notices });
+      if (!hideAllNotifications) {
+        showOsNotification(i18n.t('Export finished'));
+        openExportFinishedToast({ filePath: revealPath, warnings, notices });
+      }
 
       if (cleanupChoices.cleanupAfterExport) await cleanupFilesWithDialog();
 
@@ -1366,6 +1388,8 @@ function App() {
         console.log('stdout:', getStdioString(err.stdout));
         console.error('stderr:', getStdioString(err.stderr));
 
+        showOsNotification(i18n.t('Failed to export'));
+
         if (isOutOfSpaceError(err)) {
           showDiskFull();
           return;
@@ -1378,12 +1402,13 @@ function App() {
         return;
       }
 
+      showOsNotification(i18n.t('Failed to export'));
       handleError(err);
     } finally {
       setWorking(undefined);
       setCutProgress(undefined);
     }
-  }, [numStreamsToCopy, segmentsToExport, haveInvalidSegs, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, mergedOutFilePath, hideAllNotifications, cleanupChoices.cleanupAfterExport, cleanupFilesWithDialog, resetMergedOutFileName, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, filePath, handleExportFailed]);
+  }, [filePath, numStreamsToCopy, segmentsToExport, haveInvalidSegs, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, mergedOutFilePath, hideAllNotifications, cleanupChoices.cleanupAfterExport, cleanupFilesWithDialog, resetMergedOutFileName, selectedSegmentsOrInverse, segmentsToChapters, invertCutSegments, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, showOsNotification, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath) return;
@@ -1443,14 +1468,19 @@ function App() {
         // eslint-disable-next-line no-await-in-loop
         lastOutPath = await captureFramesRange({ customOutDir, filePath, fps: detectedFps, fromTime: start, toTime: end, estimatedMaxNumFiles: captureFramesResponse.estimatedMaxNumFiles, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, outputTimestamps: captureFrameFileNameFormat === 'timestamp', onProgress });
       }
-      if (!hideAllNotifications && lastOutPath != null) openDirToast({ icon: 'success', filePath: lastOutPath, text: i18n.t('Frames extracted to: {{path}}', { path: outputDir }) });
+      if (!hideAllNotifications && lastOutPath != null) {
+        showOsNotification(i18n.t('Frames have been extracted'));
+        openDirToast({ icon: 'success', filePath: lastOutPath, text: i18n.t('Frames extracted to: {{path}}', { path: outputDir }) });
+      }
     } catch (err) {
+      showOsNotification(i18n.t('Failed to extract frames'));
+
       handleError(err);
     } finally {
       setWorking(undefined);
       setCutProgress(undefined);
     }
-  }, [apparentCutSegments, captureFormat, captureFrameFileNameFormat, captureFrameQuality, captureFramesRange, customOutDir, detectedFps, filePath, getFrameCount, hideAllNotifications, outputDir, setWorking]);
+  }, [apparentCutSegments, captureFormat, captureFrameFileNameFormat, captureFrameQuality, captureFramesRange, customOutDir, detectedFps, filePath, getFrameCount, hideAllNotifications, outputDir, setWorking, showOsNotification]);
 
   const extractCurrentSegmentFramesAsImages = useCallback(() => extractSegmentFramesAsImages([currentCutSeg?.segId]), [currentCutSeg?.segId, extractSegmentFramesAsImages]);
   const extractSelectedSegmentsFramesAsImages = useCallback(() => extractSegmentFramesAsImages(selectedSegments.map((seg) => seg.segId)), [extractSegmentFramesAsImages, selectedSegments]);
@@ -1466,10 +1496,10 @@ function App() {
       video!.play();
     } else {
       const newRate = adjustRate(video!.playbackRate, dir, rateMultiplier);
-      toast.fire({ title: `${i18n.t('Playback rate:')} ${Math.round(newRate * 100)}%`, timer: 1000 });
+      showNotification({ title: `${i18n.t('Playback rate:')} ${Math.round(newRate * 100)}%`, timer: 1000 });
       video!.playbackRate = newRate;
     }
-  }, [compatPlayerEnabled]);
+  }, [compatPlayerEnabled, showNotification]);
 
   const loadEdlFile = useCallback(async ({ path, type, append }: { path: string, type: EdlFileType, append?: boolean }) => {
     console.log('Loading EDL file', type, path, append);
@@ -1628,7 +1658,7 @@ function App() {
       } else if (needsAutoHtml5ify) {
         showUnsupportedFileMessage();
       } else if (isAudioDefinitelyNotSupported(fileMeta.streams)) {
-        if (!hideAllNotifications) toast.fire({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
+        showNotification({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
       } else if (!validDuration) {
         toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
       }
@@ -1642,7 +1672,7 @@ function App() {
       resetState();
       throw err;
     }
-  }, [storeProjectInWorkingDir, setWorking, loadEdlFile, getEdlFilePath, getEdlFilePathOld, enableAskForImportChapters, ensureAccessToSourceDir, loadCutSegments, autoLoadTimecode, enableNativeHevc, ensureWritableOutDir, customOutDir, resetState, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat, html5ifyAndLoadWithPreferences, showPreviewFileLoadedMessage, showUnsupportedFileMessage, hideAllNotifications]);
+  }, [storeProjectInWorkingDir, setWorking, loadEdlFile, getEdlFilePath, getEdlFilePathOld, enableAskForImportChapters, ensureAccessToSourceDir, loadCutSegments, autoLoadTimecode, enableNativeHevc, ensureWritableOutDir, customOutDir, resetState, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat, html5ifyAndLoadWithPreferences, showPreviewFileLoadedMessage, showUnsupportedFileMessage, showNotification]);
 
   const toggleLastCommands = useCallback(() => setLastCommandsVisible((val) => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible((val) => !val), []);
@@ -1777,18 +1807,23 @@ function App() {
       setWorking({ text: i18n.t('Extracting all streams') });
       setStreamsSelectorShown(false);
       const [firstExtractedPath] = await extractStreams({ customOutDir, filePath, streams: mainCopiedStreams, enableOverwriteOutput });
-      if (!hideAllNotifications && firstExtractedPath != null) openDirToast({ icon: 'success', filePath: firstExtractedPath, text: i18n.t('All streams have been extracted as separate files') });
+      if (!hideAllNotifications && firstExtractedPath != null) {
+        showOsNotification(i18n.t('All tracks have been extracted'));
+        openDirToast({ icon: 'success', filePath: firstExtractedPath, text: i18n.t('All streams have been extracted as separate files') });
+      }
     } catch (err) {
+      showOsNotification(i18n.t('Failed to extract tracks'));
+
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
-        return;
+      } else {
+        errorToast(i18n.t('Failed to extract all streams'));
+        console.error('Failed to extract all streams', err);
       }
-      errorToast(i18n.t('Failed to extract all streams'));
-      console.error('Failed to extract all streams', err);
     } finally {
       setWorking(undefined);
     }
-  }, [customOutDir, enableOverwriteOutput, filePath, hideAllNotifications, mainCopiedStreams, setWorking]);
+  }, [customOutDir, enableOverwriteOutput, filePath, hideAllNotifications, mainCopiedStreams, setWorking, showOsNotification]);
 
 
   const userHtml5ifyCurrentFile = useCallback(async ({ ignoreRememberedValue }: { ignoreRememberedValue?: boolean } = {}) => {
@@ -1846,7 +1881,7 @@ function App() {
       setCutProgress(0);
       invariant(fileFormat != null);
       const path = await fixInvalidDuration({ fileFormat, customOutDir, duration, onProgress: setCutProgress });
-      if (!hideAllNotifications) toast.fire({ icon: 'info', text: i18n.t('Duration has been fixed') });
+      showNotification({ icon: 'info', text: i18n.t('Duration has been fixed') });
 
       await loadMedia({ filePath: path });
     } catch (err) {
@@ -1856,7 +1891,7 @@ function App() {
       setWorking(undefined);
       setCutProgress(undefined);
     }
-  }, [checkFileOpened, customOutDir, duration, fileFormat, fixInvalidDuration, hideAllNotifications, loadMedia, setWorking]);
+  }, [checkFileOpened, customOutDir, duration, fileFormat, fixInvalidDuration, loadMedia, setWorking, showNotification]);
 
   const addStreamSourceFile = useCallback(async (path: string) => {
     if (allFilesMeta[path]) return undefined; // Already added?
@@ -1893,12 +1928,12 @@ function App() {
       const currentTime = getRelevantTime();
       const path = await captureFrameFromFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, quality: captureFrameQuality });
       if (!(await addFileAsCoverArt(path))) return;
-      if (!hideAllNotifications) toast.fire({ text: i18n.t('Current frame has been set as cover art') });
+      showNotification({ text: i18n.t('Current frame has been set as cover art') });
     } catch (err) {
       console.error(err);
       errorToast(i18n.t('Failed to capture frame'));
     }
-  }, [addFileAsCoverArt, captureFormat, captureFrameFromFfmpeg, captureFrameQuality, customOutDir, filePath, getRelevantTime, hideAllNotifications]);
+  }, [addFileAsCoverArt, captureFormat, captureFrameFromFfmpeg, captureFrameQuality, customOutDir, filePath, getRelevantTime, showNotification]);
 
   const batchLoadPaths = useCallback((newPaths: string[], append?: boolean) => {
     setBatchFiles((existingFiles) => {
@@ -2335,18 +2370,23 @@ function App() {
       setWorking({ text: i18n.t('Extracting track') });
       // setStreamsSelectorShown(false);
       const [firstExtractedPath] = await extractStreams({ customOutDir, filePath, streams: mainStreams.filter((s) => s.index === index), enableOverwriteOutput });
-      if (!hideAllNotifications && firstExtractedPath != null) openDirToast({ icon: 'success', filePath: firstExtractedPath, text: i18n.t('Track has been extracted') });
+      if (!hideAllNotifications && firstExtractedPath != null) {
+        showOsNotification(i18n.t('Track has been extracted'));
+        openDirToast({ icon: 'success', filePath: firstExtractedPath, text: i18n.t('Track has been extracted') });
+      }
     } catch (err) {
+      showOsNotification(i18n.t('Failed to extract track'));
+
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
-        return;
+      } else {
+        errorToast(i18n.t('Failed to extract track'));
+        console.error('Failed to extract track', err);
       }
-      errorToast(i18n.t('Failed to extract track'));
-      console.error('Failed to extract track', err);
     } finally {
       setWorking(undefined);
     }
-  }, [customOutDir, enableOverwriteOutput, filePath, hideAllNotifications, mainStreams, setWorking]);
+  }, [customOutDir, enableOverwriteOutput, filePath, hideAllNotifications, mainStreams, setWorking, showOsNotification]);
 
   const batchFilePaths = useMemo(() => batchFiles.map((f) => f.path), [batchFiles]);
 

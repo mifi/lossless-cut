@@ -110,6 +110,7 @@ const defaults: Config = {
   movFastStart: true,
   avoidNegativeTs: 'make_zero',
   hideNotifications: undefined,
+  hideOsNotifications: undefined,
   autoLoadTimecode: false,
   segmentsToChapters: false,
   preserveMetadataOnMerge: false,

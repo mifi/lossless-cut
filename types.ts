@@ -66,6 +66,7 @@ export interface Config {
   movFastStart: boolean,
   avoidNegativeTs: AvoidNegativeTs,
   hideNotifications: 'all' | undefined,
+  hideOsNotifications: 'all' | undefined,
   autoLoadTimecode: boolean,
   segmentsToChapters: boolean,
   preserveMetadataOnMerge: boolean,
