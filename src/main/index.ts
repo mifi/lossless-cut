@@ -17,6 +17,7 @@ import logger from './logger.js';
 import menu from './menu.js';
 import * as configStore from './configStore.js';
 import { isLinux } from './util.js';
+import { appName, copyrightYear } from './common.js';
 import attachContextMenu from './contextMenu.js';
 import HttpServer from './httpServer.js';
 import isDev from './isDev.js';
@@ -63,8 +64,6 @@ unhandled({
   showDialog: true,
 });
 
-const appName = 'LosslessCut';
-const copyrightYear = 2024;
 
 const appVersion = app.getVersion();
 

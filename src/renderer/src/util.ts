@@ -12,6 +12,7 @@ import type { PlatformPath } from 'node:path';
 import isDev from './isDev';
 import Swal, { errorToast, toast } from './swal';
 import { ffmpegExtractWindow } from './util/constants';
+import { appName } from '../../main/common';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename }: PlatformPath = window.require('path');
 const fsExtra: typeof FsExtra = window.require('fs-extra');
@@ -400,19 +401,21 @@ export function checkFileSizes(inputSize, outputSize) {
   return undefined;
 }
 
-function setDocumentExtraTitle(extra) {
-  const baseTitle = 'LosslessCut';
-  document.title = extra != null ? `${baseTitle} - ${extra}` : baseTitle;
-}
-
 export function setDocumentTitle({ filePath, working, cutProgress }: { filePath?: string | undefined, working?: string | undefined, cutProgress?: number | undefined }) {
   const parts: string[] = [];
-  if (filePath) parts.push(basename(filePath));
+
   if (working) {
-    parts.push('-', working);
     if (cutProgress != null) parts.push(`${(cutProgress * 100).toFixed(1)}%`);
+    parts.push(working);
   }
-  setDocumentExtraTitle(parts.length > 0 ? parts.join(' ') : undefined);
+
+  if (filePath) {
+    parts.push(basename(filePath));
+  }
+
+  parts.push(appName);
+
+  document.title = parts.join(' - ');
 }
 
 export function mustDisallowVob() {
