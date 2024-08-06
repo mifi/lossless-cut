@@ -71,8 +71,8 @@ export function createMediaSourceStream({ path, videoStreamIndex, audioStreamInd
       // @ts-expect-error todo
       if (!(err.killed)) {
         // @ts-expect-error todo
-        console.warn(err.message);
-        console.warn(stderr.toString('utf8'));
+        logger.warn(err.message);
+        logger.warn(stderr.toString('utf8'));
       }
     }
   })();

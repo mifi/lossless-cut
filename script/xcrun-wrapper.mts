@@ -1,4 +1,5 @@
 // eslint-disable-line unicorn/filename-case
+/* eslint-disable no-console */
 import { execa } from 'execa';
 import { readFile } from 'node:fs/promises';
 

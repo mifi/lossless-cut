@@ -10,6 +10,7 @@ import { app } from 'electron';
 import { platform, arch, isWindows, isMac, isLinux } from './util.js';
 import { CaptureFormat, Html5ifyMode, Waveform } from '../../types.js';
 import isDev from './isDev.js';
+import logger from './logger.js';
 
 
 const runningFfmpegs = new Set<ExecaChildProcess<Buffer>>();
@@ -46,7 +47,7 @@ const getFfprobePath = () => getFfPath('ffprobe');
 export const getFfmpegPath = () => getFfPath('ffmpeg');
 
 export function abortFfmpegs() {
-  console.log('Aborting', runningFfmpegs.size, 'ffmpeg process(es)');
+  logger.info('Aborting', runningFfmpegs.size, 'ffmpeg process(es)');
   runningFfmpegs.forEach((process) => {
     process.kill('SIGTERM', { forceKillAfterTimeout: 10000 });
   });
@@ -102,7 +103,7 @@ function handleProgress(process: { stderr: Readable | null }, durationIn: number
       onProgress(progress);
     } catch (err) {
       // @ts-expect-error todo
-      console.log('Failed to parse ffmpeg progress line:', err.message);
+      logger.error('Failed to parse ffmpeg progress line:', err.message);
     }
   });
 }
@@ -122,7 +123,7 @@ function getExecaOptions({ env, ...customExecaOptions }: Omit<ExecaOptions<Buffe
 // todo collect warnings from ffmpeg output and show them after export? example: https://github.com/mifi/lossless-cut/issues/1469
 function runFfmpegProcess(args: readonly string[], customExecaOptions?: Omit<ExecaOptions<BufferEncodingOption>, 'encoding'>, additionalOptions?: { logCli?: boolean }) {
   const ffmpegPath = getFfmpegPath();
-  if (additionalOptions?.logCli) console.log(getFfCommandLine('ffmpeg', args));
+  if (additionalOptions?.logCli) logger.info(getFfCommandLine('ffmpeg', args));
 
   const process = execa(ffmpegPath, args, getExecaOptions(customExecaOptions));
 
@@ -163,10 +164,10 @@ export async function runFfmpegWithProgress({ ffmpegArgs, duration, onProgress }
 
 export async function runFfprobe(args: readonly string[], { timeout = isDev ? 10000 : 30000 } = {}) {
   const ffprobePath = getFfprobePath();
-  console.log(getFfCommandLine('ffprobe', args));
+  logger.info(getFfCommandLine('ffprobe', args));
   const ps = execa(ffprobePath, args, getExecaOptions());
   const timer = setTimeout(() => {
-    console.warn('killing timed out ffprobe');
+    logger.warn('killing timed out ffprobe');
     ps.kill();
   }, timeout);
   try {
@@ -201,8 +202,8 @@ export async function renderWaveformPng({ filePath, start, duration, color, stre
     '-',
   ];
 
-  console.log(getFfCommandLine('ffmpeg1', args1));
-  console.log('|', getFfCommandLine('ffmpeg2', args2));
+  logger.info(getFfCommandLine('ffmpeg1', args1));
+  logger.info('|', getFfCommandLine('ffmpeg2', args2));
 
   let ps1: ExecaChildProcess<Buffer> | undefined;
   let ps2: ExecaChildProcess<Buffer> | undefined;
@@ -216,7 +217,7 @@ export async function renderWaveformPng({ filePath, start, duration, color, stre
     const timer = setTimeout(() => {
       ps1?.kill();
       ps2?.kill();
-      console.warn('ffmpeg timed out');
+      logger.warn('ffmpeg timed out');
     }, 10000);
 
     let stdout;
@@ -453,7 +454,7 @@ export async function captureFrame({ timestamp, videoPath, outPath, quality }: {
 
 
 async function readFormatData(filePath: string) {
-  console.log('readFormatData', filePath);
+  logger.info('readFormatData', filePath);
 
   const { stdout } = await runFfprobe([
     '-of', 'json', '-show_format', '-i', filePath, '-hide_banner',
@@ -482,7 +483,7 @@ export async function html5ify({ outPath, filePath: filePathArg, speed, hasAudio
     else video = 'copy';
   }
 
-  console.log('Making HTML5 friendly version', { filePathArg, outPath, speed, video, audio });
+  logger.info('Making HTML5 friendly version', { filePathArg, outPath, speed, video, audio });
 
   let videoArgs;
   let audioArgs;
@@ -571,7 +572,7 @@ export async function html5ify({ outPath, filePath: filePathArg, speed, hasAudio
   if (duration) handleProgress(process, duration, onProgress);
 
   const { stdout } = await process;
-  console.log(stdout.toString('utf8'));
+  logger.info(stdout.toString('utf8'));
 }
 
 export function readOneJpegFrame({ path, seekTo, videoStreamIndex }: { path: string, seekTo: number, videoStreamIndex: number }) {
@@ -658,7 +659,7 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
     '-f', 'mp4', '-movflags', '+frag_keyframe+empty_moov+default_base_moof', '-',
   ];
 
-  if (enableLog) console.log(getFfCommandLine('ffmpeg', args));
+  if (enableLog) logger.info(getFfCommandLine('ffmpeg', args));
 
   return execa(getFfmpegPath(), args, { encoding: null, buffer: false, stderr: enableLog ? 'inherit' : 'pipe' });
 }
