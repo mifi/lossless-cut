@@ -20,7 +20,7 @@
     "test": "vitest",
     "lint": "eslint --ext .js,.ts,.jsx,.tsx,.mjs,.mts .",
     "pack-mac": "yarn build && electron-builder --mac dmg",
-    "pack-mas-dev": "yarn build && electron-builder -mac mas-dev -c.mas.provisioningProfile=LosslessCut_Dev.provisionprofile -c.mas.identity='Apple Development: Mikael Finstad (JH4PH8B3C8)'",
+    "pack-mas-dev": "yarn build && electron-builder --mac mas-dev -c.mas.provisioningProfile=LosslessCut_Dev.provisionprofile -c.mas.identity='Apple Development: Mikael Finstad (JH4PH8B3C8)'",
     "pack-win": "yarn build && electron-builder --win zip --x64",
     "postinstall": "electron-builder install-app-deps",
     "version": "tsx script/postversion.mts && git add no.mifi.losslesscut.appdata.xml",
@@ -166,9 +166,9 @@
     ],
     "mac": {
       "hardenedRuntime": true,
+      "notarize": true,
       "appId": "no.mifi.losslesscut-mac",
       "category": "public.app-category.productivity",
-      "notarize": true,
       "target": [
         {
           "target": "mas",
