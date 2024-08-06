@@ -593,7 +593,7 @@ export async function selectSegmentsByExprDialog(inputValidator: (v: string) => 
         ))}
       </div>
     ),
-    inputPlaceholder: 'segment.duration < 5',
+    inputPlaceholder: i18n.t('Enter JavaScript expression'),
     inputValidator,
   });
   return value;
