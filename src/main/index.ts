@@ -52,14 +52,6 @@ const electronUnhandled = import('electron-unhandled');
   }
 })();
 
-// https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz
-// todo This should not be necessary anymore since v23.0.0
-declare module 'i18next' {
-  interface CustomTypeOptions {
-    returnNull: false;
-  }
-}
-
 // eslint-disable-next-line unicorn/prefer-export-from
 export { isDev };
 
