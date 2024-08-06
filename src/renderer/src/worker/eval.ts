@@ -1,8 +1,28 @@
-const workerUrl = new URL('evalWorker.js', import.meta.url);
+import invariant from 'tiny-invariant';
+
+// https://github.com/vitejs/vite/issues/11823#issuecomment-1407277242
+// https://github.com/mifi/lossless-cut/issues/2059
+import Worker from './evalWorker?worker';
+
+
+export interface RequestMessageData {
+  code: string,
+  id: number,
+  context: string // json
+}
+
+export type ResponseMessageData = { id: number } & ({
+  error: string,
+} | {
+  data: unknown,
+})
 
 // https://v3.vitejs.dev/guide/features.html#web-workers
 // todo terminate() and recreate in case of error?
-const worker = new Worker(workerUrl);
+const worker = new Worker();
+worker.addEventListener('error', (err) => {
+  console.error('evalWorker error', err);
+});
 
 let lastRequestId = 0;
 
@@ -22,13 +42,17 @@ export default async function safeishEval(code: string, context: Record<string, 
       worker.removeEventListener('error', onError);
     }
 
-    function onMessage({ data: { id: responseId, error, data } }) {
+    function onMessage(response: { data: ResponseMessageData }) {
       // console.log('message', { responseId, error, data })
 
-      if (responseId === id) {
+      if (response.data.id === id) {
         cleanup();
-        if (error) reject(new Error(error));
-        else resolve(data);
+        if ('error' in response.data) {
+          reject(new Error(response.data.error));
+        } else {
+          invariant('data' in response.data);
+          resolve(response.data.data);
+        }
       }
     }
 
@@ -46,6 +70,6 @@ export default async function safeishEval(code: string, context: Record<string, 
     worker.addEventListener('messageerror', onMessageerror);
     worker.addEventListener('error', onError);
 
-    worker.postMessage({ id, code, context: JSON.stringify(context) });
+    worker.postMessage({ id, code, context: JSON.stringify(context) } satisfies RequestMessageData);
   });
 }

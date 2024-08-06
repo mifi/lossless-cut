@@ -1,9 +1,14 @@
-// eslint-disable-next-line unicorn/no-this-assignment, @typescript-eslint/no-this-alias
-const myGlobal = this;
+import type { RequestMessageData, ResponseMessageData } from './eval';
+
 
 // https://stackoverflow.com/a/10796616/6519037
 // https://github.com/Zirak/SO-ChatBot/blob/master/source/eval.js
 // https://github.com/Zirak/SO-ChatBot/blob/master/source/codeWorker.js
+
+// `this` doesn't seem to work when transpiling, so use globalThis instead
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/globalThis
+const myGlobal = globalThis;
+
 
 const wl = {
   self: 1,
@@ -119,7 +124,7 @@ myGlobal.fetch = undefined;
 
 // eslint-disable-next-line wrap-iife, func-names
 (function () {
-  onmessage = (event) => {
+  onmessage = (event: MessageEvent<RequestMessageData>) => {
     // eslint-disable-next-line strict, lines-around-directive
     'use strict';
 
@@ -130,9 +135,9 @@ myGlobal.fetch = undefined;
       // https://stackoverflow.com/questions/8403108/calling-eval-in-particular-context
       // eslint-disable-next-line unicorn/new-for-builtins, no-new-func
       const result = Function(`\nwith (this) { return (${code}); }`).call(context);
-      postMessage({ id, data: result });
+      postMessage({ id, data: result } satisfies ResponseMessageData);
     } catch (e) {
-      postMessage({ id, error: `${e}` });
+      postMessage({ id, error: `${e}` } satisfies ResponseMessageData);
     }
   };
 })();

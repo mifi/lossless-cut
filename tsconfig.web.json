@@ -5,6 +5,8 @@
     "noEmit": true,
 
     "noImplicitAny": false, // todo
+
+    "types": ["vite/client"],
   },
   "references": [
     { "path": "./tsconfig.main.json" },
