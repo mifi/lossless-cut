@@ -4,7 +4,6 @@ process.traceProcessWarnings = true;
 /* eslint-disable import/first */
 // eslint-disable-next-line import/no-extraneous-dependencies
 import electron, { AboutPanelOptionsOptions, BrowserWindow, BrowserWindowConstructorOptions, nativeTheme, shell, app, ipcMain } from 'electron';
-import unhandled from 'electron-unhandled';
 import i18n from 'i18next';
 import debounce from 'lodash/debounce';
 import yargsParser from 'yargs-parser';
@@ -42,6 +41,17 @@ export { isLinux, isWindows, isMac, platform } from './util.js';
 export { pathToFileURL } from 'node:url';
 
 
+const electronUnhandled = import('electron-unhandled');
+
+// eslint-disable-next-line unicorn/prefer-top-level-await
+(async () => {
+  try {
+    (await electronUnhandled).default({ showDialog: true, logger: (err) => logger.error('electron-unhandled', err) });
+  } catch (err) {
+    logger.error(err);
+  }
+})();
+
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz
 // todo This should not be necessary anymore since v23.0.0
 declare module 'i18next' {
@@ -59,10 +69,6 @@ export { isDev };
 app.commandLine.appendSwitch('enable-blink-features', 'AudioVideoTracks');
 
 remote.initialize();
-
-unhandled({
-  showDialog: true,
-});
 
 
 const appVersion = app.getVersion();

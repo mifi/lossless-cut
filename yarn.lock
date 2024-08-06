@@ -412,12 +412,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@electron/remote@npm:^2.0.10":
-  version: 2.0.10
-  resolution: "@electron/remote@npm:2.0.10"
+"@electron/remote@npm:^2.1.2":
+  version: 2.1.2
+  resolution: "@electron/remote@npm:2.1.2"
   peerDependencies:
     electron: ">= 13.0.0"
-  checksum: 61b2ca95f850d431b95a51da460d50507137156b428795445546ef97439d7ed27e76c6f12ce659a1c1858d7564a9d306ac3e996cb7d416ed300b903abba77c57
+  checksum: c0fa92fb30ca0dab600513b17f648a935b3e9718516d446d65590ac98a8765e0a8d20c5c6714069a164b52a32f0f07cee87a23ff8ee65197f69d0151679ac291
   languageName: node
   linkType: hard
 
@@ -2101,12 +2101,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:18, @types/node@npm:^18.11.18":
+"@types/node@npm:*, @types/node@npm:18":
   version: 18.19.21
   resolution: "@types/node@npm:18.19.21"
   dependencies:
     undici-types: "npm:~5.26.4"
   checksum: 3a5c5841f294bc35b5b416a32764b5c0c2f22f4cef48cb7d2e3b4e068a52d5857e50da8e6e0685e743127c70344301c833849a3904ce3bd3f67448da5e85487a
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^20.9.0":
+  version: 20.14.14
+  resolution: "@types/node@npm:20.14.14"
+  dependencies:
+    undici-types: "npm:~5.26.4"
+  checksum: 035bc347e3de04888d537801e23eb4b4f99522975ca002dbfef978edd853710031b7cd43bf022670d6aba4ed5d4ac75ea1b5ff77ff8f80998bffd943b7bcef48
   languageName: node
   linkType: hard
 
@@ -3531,7 +3540,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"clean-stack@npm:^2.0.0, clean-stack@npm:^2.1.0":
+"clean-stack@npm:^2.0.0":
   version: 2.2.0
   resolution: "clean-stack@npm:2.2.0"
   checksum: 2ac8cd2b2f5ec986a3c743935ec85b07bc174d5421a5efc8017e1f146a1cf5f781ae962618f416352103b32c9cd7e203276e8c28241bbe946160cab16149fb68
@@ -3544,6 +3553,15 @@ __metadata:
   dependencies:
     escape-string-regexp: "npm:5.0.0"
   checksum: 373f656a31face5c615c0839213b9b542a0a48057abfb1df66900eab4dc2a5c6097628e4a0b5aa559cdfc4e66f8a14ea47be9681773165a44470ef5fb8ccc172
+  languageName: node
+  linkType: hard
+
+"clean-stack@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "clean-stack@npm:5.2.0"
+  dependencies:
+    escape-string-regexp: "npm:5.0.0"
+  checksum: 9b16c9d56ef673b1666030d04afc5a382c7ec6b5fb8df2dd361090c3ac79273695d6db9867938bb3268903dcebf401e2c6034b2f56f27673f6032b5e89217b81
   languageName: node
   linkType: hard
 
@@ -4431,10 +4449,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-is-dev@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "electron-is-dev@npm:2.0.0"
-  checksum: 7393f46f06153d70a427ea904c60a092e50fbf1015c26c342cebb8324ada8c9e0c0f1f02867af56d9cc76f47be17da8cb311ea6bdc83343e7ebd2323ec4014c8
+"electron-is-dev@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "electron-is-dev@npm:3.0.1"
+  checksum: 0f3bb1ebac00ab25d541a5e6b2ba9c6cdbcb0875782bffd1b0a7e8d303f837669580febfc696f1ce2b0f79cc4bc529dd71f0bf4da5d934492003c9a9b833ec22
   languageName: node
   linkType: hard
 
@@ -4470,16 +4488,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-unhandled@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "electron-unhandled@npm:4.0.1"
+"electron-unhandled@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "electron-unhandled@npm:5.0.0"
   dependencies:
-    clean-stack: "npm:^2.1.0"
-    electron-is-dev: "npm:^2.0.0"
-    ensure-error: "npm:^2.0.0"
+    clean-stack: "npm:^5.2.0"
+    electron-is-dev: "npm:^3.0.1"
+    ensure-error: "npm:^4.0.0"
     lodash.debounce: "npm:^4.0.8"
-    serialize-error: "npm:^8.1.0"
-  checksum: 64874ef2f2a681a7a4c2f98be7bf0365c02d31ebf0adaef03f5a68a22bff6db3a22be66aef7a21b85c949f8c05647dd31b15d92fb73c0ff22e2e845c5a2a9db9
+    serialize-error: "npm:^11.0.3"
+  checksum: df576bf54b715c57d1fd88195c984e5d3a8284983acf2e17dc132d36249d762709bd350c3d543be6bd3fdceff84ad8e813db1c39c01d0c70699290ace1a09cf2
   languageName: node
   linkType: hard
 
@@ -4505,16 +4523,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:^27.0.0":
-  version: 27.0.0
-  resolution: "electron@npm:27.0.0"
+"electron@npm:^31.3.1":
+  version: 31.3.1
+  resolution: "electron@npm:31.3.1"
   dependencies:
     "@electron/get": "npm:^2.0.0"
-    "@types/node": "npm:^18.11.18"
+    "@types/node": "npm:^20.9.0"
     extract-zip: "npm:^2.0.1"
   bin:
     electron: cli.js
-  checksum: 486057738b20ec65a7ac9b30d615f94311a6b8ea900f94d1c6668c4e48bb6c9371a9131ee4349a3247031c292f97b8aa85448ec8e95b6998200a28bafe4aa6c2
+  checksum: bc6e582c2a6ad9a95eeff71a24b2f798b88ce33dae1cae9e02fcb81f058463c502210a8eb0b9a061c82223060159ac69c141386f689ce2f52818f96fefc827c9
   languageName: node
   linkType: hard
 
@@ -4564,10 +4582,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ensure-error@npm:^2.0.0":
-  version: 2.1.0
-  resolution: "ensure-error@npm:2.1.0"
-  checksum: a24852103e9f39cb20ccd5b014d2657425fb786356da3ddc19a4842354430002847f1efeafd14c798e9ee62f644be1986b2b60c9eb1c73f335d1a6dea5bda71a
+"ensure-error@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "ensure-error@npm:4.0.0"
+  checksum: 1670fadfa44162b198970f6336a77a5277e6eb3299c5d9760ea7ca20817b9c11c4714c49cfb9ec99e00d7a2a40cf8d819cb814974c7468668113f470e910d322
   languageName: node
   linkType: hard
 
@@ -7603,7 +7621,7 @@ __metadata:
   resolution: "lossless-cut@workspace:."
   dependencies:
     "@adamscybot/react-leaflet-component-marker": "npm:^2.0.0"
-    "@electron/remote": "npm:^2.0.10"
+    "@electron/remote": "npm:^2.1.2"
     "@fontsource/open-sans": "npm:^4.5.14"
     "@octokit/core": "npm:5"
     "@radix-ui/colors": "npm:^0.1.8"
@@ -7635,11 +7653,11 @@ __metadata:
     csv-stringify: "npm:^5.6.2"
     cue-parser: "npm:^0.3.0"
     data-uri-to-buffer: "npm:^4.0.0"
-    electron: "npm:^27.0.0"
+    electron: "npm:^31.3.1"
     electron-builder: "npm:^24.6.4"
     electron-devtools-installer: "npm:^3.2.0"
     electron-store: "npm:5.1.1"
-    electron-unhandled: "npm:^4.0.1"
+    electron-unhandled: "npm:^5.0.0"
     electron-vite: "npm:^2.3.0"
     eslint: "npm:^8.2.0"
     eslint-config-mifi: "npm:^0.0.3"
@@ -9945,21 +9963,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"serialize-error@npm:^11.0.3":
+  version: 11.0.3
+  resolution: "serialize-error@npm:11.0.3"
+  dependencies:
+    type-fest: "npm:^2.12.2"
+  checksum: 5fe19e120e9ad8488c0abe27517e60da75bd65f56ae1cb48d8524e013d0e07f18bb9d05eca72898c5244e1168576f3131f29145c9f785e735e10742ee9c86c08
+  languageName: node
+  linkType: hard
+
 "serialize-error@npm:^7.0.1":
   version: 7.0.1
   resolution: "serialize-error@npm:7.0.1"
   dependencies:
     type-fest: "npm:^0.13.1"
   checksum: e0aba4dca2fc9fe74ae1baf38dbd99190e1945445a241ba646290f2176cdb2032281a76443b02ccf0caf30da5657d510746506368889a593b9835a497fc0732e
-  languageName: node
-  linkType: hard
-
-"serialize-error@npm:^8.1.0":
-  version: 8.1.0
-  resolution: "serialize-error@npm:8.1.0"
-  dependencies:
-    type-fest: "npm:^0.20.2"
-  checksum: 2eef236d50edd2d7926e602c14fb500dc3a125ee52e9f08f67033181b8e0be5d1122498bdf7c23c80683cddcad083a27974e9e7111ce23165f4d3bcdd6d65102
   languageName: node
   linkType: hard
 
@@ -11032,6 +11050,13 @@ __metadata:
   version: 0.8.1
   resolution: "type-fest@npm:0.8.1"
   checksum: fd4a91bfb706aeeb0d326ebd2e9a8ea5263979e5dec8d16c3e469a5bd3a946e014a062ef76c02e3086d3d1c7209a56a20a4caafd0e9f9a5c2ab975084ea3d388
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^2.12.2":
+  version: 2.19.0
+  resolution: "type-fest@npm:2.19.0"
+  checksum: 7bf9e8fdf34f92c8bb364c0af14ca875fac7e0183f2985498b77be129dc1b3b1ad0a6b3281580f19e48c6105c037fb966ad9934520c69c6434d17fd0af4eed78
   languageName: node
   linkType: hard
 

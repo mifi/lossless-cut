@@ -118,8 +118,8 @@ Links:
 
 ### Keep dependencies up to date
 - ffmpeg
-- electron
-- package.json
+- `electron`, `@electron/remote` and upgrade [electron.vite.config.ts](./electron.vite.config.ts) `target`s.
+- `package.json`
 
 ### i18n
 `yarn scan-i18n`
