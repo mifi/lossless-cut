@@ -406,3 +406,5 @@ export function quitApp() {
 }
 
 export const hasDisabledNetworking = () => !!disableNetworking;
+
+export const setProgressBar = (v: number) => mainWindow?.setProgressBar(v);

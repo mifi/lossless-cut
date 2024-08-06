@@ -97,7 +97,7 @@ const { exists } = window.require('fs-extra');
 const { lstat } = window.require('fs/promises');
 const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('path');
 
-const { focusWindow, hasDisabledNetworking, quitApp, pathToFileURL } = window.require('@electron/remote').require('./index.js');
+const { focusWindow, hasDisabledNetworking, quitApp, pathToFileURL, setProgressBar } = window.require('@electron/remote').require('./index.js');
 
 
 const videoStyle: CSSProperties = { width: '100%', height: '100%', objectFit: 'contain' };
@@ -190,6 +190,8 @@ function App() {
   }, [working?.abortController]);
 
   useEffect(() => setDocumentTitle({ filePath, working: working?.text, cutProgress }), [cutProgress, filePath, working?.text]);
+
+  useEffect(() => setProgressBar(cutProgress ?? -1), [cutProgress]);
 
   const zoom = Math.floor(zoomUnrounded);
 
