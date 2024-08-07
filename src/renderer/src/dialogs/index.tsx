@@ -15,7 +15,10 @@ import Checkbox from '../components/Checkbox';
 import { isWindows, showItemInFolder } from '../util';
 import { ParseTimecode, SegmentBase } from '../types';
 
-const { dialog, shell } = window.require('@electron/remote');
+const remote = window.require('@electron/remote');
+const { dialog, shell } = remote;
+
+const { downloadMediaUrl } = remote.require('./index.js');
 
 
 export async function promptTimecode({ initialValue, title, text, inputPlaceholder, parseTimecode, allowRelative = false }: {
@@ -709,4 +712,19 @@ export async function askForPlaybackRate({ detectedFps, outputPlaybackRate }) {
   if (!value) return undefined;
 
   return parseValue(value);
+}
+
+export async function promptDownloadMediaUrl(outPath: string) {
+  const { value } = await Swal.fire<string>({
+    title: i18n.t('Open media from URL'),
+    input: 'text',
+    inputPlaceholder: 'https://example.com/video.m3u8',
+    text: i18n.t('Losslessly download a whole media file from the specified URL, mux it into an mkv file and open it in LosslessCut. This can be useful if you need to download a video from a website, e.g. a HLS streaming video. For example in Chrome you can open Developer Tools and view the network traffic, find the playlist (e.g. m3u8) and copy paste its URL here.'),
+    showCancelButton: true,
+  });
+
+  if (!value) return false;
+
+  await downloadMediaUrl(value, outPath);
+  return true;
 }

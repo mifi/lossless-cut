@@ -40,6 +40,8 @@ export { isLinux, isWindows, isMac, platform } from './util.js';
 
 export { pathToFileURL } from 'node:url';
 
+export { downloadMediaUrl } from './ffmpeg.js';
+
 
 const electronUnhandled = import('electron-unhandled');
 

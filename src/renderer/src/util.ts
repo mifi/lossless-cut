@@ -52,6 +52,8 @@ export function getOutPath({ customOutDir, filePath, fileName }: { customOutDir?
   return join(getOutDir(customOutDir, filePath), fileName);
 }
 
+export const getDownloadMediaOutPath = (customOutDir: string, fileName: string) => join(customOutDir, fileName);
+
 export const getSuffixedFileName = (filePath: string | undefined, nameSuffix: string) => `${getFileBaseName(filePath)}-${nameSuffix}`;
 
 export function getSuffixedOutPath<T extends string | undefined>(a: { customOutDir?: string | undefined, filePath?: T | undefined, nameSuffix: string }): T extends string ? string : undefined;

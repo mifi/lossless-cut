@@ -74,13 +74,14 @@ import {
   deleteFiles, isOutOfSpaceError, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, getOutFileExtension, getSuffixedFileName, mustDisallowVob, readVideoTs, readDirRecursively, getImportProjectType,
   calcShouldShowWaveform, calcShouldShowKeyframes, mediaSourceQualities, getFrameDuration, isExecaError, getStdioString,
   isMuxNotSupported,
+  getDownloadMediaOutPath,
 } from './util';
 import { toast, errorToast } from './swal';
 import { formatDuration, parseDuration } from './util/duration';
 import { adjustRate } from './util/rate-calculator';
 import { askExtractFramesAsImages } from './dialogs/extractFrames';
 import { askForHtml5ifySpeed } from './dialogs/html5ify';
-import { askForOutDir, askForImportChapters, promptTimecode, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openExportFinishedToast, openConcatFinishedToast, showOpenDialog, showMuxNotSupported } from './dialogs';
+import { askForOutDir, askForImportChapters, promptTimecode, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openExportFinishedToast, openConcatFinishedToast, showOpenDialog, showMuxNotSupported, promptDownloadMediaUrl } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { createSegment, getCleanCutSegments, findSegmentsAtCursor, sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, playOnlyCurrentSegment, getSegmentTags } from './segments';
@@ -178,7 +179,7 @@ function App() {
 
   // Store "working" in a ref so we can avoid race conditions
   const workingRef = useRef(!!working);
-  const setWorking = useCallback((valOrBool: { text: string, abortController?: AbortController } | true | undefined) => {
+  const setWorking = useCallback((valOrBool?: { text: string, abortController?: AbortController } | true | undefined) => {
     workingRef.current = !!valOrBool;
     const val = valOrBool === true ? { text: t('Loading') } : valOrBool;
     setWorkingState(val ? { text: val.text, abortController: val.abortController } : undefined);
@@ -2149,6 +2150,23 @@ function App() {
     onEditSegmentTags(currentSegIndexSafe);
   }, [currentSegIndexSafe, onEditSegmentTags]);
 
+  const promptDownloadMediaUrlWrapper = useCallback(async () => {
+    if (customOutDir == null) {
+      errorToast(i18n.t('Please select a working directory first'));
+      return;
+    }
+    const outPath = getDownloadMediaOutPath(customOutDir, `downloaded-media-${Date.now()}.mkv`);
+    try {
+      setWorking(true);
+      const downloaded = await promptDownloadMediaUrl(outPath);
+      if (downloaded) await loadMedia({ filePath: outPath });
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setWorking();
+    }
+  }, [customOutDir, loadMedia, setWorking]);
+
   type MainKeyboardAction = Exclude<KeyboardAction, 'closeActiveScreen' | 'toggleKeyboardShortcuts' | 'goToTimecodeDirect'>;
 
   const mainActions = useMemo(() => {
@@ -2486,6 +2504,7 @@ function App() {
         // todo separate actions per type and move them into mainActions? https://github.com/mifi/lossless-cut/issues/254#issuecomment-932649424
         importEdlFile,
         exportEdlFile: tryExportEdlFile,
+        promptDownloadMediaUrl: promptDownloadMediaUrlWrapper,
       }).map(([key, fn]) => [
         key,
         async (...args: unknown[]) => {
@@ -2544,7 +2563,7 @@ function App() {
       ipcActions.forEach(([key, action]) => electron.ipcRenderer.off(key, action));
       electron.ipcRenderer.off('apiAction', tryApiAction);
     };
-  }, [checkFileOpened, customOutDir, detectedFps, filePath, getFrameCount, getKeyboardAction, goToTimecodeDirect, loadCutSegments, mainActions, selectedSegments, toggleKeyboardShortcuts, userOpenFiles]);
+  }, [checkFileOpened, customOutDir, detectedFps, filePath, getFrameCount, getKeyboardAction, goToTimecodeDirect, loadCutSegments, mainActions, promptDownloadMediaUrlWrapper, selectedSegments, toggleKeyboardShortcuts, userOpenFiles]);
 
   useEffect(() => {
     async function onDrop(ev: DragEvent) {

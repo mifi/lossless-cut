@@ -36,6 +36,13 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
           },
         },
         {
+          label: esc(t('Open URL')),
+          async click() {
+            mainWindow.webContents.send('promptDownloadMediaUrl');
+          },
+        },
+        { type: 'separator' },
+        {
           label: esc(t('Close')),
           accelerator: 'CmdOrCtrl+W',
           async click() {
