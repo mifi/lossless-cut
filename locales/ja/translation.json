@@ -844,5 +844,7 @@
     "Decrease font size": "文字を大きく",
     "Timeline keyboard seek interval": "タイムラインをキーボードでシークする間隔",
     "Timeline keyboard seek interval (longer)": "タイムラインをキーボードでシークする間隔 (大きく)",
-    "At least one resulting file name contains invalid character(s): {{invalidChars}}": "1つ以上のファイルの名前に以下の無効な文字が含まれています: {{invalidChars}}"
+    "At least one resulting file name contains invalid character(s): {{invalidChars}}": "1つ以上のファイルの名前に以下の無効な文字が含まれています: {{invalidChars}}",
+    "All tracks have been extracted": "すべてのトラックが抽出されました",
+    "Create segments from subtitles": "字幕からセグメントを作成"
 }
