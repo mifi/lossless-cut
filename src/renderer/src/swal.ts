@@ -36,6 +36,7 @@ export default Swal;
 export const swalToastOptions: SweetAlertOptions = {
   ...commonSwalOptions,
   toast: true,
+  width: '50vw',
   position: 'top',
   showConfirmButton: false,
   showCloseButton: true,
