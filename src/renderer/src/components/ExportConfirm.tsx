@@ -4,7 +4,7 @@ import { WarningSignIcon, CrossIcon } from 'evergreen-ui';
 import { FaRegCheckCircle } from 'react-icons/fa';
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
-import { IoIosHelpCircle } from 'react-icons/io';
+import { IoIosHelpCircle, IoIosSettings } from 'react-icons/io';
 import type { SweetAlertIcon } from 'sweetalert2';
 
 import ExportButton from './ExportButton';
@@ -64,6 +64,7 @@ function ExportConfirm({
   setMergedOutFileName,
   smartCutBitrate,
   setSmartCutBitrate,
+  toggleSettings,
 } : {
   areWeCutting: boolean,
   selectedSegments: InverseCutSegment[],
@@ -89,6 +90,7 @@ function ExportConfirm({
   setMergedOutFileName: (a: string) => void,
   smartCutBitrate: number | undefined,
   setSmartCutBitrate: Dispatch<SetStateAction<number | undefined>>,
+  toggleSettings: () => void,
 }) {
   const { t } = useTranslation();
 
@@ -151,6 +153,7 @@ function ExportConfirm({
 
   const onAvoidNegativeTsHelpPress = useCallback(() => {
     // https://ffmpeg.org/ffmpeg-all.html#Format-Options
+    // https://github.com/mifi/lossless-cut/issues/1206
     const texts = {
       make_non_negative: i18n.t('Shift timestamps to make them non-negative. Also note that this affects only leading negative timestamps, and not non-monotonic negative timestamps.'),
       make_zero: i18n.t('Shift timestamps so that the first timestamp is 0. (LosslessCut default)'),
@@ -309,6 +312,61 @@ function ExportConfirm({
 
                 <table className={styles['options']}>
                   <tbody>
+
+                    {areWeCutting && (
+                      <tr>
+                        <td>
+                          {t('Shift all start times')}
+                        </td>
+                        <td>
+                          <Select value={cutFromAdjustmentFrames} onChange={(e) => setCutFromAdjustmentFrames(Number(e.target.value))} style={{ height: 20, marginLeft: 5 }}>
+                            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => <option key={v} value={v}>{t('+{{numFrames}} frames', { numFrames: v, count: v })}</option>)}
+                          </Select>
+                        </td>
+                        <td>
+                          <HelpIcon onClick={onCutFromAdjustmentFramesHelpPress} />
+                        </td>
+                      </tr>
+                    )}
+
+                    {isMov && (
+                      <>
+                        <tr>
+                          <td>
+                            {t('Enable MOV Faststart?')}
+                          </td>
+                          <td>
+                            <MovFastStartButton />
+                            {isIpod && !movFastStart && <div style={warningStyle}>{t('For the ipod format, it is recommended to activate this option')}</div>}
+                          </td>
+                          <td>
+                            {isIpod && !movFastStart ? (
+                              <WarningSignIcon verticalAlign="middle" color="warning" />
+                            ) : (
+                              <HelpIcon onClick={onMovFastStartHelpPress} />
+                            )}
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td>
+                            {t('Preserve all MP4/MOV metadata?')}
+                            {isIpod && preserveMovData && <div style={warningStyle}>{t('For the ipod format, it is recommended to deactivate this option')}</div>}
+                          </td>
+                          <td>
+                            <PreserveMovDataButton />
+                          </td>
+                          <td>
+                            {isIpod && preserveMovData ? (
+                              <WarningSignIcon verticalAlign="middle" color="warning" />
+                            ) : (
+                              <HelpIcon onClick={onPreserveMovDataHelpPress} />
+                            )}
+                          </td>
+                        </tr>
+                      </>
+                    )}
+
                     {willMerge && (
                       <>
                         <tr>
@@ -403,60 +461,6 @@ function ExportConfirm({
                       </>
                     )}
 
-                    {areWeCutting && (
-                      <tr>
-                        <td>
-                          {t('Shift all start times')}
-                        </td>
-                        <td>
-                          <Select value={cutFromAdjustmentFrames} onChange={(e) => setCutFromAdjustmentFrames(Number(e.target.value))} style={{ height: 20, marginLeft: 5 }}>
-                            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => <option key={v} value={v}>{t('+{{numFrames}} frames', { numFrames: v, count: v })}</option>)}
-                          </Select>
-                        </td>
-                        <td>
-                          <HelpIcon onClick={onCutFromAdjustmentFramesHelpPress} />
-                        </td>
-                      </tr>
-                    )}
-
-                    {isMov && (
-                      <>
-                        <tr>
-                          <td>
-                            {t('Enable MOV Faststart?')}
-                          </td>
-                          <td>
-                            <MovFastStartButton />
-                            {isIpod && !movFastStart && <div style={warningStyle}>{t('For the ipod format, it is recommended to activate this option')}</div>}
-                          </td>
-                          <td>
-                            {isIpod && !movFastStart ? (
-                              <WarningSignIcon verticalAlign="middle" color="warning" />
-                            ) : (
-                              <HelpIcon onClick={onMovFastStartHelpPress} />
-                            )}
-                          </td>
-                        </tr>
-
-                        <tr>
-                          <td>
-                            {t('Preserve all MP4/MOV metadata?')}
-                            {isIpod && preserveMovData && <div style={warningStyle}>{t('For the ipod format, it is recommended to deactivate this option')}</div>}
-                          </td>
-                          <td>
-                            <PreserveMovDataButton />
-                          </td>
-                          <td>
-                            {isIpod && preserveMovData ? (
-                              <WarningSignIcon verticalAlign="middle" color="warning" />
-                            ) : (
-                              <HelpIcon onClick={onPreserveMovDataHelpPress} />
-                            )}
-                          </td>
-                        </tr>
-                      </>
-                    )}
-
                     {!needSmartCut && (() => {
                       const avoidNegativeTsWarn = (() => {
                         if (willMerge) {
@@ -474,7 +478,7 @@ function ExportConfirm({
                       return (
                         <tr>
                           <td>
-                            {`"${'avoid_negative_ts'}"`}
+                            &quot;ffmpeg&quot; <code className="highlighted">avoid_negative_ts</code>
                             {avoidNegativeTsWarn != null && <div style={warningStyle}>{avoidNegativeTsWarn}</div>}
                           </td>
                           <td>
@@ -506,6 +510,16 @@ function ExportConfirm({
                       <td>
                         <HelpIcon onClick={onFfmpegExperimentalHelpPress} />
                       </td>
+                    </tr>
+
+                    <tr>
+                      <td>
+                        {t('More settings')}
+                      </td>
+                      <td>
+                        <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ marginLeft: 5 }} />
+                      </td>
+                      <td />
                     </tr>
                   </tbody>
                 </table>
