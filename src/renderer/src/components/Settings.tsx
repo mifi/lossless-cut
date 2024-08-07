@@ -270,7 +270,7 @@ function Settings({
               <div style={detailsStyle}>
                 {keyframeCut ? (
                   <>
-                    <b>{t('Keyframe cut')}</b>: {t('Cut at the nearest keyframe (not accurate time.) Equiv to')}:<br />
+                    <b>{t('Keyframe cut')}</b>: {t('Cut at the preceding keyframe (not accurate time.) Equiv to')}:<br />
                     <code className="highlighted">ffmpeg -ss -i input.mp4</code>
                   </>
                 ) : (
