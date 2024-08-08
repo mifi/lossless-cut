@@ -806,13 +806,13 @@
     "Cannot open anything else than regular files": "通常のファイル以外は開けません",
     "File is not natively supported. Preview playback may be slow and of low quality, but the final export will be lossless. You may convert the file from the menu for a better preview.": "ファイルはネイティブでは対応していません。プレビューの再生は遅く低画質になる可能性がありますが、無劣化で出力されます。プレビューを改善するために、メニューからファイルを変換できます。",
     "Output file name is the same as the source file name. This increases the risk of accidentally overwriting or deleting source files!": "出力ファイル名と入力ファイル名が同じです。誤って入力ファイルを上書きまたは削除する危険性を高めます！",
-    "Duplicate keyboard combination": "キーボードの組み合わせを複製",
+    "Duplicate keyboard combination": "重複したキーボードの組み合わせです",
     "This option allows you to shift all segment start times forward by one or more frames before cutting. This can be useful if the output video starts from the wrong (preceding) keyframe.": "このオプションは、切り取る前に、すべてのセグメントの開始時間を1フレーム以上進めます。出力された映像が間違った（前の）キーフレームから始まる場合に便利です。",
     "Convert subtitiles into segments": "字幕をセグメントに変換",
     "When merging, it's generally recommended to set this to \"make_non_negative\"": "結合時はこれを make_non_negative に設定することが一般的におすすめです",
     "⊞ Win": "⊞ Win",
     "⌘ Cmd": "⌘ Cmd",
-    "Combination is already bound to \"{{alreadyBoundKey}}\"": "既に「{{alreadyBoundKey}}」に割り当て済みです",
+    "Combination is already bound to \"{{alreadyBoundKey}}\"": "「{{alreadyBoundKey}}」に割り当て済み",
     "Edit current segment tags": "現在のセグメントのタグを編集",
     "Fastest: FFmpeg-assisted playback": "最速: FFmpeg支援再生",
     "FFmpeg-assisted playback": "FFmpeg支援再生",
@@ -872,5 +872,10 @@
     "Show informational in-app notifications": "説明的なアプリ内通知を表示",
     "Show GPS map": "GPS地図を表示",
     "Segment tag value": "セグメントのタグの内容",
-    "Segment label (regexp)": "セグメントのラベル (正規表現)"
+    "Segment label (regexp)": "セグメントのラベル (正規表現)",
+    "Use + and - for relative seek": "+ や - を使った相対的なシークも可能",
+    "Focus segment at cursor": "再生カーソルのあるセグメントに焦点",
+    "Segment label (exact)": "セグメントのラベル (正確に)",
+    "Segment duration less than 5 seconds": "5秒未満のセグメント",
+    "Segment starts after 00:60": "00:60 以降に開始するセグメント"
 }
