@@ -1,4 +1,4 @@
-import { memo, useEffect, useState, useCallback, useRef, useMemo, CSSProperties } from 'react';
+import { memo, useEffect, useState, useCallback, useRef, useMemo, CSSProperties, ReactEventHandler } from 'react';
 import { FaAngleLeft, FaWindowClose } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence } from 'framer-motion';
@@ -313,6 +313,32 @@ function App() {
     if (videoRef.current) videoRef.current.volume = playbackVolume;
   }, [playbackVolume]);
 
+  // https://kitchen.vibbio.com/blog/optimizing-html5-video-scrubbing/
+  const seekingRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const seekToRef = useRef<number>();
+
+  const smoothSeek = useCallback((seekTo: number) => {
+    if (seekingRef.current) {
+      seekToRef.current = seekTo;
+    } else {
+      videoRef.current!.currentTime = seekTo;
+      // safety precaution:
+      seekingRef.current = setTimeout(() => {
+        seekingRef.current = undefined;
+      }, 1000);
+    }
+  }, []);
+
+  const onSeeked = useCallback<ReactEventHandler<HTMLVideoElement>>(() => {
+    if (seekToRef.current != null) {
+      videoRef.current!.currentTime = seekToRef.current;
+      seekToRef.current = undefined;
+    } else {
+      clearTimeout(seekingRef.current);
+      seekingRef.current = undefined;
+    }
+  }, []);
+
   const seekAbs = useCallback((val: number | undefined) => {
     const video = videoRef.current;
     if (video == null || val == null || Number.isNaN(val)) return;
@@ -320,10 +346,10 @@ function App() {
     if (outVal < 0) outVal = 0;
     if (outVal > video.duration) outVal = video.duration;
 
-    video.currentTime = outVal;
+    smoothSeek(outVal);
     setCommandedTime(outVal);
     setCompatPlayerEventId((id) => id + 1); // To make sure that we can seek even to the same commanded time that we are already add (e.g. loop current segment)
-  }, []);
+  }, [smoothSeek]);
 
   const commandedTimeRef = useRef(commandedTime);
   useEffect(() => {
@@ -2684,6 +2710,7 @@ function App() {
                       onClick={onVideoClick}
                       onDoubleClick={toggleFullscreenVideo}
                       onFocusCapture={onVideoFocus}
+                      onSeeked={onSeeked}
                     >
                       {renderSubtitles()}
                     </video>
