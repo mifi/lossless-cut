@@ -1029,8 +1029,8 @@ function App() {
     play(resetPlaybackRate);
   }, [play, pause, selectedSegments, apparentCutSegments, setCurrentSegIndex, seekAbs, currentApparentCutSeg.start]);
 
-  const onTimeUpdate = useCallback((e) => {
-    const { currentTime } = e.target;
+  const onTimeUpdate = useCallback<ReactEventHandler<HTMLVideoElement>>((e) => {
+    const { currentTime } = e.currentTarget;
     if (playerTime === currentTime) return;
     setPlayerTime(currentTime);
 
