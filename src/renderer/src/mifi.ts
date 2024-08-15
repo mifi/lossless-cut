@@ -1,7 +1,7 @@
 import ky from 'ky';
 
 import { runFfmpegStartupCheck, getFfmpegPath } from './ffmpeg';
-import { toast } from './swal';
+import Swal from './swal';
 import { handleError } from './util';
 import isDev from './isDev';
 
@@ -17,18 +17,28 @@ export async function loadMifiLink() {
   }
 }
 
-export async function runStartupCheck({ ffmpeg }: { ffmpeg: boolean }) {
+export async function runStartupCheck({ customFfPath }: { customFfPath: string | undefined }) {
   try {
-    if (ffmpeg) await runFfmpegStartupCheck();
+    await runFfmpegStartupCheck();
   } catch (err) {
-    if (err instanceof Error && 'code' in err && typeof err.code === 'string' && ['EPERM', 'EACCES'].includes(err.code)) {
-      toast.fire({
-        timer: 30000,
-        icon: 'error',
-        title: 'Fatal: ffmpeg not accessible',
-        text: `Got ${err.code}. This probably means that anti-virus is blocking execution of ffmpeg. Please make sure the following file exists and is executable:\n\n${getFfmpegPath()}\n\nSee this issue: https://github.com/mifi/lossless-cut/issues/1114`,
-      });
-      return;
+    if (err instanceof Error) {
+      if (!customFfPath && 'code' in err && typeof err.code === 'string' && ['EPERM', 'EACCES'].includes(err.code)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Fatal: ffmpeg not accessible',
+          text: `Got ${err.code}. This probably means that anti-virus is blocking execution of ffmpeg. Please make sure the following file exists and is executable:\n\n${getFfmpegPath()}\n\nSee this issue: https://github.com/mifi/lossless-cut/issues/1114`,
+        });
+        return;
+      }
+
+      if (customFfPath && 'code' in err && err.code === 'ENOENT') {
+        Swal.fire({
+          icon: 'error',
+          title: 'Fatal: ffmpeg not found',
+          text: `Make sure that ffmpeg executable exists: ${getFfmpegPath()}`,
+        });
+        return;
+      }
     }
 
     handleError('Fatal: ffmpeg non-functional', err);

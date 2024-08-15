@@ -2623,10 +2623,9 @@ function App() {
     if (!isStoreBuild && !hasDisabledNetworking()) loadMifiLink().then(setMifiLink);
   }, []);
 
-  const haveCustomFfPath = !!customFfPath;
   useEffect(() => {
-    runStartupCheck({ ffmpeg: !haveCustomFfPath });
-  }, [haveCustomFfPath]);
+    runStartupCheck({ customFfPath });
+  }, [customFfPath]);
 
   useEffect(() => {
     const keyScrollPreventer = (e) => {
