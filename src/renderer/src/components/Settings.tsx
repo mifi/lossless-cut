@@ -1,4 +1,4 @@
-import { CSSProperties, ChangeEventHandler, memo, useCallback, useMemo, useState } from 'react';
+import { CSSProperties, ChangeEventHandler, TdHTMLAttributes, memo, useCallback, useMemo, useState } from 'react';
 import { FaYinYang, FaKeyboard } from 'react-icons/fa';
 import { GlobeIcon, CleanIcon, CogIcon, Button, NumericalIcon, FolderCloseIcon, DocumentIcon, TimeIcon, CrossIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +30,7 @@ const Row = (props: HTMLMotionProps<'tr'>) => (
   />
 );
 // eslint-disable-next-line react/jsx-props-no-spreading
-const KeyCell = (props) => <td {...props} />;
+const KeyCell = (props: TdHTMLAttributes<HTMLTableCellElement>) => <td {...props} />;
 
 const Header = ({ title }: { title: string }) => (
   <Row className={styles['header']}>

@@ -497,6 +497,7 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
         if (v.trim().length === 0) return i18n.t('Please enter a JavaScript expression.');
         const segments = await getSegmentsToEnable(v);
         if (segments.length === 0) return i18n.t('No segments match this expression.');
+        if (segments.length === cutSegments.length) return i18n.t('All segments match this expression.');
         return undefined;
       } catch (err) {
         if (err instanceof Error) {
