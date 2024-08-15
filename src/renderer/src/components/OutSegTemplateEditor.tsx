@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { WarningSignIcon, ErrorIcon, Button, IconButton, TickIcon, ResetIcon } from 'evergreen-ui';
 import { IoIosHelpCircle } from 'react-icons/io';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FaEdit } from 'react-icons/fa';
 
 import { ReactSwal } from '../swal';
 import HighlightedText from './HighlightedText';
@@ -117,7 +118,12 @@ function OutSegTemplateEditor({ outSegTemplate, setOutSegTemplate, generateOutSe
     <motion.div style={{ maxWidth: 600 }} animate={{ margin: needToShow ? '1.5em 0' : 0 }}>
       <div>{outSegFileNames != null && t('Output name(s):', { count: outSegFileNames.length })}</div>
 
-      {outSegFileNames != null && <HighlightedText role="button" onClick={onShowClick} style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>{outSegFileNames[currentSegIndexSafe] || outSegFileNames[0] || '-'}</HighlightedText>}
+      {outSegFileNames != null && (
+        <HighlightedText role="button" onClick={onShowClick} style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>
+          {outSegFileNames[currentSegIndexSafe] || outSegFileNames[0] || '-'}
+          {!needToShow && <FaEdit style={{ fontSize: '.9em', marginLeft: '.4em', verticalAlign: 'middle' }} />}
+        </HighlightedText>
+      )}
 
       <AnimatePresence>
         {needToShow && (
@@ -127,6 +133,7 @@ function OutSegTemplateEditor({ outSegTemplate, setOutSegTemplate, generateOutSe
             animate={{ opacity: 1, height: 'auto', marginTop: '1em' }}
             exit={{ opacity: 0, height: 0, marginTop: 0 }}
           >
+            <div style={{ color: 'var(--gray11)', fontSize: '.8em' }}>{t('Output file name template')}:</div>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.2em' }}>
               <TextInput ref={inputRef} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
 

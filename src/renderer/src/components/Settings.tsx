@@ -129,7 +129,7 @@ function Settings({
             <KeyCell>
               {t('Show export options screen before exporting?')}
               <div style={detailsStyle}>
-                {t('This gives you an overview of the export and allows you to customise more parameters before exporting.')}
+                {t('This gives you an overview of the export and allows you to customise more parameters before exporting, like changing the output file name.')}
               </div>
             </KeyCell>
             <td>
