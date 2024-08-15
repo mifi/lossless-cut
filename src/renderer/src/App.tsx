@@ -116,7 +116,6 @@ function App() {
   // Per project state
   const [commandedTime, setCommandedTime] = useState(0);
   const [ffmpegCommandLog, setFfmpegCommandLog] = useState<FfmpegCommandLog>([]);
-
   const [previewFilePath, setPreviewFilePath] = useState<string>();
   const [working, setWorkingState] = useState<{ text: string, abortController?: AbortController | undefined }>();
   const [usingDummyVideo, setUsingDummyVideo] = useState(false);
@@ -149,6 +148,7 @@ function App() {
   const [exportConfirmVisible, setExportConfirmVisible] = useState(false);
   const [cacheBuster, setCacheBuster] = useState(0);
   const [mergedOutFileName, setMergedOutFileName] = useState<string>();
+  const [playbackRate, setPlaybackRateState] = useState(1);
   const [outputPlaybackRate, setOutputPlaybackRateState] = useState(1);
 
   const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
@@ -221,9 +221,14 @@ function App() {
   const videoRef = useRef<ChromiumHTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
-  const setOutputPlaybackRate = useCallback((v: number) => {
-    setOutputPlaybackRateState(v);
-    if (videoRef.current) videoRef.current.playbackRate = v;
+  const setPlaybackRate = useCallback((rate: number) => {
+    if (videoRef.current) videoRef.current.playbackRate = rate;
+    setPlaybackRateState(rate);
+  }, []);
+
+  const setOutputPlaybackRate = useCallback((rate: number) => {
+    setOutputPlaybackRateState(rate);
+    if (videoRef.current) videoRef.current.playbackRate = rate;
   }, []);
 
   const isFileOpened = !!filePath;
@@ -832,7 +837,7 @@ function App() {
     const video = videoRef.current;
     setCommandedTime(0);
     video!.currentTime = 0;
-    video!.playbackRate = 1;
+    setPlaybackRate(1);
 
     // setWorking();
     setPreviewFilePath(undefined);
@@ -872,7 +877,7 @@ function App() {
     setOutputPlaybackRateState(1);
 
     cancelRenderThumbnails();
-  }, [cutSegmentsHistory, clearSegments, setFileFormat, setDetectedFileFormat, setDeselectedSegmentIds, resetMergedOutFileName, cancelRenderThumbnails]);
+  }, [setPlaybackRate, cutSegmentsHistory, clearSegments, setFileFormat, setDetectedFileFormat, setDeselectedSegmentIds, resetMergedOutFileName, cancelRenderThumbnails]);
 
 
   const showUnsupportedFileMessage = useCallback(() => {
@@ -993,7 +998,7 @@ function App() {
     // This was added to re-sync time if file gets reloaded #1674 - but I had to remove this because it broke loop-selected-segments https://github.com/mifi/lossless-cut/discussions/1785#discussioncomment-7852134
     // if (Math.abs(commandedTimeRef.current - video.currentTime) > 1) video.currentTime = commandedTimeRef.current;
 
-    if (resetPlaybackRate) video!.playbackRate = outputPlaybackRate;
+    if (resetPlaybackRate) setPlaybackRate(outputPlaybackRate);
     video?.play().catch((err) => {
       if (err instanceof Error && err.name === 'AbortError' && 'code' in err && err.code === 20) { // Probably "DOMException: The play() request was interrupted by a call to pause()."
         console.error(err);
@@ -1001,7 +1006,7 @@ function App() {
         showPlaybackFailedMessage();
       }
     });
-  }, [filePath, outputPlaybackRate]);
+  }, [filePath, outputPlaybackRate, setPlaybackRate]);
 
   const togglePlay = useCallback(({ resetPlaybackRate, requestPlaybackMode }: { resetPlaybackRate?: boolean, requestPlaybackMode?: PlaybackMode } | undefined = {}) => {
     playbackModeRef.current = requestPlaybackMode;
@@ -1512,7 +1517,7 @@ function App() {
   const extractCurrentSegmentFramesAsImages = useCallback(() => extractSegmentFramesAsImages([currentCutSeg?.segId]), [currentCutSeg?.segId, extractSegmentFramesAsImages]);
   const extractSelectedSegmentsFramesAsImages = useCallback(() => extractSegmentFramesAsImages(selectedSegments.map((seg) => seg.segId)), [extractSegmentFramesAsImages, selectedSegments]);
 
-  const changePlaybackRate = useCallback((dir: number, rateMultiplier?: number) => {
+  const userChangePlaybackRate = useCallback((dir: number, rateMultiplier?: number) => {
     if (compatPlayerEnabled) {
       toast.fire({ title: i18n.t('Unable to change playback rate right now'), timer: 1000 });
       return;
@@ -1523,10 +1528,9 @@ function App() {
       video!.play();
     } else {
       const newRate = adjustRate(video!.playbackRate, dir, rateMultiplier);
-      showNotification({ title: `${i18n.t('Playback rate:')} ${Math.round(newRate * 100)}%`, timer: 1000 });
-      video!.playbackRate = newRate;
+      setPlaybackRate(newRate);
     }
-  }, [compatPlayerEnabled, showNotification]);
+  }, [compatPlayerEnabled, setPlaybackRate]);
 
   const loadEdlFile = useCallback(async ({ path, type, append }: { path: string, type: EdlFileType, append?: boolean }) => {
     console.log('Loading EDL file', type, path, append);
@@ -2226,10 +2230,10 @@ function App() {
       toggleLoopSelectedSegments,
       play: () => play(),
       pause,
-      reducePlaybackRate: () => changePlaybackRate(-1),
-      reducePlaybackRateMore: () => changePlaybackRate(-1, 2),
-      increasePlaybackRate: () => changePlaybackRate(1),
-      increasePlaybackRateMore: () => changePlaybackRate(1, 2),
+      reducePlaybackRate: () => userChangePlaybackRate(-1),
+      reducePlaybackRateMore: () => userChangePlaybackRate(-1, 2),
+      increasePlaybackRate: () => userChangePlaybackRate(1),
+      increasePlaybackRateMore: () => userChangePlaybackRate(1, 2),
       timelineToggleComfortZoom,
       captureSnapshot,
       captureSnapshotAsCoverArt,
@@ -2341,7 +2345,7 @@ function App() {
     };
 
     return ret;
-  }, [toggleLoopSelectedSegments, pause, timelineToggleComfortZoom, captureSnapshot, captureSnapshotAsCoverArt, setCutStart, setCutEnd, cleanupFilesDialog, splitCurrentSegment, focusSegmentAtCursor, increaseRotation, goToTimecode, jumpCutStart, jumpCutEnd, jumpTimelineStart, jumpTimelineEnd, batchOpenSelectedFile, closeBatch, addSegment, duplicateCurrentSegment, onExportPress, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, reorderSegsByStartTime, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, createFixedDurationSegments, createNumSegments, createRandomSegments, alignSegmentTimesToKeyframes, shuffleSegments, clearSegments, toggleSegmentsList, toggleStreamsSelector, extractAllStreams, convertFormatBatch, concatBatch, toggleCaptureFormat, toggleStripAudio, toggleStripThumbnail, askStartTimeOffset, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, editCurrentSegmentTags, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, tryFixInvalidDuration, shiftAllSegmentTimes, toggleMuted, copySegmentsToClipboard, handleShowStreamsSelectorClick, openFilesDialog, openDirDialog, toggleSettings, createSegmentsFromKeyframes, toggleWaveformMode, toggleShowThumbnails, toggleShowKeyframes, showIncludeExternalStreamsDialog, toggleFullscreenVideo, checkFileOpened, apparentCutSegments, seekRel, keyboardSeekAccFactor, togglePlay, play, changePlaybackRate, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, seekRelPercent, seekClosestKeyframe, shortStep, jumpSeg, setCurrentSegIndex, cutSegments.length, zoomRel, batchFileJump, removeCutSegment, currentSegIndexSafe, cutSegmentsHistory, onLabelSegment, toggleLastCommands, userHtml5ifyCurrentFile, toggleKeyframeCut, setPlaybackVolume, closeFileWithConfirm, openSendReportDialogWithState, detectBlackScenes, detectSilentScenes, detectSceneChanges]);
+  }, [toggleLoopSelectedSegments, pause, timelineToggleComfortZoom, captureSnapshot, captureSnapshotAsCoverArt, setCutStart, setCutEnd, cleanupFilesDialog, splitCurrentSegment, focusSegmentAtCursor, increaseRotation, goToTimecode, jumpCutStart, jumpCutEnd, jumpTimelineStart, jumpTimelineEnd, batchOpenSelectedFile, closeBatch, addSegment, duplicateCurrentSegment, onExportPress, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, reorderSegsByStartTime, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, createFixedDurationSegments, createNumSegments, createRandomSegments, alignSegmentTimesToKeyframes, shuffleSegments, clearSegments, toggleSegmentsList, toggleStreamsSelector, extractAllStreams, convertFormatBatch, concatBatch, toggleCaptureFormat, toggleStripAudio, toggleStripThumbnail, askStartTimeOffset, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, editCurrentSegmentTags, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, tryFixInvalidDuration, shiftAllSegmentTimes, toggleMuted, copySegmentsToClipboard, handleShowStreamsSelectorClick, openFilesDialog, openDirDialog, toggleSettings, createSegmentsFromKeyframes, toggleWaveformMode, toggleShowThumbnails, toggleShowKeyframes, showIncludeExternalStreamsDialog, toggleFullscreenVideo, checkFileOpened, apparentCutSegments, seekRel, keyboardSeekAccFactor, togglePlay, play, userChangePlaybackRate, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, seekRelPercent, seekClosestKeyframe, shortStep, jumpSeg, setCurrentSegIndex, cutSegments.length, zoomRel, batchFileJump, removeCutSegment, currentSegIndexSafe, cutSegmentsHistory, onLabelSegment, toggleLastCommands, userHtml5ifyCurrentFile, toggleKeyframeCut, setPlaybackVolume, closeFileWithConfirm, openSendReportDialogWithState, detectBlackScenes, detectSilentScenes, detectSceneChanges]);
 
   const getKeyboardAction = useCallback((action: MainKeyboardAction) => mainActions[action], [mainActions]);
 
@@ -2890,6 +2894,7 @@ function App() {
                   setOutputPlaybackRate={setOutputPlaybackRate}
                   formatTimecode={formatTimecode}
                   parseTimecode={parseTimecode}
+                  playbackRate={playbackRate}
                 />
               </div>
 

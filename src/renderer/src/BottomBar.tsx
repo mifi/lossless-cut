@@ -193,7 +193,7 @@ function BottomBar({
   darkMode, setDarkMode,
   toggleShowThumbnails, toggleWaveformMode, waveformMode, showThumbnails,
   outputPlaybackRate, setOutputPlaybackRate,
-  formatTimecode, parseTimecode,
+  formatTimecode, parseTimecode, playbackRate,
 }: {
   zoom: number,
   setZoom: Dispatch<SetStateAction<number>>,
@@ -242,6 +242,7 @@ function BottomBar({
   setOutputPlaybackRate: (v: number) => void,
   formatTimecode: FormatTimecode,
   parseTimecode: ParseTimecode,
+  playbackRate: number,
 }) {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
@@ -468,6 +469,8 @@ function BottomBar({
             )}
 
             <IoMdSpeedometer title={t('Change FPS')} style={{ padding: '0 .2em', fontSize: '1.3em' }} role="button" onClick={handleChangePlaybackRateClick} />
+
+            <div title={t('Playback rate')} style={{ color: 'var(--gray11)', fontSize: '.7em', marginLeft: '.1em' }}>{playbackRate.toFixed(1)}</div>
           </>
         )}
 
