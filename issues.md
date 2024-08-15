@@ -10,8 +10,8 @@
   - I have limited time and I have a lot of projects to work on, so I cannot promise any timeline. I will usually prioritize the issues with the most likes, [see here for a list of the most popular issues](https://github.com/mifi/lossless-cut/issues/691).
 - How to *cut away* a middle part of a video?
   - Enable "advanced view" and then click the Yin Yang symbol. It will invert the segments.
-- Where is application data, settings and temp files stored?
-  - Electron's [appData](https://www.electronjs.org/docs/api/app#appgetpathname) folder: `%APPDATA%/LosslessCut` on Windows. `~/Library/Application Support/LosslessCut` on macOS. `$XDG_CONFIG_HOME/LosslessCut` or `~/.config/LosslessCut` on Linux. LosslessCut is **not** a [portable app.](https://github.com/mifi/lossless-cut/issues/645)
+- Is LosslessCut a portable app? Where is application data, settings and temp files stored?
+  - See LosslessCut is *not* a [portable app](https://github.com/mifi/lossless-cut/issues/645). See [Installation and files](./installation.md).
 - Can I export and replace the input file in-place?
   - No, but you can export and automatically delete the input file.
 - Can you publish through [winget](https://github.com/mifi/lossless-cut/issues/1279), [Flatpak](https://github.com/mifi/lossless-cut/pull/1813), [Docker](https://github.com/mifi/lossless-cut/issues/1086) or other software mangers?
@@ -104,16 +104,15 @@ If the output file name has special characters that get replaced by underscore (
 - Completely white window when starting up?
   - Try to run with `--disable-gpu` - See [781](https://github.com/mifi/lossless-cut/issues/781).
 - How to uninstall LosslessCut?
-  - There is no installer. Just delete the folder. Settings and temp files are stored in your [appData](https://www.electronjs.org/docs/api/app#appgetpathname) folder.
+  - There is no installer. Just delete the folder. [More info](./installation.md).
 - Preview of H265/HEVC files is completely black or corrupted?
   - Go to settings and disable "Hardware HEVC decoding".
 - Video preview playback slow or stuttering inside LosslessCut?
   - See [#922](https://github.com/mifi/lossless-cut/issues/922) [#1904](https://github.com/mifi/lossless-cut/issues/1904) [#1915](https://github.com/mifi/lossless-cut/issues/1915) [#922](https://github.com/mifi/lossless-cut/issues/922)
-- Where did the `.exe`/`.zip` downloads go?
-  - I decided to stop distributing exe and instead just 7zip, due to the [problems that the exe download was causing and the large size of zips.](https://github.com/mifi/lossless-cut/issues/1072#issuecomment-1066026323).
-- [APPX is not signed and **does not work**.](https://github.com/mifi/lossless-cut/issues/337) Please use [7z package](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z) instead.
-- I'm getting a KERNEL32.dll error
-  - It's probably because you're running Windows 7, 8 or 8.1 which are [no longer supported.](https://github.com/mifi/lossless-cut/discussions/1476)
+- Why no `.exe`/`.zip`/`.appx` downloads?
+  - I decided to stop distributing exe/zip and instead just [7zip](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z), due to the [problems](https://github.com/mifi/lossless-cut/issues/1072#issuecomment-1066026323) that the (self-extracting) exe was causing and the large size of `.zip` files. `appx` is unsigned and [**does not work**](https://github.com/mifi/lossless-cut/issues/337).
+- I'm getting a `KERNEL32.dll` error
+  - It's probably because you're running Windows 7, 8 or 8.1 which is [no longer supported.](https://github.com/mifi/lossless-cut/discussions/1476)
 
 # Known limitations
 

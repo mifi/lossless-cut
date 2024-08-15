@@ -122,7 +122,7 @@ If you prefer to download the executables manually, this will of course always b
 
 If you find LosslessCut useful, I'm very thankful for [your support](https://github.com/mifi/lossless-cut#donate-).
 
-**What's the difference between App Stores and GitHub download?** [Please see FAQ](issues.md#app-stores-and-github-difference)
+What's the **difference between App Stores and GitHub download?** [Please see FAQ](issues.md#app-stores-and-github-difference)
 
 ### Nightly builds 🧪
 
@@ -165,6 +165,8 @@ Codecs and formats not listed above can still be converted to a supported format
 - For best results you may need to trial and error with another output format (Matroska takes nearly everything), change keyframe cut mode or disable some tracks (see [known issues](issues.md)).
 - Press <kbd>SHIFT</kbd> + <kbd>/</kbd> to view all keyboard & mouse shortcuts.
 - **Note:** The original video file will not be modified. Instead, a file is created file in the same directory as the original file with from/to timestamps in the file name.
+
+## [Installation](./installation.md)
 
 ## [Import / export](import-export.md)
 
