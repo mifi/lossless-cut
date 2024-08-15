@@ -1,6 +1,6 @@
 import { memo, useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextInput, TrashIcon, TickIcon, EditIcon, PlusIcon, Button, IconButton } from 'evergreen-ui';
+import { TextInput, TrashIcon, ResetIcon, TickIcon, EditIcon, PlusIcon, Button, IconButton } from 'evergreen-ui';
 import invariant from 'tiny-invariant';
 
 import { askForMetadataKey } from '../dialogs';
@@ -116,7 +116,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
                     <span style={{ padding: '.5em 0', color: thisTagCustom ? activeColor : undefined, fontWeight: thisTagCustom ? 'bold' : undefined }}>{mergedTags[tag] ? String(mergedTags[tag]) : `<${t('empty')}>`}</span>
                   )}
                   {(editingTag == null || editingThis) && <IconButton icon={Icon} title={t('Edit')} appearance="minimal" style={{ marginLeft: '.4em' }} onClick={() => onEditClick(tag)} intent={editingThis ? 'success' : 'none'} />}
-                  {editingThis && <IconButton icon={TrashIcon} title={thisTagCustom ? t('Delete') : t('Reset')} appearance="minimal" onClick={onResetClick} intent="danger" />}
+                  {editingThis && <IconButton icon={thisTagNew ? TrashIcon : ResetIcon} title={thisTagNew ? t('Delete') : t('Reset')} appearance="minimal" onClick={onResetClick} intent="danger" />}
                 </td>
               </tr>
             );
