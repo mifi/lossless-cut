@@ -177,7 +177,7 @@ export function handleError(arg1: unknown, arg2?: unknown) {
   if (err != null && 'code' in err && err.code === 'LLC_FFPROBE_UNSUPPORTED_FILE') {
     errorToast(i18n.t('Unsupported file'));
   } else {
-    toast.fire({
+    Swal.fire({
       icon: 'error',
       title: str || i18n.t('An error has occurred.'),
       text: err?.message ? err?.message.slice(0, 300) : undefined,
