@@ -618,7 +618,7 @@
     "Mouse wheel zoom modifier key": "Klávesa pro zoom kolečkem myši",
     "See <1>Help</1> menu for help": "Podívejte se do nabídky <1>Nápověda</1>",
     "Track {{index}} mismatch: {{key1}} {{value1}} != {{value2}}": "Stopa {{index}} nesoulad: {{key1}} {{value1}} != {{value2}}",
-    "Troubleshooting": "Řešení problémů",
+    "Troubleshooting": "Řešit problémy",
     "{{durationMsFormatted}} ms, {{frameCount}} frames": "{{durationMsFormatted}} ms, {{frameCount}} snímků",
     "Abort": "Přerušit",
     "Capture every single frame as an image": "Zachytit každý snímek jako obrázek",
