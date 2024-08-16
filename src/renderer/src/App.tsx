@@ -2181,21 +2181,23 @@ function App() {
   }, [currentSegIndexSafe, onEditSegmentTags]);
 
   const promptDownloadMediaUrlWrapper = useCallback(async () => {
-    if (customOutDir == null) {
-      errorToast(i18n.t('Please select a working directory first'));
-      return;
-    }
-    const outPath = getDownloadMediaOutPath(customOutDir, `downloaded-media-${Date.now()}.mkv`);
     try {
-      setWorking(true);
+      setWorking({ text: t('Downloading URL') });
+      const newCustomOutDir = await ensureWritableOutDir({ outDir: customOutDir });
+      if (newCustomOutDir == null) {
+        errorToast(i18n.t('Please select a working directory first'));
+        return;
+      }
+      const outPath = getDownloadMediaOutPath(newCustomOutDir, `downloaded-media-${Date.now()}.mkv`);
       const downloaded = await promptDownloadMediaUrl(outPath);
       if (downloaded) await loadMedia({ filePath: outPath });
     } catch (err) {
+      if (err instanceof DirectoryAccessDeclinedError) return;
       handleError(err);
     } finally {
       setWorking();
     }
-  }, [customOutDir, loadMedia, setWorking]);
+  }, [customOutDir, ensureWritableOutDir, loadMedia, setWorking, t]);
 
   type MainKeyboardAction = Exclude<KeyboardAction, 'closeActiveScreen' | 'toggleKeyboardShortcuts' | 'goToTimecodeDirect'>;
 
