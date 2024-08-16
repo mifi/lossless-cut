@@ -14,6 +14,10 @@ export const blackdetect = () => ({
     value: '0.10',
     hint: i18n.t('Set the threshold for considering a pixel "black".'),
   },
+  mode: {
+    value: '1',
+    hint: i18n.t('Segment mode: "{{mode1}}" will create segments bounding the black sections. "{{mode2}}" will create segments that start/stop at the center of each black section.', { mode1: '1', mode2: '2' }),
+  },
 });
 
 export const silencedetect = () => ({
@@ -24,6 +28,10 @@ export const silencedetect = () => ({
   duration: {
     value: '2.0',
     hint: i18n.t('Set minimum silence duration that will be converted into a segment.'),
+  },
+  mode: {
+    value: '1',
+    hint: i18n.t('Segment mode: "{{mode1}}" will create segments bounding the silent sections. "{{mode2}}" will create segments that start/stop at the center of each silent section.', { mode1: '1', mode2: '2' }),
   },
 });
 

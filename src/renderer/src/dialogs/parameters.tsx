@@ -66,7 +66,9 @@ const ParametersInput = ({ description, parameters: parametersIn, onChange, onSu
   );
 };
 
-export async function showParametersDialog({ title, description, parameters: parametersIn, docUrl }: { title?: string, description?: string, parameters: ParameterDialogParameters, docUrl?: string }) {
+export async function showParametersDialog({ title, description, parameters: parametersIn, docUrl }: {
+  title?: string, description?: string, parameters: ParameterDialogParameters, docUrl?: string,
+}) {
   let parameters = parametersIn;
   let resolve1: (value: boolean) => void;
 
@@ -81,7 +83,15 @@ export async function showParametersDialog({ title, description, parameters: par
   const promise2 = (async () => {
     const { isConfirmed } = await ReactSwal.fire({
       title,
-      html: <ParametersInput description={description} parameters={parameters} onChange={(newParameters) => { parameters = newParameters; }} onSubmit={handleSubmit} docUrl={docUrl} />,
+      html: (
+        <ParametersInput
+          description={description}
+          parameters={parameters}
+          onChange={(newParameters) => { parameters = newParameters; }}
+          onSubmit={handleSubmit}
+          docUrl={docUrl}
+        />
+      ),
       confirmButtonText: i18n.t('Confirm'),
       showCancelButton: true,
       cancelButtonText: i18n.t('Cancel'),

@@ -130,17 +130,21 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
   const selectedSegmentsRaw = useMemo(() => apparentCutSegments.filter((segment) => isSegmentSelected(segment)), [apparentCutSegments, isSegmentSelected]);
 
   const detectBlackScenes = useCallback(async () => {
-    const filterOptions = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters: ffmpegParameters.blackdetect(), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#blackdetect' });
-    if (filterOptions == null) return;
+    const parameters = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters: ffmpegParameters.blackdetect(), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#blackdetect' });
+    if (parameters == null) return;
+    const { mode, ...filterOptions } = parameters;
+    invariant(mode === '1' || mode === '2');
     invariant(filePath != null);
-    await detectSegments({ name: 'blackScenes', workingText: i18n.t('Detecting black scenes'), errorText: i18n.t('Failed to detect black scenes'), fn: async () => blackDetect({ filePath, filterOptions, onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
+    await detectSegments({ name: 'blackScenes', workingText: i18n.t('Detecting black scenes'), errorText: i18n.t('Failed to detect black scenes'), fn: async () => blackDetect({ filePath, filterOptions, boundingMode: mode === '1', onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
   }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, filePath, setCutProgress]);
 
   const detectSilentScenes = useCallback(async () => {
-    const filterOptions = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters: ffmpegParameters.silencedetect(), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#silencedetect' });
-    if (filterOptions == null) return;
+    const parameters = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters: ffmpegParameters.silencedetect(), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#silencedetect' });
+    if (parameters == null) return;
+    const { mode, ...filterOptions } = parameters;
+    invariant(mode === '1' || mode === '2');
     invariant(filePath != null);
-    await detectSegments({ name: 'silentScenes', workingText: i18n.t('Detecting silent scenes'), errorText: i18n.t('Failed to detect silent scenes'), fn: async () => silenceDetect({ filePath, filterOptions, onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
+    await detectSegments({ name: 'silentScenes', workingText: i18n.t('Detecting silent scenes'), errorText: i18n.t('Failed to detect silent scenes'), fn: async () => silenceDetect({ filePath, filterOptions, boundingMode: mode === '1', onProgress: setCutProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
   }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, filePath, setCutProgress]);
 
   const detectSceneChanges = useCallback(async () => {
@@ -157,7 +161,7 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
     if (!videoStream) return;
     invariant(filePath != null);
     const keyframes = (await readFrames({ filePath, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end, streamIndex: videoStream.index })).filter((frame) => frame.keyframe);
-    const newSegments = mapTimesToSegments(keyframes.map((keyframe) => keyframe.time));
+    const newSegments = mapTimesToSegments(keyframes.map((keyframe) => keyframe.time), true);
     loadCutSegments(newSegments, true);
   }, [currentApparentCutSeg.end, currentApparentCutSeg.start, filePath, loadCutSegments, videoStream]);
 
