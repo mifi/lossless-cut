@@ -51,7 +51,7 @@ function Settings({
 }: {
   onTunerRequested: (type: TunerType) => void,
   onKeyboardShortcutsDialogRequested: () => void,
-  askForCleanupChoices: () => Promise<void>,
+  askForCleanupChoices: () => Promise<unknown>,
   toggleStoreProjectInWorkingDir: () => Promise<void>,
   simpleMode: boolean,
   clearOutDir: () => Promise<void>,

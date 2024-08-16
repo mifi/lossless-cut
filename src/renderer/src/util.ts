@@ -279,7 +279,7 @@ export function getHtml5ifiedPath(cod: string | undefined, fp, type) {
   return getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${type}.${ext}` });
 }
 
-export async function deleteFiles({ paths, deleteIfTrashFails, signal }: { paths: string[], deleteIfTrashFails?: boolean, signal: AbortSignal }) {
+export async function deleteFiles({ paths, deleteIfTrashFails, signal }: { paths: string[], deleteIfTrashFails?: boolean | undefined, signal: AbortSignal }) {
   const failedToTrashFiles: string[] = [];
 
   // eslint-disable-next-line no-restricted-syntax
@@ -429,7 +429,7 @@ export function mustDisallowVob() {
   return false;
 }
 
-export async function readVideoTs(videoTsPath) {
+export async function readVideoTs(videoTsPath: string) {
   const files = await readdir(videoTsPath);
   const relevantFiles = files.filter((file) => /^vts_\d+_\d+\.vob$/i.test(file) && !/^vts_\d+_00\.vob$/i.test(file)); // skip menu
   const ret = sortBy(relevantFiles).map((file) => join(videoTsPath, file));
@@ -437,7 +437,7 @@ export async function readVideoTs(videoTsPath) {
   return ret;
 }
 
-export async function readDirRecursively(dirPath) {
+export async function readDirRecursively(dirPath: string) {
   const files = await readdir(dirPath, { recursive: true });
   const ret = (await pMap(files, async (path) => {
     if (['.DS_Store'].includes(basename(path))) return [];
@@ -453,7 +453,7 @@ export async function readDirRecursively(dirPath) {
   return ret;
 }
 
-export function getImportProjectType(filePath) {
+export function getImportProjectType(filePath: string) {
   if (filePath.endsWith('Summary.txt')) return 'dv-analyzer-summary-txt';
   const edlFormatForExtension = { csv: 'csv', pbf: 'pbf', edl: 'mplayer', cue: 'cue', xml: 'xmeml', fcpxml: 'fcpxml' };
   const matchingExt = Object.keys(edlFormatForExtension).find((ext) => filePath.toLowerCase().endsWith(`.${ext}`));
@@ -461,7 +461,7 @@ export function getImportProjectType(filePath) {
   return edlFormatForExtension[matchingExt];
 }
 
-export const calcShouldShowWaveform = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
-export const calcShouldShowKeyframes = (zoomedDuration) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
+export const calcShouldShowWaveform = (zoomedDuration: number | undefined) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
+export const calcShouldShowKeyframes = (zoomedDuration: number | undefined) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);
 
 export const mediaSourceQualities = ['HD', 'SD', 'OG']; // OG is original

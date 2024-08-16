@@ -96,7 +96,10 @@ export default ({ darkMode, filePath, relevantTime, duration, waveformEnabled, a
     // Cleanup old
     // if (removedWaveforms.length > 0) console.log('cleanup waveforms', removedWaveforms.length);
     removedWaveforms.forEach((waveform) => {
-      if (waveform.url != null) URL.revokeObjectURL(waveform.url);
+      if (waveform.url != null) {
+        console.log('Cleanup waveform', waveform.from, waveform.to);
+        URL.revokeObjectURL(waveform.url);
+      }
     });
     lastWaveformsRef.current = waveforms;
   }, [waveforms]);
