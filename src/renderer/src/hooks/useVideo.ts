@@ -97,7 +97,7 @@ export default ({ filePath }: { filePath: string | undefined }) => {
     playbackModeRef.current = undefined;
   }, []);
 
-  const onSartPlaying = useCallback(() => onPlayingChange(true), [onPlayingChange]);
+  const onStartPlaying = useCallback(() => onPlayingChange(true), [onPlayingChange]);
   const onDurationChange = useCallback<ReactEventHandler<HTMLVideoElement>>((e) => {
     // Some files report duration infinity first, then proper duration later
     // Sometimes after seeking to end of file, duration might change
@@ -144,7 +144,7 @@ export default ({ filePath }: { filePath: string | undefined }) => {
     setPlaying,
     playingRef,
     onStopPlaying,
-    onSartPlaying,
+    onStartPlaying,
     onSeeked,
     seekAbs,
     seekRel,

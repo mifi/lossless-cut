@@ -2393,7 +2393,7 @@ function App() {
                       ref={videoRef}
                       style={videoStyle}
                       src={fileUri}
-                      onPlay={onSartPlaying}
+                      onPlay={onStartPlaying}
                       onPause={onStopPlaying}
                       onAbort={onVideoAbort}
                       onDurationChange={onDurationChange}
