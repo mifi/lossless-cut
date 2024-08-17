@@ -865,7 +865,7 @@
     "Open folder": "フォルダを開く",
     "At least one codec is not supported by the selected output file format. Try another output format or try to disable one or more tracks.": "選択した出力ファイルの形式では、1つ以上のコーデックが対応しません。別の出力形式を試すか、1つ以上のトラックを無効にしてお試しください。",
     "Enter JavaScript expression": "JavaScriptの式を入力",
-    "<0>If you're having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></0><1>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</1>": "<0>LosslessCut の問題や質問があれば、最初に<1>ヘルプ</1>メニューのリンクをご覧ください。解決法がなければ、<3>GitHub の会話ページ</3> や <5>Discord</5>で質問できます。<0><1>LosslessCut のバグを見つけたと思う場合は、<1>バグ報告</1> もできます。",
+    "<0>If you're having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></0><1>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</1>": "<0>LosslessCut の問題や質問があれば、最初に<1>ヘルプ</1>メニューのリンクをご覧ください。解決法がなければ、<3>GitHub の会話ページ</3> や <5>Discord</5>で質問できます。</0><1>LosslessCut のバグを見つけたと思う場合は、<1>バグ報告</1> もできます。</1>",
     "Failed to extract tracks": "トラックの抽出に失敗",
     "Select segments by expression": "式を使いセグメントを選択",
     "Smart cut auto detect bitrate": "ビットレートを自動検出",
@@ -887,5 +887,10 @@
     "Advanced settings are currently not visible.": "現在、高度な設定を表示していません。",
     "Please select a working directory first": "まず作業ディレクトリを選択します",
     "Segment starts after 01:00": "セグメントは 01:00 以降に開始",
-    "This gives you an overview of the export and allows you to customise more parameters before exporting, like changing the output file name.": "出力の概要を表示します。また出力ファイル名の変更など、出力前に多くの調整が可能です。"
+    "This gives you an overview of the export and allows you to customise more parameters before exporting, like changing the output file name.": "出力の概要を表示します。また出力ファイル名の変更など、出力前に多くの調整が可能です。",
+    "More settings": "より多くの設定項目",
+    "Losslessly download a whole media file from the specified URL, mux it into an mkv file and open it in LosslessCut. This can be useful if you need to download a video from a website, e.g. a HLS streaming video. For example in Chrome you can open Developer Tools and view the network traffic, find the playlist (e.g. m3u8) and copy paste its URL here.": "指定のURLからメディアファイル全体を無劣化でダウンロードし、mkvファイルへと多重化 (mux) し LosslessCut で開きます。これはHLSストリーミング動画など、サイトからの動画のダウンロードに便利です。たとえばChromeでは、デベロッパーツールを開いてネットワークのアクセス状況を表示し、再生リスト (m3u8など) を見つけて、そのURLをここにコピーし貼り付けします。",
+    "Downloading URL": "ダウンロードURL",
+    "Segment mode: \"{{mode1}}\" will create segments bounding the black sections. \"{{mode2}}\" will create segments that start/stop at the center of each black section.": "セグメント種別 (仮翻訳): {{mode1}}は暗い部分を囲むセグメントを作成。{{mode2}}は暗い部分の中心で開始/停止するセグメントを作成。",
+    "Segment mode: \"{{mode1}}\" will create segments bounding the silent sections. \"{{mode2}}\" will create segments that start/stop at the center of each silent section.": "セグメント種別 (仮翻訳): {{mode1}}は無音部分を囲むセグメントを作成。{{mode2}}は無音部分の中心で開始/停止するセグメントを作成。"
 }
