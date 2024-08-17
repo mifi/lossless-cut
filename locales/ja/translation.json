@@ -877,5 +877,15 @@
     "Focus segment at cursor": "再生カーソルのあるセグメントに焦点",
     "Segment label (exact)": "セグメントのラベル (正確に)",
     "Segment duration less than 5 seconds": "5秒未満のセグメント",
-    "Segment starts after 00:60": "00:60 以降に開始するセグメント"
+    "Segment starts after 00:60": "00:60 以降に開始するセグメント",
+    "All segments match this expression.": "すべてのセグメントがこの式に一致。",
+    "Cut at the preceding keyframe (not accurate time.) Equiv to": "直前のキーフレームで切り取り (正確な時間ではない) 以下に相当",
+    "Open URL": "URLを開く",
+    "Playback rate": "再生速度",
+    "Open media from URL": "URLからメディアを開く",
+    "Output file name template": "出力ファイル名のテンプレート",
+    "Advanced settings are currently not visible.": "現在、高度な設定を表示していません。",
+    "Please select a working directory first": "まず作業ディレクトリを選択します",
+    "Segment starts after 01:00": "セグメントは 01:00 以降に開始",
+    "This gives you an overview of the export and allows you to customise more parameters before exporting, like changing the output file name.": "出力の概要を表示します。また出力ファイル名の変更など、出力前に多くの調整が可能です。"
 }
