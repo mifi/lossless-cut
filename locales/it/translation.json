@@ -849,5 +849,20 @@
     "Show GPS map": "Visualizza mappa GPS",
     "Show notifications": "Visualizza notifiche",
     "Smart cut auto detect bitrate": "Il taglio intelligente rileva automaticamente il bitrate",
-    "Use + and - for relative seek": "Usa + e - per la ricerca relativa"
+    "Use + and - for relative seek": "Usa + e - per la ricerca relativa",
+    "Advanced settings are currently not visible.": "Le impostazioni avanzate non sono attualmente visibili.",
+    "Cut at the preceding keyframe (not accurate time.) Equiv to": "Taglia al fotogramma chiave precedente (tempo non preciso). Equivale a",
+    "More settings": "Altre impostazioni",
+    "Open media from URL": "Apri media dall'URL",
+    "Open URL": "Apri URL",
+    "Output file name template": "Modello nome file destinazione",
+    "Please select a working directory first": "Seleziona prima una cartella di lavoro",
+    "Segment mode: \"{{mode1}}\" will create segments bounding the silent sections. \"{{mode2}}\" will create segments that start/stop at the center of each silent section.": "Modalità segmento: \"{{mode1}}\" creerà segmenti che delimitano le sezioni silenziose. \"{{mode2}}\" creerà segmenti che iniziano/si fermano al centro di ogni sezione silenziosa.",
+    "Segment starts after 01:00": "Il segmento inizia dopo 01:00",
+    "All segments match this expression.": "Tutti i segmenti corrispondono a questa espressione.",
+    "Downloading URL": "URL download",
+    "Losslessly download a whole media file from the specified URL, mux it into an mkv file and open it in LosslessCut. This can be useful if you need to download a video from a website, e.g. a HLS streaming video. For example in Chrome you can open Developer Tools and view the network traffic, find the playlist (e.g. m3u8) and copy paste its URL here.": "Scarica senza perdita di dati un intero file multimediale dall'URL specificato, combinalo in un file mkv e aprilo in LosslessCut. Questo può essere utile se devi scaricare un video da un sito web, ad es. un video in streaming HLS. Ad esempio in Chrome puoi aprire 'Strumenti per sviluppatori' e visualizzare il traffico di rete, trovare la playlist (ad esempio m3u8) e copiare e incollare la relativa URL qui.",
+    "Segment mode: \"{{mode1}}\" will create segments bounding the black sections. \"{{mode2}}\" will create segments that start/stop at the center of each black section.": "Modalità segmento: \"{{mode1}}\" creerà segmenti che delimitano le sezioni nere. \"{{mode2}}\" creerà segmenti che iniziano/si fermano al centro di ciascuna sezione nera.",
+    "Playback rate": "Velocità riproduzione",
+    "This gives you an overview of the export and allows you to customise more parameters before exporting, like changing the output file name.": "Questo ti offre una panoramica dell'esportazione e ti consente di personalizzare più parametri prima dell'esportazione, come cambiare il nome del file destinazione."
 }
