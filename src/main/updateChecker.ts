@@ -1,7 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import electron from 'electron';
 import semver from 'semver';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { Octokit } from '@octokit/core';
 
 import logger from './logger.js';

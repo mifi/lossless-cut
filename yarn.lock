@@ -2066,6 +2066,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash.debounce@npm:^4":
+  version: 4.0.9
+  resolution: "@types/lodash.debounce@npm:4.0.9"
+  dependencies:
+    "@types/lodash": "npm:*"
+  checksum: 10/8183a152e01928e3b97ca773f6ae6038b8695e76493ba8bf6b743ec143948a62294fbc9d49fa4a78b52265b3ba4892ef57534e0c13d04aa0f111671b5a944feb
+  languageName: node
+  linkType: hard
+
+"@types/lodash@npm:*":
+  version: 4.17.7
+  resolution: "@types/lodash@npm:4.17.7"
+  checksum: 10/b8177f19cf962414a66989837481b13f546afc2e98e8d465bec59e6ac03a59c584eb7053ce511cde3a09c5f3096d22a5ae22cfb56b23f3b0da75b0743b6b1a44
+  languageName: node
+  linkType: hard
+
 "@types/lodash@npm:^4.14.202":
   version: 4.14.202
   resolution: "@types/lodash@npm:4.14.202"
@@ -7472,6 +7488,7 @@ __metadata:
     "@types/express": "npm:^4.17.21"
     "@types/leaflet": "npm:^1"
     "@types/lodash": "npm:^4.14.202"
+    "@types/lodash.debounce": "npm:^4"
     "@types/luxon": "npm:^3.4.2"
     "@types/morgan": "npm:^1.9.9"
     "@types/node": "npm:18"
@@ -7519,6 +7536,7 @@ __metadata:
     ky: "npm:^0.33.1"
     leaflet: "npm:^1.9.4"
     lodash: "npm:^4.17.19"
+    lodash.debounce: "npm:^4.0.8"
     luxon: "npm:^3.3.0"
     mime-types: "npm:^2.1.14"
     mkdirp: "npm:^1.0.3"
