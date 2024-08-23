@@ -133,7 +133,7 @@
     "Enable MOV Faststart?": "MOV 高速開始を有効化",
     "Note: Keyframe cut is recommended for most common files": "注: キーフレーム切り取りを、最も一般的なファイルに推奨します",
     "Cut mode:": "切り取り方法:",
-    "Depending on your specific file/player, you may have to try different options for best results.": "具体的なファイル/プレイヤーによって、最良の結果にするため別のオプションを試す必要があることも。",
+    "Depending on your specific file/player, you may have to try different options for best results.": "個別のファイルやプレイヤーによっては最良の結果にするため様々なオプションを試す必要があることも。",
     "Preserve original metadata when merging? (slow)": "結合時に元のメタデータを保持 (遅い)",
     "Advanced options": "高度なオプション",
     "Save output to path:": "出力保存先のパス:",
