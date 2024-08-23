@@ -83,7 +83,9 @@ Doing this first might "clean up" certain parameters in the files, to make them 
 
 ## Smart cut not working
 
-Smart cut is experimental, so don't expect too much. But if you're having problems, check out [this issue](https://github.com/mifi/lossless-cut/issues/126). If Smart Cut gives you repeated (duplicate) segments, you can try to enable the Export Option "Shift all start times".
+Smart cut is experimental, so don't expect too much. But if you're having problems, check out [this issue](https://github.com/mifi/lossless-cut/issues/126).
+- If Smart cut gives you repeated (duplicate) segments, you can try to enable the Export Option "Shift all start times".
+- Sometimes it helps to convert (remux) your videos [to mp4 first](https://github.com/mifi/lossless-cut/discussions/1292#discussioncomment-10425084) (e.g. from mkv) using LosslessCut, before smart cutting them.
 
 ## My file changes from MP4 to MOV
 
