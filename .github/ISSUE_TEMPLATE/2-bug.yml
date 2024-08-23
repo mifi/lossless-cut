@@ -12,7 +12,7 @@ body:
           required: true
         - label: Search for your problem under [Issues](https://github.com/mifi/lossless-cut/issues) or [Discussions](https://github.com/mifi/lossless-cut/discussions)
           required: true
-        - label: This problem happens with all kinds of files that I try. For problem only with a particular file or type, [use this other form instead](https://github.com/mifi/lossless-cut/issues/new?assignees=&labels=&template=file-issue.yml)
+        - label: This problem happens with all kinds of files that I try. For problem only with a particular file or type, [use this other form instead](https://github.com/mifi/lossless-cut/issues/new?assignees=&labels=&projects=&template=1-file-issue.yml)
           required: true
   - type: dropdown
     id: operating-system
