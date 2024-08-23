@@ -460,7 +460,7 @@ function SegmentList({
           {header}
         </div>
 
-        <div style={{ padding: '0 10px', overflowY: 'scroll', flexGrow: 1 }} className="hide-scrollbar">
+        <div style={{ padding: '0 .1em 0 .3em', overflowX: 'hidden', overflowY: 'scroll', flexGrow: 1 }} className="consistent-scrollbar">
           <ReactSortable list={sortableList} setList={setSortableList} disabled={!!invertCutSegments} handle=".segment-handle">
             {sortableList.map(({ id, seg }, index) => {
               const selected = !invertCutSegments && isSegmentSelected({ segId: seg.segId });

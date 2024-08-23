@@ -63,6 +63,17 @@ code.highlighted {
   display: none;
 }
 
+.consistent-scrollbar::-webkit-scrollbar {
+  width: .5em;
+}
+.consistent-scrollbar::-webkit-scrollbar-track-piece {
+  background: transparent;
+}
+.consistent-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--gray11);
+  border-radius: .1em;
+}
+
 .swal2-losslesscut-radio {
   font-size: 0.8em;
   flex-direction: column;
