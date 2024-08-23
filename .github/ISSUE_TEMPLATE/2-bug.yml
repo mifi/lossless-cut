@@ -12,9 +12,7 @@ body:
           required: true
         - label: Search for your problem under [Issues](https://github.com/mifi/lossless-cut/issues) or [Discussions](https://github.com/mifi/lossless-cut/discussions)
           required: true
-        - label: If you have a problem only with a particular file (or file type), [use this form instead](https://github.com/mifi/lossless-cut/issues/new?assignees=&labels=&template=file-issue.yml)
-          required: true
-        - label: Windows 7, 8 and 8.1 are [no longer supported](https://github.com/mifi/lossless-cut/discussions/1476). **This is not a question about Windows 8.1 or older.**
+        - label: This problem happens with all kinds of files that I try. For problem only with a particular file or type, [use this other form instead](https://github.com/mifi/lossless-cut/issues/new?assignees=&labels=&template=file-issue.yml)
           required: true
   - type: dropdown
     id: operating-system
@@ -41,7 +39,7 @@ body:
     id: steps-to-reproduce
     attributes:
       label: Steps to reproduce
-      description: How would I reproduce the problem? Please describe step-by-step what you're doing from starting up LosslessCut until the problem occurs. You can attach screenshots or screencasts if needed.
+      description: How would I reproduce the problem? Please describe step-by-step what you're doing from starting up LosslessCut until the problem occurs. You can drag-drop to attach screenshots or screencasts if needed.
     validations:
       required: true
   - type: textarea
