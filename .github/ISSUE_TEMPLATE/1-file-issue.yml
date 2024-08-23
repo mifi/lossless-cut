@@ -1,10 +1,10 @@
-name: 📄 Problem with a particular file
-description: Report a problem with a particular file only
+name: 📄 Problem with a particular file/type
+description: Report a problem that happens only with a particular file or type (e.g. all files from a particular camera/app).
 body:
   - type: markdown
     attributes:
       value: |
-        If you have a problem **only with a particular file**, use this form. If you have a problem with all files or LosslessCut in general, [use this form instead](https://github.com/mifi/lossless-cut/issues/new?assignees=&labels=&template=bug.yml).
+        If you have a problem **only with a particular file or type**, use this form. If you have a problem with all files or LosslessCut in general, [use this other form instead](https://github.com/mifi/lossless-cut/issues/new?assignees=&labels=&projects=&template=2-bug.yml).
   - type: checkboxes
     id: initial-checklist
     attributes:
