@@ -673,10 +673,11 @@ const KeyboardShortcuts = memo(({
   }, []);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const actionEntries = useMemo(() => (Object.entries(actionsMap) as any as [keyof typeof actionsMap, typeof actionsMap[keyof typeof actionsMap]][]).filter(([, { name, category }]) => {
+  const actionEntries = useMemo(() => (Object.entries(actionsMap) as any as [keyof typeof actionsMap, typeof actionsMap[keyof typeof actionsMap]][]).filter(([key, { name, category }]) => {
     const searchQueryTrimmed = searchQuery.toLowerCase().trim();
     return (
       !searchQuery
+      || key.toLocaleLowerCase().includes(searchQueryTrimmed)
       || name.toLowerCase().includes(searchQueryTrimmed)
       || (category != null && category.toLowerCase().includes(searchQueryTrimmed))
     );
