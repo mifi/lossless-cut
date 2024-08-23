@@ -72,6 +72,7 @@ export interface Config {
   preserveMetadataOnMerge: boolean,
   simpleMode: boolean,
   outSegTemplate: string | undefined,
+  mergedFileTemplate: string | undefined,
   keyboardSeekAccFactor: number,
   keyboardNormalSeekSpeed: number,
   keyboardSeekSpeed2: number,

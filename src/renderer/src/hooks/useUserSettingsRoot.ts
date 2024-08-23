@@ -97,6 +97,8 @@ export default () => {
   useEffect(() => safeSetConfig({ simpleMode }), [simpleMode]);
   const [outSegTemplate, setOutSegTemplate] = useState(safeGetConfigInitial('outSegTemplate'));
   useEffect(() => safeSetConfig({ outSegTemplate }), [outSegTemplate]);
+  const [mergedFileTemplate, setMergedFileTemplate] = useState(safeGetConfigInitial('mergedFileTemplate'));
+  useEffect(() => safeSetConfig({ mergedFileTemplate }), [mergedFileTemplate]);
   const [keyboardSeekAccFactor, setKeyboardSeekAccFactor] = useState(safeGetConfigInitial('keyboardSeekAccFactor'));
   useEffect(() => safeSetConfig({ keyboardSeekAccFactor }), [keyboardSeekAccFactor]);
   const [keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed] = useState(safeGetConfigInitial('keyboardNormalSeekSpeed'));
@@ -224,6 +226,8 @@ export default () => {
     setSimpleMode,
     outSegTemplate,
     setOutSegTemplate,
+    mergedFileTemplate,
+    setMergedFileTemplate,
     keyboardSeekAccFactor,
     setKeyboardSeekAccFactor,
     keyboardNormalSeekSpeed,

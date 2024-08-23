@@ -12,11 +12,10 @@ import ExportModeButton from './ExportModeButton';
 import PreserveMovDataButton from './PreserveMovDataButton';
 import MovFastStartButton from './MovFastStartButton';
 import ToggleExportConfirm from './ToggleExportConfirm';
-import OutSegTemplateEditor from './OutSegTemplateEditor';
+import FileNameTemplateEditor from './FileNameTemplateEditor';
 import HighlightedText, { highlightedTextStyle } from './HighlightedText';
 import Select from './Select';
 import Switch from './Switch';
-import MergedOutFileName from './MergedOutFileName';
 
 import { primaryTextColor } from '../colors';
 import { withBlur } from '../util';
@@ -25,7 +24,7 @@ import { isMov as ffmpegIsMov } from '../util/streams';
 import useUserSettings from '../hooks/useUserSettings';
 import styles from './ExportConfirm.module.css';
 import { InverseCutSegment, SegmentToExport } from '../types';
-import { GenerateOutSegFileNames } from '../util/outputNameTemplate';
+import { defaultMergedFileTemplate, defaultOutSegTemplate, GenerateOutFileNames } from '../util/outputNameTemplate';
 import { FFprobeStream } from '../../../../ffprobe';
 import { AvoidNegativeTs } from '../../../../types';
 import TextInput from './TextInput';
@@ -55,13 +54,14 @@ function ExportConfirm({
   onShowStreamsSelectorClick,
   outSegTemplate,
   setOutSegTemplate,
+  mergedFileTemplate,
+  setMergedFileTemplate,
   generateOutSegFileNames,
+  generateMergedFileNames,
   currentSegIndexSafe,
   nonFilteredSegmentsOrInverse,
   mainCopiedThumbnailStreams,
   needSmartCut,
-  mergedOutFileName,
-  setMergedOutFileName,
   smartCutBitrate,
   setSmartCutBitrate,
   toggleSettings,
@@ -81,13 +81,14 @@ function ExportConfirm({
   onShowStreamsSelectorClick: () => void,
   outSegTemplate: string,
   setOutSegTemplate: (a: string) => void,
-  generateOutSegFileNames: GenerateOutSegFileNames,
+  mergedFileTemplate: string,
+  setMergedFileTemplate: (a: string) => void,
+  generateOutSegFileNames: GenerateOutFileNames,
+  generateMergedFileNames: GenerateOutFileNames,
   currentSegIndexSafe: number,
   nonFilteredSegmentsOrInverse: InverseCutSegment[],
   mainCopiedThumbnailStreams: FFprobeStream[],
   needSmartCut: boolean,
-  mergedOutFileName: string | undefined,
-  setMergedOutFileName: (a: string) => void,
   smartCutBitrate: number | undefined,
   setSmartCutBitrate: Dispatch<SetStateAction<number | undefined>>,
   toggleSettings: () => void,
@@ -147,6 +148,10 @@ function ExportConfirm({
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('You can customize the file name of the output segment(s) using special variables.', { count: segmentsToExport.length }) });
   }, [segmentsToExport.length]);
 
+  const onMergedFileTemplateHelpPress = useCallback(() => {
+    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('You can customize the file name of the merged file using special variables.') });
+  }, []);
+
   const onExportModeHelpPress = useCallback(() => {
     toast.fire({ icon: 'info', timer: 10000, text: exportModeDescription });
   }, [exportModeDescription]);
@@ -171,7 +176,7 @@ function ExportConfirm({
     toast.fire({ icon: 'info', timer: 10000, text: t('Enable experimental ffmpeg features flag?') });
   }, [t]);
 
-  const canEditTemplate = !willMerge || !autoDeleteMergedSegments;
+  const canEditSegTemplate = !willMerge || !autoDeleteMergedSegments;
 
   const handleSmartCutBitrateToggle = useCallback((checked: boolean) => {
     setSmartCutBitrate(() => (checked ? undefined : 10000));
@@ -269,10 +274,10 @@ function ExportConfirm({
                       <td />
                     </tr>
 
-                    {canEditTemplate && (
+                    {canEditSegTemplate && (
                       <tr>
                         <td colSpan={2}>
-                          <OutSegTemplateEditor outSegTemplate={outSegTemplate} setOutSegTemplate={setOutSegTemplate} generateOutSegFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} />
+                          <FileNameTemplateEditor template={outSegTemplate} setTemplate={setOutSegTemplate} defaultTemplate={defaultOutSegTemplate} generateFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} />
                         </td>
                         <td>
                           <HelpIcon onClick={onOutSegTemplateHelpPress} />
@@ -282,14 +287,11 @@ function ExportConfirm({
 
                     {willMerge && (
                       <tr>
-                        <td>
-                          {t('Merged output file name:')}
+                        <td colSpan={2}>
+                          <FileNameTemplateEditor template={mergedFileTemplate} setTemplate={setMergedFileTemplate} defaultTemplate={defaultMergedFileTemplate} generateFileNames={generateMergedFileNames} mergeMode />
                         </td>
                         <td>
-                          <MergedOutFileName mergedOutFileName={mergedOutFileName} setMergedOutFileName={setMergedOutFileName} />
-                        </td>
-                        <td>
-                          <HelpIcon onClick={() => showHelpText({ text: t('Name of the merged/concatenated output file when concatenating multiple segments.') })} />
+                          <HelpIcon onClick={onMergedFileTemplateHelpPress} />
                         </td>
                       </tr>
                     )}

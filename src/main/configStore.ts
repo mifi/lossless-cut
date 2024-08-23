@@ -116,6 +116,7 @@ const defaults: Config = {
   preserveMetadataOnMerge: false,
   simpleMode: true,
   outSegTemplate: undefined,
+  mergedFileTemplate: undefined,
   keyboardSeekAccFactor: 1.03,
   keyboardNormalSeekSpeed: 1,
   keyboardSeekSpeed2: 10,

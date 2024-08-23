@@ -114,7 +114,7 @@ export const isMov = (format: string | undefined) => format != null && ['ismv', 
 type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
 
 function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined }: {
-  stream: FFprobeStream, outputIndex: number, outFormat: string, manuallyCopyDisposition?: boolean | undefined, getVideoArgs?: GetVideoArgsFn | undefined
+  stream: FFprobeStream, outputIndex: number, outFormat: string | undefined, manuallyCopyDisposition?: boolean | undefined, getVideoArgs?: GetVideoArgsFn | undefined
 }) {
   let args: string[] = [];
 
@@ -157,7 +157,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
     // ffmpeg cannot encode pcm_bluray
     if (stream.codec_name === 'pcm_bluray' && outFormat !== 'mpegts') {
       addCodecArgs('pcm_s24le');
-    } else if (stream.codec_name === 'pcm_dvd' && ['matroska', 'mov'].includes(outFormat)) {
+    } else if (stream.codec_name === 'pcm_dvd' && outFormat != null && ['matroska', 'mov'].includes(outFormat)) {
       // https://github.com/mifi/lossless-cut/discussions/2092
       // coolitnow-partial.vob
       // https://superuser.com/questions/1272614/use-ffmpeg-to-merge-mpeg2-files-with-pcm-dvd-audio
@@ -204,7 +204,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
 }
 
 export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition, getVideoArgs }: {
-  startIndex?: number, outFormat: string, allFilesMeta, copyFileStreams: { streamIds: number[], path: string }[], manuallyCopyDisposition?: boolean, getVideoArgs?: GetVideoArgsFn,
+  startIndex?: number, outFormat: string | undefined, allFilesMeta, copyFileStreams: { streamIds: number[], path: string }[], manuallyCopyDisposition?: boolean, getVideoArgs?: GetVideoArgsFn,
 }) {
   let args: string[] = [];
   let outputIndex = startIndex;

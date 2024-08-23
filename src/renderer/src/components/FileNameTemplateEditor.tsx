@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { memo, useState, useEffect, useCallback, useRef, useMemo, ChangeEventHandler } from 'react';
 import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +9,7 @@ import { FaEdit } from 'react-icons/fa';
 
 import { ReactSwal } from '../swal';
 import HighlightedText from './HighlightedText';
-import { defaultOutSegTemplate, segNumVariable, segSuffixVariable, GenerateOutSegFileNames, extVariable, segTagsVariable, segNumIntVariable } from '../util/outputNameTemplate';
+import { segNumVariable, segSuffixVariable, GenerateOutFileNames, extVariable, segTagsVariable, segNumIntVariable } from '../util/outputNameTemplate';
 import useUserSettings from '../hooks/useUserSettings';
 import Switch from './Switch';
 import Select from './Select';
@@ -17,21 +17,32 @@ import TextInput from './TextInput';
 
 const electron = window.require('electron');
 
-const formatVariable = (variable) => `\${${variable}}`;
+
+const formatVariable = (variable: string) => `\${${variable}}`;
 
 const extVariableFormatted = formatVariable(extVariable);
 const segTagsExample = `${segTagsVariable}.XX`;
 
-function OutSegTemplateEditor({ outSegTemplate, setOutSegTemplate, generateOutSegFileNames, currentSegIndexSafe }: {
-  outSegTemplate: string, setOutSegTemplate: (text: string) => void, generateOutSegFileNames: GenerateOutSegFileNames, currentSegIndexSafe: number,
-}) {
+function FileNameTemplateEditor(opts: {
+  template: string,
+  setTemplate: (text: string) => void,
+  defaultTemplate: string,
+  generateFileNames: GenerateOutFileNames,
+} & ({
+  currentSegIndexSafe: number,
+  mergeMode?: false
+} | {
+  mergeMode: true
+})) {
+  const { template: templateIn, setTemplate, defaultTemplate, generateFileNames, mergeMode } = opts;
+
   const { safeOutputFileName, toggleSafeOutputFileName, outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding } = useUserSettings();
 
-  const [text, setText] = useState(outSegTemplate);
+  const [text, setText] = useState(templateIn);
   const [debouncedText] = useDebounce(text, 500);
   const [validText, setValidText] = useState<string>();
-  const [outSegProblems, setOutSegProblems] = useState<{ error?: string | undefined, sameAsInputFileNameWarning?: boolean | undefined }>({ error: undefined, sameAsInputFileNameWarning: false });
-  const [outSegFileNames, setOutSegFileNames] = useState<string[]>();
+  const [problems, setProblems] = useState<{ error?: string | undefined, sameAsInputFileNameWarning?: boolean | undefined }>({ error: undefined, sameAsInputFileNameWarning: false });
+  const [fileNames, setFileNames] = useState<string[]>();
   const [shown, setShown] = useState<boolean>();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -48,59 +59,64 @@ function OutSegTemplateEditor({ outSegTemplate, setOutSegTemplate, generateOutSe
 
     (async () => {
       try {
-        // console.time('generateOutSegFileNames')
-        const outSegs = await generateOutSegFileNames({ template: debouncedText });
+        // console.time('generateFileNames')
+        const outSegs = await generateFileNames({ template: debouncedText });
         // console.timeEnd('generateOutSegFileNames')
         if (abortController.signal.aborted) return;
-        setOutSegFileNames(outSegs.outSegFileNames);
-        setOutSegProblems(outSegs.outSegProblems);
-        setValidText(outSegs.outSegProblems.error == null ? debouncedText : undefined);
+        setFileNames(outSegs.fileNames);
+        setProblems(outSegs.problems);
+        setValidText(outSegs.problems.error == null ? debouncedText : undefined);
       } catch (err) {
         console.error(err);
         setValidText(undefined);
-        setOutSegProblems({ error: err instanceof Error ? err.message : String(err) });
+        setProblems({ error: err instanceof Error ? err.message : String(err) });
       }
     })();
 
     return () => abortController.abort();
-  }, [debouncedText, generateOutSegFileNames, t]);
+  }, [debouncedText, generateFileNames, t]);
+
+  const availableVariables = useMemo(() => (mergeMode
+    ? ['FILENAME', extVariable, 'EPOCH_MS']
+    : ['FILENAME', 'CUT_FROM', 'CUT_TO', segNumVariable, segNumIntVariable, 'SEG_LABEL', segSuffixVariable, extVariable, segTagsExample, 'EPOCH_MS']
+  ), [mergeMode]);
 
   // eslint-disable-next-line no-template-curly-in-string
   const isMissingExtension = validText != null && !validText.endsWith(extVariableFormatted);
 
-  const onAllSegmentsPreviewPress = useCallback(() => {
-    if (outSegFileNames == null) return;
+  const onAllFilesPreviewPress = useCallback(() => {
+    if (fileNames == null) return;
     ReactSwal.fire({
-      title: t('Resulting segment file names', { count: outSegFileNames.length }),
+      title: t('Resulting segment file names', { count: fileNames.length }),
       html: (
         <div style={{ textAlign: 'left', overflowY: 'auto', maxHeight: 400 }}>
-          {outSegFileNames.map((f) => <div key={f} style={{ marginBottom: 7 }}>{f}</div>)}
+          {fileNames.map((f) => <div key={f} style={{ marginBottom: 7 }}>{f}</div>)}
         </div>
       ),
     });
-  }, [outSegFileNames, t]);
+  }, [fileNames, t]);
 
   useEffect(() => {
-    if (validText != null) setOutSegTemplate(validText);
-  }, [validText, setOutSegTemplate]);
+    if (validText != null) setTemplate(validText);
+  }, [validText, setTemplate]);
 
   const reset = useCallback(() => {
-    setOutSegTemplate(defaultOutSegTemplate);
-    setText(defaultOutSegTemplate);
-  }, [setOutSegTemplate]);
+    setTemplate(defaultTemplate);
+    setText(defaultTemplate);
+  }, [defaultTemplate, setTemplate]);
 
   const onHideClick = useCallback(() => {
-    if (outSegProblems.error == null) setShown(false);
-  }, [outSegProblems.error]);
+    if (problems.error == null) setShown(false);
+  }, [problems.error]);
 
   const onShowClick = useCallback(() => {
     if (!shown) setShown(true);
   }, [shown]);
 
-  const onTextChange = useCallback((e) => setText(e.target.value), []);
+  const onTextChange = useCallback<ChangeEventHandler<HTMLInputElement>>((e) => setText(e.target.value), []);
 
-  const gotImportantMessage = outSegProblems.error != null || outSegProblems.sameAsInputFileNameWarning;
-  const needToShow = shown || gotImportantMessage;
+  const haveImportantMessage = problems.error != null || problems.sameAsInputFileNameWarning;
+  const needToShow = shown || haveImportantMessage;
 
   const onVariableClick = useCallback((variable: string) => {
     const input = inputRef.current;
@@ -115,12 +131,13 @@ function OutSegTemplateEditor({ outSegTemplate, setOutSegTemplate, generateOutSe
   }, [text]);
 
   return (
-    <motion.div style={{ maxWidth: 600 }} animate={{ margin: needToShow ? '1.5em 0' : 0 }}>
-      <div>{outSegFileNames != null && t('Output name(s):', { count: outSegFileNames.length })}</div>
+    <motion.div style={{ maxWidth: 600 }} animate={{ margin: needToShow ? '1.5em 0' : '0 0 .3em 0' }}>
+      <div>{fileNames != null && (mergeMode ? t('Merged output file name:') : t('Output name(s):', { count: fileNames.length }))}</div>
 
-      {outSegFileNames != null && (
+      {fileNames != null && (
         <HighlightedText role="button" onClick={onShowClick} style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>
-          {outSegFileNames[currentSegIndexSafe] || outSegFileNames[0] || '-'}
+          {/* eslint-disable-next-line react/destructuring-assignment */}
+          {('currentSegIndexSafe' in opts ? fileNames[opts.currentSegIndexSafe] : undefined) || fileNames[0] || '-'}
           {!needToShow && <FaEdit style={{ fontSize: '.9em', marginLeft: '.4em', verticalAlign: 'middle' }} />}
         </HighlightedText>
       )}
@@ -137,28 +154,28 @@ function OutSegTemplateEditor({ outSegTemplate, setOutSegTemplate, generateOutSe
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.2em' }}>
               <TextInput ref={inputRef} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
 
-              {outSegFileNames != null && <Button height={20} onClick={onAllSegmentsPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
+              {!mergeMode && fileNames != null && <Button height={20} onClick={onAllFilesPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
 
               <IconButton title={t('Reset')} icon={ResetIcon} height={20} onClick={reset} marginLeft={5} intent="danger" />
-              {!gotImportantMessage && <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" appearance="primary" />}
+              {!haveImportantMessage && <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" appearance="primary" />}
             </div>
 
             <div style={{ fontSize: '.8em', color: 'var(--gray11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
               {`${i18n.t('Variables')}:`}
 
               <IoIosHelpCircle fontSize="1.3em" color="var(--gray12)" role="button" cursor="pointer" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/import-export.md#customising-exported-file-names')} />
-              {['FILENAME', 'CUT_FROM', 'CUT_TO', segNumVariable, segNumIntVariable, 'SEG_LABEL', segSuffixVariable, extVariable, segTagsExample, 'EPOCH_MS'].map((variable) => (
+              {availableVariables.map((variable) => (
                 <span key={variable} role="button" style={{ cursor: 'pointer', marginRight: '.2em', textDecoration: 'underline', textDecorationStyle: 'dashed', fontSize: '.9em' }} onClick={() => onVariableClick(variable)}>{variable}</span>
               ))}
             </div>
 
-            {outSegProblems.error != null && (
+            {problems.error != null && (
               <div style={{ marginBottom: '1em' }}>
-                <ErrorIcon color="var(--red9)" size={14} verticalAlign="baseline" /> {outSegProblems.error}
+                <ErrorIcon color="var(--red9)" size={14} verticalAlign="baseline" /> {problems.error}
               </div>
             )}
 
-            {outSegProblems.error == null && outSegProblems.sameAsInputFileNameWarning && (
+            {problems.error == null && problems.sameAsInputFileNameWarning && (
               <div style={{ marginBottom: '1em' }}>
                 <WarningSignIcon verticalAlign="middle" color="var(--amber9)" />{' '}
                 {i18n.t('Output file name is the same as the source file name. This increases the risk of accidentally overwriting or deleting source files!')}
@@ -177,7 +194,7 @@ function OutSegTemplateEditor({ outSegTemplate, setOutSegTemplate, generateOutSe
                 <Select value={outputFileNameMinZeroPadding} onChange={(e) => setOutputFileNameMinZeroPadding(parseInt(e.target.value, 10))} style={{ marginRight: '1em', fontSize: '1em' }}>
                   {Array.from({ length: 10 }).map((_v, i) => i + 1).map((v) => <option key={v} value={v}>{v}</option>)}
                 </Select>
-                Minimum numeric padded length
+                {t('Minimum numeric padded length')}
               </div>
             )}
 
@@ -194,4 +211,4 @@ function OutSegTemplateEditor({ outSegTemplate, setOutSegTemplate, generateOutSe
   );
 }
 
-export default memo(OutSegTemplateEditor);
+export default memo(FileNameTemplateEditor);

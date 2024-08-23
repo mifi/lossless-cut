@@ -18,8 +18,11 @@ export const segTagsVariable = 'SEG_TAGS';
 const { parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, basename }: PlatformPath = window.require('path');
 
 
-function getOutSegProblems({ fileNames, filePath, outputDir, safeOutputFileName }: {
-  fileNames: string[], filePath: string, outputDir: string, safeOutputFileName: boolean
+function getTemplateProblems({ fileNames, filePath, outputDir, safeOutputFileName }: {
+  fileNames: string[],
+  filePath: string,
+  outputDir: string,
+  safeOutputFileName: boolean,
 }) {
   let error: string | undefined;
   let sameAsInputFileNameWarning = false;
@@ -30,7 +33,7 @@ function getOutSegProblems({ fileNames, filePath, outputDir, safeOutputFileName 
       break;
     }
 
-    const invalidChars = new Set();
+    const invalidChars = new Set<string>();
 
     // https://stackoverflow.com/questions/1976007/what-characters-are-forbidden-in-windows-and-linux-directory-names
     // note that we allow path separators in some cases (see below)
@@ -87,7 +90,7 @@ function getOutSegProblems({ fileNames, filePath, outputDir, safeOutputFileName 
     }
   }
 
-  if (error == null && hasDuplicates(fileNames)) {
+  if (error == null && fileNames.length > 1 && hasDuplicates(fileNames)) {
     error = i18n.t('Output file name template results in duplicate file names (you are trying to export multiple files with the same name). You can fix this for example by adding the "{{segNumVariable}}" variable.', { segNumVariable });
   }
 
@@ -100,10 +103,22 @@ function getOutSegProblems({ fileNames, filePath, outputDir, safeOutputFileName 
 // This is used as a fallback and so it has to always generate unique file names
 // eslint-disable-next-line no-template-curly-in-string
 export const defaultOutSegTemplate = '${FILENAME}-${CUT_FROM}-${CUT_TO}${SEG_SUFFIX}${EXT}';
+// eslint-disable-next-line no-template-curly-in-string
+export const defaultMergedFileTemplate = '${FILENAME}-cut-merged-${EPOCH_MS}${EXT}';
 
-async function interpolateSegmentFileName({ template, epochMs, inputFileNameWithoutExt, segSuffix, ext, segNum, segNumPadded, segLabel, cutFrom, cutTo, tags }: {
-  template: string, epochMs: number, inputFileNameWithoutExt: string, segSuffix: string, ext: string, segNum: number, segNumPadded: string, segLabel: string, cutFrom: string, cutTo: string, tags: Record<string, string>
-}) {
+async function interpolateOutFileName(template: string, { epochMs, inputFileNameWithoutExt, ext, segSuffix, segNum, segNumPadded, segLabel, cutFrom, cutTo, tags }: {
+  epochMs: number,
+  inputFileNameWithoutExt: string,
+  ext: string,
+} & Partial<{
+  segSuffix: string,
+  segNum: number,
+  segNumPadded: string,
+  segLabel: string,
+  cutFrom: string,
+  cutTo: string,
+  tags: Record<string, string>,
+}>) {
   const context = {
     FILENAME: inputFileNameWithoutExt,
     [segSuffixVariable]: segSuffix,
@@ -114,7 +129,7 @@ async function interpolateSegmentFileName({ template, epochMs, inputFileNameWith
     EPOCH_MS: epochMs,
     CUT_FROM: cutFrom,
     CUT_TO: cutTo,
-    [segTagsVariable]: {
+    [segTagsVariable]: tags && {
       // allow both original case and uppercase
       ...tags,
       ...Object.fromEntries(Object.entries(tags).map(([key, value]) => [`${key.toLocaleUpperCase('en-US')}`, value])),
@@ -126,10 +141,33 @@ async function interpolateSegmentFileName({ template, epochMs, inputFileNameWith
   return ret;
 }
 
+function maybeTruncatePath(fileName: string, truncate: boolean) {
+  // Split the path by its separator, so we can check the actual file name (last path seg)
+  const pathSegs = fileName.split(pathSep);
+  if (pathSegs.length === 0) return '';
+  const [lastSeg] = pathSegs.slice(-1);
+  const rest = pathSegs.slice(0, -1);
+
+  return [
+    ...rest,
+    // If sanitation is enabled, make sure filename (last seg of the path) is not too long
+    truncate ? lastSeg!.slice(0, 200) : lastSeg,
+  ].join(pathSep);
+}
+
 export async function generateOutSegFileNames({ segments, template: desiredTemplate, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding }: {
-  segments: SegmentToExport[], template: string, formatTimecode: FormatTimecode, isCustomFormatSelected: boolean, fileFormat: string, filePath: string, outputDir: string, safeOutputFileName: boolean, maxLabelLength: number, outputFileNameMinZeroPadding: number,
+  segments: SegmentToExport[],
+  template: string,
+  formatTimecode: FormatTimecode,
+  isCustomFormatSelected: boolean,
+  fileFormat: string,
+  filePath: string,
+  outputDir: string,
+  safeOutputFileName: boolean,
+  maxLabelLength: number,
+  outputFileNameMinZeroPadding: number,
 }) {
-  function generate({ template, forceSafeOutputFileName }: { template: string, forceSafeOutputFileName: boolean }) {
+  async function generate({ template, forceSafeOutputFileName }: { template: string, forceSafeOutputFileName: boolean }) {
     const epochMs = Date.now();
 
     return pMap(segments, async (segment, i) => {
@@ -150,8 +188,7 @@ export async function generateOutSegFileNames({ segments, template: desiredTempl
 
       const { name: inputFileNameWithoutExt } = parsePath(filePath);
 
-      const segFileName = await interpolateSegmentFileName({
-        template,
+      const segFileName = await interpolateOutFileName(template, {
         epochMs,
         segNum,
         segNumPadded,
@@ -164,28 +201,56 @@ export async function generateOutSegFileNames({ segments, template: desiredTempl
         tags: Object.fromEntries(Object.entries(getSegmentTags(segment)).map(([tag, value]) => [tag, filenamifyOrNot(value)])),
       });
 
-      // Now split the path by its separator, so we can check the actual file name (last path seg)
-      const pathSegs = segFileName.split(pathSep);
-      if (pathSegs.length === 0) return '';
-      const [lastSeg] = pathSegs.slice(-1);
-      const rest = pathSegs.slice(0, -1);
-
-      return [
-        ...rest,
-        // If sanitation is enabled, make sure filename (last seg of the path) is not too long
-        safeOutputFileName ? lastSeg!.slice(0, 200) : lastSeg,
-      ].join(pathSep);
+      return maybeTruncatePath(segFileName, safeOutputFileName);
     }, { concurrency: 5 });
   }
 
-  let outSegFileNames = await generate({ template: desiredTemplate, forceSafeOutputFileName: false });
+  let fileNames = await generate({ template: desiredTemplate, forceSafeOutputFileName: false });
 
-  const outSegProblems = getOutSegProblems({ fileNames: outSegFileNames, filePath, outputDir, safeOutputFileName });
-  if (outSegProblems.error != null) {
-    outSegFileNames = await generate({ template: defaultOutSegTemplate, forceSafeOutputFileName: true });
+  const problems = getTemplateProblems({ fileNames, filePath, outputDir, safeOutputFileName });
+  if (problems.error != null) {
+    fileNames = await generate({ template: defaultOutSegTemplate, forceSafeOutputFileName: true });
   }
 
-  return { outSegFileNames, outSegProblems };
+  return { fileNames, problems };
 }
 
-export type GenerateOutSegFileNames = (a: { segments?: SegmentToExport[], template: string }) => ReturnType<typeof generateOutSegFileNames>;
+export type GenerateOutFileNames = (a: { template: string }) => Promise<{
+  fileNames: string[],
+  problems: {
+    error: string | undefined;
+    sameAsInputFileNameWarning: boolean;
+  },
+}>;
+
+export async function generateMergedFileNames({ template: desiredTemplate, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName }: {
+  template: string,
+  isCustomFormatSelected: boolean,
+  fileFormat: string,
+  filePath: string,
+  outputDir: string,
+  safeOutputFileName: boolean,
+}) {
+  async function generate(template: string) {
+    const epochMs = Date.now();
+
+    const { name: inputFileNameWithoutExt } = parsePath(filePath);
+
+    const fileName = await interpolateOutFileName(template, {
+      epochMs,
+      inputFileNameWithoutExt,
+      ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath }),
+    });
+
+    return maybeTruncatePath(fileName, safeOutputFileName);
+  }
+
+  let fileName = await generate(desiredTemplate);
+
+  const problems = getTemplateProblems({ fileNames: [fileName], filePath, outputDir, safeOutputFileName });
+  if (problems.error != null) {
+    fileName = await generate(defaultMergedFileTemplate);
+  }
+
+  return { fileNames: [fileName], problems };
+}

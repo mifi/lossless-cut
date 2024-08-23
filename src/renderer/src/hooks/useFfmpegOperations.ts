@@ -82,7 +82,20 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   const getOutputPlaybackRateArgs = useCallback(() => (outputPlaybackRate !== 1 ? ['-itsscale', String(1 / outputPlaybackRate)] : []), [outputPlaybackRate]);
 
   const concatFiles = useCallback(async ({ paths, outDir, outPath, metadataFromPath, includeAllStreams, streams, outFormat, ffmpegExperimental, onProgress = () => undefined, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge, videoTimebase }: {
-    paths: string[], outDir: string | undefined, outPath: string, metadataFromPath: string, includeAllStreams: boolean, streams: FFprobeStream[], outFormat: string, ffmpegExperimental: boolean, onProgress?: (a: number) => void, preserveMovData: boolean, movFastStart: boolean, chapters: Chapter[] | undefined, preserveMetadataOnMerge: boolean, videoTimebase?: number | undefined,
+    paths: string[],
+    outDir: string | undefined,
+    outPath: string,
+    metadataFromPath: string,
+    includeAllStreams: boolean,
+    streams: FFprobeStream[],
+    outFormat?: string | undefined,
+    ffmpegExperimental: boolean,
+    onProgress?: (a: number) => void,
+    preserveMovData: boolean,
+    movFastStart: boolean,
+    chapters: Chapter[] | undefined,
+    preserveMetadataOnMerge: boolean,
+    videoTimebase?: number | undefined,
   }) => {
     if (await shouldSkipExistingFile(outPath)) return { haveExcludedStreams: false };
 
@@ -500,7 +513,19 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     }
   }, [needSmartCut, filePath, losslessCutSingle, shouldSkipExistingFile, smartCutCustomBitrate, appendFfmpegCommandLog, concatFiles]);
 
-  const autoConcatCutSegments = useCallback(async ({ customOutDir, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge, mergedOutFilePath }) => {
+  const autoConcatCutSegments = useCallback(async ({ customOutDir, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge, mergedOutFilePath }: {
+    customOutDir: string | undefined,
+    outFormat: string | undefined,
+    segmentPaths: string[],
+    ffmpegExperimental: boolean,
+    onProgress: (p: number) => void,
+    preserveMovData: boolean,
+    movFastStart: boolean,
+    autoDeleteMergedSegments: boolean,
+    chapterNames: (string | undefined)[] | undefined,
+    preserveMetadataOnMerge: boolean,
+    mergedOutFilePath: string,
+  }) => {
     const outDir = getOutDir(customOutDir, filePath);
 
     if (await shouldSkipExistingFile(mergedOutFilePath)) return;
@@ -508,6 +533,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const chapters = await createChaptersFromSegments({ segmentPaths, chapterNames });
 
     const metadataFromPath = segmentPaths[0];
+    invariant(metadataFromPath != null);
     // need to re-read streams because may have changed
     const { streams } = await readFileMeta(metadataFromPath);
     await concatFiles({ paths: segmentPaths, outDir, outPath: mergedOutFilePath, metadataFromPath, outFormat, includeAllStreams: true, streams, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge });
