@@ -882,5 +882,20 @@
     "Select segments by expression": "Выбор сегментов по выражению",
     "Show informational in-app notifications": "Показывать информационные уведомления в приложении",
     "Show notifications": "Показать уведомления",
-    "Smart cut auto detect bitrate": "Smart Cut автоподбор битрейта"
+    "Smart cut auto detect bitrate": "Smart Cut автоподбор битрейта",
+    "More settings": "Больше настроек",
+    "Open media from URL": "Открыть медиафайл по URL",
+    "Open URL": "Открыть URL",
+    "Output file name template": "Шаблон имени выходного файла",
+    "Playback rate": "Скорость воспроизведения",
+    "Please select a working directory first": "Сначала выберите рабочий каталог",
+    "Segment mode: \"{{mode1}}\" will create segments bounding the black sections. \"{{mode2}}\" will create segments that start/stop at the center of each black section.": "Режим сегментации: \"{{mode1}}\" создаст сегменты, ограничивающие черные секции. \"{{mode2}}\" создаст сегменты, которые начинаются/заканчиваются в центре каждой черной секции.",
+    "Segment starts after 01:00": "Сегменты начинаются после 01:00",
+    "All segments match this expression.": "Все сегменты соответствуют данному выражению.",
+    "Downloading URL": "Загрузка URL",
+    "Segment mode: \"{{mode1}}\" will create segments bounding the silent sections. \"{{mode2}}\" will create segments that start/stop at the center of each silent section.": "Режим сегментации: \"{{mode1}}\" создаст сегменты, ограничивающие тихие секции. \"{{mode2}}\" создаст сегменты, которые начинаются/заканчиваются в центре каждой тихой секции.",
+    "Cut at the preceding keyframe (not accurate time.) Equiv to": "Разрезать на предыдущем ключевом кадре (не точное время). Эквивалентно",
+    "Losslessly download a whole media file from the specified URL, mux it into an mkv file and open it in LosslessCut. This can be useful if you need to download a video from a website, e.g. a HLS streaming video. For example in Chrome you can open Developer Tools and view the network traffic, find the playlist (e.g. m3u8) and copy paste its URL here.": "Загрузка без потерь медиа-файла с указанного URL-адреса, объединение в файл mkv и открытие в LosslessCut. Это может быть полезно, если вам нужно скачать видео с веб-сайта, например, потоковое видео HLS. Вы можете открыть инструменты разработчика Chrome и просмотреть сетевой трафик, найти плейлист (например, m3u8) и вставить его URL сюда.",
+    "Advanced settings are currently not visible.": "Расширенные настройки в настоящее время не видны.",
+    "This gives you an overview of the export and allows you to customise more parameters before exporting, like changing the output file name.": "Это дает вам обзор экспорта и позволяет настроить дополнительные параметры перед экспортом, например изменить имя выходного файла."
 }
