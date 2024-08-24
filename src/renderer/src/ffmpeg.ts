@@ -425,7 +425,7 @@ async function extractNonAttachmentStreams({ customOutDir, filePath, streams, en
     ...streamArgs,
   ];
 
-  const { stdout } = await runFfmpeg(ffmpegArgs);
+  const { stdout } = await runFfmpeg(ffmpegArgs, undefined, { logCli: true });
   console.log(stdout.toString('utf8'));
 
   return outPaths;
@@ -461,7 +461,7 @@ async function extractAttachmentStreams({ customOutDir, filePath, streams, enabl
   ];
 
   try {
-    const { stdout } = await runFfmpeg(ffmpegArgs);
+    const { stdout } = await runFfmpeg(ffmpegArgs, undefined, { logCli: true });
     console.log(stdout.toString('utf8'));
   } catch (err) {
     // Unfortunately ffmpeg will exit with code 1 even though it's a success
