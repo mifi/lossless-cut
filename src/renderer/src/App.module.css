@@ -1,0 +1,13 @@
+/* https://stackoverflow.com/questions/18270894/html5-video-does-not-hide-controls-in-fullscreen-mode-in-chrome */
+video.video::-webkit-media-controls {
+  display:none !important;
+}
+
+video.video::cue {
+  background-color: rgba(0,0,0,0.3);
+}
+
+/* remove gap between subtitle lines https://stackoverflow.com/questions/41317044/need-help-styling-subtitles-on-html5-using-the-track-element */
+video.video::-webkit-media-text-track-display {
+  overflow: visible !important;
+}

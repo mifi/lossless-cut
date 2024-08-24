@@ -108,8 +108,3 @@ code.highlighted {
 .link-button:focus {
   outline: revert;
 }
-
-/* https://stackoverflow.com/questions/18270894/html5-video-does-not-hide-controls-in-fullscreen-mode-in-chrome */
-video.main-player::-webkit-media-controls {
-  display:none !important;
-}

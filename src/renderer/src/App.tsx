@@ -95,6 +95,7 @@ import useThumbnails from './hooks/useThumbnails';
 import useSubtitles from './hooks/useSubtitles';
 import useStreamsMeta from './hooks/useStreamsMeta';
 import { bottomStyle, videoStyle } from './styles';
+import styles from './App.module.css';
 
 const electron = window.require('electron');
 const { exists } = window.require('fs-extra');
@@ -2390,7 +2391,7 @@ function App() {
                   <div className="no-user-select" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, visibility: !isFileOpened || !hasVideo || bigWaveformEnabled ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
                     {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
                     <video
-                      className="main-player"
+                      className={styles['video']}
                       tabIndex={-1}
                       muted={playbackVolume === 0 || compatPlayerEnabled}
                       ref={videoRef}
