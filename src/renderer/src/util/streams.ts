@@ -169,6 +169,8 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
       // I think DV format only supports PCM_S16LE https://github.com/FFmpeg/FFmpeg/blob/b92028346c35dad837dd1160930435d88bd838b5/libavformat/dvenc.c#L450
       addCodecArgs('pcm_s16le');
       addArgs(`-ar:${outputIndex}`, '48000'); // maybe technically not lossless?
+    } else if (outFormat === 'flac' && areWeCutting && stream.codec_name === 'flac') { // https://github.com/mifi/lossless-cut/issues/1809
+      addCodecArgs('flac'); // lossless because flac is a lossless codec
     } else {
       addCodecArgs('copy');
     }

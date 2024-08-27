@@ -103,6 +103,14 @@ function ExportConfirm({
   // some thumbnail streams (png,jpg etc) cannot always be cut correctly, so we warn if they try to.
   const areWeCuttingProblematicStreams = areWeCutting && mainCopiedThumbnailStreams.length > 0;
 
+  const warnings = useMemo(() => {
+    const ret: string[] = [];
+    // https://github.com/mifi/lossless-cut/issues/1809
+    if (areWeCutting && outFormat === 'flac') {
+      ret.push(t('There is a known issue in FFmpeg with cutting FLAC files. The file will be re-encoded, which is still lossless, but the export may be slower.'));
+    }
+    return ret;
+  }, [areWeCutting, outFormat, t]);
   const exportModeDescription = useMemo(() => ({
     segments_to_chapters: t('Don\'t cut the file, but instead export an unmodified original which has chapters generated from segments'),
     merge: t('Auto merge segments to one file after export'),
@@ -208,6 +216,14 @@ function ExportConfirm({
 
                 <table className={styles['options']}>
                   <tbody>
+                    {warnings.map((warning) => (
+                      <tr key={warning}>
+                        <td colSpan={2}>
+                          <div style={warningStyle}><WarningSignIcon verticalAlign="middle" color="warning" /> {warnings.join('\n')}</div>
+                        </td>
+                        <td />
+                      </tr>
+                    ))}
                     {selectedSegments.length !== nonFilteredSegmentsOrInverse.length && (
                       <tr>
                         <td colSpan={2}>
