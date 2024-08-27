@@ -53,7 +53,7 @@ import { darkModeTransition } from './colors';
 import { getSegColor } from './util/colors';
 import {
   getStreamFps, isCuttingStart, isCuttingEnd,
-  readFileMeta, getSmarterOutFormat,
+  readFileMeta, getDefaultOutFormat,
   extractStreams, setCustomFfPath as ffmpegSetCustomFfPath,
   isIphoneHevc, isProblematicAvc1, tryMapChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments,
@@ -1304,7 +1304,7 @@ function App() {
       const fileMeta = await readFileMeta(fp);
       // console.log('file meta read', fileMeta);
 
-      const fileFormatNew = await getSmarterOutFormat({ filePath: fp, fileMeta });
+      const fileFormatNew = await getDefaultOutFormat({ filePath: fp, fileMeta });
 
       if (!fileFormatNew) throw new Error('Unable to determine file format');
 

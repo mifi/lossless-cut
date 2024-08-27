@@ -260,9 +260,11 @@ function mapDefaultFormat({ streams, requestedFormat }: { streams: FFprobeStream
 async function determineOutputFormat(ffprobeFormatsStr: string | undefined, filePath: string) {
   const ffprobeFormats = (ffprobeFormatsStr || '').split(',').map((str) => str.trim()).filter(Boolean);
   if (ffprobeFormats.length === 0) {
-    console.warn('ffprobe returned unknown formats', ffprobeFormatsStr);
+    console.warn('FFprobe returned unknown formats', ffprobeFormatsStr);
     return undefined;
   }
+
+  console.log('FFprobe detected format(s)', ffprobeFormatsStr);
 
   const [firstFfprobeFormat] = ffprobeFormats;
   if (ffprobeFormats.length === 1) return firstFfprobeFormat;
@@ -326,9 +328,8 @@ async function determineOutputFormat(ffprobeFormatsStr: string | undefined, file
   }
 }
 
-export async function getSmarterOutFormat({ filePath, fileMeta: { format, streams } }: { filePath: string, fileMeta: { format: FFprobeFormat, streams: FFprobeStream[] } }) {
-  const formatsStr = format.format_name;
-  const assumedFormat = await determineOutputFormat(formatsStr, filePath);
+export async function getDefaultOutFormat({ filePath, fileMeta: { format, streams } }: { filePath: string, fileMeta: { format: Pick<FFprobeFormat, 'format_name'>, streams: FFprobeStream[] } }) {
+  const assumedFormat = await determineOutputFormat(format.format_name, filePath);
 
   return mapDefaultFormat({ streams, requestedFormat: assumedFormat });
 }
