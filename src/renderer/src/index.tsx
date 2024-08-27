@@ -9,7 +9,6 @@ import type fsPromises from 'node:fs/promises';
 import type fsExtraRaw from 'fs-extra';
 import type mimeTypes from 'mime-types';
 import type i18nextFsBackend from 'i18next-fs-backend';
-import type fileType from 'file-type';
 import type cueParser from 'cue-parser';
 
 import '@fontsource/open-sans/300.css';
@@ -58,7 +57,6 @@ declare global {
       T extends 'fs-extra' ? FsExtra :
       T extends 'mime-types' ? typeof mimeTypes :
       T extends 'i18next-fs-backend' ? typeof i18nextFsBackend :
-      T extends 'file-type' ? typeof fileType :
       T extends 'cue-parser' ? typeof cueParser :
       never
     );

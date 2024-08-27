@@ -44,6 +44,7 @@ export { downloadMediaUrl } from './ffmpeg.js';
 
 
 const electronUnhandled = import('electron-unhandled');
+export const fileTypePromise = import('file-type/node');
 
 // eslint-disable-next-line unicorn/prefer-top-level-await
 (async () => {

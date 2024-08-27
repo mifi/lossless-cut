@@ -135,7 +135,7 @@
     "execa": "^8.0.1",
     "express": "^4.19.2",
     "express-async-handler": "^1.2.0",
-    "file-type": "^19.4.1",
+    "file-type": "patch:file-type@npm%3A19.4.1#~/.yarn/patches/file-type-npm-19.4.1-d18086444c.patch",
     "fs-extra": "^8.1.0",
     "i18next": "^23.12.2",
     "i18next-fs-backend": "^2.3.2",

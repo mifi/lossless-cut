@@ -5579,7 +5579,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-type@npm:^19.4.1":
+"file-type@npm:19.4.1":
   version: 19.4.1
   resolution: "file-type@npm:19.4.1"
   dependencies:
@@ -5588,6 +5588,18 @@ __metadata:
     token-types: "npm:^6.0.0"
     uint8array-extras: "npm:^1.3.0"
   checksum: 10/3200a0dd738087c8bbd3a9cb45a5ffbdbd10cf209b3ea98e816864593bbf0a4d3bb004270231dee7a95dc714a7aa26cf4f41271f02d78eb8ae5e09fbd2ac91e5
+  languageName: node
+  linkType: hard
+
+"file-type@patch:file-type@npm%3A19.4.1#~/.yarn/patches/file-type-npm-19.4.1-d18086444c.patch":
+  version: 19.4.1
+  resolution: "file-type@patch:file-type@npm%3A19.4.1#~/.yarn/patches/file-type-npm-19.4.1-d18086444c.patch::version=19.4.1&hash=31e3c3"
+  dependencies:
+    get-stream: "npm:^9.0.1"
+    strtok3: "npm:^8.1.0"
+    token-types: "npm:^6.0.0"
+    uint8array-extras: "npm:^1.3.0"
+  checksum: 10/9bfbcc1d15db351f77a3ace39baa397c19f79a755e3dd66c5d37a924ef7e424aa45583f9c88c262c3dabe6ae17c69b3451cb906abd396de7436497d3a9f99113
   languageName: node
   linkType: hard
 
@@ -7550,7 +7562,7 @@ __metadata:
     express: "npm:^4.19.2"
     express-async-handler: "npm:^1.2.0"
     fast-xml-parser: "npm:^4.4.1"
-    file-type: "npm:^19.4.1"
+    file-type: "patch:file-type@npm%3A19.4.1#~/.yarn/patches/file-type-npm-19.4.1-d18086444c.patch"
     framer-motion: "npm:^9.0.3"
     fs-extra: "npm:^8.1.0"
     i18next: "npm:^23.12.2"
