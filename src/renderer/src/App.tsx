@@ -589,7 +589,7 @@ function App() {
     showNotification({ timer: 13000, text: i18n.t('File is not natively supported. Preview playback may be slow and of low quality, but the final export will be lossless. You may convert the file from the menu for a better preview.') });
   }, [showNotification]);
 
-  const showPreviewFileLoadedMessage = useCallback((fileName) => {
+  const showPreviewFileLoadedMessage = useCallback((fileName: string) => {
     showNotification({ icon: 'info', text: i18n.t('Loaded existing preview file: {{ fileName }}', { fileName }) });
   }, [showNotification]);
 

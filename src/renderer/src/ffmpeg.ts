@@ -5,11 +5,12 @@ import Timecode from 'smpte-timecode';
 import minBy from 'lodash/minBy';
 import invariant from 'tiny-invariant';
 
-import { pcmAudioCodecs, getMapStreamsArgs, isMov, LiteFFprobeStream } from './util/streams';
+import { pcmAudioCodecs, getMapStreamsArgs, isMov } from './util/streams';
 import { getSuffixedOutPath, isExecaError } from './util';
 import { isDurationValid } from './segments';
 import { FFprobeChapter, FFprobeFormat, FFprobeProbeResult, FFprobeStream } from '../../../ffprobe';
 import { parseSrt, parseSrtToSegments } from './edlFormats';
+import { CopyfileStreams, LiteFFprobeStream } from './types';
 
 const FileType = window.require('file-type');
 const { pathExists } = window.require('fs-extra');
@@ -58,7 +59,7 @@ export function isCuttingEnd(cutTo: number, duration: number | undefined) {
   return cutTo < duration;
 }
 
-function getIntervalAroundTime(time, window) {
+function getIntervalAroundTime(time: number, window: number) {
   return {
     from: Math.max(time - window / 2, 0),
     to: time + window / 2,
@@ -681,7 +682,7 @@ export const getVideoTimescaleArgs = (videoTimebase: number | undefined) => (vid
 
 // inspired by https://gist.github.com/fernandoherreradelasheras/5eca67f4200f1a7cc8281747da08496e
 export async function cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate, videoTimebase, allFilesMeta, copyFileStreams, videoStreamIndex, ffmpegExperimental }: {
-  filePath: string, cutFrom: number, cutTo: number, outPath: string, outFormat: string, videoCodec: string, videoBitrate: number, videoTimebase: number, allFilesMeta, copyFileStreams, videoStreamIndex: number, ffmpegExperimental: boolean,
+  filePath: string, cutFrom: number, cutTo: number, outPath: string, outFormat: string, videoCodec: string, videoBitrate: number, videoTimebase: number, allFilesMeta, copyFileStreams: CopyfileStreams, videoStreamIndex: number, ffmpegExperimental: boolean,
 }) {
   function getVideoArgs({ streamIndex, outputIndex }: { streamIndex: number, outputIndex: number }) {
     if (streamIndex !== videoStreamIndex) return undefined;

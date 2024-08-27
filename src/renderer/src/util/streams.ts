@@ -1,5 +1,6 @@
+import invariant from 'tiny-invariant';
 import { FFprobeStream, FFprobeStreamDisposition } from '../../../../ffprobe';
-import { ChromiumHTMLAudioElement, ChromiumHTMLVideoElement } from '../types';
+import { AllFilesMeta, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, LiteFFprobeStream } from '../types';
 
 // https://www.ffmpeg.org/doxygen/3.2/libavutil_2utils_8c_source.html#l00079
 const defaultProcessedCodecTypes = new Set([
@@ -113,15 +114,15 @@ export const isMov = (format: string | undefined) => format != null && ['ismv', 
 
 type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
 
-function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined }: {
-  stream: FFprobeStream, outputIndex: number, outFormat: string | undefined, manuallyCopyDisposition?: boolean | undefined, getVideoArgs?: GetVideoArgsFn | undefined
+function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined, areWeCutting }: {
+  stream: LiteFFprobeStream, outputIndex: number, outFormat: string | undefined, manuallyCopyDisposition?: boolean | undefined, getVideoArgs?: GetVideoArgsFn | undefined, areWeCutting: boolean | undefined
 }) {
   let args: string[] = [];
 
-  function addArgs(...newArgs) {
+  function addArgs(...newArgs: string[]) {
     args.push(...newArgs);
   }
-  function addCodecArgs(codec) {
+  function addCodecArgs(codec: string) {
     addArgs(`-c:${outputIndex}`, codec);
   }
 
@@ -203,20 +204,27 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
   return args;
 }
 
-export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition, getVideoArgs }: {
-  startIndex?: number, outFormat: string | undefined, allFilesMeta, copyFileStreams: { streamIds: number[], path: string }[], manuallyCopyDisposition?: boolean, getVideoArgs?: GetVideoArgsFn,
+export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition, getVideoArgs, areWeCutting }: {
+  startIndex?: number,
+  outFormat: string | undefined,
+  allFilesMeta: Record<string, Pick<AllFilesMeta[string], 'streams'>>,
+  copyFileStreams: CopyfileStreams,
+  manuallyCopyDisposition?: boolean,
+  getVideoArgs?: GetVideoArgsFn,
+  areWeCutting?: boolean,
 }) {
   let args: string[] = [];
   let outputIndex = startIndex;
 
   copyFileStreams.forEach(({ streamIds, path }, fileIndex) => {
     streamIds.forEach((streamId) => {
-      const { streams } = allFilesMeta[path];
+      const { streams } = allFilesMeta[path]!;
       const stream = streams.find((s) => s.index === streamId);
+      invariant(stream != null);
       args = [
         ...args,
         '-map', `${fileIndex}:${streamId}`,
-        ...getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition, getVideoArgs }),
+        ...getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition, getVideoArgs, areWeCutting }),
       ];
       outputIndex += 1;
     });
@@ -232,16 +240,14 @@ export function shouldCopyStreamByDefault(stream: FFprobeStream) {
 
 export const attachedPicDisposition = 'attached_pic';
 
-export type LiteFFprobeStream = Pick<FFprobeStream, 'index' | 'codec_type' | 'codec_tag' | 'codec_name' | 'disposition' | 'tags'>;
-
-export function isStreamThumbnail(stream: LiteFFprobeStream) {
+export function isStreamThumbnail(stream: Pick<FFprobeStream, 'codec_type' | 'disposition'>) {
   return stream && stream.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
 }
 
-export const getAudioStreams = <T extends LiteFFprobeStream>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'audio');
-export const getRealVideoStreams = <T extends LiteFFprobeStream>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'video' && !isStreamThumbnail(stream));
-export const getSubtitleStreams = <T extends LiteFFprobeStream>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'subtitle');
-export const isGpsStream = <T extends LiteFFprobeStream>(stream: T) => stream.codec_type === 'subtitle' && stream.tags?.['handler_name'] === '\u0010DJI.Subtitle';
+export const getAudioStreams = <T extends Pick<FFprobeStream, 'codec_type'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'audio');
+export const getRealVideoStreams = <T extends Pick<FFprobeStream, 'codec_type' | 'disposition'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'video' && !isStreamThumbnail(stream));
+export const getSubtitleStreams = <T extends Pick<FFprobeStream, 'codec_type'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'subtitle');
+export const isGpsStream = <T extends Pick<FFprobeStream, 'codec_type' | 'tags'>>(stream: T) => stream.codec_type === 'subtitle' && stream.tags?.['handler_name'] === '\u0010DJI.Subtitle';
 
 // videoTracks/audioTracks seems to be 1-indexed, while ffmpeg is 0-indexes
 const getHtml5TrackId = (ffmpegTrackIndex: number) => String(ffmpegTrackIndex + 1);
@@ -365,7 +371,7 @@ export function isAudioDefinitelyNotSupported(streams: FFprobeStream[]) {
   return audioStreams.every((stream) => ['ac3', 'eac3'].includes(stream.codec_name));
 }
 
-export function getVideoTimebase(videoStream: FFprobeStream) {
+export function getVideoTimebase(videoStream: Pick<FFprobeStream, 'time_base'>) {
   const timebaseMatch = videoStream.time_base && videoStream.time_base.split('/');
   if (timebaseMatch) {
     const timebaseParsed = parseInt(timebaseMatch[1]!, 10);

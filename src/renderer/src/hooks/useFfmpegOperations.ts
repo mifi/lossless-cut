@@ -432,8 +432,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       console.log('Smart cut on video stream', videoStreamIndex);
 
-      const onCutProgress = (progress) => onSingleProgress(i, progress / 2);
-      const onConcatProgress = (progress) => onSingleProgress(i, (1 + progress) / 2);
+      const onCutProgress = (progress: number) => onSingleProgress(i, progress / 2);
+      const onConcatProgress = (progress: number) => onSingleProgress(i, (1 + progress) / 2);
 
       const copyFileStreamsFiltered = [{
         path: filePath,

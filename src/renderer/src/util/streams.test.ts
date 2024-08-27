@@ -1,7 +1,8 @@
 import { test, expect } from 'vitest';
 
-import { LiteFFprobeStream, getMapStreamsArgs, getStreamIdsToCopy } from './streams';
+import { getMapStreamsArgs, getStreamIdsToCopy } from './streams';
 import { FFprobeStreamDisposition } from '../../../../ffprobe';
+import { LiteFFprobeStream } from '../types';
 
 
 const makeDisposition = (override?: Partial<FFprobeStreamDisposition>): FFprobeStreamDisposition => ({
@@ -26,14 +27,14 @@ const makeDisposition = (override?: Partial<FFprobeStreamDisposition>): FFprobeS
 });
 
 const streams1: LiteFFprobeStream[] = [
-  { index: 0, codec_type: 'video', codec_tag: '0x0000', codec_name: 'mjpeg', disposition: makeDisposition({ attached_pic: 1 }) },
-  { index: 1, codec_type: 'audio', codec_tag: '0x6134706d', codec_name: 'aac', disposition: makeDisposition() },
-  { index: 2, codec_type: 'video', codec_tag: '0x31637661', codec_name: 'h264', disposition: makeDisposition() },
-  { index: 3, codec_type: 'video', codec_tag: '0x0000', codec_name: 'hevc', disposition: makeDisposition() },
-  { index: 4, codec_type: 'audio', codec_tag: '0x6134706d', codec_name: 'aac', disposition: makeDisposition() },
-  { index: 5, codec_type: 'attachment', codec_tag: '0x0000', codec_name: 'ttf', disposition: makeDisposition() },
-  { index: 6, codec_type: 'data', codec_tag: '0x64636d74', codec_name: '', disposition: makeDisposition() },
-  { index: 7, codec_type: 'subtitle', codec_tag: '0x0000', codec_name: 'subrip', disposition: makeDisposition() },
+  { index: 0, codec_type: 'video', codec_tag: '0x0000', codec_name: 'mjpeg', time_base: '', disposition: makeDisposition({ attached_pic: 1 }) },
+  { index: 1, codec_type: 'audio', codec_tag: '0x6134706d', codec_name: 'aac', time_base: '', disposition: makeDisposition() },
+  { index: 2, codec_type: 'video', codec_tag: '0x31637661', codec_name: 'h264', time_base: '', disposition: makeDisposition() },
+  { index: 3, codec_type: 'video', codec_tag: '0x0000', codec_name: 'hevc', time_base: '', disposition: makeDisposition() },
+  { index: 4, codec_type: 'audio', codec_tag: '0x6134706d', codec_name: 'aac', time_base: '', disposition: makeDisposition() },
+  { index: 5, codec_type: 'attachment', codec_tag: '0x0000', codec_name: 'ttf', time_base: '', disposition: makeDisposition() },
+  { index: 6, codec_type: 'data', codec_tag: '0x64636d74', codec_name: '', time_base: '', disposition: makeDisposition() },
+  { index: 7, codec_type: 'subtitle', codec_tag: '0x0000', codec_name: 'subrip', time_base: '', disposition: makeDisposition() },
 ];
 
 const path = '/path/to/file';
@@ -66,8 +67,8 @@ test('getMapStreamsArgs', () => {
 test('getMapStreamsArgs, subtitles to matroska', () => {
   const outFormat = 'matroska';
 
-  const streams = [
-    { index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text' },
+  const streams: LiteFFprobeStream[] = [
+    { index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text', time_base: '', disposition: makeDisposition() },
   ];
 
   expect(getMapStreamsArgs({
@@ -136,7 +137,7 @@ test('getStreamIdsToCopy, includeAllStreams false', () => {
 
 test('srt output', () => {
   expect(getMapStreamsArgs({
-    allFilesMeta: { [path]: { streams: [{ index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text' }] } },
+    allFilesMeta: { [path]: { streams: [{ index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text', time_base: '', disposition: makeDisposition() }] } },
     copyFileStreams: [{ path, streamIds: [0] }],
     outFormat: 'srt',
   })).toEqual([
@@ -146,7 +147,7 @@ test('srt output', () => {
 
 test('webvtt output', () => {
   expect(getMapStreamsArgs({
-    allFilesMeta: { [path]: { streams: [{ index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text' }] } },
+    allFilesMeta: { [path]: { streams: [{ index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text', time_base: '', disposition: makeDisposition() }] } },
     copyFileStreams: [{ path, streamIds: [0] }],
     outFormat: 'webvtt',
   })).toEqual([
@@ -156,7 +157,7 @@ test('webvtt output', () => {
 
 test('ass output', () => {
   expect(getMapStreamsArgs({
-    allFilesMeta: { [path]: { streams: [{ index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text' }] } },
+    allFilesMeta: { [path]: { streams: [{ index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text', time_base: '', disposition: makeDisposition() }] } },
     copyFileStreams: [{ path, streamIds: [0] }],
     outFormat: 'ass',
   })).toEqual([

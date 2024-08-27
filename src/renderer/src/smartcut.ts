@@ -10,7 +10,7 @@ const mapVideoCodec = (codec: string) => ({ av1: 'libsvtav1' }[codec] ?? codec);
 
 // eslint-disable-next-line import/prefer-default-export
 export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, streams }: {
-  path: string, videoDuration: number | undefined, desiredCutFrom: number, streams: FFprobeStream[],
+  path: string, videoDuration: number | undefined, desiredCutFrom: number, streams: Pick<FFprobeStream, 'time_base' | 'codec_type' | 'disposition' | 'index' | 'bit_rate' | 'codec_name'>[],
 }) {
   const videoStreams = getRealVideoStreams(streams);
   if (videoStreams.length > 1) throw new Error('Can only smart cut video with exactly one video stream');
