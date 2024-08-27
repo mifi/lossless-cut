@@ -425,8 +425,10 @@ function ExportConfirm({
                         <tr>
                           <td>
                             {t('Smart cut (experimental):')}
+                            {needSmartCut && <div style={warningStyle}>{t('Smart cut is experimental and will not work on all files.')}</div>}
                           </td>
                           <td>
+
                             <Switch checked={enableSmartCut} onCheckedChange={() => setEnableSmartCut((v) => !v)} />
                           </td>
                           <td>
