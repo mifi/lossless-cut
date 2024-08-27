@@ -2089,6 +2089,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/mime-types@npm:^2.1.4":
+  version: 2.1.4
+  resolution: "@types/mime-types@npm:2.1.4"
+  checksum: 10/f8c521c54ee0c0b9f90a65356a80b1413ed27ccdc94f5c7ebb3de5d63cedb559cd2610ea55b4100805c7349606a920d96e54f2d16b2f0afa6b7cd5253967ccc9
+  languageName: node
+  linkType: hard
+
 "@types/mime@npm:*":
   version: 3.0.4
   resolution: "@types/mime@npm:3.0.4"
@@ -7483,6 +7490,7 @@ __metadata:
     "@types/lodash": "npm:^4.14.202"
     "@types/lodash.debounce": "npm:^4"
     "@types/luxon": "npm:^3.4.2"
+    "@types/mime-types": "npm:^2.1.4"
     "@types/morgan": "npm:^1.9.9"
     "@types/node": "npm:18"
     "@types/react": "npm:^18.2.66"

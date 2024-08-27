@@ -1,7 +1,6 @@
 import dataUriToBuffer from 'data-uri-to-buffer';
 import pMap from 'p-map';
 import { useCallback } from 'react';
-import type * as FsPromises from 'node:fs/promises';
 
 import { getSuffixedOutPath, getOutDir, transferTimestamps, getSuffixedFileName, getOutPath, escapeRegExp, fsOperationWithRetry } from '../util';
 import { getNumDigits } from '../segments';
@@ -11,7 +10,7 @@ import { FormatTimecode } from '../types';
 import { CaptureFormat } from '../../../../types';
 
 const mime = window.require('mime-types');
-const { rename, readdir, writeFile }: typeof FsPromises = window.require('fs/promises');
+const { rename, readdir, writeFile } = window.require('fs/promises');
 
 
 function getFrameFromVideo(video: HTMLVideoElement, format: CaptureFormat, quality: number) {

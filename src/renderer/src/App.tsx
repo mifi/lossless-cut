@@ -1687,7 +1687,7 @@ function App() {
 
       // first check if it is a single directory, and if so, read it recursively
       if (filePaths.length === 1) {
-        const firstFilePath = filePaths[0];
+        const firstFilePath = filePaths[0]!;
         const firstFileStat = await lstat(firstFilePath);
         if (firstFileStat.isDirectory()) {
           console.log('Reading directory...');

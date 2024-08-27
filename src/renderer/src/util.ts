@@ -5,18 +5,15 @@ import prettyBytes from 'pretty-bytes';
 import sortBy from 'lodash/sortBy';
 import pRetry, { Options } from 'p-retry';
 import { ExecaError } from 'execa';
-import type * as FsPromises from 'node:fs/promises';
-import type * as FsExtra from 'fs-extra';
-import type { PlatformPath } from 'node:path';
 
 import isDev from './isDev';
 import Swal, { errorToast, toast } from './swal';
 import { ffmpegExtractWindow } from './util/constants';
 import { appName } from '../../main/common';
 
-const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename }: PlatformPath = window.require('path');
-const fsExtra: typeof FsExtra = window.require('fs-extra');
-const { stat, lstat, readdir, utimes, unlink }: typeof FsPromises = window.require('fs/promises');
+const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
+const fsExtra = window.require('fs-extra');
+const { stat, lstat, readdir, utimes, unlink } = window.require('fs/promises');
 const { ipcRenderer } = window.require('electron');
 const remote = window.require('@electron/remote');
 const { isWindows, isMac } = remote.require('./index.js');

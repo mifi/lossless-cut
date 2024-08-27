@@ -55,6 +55,7 @@
     "@types/lodash": "^4.14.202",
     "@types/lodash.debounce": "^4",
     "@types/luxon": "^3.4.2",
+    "@types/mime-types": "^2.1.4",
     "@types/morgan": "^1.9.9",
     "@types/node": "18",
     "@types/react": "^18.2.66",

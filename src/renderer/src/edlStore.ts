@@ -1,6 +1,5 @@
 import JSON5 from 'json5';
 import i18n from 'i18next';
-import type { parse as CueParse } from 'cue-parser';
 import invariant from 'tiny-invariant';
 
 import { parseSrtToSegments, formatSrt, parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parseCutlist, parsePbf, parseMplayerEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, parseCsvTime, getFrameValParser, parseDvAnalyzerSummaryTxt } from './edlFormats';
@@ -9,7 +8,7 @@ import { getOutPath } from './util';
 import { EdlExportType, EdlFileType, EdlImportType, Segment, StateSegment } from './types';
 
 const { readFile, writeFile } = window.require('fs/promises');
-const cueParser: { parse: typeof CueParse } = window.require('cue-parser');
+const cueParser = window.require('cue-parser');
 const { basename } = window.require('path');
 
 const { dialog } = window.require('@electron/remote');
@@ -85,7 +84,7 @@ export async function saveLlcProject({ savePath, filePath, cutSegments }) {
 }
 
 export async function loadLlcProject(path: string) {
-  const parsed = JSON5.parse(await readFile(path)) as unknown;
+  const parsed = JSON5.parse(await readFile(path) as unknown as string) as unknown;
   if (parsed == null || typeof parsed !== 'object') throw new Error('Invalid LLC file');
   let mediaFileName: string | undefined;
   if ('mediaFileName' in parsed && typeof parsed.mediaFileName === 'string') {
