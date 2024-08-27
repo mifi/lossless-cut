@@ -259,26 +259,41 @@ function mapDefaultFormat({ streams, requestedFormat }: { streams: FFprobeStream
 
 async function determineOutputFormat(ffprobeFormatsStr: string | undefined, filePath: string) {
   const ffprobeFormats = (ffprobeFormatsStr || '').split(',').map((str) => str.trim()).filter(Boolean);
-  if (ffprobeFormats.length === 0) {
-    console.warn('FFprobe returned unknown formats', ffprobeFormatsStr);
+
+  const [firstFfprobeFormat] = ffprobeFormats;
+
+  if (firstFfprobeFormat == null) {
+    console.warn('FFprobe returned no formats', ffprobeFormatsStr);
     return undefined;
   }
 
   console.log('FFprobe detected format(s)', ffprobeFormatsStr);
 
-  const [firstFfprobeFormat] = ffprobeFormats;
-  if (ffprobeFormats.length === 1) return firstFfprobeFormat;
+  // We need to test mp3 first because ffprobe seems to report the wrong format sometimes https://github.com/mifi/lossless-cut/issues/2129
+  if (firstFfprobeFormat === 'mp3') {
+    // file-type detects it correctly
+    const fileTypeResponse = await FileType.fromFile(filePath);
+    if (fileTypeResponse?.mime === 'audio/mpeg') {
+      return 'mp2';
+    }
+  }
 
-  // If ffprobe returned a list of formats, try to be a bit smarter about it.
-  // This should only be the case for matroska and mov. See `ffmpeg -formats`
-  if (firstFfprobeFormat == null || !['matroska', 'mov'].includes(firstFfprobeFormat)) {
+  if (ffprobeFormats.length === 1) {
+    return firstFfprobeFormat;
+  }
+
+  // If ffprobe returned a list of formats, use `file-type` to try to detect more accurately.
+  // This should only be the case for matroska (matroska,webm) and mov (mov,mp4,m4a,3gp,3g2,mj2),
+  // so if it's another format, then just return the first format from the list.
+  // See also `ffmpeg -formats`
+  if (!['matroska', 'mov'].includes(firstFfprobeFormat)) {
     console.warn('Unknown ffprobe format list', ffprobeFormats);
     return firstFfprobeFormat;
   }
 
   const fileTypeResponse = await FileType.fromFile(filePath);
   if (fileTypeResponse == null) {
-    console.warn('file-type failed to detect format, defaulting to first', ffprobeFormats);
+    console.warn('file-type failed to detect format, defaulting to first FFprobe detected format', ffprobeFormats);
     return firstFfprobeFormat;
   }
 
