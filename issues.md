@@ -39,7 +39,7 @@ Here is a great introduction to audio/video: [howvideo.works](https://howvideo.w
 
 If the video exports successfully without any error from LosslessCut, but it does not look as expected when playing back, please try this:
 
-- Try both `Keyframe cut` vs `Normal cut` (do not use `Smart Cut` if you have any problem)
+- Try both with *Keyframe cut mode* on and off (do not use `Smart Cut` if you have any problem).
 - Disable unnecessary tracks from the **Tracks panel**. First try to disable all tracks except the main track (e.g. video) and if that succeeds, then work your way by enabling more tracks and see which one is causing the problem. Sometimes LosslessCut (ffmpeg) is unable to cut certain tracks at all, and this could lead to a strange output (e.g. wrong output duration or black parts).
 - Select a different **output format** (`matroska` and `mov` support a lot of codecs.)
 - Try the same operation with a different file (same codec or different codec) and see whether it's a problem with just that one particular file.
@@ -49,7 +49,7 @@ If the video exports successfully without any error from LosslessCut, but it doe
 
 Each segment's *start cut time* normally (but not always) will be "rounded" to the nearest **previous** keyframe. This means that you often have to move the **start cut time** to **few frames after** the desired keyframe.
 - Lossless cutting is not an exact science. For some files, it just works. For others, you may need to trial and error to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
-- Your mileage may vary when it comes to `Keyframe cut` vs `Normal cut`. Most common video files need `Keyframe cut`, but you may need to try both. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. In `ffmpeg`, `Keyframe cut` corresponds to `-ss` *before* `-i` and `Normal cut` is `-ss` *after* `-i`.
+- Your mileage may vary when it comes to *Keyframe cut mode*. Most common video files need *Keyframe cut* enabled, but you may need to try both values. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. In `ffmpeg`, *Keyframe cut* corresponds to `-ss` *before* `-i`.
 - Try to change `avoid_negative_ts` (in export options).
 - Try also to set the **start**-cutpoint a few frames **before or after** the nearest keyframe (may also solve audio sync issues).
 - You may try to enable the new "Smart cut" mode to allow cutting between keyframes. However it is very experimental and may not work for many files.
