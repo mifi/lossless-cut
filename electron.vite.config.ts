@@ -7,7 +7,7 @@ export default defineConfig({
     // https://electron-vite.org/guide/dev#dependencies-vs-devdependencies
     // For the main process and preload, the best practice is to externalize dependencies and only bundle our own code.
     // However, until we use ESM for electron main, we need to include ESM-only deps in the bundle: (exclude from externalize)
-    plugins: [externalizeDepsPlugin({ exclude: ['p-map', 'execa', 'nanoid'] })],
+    plugins: [externalizeDepsPlugin({ exclude: ['p-map', 'execa', 'nanoid', 'file-type'] })],
     build: {
       target: 'node20.14',
       sourcemap: true,
