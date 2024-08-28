@@ -1,1 +1,9 @@
-{}
+{
+    "{{durationMsFormatted}} ms, {{frameCount}} frames": "{{durationMsFormatted}} md, {{frameCount}} bingkai",
+    "(detected)": "(terdeteksi)",
+    "{{selectedSegments}} of {{nonFilteredSegments}} segments selected": "{{selectedSegments}} dari {{nonFilteredSegments}} segmen terpilih",
+    "\"ffmpeg\" experimental flag": "\"ffmpeg\" penanda eksperimental",
+    "(data tracks such as GoPro GPS, telemetry etc. are not copied over by default because ffmpeg cannot cut them, thus they will cause the media duration to stay the same after cutting video/audio)": "(pelacakan data seperti GoPro GPS, telemetri, dll. tidak disalin secara bawaan karena ffmpeg tidak dapat memotongnya, sehingga hal itu akan menyebabkan durasi media tetap sama setelah memotong video/audio)",
+    "+{{numFrames}} frames_one": "+{{numFrames}} bingkai",
+    "+{{numFrames}} frames_other": "+{{numFrames}} bingkai"
+}
