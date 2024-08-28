@@ -2,17 +2,6 @@ import invariant from 'tiny-invariant';
 import { FFprobeStream, FFprobeStreamDisposition } from '../../../../ffprobe';
 import { AllFilesMeta, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, LiteFFprobeStream } from '../types';
 
-// https://www.ffmpeg.org/doxygen/3.2/libavutil_2utils_8c_source.html#l00079
-const defaultProcessedCodecTypes = new Set([
-  'video',
-  'audio',
-  'subtitle',
-  'attachment',
-]);
-
-const unprocessableCodecs = new Set([
-  'dvb_teletext', // ffmpeg doesn't seem to support this https://github.com/mifi/lossless-cut/issues/1343
-]);
 
 // taken from `ffmpeg -codecs`
 export const pcmAudioCodecs = [
@@ -235,9 +224,26 @@ export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, cop
 }
 
 export function shouldCopyStreamByDefault(stream: FFprobeStream) {
-  if (!defaultProcessedCodecTypes.has(stream.codec_type)) return false;
-  if (unprocessableCodecs.has(stream.codec_name)) return false;
-  return true;
+  // https://www.ffmpeg.org/doxygen/3.2/libavutil_2utils_8c_source.html#l00079
+  switch (stream.codec_type) {
+    case 'audio':
+    case 'attachment':
+    case 'video': {
+      return true;
+    }
+    case 'subtitle': {
+      return stream.codec_name !== 'dvb_teletext'; // ffmpeg doesn't seem to support this https://github.com/mifi/lossless-cut/issues/1343
+    }
+    case 'data': {
+      // can handle gopro gpmd https://github.com/mifi/lossless-cut/issues/2134
+      // no other data tracks are known to be supported (might be added later)
+      return stream.codec_name === 'bin_data' && stream.codec_tag_string === 'gpmd';
+    }
+
+    default: {
+      return false;
+    }
+  }
 }
 
 export const attachedPicDisposition = 'attached_pic';
