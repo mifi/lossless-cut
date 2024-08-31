@@ -106,7 +106,7 @@ export const findNextKeyframe = (keyframes: Keyframe[], time: number) => keyfram
 const findPreviousKeyframe = (keyframes: Keyframe[], time: number) => keyframes.findLast((keyframe) => keyframe.time <= time);
 const findNearestKeyframe = (keyframes: Keyframe[], time: number) => minBy(keyframes, (keyframe) => Math.abs(keyframe.time - time));
 
-export type FindKeyframeMode = 'nearest' | 'before' | 'after' | 'consistent';
+export type FindKeyframeMode = 'nearest' | 'before' | 'after' | 'keyframeCutFix';
 
 function findKeyframe(keyframes: Keyframe[], time: number, mode: FindKeyframeMode) {
   switch (mode) {
@@ -119,7 +119,7 @@ function findKeyframe(keyframes: Keyframe[], time: number, mode: FindKeyframeMod
     case 'after': {
       return findNextKeyframe(keyframes, time);
     }
-    case 'consistent': {
+    case 'keyframeCutFix': {
       return findNextKeyframe(keyframes,time);
     }
     default: {

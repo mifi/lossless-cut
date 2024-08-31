@@ -290,10 +290,10 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
 
         async function align(key: string) {
           const time = newSegment[key];
-          if (filePath == null) throw new Error();
+          if (filePath === null) throw new Error();
           let keyframe = await findKeyframeNearTime({ filePath, streamIndex: videoStream.index, time, mode });
-          if (keyframe == null) {
-            if (mode != 'consistent') {
+          if (keyframe === null) {
+            if (mode !== 'keyframeCutFix') {
               throw new Error(`Cannot find any keyframe within 60 seconds of frame ${time}`);
             }
             keyframe = duration;
@@ -301,17 +301,17 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
           newSegment[key] = keyframe;
         }
         if (startOrEnd.includes('start')) {
-          if (mode == 'consistent') {
+          if (mode === 'keyframeCutFix') {
             newSegment.start += frameTime * 0.3;
           }
           await align('start');
-          if (mode == 'consistent') {
+          if (mode === 'keyframeCutFix') {
             newSegment.start -= frameTime * 0.7;
           }
         }
         if (startOrEnd.includes('end')) {
           await align('end');
-          if (mode == 'consistent' && newSegment.end != duration) {
+          if (mode === 'keyframeCutFix' && newSegment.end !== duration) {
             newSegment.end -= frameTime * 0.3;
           }
         }
