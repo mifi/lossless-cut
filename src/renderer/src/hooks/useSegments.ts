@@ -5,7 +5,7 @@ import pMap from 'p-map';
 import invariant from 'tiny-invariant';
 import sortBy from 'lodash/sortBy';
 
-import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToSegments, findKeyframeNearTime, getStreamFps, getDuration } from '../ffmpeg';
+import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToSegments, findKeyframeNearTime, getStreamFps } from '../ffmpeg';
 import { handleError, shuffleArray } from '../util';
 import { errorToast } from '../swal';
 import { showParametersDialog } from '../dialogs/parameters';
@@ -283,14 +283,13 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
 
       if (filePath == null) throw new Error();
       const frameTime = 1 / (getStreamFps(videoStream) || 1000);
-      const duration = await getDuration(filePath);
 
       await modifySelectedSegmentTimes(async (segment) => {
         const newSegment = { ...segment };
 
         async function align(key: string) {
           const time = newSegment[key];
-          if (filePath === null) throw new Error();
+          if (filePath == null) throw new Error();
           let keyframe = await findKeyframeNearTime({ filePath, streamIndex: videoStream.index, time, mode });
           if (keyframe === null) {
             if (mode !== 'keyframeCutFix') {
@@ -316,9 +315,8 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
           }
         }
         if (startOrEnd.includes('start')) {
-          newSegment.start = Math.min(newSegment.start, newSegment.end - frameTime * 0.99); //don't know how ffmpeg interprets cuts between frames
-        }
-        else {
+          newSegment.start = Math.min(newSegment.start, newSegment.end - frameTime * 0.99); // don't know how ffmpeg interprets cuts between frames
+        } else {
           newSegment.end = Math.max(newSegment.start + frameTime * 0.99, newSegment.end);
         }
 
@@ -330,7 +328,7 @@ function useSegments({ filePath, workingRef, setWorking, setCutProgress, videoSt
     } finally {
       setWorking(undefined);
     }
-  }, [filePath, videoStream, modifySelectedSegmentTimes, setWorking, workingRef]);
+  }, [filePath, videoStream, modifySelectedSegmentTimes, setWorking, workingRef, duration]);
 
   const updateSegOrder = useCallback((index, newOrder) => {
     if (newOrder > cutSegments.length - 1 || newOrder < 0) return;
