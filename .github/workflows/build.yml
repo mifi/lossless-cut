@@ -116,8 +116,7 @@ jobs:
 
 #      - run: npx tsx script/e2e.mts 'dist/win-x64/LosslessCut.app/Contents/MacOS/LosslessCut' screenshot-windows.jpeg
       - run: |
-          cd dist\win-x64
-          dir
+          dir /s
         if: startsWith(matrix.os, 'windows')
 
       - run: |
