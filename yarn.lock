@@ -2036,14 +2036,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/http-cache-semantics@npm:*":
-  version: 4.0.1
-  resolution: "@types/http-cache-semantics@npm:4.0.1"
-  checksum: 10/d059bf8a15d5163cc60da51ba00d17620507f968d0b792cd55f62043016344a5f0e1aa94fa411089d41114035fcd0ea656f968bda7eabb6663a97787e3445a1c
-  languageName: node
-  linkType: hard
-
-"@types/http-cache-semantics@npm:^4.0.4":
+"@types/http-cache-semantics@npm:*, @types/http-cache-semantics@npm:^4.0.4":
   version: 4.0.4
   resolution: "@types/http-cache-semantics@npm:4.0.4"
   checksum: 10/a59566cff646025a5de396d6b3f44a39ab6a74f2ed8150692e0f31cc52f3661a68b04afe3166ebe0d566bd3259cb18522f46e949576d5204781cd6452b7fe0c5
@@ -10975,14 +10968,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^4.10.3, type-fest@npm:^4.23.0":
-  version: 4.23.0
-  resolution: "type-fest@npm:4.23.0"
-  checksum: 10/c411dea83262f9a4453e09ff82e3ac729dd26afc2e68b7a9fe93dd633b1a2bf7bf2bf3e041676497ae8b8411266019b3add91d4fe34b926a82ba09eb41e9e52b
-  languageName: node
-  linkType: hard
-
-"type-fest@npm:^4.19.0":
+"type-fest@npm:^4.10.3, type-fest@npm:^4.19.0, type-fest@npm:^4.23.0":
   version: 4.26.0
   resolution: "type-fest@npm:4.26.0"
   checksum: 10/f5fe86d2c3db693f7154c8ab0d228a89394e4c446f2ed30ea3b61afaea9757c87c4e79475ef8d6f5fafbd7a4efd302e3b0237d9657dd425228f20a27feee3aef
