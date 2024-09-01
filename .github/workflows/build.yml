@@ -114,16 +114,20 @@ jobs:
       - run: npx tsx script/e2e.mts 'dist/mac-arm64/LosslessCut.app/Contents/MacOS/LosslessCut' screenshot-macos.jpeg
         if: startsWith(matrix.os, 'macos')
 
-      - run: npx tsx script/e2e.mts 'dist/win-x64/LosslessCut.app/Contents/MacOS/LosslessCut' screenshot-windows.jpeg
+#      - run: npx tsx script/e2e.mts 'dist/win-x64/LosslessCut.app/Contents/MacOS/LosslessCut' screenshot-windows.jpeg
+      - run: |
+          cd dist\win-x64
+          dir
         if: startsWith(matrix.os, 'windows')
 
       - run: |
           export DISPLAY=:0
           sudo Xvfb -ac :0 -screen 0 1280x1024x24 > /dev/null 2>&1 &
           sleep 1
-          npx tsx script/e2e.mts 'dist/linux-x64/LosslessCut.app/Contents/MacOS/LosslessCut' screenshot-linux.jpeg
+          ls -R dist/linux-x64
+#          npx tsx script/e2e.mts 'dist/linux-x64/LosslessCut.app/Contents/MacOS/LosslessCut' screenshot-linux.jpeg
         if: startsWith(matrix.os, 'ubuntu')
-      
+
       - name: (MacOS) Upload to Mac App Store
         if: startsWith(matrix.os, 'macos') && env.is_tag == 'true'
         run: |
