@@ -889,5 +889,14 @@
     "Segment starts after 00:60": "Segment beginnt nach 00:60",
     "Segment tag value": "Segment-Tag-Wert",
     "Select segments by expression": "Segmente nach Ausdruck auswählen",
-    "Show GPS map": "GPS-Karte anzeigen"
+    "Show GPS map": "GPS-Karte anzeigen",
+    "Advanced settings are currently not visible.": "Erweiterte Einstellungen sind derzeit nicht sichtbar.",
+    "All segments match this expression.": "Alle Segmente entsprechen diesem Ausdruck.",
+    "More settings": "Weitere Einstellungen",
+    "Open media from URL": "Medium von URL öffnen",
+    "Open URL": "URL öffnen",
+    "Output file name template": "Vorlage für den Ausgabedateinamen",
+    "Playback rate": "Wiedergabegeschwindigkeit",
+    "Please select a working directory first": "Bitte wählen Sie zunächst ein Arbeitsverzeichnis aus",
+    "Segment starts after 01:00": "Segment beginnt nach 01:00"
 }
