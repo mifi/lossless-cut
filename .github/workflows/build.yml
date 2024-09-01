@@ -123,8 +123,8 @@ jobs:
           sleep 5
           ls -R dist
           sleep 1
-          chmod +x dist/linux-unpacked/LosslessCut
-          npx tsx script/e2e.mts 'dist/linux-unpacked/LosslessCut' ':0.0+0,0' screenshot.jpeg
+          chmod +x dist/linux-unpacked/losslesscut
+          npx tsx script/e2e.mts 'dist/linux-unpacked/losslesscut' ':0.0+0,0' screenshot.jpeg
         if: startsWith(matrix.os, 'ubuntu')
 
       - name: (MacOS) Upload to Mac App Store
