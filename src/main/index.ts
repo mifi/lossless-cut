@@ -405,10 +405,9 @@ export function focusWindow() {
   }
 }
 
-export async function quitApp() {
+export function quitApp() {
   // allow HTTP API to respond etc.
-  await timers.setTimeout(1000);
-  electron.app.quit();
+  timers.setTimeout(1000).then(() => electron.app.quit());
 }
 
 export const hasDisabledNetworking = () => !!disableNetworking;
