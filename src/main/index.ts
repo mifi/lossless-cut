@@ -71,7 +71,10 @@ const appVersion = app.getVersion();
 app.name = appName;
 
 if (isWindows) {
-  app.setAppUserModelId(appName);
+  // in order to set the title on OS notifications on Windows, this needs to be set to app.name
+  // https://github.com/mifi/lossless-cut/pull/2139
+  // https://stackoverflow.com/a/65863174/6519037
+  app.setAppUserModelId(app.name);
 }
 
 const isStoreBuild = process.windowsStore || process.mas;
