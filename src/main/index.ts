@@ -15,7 +15,7 @@ import assert from 'node:assert';
 import logger from './logger.js';
 import menu from './menu.js';
 import * as configStore from './configStore.js';
-import { isLinux } from './util.js';
+import { isLinux, isWindows } from './util.js';
 import { appName, copyrightYear } from './common.js';
 import attachContextMenu from './contextMenu.js';
 import HttpServer from './httpServer.js';
@@ -69,6 +69,10 @@ remote.initialize();
 const appVersion = app.getVersion();
 
 app.name = appName;
+
+if (isWindows) {
+  app.setAppUserModelId(appName);
+}
 
 const isStoreBuild = process.windowsStore || process.mas;
 
