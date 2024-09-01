@@ -11,6 +11,7 @@ import JSON5 from 'json5';
 import remote from '@electron/remote/main';
 import { stat } from 'node:fs/promises';
 import assert from 'node:assert';
+import timers from 'node:timers/promises';
 
 import logger from './logger.js';
 import menu from './menu.js';
@@ -404,7 +405,9 @@ export function focusWindow() {
   }
 }
 
-export function quitApp() {
+export async function quitApp() {
+  // allow HTTP API to respond etc.
+  await timers.setTimeout(1000);
   electron.app.quit();
 }
 

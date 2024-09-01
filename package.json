@@ -85,6 +85,7 @@
     "evergreen-ui": "^6.13.1",
     "fast-xml-parser": "^4.4.1",
     "framer-motion": "^9.0.3",
+    "got": "^14.4.2",
     "i18next-parser": "^9.0.1",
     "icon-gen": "^4.0.0",
     "immer": "^10.0.2",
