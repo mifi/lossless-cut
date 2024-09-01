@@ -7,7 +7,12 @@ on:
   schedule:
     - cron: '0 10 * * *'
   workflow_dispatch:
-
+    inputs:
+      tmate_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
 
 jobs:
   release:
@@ -24,7 +29,13 @@ jobs:
 #        os: [windows-latest]
 
     steps:
-      # Windows fix. See https://github.com/actions/checkout/issues/226
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.tmate_enabled }}
+        with:
+          detached: true
+  
+        # Windows fix. See https://github.com/actions/checkout/issues/226
       - run: git config --global core.autocrlf false
 
       - name: Check out Git repository
