@@ -16,7 +16,7 @@ import timers from 'node:timers/promises';
 import logger from './logger.js';
 import menu from './menu.js';
 import * as configStore from './configStore.js';
-import { isLinux } from './util.js';
+import { isLinux, isWindows } from './util.js';
 import { appName, copyrightYear } from './common.js';
 import attachContextMenu from './contextMenu.js';
 import HttpServer from './httpServer.js';
@@ -70,6 +70,13 @@ remote.initialize();
 const appVersion = app.getVersion();
 
 app.name = appName;
+
+if (isWindows) {
+  // in order to set the title on OS notifications on Windows, this needs to be set to app.name
+  // https://github.com/mifi/lossless-cut/pull/2139
+  // https://stackoverflow.com/a/65863174/6519037
+  app.setAppUserModelId(app.name);
+}
 
 const isStoreBuild = process.windowsStore || process.mas;
 
