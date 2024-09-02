@@ -8,7 +8,8 @@ import timers from 'node:timers/promises';
 
 const losslessCutExePath = process.argv[2];
 assert(losslessCutExePath);
-const screenshotOutPath = process.argv[3];
+const screenshotDevice = process.argv[3];
+const screenshotOutPath = process.argv[4];
 assert(screenshotOutPath);
 
 
@@ -26,10 +27,20 @@ const client = got.extend({ prefixUrl: `http://127.0.0.1:${port}`, timeout: { re
 async function captureScreenshot(outPath: string) {
   // https://trac.ffmpeg.org/wiki/Capture/Desktop#Windows
 
+  const platform = os.platform();
+
+  if (platform === 'darwin') {
+    const { stderr } = await execa('ffmpeg', ['-f', 'avfoundation', '-list_devices', 'true', '-i', '', '-hide_banner'], { reject: false });
+    console.log(stderr);
+  }
+
+  assert(screenshotDevice);
+
   await execa('ffmpeg', [
-    ...(os.platform() === 'darwin' ? ['-r', '30', '-pix_fmt', 'uyvy422', '-f', 'avfoundation', '-i', '1:none'] : []),
-    ...(os.platform() === 'win32' ? ['-f', 'gdigrab', '-framerate', '30', '-i', 'desktop'] : []),
-    ...(os.platform() === 'linux' ? ['-framerate', '25', '-f', 'x11grab', '-i', ':0.0+0,0'] : []),
+    ...(platform === 'darwin' ? ['-r', '30', '-pix_fmt', 'uyvy422', '-f', 'avfoundation'] : []),
+    ...(platform === 'win32' ? ['-f', 'gdigrab', '-framerate', '30'] : []),
+    ...(platform === 'linux' ? ['-framerate', '25', '-f', 'x11grab'] : []),
+    '-i', screenshotDevice,
     '-vframes', '1', outPath,
   ], { timeout: 30000 });
 }
@@ -58,6 +69,9 @@ try {
 
 console.log('Waiting for app to quit');
 
-await ps;
+const { stdout, stderr } = await ps;
 
 console.log('App has quit');
+
+console.log('stdout:', stdout);
+console.log('stderr:', stderr);

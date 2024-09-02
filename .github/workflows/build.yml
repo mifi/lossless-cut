@@ -7,7 +7,12 @@ on:
   schedule:
     - cron: '0 10 * * *'
   workflow_dispatch:
-
+    inputs:
+      tmate_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
 
 jobs:
   release:
@@ -24,7 +29,13 @@ jobs:
 #        os: [windows-latest]
 
     steps:
-      # Windows fix. See https://github.com/actions/checkout/issues/226
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.tmate_enabled }}
+        with:
+          detached: true
+  
+        # Windows fix. See https://github.com/actions/checkout/issues/226
       - run: git config --global core.autocrlf false
 
       - name: Check out Git repository
@@ -111,20 +122,18 @@ jobs:
           APPLE_API_KEY_ID: ${{ secrets.api_key_id }}
           APPLE_API_ISSUER: ${{ secrets.api_key_issuer_id }}
 
-      - run: npx tsx script/e2e.mts 'dist/mac-arm64/LosslessCut.app/Contents/MacOS/LosslessCut' screenshot-macos.jpeg
+      - run: npx tsx script/e2e.mts 'dist/mac-arm64/LosslessCut.app/Contents/MacOS/LosslessCut' 0:none screenshot.jpeg
         if: startsWith(matrix.os, 'macos')
 
-#      - run: npx tsx script/e2e.mts 'dist/win-x64/LosslessCut.app/Contents/MacOS/LosslessCut' screenshot-windows.jpeg
-      - run: |
-          dir /s
+      - run: npx tsx script/e2e.mts 'dist\win-unpacked\LosslessCut.exe' desktop screenshot.jpeg
         if: startsWith(matrix.os, 'windows')
 
       - run: |
           export DISPLAY=:0
           sudo Xvfb -ac :0 -screen 0 1280x1024x24 > /dev/null 2>&1 &
-          sleep 1
-          ls -R dist/linux-x64
-#          npx tsx script/e2e.mts 'dist/linux-x64/LosslessCut.app/Contents/MacOS/LosslessCut' screenshot-linux.jpeg
+          sleep 5
+          chmod +x dist/linux-unpacked/losslesscut
+          npx tsx script/e2e.mts 'dist/linux-unpacked/losslesscut' ':0.0+0,0' screenshot.jpeg
         if: startsWith(matrix.os, 'ubuntu')
 
       - name: (MacOS) Upload to Mac App Store
@@ -140,7 +149,7 @@ jobs:
           path: |
             dist/LosslessCut-mac-arm64.dmg
             dist/LosslessCut-mac-x64.dmg
-            screenshot-macos.jpeg
+            screenshot.jpeg
 
       - name: (Windows) Upload artifacts
         uses: actions/upload-artifact@v3
@@ -149,7 +158,7 @@ jobs:
           name: Windows
           path: |
             dist/LosslessCut-win-x64.7z
-            screenshot-windows.jpeg
+            screenshot.jpeg
 
       - name: (Linux) Upload artifacts
         uses: actions/upload-artifact@v3
@@ -160,5 +169,5 @@ jobs:
             dist/LosslessCut-linux-arm64.tar.bz2
             dist/LosslessCut-linux-armv7l.tar.bz2
             dist/LosslessCut-linux-x64.tar.bz2
-            screenshot-linux.jpeg
+            screenshot.jpeg
 
