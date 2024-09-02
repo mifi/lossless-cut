@@ -3,7 +3,7 @@ process.traceProcessWarnings = true;
 
 /* eslint-disable import/first */
 // eslint-disable-next-line import/no-extraneous-dependencies
-import electron, { AboutPanelOptionsOptions, BrowserWindow, BrowserWindowConstructorOptions, nativeTheme, shell, app, ipcMain, Notification, NotificationConstructorOptions } from 'electron';
+import electron, { BrowserWindow, BrowserWindowConstructorOptions, nativeTheme, shell, app, ipcMain, Notification, NotificationConstructorOptions } from 'electron';
 import i18n from 'i18next';
 import debounce from 'lodash.debounce';
 import yargsParser from 'yargs-parser';
@@ -16,11 +16,13 @@ import timers from 'node:timers/promises';
 import logger from './logger.js';
 import menu from './menu.js';
 import * as configStore from './configStore.js';
-import { isLinux, isWindows } from './util.js';
-import { appName, copyrightYear } from './common.js';
+import { isWindows } from './util.js';
+import { appName } from './common.js';
 import attachContextMenu from './contextMenu.js';
 import HttpServer from './httpServer.js';
 import isDev from './isDev.js';
+import isStoreBuild from './isStoreBuild.js';
+import { getAboutPanelOptions } from './aboutPanel.js';
 
 import { checkNewVersion } from './updateChecker.js';
 
@@ -67,8 +69,6 @@ app.commandLine.appendSwitch('enable-blink-features', 'AudioVideoTracks');
 remote.initialize();
 
 
-const appVersion = app.getVersion();
-
 app.name = appName;
 
 if (isWindows) {
@@ -78,28 +78,8 @@ if (isWindows) {
   app.setAppUserModelId(app.name);
 }
 
-const isStoreBuild = process.windowsStore || process.mas;
-
-const showVersion = !isStoreBuild;
-
-const aboutPanelOptions: AboutPanelOptionsOptions = {
-  applicationName: appName,
-  copyright: `Copyright © ${copyrightYear} Mikael Finstad ❤️ 🇳🇴`,
-  version: '', // not very useful (MacOS only, and same as applicationVersion)
-};
-
-// https://github.com/electron/electron/issues/18918
-// https://github.com/mifi/lossless-cut/issues/1537
-if (isLinux) {
-  aboutPanelOptions.version = appVersion;
-}
-if (!showVersion) {
-  // https://github.com/mifi/lossless-cut/issues/1882
-  aboutPanelOptions.applicationVersion = `${process.windowsStore ? 'Microsoft Store' : 'App Store'} edition, based on GitHub v${appVersion}`;
-}
-
 // https://www.electronjs.org/docs/latest/api/app#appsetaboutpaneloptionsoptions
-app.setAboutPanelOptions(aboutPanelOptions);
+app.setAboutPanelOptions(getAboutPanelOptions());
 
 let filesToOpen: string[] = [];
 
