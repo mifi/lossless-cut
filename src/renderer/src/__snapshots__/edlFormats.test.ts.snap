@@ -12,6 +12,40 @@ Subtitle 2 line 2
 "
 `;
 
+exports[`parseGpsLine 1`] = `
+{
+  "alt": 19,
+  "distance": 67.78,
+  "dzoom": undefined,
+  "ev": -1,
+  "f": "F/2.8",
+  "height": 20.3,
+  "horizontalSpeed": 1.03,
+  "iso": 100,
+  "lat": 15.0732,
+  "lng": 67.9771,
+  "ss": 776.89,
+  "verticalSpeed": 0,
+}
+`;
+
+exports[`parseGpsLine 2`] = `
+{
+  "alt": 26,
+  "distance": 0.57,
+  "dzoom": 1,
+  "ev": 0,
+  "f": "F/2.8",
+  "height": 102.4,
+  "horizontalSpeed": 0,
+  "iso": 100,
+  "lat": -3.913,
+  "lng": 56.5019,
+  "ss": 678.52,
+  "verticalSpeed": -0,
+}
+`;
+
 exports[`parses DV Analyzer Summary.txt 1`] = `
 [
   {

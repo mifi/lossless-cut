@@ -427,3 +427,22 @@ export function parseSrtToSegments(text: string) {
 export function formatSrt(segments) {
   return segments.reduce((acc, segment, index) => `${acc}${index > 0 ? '\r\n' : ''}${index + 1}\r\n${formatDuration({ seconds: segment.start }).replaceAll('.', ',')} --> ${formatDuration({ seconds: segment.end }).replaceAll('.', ',')}\r\n${segment.name || '-'}\r\n`, '');
 }
+
+export function parseGpsLine(line: string) {
+  const gpsMatch = line.match(/^\s*([^,]+),\s*SS\s+([^,]+),\s*ISO\s+([^,]+),\s*EV\s+([^,]+)(?:,\s*DZOOM\s+([^,]+))?,\s*GPS\s+\(([^,]+),\s*([^,]+),\s*([^,]+)\),\s*D\s+([^m]+)m,\s*H\s+([^m]+)m,\s*H\.S\s+([^m]+)m\/s,\s*V\.S\s+([^m]+)m\/s\s*$/);
+  if (!gpsMatch) return undefined;
+  return {
+    f: gpsMatch[1]!,
+    ss: parseFloat(gpsMatch[2]!),
+    iso: parseInt(gpsMatch[3]!, 10),
+    ev: parseFloat(gpsMatch[4]!),
+    dzoom: gpsMatch[5] != null ? parseFloat(gpsMatch[5]) : undefined,
+    lat: parseFloat(gpsMatch[6]!),
+    lng: parseFloat(gpsMatch[7]!),
+    alt: parseFloat(gpsMatch[8]!),
+    distance: parseFloat(gpsMatch[9]!),
+    height: parseFloat(gpsMatch[10]!),
+    horizontalSpeed: parseFloat(gpsMatch[11]!),
+    verticalSpeed: parseFloat(gpsMatch[12]!),
+  };
+}
