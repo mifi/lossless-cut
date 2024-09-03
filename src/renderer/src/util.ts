@@ -216,20 +216,20 @@ export function getOutFileExtension({ isCustomFormatSelected, outFormat, filePat
   isCustomFormatSelected?: boolean, outFormat: string, filePath: string,
 }) {
   if (!isCustomFormatSelected) {
-    const ext = extname(filePath);
+    const inputExt = extname(filePath);
     // QuickTime is quirky about the file extension of mov files (has to be .mov)
     // https://github.com/mifi/lossless-cut/issues/1075#issuecomment-1072084286
-    const hasMovIncorrectExtension = outFormat === 'mov' && ext.toLowerCase() !== '.mov';
+    const hasMovIncorrectExtension = outFormat === 'mov' && inputExt.toLowerCase() !== '.mov';
 
     // OK, just keep the current extension. Because most players will not care about the extension
-    if (!hasMovIncorrectExtension) return extname(filePath);
+    if (!hasMovIncorrectExtension) return inputExt;
   }
 
   // user is changing format, must update extension too
   return `.${getExtensionForFormat(outFormat)}`;
 }
 
-export const hasDuplicates = (arr) => new Set(arr).size !== arr.length;
+export const hasDuplicates = (arr: unknown[]) => new Set(arr).size !== arr.length;
 
 // Need to resolve relative paths from the command line https://github.com/mifi/lossless-cut/issues/639
 export const resolvePathIfNeeded = (inPath: string) => (isAbsolute(inPath) ? inPath : resolve(inPath));
