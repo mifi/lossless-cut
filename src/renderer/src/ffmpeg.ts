@@ -236,27 +236,28 @@ export async function createChaptersFromSegments({ segmentPaths, chapterNames }:
 }
 
 /**
- * ffmpeg only supports encoding certain formats, and some of the detected input
- * formats are not the same as the muxer name used for encoding.
+ * Some of the detected input formats are not the same as the muxer name used for encoding.
  * Therefore we have to map between detected input format and encode format
  * See also ffmpeg -formats
  */
-function mapDefaultFormat({ streams, requestedFormat }: { streams: FFprobeStream[], requestedFormat: string | undefined }) {
-  if (requestedFormat === 'mp4') {
-    // Only MOV supports these codecs, so default to MOV instead https://github.com/mifi/lossless-cut/issues/948
-    // eslint-disable-next-line unicorn/no-lonely-if
-    if (streams.some((stream) => pcmAudioCodecs.includes(stream.codec_name))) {
-      return 'mov';
-    }
-  }
-
-  // see sample.aac
+function mapInputToOutputFormat(requestedFormat: string | undefined) {
+  // see file aac raw adts.aac
   if (requestedFormat === 'aac') return 'adts';
 
   return requestedFormat;
 }
 
-async function determineOutputFormat(ffprobeFormatsStr: string | undefined, filePath: string) {
+export function mapRecommendedDefaultFormat({ streams, sourceFormat }: { streams: FFprobeStream[], sourceFormat: string | undefined }) {
+  // Certain codecs cannot be muxed by ffmpeg into mp4, but in MOV they can
+  // so we default to MOV instead in those cases https://github.com/mifi/lossless-cut/issues/948
+  if (sourceFormat === 'mp4' && streams.some((stream) => pcmAudioCodecs.includes(stream.codec_name))) {
+    return { format: 'mov', message: i18n.t('This file contains an audio track that FFmpeg is unable to mux into the MP4 format, so MOV has been auto-selected as the default output format.') };
+  }
+
+  return { format: sourceFormat };
+}
+
+async function determineSourceFileFormat(ffprobeFormatsStr: string | undefined, filePath: string) {
   const ffprobeFormats = (ffprobeFormatsStr || '').split(',').map((str) => str.trim()).filter(Boolean);
 
   const [firstFfprobeFormat] = ffprobeFormats;
@@ -342,10 +343,10 @@ async function determineOutputFormat(ffprobeFormatsStr: string | undefined, file
   }
 }
 
-export async function getDefaultOutFormat({ filePath, fileMeta: { format, streams } }: { filePath: string, fileMeta: { format: Pick<FFprobeFormat, 'format_name'>, streams: FFprobeStream[] } }) {
-  const assumedFormat = await determineOutputFormat(format.format_name, filePath);
+export async function getDefaultOutFormat({ filePath, fileMeta: { format } }: { filePath: string, fileMeta: { format: Pick<FFprobeFormat, 'format_name'> } }) {
+  const assumedFormat = await determineSourceFileFormat(format.format_name, filePath);
 
-  return mapDefaultFormat({ streams, requestedFormat: assumedFormat });
+  return mapInputToOutputFormat(assumedFormat);
 }
 
 export async function readFileMeta(filePath: string) {

@@ -221,7 +221,7 @@ export function getOutFileExtension({ isCustomFormatSelected, outFormat, filePat
     // https://github.com/mifi/lossless-cut/issues/1075#issuecomment-1072084286
     const hasMovIncorrectExtension = outFormat === 'mov' && inputExt.toLowerCase() !== '.mov';
 
-    // OK, just keep the current extension. Because most players will not care about the extension
+    // OK, just keep the current extension. Because most other players will not care about the extension
     if (!hasMovIncorrectExtension) return inputExt;
   }
 

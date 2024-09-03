@@ -8,7 +8,7 @@ import invariant from 'tiny-invariant';
 import Checkbox from './Checkbox';
 
 import { ReactSwal } from '../swal';
-import { readFileMeta, getDefaultOutFormat } from '../ffmpeg';
+import { readFileMeta, getDefaultOutFormat, mapRecommendedDefaultFormat } from '../ffmpeg';
 import useFileFormatState from '../hooks/useFileFormatState';
 import OutputFormatSelect from './OutputFormatSelect';
 import useUserSettings from '../hooks/useUserSettings';
@@ -69,8 +69,8 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
       const fileFormatNew = await getDefaultOutFormat({ filePath: firstPath, fileMeta: fileMetaNew });
       if (aborted) return;
       setFileMeta(fileMetaNew);
-      setFileFormat(fileFormatNew);
       setDetectedFileFormat(fileFormatNew);
+      setFileFormat(mapRecommendedDefaultFormat({ sourceFormat: fileFormatNew, streams: fileMetaNew.streams }).format);
       setUniqueSuffix(Date.now());
     })().catch(console.error);
 

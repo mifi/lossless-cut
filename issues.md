@@ -87,9 +87,9 @@ Smart cut is experimental, so don't expect too much. But if you're having proble
 - If Smart cut gives you repeated (duplicate) segments, you can try to enable the Export Option "Shift all start times".
 - Sometimes it helps to convert (remux) your videos [to mp4 first](https://github.com/mifi/lossless-cut/discussions/1292#discussioncomment-10425084) (e.g. from mkv) using LosslessCut, before smart cutting them.
 
-## My file changes from MP4 to MOV
+## MP4/MOV issues
 
-Some MP4 files ffmpeg is not able to export as MP4 and therefore needs to use MOV instead. Unfortunately I don't know any way to fix this.
+Some MP4 files FFmpeg is not able to export as MP4 and MOV needs to be selected instead. Unfortunately I don't know any way to fix this. Sometimes certain players are not able to play back certain exported `.mov` files ([Adobe Premiere](https://github.com/mifi/lossless-cut/issues/1075#issuecomment-2327459890) 👀). You can try to rename the exported MOV file extension to `.mp4` and see if it helps. Or vice versa, rename an exported MP4 file to `.mov`.
 
 ## Output file name is missing characters
 

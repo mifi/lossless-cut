@@ -58,6 +58,7 @@ import {
   isIphoneHevc, isProblematicAvc1, tryMapChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments,
   RefuseOverwriteError, extractSubtitleTrackToSegments,
+  mapRecommendedDefaultFormat,
 } from './ffmpeg';
 import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback, getSubtitleStreams, getVideoTrackForStreamIndex, getAudioTrackForStreamIndex, enableVideoTrack, enableAudioTrack } from './util/streams';
 import { exportEdlFile, readEdlFile, loadLlcProject, askForEdlImport } from './edlStore';
@@ -1305,7 +1306,6 @@ function App() {
       // console.log('file meta read', fileMeta);
 
       const fileFormatNew = await getDefaultOutFormat({ filePath: fp, fileMeta });
-
       if (!fileFormatNew) throw new Error('Unable to determine file format');
 
       const timecode = autoLoadTimecode ? getTimecodeFromStreams(fileMeta.streams) : undefined;
@@ -1373,8 +1373,14 @@ function App() {
       if (!haveVideoStream) setWaveformMode('big-waveform');
       setMainFileMeta({ streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters });
       setCopyStreamIdsForPath(fp, () => copyStreamIdsForPathNew);
-      setFileFormat(outFormatLocked || fileFormatNew);
       setDetectedFileFormat(fileFormatNew);
+      if (outFormatLocked) {
+        setFileFormat(outFormatLocked);
+      } else {
+        const recommendedDefaultFormat = mapRecommendedDefaultFormat({ sourceFormat: fileFormatNew, streams: fileMeta.streams });
+        if (recommendedDefaultFormat.message) showNotification({ icon: 'info', text: recommendedDefaultFormat.message });
+        setFileFormat(recommendedDefaultFormat.format);
+      }
 
       // only show one toast, or else we will only show the last one
       if (existingHtml5FriendlyFile) {
