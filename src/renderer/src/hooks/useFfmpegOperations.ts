@@ -14,8 +14,15 @@ import { AvoidNegativeTs, Html5ifyMode } from '../../../../types';
 import { AllFilesMeta, Chapter, CopyfileStreams, CustomTagsByFile, ParamsByStreamId, SegmentToExport } from '../types';
 
 const { join, resolve, dirname } = window.require('path');
-const { pathExists } = window.require('fs-extra');
-const { writeFile, mkdir } = window.require('fs/promises');
+const { writeFile, mkdir, access, constants: { F_OK, W_OK } } = window.require('fs/promises');
+
+
+export class OutputNotWritableError extends Error {
+  constructor() {
+    super();
+    this.name = 'OutputNotWritableError';
+  }
+}
 
 async function writeChaptersFfmetadata(outDir: string, chapters: Chapter[] | undefined) {
   if (!chapters || chapters.length === 0) return undefined;
@@ -60,6 +67,15 @@ async function tryDeleteFiles(paths: string[]) {
   return pMap(paths, (path) => unlinkWithRetry(path).catch((err) => console.error('Failed to delete', path, err)), { concurrency: 5 });
 }
 
+async function pathExists(path: string) {
+  try {
+    await access(path, F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, appendLastCommandsLog, smartCutCustomBitrate }: {
   filePath: string | undefined,
   treatInputFileModifiedTimeAsStart: boolean | null | undefined,
@@ -74,9 +90,20 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   const appendFfmpegCommandLog = useCallback((args: string[]) => appendLastCommandsLog(getFfCommandLine('ffmpeg', args)), [appendLastCommandsLog]);
 
   const shouldSkipExistingFile = useCallback(async (path: string) => {
-    const skip = !enableOverwriteOutput && await pathExists(path);
-    if (skip) console.log('Not overwriting existing file', path);
-    return skip;
+    const fileExists = await pathExists(path);
+
+    // If output file exists, check that it is writable, so we can inform user if it's not (or else ffmpeg will fail with "Permission denied")
+    // this seems to sometimes happen on Windows, not sure why.
+    if (fileExists) {
+      try {
+        await access(path, W_OK);
+      } catch {
+        throw new OutputNotWritableError();
+      }
+    }
+    const shouldSkip = !enableOverwriteOutput && fileExists;
+    if (shouldSkip) console.log('Not overwriting existing file', path);
+    return shouldSkip;
   }, [enableOverwriteOutput]);
 
   const getOutputPlaybackRateArgs = useCallback(() => (outputPlaybackRate !== 1 ? ['-itsscale', String(1 / outputPlaybackRate)] : []), [outputPlaybackRate]);

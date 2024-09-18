@@ -17,7 +17,7 @@ import { SweetAlertOptions } from 'sweetalert2';
 import theme from './theme';
 import useTimelineScroll from './hooks/useTimelineScroll';
 import useUserSettingsRoot from './hooks/useUserSettingsRoot';
-import useFfmpegOperations from './hooks/useFfmpegOperations';
+import useFfmpegOperations, { OutputNotWritableError } from './hooks/useFfmpegOperations';
 import useKeyframes from './hooks/useKeyframes';
 import useWaveform from './hooks/useWaveform';
 import useKeyboard from './hooks/useKeyboard';
@@ -71,12 +71,13 @@ import {
   calcShouldShowWaveform, calcShouldShowKeyframes, mediaSourceQualities, isExecaError, getStdioString,
   isMuxNotSupported,
   getDownloadMediaOutPath,
+  isAbortedError,
 } from './util';
 import { toast, errorToast, showPlaybackFailedMessage } from './swal';
 import { adjustRate } from './util/rate-calculator';
 import { askExtractFramesAsImages } from './dialogs/extractFrames';
 import { askForHtml5ifySpeed } from './dialogs/html5ify';
-import { askForOutDir, askForImportChapters, promptTimecode, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openExportFinishedToast, openConcatFinishedToast, showOpenDialog, showMuxNotSupported, promptDownloadMediaUrl, CleanupChoicesType } from './dialogs';
+import { askForOutDir, askForImportChapters, promptTimecode, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openExportFinishedToast, openConcatFinishedToast, showOpenDialog, showMuxNotSupported, promptDownloadMediaUrl, CleanupChoicesType, showOutputNotWritable } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { findSegmentsAtCursor, sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, playOnlyCurrentSegment, getSegmentTags } from './segments';
@@ -863,16 +864,11 @@ function App() {
         openConcatFinishedToast({ filePath: outPath, notices, warnings });
       }
     } catch (err) {
+      if (err instanceof DirectoryAccessDeclinedError || isAbortedError(err)) return;
+
       showOsNotification(i18n.t('Failed to merge'));
 
-      if (err instanceof DirectoryAccessDeclinedError) return;
-
       if (isExecaError(err)) {
-        if (err.killed) {
-          // assume execa killed (aborted by user)
-          return;
-        }
-
         console.log('stdout:', getStdioString(err.stdout));
         console.error('stderr:', getStdioString(err.stderr));
 
@@ -884,12 +880,15 @@ function App() {
           showMuxNotSupported();
           return;
         }
-        const reportState = { includeAllStreams, streams, outFormat, outFileName, segmentsToChapters };
-        handleConcatFailed(err, reportState);
+      }
+
+      if (err instanceof OutputNotWritableError) {
+        showOutputNotWritable();
         return;
       }
 
-      handleError(err);
+      const reportState = { includeAllStreams, streams, outFormat, outFileName, segmentsToChapters };
+      handleConcatFailed(err, reportState);
     } finally {
       setWorking(undefined);
       setCutProgress(undefined);
@@ -1105,16 +1104,13 @@ function App() {
 
       if (cleanupChoices.cleanupAfterExport) await cleanupFilesWithDialog();
     } catch (err) {
-      if (isExecaError(err)) {
-        if (err.killed) {
-          // assume execa killed (aborted by user)
-          return;
-        }
+      if (isAbortedError(err)) return;
 
+      showOsNotification(i18n.t('Failed to export'));
+
+      if (isExecaError(err)) {
         console.log('stdout:', getStdioString(err.stdout));
         console.error('stderr:', getStdioString(err.stderr));
-
-        showOsNotification(i18n.t('Failed to export'));
 
         if (isOutOfSpaceError(err)) {
           showDiskFull();
@@ -1124,12 +1120,14 @@ function App() {
           showMuxNotSupported();
           return;
         }
-        handleExportFailed(err);
+      }
+
+      if (err instanceof OutputNotWritableError) {
+        showOutputNotWritable();
         return;
       }
 
-      showOsNotification(i18n.t('Failed to export'));
-      handleError(err);
+      handleExportFailed(err);
     } finally {
       setWorking(undefined);
       setCutProgress(undefined);
@@ -1258,7 +1256,7 @@ function App() {
 
         // then try to open project from source file dir
         const sameDirEdlFilePath = getEdlFilePath(fp);
-        // MAS only allows fs.stat (fs-extra.exists) if we don't have access to input dir yet, so check first if the file exists,
+        // MAS only allows fs.access (fs-extra.exists) if we don't have access to input dir yet, so check first if the file exists,
         // so we don't need to annoy the user by asking for permission if the project file doesn't exist
         if (await exists(sameDirEdlFilePath)) {
           // Ok, the file exists. now we have to ask the user, because we need to read that file

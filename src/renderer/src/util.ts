@@ -318,6 +318,9 @@ export function isExecaError(err: unknown): err is InvariantExecaError {
   return err instanceof Error && 'stdout' in err && 'stderr' in err;
 }
 
+// execa killed (aborted by user)
+export const isAbortedError = (err: unknown) => isExecaError(err) && err.killed;
+
 export const getStdioString = (stdio: string | Buffer | undefined) => (stdio instanceof Buffer ? stdio.toString('utf8') : stdio);
 
 // A bit hacky but it works, unless someone has a file called "No space left on device" ( ͡° ͜ʖ ͡°)

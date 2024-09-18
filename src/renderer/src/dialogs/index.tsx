@@ -168,6 +168,13 @@ export async function showMuxNotSupported() {
   });
 }
 
+export async function showOutputNotWritable() {
+  await Swal.fire({
+    icon: 'error',
+    text: i18n.t('You are not allowed to write the output file. This probably means that the file already exists with the wrong permissions, or you don\'t have write permissions to the output folder.'),
+  });
+}
+
 export async function showRefuseToOverwrite() {
   await Swal.fire({
     icon: 'warning',
