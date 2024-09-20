@@ -898,5 +898,6 @@
     "Output file name template": "Vorlage für den Ausgabedateinamen",
     "Playback rate": "Wiedergabegeschwindigkeit",
     "Please select a working directory first": "Bitte wählen Sie zunächst ein Arbeitsverzeichnis aus",
-    "Segment starts after 01:00": "Segment beginnt nach 01:00"
+    "Segment starts after 01:00": "Segment beginnt nach 01:00",
+    "Losslessly download a whole media file from the specified URL, mux it into an mkv file and open it in LosslessCut. This can be useful if you need to download a video from a website, e.g. a HLS streaming video. For example in Chrome you can open Developer Tools and view the network traffic, find the playlist (e.g. m3u8) and copy paste its URL here.": "Laden Sie eine ganze Mediendatei verlustfrei von der angegebenen URL herunter, muxen diese in eine mkv-Datei und öffnen sie in LosslessCut. Dies kann nützlich sein, wenn Sie ein Video von einer Website herunterladen müssen, z. B. ein HLS-Streaming-Video. In Chrome können Sie z. B. die Entwicklertools öffnen und den Netzwerkverkehr anzeigen, die Wiedergabeliste finden (z. B. m3u8) und ihre URL hierher kopieren."
 }
