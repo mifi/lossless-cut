@@ -25,9 +25,22 @@ function getFrameFromVideo(video: HTMLVideoElement, format: CaptureFormat, quali
   return dataUriToBuffer(dataUri);
 }
 
-export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }: { formatTimecode: FormatTimecode, treatOutputFileModifiedTimeAsStart?: boolean | undefined | null }) => {
+export default ({ formatTimecode, treatOutputFileModifiedTimeAsStart }: {
+  formatTimecode: FormatTimecode,
+  treatOutputFileModifiedTimeAsStart?: boolean | undefined | null,
+}) => {
   const captureFramesRange = useCallback(async ({ customOutDir, filePath, fps, fromTime, toTime, estimatedMaxNumFiles, captureFormat, quality, filter, onProgress, outputTimestamps }: {
-    customOutDir, filePath: string, fps: number, fromTime: number, toTime: number, estimatedMaxNumFiles: number, captureFormat: CaptureFormat, quality: number, filter?: string | undefined, onProgress: (a: number) => void, outputTimestamps: boolean
+    customOutDir: string | undefined,
+    filePath: string,
+    fps: number,
+    fromTime: number,
+    toTime: number,
+    estimatedMaxNumFiles: number,
+    captureFormat: CaptureFormat,
+    quality: number,
+    filter?: string | undefined,
+    onProgress: (a: number) => void,
+    outputTimestamps: boolean,
   }) => {
     const getSuffix = (prefix: string) => `${prefix}.${captureFormat}`;
 

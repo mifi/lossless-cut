@@ -53,7 +53,12 @@ export function abortFfmpegs() {
   });
 }
 
-function handleProgress(process: { stderr: Readable | null }, durationIn: number | undefined, onProgress: (a: number) => void, customMatcher: (a: string) => void = () => undefined) {
+function handleProgress(
+  process: { stderr: Readable | null },
+  durationIn: number | undefined,
+  onProgress: (a: number) => void,
+  customMatcher: (a: string) => void = () => undefined,
+) {
   if (!onProgress) return;
   if (process.stderr == null) return;
   onProgress(0);
@@ -425,7 +430,15 @@ function getCodecOpts(captureFormat: CaptureFormat) {
 }
 
 export async function captureFrames({ from, to, videoPath, outPathTemplate, quality, filter, framePts, onProgress, captureFormat }: {
-  from: number, to: number, videoPath: string, outPathTemplate: string, quality: number, filter?: string | undefined, framePts?: boolean | undefined, onProgress: (p: number) => void, captureFormat: CaptureFormat,
+  from: number,
+  to: number,
+  videoPath: string,
+  outPathTemplate: string,
+  quality: number,
+  filter?: string | undefined,
+  framePts?: boolean | undefined,
+  onProgress: (p: number) => void,
+  captureFormat: CaptureFormat,
 }) {
   const args = [
     '-ss', String(from),
