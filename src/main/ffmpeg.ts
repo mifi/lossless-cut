@@ -104,11 +104,10 @@ function handleProgress(
       if (durationIn == null) return;
       const duration = Math.max(0, durationIn);
       if (duration === 0) return;
-      const progress = duration ? Math.min(progressTime / duration, 1) : 0; // sometimes progressTime will be greater than cutDuration
+      const progress = Math.min(progressTime / duration, 1); // sometimes progressTime will be greater than cutDuration
       onProgress(progress);
     } catch (err) {
-      // @ts-expect-error todo
-      logger.error('Failed to parse ffmpeg progress line:', err.message);
+      logger.error('Failed to parse ffmpeg progress line:', err instanceof Error ? err.message : err);
     }
   });
 }
