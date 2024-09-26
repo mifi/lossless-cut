@@ -14,6 +14,7 @@ import CopyClipboardButton from '../components/CopyClipboardButton';
 import Checkbox from '../components/Checkbox';
 import { isWindows, showItemInFolder } from '../util';
 import { ParseTimecode, SegmentBase } from '../types';
+import { FindKeyframeMode } from '../ffmpeg';
 
 const remote = window.require('@electron/remote');
 const { dialog, shell } = remote;
@@ -291,8 +292,8 @@ async function askForSegmentsRandomDurationRange() {
   return parse(value);
 }
 
-async function askForSegmentsStartOrEnd(text) {
-  const { value } = await Swal.fire({
+async function askForSegmentsStartOrEnd(text: string) {
+  const { value } = await Swal.fire<string>({
     input: 'radio',
     showCancelButton: true,
     inputOptions: {
@@ -323,7 +324,7 @@ export async function askForShiftSegments({ inputPlaceholder, parseTimecode }: {
     return undefined;
   }
 
-  const { value } = await Swal.fire({
+  const { value } = await Swal.fire<string>({
     input: 'text',
     showCancelButton: true,
     inputValue: inputPlaceholder,
@@ -352,14 +353,14 @@ export async function askForAlignSegments() {
   const startOrEnd = await askForSegmentsStartOrEnd(i18n.t('Do you want to align the segment start or end timestamps to keyframes?'));
   if (startOrEnd == null) return undefined;
 
-  const { value: mode } = await Swal.fire({
+  const { value: mode } = await Swal.fire<FindKeyframeMode>({
     input: 'radio',
     showCancelButton: true,
     inputOptions: {
       nearest: i18n.t('Nearest keyframe'),
       before: i18n.t('Previous keyframe'),
       after: i18n.t('Next keyframe'),
-    },
+    } satisfies Record<FindKeyframeMode, unknown>,
     inputValue: 'before',
     text: i18n.t('Do you want to align segment times to the nearest, previous or next keyframe?'),
   });
