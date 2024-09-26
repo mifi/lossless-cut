@@ -1449,11 +1449,11 @@ function App() {
   const batchOpenSingleFile = useCallback(async (path: string) => {
     if (workingRef.current) return;
     if (filePath === path) return;
+    setWorking({ text: i18n.t('Loading file') });
     try {
-      setWorking({ text: i18n.t('Loading file') });
-      await userOpenSingleFile({ path });
-    } catch (err) {
-      handleError(err);
+      await withErrorHandling(async () => {
+        await userOpenSingleFile({ path });
+      }, i18n.t('Failed to open file'));
     } finally {
       setWorking(undefined);
     }
