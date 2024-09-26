@@ -1,4 +1,3 @@
-// eslint-disable-line unicorn/filename-case
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { test, expect, describe } from 'vitest';
 

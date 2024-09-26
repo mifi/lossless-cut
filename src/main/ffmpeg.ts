@@ -11,6 +11,7 @@ import { platform, arch, isWindows, isMac, isLinux } from './util.js';
 import { CaptureFormat, Html5ifyMode, Waveform } from '../../types.js';
 import isDev from './isDev.js';
 import logger from './logger.js';
+import { parseFfmpegProgressLine } from './progress.js';
 
 
 const runningFfmpegs = new Set<ExecaChildProcess<Buffer>>();
@@ -55,9 +56,9 @@ export function abortFfmpegs() {
 
 function handleProgress(
   process: { stderr: Readable | null },
-  durationIn: number | undefined,
+  duration: number | undefined,
   onProgress: (a: number) => void,
-  customMatcher: (a: string) => void = () => undefined,
+  customMatcher?: (a: string) => void,
 ) {
   if (!onProgress) return;
   if (process.stderr == null) return;
@@ -68,44 +69,10 @@ function handleProgress(
     // console.log('progress', line);
 
     try {
-      // eslint-disable-next-line unicorn/better-regex
-      let match = line.match(/frame=\s*[^\s]+\s+fps=\s*[^\s]+\s+q=\s*[^\s]+\s+(?:size|Lsize)=\s*[^\s]+\s+time=\s*([^\s]+)\s+/);
-      // Audio only looks like this: "line size=  233422kB time=01:45:50.68 bitrate= 301.1kbits/s speed= 353x    "
-      // eslint-disable-next-line unicorn/better-regex
-      if (!match) match = line.match(/(?:size|Lsize)=\s*[^\s]+\s+time=\s*([^\s]+)\s+/);
-      if (!match) {
-        customMatcher(line);
-        return;
+      const progress = parseFfmpegProgressLine({ line, customMatcher, duration });
+      if (progress != null) {
+        onProgress(progress);
       }
-
-      const timeStr = match[1];
-      // console.log(timeStr);
-      const match2 = timeStr!.match(/^(-?)(\d+):(\d+):(\d+)\.(\d+)$/);
-      if (!match2) throw new Error(`Invalid time from ffmpeg progress ${timeStr}`);
-
-      const sign = match2[1];
-
-      if (sign === '-') {
-        // For some reason, ffmpeg sometimes gives a negative progress, e.g. "-00:00:06.46"
-        // let's just ignore that
-        return;
-      }
-
-      const h = parseInt(match2[2]!, 10);
-      const m = parseInt(match2[3]!, 10);
-      const s = parseInt(match2[4]!, 10);
-      const cs = parseInt(match2[5]!, 10);
-      const time = (((h * 60) + m) * 60 + s) + cs / 100;
-      // console.log(time);
-
-      const progressTime = Math.max(0, time);
-      // console.log(progressTime);
-
-      if (durationIn == null) return;
-      const duration = Math.max(0, durationIn);
-      if (duration === 0) return;
-      const progress = Math.min(progressTime / duration, 1); // sometimes progressTime will be greater than cutDuration
-      onProgress(progress);
     } catch (err) {
       logger.error('Failed to parse ffmpeg progress line:', err instanceof Error ? err.message : err);
     }
