@@ -379,7 +379,6 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     ];
 
     appendFfmpegCommandLog(ffmpegArgs);
-
     const result = await runFfmpegWithProgress({ ffmpegArgs, duration: cutDuration, onProgress });
     logStdoutStderr(result);
 
@@ -579,8 +578,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     return outPath;
   }, [treatOutputFileModifiedTimeAsStart]);
 
-  // This is just used to load something into the player with correct length,
-  // so user can seek and then we render frames using ffmpeg & MediaSource
+  // This is just used to load something into the player with correct duration,
+  // so that the user can seek and then we render frames using ffmpeg & MediaSource
   const html5ifyDummy = useCallback(async ({ filePath: filePathArg, outPath, onProgress }) => {
     console.log('Making ffmpeg-assisted dummy file', { filePathArg, outPath });
 
@@ -603,11 +602,14 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   }, [treatOutputFileModifiedTimeAsStart]);
 
   // https://stackoverflow.com/questions/34118013/how-to-determine-webm-duration-using-ffprobe
-  const fixInvalidDuration = useCallback(async ({ fileFormat, customOutDir, duration, onProgress }: { fileFormat: string, customOutDir?: string | undefined, duration: number | undefined, onProgress }) => {
+  const fixInvalidDuration = useCallback(async ({ fileFormat, customOutDir, onProgress }: {
+    fileFormat: string,
+    customOutDir?: string | undefined,
+    onProgress: (a: number) => void,
+  }) => {
     invariant(filePath != null);
     const ext = getOutFileExtension({ outFormat: fileFormat, filePath });
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `reformatted${ext}` });
-    invariant(outPath != null);
 
     const ffmpegArgs = [
       '-hide_banner',
@@ -624,8 +626,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     ];
 
     appendFfmpegCommandLog(ffmpegArgs);
-
-    const result = await runFfmpegWithProgress({ ffmpegArgs, duration, onProgress });
+    const result = await runFfmpegWithProgress({ ffmpegArgs, onProgress });
     logStdoutStderr(result);
 
     await transferTimestamps({ inPath: filePath, outPath, treatOutputFileModifiedTimeAsStart });

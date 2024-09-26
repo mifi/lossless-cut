@@ -1608,7 +1608,7 @@ function App() {
       setWorking({ text: i18n.t('Fixing file duration') });
       setCutProgress(0);
       invariant(fileFormat != null);
-      const path = await fixInvalidDuration({ fileFormat, customOutDir, duration, onProgress: setCutProgress });
+      const path = await fixInvalidDuration({ fileFormat, customOutDir, onProgress: setCutProgress });
       showNotification({ icon: 'info', text: i18n.t('Duration has been fixed') });
 
       await loadMedia({ filePath: path });
@@ -1619,7 +1619,7 @@ function App() {
       setWorking(undefined);
       setCutProgress(undefined);
     }
-  }, [checkFileOpened, customOutDir, duration, fileFormat, fixInvalidDuration, loadMedia, setWorking, showNotification, workingRef]);
+  }, [checkFileOpened, customOutDir, fileFormat, fixInvalidDuration, loadMedia, setWorking, showNotification, workingRef]);
 
   const addStreamSourceFile = useCallback(async (path: string) => {
     if (allFilesMeta[path]) return undefined; // Already added?

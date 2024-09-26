@@ -125,7 +125,9 @@ export async function runFfmpegConcat({ ffmpegArgs, concatTxt, totalDuration, on
 }
 
 export async function runFfmpegWithProgress({ ffmpegArgs, duration, onProgress }: {
-  ffmpegArgs: string[], duration: number | undefined, onProgress: (a: number) => void,
+  ffmpegArgs: string[],
+  duration?: number | undefined,
+  onProgress: (a: number) => void,
 }) {
   const process = runFfmpegProcess(ffmpegArgs);
   assert(process.stderr != null);
