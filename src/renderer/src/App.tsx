@@ -1178,19 +1178,20 @@ function App() {
       setCutProgress(0);
 
       let lastOutPath: string | undefined;
-      let totalProgress = 0;
 
-      const onProgress = (progress: number) => {
-        totalProgress += progress;
+      const segmentProgresses: Record<number, number> = {};
+      const handleSegmentProgress = (segIndex: number, progress: number) => {
+        segmentProgresses[segIndex] = progress;
+        const totalProgress = segments.reduce((acc, _ignored, index) => acc + (segmentProgresses[index] ?? 0), 0);
         setCutProgress(totalProgress / segments.length);
       };
 
       // eslint-disable-next-line no-restricted-syntax
-      for (const segment of segments) {
+      for (const [index, segment] of segments.entries()) {
         const { start, end } = segment;
         if (filePath == null) throw new Error();
         // eslint-disable-next-line no-await-in-loop
-        lastOutPath = await captureFramesRange({ customOutDir, filePath, fps: detectedFps, fromTime: start, toTime: end, estimatedMaxNumFiles: captureFramesResponse.estimatedMaxNumFiles, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, outputTimestamps: captureFrameFileNameFormat === 'timestamp', onProgress });
+        lastOutPath = await captureFramesRange({ customOutDir, filePath, fps: detectedFps, fromTime: start, toTime: end, estimatedMaxNumFiles: captureFramesResponse.estimatedMaxNumFiles, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, outputTimestamps: captureFrameFileNameFormat === 'timestamp', onProgress: (progress) => handleSegmentProgress(index, progress) });
       }
       if (!hideAllNotifications && lastOutPath != null) {
         showOsNotification(i18n.t('Frames have been extracted'));
