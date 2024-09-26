@@ -122,7 +122,7 @@ function App() {
   const [previewFilePath, setPreviewFilePath] = useState<string>();
   const [usingDummyVideo, setUsingDummyVideo] = useState(false);
   const [rotation, setRotation] = useState(360);
-  const [cutProgress, setCutProgress] = useState<number>();
+  const [progress, setProgress] = useState<number>();
   const [startTimeOffset, setStartTimeOffset] = useState(0);
   const [filePath, setFilePath] = useState<string>();
   const [externalFilesMeta, setExternalFilesMeta] = useState<FilesMeta>({});
@@ -183,9 +183,9 @@ function App() {
   const zoom = Math.floor(zoomUnrounded);
   const zoomedDuration = isDurationValid(duration) ? duration / zoom : undefined;
 
-  useEffect(() => setDocumentTitle({ filePath, working: working?.text, cutProgress }), [cutProgress, filePath, working?.text]);
+  useEffect(() => setDocumentTitle({ filePath, working: working?.text, progress }), [progress, filePath, working?.text]);
 
-  useEffect(() => setProgressBar(cutProgress ?? -1), [cutProgress]);
+  useEffect(() => setProgressBar(progress ?? -1), [progress]);
 
   useEffect(() => {
     ffmpegSetCustomFfPath(customFfPath);
@@ -330,7 +330,7 @@ function App() {
 
   const {
     cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, focusSegmentAtCursor, createNumSegments, createFixedDurationSegments, createRandomSegments, apparentCutSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, currentApparentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, isSegmentSelected, setCutTime, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, onSelectSegmentsByExpr, toggleSegmentSelected, selectOnlySegment, getApparentCutSegmentById, selectedSegments, selectedSegmentsOrInverse, nonFilteredSegmentsOrInverse, segmentsToExport, duplicateCurrentSegment, duplicateSegment, updateSegAtIndex,
-  } = useSegments({ filePath, workingRef, setWorking, setCutProgress, videoStream: activeVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode });
+  } = useSegments({ filePath, workingRef, setWorking, setProgress, videoStream: activeVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode });
 
   const { getEdlFilePath, getEdlFilePathOld, projectFileSavePath, getProjectFileSavePath } = useSegmentsAutoSave({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, customOutDir, cutSegments });
 
@@ -563,7 +563,7 @@ function App() {
     setFileFormat(undefined);
     setDetectedFileFormat(undefined);
     setRotation(360);
-    setCutProgress(undefined);
+    setProgress(undefined);
     setStartTimeOffset(0);
     setFilePath(undefined);
     setExternalFilesMeta({});
@@ -614,19 +614,19 @@ function App() {
       if (speed === 'fastest') {
         const path = getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${html5dummySuffix}.mkv` });
         try {
-          setCutProgress(0);
-          await html5ifyDummy({ filePath: fp, outPath: path, onProgress: setCutProgress });
+          setProgress(0);
+          await html5ifyDummy({ filePath: fp, outPath: path, onProgress: setProgress });
         } finally {
-          setCutProgress(undefined);
+          setProgress(undefined);
         }
         return path;
       }
 
       try {
         const shouldIncludeVideo = !usesDummyVideo && hv;
-        return await html5ify({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: shouldIncludeVideo, onProgress: setCutProgress });
+        return await html5ify({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: shouldIncludeVideo, onProgress: setProgress });
       } finally {
-        setCutProgress(undefined);
+        setProgress(undefined);
       }
     }
 
@@ -643,14 +643,14 @@ function App() {
 
     const failedFiles: string[] = [];
     let i = 0;
-    const setTotalProgress = (fileProgress = 0) => setCutProgress((i + fileProgress) / filePaths.length);
+    const setTotalProgress = (fileProgress = 0) => setProgress((i + fileProgress) / filePaths.length);
 
     const { selectedOption: speed } = await askForHtml5ifySpeed({ allowedOptions: ['fast-audio-remux', 'fast-audio', 'fast', 'slow', 'slow-audio', 'slowest'] });
     if (!speed) return;
 
     if (workingRef.current) return;
     setWorking({ text: i18n.t('Batch converting to supported format') });
-    setCutProgress(0);
+    setProgress(0);
     try {
       await withErrorHandling(async () => {
         // eslint-disable-next-line no-restricted-syntax
@@ -676,7 +676,7 @@ function App() {
       }, i18n.t('Failed to batch convert to supported format'));
     } finally {
       setWorking(undefined);
-      setCutProgress(undefined);
+      setProgress(undefined);
     }
   }, [batchFiles, customOutDir, ensureWritableOutDir, html5ify, setWorking, workingRef]);
 
@@ -848,7 +848,7 @@ function App() {
       // console.log('merge', paths);
       const metadataFromPath = paths[0];
       invariant(metadataFromPath != null);
-      const { haveExcludedStreams } = await concatFiles({ paths, outPath, outDir, outFormat, metadataFromPath, includeAllStreams, streams, ffmpegExperimental, onProgress: setCutProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
+      const { haveExcludedStreams } = await concatFiles({ paths, outPath, outDir, outFormat, metadataFromPath, includeAllStreams, streams, ffmpegExperimental, onProgress: setProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
 
       const warnings: string[] = [];
       const notices: string[] = [];
@@ -892,7 +892,7 @@ function App() {
       handleConcatFailed(err, reportState);
     } finally {
       setWorking(undefined);
-      setCutProgress(undefined);
+      setProgress(undefined);
     }
   }, [workingRef, setWorking, ensureWritableOutDir, customOutDir, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, hideAllNotifications, showOsNotification, handleConcatFailed]);
 
@@ -1018,7 +1018,7 @@ function App() {
         keyframeCut,
         segments: segmentsToExport,
         outSegFileNames,
-        onProgress: setCutProgress,
+        onProgress: setProgress,
         shortestFlag,
         ffmpegExperimental,
         preserveMovData,
@@ -1036,7 +1036,7 @@ function App() {
       if (willMerge) {
         console.log('mergedFileTemplateOrDefault', mergedFileTemplateOrDefault);
 
-        setCutProgress(0);
+        setProgress(0);
         setWorking({ text: i18n.t('Merging') });
 
         const chapterNames = segmentsToChapters && !invertCutSegments ? segmentsToExport.map((s) => s.name) : undefined;
@@ -1057,7 +1057,7 @@ function App() {
           ffmpegExperimental,
           preserveMovData,
           movFastStart,
-          onProgress: setCutProgress,
+          onProgress: setProgress,
           chapterNames,
           autoDeleteMergedSegments,
           preserveMetadataOnMerge,
@@ -1081,7 +1081,7 @@ function App() {
 
       if (exportExtraStreams) {
         try {
-          setCutProgress(undefined); // If extracting extra streams takes a long time, prevent loader from being stuck at 100%
+          setProgress(undefined); // If extracting extra streams takes a long time, prevent loader from being stuck at 100%
           setWorking({ text: i18n.t('Extracting {{count}} unprocessable tracks', { count: nonCopiedExtraStreams.length }) });
           await extractStreams({ filePath, customOutDir, streams: nonCopiedExtraStreams, enableOverwriteOutput });
           notices.push(i18n.t('Unprocessable streams were exported as separate files.'));
@@ -1128,7 +1128,7 @@ function App() {
       handleExportFailed(err);
     } finally {
       setWorking(undefined);
-      setCutProgress(undefined);
+      setProgress(undefined);
     }
   }, [filePath, numStreamsToCopy, segmentsToExport, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMovData, preserveMetadataOnMerge, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, hideAllNotifications, cleanupChoices.cleanupAfterExport, cleanupFilesWithDialog, selectedSegmentsOrInverse, mergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateMergedFileNames, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, showOsNotification, handleExportFailed]);
 
@@ -1170,15 +1170,15 @@ function App() {
       setWorking({ text: i18n.t('Extracting frames') });
       console.log('Extracting frames as images', { segIds, captureFramesResponse });
 
-      setCutProgress(0);
+      setProgress(0);
 
       let lastOutPath: string | undefined;
 
       const segmentProgresses: Record<number, number> = {};
-      const handleSegmentProgress = (segIndex: number, progress: number) => {
-        segmentProgresses[segIndex] = progress;
+      const handleSegmentProgress = (segIndex: number, segmentProgress: number) => {
+        segmentProgresses[segIndex] = segmentProgress;
         const totalProgress = segments.reduce((acc, _ignored, index) => acc + (segmentProgresses[index] ?? 0), 0);
-        setCutProgress(totalProgress / segments.length);
+        setProgress(totalProgress / segments.length);
       };
 
       // eslint-disable-next-line no-restricted-syntax
@@ -1186,7 +1186,7 @@ function App() {
         const { start, end } = segment;
         if (filePath == null) throw new Error();
         // eslint-disable-next-line no-await-in-loop
-        lastOutPath = await captureFramesRange({ customOutDir, filePath, fps: detectedFps, fromTime: start, toTime: end, estimatedMaxNumFiles: captureFramesResponse.estimatedMaxNumFiles, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, outputTimestamps: captureFrameFileNameFormat === 'timestamp', onProgress: (progress) => handleSegmentProgress(index, progress) });
+        lastOutPath = await captureFramesRange({ customOutDir, filePath, fps: detectedFps, fromTime: start, toTime: end, estimatedMaxNumFiles: captureFramesResponse.estimatedMaxNumFiles, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, outputTimestamps: captureFrameFileNameFormat === 'timestamp', onProgress: (segmentProgress) => handleSegmentProgress(index, segmentProgress) });
       }
       if (!hideAllNotifications && lastOutPath != null) {
         showOsNotification(i18n.t('Frames have been extracted'));
@@ -1197,7 +1197,7 @@ function App() {
       handleError(err);
     } finally {
       setWorking(undefined);
-      setCutProgress(undefined);
+      setProgress(undefined);
     }
   }, [apparentCutSegments, captureFormat, captureFrameFileNameFormat, captureFrameQuality, captureFramesRange, customOutDir, detectedFps, filePath, getFrameCount, hideAllNotifications, outputDir, setWorking, showOsNotification, workingRef]);
 
@@ -1600,16 +1600,16 @@ function App() {
     try {
       await withErrorHandling(async () => {
         setWorking({ text: i18n.t('Fixing file duration') });
-        setCutProgress(0);
+        setProgress(0);
         invariant(fileFormat != null);
-        const path = await fixInvalidDuration({ fileFormat, customOutDir, onProgress: setCutProgress });
+        const path = await fixInvalidDuration({ fileFormat, customOutDir, onProgress: setProgress });
         showNotification({ icon: 'info', text: i18n.t('Duration has been fixed') });
 
         await loadMedia({ filePath: path });
       }, i18n.t('Failed to fix file duration'));
     } finally {
       setWorking(undefined);
-      setCutProgress(undefined);
+      setProgress(undefined);
     }
   }, [checkFileOpened, customOutDir, fileFormat, fixInvalidDuration, loadMedia, setWorking, showNotification, workingRef]);
 
@@ -2438,7 +2438,7 @@ function App() {
                   )}
 
                   <AnimatePresence>
-                    {working && <Working text={working.text} cutProgress={cutProgress} onAbortClick={abortWorking} />}
+                    {working && <Working text={working.text} progress={progress} onAbortClick={abortWorking} />}
                   </AnimatePresence>
 
                   {tunerVisible && <ValueTuners type={tunerVisible} onFinished={() => setTunerVisible(undefined)} />}

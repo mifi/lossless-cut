@@ -432,11 +432,14 @@ export function checkFileSizes(inputSize: number, outputSize: number) {
   return undefined;
 }
 
-export function setDocumentTitle({ filePath, working, cutProgress }: { filePath?: string | undefined, working?: string | undefined, cutProgress?: number | undefined }) {
+export function setDocumentTitle({ filePath, working, progress }: {
+  filePath?: string | undefined,
+  working?: string | undefined,
+  progress?: number | undefined }) {
   const parts: string[] = [];
 
   if (working) {
-    if (cutProgress != null) parts.push(`${(cutProgress * 100).toFixed(1)}%`);
+    if (progress != null) parts.push(`${(progress * 100).toFixed(1)}%`);
     parts.push(working);
   }
 
