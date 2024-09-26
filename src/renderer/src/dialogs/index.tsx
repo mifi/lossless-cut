@@ -544,8 +544,8 @@ export async function showConcatFailedDialog({ fileFormat }: { fileFormat: strin
   return value;
 }
 
-export function openYouTubeChaptersDialog(text: string) {
-  ReactSwal.fire({
+export async function openYouTubeChaptersDialog(text: string) {
+  await ReactSwal.fire({
     showCloseButton: true,
     title: i18n.t('YouTube Chapters'),
     html: (

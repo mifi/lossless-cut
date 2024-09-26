@@ -5,14 +5,9 @@ import invariant from 'tiny-invariant';
 import { getOutDir, getFileDir, checkDirWriteAccess, dirExists, isMasBuild } from '../util';
 import { askForOutDir, askForInputDir } from '../dialogs';
 import { errorToast } from '../swal';
+import { DirectoryAccessDeclinedError } from '../../errors';
 // import isDev from '../isDev';
 
-export class DirectoryAccessDeclinedError extends Error {
-  constructor() {
-    super();
-    this.name = 'DirectoryAccessDeclinedError';
-  }
-}
 
 // MacOS App Store sandbox doesn't allow reading/writing anywhere,
 // except those exact file paths that have been explicitly drag-dropped into LosslessCut or opened using the opener dialog

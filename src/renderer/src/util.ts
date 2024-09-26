@@ -10,6 +10,8 @@ import isDev from './isDev';
 import Swal, { errorToast, toast } from './swal';
 import { ffmpegExtractWindow } from './util/constants';
 import { appName } from '../../main/common';
+import { DirectoryAccessDeclinedError, UnsupportedFileError } from '../errors';
+import { Html5ifyMode } from '../../../types';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
 const fsExtra = window.require('fs-extra');
@@ -159,29 +161,6 @@ export async function transferTimestamps({ inPath, outPath, cutFrom = 0, cutTo =
   }
 }
 
-export function handleError(arg1: unknown, arg2?: unknown) {
-  console.error('handleError', arg1, arg2);
-
-  let err: Error | undefined;
-  let str: string | undefined;
-
-  if (typeof arg1 === 'string') str = arg1;
-  else if (typeof arg2 === 'string') str = arg2;
-
-  if (arg1 instanceof Error) err = arg1;
-  else if (arg2 instanceof Error) err = arg2;
-
-  if (err != null && 'code' in err && err.code === 'LLC_FFPROBE_UNSUPPORTED_FILE') {
-    errorToast(i18n.t('Unsupported file'));
-  } else {
-    Swal.fire({
-      icon: 'error',
-      title: str || i18n.t('An error has occurred.'),
-      text: err?.message ? err?.message.slice(0, 300) : undefined,
-    });
-  }
-}
-
 export function filenamify(name: string) {
   return name.replaceAll(/[^\w.-]/g, '_');
 }
@@ -193,7 +172,7 @@ export function withBlur(cb) {
   };
 }
 
-export function dragPreventer(ev) {
+export function dragPreventer(ev: DragEvent) {
   ev.preventDefault();
 }
 
@@ -237,7 +216,7 @@ export const resolvePathIfNeeded = (inPath: string) => (isAbsolute(inPath) ? inP
 export const html5ifiedPrefix = 'html5ified-';
 export const html5dummySuffix = 'dummy';
 
-export async function findExistingHtml5FriendlyFile(fp, cod) {
+export async function findExistingHtml5FriendlyFile(fp: string, cod: string | undefined) {
   // The order is the priority we will search:
   const suffixes = ['slowest', 'slow-audio', 'slow', 'fast-audio-remux', 'fast-audio', 'fast', html5dummySuffix];
   const prefix = getSuffixedFileName(fp, html5ifiedPrefix);
@@ -270,7 +249,7 @@ export async function findExistingHtml5FriendlyFile(fp, cod) {
   };
 }
 
-export function getHtml5ifiedPath(cod: string | undefined, fp, type) {
+export function getHtml5ifiedPath(cod: string | undefined, fp: string, type: Html5ifyMode) {
   // See also inside ffmpegHtml5ify
   const ext = (isMac && ['slowest', 'slow', 'slow-audio'].includes(type)) ? 'mp4' : 'mkv';
   return getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${type}.${ext}` });
@@ -335,6 +314,55 @@ export const isMuxNotSupported = (err: InvariantExecaError) => (
   && /Could not write header .*incorrect codec parameters .*Invalid argument/.test(getStdioString(err.stderr) ?? '')
 );
 
+export function handleError(arg1: unknown, arg2?: unknown) {
+  console.error('handleError', arg1, arg2);
+
+  let err: Error | undefined;
+  let str: string | undefined;
+
+  if (typeof arg1 === 'string') str = arg1;
+  else if (typeof arg2 === 'string') str = arg2;
+
+  if (arg1 instanceof Error) err = arg1;
+  else if (arg2 instanceof Error) err = arg2;
+
+  if (err instanceof UnsupportedFileError) {
+    errorToast(i18n.t('Unsupported file'));
+  } else {
+    Swal.fire({
+      icon: 'error',
+      title: str || i18n.t('An error has occurred.'),
+      text: err?.message ? err?.message.slice(0, 300) : undefined,
+    });
+  }
+}
+
+/**
+ * Run an operation with error handling
+ */
+export async function withErrorHandling(operation: () => Promise<void>, errorMsgOrFn?: string | ((err: unknown) => string)) {
+  try {
+    await operation();
+  } catch (err) {
+    if (err instanceof DirectoryAccessDeclinedError || isAbortedError(err)) return;
+
+    if (err instanceof UnsupportedFileError) {
+      errorToast(i18n.t('Unsupported file'));
+      return;
+    }
+
+    let errorMsg: string | undefined;
+    if (typeof errorMsgOrFn === 'string') errorMsg = errorMsgOrFn;
+    if (typeof errorMsgOrFn === 'function') errorMsg = errorMsgOrFn(err);
+    if (errorMsg != null) {
+      console.error(errorMsg, err);
+      errorToast(errorMsg);
+    } else {
+      handleError(err);
+    }
+  }
+}
+
 export async function checkAppPath() {
   try {
     const forceCheck = false;
@@ -364,10 +392,10 @@ export async function checkAppPath() {
 }
 
 // https://stackoverflow.com/a/2450976/6519037
-export function shuffleArray(arrayIn) {
+export function shuffleArray<T>(arrayIn: T[]) {
   const array = [...arrayIn];
   let currentIndex = array.length;
-  let randomIndex;
+  let randomIndex: number;
 
   // While there remain elements to shuffle...
   while (currentIndex !== 0) {
@@ -377,23 +405,24 @@ export function shuffleArray(arrayIn) {
 
     // And swap it with the current element.
     [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex], array[currentIndex]];
+      array[randomIndex]!, array[currentIndex]!,
+    ] as const;
   }
 
   return array;
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
-export function escapeRegExp(string) {
+export function escapeRegExp(str: string) {
   // eslint-disable-next-line unicorn/better-regex
-  return string.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+  return str.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
-export const readFileSize = async (path) => (await stat(path)).size;
+export const readFileSize = async (path: string) => (await stat(path)).size;
 
-export const readFileSizes = (paths) => pMap(paths, async (path) => readFileSize(path), { concurrency: 5 });
+export const readFileSizes = (paths: string[]) => pMap(paths, async (path) => readFileSize(path), { concurrency: 5 });
 
-export function checkFileSizes(inputSize, outputSize) {
+export function checkFileSizes(inputSize: number, outputSize: number) {
   const diff = Math.abs(outputSize - inputSize);
   const relDiff = diff / inputSize;
   const maxDiffPercent = 5;

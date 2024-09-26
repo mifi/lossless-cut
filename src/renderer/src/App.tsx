@@ -24,7 +24,7 @@ import useKeyboard from './hooks/useKeyboard';
 import useFileFormatState from './hooks/useFileFormatState';
 import useFrameCapture from './hooks/useFrameCapture';
 import useSegments from './hooks/useSegments';
-import useDirectoryAccess, { DirectoryAccessDeclinedError } from './hooks/useDirectoryAccess';
+import useDirectoryAccess from './hooks/useDirectoryAccess';
 
 import { UserSettingsContext, SegColorsContext, UserSettingsContextType } from './contexts';
 
@@ -72,6 +72,7 @@ import {
   isMuxNotSupported,
   getDownloadMediaOutPath,
   isAbortedError,
+  withErrorHandling,
 } from './util';
 import { toast, errorToast, showPlaybackFailedMessage } from './swal';
 import { adjustRate } from './util/rate-calculator';
@@ -98,6 +99,7 @@ import useSubtitles from './hooks/useSubtitles';
 import useStreamsMeta from './hooks/useStreamsMeta';
 import { bottomStyle, videoStyle } from './styles';
 import styles from './App.module.css';
+import { DirectoryAccessDeclinedError } from '../errors';
 
 const electron = window.require('electron');
 const { exists } = window.require('fs-extra');
@@ -492,13 +494,14 @@ function App() {
     }
     const subtitleStream = index != null && subtitleStreams.find((s) => s.index === index);
     if (!subtitleStream || workingRef.current) return;
+
+    setWorking({ text: i18n.t('Loading subtitle') });
     try {
-      setWorking({ text: i18n.t('Loading subtitle') });
-      invariant(filePath != null);
-      await loadSubtitle({ filePath, index, subtitleStream });
-      setActiveSubtitleStreamIndex(index);
-    } catch (err) {
-      handleError(`Failed to extract subtitles for stream ${index}`, err instanceof Error && err.message);
+      await withErrorHandling(async () => {
+        invariant(filePath != null);
+        await loadSubtitle({ filePath, index, subtitleStream });
+        setActiveSubtitleStreamIndex(index);
+      }, i18n.t('Failed to load subtitles from track {{index}}', { index }));
     } finally {
       setWorking(undefined);
     }
@@ -646,33 +649,31 @@ function App() {
     if (!speed) return;
 
     if (workingRef.current) return;
+    setWorking({ text: i18n.t('Batch converting to supported format') });
+    setCutProgress(0);
     try {
-      setWorking({ text: i18n.t('Batch converting to supported format') });
-      setCutProgress(0);
+      await withErrorHandling(async () => {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const path of filePaths) {
+          try {
+            // eslint-disable-next-line no-await-in-loop
+            const newCustomOutDir = await ensureWritableOutDir({ inputPath: path, outDir: customOutDir });
 
-      // eslint-disable-next-line no-restricted-syntax
-      for (const path of filePaths) {
-        try {
-          // eslint-disable-next-line no-await-in-loop
-          const newCustomOutDir = await ensureWritableOutDir({ inputPath: path, outDir: customOutDir });
+            // eslint-disable-next-line no-await-in-loop
+            await html5ify({ customOutDir: newCustomOutDir, filePath: path, speed, hasAudio: true, hasVideo: true, onProgress: setTotalProgress });
+          } catch (err2) {
+            if (err2 instanceof DirectoryAccessDeclinedError) return;
 
-          // eslint-disable-next-line no-await-in-loop
-          await html5ify({ customOutDir: newCustomOutDir, filePath: path, speed, hasAudio: true, hasVideo: true, onProgress: setTotalProgress });
-        } catch (err2) {
-          if (err2 instanceof DirectoryAccessDeclinedError) return;
+            console.error('Failed to html5ify', path, err2);
+            failedFiles.push(path);
+          }
 
-          console.error('Failed to html5ify', path, err2);
-          failedFiles.push(path);
+          i += 1;
+          setTotalProgress();
         }
 
-        i += 1;
-        setTotalProgress();
-      }
-
-      if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}`, timer: null as unknown as undefined, showConfirmButton: true });
-    } catch (err) {
-      errorToast(i18n.t('Failed to batch convert to supported format'));
-      console.error('Failed to html5ify', err);
+        if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}`, timer: null as unknown as undefined, showConfirmButton: true });
+      }, i18n.t('Failed to batch convert to supported format'));
     } finally {
       setWorking(undefined);
       setCutProgress(undefined);
@@ -906,7 +907,7 @@ function App() {
       resetState();
     }
 
-    try {
+    await withErrorHandling(async () => {
       const abortController = new AbortController();
       setWorking({ text: i18n.t('Cleaning up'), abortController });
       console.log('Cleaning up files', cleanupChoices2);
@@ -917,10 +918,7 @@ function App() {
       if (cleanupChoices2.trashSourceFile && savedPaths.sourceFilePath) pathsToDelete.push(savedPaths.sourceFilePath);
 
       await deleteFiles({ paths: pathsToDelete, deleteIfTrashFails: cleanupChoices2.deleteIfTrashFails, signal: abortController.signal });
-    } catch (err) {
-      errorToast(i18n.t('Unable to delete file: {{message}}', { message: err instanceof Error ? err.message : String(err) }));
-      console.error(err);
-    }
+    }, (err) => i18n.t('Unable to delete file: {{message}}', { message: err instanceof Error ? err.message : String(err) }));
   }, [batchListRemoveFile, filePath, previewFilePath, projectFileSavePath, resetState, setWorking]);
 
   const askForCleanupChoices = useCallback(async () => {
@@ -1148,7 +1146,7 @@ function App() {
   const captureSnapshot = useCallback(async () => {
     if (!filePath) return;
 
-    try {
+    await withErrorHandling(async () => {
       const currentTime = getRelevantTime();
       const video = videoRef.current;
       if (video == null) throw new Error();
@@ -1158,10 +1156,7 @@ function App() {
         : await captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, quality: captureFrameQuality });
 
       if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: outPath, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
-    } catch (err) {
-      console.error(err);
-      errorToast(i18n.t('Failed to capture frame'));
-    }
+    }, i18n.t('Failed to capture frame'));
   }, [filePath, getRelevantTime, videoRef, usingPreviewFile, captureFrameMethod, captureFrameFromFfmpeg, customOutDir, captureFormat, captureFrameQuality, captureFrameFromTag, hideAllNotifications]);
 
   const extractSegmentFramesAsImages = useCallback(async (segIds: string[]) => {
@@ -1199,7 +1194,6 @@ function App() {
       }
     } catch (err) {
       showOsNotification(i18n.t('Failed to extract frames'));
-
       handleError(err);
     } finally {
       setWorking(undefined);
@@ -1577,10 +1571,9 @@ function App() {
     if (workingRef.current) return;
     try {
       setWorking({ text: i18n.t('Converting to supported format') });
-      await html5ifyAndLoad(customOutDir, filePath, selectedOption, hasVideo, hasAudio);
-    } catch (err) {
-      errorToast(i18n.t('Failed to convert file. Try a different conversion'));
-      console.error('Failed to html5ify file', err);
+      await withErrorHandling(async () => {
+        await html5ifyAndLoad(customOutDir, filePath, selectedOption, hasVideo, hasAudio);
+      }, i18n.t('Failed to convert file. Try a different conversion'));
     } finally {
       setWorking(undefined);
     }
@@ -1605,16 +1598,15 @@ function App() {
   const tryFixInvalidDuration = useCallback(async () => {
     if (!checkFileOpened() || workingRef.current) return;
     try {
-      setWorking({ text: i18n.t('Fixing file duration') });
-      setCutProgress(0);
-      invariant(fileFormat != null);
-      const path = await fixInvalidDuration({ fileFormat, customOutDir, onProgress: setCutProgress });
-      showNotification({ icon: 'info', text: i18n.t('Duration has been fixed') });
+      await withErrorHandling(async () => {
+        setWorking({ text: i18n.t('Fixing file duration') });
+        setCutProgress(0);
+        invariant(fileFormat != null);
+        const path = await fixInvalidDuration({ fileFormat, customOutDir, onProgress: setCutProgress });
+        showNotification({ icon: 'info', text: i18n.t('Duration has been fixed') });
 
-      await loadMedia({ filePath: path });
-    } catch (err) {
-      errorToast(i18n.t('Failed to fix file duration'));
-      console.error('Failed to fix file duration', err);
+        await loadMedia({ filePath: path });
+      }, i18n.t('Failed to fix file duration'));
     } finally {
       setWorking(undefined);
       setCutProgress(undefined);
@@ -1652,15 +1644,12 @@ function App() {
 
   const captureSnapshotAsCoverArt = useCallback(async () => {
     if (!filePath) return;
-    try {
+    await withErrorHandling(async () => {
       const currentTime = getRelevantTime();
       const path = await captureFrameFromFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, quality: captureFrameQuality });
       if (!(await addFileAsCoverArt(path))) return;
       showNotification({ text: i18n.t('Current frame has been set as cover art') });
-    } catch (err) {
-      console.error(err);
-      errorToast(i18n.t('Failed to capture frame'));
-    }
+    }, i18n.t('Failed to capture frame'));
   }, [addFileAsCoverArt, captureFormat, captureFrameFromFfmpeg, captureFrameQuality, customOutDir, filePath, getRelevantTime, showNotification]);
 
   const batchLoadPaths = useCallback((newPaths: string[], append?: boolean) => {
@@ -1681,7 +1670,7 @@ function App() {
   }, []);
 
   const userOpenFiles = useCallback(async (filePathsIn?: string[]) => {
-    try {
+    await withErrorHandling(async () => {
       let filePaths = filePathsIn;
       if (!filePaths || filePaths.length === 0) return;
 
@@ -1804,10 +1793,7 @@ function App() {
       } finally {
         setWorking(undefined);
       }
-    } catch (err) {
-      console.error('userOpenFiles', err);
-      handleError(i18n.t('Failed to open file'), err);
-    }
+    }, i18n.t('Failed to open file'));
   }, [workingRef, alwaysConcatMultipleFiles, batchLoadPaths, setWorking, isFileOpened, batchFiles.length, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile, filePath]);
 
   const openFilesDialog = useCallback(async () => {
@@ -1840,14 +1826,12 @@ function App() {
   }, [isFileOpened, selectedSegments]);
 
   const showIncludeExternalStreamsDialog = useCallback(async () => {
-    try {
+    await withErrorHandling(async () => {
       const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'], title: t('Include more tracks from other file') });
       const [firstFilePath] = filePaths;
       if (canceled || firstFilePath == null) return;
       await addStreamSourceFile(firstFilePath);
-    } catch (err) {
-      handleError(err);
-    }
+    }, i18n.t('Failed to include track'));
   }, [addStreamSourceFile, t]);
 
   const toggleFullscreenVideo = useCallback(async () => {
@@ -1881,17 +1865,16 @@ function App() {
   const promptDownloadMediaUrlWrapper = useCallback(async () => {
     try {
       setWorking({ text: t('Downloading URL') });
-      const newCustomOutDir = await ensureWritableOutDir({ outDir: customOutDir });
-      if (newCustomOutDir == null) {
-        errorToast(i18n.t('Please select a working directory first'));
-        return;
-      }
-      const outPath = getDownloadMediaOutPath(newCustomOutDir, `downloaded-media-${Date.now()}.mkv`);
-      const downloaded = await promptDownloadMediaUrl(outPath);
-      if (downloaded) await loadMedia({ filePath: outPath });
-    } catch (err) {
-      if (err instanceof DirectoryAccessDeclinedError) return;
-      handleError(err);
+      await withErrorHandling(async () => {
+        const newCustomOutDir = await ensureWritableOutDir({ outDir: customOutDir });
+        if (newCustomOutDir == null) {
+          errorToast(i18n.t('Please select a working directory first'));
+          return;
+        }
+        const outPath = getDownloadMediaOutPath(newCustomOutDir, `downloaded-media-${Date.now()}.mkv`);
+        const downloaded = await promptDownloadMediaUrl(outPath);
+        if (downloaded) await loadMedia({ filePath: outPath });
+      }, i18n.t('Failed to download URL'));
     } finally {
       setWorking();
     }
@@ -1902,7 +1885,6 @@ function App() {
   const mainActions = useMemo(() => {
     async function exportYouTube() {
       if (!checkFileOpened()) return;
-
       await openYouTubeChaptersDialog(formatYouTube(apparentCutSegments));
     }
 
@@ -2186,29 +2168,24 @@ function App() {
 
   const tryExportEdlFile = useCallback(async (type: EdlExportType) => {
     if (!checkFileOpened()) return;
-    try {
+    await withErrorHandling(async () => {
       await exportEdlFile({ type, cutSegments: selectedSegments, customOutDir, filePath, getFrameCount });
-    } catch (err) {
-      errorToast(i18n.t('Failed to export project'));
-      console.error('Failed to export project', type, err);
-    }
+    }, i18n.t('Failed to export project'));
   }, [checkFileOpened, customOutDir, filePath, getFrameCount, selectedSegments]);
 
   const importEdlFile = useCallback(async (type: EdlImportType) => {
     if (!checkFileOpened()) return;
 
-    try {
+    await withErrorHandling(async () => {
       const edl = await askForEdlImport({ type, fps: detectedFps });
       if (edl.length > 0) loadCutSegments(edl, true);
-    } catch (err) {
-      handleError(err);
-    }
+    }, i18n.t('Failed to import project file'));
   }, [checkFileOpened, detectedFps, loadCutSegments]);
 
   useEffect(() => {
     const openFiles = (filePaths: string[]) => { userOpenFiles(filePaths.map((p) => resolvePathIfNeeded(p))); };
 
-    async function actionWithCatch(fn: () => void) {
+    async function actionWithCatch(fn: () => Promise<void>) {
       try {
         await fn();
       } catch (err) {

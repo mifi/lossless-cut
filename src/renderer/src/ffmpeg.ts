@@ -11,6 +11,7 @@ import { isDurationValid } from './segments';
 import { FFprobeChapter, FFprobeFormat, FFprobeProbeResult, FFprobeStream } from '../../../ffprobe';
 import { parseSrt, parseSrtToSegments } from './edlFormats';
 import { CopyfileStreams, LiteFFprobeStream } from './types';
+import { UnsupportedFileError } from '../errors';
 
 const { pathExists } = window.require('fs-extra');
 
@@ -368,7 +369,7 @@ export async function readFileMeta(filePath: string) {
     return { format, streams, chapters };
   } catch (err) {
     if (isExecaError(err)) {
-      throw Object.assign(new Error(`Unsupported file: ${err.message}`), { code: 'LLC_FFPROBE_UNSUPPORTED_FILE' });
+      throw new UnsupportedFileError(err.message);
     }
     throw err;
   }
