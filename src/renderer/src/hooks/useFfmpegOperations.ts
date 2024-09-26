@@ -595,11 +595,12 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       '-y', outPath,
     ];
 
+    appendFfmpegCommandLog(ffmpegArgs);
     const result = await runFfmpegWithProgress({ ffmpegArgs, duration, onProgress });
     logStdoutStderr(result);
 
     await transferTimestamps({ inPath: filePathArg, outPath, treatOutputFileModifiedTimeAsStart });
-  }, [treatOutputFileModifiedTimeAsStart]);
+  }, [appendFfmpegCommandLog, treatOutputFileModifiedTimeAsStart]);
 
   // https://stackoverflow.com/questions/34118013/how-to-determine-webm-duration-using-ffprobe
   const fixInvalidDuration = useCallback(async ({ fileFormat, customOutDir, onProgress }: {
