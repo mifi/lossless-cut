@@ -4,6 +4,7 @@ import { t } from 'i18next';
 
 import { homepage, getReleaseUrl, licensesPage } from './constants.js';
 import { logFilePath } from './logger.js';
+import { getConfigPath } from './configStore.js';
 
 
 // menu-safe i18n.t:
@@ -448,6 +449,10 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
           click() { electron.shell.openExternal('https://github.com/mifi/lossless-cut/issues'); },
         },
         { type: 'separator' },
+        {
+          label: esc(t('Configuration file')),
+          click() { electron.shell.showItemInFolder(getConfigPath()); },
+        },
         {
           label: esc(t('Log file')),
           click() { electron.shell.openPath(logFilePath); },
