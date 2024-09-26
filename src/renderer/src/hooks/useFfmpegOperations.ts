@@ -235,8 +235,26 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     keyframeCut: ssBeforeInput, avoidNegativeTs, copyFileStreams, cutFrom, cutTo, chaptersPath, onProgress, outPath,
     videoDuration, rotation, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMovData, movFastStart, customTagsByFile, paramsByStreamId, videoTimebase, detectedFps,
   }: {
-    keyframeCut: boolean, avoidNegativeTs: AvoidNegativeTs | undefined, copyFileStreams: CopyfileStreams, cutFrom: number, cutTo: number, chaptersPath?: string | undefined, onProgress: (p: number) => void, outPath: string,
-    videoDuration: number | undefined, rotation: number | undefined, allFilesMeta: AllFilesMeta, outFormat: string, shortestFlag: boolean, ffmpegExperimental: boolean, preserveMovData: boolean, movFastStart: boolean, customTagsByFile: CustomTagsByFile, paramsByStreamId: ParamsByStreamId, videoTimebase?: number | undefined, detectedFps?: number,
+    keyframeCut: boolean,
+    avoidNegativeTs: AvoidNegativeTs | undefined,
+    copyFileStreams: CopyfileStreams,
+    cutFrom: number,
+    cutTo: number,
+    chaptersPath?: string | undefined,
+    onProgress: (p: number) => void,
+    outPath: string,
+    videoDuration: number | undefined,
+    rotation: number | undefined,
+    allFilesMeta: AllFilesMeta,
+    outFormat: string,
+    shortestFlag: boolean,
+    ffmpegExperimental: boolean,
+    preserveMovData: boolean,
+    movFastStart: boolean,
+    customTagsByFile: CustomTagsByFile,
+    paramsByStreamId: ParamsByStreamId,
+    videoTimebase?: number | undefined,
+    detectedFps?: number,
   }) => {
     if (await shouldSkipExistingFile(outPath)) return;
 
@@ -413,8 +431,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     console.log('customTagsByFile', customTagsByFile);
     console.log('paramsByStreamId', paramsByStreamId);
 
-    const singleProgresses = {};
-    function onSingleProgress(id, singleProgress) {
+    const singleProgresses: Record<number, number> = {};
+    function onSingleProgress(id: number, singleProgress: number) {
       singleProgresses[id] = singleProgress;
       return onTotalProgress((sum(Object.values(singleProgresses)) / segments.length));
     }
@@ -425,7 +443,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     // or if enabled, will first cut&encode the part before the next keyframe, trying to match the input file's codec params
     // then it will cut the part *from* the keyframe to "end", and concat them together and return the concated file
     // so that for the calling code it looks as if it's just a normal segment
-    async function maybeSmartCutSegment({ start: desiredCutFrom, end: cutTo }, i) {
+    async function maybeSmartCutSegment({ start: desiredCutFrom, end: cutTo }: { start: number, end: number }, i: number) {
       async function makeSegmentOutPath() {
         const outPath = join(outputDir, outSegFileNames[i]!);
         // because outSegFileNames might contain slashes https://github.com/mifi/lossless-cut/issues/1532

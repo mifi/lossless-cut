@@ -1598,9 +1598,9 @@ function App() {
   const tryFixInvalidDuration = useCallback(async () => {
     if (!checkFileOpened() || workingRef.current) return;
     try {
+      setWorking({ text: i18n.t('Fixing file duration') });
+      setProgress(0);
       await withErrorHandling(async () => {
-        setWorking({ text: i18n.t('Fixing file duration') });
-        setProgress(0);
         invariant(fileFormat != null);
         const path = await fixInvalidDuration({ fileFormat, customOutDir, onProgress: setProgress });
         showNotification({ icon: 'info', text: i18n.t('Duration has been fixed') });
