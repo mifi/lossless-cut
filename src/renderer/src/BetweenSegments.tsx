@@ -4,10 +4,13 @@ import { FaTrashAlt, FaSave } from 'react-icons/fa';
 
 import { mySpring } from './animations';
 import { saveColor } from './colors';
+import useUserSettings from './hooks/useUserSettings';
 
 
 function BetweenSegments({ start, end, duration, invertCutSegments }: { start: number, end: number, duration: number, invertCutSegments: boolean }) {
   const left = `${(start / duration) * 100}%`;
+
+  const { effectiveExportMode } = useUserSettings();
 
   return (
     <motion.div
@@ -31,12 +34,17 @@ function BetweenSegments({ start, end, duration, invertCutSegments }: { start: n
       transition={mySpring}
     >
       <div style={{ flexGrow: 1, borderBottom: '1px dashed var(--gray10)', marginLeft: 5, marginRight: 5 }} />
-      {invertCutSegments ? (
-        <FaSave style={{ color: saveColor }} size={16} />
-      ) : (
-        <FaTrashAlt style={{ color: 'var(--gray10)' }} size={16} />
+      {/* https://github.com/mifi/lossless-cut/issues/2157 */}
+      {effectiveExportMode !== 'segments_to_chapters' && (
+        <>
+          {invertCutSegments ? (
+            <FaSave style={{ color: saveColor }} size={16} />
+          ) : (
+            <FaTrashAlt style={{ color: 'var(--gray10)' }} size={16} />
+          )}
+          <div style={{ flexGrow: 1, borderBottom: '1px dashed var(--gray10)', marginLeft: 5, marginRight: 5 }} />
+        </>
       )}
-      <div style={{ flexGrow: 1, borderBottom: '1px dashed var(--gray10)', marginLeft: 5, marginRight: 5 }} />
     </motion.div>
   );
 }
