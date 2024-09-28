@@ -24,8 +24,16 @@ export function setCustomFfPath(path: string | undefined) {
   customFfPath = path;
 }
 
+function escapeCliArg(arg: string) {
+  if (isWindows) {
+    // https://github.com/mifi/lossless-cut/issues/2151
+    return /[\s"&<>^|]/.test(arg) ? `"${arg.replaceAll('"', '""')}"` : arg;
+  }
+  return /[^\w-]/.test(arg) ? `'${arg.replaceAll("'", '\'"\'"\'')}'` : arg;
+}
+
 export function getFfCommandLine(cmd: string, args: readonly string[]) {
-  return `${cmd} ${args.map((arg) => (/[^\w-]/.test(arg) ? `'${arg}'` : arg)).join(' ')}`;
+  return `${cmd} ${args.map((arg) => escapeCliArg(arg)).join(' ')}`;
 }
 
 function getFfPath(cmd: string) {
