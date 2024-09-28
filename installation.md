@@ -17,13 +17,13 @@ Settings, logs and temporary cache files are stored in your [`appData`](https://
 
 ### `appData` folder:
 
-| OS | Path |
-|-|-|
-| Windows | `%APPDATA%\LosslessCut` |
-| Windows (MS Store Version) | `C:\Users\%USERNAME%\AppData\Local\Packages\57275mifi.no.LosslessCut_eg8x93dt4dxje\LocalCache\Roaming\LosslessCut` |
-| MacOS | `~/Library/Application Support/LosslessCut` |
-| MacOS (App Store version) | `~/Library/Containers/no.mifi.losslesscut/Data/Library/Application Support/LosslessCut` |
-| Linux | `$XDG_CONFIG_HOME/LosslessCut` or `~/.config/LosslessCut` |
+| OS | Path | Notes |
+|-|-|-|
+| Windows | `%APPDATA%\LosslessCut` | |
+| Windows (MS Store Version) | `C:\Users\%USERNAME%\AppData\Local\Packages\57275mifi.no.LosslessCut_eg8x93dt4dxje\LocalCache\Roaming\LosslessCut` | [*Not sure](https://github.com/mifi/lossless-cut/discussions/2167) |
+| MacOS | `~/Library/Application Support/LosslessCut` | |
+| MacOS (App Store version) | `~/Library/Containers/no.mifi.losslesscut/Data/Library/Application Support/LosslessCut` | |
+| Linux | `$XDG_CONFIG_HOME/LosslessCut` or `~/.config/LosslessCut` | |
 
 [What is Windows `%APPDATA%`?](https://superuser.com/questions/632891/what-is-appdata)
 
