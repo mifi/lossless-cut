@@ -707,25 +707,37 @@ const KeyboardShortcuts = memo(({
 
   const stringifyKeys = (keys: string[]) => keys.join('+');
 
-  const onNewKeyBindingConfirmed = useCallback((action: KeyboardAction, keys: string[]) => {
+  const onNewKeyBindingConfirmed = useCallback(async (action: KeyboardAction, keys: string[]) => {
     const fixedKeys = fixKeys(keys);
     if (fixedKeys.length === 0) return;
     const keysStr = stringifyKeys(fixedKeys);
     console.log('new key binding', action, keysStr);
 
-    setKeyBindings((existingBindings) => {
-      const duplicate = existingBindings.find((existingBinding) => existingBinding.keys === keysStr);
-      if (duplicate) {
-        Swal.fire({ icon: 'error', title: t('Duplicate keyboard combination'), text: t('Combination is already bound to "{{alreadyBoundKey}}"', { alreadyBoundKey: actionsMap[duplicate.action]?.name }) });
-        console.log('trying to add duplicate');
-        return existingBindings;
+    const duplicate = keyBindings.find((existingBinding) => existingBinding.keys === keysStr);
+    let shouldReplaceDuplicate: KeyBinding | undefined;
+    if (duplicate) {
+      const { isConfirmed } = await Swal.fire({
+        icon: 'warning',
+        title: t('Duplicate keyboard combination'),
+        text: t('Combination is already bound to "{{alreadyBoundKey}}". Do you want to replace the existing binding?', { alreadyBoundKey: actionsMap[duplicate.action]?.name }),
+        confirmButtonText: t('Replace'),
+        focusCancel: true,
+        showCancelButton: true,
+      });
+      if (isConfirmed) {
+        shouldReplaceDuplicate = duplicate;
+      } else {
+        return;
       }
+    }
 
-      console.log('saving key binding');
+    setKeyBindings((existingBindings) => {
+      console.log('Saving key binding');
       setCreatingBinding(undefined);
-      return [...existingBindings, { action, keys: keysStr }];
+      const filtered = !shouldReplaceDuplicate ? existingBindings : existingBindings.filter((existing) => existing.keys !== shouldReplaceDuplicate.keys);
+      return [...filtered, { action, keys: keysStr }];
     });
-  }, [actionsMap, setKeyBindings, t]);
+  }, [actionsMap, keyBindings, setKeyBindings, t]);
 
   return (
     <>
