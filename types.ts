@@ -91,6 +91,8 @@ export interface Config {
   storeProjectInWorkingDir: boolean,
   enableOverwriteOutput: boolean,
   mouseWheelZoomModifierKey: ModifierKey,
+  mouseWheelFrameSeekModifierKey: ModifierKey,
+  mouseWheelKeyframeSeekModifierKey: ModifierKey,
   captureFrameMethod: 'videotag' | 'ffmpeg',
   captureFrameQuality: number,
   captureFrameFileNameFormat: 'timestamp' | 'index',

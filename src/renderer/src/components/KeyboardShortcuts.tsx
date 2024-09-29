@@ -12,7 +12,7 @@ import Swal from '../swal';
 import SetCutpointButton from './SetCutpointButton';
 import SegmentCutpointButton from './SegmentCutpointButton';
 import { getModifier } from '../hooks/useTimelineScroll';
-import { KeyBinding, KeyboardAction } from '../../../../types';
+import { KeyBinding, KeyboardAction, ModifierKey } from '../../../../types';
 import { StateSegment } from '../types';
 import Sheet from './Sheet';
 
@@ -119,6 +119,18 @@ const CreateBinding = memo(({
 
 const rowStyle = { display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.1)', paddingBottom: '.2em' };
 
+function WheelModifier({ text, wheelText, modifier }: { text: string, wheelText: string, modifier: ModifierKey }) {
+  return (
+    <div style={{ ...rowStyle, alignItems: 'center' }}>
+      <span>{text}</span>
+      <div style={{ flexGrow: 1 }} />
+      {getModifier(modifier).map((v) => <kbd key={v} style={{ marginRight: '.7em' }}>{v}</kbd>)}
+      <FaMouse style={{ marginRight: '.3em' }} />
+      <span>{wheelText}</span>
+    </div>
+  );
+}
+
 // eslint-disable-next-line react/display-name
 const KeyboardShortcuts = memo(({
   keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg,
@@ -127,7 +139,7 @@ const KeyboardShortcuts = memo(({
 }) => {
   const { t } = useTranslation();
 
-  const { mouseWheelZoomModifierKey } = useUserSettings();
+  const { mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey } = useUserSettings();
 
   const { actionsMap, extraLinesPerCategory } = useMemo(() => {
     const playbackCategory = t('Playback');
@@ -631,19 +643,17 @@ const KeyboardShortcuts = memo(({
     const extraLinesPerCategory: Record<Category, ReactNode> = {
       [zoomOperationsCategory]: [
         <div key="1" style={{ ...rowStyle, alignItems: 'center' }}>
-          <span>{t('Zoom in/out timeline')}</span>
+          <span>{t('Pan timeline')}</span>
           <div style={{ flexGrow: 1 }} />
           <FaMouse style={{ marginRight: '.3em' }} />
           <span>{t('Mouse scroll/wheel up/down')}</span>
         </div>,
 
-        <div key="2" style={{ ...rowStyle, alignItems: 'center' }}>
-          <span>{t('Pan timeline')}</span>
-          <div style={{ flexGrow: 1 }} />
-          {getModifier(mouseWheelZoomModifierKey).map((v) => <kbd key={v} style={{ marginRight: '.7em' }}>{v}</kbd>)}
-          <FaMouse style={{ marginRight: '.3em' }} />
-          <span>{t('Mouse scroll/wheel up/down')}</span>
-        </div>,
+        <WheelModifier key="2" text={t('Seek one frame')} wheelText={t('Mouse scroll/wheel up/down')} modifier={mouseWheelFrameSeekModifierKey} />,
+
+        <WheelModifier key="3" text={t('Seek one key frame')} wheelText={t('Mouse scroll/wheel up/down')} modifier={mouseWheelKeyframeSeekModifierKey} />,
+
+        <WheelModifier key="4" text={t('Zoom in/out timeline')} wheelText={t('Mouse scroll/wheel up/down')} modifier={mouseWheelZoomModifierKey} />,
       ],
     };
 
@@ -651,7 +661,7 @@ const KeyboardShortcuts = memo(({
       extraLinesPerCategory,
       actionsMap,
     };
-  }, [currentCutSeg, mouseWheelZoomModifierKey, t]);
+  }, [currentCutSeg, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, mouseWheelZoomModifierKey, t]);
 
   useEffect(() => {
     // cleanup invalid bindings, to prevent renamed actions from blocking user to rebind

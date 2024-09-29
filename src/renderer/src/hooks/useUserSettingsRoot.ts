@@ -133,6 +133,10 @@ export default () => {
   useEffect(() => safeSetConfig({ enableOverwriteOutput }), [enableOverwriteOutput]);
   const [mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey] = useState(safeGetConfigInitial('mouseWheelZoomModifierKey'));
   useEffect(() => safeSetConfig({ mouseWheelZoomModifierKey }), [mouseWheelZoomModifierKey]);
+  const [mouseWheelFrameSeekModifierKey, setMouseWheelFrameSeekModifierKey] = useState(safeGetConfigInitial('mouseWheelFrameSeekModifierKey'));
+  useEffect(() => safeSetConfig({ mouseWheelFrameSeekModifierKey }), [mouseWheelFrameSeekModifierKey]);
+  const [mouseWheelKeyframeSeekModifierKey, setMouseWheelKeyframeSeekModifierKey] = useState(safeGetConfigInitial('mouseWheelKeyframeSeekModifierKey'));
+  useEffect(() => safeSetConfig({ mouseWheelKeyframeSeekModifierKey }), [mouseWheelKeyframeSeekModifierKey]);
   const [captureFrameMethod, setCaptureFrameMethod] = useState(safeGetConfigInitial('captureFrameMethod'));
   useEffect(() => safeSetConfig({ captureFrameMethod }), [captureFrameMethod]);
   const [captureFrameQuality, setCaptureFrameQuality] = useState(safeGetConfigInitial('captureFrameQuality'));
@@ -261,6 +265,10 @@ export default () => {
     setEnableOverwriteOutput,
     mouseWheelZoomModifierKey,
     setMouseWheelZoomModifierKey,
+    mouseWheelFrameSeekModifierKey,
+    setMouseWheelFrameSeekModifierKey,
+    mouseWheelKeyframeSeekModifierKey,
+    setMouseWheelKeyframeSeekModifierKey,
     captureFrameMethod,
     setCaptureFrameMethod,
     captureFrameQuality,

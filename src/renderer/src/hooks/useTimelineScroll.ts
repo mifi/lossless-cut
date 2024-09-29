@@ -9,7 +9,7 @@ export const keyMap = {
   shift: 'shiftKey',
   alt: 'altKey',
   meta: 'metaKey',
-};
+} as const;
 
 export const getModifierKeyNames = () => ({
   ctrl: [t('Ctrl')],
@@ -20,22 +20,35 @@ export const getModifierKeyNames = () => ({
 
 export const getModifier = (key: ModifierKey) => getModifierKeyNames()[key];
 
-function useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, invertTimelineScroll, zoomRel, seekRel }: {
-  wheelSensitivity: number, mouseWheelZoomModifierKey: ModifierKey, invertTimelineScroll?: boolean | undefined, zoomRel: (a: number) => void, seekRel: (a: number) => void,
+function useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, invertTimelineScroll, zoomRel, seekRel, shortStep, seekClosestKeyframe }: {
+  wheelSensitivity: number,
+  mouseWheelZoomModifierKey: ModifierKey,
+  mouseWheelFrameSeekModifierKey: ModifierKey,
+  mouseWheelKeyframeSeekModifierKey: ModifierKey,
+  invertTimelineScroll?: boolean | undefined,
+  zoomRel: (a: number) => void,
+  seekRel: (a: number) => void,
+  shortStep: (a: number) => void,
+  seekClosestKeyframe: (a: number) => void,
 }) {
-  const onWheel = useCallback<WheelEventHandler<Element>>((e) => {
-    const { pixelX, pixelY } = normalizeWheel(e);
+  const onWheel = useCallback<WheelEventHandler<Element>>((wheelEvent) => {
+    const { pixelX, pixelY } = normalizeWheel(wheelEvent);
     // console.log({ spinX, spinY, pixelX, pixelY });
 
     const direction = invertTimelineScroll ? 1 : -1;
 
-    const modifierKey = keyMap[mouseWheelZoomModifierKey];
-    if (e[modifierKey]) {
-      zoomRel(direction * (pixelY) * wheelSensitivity * 0.4);
+    const makeUnit = (v: number) => ((direction * v) > 0 ? 1 : -1);
+
+    if (wheelEvent[keyMap[mouseWheelZoomModifierKey]]) {
+      zoomRel(direction * pixelY * wheelSensitivity * 0.4);
+    } else if (wheelEvent[keyMap[mouseWheelFrameSeekModifierKey]]) {
+      shortStep(makeUnit(pixelX + pixelY));
+    } else if (wheelEvent[keyMap[mouseWheelKeyframeSeekModifierKey]]) {
+      seekClosestKeyframe(makeUnit(pixelX + pixelY));
     } else {
       seekRel(direction * (pixelX + pixelY) * wheelSensitivity * 0.2);
     }
-  }, [invertTimelineScroll, mouseWheelZoomModifierKey, zoomRel, wheelSensitivity, seekRel]);
+  }, [invertTimelineScroll, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, zoomRel, wheelSensitivity, shortStep, seekClosestKeyframe, seekRel]);
 
   return onWheel;
 }
