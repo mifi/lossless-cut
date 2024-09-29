@@ -263,8 +263,15 @@ const getHtml5TrackId = (ffmpegTrackIndex: number) => String(ffmpegTrackIndex + 
 const getHtml5VideoTracks = (video: ChromiumHTMLVideoElement) => [...(video.videoTracks ?? [])];
 const getHtml5AudioTracks = (audio: ChromiumHTMLAudioElement) => [...(audio.audioTracks ?? [])];
 
-export const getVideoTrackForStreamIndex = (video: ChromiumHTMLVideoElement, index) => getHtml5VideoTracks(video).find((videoTrack) => videoTrack.id === getHtml5TrackId(index));
-export const getAudioTrackForStreamIndex = (audio: ChromiumHTMLAudioElement, index) => getHtml5AudioTracks(audio).find((audioTrack) => audioTrack.id === getHtml5TrackId(index));
+const getVideoTrackForStreamIndex = (video: ChromiumHTMLVideoElement, index: number) => getHtml5VideoTracks(video).find((videoTrack) => videoTrack.id === getHtml5TrackId(index));
+const getAudioTrackForStreamIndex = (audio: ChromiumHTMLAudioElement, index: number) => getHtml5AudioTracks(audio).find((audioTrack) => audioTrack.id === getHtml5TrackId(index));
+
+// although not technically correct, if video and audio index is null, assume that we can play
+// the user can select an audio/video track if they want ffmpeg assisted playback
+export const canHtml5PlayerPlayStreams = (videoEl: ChromiumHTMLVideoElement, videoIndex: number | undefined, audioIndex: number | undefined) => (
+  (videoIndex == null || getVideoTrackForStreamIndex(videoEl, videoIndex) != null)
+  && (audioIndex == null || getAudioTrackForStreamIndex(videoEl, audioIndex) != null)
+);
 
 function resetVideoTrack(video: ChromiumHTMLVideoElement) {
   console.log('Resetting video track');

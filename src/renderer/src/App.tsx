@@ -1,5 +1,5 @@
 import { memo, useEffect, useState, useCallback, useRef, useMemo, CSSProperties, ReactEventHandler, FocusEventHandler } from 'react';
-import { FaAngleLeft, FaWindowClose } from 'react-icons/fa';
+import { FaAngleLeft, FaRegTimesCircle } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence } from 'framer-motion';
 import { ThemeProvider } from 'evergreen-ui';
@@ -60,7 +60,7 @@ import {
   RefuseOverwriteError, extractSubtitleTrackToSegments,
   mapRecommendedDefaultFormat,
 } from './ffmpeg';
-import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback, getSubtitleStreams, getVideoTrackForStreamIndex, getAudioTrackForStreamIndex, enableVideoTrack, enableAudioTrack } from './util/streams';
+import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback, getSubtitleStreams, enableVideoTrack, enableAudioTrack, canHtml5PlayerPlayStreams } from './util/streams';
 import { exportEdlFile, readEdlFile, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube, getFrameCountRaw, formatTsv } from './edlFormats';
 import {
@@ -299,13 +299,17 @@ function App() {
 
   const zoomRel = useCallback((rel: number) => setZoom((z) => Math.min(Math.max(z + (rel * (1 + (z / 10))), 1), zoomMax)), []);
   const compatPlayerRequired = usingDummyVideo;
-  const compatPlayerWanted = (isRotationSet || activeVideoStreamIndex != null || activeAudioStreamIndex != null) && !hideMediaSourcePlayer;
+  const compatPlayerWanted = (
+    isRotationSet
+    // if user selected a custom video/audio stream, use compat player if the html5 player does not have any track index corresponding to the selected stream indexes
+    || ((activeVideoStreamIndex != null || activeAudioStreamIndex != null) && videoRef.current != null && !canHtml5PlayerPlayStreams(videoRef.current, activeVideoStreamIndex, activeAudioStreamIndex))
+  ) && !hideMediaSourcePlayer;
   const compatPlayerEnabled = (compatPlayerRequired || compatPlayerWanted) && (activeVideoStream != null || activeAudioStream != null);
 
-  const shouldShowPlaybackStreamSelector = videoStreams.length > 1 || audioStreams.length > 1 || (subtitleStreams.length > 0 && !compatPlayerEnabled);
+  const shouldShowPlaybackStreamSelector = videoStreams.length > 0 || audioStreams.length > 0 || (subtitleStreams.length > 0 && !compatPlayerEnabled);
 
   useEffect(() => {
-    // Reset the user preference when the state changes to true
+    // Reset the user preference when we go from not having compat player to having it
     if (compatPlayerEnabled) setHideMediaSourcePlayer(false);
   }, [compatPlayerEnabled]);
 
@@ -505,17 +509,17 @@ function App() {
     }
   }, [subtitlesByStreamId, subtitleStreams, workingRef, setWorking, filePath, loadSubtitle]);
 
-  const onActiveVideoStreamChange = useCallback((index?: number) => {
+  const onActiveVideoStreamChange = useCallback((videoStreamIndex?: number) => {
     invariant(videoRef.current);
-    setHideMediaSourcePlayer(index == null || getVideoTrackForStreamIndex(videoRef.current, index) != null);
-    enableVideoTrack(videoRef.current, index);
-    setActiveVideoStreamIndex(index);
+    setHideMediaSourcePlayer(false);
+    enableVideoTrack(videoRef.current, videoStreamIndex);
+    setActiveVideoStreamIndex(videoStreamIndex);
   }, [videoRef]);
-  const onActiveAudioStreamChange = useCallback((index?: number) => {
+  const onActiveAudioStreamChange = useCallback((audioStreamIndex?: number) => {
     invariant(videoRef.current);
-    setHideMediaSourcePlayer(index == null || getAudioTrackForStreamIndex(videoRef.current, index) != null);
-    enableAudioTrack(videoRef.current, index);
-    setActiveAudioStreamIndex(index);
+    setHideMediaSourcePlayer(false);
+    enableAudioTrack(videoRef.current, audioStreamIndex);
+    setActiveAudioStreamIndex(audioStreamIndex);
   }, [videoRef]);
 
   const allFilesMeta = useMemo(() => ({
@@ -2421,7 +2425,9 @@ function App() {
                         </>
                       )}
 
-                      {!compatPlayerRequired && <FaWindowClose role="button" style={{ cursor: 'pointer', pointerEvents: 'initial', verticalAlign: 'middle', padding: 10 }} onClick={() => setHideMediaSourcePlayer(true)} />}
+                      <div style={{ cursor: 'pointer', pointerEvents: 'initial', color: 'white', opacity: 0.7, padding: '.2em', marginLeft: '.5em' }} role="button" onClick={() => incrementMediaSourceQuality()} title={t('Select playback quality')}>{mediaSourceQualities[mediaSourceQuality]}</div>
+
+                      {!compatPlayerRequired && <FaRegTimesCircle role="button" style={{ cursor: 'pointer', pointerEvents: 'initial', verticalAlign: 'middle', padding: '.2em' }} onClick={() => setHideMediaSourcePlayer(true)} />}
                     </div>
                   )}
 
@@ -2432,8 +2438,6 @@ function App() {
                       {shouldShowPlaybackStreamSelector && (
                         <PlaybackStreamSelector subtitleStreams={subtitleStreams} videoStreams={videoStreams} audioStreams={audioStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} activeVideoStreamIndex={activeVideoStreamIndex} activeAudioStreamIndex={activeAudioStreamIndex} onActiveSubtitleChange={onActiveSubtitleChange} onActiveVideoStreamChange={onActiveVideoStreamChange} onActiveAudioStreamChange={onActiveAudioStreamChange} />
                       )}
-
-                      {compatPlayerEnabled && <div style={{ color: 'white', opacity: 0.7, padding: '.5em' }} role="button" onClick={() => incrementMediaSourceQuality()} title={t('Select playback quality')}>{mediaSourceQualities[mediaSourceQuality]}</div>}
 
                       {!showRightBar && (
                         <FaAngleLeft
