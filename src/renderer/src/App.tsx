@@ -2281,11 +2281,21 @@ function App() {
 
       focusWindow();
 
-      await userOpenFiles(filePaths);
+      userOpenFiles(filePaths);
+    }
+    const element = videoContainerRef.current;
+    element?.addEventListener('drop', onDrop);
+    return () => element?.removeEventListener('drop', onDrop);
+  }, [userOpenFiles, videoContainerRef]);
+
+  useEffect(() => {
+    function onDrop(ev: DragEvent) {
+      // default drop handler to prevent new electron window from popping up https://github.com/electron/electron/issues/39839
+      ev.preventDefault();
     }
     document.body.addEventListener('drop', onDrop);
     return () => document.body.removeEventListener('drop', onDrop);
-  }, [userOpenFiles]);
+  }, []);
 
   const renderOutFmt = useCallback((style: CSSProperties) => (
     <OutputFormatSelect style={style} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />

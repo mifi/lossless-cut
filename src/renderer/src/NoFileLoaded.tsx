@@ -5,11 +5,15 @@ import { useTranslation, Trans } from 'react-i18next';
 import SetCutpointButton from './components/SetCutpointButton';
 import SimpleModeButton from './components/SimpleModeButton';
 import useUserSettings from './hooks/useUserSettings';
+import { StateSegment } from './types';
 
 const electron = window.require('electron');
 
 function NoFileLoaded({ mifiLink, currentCutSeg, onClick, darkMode }: {
-  mifiLink: unknown, currentCutSeg, onClick: () => void, darkMode?: boolean,
+  mifiLink: unknown,
+  currentCutSeg: StateSegment,
+  onClick: () => void,
+  darkMode?: boolean,
 }) {
   const { t } = useTranslation();
   const { simpleMode } = useUserSettings();

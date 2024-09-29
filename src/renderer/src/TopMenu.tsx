@@ -1,4 +1,4 @@
-import { CSSProperties, ReactNode, memo, useCallback } from 'react';
+import { CSSProperties, ReactNode, memo, useCallback, useEffect, useRef } from 'react';
 import { IoIosSettings } from 'react-icons/io';
 import { FaLock, FaUnlock } from 'react-icons/fa';
 import { CrossIcon, ListIcon, VolumeUpIcon, VolumeOffIcon } from 'evergreen-ui';
@@ -12,6 +12,8 @@ import { primaryTextColor, controlsBackground, darkModeTransition } from './colo
 import useUserSettings from './hooks/useUserSettings';
 import { InverseCutSegment } from './types';
 
+
+const { stat } = window.require('fs/promises');
 
 const outFmtStyle = { height: 20, maxWidth: 100 };
 const exportModeStyle = { flexGrow: 0, flexBasis: 140 };
@@ -44,7 +46,8 @@ function TopMenu({
   clearOutDir: () => void,
 }) {
   const { t } = useTranslation();
-  const { customOutDir, changeOutDir, simpleMode, outFormatLocked, setOutFormatLocked } = useUserSettings();
+  const { customOutDir, changeOutDir, setCustomOutDir, simpleMode, outFormatLocked, setOutFormatLocked } = useUserSettings();
+  const workingDirButtonRef = useRef<HTMLButtonElement>(null);
 
   const onOutFormatLockedClick = useCallback(() => setOutFormatLocked((v) => (v ? undefined : fileFormat)), [fileFormat, setOutFormatLocked]);
 
@@ -54,6 +57,22 @@ function TopMenu({
     const Icon = outFormatLocked ? FaLock : FaUnlock;
     return <Icon onClick={onOutFormatLockedClick} title={t('Lock/unlock output format')} size={14} style={{ marginRight: 7, marginLeft: 2, color: outFormatLocked ? primaryTextColor : undefined }} />;
   }
+
+  // Convenience for drag and drop: https://github.com/mifi/lossless-cut/issues/2147
+  useEffect(() => {
+    async function onDrop(ev: DragEvent) {
+      ev.preventDefault();
+      if (!ev.dataTransfer) return;
+      const paths = [...ev.dataTransfer.files].map((f) => f.path);
+      const [firstPath] = paths;
+      if (paths.length === 1 && firstPath && (await stat(firstPath)).isDirectory()) {
+        setCustomOutDir(firstPath);
+      }
+    }
+    const element = workingDirButtonRef.current;
+    element?.addEventListener('drop', onDrop);
+    return () => element?.removeEventListener('drop', onDrop);
+  }, [setCustomOutDir]);
 
   return (
     <div
@@ -93,6 +112,7 @@ function TopMenu({
       )}
 
       <Button
+        ref={workingDirButtonRef}
         onClick={withBlur(changeOutDir)}
         title={customOutDir}
         style={{ paddingLeft: showClearWorkingDirButton ? 4 : undefined }}
