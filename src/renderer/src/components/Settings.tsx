@@ -11,7 +11,7 @@ import Switch from './Switch';
 import useUserSettings from '../hooks/useUserSettings';
 import { askForFfPath } from '../dialogs';
 import { isMasBuild, isStoreBuild } from '../util';
-import { LanguageKey, TimecodeFormat, langNames } from '../../../../types';
+import { LanguageKey, ModifierKey, TimecodeFormat, langNames } from '../../../../types';
 import styles from './Settings.module.css';
 import Select from './Select';
 
@@ -365,7 +365,7 @@ function Settings({
           <Row>
             <KeyCell>{t('Mouse wheel zoom modifier key')}</KeyCell>
             <td>
-              <Select value={mouseWheelZoomModifierKey} onChange={(e) => setMouseWheelZoomModifierKey(e.target.value)}>
+              <Select value={mouseWheelZoomModifierKey} onChange={(e) => setMouseWheelZoomModifierKey(e.target.value as ModifierKey)}>
                 {Object.entries(getModifierKeyNames()).map(([key, values]) => (
                   <option key={key} value={key}>{values.join(' / ')}</option>
                 ))}

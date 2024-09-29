@@ -2,6 +2,7 @@ import { WheelEventHandler, useCallback } from 'react';
 import { t } from 'i18next';
 
 import normalizeWheel from './normalizeWheel';
+import { ModifierKey } from '../../../../types';
 
 export const keyMap = {
   ctrl: 'ctrlKey',
@@ -17,10 +18,10 @@ export const getModifierKeyNames = () => ({
   meta: [t('⌘ Cmd'), t('⊞ Win')],
 });
 
-export const getModifier = (key) => getModifierKeyNames()[key];
+export const getModifier = (key: ModifierKey) => getModifierKeyNames()[key];
 
 function useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, invertTimelineScroll, zoomRel, seekRel }: {
-  wheelSensitivity: number, mouseWheelZoomModifierKey: string, invertTimelineScroll?: boolean | undefined, zoomRel: (a: number) => void, seekRel: (a: number) => void,
+  wheelSensitivity: number, mouseWheelZoomModifierKey: ModifierKey, invertTimelineScroll?: boolean | undefined, zoomRel: (a: number) => void, seekRel: (a: number) => void,
 }) {
   const onWheel = useCallback<WheelEventHandler<Element>>((e) => {
     const { pixelX, pixelY } = normalizeWheel(e);

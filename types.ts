@@ -42,6 +42,9 @@ export type TimecodeFormat = 'timecodeWithDecimalFraction' | 'frameCount' | 'tim
 
 export type AvoidNegativeTs = 'make_zero' | 'auto' | 'make_non_negative' | 'disabled';
 
+export type ModifierKey = 'ctrl' | 'shift' | 'alt' | 'meta';
+
+
 export interface Config {
   captureFormat: CaptureFormat,
   customOutDir: string | undefined,
@@ -87,7 +90,7 @@ export interface Config {
   customFfPath: string | undefined,
   storeProjectInWorkingDir: boolean,
   enableOverwriteOutput: boolean,
-  mouseWheelZoomModifierKey: string,
+  mouseWheelZoomModifierKey: ModifierKey,
   captureFrameMethod: 'videotag' | 'ffmpeg',
   captureFrameQuality: number,
   captureFrameFileNameFormat: 'timestamp' | 'index',
