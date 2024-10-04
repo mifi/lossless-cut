@@ -111,7 +111,7 @@ If you want to support my continued work on LosslessCut, and you want the advant
 
 For Linux these are some alternatives:
 
-<a href="https://snapcraft.io/losslesscut"><img src="https://snapcraft.io/static/images/badges/en/snap-store-black.svg" alt="Snapcraft" height="50"/></a> <a href="https://flathub.org/apps/details/no.mifi.losslesscut"><img src="https://flathub.org/assets/badges/flathub-badge-en.png" alt="Flathub" height="50"/></a>
+<a href="https://snapcraft.io/losslesscut"><img src="https://github.com/mifi/lossless-cut/raw/master/snap-store-black.svg?sanitize=true" alt="Snapcraft" height="50"/></a> <a href="https://flathub.org/apps/details/no.mifi.losslesscut"><img src="https://github.com/mifi/lossless-cut/raw/master/flathub-badge.svg?sanitize=true" alt="Flathub" height="50"/></a>
 
 If you prefer to download the executables manually, this will of course always be free:
 
