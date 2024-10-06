@@ -14,7 +14,7 @@ import { DirectoryAccessDeclinedError } from '../../errors';
 // Therefore we set the flag com.apple.security.files.user-selected.read-write
 // With this flag, we can show the user an open-dialog for a **directory**, and once the user has opened that directory, we can read/write files in this directory until the app is restarted.
 // NOTE! fs.stat is still allowed everywhere, even though read/write is not
-// see also developer-notes.md
+// see also CONTRIBUTING.md
 
 // const simulateMasBuild = isDev; // can be used for testing this logic without having to build mas-dev
 const simulateMasBuild = false;
