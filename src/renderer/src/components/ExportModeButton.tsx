@@ -54,7 +54,7 @@ function ExportModeButton({ selectedSegments, style }: { selectedSegments: unkno
     <Select
       style={{ height: 20, ...style }}
       value={effectiveExportMode}
-      onChange={withBlur((e) => onChange(e.target.value))}
+      onChange={withBlur((e) => onChange(e.target.value as ExportMode))}
     >
       <option key="disabled" value="" disabled>{t('Export mode')}</option>
 

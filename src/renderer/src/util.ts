@@ -165,10 +165,11 @@ export function filenamify(name: string) {
   return name.replaceAll(/[^\w.-]/g, '_');
 }
 
-export function withBlur(cb) {
-  return (e) => {
+// eslint-disable-next-line space-before-function-paren
+export function withBlur<T extends { target?: { blur?: () => unknown } | object }>(cb: (a: T) => void) {
+  return (e: T) => {
     cb(e);
-    e.target?.blur();
+    if (e.target && 'blur' in e.target) e.target?.blur?.();
   };
 }
 
