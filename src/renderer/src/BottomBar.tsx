@@ -196,7 +196,7 @@ function BottomBar({
   formatTimecode, parseTimecode, playbackRate,
 }: {
   zoom: number,
-  setZoom: Dispatch<SetStateAction<number>>,
+  setZoom: (fn: (z: number) => number) => void,
   timelineToggleComfortZoom: () => void,
   isRotationSet: boolean,
   rotation: number,
@@ -457,7 +457,7 @@ function BottomBar({
 
             <div role="button" style={{ marginRight: 5, marginLeft: 10 }} title={t('Zoom')} onClick={timelineToggleComfortZoom}>{Math.floor(zoom)}x</div>
 
-            <Select style={{ height: 20, flexBasis: 85, flexGrow: 0 }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur((e) => setZoom(parseInt(e.target.value, 10)))}>
+            <Select style={{ height: 20, flexBasis: 85, flexGrow: 0 }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur((e) => setZoom(() => parseInt(e.target.value, 10)))}>
               <option key="" value="" disabled>{t('Zoom')}</option>
               {zoomOptions.map((val) => (
                 <option key={val} value={String(val)}>{t('Zoom')} {val}x</option>

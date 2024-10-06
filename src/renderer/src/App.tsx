@@ -298,7 +298,8 @@ function App() {
   const isRotationSet = rotation !== 360;
   const effectiveRotation = useMemo(() => (isRotationSet ? rotation : (activeVideoStream?.tags?.rotate ? parseInt(activeVideoStream.tags.rotate, 10) : undefined)), [isRotationSet, activeVideoStream, rotation]);
 
-  const zoomRel = useCallback((rel: number) => setZoom((z) => Math.min(Math.max(z + (rel * (1 + (z / 10))), 1), zoomMax)), []);
+  const zoomAbs = useCallback((fn: (v: number) => number) => setZoom((z) => Math.min(Math.max(fn(z), 1), zoomMax)), []);
+  const zoomRel = useCallback((rel: number) => zoomAbs((z) => z + (rel * (1 + (z / 10)))), [zoomAbs]);
   const compatPlayerRequired = usingDummyVideo;
   const compatPlayerWanted = (
     isRotationSet
@@ -318,11 +319,11 @@ function App() {
   const timelineToggleComfortZoom = useCallback(() => {
     if (!comfortZoom) return;
 
-    setZoom((prevZoom) => {
+    zoomAbs((prevZoom) => {
       if (prevZoom === 1) return comfortZoom;
       return 1;
     });
-  }, [comfortZoom]);
+  }, [comfortZoom, zoomAbs]);
 
 
   const maxLabelLength = safeOutputFileName ? 100 : 500;
@@ -2539,7 +2540,7 @@ function App() {
 
                 <BottomBar
                   zoom={zoom}
-                  setZoom={setZoom}
+                  setZoom={zoomAbs}
                   timelineToggleComfortZoom={timelineToggleComfortZoom}
                   hasVideo={hasVideo}
                   isRotationSet={isRotationSet}
