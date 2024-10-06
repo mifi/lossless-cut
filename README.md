@@ -174,7 +174,7 @@ Codecs and formats not listed above can still be converted to a supported format
 
 ## [Known issues, limitations, troubleshooting, FAQ](issues.md)
 
-## [Contributing](developer-notes.md)
+## [Contributing](CONTRIBUTING.md)
 
 ## [Translation](translation.md)
 

@@ -1,6 +1,6 @@
 # Contributing
 
-## Development setup
+## Development environment setup
 
 This app is built using Electron.
 Make sure you have at least Node v16. The app uses ffmpeg from PATH when developing.
@@ -126,18 +126,26 @@ Links:
 yarn scan-i18n
 ```
 
-### Licenses
-
-#### Generate summary
+### Generate license summary
 
 ```bash
 npx license-checker --summary
 ```
 
-#### Regenerate licenses file
+### Regenerate licenses file
 
 ```bash
 yarn generate-licenses
 #cp licenses.txt losslesscut.mifi.no/public/
 ```
 Then deploy.
+
+### Dependabot
+
+https://github.com/mifi/lossless-cut/security/dependabot
+
+## ffmpeg builds
+
+- https://github.com/BtbN/FFmpeg-Builds
+- https://www.gyan.dev/ffmpeg/builds/
+- https://github.com/m-ab-s/media-autobuild_suite
