@@ -9,8 +9,6 @@ import type { SweetAlertIcon } from 'sweetalert2';
 
 import ExportButton from './ExportButton';
 import ExportModeButton from './ExportModeButton';
-import PreserveMovDataButton from './PreserveMovDataButton';
-import MovFastStartButton from './MovFastStartButton';
 import ToggleExportConfirm from './ToggleExportConfirm';
 import FileNameTemplateEditor from './FileNameTemplateEditor';
 import HighlightedText, { highlightedTextStyle } from './HighlightedText';
@@ -26,7 +24,7 @@ import styles from './ExportConfirm.module.css';
 import { InverseCutSegment, SegmentToExport } from '../types';
 import { defaultMergedFileTemplate, defaultOutSegTemplate, GenerateOutFileNames } from '../util/outputNameTemplate';
 import { FFprobeStream } from '../../../../ffprobe';
-import { AvoidNegativeTs } from '../../../../types';
+import { AvoidNegativeTs, PreserveMetadata } from '../../../../types';
 import TextInput from './TextInput';
 
 
@@ -95,7 +93,13 @@ function ExportConfirm({
 }) {
   const { t } = useTranslation();
 
-  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, movFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, toggleSegmentsToChapters, preserveMetadataOnMerge, togglePreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames } = useUserSettings();
+  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames } = useUserSettings();
+
+  const togglePreserveChapters = useCallback(() => setPreserveChapters((val) => !val), [setPreserveChapters]);
+  const togglePreserveMovData = useCallback(() => setPreserveMovData((val) => !val), [setPreserveMovData]);
+  const toggleMovFastStart = useCallback(() => setMovFastStart((val) => !val), [setMovFastStart]);
+  const toggleSegmentsToChapters = useCallback(() => setSegmentsToChapters((v) => !v), [setSegmentsToChapters]);
+  const togglePreserveMetadataOnMerge = useCallback(() => setPreserveMetadataOnMerge((v) => !v), [setPreserveMetadataOnMerge]);
 
   const isMov = ffmpegIsMov(outFormat);
   const isIpod = outFormat === 'ipod';
@@ -120,8 +124,16 @@ function ExportConfirm({
 
   const showHelpText = useCallback(({ icon = 'info', timer = 10000, text }: { icon?: SweetAlertIcon, timer?: number, text: string }) => toast.fire({ icon, timer, text }), []);
 
+  const onPreserveChaptersPress = useCallback(() => {
+    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Whether to preserve chapters from source file.') });
+  }, []);
+
   const onPreserveMovDataHelpPress = useCallback(() => {
     toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Preserve all MOV/MP4 metadata tags (e.g. EXIF, GPS position etc.) from source file? Note that some players have trouble playing back files where all metadata is preserved, like iTunes and other Apple software') });
+  }, []);
+
+  const onPreserveMetadataHelpPress = useCallback(() => {
+    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied') });
   }, []);
 
   const onMovFastStartHelpPress = useCallback(() => {
@@ -354,7 +366,7 @@ function ExportConfirm({
                             {t('Enable MOV Faststart?')}
                           </td>
                           <td>
-                            <MovFastStartButton />
+                            <Switch checked={movFastStart} onCheckedChange={toggleMovFastStart} />
                             {isIpod && !movFastStart && <div style={warningStyle}>{t('For the ipod format, it is recommended to activate this option')}</div>}
                           </td>
                           <td>
@@ -368,11 +380,39 @@ function ExportConfirm({
 
                         <tr>
                           <td>
+                            {t('Preserve chapters')}
+                          </td>
+                          <td>
+                            <Switch checked={preserveChapters} onCheckedChange={togglePreserveChapters} />
+                          </td>
+                          <td>
+                            <HelpIcon onClick={onPreserveChaptersPress} />
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td>
+                            {t('Preserve metadata')}
+                          </td>
+                          <td>
+                            <Select value={preserveMetadata} onChange={(e) => setPreserveMetadata(e.target.value as PreserveMetadata)} style={{ height: 20, marginLeft: 5 }}>
+                              <option value={'default' as PreserveMetadata}>{t('Default')}</option>
+                              <option value={'none' satisfies PreserveMetadata}>{t('None')}</option>
+                              <option value={'nonglobal' satisfies PreserveMetadata}>{t('Non-global')}</option>
+                            </Select>
+                          </td>
+                          <td>
+                            <HelpIcon onClick={onPreserveMetadataHelpPress} />
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td>
                             {t('Preserve all MP4/MOV metadata?')}
                             {isIpod && preserveMovData && <div style={warningStyle}>{t('For the ipod format, it is recommended to deactivate this option')}</div>}
                           </td>
                           <td>
-                            <PreserveMovDataButton />
+                            <Switch checked={preserveMovData} onCheckedChange={togglePreserveMovData} />
                           </td>
                           <td>
                             {isIpod && preserveMovData ? (

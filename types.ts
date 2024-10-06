@@ -44,6 +44,8 @@ export type AvoidNegativeTs = 'make_zero' | 'auto' | 'make_non_negative' | 'disa
 
 export type ModifierKey = 'ctrl' | 'shift' | 'alt' | 'meta';
 
+export type PreserveMetadata = 'default' | 'nonglobal' | 'none'
+
 
 export interface Config {
   captureFormat: CaptureFormat,
@@ -65,6 +67,9 @@ export interface Config {
   wheelSensitivity: number,
   language: LanguageKey | undefined,
   ffmpegExperimental: boolean,
+  preserveChapters: boolean,
+  preserveMetadata: PreserveMetadata,
+  preserveMetadataOnMerge: boolean,
   preserveMovData: boolean,
   movFastStart: boolean,
   avoidNegativeTs: AvoidNegativeTs,
@@ -72,7 +77,6 @@ export interface Config {
   hideOsNotifications: 'all' | undefined,
   autoLoadTimecode: boolean,
   segmentsToChapters: boolean,
-  preserveMetadataOnMerge: boolean,
   simpleMode: boolean,
   outSegTemplate: string | undefined,
   mergedFileTemplate: string | undefined,

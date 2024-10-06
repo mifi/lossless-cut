@@ -47,8 +47,14 @@ export default () => {
   useEffect(() => safeSetConfig({ customOutDir }), [customOutDir]);
   const [keyframeCut, setKeyframeCut] = useState(safeGetConfigInitial('keyframeCut'));
   useEffect(() => safeSetConfig({ keyframeCut }), [keyframeCut]);
+  const [preserveMetadata, setPreserveMetadata] = useState(safeGetConfigInitial('preserveMetadata'));
+  useEffect(() => safeSetConfig({ preserveMetadata }), [preserveMetadata]);
+  const [preserveMetadataOnMerge, setPreserveMetadataOnMerge] = useState(safeGetConfigInitial('preserveMetadataOnMerge'));
+  useEffect(() => safeSetConfig({ preserveMetadataOnMerge }), [preserveMetadataOnMerge]);
   const [preserveMovData, setPreserveMovData] = useState(safeGetConfigInitial('preserveMovData'));
   useEffect(() => safeSetConfig({ preserveMovData }), [preserveMovData]);
+  const [preserveChapters, setPreserveChapters] = useState(safeGetConfigInitial('preserveChapters'));
+  useEffect(() => safeSetConfig({ preserveChapters }), [preserveChapters]);
   const [movFastStart, setMovFastStart] = useState(safeGetConfigInitial('movFastStart'));
   useEffect(() => safeSetConfig({ movFastStart }), [movFastStart]);
   const [avoidNegativeTs, setAvoidNegativeTs] = useState(safeGetConfigInitial('avoidNegativeTs'));
@@ -91,8 +97,6 @@ export default () => {
   useEffect(() => safeSetConfig({ exportConfirmEnabled }), [exportConfirmEnabled]);
   const [segmentsToChapters, setSegmentsToChapters] = useState(safeGetConfigInitial('segmentsToChapters'));
   useEffect(() => safeSetConfig({ segmentsToChapters }), [segmentsToChapters]);
-  const [preserveMetadataOnMerge, setPreserveMetadataOnMerge] = useState(safeGetConfigInitial('preserveMetadataOnMerge'));
-  useEffect(() => safeSetConfig({ preserveMetadataOnMerge }), [preserveMetadataOnMerge]);
   const [simpleMode, setSimpleMode] = useState(safeGetConfigInitial('simpleMode'));
   useEffect(() => safeSetConfig({ simpleMode }), [simpleMode]);
   const [outSegTemplate, setOutSegTemplate] = useState(safeGetConfigInitial('outSegTemplate'));
@@ -180,8 +184,14 @@ export default () => {
     setCustomOutDir,
     keyframeCut,
     setKeyframeCut,
+    preserveMetadata,
+    setPreserveMetadata,
+    preserveMetadataOnMerge,
+    setPreserveMetadataOnMerge,
     preserveMovData,
     setPreserveMovData,
+    preserveChapters,
+    setPreserveChapters,
     movFastStart,
     setMovFastStart,
     avoidNegativeTs,
@@ -224,8 +234,6 @@ export default () => {
     setExportConfirmEnabled,
     segmentsToChapters,
     setSegmentsToChapters,
-    preserveMetadataOnMerge,
-    setPreserveMetadataOnMerge,
     simpleMode,
     setSimpleMode,
     outSegTemplate,
