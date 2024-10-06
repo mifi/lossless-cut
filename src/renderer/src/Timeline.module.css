@@ -1,0 +1,11 @@
+.time {
+  background: rgba(0,0,0,0.4);
+  border-radius: 3;
+  padding: 2px 4px;
+  color: rgba(255, 255, 255, 0.8);
+  transition: opacity 0.2s;
+  pointer-events: auto;
+}
+.time:hover {
+  opacity: 0.1;
+}

@@ -10,6 +10,8 @@ import BetweenSegments from './BetweenSegments';
 import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
 
+import styles from './Timeline.module.css';
+
 
 import { timelineBackground, darkModeTransition } from './colors';
 import { Frame } from './ffmpeg';
@@ -71,7 +73,6 @@ const CommandedTime = memo(({ commandedTimePercent }: { commandedTimePercent: st
 const timelineHeight = 36;
 
 const timeWrapperStyle: CSSProperties = { position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' };
-const timeStyle: CSSProperties = { background: 'rgba(0,0,0,0.4)', borderRadius: 3, padding: '2px 4px', color: 'rgba(255, 255, 255, 0.8)' };
 
 function Timeline({
   durationSafe,
@@ -401,8 +402,8 @@ function Timeline({
         </div>
       </div>
 
-      <div style={timeWrapperStyle}>
-        <div style={timeStyle}>
+      <div style={timeWrapperStyle} onWheel={onWheel}>
+        <div className={styles['time']}>
           {formatTimeAndFrames(displayTime)}{isZoomed ? ` ${displayTimePercent}` : ''}
         </div>
       </div>
