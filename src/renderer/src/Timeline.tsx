@@ -76,7 +76,7 @@ const CommandedTime = memo(({ commandedTimePercent }: { commandedTimePercent: st
 
 const timelineHeight = 36;
 
-const timeWrapperStyle: CSSProperties = { position: 'absolute', height: timelineHeight, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' };
+const timeWrapperStyle: CSSProperties = { height: timelineHeight };
 
 function Timeline({
   durationSafe,
@@ -302,7 +302,15 @@ function Timeline({
     window.addEventListener('mousemove', onMouseMove);
   }, [getMouseTimelinePos, handleScrub, seekAbs]);
 
+  const timeRef = useRef<HTMLDivElement>(null);
+
   const onMouseMove = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
+    // need to manually check, because we cannot use css :hover when pointer-events: none
+    // and we need pointer-events: none on time because we want to be able to click through it to segments behind (and they are not parent)
+    const rect = timeRef.current?.getBoundingClientRect();
+    const isInBounds = rect && e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+    timeRef.current?.style.setProperty('opacity', isInBounds ? '0.2' : '1');
+
     if (!mouseDownRef.current) { // no button pressed
       setHoveringTime(getMouseTimelinePos(e.nativeEvent));
     }
@@ -410,8 +418,8 @@ function Timeline({
         </div>
       </div>
 
-      <div style={timeWrapperStyle} onWheel={onWheel}>
-        <div className={styles['time']}>
+      <div style={timeWrapperStyle} className={styles['time-wrapper']}>
+        <div className={styles['time']} ref={timeRef}>
           {formatTimeAndFrames(displayTime)}{isZoomed ? ` ${displayTimePercent}` : ''}
         </div>
       </div>
