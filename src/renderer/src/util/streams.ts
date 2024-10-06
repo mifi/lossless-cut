@@ -126,8 +126,9 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
       // https://github.com/mifi/lossless-cut/issues/418
       // https://www.reddit.com/r/PleX/comments/bcfvev/can_someone_eli5_subtitles/
       addCodecArgs('srt');
-    } else if (outFormat === 'webm' && stream.codec_name === 'mov_text') {
+    } else if (outFormat === 'webm' && stream.codec_name !== 'webvtt') {
       // Only WebVTT subtitles are supported for WebM.
+      // https://github.com/mifi/lossless-cut/issues/2179#issuecomment-2395413115
       addCodecArgs('webvtt');
     // eslint-disable-next-line unicorn/prefer-switch
     } else if (outFormat === 'srt') { // not technically lossless but why not
