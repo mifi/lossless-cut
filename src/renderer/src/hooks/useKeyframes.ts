@@ -8,9 +8,14 @@ import { FFprobeStream } from '../../../../ffprobe';
 const maxKeyframes = 1000;
 // const maxKeyframes = 100;
 
-export default ({ keyframesEnabled, filePath, commandedTime, videoStream, detectedFps, ffmpegExtractWindow }: {
-  keyframesEnabled: boolean, filePath: string | undefined, commandedTime: number, videoStream: FFprobeStream | undefined, detectedFps: number | undefined, ffmpegExtractWindow: number,
-}) => {
+function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, detectedFps, ffmpegExtractWindow }: {
+  keyframesEnabled: boolean,
+  filePath: string | undefined,
+  commandedTime: number,
+  videoStream: FFprobeStream | undefined,
+  detectedFps: number | undefined,
+  ffmpegExtractWindow: number,
+}) {
   const readingKeyframesPromise = useRef<Promise<unknown>>();
   const [neighbouringKeyFramesMap, setNeighbouringKeyFrames] = useState<Record<string, Frame>>({});
   const neighbouringKeyFrames = useMemo(() => Object.values(neighbouringKeyFramesMap), [neighbouringKeyFramesMap]);
@@ -61,4 +66,6 @@ export default ({ keyframesEnabled, filePath, commandedTime, videoStream, detect
   return {
     neighbouringKeyFrames, findNearestKeyFrameTime,
   };
-};
+}
+
+export default useKeyframes;

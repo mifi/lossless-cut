@@ -182,6 +182,7 @@ function App() {
   const durationSafe = isDurationValid(duration) ? duration : 1;
   const zoom = Math.floor(zoomUnrounded);
   const zoomedDuration = isDurationValid(duration) ? duration / zoom : undefined;
+  const zoomWindowEndTime = useMemo(() => (zoomedDuration != null ? zoomWindowStartTime + zoomedDuration : undefined), [zoomedDuration, zoomWindowStartTime]);
 
   useEffect(() => setDocumentTitle({ filePath, working: working?.text, progress }), [progress, filePath, working?.text]);
 
@@ -2526,6 +2527,8 @@ function App() {
                   inverseCutSegments={inverseCutSegments}
                   formatTimecode={formatTimecode}
                   formatTimeAndFrames={formatTimeAndFrames}
+                  zoomWindowStartTime={zoomWindowStartTime}
+                  zoomWindowEndTime={zoomWindowEndTime}
                   onZoomWindowStartTimeChange={setZoomWindowStartTime}
                   playing={playing}
                   isFileOpened={isFileOpened}

@@ -11,7 +11,14 @@ import { ApparentCutSegment, FormatTimecode } from './types';
 function TimelineSeg({
   seg, duration, isActive, segNum, onSegClick, invertCutSegments, formatTimecode, selected,
 } : {
-  seg: ApparentCutSegment, duration: number, isActive: boolean, segNum: number, onSegClick: (a: number) => void, invertCutSegments: boolean, formatTimecode: FormatTimecode, selected: boolean,
+  seg: ApparentCutSegment,
+  duration: number,
+  isActive: boolean,
+  segNum: number,
+  onSegClick: (a: number) => void,
+  invertCutSegments: boolean,
+  formatTimecode: FormatTimecode,
+  selected: boolean,
 }) {
   const { darkMode } = useUserSettings();
   const { getSegColor } = useSegColors();

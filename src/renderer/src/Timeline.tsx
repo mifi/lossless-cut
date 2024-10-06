@@ -1,4 +1,4 @@
-import { memo, useRef, useMemo, useCallback, useEffect, useState, MutableRefObject, CSSProperties, WheelEventHandler } from 'react';
+import { memo, useRef, useMemo, useCallback, useEffect, useState, MutableRefObject, CSSProperties, WheelEventHandler, MouseEventHandler } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import debounce from 'lodash/debounce';
 import { useTranslation } from 'react-i18next';
@@ -48,7 +48,11 @@ const Waveform = memo(({ waveform, calculateTimelinePercent, durationSafe }: {
 
 // eslint-disable-next-line react/display-name
 const Waveforms = memo(({ calculateTimelinePercent, durationSafe, waveforms, zoom, height }: {
-  calculateTimelinePercent: CalculateTimelinePercent, durationSafe: number, waveforms: RenderableWaveform[], zoom: number, height: number,
+  calculateTimelinePercent: CalculateTimelinePercent,
+  durationSafe: number,
+  waveforms: RenderableWaveform[],
+  zoom: number,
+  height: number,
 }) => (
   <div style={{ height, width: `${zoom * 100}%`, position: 'relative' }}>
     {waveforms.map((waveform) => (
@@ -93,6 +97,8 @@ function Timeline({
   shouldShowWaveform,
   shouldShowKeyframes,
   thumbnails,
+  zoomWindowStartTime,
+  zoomWindowEndTime,
   onZoomWindowStartTimeChange,
   waveformEnabled,
   showThumbnails,
@@ -121,6 +127,8 @@ function Timeline({
   shouldShowWaveform: boolean,
   shouldShowKeyframes: boolean,
   thumbnails: Thumbnail[],
+  zoomWindowStartTime: number,
+  zoomWindowEndTime: number | undefined,
   onZoomWindowStartTimeChange: (a: number) => void,
   waveformEnabled: boolean,
   showThumbnails: boolean,
@@ -147,14 +155,14 @@ function Timeline({
 
   const isZoomed = zoom > 1;
 
+  const keyFramesInZoomWindow = useMemo(() => (zoomWindowEndTime == null ? [] : neighbouringKeyFrames.filter((f) => f.time >= zoomWindowStartTime && f.time <= zoomWindowEndTime)), [neighbouringKeyFrames, zoomWindowEndTime, zoomWindowStartTime]);
+
   // Don't show keyframes if too packed together (at current zoom)
   // See https://github.com/mifi/lossless-cut/issues/259
-  // todo
-  // const areKeyframesTooClose = keyframes.length > zoom * 200;
-  const areKeyframesTooClose = false;
+  const areKeyframesTooClose = keyFramesInZoomWindow.length > zoom * 200;
 
-  const calculateTimelinePos = useCallback((time) => (time !== undefined ? Math.min(time / durationSafe, 1) : undefined), [durationSafe]);
-  const calculateTimelinePercent = useCallback((time) => {
+  const calculateTimelinePos = useCallback((time: number | undefined) => (time !== undefined ? Math.min(time / durationSafe, 1) : undefined), [durationSafe]);
+  const calculateTimelinePercent = useCallback((time: number | undefined) => {
     const pos = calculateTimelinePos(time);
     return pos !== undefined ? `${pos * 100}%` : undefined;
   }, [calculateTimelinePos]);
@@ -228,7 +236,7 @@ function Timeline({
 
 
   useEffect(() => {
-    const cancelWheel = (event) => event.preventDefault();
+    const cancelWheel = (event: WheelEvent) => event.preventDefault();
 
     const scroller = timelineScrollerRef.current;
     invariant(scroller != null);
@@ -253,7 +261,7 @@ function Timeline({
       / (timelineScrollerRef.current.offsetWidth * zoom)) * duration));
   }, [duration, seekAbs, zoomed, zoom, zoomWindowStartTime, onZoomWindowStartTimeChange]); */
 
-  const getMouseTimelinePos = useCallback((e) => {
+  const getMouseTimelinePos = useCallback((e: MouseEvent) => {
     const target = timelineWrapperRef.current;
     invariant(target != null);
     const rect = target.getBoundingClientRect();
@@ -261,22 +269,22 @@ function Timeline({
     return (relX / target.offsetWidth) * durationSafe;
   }, [durationSafe]);
 
-  const mouseDownRef = useRef();
+  const mouseDownRef = useRef<unknown>();
 
-  const handleScrub = useCallback((e) => seekAbs((getMouseTimelinePos(e))), [seekAbs, getMouseTimelinePos]);
+  const handleScrub = useCallback((e: MouseEvent) => seekAbs((getMouseTimelinePos(e))), [seekAbs, getMouseTimelinePos]);
 
   useEffect(() => {
     setHoveringTime(undefined);
   }, [relevantTime]);
 
-  const onMouseDown = useCallback((e) => {
+  const onMouseDown = useCallback<MouseEventHandler<HTMLElement>>((e) => {
     if (e.nativeEvent.buttons !== 1) return; // not primary button
 
     handleScrub(e.nativeEvent);
 
     mouseDownRef.current = e.target;
 
-    function onMouseMove(e2) {
+    function onMouseMove(e2: MouseEvent) {
       if (mouseDownRef.current == null) return;
       seekAbs(getMouseTimelinePos(e2));
     }
@@ -294,7 +302,7 @@ function Timeline({
     window.addEventListener('mousemove', onMouseMove);
   }, [getMouseTimelinePos, handleScrub, seekAbs]);
 
-  const onMouseMove = useCallback((e) => {
+  const onMouseMove = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
     if (!mouseDownRef.current) { // no button pressed
       setHoveringTime(getMouseTimelinePos(e.nativeEvent));
     }
@@ -389,7 +397,7 @@ function Timeline({
             />
           ))}
 
-          {shouldShowKeyframes && !areKeyframesTooClose && neighbouringKeyFrames.map((f) => (
+          {shouldShowKeyframes && !areKeyframesTooClose && keyFramesInZoomWindow.map((f) => (
             <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / durationSafe) * 100}%`, marginLeft: -1, width: 1, background: 'var(--gray11)', pointerEvents: 'none' }} />
           ))}
 
