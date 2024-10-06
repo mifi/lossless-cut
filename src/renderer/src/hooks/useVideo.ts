@@ -66,10 +66,6 @@ export default ({ filePath }: { filePath: string | undefined }) => {
     setCompatPlayerEventId((id) => id + 1); // To make sure that we can seek even to the same commanded time that we are already add (e.g. loop current segment)
   }, [smoothSeek]);
 
-  const seekRel = useCallback((val: number) => {
-    seekAbs(videoRef.current!.currentTime + val);
-  }, [seekAbs, videoRef]);
-
   const commandedTimeRef = useRef(commandedTime);
   useEffect(() => {
     commandedTimeRef.current = commandedTime;
@@ -79,6 +75,10 @@ export default ({ filePath }: { filePath: string | undefined }) => {
   const relevantTime = useMemo(() => (playing ? playerTime : commandedTime) || 0, [commandedTime, playerTime, playing]);
   // The reason why we also have a getter is because it can be used when we need to get the time, but don't want to re-render for every time update (which can be heavy!)
   const getRelevantTime = useCallback(() => (playingRef.current ? videoRef.current!.currentTime : commandedTimeRef.current) || 0, []);
+
+  const seekRel = useCallback((val: number) => {
+    seekAbs(getRelevantTime() + val);
+  }, [getRelevantTime, seekAbs]);
 
   const onPlayingChange = useCallback((val: boolean) => {
     playingRef.current = val;
