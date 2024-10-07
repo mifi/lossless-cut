@@ -732,7 +732,7 @@
     "Frames extracted to: {{path}}": "Кадры извлечены в: {{path}}",
     "Input has {{numStreamsTotal}} tracks": "Входные данные содержат {{numStreamsTotal}} дорожек",
     "Keyboard, mouse and input": "Клавиатура, мышь и ввод",
-    "Mouse wheel zoom modifier key": "Клавиша-модификатор масштаба колеса мыши",
+    "Mouse wheel zoom modifier key": "Клавиша-модификатор масштаба колесом мыши",
     "Nearest keyframe": "Ближайший ключевой кадр",
     "Play selected segments in order": "Воспроизвести выбранные сегменты по порядку",
     "Pause": "Пауза",
