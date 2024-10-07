@@ -62,26 +62,45 @@ Windows store version is built as a Desktop Bridge app (with `runFullTrust` capa
 
 ## Releasing
 
-For per-platform build/signing setup, see [this article](https://mifi.no/blog/automated-electron-build-with-release-to-mac-app-store-microsoft-store-snapcraft/).
+### Build new version
 
-### Release new version
-
-- If Mac App Store / Windows Store
-  - Checkout branch `stores`
-  - Merge `master` into `stores`
-- `npm version ...`
+- `git checkout master`
+- `git merge stores` (in case there's an old unmerged stores hotfix)
+- *If Store-only hotfix release*
+  - `git checkout stores`
+  - `npm version patch`
+- *If normal GitHub-first release*
+  - `npm version minor`
 - `git push --follow-tags`
 - Wait for build and draft in Github actions
+
+### Release built version
+
 - Open draft in github and add Release notes
 - For files `LosslessCut-mac-universal.pkg` and `LosslessCut-win-x64.appx` add prefix `-DO-NOT-DOWNLOAD`
-- If intended as Github, release the draft
-- If store-only release, release the draft as **pre-release**
+- *If GitHub release*
+  - Release the draft
+- *If Store-only hotfix release*
+  - Remove all other artifacts and release the draft as **pre-release**
 
-### After release
+#### After releasing on GitHub
 
-- If Mac App Store / Windows Store
-  - Merge `stores` into `master`
-- Bump [snap version](https://snapcraft.io/losslesscut/listing)
+- *If Stores-only hotfix release*
+  - `git checkout master`
+  - `git merge stores`
+- Bump [snap version](https://snapcraft.io/losslesscut/releases)
+
+### After releasing existing GitHub version in Stores
+
+- `git checkout stores`
+- Find the tag just released in the Stores
+- Merge this tag (from `master`) into `stores`: `git merge vX.Y.Z`
+- `git push`
+- `git checkout master`
+
+### More info
+
+For per-platform build/signing setup, see [this article](https://mifi.no/blog/automated-electron-build-with-release-to-mac-app-store-microsoft-store-snapcraft/).
 
 ## Weblate
 
