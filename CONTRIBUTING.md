@@ -82,7 +82,14 @@ For per-platform build/signing setup, see [this article](https://mifi.no/blog/au
 - If Mac App Store / Windows Store
   - Merge `stores` into `master`
 - Bump [snap version](https://snapcraft.io/losslesscut/listing)
-- `yarn scan-i18n` to get the newest English strings and push so weblate gets them
+
+## Weblate
+
+`yarn scan-i18n` to get the newest English strings and push so Weblate gets them.
+
+Find the [latest PR](https://github.com/mifi/lossless-cut/pulls) from Weblate and **rebase+merge** it.
+
+**Warning:** Do not squash and merge (see [here why](translation.md#weblate))!
 
 ## Minimum OS version
 

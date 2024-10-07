@@ -63,7 +63,6 @@ You can find a list of the available [`localeCode`s here](https://github.com/mif
 
 Now LosslessCut will use your language local file.
 
+## Weblate
 
-## Weblate merge
-
-Note to LosslessCut maintainers: Weblate [does not allow](https://github.com/WeblateOrg/weblate/issues/7081) any pushes to the weblate LosslessCut github repository (`https://hosted.weblate.org/git/losslesscut/losslesscut/`). This means if their repo becomes out of sync with this repo, the translations will be locked and the `master` branch here needs to be synced with their branch. This should normally not happen unless the weblate PR has been accidentally merged with rebase or squash.
+Note to LosslessCut maintainers: Weblate [does not allow](https://github.com/WeblateOrg/weblate/issues/7081) any pushes to the weblate LosslessCut github repository (`https://hosted.weblate.org/git/losslesscut/losslesscut/`). This means if their repo becomes out of sync with this repo, the translations will be locked and the `master` branch here needs to be synced with their branch. This should normally not happen unless the weblate PR has been accidentally merged with a squash commit.
