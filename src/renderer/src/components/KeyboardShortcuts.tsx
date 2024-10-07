@@ -49,7 +49,10 @@ function fixKeys(keys: string[]) {
 const CreateBinding = memo(({
   actionsMap, action, setCreatingBinding, onNewKeyBindingConfirmed,
 }: {
-  actionsMap: ActionsMap, action: KeyboardAction | undefined, setCreatingBinding: Dispatch<SetStateAction<KeyboardAction | undefined>>, onNewKeyBindingConfirmed: (a: KeyboardAction, keys: string[]) => void,
+  actionsMap: ActionsMap,
+  action: KeyboardAction | undefined,
+  setCreatingBinding: Dispatch<SetStateAction<KeyboardAction | undefined>>,
+  onNewKeyBindingConfirmed: (a: KeyboardAction, keys: string[]) => void,
 }) => {
   const { t } = useTranslation();
 

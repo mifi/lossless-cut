@@ -2149,6 +2149,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/mousetrap@npm:^1.6.15":
+  version: 1.6.15
+  resolution: "@types/mousetrap@npm:1.6.15"
+  checksum: 10/58ec552218108f8e5f0d40ee81579aafbdb00c3af0ef4b6d3fb193a8a11a2d37aa84c6e20524120b7f218c2a87dac24f426ee3b23e1269d42f8145a1a37c9eca
+  languageName: node
+  linkType: hard
+
 "@types/ms@npm:*":
   version: 0.7.31
   resolution: "@types/ms@npm:0.7.31"
@@ -7610,6 +7617,7 @@ __metadata:
     "@types/luxon": "npm:^3.4.2"
     "@types/mime-types": "npm:^2.1.4"
     "@types/morgan": "npm:^1.9.9"
+    "@types/mousetrap": "npm:^1.6.15"
     "@types/node": "npm:18"
     "@types/react": "npm:^18.2.66"
     "@types/react-dom": "npm:^18.2.22"

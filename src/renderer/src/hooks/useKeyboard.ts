@@ -40,6 +40,8 @@ export default ({ keyBindings, onKeyPress: onKeyPressProp }: {
       }
     });
 
-    return () => mousetrap.reset();
+    return () => {
+      mousetrap.reset();
+    };
   }, [keyBindings]);
 };
