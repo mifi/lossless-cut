@@ -77,7 +77,7 @@ Windows store version is built as a Desktop Bridge app (with `runFullTrust` capa
 ### Release built version
 
 - Open draft in github and add Release notes
-- For files `LosslessCut-mac-universal.pkg` and `LosslessCut-win-x64.appx` add prefix `-DO-NOT-DOWNLOAD`
+- Add prefix `-DO-NOT-DOWNLOAD` to `LosslessCut-mac-universal.pkg` and `LosslessCut-win-x64.appx`
 - *If GitHub release*
   - Release the draft
 - *If Store-only hotfix release*
