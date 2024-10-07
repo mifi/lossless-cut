@@ -2316,17 +2316,25 @@ function App() {
     runStartupCheck({ customFfPath });
   }, [customFfPath]);
 
+  const haveBoundAlt = useMemo(() => keyBindings.some(({ keys }) => keys.split('+').includes('alt')), [keyBindings]);
+
   useEffect(() => {
-    const keyScrollPreventer = (e: KeyboardEvent) => {
+    const handleKeydown = (e: KeyboardEvent) => {
+      // Keyboard scroll prevention:
       // https://stackoverflow.com/questions/8916620/disable-arrow-key-scrolling-in-users-browser
       if (e.target === document.body && [32, 37, 38, 39, 40].includes(e.keyCode)) {
         e.preventDefault();
       }
+
+      // if the user has bound alt in any of their keybindings, prevent alt from triggering the menu https://github.com/mifi/lossless-cut/issues/2180
+      if (haveBoundAlt && e.code === 'AltLeft') {
+        e.preventDefault();
+      }
     };
 
-    window.addEventListener('keydown', keyScrollPreventer);
-    return () => window.removeEventListener('keydown', keyScrollPreventer);
-  }, []);
+    window.addEventListener('keydown', handleKeydown);
+    return () => window.removeEventListener('keydown', handleKeydown);
+  }, [haveBoundAlt]);
 
   const showLeftBar = batchFiles.length > 0;
 
