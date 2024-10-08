@@ -734,9 +734,9 @@
     "Decrease font size": "Reducir el tamaño de la fuente",
     "Detecting black scenes": "Reconocer escenas oscuras",
     "Cut at the preceding keyframe (not accurate time.) Equiv to": "Cortar en el fotograma clave anterior (tiempo no exacto). Equivalente a",
-    "Please press your desired key combination. Make sure it doesn't conflict with any other binding or system hotkeys.": "Por favor presione la combinación de teclas que desee. Asegúrese de que no entre en conflicto con ningún otro enlace o tecla de acceso rápido del sistema.",
+    "Please press your desired key combination. Make sure it doesn't conflict with any other binding or system hotkeys.": "Por favor presione la combinación de teclas deseada. Asegúrese de que no entre en conflicto con ningún otro enlace o tecla de acceso rápido del sistema.",
     "Playback/preview segments only": "Reproducción/ vista previa sólo de segmentos",
-    "Please confirm folder": "Por favor confirme carpeta",
+    "Please confirm folder": "Por favor, confirme la carpeta",
     "Please enter a valid number.": "Por favor introduzca un número válido.",
-    "Please enter a JavaScript expression.": "Por favor introduzca una expresión JavaScript."
+    "Please enter a JavaScript expression.": "Por favor introduzca una expresión de JavaScript."
 }
