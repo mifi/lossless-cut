@@ -738,5 +738,7 @@
     "Playback/preview segments only": "Reproducción/ vista previa sólo de segmentos",
     "Please confirm folder": "Por favor, confirme la carpeta",
     "Please enter a valid number.": "Por favor introduzca un número válido.",
-    "Please enter a JavaScript expression.": "Por favor introduzca una expresión de JavaScript."
+    "Please enter a JavaScript expression.": "Por favor introduzca una expresión de JavaScript.",
+    "Please send an email to <1>losslesscut@mifi.no</1> where you describe what you were doing.": "Por favor envíe un correo a <1>losslesscut@mifi.no</1> y descríbanos qué estaba haciendo.",
+    "Please select a working directory first": "Por favor seleccione primero, un directorio de trabajo"
 }
