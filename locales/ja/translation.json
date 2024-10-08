@@ -614,7 +614,7 @@
     "Output file name": "出力ファイル名",
     "Output file already exists, refusing to overwrite. You can turn on overwriting in settings.": "出力ファイルが既に存在し、上書きもできません。設定によって上書き可能にできます。",
     "The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.": "ファイル名のテンプレートに {{ext}} がなく、拡張子のないファイルとなります。再生できない出力ファイルになる可能性があります。",
-    "File compatibility check is not enabled, so the merge operation might not produce a valid output. Enable \"Check compatibility\" below to check file compatibility before merging.": "ファイル同士の互換性検査が無効なため、結合により、無効な出力ファイルなることがあります。下記「互換性を検査」を有効にし、結合前に検査してください。",
+    "File compatibility check is not enabled, so the merge operation might not produce a valid output. Enable \"Check compatibility\" below to check file compatibility before merging.": "ファイル同士の互換性検査が無効なため、結合により、無効な出力ファイルなることがあります。「互換性を検査」を有効にし、結合前に検査してください。",
     "A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.": "1個以上のファイルで不一致が検出されました。続行できますが、出力されるファイルは再生できない可能性があります。",
     "Track {{index}} mismatch: {{key1}} {{value1}} != {{value2}}": "トラック {{index}} 不一致: {{key1}} {{value1}} != {{value2}}",
     "{{durationMsFormatted}} ms, {{frameCount}} frames": "{{durationMsFormatted}} ms, {{frameCount}} フレーム",
@@ -906,5 +906,9 @@
     "Seek one frame": "1フレームをシーク",
     "Seek one key frame": "1キーフレームをシーク",
     "Preserve chapters": "チャプターを保存",
-    "Smart cut is experimental and will not work on all files.": "スマート切り取りは試験段階なので、一部のファイルでしか成功しません。"
+    "Smart cut is experimental and will not work on all files.": "スマート切り取りは試験段階なので、一部のファイルでしか成功しません。",
+    "Minimum numeric padded length": "数値の桁数",
+    "There is a known issue in FFmpeg with cutting FLAC files. The file will be re-encoded, which is still lossless, but the export may be slower.": "FLACファイルの切り取りについて、FFmpegに既知の問題があります。可逆圧縮のままファイルは再エンコードされますが、出力時間が遅くなる可能性があります。",
+    "You can customize the file name of the merged file using special variables.": "特殊変数を使い、結合後のファイル名を指定できます。",
+    "This file contains an audio track that FFmpeg is unable to mux into the MP4 format, so MOV has been auto-selected as the default output format.": "FFmpegは、このファイルに含まれる音声トラックをMP4形式で多重化できないため、標準の出力形式として、MOVが自動選択されました。"
 }
