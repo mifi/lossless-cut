@@ -836,5 +836,7 @@
     "Start over": "Reanudar",
     "Subtitles (SRT)": "Subtítulos (SRT)",
     "subtitle": "subtítulo",
-    "Store next to media file": "Almacenar junto al archivo multimedia"
+    "Store next to media file": "Almacenar junto al archivo multimedia",
+    "The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.": "Falta la plantilla de nombre de archivo {{ext}} y dará como resultado un archivo sin la extensión sugerida. Esto puede resultar en un archivo de salida que no se puede reproducir.",
+    "The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}": "El archivo multimedia al que hace referencia el archivo del proyecto que intentó abrir no existe en la misma carpeta que el archivo del proyecto: {{mediaFileName}}"
 }
