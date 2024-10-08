@@ -41,7 +41,7 @@
     "Choose cutting mode: Remove or keep selected segments from video when exporting?": "Elija el modo de corte: ¿Eliminar o mantener segmentos seleccionados del video al exportar?",
     "Make sure you have no overlapping segments.": "Asegúrese de que no haya segmentos superpuestos.",
     "Ask on file open": "Preguntar al abrir el archivo",
-    "Ask about what to do when opening a new file when another file is already already open?": "Preguntar acerca de qué hacer cuando se abre un archivo nuevo cuando otro archivo ya está abierto?",
+    "Ask about what to do when opening a new file when another file is already already open?": "Preguntar qué hacer al abrir un nuevo archivo cuando ya hay otro abierto",
     "Ask about chapters": "Preguntar por los capítulos",
     "Ask about importing chapters from opened file?": "¿Preguntar acerca de la importación de capítulos desde un archivo abierto?",
     "Ask before closing": "Preguntar antes de cerrar",
@@ -371,8 +371,8 @@
     "Unable to move file to trash. Do you want to permanently delete it?": "Imposible mover el archivo a la papelera. ¿Desea eliminarlo permanentemente?",
     "Cleanup successful": "Limpieza realizada con éxito",
     "Cleaning up": "Limpieza",
-    "Advanced view disabled. You will now see only the most essential buttons and functions": "Vista avanzada desactivada. Ahora sólo verá los botones y funciones más esenciales",
-    "Advanced view has been enabled. You will now also see non-essential buttons and functions": "Se ha activado la vista avanzada. Ahora también verá botones y funciones no esenciales",
+    "Advanced view disabled. You will now see only the most essential buttons and functions": "Vista avanzada desactivada. Ahora solo verá los botones y funciones más esenciales.",
+    "Advanced view has been enabled. You will now also see non-essential buttons and functions": "Se ha activado la vista avanzada. Ahora también verá botones y funciones no esenciales.",
     "Export project": "Exportar proyecto",
     "DaVinci Resolve / Final Cut Pro XML": "DaVinci Resolve // Final Cut Pro XML",
     "Text chapters / YouTube": "Capítulos / YouTube",
@@ -837,6 +837,6 @@
     "Subtitles (SRT)": "Subtítulos (SRT)",
     "subtitle": "subtítulo",
     "Store next to media file": "Almacenar junto al archivo multimedia",
-    "The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.": "Falta la plantilla de nombre de archivo {{ext}} y dará como resultado un archivo sin la extensión sugerida. Esto puede resultar en un archivo de salida que no se puede reproducir.",
-    "The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}": "El archivo multimedia al que hace referencia el archivo del proyecto que intentó abrir no existe en la misma carpeta que el archivo del proyecto: {{mediaFileName}}"
+    "The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.": "A la plantilla del nombre del archivo le falta {{ext}} y dará como resultado un archivo sin la extensión sugerida. Esto puede dar lugar a un archivo de salida no se pueda reproducir.",
+    "The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}": "El archivo multimedia al que hace referencia el archivo de proyecto que ha intentado abrir no existe en el mismo directorio que el archivo del proyecto: {{mediaFileName}}"
 }
