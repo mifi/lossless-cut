@@ -830,10 +830,10 @@
     "Source file's time plus segment start cut time": "Hora del archivo de origen más hora de inicio del corte del segmento",
     "Some extra tracks have been discarded. You can change this option before merging.": "Se han descartado algunas pistas extras. Puede cambiar esta opción antes de la fusión.",
     "Sort items": "Ordenar elementos",
-    "Start current segment at current time": "Iniciar el segmento actual en el momento actual",
+    "Start current segment at current time": "Iniciar la sección actual en el momento actual",
     "Store in working directory": "Almacenar en la carpeta de trabajo",
     "Start of video": "Inicio del video",
-    "Start over": "Iniciar de nuevo",
+    "Start over": "Reanudar",
     "Subtitles (SRT)": "Subtítulos (SRT)",
     "subtitle": "subtítulo",
     "Store next to media file": "Almacenar junto al archivo multimedia"
