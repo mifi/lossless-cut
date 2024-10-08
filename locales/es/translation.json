@@ -824,5 +824,11 @@
     "Smart cut is experimental and will not work on all files.": "El corte inteligente es experimental y no funcionará con todos los archivos.",
     "Snapshot capture method": "Método de captura de instantánea",
     "Snapshots and frame extraction": "Captura de instantáneas y extracción de fotograma",
-    "Snapshot capture quality": "Calidad de captura de instantáneas"
+    "Snapshot capture quality": "Calidad de captura de instantáneas",
+    "Start": "Iniciar",
+    "Source file's time minus segment end cut time": "Duración del archivo fuente menos duración de corte final del segmento",
+    "Source file's time plus segment start cut time": "Duración del archivo fuente más duración de corte de inicio del segmento",
+    "Some extra tracks have been discarded. You can change this option before merging.": "Se han descartado algunas pistas extras. Puede cambiar esta opción antes de la fusión.",
+    "Sort items": "Ordenar elementos",
+    "Start current segment at current time": "Iniciar el segmento actual en el momento actual"
 }
