@@ -703,5 +703,7 @@
     "Frames extracted to: {{path}}": "Fotogramas extraídos en: {{path}}",
     "Output file name template results in duplicate file names (you are trying to export multiple files with the same name). You can fix this for example by adding the \"{{segNumVariable}}\" variable.": "La plantilla de nombre de archivo de salida da como resultado nombres de archivo duplicados (está intentando exportar varios archivos con el mismo nombre). Puede solucionar este problema, por ejemplo, agregando la variable \"{{segNumVariable}}\".",
     "Output file already exists, refusing to overwrite. You can turn on overwriting in settings.": "El archivo de salida ya existe y no se puede sobrescribir. Puede activar la sobrescritura en la configuración.",
-    "Output file name template": "Plantilla de nombre de archivo de salida"
+    "Output file name template": "Plantilla de nombre de archivo de salida",
+    "Output name(s):_other": "Nombre de archivos de salida:",
+    "Overwrite existing files": "Sobreescribir archivos existentes"
 }
