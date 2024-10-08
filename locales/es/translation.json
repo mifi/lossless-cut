@@ -761,11 +761,13 @@
     "Resulting segment file names_other": "Nombre de los archivos resultantes",
     "Save": "Guardar",
     "See <1>Help</1> menu for help": "Consulte <1>Ayuda</1> para ayuda adicional",
-    "Seek one key frame": "Buscar fotograma clave",
+    "Seek one key frame": "Buscar un fotograma clave",
     "Segment label (exact)": "Etiqueta de segmento (exacta)",
     "Segment label (regexp)": "Etiqueta de segmento (regexp)",
-    "Segment mode: \"{{mode1}}\" will create segments bounding the silent sections. \"{{mode2}}\" will create segments that start/stop at the center of each silent section.": "Modo de segmento: '{{mode1}}' creará segmentos que delimitan las secciones negras. '{{mode2}}' creará segmentos que comienzan/paran en el centro de cada sección negra.",
+    "Segment mode: \"{{mode1}}\" will create segments bounding the silent sections. \"{{mode2}}\" will create segments that start/stop at the center of each silent section.": "Modo de segmento: \"{{mode1}}\" creará segmentos que delimitan las secciones silenciosas. \"{{mode2}}\" creará segmentos que comienzan/se detienen en el centro de cada sección silenciosa.",
     "Seek one frame": "Buscar un fotograma",
     "Segment duration less than 5 seconds": "Duración del segmento inferior a 5 segundos.",
-    "Segment mode: \"{{mode1}}\" will create segments bounding the black sections. \"{{mode2}}\" will create segments that start/stop at the center of each black section.": "Modo de segmento: \"{{mode1}}\" creará segmentos que delimitan las secciones negras. \"{{mode2}}\" creará segmentos que comienzan/paran en el centro de cada sección negra."
+    "Segment mode: \"{{mode1}}\" will create segments bounding the black sections. \"{{mode2}}\" will create segments that start/stop at the center of each black section.": "Modo de segmento: \"{{mode1}}\" creará segmentos que delimitan las secciones negras. \"{{mode2}}\" creará segmentos que comienzan/paran en el centro de cada sección negra.",
+    "Segment starts after 01:00": "Segmento comienza después de las 01:00",
+    "Segment tag value": "Valor de la etiqueta del segmento"
 }
