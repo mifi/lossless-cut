@@ -770,7 +770,7 @@
     "Segment mode: \"{{mode1}}\" will create segments bounding the black sections. \"{{mode2}}\" will create segments that start/stop at the center of each black section.": "Modo de segmento: \"{{mode1}}\" creará segmentos que delimitan las secciones negras. \"{{mode2}}\" creará segmentos que comienzan/paran en el centro de cada sección negra.",
     "Segment starts after 01:00": "Segmento comienza después de las 01:00",
     "Segment tag value": "Valor de la etiqueta del segmento",
-    "Shift": "Mayúscula",
+    "Shift": "Cambiar",
     "Select only this segment": "Seleccionar sólo este segmento",
     "Set noise tolerance. Can be specified in dB (in case \"dB\" is appended to the specified value) or amplitude ratio. Default is -60dB, or 0.001.": "Establecer la tolerancia al ruido. Se puede especificar en dB (en caso de que se agregue \"dB\" al valor especificado) o en relación de amplitud. El valor predeterminado es -60 dB o 0,001.",
     "Set the minimum detected black duration expressed in seconds. It must be a non-negative floating point number.": "Establezcer la duración mínima de escenas en negro expresada en segundos. Debe ser un número de coma flotante no negativo.",
@@ -810,5 +810,16 @@
     "End": "Fin",
     "Enter a JavaScript expression which will be evaluated for each segment. Segments for which the expression evaluates to \"true\" will be selected. <1>View available syntax.</1>": "Introduzca una expresión de JavaScript que se evaluará para cada segmento. Se seleccionarán los segmentos para los que la expresión se evalúe como \"true\". <1>Ver sintaxis disponible.</1>",
     "Enable HEVC / H265 hardware decoding (you may need to turn this off if you have problems with HEVC files)": "Habilitar la decodificación de hardware HEVC/ H265 (puede ser necesario desactivarla si tiene problemas con los archivos HEVC)",
-    "Enabling this will allow faster playback of the exported file. This makes processing use 3 times as much export I/O, which is negligible for small files but might slow down exporting of large files.": "Habilitar esto permitirá una reproducción más rápida del archivo exportado. Esto hace que el procesamiento utilice 3 veces más E/S de exportación, lo cual es insignificante para archivos pequeños pero puede ralentizar la exportación de archivos grandes."
+    "Enabling this will allow faster playback of the exported file. This makes processing use 3 times as much export I/O, which is negligible for small files but might slow down exporting of large files.": "Habilitar esto permitirá una reproducción más rápida del archivo exportado. Esto hace que el procesamiento utilice 3 veces más E/S de exportación, lo cual es insignificante para archivos pequeños pero puede ralentizar la exportación de archivos grandes.",
+    "Shift all segments on timeline": "Cambiar todos los segmentos en la línea de tiempo",
+    "Show GPS map": "Mostrar mapa GPS",
+    "Show informational in-app notifications": "Mostrar notificaciones informativas dentro de la aplicación",
+    "Shuffle segments order": "Orden aleatorio de segmentos",
+    "Shift all start times": "Cambiar todos los tiempos de inicio",
+    "Show advanced settings": "Mostrar configuración avanzada",
+    "Show notifications": "Mostrar notificaciones",
+    "Show this dialog every time?": "Mostrar este cuadro de diálogo cada vez",
+    "Smart cut auto detect bitrate": "Corte inteligente con detección automática de tasa de bits",
+    "Smart cut (experimental):": "Corte inteligente (experimental):",
+    "Smart cut is experimental and will not work on all files.": "Corte inteligente es experimental y no funcionará en todos los archivos."
 }
