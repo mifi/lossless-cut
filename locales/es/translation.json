@@ -821,5 +821,8 @@
     "Show this dialog every time?": "Mostrar este cuadro de diálogo cada vez",
     "Smart cut auto detect bitrate": "Corte inteligente con detección automática de tasa de bits",
     "Smart cut (experimental):": "Corte inteligente (experimental):",
-    "Smart cut is experimental and will not work on all files.": "Corte inteligente es experimental y no funcionará en todos los archivos."
+    "Smart cut is experimental and will not work on all files.": "Corte inteligente es experimental y no funcionará en todos los archivos.",
+    "Snapshot capture method": "Método de captura de instantánea",
+    "Snapshots and frame extraction": "Captura de instantáneas y extracción de fotograma",
+    "Snapshot capture quality": "Calidad de captura de instantáneas"
 }
