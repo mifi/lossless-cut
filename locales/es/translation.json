@@ -705,5 +705,14 @@
     "Output file already exists, refusing to overwrite. You can turn on overwriting in settings.": "El archivo de salida ya existe y no se puede sobrescribir. Puede activar la sobrescritura en la configuración.",
     "Output file name template": "Plantilla del nombre del archivo de salida",
     "Output name(s):_other": "Nombre de archivos de salida:",
-    "Overwrite existing files": "Sobreescribir archivos existentes"
+    "Overwrite existing files": "Sobreescribir archivos existentes",
+    "Play": "Reproducir",
+    "Permanently delete the files if trash fails?": "Eliminar de forma permanente los archivos si falla la papelera",
+    "Play selected segments in order": "Reproducir segmentos seleccionados en orden",
+    "Play/pause (no reset speed)": "Reproducir/Pausa (sin cambiar la velocidad)",
+    "Pause": "Pausa",
+    "Play current segment once": "Reproducir segmento actual una vez",
+    "Overwrite files when exporting, if a file with the same name as the output file name exists?": "Sobrescribir archivos al exportar, si existe un archivo con el mismo nombre que el nombre del archivo de salida",
+    "Overwrite output setting is disabled and some files might have been skipped.": "La configuración de sobrescritura de salida está deshabilitada y es posible que se hayan omitido algunos archivos.",
+    "Playback rate": "Velocidad de reproducción"
 }
