@@ -999,9 +999,13 @@ function App() {
 
       console.log('outSegTemplateOrDefault', outSegTemplateOrDefault);
 
+      const notices: string[] = [];
+      const warnings: string[] = [];
+
       const { fileNames: outSegFileNames, problems: outSegProblems } = await generateOutSegFileNames({ segments: segmentsToExport, template: outSegTemplateOrDefault });
       if (outSegProblems.error != null) {
         console.warn('Output segments file name invalid, using default instead', outSegFileNames);
+        warnings.push(t('Fell back to default output file name'), outSegProblems.error);
       }
 
       // throw (() => { const err = new Error('test'); err.code = 'ENOENT'; return err; })();
@@ -1044,6 +1048,7 @@ function App() {
         const { fileNames, problems } = await generateMergedFileNames({ template: mergedFileTemplateOrDefault });
         if (problems.error != null) {
           console.warn('Merged file name invalid, using default instead', fileNames[0]);
+          warnings.push(t('Fell back to default output file name'), problems.error);
         }
 
         const [fileName] = fileNames;
@@ -1064,9 +1069,6 @@ function App() {
           mergedOutFilePath,
         });
       }
-
-      const notices = [];
-      const warnings = [];
 
       if (!enableOverwriteOutput) warnings.push(i18n.t('Overwrite output setting is disabled and some files might have been skipped.'));
 
