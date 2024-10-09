@@ -234,7 +234,7 @@
     "Track has been extracted": "トラックは抽出されました",
     "Extracting track": "トラックの抽出中",
     "Unsupported file": "未対応のファイル",
-    "This file does not have a valid duration. This may cause issues. You can try to fix the file's duration from the File menu": "このファイルは正しい長さではありません。問題を起こすことがあります。メニューから長さを修正してください",
+    "This file does not have a valid duration. This may cause issues. You can try to fix the file's duration from the File menu": "ファイルの再生時間が正しくないです。問題の原因になることがあります。メニューから動画の長さを修正してください",
     "The audio track is not supported. You can convert to a supported format from the menu": "この音声トラックには未対応です。メニューから対応形式に変換してください。",
     "Unable to determine file format": "ファイル形式の検出に失敗",
     "Failed to load segments": "セグメントの読み込み失敗",
@@ -891,8 +891,8 @@
     "More settings": "より多くの設定項目",
     "Losslessly download a whole media file from the specified URL, mux it into an mkv file and open it in LosslessCut. This can be useful if you need to download a video from a website, e.g. a HLS streaming video. For example in Chrome you can open Developer Tools and view the network traffic, find the playlist (e.g. m3u8) and copy paste its URL here.": "指定のURLからメディアファイル全体を無劣化でダウンロードし、mkvファイルへと多重化 (mux) し LosslessCut で開きます。これはHLSストリーミング動画など、サイトからの動画のダウンロードに便利です。たとえばChromeでは、デベロッパーツールを開いてネットワークのアクセス状況を表示し、再生リスト (m3u8など) を見つけて、そのURLをここにコピーし貼り付けします。",
     "Downloading URL": "URLからダウンロード中",
-    "Segment mode: \"{{mode1}}\" will create segments bounding the black sections. \"{{mode2}}\" will create segments that start/stop at the center of each black section.": "セグメント種別 (仮翻訳): {{mode1}}は暗い部分を囲むセグメントを作成。{{mode2}}は暗い部分の中心で開始/停止するセグメントを作成。",
-    "Segment mode: \"{{mode1}}\" will create segments bounding the silent sections. \"{{mode2}}\" will create segments that start/stop at the center of each silent section.": "セグメント種別 (仮翻訳): {{mode1}}は無音部分を囲むセグメントを作成。{{mode2}}は無音部分の中心で開始/停止するセグメントを作成。",
+    "Segment mode: \"{{mode1}}\" will create segments bounding the black sections. \"{{mode2}}\" will create segments that start/stop at the center of each black section.": "セグメント種別: {{mode1}}は暗い部分のセグメントを作成。{{mode2}}は暗い部分で開始/停止するセグメントを作成。",
+    "Segment mode: \"{{mode1}}\" will create segments bounding the silent sections. \"{{mode2}}\" will create segments that start/stop at the center of each silent section.": "セグメント種別: {{mode1}}は無音部分のセグメントを作成。{{mode2}}は無音部分で開始/停止するセグメントを作成。",
     "Configuration file": "設定ファイル",
     "Combination is already bound to \"{{alreadyBoundKey}}\". Do you want to replace the existing binding?": "この組み合わせは既に「{{alreadyBoundKey}}」に割り当て済みです。代わりにここに割り当てますか？",
     "Failed to import project file": "プロジェクトファイルのインポートに失敗",
@@ -911,5 +911,9 @@
     "There is a known issue in FFmpeg with cutting FLAC files. The file will be re-encoded, which is still lossless, but the export may be slower.": "FLACファイルの切り取りについて、FFmpegに既知の問題があります。可逆圧縮のままファイルは再エンコードされますが、出力時間が遅くなる可能性があります。",
     "You can customize the file name of the merged file using special variables.": "特殊変数を使い、結合後のファイル名を指定できます。",
     "This file contains an audio track that FFmpeg is unable to mux into the MP4 format, so MOV has been auto-selected as the default output format.": "FFmpegは、このファイルに含まれる音声トラックをMP4形式で多重化できないため、標準の出力形式として、MOVが自動選択されました。",
-    "Preserve metadata": "メタデータを保持"
+    "Preserve metadata": "メタデータを保持",
+    "Non-global": "非グローバル",
+    "Whether to preserve chapters from source file.": "入力ファイルのチャプターを保持するか。",
+    "Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied": "入力ファイルのメタデータを保持するか。初期値: グローバル (ファイルのメタデータ)、トラック単位とチャプター単位のメタデータをコピーします。非グローバル: トラック単位とチャプター単位のメタデータのみをコピーします。なし: メタデータをコピーしません",
+    "You are not allowed to write the output file. This probably means that the file already exists with the wrong permissions, or you don't have write permissions to the output folder.": "出力ファイルへの書き込みが許可されていません。おそらく、そのファイルに誤った許可が与えられているか、その出力フォルダへの書き込み権限がないということです。"
 }
