@@ -238,7 +238,7 @@
     "The audio track is not supported. You can convert to a supported format from the menu": "この音声トラックには未対応です。メニューから対応形式に変換してください。",
     "Unable to determine file format": "ファイル形式の検出に失敗",
     "Failed to load segments": "セグメントの読み込み失敗",
-    "No valid segments found": "有効なセグメントはありません",
+    "No valid segments found": "該当するセグメントはありません",
     "No segment to split. Please move cursor over the segment you want to split": "分割するセグメントなし。分割したいセグメント上にカーソルを合わせてください。",
     "Start time must be before end time": "開始位置は終了位置より前に指定してください",
     "Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, see the HELP page.": "完了! 切り取り箇所が不正確なことがあります。元ファイルの削除前に、好きなプレイヤーやエディタで出力ファイルを確認してください。出力ファイルがおかしければ、ヘルプを参照。",
@@ -905,10 +905,11 @@
     "Replace": "置き換える",
     "Seek one frame": "1フレームをシーク",
     "Seek one key frame": "1キーフレームをシーク",
-    "Preserve chapters": "チャプターを保存",
+    "Preserve chapters": "チャプターを保持",
     "Smart cut is experimental and will not work on all files.": "スマート切り取りは試験段階なので、一部のファイルでしか成功しません。",
     "Minimum numeric padded length": "数値の桁数",
     "There is a known issue in FFmpeg with cutting FLAC files. The file will be re-encoded, which is still lossless, but the export may be slower.": "FLACファイルの切り取りについて、FFmpegに既知の問題があります。可逆圧縮のままファイルは再エンコードされますが、出力時間が遅くなる可能性があります。",
     "You can customize the file name of the merged file using special variables.": "特殊変数を使い、結合後のファイル名を指定できます。",
-    "This file contains an audio track that FFmpeg is unable to mux into the MP4 format, so MOV has been auto-selected as the default output format.": "FFmpegは、このファイルに含まれる音声トラックをMP4形式で多重化できないため、標準の出力形式として、MOVが自動選択されました。"
+    "This file contains an audio track that FFmpeg is unable to mux into the MP4 format, so MOV has been auto-selected as the default output format.": "FFmpegは、このファイルに含まれる音声トラックをMP4形式で多重化できないため、標準の出力形式として、MOVが自動選択されました。",
+    "Preserve metadata": "メタデータを保持"
 }
