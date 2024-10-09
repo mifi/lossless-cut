@@ -528,7 +528,7 @@
     "Shift all segments on the timeline by this amount. Negative values will be shifted back, while positive value will be shifted forward in time.": "Desplace todos los segmentos en la línea de tiempo en esta cantidad. Los valores negativos se desplazarán hacia atrás, mientras que los valores positivos se desplazarán hacia adelante en el tiempo.",
     "Store project file (.llc) in the working directory or next to loaded media file?": "Guarde el archivo del proyecto (.llc) en la carpeta de trabajo o junto al archivo multimedia cargado",
     "This allows you to specify custom FFmpeg and FFprobe binaries to use. Make sure the \"ffmpeg\" and \"ffprobe\" executables exist in the same directory, and then select the directory.": "Le permite especificar binarios personalizados de FFmpeg y FFprobe para usar. Asegúrese de que los ejecutables \"ffmpeg\" y \"ffprobe\" estén en la misma carpeta y luego seleccione la carpeta.",
-    "A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.": "Se ha detectado una discrepancia en al menos un archivo. Puede continuar, pero el archivo resultante podría no ser reproducible.",
+    "A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.": "Se detectó una discrepancia en al menos un archivo. Puede continuar, pero es posible que el archivo resultante no se pueda reproducir.",
     "Add the file to the batch list": "Añadir el archivo a la lista de lotes",
     "<0></0> to show advanced view": "Para mostrar vista avanzada <0></0>",
     "<0></0> to show simple view": "Para mostrar vista simple <0></0>",
