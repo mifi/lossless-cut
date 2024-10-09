@@ -552,7 +552,7 @@
     "Options": "Opciones",
     "Files merged with warning(s)_one": "Archivos fusionados con una advertencia",
     "Loop beginning and end of current segment": "Bucle al principio y final del segmento actual",
-    "At least one resulting file name has no length": "Al menos un nombre de archivo resultante no tiene longitud",
+    "At least one resulting file name has no length": "Al menos un nombre del archivo resultante no tiene longitud",
     "Capture every single frame as an image": "Capturar cada fotograma como una imagen",
     "Capture exactly one image every nth frame": "Capturar exactamente una imagen cada n fotograma",
     "Close current file": "Cerrar archivo actual",
