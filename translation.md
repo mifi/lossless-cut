@@ -33,7 +33,7 @@
 
 Thanks to everyone who helped translate the app! 🙌
 
-View a status of [all translations here](https://hosted.weblate.org/projects/losslesscut/losslesscut/). You are welcome to help translate the app in [Weblate](https://hosted.weblate.org/projects/losslesscut/losslesscut/). Weblate will automatically push translations as a Pull Request in this repo, but this PR is not merged immediately by maintainers.
+View a status of [all translations here](https://hosted.weblate.org/projects/losslesscut/losslesscut/). You are welcome to help translate the app in [Weblate](https://hosted.weblate.org/projects/losslesscut/losslesscut/). **Do not submit a PR** yourself with translations. Weblate will automatically push translations as a Pull Request in this repo, but this PR is not merged immediately by maintainers.
 
 Master language is English and i18n keys are the English strings.
 
