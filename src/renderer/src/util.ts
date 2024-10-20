@@ -366,27 +366,39 @@ export async function withErrorHandling(operation: () => Promise<void>, errorMsg
 
 export async function checkAppPath() {
   try {
-    const forceCheck = false;
-    // const forceCheck = isDev;
+    const forceCheckMs = false;
+    const forceCheckTitle = false;
     // this code is purposefully obfuscated to try to detect the most basic cloned app submissions to the MS Store
-    if (!isWindowsStoreBuild && !forceCheck) return;
     // eslint-disable-next-line no-useless-concat, one-var, one-var-declaration-per-line
-    const mf = 'mi' + 'fi.no', llc = 'Los' + 'slessC' + 'ut';
-    const appPath = isDev ? 'C:\\Program Files\\WindowsApps\\37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84' : remote.app.getAppPath();
-    const pathMatch = appPath.replaceAll('\\', '/').match(/Windows ?Apps\/([^/]+)/); // find the first component after WindowsApps
-    // example pathMatch: 37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84
-    if (!pathMatch) {
-      console.warn('Unknown path match', appPath);
-      return;
+    const mf = 'mi' + 'fi.no', ap = 'Los' + 'slessC' + 'ut';
+    let payload: string | undefined;
+    if (isWindowsStoreBuild || (isDev && forceCheckMs)) {
+      const appPath = isDev ? 'C:\\Program Files\\WindowsApps\\37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84' : remote.app.getAppPath();
+      const pathMatch = appPath.replaceAll('\\', '/').match(/Windows ?Apps\/([^/]+)/); // find the first component after WindowsApps
+      // example pathMatch: 37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84
+      if (!pathMatch) {
+        console.warn('Unknown path match', appPath);
+        return;
+      }
+      const pathSeg = pathMatch[1];
+      if (pathSeg == null) return;
+      if (pathSeg.startsWith(`57275${mf}.${ap}_`)) return;
+      // this will report the path and may return a msg
+      payload = `msstore-app-id:${pathSeg}`;
+      // and non ms store fakes:)
+    } else if (isMac || isWindows || (isDev && forceCheckTitle)) {
+      const { title } = document;
+      if (!title.includes(ap)) {
+        payload = `app-title:${title}`;
+      }
     }
-    const pathSeg = pathMatch[1];
-    if (pathSeg == null) return;
-    if (pathSeg.startsWith(`57275${mf}.${llc}_`)) return;
-    // this will report the path and may return a msg
-    const url = `https://losslesscut-analytics.mifi.no/${pathSeg.length}/${encodeURIComponent(btoa(pathSeg))}`;
-    // console.log('Reporting app', pathSeg, url);
-    const response = await ky(url).json<{ invalid?: boolean, title: string, text: string }>();
-    if (response.invalid) toast.fire({ timer: 60000, icon: 'error', title: response.title, text: response.text });
+
+    if (payload) {
+      const url = `https://losslesscut-analytics.mifi.no/${payload.length}/${encodeURIComponent(btoa(payload))}`;
+      // console.log('Reporting app', pathSeg, url);
+      const response = await ky(url).json<{ invalid?: boolean, title: string, text: string }>();
+      if (response.invalid) toast.fire({ timer: 60000, icon: 'error', title: response.title, text: response.text });
+    }
   } catch (err) {
     if (isDev) console.warn(err instanceof Error && err.message);
   }

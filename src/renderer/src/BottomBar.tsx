@@ -287,7 +287,7 @@ function BottomBar({
     if (newRate != null) setOutputPlaybackRate(newRate);
   }, [detectedFps, outputPlaybackRate, setOutputPlaybackRate]);
 
-  function renderJumpCutpointButton(direction) {
+  function renderJumpCutpointButton(direction: number) {
     const newIndex = currentSegIndexSafe + direction;
     const seg = cutSegments[newIndex];
 
