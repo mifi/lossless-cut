@@ -380,34 +380,6 @@ function ExportConfirm({
 
                         <tr>
                           <td>
-                            {t('Preserve chapters')}
-                          </td>
-                          <td>
-                            <Switch checked={preserveChapters} onCheckedChange={togglePreserveChapters} />
-                          </td>
-                          <td>
-                            <HelpIcon onClick={onPreserveChaptersPress} />
-                          </td>
-                        </tr>
-
-                        <tr>
-                          <td>
-                            {t('Preserve metadata')}
-                          </td>
-                          <td>
-                            <Select value={preserveMetadata} onChange={(e) => setPreserveMetadata(e.target.value as PreserveMetadata)} style={{ height: 20, marginLeft: 5 }}>
-                              <option value={'default' as PreserveMetadata}>{t('Default')}</option>
-                              <option value={'none' satisfies PreserveMetadata}>{t('None')}</option>
-                              <option value={'nonglobal' satisfies PreserveMetadata}>{t('Non-global')}</option>
-                            </Select>
-                          </td>
-                          <td>
-                            <HelpIcon onClick={onPreserveMetadataHelpPress} />
-                          </td>
-                        </tr>
-
-                        <tr>
-                          <td>
                             {t('Preserve all MP4/MOV metadata?')}
                             {isIpod && preserveMovData && <div style={warningStyle}>{t('For the ipod format, it is recommended to deactivate this option')}</div>}
                           </td>
@@ -424,6 +396,34 @@ function ExportConfirm({
                         </tr>
                       </>
                     )}
+
+                    <tr>
+                      <td>
+                        {t('Preserve chapters')}
+                      </td>
+                      <td>
+                        <Switch checked={preserveChapters} onCheckedChange={togglePreserveChapters} />
+                      </td>
+                      <td>
+                        <HelpIcon onClick={onPreserveChaptersPress} />
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td>
+                        {t('Preserve metadata')}
+                      </td>
+                      <td>
+                        <Select value={preserveMetadata} onChange={(e) => setPreserveMetadata(e.target.value as PreserveMetadata)} style={{ height: 20, marginLeft: 5 }}>
+                          <option value={'default' as PreserveMetadata}>{t('Default')}</option>
+                          <option value={'none' satisfies PreserveMetadata}>{t('None')}</option>
+                          <option value={'nonglobal' satisfies PreserveMetadata}>{t('Non-global')}</option>
+                        </Select>
+                      </td>
+                      <td>
+                        <HelpIcon onClick={onPreserveMetadataHelpPress} />
+                      </td>
+                    </tr>
 
                     {willMerge && (
                       <>
