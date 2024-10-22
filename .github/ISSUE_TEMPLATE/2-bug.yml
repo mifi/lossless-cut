@@ -20,7 +20,8 @@ body:
       label: Operating System
       description: Which operating system are you running?
       options:
-        - I don't want to say
+        - MacOS 15
+        - MacOS 14
         - MacOS 13
         - MacOS 12
         - MacOS 11
