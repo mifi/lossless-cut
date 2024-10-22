@@ -15,6 +15,9 @@ export const segSuffixVariable = 'SEG_SUFFIX';
 export const extVariable = 'EXT';
 export const segTagsVariable = 'SEG_TAGS';
 
+// I don't remember why I set it to 200, but on Windows max length seems to be 256, on MacOS it seems to be 255.
+export const maxFileNameLength = 200;
+
 const { parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, basename }: PlatformPath = window.require('path');
 
 
@@ -104,7 +107,9 @@ function getTemplateProblems({ fileNames, filePath, outputDir, safeOutputFileNam
 // eslint-disable-next-line no-template-curly-in-string
 export const defaultOutSegTemplate = '${FILENAME}-${CUT_FROM}-${CUT_TO}${SEG_SUFFIX}${EXT}';
 // eslint-disable-next-line no-template-curly-in-string
-export const defaultMergedFileTemplate = '${FILENAME}-cut-merged-${EPOCH_MS}${EXT}';
+export const defaultCutMergedFileTemplate = '${FILENAME}-cut-merged-${EPOCH_MS}${EXT}';
+// eslint-disable-next-line no-template-curly-in-string
+export const defaultMergedFileTemplate = '${FILENAME}-merged-${EPOCH_MS}${EXT}';
 
 async function interpolateOutFileName(template: string, { epochMs, inputFileNameWithoutExt, ext, segSuffix, segNum, segNumPadded, segLabel, cutFrom, cutTo, tags }: {
   epochMs: number,
@@ -151,7 +156,7 @@ function maybeTruncatePath(fileName: string, truncate: boolean) {
   return [
     ...rest,
     // If sanitation is enabled, make sure filename (last seg of the path) is not too long
-    truncate ? lastSeg!.slice(0, 200) : lastSeg,
+    truncate ? lastSeg!.slice(0, maxFileNameLength) : lastSeg,
   ].join(pathSep);
 }
 
@@ -223,17 +228,16 @@ export type GenerateOutFileNames = (a: { template: string }) => Promise<{
   },
 }>;
 
-export async function generateMergedFileNames({ template: desiredTemplate, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName }: {
+export async function generateMergedFileNames({ template: desiredTemplate, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, epochMs = Date.now() }: {
   template: string,
   isCustomFormatSelected: boolean,
   fileFormat: string,
   filePath: string,
   outputDir: string,
   safeOutputFileName: boolean,
+  epochMs?: number,
 }) {
   async function generate(template: string) {
-    const epochMs = Date.now();
-
     const { name: inputFileNameWithoutExt } = parsePath(filePath);
 
     const fileName = await interpolateOutFileName(template, {
@@ -249,7 +253,7 @@ export async function generateMergedFileNames({ template: desiredTemplate, isCus
 
   const problems = getTemplateProblems({ fileNames: [fileName], filePath, outputDir, safeOutputFileName });
   if (problems.error != null) {
-    fileName = await generate(defaultMergedFileTemplate);
+    fileName = await generate(defaultCutMergedFileTemplate);
   }
 
   return { fileNames: [fileName], problems };

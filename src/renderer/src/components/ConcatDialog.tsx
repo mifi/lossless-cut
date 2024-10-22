@@ -13,11 +13,12 @@ import useFileFormatState from '../hooks/useFileFormatState';
 import OutputFormatSelect from './OutputFormatSelect';
 import useUserSettings from '../hooks/useUserSettings';
 import { isMov } from '../util/streams';
-import { getOutFileExtension, getSuffixedFileName } from '../util';
+import { getOutDir, getOutFileExtension } from '../util';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../../ffprobe';
 import Sheet from './Sheet';
 import TextInput from './TextInput';
 import Button from './Button';
+import { defaultMergedFileTemplate, generateMergedFileNames, maxFileNameLength } from '../util/outputNameTemplate';
 
 const { basename } = window.require('path');
 
@@ -36,7 +37,7 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
   isShown: boolean, onHide: () => void, paths: string[], onConcat: (a: { paths: string[], includeAllStreams: boolean, streams: FFprobeStream[], outFileName: string, fileFormat: string, clearBatchFilesAfterConcat: boolean }) => Promise<void>, alwaysConcatMultipleFiles: boolean, setAlwaysConcatMultipleFiles: (a: boolean) => void,
 }) {
   const { t } = useTranslation();
-  const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge } = useUserSettings();
+  const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, safeOutputFileName, customOutDir } = useUserSettings();
 
   const [includeAllStreams, setIncludeAllStreams] = useState(false);
   const [fileMeta, setFileMeta] = useState<{ format: FFprobeFormat, streams: FFprobeStream[], chapters: FFprobeChapter[] }>();
@@ -80,16 +81,32 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
   }, [firstPath, isShown, setDetectedFileFormat, setFileFormat]);
 
   useEffect(() => {
-    if (fileFormat == null || firstPath == null) {
+    if (fileFormat == null || firstPath == null || uniqueSuffix == null) {
       setOutFileName(undefined);
       return;
     }
     const ext = getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath: firstPath });
+    const outputDir = getOutDir(customOutDir, firstPath);
+
     setOutFileName((existingOutputName) => {
-      if (existingOutputName == null) return getSuffixedFileName(firstPath, `merged-${uniqueSuffix}${ext}`);
-      return existingOutputName.replace(/(\.[^.]*)?$/, ext); // make sure the last (optional) .* is replaced by .ext`
+      // here we only generate the file name the first time. Then the user can edit it manually as they please in the text input field.
+      // todo allow user to edit template instead of this "hack"
+      if (existingOutputName == null) {
+        (async () => {
+          const generated = await generateMergedFileNames({ template: defaultMergedFileTemplate, isCustomFormatSelected, fileFormat, filePath: firstPath, outputDir, safeOutputFileName, epochMs: uniqueSuffix });
+          // todo show to user more errors?
+          const [fileName] = generated.fileNames;
+          invariant(fileName != null);
+          setOutFileName(fileName);
+        })();
+        return existingOutputName; // async later (above)
+      }
+
+      // in case the user has chosen a different output format:
+      // make sure the last (optional) .* is replaced by .ext`
+      return existingOutputName.replace(/(\.[^.]*)?$/, ext);
     });
-  }, [fileFormat, firstPath, isCustomFormatSelected, uniqueSuffix]);
+  }, [customOutDir, fileFormat, firstPath, isCustomFormatSelected, safeOutputFileName, uniqueSuffix]);
 
   const allFilesMeta = useMemo(() => {
     if (paths.length === 0) return undefined;
@@ -97,7 +114,8 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
     return filtered.length === paths.length ? filtered : undefined;
   }, [allFilesMetaCache, paths]);
 
-  const isOutFileNameValid = outFileName != null && outFileName.length > 0;
+  const isOutFileNameTooLong = outFileName != null && outFileName.length > maxFileNameLength;
+  const isOutFileNameValid = outFileName != null && outFileName.length > 0 && !isOutFileNameTooLong;
 
   const problemsByFile = useMemo(() => {
     if (!allFilesMeta) return {};
@@ -209,8 +227,14 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
         <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end', marginBottom: '1em' }}>
           <div style={{ marginRight: '.5em' }}>{t('Output file name')}:</div>
           <TextInput value={outFileName || ''} onChange={(e) => setOutFileName(e.target.value)} />
-          <Button disabled={detectedFileFormat == null || !isOutFileNameValid} onClick={onConcatClick} style={{ fontSize: '1.3em', padding: '0 .3em', marginLeft: '1em' }}><AiOutlineMergeCells style={{ fontSize: '1.4em', verticalAlign: 'middle' }} /> {t('Merge!')}</Button>
+          <Button disabled={detectedFileFormat == null || !isOutFileNameValid} onClick={onConcatClick} style={{ fontSize: '1.3em', padding: '0 .3em', marginLeft: '1em' }}>
+            <AiOutlineMergeCells style={{ fontSize: '1.4em', verticalAlign: 'middle' }} /> {t('Merge!')}
+          </Button>
         </div>
+
+        {isOutFileNameTooLong && (
+          <Alert text={t('File name is too long and cannot be exported.')} />
+        )}
 
         {enableReadFileMeta && (!allFilesMeta || Object.values(problemsByFile).length > 0) && (
           <Alert text={t('A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.')} />

@@ -11,3 +11,8 @@
   border: .05em solid var(--gray7);
   cursor: pointer;
 }
+
+.button:disabled {
+  opacity: .5;
+  cursor: initial;
+}

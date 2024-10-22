@@ -82,7 +82,7 @@ import { askForOutDir, askForImportChapters, promptTimecode, askForFileOpenActio
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { findSegmentsAtCursor, sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, playOnlyCurrentSegment, getSegmentTags } from './segments';
-import { generateOutSegFileNames as generateOutSegFileNamesRaw, generateMergedFileNames as generateMergedFileNamesRaw, defaultOutSegTemplate, defaultMergedFileTemplate } from './util/outputNameTemplate';
+import { generateOutSegFileNames as generateOutSegFileNamesRaw, generateMergedFileNames as generateMergedFileNamesRaw, defaultOutSegTemplate, defaultCutMergedFileTemplate } from './util/outputNameTemplate';
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 import BigWaveform from './components/BigWaveform';
 
@@ -193,7 +193,7 @@ function App() {
   }, [customFfPath]);
 
   const outSegTemplateOrDefault = outSegTemplate || defaultOutSegTemplate;
-  const mergedFileTemplateOrDefault = mergedFileTemplate || defaultMergedFileTemplate;
+  const mergedFileTemplateOrDefault = mergedFileTemplate || defaultCutMergedFileTemplate;
 
   useEffect(() => {
     const l = language || fallbackLng;
