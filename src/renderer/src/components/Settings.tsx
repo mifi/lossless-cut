@@ -257,7 +257,7 @@ function Settings({
             <Row>
               <KeyCell>{t('Set file modification date/time of output files to:')}</KeyCell>
               <td>
-                <Select value={treatOutputFileModifiedTimeAsStart ? String(treatOutputFileModifiedTimeAsStart) : 'disabled'} onChange={(e) => setTreatOutputFileModifiedTimeAsStart(e.target.value === 'disabled' ? null : (e.target.value === 'true'))}>
+                <Select value={typeof treatOutputFileModifiedTimeAsStart === 'boolean' ? String(treatOutputFileModifiedTimeAsStart) : 'disabled'} onChange={(e) => setTreatOutputFileModifiedTimeAsStart(e.target.value === 'disabled' ? null : (e.target.value === 'true'))}>
                   <option value="disabled">{t('Current time')}</option>
                   <option value="true">{t('Source file\'s time plus segment start cut time')}</option>
                   <option value="false">{t('Source file\'s time minus segment end cut time')}</option>
