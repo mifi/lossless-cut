@@ -132,14 +132,18 @@ function FileNameTemplateEditor(opts: {
 
   return (
     <motion.div style={{ maxWidth: 600 }} animate={{ margin: needToShow ? '1.5em 0' : '0 0 .3em 0' }}>
-      <div>{fileNames != null && (mergeMode ? t('Merged output file name:') : t('Output name(s):', { count: fileNames.length }))}</div>
-
       {fileNames != null && (
-        <HighlightedText role="button" onClick={onShowClick} style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>
-          {/* eslint-disable-next-line react/destructuring-assignment */}
-          {('currentSegIndexSafe' in opts ? fileNames[opts.currentSegIndexSafe] : undefined) || fileNames[0] || '-'}
-          {!needToShow && <FaEdit style={{ fontSize: '.9em', marginLeft: '.4em', verticalAlign: 'middle' }} />}
-        </HighlightedText>
+        <>
+          <div>{(mergeMode ? t('Merged output file name:') : t('Output name(s):', { count: fileNames.length }))}</div>
+
+          <div style={{ marginBottom: '.3em' }}>
+            <HighlightedText role="button" onClick={onShowClick} style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>
+              {/* eslint-disable-next-line react/destructuring-assignment */}
+              {('currentSegIndexSafe' in opts ? fileNames[opts.currentSegIndexSafe] : undefined) || fileNames[0] || '-'}
+              {!needToShow && <FaEdit style={{ fontSize: '.9em', marginLeft: '.4em', verticalAlign: 'middle' }} />}
+            </HighlightedText>
+          </div>
+        </>
       )}
 
       <AnimatePresence>
@@ -147,7 +151,7 @@ function FileNameTemplateEditor(opts: {
           <motion.div
             key="1"
             initial={{ opacity: 0, height: 0, marginTop: 0 }}
-            animate={{ opacity: 1, height: 'auto', marginTop: '1em' }}
+            animate={{ opacity: 1, height: 'auto', marginTop: '.5em' }}
             exit={{ opacity: 0, height: 0, marginTop: 0 }}
           >
             <div style={{ color: 'var(--gray11)', fontSize: '.8em' }}>{t('Output file name template')}:</div>
@@ -169,29 +173,9 @@ function FileNameTemplateEditor(opts: {
               ))}
             </div>
 
-            {problems.error != null && (
-              <div style={{ marginBottom: '1em' }}>
-                <ErrorIcon color="var(--red9)" size={14} verticalAlign="baseline" /> {problems.error}
-              </div>
-            )}
-
-            {problems.error == null && problems.sameAsInputFileNameWarning && (
-              <div style={{ marginBottom: '1em' }}>
-                <WarningSignIcon verticalAlign="middle" color="var(--amber9)" />{' '}
-                {i18n.t('Output file name is the same as the source file name. This increases the risk of accidentally overwriting or deleting source files!')}
-              </div>
-            )}
-
-            {isMissingExtension && (
-              <div style={{ marginBottom: '1em' }}>
-                <WarningSignIcon verticalAlign="middle" color="var(--amber9)" />{' '}
-                {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVariableFormatted })}
-              </div>
-            )}
-
             {hasTextNumericPaddedValue && (
               <div style={{ marginBottom: '.3em' }}>
-                <Select value={outputFileNameMinZeroPadding} onChange={(e) => setOutputFileNameMinZeroPadding(parseInt(e.target.value, 10))} style={{ marginRight: '1em', fontSize: '1em' }}>
+                <Select value={outputFileNameMinZeroPadding} onChange={(e) => setOutputFileNameMinZeroPadding(parseInt(e.target.value, 10))} style={{ marginRight: '.5em', fontSize: '1em' }}>
                   {Array.from({ length: 10 }).map((_v, i) => i + 1).map((v) => <option key={v} value={v}>{v}</option>)}
                 </Select>
                 {t('Minimum numeric padded length')}
@@ -207,6 +191,28 @@ function FileNameTemplateEditor(opts: {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {problems.error != null ? (
+        <div style={{ marginBottom: '1em' }}>
+          <ErrorIcon color="var(--red9)" size={14} verticalAlign="baseline" /> {problems.error}
+        </div>
+      ) : (
+        <>
+          {problems.sameAsInputFileNameWarning && (
+            <div style={{ marginBottom: '1em' }}>
+              <WarningSignIcon verticalAlign="middle" color="var(--amber9)" />{' '}
+              {i18n.t('Output file name is the same as the source file name. This increases the risk of accidentally overwriting or deleting source files!')}
+            </div>
+          )}
+
+          {isMissingExtension && (
+            <div style={{ marginBottom: '1em' }}>
+              <WarningSignIcon verticalAlign="middle" color="var(--amber9)" />{' '}
+              {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVariableFormatted })}
+            </div>
+          )}
+        </>
+      )}
     </motion.div>
   );
 }
