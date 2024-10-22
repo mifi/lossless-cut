@@ -63,6 +63,7 @@ function ExportConfirm({
   smartCutBitrate,
   setSmartCutBitrate,
   toggleSettings,
+  outputPlaybackRate,
 } : {
   areWeCutting: boolean,
   selectedSegments: InverseCutSegment[],
@@ -90,6 +91,7 @@ function ExportConfirm({
   smartCutBitrate: number | undefined,
   setSmartCutBitrate: Dispatch<SetStateAction<number | undefined>>,
   toggleSettings: () => void,
+  outputPlaybackRate: number,
 }) {
   const { t } = useTranslation();
 
@@ -113,8 +115,12 @@ function ExportConfirm({
     if (areWeCutting && outFormat === 'flac') {
       ret.push(t('There is a known issue in FFmpeg with cutting FLAC files. The file will be re-encoded, which is still lossless, but the export may be slower.'));
     }
+    if (areWeCutting && outputPlaybackRate !== 1) {
+      ret.push(t('Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.'));
+    }
     return ret;
-  }, [areWeCutting, outFormat, t]);
+  }, [areWeCutting, outFormat, outputPlaybackRate, t]);
+
   const exportModeDescription = useMemo(() => ({
     segments_to_chapters: t('Don\'t cut the file, but instead export an unmodified original which has chapters generated from segments'),
     merge: t('Auto merge segments to one file after export'),
@@ -231,7 +237,7 @@ function ExportConfirm({
                     {warnings.map((warning) => (
                       <tr key={warning}>
                         <td colSpan={2}>
-                          <div style={warningStyle}><WarningSignIcon verticalAlign="middle" color="warning" /> {warnings.join('\n')}</div>
+                          <div style={{ ...warningStyle, display: 'flex', alignItems: 'center', gap: '0 .5em' }}><WarningSignIcon verticalAlign="middle" color="warning" flexShrink="0" /> {warning}</div>
                         </td>
                         <td />
                       </tr>
