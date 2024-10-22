@@ -615,7 +615,11 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
   // This is just used to load something into the player with correct duration,
   // so that the user can seek and then we render frames using ffmpeg & MediaSource
-  const html5ifyDummy = useCallback(async ({ filePath: filePathArg, outPath, onProgress }) => {
+  const html5ifyDummy = useCallback(async ({ filePath: filePathArg, outPath, onProgress }: {
+    filePath: string,
+    outPath: string,
+    onProgress: (p: number) => void,
+  }) => {
     console.log('Making ffmpeg-assisted dummy file', { filePathArg, outPath });
 
     const duration = await getDuration(filePathArg);
@@ -625,7 +629,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       // This is just a fast way of generating an empty dummy file
       '-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',
-      '-t', duration,
+      '-t', String(duration),
       '-acodec', 'flac',
       '-y', outPath,
     ];

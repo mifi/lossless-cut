@@ -25,11 +25,12 @@ export function setCustomFfPath(path: string | undefined) {
 }
 
 function escapeCliArg(arg: string) {
+  // todo change String(arg) => arg when ts no-implicit-any is turned on
   if (isWindows) {
     // https://github.com/mifi/lossless-cut/issues/2151
-    return /[\s"&<>^|]/.test(arg) ? `"${arg.replaceAll('"', '""')}"` : arg;
+    return /[\s"&<>^|]/.test(arg) ? `"${String(arg).replaceAll('"', '""')}"` : arg;
   }
-  return /[^\w-]/.test(arg) ? `'${arg.replaceAll("'", '\'"\'"\'')}'` : arg;
+  return /[^\w-]/.test(arg) ? `'${String(arg).replaceAll("'", '\'"\'"\'')}'` : arg;
 }
 
 export function getFfCommandLine(cmd: string, args: readonly string[]) {
