@@ -887,5 +887,8 @@
     "You are not allowed to write the output file. This probably means that the file already exists with the wrong permissions, or you don't have write permissions to the output folder.": "Impossibile scrivere il file destinazione. Ciò probabilmente significa che il file esiste già con le autorizzazioni errate o che non disponi delle autorizzazioni di scrittura nella cartella destinazione.",
     "You can customize the file name of the merged file using special variables.": "È possibile personalizzare il nome del file unito usando variabili speciali.",
     "Mouse wheel keyframe seek modifier key": "Tasto modifica ricerca fotogramma chiave con rotellina mouse",
-    "Mouse wheel frame seek modifier key": "Tasto modifica ricerca fotogramma con rotellina mouse"
+    "Mouse wheel frame seek modifier key": "Tasto modifica ricerca fotogramma con rotellina mouse",
+    "File name is too long and cannot be exported.": "Il nome file è troppo lungo e non può essere esportato.",
+    "Fell back to default output file name": "Torna al nome del file destinazione predefinito",
+    "Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.": "La regolazione dell'FPS in uscita e il taglio simultaneo causeranno tagli errati. Considera invece di farlo in due passaggi separati."
 }
