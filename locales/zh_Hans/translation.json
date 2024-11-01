@@ -952,5 +952,8 @@
     "None": "无",
     "Preserve metadata": "保留元数据",
     "Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied": "是否保留源文件中的元数据。默认值：全局（文件元数据），复制每个轨道和每个章节的元数据。非全局：仅复制每个轨道和每个章节的元数据。无：不复制元数据",
-    "You can customize the file name of the merged file using special variables.": "您可以使用特殊变量来定制合并文件的文件名。"
+    "You can customize the file name of the merged file using special variables.": "您可以使用特殊变量来定制合并文件的文件名。",
+    "File name is too long and cannot be exported.": "文件名太长，无法导出。",
+    "Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.": "调整输出 FPS 和同时进行剪切会导致不正确的剪切。请考虑分两个单独的步骤来执行。",
+    "Fell back to default output file name": "回退到默认输出文件名"
 }
