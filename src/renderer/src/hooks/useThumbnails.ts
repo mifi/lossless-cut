@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
+import { useEffect, useMemo, useState } from 'react';
+import { useDebounce } from 'use-debounce';
 import invariant from 'tiny-invariant';
 import sortBy from 'lodash/sortBy';
 
@@ -15,51 +15,48 @@ export default ({ filePath, zoomedDuration, zoomWindowStartTime, showThumbnails 
   showThumbnails: boolean,
 }) => {
   const [thumbnails, setThumbnails] = useState<Thumbnail[]>([]);
-  const thumnailsRef = useRef<Thumbnail[]>([]);
-  const thumnailsRenderingPromiseRef = useRef<Promise<void>>();
 
-  function addThumbnail(thumbnail) {
-    // console.log('Rendered thumbnail', thumbnail.url);
-    setThumbnails((v) => [...v, thumbnail]);
-  }
+  const [debounced] = useDebounce({ zoomedDuration, filePath, zoomWindowStartTime, showThumbnails }, 300, {
+    equalityFn: (a, b) => JSON.stringify(a) === JSON.stringify(b),
+  });
 
-  const [, cancelRenderThumbnails] = useDebounceOld(() => {
-    async function renderThumbnails() {
-      if (!showThumbnails || thumnailsRenderingPromiseRef.current) return;
+  useEffect(() => {
+    const abortController = new AbortController();
+    const thumbnails2: Thumbnail[] = [];
+
+    (async () => {
+      if (!isDurationValid(debounced.zoomedDuration) || !debounced.showThumbnails) return;
 
       try {
-        setThumbnails([]);
-        invariant(filePath != null);
-        invariant(zoomedDuration != null);
-        const promise = ffmpegRenderThumbnails({ filePath, from: zoomWindowStartTime, duration: zoomedDuration, onThumbnail: addThumbnail });
-        thumnailsRenderingPromiseRef.current = promise;
-        await promise;
+        invariant(debounced.filePath != null);
+        invariant(debounced.zoomedDuration != null);
+
+        const addThumbnail = (t: Thumbnail) => {
+          if (abortController.signal.aborted) return; // because the bridge is async
+          thumbnails2.push(t);
+          setThumbnails((v) => [...v, t]);
+        };
+
+        await ffmpegRenderThumbnails({ signal: abortController.signal, filePath: debounced.filePath, from: debounced.zoomWindowStartTime, duration: debounced.zoomedDuration, onThumbnail: addThumbnail });
       } catch (err) {
-        console.error('Failed to render thumbnail', err);
-      } finally {
-        thumnailsRenderingPromiseRef.current = undefined;
+        if ((err as Error).name !== 'AbortError') {
+          console.error('Failed to render thumbnails', err);
+        }
       }
-    }
+    })();
 
-    if (isDurationValid(zoomedDuration)) renderThumbnails();
-  }, 500, [zoomedDuration, filePath, zoomWindowStartTime, showThumbnails]);
-
-  // Cleanup removed thumbnails
-  useEffect(() => {
-    thumnailsRef.current.forEach((thumbnail) => {
-      if (!thumbnails.some((nextThumbnail) => nextThumbnail.url === thumbnail.url)) {
-        console.log('Cleanup thumbnail', thumbnail.time);
-        URL.revokeObjectURL(thumbnail.url);
-      }
-    });
-    thumnailsRef.current = thumbnails;
-  }, [thumbnails]);
+    return () => {
+      abortController.abort();
+      console.log('Cleanup thumbnails', thumbnails2.map((t) => t.time));
+      thumbnails2.forEach((thumbnail) => URL.revokeObjectURL(thumbnail.url));
+      setThumbnails([]);
+    };
+  }, [debounced]);
 
   const thumbnailsSorted = useMemo(() => sortBy(thumbnails, (thumbnail) => thumbnail.time), [thumbnails]);
 
   return {
     thumbnailsSorted,
     setThumbnails,
-    cancelRenderThumbnails,
   };
 };

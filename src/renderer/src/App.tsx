@@ -531,7 +531,7 @@ function App() {
   const bigWaveformEnabled = waveformEnabled && waveformMode === 'big-waveform';
   const showThumbnails = thumbnailsEnabled && hasVideo;
 
-  const { cancelRenderThumbnails, thumbnailsSorted, setThumbnails } = useThumbnails({ filePath, zoomedDuration, zoomWindowStartTime, showThumbnails });
+  const { thumbnailsSorted, setThumbnails } = useThumbnails({ filePath, zoomedDuration, zoomWindowStartTime, showThumbnails });
 
   const shouldShowKeyframes = keyframesEnabled && hasVideo && calcShouldShowKeyframes(zoomedDuration);
   const shouldShowWaveform = calcShouldShowWaveform(zoomedDuration);
@@ -581,9 +581,7 @@ function App() {
     setHideMediaSourcePlayer(false);
     setExportConfirmVisible(false);
     setOutputPlaybackRateState(1);
-
-    cancelRenderThumbnails();
-  }, [videoRef, setCommandedTime, setPlaybackRate, setPlaying, playingRef, playbackModeRef, setCompatPlayerEventId, setDuration, cutSegmentsHistory, clearSegments, setFileFormat, setDetectedFileFormat, setCopyStreamIdsByFile, setThumbnails, setDeselectedSegmentIds, setSubtitlesByStreamId, setOutputPlaybackRateState, cancelRenderThumbnails]);
+  }, [videoRef, setCommandedTime, setPlaybackRate, setPlaying, playingRef, playbackModeRef, setCompatPlayerEventId, setDuration, cutSegmentsHistory, clearSegments, setFileFormat, setDetectedFileFormat, setCopyStreamIdsByFile, setThumbnails, setDeselectedSegmentIds, setSubtitlesByStreamId, setOutputPlaybackRateState]);
 
 
   const showUnsupportedFileMessage = useCallback(() => {

@@ -506,7 +506,7 @@ export async function extractStreams({ filePath, customOutDir, streams, enableOv
   ];
 }
 
-async function renderThumbnail(filePath: string, timestamp: number) {
+async function renderThumbnail(filePath: string, timestamp: number, signal: AbortSignal) {
   const args = [
     '-ss', String(timestamp),
     '-i', filePath,
@@ -517,7 +517,7 @@ async function renderThumbnail(filePath: string, timestamp: number) {
     '-',
   ];
 
-  const { stdout } = await runFfmpeg(args);
+  const { stdout } = await runFfmpeg(args, { signal });
 
   const blob = new Blob([fixRemoteBuffer(stdout)], { type: 'image/jpeg' });
   return URL.createObjectURL(blob);
@@ -561,24 +561,19 @@ export async function extractSubtitleTrackVtt(filePath: string, streamId: number
   return URL.createObjectURL(blob);
 }
 
-export async function renderThumbnails({ filePath, from, duration, onThumbnail }: {
-  filePath: string, from: number, duration: number, onThumbnail: (a: { time: number, url: string }) => void,
+export async function renderThumbnails({ filePath, from, duration, onThumbnail, signal }: {
+  filePath: string,
+  from: number,
+  duration: number,
+  onThumbnail: (a: { time: number, url: string }) => void,
+  signal: AbortSignal,
 }) {
-  // Time first render to determine how many to render
-  const startTime = Date.now() / 1000;
-  let url = await renderThumbnail(filePath, from);
-  const endTime = Date.now() / 1000;
-  onThumbnail({ time: from, url });
-
-  // Aim for max 3 sec to render all
-  const numThumbs = Math.floor(Math.min(Math.max(3 / (endTime - startTime), 3), 10));
-  // console.log(numThumbs);
-
-  const thumbTimes = Array.from({ length: numThumbs - 1 }).fill(undefined).map((_unused, i) => (from + ((duration * (i + 1)) / (numThumbs))));
+  const numThumbs = 10;
+  const thumbTimes = Array.from({ length: numThumbs }).fill(undefined).map((_unused, i) => (from + ((duration * i) / numThumbs)));
   // console.log(thumbTimes);
 
   await pMap(thumbTimes, async (time) => {
-    url = await renderThumbnail(filePath, time);
+    const url = await renderThumbnail(filePath, time, signal);
     onThumbnail({ time, url });
   }, { concurrency: 2 });
 }
