@@ -16,7 +16,7 @@ export type UserSettingsContextType = ReturnType<typeof useUserSettingsRoot> & {
 }
 
 interface SegColorsContextType {
-  getSegColor: (seg: SegmentColorIndex) => Color
+  getSegColor: (seg: SegmentColorIndex | undefined) => Color
 }
 
 export const UserSettingsContext = React.createContext<UserSettingsContextType | undefined>(undefined);

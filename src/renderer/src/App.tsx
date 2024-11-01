@@ -473,7 +473,7 @@ function App() {
   }), [allUserSettings, changeOutDir, effectiveExportMode, toggleCaptureFormat, toggleExportConfirmEnabled, toggleKeyframeCut, toggleSafeOutputFileName, toggleSimpleMode]);
 
   const segColorsContext = useMemo(() => ({
-    getSegColor: (seg: SegmentColorIndex) => {
+    getSegColor: (seg: SegmentColorIndex | undefined) => {
       const color = getSegColor(seg);
       return preferStrongColors ? color.desaturate(0.2) : color.desaturate(0.6);
     },

@@ -14,7 +14,7 @@ function getColor(n: number) {
 }
 
 // eslint-disable-next-line import/prefer-default-export
-export function getSegColor(seg: SegmentColorIndex) {
+export function getSegColor(seg: SegmentColorIndex | undefined) {
   if (!seg) {
     return color({
       h: 0,
