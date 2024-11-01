@@ -903,5 +903,8 @@
     "You might want to redact any sensitive information like paths.": "Es posible que desees eliminar la información confidencial, como rutas.",
     "You have enabled the \"invert segments\" mode <1></1> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <3></3> symbol below to disable this mode. Alternatively you may combine overlapping segments from the menu.": "Ha habilitado el modo \"invertir segmentos\" <1></1> que cortará los segmentos seleccionados en lugar de conservarlos. Pero no hay espacio entre ningún segmento, o al menos dos segmentos se superponen. Esto no produciría ningún resultado. Haga espacio entre los segmentos o haga clic en el símbolo Yinyang <3></3> a continuación para desactivar este modo. Alternativamente, puede combinar segmentos superpuestos desde el menú.",
     "You have no write access to the directory of this file": "No tienes permiso de escritura para la carpeta donde se encuentra este archivo",
-    "Examples": "Ejemplos"
+    "Examples": "Ejemplos",
+    "File name is too long and cannot be exported.": "El nombre del archivo es muy largo y no se puede exportar.",
+    "Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.": "Ajustar los FPS de salida y cortar al mismo tiempo causará cortes incorrectos. Considera hacerlo en dos pasos separados.",
+    "Fell back to default output file name": "Se ha vuelto al nombre de archivo de salida predeterminado"
 }
