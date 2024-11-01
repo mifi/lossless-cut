@@ -357,7 +357,7 @@ export async function withErrorHandling(operation: () => Promise<void>, errorMsg
     if (typeof errorMsgOrFn === 'function') errorMsg = errorMsgOrFn(err);
     if (errorMsg != null) {
       console.error(errorMsg, err);
-      errorToast(errorMsg);
+      handleError(errorMsg, err);
     } else {
       handleError(err);
     }
