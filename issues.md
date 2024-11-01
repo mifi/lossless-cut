@@ -109,8 +109,10 @@ If the output file name has special characters that get replaced by underscore (
   - Try to run with `--disable-gpu` - See [781](https://github.com/mifi/lossless-cut/issues/781).
 - How to uninstall LosslessCut?
   - There is no installer. Just delete the folder. [More info](./installation.md).
-- Preview of H265/HEVC files is completely black or corrupted?
+- Preview of H265/HEVC files is completely black, corrupted or just won't play back?
+  - This probably means that Chromium (which LosslessCut uses for playback) doesn't support your particular file (maybe it's 10-bit). [#2228](https://github.com/mifi/lossless-cut/discussions/2228), [#1767](https://github.com/mifi/lossless-cut/discussions/1767)
   - Go to settings and disable "Hardware HEVC decoding".
+  - Use FFmpeg-assisted software decoding playback by going to *File* -> *Convert to supported format*
 - Video preview playback slow, stuttering, flickering inside LosslessCut (NVIDIA)
   - See [#922](https://github.com/mifi/lossless-cut/issues/922) [#1904](https://github.com/mifi/lossless-cut/issues/1904) [#1915](https://github.com/mifi/lossless-cut/issues/1915) [#922](https://github.com/mifi/lossless-cut/issues/922) [#2083](https://github.com/mifi/lossless-cut/issues/2083)
 - Why no `.exe`/`.zip`/`.appx` downloads?
