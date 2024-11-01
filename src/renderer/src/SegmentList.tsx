@@ -390,6 +390,14 @@ function SegmentList({
             style={{ ...buttonBaseStyle, padding: 1, background: segmentAtCursor ? segAtCursorColor : neutralButtonColor }}
             onClick={splitCurrentSegment}
           />
+
+          <FaRegCheckCircle
+            size={22}
+            title={t('Split segment at cursor')}
+            role="button"
+            style={{ ...buttonBaseStyle, padding: 1, background: segmentAtCursor ? segAtCursorColor : neutralButtonColor }}
+            onClick={onInvertSelectedSegments}
+          />
         </div>
 
         <div style={{ padding: '5px 10px', boxSizing: 'border-box', borderBottom: '1px solid var(gray6)', borderTop: '1px solid var(gray6)', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
