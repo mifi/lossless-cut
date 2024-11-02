@@ -931,5 +931,8 @@
     "Preserve metadata": "Zachovat metadata",
     "Replace": "Nahradit",
     "Whether to preserve chapters from source file.": "Použití kapitol ze zdrojového souboru.",
-    "You can customize the file name of the merged file using special variables.": "Můžete přizpůsobit název spojeného souboru pomocí speciálních proměnných."
+    "You can customize the file name of the merged file using special variables.": "Můžete přizpůsobit název spojeného souboru pomocí speciálních proměnných.",
+    "Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.": "Současné nastavení výstupní FPS a střih způsobí nesprávné střihy. Zvažte raději provedení ve dvou samostatných krocích.",
+    "Fell back to default output file name": "Návrat k výchozímu názvu výstupního souboru",
+    "File name is too long and cannot be exported.": "Název souboru je příliš dlouhý a nemůže být exportován."
 }
