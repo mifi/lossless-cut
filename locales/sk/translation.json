@@ -776,5 +776,8 @@
     "Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied": "Zachovanie metadát zo zdrojového súboru. Predvolené nastavenie: (metadáta súboru), metadáta na stopu a na kapitolu sa skopírujú. Iné ako globálne: Skopírujú sa len metadáta na stopu a na kapitolu. Žiadne: Nebudú sa kopírovať žiadne metadáta",
     "There is a known issue in FFmpeg with cutting FLAC files. The file will be re-encoded, which is still lossless, but the export may be slower.": "V aplikácii FFmpeg je známy problém so strihaním súborov FLAC. Súbor sa opätovne zakóduje, čo je stále bezstratové, ale export môže byť pomalší.",
     "This file contains an audio track that FFmpeg is unable to mux into the MP4 format, so MOV has been auto-selected as the default output format.": "Tento súbor obsahuje zvukovú stopu, ktorú FFmpeg nedokáže muxovať do formátu MP4, takže ako predvolený výstupný formát bol automaticky zvolený MOV.",
-    "You can customize the file name of the merged file using special variables.": "Názov zlúčeného súboru môžete prispôsobiť pomocou špeciálnych premenných."
+    "You can customize the file name of the merged file using special variables.": "Názov zlúčeného súboru môžete prispôsobiť pomocou špeciálnych premenných.",
+    "File name is too long and cannot be exported.": "Názov súboru je príliš dlho a nie je možné exportovať.",
+    "Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.": "Úprava výstupu FPS a rezanie súčasne spôsobí nesprávne rezy. Zvážte namiesto toho, aby ste to urobili v dvoch samostatných krokoch.",
+    "Fell back to default output file name": "Vrátiť späť na predvolený výstupný názov súboru"
 }
