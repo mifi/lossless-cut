@@ -393,7 +393,7 @@ function SegmentList({
 
           <FaRegCheckCircle
             size={22}
-            title={t('Split segment at cursor')}
+            title={t('Invert selected segments')}
             role="button"
             style={{ ...buttonBaseStyle, padding: 1, background: segmentAtCursor ? segAtCursorColor : neutralButtonColor }}
             onClick={onInvertSelectedSegments}
