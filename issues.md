@@ -2,8 +2,8 @@
 
 - **Can LosslessCut crop, resize, stretch, mirror/flip, overlay text/images, watermark, blur, redact, re-encode, create GIF, slideshow, burn subtitles, color grading, fade/transition between video clips, fade/combine/mix/merge audio tracks or change audio volume?**
   - No, these are all lossy operations (meaning you *have* to re-encode the file), but in the future I may start to implement such features. [See this issue for more information.](https://github.com/mifi/lossless-cut/issues/372). See also [#643](https://github.com/mifi/lossless-cut/issues/643).
-- Can LosslessCut be batched/automated using a CLI or API?
-  - While it was never designed for advanced batching/automation, it does have a [basic CLI and a HTTP API](./cli.md), and there are a few feature requests regarding this: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868).
+- Can LosslessCut be batched/automated using a CLI or API or do external post-processing?
+  - While it was never designed for advanced batching/automation, it does have a [basic CLI and a HTTP API](./cli.md). More info: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868).
 - Is there a keyboard shortcut to do X?
   - First check the Keyboard shortcuts dialog. If you cannot find your shortcut there, [see this issue.](https://github.com/mifi/lossless-cut/issues/254)
 - When will you implement feature X?
@@ -136,13 +136,11 @@ MPEG TS (`.mts`/`.ts`) files have a tendency to be a [bit problematic](https://g
 
 ## EXIF / metadata
 
-EXIF/metadata can be preserved (see Export Options dialog), but it doesn't always output compliant files, so use it carefully. Alternatively you can use [exiftool](https://exiftool.org/) after exporting with LosslessCut to transfer metadata, for example:
+It is a known problem that FFmpeg will not always preserve metadata correctly. More info [#1027](https://github.com/mifi/lossless-cut/issues/1027). Some metadata can be preserved (see Export Options dialog), but it doesn't always output compliant files, so use it carefully. Alternatively you can use [exiftool](https://exiftool.org/) after exporting with LosslessCut to transfer metadata, for example:
 
 ```bash
-exiftool -tagsFromFile original-source-file.mp4 -all:all -overwrite_original exported-from-losslesscut.mp4
+exiftool -tagsFromFile Original-Source-File.mp4 -all:all -overwrite_original Exported-From-LosslessCut.mp4
 ```
-
-More info [#1027](https://github.com/mifi/lossless-cut/issues/1027)
 
 ## Proprietary data tracks list
 
