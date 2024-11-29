@@ -1329,7 +1329,7 @@ function App() {
 
       // BEGIN STATE UPDATES:
 
-      console.log('loadMedia', fp, cod, projectPath);
+      console.log('loadMedia', { filePath: fp, customOutDir: cod, projectPath });
 
       resetState();
 
