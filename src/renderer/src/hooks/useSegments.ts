@@ -21,7 +21,7 @@ import { FFprobeStream } from '../../../../ffprobe';
 const { ffmpeg: { blackDetect, silenceDetect } } = window.require('@electron/remote').require('./index.js');
 
 
-function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode }: {
+function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog }: {
   filePath?: string | undefined,
   workingRef: MutableRefObject<boolean>,
   setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void,
@@ -35,6 +35,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   segmentsToChaptersOnly: boolean,
   timecodePlaceholder: string,
   parseTimecode: ParseTimecode,
+  appendFfmpegCommandLog: (args: string[]) => void,
 }) {
   // Segment related state
   const segCounterRef = useRef(0);
@@ -94,7 +95,10 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   }, [clearSegCounter, createIndexedSegment, setCutSegments]);
 
   const detectSegments = useCallback(async ({ name, workingText, errorText, fn }: {
-    name: string, workingText: string, errorText: string, fn: () => Promise<SegmentBase[]>,
+    name: string,
+    workingText: string,
+    errorText: string,
+    fn: () => Promise<{ detectedSegments: SegmentBase[], ffmpegArgs: string[] }>,
   }) => {
     if (!filePath) return;
     if (workingRef.current) return;
@@ -102,16 +106,18 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       setWorking({ text: workingText });
       setProgress(0);
 
-      const newSegments = await fn();
-      console.log(name, newSegments);
-      loadCutSegments(newSegments, true);
+      const { detectedSegments, ffmpegArgs } = await fn();
+      appendFfmpegCommandLog(ffmpegArgs);
+
+      console.log(name, detectedSegments);
+      loadCutSegments(detectedSegments, true);
     } catch (err) {
       if (!(err instanceof Error && err.name === 'AbortError')) handleError(errorText, err);
     } finally {
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [filePath, workingRef, setWorking, setProgress, loadCutSegments]);
+  }, [filePath, workingRef, setWorking, setProgress, appendFfmpegCommandLog, loadCutSegments]);
 
   const getSegApparentEnd = useCallback((seg: SegmentBase) => getSegApparentEnd2(seg, duration), [duration]);
 

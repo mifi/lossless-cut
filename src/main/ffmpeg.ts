@@ -279,7 +279,7 @@ export async function detectSceneChanges({ filePath, minChange, onProgress, from
 
   const segments = mapTimesToSegments(times, false);
 
-  return adjustSegmentsWithOffset({ segments, from });
+  return { detectedSegments: adjustSegmentsWithOffset({ segments, from }), ffmpegArgs: args };
 }
 
 async function detectIntervals({ filePath, customArgs, onProgress, from, to, matchLineTokens, boundingMode }: {
@@ -328,7 +328,7 @@ async function detectIntervals({ filePath, customArgs, onProgress, from, to, mat
     }
   }
 
-  return adjustSegmentsWithOffset({ segments, from });
+  return { detectedSegments: adjustSegmentsWithOffset({ segments, from }), ffmpegArgs: args };
 }
 
 const mapFilterOptions = (options: Record<string, string>) => Object.entries(options).map(([key, value]) => `${key}=${value}`).join(':');

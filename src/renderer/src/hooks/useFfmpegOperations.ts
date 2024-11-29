@@ -76,7 +76,7 @@ async function pathExists(path: string) {
   }
 }
 
-function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, appendLastCommandsLog, smartCutCustomBitrate }: {
+function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, appendLastCommandsLog, smartCutCustomBitrate, appendFfmpegCommandLog }: {
   filePath: string | undefined,
   treatInputFileModifiedTimeAsStart: boolean | null | undefined,
   treatOutputFileModifiedTimeAsStart: boolean | null | undefined,
@@ -86,9 +86,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   cutFromAdjustmentFrames: number,
   appendLastCommandsLog: (a: string) => void,
   smartCutCustomBitrate: number | undefined,
+  appendFfmpegCommandLog: (args: string[]) => void,
 }) {
-  const appendFfmpegCommandLog = useCallback((args: string[]) => appendLastCommandsLog(getFfCommandLine('ffmpeg', args)), [appendLastCommandsLog]);
-
   const shouldSkipExistingFile = useCallback(async (path: string) => {
     const fileExists = await pathExists(path);
 
@@ -969,7 +968,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   }, [extractAttachmentStreams, extractNonAttachmentStreams, filePath]);
 
   return {
-    appendFfmpegCommandLog, cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, autoConcatCutSegments, extractStreams,
+    cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, autoConcatCutSegments, extractStreams,
   };
 }
 
