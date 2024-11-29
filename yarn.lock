@@ -7665,7 +7665,7 @@ __metadata:
     leaflet: "npm:^1.9.4"
     lodash: "npm:^4.17.19"
     lodash.debounce: "npm:^4.0.8"
-    luxon: "npm:^3.3.0"
+    luxon: "npm:^3.5.0"
     mime-types: "npm:^2.1.14"
     mkdirp: "npm:^1.0.3"
     morgan: "npm:^1.10.0"
@@ -7781,10 +7781,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"luxon@npm:^3.3.0":
-  version: 3.3.0
-  resolution: "luxon@npm:3.3.0"
-  checksum: 10/ff60904401caa2346da492c7776d8a17a8e5b3715d6246534c3c0ea3af07c22f9ba9f16730259749f6cafb3de02f0fdffb970d53d4139f0de66eb9ac16ea163c
+"luxon@npm:^3.5.0":
+  version: 3.5.0
+  resolution: "luxon@npm:3.5.0"
+  checksum: 10/48f86e6c1c96815139f8559456a3354a276ba79bcef0ae0d4f2172f7652f3ba2be2237b0e103b8ea0b79b47715354ac9fac04eb1db3485dcc72d5110491dd47f
   languageName: node
   linkType: hard
 
