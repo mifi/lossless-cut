@@ -5,7 +5,7 @@ import pMap from 'p-map';
 import invariant from 'tiny-invariant';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration } from '../util';
-import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileMeta, cutEncodeSmartPart, getExperimentalArgs, html5ify as ffmpegHtml5ify, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
+import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileMeta, getExperimentalArgs, html5ify as ffmpegHtml5ify, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { getSmartCutParams } from '../smartcut';
 import { isDurationValid } from '../segments';
@@ -418,6 +418,60 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     await transferTimestamps({ inPath: filePath, outPath, cutFrom, cutTo, treatInputFileModifiedTimeAsStart, duration: isDurationValid(videoDuration) ? videoDuration : undefined, treatOutputFileModifiedTimeAsStart });
   }, [appendFfmpegCommandLog, cutFromAdjustmentFrames, filePath, getOutputPlaybackRateArgs, shouldSkipExistingFile, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
+  // inspired by https://gist.github.com/fernandoherreradelasheras/5eca67f4200f1a7cc8281747da08496e
+  const cutEncodeSmartPart = useCallback(async ({ cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate, videoTimebase, allFilesMeta, copyFileStreams, videoStreamIndex, ffmpegExperimental }: {
+    cutFrom: number, cutTo: number, outPath: string, outFormat: string, videoCodec: string, videoBitrate: number, videoTimebase: number, allFilesMeta: AllFilesMeta, copyFileStreams: CopyfileStreams, videoStreamIndex: number, ffmpegExperimental: boolean,
+  }) => {
+    invariant(filePath != null);
+
+    function getVideoArgs({ streamIndex, outputIndex }: { streamIndex: number, outputIndex: number }) {
+      if (streamIndex !== videoStreamIndex) return undefined;
+
+      const args = [
+        `-c:${outputIndex}`, videoCodec,
+        `-b:${outputIndex}`, String(videoBitrate),
+      ];
+
+      // seems like ffmpeg handles this itself well when encoding same source file
+      // if (videoLevel != null) args.push(`-level:${outputIndex}`, videoLevel);
+      // if (videoProfile != null) args.push(`-profile:${outputIndex}`, videoProfile);
+
+      return args;
+    }
+
+    const mapStreamsArgs = getMapStreamsArgs({
+      allFilesMeta,
+      copyFileStreams,
+      outFormat,
+      getVideoArgs,
+    });
+
+    const ffmpegArgs = [
+      '-hide_banner',
+      // No progress if we set loglevel warning :(
+      // '-loglevel', 'warning',
+
+      '-ss', cutFrom.toFixed(5), // if we don't -ss before -i, seeking will be slow for long files, see https://github.com/mifi/lossless-cut/issues/126#issuecomment-1135451043
+      '-i', filePath,
+      '-ss', '0', // If we don't do this, the output seems to start with an empty black after merging with the encoded part
+      '-t', (cutTo - cutFrom).toFixed(5),
+
+      ...mapStreamsArgs,
+
+      // See https://github.com/mifi/lossless-cut/issues/170
+      '-ignore_unknown',
+
+      ...getVideoTimescaleArgs(videoTimebase),
+
+      ...getExperimentalArgs(ffmpegExperimental),
+
+      '-f', outFormat, '-y', outPath,
+    ];
+
+    appendFfmpegCommandLog(ffmpegArgs);
+    await runFfmpeg(ffmpegArgs);
+  }, [appendFfmpegCommandLog, filePath]);
+
   const cutMultiple = useCallback(async ({
     outputDir, customOutDir, segments, outSegFileNames, videoDuration, rotation, detectedFps, onProgress: onTotalProgress, keyframeCut, copyFileStreams, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, chapters,
   }: {
@@ -509,8 +563,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         if (videoCodec == null || detectedVideoBitrate == null || videoTimebase == null) throw new Error();
         invariant(filePath != null);
         invariant(outFormat != null);
-        const args = await cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate: smartCutCustomBitrate != null ? smartCutCustomBitrate * 1000 : detectedVideoBitrate, videoStreamIndex, videoTimebase, allFilesMeta, copyFileStreams: copyFileStreamsFiltered, ffmpegExperimental });
-        appendFfmpegCommandLog(args);
+        await cutEncodeSmartPart({ cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate: smartCutCustomBitrate != null ? smartCutCustomBitrate * 1000 : detectedVideoBitrate, videoStreamIndex, videoTimebase, allFilesMeta, copyFileStreams: copyFileStreamsFiltered, ffmpegExperimental });
       }
 
       // If we are cutting within two keyframes, just encode the whole part and return that
@@ -573,7 +626,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     } finally {
       if (chaptersPath) await tryDeleteFiles([chaptersPath]);
     }
-  }, [needSmartCut, filePath, losslessCutSingle, shouldSkipExistingFile, smartCutCustomBitrate, appendFfmpegCommandLog, concatFiles]);
+  }, [needSmartCut, filePath, losslessCutSingle, shouldSkipExistingFile, cutEncodeSmartPart, smartCutCustomBitrate, concatFiles]);
 
   const autoConcatCutSegments = useCallback(async ({ customOutDir, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, autoDeleteMergedSegments, chapterNames, preserveMetadataOnMerge, mergedOutFilePath }: {
     customOutDir: string | undefined,

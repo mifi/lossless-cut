@@ -5,12 +5,11 @@ import Timecode from 'smpte-timecode';
 import minBy from 'lodash/minBy';
 import invariant from 'tiny-invariant';
 
-import { pcmAudioCodecs, getMapStreamsArgs, isMov } from './util/streams';
+import { pcmAudioCodecs, isMov } from './util/streams';
 import { isExecaError } from './util';
 import { isDurationValid } from './segments';
 import { FFprobeChapter, FFprobeFormat, FFprobeProbeResult, FFprobeStream } from '../../../ffprobe';
 import { parseSrt, parseSrtToSegments } from './edlFormats';
-import { CopyfileStreams } from './types';
 import { UnsupportedFileError } from '../errors';
 
 const { ffmpeg, fileTypePromise } = window.require('@electron/remote').require('./index.js');
@@ -18,7 +17,7 @@ const { ffmpeg, fileTypePromise } = window.require('@electron/remote').require('
 const { renderWaveformPng, mapTimesToSegments, detectSceneChanges, captureFrames, captureFrame, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, html5ify, getDuration, abortFfmpegs, runFfmpeg, runFfprobe, getFfmpegPath, setCustomFfPath } = ffmpeg;
 
 
-export { renderWaveformPng, mapTimesToSegments, detectSceneChanges, captureFrames, captureFrame, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, html5ify, getDuration, abortFfmpegs, runFfmpeg, runFfprobe, getFfmpegPath, setCustomFfPath };
+export { renderWaveformPng, mapTimesToSegments, detectSceneChanges, captureFrames, captureFrame, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, html5ify, getDuration, abortFfmpegs, runFfmpeg, getFfmpegPath, setCustomFfPath };
 
 
 export class RefuseOverwriteError extends Error {
@@ -140,11 +139,11 @@ export async function findKeyframeNearTime({ filePath, streamIndex, time, mode }
 // todo this is not in use
 // https://stackoverflow.com/questions/14005110/how-to-split-a-video-using-ffmpeg-so-that-each-chunk-starts-with-a-key-frame
 // http://kicherer.org/joomla/index.php/de/blog/42-avcut-frame-accurate-video-cutting-with-only-small-quality-loss
-export function getSafeCutTime(frames, cutTime, nextMode) {
+export function getSafeCutTime(frames: (Frame & { time: number })[], cutTime: number, nextMode: boolean) {
   const sigma = 0.01;
-  const isCloseTo = (time1, time2) => Math.abs(time1 - time2) < sigma;
+  const isCloseTo = (time1: number, time2: number) => Math.abs(time1 - time2) < sigma;
 
-  let index;
+  let index: number;
 
   if (frames.length < 2) throw new Error(i18n.t('Less than 2 frames found'));
 
@@ -152,7 +151,7 @@ export function getSafeCutTime(frames, cutTime, nextMode) {
     index = frames.findIndex((f) => f.keyframe && f.time >= cutTime - sigma);
     if (index === -1) throw new Error(i18n.t('Failed to find next keyframe'));
     if (index >= frames.length - 1) throw new Error(i18n.t('We are on the last frame'));
-    const { time } = frames[index];
+    const { time } = frames[index]!;
     if (isCloseTo(time, cutTime)) {
       return undefined; // Already on keyframe, no need to modify cut time
     }
@@ -174,7 +173,7 @@ export function getSafeCutTime(frames, cutTime, nextMode) {
     // Last frame of video, no need to modify cut time
     return undefined;
   }
-  if (frames[index + 1].keyframe) {
+  if (frames[index + 1]!.keyframe) {
     // Already on frame before keyframe, no need to modify cut time
     return undefined;
   }
@@ -185,7 +184,7 @@ export function getSafeCutTime(frames, cutTime, nextMode) {
   if (index === 0) throw new Error(i18n.t('We are on the first keyframe'));
 
   // Use frame before the found keyframe
-  return frames[index - 1].time;
+  return frames[index - 1]!.time;
 }
 
 export function findNearestKeyFrameTime({ frames, time, direction, fps }: { frames: Frame[], time: number, direction: number, fps: number | undefined }) {
@@ -197,7 +196,7 @@ export function findNearestKeyFrameTime({ frames, time, direction, fps }: { fram
   return nearestKeyFrame.time;
 }
 
-export async function tryMapChaptersToEdl(chapters: FFprobeChapter[]) {
+export function tryMapChaptersToEdl(chapters: FFprobeChapter[]) {
   try {
     return chapters.map((chapter) => {
       const start = parseFloat(chapter.start_time);
@@ -558,56 +557,3 @@ export async function runFfmpegStartupCheck() {
 export const getExperimentalArgs = (ffmpegExperimental: boolean) => (ffmpegExperimental ? ['-strict', 'experimental'] : []);
 
 export const getVideoTimescaleArgs = (videoTimebase: number | undefined) => (videoTimebase != null ? ['-video_track_timescale', String(videoTimebase)] : []);
-
-// inspired by https://gist.github.com/fernandoherreradelasheras/5eca67f4200f1a7cc8281747da08496e
-export async function cutEncodeSmartPart({ filePath, cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate, videoTimebase, allFilesMeta, copyFileStreams, videoStreamIndex, ffmpegExperimental }: {
-  filePath: string, cutFrom: number, cutTo: number, outPath: string, outFormat: string, videoCodec: string, videoBitrate: number, videoTimebase: number, allFilesMeta, copyFileStreams: CopyfileStreams, videoStreamIndex: number, ffmpegExperimental: boolean,
-}) {
-  function getVideoArgs({ streamIndex, outputIndex }: { streamIndex: number, outputIndex: number }) {
-    if (streamIndex !== videoStreamIndex) return undefined;
-
-    const args = [
-      `-c:${outputIndex}`, videoCodec,
-      `-b:${outputIndex}`, String(videoBitrate),
-    ];
-
-    // seems like ffmpeg handles this itself well when encoding same source file
-    // if (videoLevel != null) args.push(`-level:${outputIndex}`, videoLevel);
-    // if (videoProfile != null) args.push(`-profile:${outputIndex}`, videoProfile);
-
-    return args;
-  }
-
-  const mapStreamsArgs = getMapStreamsArgs({
-    allFilesMeta,
-    copyFileStreams,
-    outFormat,
-    getVideoArgs,
-  });
-
-  const ffmpegArgs = [
-    '-hide_banner',
-    // No progress if we set loglevel warning :(
-    // '-loglevel', 'warning',
-
-    '-ss', cutFrom.toFixed(5), // if we don't -ss before -i, seeking will be slow for long files, see https://github.com/mifi/lossless-cut/issues/126#issuecomment-1135451043
-    '-i', filePath,
-    '-ss', '0', // If we don't do this, the output seems to start with an empty black after merging with the encoded part
-    '-t', (cutTo - cutFrom).toFixed(5),
-
-    ...mapStreamsArgs,
-
-    // See https://github.com/mifi/lossless-cut/issues/170
-    '-ignore_unknown',
-
-    ...getVideoTimescaleArgs(videoTimebase),
-
-    ...getExperimentalArgs(ffmpegExperimental),
-
-    '-f', outFormat, '-y', outPath,
-  ];
-
-  await runFfmpeg(ffmpegArgs);
-
-  return ffmpegArgs;
-}

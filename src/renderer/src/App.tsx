@@ -1264,7 +1264,7 @@ function App() {
         if (await tryOpenProjectPath(getEdlFilePathOld(fp, cod), 'csv')) return;
 
         // OK, we didn't find a project file, instead maybe try to create project (segments) from chapters
-        const edl = await tryMapChaptersToEdl(chapters);
+        const edl = tryMapChaptersToEdl(chapters);
         if (edl.length > 0 && enableAskForImportChapters && (await askForImportChapters())) {
           console.log('Convert chapters to segments', edl);
           loadCutSegments(edl);
