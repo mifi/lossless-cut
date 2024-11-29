@@ -4,8 +4,8 @@ import sum from 'lodash/sum';
 import pMap from 'p-map';
 import invariant from 'tiny-invariant';
 
-import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration } from '../util';
-import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileMeta, getExperimentalArgs, html5ify as ffmpegHtml5ify, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
+import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac } from '../util';
+import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { getSmartCutParams } from '../smartcut';
 import { isDurationValid } from '../segments';
@@ -660,11 +660,115 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   }) => {
     const outPath = getHtml5ifiedPath(customOutDir, filePathArg, speed);
     invariant(outPath != null);
-    await ffmpegHtml5ify({ filePath: filePathArg, outPath, speed, hasAudio, hasVideo, onProgress });
+
+    let audio: string | undefined;
+    if (hasAudio) {
+      if (speed === 'slowest') audio = 'hq';
+      else if (['slow-audio', 'fast-audio'].includes(speed)) audio = 'lq';
+      else if (['fast-audio-remux'].includes(speed)) audio = 'copy';
+    }
+
+    let video: string | undefined;
+    if (hasVideo) {
+      if (speed === 'slowest') video = 'hq';
+      else if (['slow-audio', 'slow'].includes(speed)) video = 'lq';
+      else video = 'copy';
+    }
+
+    console.log('Making HTML5 friendly version', { filePathArg, outPath, speed, video, audio });
+
+    let videoArgs: string[];
+    let audioArgs: string[];
+
+    // h264/aac_at: No licensing when using HW encoder (Video/Audio Toolbox on Mac)
+    // https://github.com/mifi/lossless-cut/issues/372#issuecomment-810766512
+
+    const targetHeight = 400;
+
+    switch (video) {
+      case 'hq': {
+        // eslint-disable-next-line unicorn/prefer-ternary
+        if (isMac) {
+          videoArgs = ['-vf', 'format=yuv420p', '-allow_sw', '1', '-vcodec', 'h264', '-b:v', '15M'];
+        } else {
+          // AV1 is very slow
+          // videoArgs = ['-vf', 'format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libaom-av1', '-crf', '30', '-cpu-used', '8'];
+          // Theora is a bit faster but not that much
+          // videoArgs = ['-vf', '-c:v', 'libtheora', '-qscale:v', '1'];
+          // videoArgs = ['-vf', 'format=yuv420p', '-c:v', 'libvpx-vp9', '-crf', '30', '-b:v', '0', '-row-mt', '1'];
+          // x264 can only be used in GPL projects
+          videoArgs = ['-vf', 'format=yuv420p', '-c:v', 'libx264', '-profile:v', 'high', '-preset:v', 'slow', '-crf', '17'];
+        }
+        break;
+      }
+      case 'lq': {
+        // eslint-disable-next-line unicorn/prefer-ternary
+        if (isMac) {
+          videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
+        } else {
+          // videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-sws_flags', 'neighbor', '-c:v', 'libtheora', '-qscale:v', '1'];
+          // x264 can only be used in GPL projects
+          videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-sws_flags', 'neighbor', '-c:v', 'libx264', '-profile:v', 'baseline', '-x264opts', 'level=3.0', '-preset:v', 'ultrafast', '-crf', '28'];
+        }
+        break;
+      }
+      case 'copy': {
+        videoArgs = ['-vcodec', 'copy'];
+        break;
+      }
+      default: {
+        videoArgs = ['-vn'];
+      }
+    }
+
+    switch (audio) {
+      case 'hq': {
+        // eslint-disable-next-line unicorn/prefer-ternary
+        if (isMac) {
+          audioArgs = ['-acodec', 'aac_at', '-b:a', '192k'];
+        } else {
+          audioArgs = ['-acodec', 'flac'];
+        }
+        break;
+      }
+      case 'lq': {
+        // eslint-disable-next-line unicorn/prefer-ternary
+        if (isMac) {
+          audioArgs = ['-acodec', 'aac_at', '-ar', '44100', '-ac', '2', '-b:a', '96k'];
+        } else {
+          audioArgs = ['-acodec', 'flac', '-ar', '11025', '-ac', '2'];
+        }
+        break;
+      }
+      case 'copy': {
+        audioArgs = ['-acodec', 'copy'];
+        break;
+      }
+      default: {
+        audioArgs = ['-an'];
+      }
+    }
+
+    const ffmpegArgs = [
+      '-hide_banner',
+
+      '-i', filePathArg,
+      ...videoArgs,
+      ...audioArgs,
+      '-sn',
+      '-y', outPath,
+    ];
+
+    const duration = await getDuration(filePathArg);
+    appendFfmpegCommandLog(ffmpegArgs);
+    const { stdout } = await runFfmpegWithProgress({ ffmpegArgs, duration, onProgress });
+
+    console.log(stdout.toString('utf8'));
+
     invariant(outPath != null);
     await transferTimestamps({ inPath: filePathArg, outPath, treatOutputFileModifiedTimeAsStart });
     return outPath;
-  }, [treatOutputFileModifiedTimeAsStart]);
+  }, [appendFfmpegCommandLog, treatOutputFileModifiedTimeAsStart]);
 
   // This is just used to load something into the player with correct duration,
   // so that the user can seek and then we render frames using ffmpeg & MediaSource

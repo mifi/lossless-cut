@@ -674,9 +674,9 @@ function App() {
     }
   }, [batchFiles, customOutDir, ensureWritableOutDir, html5ify, setWorking, workingRef]);
 
-  const getConvertToSupportedFormat = useCallback((fallback) => rememberConvertToSupportedFormat || fallback, [rememberConvertToSupportedFormat]);
+  const getConvertToSupportedFormat = useCallback((fallback: Html5ifyMode) => rememberConvertToSupportedFormat || fallback, [rememberConvertToSupportedFormat]);
 
-  const html5ifyAndLoadWithPreferences = useCallback(async (cod, fp, speed, hv, ha) => {
+  const html5ifyAndLoadWithPreferences = useCallback(async (cod: string | undefined, fp: string, speed: Html5ifyMode, hv: boolean, ha: boolean) => {
     if (!enableAutoHtml5ify) return;
     setWorking({ text: i18n.t('Converting to supported format') });
     await html5ifyAndLoad(cod, fp, getConvertToSupportedFormat(speed), hv, ha);

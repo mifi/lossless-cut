@@ -7,8 +7,8 @@ import { Readable } from 'node:stream';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { app } from 'electron';
 
-import { platform, arch, isWindows, isMac, isLinux } from './util.js';
-import { CaptureFormat, Html5ifyMode, Waveform } from '../../types.js';
+import { platform, arch, isWindows, isLinux } from './util.js';
+import { CaptureFormat, Waveform } from '../../types.js';
 import isDev from './isDev.js';
 import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';
@@ -470,115 +470,6 @@ async function readFormatData(filePath: string) {
 
 export async function getDuration(filePath: string) {
   return parseFloat((await readFormatData(filePath)).duration);
-}
-
-export async function html5ify({ outPath, filePath: filePathArg, speed, hasAudio, hasVideo, onProgress }: {
-  outPath: string, filePath: string, speed: Html5ifyMode, hasAudio: boolean, hasVideo: boolean, onProgress: (p: number) => void,
-}) {
-  let audio;
-  if (hasAudio) {
-    if (speed === 'slowest') audio = 'hq';
-    else if (['slow-audio', 'fast-audio'].includes(speed)) audio = 'lq';
-    else if (['fast-audio-remux'].includes(speed)) audio = 'copy';
-  }
-
-  let video;
-  if (hasVideo) {
-    if (speed === 'slowest') video = 'hq';
-    else if (['slow-audio', 'slow'].includes(speed)) video = 'lq';
-    else video = 'copy';
-  }
-
-  logger.info('Making HTML5 friendly version', { filePathArg, outPath, speed, video, audio });
-
-  let videoArgs;
-  let audioArgs;
-
-  // h264/aac_at: No licensing when using HW encoder (Video/Audio Toolbox on Mac)
-  // https://github.com/mifi/lossless-cut/issues/372#issuecomment-810766512
-
-  const targetHeight = 400;
-
-  switch (video) {
-    case 'hq': {
-      // eslint-disable-next-line unicorn/prefer-ternary
-      if (isMac) {
-        videoArgs = ['-vf', 'format=yuv420p', '-allow_sw', '1', '-vcodec', 'h264', '-b:v', '15M'];
-      } else {
-        // AV1 is very slow
-        // videoArgs = ['-vf', 'format=yuv420p', '-sws_flags', 'neighbor', '-vcodec', 'libaom-av1', '-crf', '30', '-cpu-used', '8'];
-        // Theora is a bit faster but not that much
-        // videoArgs = ['-vf', '-c:v', 'libtheora', '-qscale:v', '1'];
-        // videoArgs = ['-vf', 'format=yuv420p', '-c:v', 'libvpx-vp9', '-crf', '30', '-b:v', '0', '-row-mt', '1'];
-        // x264 can only be used in GPL projects
-        videoArgs = ['-vf', 'format=yuv420p', '-c:v', 'libx264', '-profile:v', 'high', '-preset:v', 'slow', '-crf', '17'];
-      }
-      break;
-    }
-    case 'lq': {
-      // eslint-disable-next-line unicorn/prefer-ternary
-      if (isMac) {
-        videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
-      } else {
-        // videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-sws_flags', 'neighbor', '-c:v', 'libtheora', '-qscale:v', '1'];
-        // x264 can only be used in GPL projects
-        videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-sws_flags', 'neighbor', '-c:v', 'libx264', '-profile:v', 'baseline', '-x264opts', 'level=3.0', '-preset:v', 'ultrafast', '-crf', '28'];
-      }
-      break;
-    }
-    case 'copy': {
-      videoArgs = ['-vcodec', 'copy'];
-      break;
-    }
-    default: {
-      videoArgs = ['-vn'];
-    }
-  }
-
-  switch (audio) {
-    case 'hq': {
-      // eslint-disable-next-line unicorn/prefer-ternary
-      if (isMac) {
-        audioArgs = ['-acodec', 'aac_at', '-b:a', '192k'];
-      } else {
-        audioArgs = ['-acodec', 'flac'];
-      }
-      break;
-    }
-    case 'lq': {
-      // eslint-disable-next-line unicorn/prefer-ternary
-      if (isMac) {
-        audioArgs = ['-acodec', 'aac_at', '-ar', '44100', '-ac', '2', '-b:a', '96k'];
-      } else {
-        audioArgs = ['-acodec', 'flac', '-ar', '11025', '-ac', '2'];
-      }
-      break;
-    }
-    case 'copy': {
-      audioArgs = ['-acodec', 'copy'];
-      break;
-    }
-    default: {
-      audioArgs = ['-an'];
-    }
-  }
-
-  const ffmpegArgs = [
-    '-hide_banner',
-
-    '-i', filePathArg,
-    ...videoArgs,
-    ...audioArgs,
-    '-sn',
-    '-y', outPath,
-  ];
-
-  const duration = await getDuration(filePathArg);
-  const process = runFfmpegProcess(ffmpegArgs);
-  if (duration) handleProgress(process, duration, onProgress);
-
-  const { stdout } = await process;
-  logger.info(stdout.toString('utf8'));
 }
 
 export function readOneJpegFrame({ path, seekTo, videoStreamIndex }: { path: string, seekTo: number, videoStreamIndex: number }) {
