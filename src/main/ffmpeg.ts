@@ -138,6 +138,7 @@ export async function runFfmpegWithProgress({ ffmpegArgs, duration, onProgress }
   duration?: number | undefined,
   onProgress: (a: number) => void,
 }) {
+  logger.info(getFfCommandLine('ffmpeg', ffmpegArgs));
   const process = runFfmpegProcess(ffmpegArgs);
   assert(process.stderr != null);
   handleProgress(process, duration, onProgress);
@@ -258,6 +259,7 @@ export async function detectSceneChanges({ filePath, minChange, onProgress, from
     '-filter_complex', `select='gt(scene,${minChange})',metadata=print:file=-`,
     '-f', 'null', '-',
   ];
+  logger.info(getFfCommandLine('ffmpeg', args));
   const process = runFfmpegProcess(args, { buffer: false });
 
   const times = [0];
@@ -291,6 +293,7 @@ async function detectIntervals({ filePath, customArgs, onProgress, from, to, mat
     ...customArgs,
     '-f', 'null', '-',
   ];
+  logger.info(getFfCommandLine('ffmpeg', args));
   const process = runFfmpegProcess(args, { buffer: false });
 
   let segments: { start: number, end: number }[] = [];
@@ -435,6 +438,7 @@ export async function captureFrames({ from, to, videoPath, outPathTemplate, qual
     '-y', outPathTemplate,
   ];
 
+  logger.info(getFfCommandLine('ffmpeg', args));
   const process = runFfmpegProcess(args, { buffer: false });
 
   handleProgress(process, to - from, onProgress);
@@ -446,13 +450,15 @@ export async function captureFrame({ timestamp, videoPath, outPath, quality }: {
   timestamp: number, videoPath: string, outPath: string, quality: number,
 }) {
   const ffmpegQuality = getFffmpegJpegQuality(quality);
-  await runFfmpegProcess([
+  const args = [
     '-ss', String(timestamp),
     '-i', videoPath,
     '-vframes', '1',
     '-q:v', String(ffmpegQuality),
     '-y', outPath,
-  ]);
+  ];
+  logger.info(getFfCommandLine('ffmpeg', args));
+  await runFfmpegProcess(args);
 }
 
 
@@ -571,6 +577,7 @@ export async function html5ify({ outPath, filePath: filePathArg, speed, hasAudio
   ];
 
   const duration = await getDuration(filePathArg);
+  logger.info(getFfCommandLine('ffmpeg', ffmpegArgs));
   const process = runFfmpegProcess(ffmpegArgs);
   if (duration) handleProgress(process, duration, onProgress);
 
@@ -597,8 +604,7 @@ export function readOneJpegFrame({ path, seekTo, videoStreamIndex }: { path: str
     '-',
   ];
 
-  // console.log(args);
-
+  // logger.info(getFfCommandLine('ffmpeg', args));
   return runFfmpegProcess(args, undefined, { logCli: true });
 }
 
@@ -678,6 +684,7 @@ export async function downloadMediaUrl(url: string, outPath: string) {
     outPath,
   ];
 
+  logger.info(getFfCommandLine('ffmpeg', args));
   await runFfmpegProcess(args);
 }
 
