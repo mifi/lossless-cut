@@ -103,7 +103,8 @@ function getExecaOptions({ env, ...customExecaOptions }: Omit<ExecaOptions<Buffe
 // todo collect warnings from ffmpeg output and show them after export? example: https://github.com/mifi/lossless-cut/issues/1469
 function runFfmpegProcess(args: readonly string[], customExecaOptions?: Omit<ExecaOptions<BufferEncodingOption>, 'encoding'>, additionalOptions?: { logCli?: boolean }) {
   const ffmpegPath = getFfmpegPath();
-  if (additionalOptions?.logCli) logger.info(getFfCommandLine('ffmpeg', args));
+  const { logCli = true } = additionalOptions ?? {};
+  if (logCli) logger.info(getFfCommandLine('ffmpeg', args));
 
   const process = execa(ffmpegPath, args, getExecaOptions(customExecaOptions));
 
@@ -138,16 +139,15 @@ export async function runFfmpegWithProgress({ ffmpegArgs, duration, onProgress }
   duration?: number | undefined,
   onProgress: (a: number) => void,
 }) {
-  logger.info(getFfCommandLine('ffmpeg', ffmpegArgs));
   const process = runFfmpegProcess(ffmpegArgs);
   assert(process.stderr != null);
   handleProgress(process, duration, onProgress);
   return process;
 }
 
-export async function runFfprobe(args: readonly string[], { timeout = isDev ? 10000 : 30000 } = {}) {
+export async function runFfprobe(args: readonly string[], { timeout = isDev ? 10000 : 30000, logCli = true } = {}) {
   const ffprobePath = getFfprobePath();
-  logger.info(getFfCommandLine('ffprobe', args));
+  if (logCli) logger.info(getFfCommandLine('ffprobe', args));
   const ps = execa(ffprobePath, args, getExecaOptions());
   const timer = setTimeout(() => {
     logger.warn('killing timed out ffprobe');
@@ -185,8 +185,7 @@ export async function renderWaveformPng({ filePath, start, duration, color, stre
     '-',
   ];
 
-  logger.info(getFfCommandLine('ffmpeg1', args1));
-  logger.info('|', getFfCommandLine('ffmpeg2', args2));
+  logger.info(`${getFfCommandLine('ffmpeg1', args1)} | \n${getFfCommandLine('ffmpeg2', args2)}`);
 
   let ps1: ExecaChildProcess<Buffer> | undefined;
   let ps2: ExecaChildProcess<Buffer> | undefined;
@@ -259,7 +258,6 @@ export async function detectSceneChanges({ filePath, minChange, onProgress, from
     '-filter_complex', `select='gt(scene,${minChange})',metadata=print:file=-`,
     '-f', 'null', '-',
   ];
-  logger.info(getFfCommandLine('ffmpeg', args));
   const process = runFfmpegProcess(args, { buffer: false });
 
   const times = [0];
@@ -293,7 +291,6 @@ async function detectIntervals({ filePath, customArgs, onProgress, from, to, mat
     ...customArgs,
     '-f', 'null', '-',
   ];
-  logger.info(getFfCommandLine('ffmpeg', args));
   const process = runFfmpegProcess(args, { buffer: false });
 
   let segments: { start: number, end: number }[] = [];
@@ -438,12 +435,12 @@ export async function captureFrames({ from, to, videoPath, outPathTemplate, qual
     '-y', outPathTemplate,
   ];
 
-  logger.info(getFfCommandLine('ffmpeg', args));
   const process = runFfmpegProcess(args, { buffer: false });
 
   handleProgress(process, to - from, onProgress);
 
   await process;
+  return args;
 }
 
 export async function captureFrame({ timestamp, videoPath, outPath, quality }: {
@@ -457,8 +454,8 @@ export async function captureFrame({ timestamp, videoPath, outPath, quality }: {
     '-q:v', String(ffmpegQuality),
     '-y', outPath,
   ];
-  logger.info(getFfCommandLine('ffmpeg', args));
   await runFfmpegProcess(args);
+  return args;
 }
 
 
@@ -577,7 +574,6 @@ export async function html5ify({ outPath, filePath: filePathArg, speed, hasAudio
   ];
 
   const duration = await getDuration(filePathArg);
-  logger.info(getFfCommandLine('ffmpeg', ffmpegArgs));
   const process = runFfmpegProcess(ffmpegArgs);
   if (duration) handleProgress(process, duration, onProgress);
 
@@ -605,7 +601,7 @@ export function readOneJpegFrame({ path, seekTo, videoStreamIndex }: { path: str
   ];
 
   // logger.info(getFfCommandLine('ffmpeg', args));
-  return runFfmpegProcess(args, undefined, { logCli: true });
+  return runFfmpegProcess(args, undefined, { logCli: false });
 }
 
 const enableLog = false;
@@ -684,7 +680,6 @@ export async function downloadMediaUrl(url: string, outPath: string) {
     outPath,
   ];
 
-  logger.info(getFfCommandLine('ffmpeg', args));
   await runFfmpegProcess(args);
 }
 

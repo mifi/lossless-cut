@@ -79,7 +79,7 @@ export async function readFrames({ filePath, from, to, streamIndex }: {
   filePath: string, from?: number | undefined, to?: number | undefined, streamIndex: number,
 }) {
   const intervalsArgs = from != null && to != null ? ['-read_intervals', `${from}%${to}`] : [];
-  const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', String(streamIndex), '-show_entries', 'packet=pts_time,flags', '-of', 'json', filePath]);
+  const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', String(streamIndex), '-show_entries', 'packet=pts_time,flags', '-of', 'json', filePath], { logCli: false });
   const packetsFiltered: Frame[] = (JSON.parse(stdout as unknown as string).packets as { flags: string, pts_time: string }[])
     .map((p) => ({
       keyframe: p.flags[0] === 'K',
@@ -443,7 +443,7 @@ async function extractNonAttachmentStreams({ customOutDir, filePath, streams, en
     ...streamArgs,
   ];
 
-  const { stdout } = await runFfmpeg(ffmpegArgs, undefined, { logCli: true });
+  const { stdout } = await runFfmpeg(ffmpegArgs);
   console.log(stdout.toString('utf8'));
 
   return outPaths;
@@ -479,7 +479,7 @@ async function extractAttachmentStreams({ customOutDir, filePath, streams, enabl
   ];
 
   try {
-    const { stdout } = await runFfmpeg(ffmpegArgs, undefined, { logCli: true });
+    const { stdout } = await runFfmpeg(ffmpegArgs);
     console.log(stdout.toString('utf8'));
   } catch (err) {
     // Unfortunately ffmpeg will exit with code 1 even though it's a success
@@ -517,7 +517,7 @@ async function renderThumbnail(filePath: string, timestamp: number, signal: Abor
     '-',
   ];
 
-  const { stdout } = await runFfmpeg(args, { signal });
+  const { stdout } = await runFfmpeg(args, { signal }, { logCli: false });
 
   const blob = new Blob([fixRemoteBuffer(stdout)], { type: 'image/jpeg' });
   return URL.createObjectURL(blob);
@@ -601,7 +601,7 @@ export async function extractWaveform({ filePath, outPath }: { filePath: string,
     '-f', 'wav',
     '-y',
     outPath,
-  ]);
+  ], undefined, { logCli: false });
   console.timeEnd('ffmpeg');
 }
 

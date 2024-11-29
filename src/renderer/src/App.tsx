@@ -374,8 +374,6 @@ function App() {
   const jumpTimelineStart = useCallback(() => seekAbs(0), [seekAbs]);
   const jumpTimelineEnd = useCallback(() => seekAbs(durationSafe), [durationSafe, seekAbs]);
 
-  const { captureFrameFromTag, captureFrameFromFfmpeg, captureFramesRange } = useFrameCapture({ formatTimecode, treatOutputFileModifiedTimeAsStart });
-
   // const getSafeCutTime = useCallback((cutTime, next) => ffmpeg.getSafeCutTime(neighbouringFrames, cutTime, next), [neighbouringFrames]);
 
   const outputDir = getOutDir(customOutDir, filePath);
@@ -596,8 +594,10 @@ function App() {
   const needSmartCut = !!(areWeCutting && enableSmartCut);
 
   const {
-    concatFiles, html5ifyDummy, cutMultiple, autoConcatCutSegments, html5ify, fixInvalidDuration,
+    appendFfmpegCommandLog, concatFiles, html5ifyDummy, cutMultiple, autoConcatCutSegments, html5ify, fixInvalidDuration,
   } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, appendLastCommandsLog, smartCutCustomBitrate: smartCutBitrate });
+
+  const { captureFrameFromTag, captureFrameFromFfmpeg, captureFramesRange } = useFrameCapture({ appendFfmpegCommandLog, formatTimecode, treatOutputFileModifiedTimeAsStart });
 
   const html5ifyAndLoad = useCallback(async (cod: string | undefined, fp: string, speed: Html5ifyMode, hv: boolean, ha: boolean) => {
     const usesDummyVideo = speed === 'fastest';

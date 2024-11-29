@@ -675,7 +675,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   }, [appendFfmpegCommandLog, filePath, treatOutputFileModifiedTimeAsStart]);
 
   return {
-    cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, autoConcatCutSegments,
+    appendFfmpegCommandLog, cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, autoConcatCutSegments,
   };
 }
 
