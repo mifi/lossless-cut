@@ -2629,6 +2629,7 @@ function App() {
                 visible={lastCommandsVisible}
                 onTogglePress={toggleLastCommands}
                 ffmpegCommandLog={ffmpegCommandLog}
+                setFfmpegCommandLog={setFfmpegCommandLog}
               />
 
               <Sheet visible={settingsVisible} onClosePress={toggleSettings}>
