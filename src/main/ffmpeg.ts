@@ -317,11 +317,15 @@ async function detectIntervals({ filePath, customArgs, onProgress, from, to, mat
         start: midpoints[i - 1] ?? 0,
         end: time,
       },
-      {
-        start: time,
-        end: midpoints[i + 1] ?? (to - from),
-      },
     ]);
+
+    const lastMidpoint = midpoints.at(-1);
+    if (lastMidpoint != null) {
+      segments.push({
+        start: lastMidpoint,
+        end: to - from,
+      });
+    }
   }
 
   return adjustSegmentsWithOffset({ segments, from });
