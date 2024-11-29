@@ -54,7 +54,7 @@ import { getSegColor } from './util/colors';
 import {
   getStreamFps, isCuttingStart, isCuttingEnd,
   readFileMeta, getDefaultOutFormat,
-  extractStreams, setCustomFfPath as ffmpegSetCustomFfPath,
+  setCustomFfPath as ffmpegSetCustomFfPath,
   isIphoneHevc, isProblematicAvc1, tryMapChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments,
   RefuseOverwriteError, extractSubtitleTrackToSegments,
@@ -594,7 +594,7 @@ function App() {
   const needSmartCut = !!(areWeCutting && enableSmartCut);
 
   const {
-    appendFfmpegCommandLog, concatFiles, html5ifyDummy, cutMultiple, autoConcatCutSegments, html5ify, fixInvalidDuration,
+    appendFfmpegCommandLog, concatFiles, html5ifyDummy, cutMultiple, autoConcatCutSegments, html5ify, fixInvalidDuration, extractStreams,
   } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, appendLastCommandsLog, smartCutCustomBitrate: smartCutBitrate });
 
   const { captureFrameFromTag, captureFrameFromFfmpeg, captureFramesRange } = useFrameCapture({ appendFfmpegCommandLog, formatTimecode, treatOutputFileModifiedTimeAsStart });
@@ -1083,7 +1083,7 @@ function App() {
         try {
           setProgress(undefined); // If extracting extra streams takes a long time, prevent loader from being stuck at 100%
           setWorking({ text: i18n.t('Extracting {{count}} unprocessable tracks', { count: nonCopiedExtraStreams.length }) });
-          await extractStreams({ filePath, customOutDir, streams: nonCopiedExtraStreams, enableOverwriteOutput });
+          await extractStreams({ customOutDir, streams: nonCopiedExtraStreams });
           notices.push(i18n.t('Unprocessable streams were exported as separate files.'));
         } catch (err) {
           console.error('Extra stream export failed', err);
@@ -1130,7 +1130,7 @@ function App() {
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [filePath, numStreamsToCopy, segmentsToExport, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, hideAllNotifications, cleanupChoices.cleanupAfterExport, cleanupFilesWithDialog, selectedSegmentsOrInverse, t, mergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateMergedFileNames, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, showOsNotification, handleExportFailed]);
+  }, [filePath, numStreamsToCopy, segmentsToExport, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, hideAllNotifications, cleanupChoices.cleanupAfterExport, cleanupFilesWithDialog, selectedSegmentsOrInverse, t, mergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateMergedFileNames, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, extractStreams, showOsNotification, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath) return;
@@ -1531,7 +1531,7 @@ function App() {
     try {
       setWorking({ text: i18n.t('Extracting all streams') });
       setStreamsSelectorShown(false);
-      const [firstExtractedPath] = await extractStreams({ customOutDir, filePath, streams: mainCopiedStreams, enableOverwriteOutput });
+      const [firstExtractedPath] = await extractStreams({ customOutDir, streams: mainCopiedStreams });
       if (!hideAllNotifications && firstExtractedPath != null) {
         showOsNotification(i18n.t('All tracks have been extracted'));
         openDirToast({ icon: 'success', filePath: firstExtractedPath, text: i18n.t('All streams have been extracted as separate files') });
@@ -1548,7 +1548,7 @@ function App() {
     } finally {
       setWorking(undefined);
     }
-  }, [customOutDir, enableOverwriteOutput, filePath, hideAllNotifications, mainCopiedStreams, setWorking, showOsNotification, workingRef]);
+  }, [customOutDir, extractStreams, filePath, hideAllNotifications, mainCopiedStreams, setWorking, showOsNotification, workingRef]);
 
   const userHtml5ifyCurrentFile = useCallback(async ({ ignoreRememberedValue }: { ignoreRememberedValue?: boolean } = {}) => {
     if (!filePath) return;
@@ -2101,7 +2101,7 @@ function App() {
     try {
       setWorking({ text: i18n.t('Extracting track') });
       // setStreamsSelectorShown(false);
-      const [firstExtractedPath] = await extractStreams({ customOutDir, filePath, streams: mainStreams.filter((s) => s.index === index), enableOverwriteOutput });
+      const [firstExtractedPath] = await extractStreams({ customOutDir, streams: mainStreams.filter((s) => s.index === index) });
       if (!hideAllNotifications && firstExtractedPath != null) {
         showOsNotification(i18n.t('Track has been extracted'));
         openDirToast({ icon: 'success', filePath: firstExtractedPath, text: i18n.t('Track has been extracted') });
@@ -2118,7 +2118,7 @@ function App() {
     } finally {
       setWorking(undefined);
     }
-  }, [customOutDir, enableOverwriteOutput, filePath, hideAllNotifications, mainStreams, setWorking, showOsNotification, workingRef]);
+  }, [customOutDir, extractStreams, filePath, hideAllNotifications, mainStreams, setWorking, showOsNotification, workingRef]);
 
   const batchFilePaths = useMemo(() => batchFiles.map((f) => f.path), [batchFiles]);
 

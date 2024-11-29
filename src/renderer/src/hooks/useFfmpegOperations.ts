@@ -5,13 +5,13 @@ import pMap from 'p-map';
 import invariant from 'tiny-invariant';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration } from '../util';
-import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileMeta, cutEncodeSmartPart, getExperimentalArgs, html5ify as ffmpegHtml5ify, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat } from '../ffmpeg';
+import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileMeta, cutEncodeSmartPart, getExperimentalArgs, html5ify as ffmpegHtml5ify, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { getSmartCutParams } from '../smartcut';
 import { isDurationValid } from '../segments';
 import { FFprobeStream } from '../../../../ffprobe';
 import { AvoidNegativeTs, Html5ifyMode, PreserveMetadata } from '../../../../types';
-import { AllFilesMeta, Chapter, CopyfileStreams, CustomTagsByFile, ParamsByStreamId, SegmentToExport } from '../types';
+import { AllFilesMeta, Chapter, CopyfileStreams, CustomTagsByFile, LiteFFprobeStream, ParamsByStreamId, SegmentToExport } from '../types';
 
 const { join, resolve, dirname } = window.require('path');
 const { writeFile, mkdir, access, constants: { F_OK, W_OK } } = window.require('fs/promises');
@@ -674,8 +674,146 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     return outPath;
   }, [appendFfmpegCommandLog, filePath, treatOutputFileModifiedTimeAsStart]);
 
+  function getPreferredCodecFormat(stream: LiteFFprobeStream) {
+    const map = {
+      mp3: { format: 'mp3', ext: 'mp3' },
+      opus: { format: 'opus', ext: 'opus' },
+      vorbis: { format: 'ogg', ext: 'ogg' },
+      h264: { format: 'mp4', ext: 'mp4' },
+      hevc: { format: 'mp4', ext: 'mp4' },
+      eac3: { format: 'eac3', ext: 'eac3' },
+
+      subrip: { format: 'srt', ext: 'srt' },
+      mov_text: { format: 'mp4', ext: 'mp4' },
+
+      m4a: { format: 'ipod', ext: 'm4a' },
+      aac: { format: 'adts', ext: 'aac' },
+      jpeg: { format: 'image2', ext: 'jpeg' },
+      png: { format: 'image2', ext: 'png' },
+
+      // TODO add more
+      // TODO allow user to change?
+    };
+
+    const match = map[stream.codec_name];
+    if (match) return match;
+
+    // default fallbacks:
+    if (stream.codec_type === 'video') return { ext: 'mkv', format: 'matroska' };
+    if (stream.codec_type === 'audio') return { ext: 'mka', format: 'matroska' };
+    if (stream.codec_type === 'subtitle') return { ext: 'mks', format: 'matroska' };
+    if (stream.codec_type === 'data') return { ext: 'bin', format: 'data' }; // https://superuser.com/questions/1243257/save-data-stream
+
+    return undefined;
+  }
+
+  async function extractNonAttachmentStreams({ customOutDir, streams }: {
+    customOutDir?: string | undefined, streams: FFprobeStream[],
+  }) {
+    invariant(filePath != null);
+    if (streams.length === 0) return [];
+
+    const outStreams = streams.map((s) => ({
+      index: s.index,
+      codec: s.codec_name || s.codec_tag_string || s.codec_type,
+      type: s.codec_type,
+      format: getPreferredCodecFormat(s),
+    }))
+      .filter(({ format, index }) => format != null && index != null);
+
+    // console.log(outStreams);
+
+
+    let streamArgs: string[] = [];
+    const outPaths = await pMap(outStreams, async ({ index, codec, type, format: { format, ext } }) => {
+      const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
+      if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
+
+      streamArgs = [
+        ...streamArgs,
+        '-map', `0:${index}`, '-c', 'copy', '-f', format, '-y', outPath,
+      ];
+      return outPath;
+    }, { concurrency: 1 });
+
+    const ffmpegArgs = [
+      '-hide_banner',
+
+      '-i', filePath,
+      ...streamArgs,
+    ];
+
+    appendFfmpegCommandLog(ffmpegArgs);
+    const { stdout } = await runFfmpeg(ffmpegArgs);
+    console.log(stdout.toString('utf8'));
+
+    return outPaths;
+  }
+
+  async function extractAttachmentStreams({ customOutDir, streams }: {
+    customOutDir?: string | undefined, streams: FFprobeStream[],
+  }) {
+    invariant(filePath != null);
+    if (streams.length === 0) return [];
+
+    console.log('Extracting', streams.length, 'attachment streams');
+
+    let streamArgs: string[] = [];
+    const outPaths = await pMap(streams, async ({ index, codec_name: codec, codec_type: type }) => {
+      const ext = codec || 'bin';
+      const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
+      if (outPath == null) throw new Error();
+      if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
+
+      streamArgs = [
+        ...streamArgs,
+        `-dump_attachment:${index}`, outPath,
+      ];
+      return outPath;
+    }, { concurrency: 1 });
+
+    const ffmpegArgs = [
+      '-y',
+      '-hide_banner',
+      '-loglevel', 'error',
+      ...streamArgs,
+      '-i', filePath,
+    ];
+
+    try {
+      appendFfmpegCommandLog(ffmpegArgs);
+      const { stdout } = await runFfmpeg(ffmpegArgs);
+      console.log(stdout.toString('utf8'));
+    } catch (err) {
+      // Unfortunately ffmpeg will exit with code 1 even though it's a success
+      // Note: This is kind of hacky:
+      if (err instanceof Error && 'exitCode' in err && 'stderr' in err && err.exitCode === 1 && typeof err.stderr === 'string' && err.stderr.includes('At least one output file must be specified')) return outPaths;
+      throw err;
+    }
+    return outPaths;
+  }
+
+  // https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
+  async function extractStreams({ customOutDir, streams }: {
+    customOutDir: string | undefined, streams: FFprobeStream[],
+  }) {
+    invariant(filePath != null);
+
+    const attachmentStreams = streams.filter((s) => s.codec_type === 'attachment');
+    const nonAttachmentStreams = streams.filter((s) => s.codec_type !== 'attachment');
+
+    // TODO progress
+
+    // Attachment streams are handled differently from normal streams
+    return [
+      ...(await extractNonAttachmentStreams({ customOutDir, streams: nonAttachmentStreams })),
+      ...(await extractAttachmentStreams({ customOutDir, streams: attachmentStreams })),
+    ];
+  }
+
+
   return {
-    appendFfmpegCommandLog, cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, autoConcatCutSegments,
+    appendFfmpegCommandLog, cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, autoConcatCutSegments, extractStreams,
   };
 }
 
