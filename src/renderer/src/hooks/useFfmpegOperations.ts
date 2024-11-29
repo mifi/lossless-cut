@@ -707,9 +707,9 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     return undefined;
   }
 
-  async function extractNonAttachmentStreams({ customOutDir, streams }: {
+  const extractNonAttachmentStreams = useCallback(async ({ customOutDir, streams }: {
     customOutDir?: string | undefined, streams: FFprobeStream[],
-  }) {
+  }) => {
     invariant(filePath != null);
     if (streams.length === 0) return [];
 
@@ -748,11 +748,11 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     console.log(stdout.toString('utf8'));
 
     return outPaths;
-  }
+  }, [appendFfmpegCommandLog, enableOverwriteOutput, filePath]);
 
-  async function extractAttachmentStreams({ customOutDir, streams }: {
+  const extractAttachmentStreams = useCallback(async ({ customOutDir, streams }: {
     customOutDir?: string | undefined, streams: FFprobeStream[],
-  }) {
+  }) => {
     invariant(filePath != null);
     if (streams.length === 0) return [];
 
@@ -791,12 +791,12 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       throw err;
     }
     return outPaths;
-  }
+  }, [appendFfmpegCommandLog, enableOverwriteOutput, filePath]);
 
   // https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
-  async function extractStreams({ customOutDir, streams }: {
+  const extractStreams = useCallback(async ({ customOutDir, streams }: {
     customOutDir: string | undefined, streams: FFprobeStream[],
-  }) {
+  }) => {
     invariant(filePath != null);
 
     const attachmentStreams = streams.filter((s) => s.codec_type === 'attachment');
@@ -809,8 +809,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       ...(await extractNonAttachmentStreams({ customOutDir, streams: nonAttachmentStreams })),
       ...(await extractAttachmentStreams({ customOutDir, streams: attachmentStreams })),
     ];
-  }
-
+  }, [extractAttachmentStreams, extractNonAttachmentStreams, filePath]);
 
   return {
     appendFfmpegCommandLog, cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, autoConcatCutSegments, extractStreams,
