@@ -2281,7 +2281,7 @@ function App() {
       ev.preventDefault();
       if (!ev.dataTransfer) return;
       const { files } = ev.dataTransfer;
-      const filePaths = [...files].map((f) => f.path);
+      const filePaths = [...files].map((f) => electron.webUtils.getPathForFile(f));
 
       focusWindow();
 

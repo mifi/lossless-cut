@@ -14,6 +14,7 @@ import { InverseCutSegment } from './types';
 
 
 const { stat } = window.require('fs/promises');
+const { webUtils } = window.require('electron');
 
 const outFmtStyle = { height: 20, maxWidth: 100 };
 const exportModeStyle = { flexGrow: 0, flexBasis: 140 };
@@ -63,7 +64,7 @@ function TopMenu({
     async function onDrop(ev: DragEvent) {
       ev.preventDefault();
       if (!ev.dataTransfer) return;
-      const paths = [...ev.dataTransfer.files].map((f) => f.path);
+      const paths = [...ev.dataTransfer.files].map((f) => webUtils.getPathForFile(f));
       const [firstPath] = paths;
       if (paths.length === 1 && firstPath && (await stat(firstPath)).isDirectory()) {
         setCustomOutDir(firstPath);
