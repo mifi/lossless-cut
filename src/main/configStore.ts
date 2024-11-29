@@ -150,6 +150,7 @@ const defaults: Config = {
   outputFileNameMinZeroPadding: 1,
   cutFromAdjustmentFrames: 0,
   invertTimelineScroll: undefined,
+  storeWindowBounds: true,
 };
 
 const configFileName = 'config.json'; // note: this is also hard-coded inside electron-store

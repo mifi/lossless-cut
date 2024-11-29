@@ -189,7 +189,7 @@ function createWindow() {
   });
 
   const debouncedSaveWindowState = debounce(() => {
-    if (!mainWindow) return;
+    if (!mainWindow || !configStore.get('storeWindowBounds')) return;
     const { x, y, width, height } = mainWindow.getNormalBounds();
     configStore.set('windowBounds', { x, y, width, height });
   }, 500);

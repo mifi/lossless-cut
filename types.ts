@@ -89,6 +89,7 @@ export interface Config {
   outFormatLocked: string | undefined,
   safeOutputFileName: boolean,
   windowBounds: { x: number, y: number, width: number, height: number } | undefined,
+  storeWindowBounds: boolean,
   enableAutoHtml5ify: boolean,
   keyBindings: KeyBinding[],
   customFfPath: string | undefined,

@@ -163,6 +163,8 @@ export default () => {
   useEffect(() => safeSetConfig({ outputFileNameMinZeroPadding }), [outputFileNameMinZeroPadding]);
   const [cutFromAdjustmentFrames, setCutFromAdjustmentFrames] = useState(safeGetConfigInitial('cutFromAdjustmentFrames'));
   useEffect(() => safeSetConfig({ cutFromAdjustmentFrames }), [cutFromAdjustmentFrames]);
+  const [storeWindowBounds, setStoreWindowBounds] = useState(safeGetConfigInitial('storeWindowBounds'));
+  useEffect(() => safeSetConfig({ storeWindowBounds }), [storeWindowBounds]);
 
   const resetKeyBindings = useCallback(() => {
     configStore.reset('keyBindings');
@@ -299,5 +301,7 @@ export default () => {
     setOutputFileNameMinZeroPadding,
     cutFromAdjustmentFrames,
     setCutFromAdjustmentFrames,
+    storeWindowBounds,
+    setStoreWindowBounds,
   };
 };
