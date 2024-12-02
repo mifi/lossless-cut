@@ -215,7 +215,7 @@
     "No": "Ne",
     "Yes": "Ano",
     "Separate files": "Jednotlivé soubory",
-    "Merge cuts": "Spojit sřihy",
+    "Merge cuts": "Spojit segmenty",
     "Export to separate files": "Exportovat do samostatných souborů",
     "Auto merge segments to one file after export": "Po exportu automaticky spojovat segmenty do jednoho souboru",
     "Normal cut": "Normální",
