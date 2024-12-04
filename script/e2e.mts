@@ -62,7 +62,11 @@ try {
 
   console.log('Sending quit command');
 
-  await client.post('api/action/quit').text();
+  try {
+    await client.post('api/action/quit').text();
+  } catch (err) {
+    console.warn('Quit command failed', err);
+  }
 } finally {
   // ps.cancel();
 }
