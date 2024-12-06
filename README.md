@@ -119,14 +119,11 @@ If you prefer to download the executables manually, this will of course always b
 - Windows: [7zip](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z) (Windows 7, 8 and 8.1 is [no longer supported](https://github.com/mifi/lossless-cut/discussions/1476) after [v3.50.0](https://github.com/mifi/lossless-cut/releases/tag/v3.50.0))
 - Linux: [x64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x64.tar.bz2) / [x64 AppImage](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x86_64.AppImage) / [arm64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-arm64.tar.bz2) / [Raspberry Pi armv7l](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-armv7l.tar.bz2)
 - [More releases](https://github.com/mifi/lossless-cut/releases) (note that APPX for Windows and PKG for MacOS **do not work**)
+- [Download latest nightly builds 🧪](https://mifi.no/llc/nightly).
 
 If you find LosslessCut useful, I'm very thankful for [your support](https://github.com/mifi/lossless-cut#donate-).
 
 What's the **difference between App Stores and GitHub download?** [Please see FAQ](issues.md#app-stores-and-github-difference)
-
-### Nightly builds 🧪
-
-If you want to test the very latest and greatest bleeding-edge version. 1. Go to [Actions](https://github.com/mifi/lossless-cut/actions/workflows/build.yml), 2. click on the latest *Build/release*, 3. scroll all the way down to *Artifacts*. **Note:** these builds may be totally broken!
 
 ## [Supported operating systems](./requirements.md)
 
