@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import assert from 'node:assert';
 import { execa } from 'execa';
-import got from 'got';
+import ky from 'ky';
 import os from 'node:os';
 import timers from 'node:timers/promises';
 
@@ -22,7 +22,7 @@ console.log('Started', losslessCutExePath);
 // eslint-disable-next-line unicorn/prefer-top-level-await
 ps.catch((err) => console.error(err));
 
-const client = got.extend({ prefixUrl: `http://127.0.0.1:${port}`, timeout: { request: 5000 } });
+const client = ky.extend({ prefixUrl: `http://127.0.0.1:${port}` });
 
 async function captureScreenshot(outPath: string) {
   // https://trac.ffmpeg.org/wiki/Capture/Desktop#Windows
@@ -30,7 +30,7 @@ async function captureScreenshot(outPath: string) {
   const platform = os.platform();
 
   if (platform === 'darwin') {
-    const { stderr } = await execa('ffmpeg', ['-f', 'avfoundation', '-list_devices', 'true', '-i', '', '-hide_banner'], { reject: false });
+    const { stderr } = await execa('ffmpeg', ['-f', 'avfoundation', '-list_devices', 'true', '-i', '', '-hide_banner'], { reject: false, timeout: 30000 });
     console.log(stderr);
   }
 
@@ -47,6 +47,7 @@ async function captureScreenshot(outPath: string) {
 
 try {
   const resp = await client('', {
+    timeout: 5000,
     retry: { backoffLimit: 5000, limit: 10 },
     hooks: { beforeRequest: [() => { console.log('attempt'); }] },
   }).text();
