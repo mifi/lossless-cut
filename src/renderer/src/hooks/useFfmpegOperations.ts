@@ -762,7 +762,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     appendFfmpegCommandLog(ffmpegArgs);
     const { stdout } = await runFfmpegWithProgress({ ffmpegArgs, duration, onProgress });
 
-    console.log(stdout.toString('utf8'));
+    console.log(new TextDecoder().decode(stdout));
 
     invariant(outPath != null);
     await transferTimestamps({ inPath: filePathArg, outPath, treatOutputFileModifiedTimeAsStart });
@@ -901,7 +901,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
     appendFfmpegCommandLog(ffmpegArgs);
     const { stdout } = await runFfmpeg(ffmpegArgs);
-    console.log(stdout.toString('utf8'));
+    console.log(new TextDecoder().decode(stdout));
 
     return outPaths;
   }, [appendFfmpegCommandLog, enableOverwriteOutput, filePath]);
@@ -939,7 +939,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     try {
       appendFfmpegCommandLog(ffmpegArgs);
       const { stdout } = await runFfmpeg(ffmpegArgs);
-      console.log(stdout.toString('utf8'));
+      console.log(new TextDecoder().decode(stdout));
     } catch (err) {
       // Unfortunately ffmpeg will exit with code 1 even though it's a success
       // Note: This is kind of hacky:

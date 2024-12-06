@@ -1,5 +1,5 @@
 {
-  "extends": ["@tsconfig/strictest", "@tsconfig/node18/tsconfig.json"],
+  "extends": ["@tsconfig/strictest", "@tsconfig/node20/tsconfig.json"],
   "compilerOptions": {
     "noEmit": true,
   },

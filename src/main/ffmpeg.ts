@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import readline from 'node:readline';
 import stringToStream from 'string-to-stream';
-import { BufferEncodingOption, execa, ExecaChildProcess, Options as ExecaOptions } from 'execa';
+import { execa, Options as ExecaOptions, ResultPromise } from 'execa';
 import assert from 'node:assert';
 import { Readable } from 'node:stream';
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -14,7 +14,7 @@ import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';
 
 
-const runningFfmpegs = new Set<ExecaChildProcess<Buffer>>();
+const runningFfmpegs = new Set<ResultPromise<Omit<ExecaOptions, 'encoding'> & { encoding: 'buffer' }>>();
 // setInterval(() => console.log(runningFfmpegs.size), 1000);
 
 let customFfPath: string | undefined;
@@ -59,7 +59,7 @@ export const getFfmpegPath = () => getFfPath('ffmpeg');
 export function abortFfmpegs() {
   logger.info('Aborting', runningFfmpegs.size, 'ffmpeg process(es)');
   runningFfmpegs.forEach((process) => {
-    process.kill('SIGTERM', { forceKillAfterTimeout: 10000 });
+    process.kill();
   });
 }
 
@@ -88,20 +88,27 @@ function handleProgress(
   });
 }
 
-function getExecaOptions({ env, ...customExecaOptions }: Omit<ExecaOptions<BufferEncodingOption>, 'buffer'> = {}) {
-  const execaOptions: Omit<ExecaOptions<BufferEncodingOption>, 'buffer'> = { ...customExecaOptions, encoding: 'buffer' };
-  // https://github.com/mifi/lossless-cut/issues/1143#issuecomment-1500883489
-  if (isLinux && !isDev && !customFfPath) {
-    return {
-      ...execaOptions,
-      env: { ...env, LD_LIBRARY_PATH: process.resourcesPath },
-    };
-  }
+function getExecaOptions({ env, cancelSignal, ...rest }: ExecaOptions = {}) {
+  // This is a ugly hack to please execa which expects cancelSignal to be a prototype of AbortSignal
+  // however this gets lost during @electron/remote passing
+  // https://github.com/sindresorhus/execa/blob/c8cff27a47b6e6f1cfbfec2bf7fa9dcd08cefed1/lib/terminate/cancel.js#L5
+  if (cancelSignal != null) Object.setPrototypeOf(cancelSignal, new AbortController().signal);
+
+  const execaOptions: Pick<ExecaOptions, 'env'> & { encoding: 'buffer' } = {
+    ...(cancelSignal != null && { cancelSignal }),
+    ...rest,
+    encoding: 'buffer' as const,
+    env: {
+      ...env,
+      // https://github.com/mifi/lossless-cut/issues/1143#issuecomment-1500883489
+      ...(isLinux && !isDev && !customFfPath && { LD_LIBRARY_PATH: process.resourcesPath }),
+    },
+  };
   return execaOptions;
 }
 
 // todo collect warnings from ffmpeg output and show them after export? example: https://github.com/mifi/lossless-cut/issues/1469
-function runFfmpegProcess(args: readonly string[], customExecaOptions?: Omit<ExecaOptions<BufferEncodingOption>, 'encoding'>, additionalOptions?: { logCli?: boolean }) {
+function runFfmpegProcess(args: readonly string[], customExecaOptions?: ExecaOptions, additionalOptions?: { logCli?: boolean }) {
   const ffmpegPath = getFfmpegPath();
   const { logCli = true } = additionalOptions ?? {};
   if (logCli) logger.info(getFfCommandLine('ffmpeg', args));
@@ -187,8 +194,8 @@ export async function renderWaveformPng({ filePath, start, duration, color, stre
 
   logger.info(`${getFfCommandLine('ffmpeg1', args1)} | \n${getFfCommandLine('ffmpeg2', args2)}`);
 
-  let ps1: ExecaChildProcess<Buffer> | undefined;
-  let ps2: ExecaChildProcess<Buffer> | undefined;
+  let ps1: ResultPromise<{ encoding: 'buffer' }> | undefined;
+  let ps2: ResultPromise<{ encoding: 'buffer' }> | undefined;
   try {
     ps1 = runFfmpegProcess(args1, { buffer: false }, { logCli: false });
     ps2 = runFfmpegProcess(args2, undefined, { logCli: false });
@@ -210,7 +217,7 @@ export async function renderWaveformPng({ filePath, start, duration, color, stre
     }
 
     return {
-      buffer: stdout,
+      buffer: Buffer.from(stdout),
     };
   } catch (err) {
     if (ps1) ps1.kill();
@@ -465,7 +472,7 @@ async function readFormatData(filePath: string) {
   const { stdout } = await runFfprobe([
     '-of', 'json', '-show_format', '-i', filePath, '-hide_banner',
   ]);
-  return JSON.parse(stdout as unknown as string).format;
+  return JSON.parse(new TextDecoder().decode(stdout)).format;
 }
 
 export async function getDuration(filePath: string) {
@@ -557,7 +564,7 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
 
   if (enableLog) logger.info(getFfCommandLine('ffmpeg', args));
 
-  return execa(getFfmpegPath(), args, { encoding: null, buffer: false, stderr: enableLog ? 'inherit' : 'pipe' });
+  return execa(getFfmpegPath(), args, { encoding: 'buffer', buffer: false, stderr: enableLog ? 'inherit' : 'pipe' });
 }
 
 export async function downloadMediaUrl(url: string, outPath: string) {

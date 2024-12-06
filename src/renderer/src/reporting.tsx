@@ -2,7 +2,7 @@ import i18n from 'i18next';
 import { Trans } from 'react-i18next';
 
 import CopyClipboardButton from './components/CopyClipboardButton';
-import { isStoreBuild, isMasBuild, isWindowsStoreBuild } from './util';
+import { isStoreBuild, isMasBuild, isWindowsStoreBuild, isExecaError } from './util';
 import { ReactSwal } from './swal';
 
 const electron = window.require('electron');
@@ -33,15 +33,15 @@ export function openSendReportDialog(err: unknown | undefined, state?: unknown) 
   const version = app.getVersion();
 
   const text = `${err instanceof Error ? err.stack : 'No error occurred.'}\n\n${JSON.stringify({
-    err: err instanceof Error && {
-      code: err['code'],
-      killed: err['killed'],
-      failed: err['failed'],
-      timedOut: err['timedOut'],
-      isCanceled: err['isCanceled'],
-      exitCode: err['exitCode'],
-      signal: err['signal'],
-      signalDescription: err['signalDescription'],
+    err: isExecaError(err) && {
+      code: err.code,
+      isTerminated: err.isTerminated,
+      failed: err.failed,
+      timedOut: err.timedOut,
+      isCanceled: err.isCanceled,
+      exitCode: err.exitCode,
+      signal: err.signal,
+      signalDescription: err.signalDescription,
     },
 
     state,

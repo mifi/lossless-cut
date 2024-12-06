@@ -6,6 +6,7 @@ import sortBy from 'lodash/sortBy';
 import { renderThumbnails as ffmpegRenderThumbnails } from '../ffmpeg';
 import { Thumbnail } from '../types';
 import { isDurationValid } from '../segments';
+import { isExecaError } from '../util';
 
 
 export default ({ filePath, zoomedDuration, zoomWindowStartTime, showThumbnails }: {
@@ -39,7 +40,7 @@ export default ({ filePath, zoomedDuration, zoomWindowStartTime, showThumbnails 
 
         await ffmpegRenderThumbnails({ signal: abortController.signal, filePath: debounced.filePath, from: debounced.zoomWindowStartTime, duration: debounced.zoomedDuration, onThumbnail: addThumbnail });
       } catch (err) {
-        if ((err as Error).name !== 'AbortError') {
+        if ((err as Error).name !== 'AbortError' && !(isExecaError(err) && err.isCanceled)) {
           console.error('Failed to render thumbnails', err);
         }
       }

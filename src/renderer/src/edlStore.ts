@@ -84,7 +84,7 @@ export async function saveLlcProject({ savePath, filePath, cutSegments }) {
 }
 
 export async function loadLlcProject(path: string) {
-  const parsed = JSON5.parse(await readFile(path) as unknown as string) as unknown;
+  const parsed = JSON5.parse(await readFile(path, 'utf8')) as unknown;
   if (parsed == null || typeof parsed !== 'object') throw new Error('Invalid LLC file');
   let mediaFileName: string | undefined;
   if ('mediaFileName' in parsed && typeof parsed.mediaFileName === 'string') {

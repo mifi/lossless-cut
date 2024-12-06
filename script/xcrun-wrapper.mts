@@ -18,7 +18,7 @@ const bundleId = args[4];
 // seems to be the same
 const ascPublicId = apiIssuer;
 
-const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url)) as unknown as string);
+const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 
 console.log('Using version', packageJson.version);
 

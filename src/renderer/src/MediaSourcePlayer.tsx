@@ -230,7 +230,7 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndex, 
   processChunk();
 }
 
-function drawJpegFrame(canvas: HTMLCanvasElement | null, jpegImage: Buffer) {
+function drawJpegFrame(canvas: HTMLCanvasElement | null, jpegImage: Uint8Array) {
   if (!canvas) return;
 
   const ctx = canvas.getContext('2d');
@@ -244,7 +244,8 @@ function drawJpegFrame(canvas: HTMLCanvasElement | null, jpegImage: Buffer) {
   img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   // eslint-disable-next-line unicorn/prefer-add-event-listener
   img.onerror = (error) => console.error('Canvas JPEG image error', error);
-  img.src = `data:image/jpeg;base64,${jpegImage.toString('base64')}`;
+  // todo use Blob?
+  img.src = `data:image/jpeg;base64,${Buffer.from(jpegImage).toString('base64')}`;
 }
 
 async function createPauseImage({ path, seekTo, videoStreamIndex, canvas, signal }: {

@@ -3,7 +3,7 @@ import sortBy from 'lodash/sortBy';
 import { useThrottle } from '@uidotdev/usehooks';
 import { waveformColorDark, waveformColorLight } from '../colors';
 
-import { fixRemoteBuffer, renderWaveformPng } from '../ffmpeg';
+import { renderWaveformPng, safeCreateBlob } from '../ffmpeg';
 import { RenderableWaveform } from '../types';
 import { FFprobeStream } from '../../../../ffprobe';
 
@@ -75,7 +75,7 @@ export default ({ darkMode, filePath, relevantTime, duration, waveformEnabled, a
 
           return {
             ...w,
-            url: URL.createObjectURL(new Blob([fixRemoteBuffer(buffer)], { type: 'image/png' })),
+            url: URL.createObjectURL(safeCreateBlob(buffer, { type: 'image/png' })),
           };
         }));
       } catch (err) {

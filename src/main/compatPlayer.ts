@@ -1,4 +1,5 @@
 import assert from 'node:assert';
+import { ExecaError } from 'execa';
 
 import logger from './logger.js';
 import { createMediaSourceProcess, readOneJpegFrame as readOneJpegFrameRaw } from './ffmpeg.js';
@@ -64,16 +65,12 @@ export function createMediaSourceStream({ path, videoStreamIndex, audioStreamInd
     try {
       await process;
     } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
+      if (err instanceof ExecaError && err.isTerminated) {
         return;
       }
 
-      // @ts-expect-error todo
-      if (!(err.killed)) {
-        // @ts-expect-error todo
-        logger.warn(err.message);
-        logger.warn(stderr.toString('utf8'));
-      }
+      logger.warn((err as Error).message);
+      logger.warn(stderr.toString('utf8'));
     }
   })();
 

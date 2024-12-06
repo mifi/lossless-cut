@@ -27,23 +27,23 @@ export class RefuseOverwriteError extends Error {
   }
 }
 
-export function fixRemoteBuffer(buffer: Buffer) {
+export function safeCreateBlob(array: Uint8Array, options?: BlobPropertyBag) {
   // if we don't do this when creating a Blob, we get:
   // "Failed to construct 'Blob': The provided ArrayBufferView value must not be resizable."
   // maybe when moving away from @electron/remote, it's not needed anymore?
-  const buffer2 = Buffer.allocUnsafe(buffer.length);
-  buffer.copy(buffer2);
-  return buffer2;
+  // https://stackoverflow.com/a/25255750/6519037
+  const cloned = new Uint8Array(array);
+  return new Blob([cloned], options);
 }
 
-export function logStdoutStderr({ stdout, stderr }: { stdout: Buffer, stderr: Buffer }) {
+export function logStdoutStderr({ stdout, stderr }: { stdout: Uint8Array, stderr: Uint8Array }) {
   if (stdout.length > 0) {
     console.log('%cSTDOUT:', 'color: green; font-weight: bold');
-    console.log(stdout.toString('utf8'));
+    console.log(new TextDecoder().decode(stdout));
   }
   if (stderr.length > 0) {
     console.log('%cSTDERR:', 'color: blue; font-weight: bold');
-    console.log(stderr.toString('utf8'));
+    console.log(new TextDecoder().decode(stderr));
   }
 }
 
@@ -77,7 +77,7 @@ export async function readFrames({ filePath, from, to, streamIndex }: {
 }) {
   const intervalsArgs = from != null && to != null ? ['-read_intervals', `${from}%${to}`] : [];
   const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', String(streamIndex), '-show_entries', 'packet=pts_time,flags', '-of', 'json', filePath], { logCli: false });
-  const packetsFiltered: Frame[] = (JSON.parse(stdout as unknown as string).packets as { flags: string, pts_time: string }[])
+  const packetsFiltered: Frame[] = (JSON.parse(new TextDecoder().decode(stdout)).packets as { flags: string, pts_time: string }[])
     .map((p) => ({
       keyframe: p.flags[0] === 'K',
       time: parseFloat(p.pts_time),
@@ -356,7 +356,7 @@ export async function readFileMeta(filePath: string) {
     let parsedJson: FFprobeProbeResult;
     try {
       // https://github.com/mifi/lossless-cut/issues/1342
-      parsedJson = JSON.parse(stdout.toString('utf8'));
+      parsedJson = JSON.parse(new TextDecoder().decode(stdout));
     } catch {
       console.log('ffprobe stdout', stdout);
       throw new Error('ffprobe returned malformed data');
@@ -383,9 +383,9 @@ async function renderThumbnail(filePath: string, timestamp: number, signal: Abor
     '-',
   ];
 
-  const { stdout } = await runFfmpeg(args, { signal }, { logCli: false });
+  const { stdout } = await runFfmpeg(args, { cancelSignal: signal }, { logCli: false });
 
-  const blob = new Blob([fixRemoteBuffer(stdout)], { type: 'image/jpeg' });
+  const blob = safeCreateBlob(stdout, { type: 'image/jpeg' });
   return URL.createObjectURL(blob);
 }
 
@@ -399,7 +399,7 @@ export async function extractSubtitleTrack(filePath: string, streamId: number) {
   ];
 
   const { stdout } = await runFfmpeg(args);
-  return stdout.toString('utf8');
+  return new TextDecoder().decode(stdout);
 }
 
 export async function extractSubtitleTrackToSegments(filePath: string, streamId: number) {
@@ -423,7 +423,7 @@ export async function extractSubtitleTrackVtt(filePath: string, streamId: number
 
   const { stdout } = await runFfmpeg(args);
 
-  const blob = new Blob([fixRemoteBuffer(stdout)], { type: 'text/vtt' });
+  const blob = safeCreateBlob(stdout, { type: 'text/vtt' });
   return URL.createObjectURL(blob);
 }
 
