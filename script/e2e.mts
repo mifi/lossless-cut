@@ -15,7 +15,7 @@ assert(screenshotOutPath);
 
 const port = 8081;
 
-const ps = execa(losslessCutExePath, ['--http-api', String(port)]);
+const ps = execa(losslessCutExePath, ['--http-api', String(port)], { forceKillAfterDelay: 10000 });
 
 console.log('Started', losslessCutExePath);
 
@@ -66,6 +66,7 @@ try {
     await client.post('api/action/quit').text();
   } catch (err) {
     console.warn('Quit command failed', err);
+    ps.kill();
   }
 } finally {
   // ps.cancel();
