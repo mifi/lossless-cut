@@ -105,6 +105,7 @@ If the output file name has special characters that get replaced by underscore (
 ## Linux specific issues
 
 - If you get an error like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.`, try to run it as `./lossless-cut --no-sandbox`. See [#258](https://github.com/mifi/lossless-cut/issues/258)
+- [Hardware accelerated HEVC playback](https://github.com/mifi/lossless-cut/discussions/2261)
 
 If you have an issue with the Snap or Flatpak version of LosslessCut, try instead the GitHub downloads. I **cannot provide support for the [Flatpak version](https://github.com/flathub/no.mifi.losslesscut)** because is not maintained by me.
 
