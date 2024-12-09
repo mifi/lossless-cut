@@ -75,9 +75,11 @@ try {
 
 console.log('Waiting for app to quit');
 
-const { stdout, stderr } = await ps;
-
-console.log('App has quit');
-
-console.log('stdout:', stdout);
-console.log('stderr:', stderr);
+try {
+  const { stdout, stderr } = await ps;
+  console.log('App exited');
+  console.log('stdout:', stdout);
+  console.log('stderr:', stderr);
+} catch (err) {
+  console.warn(err);
+}
