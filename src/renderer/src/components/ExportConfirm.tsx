@@ -34,7 +34,19 @@ const outDirStyle: CSSProperties = { ...highlightedTextStyle, wordBreak: 'break-
 
 const warningStyle: CSSProperties = { color: 'var(--orange8)', fontSize: '80%', marginBottom: '.5em' };
 
+const adjustCutFromValues = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const adjustCutToValues = [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
 const HelpIcon = ({ onClick, style }: { onClick: () => void, style?: CSSProperties }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', color: primaryTextColor, verticalAlign: 'middle', ...style }} />;
+
+function ShiftTimes({ values, num, setNum }: { values: number[], num: number, setNum: (n: number) => void }) {
+  const { t } = useTranslation();
+  return (
+    <Select value={num} onChange={(e) => setNum(Number(e.target.value))} style={{ height: 20, marginLeft: 5 }}>
+      {values.map((v) => <option key={v} value={v}>{t('{{numFrames}} frames', { numFrames: v >= 0 ? `+${v}` : v, count: v })}</option>)}
+    </Select>
+  );
+}
 
 function ExportConfirm({
   areWeCutting,
@@ -95,7 +107,7 @@ function ExportConfirm({
 }) {
   const { t } = useTranslation();
 
-  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames } = useUserSettings();
+  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames } = useUserSettings();
 
   const togglePreserveChapters = useCallback(() => setPreserveChapters((val) => !val), [setPreserveChapters]);
   const togglePreserveMovData = useCallback(() => setPreserveMovData((val) => !val), [setPreserveMovData]);
@@ -350,19 +362,28 @@ function ExportConfirm({
                   <tbody>
 
                     {areWeCutting && (
-                      <tr>
-                        <td>
-                          {t('Shift all start times')}
-                        </td>
-                        <td>
-                          <Select value={cutFromAdjustmentFrames} onChange={(e) => setCutFromAdjustmentFrames(Number(e.target.value))} style={{ height: 20, marginLeft: 5 }}>
-                            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => <option key={v} value={v}>{t('+{{numFrames}} frames', { numFrames: v, count: v })}</option>)}
-                          </Select>
-                        </td>
-                        <td>
-                          <HelpIcon onClick={onCutFromAdjustmentFramesHelpPress} />
-                        </td>
-                      </tr>
+                      <>
+                        <tr>
+                          <td>
+                            {t('Shift all start times')}
+                          </td>
+                          <td>
+                            <ShiftTimes values={adjustCutFromValues} num={cutFromAdjustmentFrames} setNum={setCutFromAdjustmentFrames} />
+                          </td>
+                          <td>
+                            <HelpIcon onClick={onCutFromAdjustmentFramesHelpPress} />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            {t('Shift all end times')}
+                          </td>
+                          <td>
+                            <ShiftTimes values={adjustCutToValues} num={cutToAdjustmentFrames} setNum={setCutToAdjustmentFrames} />
+                          </td>
+                          <td />
+                        </tr>
+                      </>
                     )}
 
                     {isMov && (

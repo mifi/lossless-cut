@@ -111,6 +111,7 @@ export interface Config {
   preferStrongColors: boolean,
   outputFileNameMinZeroPadding: number,
   cutFromAdjustmentFrames: number,
+  cutToAdjustmentFrames: number,
   invertTimelineScroll: boolean | undefined,
 }
 

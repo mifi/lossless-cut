@@ -76,7 +76,7 @@ async function pathExists(path: string) {
   }
 }
 
-function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, appendLastCommandsLog, smartCutCustomBitrate, appendFfmpegCommandLog }: {
+function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, smartCutCustomBitrate, appendFfmpegCommandLog }: {
   filePath: string | undefined,
   treatInputFileModifiedTimeAsStart: boolean | null | undefined,
   treatOutputFileModifiedTimeAsStart: boolean | null | undefined,
@@ -84,6 +84,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   needSmartCut: boolean,
   outputPlaybackRate: number,
   cutFromAdjustmentFrames: number,
+  cutToAdjustmentFrames: number,
   appendLastCommandsLog: (a: string) => void,
   smartCutCustomBitrate: number | undefined,
   appendFfmpegCommandLog: (args: string[]) => void,
@@ -263,11 +264,12 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
     const cuttingStart = isCuttingStart(cutFrom);
     const cutFromWithAdjustment = cutFrom + cutFromAdjustmentFrames * frameDuration;
+    const cutToWithAdjustment = cutTo + cutToAdjustmentFrames * frameDuration;
     const cuttingEnd = isCuttingEnd(cutTo, videoDuration);
     const areWeCutting = cuttingStart || cuttingEnd;
-    if (areWeCutting) console.log('Cutting from', cuttingStart ? `${cutFrom} (${cutFromWithAdjustment} adjusted ${cutFromAdjustmentFrames} frames)` : 'start', 'to', cuttingEnd ? cutTo : 'end');
+    if (areWeCutting) console.log('Cutting from', cuttingStart ? `${cutFrom} (${cutFromWithAdjustment} adjusted ${cutFromAdjustmentFrames} frames)` : 'start', 'to', cuttingEnd ? `${cutTo} (adjusted ${cutToAdjustmentFrames} frames)` : 'end');
 
-    let cutDuration = cutTo - cutFromWithAdjustment;
+    let cutDuration = cutToWithAdjustment - cutFromWithAdjustment;
     if (detectedFps != null) cutDuration = Math.max(cutDuration, frameDuration); // ensure at least one frame duration
 
     // Don't cut if no need: https://github.com/mifi/lossless-cut/issues/50
@@ -415,7 +417,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     logStdoutStderr(result);
 
     await transferTimestamps({ inPath: filePath, outPath, cutFrom, cutTo, treatInputFileModifiedTimeAsStart, duration: isDurationValid(videoDuration) ? videoDuration : undefined, treatOutputFileModifiedTimeAsStart });
-  }, [appendFfmpegCommandLog, cutFromAdjustmentFrames, filePath, getOutputPlaybackRateArgs, shouldSkipExistingFile, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
+  }, [appendFfmpegCommandLog, cutFromAdjustmentFrames, cutToAdjustmentFrames, filePath, getOutputPlaybackRateArgs, shouldSkipExistingFile, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   // inspired by https://gist.github.com/fernandoherreradelasheras/5eca67f4200f1a7cc8281747da08496e
   const cutEncodeSmartPart = useCallback(async ({ cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate, videoTimebase, allFilesMeta, copyFileStreams, videoStreamIndex, ffmpegExperimental }: {

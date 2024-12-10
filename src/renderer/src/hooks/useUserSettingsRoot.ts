@@ -163,6 +163,8 @@ export default () => {
   useEffect(() => safeSetConfig({ outputFileNameMinZeroPadding }), [outputFileNameMinZeroPadding]);
   const [cutFromAdjustmentFrames, setCutFromAdjustmentFrames] = useState(safeGetConfigInitial('cutFromAdjustmentFrames'));
   useEffect(() => safeSetConfig({ cutFromAdjustmentFrames }), [cutFromAdjustmentFrames]);
+  const [cutToAdjustmentFrames, setCutToAdjustmentFrames] = useState(safeGetConfigInitial('cutToAdjustmentFrames'));
+  useEffect(() => safeSetConfig({ cutToAdjustmentFrames }), [cutToAdjustmentFrames]);
   const [storeWindowBounds, setStoreWindowBounds] = useState(safeGetConfigInitial('storeWindowBounds'));
   useEffect(() => safeSetConfig({ storeWindowBounds }), [storeWindowBounds]);
 
@@ -301,6 +303,8 @@ export default () => {
     setOutputFileNameMinZeroPadding,
     cutFromAdjustmentFrames,
     setCutFromAdjustmentFrames,
+    cutToAdjustmentFrames,
+    setCutToAdjustmentFrames,
     storeWindowBounds,
     setStoreWindowBounds,
   };

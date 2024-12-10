@@ -149,6 +149,7 @@ const defaults: Config = {
   preferStrongColors: false,
   outputFileNameMinZeroPadding: 1,
   cutFromAdjustmentFrames: 0,
+  cutToAdjustmentFrames: 0,
   invertTimelineScroll: undefined,
   storeWindowBounds: true,
 };
