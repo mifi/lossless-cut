@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import sortBy from 'lodash/sortBy';
 import { useThrottle } from '@uidotdev/usehooks';
-import { waveformColorDark, waveformColorLight } from '../colors';
 
 import { renderWaveformPng, safeCreateBlob } from '../ffmpeg';
 import { RenderableWaveform } from '../types';
@@ -11,8 +10,13 @@ import { FFprobeStream } from '../../../../ffprobe';
 const maxWaveforms = 100;
 // const maxWaveforms = 3; // testing
 
-export default ({ darkMode, filePath, relevantTime, duration, waveformEnabled, audioStream, ffmpegExtractWindow }: {
-  darkMode: boolean, filePath: string | undefined, relevantTime: number, duration: number | undefined, waveformEnabled: boolean, audioStream: FFprobeStream | undefined, ffmpegExtractWindow: number,
+export default ({ filePath, relevantTime, duration, waveformEnabled, audioStream, ffmpegExtractWindow }: {
+  filePath: string | undefined,
+  relevantTime: number,
+  duration: number | undefined,
+  waveformEnabled: boolean,
+  audioStream: FFprobeStream | undefined,
+  ffmpegExtractWindow: number,
 }) => {
   const creatingWaveformPromise = useRef<Promise<unknown>>();
   const [waveforms, setWaveforms] = useState<RenderableWaveform[]>([]);
@@ -21,8 +25,6 @@ export default ({ darkMode, filePath, relevantTime, duration, waveformEnabled, a
   useEffect(() => {
     waveformsRef.current = waveforms;
   }, [waveforms]);
-
-  const waveformColor = darkMode ? waveformColorDark : waveformColorLight;
 
   useEffect(() => {
     waveformsRef.current = [];
@@ -43,7 +45,7 @@ export default ({ darkMode, filePath, relevantTime, duration, waveformEnabled, a
       if (!shouldRun) return;
 
       try {
-        const promise = renderWaveformPng({ filePath, start: waveformStartTimeThrottled, duration: safeExtractDuration, color: waveformColor, streamIndex: audioStream.index });
+        const promise = renderWaveformPng({ filePath, start: waveformStartTimeThrottled, duration: safeExtractDuration, color: '##000000', streamIndex: audioStream.index });
         creatingWaveformPromise.current = promise;
 
         setWaveforms((currentWaveforms) => {
@@ -88,7 +90,7 @@ export default ({ darkMode, filePath, relevantTime, duration, waveformEnabled, a
     return () => {
       aborted = true;
     };
-  }, [audioStream, filePath, safeExtractDuration, waveformColor, waveformEnabled, waveformStartTimeThrottled]);
+  }, [audioStream, filePath, safeExtractDuration, waveformEnabled, waveformStartTimeThrottled]);
 
   const lastWaveformsRef = useRef<RenderableWaveform[]>([]);
   useEffect(() => {
