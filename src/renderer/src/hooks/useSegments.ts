@@ -11,7 +11,7 @@ import { errorToast } from '../swal';
 import { showParametersDialog } from '../dialogs/parameters';
 import { createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, selectSegmentsByExprDialog } from '../dialogs';
 import { createSegment, findSegmentsAtCursor, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2, addSegmentColorIndex } from '../segments';
-import * as ffmpegParameters from '../ffmpeg-parameters';
+import { parameters as allFfmpegParameters, FfmpegDialog } from '../ffmpegParameters';
 import { maxSegmentsAllowed } from '../util/constants';
 import { ApparentCutSegment, ParseTimecode, SegmentBase, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
 import safeishEval from '../worker/eval';
@@ -55,6 +55,19 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
   const [currentSegIndex, setCurrentSegIndex] = useState(0);
   const [deselectedSegmentIds, setDeselectedSegmentIds] = useState<Record<string, boolean>>({});
+
+  const [ffmpegParameters, setFfmpegParameters] = useState(() => Object.fromEntries(Object.entries(allFfmpegParameters).map(([dialogType, parameters]) => ([
+    dialogType,
+    Object.fromEntries(Object.entries(parameters).map(([k2, v2]) => [k2, v2.value])),
+  ] as const))));
+
+  const setFfmpegParametersForDialog = useCallback((dialogType: FfmpegDialog, newParams: Record<string, string>) => setFfmpegParameters((existing) => ({
+    ...existing,
+    [dialogType]: {
+      ...existing[dialogType],
+      ...newParams,
+    },
+  })), []);
 
   const isSegmentSelected = useCallback(({ segId }: { segId: string }) => !deselectedSegmentIds[segId], [deselectedSegmentIds]);
 
@@ -148,33 +161,45 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
   const selectedSegmentsRaw = useMemo(() => apparentCutSegments.filter((segment) => isSegmentSelected(segment)), [apparentCutSegments, isSegmentSelected]);
 
+  const getFfmpegParameters = useCallback((key: FfmpegDialog) => {
+    const parameters = ffmpegParameters[key];
+    invariant(parameters);
+    return parameters;
+  }, [ffmpegParameters]);
+
   const detectBlackScenes = useCallback(async () => {
-    const parameters = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters: ffmpegParameters.blackdetect(), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#blackdetect' });
+    const dialogType = 'blackdetect';
+    const parameters = await showParametersDialog({ title: i18n.t('Enter parameters'), dialogType, parameters: getFfmpegParameters(dialogType), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#blackdetect' });
     if (parameters == null) return;
     const { mode, ...filterOptions } = parameters;
+    setFfmpegParametersForDialog(dialogType, parameters);
     invariant(mode === '1' || mode === '2');
     invariant(filePath != null);
     await detectSegments({ name: 'blackScenes', workingText: i18n.t('Detecting black scenes'), errorText: i18n.t('Failed to detect black scenes'), fn: async () => blackDetect({ filePath, filterOptions, boundingMode: mode === '1', onProgress: setProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
-  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, filePath, setProgress]);
+  }, [getFfmpegParameters, setFfmpegParametersForDialog, filePath, detectSegments, setProgress, currentApparentCutSeg.start, currentApparentCutSeg.end]);
 
   const detectSilentScenes = useCallback(async () => {
-    const parameters = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters: ffmpegParameters.silencedetect(), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#silencedetect' });
+    const dialogType = 'silencedetect';
+    const parameters = await showParametersDialog({ title: i18n.t('Enter parameters'), dialogType, parameters: getFfmpegParameters(dialogType), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#silencedetect' });
     if (parameters == null) return;
+    setFfmpegParametersForDialog(dialogType, parameters);
     const { mode, ...filterOptions } = parameters;
     invariant(mode === '1' || mode === '2');
     invariant(filePath != null);
     await detectSegments({ name: 'silentScenes', workingText: i18n.t('Detecting silent scenes'), errorText: i18n.t('Failed to detect silent scenes'), fn: async () => silenceDetect({ filePath, filterOptions, boundingMode: mode === '1', onProgress: setProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
-  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, filePath, setProgress]);
+  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress]);
 
   const detectSceneChanges = useCallback(async () => {
-    const filterOptions = await showParametersDialog({ title: i18n.t('Enter parameters'), parameters: ffmpegParameters.sceneChange() });
-    if (filterOptions == null) return;
+    const dialogType = 'sceneChange';
+    const parameters = await showParametersDialog({ title: i18n.t('Enter parameters'), dialogType, parameters: getFfmpegParameters(dialogType) });
+    if (parameters == null) return;
+    setFfmpegParametersForDialog(dialogType, parameters);
     invariant(filePath != null);
     // eslint-disable-next-line prefer-destructuring
-    const minChange = filterOptions['minChange'];
+    const minChange = parameters['minChange'];
     invariant(minChange != null);
     await detectSegments({ name: 'sceneChanges', workingText: i18n.t('Detecting scene changes'), errorText: i18n.t('Failed to detect scene changes'), fn: async () => ffmpegDetectSceneChanges({ filePath, minChange, onProgress: setProgress, from: currentApparentCutSeg.start, to: currentApparentCutSeg.end }) });
-  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, filePath, setProgress]);
+  }, [currentApparentCutSeg.end, currentApparentCutSeg.start, detectSegments, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress]);
 
   const createSegmentsFromKeyframes = useCallback(async () => {
     if (!videoStream) return;

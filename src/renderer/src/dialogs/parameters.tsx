@@ -1,33 +1,38 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, FormEvent } from 'react';
 import i18n from 'i18next';
 import { FaLink } from 'react-icons/fa';
 
 import Swal, { ReactSwal } from '../swal';
 import Button from '../components/Button';
 import TextInput from '../components/TextInput';
+import { FfmpegDialog, getHint, getLabel } from '../ffmpegParameters';
 
 
 const { shell } = window.require('electron');
 
 
-export interface ParameterDialogParameter { value: string, label?: string, hint?: string }
-export type ParameterDialogParameters = Record<string, ParameterDialogParameter>;
+export type ParameterDialogParameters = Record<string, string>;
 
-const ParametersInput = ({ description, parameters: parametersIn, onChange, onSubmit, docUrl }: {
-  description?: string | undefined, parameters: ParameterDialogParameters, onChange: (a: ParameterDialogParameters) => void, onSubmit: () => void, docUrl?: string | undefined,
+const ParametersInput = ({ description, dialogType, parameters: parametersIn, onChange, onSubmit, docUrl }: {
+  description?: string | undefined,
+  dialogType: FfmpegDialog,
+  parameters: ParameterDialogParameters,
+  onChange: (a: ParameterDialogParameters) => void,
+  onSubmit: () => void,
+  docUrl?: string | undefined,
 }) => {
   const firstInputRef = useRef<HTMLInputElement>(null);
   const [parameters, setParameters] = useState(parametersIn);
 
-  const getParameter = (key: string) => parameters[key]?.value;
+  const getParameter = (key: string) => parameters[key];
 
   const handleChange = (key: string, value: string) => setParameters((existing) => {
-    const newParameters = { ...existing, [key]: { ...existing[key], value } };
+    const newParameters = { ...existing, [key]: value };
     onChange(newParameters);
     return newParameters;
   });
 
-  const handleSubmit = useCallback((e) => {
+  const handleSubmit = useCallback((e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmit();
   }, [onSubmit]);
@@ -47,7 +52,7 @@ const ParametersInput = ({ description, parameters: parametersIn, onChange, onSu
           const id = `parameter-${key}`;
           return (
             <div key={key} style={{ marginBottom: '.5em' }}>
-              <label htmlFor={id} style={{ display: 'block', fontFamily: 'monospace', marginBottom: '.3em' }}>{parameter.label || key}</label>
+              <label htmlFor={id} style={{ display: 'block', fontFamily: 'monospace', marginBottom: '.3em' }}>{getLabel(dialogType, parameter) || key}</label>
               <TextInput
                 id={id}
                 ref={i === 0 ? firstInputRef : undefined}
@@ -55,7 +60,7 @@ const ParametersInput = ({ description, parameters: parametersIn, onChange, onSu
                 onChange={(e) => handleChange(key, e.target.value)}
                 style={{ marginBottom: '.2em' }}
               />
-              {parameter.hint && <div style={{ opacity: 0.6, fontSize: '0.8em' }}>{parameter.hint}</div>}
+              {getHint(dialogType, key) && <div style={{ opacity: 0.6, fontSize: '0.8em' }}>{getHint(dialogType, key)}</div>}
             </div>
           );
         })}
@@ -66,8 +71,12 @@ const ParametersInput = ({ description, parameters: parametersIn, onChange, onSu
   );
 };
 
-export async function showParametersDialog({ title, description, parameters: parametersIn, docUrl }: {
-  title?: string, description?: string, parameters: ParameterDialogParameters, docUrl?: string,
+export async function showParametersDialog({ title, description, dialogType, parameters: parametersIn, docUrl }: {
+  title?: string,
+  description?: string,
+  dialogType: FfmpegDialog,
+  parameters: ParameterDialogParameters,
+  docUrl?: string,
 }) {
   let parameters = parametersIn;
   let resolve1: (value: boolean) => void;
@@ -86,6 +95,7 @@ export async function showParametersDialog({ title, description, parameters: par
       html: (
         <ParametersInput
           description={description}
+          dialogType={dialogType}
           parameters={parameters}
           onChange={(newParameters) => { parameters = newParameters; }}
           onSubmit={handleSubmit}
@@ -102,5 +112,5 @@ export async function showParametersDialog({ title, description, parameters: par
   const isConfirmed = await Promise.race([promise1, promise2]);
   if (!isConfirmed) return undefined;
 
-  return Object.fromEntries(Object.entries(parameters).map(([key, parameter]) => [key, parameter.value]));
+  return parameters;
 }
