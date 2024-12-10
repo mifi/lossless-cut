@@ -13,8 +13,11 @@ import isDev from './isDev.js';
 import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';
 
-
-const runningFfmpegs = new Set<ResultPromise<Omit<ExecaOptions, 'encoding'> & { encoding: 'buffer' }>>();
+// cannot use process.kill: https://github.com/sindresorhus/execa/issues/1177
+const runningFfmpegs = new Set<{
+  process: ResultPromise<Omit<ExecaOptions, 'encoding'> & { encoding: 'buffer' }>,
+  abortController: AbortController,
+}>();
 // setInterval(() => console.log(runningFfmpegs.size), 1000);
 
 let customFfPath: string | undefined;
@@ -59,7 +62,7 @@ export const getFfmpegPath = () => getFfPath('ffmpeg');
 export function abortFfmpegs() {
   logger.info('Aborting', runningFfmpegs.size, 'ffmpeg process(es)');
   runningFfmpegs.forEach((process) => {
-    process.kill();
+    process.abortController.abort();
   });
 }
 
@@ -113,16 +116,19 @@ function runFfmpegProcess(args: readonly string[], customExecaOptions?: ExecaOpt
   const { logCli = true } = additionalOptions ?? {};
   if (logCli) logger.info(getFfCommandLine('ffmpeg', args));
 
-  const process = execa(ffmpegPath, args, getExecaOptions(customExecaOptions));
+  const abortController = new AbortController();
+  const process = execa(ffmpegPath, args, getExecaOptions({ ...customExecaOptions, cancelSignal: abortController.signal }));
+
+  const wrapped = { process, abortController };
 
   (async () => {
-    runningFfmpegs.add(process);
+    runningFfmpegs.add(wrapped);
     try {
       await process;
     } catch {
       // ignored here
     } finally {
-      runningFfmpegs.delete(process);
+      runningFfmpegs.delete(wrapped);
     }
   })();
   return process;
