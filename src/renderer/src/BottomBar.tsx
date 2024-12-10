@@ -1,4 +1,4 @@
-import { CSSProperties, Dispatch, SetStateAction, memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { CSSProperties, ClipboardEvent, Dispatch, FormEvent, SetStateAction, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
@@ -100,7 +100,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
     border, borderRadius: 5, backgroundColor: 'var(--gray5)', transition: darkModeTransition, fontSize: 13, textAlign: 'center', padding: '1px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 0 : 5, marginRight: isStart ? 5 : 0, boxSizing: 'border-box', fontFamily: 'inherit', width: 90, outline: 'none',
   };
 
-  const trySetTime = useCallback((timeWithOffset) => {
+  const trySetTime = useCallback((timeWithOffset: number) => {
     const timeWithoutOffset = Math.max(timeWithOffset - startTimeOffset, 0);
     try {
       setCutTime(isStart ? 'start' : 'end', timeWithoutOffset);
@@ -113,7 +113,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
     }
   }, [isStart, seekAbs, setCutTime, startTimeOffset]);
 
-  const handleSubmit = useCallback((e) => {
+  const handleSubmit = useCallback((e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Don't proceed if not a valid time value
@@ -123,7 +123,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
     trySetTime(timeWithOffset);
   }, [cutTimeManual, parseTimecode, trySetTime]);
 
-  const parseAndSetCutTime = useCallback((text) => {
+  const parseAndSetCutTime = useCallback((text: string) => {
     // Don't proceed if not a valid time value
     const timeWithOffset = parseTimecode(text);
     if (timeWithOffset === undefined) return;
@@ -131,13 +131,13 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
     trySetTime(timeWithOffset);
   }, [parseTimecode, trySetTime]);
 
-  function handleCutTimeInput(text) {
+  function handleCutTimeInput(text: string) {
     setCutTimeManual(text);
 
     if (isExactDurationMatch(text)) parseAndSetCutTime(text);
   }
 
-  const tryPaste = useCallback((clipboardText) => {
+  const tryPaste = useCallback((clipboardText: string) => {
     try {
       setCutTimeManual(clipboardText);
       parseAndSetCutTime(clipboardText);
@@ -146,7 +146,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
     }
   }, [parseAndSetCutTime]);
 
-  const handleCutTimePaste = useCallback((e) => {
+  const handleCutTimePaste = useCallback((e: ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
 
     try {

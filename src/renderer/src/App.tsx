@@ -759,7 +759,7 @@ function App() {
     setSelectedBatchFiles([]);
   }, [askBeforeClose]);
 
-  const batchListRemoveFile = useCallback((path) => {
+  const batchListRemoveFile = useCallback((path: string | undefined) => {
     setBatchFiles((existingBatch) => {
       const index = existingBatch.findIndex((existingFile) => existingFile.path === path);
       if (index < 0) return existingBatch;
@@ -1246,7 +1246,7 @@ function App() {
 
     const storeProjectInSourceDir = !storeProjectInWorkingDir;
 
-    async function tryFindAndLoadProjectFile({ chapters, cod }: { chapters, cod: string | undefined }) {
+    async function tryFindAndLoadProjectFile({ chapters, cod }: { chapters: FFprobeChapter[], cod: string | undefined }) {
       try {
         // First try to open from from working dir
         if (await tryOpenProjectPath(getEdlFilePath(fp, cod), 'llc')) return;
@@ -1658,7 +1658,7 @@ function App() {
 
   const batchLoadPaths = useCallback((newPaths: string[], append?: boolean) => {
     setBatchFiles((existingFiles) => {
-      const mapPathsToFiles = (paths) => paths.map((path) => ({ path, name: basename(path) }));
+      const mapPathsToFiles = (paths: string[]) => paths.map((path) => ({ path, name: basename(path) }));
       if (append) {
         const newUniquePaths = newPaths.filter((newPath) => !existingFiles.some(({ path: existingPath }) => newPath === existingPath));
         const [firstNewUniquePath] = newUniquePaths;
