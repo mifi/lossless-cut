@@ -17,7 +17,7 @@
 - Can you publish through [winget](https://github.com/mifi/lossless-cut/issues/1279), [Flatpak](https://github.com/mifi/lossless-cut/pull/1813), [Docker](https://github.com/mifi/lossless-cut/issues/1086) or other software mangers?
   - In general I don't want to maintain more build systems, but I could be open to linking to externally maintained build systems.
 - Can LosslessCut do a batch conversion of multiple files?
-  - Most likely not, but if you download [FFmpeg](https://ffmpeg.org/) on your computer and then ask an AI exactly what you want, it might be able to create a bash script for you. Example ChatGPT prompt: `Can you help me write a bash script that for each .mp4 file in a specified folder, losslessly cuts off the first 10 seconds from each file?`
+  - Most likely not, but if you download [FFmpeg](https://ffmpeg.org/) on your computer and then ask an AI exactly what you want, it might be able to create a bash script for you. Example ChatGPT prompt: `Can you help me write a bash script that for each .mp4 file in a specified folder, losslessly cuts off the first 10 seconds from each file?` - You can also feed the AI commands from "Last FFmpeg commands" page in LosslessCut as an example.
 
 ## App Stores and GitHub difference
 
