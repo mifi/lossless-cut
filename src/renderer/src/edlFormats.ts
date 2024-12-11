@@ -1,5 +1,6 @@
 import { XMLParser } from 'fast-xml-parser';
 import i18n from 'i18next';
+import invariant from 'tiny-invariant';
 
 import { parse as csvParse } from 'csv-parse/browser/esm/sync';
 import { stringify as csvStringify } from 'csv-stringify/browser/esm/sync';
@@ -9,7 +10,6 @@ import type { ICueSheet, ITrack } from 'cue-parser/lib/types';
 import { formatDuration } from './util/duration';
 import { invertSegments, sortSegments } from './segments';
 import { GetFrameCount, Segment, SegmentBase } from './types';
-import invariant from 'tiny-invariant';
 
 export const getTimeFromFrameNum = (detectedFps: number, frameNum: number) => frameNum / detectedFps;
 
