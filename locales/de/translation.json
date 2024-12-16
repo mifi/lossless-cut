@@ -927,5 +927,8 @@
     "You can customize the file name of the merged file using special variables.": "Sie können den Dateinamen der zusammengeführten Datei durch die Verwendung spezieller Variablen anpassen.",
     "Combination is already bound to \"{{alreadyBoundKey}}\". Do you want to replace the existing binding?": "Die Kombination ist bereits an „{{alreadyBoundKey}}“ gebunden. Möchten Sie die bestehende Bindung ersetzen?",
     "Failed to download URL": "Download der URL fehlgeschlagen",
-    "Failed to load subtitles from track {{index}}": "Untertitel von Spur {{index}} konnten nicht geladen werden"
+    "Failed to load subtitles from track {{index}}": "Untertitel von Spur {{index}} konnten nicht geladen werden",
+    "Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.": "Wenn Sie die Ausgabe-FPS anpassen und gleichzeitig schneiden, führt dies zu falschen Schnitten. Erwägen Sie stattdessen, dies in zwei separaten Schritten zu tun.",
+    "File name is too long and cannot be exported.": "Der Dateiname ist zu lang und kann nicht exportiert werden.",
+    "Fell back to default output file name": "Ausgabedateiname wurde auf Standard zurückgesetzt"
 }
