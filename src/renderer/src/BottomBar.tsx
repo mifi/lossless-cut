@@ -1,4 +1,4 @@
-import { CSSProperties, ClipboardEvent, Dispatch, FormEvent, SetStateAction, memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { CSSProperties, ClipboardEvent, Dispatch, FormEvent, SetStateAction, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
@@ -287,6 +287,11 @@ function BottomBar({
     if (newRate != null) setOutputPlaybackRate(newRate);
   }, [detectedFps, outputPlaybackRate, setOutputPlaybackRate]);
 
+  const playbackRateRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    playbackRateRef.current?.animate([{ transform: 'scale(1.7)', color: 'var(--gray12)' }, {}], { duration: 200 });
+  }, [playbackRate]);
+
   function renderJumpCutpointButton(direction: number) {
     const newIndex = currentSegIndexSafe + direction;
     const seg = cutSegments[newIndex];
@@ -470,7 +475,7 @@ function BottomBar({
 
             <IoMdSpeedometer title={t('Change FPS')} style={{ padding: '0 .2em', fontSize: '1.3em' }} role="button" onClick={handleChangePlaybackRateClick} />
 
-            <div title={t('Playback rate')} style={{ color: 'var(--gray11)', fontSize: '.7em', marginLeft: '.1em' }}>{playbackRate.toFixed(1)}</div>
+            <div ref={playbackRateRef} title={t('Playback rate')} style={{ color: 'var(--gray11)', fontSize: '.7em', marginLeft: '.1em' }}>{playbackRate.toFixed(1)}</div>
           </>
         )}
 
