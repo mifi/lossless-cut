@@ -2542,6 +2542,7 @@ function App() {
                   onWheel={onTimelineWheel}
                   goToTimecode={goToTimecode}
                   isSegmentSelected={isSegmentSelected}
+                  darkMode={darkMode}
                 />
 
                 <BottomBar

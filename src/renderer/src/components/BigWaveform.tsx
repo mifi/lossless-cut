@@ -1,4 +1,4 @@
-import { memo, useEffect, useState, useCallback, useRef, CSSProperties } from 'react';
+import { memo, useEffect, useState, useCallback, useRef, CSSProperties, MouseEventHandler, WheelEventHandler } from 'react';
 import { Spinner } from 'evergreen-ui';
 
 import { ffmpegExtractWindow } from '../util/constants';
@@ -38,9 +38,9 @@ function BigWaveform({ waveforms, relevantTime, playing, durationSafe, zoom, see
     e.preventDefault();
   }, [relevantTime]);
 
-  const scaleToTime = useCallback((v) => (((v) / getRect().width) * windowSize) / zoom, [getRect, windowSize, zoom]);
+  const scaleToTime = useCallback((v: number) => (((v) / getRect().width) * windowSize) / zoom, [getRect, windowSize, zoom]);
 
-  const handleMouseMove = useCallback((e) => {
+  const handleMouseMove = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
     if (mouseDownRef.current == null) return;
 
     seekRel(-scaleToTime(e.movementX));
@@ -48,11 +48,11 @@ function BigWaveform({ waveforms, relevantTime, playing, durationSafe, zoom, see
     e.preventDefault();
   }, [scaleToTime, seekRel]);
 
-  const handleWheel = useCallback((e) => {
+  const handleWheel = useCallback<WheelEventHandler<HTMLDivElement>>((e) => {
     seekRel(scaleToTime(e.deltaX));
   }, [scaleToTime, seekRel]);
 
-  const handleMouseUp = useCallback((e) => {
+  const handleMouseUp = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
     if (!mouseDownRef.current) return;
     mouseDownRef.current = undefined;
     e.preventDefault();
@@ -63,7 +63,7 @@ function BigWaveform({ waveforms, relevantTime, playing, durationSafe, zoom, see
     const startTime = Date.now();
 
     if (playing) {
-      let raf;
+      let raf: number;
       // eslint-disable-next-line no-inner-declarations
       function render() {
         raf = window.requestAnimationFrame(() => {

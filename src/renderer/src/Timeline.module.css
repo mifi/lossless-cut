@@ -15,3 +15,15 @@
   color: rgba(255, 255, 255, 0.8);
   transition: opacity 0.2s;
 }
+
+@keyframes background-animation {
+  0% {background-position: 0% 50%}
+  100% {background-position: 100% 50%}
+}
+
+.loading-bg {
+  --c: rgba(255,255,255,0.3);
+  background: repeating-linear-gradient(45deg, var(--c), var(--c) 1px, transparent 1.5px, transparent 4.4px);
+  background-size: 50% 100%;
+  animation: background-animation 3s linear infinite;
+}

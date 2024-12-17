@@ -23,40 +23,41 @@ type CalculateTimelinePercent = (time: number) => string | undefined;
 const currentTimeWidth = 1;
 
 // eslint-disable-next-line react/display-name
-const Waveform = memo(({ waveform, calculateTimelinePercent, durationSafe }: {
-  waveform: RenderableWaveform, calculateTimelinePercent: CalculateTimelinePercent, durationSafe: number,
+const Waveform = memo(({ waveform, calculateTimelinePercent, durationSafe, darkMode }: {
+  waveform: RenderableWaveform,
+  calculateTimelinePercent: CalculateTimelinePercent,
+  durationSafe: number,
+  darkMode: boolean,
 }) => {
-  const [style, setStyle] = useState<CSSProperties>({ display: 'none' });
-
   const leftPos = calculateTimelinePercent(waveform.from);
 
   const toTruncated = Math.min(waveform.to, durationSafe);
 
-  // Prevents flash
-  function onLoad() {
-    setStyle({
-      position: 'absolute', height: '100%', left: leftPos, width: `${((toTruncated - waveform.from) / durationSafe) * 100}%`,
-    });
+  const style = useMemo<CSSProperties>(() => ({
+    position: 'absolute', height: '100%', left: leftPos, width: `${((toTruncated - waveform.from) / durationSafe) * 100}%`, filter: darkMode ? undefined : 'invert(1)',
+  }), [darkMode, durationSafe, leftPos, toTruncated, waveform.from]);
+
+  if (waveform.url == null) {
+    return <div style={{ ...style }} className={styles['loading-bg']} />;
   }
 
-  if (waveform.url == null) return null;
-
   return (
-    <img src={waveform.url} draggable={false} style={style} alt="" onLoad={onLoad} />
+    <img src={waveform.url} draggable={false} style={style} alt="" />
   );
 });
 
 // eslint-disable-next-line react/display-name
-const Waveforms = memo(({ calculateTimelinePercent, durationSafe, waveforms, zoom, height }: {
+const Waveforms = memo(({ calculateTimelinePercent, durationSafe, waveforms, zoom, height, darkMode }: {
   calculateTimelinePercent: CalculateTimelinePercent,
   durationSafe: number,
   waveforms: RenderableWaveform[],
   zoom: number,
   height: number,
+  darkMode: boolean,
 }) => (
   <div style={{ height, width: `${zoom * 100}%`, position: 'relative' }}>
     {waveforms.map((waveform) => (
-      <Waveform key={`${waveform.from}-${waveform.to}`} waveform={waveform} calculateTimelinePercent={calculateTimelinePercent} durationSafe={durationSafe} />
+      <Waveform key={`${waveform.from}-${waveform.to}`} waveform={waveform} calculateTimelinePercent={calculateTimelinePercent} durationSafe={durationSafe} darkMode={darkMode} />
     ))}
   </div>
 ));
@@ -108,6 +109,7 @@ function Timeline({
   commandedTimeRef,
   goToTimecode,
   isSegmentSelected,
+  darkMode,
 } : {
   durationSafe: number,
   startTimeOffset: number,
@@ -138,6 +140,7 @@ function Timeline({
   commandedTimeRef: MutableRefObject<number>,
   goToTimecode: () => void,
   isSegmentSelected: (a: { segId: string }) => boolean,
+  darkMode: boolean,
 }) {
   const { t } = useTranslation();
 
@@ -354,6 +357,7 @@ function Timeline({
             waveforms={waveforms}
             zoom={zoom}
             height={40}
+            darkMode={darkMode}
           />
         )}
 
