@@ -3,13 +3,13 @@
 Please read this first:
 
 - **Q:** Can LosslessCut **crop, resize, stretch, mirror/flip, overlay text/images, watermark, blur, redact, reduce quality/re-encode, create GIF, slideshow, burn subtitles, color grading, fade/transition between video clips, fade/combine/mix/merge audio tracks or change audio volume**?
-  - **A:** No, these are all lossy operations (meaning you *have* to re-encode the file), but in the future I may start to implement such features. [See this issue for more information](https://github.com/mifi/lossless-cut/issues/372). See also [#643](https://github.com/mifi/lossless-cut/issues/643).
-- **Q:** Can LosslessCut be batched/automated using a CLI or API or do external post-processing?
-  - **A:** While it was never designed for advanced batching/automation, it does have a [basic CLI and a HTTP API](./cli.md). More info: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868).
+  - **A:** No, these are all lossy operations (meaning you *have* to re-encode the file), but in the future I may start to implement such features. [See #372](https://github.com/mifi/lossless-cut/issues/372). Related: [#643](https://github.com/mifi/lossless-cut/issues/643).
 - **Q:** Is there a keyboard shortcut to do X?
   - **A:** First check the Keyboard shortcuts dialog. If you cannot find your shortcut there, [see this issue.](https://github.com/mifi/lossless-cut/issues/254)
 - **Q:** Can LosslessCut do the same batch conversion operation on multiple files?
   - [**A:** Probably not, but you can probably do it! See here.](./batch.md)
+- **Q:** Can LosslessCut be automated using a CLI or API or do external post-processing?
+  - **A:** While it was never designed for advanced batching/automation, it does have a [basic CLI and a HTTP API](./cli.md). More info: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868).
 - **Q:** How to *cut away* a middle part of a video?
   - **A:** Enable "advanced view" and then click the Yin Yang symbol. It will invert the segments.
 - **Q:** When will you implement feature X?
