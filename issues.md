@@ -1,31 +1,29 @@
 # FAQ
 
-- **Can LosslessCut crop, resize, stretch, mirror/flip, overlay text/images, watermark, blur, redact, reduce quality/re-encode, create GIF, slideshow, burn subtitles, color grading, fade/transition between video clips, fade/combine/mix/merge audio tracks or change audio volume?**
-  - No, these are all lossy operations (meaning you *have* to re-encode the file), but in the future I may start to implement such features. [See this issue for more information](https://github.com/mifi/lossless-cut/issues/372). See also [#643](https://github.com/mifi/lossless-cut/issues/643).
-- Can LosslessCut be batched/automated using a CLI or API or do external post-processing?
-  - While it was never designed for advanced batching/automation, it does have a [basic CLI and a HTTP API](./cli.md). More info: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868).
-- Is there a keyboard shortcut to do X?
-  - First check the Keyboard shortcuts dialog. If you cannot find your shortcut there, [see this issue.](https://github.com/mifi/lossless-cut/issues/254)
-- When will you implement feature X?
-  - I have limited time and I have a lot of projects to work on, so I cannot promise any timeline. I will usually prioritize the issues with the most likes, [see here for a list of the most popular issues](https://github.com/mifi/lossless-cut/issues/691).
-- How to *cut away* a middle part of a video?
-  - Enable "advanced view" and then click the Yin Yang symbol. It will invert the segments.
-- Is LosslessCut a portable app? Where is application data, settings and temp files stored?
-  - See LosslessCut is *not* a [portable app](https://github.com/mifi/lossless-cut/issues/645). See [Installation and files](./installation.md).
-- Can I export and replace the input file in-place?
-  - No, but you can export and automatically delete the input file.
-- Can you publish through [winget](https://github.com/mifi/lossless-cut/issues/1279), [Flatpak](https://github.com/mifi/lossless-cut/pull/1813), [Docker](https://github.com/mifi/lossless-cut/issues/1086) or other software mangers?
-  - In general I don't want to maintain more build systems, but I could be open to linking to externally maintained build systems.
-- Can LosslessCut do a batch conversion of multiple files?
-  - Most likely not, but if you download [FFmpeg](https://ffmpeg.org/) on your computer and then ask an AI exactly what you want, it might be able to create a bash script for you. Example ChatGPT prompt: `Can you help me write a bash script that for each .mp4 file in a specified folder, losslessly cuts off the first 10 seconds from each file?` - You can also feed the AI commands from "Last FFmpeg commands" page in LosslessCut as an example.
+Please read this first:
+
+- **Q:** Can LosslessCut **crop, resize, stretch, mirror/flip, overlay text/images, watermark, blur, redact, reduce quality/re-encode, create GIF, slideshow, burn subtitles, color grading, fade/transition between video clips, fade/combine/mix/merge audio tracks or change audio volume**?
+  - **A:** No, these are all lossy operations (meaning you *have* to re-encode the file), but in the future I may start to implement such features. [See this issue for more information](https://github.com/mifi/lossless-cut/issues/372). See also [#643](https://github.com/mifi/lossless-cut/issues/643).
+- **Q:** Can LosslessCut be batched/automated using a CLI or API or do external post-processing?
+  - **A:** While it was never designed for advanced batching/automation, it does have a [basic CLI and a HTTP API](./cli.md). More info: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868).
+- **Q:** Is there a keyboard shortcut to do X?
+  - **A:** First check the Keyboard shortcuts dialog. If you cannot find your shortcut there, [see this issue.](https://github.com/mifi/lossless-cut/issues/254)
+- **Q:** Can LosslessCut do the same batch conversion operation on multiple files?
+  - [**A:** Probably not, but you can probably do it! See here.](./batch.md)
+- **Q:** How to *cut away* a middle part of a video?
+  - **A:** Enable "advanced view" and then click the Yin Yang symbol. It will invert the segments.
+- **Q:** When will you implement feature X?
+  - **A:** I have limited time and I have a lot of projects to work on, so I cannot promise any timeline. I will usually prioritize the issues with the most likes, [see here for a list of the most popular issues](https://github.com/mifi/lossless-cut/issues/691).
+- **Q:** Is LosslessCut a portable app? Where is application data, settings and temp files stored?
+  - **A:** See LosslessCut is *not* a [portable app](https://github.com/mifi/lossless-cut/issues/645). See [Installation and files](./installation.md).
+- **Q:** Can I export and replace the input file in-place?
+  - **A:** No, but you can export and automatically delete the input file.
+- **Q:** Can you publish through [winget](https://github.com/mifi/lossless-cut/issues/1279), [Flatpak](https://github.com/mifi/lossless-cut/pull/1813), [Docker](https://github.com/mifi/lossless-cut/issues/1086) or other software mangers?
+  - **A:** In general I don't want to maintain more build systems, but I could be open to linking to externally maintained build systems.
 
 ## App Stores and GitHub difference
 
-LosslessCut version in the App Stores is often a few versions behind the latest GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. The GitHub version will contain new, untested features and may contain some bugs (even in existing functionality). I consider the newest GitHub versions to be a public "beta" test. Then, once I'm sure that the new version works well, I will release it in the App Stores as well to give a frictionless as possible experience for customers.
-
-### Feature differences
-
-They have exactly the same in-app features, except for a few platform limitations: Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps run in a sandbox, and therefore need to prompt for output directory before allowing writing files.
+LosslessCut version in the App Stores is often a few versions behind the latest GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. The GitHub version will contain new, untested features and may contain some bugs (even in existing functionality). I consider the newest GitHub versions to be a public "beta" test. Then, once I'm sure that the new version works well, I will release it in the App Stores as well to give a frictionless as possible experience for customers. They have exactly the same in-app features, except for a few platform limitations: Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps run in a sandbox, and therefore need to prompt for output directory before allowing writing files.
 
 # Primer: Video & audio formats vs. codecs
 
