@@ -311,12 +311,12 @@ export const getStdioString = (stdio: string | Uint8Array) => (stdio instanceof 
 
 // A bit hacky but it works, unless someone has a file called "No space left on device" ( ͡° ͜ʖ ͡°)
 export const isOutOfSpaceError = (err: InvariantExecaError) => (
-  err.exitCode === 1
+  err.exitCode !== 0
   && !!getStdioString(err.stderr)?.includes('No space left on device')
 );
 
 export const isMuxNotSupported = (err: InvariantExecaError) => (
-  err.exitCode === 1
+  err.exitCode !== 0
   && err.stderr != null
   && /Could not write header .*incorrect codec parameters .*Invalid argument/.test(getStdioString(err.stderr) ?? '')
 );
