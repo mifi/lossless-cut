@@ -1,16 +1,8 @@
-import fs from 'node:fs/promises';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { it, describe, expect, test } from 'vitest';
 
-
 import { parseSrtToSegments, formatSrt, parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, parseCsvTime, getFrameValParser, formatCsvFrames, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt, parseCutlist, parseGpsLine } from './edlFormats';
+import { readFixture, readFixtureBinary } from './test/util';
 
-// eslint-disable-next-line no-underscore-dangle
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const readFixture = async (name: string, encoding: BufferEncoding = 'utf8') => fs.readFile(join(__dirname, 'fixtures', name), encoding);
-const readFixtureBinary = async (name: string) => fs.readFile(join(__dirname, 'fixtures', name), null);
 
 const expectYouTube1 = [
   { start: 0, end: 1, name: '00:01 Test 1' },
@@ -177,16 +169,16 @@ it('parseMplayerEdl, starting at 0', async () => {
 });
 
 it('parses xmeml 1', async () => {
-  expect(await parseXmeml(await readFixture('Final Cut Pro XMEML.xml'))).toMatchSnapshot();
+  expect(parseXmeml(await readFixture('Final Cut Pro XMEML.xml'))).toMatchSnapshot();
 });
 
 it('parses xmeml 2', async () => {
-  expect(await parseXmeml(await readFixture('Final Cut Pro XMEML 2.xml'))).toMatchSnapshot();
+  expect(parseXmeml(await readFixture('Final Cut Pro XMEML 2.xml'))).toMatchSnapshot();
 });
 
 // see https://github.com/mifi/lossless-cut/issues/1195
 it('parses xmeml - with multiple tracks', async () => {
-  expect(await parseXmeml(await readFixture('Final Cut Pro XMEML 3.xml'))).toMatchSnapshot();
+  expect(parseXmeml(await readFixture('Final Cut Pro XMEML 3.xml'))).toMatchSnapshot();
 });
 
 // see https://github.com/mifi/lossless-cut/issues/1195
