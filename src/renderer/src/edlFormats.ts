@@ -1,6 +1,7 @@
 import { XMLParser } from 'fast-xml-parser';
 import i18n from 'i18next';
 import invariant from 'tiny-invariant';
+import { Duration } from 'luxon';
 
 import { parse as csvParse } from 'csv-parse/browser/esm/sync';
 import { stringify as csvStringify } from 'csv-stringify/browser/esm/sync';
@@ -10,6 +11,7 @@ import type { ICueSheet, ITrack } from 'cue-parser/lib/types';
 import { formatDuration } from './util/duration';
 import { invertSegments, sortSegments } from './segments';
 import { GetFrameCount, Segment, SegmentBase } from './types';
+import parseCmx3600 from './cmx3600';
 
 export const getTimeFromFrameNum = (detectedFps: number, frameNum: number) => frameNum / detectedFps;
 
@@ -158,6 +160,32 @@ export async function parseMplayerEdl(text: string) {
   ];
   if (out.length === 0) throw new Error(i18n.t('Invalid EDL data found'));
   return out;
+}
+
+export async function parseEdlCmx3600(text: string, fps: number) {
+  const cmx = parseCmx3600(text);
+
+  const parseTimecode = (t: string) => {
+    const match = t.match(/^(\d+)[:;](\d+)[:;](\d+)[:;](\d+)$/);
+    invariant(match, `Invalid EDL line: ${t}`);
+    const hours = parseInt(match[1]!, 10);
+    const minutes = parseInt(match[2]!, 10);
+    const seconds = parseInt(match[3]!, 10);
+    const frames = parseInt(match[4]!, 10);
+    return Duration.fromObject({ hours, minutes, seconds: seconds + (frames / fps) }).as('seconds');
+  };
+
+  return cmx.events.map((event) => ({
+    start: parseTimecode(event.sourceIn),
+    end: parseTimecode(event.sourceOut),
+    name: event.eventNumber,
+    tags: { reel: event.reelNumber, trackType: event.trackType, transition: event.transition },
+  }));
+}
+
+export async function parseEdl(text: string, fps: number) {
+  if (text.startsWith('TITLE: ')) return parseEdlCmx3600(text, fps);
+  return parseMplayerEdl(text);
 }
 
 export function parseCuesheet(cuesheet: ICueSheet) {

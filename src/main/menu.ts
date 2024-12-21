@@ -91,9 +91,9 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
               },
             },
             {
-              label: esc(t('EDL (MPlayer)')),
+              label: esc(t('EDL')),
               click() {
-                mainWindow.webContents.send('importEdlFile', 'mplayer');
+                mainWindow.webContents.send('importEdlFile', 'edl');
               },
             },
             {

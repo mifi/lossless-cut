@@ -50,6 +50,10 @@ export default ({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, custo
           return;
         }
 
+        if (debouncedSaveOperation.filePath == null) {
+          return;
+        }
+
         await saveLlcProject({ savePath: debouncedSaveOperation.projectFileSavePath, filePath: debouncedSaveOperation.filePath, cutSegments: debouncedSaveOperation.cutSegments });
         lastSaveOperation.current = debouncedSaveOperation;
       } catch (err) {

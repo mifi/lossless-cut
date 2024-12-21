@@ -506,7 +506,7 @@ export async function readDirRecursively(dirPath: string) {
 
 export function getImportProjectType(filePath: string) {
   if (filePath.endsWith('Summary.txt')) return 'dv-analyzer-summary-txt';
-  const edlFormatForExtension = { csv: 'csv', pbf: 'pbf', edl: 'mplayer', cue: 'cue', xml: 'xmeml', fcpxml: 'fcpxml' };
+  const edlFormatForExtension = { csv: 'csv', pbf: 'pbf', edl: 'edl', cue: 'cue', xml: 'xmeml', fcpxml: 'fcpxml' };
   const matchingExt = Object.keys(edlFormatForExtension).find((ext) => filePath.toLowerCase().endsWith(`.${ext}`));
   if (!matchingExt) return undefined;
   return edlFormatForExtension[matchingExt];
