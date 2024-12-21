@@ -1223,8 +1223,8 @@ function App() {
 
   const loadEdlFile = useCallback(async ({ path, type, append }: { path: string, type: EdlFileType, append?: boolean }) => {
     console.log('Loading EDL file', type, path, append);
-    loadCutSegments(await readEdlFile({ type, path }), append);
-  }, [loadCutSegments]);
+    loadCutSegments(await readEdlFile({ type, path, fps: detectedFps }), append);
+  }, [detectedFps, loadCutSegments]);
 
   const loadSubtitleTrackToSegments = useCallback(async (streamId: number) => {
     invariant(filePath != null);

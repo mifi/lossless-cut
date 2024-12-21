@@ -184,7 +184,8 @@ export async function parseEdlCmx3600(text: string, fps: number) {
 }
 
 export async function parseEdl(text: string, fps: number) {
-  if (text.startsWith('TITLE: ')) return parseEdlCmx3600(text, fps);
+  // trim because it might have a BOM
+  if (text.trim().startsWith('TITLE: ')) return parseEdlCmx3600(text, fps);
   return parseMplayerEdl(text);
 }
 

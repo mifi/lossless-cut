@@ -105,11 +105,12 @@ export async function loadLlcProject(path: string) {
   };
 }
 
-export async function readEdlFile({ type, path, fps }: { type: EdlFileType, path: string, fps?: number | undefined }) {
+export async function readEdlFile({ type, path, fps }: { type: EdlFileType, path: string, fps: number | undefined }) {
   if (type === 'csv') return loadCsvSeconds(path);
-  if (type === 'csv-frames') {
+  if (type === 'csv-frames' || type === 'edl') {
     invariant(fps != null, 'The loaded media has an unknown framerate');
-    return loadCsvFrames(path, fps);
+    if (type === 'csv-frames') return loadCsvFrames(path, fps);
+    if (type === 'edl') return loadEdl(path, fps);
   }
   if (type === 'cutlist') return loadCutlistSeconds(path);
   if (type === 'xmeml') return loadXmeml(path);
@@ -117,10 +118,6 @@ export async function readEdlFile({ type, path, fps }: { type: EdlFileType, path
   if (type === 'dv-analyzer-summary-txt') return loadDvAnalyzerSummaryTxt(path);
   if (type === 'cue') return loadCue(path);
   if (type === 'pbf') return loadPbf(path);
-  if (type === 'edl') {
-    invariant(fps != null, 'The loaded media has an unknown framerate');
-    return loadEdl(path, fps);
-  }
   if (type === 'srt') return loadSrt(path);
   if (type === 'llc') {
     const project = await loadLlcProject(path);

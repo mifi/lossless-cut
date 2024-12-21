@@ -10,10 +10,11 @@ export interface EDLEvent {
 }
 
 export default function parseCmx3600(edlContent: string) {
-  const lines = edlContent.split('\n');
+  const [firstLine, ...lines] = edlContent.split('\n');
   const events: EDLEvent[] = [];
 
-  for (const line of lines) {
+  // trim BOM from first line.
+  for (const line of [...(firstLine ? [firstLine.trim()] : []), ...lines]) {
     if (/^\d+\s+/.test(line)) {
       const parts = line.trim().split(/\s+/);
       if (parts.length >= 8) {
