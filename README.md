@@ -187,7 +187,8 @@ This project is maintained by me alone. The project will always remain free and 
 
 - [Featured in the Console newsletter](https://console.substack.com/p/console-93)
 - Hacker News [2024](https://news.ycombinator.com/item?id=40829494) [2022](https://news.ycombinator.com/item?id=33969490) [2020-10](https://news.ycombinator.com/item?id=24883030) [2020-01](https://news.ycombinator.com/item?id=22026412) [2016](https://news.ycombinator.com/item?id=12885585)
-- Are you using LosslessCut for some interesting project and want your link here? Reach out!
+- [LosslessCut on Wikipedia](https://en.m.wikipedia.org/wiki/LosslessCut)
+- Your link here?
 
 <img src="https://api.star-history.com/svg?repos=mifi/lossless-cut&type=Date" alt="Star History Chart" width="400px" />
 
