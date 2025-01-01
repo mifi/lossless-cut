@@ -432,7 +432,7 @@
     "Set file modification date/time of output files to:": "Establecer la fecha/hora de modificación de todos los archivos de salida en:",
     "Current time": "Hora actual",
     "to show advanced view": "para mostrar vista avanzada",
-    "<0></0> <2></2> or <4>I</4> <6>O</6> to set cutpoints": "<0></0> <2></2> o <4>I</4> <6>O</6> para establecer los pundos de corte",
+    "<0></0> <2></2> or <4>I</4> <6>O</6> to set cutpoints": "<0></0> <2></2> o <4>I</4> <6>O</6> para establecer puntos de corte",
     "Include the following text:": "Incluya el texto siguiente:",
     "Frame fractions": "fraccionde de fotograma",
     "This is where working files and exported files are stored.": "Es donde se guardan los archivos de trabajo y los exportados.",
