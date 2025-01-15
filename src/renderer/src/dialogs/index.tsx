@@ -221,6 +221,36 @@ async function askForNumSegments() {
   return parseInt(value, 10);
 }
 
+let padding: number;
+
+export async function askForPadding() {
+
+  if(padding) return padding;
+  
+  const { value } = await Swal.fire({
+    input: 'number',
+    inputAttributes: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      min: 0 as any as string,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      max: 100 as any as string,
+    },
+    showCancelButton: true,
+    inputValue: '5',
+    text: i18n.t('Create a segment at cursor with the specified before/after padding in seconds. Value will be kept until program restart.'),
+    inputValidator: (v) => {
+      const parsed = parseInt(v, 10);
+      if (!Number.isNaN(parsed) && parsed >= 2 && parsed <= maxSegments) return null;
+      return i18n.t('Please input a valid number for padding');
+    },
+  });
+
+  if (value == null) return undefined;
+
+  padding = parseInt(value, 10);
+  return padding;
+}
+
 export async function createNumSegments(fileDuration) {
   const numSegments = await askForNumSegments();
   if (numSegments == null) return undefined;

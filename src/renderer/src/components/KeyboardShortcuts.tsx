@@ -399,6 +399,10 @@ const KeyboardShortcuts = memo(({
         name: t('Create random segments'),
         category: segmentsAndCutpointsCategory,
       },
+      createSegmentAtCursorWithPadding: {
+        name: t('Create segment at cursor with padding'),
+        category: segmentsAndCutpointsCategory,
+      },
       detectBlackScenes: {
         name: t('Detect black scenes'),
         category: segmentsAndCutpointsCategory,

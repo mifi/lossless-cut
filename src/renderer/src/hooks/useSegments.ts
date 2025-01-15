@@ -9,11 +9,11 @@ import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToS
 import { handleError, shuffleArray } from '../util';
 import { errorToast } from '../swal';
 import { showParametersDialog } from '../dialogs/parameters';
-import { createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, selectSegmentsByExprDialog } from '../dialogs';
+import { createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, selectSegmentsByExprDialog, askForPadding } from '../dialogs';
 import { createSegment, findSegmentsAtCursor, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, getSegApparentStart, getSegApparentEnd as getSegApparentEnd2, addSegmentColorIndex } from '../segments';
 import { parameters as allFfmpegParameters, FfmpegDialog } from '../ffmpegParameters';
 import { maxSegmentsAllowed } from '../util/constants';
-import { ApparentCutSegment, ParseTimecode, SegmentBase, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
+import { ApparentCutSegment, ParseTimecode, FormatTimecode, SegmentBase, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
 import safeishEval from '../worker/eval';
 import { ScopeSegment } from '../../../../types';
 import { FFprobeStream } from '../../../../ffprobe';
@@ -21,7 +21,7 @@ import { FFprobeStream } from '../../../../ffprobe';
 const { ffmpeg: { blackDetect, silenceDetect } } = window.require('@electron/remote').require('./index.js');
 
 
-function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog }: {
+function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, formatTimecode, appendFfmpegCommandLog }: {
   filePath?: string | undefined,
   workingRef: MutableRefObject<boolean>,
   setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void,
@@ -35,6 +35,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   segmentsToChaptersOnly: boolean,
   timecodePlaceholder: string,
   parseTimecode: ParseTimecode,
+  formatTimecode: FormatTimecode,
   appendFfmpegCommandLog: (args: string[]) => void,
 }) {
   // Segment related state
@@ -510,6 +511,23 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     if (segments) loadCutSegments(segments);
   }, [checkFileOpened, duration, loadCutSegments]);
 
+  const createSegmentAtCursorWithPadding = useCallback(async () => {
+
+    if (!checkFileOpened() || !isDurationValid(duration)) return;
+    const relevantTime = getRelevantTime();
+    const padding = await askForPadding();
+    if(padding) {
+      const start = relevantTime - padding < 0 ? 0 : relevantTime - padding;
+      const end = relevantTime + padding > duration ? duration : relevantTime + padding;
+      const formattedTimecode = formatTimecode({seconds: relevantTime});
+      const newSegment = createIndexedSegment({ segment: { name: `padded_segment_${formattedTimecode}`, start, end }, incrementCount: true });
+
+      const newSegments = [...cutSegments];
+      newSegments.push(newSegment);
+      setCutSegments(newSegments);
+    }
+  }, [checkFileOpened, createIndexedSegment, cutSegments, duration, formatTimecode, getRelevantTime, setCutSegments]);
+
   const enableSegments = useCallback((segmentsToEnable: { segId: string }[]) => {
     if (segmentsToEnable.length === 0 || segmentsToEnable.length === cutSegments.length) return; // no point
     setDeselectedSegmentIds((existing) => {
@@ -626,6 +644,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     createNumSegments,
     createFixedDurationSegments,
     createRandomSegments,
+    createSegmentAtCursorWithPadding,
     apparentCutSegments,
     getApparentCutSegmentById,
     haveInvalidSegs,

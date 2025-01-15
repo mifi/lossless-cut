@@ -272,7 +272,12 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
             mainWindow.webContents.send('createRandomSegments');
           },
         },
-
+        {
+          label: esc(t('Create segment at cursor with padding')),
+          click() {
+            mainWindow.webContents.send('createSegmentAtCursorWithPadding');
+          },
+        },
         { type: 'separator' },
 
         {

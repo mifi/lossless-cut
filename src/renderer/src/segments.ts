@@ -9,6 +9,7 @@ import { ApparentSegmentBase, PlaybackMode, SegmentBase, SegmentTags, StateSegme
 
 export const isDurationValid = (duration?: number): duration is number => duration != null && Number.isFinite(duration) && duration > 0;
 
+
 export const createSegment = (props?: { start?: number | undefined, end?: number | undefined, name?: string | undefined, tags?: unknown | undefined }): Omit<StateSegment, 'segColorIndex'> => ({
   start: props?.start,
   end: props?.end,
