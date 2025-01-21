@@ -15,7 +15,13 @@ assert(screenshotOutPath);
 
 const port = 8081;
 
-const ps = execa(losslessCutExePath, ['--http-api', String(port)], { forceKillAfterDelay: 10000 });
+const platform = os.platform();
+
+const losslessCutArgs = [
+  ...(platform === 'linux' ? ['--no-sandbox'] : []),
+  '--http-api', String(port),
+];
+const ps = execa(losslessCutExePath, losslessCutArgs, { forceKillAfterDelay: 10000 });
 
 console.log('Started', losslessCutExePath);
 
@@ -26,8 +32,6 @@ const client = ky.extend({ prefixUrl: `http://127.0.0.1:${port}` });
 
 async function captureScreenshot(outPath: string) {
   // https://trac.ffmpeg.org/wiki/Capture/Desktop#Windows
-
-  const platform = os.platform();
 
   if (platform === 'darwin') {
     const { stderr } = await execa('ffmpeg', ['-f', 'avfoundation', '-list_devices', 'true', '-i', '', '-hide_banner'], { reject: false, timeout: 30000 });
