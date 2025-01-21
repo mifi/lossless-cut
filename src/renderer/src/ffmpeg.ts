@@ -354,11 +354,13 @@ export async function readFileMeta(filePath: string) {
     ]);
 
     let parsedJson: FFprobeProbeResult;
+    let decoded: string | undefined;
     try {
       // https://github.com/mifi/lossless-cut/issues/1342
-      parsedJson = JSON.parse(new TextDecoder().decode(stdout));
+      decoded = new TextDecoder().decode(stdout);
+      parsedJson = JSON.parse(decoded);
     } catch {
-      console.log('ffprobe stdout', stdout);
+      console.log('ffprobe stdout:', decoded ?? stdout);
       throw new Error('ffprobe returned malformed data');
     }
     const { streams = [], format, chapters = [] } = parsedJson;
