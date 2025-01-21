@@ -158,6 +158,10 @@ By default, only a single running instance of LosslessCut is allowed. If you sta
 
 A video’s rotation is just metadata stored in its file. A file can only have a single rotation across the whole file, so if you have two video files and you rotate only one file and then concatenate them, there will be only one output rotation.
 
+## Extract single track as format
+
+When you use the Tracks panel to extract a single track as a file, e.g. a subtitle, a default format will be automatically chosen. For example for subtitle, it will output an `.mks`. If you want a different output format, you can instead disable all tracks except the single track you want to extract, then close the Tracks panel, the choose the output format, (e.g. `srt`) and then perform an export.
+
 # Still cannot find an answer?
 
 If any other problem please search for [existing issues](https://github.com/mifi/lossless-cut/issues) before you [ask a question](https://github.com/mifi/lossless-cut/discussions) here on GitHub. You can check the developer tools for any errors or clues. Menu: `Tools` -> `Toggle Developer Tools`.
