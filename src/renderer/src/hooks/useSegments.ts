@@ -372,9 +372,6 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
   const addSegment = useCallback(() => {
     try {
-      // Cannot add if prev seg is not finished
-      if (currentCutSeg.start === undefined && currentCutSeg.end === undefined) return;
-
       const suggestedStart = getRelevantTime();
       /* if (keyframeCut) {
         const keyframeAlignedStart = getSafeCutTime(suggestedStart, true);
@@ -383,17 +380,23 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
       if (duration == null || suggestedStart >= duration) return;
 
-      const cutSegmentsNew = [
-        ...cutSegments,
-        createIndexedSegment({ segment: { start: suggestedStart }, incrementCount: true }),
-      ];
+      const newSegment = createIndexedSegment({ segment: { start: suggestedStart }, incrementCount: true });
+
+      // if initial segment, replace it instead
+      const cutSegmentsNew = cutSegments.length === 1 && cutSegments[0]!.start === undefined && cutSegments[0]!.end === undefined
+        ? [
+          newSegment,
+        ] : [
+          ...cutSegments,
+          newSegment,
+        ];
 
       setCutSegments(cutSegmentsNew);
       setCurrentSegIndex(cutSegmentsNew.length - 1);
     } catch (err) {
       console.error(err);
     }
-  }, [currentCutSeg.start, currentCutSeg.end, getRelevantTime, duration, cutSegments, createIndexedSegment, setCutSegments, setCurrentSegIndex]);
+  }, [getRelevantTime, duration, cutSegments, createIndexedSegment, setCutSegments, setCurrentSegIndex]);
 
   const duplicateSegment = useCallback((segment: Pick<StateSegment, 'start' | 'end'> & Partial<Pick<StateSegment, 'name'>>) => {
     try {
