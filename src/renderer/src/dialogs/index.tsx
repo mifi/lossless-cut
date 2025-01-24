@@ -582,30 +582,29 @@ export async function selectSegmentsByLabelDialog(currentName: string) {
   return value;
 }
 
-export async function selectSegmentsByExprDialog(inputValidator: (v: string) => Promise<string | undefined>) {
-  const examples = {
-    duration: { name: i18n.t('Segment duration less than 5 seconds'), code: 'segment.duration < 5' },
-    start: { name: i18n.t('Segment starts after 01:00'), code: 'segment.start > 60' },
-    label: { name: i18n.t('Segment label (exact)'), code: "segment.label === 'My label'" },
-    regexp: { name: i18n.t('Segment label (regexp)'), code: '/^My label/.test(segment.label)' },
-    tag: { name: i18n.t('Segment tag value'), code: "segment.tags.myTag === 'tag value'" },
-  };
-
+export async function exprDialog({ inputValidator, examples, title, description, variables }: {
+  inputValidator: (v: string) => Promise<string | undefined>,
+  examples: Record<string, { name: string, code: string }>,
+  title: string,
+  description: ReactNode,
+  variables: string[]
+}) {
   function addExample(type: string) {
     Swal.getInput()!.value = examples[type]?.code ?? '';
   }
 
   const { value } = await ReactSwal.fire<string>({
     showCancelButton: true,
-    title: i18n.t('Select segments by expression'),
+    title,
     input: 'text',
+    width: '90vw',
     html: (
       <div style={{ textAlign: 'left' }}>
         <div style={{ marginBottom: '1em' }}>
-          <Trans>Enter a JavaScript expression which will be evaluated for each segment. Segments for which the expression evaluates to &quot;true&quot; will be selected. <button type="button" className="link-button" onClick={() => shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/expressions.md')}>View available syntax.</button></Trans>
+          {description}
         </div>
 
-        <div style={{ marginBottom: '1em' }}><b>{i18n.t('Variables')}:</b> segment.label, segment.start, segment.end, segment.duration, segment.tags.*</div>
+        <div style={{ marginBottom: '1em' }}><b>{i18n.t('Variables')}:</b> {variables.join(', ')}</div>
 
         <div><b>{i18n.t('Examples')}:</b></div>
 
@@ -620,6 +619,39 @@ export async function selectSegmentsByExprDialog(inputValidator: (v: string) => 
     inputValidator,
   });
   return value;
+}
+
+export async function selectSegmentsByExprDialog(inputValidator: (v: string) => Promise<string | undefined>) {
+  return exprDialog({
+    inputValidator,
+    examples: {
+      duration: { name: i18n.t('Segment duration less than 5 seconds'), code: 'segment.duration < 5' },
+      start: { name: i18n.t('Segment starts after 01:00'), code: 'segment.start > 60' },
+      label: { name: i18n.t('Segment label (exact)'), code: "segment.label === 'My label'" },
+      regexp: { name: i18n.t('Segment label (regexp)'), code: '/^My label/.test(segment.label)' },
+      tag: { name: i18n.t('Segment tag value'), code: "segment.tags.myTag === 'tag value'" },
+    },
+    title: i18n.t('Select segments by expression'),
+    description: <Trans>Enter a JavaScript expression which will be evaluated for each segment. Segments for which the expression evaluates to &quot;true&quot; will be selected. <button type="button" className="link-button" onClick={() => shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/expressions.md')}>View available syntax.</button></Trans>,
+    variables: ['segment.index', 'segment.label', 'segment.start', 'segment.end', 'segment.duration', 'segment.tags.*'],
+  });
+}
+
+export async function mutateSegmentsByExprDialog(inputValidator: (v: string) => Promise<string | undefined>) {
+  return exprDialog({
+    inputValidator,
+    examples: {
+      center: { name: i18n.t('Feather segments +5 sec'), code: '{ start: segment.start - 5, end: segment.end + 5 }' },
+      feather: { name: i18n.t('Shrink segments -5 sec'), code: '{ start: segment.start + 5, end: segment.end - 5 }' },
+      shrink: { name: i18n.t('Center segments around start time'), code: '{ start: segment.start - 5, end: segment.start + 5 }' },
+      // eslint-disable-next-line no-template-curly-in-string
+      addNumToLabel: { name: i18n.t('Add number suffix to label'), code: '{ label: `${segment.label} ${segment.index + 1}` }' },
+      tagEven: { name: i18n.t('Add a tag to every even segment'), code: '{ tags: (segment.index + 1) % 2 === 0 ? { ...segment.tags, even: \'true\' } : segment.tags }' },
+    },
+    title: i18n.t('Edit segments by expression'),
+    description: <Trans>Enter a JavaScript expression which will be evaluated for each selected segment. Returned properties will be edited. <button type="button" className="link-button" onClick={() => shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/expressions.md')}>View available syntax.</button></Trans>,
+    variables: ['segment.index', 'segment.label', 'segment.start', 'segment.end', 'segment.tags.*'],
+  });
 }
 
 export function showJson5Dialog({ title, json, darkMode }: { title: string, json: unknown, darkMode: boolean }) {

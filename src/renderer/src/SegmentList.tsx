@@ -47,6 +47,7 @@ const Segment = memo(({
   onSelectSegmentsByLabel,
   onSelectSegmentsByExpr,
   onSelectAllSegments,
+  onMutateSegmentsByExpr,
   jumpSegStart,
   jumpSegEnd,
   addSegment,
@@ -74,6 +75,7 @@ const Segment = memo(({
   onSelectSegmentsByLabel: UseSegments['onSelectSegmentsByLabel'],
   onSelectSegmentsByExpr: UseSegments['onSelectSegmentsByExpr'],
   onSelectAllSegments: UseSegments['selectAllSegments'],
+  onMutateSegmentsByExpr: UseSegments['onMutateSegmentsByExpr'],
   jumpSegStart: (i: number) => void,
   jumpSegEnd: (i: number) => void,
   addSegment: UseSegments['addSegment'],
@@ -117,6 +119,7 @@ const Segment = memo(({
 
       { label: t('Label selected segments'), click: onLabelSelectedSegments },
       { label: t('Remove selected segments'), click: onRemoveSelected },
+      { label: t('Edit segments by expression'), click: () => onMutateSegmentsByExpr() },
 
       { type: 'separator' },
 
@@ -129,7 +132,7 @@ const Segment = memo(({
       { label: t('Segment tags'), click: () => onEditSegmentTags(index) },
       { label: t('Extract frames as image files'), click: () => onExtractSegmentFramesAsImages([seg.segId]) },
     ];
-  }, [invertCutSegments, t, addSegment, onLabelSelectedSegments, onRemoveSelected, updateSegOrder, index, jumpSegStart, jumpSegEnd, onLabelPress, onRemovePress, onDuplicateSegmentClick, seg, onSelectSingleSegment, onSelectAllSegments, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectSegmentsByExpr, onInvertSelectedSegments, onReorderPress, onEditSegmentTags, onExtractSegmentFramesAsImages]);
+  }, [invertCutSegments, t, addSegment, onLabelSelectedSegments, onRemoveSelected, updateSegOrder, index, jumpSegStart, jumpSegEnd, onLabelPress, onRemovePress, onDuplicateSegmentClick, seg, onSelectSingleSegment, onSelectAllSegments, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectSegmentsByExpr, onInvertSelectedSegments, onMutateSegmentsByExpr, onReorderPress, onEditSegmentTags, onExtractSegmentFramesAsImages]);
 
   useContextMenu(ref, contextMenuTemplate);
 
@@ -245,6 +248,7 @@ function SegmentList({
   onSelectAllSegments,
   onSelectSegmentsByLabel,
   onSelectSegmentsByExpr,
+  onMutateSegmentsByExpr,
   onExtractSegmentFramesAsImages,
   onLabelSelectedSegments,
   onInvertSelectedSegments,
@@ -283,6 +287,7 @@ function SegmentList({
   onSelectAllSegments: UseSegments['selectAllSegments'],
   onSelectSegmentsByLabel: UseSegments['onSelectSegmentsByLabel'],
   onSelectSegmentsByExpr: UseSegments['onSelectSegmentsByExpr'],
+  onMutateSegmentsByExpr: UseSegments['onMutateSegmentsByExpr'],
   onExtractSegmentFramesAsImages: (segIds: string[]) => Promise<void>,
   onLabelSelectedSegments: UseSegments['onLabelSelectedSegments'],
   onInvertSelectedSegments: UseSegments['invertSelectedSegments'],
@@ -497,6 +502,7 @@ function SegmentList({
                   onEditSegmentTags={onEditSegmentTags}
                   onSelectSegmentsByLabel={onSelectSegmentsByLabel}
                   onSelectSegmentsByExpr={onSelectSegmentsByExpr}
+                  onMutateSegmentsByExpr={onMutateSegmentsByExpr}
                   onExtractSegmentFramesAsImages={onExtractSegmentFramesAsImages}
                   onLabelSelectedSegments={onLabelSelectedSegments}
                   onInvertSelectedSegments={onInvertSelectedSegments}

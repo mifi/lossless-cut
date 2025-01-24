@@ -131,6 +131,7 @@ export type WaveformMode = 'big-waveform' | 'waveform';
 
 // This is the contract with the user, see https://github.com/mifi/lossless-cut/blob/master/expressions.md
 export interface ScopeSegment {
+  index: number,
   label: string,
   start: number,
   end: number,
