@@ -132,11 +132,11 @@ If you have an issue with the Snap or Flatpak version of LosslessCut, try instea
 
 ## File not supported
 
-If you're getting a message saying that the file must be converted to a supported format, this means that LosslessCut's built-in player isn't able to play back the particular file. As a work-around LosslessCut has an FFmpeg-assisted software decoding playback which can be enabled from the menu: *File -> Convert to supported format*.
+If you're getting a message saying that the file must be converted to a supported format, this means that LosslessCut's built-in player isn't able to play back that particular file. As a work-around LosslessCut has an FFmpeg-assisted software decoding playback which can be activated from the menu: *File -> Convert to supported format*.
 
 ## Low quality / blurry playback
 
-Some formats or codecs are not natively supported, so they will play back with a lower quality. You may convert these files to a supported codec from the File menu, see [#88](https://github.com/mifi/lossless-cut/issues/88).
+Some formats or codecs are not natively supported by LosslessCut's built in player, and LosslessCut will automatically use FFmpeg-assisted software decoding to playback in a lower quality. For better playback you may convert these files to a different format from the menu: *File -> Convert to supported format*. Note that this will not affect the output from LosslessCut, it is only used for playback, see [#88](https://github.com/mifi/lossless-cut/issues/88).
 
 ## MPEG TS / MTS
 
