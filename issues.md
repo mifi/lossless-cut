@@ -130,6 +130,10 @@ If you have an issue with the Snap or Flatpak version of LosslessCut, try instea
 
 - Undo/redo segments doesn't work through the top menu. This is a [known issue](https://github.com/mifi/lossless-cut/issues/610) that I don't know how to fix. Please use the keyboard shortcuts instead (<kbd>CTRL</kbd>/<kbd>CMD</kbd>+<kbd>Z</kbd> and <kbd>CTRL</kbd>+<kbd>Y</kbd> / <kbd>CMD</kbd>+<kbd>SHIFT</kbd>+<kbd>Z</kbd>).
 
+## File not supported
+
+If you're getting a message saying that the file must be converted to a supported format, this means that LosslessCut's built-in player isn't able to play back the particular file. As a work-around LosslessCut has an FFmpeg-assisted software decoding playback which can be enabled from the menu: *File -> Convert to supported format*.
+
 ## Low quality / blurry playback
 
 Some formats or codecs are not natively supported, so they will play back with a lower quality. You may convert these files to a supported codec from the File menu, see [#88](https://github.com/mifi/lossless-cut/issues/88).
