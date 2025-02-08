@@ -448,6 +448,10 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
           label: esc(t('Feature request')),
           click() { electron.shell.openExternal('https://github.com/mifi/lossless-cut/issues'); },
         },
+        ...(!isStoreBuild ? [{
+          label: esc(`${t('Donate')} ❤️`),
+          click() { electron.shell.openExternal('https://mifi.no/thanks'); },
+        }] : []),
         { type: 'separator' },
         {
           label: esc(t('Configuration file')),

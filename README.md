@@ -121,9 +121,13 @@ If you prefer to download the executables manually, this will of course always b
 - [More releases](https://github.com/mifi/lossless-cut/releases) (note that APPX for Windows and PKG for MacOS **do not work**)
 - [Download latest nightly builds 🧪](https://mifi.no/llc/nightly/).
 
-If you find LosslessCut useful, I'm very thankful for [your support](https://github.com/mifi/lossless-cut#donate-).
-
 What's the **difference between App Stores and GitHub download?** [Please see FAQ](issues.md#app-stores-and-github-difference)
+
+[![](./donate.svg)](https://paypal.me/mifino/usd)
+
+LosslessCut is maintained by me alone and will always remain free and open source. If it's useful to you, consider supporting my work. Alternatively [donate to FFmpeg](https://www.ffmpeg.org/donations.html) because they are doing the world a huge favor.
+
+[Paypal](https://paypal.me/mifino/usd) | [crypto](https://mifi.no/thanks) | [more](https://mifi.no/thanks)
 
 ## [Supported operating systems](./requirements.md)
 
@@ -176,12 +180,6 @@ Codecs and formats not listed above can still be converted to a supported format
 ## [Translation](translation.md)
 
 If you have any problem or question, [please read this](issues.md) before creating an issue. I try to answer most common questions here.
-
-## Donate 🙈
-
-This project is maintained by me alone. The project will always remain free and open source, but if it's useful for you, consider supporting me. :) It will give me extra motivation to improve it. Or even better [donate to ffmpeg](https://www.ffmpeg.org/donations.html) because they are doing the world a big favor 🙏
-
-[Paypal](https://paypal.me/mifino/usd) | [crypto](https://mifi.no/thanks)
 
 ## Featured
 
