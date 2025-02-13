@@ -142,6 +142,7 @@ function App() {
   const [hideMediaSourcePlayer, setHideMediaSourcePlayer] = useState(false);
   const [exportConfirmVisible, setExportConfirmVisible] = useState(false);
   const [cacheBuster, setCacheBuster] = useState(0);
+  const [currentFileExportCount, setCurrentFileExportCount] = useState(0);
 
   const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
 
@@ -162,6 +163,7 @@ function App() {
   const [editingSegmentTags, setEditingSegmentTags] = useState<SegmentTags>();
   const [mediaSourceQuality, setMediaSourceQuality] = useState(0);
   const [smartCutBitrate, setSmartCutBitrate] = useState<number | undefined>();
+  const [exportCount, setExportCount] = useState(0);
 
   const incrementMediaSourceQuality = useCallback(() => setMediaSourceQuality((v) => (v + 1) % mediaSourceQualities.length), []);
 
@@ -581,6 +583,7 @@ function App() {
     setHideMediaSourcePlayer(false);
     setExportConfirmVisible(false);
     setOutputPlaybackRateState(1);
+    setCurrentFileExportCount(0);
   }, [videoRef, setCommandedTime, setPlaybackRate, setPlaying, playingRef, playbackModeRef, setCompatPlayerEventId, setDuration, cutSegmentsHistory, clearSegments, setFileFormat, setDetectedFileFormat, setCopyStreamIdsByFile, setThumbnails, setDeselectedSegmentIds, setSubtitlesByStreamId, setOutputPlaybackRateState]);
 
 
@@ -950,13 +953,13 @@ function App() {
 
   const generateOutSegFileNames = useCallback(async ({ segments = segmentsToExport, template }: { segments?: SegmentToExport[], template: string }) => {
     invariant(fileFormat != null && outputDir != null && filePath != null);
-    return generateOutSegFileNamesRaw({ segments, template, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding });
-  }, [fileFormat, filePath, formatTimecode, isCustomFormatSelected, maxLabelLength, outputDir, outputFileNameMinZeroPadding, safeOutputFileName, segmentsToExport]);
+    return generateOutSegFileNamesRaw({ exportCount, currentFileExportCount, segments, template, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding });
+  }, [currentFileExportCount, exportCount, fileFormat, filePath, formatTimecode, isCustomFormatSelected, maxLabelLength, outputDir, outputFileNameMinZeroPadding, safeOutputFileName, segmentsToExport]);
 
   const generateMergedFileNames = useCallback(async ({ template }: { template: string }) => {
     invariant(fileFormat != null && filePath != null);
-    return generateMergedFileNamesRaw({ template, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName });
-  }, [fileFormat, filePath, isCustomFormatSelected, outputDir, safeOutputFileName]);
+    return generateMergedFileNamesRaw({ template, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, exportCount, currentFileExportCount });
+  }, [currentFileExportCount, exportCount, fileFormat, filePath, isCustomFormatSelected, outputDir, safeOutputFileName]);
 
   const closeExportConfirm = useCallback(() => setExportConfirmVisible(false), []);
 
@@ -1103,6 +1106,9 @@ function App() {
       }
 
       if (cleanupChoices.cleanupAfterExport) await cleanupFilesWithDialog();
+
+      setExportCount((c) => c + 1);
+      setCurrentFileExportCount((c) => c + 1);
     } catch (err) {
       if (isAbortedError(err)) return;
 
@@ -2647,7 +2653,7 @@ function App() {
                 />
               </Sheet>
 
-              <ConcatDialog isShown={batchFiles.length > 0 && concatDialogVisible} onHide={() => setConcatDialogVisible(false)} paths={batchFilePaths} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} />
+              <ConcatDialog isShown={batchFiles.length > 0 && concatDialogVisible} onHide={() => setConcatDialogVisible(false)} paths={batchFilePaths} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} exportCount={exportCount} />
 
               <KeyboardShortcuts isShown={keyboardShortcutsVisible} onHide={() => setKeyboardShortcutsVisible(false)} keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} />
             </div>

@@ -33,8 +33,14 @@ function Alert({ text }: { text: string }) {
   );
 }
 
-function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles }: {
-  isShown: boolean, onHide: () => void, paths: string[], onConcat: (a: { paths: string[], includeAllStreams: boolean, streams: FFprobeStream[], outFileName: string, fileFormat: string, clearBatchFilesAfterConcat: boolean }) => Promise<void>, alwaysConcatMultipleFiles: boolean, setAlwaysConcatMultipleFiles: (a: boolean) => void,
+function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, exportCount }: {
+  isShown: boolean,
+  onHide: () => void,
+  paths: string[],
+  onConcat: (a: { paths: string[], includeAllStreams: boolean, streams: FFprobeStream[], outFileName: string, fileFormat: string, clearBatchFilesAfterConcat: boolean }) => Promise<void>,
+  alwaysConcatMultipleFiles: boolean,
+  setAlwaysConcatMultipleFiles: (a: boolean) => void,
+  exportCount: number,
 }) {
   const { t } = useTranslation();
   const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, safeOutputFileName, customOutDir } = useUserSettings();
@@ -93,7 +99,7 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
       // todo allow user to edit template instead of this "hack"
       if (existingOutputName == null) {
         (async () => {
-          const generated = await generateMergedFileNames({ template: defaultMergedFileTemplate, isCustomFormatSelected, fileFormat, filePath: firstPath, outputDir, safeOutputFileName, epochMs: uniqueSuffix });
+          const generated = await generateMergedFileNames({ template: defaultMergedFileTemplate, isCustomFormatSelected, fileFormat, filePath: firstPath, outputDir, safeOutputFileName, epochMs: uniqueSuffix, exportCount });
           // todo show to user more errors?
           const [fileName] = generated.fileNames;
           invariant(fileName != null);
@@ -106,7 +112,7 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
       // make sure the last (optional) .* is replaced by .ext`
       return existingOutputName.replace(/(\.[^.]*)?$/, ext);
     });
-  }, [customOutDir, fileFormat, firstPath, isCustomFormatSelected, safeOutputFileName, uniqueSuffix]);
+  }, [customOutDir, exportCount, fileFormat, firstPath, isCustomFormatSelected, safeOutputFileName, uniqueSuffix]);
 
   const allFilesMeta = useMemo(() => {
     if (paths.length === 0) return undefined;

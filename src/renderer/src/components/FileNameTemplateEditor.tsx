@@ -77,8 +77,8 @@ function FileNameTemplateEditor(opts: {
   }, [debouncedText, generateFileNames, t]);
 
   const availableVariables = useMemo(() => (mergeMode
-    ? ['FILENAME', extVariable, 'EPOCH_MS']
-    : ['FILENAME', 'CUT_FROM', 'CUT_TO', segNumVariable, segNumIntVariable, 'SEG_LABEL', segSuffixVariable, extVariable, segTagsExample, 'EPOCH_MS']
+    ? ['FILENAME', extVariable, 'EPOCH_MS', 'EXPORT_COUNT']
+    : ['FILENAME', 'CUT_FROM', 'CUT_TO', segNumVariable, segNumIntVariable, 'SEG_LABEL', segSuffixVariable, extVariable, segTagsExample, 'EPOCH_MS', 'EXPORT_COUNT', 'FILE_EXPORT_COUNT']
   ), [mergeMode]);
 
   // eslint-disable-next-line no-template-curly-in-string

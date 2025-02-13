@@ -111,10 +111,12 @@ export const defaultCutMergedFileTemplate = '${FILENAME}-cut-merged-${EPOCH_MS}$
 // eslint-disable-next-line no-template-curly-in-string
 export const defaultMergedFileTemplate = '${FILENAME}-merged-${EPOCH_MS}${EXT}';
 
-async function interpolateOutFileName(template: string, { epochMs, inputFileNameWithoutExt, ext, segSuffix, segNum, segNumPadded, segLabel, cutFrom, cutTo, tags }: {
+async function interpolateOutFileName(template: string, { epochMs, inputFileNameWithoutExt, ext, segSuffix, segNum, segNumPadded, segLabel, cutFrom, cutTo, tags, exportCount, currentFileExportCount }: {
   epochMs: number,
   inputFileNameWithoutExt: string,
   ext: string,
+  exportCount: number,
+  currentFileExportCount?: number | undefined,
 } & Partial<{
   segSuffix: string,
   segNum: number,
@@ -139,6 +141,8 @@ async function interpolateOutFileName(template: string, { epochMs, inputFileName
       ...tags,
       ...Object.fromEntries(Object.entries(tags).map(([key, value]) => [`${key.toLocaleUpperCase('en-US')}`, value])),
     },
+    FILE_EXPORT_COUNT: currentFileExportCount,
+    EXPORT_COUNT: exportCount,
   };
 
   const ret = (await safeishEval(`\`${template}\``, context));
@@ -160,7 +164,7 @@ function maybeTruncatePath(fileName: string, truncate: boolean) {
   ].join(pathSep);
 }
 
-export async function generateOutSegFileNames({ segments, template: desiredTemplate, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding }: {
+export async function generateOutSegFileNames({ segments, template: desiredTemplate, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding, exportCount, currentFileExportCount }: {
   segments: SegmentToExport[],
   template: string,
   formatTimecode: FormatTimecode,
@@ -171,6 +175,8 @@ export async function generateOutSegFileNames({ segments, template: desiredTempl
   safeOutputFileName: boolean,
   maxLabelLength: number,
   outputFileNameMinZeroPadding: number,
+  exportCount: number,
+  currentFileExportCount: number,
 }) {
   async function generate({ template, forceSafeOutputFileName }: { template: string, forceSafeOutputFileName: boolean }) {
     const epochMs = Date.now();
@@ -204,6 +210,8 @@ export async function generateOutSegFileNames({ segments, template: desiredTempl
         cutFrom: formatTimecode({ seconds: start, fileNameFriendly: true }),
         cutTo: formatTimecode({ seconds: end, fileNameFriendly: true }),
         tags: Object.fromEntries(Object.entries(getSegmentTags(segment)).map(([tag, value]) => [tag, filenamifyOrNot(value)])),
+        exportCount,
+        currentFileExportCount,
       });
 
       return maybeTruncatePath(segFileName, safeOutputFileName);
@@ -228,7 +236,7 @@ export type GenerateOutFileNames = (a: { template: string }) => Promise<{
   },
 }>;
 
-export async function generateMergedFileNames({ template: desiredTemplate, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, epochMs = Date.now() }: {
+export async function generateMergedFileNames({ template: desiredTemplate, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, epochMs = Date.now(), exportCount, currentFileExportCount }: {
   template: string,
   isCustomFormatSelected: boolean,
   fileFormat: string,
@@ -236,6 +244,8 @@ export async function generateMergedFileNames({ template: desiredTemplate, isCus
   outputDir: string,
   safeOutputFileName: boolean,
   epochMs?: number,
+  exportCount: number,
+  currentFileExportCount?: number,
 }) {
   async function generate(template: string) {
     const { name: inputFileNameWithoutExt } = parsePath(filePath);
@@ -244,6 +254,8 @@ export async function generateMergedFileNames({ template: desiredTemplate, isCus
       epochMs,
       inputFileNameWithoutExt,
       ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath }),
+      exportCount,
+      currentFileExportCount,
     });
 
     return maybeTruncatePath(fileName, safeOutputFileName);
