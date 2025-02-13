@@ -1,5 +1,7 @@
 # Contributing
 
+## [Translation](translation.md)
+
 ## Development environment setup
 
 This app is built using Electron.

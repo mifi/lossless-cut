@@ -38,6 +38,10 @@ Other than that you it's not possible convert a file losslessly to reduce its si
 
 Here is a great introduction to audio/video: [howvideo.works](https://howvideo.works/).
 
+## Tracks
+
+The tracks panel is used to selectively enable/disable individual tracks for export and edit track or file metadata. It can also be used to change [content disposition.](https://github.com/mifi/lossless-cut/discussions/2291)
+
 # Common / known issues & troubleshooting
 
 ## The exported video has a problem

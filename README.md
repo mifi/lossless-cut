@@ -16,11 +16,23 @@
 	<br>
 </div>
 
-
 LosslessCut aims to be the ultimate cross platform FFmpeg GUI for extremely fast and lossless operations on video, audio, subtitle and other related media files.
-The main feature is lossless trimming and cutting of video and audio files, which is great for saving space by rough-cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. Or you can add a music or subtitle track to your video without needing to encode. Everything is extremely fast because it does an almost direct data copy, fueled by the awesome FFmpeg which does all the grunt work.
+The main feature is lossless trimming and cutting of video and audio files, which is great for saving space by rough-cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. There are also many more [use cases](#typical-workflow). Everything is extremely fast because it does an almost direct data copy, fueled by the awesome FFmpeg which does all the grunt work.
+
+## Table of contents
+
+- [Features](#features)
+- [Example lossless use cases](#example-lossless-use-cases)
+- [Download](#download)
+- [Supported formats](#supported-formats)
+- [Typical workflow](#typical-workflow)
+- [Video demos](#video-demos)
+- [Featured](#featured)
+- [Attributions](#attributions)
+- [More documentation](#more-documentation)
 
 ## Features
+
 - Lossless cutting of most video and audio formats
 - [Smart cut](https://github.com/mifi/lossless-cut/issues/126) (experimental)
 - Losslessly cut out parts of video/audio (for cutting away commercials etc.)
@@ -113,15 +125,15 @@ For Linux these are some alternatives:
 
 <a href="https://snapcraft.io/losslesscut"><img src="https://github.com/mifi/lossless-cut/raw/master/snap-store-black.svg?sanitize=true" alt="Snapcraft" height="50"/></a> <a href="https://flathub.org/apps/details/no.mifi.losslesscut"><img src="https://github.com/mifi/lossless-cut/raw/master/flathub-badge.svg?sanitize=true" alt="Flathub" height="50"/></a>
 
-If you prefer to download the executables manually, this will of course always be free:
+If you prefer to download the executables manually, this will of course always be free (see also [supported operating systems](./requirements.md)):
 
-- Mac OS X: [Intel DMG](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac-x64.dmg) / [Apple Silicon DMG](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac-arm64.dmg) (note that universal.pkg **does not work**)
+- macOS: [Intel](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac-x64.dmg) / [Apple Silicon](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac-arm64.dmg) DMG (note that PKG does **not** work)
 - Windows: [7zip](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z) (Windows 7, 8 and 8.1 is [no longer supported](https://github.com/mifi/lossless-cut/discussions/1476) after [v3.50.0](https://github.com/mifi/lossless-cut/releases/tag/v3.50.0))
 - Linux: [x64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x64.tar.bz2) / [x64 AppImage](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x86_64.AppImage) / [arm64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-arm64.tar.bz2) / [Raspberry Pi armv7l](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-armv7l.tar.bz2)
-- [More releases](https://github.com/mifi/lossless-cut/releases) (note that APPX for Windows and PKG for MacOS **do not work**)
-- [Download latest nightly builds 🧪](https://mifi.no/llc/nightly/).
+- [More releases](https://github.com/mifi/lossless-cut/releases) - Note that APPX (Windows) and PKG (macOS) do **not** work)
+- [Latest nightly builds 🧪](https://mifi.no/llc/nightly/)
 
-What's the **difference between App Stores and GitHub download?** [Please see FAQ](issues.md#app-stores-and-github-difference)
+Difference between App Stores and GitHub download? [Please see FAQ](issues.md#app-stores-and-github-difference).
 
 [![](./donate.svg)](https://paypal.me/mifino/usd)
 
@@ -129,22 +141,11 @@ LosslessCut is maintained by me alone and will always remain free and open sourc
 
 [Paypal](https://paypal.me/mifino/usd) | [crypto](https://mifi.no/thanks) | [more](https://mifi.no/thanks)
 
-## [Supported operating systems](./requirements.md)
-
 ## Supported formats
 
-LosslessCut uses Chromium's HTML5 video player, and not all FFmpeg supported formats and codecs are natively supported. Generally, the following formats should work: `MP4`, `MOV`, `WebM`, `Matroska`, `OGG` and `WAV`. The following audio codecs: `FLAC`, `MP3`, `Opus`, `PCM`, `Vorbis` and `AAC`. Video codecs: `H264`, `AV1`, `Theora`, `VP8`, `VP9` and `H265` (needs hardware decoder). More information about [Chromium supported formats / codecs](https://www.chromium.org/audio-video). [What's the difference between a codec and a format?](./issues.md#primer-video--audio-formats-vs-codecs)
+LosslessCut uses the Chromium browser's HTML5 video player, and not all formats/codecs are [natively supported](https://www.chromium.org/audio-video). Generally, the following file formats work: `MP4`, `MOV`, `WebM`, `Matroska`, `OGG` and `WAV`. Audio codecs: `FLAC`, `MP3`, `Opus`, `PCM`, `Vorbis` and `AAC`. Video codecs: `H264`, `AV1`, `Theora`, `VP8`, `VP9` and `H265` (with hardware decoder). Learn the [difference between a codec and a format](./issues.md#primer-video--audio-formats-vs-codecs). Codecs and formats not listed above can still be converted to a supported format/codec from the `File` menu (try the option *Fastest: FFmpeg-assisted playback* first). A low quality version of the file will then be created and opened in the player. Note that the actual cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that FFmpeg is able to decode.
 
-Codecs and formats not listed above can still be converted to a supported format/codec from the `File` menu. (Try the `fastest` option first.) A low quality version of the file (with/without audio) will then be created and opened in the player. The actual cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that FFmpeg is able to decode.
-
-## Video demos
-
-- [Common features](https://www.youtube.com/watch?v=pYHMxXy05Jg)
-- [How to add a thumbnail / cover art to an MP4](https://www.youtube.com/watch?v=4pYJ93cn80E)
-- [How to add multi-language audio to a video](https://www.youtube.com/watch?v=MRBGDsuw_WU)
-- **Your video here?** If you would like to make a video showing off LosslessCut use cases, let me know and I can link it here!
-
-### Typical workflow
+## Typical workflow
 
 - Drag drop a video file into player or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
 - Press <kbd>SPACE</kbd> to play/pause or <kbd>◀</kbd><kbd>▶</kbd>, <kbd>,</kbd><kbd>.</kbd> or mouse/trackpad wheel to seek back/forth.
@@ -167,41 +168,34 @@ Codecs and formats not listed above can still be converted to a supported format
 - Press <kbd>SHIFT</kbd> + <kbd>/</kbd> to view all keyboard & mouse shortcuts.
 - **Note:** The original video file will not be modified. Instead, a file is created file in the same directory as the original file with from/to timestamps in the file name.
 
-## [Installation](./installation.md)
+### Video demos
 
-## [Import / export](import-export.md)
+- [Common features](https://www.youtube.com/watch?v=pYHMxXy05Jg)
+- [How to add a thumbnail / cover art to an MP4](https://www.youtube.com/watch?v=4pYJ93cn80E)
+- [How to add multi-language audio to a video](https://www.youtube.com/watch?v=MRBGDsuw_WU)
+- Your video here?
 
-## [Command line interface (CLI)](cli.md) & [HTTP API](api.md)
-
-## [Known issues, limitations, troubleshooting, FAQ](issues.md)
-
-## [Contributing](CONTRIBUTING.md)
-
-## [Translation](translation.md)
-
-If you have any problem or question, [please read this](issues.md) before creating an issue. I try to answer most common questions here.
+## More documentation
+- [Import / export](import-export.md)
+- [Command line interface (CLI)](cli.md) & [HTTP API](api.md)
+- [Known issues, limitations, troubleshooting, FAQ](issues.md)
+- [Contributing](CONTRIBUTING.md)
 
 ## Featured
 
-- [Featured in the Console newsletter](https://console.substack.com/p/console-93)
+- [Console newsletter](https://console.substack.com/p/console-93)
 - Hacker News [2024](https://news.ycombinator.com/item?id=40829494) [2022](https://news.ycombinator.com/item?id=33969490) [2020-10](https://news.ycombinator.com/item?id=24883030) [2020-01](https://news.ycombinator.com/item?id=22026412) [2016](https://news.ycombinator.com/item?id=12885585)
-- [LosslessCut on Wikipedia](https://en.m.wikipedia.org/wiki/LosslessCut)
+- [Wikipedia](https://en.m.wikipedia.org/wiki/LosslessCut)
 - Your link here?
 
 <img src="https://api.star-history.com/svg?repos=mifi/lossless-cut&type=Date" alt="Star History Chart" width="400px" />
 
 ## Attributions
-- App icon made by [Dimi Kazak](http://www.flaticon.com/authors/dimi-kazak "Dimi Kazak") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0")
-- [Lottie animation](https://lottiefiles.com/7077-magic-flow)
-- Thanks to Adi Abinun for his UI sketch work, inspiration and guidance
-- [Thanks to everyone for supporting](https://mifi.no/thanks/) my open source work 🙌
+- App icon made by [Dimi Kazak](http://www.flaticon.com/authors/dimi-kazak "Dimi Kazak") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0").
+- [Lottie animation by Chris Gannon](https://lottiefiles.com/7077-magic-flow).
+- Thanks to Adi Abinun for UI work.
 - Thanks to translators who helped translate the app. [You can too!](translation.md)
-
-## More software
-
-- I made a command line video editor with slick transitions and lots of colors! [editly](https://github.com/mifi/editly)
-- I made a tool for cross platform sharing of files between computer/phone over the local network: [ezshare](https://github.com/mifi/ezshare)
-- I created a super simple Instagram bot for getting more followers [SimpleInstaBot](https://github.com/mifi/SimpleInstaBot)
+- [Thanks to everyone for supporting](https://mifi.no/thanks/) my open source work 🙌
 
 ---
 
