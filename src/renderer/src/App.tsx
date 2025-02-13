@@ -1154,8 +1154,8 @@ function App() {
       if (video == null) throw new Error();
       const useFffmpeg = usingPreviewFile || captureFrameMethod === 'ffmpeg';
       const outPath = useFffmpeg
-        ? await captureFrameFromFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, quality: captureFrameQuality })
-        : await captureFrameFromTag({ customOutDir, filePath, currentTime, captureFormat, video, quality: captureFrameQuality });
+        ? await captureFrameFromFfmpeg({ customOutDir, filePath, time: currentTime, captureFormat, quality: captureFrameQuality })
+        : await captureFrameFromTag({ customOutDir, filePath, time: currentTime, captureFormat, quality: captureFrameQuality, video });
 
       if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: outPath, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
     }, i18n.t('Failed to capture frame'));
@@ -1650,7 +1650,7 @@ function App() {
     if (!filePath) return;
     await withErrorHandling(async () => {
       const currentTime = getRelevantTime();
-      const path = await captureFrameFromFfmpeg({ customOutDir, filePath, fromTime: currentTime, captureFormat, quality: captureFrameQuality });
+      const path = await captureFrameFromFfmpeg({ customOutDir, filePath, time: currentTime, captureFormat, quality: captureFrameQuality });
       if (!(await addFileAsCoverArt(path))) return;
       showNotification({ text: i18n.t('Current frame has been set as cover art') });
     }, i18n.t('Failed to capture frame'));

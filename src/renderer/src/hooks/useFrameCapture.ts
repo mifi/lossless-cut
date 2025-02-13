@@ -47,10 +47,8 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatOutputFileModifie
 
     if (!outputTimestamps) {
       const numDigits = getNumDigits(estimatedMaxNumFiles);
-      const nameTemplateSuffix = getSuffix(`%0${numDigits}d`);
-      const nameSuffix = getSuffix(`${'1'.padStart(numDigits, '0')}`); // mimic ffmpeg output
-      const outPathTemplate = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: nameTemplateSuffix });
-      const firstFileOutPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix });
+      const outPathTemplate = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: getSuffix(`%0${numDigits}d`) });
+      const firstFileOutPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: getSuffix(`${'1'.padStart(numDigits, '0')}`) }); // mimic ffmpeg output
 
       const args = await ffmpeg.captureFrames({ from: fromTime, to: toTime, videoPath: filePath, outPathTemplate, captureFormat, quality, filter, onProgress });
       appendFfmpegCommandLog(args);
@@ -58,7 +56,9 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatOutputFileModifie
       return firstFileOutPath;
     }
 
+    // capture frames with timestamps
     // see https://github.com/mifi/lossless-cut/issues/1139
+
     const tmpSuffix = 'llc-tmp-frame-capture-';
     const outPathTemplate = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: getSuffix(`${tmpSuffix}%d`) });
     const args = await ffmpeg.captureFrames({ from: fromTime, to: toTime, videoPath: filePath, outPathTemplate, captureFormat, quality, filter, framePts: true, onProgress });
@@ -67,7 +67,6 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatOutputFileModifie
     const outDir = getOutDir(customOutDir, filePath);
     const files = await readdir(outDir);
 
-    // https://github.com/mifi/lossless-cut/issues/1139
     const matches = files.flatMap((fileName) => {
       const escapedRegexp = escapeRegExp(getSuffixedFileName(filePath, tmpSuffix));
       const regexp = `^${escapedRegexp}(\\d+)`;
@@ -90,31 +89,40 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatOutputFileModifie
     return outPaths[0];
   }, [appendFfmpegCommandLog, formatTimecode]);
 
-  const captureFrameFromFfmpeg = useCallback(async ({ customOutDir, filePath, fromTime, captureFormat, quality }: {
-    customOutDir?: string | undefined, filePath: string, fromTime: number, captureFormat: CaptureFormat, quality: number,
+  const captureFrameFromFfmpeg = useCallback(async ({ customOutDir, filePath, time, captureFormat, quality }: {
+    customOutDir?: string | undefined,
+    filePath: string,
+    time: number,
+    captureFormat: CaptureFormat,
+    quality: number,
   }) => {
-    const time = formatTimecode({ seconds: fromTime, fileNameFriendly: true });
-    const nameSuffix = `${time}.${captureFormat}`;
+    const timecode = formatTimecode({ seconds: time, fileNameFriendly: true });
+    const nameSuffix = `${timecode}.${captureFormat}`;
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix });
-    const args = await ffmpeg.captureFrame({ timestamp: fromTime, videoPath: filePath, outPath, quality });
+    const args = await ffmpeg.captureFrame({ timestamp: time, videoPath: filePath, outPath, quality });
     appendFfmpegCommandLog(args);
 
-    await transferTimestamps({ inPath: filePath, outPath, cutFrom: fromTime, treatOutputFileModifiedTimeAsStart });
+    await transferTimestamps({ inPath: filePath, outPath, cutFrom: time, treatOutputFileModifiedTimeAsStart });
     return outPath;
   }, [appendFfmpegCommandLog, formatTimecode, treatOutputFileModifiedTimeAsStart]);
 
-  const captureFrameFromTag = useCallback(async ({ customOutDir, filePath, currentTime, captureFormat, video, quality }: {
-    customOutDir?: string | undefined, filePath: string, currentTime: number, captureFormat: CaptureFormat, video: HTMLVideoElement, quality: number,
+  const captureFrameFromTag = useCallback(async ({ customOutDir, filePath, time, captureFormat, quality, video }: {
+    customOutDir?: string | undefined,
+    filePath: string,
+    time: number,
+    captureFormat: CaptureFormat,
+    quality: number,
+    video: HTMLVideoElement,
   }) => {
     const buf = getFrameFromVideo(video, captureFormat, quality);
 
     const ext = mime.extension(buf.type);
-    const time = formatTimecode({ seconds: currentTime, fileNameFriendly: true });
+    const timecode = formatTimecode({ seconds: time, fileNameFriendly: true });
 
-    const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `${time}.${ext}` });
+    const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `${timecode}.${ext}` });
     await writeFile(outPath, buf);
 
-    await transferTimestamps({ inPath: filePath, outPath, cutFrom: currentTime, treatOutputFileModifiedTimeAsStart });
+    await transferTimestamps({ inPath: filePath, outPath, cutFrom: time, treatOutputFileModifiedTimeAsStart });
     return outPath;
   }, [formatTimecode, treatOutputFileModifiedTimeAsStart]);
 
