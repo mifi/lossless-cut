@@ -357,7 +357,10 @@ function Settings({
 
           {showAdvanced && (
             <Row>
-              <KeyCell>{t('File names of extracted video frames')}</KeyCell>
+              <KeyCell>
+                {t('File names of extracted video frames')}
+                <div style={detailsStyle}>{t('Note that this only applies when extracting multiple frames. When "Frame number" is selected, frame numbers are relative to the start of the segment (starting from 1).')}</div>
+              </KeyCell>
               <td>
                 <Button iconBefore={captureFrameFileNameFormat === 'timestamp' ? TimeIcon : NumericalIcon} onClick={() => setCaptureFrameFileNameFormat((existing) => (existing === 'timestamp' ? 'index' : 'timestamp'))}>
                   {captureFrameFileNameFormat === 'timestamp' ? t('Frame timestamp') : t('Frame number')}
