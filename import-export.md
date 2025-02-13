@@ -19,9 +19,11 @@ When exporting multiple segments as separate files, LosslessCut offers you the a
 
 Your files must always include at least one unique identifer (such as `${SEG_NUM}` or `${CUT_FROM}`), and it should end in `${EXT}` (or else players might not recognise the files). For instance, to achieve a filename sequence of `Beach Trip - 1.mp4`, `Beach Trip - 2.mp4`, `Beach Trip - 3.mp4`, your format should read `${FILENAME} - ${SEG_NUM}${EXT}`
 
-##  Export project formats
+## Import/export projects
 
 LosslessCut also allows importing/exporting your project (segments) in a variety of file formats.
+
+See [list of supported formats](https://github.com/mifi/lossless-cut/issues/1340).
 
 ### CSV
 
@@ -30,6 +32,7 @@ LosslessCut also allows importing/exporting your project (segments) in a variety
 - Use comma `,` to separate the fields (**not** semicolon `;`)
 
 #### example.csv
+
 ```csv
 ,56.9568,First segment starting at 0
 70,842.33,"Another quoted label"
@@ -39,7 +42,3 @@ LosslessCut also allows importing/exporting your project (segments) in a variety
 ### TSV
 
 Same as CSV but `<tab>` instead.
-
-### More formats?
-
-See https://github.com/mifi/lossless-cut/issues/1340

@@ -135,7 +135,7 @@ If you prefer to download the executables manually, this will of course always b
 
 Difference between App Stores and GitHub download? [Please see FAQ](issues.md#app-stores-and-github-difference).
 
-[![](./donate.svg)](https://paypal.me/mifino/usd)
+[![](./donate.svg)](https://mifi.no/thanks)
 
 LosslessCut is maintained by me alone and will always remain free and open source. If it's useful to you, consider supporting my work. Alternatively [donate to FFmpeg](https://www.ffmpeg.org/donations.html) because they are doing the world a huge favor.
 
