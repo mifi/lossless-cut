@@ -141,8 +141,8 @@ async function interpolateOutFileName(template: string, { epochMs, inputFileName
       ...tags,
       ...Object.fromEntries(Object.entries(tags).map(([key, value]) => [`${key.toLocaleUpperCase('en-US')}`, value])),
     },
-    FILE_EXPORT_COUNT: currentFileExportCount,
-    EXPORT_COUNT: exportCount,
+    FILE_EXPORT_COUNT: currentFileExportCount != null ? currentFileExportCount + 1 : undefined,
+    EXPORT_COUNT: exportCount != null ? exportCount + 1 : undefined,
   };
 
   const ret = (await safeishEval(`\`${template}\``, context));
