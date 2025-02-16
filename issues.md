@@ -160,7 +160,7 @@ When exporting, LosslessCut may be unable to process certain proprietary tracks.
 
 ## Multiple LosslessCut instances
 
-By default, only a single running instance of LosslessCut is allowed. If you start a new LosslessCut instance from the command line, it will instead pass the list of files onto the already running instance. You can override this behavior inside settings Note that this is **(experimental)**, because Electron doesn't seem to support this. [More info](https://github.com/electron/electron/issues/2493) [#1641](https://github.com/mifi/lossless-cut/issues/1641)
+By default, only a single running instance of LosslessCut is allowed. If you start a new LosslessCut instance from the command line, it will pass the list of files to the already running instance. You can override this behavior inside settings. Note that running multiple instances is **experimental**, because Electron doesn't seem to support this. [More info](https://github.com/electron/electron/issues/2493) [#1641](https://github.com/mifi/lossless-cut/issues/1641)
 
 ## Rotation and merging
 
