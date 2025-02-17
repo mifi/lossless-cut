@@ -335,7 +335,7 @@ function App() {
   }, [isFileOpened]);
 
   const {
-    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, focusSegmentAtCursor, createNumSegments, createFixedDurationSegments, createRandomSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, isSegmentSelected, setCutTime, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, onSelectSegmentsByExpr, onMutateSegmentsByExpr, toggleSegmentSelected, selectOnlySegment, getCutSegmentById, selectedSegments, selectedSegmentsOrInverse, nonFilteredSegmentsOrInverse, segmentsToExport, duplicateCurrentSegment, duplicateSegment, updateSegAtIndex, getSegApparentEnd, getApparentCutSegments,
+    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, focusSegmentAtCursor, createNumSegments, createFixedDurationSegments, createRandomSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, isSegmentSelected, setCutTime, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, onSelectSegmentsByExpr, onMutateSegmentsByExpr, toggleSegmentSelected, selectOnlySegment, selectedSegments, selectedSegmentsOrInverse, nonFilteredSegmentsOrInverse, segmentsToExport, duplicateCurrentSegment, duplicateSegment, updateSegAtIndex, getSegApparentEnd, getApparentCutSegments,
   } = useSegments({ filePath, workingRef, setWorking, setProgress, videoStream: activeVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog });
 
   const { getEdlFilePath, getEdlFilePathOld, projectFileSavePath, getProjectFileSavePath } = useSegmentsAutoSave({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, customOutDir, cutSegments });
@@ -698,17 +698,20 @@ function App() {
       return;
     }
 
+    // If we are using a special playback mode, we might need to do more:
     if (playbackModeRef.current != null) {
       const selectedSegmentAtCursor = selectedSegments.find((selectedSegment) => selectedSegment.segId === segmentAtCursorRef.current?.segId);
       const isSomeSegmentAtCursor = selectedSegmentAtCursor != null && commandedTimeRef.current != null && getSegApparentEnd(selectedSegmentAtCursor) - commandedTimeRef.current > 0.1;
       if (!isSomeSegmentAtCursor) { // if a segment is already at cursor, don't do anything
+        // if no segment at cursor, and looping playback mode, continue looping
         if (playbackModeRef.current === 'loop-selected-segments') {
           const firstSelectedSegment = selectedSegments[0];
-          if (firstSelectedSegment == null) throw new Error();
+          invariant(firstSelectedSegment != null);
           const index = cutSegments.indexOf(firstSelectedSegment);
           if (index >= 0) setCurrentSegIndex(index);
           seekAbs(firstSelectedSegment.start);
         } else {
+          // for all other playback modes, seek to start of current segment
           seekAbs(getSegApparentStart(currentCutSeg));
         }
       }
@@ -722,31 +725,33 @@ function App() {
     setPlayerTime(currentTime);
 
     const playbackMode = playbackModeRef.current;
-    if (playbackMode != null && segmentAtCursorRef.current != null) { // todo and is currently playing?
-      const playingSegment = getCutSegmentById(segmentAtCursorRef.current.segId);
 
-      if (playingSegment != null) {
-        const nextAction = getPlaybackMode({ playbackMode, currentTime, playingSegment: { start: getSegApparentStart(playingSegment), end: getSegApparentEnd(playingSegment) } });
-        if (nextAction != null) {
-          console.log(nextAction);
-          if (nextAction.nextSegment) {
-            const index = selectedSegments.indexOf(playingSegment);
-            let newIndex = getNewJumpIndex(index >= 0 ? index : 0, 1);
-            if (newIndex > selectedSegments.length - 1) newIndex = 0; // have reached end of last segment, start over
-            const nextSelectedSegment = selectedSegments[newIndex];
-            if (nextSelectedSegment != null) seekAbs(nextSelectedSegment.start);
-          }
-          if (nextAction.seekTo != null) {
-            seekAbs(nextAction.seekTo);
-          }
-          if (nextAction.exit) {
-            playbackModeRef.current = undefined;
-            pause();
-          }
+    const segmentsAtCursorIndexes = findSegmentsAtCursor(cutSegments, commandedTimeRef.current);
+    const firstSegmentAtCursorIndex = segmentsAtCursorIndexes[0];
+    const playingSegment = firstSegmentAtCursorIndex != null ? cutSegments[firstSegmentAtCursorIndex] : undefined;
+
+    if (playbackMode != null && playingSegment) { // todo and is currently playing?
+      const nextAction = getPlaybackMode({ playbackMode, currentTime, playingSegment: { start: getSegApparentStart(playingSegment), end: getSegApparentEnd(playingSegment) } });
+
+      if (nextAction != null) {
+        console.log(nextAction);
+        if (nextAction.nextSegment) {
+          const index = selectedSegments.indexOf(playingSegment);
+          let newIndex = getNewJumpIndex(index >= 0 ? index : 0, 1);
+          if (newIndex > selectedSegments.length - 1) newIndex = 0; // have reached end of last segment, start over
+          const nextSelectedSegment = selectedSegments[newIndex];
+          if (nextSelectedSegment != null) seekAbs(nextSelectedSegment.start);
+        }
+        if (nextAction.seekTo != null) {
+          seekAbs(nextAction.seekTo);
+        }
+        if (nextAction.exit) {
+          playbackModeRef.current = undefined;
+          pause();
         }
       }
     }
-  }, [getCutSegmentById, getSegApparentEnd, pause, playbackModeRef, playerTime, seekAbs, selectedSegments, setPlayerTime]);
+  }, [commandedTimeRef, cutSegments, getSegApparentEnd, pause, playbackModeRef, playerTime, seekAbs, selectedSegments, setPlayerTime]);
 
   const closeFileWithConfirm = useCallback(() => {
     if (!isFileOpened || workingRef.current) return;

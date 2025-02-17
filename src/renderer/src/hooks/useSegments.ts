@@ -148,8 +148,6 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     end: getSegApparentEnd(cutSegment),
   })), [getSegApparentEnd]);
 
-  const getCutSegmentById = useCallback((id: string) => cutSegments.find((s) => s.segId === id), [cutSegments]);
-
   const haveInvalidSegs = useMemo(() => cutSegments.some((cutSegment) => getSegApparentStart(cutSegment) >= getSegApparentEnd(cutSegment)), [cutSegments, getSegApparentEnd]);
 
   const currentSegIndexSafe = Math.min(currentSegIndex, cutSegments.length - 1);
@@ -683,7 +681,6 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     createNumSegments,
     createFixedDurationSegments,
     createRandomSegments,
-    getCutSegmentById,
     getApparentCutSegments,
     getSegApparentEnd,
     haveInvalidSegs,

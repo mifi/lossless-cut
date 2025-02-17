@@ -330,7 +330,7 @@ function SegmentList({
     if (cutSegments.length < 2) return;
     const { value } = await Swal.fire({
       title: `${t('Change order of segment')} ${index + 1}`,
-      text: t('Please enter a number from 1 to {{n}} to be the new order for the current segment', { n: cutSegments.length}),
+      text: t('Please enter a number from 1 to {{n}} to be the new order for the current segment', { n: cutSegments.length }),
       input: 'text',
       inputValue: index + 1,
       showCancelButton: true,

@@ -53,7 +53,7 @@ export function findSegmentsAtCursor(segments: SegmentBase[], currentTime: numbe
   segments.forEach((segment, index) => {
     if ((segment.start == null || segment.start <= currentTime) && (segment.end == null || segment.end >= currentTime)) indexes.push(index);
   });
-  return indexes;
+  return indexes.reverse(); // if we are on multiple, select the last. That way, auto play selected segments won't go on repeat on the same segment
 }
 
 // in the past we had non-string tags
