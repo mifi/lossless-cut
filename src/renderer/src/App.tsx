@@ -82,7 +82,7 @@ import { askForHtml5ifySpeed } from './dialogs/html5ify';
 import { askForOutDir, askForImportChapters, promptTimecode, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openExportFinishedToast, openConcatFinishedToast, showOpenDialog, showMuxNotSupported, promptDownloadMediaUrl, CleanupChoicesType, showOutputNotWritable } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
-import { findSegmentsAtCursor, sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, getPlaybackMode, getSegmentTags, getSegApparentStart } from './segments';
+import { sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, getPlaybackMode, getSegmentTags, filterNonMarkers } from './segments';
 import { generateOutSegFileNames as generateOutSegFileNamesRaw, generateMergedFileNames as generateMergedFileNamesRaw, defaultOutSegTemplate, defaultCutMergedFileTemplate } from './util/outputNameTemplate';
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 import BigWaveform from './components/BigWaveform';
@@ -335,20 +335,20 @@ function App() {
   }, [isFileOpened]);
 
   const {
-    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, focusSegmentAtCursor, createNumSegments, createFixedDurationSegments, createRandomSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, isSegmentSelected, setCutTime, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, onSelectSegmentsByExpr, onMutateSegmentsByExpr, toggleSegmentSelected, selectOnlySegment, selectedSegments, selectedSegmentsOrInverse, nonFilteredSegmentsOrInverse, segmentsToExport, duplicateCurrentSegment, duplicateSegment, updateSegAtIndex, getSegApparentEnd, getApparentCutSegments,
-  } = useSegments({ filePath, workingRef, setWorking, setProgress, videoStream: activeVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog });
+    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeCutSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, onLabelSegment, splitCurrentSegment, focusSegmentAtCursor, createNumSegments, createFixedDurationSegments, createRandomSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, inverseCutSegments, clearSegments, loadCutSegments, isSegmentSelected, setCutTime, setCurrentSegIndex, onLabelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, setDeselectedSegmentIds, onSelectSegmentsByLabel, onSelectSegmentsByExpr, onMutateSegmentsByExpr, toggleSegmentSelected, selectOnlySegment, selectedSegments, selectedSegmentsOrInverse, nonFilteredSegmentsOrInverse, segmentsToExport, duplicateCurrentSegment, duplicateSegment, updateSegAtIndex, findSegmentsAtCursor,
+  } = useSegments({ filePath, workingRef, setWorking, setProgress, videoStream: activeVideoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, durationSafe });
 
-  const { getEdlFilePath, getEdlFilePathOld, projectFileSavePath, getProjectFileSavePath } = useSegmentsAutoSave({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, customOutDir, cutSegments });
+  const { getEdlFilePath, projectFileSavePath, getProjectFileSavePath } = useSegmentsAutoSave({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, customOutDir, cutSegments });
 
   const { nonCopiedExtraStreams, exportExtraStreams, mainCopiedThumbnailStreams, numStreamsToCopy, toggleStripAudio, toggleStripThumbnail, copyAnyAudioTrack, copyStreamIdsByFile, setCopyStreamIdsByFile, copyFileStreams, mainCopiedStreams, setCopyStreamIdsForPath, toggleCopyStreamId, isCopyingStreamId } = useStreamsMeta({ mainStreams, filePath, autoExportExtraStreams });
 
   const segmentAtCursor = useMemo(() => {
-    const segmentsAtCursorIndexes = findSegmentsAtCursor(cutSegments, commandedTime);
+    const segmentsAtCursorIndexes = findSegmentsAtCursor(commandedTime);
     const firstSegmentAtCursorIndex = segmentsAtCursorIndexes[0];
 
     if (firstSegmentAtCursorIndex == null) return undefined;
     return cutSegments[firstSegmentAtCursorIndex];
-  }, [cutSegments, commandedTime]);
+  }, [commandedTime, cutSegments, findSegmentsAtCursor]);
 
   const segmentAtCursorRef = useRef<StateSegment>();
   useEffect(() => {
@@ -371,8 +371,11 @@ function App() {
     seekAbs(nextFrame / fps);
   }, [detectedFps, seekAbs, videoRef]);
 
-  const jumpSegStart = useCallback((index: number) => seekAbs(getSegApparentStart(cutSegments[index]!)), [cutSegments, seekAbs]);
-  const jumpSegEnd = useCallback((index: number) => seekAbs(getSegApparentEnd(cutSegments[index]!)), [cutSegments, getSegApparentEnd, seekAbs]);
+  const jumpSegStart = useCallback((index: number) => seekAbs(cutSegments[index]!.start), [cutSegments, seekAbs]);
+  const jumpSegEnd = useCallback((index: number) => {
+    const seg = cutSegments[index];
+    if (seg?.end != null) seekAbs(seg.end);
+  }, [cutSegments, seekAbs]);
   const jumpCutStart = useCallback(() => jumpSegStart(currentSegIndexSafe), [currentSegIndexSafe, jumpSegStart]);
   const jumpCutEnd = useCallback(() => jumpSegEnd(currentSegIndexSafe), [currentSegIndexSafe, jumpSegEnd]);
   const jumpTimelineStart = useCallback(() => seekAbs(0), [seekAbs]);
@@ -701,7 +704,7 @@ function App() {
     // If we are using a special playback mode, we might need to do more:
     if (playbackModeRef.current != null) {
       const selectedSegmentAtCursor = selectedSegments.find((selectedSegment) => selectedSegment.segId === segmentAtCursorRef.current?.segId);
-      const isSomeSegmentAtCursor = selectedSegmentAtCursor != null && commandedTimeRef.current != null && getSegApparentEnd(selectedSegmentAtCursor) - commandedTimeRef.current > 0.1;
+      const isSomeSegmentAtCursor = selectedSegmentAtCursor != null && commandedTimeRef.current != null && selectedSegmentAtCursor.end != null && selectedSegmentAtCursor.end - commandedTimeRef.current > 0.1;
       if (!isSomeSegmentAtCursor) { // if a segment is already at cursor, don't do anything
         // if no segment at cursor, and looping playback mode, continue looping
         if (playbackModeRef.current === 'loop-selected-segments') {
@@ -712,12 +715,12 @@ function App() {
           seekAbs(firstSelectedSegment.start);
         } else {
           // for all other playback modes, seek to start of current segment
-          seekAbs(getSegApparentStart(currentCutSeg));
+          seekAbs(currentCutSeg.start);
         }
       }
     }
     play(resetPlaybackRate);
-  }, [playbackModeRef, playingRef, play, pause, selectedSegments, commandedTimeRef, getSegApparentEnd, cutSegments, setCurrentSegIndex, seekAbs, currentCutSeg]);
+  }, [playbackModeRef, playingRef, play, pause, selectedSegments, commandedTimeRef, cutSegments, setCurrentSegIndex, seekAbs, currentCutSeg]);
 
   const onTimeUpdate = useCallback<ReactEventHandler<HTMLVideoElement>>((e) => {
     const { currentTime } = e.currentTarget;
@@ -726,12 +729,12 @@ function App() {
 
     const playbackMode = playbackModeRef.current;
 
-    const segmentsAtCursorIndexes = findSegmentsAtCursor(cutSegments, commandedTimeRef.current);
+    const segmentsAtCursorIndexes = findSegmentsAtCursor(commandedTimeRef.current);
     const firstSegmentAtCursorIndex = segmentsAtCursorIndexes[0];
     const playingSegment = firstSegmentAtCursorIndex != null ? cutSegments[firstSegmentAtCursorIndex] : undefined;
 
-    if (playbackMode != null && playingSegment) { // todo and is currently playing?
-      const nextAction = getPlaybackMode({ playbackMode, currentTime, playingSegment: { start: getSegApparentStart(playingSegment), end: getSegApparentEnd(playingSegment) } });
+    if (playbackMode != null && playingSegment && playingSegment.end != null) { // todo and is currently playing?
+      const nextAction = getPlaybackMode({ playbackMode, currentTime, playingSegment: { start: playingSegment.start, end: playingSegment.end } });
 
       if (nextAction != null) {
         console.log(nextAction);
@@ -751,7 +754,7 @@ function App() {
         }
       }
     }
-  }, [commandedTimeRef, cutSegments, getSegApparentEnd, pause, playbackModeRef, playerTime, seekAbs, selectedSegments, setPlayerTime]);
+  }, [commandedTimeRef, cutSegments, findSegmentsAtCursor, pause, playbackModeRef, playerTime, seekAbs, selectedSegments, setPlayerTime]);
 
   const closeFileWithConfirm = useCallback(() => {
     if (!isFileOpened || workingRef.current) return;
@@ -981,6 +984,7 @@ function App() {
     }
 
     if (segmentsToExport.length === 0) {
+      console.warn('Nothing to export');
       return;
     }
 
@@ -999,7 +1003,7 @@ function App() {
       // Special segments-to-chapters mode:
       let chaptersToAdd: Chapter[] | undefined;
       if (segmentsToChaptersOnly) {
-        const sortedSegments = sortSegments(getApparentCutSegments(selectedSegmentsOrInverse));
+        const sortedSegments = sortSegments(selectedSegmentsOrInverse);
         if (hasAnySegmentOverlap(sortedSegments)) {
           errorToast(i18n.t('Make sure you have no overlapping segments.'));
           return;
@@ -1145,7 +1149,7 @@ function App() {
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [filePath, numStreamsToCopy, segmentsToExport, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, hideAllNotifications, cleanupChoices.cleanupAfterExport, cleanupFilesWithDialog, getApparentCutSegments, selectedSegmentsOrInverse, t, mergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateMergedFileNames, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, extractStreams, showOsNotification, handleExportFailed]);
+  }, [filePath, numStreamsToCopy, segmentsToExport, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, cutMultiple, outputDir, customOutDir, fileFormat, duration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, hideAllNotifications, cleanupChoices.cleanupAfterExport, cleanupFilesWithDialog, selectedSegmentsOrInverse, t, mergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateMergedFileNames, autoConcatCutSegments, autoDeleteMergedSegments, nonCopiedExtraStreams, extractStreams, showOsNotification, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath) return;
@@ -1174,16 +1178,15 @@ function App() {
     }, i18n.t('Failed to capture frame'));
   }, [filePath, getRelevantTime, videoRef, usingPreviewFile, captureFrameMethod, captureFrameFromFfmpeg, customOutDir, captureFormat, captureFrameQuality, captureFrameFromTag, hideAllNotifications]);
 
-  const extractSegmentFramesAsImages = useCallback(async (segIds: string[]) => {
+  const extractSegmentFramesAsImages = useCallback(async (segments: { start: number, end: number }[]) => {
     if (!filePath || detectedFps == null || workingRef.current) return;
-    const segments = getApparentCutSegments(cutSegments.filter((seg) => segIds.includes(seg.segId)));
     const segmentsNumFrames = segments.reduce((acc, { start, end }) => acc + (getFrameCount(end - start) ?? 0), 0);
     const captureFramesResponse = await askExtractFramesAsImages({ segmentsNumFrames, plural: segments.length > 1, fps: detectedFps });
     if (captureFramesResponse == null) return;
 
     try {
       setWorking({ text: i18n.t('Extracting frames') });
-      console.log('Extracting frames as images', { segIds, captureFramesResponse });
+      console.log('Extracting frames as images', { captureFramesResponse });
 
       setProgress(0);
 
@@ -1214,10 +1217,15 @@ function App() {
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [filePath, detectedFps, workingRef, getApparentCutSegments, cutSegments, getFrameCount, setWorking, hideAllNotifications, captureFramesRange, customOutDir, captureFormat, captureFrameQuality, captureFrameFileNameFormat, showOsNotification, outputDir]);
+  }, [filePath, detectedFps, workingRef, getFrameCount, setWorking, hideAllNotifications, captureFramesRange, customOutDir, captureFormat, captureFrameQuality, captureFrameFileNameFormat, showOsNotification, outputDir]);
 
-  const extractCurrentSegmentFramesAsImages = useCallback(() => extractSegmentFramesAsImages([currentCutSeg?.segId]), [currentCutSeg?.segId, extractSegmentFramesAsImages]);
-  const extractSelectedSegmentsFramesAsImages = useCallback(() => extractSegmentFramesAsImages(selectedSegments.map((seg) => seg.segId)), [extractSegmentFramesAsImages, selectedSegments]);
+  const extractCurrentSegmentFramesAsImages = useCallback(() => {
+    const { end } = currentCutSeg;
+    invariant(currentCutSeg != null && end != null);
+    extractSegmentFramesAsImages([{ ...currentCutSeg, end }]);
+  }, [currentCutSeg, extractSegmentFramesAsImages]);
+
+  const extractSelectedSegmentsFramesAsImages = useCallback(() => extractSegmentFramesAsImages(filterNonMarkers(selectedSegments)), [extractSegmentFramesAsImages, selectedSegments]);
 
   const userChangePlaybackRate = useCallback((dir: number, rateMultiplier?: number) => {
     if (compatPlayerEnabled) {
@@ -1251,9 +1259,9 @@ function App() {
   }, [filePath, loadCutSegments, setWorking]);
 
   const loadMedia = useCallback(async ({ filePath: fp, projectPath }: { filePath: string, projectPath?: string | undefined }) => {
-    async function tryOpenProjectPath(path: string, type: EdlFileType) {
+    async function tryOpenProjectPath(path: string) {
       if (!(await exists(path))) return false;
-      await loadEdlFile({ path, type });
+      await loadEdlFile({ path, type: 'llc' });
       return true;
     }
 
@@ -1262,7 +1270,7 @@ function App() {
     async function tryFindAndLoadProjectFile({ chapters, cod }: { chapters: FFprobeChapter[], cod: string | undefined }) {
       try {
         // First try to open from from working dir
-        if (await tryOpenProjectPath(getEdlFilePath(fp, cod), 'llc')) return;
+        if (await tryOpenProjectPath(getEdlFilePath(fp, cod))) return;
 
         // then try to open project from source file dir
         const sameDirEdlFilePath = getEdlFilePath(fp);
@@ -1274,9 +1282,6 @@ function App() {
           // Ok, we got access from the user (or already have access), now read the project file
           await loadEdlFile({ path: sameDirEdlFilePath, type: 'llc' });
         }
-
-        // then finally old csv style project
-        if (await tryOpenProjectPath(getEdlFilePathOld(fp, cod), 'csv')) return;
 
         // OK, we didn't find a project file, instead maybe try to create project (segments) from chapters
         const edl = tryMapChaptersToEdl(chapters);
@@ -1410,7 +1415,7 @@ function App() {
       resetState();
       throw err;
     }
-  }, [storeProjectInWorkingDir, setWorking, loadEdlFile, getEdlFilePath, getEdlFilePathOld, enableAskForImportChapters, ensureAccessToSourceDir, loadCutSegments, autoLoadTimecode, enableNativeHevc, ensureWritableOutDir, customOutDir, resetState, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat, html5ifyAndLoadWithPreferences, showPreviewFileLoadedMessage, showUnsupportedFileMessage, showNotification]);
+  }, [storeProjectInWorkingDir, setWorking, loadEdlFile, getEdlFilePath, enableAskForImportChapters, ensureAccessToSourceDir, loadCutSegments, autoLoadTimecode, enableNativeHevc, ensureWritableOutDir, customOutDir, resetState, setCopyStreamIdsForPath, setFileFormat, outFormatLocked, setDetectedFileFormat, html5ifyAndLoadWithPreferences, showPreviewFileLoadedMessage, showUnsupportedFileMessage, showNotification]);
 
   const toggleLastCommands = useCallback(() => setLastCommandsVisible((val) => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible((val) => !val), []);
@@ -1902,7 +1907,7 @@ function App() {
   const mainActions = useMemo(() => {
     async function exportYouTube() {
       if (!checkFileOpened()) return;
-      await openYouTubeChaptersDialog(formatYouTube(getApparentCutSegments(cutSegments)));
+      await openYouTubeChaptersDialog(formatYouTube(cutSegments));
     }
 
     function seekReset() {
@@ -2044,7 +2049,7 @@ function App() {
     };
 
     return ret;
-  }, [toggleLoopSelectedSegments, pause, timelineToggleComfortZoom, captureSnapshot, captureSnapshotAsCoverArt, setCutStart, setCutEnd, cleanupFilesDialog, splitCurrentSegment, focusSegmentAtCursor, increaseRotation, goToTimecode, jumpCutStart, jumpCutEnd, jumpTimelineStart, jumpTimelineEnd, batchOpenSelectedFile, closeBatch, addSegment, duplicateCurrentSegment, onExportPress, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, reorderSegsByStartTime, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, createFixedDurationSegments, createNumSegments, createRandomSegments, alignSegmentTimesToKeyframes, shuffleSegments, clearSegments, toggleSegmentsList, toggleStreamsSelector, extractAllStreams, convertFormatBatch, concatBatch, toggleCaptureFormat, toggleStripAudio, toggleStripThumbnail, askStartTimeOffset, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, editCurrentSegmentTags, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, tryFixInvalidDuration, shiftAllSegmentTimes, toggleMuted, copySegmentsToClipboard, handleShowStreamsSelectorClick, openFilesDialog, openDirDialog, toggleSettings, createSegmentsFromKeyframes, toggleWaveformMode, toggleShowThumbnails, toggleShowKeyframes, showIncludeExternalStreamsDialog, toggleFullscreenVideo, checkFileOpened, getApparentCutSegments, cutSegments, seekRel, keyboardSeekAccFactor, togglePlay, play, userChangePlaybackRate, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, seekRelPercent, seekClosestKeyframe, shortStep, jumpSeg, setCurrentSegIndex, zoomRel, batchFileJump, removeCutSegment, currentSegIndexSafe, cutSegmentsHistory, onLabelSegment, toggleLastCommands, userHtml5ifyCurrentFile, toggleKeyframeCut, setPlaybackVolume, closeFileWithConfirm, openSendReportDialogWithState, detectBlackScenes, detectSilentScenes, detectSceneChanges]);
+  }, [toggleLoopSelectedSegments, pause, timelineToggleComfortZoom, captureSnapshot, captureSnapshotAsCoverArt, setCutStart, setCutEnd, cleanupFilesDialog, splitCurrentSegment, focusSegmentAtCursor, increaseRotation, goToTimecode, jumpCutStart, jumpCutEnd, jumpTimelineStart, jumpTimelineEnd, batchOpenSelectedFile, closeBatch, addSegment, duplicateCurrentSegment, onExportPress, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, reorderSegsByStartTime, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, createFixedDurationSegments, createNumSegments, createRandomSegments, alignSegmentTimesToKeyframes, shuffleSegments, clearSegments, toggleSegmentsList, toggleStreamsSelector, extractAllStreams, convertFormatBatch, concatBatch, toggleCaptureFormat, toggleStripAudio, toggleStripThumbnail, askStartTimeOffset, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, editCurrentSegmentTags, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, tryFixInvalidDuration, shiftAllSegmentTimes, toggleMuted, copySegmentsToClipboard, handleShowStreamsSelectorClick, openFilesDialog, openDirDialog, toggleSettings, createSegmentsFromKeyframes, toggleWaveformMode, toggleShowThumbnails, toggleShowKeyframes, showIncludeExternalStreamsDialog, toggleFullscreenVideo, checkFileOpened, cutSegments, seekRel, keyboardSeekAccFactor, togglePlay, play, userChangePlaybackRate, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, seekRelPercent, seekClosestKeyframe, shortStep, jumpSeg, setCurrentSegIndex, zoomRel, batchFileJump, removeCutSegment, currentSegIndexSafe, cutSegmentsHistory, onLabelSegment, toggleLastCommands, userHtml5ifyCurrentFile, toggleKeyframeCut, setPlaybackVolume, closeFileWithConfirm, openSendReportDialogWithState, detectBlackScenes, detectSilentScenes, detectSceneChanges]);
 
   const getKeyboardAction = useCallback((action: MainKeyboardAction) => mainActions[action], [mainActions]);
 
@@ -2485,7 +2490,6 @@ function App() {
                       width={rightBarWidth}
                       currentSegIndex={currentSegIndexSafe}
                       cutSegments={cutSegments}
-                      getSegApparentEnd={getSegApparentEnd}
                       inverseCutSegments={inverseCutSegments}
                       getFrameCount={getFrameCount}
                       formatTimecode={formatTimecode}
@@ -2558,7 +2562,6 @@ function App() {
                   goToTimecode={goToTimecode}
                   isSegmentSelected={isSegmentSelected}
                   darkMode={darkMode}
-                  getSegApparentEnd={getSegApparentEnd}
                 />
 
                 <BottomBar
@@ -2588,7 +2591,6 @@ function App() {
                   jumpTimelineEnd={jumpTimelineEnd}
                   startTimeOffset={startTimeOffset}
                   setCutTime={setCutTime}
-                  getSegApparentEnd={getSegApparentEnd}
                   playing={playing}
                   shortStep={shortStep}
                   seekClosestKeyframe={seekClosestKeyframe}

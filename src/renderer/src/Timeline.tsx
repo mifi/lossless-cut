@@ -16,7 +16,6 @@ import styles from './Timeline.module.css';
 import { timelineBackground, darkModeTransition } from './colors';
 import { Frame } from './ffmpeg';
 import { FormatTimecode, InverseCutSegment, RenderableWaveform, StateSegment, Thumbnail } from './types';
-import { UseSegments } from './hooks/useSegments';
 
 
 type CalculateTimelinePercent = (time: number) => string | undefined;
@@ -111,7 +110,6 @@ function Timeline({
   goToTimecode,
   isSegmentSelected,
   darkMode,
-  getSegApparentEnd,
 } : {
   durationSafe: number,
   startTimeOffset: number,
@@ -143,7 +141,6 @@ function Timeline({
   goToTimecode: () => void,
   isSegmentSelected: (a: { segId: string }) => boolean,
   darkMode: boolean,
-  getSegApparentEnd: UseSegments['getSegApparentEnd'],
 }) {
   const { t } = useTranslation();
 
@@ -383,8 +380,6 @@ function Timeline({
           ref={timelineWrapperRef}
         >
           {cutSegments.map((seg, i) => {
-            if (seg.start === 0 && seg.end === 0) return null; // No video loaded
-
             const selected = invertCutSegments || isSegmentSelected({ segId: seg.segId });
 
             return (
@@ -398,7 +393,6 @@ function Timeline({
                 invertCutSegments={invertCutSegments}
                 formatTimecode={formatTimecode}
                 selected={selected}
-                getSegApparentEnd={getSegApparentEnd}
               />
             );
           })}

@@ -14,7 +14,7 @@ import { parseYouTube } from '../edlFormats';
 import CopyClipboardButton from '../components/CopyClipboardButton';
 import Checkbox from '../components/Checkbox';
 import { isWindows, showItemInFolder } from '../util';
-import { ParseTimecode, SegmentBase } from '../types';
+import { ParseTimecode } from '../types';
 import { FindKeyframeMode } from '../ffmpeg';
 
 const remote = window.require('@electron/remote');
@@ -225,10 +225,10 @@ async function askForNumSegments() {
 export async function createNumSegments(fileDuration: number) {
   const numSegments = await askForNumSegments();
   if (numSegments == null) return undefined;
-  const edl: SegmentBase[] = [];
+  const edl: { start: number, end: number }[] = [];
   const segDuration = fileDuration / numSegments;
   for (let i = 0; i < numSegments; i += 1) {
-    edl.push({ start: i * segDuration, end: i === numSegments - 1 ? undefined : (i + 1) * segDuration });
+    edl.push({ start: i * segDuration, end: i === numSegments - 1 ? fileDuration : (i + 1) * segDuration });
   }
   return edl;
 }
@@ -472,10 +472,10 @@ export async function createFixedDurationSegments({ fileDuration, inputPlacehold
 }) {
   const segmentDuration = await askForSegmentDuration({ fileDuration, inputPlaceholder, parseTimecode });
   if (segmentDuration == null) return undefined;
-  const edl: SegmentBase[] = [];
+  const edl: { start: number, end: number }[] = [];
   for (let start = 0; start < fileDuration; start += segmentDuration) {
     const end = start + segmentDuration;
-    edl.push({ start, end: end >= fileDuration ? undefined : end });
+    edl.push({ start, end: end >= fileDuration ? fileDuration : end });
   }
   return edl;
 }
@@ -488,7 +488,7 @@ export async function createRandomSegments(fileDuration: number) {
 
   const randomInRange = (min: number, max: number) => min + Math.random() * (max - min);
 
-  const edl: SegmentBase[] = [];
+  const edl: { start: number, end: number }[] = [];
   for (let start = randomInRange(gapMin, gapMax); start < fileDuration && edl.length < maxSegments; start += randomInRange(gapMin, gapMax)) {
     const end = Math.min(fileDuration, start + randomInRange(durationMin, durationMax));
     edl.push({ start, end });
@@ -632,6 +632,7 @@ export async function selectSegmentsByExprDialog(inputValidator: (v: string) => 
       label: { name: i18n.t('Segment label (exact)'), code: "segment.label === 'My label'" },
       regexp: { name: i18n.t('Segment label (regexp)'), code: '/^My label/.test(segment.label)' },
       tag: { name: i18n.t('Segment tag value'), code: "segment.tags.myTag === 'tag value'" },
+      markers: { name: i18n.t('Markers'), code: 'segment.end == null' },
     },
     title: i18n.t('Select segments by expression'),
     description: <Trans>Enter a JavaScript expression which will be evaluated for each segment. Segments for which the expression evaluates to &quot;true&quot; will be selected. <button type="button" className="link-button" onClick={() => shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/expressions.md')}>View available syntax.</button></Trans>,
@@ -649,6 +650,8 @@ export async function mutateSegmentsByExprDialog(inputValidator: (v: string) => 
       // eslint-disable-next-line no-template-curly-in-string
       addNumToLabel: { name: i18n.t('Add number suffix to label'), code: '{ label: `${segment.label} ${segment.index + 1}` }' },
       tagEven: { name: i18n.t('Add a tag to every even segment'), code: '{ tags: (segment.index + 1) % 2 === 0 ? { ...segment.tags, even: \'true\' } : segment.tags }' },
+      segmentsToMarkers: { name: i18n.t('Convert segments to markers'), code: '{ end: undefined }' },
+      markersToSegments: { name: i18n.t('Convert markers to segments'), code: '{ ...(segment.end == null && { end: segment.start + 5 }) }' },
     },
     title: i18n.t('Edit segments by expression'),
     description: <Trans>Enter a JavaScript expression which will be evaluated for each selected segment. Returned properties will be edited. <button type="button" className="link-button" onClick={() => shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/expressions.md')}>View available syntax.</button></Trans>,

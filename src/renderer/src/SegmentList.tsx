@@ -15,10 +15,11 @@ import useUserSettings from './hooks/useUserSettings';
 import { saveColor, controlsBackground, primaryTextColor, darkModeTransition } from './colors';
 import { useSegColors } from './contexts';
 import { mySpring } from './animations';
-import { getSegApparentStart, getSegmentTags } from './segments';
+import { getSegmentTags } from './segments';
 import TagEditor from './components/TagEditor';
 import { ContextMenuTemplate, FormatTimecode, GetFrameCount, InverseCutSegment, SegmentTags, StateSegment } from './types';
 import { UseSegments } from './hooks/useSegments';
+
 
 const buttonBaseStyle = {
   margin: '0 3px', borderRadius: 3, color: 'white', cursor: 'pointer',
@@ -55,7 +56,6 @@ const Segment = memo(({
   onExtractSegmentFramesAsImages,
   onInvertSelectedSegments,
   onDuplicateSegmentClick,
-  getSegApparentEnd,
 }: {
   seg: StateSegment | InverseCutSegment,
   index: number,
@@ -81,10 +81,9 @@ const Segment = memo(({
   jumpSegEnd: (i: number) => void,
   addSegment: UseSegments['addSegment'],
   onEditSegmentTags: (i: number) => void,
-  onExtractSegmentFramesAsImages: (segIds: string[]) => Promise<void>,
+  onExtractSegmentFramesAsImages: (segments: Pick<InverseCutSegment, 'start' | 'end'>[]) => Promise<void>,
   onInvertSelectedSegments: UseSegments['invertSelectedSegments'],
   onDuplicateSegmentClick: UseSegments['duplicateSegment'],
-  getSegApparentEnd: UseSegments['getSegApparentEnd'],
 }) => {
   const { invertCutSegments, darkMode } = useUserSettings();
   const { t } = useTranslation();
@@ -132,14 +131,19 @@ const Segment = memo(({
       { type: 'separator' },
 
       { label: t('Segment tags'), click: () => onEditSegmentTags(index) },
-      { label: t('Extract frames as image files'), click: () => onExtractSegmentFramesAsImages([seg.segId]) },
+      ...(seg.end != null ? [{ label: t('Extract frames as image files'), click: () => onExtractSegmentFramesAsImages([seg as Pick<InverseCutSegment, 'start' | 'end'>]) }] : []),
     ];
   }, [invertCutSegments, t, addSegment, onLabelSelectedSegments, onRemoveSelected, updateSegOrder, index, jumpSegStart, jumpSegEnd, onLabelPress, onRemovePress, onDuplicateSegmentClick, seg, onSelectSingleSegment, onSelectAllSegments, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectSegmentsByExpr, onInvertSelectedSegments, onMutateSegmentsByExpr, onReorderPress, onEditSegmentTags, onExtractSegmentFramesAsImages]);
 
   useContextMenu(ref, contextMenuTemplate);
 
-  const duration = useMemo(() => getSegApparentEnd(seg) - getSegApparentStart(seg), [getSegApparentEnd, seg]);
-  const durationMs = duration * 1000;
+  const duration = useMemo(() => (seg.end == null ? undefined : seg.end - seg.start), [seg]);
+
+  const timeStr = useMemo(() => (
+    seg.end == null
+      ? formatTimecode({ seconds: seg.start })
+      : `${formatTimecode({ seconds: seg.start })} - ${formatTimecode({ seconds: seg.end })}`
+  ), [formatTimecode, seg]);
 
   const isActive = !invertCutSegments && currentSegIndex === index;
 
@@ -158,15 +162,10 @@ const Segment = memo(({
     return <b style={{ cursor: 'grab', color: 'white', padding: '0 4px', marginRight: 3, marginLeft: -3, background: color.string(), border: `1px solid ${isActive ? borderColor.string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
   }
 
-  const timeStr = useMemo(() => `${formatTimecode({ seconds: getSegApparentStart(seg) })} - ${formatTimecode({ seconds: getSegApparentEnd(seg) })}`, [formatTimecode, seg, getSegApparentEnd]);
-
   const onDoubleClick = useCallback(() => {
     if (invertCutSegments) return;
     jumpSegStart(index);
   }, [index, invertCutSegments, jumpSegStart]);
-
-  const durationMsFormatted = Math.floor(durationMs);
-  const frameCount = getFrameCount(duration);
 
   const CheckIcon = selected ? FaRegCheckCircle : FaRegCircle;
 
@@ -196,24 +195,26 @@ const Segment = memo(({
       exit={{ scaleY: 0 }}
       className="segment-list-entry"
     >
-      <div className="segment-handle" style={{ cursor, color: 'var(--gray12)', marginBottom: 3, display: 'flex', alignItems: 'center', height: 16 }}>
+      <div className="segment-handle" style={{ cursor, color: 'var(--gray12)', marginBottom: duration != null ? 3 : undefined, display: 'flex', alignItems: 'center', height: 16 }}>
         {renderNumber()}
-        <span style={{ cursor, fontSize: Math.min(310 / timeStr.length, 14), whiteSpace: 'nowrap' }}>{timeStr}</span>
+        <span style={{ cursor, fontSize: Math.min(310 / timeStr.length, 12), whiteSpace: 'nowrap' }}>{timeStr}</span>
       </div>
 
-      <div style={{ fontSize: 12 }}>
-        {'name' in seg && seg.name && <span style={{ color: primaryTextColor, marginRight: '.3em' }}>{seg.name}</span>}
-        {Object.entries(tags).map(([name, value]) => (
-          <span style={{ fontSize: 11, backgroundColor: 'var(--gray5)', color: 'var(--gray12)', borderRadius: '.4em', padding: '0 .2em', marginRight: '.1em' }} key={name}>{name}:<b>{value}</b></span>
-        ))}
-      </div>
+      {'name' in seg && seg.name && <span style={{ fontSize: 12, color: primaryTextColor, marginRight: '.3em' }}>{seg.name}</span>}
+      {Object.entries(tags).map(([name, value]) => (
+        <span style={{ fontSize: 11, backgroundColor: 'var(--gray5)', color: 'var(--gray12)', borderRadius: '.4em', padding: '0 .2em', marginRight: '.1em' }} key={name}>{name}:<b>{value}</b></span>
+      ))}
 
-      <div style={{ fontSize: 13 }}>
-        {t('Duration')} {formatTimecode({ seconds: duration, shorten: true })}
-      </div>
-      <div style={{ fontSize: 12 }}>
-        <Trans>{{ durationMsFormatted }} ms, {{ frameCount: frameCount ?? '?' }} frames</Trans>
-      </div>
+      {duration != null && (
+        <>
+          <div style={{ fontSize: 13 }}>
+            {t('Duration')} {formatTimecode({ seconds: duration, shorten: true })}
+          </div>
+          <div style={{ fontSize: 12 }}>
+            <Trans>{{ durationMsFormatted: Math.floor(duration * 1000) }} ms, {{ frameCount: (duration && getFrameCount(duration)) ?? '?' }} frames</Trans>
+          </div>
+        </>
+      )}
 
       {!invertCutSegments && (
         <div style={{ position: 'absolute', right: 3, bottom: 3 }}>
@@ -263,7 +264,6 @@ function SegmentList({
   setEditingSegmentTags,
   setEditingSegmentTagsSegmentIndex,
   onEditSegmentTags,
-  getSegApparentEnd,
 }: {
   width: number,
   formatTimecode: FormatTimecode,
@@ -291,7 +291,7 @@ function SegmentList({
   onSelectSegmentsByLabel: UseSegments['onSelectSegmentsByLabel'],
   onSelectSegmentsByExpr: UseSegments['onSelectSegmentsByExpr'],
   onMutateSegmentsByExpr: UseSegments['onMutateSegmentsByExpr'],
-  onExtractSegmentFramesAsImages: (segIds: string[]) => Promise<void>,
+  onExtractSegmentFramesAsImages: (segments: Pick<InverseCutSegment, 'start' | 'end'>[]) => Promise<void>,
   onLabelSelectedSegments: UseSegments['onLabelSelectedSegments'],
   onInvertSelectedSegments: UseSegments['invertSelectedSegments'],
   onDuplicateSegmentClick: UseSegments['duplicateSegment'],
@@ -303,7 +303,6 @@ function SegmentList({
   setEditingSegmentTags: Dispatch<SetStateAction<SegmentTags | undefined>>,
   setEditingSegmentTagsSegmentIndex: Dispatch<SetStateAction<number | undefined>>,
   onEditSegmentTags: (index: number) => void,
-  getSegApparentEnd: UseSegments['getSegApparentEnd'],
 }) {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
@@ -351,7 +350,7 @@ function SegmentList({
     const currentSegColor = getButtonColor(currentCutSeg);
     const segAtCursorColor = getButtonColor(segmentAtCursor);
 
-    const segmentsTotal = selectedSegments.reduce((acc, seg) => (getSegApparentEnd(seg) - getSegApparentStart(seg)) + acc, 0);
+    const segmentsTotal = selectedSegments.reduce((acc, seg) => (seg.end == null ? 0 : seg.end - seg.start) + acc, 0);
 
     return (
       <>
@@ -513,7 +512,6 @@ function SegmentList({
                   onLabelSelectedSegments={onLabelSelectedSegments}
                   onInvertSelectedSegments={onInvertSelectedSegments}
                   onDuplicateSegmentClick={onDuplicateSegmentClick}
-                  getSegApparentEnd={getSegApparentEnd}
                 />
               );
             })}

@@ -1,17 +1,76 @@
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence, MotionStyle } from 'framer-motion';
 import { FaTrashAlt } from 'react-icons/fa';
+import Color from 'color';
 
 import { mySpring } from './animations';
 import useUserSettings from './hooks/useUserSettings';
 import { useSegColors } from './contexts';
 import { FormatTimecode, StateSegment } from './types';
-import { getSegApparentStart } from './segments';
-import { UseSegments } from './hooks/useSegments';
 
+
+function Marker({
+  seg, segNum, color, isActive, selected, onClick, getTimePercent, formatTimecode,
+}: {
+  seg: StateSegment,
+  segNum: number,
+  color: Color,
+  isActive: boolean,
+  selected: boolean,
+  onClick: () => void,
+  getTimePercent: (a: number) => string,
+  formatTimecode: FormatTimecode,
+}) {
+  const { darkMode } = useUserSettings();
+
+  const pinColor = darkMode ? color.saturate(0.2).lightness(40).string() : color.desaturate(0.2).lightness(50).string();
+
+  const title = [];
+  title.push(formatTimecode({ seconds: seg.start, shorten: true }));
+  if (seg.name) title.push(seg.name);
+
+  const borderColor = useMemo(() => {
+    if (isActive) {
+      if (darkMode) return 'rgba(255,255,255,0.5)';
+      return 'rgba(0,0,0,0.5)';
+    }
+    return 'rgba(0,0,0,0)';
+  }, [darkMode, isActive]);
+
+  return (
+    <motion.div
+      style={{
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: getTimePercent(seg.start),
+        width: 2,
+        marginLeft: -1,
+        overflow: 'visible',
+        backgroundColor: 'var(--gray12)',
+      }}
+      layout
+      transition={mySpring}
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ opacity: selected ? 1 : 0.5, scale: 1 }}
+      exit={{ opacity: 0, scale: 0 }}
+      title={title.join(' ')}
+    >
+      <div style={{ borderRadius: '50%', backgroundColor: pinColor, width: 14, height: 14, marginLeft: -7, flexShrink: 0, textAlign: 'center', border: `1px solid ${borderColor}` }}>
+        <div
+          style={{ fontSize: 10, minWidth: 0, letterSpacing: '-.1em', color: 'white' }}
+          role="button"
+          onClick={() => onClick()}
+        >
+          {segNum + 1}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 function TimelineSeg({
-  seg, duration, isActive, segNum, onSegClick, invertCutSegments, formatTimecode, selected, getSegApparentEnd,
+  seg, duration, isActive, segNum, onSegClick, invertCutSegments, formatTimecode, selected,
 } : {
   seg: StateSegment,
   duration: number,
@@ -21,7 +80,6 @@ function TimelineSeg({
   invertCutSegments: boolean,
   formatTimecode: FormatTimecode,
   selected: boolean,
-  getSegApparentEnd: UseSegments['getSegApparentEnd'],
 }) {
   const { darkMode } = useUserSettings();
   const { getSegColor } = useSegColors();
@@ -30,14 +88,9 @@ function TimelineSeg({
 
   const { name } = seg;
 
-  const cutStart = useMemo(() => getSegApparentStart(seg), [seg]);
-  const cutEnd = useMemo(() => getSegApparentEnd(seg), [getSegApparentEnd, seg]);
+  const getTimePercent = (t: number) => `${(t / duration) * 100}%`;
 
-  const cutSectionWidth = `${((cutEnd - cutStart) / duration) * 100}%`;
-
-  const startTimePos = `${(cutStart / duration) * 100}%`;
-
-  const markerBorder = useMemo(() => {
+  const vertBorder = useMemo(() => {
     if (!isActive) return '2px solid transparent';
     return `1.5px solid ${darkMode ? segColor.desaturate(0.1).lightness(70).string() : segColor.desaturate(0.2).lightness(40).string()}`;
   }, [darkMode, isActive, segColor]);
@@ -48,13 +101,26 @@ function TimelineSeg({
     if (isActive) return darkMode ? segColor.saturate(0.2).lightness(60).alpha(0.7).string() : segColor.saturate(0.2).lightness(40).alpha(0.8).string();
     return darkMode ? segColor.desaturate(0.2).lightness(50).alpha(0.7).string() : segColor.lightness(35).alpha(0.6).string();
   }, [darkMode, invertCutSegments, isActive, segColor, selected]);
-  const markerBorderRadius = 5;
+
+  const vertBorderRadius = 5;
+
+  const onThisSegClick = useCallback(() => onSegClick(segNum), [onSegClick, segNum]);
+
+  if (seg.end == null) {
+    if (invertCutSegments) return null;
+
+    return (
+      <Marker seg={seg} segNum={segNum} color={segColor} selected={selected} isActive={isActive} onClick={onThisSegClick} getTimePercent={getTimePercent} formatTimecode={formatTimecode} />
+    );
+  }
+
+  const cutSectionWidth = `${((seg.end - seg.start) / duration) * 100}%`;
 
   const wrapperStyle: MotionStyle = {
     position: 'absolute',
     top: 0,
     bottom: 0,
-    left: startTimePos,
+    left: getTimePercent(seg.start),
     width: cutSectionWidth,
     display: 'flex',
     alignItems: 'center',
@@ -64,19 +130,18 @@ function TimelineSeg({
     color: 'white',
     overflow: 'hidden',
 
-    borderLeft: markerBorder,
-    borderTopLeftRadius: markerBorderRadius,
-    borderBottomLeftRadius: markerBorderRadius,
+    borderLeft: vertBorder,
+    borderTopLeftRadius: vertBorderRadius,
+    borderBottomLeftRadius: vertBorderRadius,
 
-    borderRight: markerBorder,
-    borderTopRightRadius: markerBorderRadius,
-    borderBottomRightRadius: markerBorderRadius,
+    borderRight: vertBorder,
+    borderTopRightRadius: vertBorderRadius,
+    borderBottomRightRadius: vertBorderRadius,
   };
 
-  const onThisSegClick = () => onSegClick(segNum);
-
   const title: string[] = [];
-  if (cutEnd > cutStart) title.push(`${formatTimecode({ seconds: cutEnd - cutStart, shorten: true })}`);
+  title.push(formatTimecode({ seconds: seg.start, shorten: true }));
+  if (seg.end != null) title.push(`- ${formatTimecode({ seconds: seg.end, shorten: true })}`);
   if (name) title.push(name);
 
   return (

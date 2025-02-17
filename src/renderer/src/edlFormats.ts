@@ -53,13 +53,13 @@ export async function parseCsv(csvStr: string, parseTimeFn: (a: string) => numbe
 
   const mapped = rows
     .map(([start, end, name]) => ({
-      start: parseTimeFn(start),
+      start: parseTimeFn(start) ?? 0,
       end: parseTimeFn(end),
       name: name.trim(),
     }));
 
   if (!mapped.every(({ start, end }) => (
-    (start === undefined || !Number.isNaN(start))
+    !Number.isNaN(start)
     && (end === undefined || !Number.isNaN(end))
   ))) {
     console.log(mapped);
@@ -209,7 +209,7 @@ export function parseCuesheet(cuesheet: ICueSheet) {
     const nextTrack = tracks![i + 1];
     const end = nextTrack && getTime(nextTrack);
 
-    return { name: track.title, start: getTime(track), end, tags: { performer: track.performer, title: track.title } };
+    return { name: track.title, start: getTime(track) ?? 0, end, tags: { performer: track.performer, title: track.title } };
   });
 }
 

@@ -10,7 +10,7 @@ import { PlaybackMode, SegmentBase, SegmentTags, StateSegment } from './types';
 export const isDurationValid = (duration?: number): duration is number => duration != null && Number.isFinite(duration) && duration > 0;
 
 export const createSegment = (props?: { start?: number | undefined, end?: number | undefined, name?: string | undefined, tags?: unknown | undefined }): Omit<StateSegment, 'segColorIndex'> => ({
-  start: props?.start,
+  start: props?.start ?? 0,
   end: props?.end,
   name: props?.name || '',
   segId: nanoid(),
@@ -27,34 +27,12 @@ export const addSegmentColorIndex = (segment: Omit<StateSegment, 'segColorIndex'
   segColorIndex,
 });
 
-// Because segments could have undefined start / end
-// meaning extend from start of timeline or to end whatever time end has (video duration)
-export function getSegApparentStart(seg: SegmentBase) {
-  const time = seg.start;
-  return time !== undefined ? time : 0;
-}
-
-export function getSegApparentEnd(seg: SegmentBase, duration: number | undefined) {
-  const time = seg.end;
-  if (time !== undefined) return time;
-  if (isDurationValid(duration)) return duration;
-  return 0; // Haven't gotten duration yet - what do to ¯\_(ツ)_/¯
-}
-
 export const getCleanCutSegments = (cs: Pick<StateSegment, 'start' | 'end' | 'name' | 'tags'>[]) => cs.map((seg) => ({
   start: seg.start,
   end: seg.end,
   name: seg.name,
   tags: seg.tags,
 }));
-
-export function findSegmentsAtCursor(segments: SegmentBase[], currentTime: number) {
-  const indexes: number[] = [];
-  segments.forEach((segment, index) => {
-    if ((segment.start == null || segment.start <= currentTime) && (segment.end == null || segment.end >= currentTime)) indexes.push(index);
-  });
-  return indexes.reverse(); // if we are on multiple, select the last. That way, auto play selected segments won't go on repeat on the same segment
-}
 
 // in the past we had non-string tags
 export const getSegmentTags = (segment: { tags?: SegmentTags | undefined }) => (
@@ -64,20 +42,15 @@ export const getSegmentTags = (segment: { tags?: SegmentTags | undefined }) => (
 export const sortSegments = <T extends { start: number }>(segments: T[]) => sortBy(segments, 'start');
 
 // https://stackoverflow.com/a/30472982/6519037
-export function partitionIntoOverlappingRanges<T extends SegmentBase>(
-  array: T[],
-  getSegmentStart = getSegApparentStart,
-  getSegmentEnd = (seg: T) => {
-    if (seg.end == null) throw new Error('Unknown end of segment');
-    return seg.end;
-  },
-) {
+export function partitionIntoOverlappingRanges<T extends SegmentBase>(array: T[]) {
   const [firstItem] = array;
   if (firstItem == null) throw new Error('No segments');
 
   const ret: T[][] = [
     [firstItem],
   ];
+
+  const getSegmentEnd = (s: T) => s.end ?? s.start; // assume markers have a length of 0;
 
   const getMaxEnd = (array2: T[]) => {
     // note: this also mutates array2
@@ -92,8 +65,8 @@ export function partitionIntoOverlappingRanges<T extends SegmentBase>(
 
   for (let i = 1, g = 0; i < array.length; i += 1) {
     const item = array[i]!;
-    const start = getSegmentStart(item);
-    const prevStart = getSegmentStart(array[i - 1]!);
+    const { start } = item;
+    const prevStart = array[i - 1]!.start;
     if (start == null || prevStart == null) throw new Error();
     if (start >= prevStart && start < getMaxEnd(ret[g]!)) {
       ret[g]!.push(item);
@@ -103,11 +76,11 @@ export function partitionIntoOverlappingRanges<T extends SegmentBase>(
     }
   }
 
-  return ret.filter((group) => group.length > 1).map((group) => sortBy(group, (seg) => getSegmentStart(seg)));
+  return ret.filter((group) => group.length > 1).map((group) => sortBy(group, (seg) => seg.start));
 }
 
-export function combineOverlappingSegments<T extends SegmentBase>(existingSegments: T[], getSegApparentEnd2: (seg: SegmentBase) => number) {
-  const partitionedSegments = partitionIntoOverlappingRanges(existingSegments, getSegApparentStart, getSegApparentEnd2);
+export function combineOverlappingSegments<T extends SegmentBase>(existingSegments: T[]) {
+  const partitionedSegments = partitionIntoOverlappingRanges(existingSegments);
 
   return existingSegments.flatMap((existingSegment) => {
     const partOfPartition = partitionedSegments.find((partition) => partition.includes(existingSegment));
@@ -129,27 +102,30 @@ export function combineOverlappingSegments<T extends SegmentBase>(existingSegmen
   });
 }
 
-export function combineSelectedSegments(existingSegments: StateSegment[], getSegApparentEnd2: (seg: StateSegment) => number, isSegmentSelected: (seg: StateSegment) => boolean) {
+export function combineSelectedSegments({ existingSegments, isSegmentSelected }: { existingSegments: StateSegment[], isSegmentSelected: (seg: StateSegment) => boolean }) {
   const selectedSegments = existingSegments.filter((segment) => isSegmentSelected(segment));
-  const firstSegment = minBy(selectedSegments, (seg) => getSegApparentStart(seg));
-  const lastSegment = maxBy(selectedSegments, (seg) => getSegApparentEnd2(seg));
+  const firstSegment = minBy(selectedSegments, (seg) => seg.start);
+  const lastSegment = maxBy(selectedSegments, (seg) => seg.end ?? seg.start);
 
   return existingSegments.flatMap((existingSegment) => {
+    invariant(lastSegment != null);
     if (existingSegment === firstSegment) {
       return [{
         ...firstSegment,
         start: firstSegment.start,
-        end: lastSegment!.end,
+        end: lastSegment.end ?? lastSegment.start, // for markers use their start
       }];
     }
 
-    if (isSegmentSelected(existingSegment)) return []; // remove other selected segments
+    if (isSegmentSelected(existingSegment)) {
+      return []; // remove other selected segments
+    }
 
     return [existingSegment];
   });
 }
 
-export function hasAnySegmentOverlap(sortedSegments: SegmentBase[]) {
+export function hasAnySegmentOverlap(sortedSegments: { start: number, end: number }[]) {
   if (sortedSegments.length === 0) return false;
 
   const overlappingGroups = partitionIntoOverlappingRanges(sortedSegments);
@@ -157,12 +133,12 @@ export function hasAnySegmentOverlap(sortedSegments: SegmentBase[]) {
 }
 
 // eslint-disable-next-line space-before-function-paren
-export function invertSegments(sortedCutSegments: (SegmentBase & { segId?: string | undefined })[], includeFirstSegment: boolean, includeLastSegment: boolean, duration?: number) {
+export function invertSegments(sortedCutSegments: ({ start: number, end: number, segId?: string | undefined })[], includeFirstSegment: boolean, includeLastSegment: boolean, duration?: number) {
   if (sortedCutSegments.length === 0) return [];
 
   if (hasAnySegmentOverlap(sortedCutSegments)) return [];
 
-  const ret: typeof sortedCutSegments = [];
+  const ret: { start: number, end?: number | undefined, segId?: string | undefined }[] = [];
 
   if (includeFirstSegment) {
     const firstSeg = sortedCutSegments[0]!;
@@ -189,7 +165,7 @@ export function invertSegments(sortedCutSegments: (SegmentBase & { segId?: strin
   if (includeLastSegment) {
     const lastSeg = sortedCutSegments.at(-1)!;
     if (duration == null || (lastSeg.end != null && lastSeg.end < duration)) {
-      const inverted: typeof sortedCutSegments[number] = {
+      const inverted: typeof ret[number] = {
         start: lastSeg.end,
         end: duration,
       };
@@ -272,3 +248,8 @@ export function formatSegNum(segIndex: number, numSegments: number, minLength = 
   const numDigits = getNumDigits(numSegments);
   return `${segIndex + 1}`.padStart(Math.max(numDigits, minLength), '0');
 }
+
+export const filterNonMarkers = <T extends { end?: number | undefined }>(segments: T[]) => segments.flatMap(({ end, ...rest }) => (end != null ? [{
+  ...rest,
+  end,
+}] : []));

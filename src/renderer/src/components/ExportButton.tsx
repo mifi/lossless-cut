@@ -9,7 +9,10 @@ import { SegmentToExport } from '../types';
 
 
 function ExportButton({ segmentsToExport, areWeCutting, onClick, size = 1 }: {
-  segmentsToExport: SegmentToExport[], areWeCutting: boolean, onClick: () => void, size?: number | undefined,
+  segmentsToExport: SegmentToExport[],
+  areWeCutting: boolean,
+  onClick: () => void,
+  size?: number | undefined,
 }) {
   const CutIcon = areWeCutting ? FiScissors : FaFileExport;
 

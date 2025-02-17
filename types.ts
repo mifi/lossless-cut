@@ -134,7 +134,7 @@ export interface ScopeSegment {
   index: number,
   label: string,
   start: number,
-  end: number,
+  end?: number | undefined,
   duration: number,
   tags: Record<string, string>,
 }

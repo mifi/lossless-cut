@@ -6,6 +6,7 @@ import { IoIosCamera, IoMdKey, IoMdSpeedometer } from 'react-icons/io';
 import { FaYinYang, FaTrashAlt, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey, FaSun } from 'react-icons/fa';
 import { GiSoundWaves } from 'react-icons/gi';
 // import useTraceUpdate from 'use-trace-update';
+import invariant from 'tiny-invariant';
 
 import { primaryTextColor, primaryColor, darkModeTransition } from './colors';
 import SegmentCutpointButton from './components/SegmentCutpointButton';
@@ -25,8 +26,6 @@ import useUserSettings from './hooks/useUserSettings';
 import { askForPlaybackRate } from './dialogs';
 import { FormatTimecode, ParseTimecode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
 import { WaveformMode } from '../../../types';
-import { GetSegApparentEnd } from './hooks/useSegments';
-import { getSegApparentStart } from './segments';
 
 const { clipboard } = window.require('electron');
 
@@ -71,8 +70,8 @@ const InvertCutModeButton = memo(({ invertCutSegments, setInvertCutSegments }: {
 // eslint-disable-next-line react/display-name
 const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, seekAbs, currentCutSeg, isStart, formatTimecode, parseTimecode }: {
   darkMode: boolean,
-  cutTime: number,
-  setCutTime: (type: 'start' | 'end', v: number) => void,
+  cutTime: number | undefined,
+  setCutTime: (type: 'start' | 'end', v: number | undefined) => void,
   startTimeOffset: number,
   seekAbs: (a: number) => void,
   currentCutSeg: StateSegment,
@@ -101,9 +100,16 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
     border, borderRadius: 5, backgroundColor: 'var(--gray5)', transition: darkModeTransition, fontSize: 13, textAlign: 'center', padding: '1px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 0 : 5, marginRight: isStart ? 5 : 0, boxSizing: 'border-box', fontFamily: 'inherit', width: 90, outline: 'none',
   };
 
-  const trySetTime = useCallback((timeWithOffset: number) => {
-    const timeWithoutOffset = Math.max(timeWithOffset - startTimeOffset, 0);
+  const trySetTime = useCallback((timeWithOffset: number | undefined) => {
     try {
+      if (timeWithOffset == null) { // clear time
+        invariant(!isStart);
+        setCutTime('end', undefined);
+        setCutTimeManual(undefined);
+        return;
+      }
+
+      const timeWithoutOffset = Math.max(timeWithOffset - startTimeOffset, 0);
       setCutTime(isStart ? 'start' : 'end', timeWithoutOffset);
       seekAbs(timeWithoutOffset);
       setCutTimeManual(undefined);
@@ -114,28 +120,39 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
     }
   }, [isStart, seekAbs, setCutTime, startTimeOffset]);
 
+  const isEmptyEndTime = useCallback((v: string | undefined) => !isStart && v?.trim() === '', [isStart]);
+
   const handleSubmit = useCallback((e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (isEmptyEndTime(cutTimeManual)) {
+      trySetTime(undefined); // clear time
+      return;
+    }
 
     // Don't proceed if not a valid time value
     const timeWithOffset = cutTimeManual != null ? parseTimecode(cutTimeManual) : undefined;
     if (timeWithOffset === undefined) return;
 
     trySetTime(timeWithOffset);
-  }, [cutTimeManual, parseTimecode, trySetTime]);
+  }, [cutTimeManual, isEmptyEndTime, parseTimecode, trySetTime]);
 
   const parseAndSetCutTime = useCallback((text: string) => {
+    if (isEmptyEndTime(text)) {
+      trySetTime(undefined); // clear time
+      return;
+    }
+
     // Don't proceed if not a valid time value
     const timeWithOffset = parseTimecode(text);
     if (timeWithOffset === undefined) return;
 
     trySetTime(timeWithOffset);
-  }, [parseTimecode, trySetTime]);
+  }, [isEmptyEndTime, parseTimecode, trySetTime]);
 
   function handleCutTimeInput(text: string) {
-    setCutTimeManual(text);
-
-    if (isExactDurationMatch(text)) parseAndSetCutTime(text);
+    if (isExactDurationMatch(text) || isEmptyEndTime(text)) parseAndSetCutTime(text);
+    else setCutTimeManual(text);
   }
 
   const tryPaste = useCallback((clipboardText: string) => {
@@ -164,6 +181,12 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
     if (text) tryPaste(text);
   }, [tryPaste]);
 
+  function renderValue() {
+    if (isCutTimeManualSet()) return cutTimeManual;
+    if (cutTime == null) return '';
+    return formatTimecode({ seconds: cutTime + startTimeOffset });
+  }
+
   return (
     <form onSubmit={handleSubmit}>
       <input
@@ -174,9 +197,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
         onPaste={handleCutTimePaste}
         onBlur={() => setCutTimeManual(undefined)}
         onContextMenu={handleContextMenu}
-        value={isCutTimeManualSet()
-          ? cutTimeManual
-          : formatTimecode({ seconds: cutTime + startTimeOffset })}
+        value={renderValue()}
       />
     </form>
   );
@@ -195,7 +216,6 @@ function BottomBar({
   toggleShowThumbnails, toggleWaveformMode, waveformMode, showThumbnails,
   outputPlaybackRate, setOutputPlaybackRate,
   formatTimecode, parseTimecode, playbackRate,
-  getSegApparentEnd,
 }: {
   zoom: number,
   setZoom: (fn: (z: number) => number) => void,
@@ -221,7 +241,7 @@ function BottomBar({
   jumpCutEnd: () => void,
   jumpCutStart: () => void,
   startTimeOffset: number,
-  setCutTime: (type: 'start' | 'end', v: number) => void,
+  setCutTime: (type: 'start' | 'end', v: number | undefined) => void,
   playing: boolean,
   shortStep: (a: number) => void,
   togglePlay: () => void,
@@ -244,7 +264,6 @@ function BottomBar({
   formatTimecode: FormatTimecode,
   parseTimecode: ParseTimecode,
   playbackRate: number,
-  getSegApparentEnd: GetSegApparentEnd,
 }) {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
@@ -380,7 +399,7 @@ function BottomBar({
 
         <SetCutpointButton currentCutSeg={currentCutSeg} side="start" onClick={setCutStart} title={t('Start current segment at current time')} style={{ marginRight: 5 }} />
 
-        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={getSegApparentStart(currentCutSeg)} setCutTime={setCutTime} isStart formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
+        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentCutSeg.start} setCutTime={setCutTime} isStart formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
 
         <IoMdKey
           size={25}
@@ -425,7 +444,7 @@ function BottomBar({
           onClick={() => seekClosestKeyframe(1)}
         />
 
-        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={getSegApparentEnd(currentCutSeg)} setCutTime={setCutTime} formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
+        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentCutSeg.end} setCutTime={setCutTime} formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
 
         <SetCutpointButton currentCutSeg={currentCutSeg} side="end" onClick={setCutEnd} title={t('End current segment at current time')} style={{ marginLeft: 5 }} />
 

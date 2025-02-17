@@ -19,11 +19,8 @@ export default ({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, custo
   cutSegments: StateSegment[],
 }) => {
   const projectSuffix = 'proj.llc';
-  const oldProjectSuffix = 'llc-edl.csv';
   // New LLC format can be stored along with input file or in working dir (customOutDir)
   const getEdlFilePath = useCallback((fp?: string, cod?: string) => getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: projectSuffix }), []);
-  // Old versions of LosslessCut used CSV files and stored them always in customOutDir:
-  const getEdlFilePathOld = useCallback((fp: string | undefined, cod?: string | undefined) => getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: oldProjectSuffix }), []);
   const getProjectFileSavePath = useCallback((storeProjectInWorkingDirIn: boolean) => getEdlFilePath(filePath, storeProjectInWorkingDirIn ? customOutDir : undefined), [getEdlFilePath, filePath, customOutDir]);
   const projectFileSavePath = useMemo(() => getProjectFileSavePath(storeProjectInWorkingDir), [getProjectFileSavePath, storeProjectInWorkingDir]);
 
@@ -66,7 +63,6 @@ export default ({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, custo
 
   return {
     getEdlFilePath,
-    getEdlFilePathOld,
     projectFileSavePath,
     getProjectFileSavePath,
   };

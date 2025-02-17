@@ -1,11 +1,12 @@
 import JSON5 from 'json5';
 import i18n from 'i18next';
 import invariant from 'tiny-invariant';
+import { ZodError } from 'zod';
 
 import { parseSrtToSegments, formatSrt, parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parseCutlist, parsePbf, parseEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, parseCsvTime, getFrameValParser, parseDvAnalyzerSummaryTxt } from './edlFormats';
 import { askForYouTubeInput, showOpenDialog } from './dialogs';
 import { getOutPath } from './util';
-import { EdlExportType, EdlFileType, EdlImportType, GetFrameCount, SegmentBase, StateSegment } from './types';
+import { EdlExportType, EdlFileType, EdlImportType, GetFrameCount, LlcProject, llcProjectV1Schema, llcProjectV2Schema, SegmentBase, StateSegment } from './types';
 
 const { readFile, writeFile } = window.require('fs/promises');
 const cueParser = window.require('cue-parser');
@@ -84,25 +85,35 @@ export async function saveLlcProject({ savePath, filePath, cutSegments }: {
   cutSegments: StateSegment[],
 }) {
   const projectData = {
-    version: 1,
+    version: 2,
     mediaFileName: basename(filePath),
     cutSegments: cutSegments.map(({ start, end, name, tags }) => ({ start, end, name, tags })),
   };
   await writeFile(savePath, JSON5.stringify(projectData, null, 2));
 }
 
-export async function loadLlcProject(path: string) {
-  const parsed = JSON5.parse(await readFile(path, 'utf8')) as unknown;
-  if (parsed == null || typeof parsed !== 'object') throw new Error('Invalid LLC file');
-  let mediaFileName: string | undefined;
-  if ('mediaFileName' in parsed && typeof parsed.mediaFileName === 'string') {
-    mediaFileName = parsed.mediaFileName;
+export async function loadLlcProject(path: string): Promise<LlcProject> {
+  const json = JSON5.parse(await readFile(path, 'utf8'));
+
+  // todo probably remove migration in future
+  try {
+    return llcProjectV2Schema.parse(json);
+  } catch (err) {
+    if (err instanceof ZodError) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { cutSegments, version: _ignored, ...restProject } = llcProjectV1Schema.parse(json);
+      console.log('Converting v1 project to v2');
+      return {
+        ...restProject,
+        version: 2,
+        cutSegments: cutSegments.map(({ start, ...restSeg }) => ({
+          ...restSeg,
+          start: start ?? 0, // v1 allowed undefined for "start"
+        })),
+      };
+    }
+    throw err;
   }
-  if (!('cutSegments' in parsed) || !Array.isArray(parsed.cutSegments)) throw new Error('Invalid LLC file');
-  return {
-    mediaFileName,
-    cutSegments: parsed.cutSegments as StateSegment[], // todo validate more
-  };
 }
 
 export async function readEdlFile({ type, path, fps }: { type: EdlFileType, path: string, fps: number | undefined }) {

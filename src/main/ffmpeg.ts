@@ -254,10 +254,8 @@ export function mapTimesToSegments(times: number[], includeLast: boolean) {
   return segments;
 }
 
-const getSegmentOffset = (from?: number) => (from != null ? from : 0);
-
 function adjustSegmentsWithOffset({ segments, from }: { segments: { start: number, end: number | undefined }[], from?: number | undefined }) {
-  const offset = getSegmentOffset(from);
+  const offset = from ?? 0;
   return segments.map(({ start, end }) => ({ start: start + offset, end: end != null ? end + offset : end }));
 }
 
@@ -296,7 +294,13 @@ export async function detectSceneChanges({ filePath, minChange, onProgress, from
 }
 
 async function detectIntervals({ filePath, customArgs, onProgress, from, to, matchLineTokens, boundingMode }: {
-  filePath: string, customArgs: string[], onProgress: (p: number) => void, from: number, to: number, matchLineTokens: (line: string) => { start: number, end: number } | undefined, boundingMode: boolean
+  filePath: string,
+  customArgs: string[],
+  onProgress: (p: number) => void,
+  from: number,
+  to: number,
+  matchLineTokens: (line: string) => { start: number, end: number } | undefined,
+  boundingMode: boolean,
 }) {
   const args = [
     '-hide_banner',
