@@ -5,13 +5,15 @@ import { FaTrashAlt } from 'react-icons/fa';
 import { mySpring } from './animations';
 import useUserSettings from './hooks/useUserSettings';
 import { useSegColors } from './contexts';
-import { ApparentCutSegment, FormatTimecode } from './types';
+import { FormatTimecode, StateSegment } from './types';
+import { getSegApparentStart } from './segments';
+import { UseSegments } from './hooks/useSegments';
 
 
 function TimelineSeg({
-  seg, duration, isActive, segNum, onSegClick, invertCutSegments, formatTimecode, selected,
+  seg, duration, isActive, segNum, onSegClick, invertCutSegments, formatTimecode, selected, getSegApparentEnd,
 } : {
-  seg: ApparentCutSegment,
+  seg: StateSegment,
   duration: number,
   isActive: boolean,
   segNum: number,
@@ -19,13 +21,17 @@ function TimelineSeg({
   invertCutSegments: boolean,
   formatTimecode: FormatTimecode,
   selected: boolean,
+  getSegApparentEnd: UseSegments['getSegApparentEnd'],
 }) {
   const { darkMode } = useUserSettings();
   const { getSegColor } = useSegColors();
 
   const segColor = useMemo(() => getSegColor(seg), [getSegColor, seg]);
 
-  const { name, start: cutStart, end: cutEnd } = seg;
+  const { name } = seg;
+
+  const cutStart = useMemo(() => getSegApparentStart(seg), [seg]);
+  const cutEnd = useMemo(() => getSegApparentEnd(seg), [getSegApparentEnd, seg]);
 
   const cutSectionWidth = `${((cutEnd - cutStart) / duration) * 100}%`;
 

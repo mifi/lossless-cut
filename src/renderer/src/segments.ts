@@ -4,7 +4,7 @@ import minBy from 'lodash/minBy';
 import maxBy from 'lodash/maxBy';
 import invariant from 'tiny-invariant';
 
-import { ApparentSegmentBase, PlaybackMode, SegmentBase, SegmentTags, StateSegment } from './types';
+import { PlaybackMode, SegmentBase, SegmentTags, StateSegment } from './types';
 
 
 export const isDurationValid = (duration?: number): duration is number => duration != null && Number.isFinite(duration) && duration > 0;
@@ -48,10 +48,10 @@ export const getCleanCutSegments = (cs: Pick<StateSegment, 'start' | 'end' | 'na
   tags: seg.tags,
 }));
 
-export function findSegmentsAtCursor(apparentSegments: ApparentSegmentBase[], currentTime: number) {
+export function findSegmentsAtCursor(segments: SegmentBase[], currentTime: number) {
   const indexes: number[] = [];
-  apparentSegments.forEach((segment, index) => {
-    if (segment.start <= currentTime && segment.end >= currentTime) indexes.push(index);
+  segments.forEach((segment, index) => {
+    if ((segment.start == null || segment.start <= currentTime) && (segment.end == null || segment.end >= currentTime)) indexes.push(index);
   });
   return indexes;
 }
@@ -61,10 +61,10 @@ export const getSegmentTags = (segment: { tags?: SegmentTags | undefined }) => (
   Object.fromEntries(Object.entries(segment.tags || {}).flatMap(([tag, value]) => (value != null ? [[tag, String(value)]] : [])))
 );
 
-export const sortSegments = <T>(segments: T[]) => sortBy(segments, 'start');
+export const sortSegments = <T extends { start: number }>(segments: T[]) => sortBy(segments, 'start');
 
 // https://stackoverflow.com/a/30472982/6519037
-export function partitionIntoOverlappingRanges<T extends SegmentBase | ApparentSegmentBase>(
+export function partitionIntoOverlappingRanges<T extends SegmentBase>(
   array: T[],
   getSegmentStart = getSegApparentStart,
   getSegmentEnd = (seg: T) => {
@@ -217,7 +217,11 @@ export function convertSegmentsToChapters(sortedSegments: { start: number, end: 
   return sortSegments([...sortedSegments, ...invertedSegments]);
 }
 
-export function playOnlyCurrentSegment({ playbackMode, currentTime, playingSegment }: { playbackMode: PlaybackMode, currentTime: number, playingSegment: ApparentSegmentBase }) {
+export function getPlaybackMode({ playbackMode, currentTime, playingSegment }: {
+  playbackMode: PlaybackMode,
+  currentTime: number,
+  playingSegment: { start: number, end: number },
+}) {
   switch (playbackMode) {
     case 'loop-segment-start-end': {
       const maxSec = 3; // max time each side (start/end)
@@ -259,7 +263,7 @@ export function playOnlyCurrentSegment({ playbackMode, currentTime, playingSegme
     default:
   }
 
-  return {};
+  return undefined; // no action
 }
 
 export const getNumDigits = (value: number) => Math.floor(value > 0 ? Math.log10(value) : 0) + 1;

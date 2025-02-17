@@ -10,7 +10,6 @@ import ExportModeButton from './components/ExportModeButton';
 import { withBlur } from './util';
 import { primaryTextColor, controlsBackground, darkModeTransition } from './colors';
 import useUserSettings from './hooks/useUserSettings';
-import { InverseCutSegment } from './types';
 
 
 const { stat } = window.require('fs/promises');
@@ -42,7 +41,7 @@ function TopMenu({
   numStreamsTotal: number,
   setStreamsSelectorShown: (v: boolean) => void,
   toggleSettings: () => void,
-  selectedSegments: InverseCutSegment[],
+  selectedSegments: unknown[],
   isCustomFormatSelected: boolean,
   clearOutDir: () => void,
 }) {

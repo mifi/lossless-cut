@@ -15,7 +15,8 @@ import styles from './Timeline.module.css';
 
 import { timelineBackground, darkModeTransition } from './colors';
 import { Frame } from './ffmpeg';
-import { ApparentCutSegment, FormatTimecode, InverseCutSegment, RenderableWaveform, Thumbnail } from './types';
+import { FormatTimecode, InverseCutSegment, RenderableWaveform, StateSegment, Thumbnail } from './types';
+import { UseSegments } from './hooks/useSegments';
 
 
 type CalculateTimelinePercent = (time: number) => string | undefined;
@@ -88,7 +89,7 @@ function Timeline({
   zoom,
   neighbouringKeyFrames,
   seekAbs,
-  apparentCutSegments,
+  cutSegments,
   setCurrentSegIndex,
   currentSegIndexSafe,
   inverseCutSegments,
@@ -110,6 +111,7 @@ function Timeline({
   goToTimecode,
   isSegmentSelected,
   darkMode,
+  getSegApparentEnd,
 } : {
   durationSafe: number,
   startTimeOffset: number,
@@ -119,7 +121,7 @@ function Timeline({
   zoom: number,
   neighbouringKeyFrames: Frame[],
   seekAbs: (a: number) => void,
-  apparentCutSegments: ApparentCutSegment[],
+  cutSegments: StateSegment[],
   setCurrentSegIndex: (a: number) => void,
   currentSegIndexSafe: number,
   inverseCutSegments: InverseCutSegment[],
@@ -141,6 +143,7 @@ function Timeline({
   goToTimecode: () => void,
   isSegmentSelected: (a: { segId: string }) => boolean,
   darkMode: boolean,
+  getSegApparentEnd: UseSegments['getSegApparentEnd'],
 }) {
   const { t } = useTranslation();
 
@@ -379,7 +382,7 @@ function Timeline({
           style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative', backgroundColor: timelineBackground, transition: darkModeTransition }}
           ref={timelineWrapperRef}
         >
-          {apparentCutSegments.map((seg, i) => {
+          {cutSegments.map((seg, i) => {
             if (seg.start === 0 && seg.end === 0) return null; // No video loaded
 
             const selected = invertCutSegments || isSegmentSelected({ segId: seg.segId });
@@ -395,6 +398,7 @@ function Timeline({
                 invertCutSegments={invertCutSegments}
                 formatTimecode={formatTimecode}
                 selected={selected}
+                getSegApparentEnd={getSegApparentEnd}
               />
             );
           })}

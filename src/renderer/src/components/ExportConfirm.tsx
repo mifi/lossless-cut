@@ -21,7 +21,7 @@ import { toast } from '../swal';
 import { isMov as ffmpegIsMov } from '../util/streams';
 import useUserSettings from '../hooks/useUserSettings';
 import styles from './ExportConfirm.module.css';
-import { InverseCutSegment, SegmentToExport } from '../types';
+import { SegmentToExport } from '../types';
 import { defaultMergedFileTemplate, defaultOutSegTemplate, GenerateOutFileNames } from '../util/outputNameTemplate';
 import { FFprobeStream } from '../../../../ffprobe';
 import { AvoidNegativeTs, PreserveMetadata } from '../../../../types';
@@ -78,7 +78,7 @@ function ExportConfirm({
   outputPlaybackRate,
 } : {
   areWeCutting: boolean,
-  selectedSegments: InverseCutSegment[],
+  selectedSegments: unknown[],
   segmentsToExport: SegmentToExport[],
   willMerge: boolean,
   visible: boolean,
@@ -97,7 +97,7 @@ function ExportConfirm({
   generateOutSegFileNames: GenerateOutFileNames,
   generateMergedFileNames: GenerateOutFileNames,
   currentSegIndexSafe: number,
-  nonFilteredSegmentsOrInverse: InverseCutSegment[],
+  nonFilteredSegmentsOrInverse: unknown[],
   mainCopiedThumbnailStreams: FFprobeStream[],
   needSmartCut: boolean,
   smartCutBitrate: number | undefined,

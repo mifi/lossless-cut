@@ -67,16 +67,16 @@ describe('parseYouTube', () => {
 
 it('formatYouTube', () => {
   expect(formatYouTube([
-    { start: 1, end: 2, name: 'Label 🎉' },
-    { start: 3, end: 5 },
-    { start: 10000, end: 10001, name: '' },
+    { start: 1, name: 'Label 🎉' },
+    { start: 3 },
+    { start: 10000, name: '' },
   ]).split('\n')).toEqual([
     '0:01 Label 🎉',
     '0:03',
     '2:46:40',
   ]);
   expect(formatYouTube([
-    { start: 0, end: 100 },
+    { start: 0 },
   ]).split('\n')).toEqual([
     '0:00',
   ]);

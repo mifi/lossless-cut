@@ -10,7 +10,7 @@ import type { ICueSheet, ITrack } from 'cue-parser/lib/types';
 
 import { formatDuration } from './util/duration';
 import { invertSegments, sortSegments } from './segments';
-import { GetFrameCount, Segment, SegmentBase } from './types';
+import { GetFrameCount, SegmentBase } from './types';
 import parseCmx3600 from './cmx3600';
 
 export const getTimeFromFrameNum = (detectedFps: number, frameNum: number) => frameNum / detectedFps;
@@ -222,7 +222,7 @@ export function parsePbf(buf: Buffer) {
     return undefined;
   }).filter(Boolean);
 
-  const out: Segment[] = [];
+  const out: SegmentBase[] = [];
 
   for (let i = 0; i < bookmarks.length;) {
     const bookmark = bookmarks[i]!;
@@ -316,7 +316,7 @@ export function parseYouTube(str: string) {
   return edl.filter((ed) => ed.start !== ed.end);
 }
 
-export function formatYouTube(segments: Segment[]) {
+export function formatYouTube(segments: { start: number, name?: string }[]) {
   return segments.map((segment) => {
     const timeStr = formatDuration({ seconds: segment.start, showFraction: false, shorten: true });
     const namePart = segment.name ? ` ${segment.name}` : '';
@@ -327,13 +327,13 @@ export function formatYouTube(segments: Segment[]) {
 // because null/undefined is also valid values (start/end of timeline)
 const safeFormatDuration = (duration: number | undefined) => (duration != null ? formatDuration({ seconds: duration }) : '');
 
-export const formatSegmentsTimes = (cutSegments: Segment[]) => cutSegments.map(({ start, end, name }) => [
+export const formatSegmentsTimes = (cutSegments: SegmentBase[]) => cutSegments.map(({ start, end, name }) => [
   safeFormatDuration(start),
   safeFormatDuration(end),
   name,
 ]);
 
-export async function formatCsvFrames({ cutSegments, getFrameCount }: { cutSegments: Segment[], getFrameCount: GetFrameCount }) {
+export async function formatCsvFrames({ cutSegments, getFrameCount }: { cutSegments: SegmentBase[], getFrameCount: GetFrameCount }) {
   const safeFormatFrameCount = (seconds: number | undefined) => (seconds != null ? getFrameCount(seconds) : '');
 
   const formatted = cutSegments.map(({ start, end, name }) => [
@@ -345,16 +345,16 @@ export async function formatCsvFrames({ cutSegments, getFrameCount }: { cutSegme
   return csvStringify(formatted);
 }
 
-export async function formatCsvSeconds(cutSegments: Segment[]) {
+export async function formatCsvSeconds(cutSegments: SegmentBase[]) {
   const rows = cutSegments.map(({ start, end, name }) => [start, end, name]);
   return csvStringify(rows);
 }
 
-export async function formatCsvHuman(cutSegments: Segment[]) {
+export async function formatCsvHuman(cutSegments: SegmentBase[]) {
   return csvStringify(formatSegmentsTimes(cutSegments));
 }
 
-export async function formatTsv(cutSegments: Segment[]) {
+export async function formatTsv(cutSegments: SegmentBase[]) {
   return csvStringify(formatSegmentsTimes(cutSegments), { delimiter: '\t' });
 }
 
@@ -445,7 +445,7 @@ export function parseSrtToSegments(text: string) {
   }));
 }
 
-export function formatSrt(segments: Segment[]) {
+export function formatSrt(segments: SegmentBase[]) {
   return segments.reduce((acc, segment, index) => `${acc}${index > 0 ? '\r\n' : ''}${index + 1}\r\n${formatDuration({ seconds: segment.start }).replaceAll('.', ',')} --> ${formatDuration({ seconds: segment.end }).replaceAll('.', ',')}\r\n${segment.name || '-'}\r\n`, '');
 }
 

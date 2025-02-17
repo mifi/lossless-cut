@@ -5,7 +5,7 @@ import invariant from 'tiny-invariant';
 import { parseSrtToSegments, formatSrt, parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parseCutlist, parsePbf, parseEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, parseCsvTime, getFrameValParser, parseDvAnalyzerSummaryTxt } from './edlFormats';
 import { askForYouTubeInput, showOpenDialog } from './dialogs';
 import { getOutPath } from './util';
-import { EdlExportType, EdlFileType, EdlImportType, GetFrameCount, Segment, StateSegment } from './types';
+import { EdlExportType, EdlFileType, EdlImportType, GetFrameCount, SegmentBase, StateSegment } from './types';
 
 const { readFile, writeFile } = window.require('fs/promises');
 const cueParser = window.require('cue-parser');
@@ -54,27 +54,27 @@ async function loadSrt(path: string) {
   return parseSrtToSegments(await readFile(path, 'utf8'));
 }
 
-export async function saveCsv(path: string, cutSegments: Segment[]) {
+export async function saveCsv(path: string, cutSegments: SegmentBase[]) {
   await writeFile(path, await formatCsvSeconds(cutSegments));
 }
 
-export async function saveCsvHuman(path: string, cutSegments: Segment[]) {
+export async function saveCsvHuman(path: string, cutSegments: SegmentBase[]) {
   await writeFile(path, await formatCsvHuman(cutSegments));
 }
 
 export async function saveCsvFrames({ path, cutSegments, getFrameCount }: {
   path: string,
-  cutSegments: Segment[],
+  cutSegments: SegmentBase[],
   getFrameCount: GetFrameCount,
 }) {
   await writeFile(path, await formatCsvFrames({ cutSegments, getFrameCount }));
 }
 
-export async function saveTsv(path: string, cutSegments: Segment[]) {
+export async function saveTsv(path: string, cutSegments: SegmentBase[]) {
   await writeFile(path, await formatTsv(cutSegments));
 }
 
-export async function saveSrt(path: string, cutSegments: Segment[]) {
+export async function saveSrt(path: string, cutSegments: SegmentBase[]) {
   await writeFile(path, formatSrt(cutSegments));
 }
 

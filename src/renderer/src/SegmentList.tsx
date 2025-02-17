@@ -15,9 +15,9 @@ import useUserSettings from './hooks/useUserSettings';
 import { saveColor, controlsBackground, primaryTextColor, darkModeTransition } from './colors';
 import { useSegColors } from './contexts';
 import { mySpring } from './animations';
-import { getSegmentTags } from './segments';
+import { getSegApparentStart, getSegmentTags } from './segments';
 import TagEditor from './components/TagEditor';
-import { ApparentCutSegment, ContextMenuTemplate, FormatTimecode, GetFrameCount, InverseCutSegment, SegmentTags, StateSegment } from './types';
+import { ContextMenuTemplate, FormatTimecode, GetFrameCount, InverseCutSegment, SegmentTags, StateSegment } from './types';
 import { UseSegments } from './hooks/useSegments';
 
 const buttonBaseStyle = {
@@ -55,8 +55,9 @@ const Segment = memo(({
   onExtractSegmentFramesAsImages,
   onInvertSelectedSegments,
   onDuplicateSegmentClick,
+  getSegApparentEnd,
 }: {
-  seg: ApparentCutSegment | InverseCutSegment,
+  seg: StateSegment | InverseCutSegment,
   index: number,
   currentSegIndex: number,
   formatTimecode: FormatTimecode,
@@ -83,6 +84,7 @@ const Segment = memo(({
   onExtractSegmentFramesAsImages: (segIds: string[]) => Promise<void>,
   onInvertSelectedSegments: UseSegments['invertSelectedSegments'],
   onDuplicateSegmentClick: UseSegments['duplicateSegment'],
+  getSegApparentEnd: UseSegments['getSegApparentEnd'],
 }) => {
   const { invertCutSegments, darkMode } = useUserSettings();
   const { t } = useTranslation();
@@ -136,7 +138,7 @@ const Segment = memo(({
 
   useContextMenu(ref, contextMenuTemplate);
 
-  const duration = seg.end - seg.start;
+  const duration = useMemo(() => getSegApparentEnd(seg) - getSegApparentStart(seg), [getSegApparentEnd, seg]);
   const durationMs = duration * 1000;
 
   const isActive = !invertCutSegments && currentSegIndex === index;
@@ -156,7 +158,7 @@ const Segment = memo(({
     return <b style={{ cursor: 'grab', color: 'white', padding: '0 4px', marginRight: 3, marginLeft: -3, background: color.string(), border: `1px solid ${isActive ? borderColor.string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
   }
 
-  const timeStr = useMemo(() => `${formatTimecode({ seconds: seg.start })} - ${formatTimecode({ seconds: seg.end })}`, [seg.start, seg.end, formatTimecode]);
+  const timeStr = useMemo(() => `${formatTimecode({ seconds: getSegApparentStart(seg) })} - ${formatTimecode({ seconds: getSegApparentEnd(seg) })}`, [formatTimecode, seg, getSegApparentEnd]);
 
   const onDoubleClick = useCallback(() => {
     if (invertCutSegments) return;
@@ -225,7 +227,7 @@ const Segment = memo(({
 function SegmentList({
   width,
   formatTimecode,
-  apparentCutSegments,
+  cutSegments,
   inverseCutSegments,
   getFrameCount,
   onSegClick,
@@ -261,10 +263,11 @@ function SegmentList({
   setEditingSegmentTags,
   setEditingSegmentTagsSegmentIndex,
   onEditSegmentTags,
+  getSegApparentEnd,
 }: {
   width: number,
   formatTimecode: FormatTimecode,
-  apparentCutSegments: ApparentCutSegment[],
+  cutSegments: StateSegment[],
   inverseCutSegments: InverseCutSegment[],
   getFrameCount: GetFrameCount,
   onSegClick: (index: number) => void,
@@ -300,39 +303,40 @@ function SegmentList({
   setEditingSegmentTags: Dispatch<SetStateAction<SegmentTags | undefined>>,
   setEditingSegmentTagsSegmentIndex: Dispatch<SetStateAction<number | undefined>>,
   onEditSegmentTags: (index: number) => void,
+  getSegApparentEnd: UseSegments['getSegApparentEnd'],
 }) {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
 
   const { invertCutSegments, simpleMode, darkMode } = useUserSettings();
 
-  const segments: (InverseCutSegment | ApparentCutSegment)[] = invertCutSegments ? inverseCutSegments : apparentCutSegments;
+  const segmentsOrInverse: (InverseCutSegment | StateSegment)[] = invertCutSegments ? inverseCutSegments : cutSegments;
 
-  const sortableList = useMemo(() => segments.map((seg) => ({ id: seg.segId, seg })), [segments]);
+  const sortableList = useMemo(() => segmentsOrInverse.map((seg) => ({ id: seg.segId, seg })), [segmentsOrInverse]);
 
   const setSortableList = useCallback((newList: typeof sortableList) => {
-    if (isEqual(segments.map((s) => s.segId), newList.map((l) => l.id))) return; // No change
+    if (isEqual(segmentsOrInverse.map((s) => s.segId), newList.map((l) => l.id))) return; // No change
     updateSegOrders(newList.map((list) => list.id));
-  }, [segments, updateSegOrders]);
+  }, [segmentsOrInverse, updateSegOrders]);
 
   let header: ReactNode = t('Segments to export:');
-  if (segments.length === 0) {
+  if (segmentsOrInverse.length === 0) {
     header = invertCutSegments ? (
       <Trans>You have enabled the &quot;invert segments&quot; mode <FaYinYang style={{ verticalAlign: 'middle' }} /> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <FaYinYang style={{ verticalAlign: 'middle', color: primaryTextColor }} /> symbol below to disable this mode. Alternatively you may combine overlapping segments from the menu.</Trans>
     ) : t('No segments to export.');
   }
 
   const onReorderSegs = useCallback(async (index: number) => {
-    if (apparentCutSegments.length < 2) return;
+    if (cutSegments.length < 2) return;
     const { value } = await Swal.fire({
       title: `${t('Change order of segment')} ${index + 1}`,
-      text: `Please enter a number from 1 to ${apparentCutSegments.length} to be the new order for the current segment`,
+      text: t('Please enter a number from 1 to {{n}} to be the new order for the current segment', { n: cutSegments.length}),
       input: 'text',
       inputValue: index + 1,
       showCancelButton: true,
       inputValidator: (v) => {
         const parsed = parseInt(v, 10);
-        return Number.isNaN(parsed) || parsed > apparentCutSegments.length || parsed < 1 ? t('Invalid number entered') : undefined;
+        return Number.isNaN(parsed) || parsed > cutSegments.length || parsed < 1 ? t('Invalid number entered') : undefined;
       },
     });
 
@@ -340,14 +344,14 @@ function SegmentList({
       const newOrder = parseInt(value, 10);
       updateSegOrder(index, newOrder - 1);
     }
-  }, [apparentCutSegments.length, t, updateSegOrder]);
+  }, [cutSegments.length, t, updateSegOrder]);
 
   function renderFooter() {
     const getButtonColor = (seg: StateSegment | undefined) => getSegColor(seg).desaturate(0.3).lightness(darkMode ? 45 : 55).string();
     const currentSegColor = getButtonColor(currentCutSeg);
     const segAtCursorColor = getButtonColor(segmentAtCursor);
 
-    const segmentsTotal = selectedSegments.reduce((acc, { start, end }) => (end - start) + acc, 0);
+    const segmentsTotal = selectedSegments.reduce((acc, seg) => (getSegApparentEnd(seg) - getSegApparentStart(seg)) + acc, 0);
 
     return (
       <>
@@ -362,7 +366,7 @@ function SegmentList({
 
           <FaMinus
             size={24}
-            style={{ ...buttonBaseStyle, background: apparentCutSegments.length >= 2 ? currentSegColor : neutralButtonColor }}
+            style={{ ...buttonBaseStyle, background: cutSegments.length >= 2 ? currentSegColor : neutralButtonColor }}
             role="button"
             title={`${t('Remove segment')} ${currentSegIndex + 1}`}
             onClick={() => removeCutSegment(currentSegIndex)}
@@ -396,13 +400,15 @@ function SegmentList({
             onClick={splitCurrentSegment}
           />
 
-          <FaRegCheckCircle
-            size={22}
-            title={t('Invert selected segments')}
-            role="button"
-            style={{ ...buttonBaseStyle, padding: 1, background: segmentAtCursor ? segAtCursorColor : neutralButtonColor }}
-            onClick={onInvertSelectedSegments}
-          />
+          {!invertCutSegments && (
+            <FaRegCheckCircle
+              size={22}
+              title={t('Invert selected segments')}
+              role="button"
+              style={{ ...buttonBaseStyle, padding: 1, background: segmentAtCursor ? segAtCursorColor : neutralButtonColor }}
+              onClick={onInvertSelectedSegments}
+            />
+          )}
         </div>
 
         <div style={{ padding: '5px 10px', boxSizing: 'border-box', borderBottom: '1px solid var(gray6)', borderTop: '1px solid var(gray6)', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
@@ -507,13 +513,14 @@ function SegmentList({
                   onLabelSelectedSegments={onLabelSelectedSegments}
                   onInvertSelectedSegments={onInvertSelectedSegments}
                   onDuplicateSegmentClick={onDuplicateSegmentClick}
+                  getSegApparentEnd={getSegApparentEnd}
                 />
               );
             })}
           </ReactSortable>
         </div>
 
-        {segments.length > 0 && renderFooter()}
+        {segmentsOrInverse.length > 0 && renderFooter()}
       </motion.div>
     </>
   );
