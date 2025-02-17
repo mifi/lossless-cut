@@ -45,7 +45,7 @@ export default ({ mainStreams, filePath, autoExportExtraStreams }: {
 
   const checkCopyingAnyTrackOfType = useCallback((filter: (s: FFprobeStream) => boolean) => mainStreams.some((stream) => isCopyingStreamId(filePath, stream.index) && filter(stream)), [filePath, isCopyingStreamId, mainStreams]);
 
-  const toggleStripStream = useCallback((filter) => {
+  const toggleStripStream = useCallback((filter: (s: FFprobeStream) => boolean) => {
     const copyingAnyTrackOfType = checkCopyingAnyTrackOfType(filter);
     invariant(filePath != null);
     setCopyStreamIdsForPath(filePath, (old) => {

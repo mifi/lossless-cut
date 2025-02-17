@@ -9,6 +9,7 @@ import { SortAlphabeticalIcon, SortAlphabeticalDescIcon } from 'evergreen-ui';
 import BatchFile from './BatchFile';
 import { controlsBackground, darkModeTransition } from '../colors';
 import { mySpring } from '../animations';
+import { BatchFile as BatchFileType } from '../types';
 
 
 const iconStyle = {
@@ -20,14 +21,25 @@ const iconStyle = {
   padding: '3px 5px',
 };
 
-function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBatchFiles, onBatchFileSelect, batchListRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }) {
+function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBatchFiles, onBatchFileSelect, batchListRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }: {
+  selectedBatchFiles: string[],
+  filePath: string | undefined,
+  width: number,
+  batchFiles: BatchFileType[],
+  setBatchFiles: (f: BatchFileType[]) => void,
+  onBatchFileSelect: (f: string) => void,
+  batchListRemoveFile: (path: string | undefined) => void,
+  closeBatch: () => void,
+  onMergeFilesClick: () => void,
+  onBatchConvertToSupportedFormatClick: () => void,
+}) {
   const { t } = useTranslation();
 
   const [sortDesc, setSortDesc] = useState<boolean>();
 
   const sortableList = batchFiles.map((batchFile) => ({ id: batchFile.path, batchFile }));
 
-  const setSortableList = useCallback((newList) => {
+  const setSortableList = useCallback((newList: { batchFile: BatchFileType }[]) => {
     setBatchFiles(newList.map(({ batchFile }) => batchFile));
   }, [setBatchFiles]);
 

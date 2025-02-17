@@ -67,10 +67,12 @@ Object.getOwnPropertyNames(myGlobal).forEach(function (prop) {
   }
 });
 
+// @ts-expect-error dunno
 // eslint-disable-next-line no-proto, prefer-arrow-callback, func-names
 Object.getOwnPropertyNames(myGlobal.__proto__).forEach(function (prop) {
   // eslint-disable-next-line no-prototype-builtins
   if (!wl.hasOwnProperty(prop)) {
+    // @ts-expect-error dunno
     // eslint-disable-next-line no-proto
     Object.defineProperty(myGlobal.__proto__, prop, {
       // eslint-disable-next-line func-names, object-shorthand
@@ -92,7 +94,7 @@ Object.defineProperty(Array.prototype, 'join', {
   // eslint-disable-next-line wrap-iife, func-names
   value: function (old) {
     // eslint-disable-next-line func-names
-    return function (arg) {
+    return function (arg: unknown[]) {
       // @ts-expect-error dunno how to fix
       if (this.length > 500 || (arg && arg.length > 500)) {
         // eslint-disable-next-line no-throw-literal

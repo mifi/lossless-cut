@@ -698,7 +698,7 @@ const KeyboardShortcuts = memo(({
 
   const categoriesWithActions = useMemo(() => Object.entries(groupBy(actionEntries, ([, { category }]) => category)), [actionEntries]);
 
-  const onDeleteBindingClick = useCallback(({ action, keys }) => {
+  const onDeleteBindingClick = useCallback(({ action, keys }: { action: KeyboardAction, keys: string }) => {
     // eslint-disable-next-line no-alert
     if (!window.confirm(t('Are you sure?'))) return;
 

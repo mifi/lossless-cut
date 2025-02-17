@@ -31,10 +31,10 @@ export function parseLevel(videoStream: FFprobeStream) {
   return undefined;
 }
 
-export function parseProfile(videoStream) {
+export function parseProfile(videoStream: FFprobeStream) {
   const { profile: ffprobeProfile, codec_name: videoCodec } = videoStream;
 
-  let map;
+  let map: Map<string, { profile: string, warn?: boolean }>;
   if (videoCodec === 'h264') {
     // List of profiles that x264 supports https://trac.ffmpeg.org/wiki/Encode/H.264
     // baseline, main, high, high10 (first 10 bit compatible profile), high422 (supports yuv420p, yuv422p, yuv420p10le and yuv422p10le), high444 (supports as above as well as yuv444p and yuv444p10le)
@@ -71,12 +71,13 @@ export function parseProfile(videoStream) {
     return undefined;
   }
 
-  if (!map.has(ffprobeProfile)) {
+  const match = map.get(ffprobeProfile);
+
+  if (match == null) {
     console.warn('Unknown ffprobe profile', ffprobeProfile);
     return undefined;
   }
 
-  const match = map.get(ffprobeProfile);
   if (match.warn) console.warn('Possibly unknown ffprobe profile', ffprobeProfile);
   return match.profile;
 }

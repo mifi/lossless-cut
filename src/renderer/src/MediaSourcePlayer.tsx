@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, useMemo, memo, CSSProperties, RefObject } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, memo, CSSProperties, RefObject, ReactEventHandler, FocusEventHandler } from 'react';
 import { Spinner } from 'evergreen-ui';
 import { useDebounce } from 'use-debounce';
 
@@ -25,7 +25,7 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndex, 
   let canPlay = false;
   let bufferEndTime: number | undefined;
   let bufferStartTime = 0;
-  let stream;
+  let stream: ReturnType<typeof createMediaSourceStream> | undefined;
   let done = false;
   let interval: NodeJS.Timeout | undefined;
   let objectUrl: string | undefined;
@@ -48,7 +48,7 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndex, 
 
   const mediaSource = new MediaSource();
 
-  let streamTimestamp;
+  let streamTimestamp: number | undefined;
   let lastRemoveTimestamp = 0;
 
   function setStandardPlaybackRate() {
@@ -111,7 +111,7 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndex, 
 
   const processChunk = async () => {
     try {
-      const chunk = await stream.readChunk();
+      const chunk = await stream!.readChunk();
       if (chunk == null) {
         console.log('End of stream');
         return;
@@ -264,7 +264,7 @@ function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStr
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [loading, setLoading] = useState(true);
 
-  const onVideoError = useCallback((error) => {
+  const onVideoError = useCallback<ReactEventHandler<HTMLVideoElement>>((error) => {
     console.error('video error', error);
   }, []);
 
@@ -348,7 +348,7 @@ function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStr
     if (videoRef.current) videoRef.current.volume = playbackVolume;
   }, [playbackVolume]);
 
-  const onFocus = useCallback((e) => {
+  const onFocus = useCallback<FocusEventHandler<HTMLVideoElement | HTMLCanvasElement>>((e) => {
     // prevent video element from stealing focus in fullscreen mode https://github.com/mifi/lossless-cut/issues/543#issuecomment-1868167775
     e.target.blur();
   }, []);

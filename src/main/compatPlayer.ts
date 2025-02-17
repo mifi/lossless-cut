@@ -23,7 +23,7 @@ export function createMediaSourceStream({ path, videoStreamIndex, audioStreamInd
 
   stdout.pause();
 
-  const readChunk = async () => new Promise((resolve, reject) => {
+  const readChunk = async () => new Promise<Buffer | null>((resolve, reject) => {
     let cleanup: () => void;
 
     const onClose = () => {

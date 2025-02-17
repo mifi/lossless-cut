@@ -11,7 +11,7 @@ const commonSubtitleFormats = ['ass', 'srt', 'sup', 'webvtt'];
 
 function renderFormatOptions(formats: string[]) {
   return formats.map((format) => (
-    <option key={format} value={format}>{format} - {allOutFormats[format]}</option>
+    <option key={format} value={format}>{format} - {(allOutFormats as Record<string, string>)[format]}</option>
   ));
 }
 
@@ -32,7 +32,7 @@ function OutputFormatSelect({ style, detectedFileFormat, fileFormat, onOutputFor
 
       {detectedFileFormat && (
         <option key={detectedFileFormat} value={detectedFileFormat}>
-          {detectedFileFormat} - {allOutFormats[detectedFileFormat]} {i18n.t('(detected)')}
+          {detectedFileFormat} - {(allOutFormats as Record<string, string>)[detectedFileFormat]} {i18n.t('(detected)')}
         </option>
       )}
 

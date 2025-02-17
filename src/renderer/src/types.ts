@@ -136,3 +136,8 @@ export interface StreamParams {
   bsfHevcMp4toannexb?: boolean,
 }
 export type ParamsByStreamId = Map<string, Map<number, StreamParams>>;
+
+export interface BatchFile {
+  path: string,
+  name: string,
+}

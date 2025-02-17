@@ -4,8 +4,6 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "noEmit": true,
 
-    "noImplicitAny": false, // todo
-
     "types": ["vite/client"],
   },
   "references": [

@@ -6,6 +6,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { tomorrow as lightSyntaxStyle, tomorrowNight as darkSyntaxStyle } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import JSON5 from 'json5';
 import type { SweetAlertOptions } from 'sweetalert2';
+import invariant from 'tiny-invariant';
 
 import { formatDuration } from '../util/duration';
 import Swal, { ReactSwal, swalToastOptions, toast } from '../swal';
@@ -221,7 +222,7 @@ async function askForNumSegments() {
   return parseInt(value, 10);
 }
 
-export async function createNumSegments(fileDuration) {
+export async function createNumSegments(fileDuration: number) {
   const numSegments = await askForNumSegments();
   if (numSegments == null) return undefined;
   const edl: SegmentBase[] = [];
@@ -259,17 +260,17 @@ async function askForSegmentDuration({ fileDuration, inputPlaceholder, parseTime
 
 // https://github.com/mifi/lossless-cut/issues/1153
 async function askForSegmentsRandomDurationRange() {
-  function parse(str) {
+  function parse(str: string) {
     // eslint-disable-next-line unicorn/better-regex
     const match = str.replaceAll(/\s/g, '').match(/^duration([\d.]+)to([\d.]+),gap([-\d.]+)to([-\d.]+)$/i);
     if (!match) return undefined;
     const values = match.slice(1);
     const parsed = values.map((val) => parseFloat(val));
 
-    const durationMin = parsed[0];
-    const durationMax = parsed[1];
-    const gapMin = parsed[2];
-    const gapMax = parsed[3];
+    const durationMin = parsed[0]!;
+    const durationMax = parsed[1]!;
+    const gapMin = parsed[2]!;
+    const gapMax = parsed[3]!;
 
     if (!(parsed.every((val) => !Number.isNaN(val)) && durationMin <= durationMax && gapMin <= gapMax && durationMin > 0)) return undefined;
     return { durationMin, durationMax, gapMin, gapMax };
@@ -306,7 +307,7 @@ async function askForSegmentsStartOrEnd(text: string) {
   });
   if (!value) return undefined;
 
-  return value === 'both' ? ['start', 'end'] : [value];
+  return value === 'both' ? ['start', 'end'] as const : [value as 'start' | 'end'] as const;
 }
 
 export async function askForShiftSegments({ inputPlaceholder, parseTimecode }: { inputPlaceholder: string, parseTimecode: ParseTimecode }) {
@@ -338,6 +339,7 @@ export async function askForShiftSegments({ inputPlaceholder, parseTimecode }: {
 
   if (value == null) return undefined;
   const parsed = parseValue(value);
+  invariant(parsed != null);
 
   const startOrEnd = await askForSegmentsStartOrEnd(i18n.t('Do you want to shift the start or end timestamp by {{time}}?', { time: formatDuration({ seconds: parsed, shorten: true }) }));
   if (startOrEnd == null) return undefined;
@@ -567,7 +569,7 @@ export async function labelSegmentDialog({ currentName, maxLength }: { currentNa
     title: i18n.t('Label current segment'),
     inputValue: currentName,
     input: currentName.includes('\n') ? 'textarea' : 'text',
-    inputValidator: (v) => (v.length > maxLength ? `${i18n.t('Max length')} ${maxLength}` : null),
+    inputValidator: (v: string) => (v.length > maxLength ? `${i18n.t('Max length')} ${maxLength}` : null),
   });
   return value;
 }
@@ -685,7 +687,7 @@ export async function openDirToast({ filePath, text, html, ...props }: SweetAler
   if (value) showItemInFolder(filePath);
 }
 
-const UnorderedList = ({ children }) => (
+const UnorderedList = ({ children }: { children: ReactNode }) => (
   <ul style={{ paddingLeft: '1em' }}>{children}</ul>
 );
 const ListItem = ({ icon: Icon, iconColor, children, style }: { icon: IconComponent, iconColor?: string, children: ReactNode, style?: CSSProperties }) => (
@@ -736,7 +738,7 @@ export async function openConcatFinishedToast({ filePath, warnings, notices }: {
   await openDirToast({ filePath, html, width: 800, position: 'center', timer: 30000 });
 }
 
-export async function askForPlaybackRate({ detectedFps, outputPlaybackRate }) {
+export async function askForPlaybackRate({ detectedFps, outputPlaybackRate }: { detectedFps: number | undefined, outputPlaybackRate: number }) {
   const fps = detectedFps || 1;
   const currentFps = fps * outputPlaybackRate;
 

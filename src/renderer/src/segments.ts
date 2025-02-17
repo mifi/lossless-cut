@@ -106,27 +106,30 @@ export function partitionIntoOverlappingRanges<T extends SegmentBase | ApparentS
   return ret.filter((group) => group.length > 1).map((group) => sortBy(group, (seg) => getSegmentStart(seg)));
 }
 
-export function combineOverlappingSegments(existingSegments, getSegApparentEnd2) {
+export function combineOverlappingSegments<T extends SegmentBase>(existingSegments: T[], getSegApparentEnd2: (seg: SegmentBase) => number) {
   const partitionedSegments = partitionIntoOverlappingRanges(existingSegments, getSegApparentStart, getSegApparentEnd2);
 
-  return existingSegments.map((existingSegment) => {
+  return existingSegments.flatMap((existingSegment) => {
     const partOfPartition = partitionedSegments.find((partition) => partition.includes(existingSegment));
-    if (partOfPartition == null) return existingSegment; // this is not an overlapping segment, pass it through
+    if (partOfPartition == null) {
+      return [existingSegment]; // this is not an overlapping segment, pass it through
+    }
 
     const index = partOfPartition.indexOf(existingSegment);
     // The first segment is the one with the lowest "start" value, so we use its start value
     if (index === 0) {
-      return {
+      return [{
         ...existingSegment,
         // but use the segment with the highest "end" value as the end value.
         end: sortBy(partOfPartition, (segment) => segment.end)[partOfPartition.length - 1]!.end,
-      };
+      }];
     }
-    return undefined; // then remove all other segments in this partition group
-  }).filter(Boolean);
+
+    return []; // then remove all other segments in this partition group
+  });
 }
 
-export function combineSelectedSegments<T extends SegmentBase>(existingSegments: T[], getSegApparentEnd2, isSegmentSelected) {
+export function combineSelectedSegments(existingSegments: StateSegment[], getSegApparentEnd2: (seg: StateSegment) => number, isSegmentSelected: (seg: StateSegment) => boolean) {
   const selectedSegments = existingSegments.filter((segment) => isSegmentSelected(segment));
   const firstSegment = minBy(selectedSegments, (seg) => getSegApparentStart(seg));
   const lastSegment = maxBy(selectedSegments, (seg) => getSegApparentEnd2(seg));

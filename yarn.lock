@@ -2233,6 +2233,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-syntax-highlighter@npm:^15.5.13":
+  version: 15.5.13
+  resolution: "@types/react-syntax-highlighter@npm:15.5.13"
+  dependencies:
+    "@types/react": "npm:*"
+  checksum: 10/0cc47785326aea5effac9ee68c263abc6448c63b6a084eec3084fd13c08da93addfdc3102ff919cbe420aa71fbded9bf041cc2c51fe625c6ee0751e8a131bd38
+  languageName: node
+  linkType: hard
+
 "@types/react-transition-group@npm:^4.4.0":
   version: 4.4.4
   resolution: "@types/react-transition-group@npm:4.4.4"
@@ -2312,6 +2321,13 @@ __metadata:
     "@types/mime": "npm:*"
     "@types/node": "npm:*"
   checksum: 10/49aa21c367fffe4588fc8c57ea48af0ea7cbadde7418bc53cde85d8bd57fd2a09a293970d9ea86e79f17a87f8adeb3e20da76aab38e1c4d1567931fa15c8af38
+  languageName: node
+  linkType: hard
+
+"@types/smpte-timecode@npm:^1.2.5":
+  version: 1.2.5
+  resolution: "@types/smpte-timecode@npm:1.2.5"
+  checksum: 10/e91c0535df278bd3cbe9b5517c5edf084531322237ec876ec40154d79968faa343404822f5b85df42455a2749e1e7a13a1254b9fc893cf7de09823e0d74c4f03
   languageName: node
   linkType: hard
 
@@ -7599,6 +7615,8 @@ __metadata:
     "@types/node": "npm:20"
     "@types/react": "npm:^18.2.66"
     "@types/react-dom": "npm:^18.2.22"
+    "@types/react-syntax-highlighter": "npm:^15.5.13"
+    "@types/smpte-timecode": "npm:^1.2.5"
     "@types/sortablejs": "npm:^1.15.0"
     "@types/yargs-parser": "npm:^21.0.3"
     "@typescript-eslint/eslint-plugin": "npm:^6.12.0"

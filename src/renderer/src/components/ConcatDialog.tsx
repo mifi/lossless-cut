@@ -142,7 +142,7 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
           return;
         }
         // check all these parameters
-        ['codec_name', 'width', 'height', 'fps', 'pix_fmt', 'level', 'profile', 'sample_fmt', 'r_frame_rate', 'time_base'].forEach((key) => {
+        (['codec_name', 'width', 'height', 'pix_fmt', 'level', 'profile', 'sample_fmt', 'avg_frame_rate', 'r_frame_rate', 'time_base'] as const).forEach((key) => {
           const val = stream[key];
           const referenceVal = referenceStream[key];
           if (val !== referenceVal) {
@@ -187,7 +187,7 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
     };
   }, [allFilesMetaCache, enableReadFileMeta, isShown, paths]);
 
-  const onOutputFormatUserChange = useCallback((newFormat) => setFileFormat(newFormat), [setFileFormat]);
+  const onOutputFormatUserChange = useCallback((newFormat: string) => setFileFormat(newFormat), [setFileFormat]);
 
   const onConcatClick = useCallback(() => {
     if (outFileName == null) throw new Error();

@@ -1,9 +1,13 @@
-import { memo, useState, useCallback, useRef, useEffect } from 'react';
+import { memo, useState, useCallback, useRef, useEffect, ChangeEventHandler } from 'react';
 import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
 
-function VolumeControl({ playbackVolume, setPlaybackVolume, onToggleMutedClick }: { playbackVolume: number, setPlaybackVolume: (a: number) => void, onToggleMutedClick: () => void }) {
+function VolumeControl({ playbackVolume, setPlaybackVolume, onToggleMutedClick }: {
+  playbackVolume: number,
+  setPlaybackVolume: (a: number) => void,
+  onToggleMutedClick: () => void,
+}) {
   const [volumeControlVisible, setVolumeControlVisible] = useState(false);
   const timeoutRef = useRef<number>();
   const { t } = useTranslation();
@@ -15,9 +19,9 @@ function VolumeControl({ playbackVolume, setPlaybackVolume, onToggleMutedClick }
     return () => clear();
   }, [playbackVolume, volumeControlVisible]);
 
-  const onVolumeChange = useCallback((e) => {
+  const onVolumeChange = useCallback<ChangeEventHandler<HTMLInputElement>>((e) => {
     e.target.blur();
-    setPlaybackVolume(e.target.value / 100);
+    setPlaybackVolume(Number(e.target.value) / 100);
   }, [setPlaybackVolume]);
 
   const onVolumeIconClick = useCallback(() => {

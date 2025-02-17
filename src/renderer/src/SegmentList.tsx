@@ -1,4 +1,4 @@
-import { memo, useMemo, useRef, useCallback, useState, SetStateAction, Dispatch, ReactNode } from 'react';
+import { memo, useMemo, useRef, useCallback, useState, SetStateAction, Dispatch, ReactNode, MouseEventHandler } from 'react';
 import { FaYinYang, FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaRegCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
 import { MotionStyle, motion } from 'framer-motion';
@@ -168,7 +168,7 @@ const Segment = memo(({
 
   const CheckIcon = selected ? FaRegCheckCircle : FaRegCircle;
 
-  const onToggleSegmentSelectedClick = useCallback((e) => {
+  const onToggleSegmentSelectedClick = useCallback<MouseEventHandler>((e) => {
     e.stopPropagation();
     onToggleSegmentSelected(seg);
   }, [onToggleSegmentSelected, seg]);
@@ -310,7 +310,7 @@ function SegmentList({
 
   const sortableList = useMemo(() => segments.map((seg) => ({ id: seg.segId, seg })), [segments]);
 
-  const setSortableList = useCallback((newList) => {
+  const setSortableList = useCallback((newList: typeof sortableList) => {
     if (isEqual(segments.map((s) => s.segId), newList.map((l) => l.id))) return; // No change
     updateSegOrders(newList.map((list) => list.id));
   }, [segments, updateSegOrders]);

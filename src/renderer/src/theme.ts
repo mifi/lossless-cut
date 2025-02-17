@@ -37,9 +37,9 @@ const customTheme: ProviderProps<DefaultTheme>['value'] = {
 
           // https://github.com/segmentio/evergreen/blob/master/src/themes/default/components/button.js
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          border: ((_theme, props) => `1px solid ${borderColorForIntent(props.intent)}`) as any as string, // todo types
+          border: ((_theme: unknown, props: { intent: IntentTypes }) => `1px solid ${borderColorForIntent(props.intent)}`) as any as string, // todo types
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          color: ((_theme, props) => props.color || colorKeyForIntent(props.intent)) as any as string, // todo types
+          color: ((_theme: unknown, props: { color: string, intent: IntentTypes }) => props.color || colorKeyForIntent(props.intent)) as any as string, // todo types
 
           _hover: {
             backgroundColor: 'var(--gray4)',
@@ -61,7 +61,7 @@ const customTheme: ProviderProps<DefaultTheme>['value'] = {
 
           // https://github.com/segmentio/evergreen/blob/master/src/themes/default/components/button.js
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          color: ((_theme, props) => props.color || colorKeyForIntent(props.intent)) as any as string, // todo types
+          color: ((_theme: unknown, props: { color: string, intent: IntentTypes }) => props.color || colorKeyForIntent(props.intent)) as any as string, // todo types
 
           _hover: {
             backgroundColor: 'var(--gray4)',

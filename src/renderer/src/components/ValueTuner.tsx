@@ -1,4 +1,4 @@
-import { memo, useState, useCallback, CSSProperties } from 'react';
+import { memo, useState, useCallback, CSSProperties, ChangeEventHandler } from 'react';
 import { Button } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
@@ -6,17 +6,25 @@ import Switch from './Switch';
 
 
 function ValueTuner({ style, title, value, setValue, onFinished, resolution = 1000, min: minIn = 0, max: maxIn = 1, resetToDefault }: {
-  style?: CSSProperties, title: string, value: number, setValue: (string) => void, onFinished: () => void, resolution?: number, min?: number, max?: number, resetToDefault: () => void
+  style?: CSSProperties,
+  title: string,
+  value: number,
+  setValue: (v: number) => void,
+  onFinished: () => void,
+  resolution?: number,
+  min?: number,
+  max?: number,
+  resetToDefault: () => void,
 }) {
   const { t } = useTranslation();
 
   const [min, setMin] = useState(minIn);
   const [max, setMax] = useState(maxIn);
 
-  function onChange(e) {
+  const onChange = useCallback<ChangeEventHandler<HTMLInputElement>>((e) => {
     e.target.blur();
-    setValue(Math.min(Math.max(min, ((e.target.value / resolution) * (max - min)) + min), max));
-  }
+    setValue(Math.min(Math.max(min, ((Number(e.target.value) / resolution) * (max - min)) + min), max));
+  }, [max, min, resolution, setValue]);
 
   const isZoomed = !(min === minIn && max === maxIn);
 

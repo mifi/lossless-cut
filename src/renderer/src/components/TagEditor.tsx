@@ -1,4 +1,4 @@
-import { memo, useRef, useState, useMemo, useCallback, useEffect } from 'react';
+import { memo, useRef, useState, useMemo, useCallback, useEffect, FormEventHandler, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, TrashIcon, ResetIcon, TickIcon, EditIcon, PlusIcon, Button, IconButton } from 'evergreen-ui';
 import invariant from 'tiny-invariant';
@@ -68,14 +68,14 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
     }
   }, [editingTag, editingTagVal, existingTags, mergedTags, newTag, onResetClick, saveTag, setEditingTag]);
 
-  function onSubmit(e) {
+  const onSubmit = useCallback<FormEventHandler<HTMLFormElement>>((e) => {
     e.preventDefault();
     onEditClick();
-  }
+  }, [onEditClick]);
 
-  const onAddPress = useCallback(async (e) => {
+  const onAddPress = useCallback<MouseEventHandler<HTMLButtonElement>>(async (e) => {
     e.preventDefault();
-    e.target.blur();
+    (e.target as HTMLButtonElement).blur();
 
     if (newTag || editingTag != null) {
       // save any unsaved edit

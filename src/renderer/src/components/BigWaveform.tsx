@@ -25,13 +25,13 @@ function BigWaveform({ waveforms, relevantTime, playing, durationSafe, zoom, see
 
   const smoothTime = smoothTimeRaw ?? relevantTime;
 
-  const mouseDownRef = useRef<{ relevantTime: number, x }>();
+  const mouseDownRef = useRef<{ relevantTime: number, x: number }>();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const getRect = useCallback(() => containerRef.current!.getBoundingClientRect(), []);
 
-  const handleMouseDown = useCallback((e) => {
-    const rect = e.target.getBoundingClientRect();
+  const handleMouseDown = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
+    const rect = (e.target as HTMLDivElement).getBoundingClientRect();
     const x = e.clientX - rect.left;
 
     mouseDownRef.current = { relevantTime, x };

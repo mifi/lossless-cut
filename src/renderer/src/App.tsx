@@ -88,7 +88,7 @@ import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './uti
 import BigWaveform from './components/BigWaveform';
 
 import isDev from './isDev';
-import { Chapter, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, goToTimecodeDirectArgsSchema, openFilesActionArgsSchema, ParamsByStreamId, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, TunerType } from './types';
+import { BatchFile, Chapter, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, goToTimecodeDirectArgsSchema, openFilesActionArgsSchema, ParamsByStreamId, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, TunerType } from './types';
 import { CaptureFormat, KeyboardAction, Html5ifyMode, WaveformMode, ApiActionRequest } from '../../../types';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 import useLoading from './hooks/useLoading';
@@ -168,7 +168,7 @@ function App() {
   const incrementMediaSourceQuality = useCallback(() => setMediaSourceQuality((v) => (v + 1) % mediaSourceQualities.length), []);
 
   // Batch state / concat files
-  const [batchFiles, setBatchFiles] = useState<{ path: string }[]>([]);
+  const [batchFiles, setBatchFiles] = useState<BatchFile[]>([]);
   const [selectedBatchFiles, setSelectedBatchFiles] = useState<string[]>([]);
 
   const allUserSettings = useUserSettingsRoot();

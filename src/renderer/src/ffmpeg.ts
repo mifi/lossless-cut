@@ -1,7 +1,7 @@
 import pMap from 'p-map';
 import sortBy from 'lodash/sortBy';
 import i18n from 'i18next';
-import Timecode from 'smpte-timecode';
+import Timecode, { FRAMERATE } from 'smpte-timecode';
 import minBy from 'lodash/minBy';
 import invariant from 'tiny-invariant';
 
@@ -88,13 +88,13 @@ export async function readFrames({ filePath, from, to, streamIndex }: {
   return sortBy(packetsFiltered, 'time');
 }
 
-export async function readFramesAroundTime({ filePath, streamIndex, aroundTime, window }) {
+export async function readFramesAroundTime({ filePath, streamIndex, aroundTime, window }: { filePath: string, streamIndex: number, aroundTime: number, window: number }) {
   if (aroundTime == null) throw new Error('aroundTime was nullish');
   const { from, to } = getIntervalAroundTime(aroundTime, window);
   return readFrames({ filePath, from, to, streamIndex });
 }
 
-export async function readKeyframesAroundTime({ filePath, streamIndex, aroundTime, window }) {
+export async function readKeyframesAroundTime({ filePath, streamIndex, aroundTime, window }: { filePath: string, streamIndex: number, aroundTime: number, window: number }) {
   const frames = await readFramesAroundTime({ filePath, aroundTime, streamIndex, window });
   return frames.filter((frame) => frame.keyframe);
 }
@@ -158,7 +158,7 @@ export function getSafeCutTime(frames: (Frame & { time: number })[], cutTime: nu
     return time;
   }
 
-  const findReverseIndex = (arr, cb) => {
+  const findReverseIndex = <T>(arr: T[], cb: (value: T, i: number, obj: T[]) => unknown) => {
     // eslint-disable-next-line unicorn/no-array-callback-reference
     const ret = [...arr].reverse().findIndex(cb);
     if (ret === -1) return -1;
@@ -477,7 +477,7 @@ export function isIphoneHevc(format: FFprobeFormat, streams: FFprobeStream[]) {
   if (!streams.some((s) => s.codec_name === 'hevc')) return false;
   const makeTag = format.tags && format.tags['com.apple.quicktime.make'];
   const modelTag = format.tags && format.tags['com.apple.quicktime.model'];
-  return (makeTag === 'Apple' && modelTag.startsWith('iPhone'));
+  return (makeTag === 'Apple' && modelTag?.startsWith('iPhone'));
 }
 
 export function isProblematicAvc1(outFormat: string | undefined, streams: FFprobeStream[]) {
@@ -524,7 +524,7 @@ export function getStreamFps(stream: FFprobeStream) {
 
 function parseTimecode(str: string, frameRate?: number | undefined) {
   // console.log(str, frameRate);
-  const t = Timecode(str, frameRate ? parseFloat(frameRate.toFixed(3)) : undefined);
+  const t = Timecode(str, frameRate ? parseFloat(frameRate.toFixed(3)) as FRAMERATE : undefined);
   if (!t) return undefined;
   const seconds = ((t.hours * 60) + t.minutes) * 60 + t.seconds + (t.frames / t.frameRate);
   return Number.isFinite(seconds) ? seconds : undefined;

@@ -559,7 +559,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       }];
 
       // eslint-disable-next-line no-shadow
-      async function cutEncodeSmartPartWrapper({ cutFrom, cutTo, outPath }) {
+      async function cutEncodeSmartPartWrapper({ cutFrom, cutTo, outPath }: { cutFrom: number, cutTo: number, outPath: string }) {
         if (await shouldSkipExistingFile(outPath)) return;
         if (videoCodec == null || detectedVideoBitrate == null || videoTimebase == null) throw new Error();
         invariant(filePath != null);
@@ -851,16 +851,16 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       // TODO add more
       // TODO allow user to change?
-    };
+    } as const;
 
-    const match = map[stream.codec_name];
+    const match = map[stream.codec_name as keyof typeof map];
     if (match) return match;
 
     // default fallbacks:
-    if (stream.codec_type === 'video') return { ext: 'mkv', format: 'matroska' };
-    if (stream.codec_type === 'audio') return { ext: 'mka', format: 'matroska' };
-    if (stream.codec_type === 'subtitle') return { ext: 'mks', format: 'matroska' };
-    if (stream.codec_type === 'data') return { ext: 'bin', format: 'data' }; // https://superuser.com/questions/1243257/save-data-stream
+    if (stream.codec_type === 'video') return { ext: 'mkv', format: 'matroska' } as const;
+    if (stream.codec_type === 'audio') return { ext: 'mka', format: 'matroska' } as const;
+    if (stream.codec_type === 'subtitle') return { ext: 'mks', format: 'matroska' } as const;
+    if (stream.codec_type === 'data') return { ext: 'bin', format: 'data' } as const; // https://superuser.com/questions/1243257/save-data-stream
 
     return undefined;
   }
@@ -871,13 +871,19 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     invariant(filePath != null);
     if (streams.length === 0) return [];
 
-    const outStreams = streams.map((s) => ({
-      index: s.index,
-      codec: s.codec_name || s.codec_tag_string || s.codec_type,
-      type: s.codec_type,
-      format: getPreferredCodecFormat(s),
-    }))
-      .filter(({ format, index }) => format != null && index != null);
+    const outStreams = streams.flatMap((s) => {
+      const format = getPreferredCodecFormat(s);
+      const { index } = s;
+
+      if (format == null || index == null) return [];
+
+      return [{
+        index,
+        codec: s.codec_name || s.codec_tag_string || s.codec_type,
+        type: s.codec_type,
+        format,
+      }];
+    });
 
     // console.log(outStreams);
 

@@ -13,7 +13,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }> {
     this.state = { error: undefined };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(error: unknown) {
     return { error };
   }
 

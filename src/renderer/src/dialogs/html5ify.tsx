@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, ChangeEventHandler } from 'react';
 import i18n from 'i18next';
 
 import { ReactSwal } from '../swal';
@@ -8,7 +8,9 @@ import Checkbox from '../components/Checkbox';
 
 // eslint-disable-next-line import/prefer-default-export
 export async function askForHtml5ifySpeed({ allowedOptions, showRemember, initialOption }: {
-  allowedOptions: Html5ifyMode[], showRemember?: boolean | undefined, initialOption?: Html5ifyMode | undefined
+  allowedOptions: Html5ifyMode[],
+  showRemember?: boolean | undefined,
+  initialOption?: Html5ifyMode | undefined,
 }) {
   const availOptions: Record<Html5ifyMode, string> = {
     fastest: i18n.t('Fastest: FFmpeg-assisted playback'),
@@ -31,12 +33,12 @@ export async function askForHtml5ifySpeed({ allowedOptions, showRemember, initia
     const [option, setOption] = useState(selectedOption);
     const [remember, setRemember] = useState(rememberChoice);
 
-    const onOptionChange = useCallback((e) => {
-      selectedOption = e.currentTarget.value;
+    const onOptionChange = useCallback<ChangeEventHandler<HTMLInputElement>>((e) => {
+      selectedOption = e.currentTarget.value as Html5ifyMode;
       setOption(selectedOption);
     }, []);
 
-    const onRememberChange = useCallback((checked) => {
+    const onRememberChange = useCallback((checked: boolean) => {
       rememberChoice = checked;
       setRemember(rememberChoice);
     }, []);

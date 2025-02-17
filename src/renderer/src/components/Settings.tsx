@@ -122,7 +122,7 @@ function Settings({
             <td>
               <Select value={language || ''} onChange={onLangChange} style={{ fontSize: '1.2em' }}>
                 <option key="" value="">{t('System language')}</option>
-                {Object.keys(langNames).map((lang) => <option key={lang} value={lang}>{langNames[lang]}</option>)}
+                {Object.keys(langNames).map((lang) => <option key={lang} value={lang}>{langNames[lang as keyof typeof langNames]}</option>)}
               </Select>
             </td>
           </Row>

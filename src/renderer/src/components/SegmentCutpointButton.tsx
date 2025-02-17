@@ -1,11 +1,17 @@
 import { CSSProperties, useMemo } from 'react';
+import { FaStepForward } from 'react-icons/fa';
 
 import { useSegColors } from '../contexts';
 import useUserSettings from '../hooks/useUserSettings';
 import { SegmentBase, SegmentColorIndex } from '../types';
 
 const SegmentCutpointButton = ({ currentCutSeg, side, Icon, onClick, title, style }: {
-  currentCutSeg: SegmentBase & SegmentColorIndex, side: 'start' | 'end', Icon, onClick?: (() => void) | undefined, title?: string | undefined, style?: CSSProperties | undefined
+  currentCutSeg: SegmentBase & SegmentColorIndex,
+  side: 'start' | 'end',
+  Icon: typeof FaStepForward,
+  onClick?: (() => void) | undefined,
+  title?: string | undefined,
+  style?: CSSProperties | undefined,
 }) => {
   const { darkMode } = useUserSettings();
   const { getSegColor } = useSegColors();
@@ -18,9 +24,9 @@ const SegmentCutpointButton = ({ currentCutSeg, side, Icon, onClick, title, styl
   return (
     <Icon
       size={13}
-      title={title}
+      title={title as string}
       role="button"
-      style={{ flexShrink: 0, color: 'white', padding: start ? '4px 4px 4px 2px' : '4px 2px 4px 4px', borderLeft: start && border, borderRight: !start && border, background: backgroundColor, borderRadius: 6, ...style }}
+      style={{ flexShrink: 0, color: 'white', padding: start ? '4px 4px 4px 2px' : '4px 2px 4px 4px', borderLeft: start ? border : undefined, borderRight: !start ? border : undefined, background: backgroundColor, borderRadius: 6, ...style }}
       onClick={onClick}
     />
   );

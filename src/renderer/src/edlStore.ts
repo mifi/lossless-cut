@@ -141,7 +141,11 @@ export async function askForEdlImport({ type, fps }: { type: EdlImportType, fps?
   else if (type === 'srt') filters = [{ name: i18n.t('Subtitles (SRT)'), extensions: ['srt'] }];
   else if (type === 'llc') filters = [{ name: i18n.t('LosslessCut project'), extensions: ['llc'] }];
 
-  const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'], filters, title: i18n.t('Import project') });
+  const { canceled, filePaths } = await showOpenDialog({
+    properties: ['openFile'],
+    title: i18n.t('Import project'),
+    ...(filters && { filters }),
+  });
   const [firstFilePath] = filePaths;
   if (canceled || firstFilePath == null) return [];
   return readEdlFile({ type, path: firstFilePath, fps });

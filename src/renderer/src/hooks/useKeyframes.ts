@@ -20,7 +20,7 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
   const [neighbouringKeyFramesMap, setNeighbouringKeyFrames] = useState<Record<string, Frame>>({});
   const neighbouringKeyFrames = useMemo(() => Object.values(neighbouringKeyFramesMap), [neighbouringKeyFramesMap]);
 
-  const findNearestKeyFrameTime = useCallback(({ time, direction }) => ffmpegFindNearestKeyFrameTime({ frames: neighbouringKeyFrames, time, direction, fps: detectedFps }), [neighbouringKeyFrames, detectedFps]);
+  const findNearestKeyFrameTime = useCallback(({ time, direction }: { time: number, direction: number }) => ffmpegFindNearestKeyFrameTime({ frames: neighbouringKeyFrames, time, direction, fps: detectedFps }), [neighbouringKeyFrames, detectedFps]);
 
   useEffect(() => setNeighbouringKeyFrames({}), [filePath, videoStream]);
 
