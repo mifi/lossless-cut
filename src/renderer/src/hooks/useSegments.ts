@@ -9,19 +9,19 @@ import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToS
 import { handleError, shuffleArray } from '../util';
 import { errorToast } from '../swal';
 import { showParametersDialog } from '../dialogs/parameters';
-import { createNumSegments as createNumSegmentsDialog, createFixedDurationSegments as createFixedDurationSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, selectSegmentsByExprDialog, mutateSegmentsByExprDialog } from '../dialogs';
-import { createSegment, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, addSegmentColorIndex, filterNonMarkers } from '../segments';
+import { createNumSegments as createNumSegmentsDialog, createFixedByteSixedSegments as createFixedByteSixedSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, selectSegmentsByExprDialog, mutateSegmentsByExprDialog, askForSegmentDuration } from '../dialogs';
+import { createSegment, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, addSegmentColorIndex, filterNonMarkers, makeDurationSegments } from '../segments';
 import { parameters as allFfmpegParameters, FfmpegDialog } from '../ffmpegParameters';
 import { maxSegmentsAllowed } from '../util/constants';
 import { ParseTimecode, SegmentBase, segmentTagsSchema, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
 import safeishEval from '../worker/eval';
 import { ScopeSegment } from '../../../../types';
-import { FFprobeStream } from '../../../../ffprobe';
+import { FFprobeFormat, FFprobeStream } from '../../../../ffprobe';
 
 const { ffmpeg: { blackDetect, silenceDetect } } = window.require('@electron/remote').require('./index.js');
 
 
-function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, durationSafe }: {
+function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, duration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, durationSafe, mainFileMeta }: {
   filePath?: string | undefined,
   workingRef: MutableRefObject<boolean>,
   setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void,
@@ -37,6 +37,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   parseTimecode: ParseTimecode,
   appendFfmpegCommandLog: (args: string[]) => void,
   durationSafe: number,
+  mainFileMeta: { formatData: FFprobeFormat } | undefined,
 }) {
   // Segment related state
   const segCounterRef = useRef(0);
@@ -528,9 +529,19 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
   const createFixedDurationSegments = useCallback(async () => {
     if (!checkFileOpened() || !isDurationValid(duration)) return;
-    const segments = await createFixedDurationSegmentsDialog({ fileDuration: duration, inputPlaceholder: timecodePlaceholder, parseTimecode });
-    if (segments) loadCutSegments(segments);
+    const segmentDuration = await askForSegmentDuration({ fileDuration: duration, inputPlaceholder: timecodePlaceholder, parseTimecode });
+    if (segmentDuration == null) return;
+    loadCutSegments(makeDurationSegments(segmentDuration, duration));
   }, [checkFileOpened, duration, loadCutSegments, parseTimecode, timecodePlaceholder]);
+
+  const createFixedByteSizedSegments = useCallback(async () => {
+    if (!checkFileOpened() || !isDurationValid(duration)) return;
+    const fileSize = mainFileMeta && parseInt(mainFileMeta.formatData.size, 10);
+    invariant(fileSize != null && !Number.isNaN(fileSize));
+    const segmentDuration = await createFixedByteSixedSegmentsDialog({ fileDuration: duration, fileSize });
+    if (segmentDuration == null) return;
+    loadCutSegments(makeDurationSegments(segmentDuration, duration));
+  }, [checkFileOpened, duration, loadCutSegments, mainFileMeta]);
 
   const createRandomSegments = useCallback(async () => {
     if (!checkFileOpened() || !isDurationValid(duration)) return;
@@ -707,6 +718,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     focusSegmentAtCursor,
     createNumSegments,
     createFixedDurationSegments,
+    createFixedByteSizedSegments,
     createRandomSegments,
     haveInvalidSegs,
     currentSegIndexSafe,

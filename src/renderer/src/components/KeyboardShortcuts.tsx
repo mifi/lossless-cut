@@ -395,6 +395,10 @@ const KeyboardShortcuts = memo(({
         name: t('Create num segments'),
         category: segmentsAndCutpointsCategory,
       },
+      createFixedByteSizedSegments: {
+        name: t('Create fixed byte sized segments'),
+        category: segmentsAndCutpointsCategory,
+      },
       createRandomSegments: {
         name: t('Create random segments'),
         category: segmentsAndCutpointsCategory,

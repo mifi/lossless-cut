@@ -235,7 +235,7 @@ export async function createNumSegments(fileDuration: number) {
 
 const exampleDuration = '00:00:05.123';
 
-async function askForSegmentDuration({ fileDuration, inputPlaceholder, parseTimecode }: {
+export async function askForSegmentDuration({ fileDuration, inputPlaceholder, parseTimecode }: {
   fileDuration: number, inputPlaceholder: string, parseTimecode: ParseTimecode,
 }) {
   const { value } = await Swal.fire({
@@ -467,18 +467,43 @@ export async function showCleanupFilesDialog(cleanupChoicesIn: CleanupChoicesTyp
   return undefined;
 }
 
-export async function createFixedDurationSegments({ fileDuration, inputPlaceholder, parseTimecode }: {
-  fileDuration: number, inputPlaceholder: string, parseTimecode: ParseTimecode,
-}) {
-  const segmentDuration = await askForSegmentDuration({ fileDuration, inputPlaceholder, parseTimecode });
-  if (segmentDuration == null) return undefined;
-  const edl: { start: number, end: number }[] = [];
-  for (let start = 0; start < fileDuration; start += segmentDuration) {
-    const end = start + segmentDuration;
-    edl.push({ start, end: end >= fileDuration ? fileDuration : end });
-  }
-  return edl;
+function parseBytesHuman(str: string) {
+  const match = str.replaceAll(/\s/g, '').match(/^(\d+)([gkmt]?)b$/i);
+  if (!match) return undefined;
+  const size = parseInt(match[1]!, 10);
+  const unit = match[2]!.toLowerCase();
+  if (unit === 't') return size * 1024 * 1024 * 1024 * 1024;
+  if (unit === 'g') return size * 1024 * 1024 * 1024;
+  if (unit === 'm') return size * 1024 * 1024;
+  if (unit === 'k') return size * 1024;
+  return size;
 }
+
+export async function createFixedByteSixedSegments({ fileDuration, fileSize }: {
+  fileDuration: number, fileSize: number,
+}) {
+  const example = '100 MB';
+  const { value } = await Swal.fire({
+    input: 'text',
+    showCancelButton: true,
+    inputValue: example,
+    inputPlaceholder: example,
+    text: i18n.t('Divide timeline into a number of segments with an approximate byte size'),
+    inputValidator: (v) => {
+      const bytes = parseBytesHuman(v);
+      if (bytes != null) return undefined;
+      return i18n.t('Please input a valid size. Example: {{example}}', { example });
+    },
+  });
+
+  if (value == null) return undefined;
+
+  const parsed = parseBytesHuman(value);
+  invariant(parsed != null);
+
+  return fileDuration * (parsed / fileSize);
+}
+
 
 export async function createRandomSegments(fileDuration: number) {
   const response = await askForSegmentsRandomDurationRange();

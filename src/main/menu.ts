@@ -267,6 +267,12 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
           },
         },
         {
+          label: esc(t('Create fixed byte sized segments')),
+          click() {
+            mainWindow.webContents.send('createFixedByteSizedSegments');
+          },
+        },
+        {
           label: esc(t('Create random segments')),
           click() {
             mainWindow.webContents.send('createRandomSegments');

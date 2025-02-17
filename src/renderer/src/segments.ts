@@ -253,3 +253,12 @@ export const filterNonMarkers = <T extends { end?: number | undefined }>(segment
   ...rest,
   end,
 }] : []));
+
+export function makeDurationSegments(segmentDuration: number, fileDuration: number) {
+  const edl: { start: number, end: number }[] = [];
+  for (let start = 0; start < fileDuration; start += segmentDuration) {
+    const end = start + segmentDuration;
+    edl.push({ start, end: end >= fileDuration ? fileDuration : end });
+  }
+  return edl;
+}
