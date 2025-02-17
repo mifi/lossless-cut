@@ -28,13 +28,13 @@ export const addSegmentColorIndex = (segment: Omit<StateSegment, 'segColorIndex'
 });
 
 // Because segments could have undefined start / end
-// (meaning extend to start of timeline or end duration)
+// meaning extend from start of timeline or to end whatever time end has (video duration)
 export function getSegApparentStart(seg: SegmentBase) {
   const time = seg.start;
   return time !== undefined ? time : 0;
 }
 
-export function getSegApparentEnd(seg: SegmentBase, duration?: number) {
+export function getSegApparentEnd(seg: SegmentBase, duration: number | undefined) {
   const time = seg.end;
   if (time !== undefined) return time;
   if (isDurationValid(duration)) return duration;

@@ -23,7 +23,7 @@ import { useSegColors } from './contexts';
 import { isExactDurationMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
 import { askForPlaybackRate } from './dialogs';
-import { FormatTimecode, ParseTimecode, SegmentBase, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
+import { FormatTimecode, ParseTimecode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
 import { WaveformMode } from '../../../types';
 import { GetSegApparentEnd } from './hooks/useSegments';
 import { getSegApparentStart } from './segments';
@@ -69,14 +69,13 @@ const InvertCutModeButton = memo(({ invertCutSegments, setInvertCutSegments }: {
 
 
 // eslint-disable-next-line react/display-name
-const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, seekAbs, currentCutSeg, currentApparentCutSeg, isStart, formatTimecode, parseTimecode }: {
+const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, seekAbs, currentCutSeg, isStart, formatTimecode, parseTimecode }: {
   darkMode: boolean,
   cutTime: number,
   setCutTime: (type: 'start' | 'end', v: number) => void,
   startTimeOffset: number,
   seekAbs: (a: number) => void,
   currentCutSeg: StateSegment,
-  currentApparentCutSeg: SegmentBase,
   isStart?: boolean,
   formatTimecode: FormatTimecode,
   parseTimecode: ParseTimecode,
@@ -89,7 +88,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
   // Clear manual overrides if upstream cut time has changed
   useEffect(() => {
     setCutTimeManual(undefined);
-  }, [setCutTimeManual, currentApparentCutSeg.start, currentApparentCutSeg.end]);
+  }, [setCutTimeManual, currentCutSeg.start, currentCutSeg.end]);
 
   const isCutTimeManualSet = () => cutTimeManual !== undefined;
 
@@ -381,7 +380,7 @@ function BottomBar({
 
         <SetCutpointButton currentCutSeg={currentCutSeg} side="start" onClick={setCutStart} title={t('Start current segment at current time')} style={{ marginRight: 5 }} />
 
-        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} currentApparentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={getSegApparentStart(currentCutSeg)} setCutTime={setCutTime} isStart formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
+        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={getSegApparentStart(currentCutSeg)} setCutTime={setCutTime} isStart formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
 
         <IoMdKey
           size={25}
@@ -426,7 +425,7 @@ function BottomBar({
           onClick={() => seekClosestKeyframe(1)}
         />
 
-        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} currentApparentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={getSegApparentEnd(currentCutSeg)} setCutTime={setCutTime} formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
+        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={getSegApparentEnd(currentCutSeg)} setCutTime={setCutTime} formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
 
         <SetCutpointButton currentCutSeg={currentCutSeg} side="end" onClick={setCutEnd} title={t('End current segment at current time')} style={{ marginLeft: 5 }} />
 
