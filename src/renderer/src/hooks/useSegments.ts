@@ -10,7 +10,7 @@ import { handleError, shuffleArray } from '../util';
 import { errorToast } from '../swal';
 import { showParametersDialog } from '../dialogs/parameters';
 import { createNumSegments as createNumSegmentsDialog, createFixedByteSixedSegments as createFixedByteSixedSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, selectSegmentsByExprDialog, mutateSegmentsByExprDialog, askForSegmentDuration } from '../dialogs';
-import { createSegment, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, addSegmentColorIndex, filterNonMarkers, makeDurationSegments } from '../segments';
+import { createSegment, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, addSegmentColorIndex, filterNonMarkers, makeDurationSegments, isInitialSegment } from '../segments';
 import { parameters as allFfmpegParameters, FfmpegDialog } from '../ffmpegParameters';
 import { maxSegmentsAllowed } from '../util/constants';
 import { ParseTimecode, SegmentBase, segmentTagsSchema, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
@@ -100,7 +100,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     if (validEdl.length > maxSegmentsAllowed) throw new Error(i18n.t('Tried to create too many segments (max {{maxSegmentsAllowed}}.)', { maxSegmentsAllowed }));
 
     setCutSegments((existingSegments) => {
-      const needToAppend = append && existingSegments.length > 1;
+      const needToAppend = append && !(existingSegments.length === 1 && isInitialSegment(existingSegments[0]!));
       let newSegments = validEdl.map((segment, i) => createIndexedSegment({ segment, incrementCount: needToAppend || i > 0 }));
       if (needToAppend) newSegments = [...existingSegments, ...newSegments];
       return newSegments;
@@ -111,7 +111,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     name: string,
     workingText: string,
     errorText: string,
-    fn: () => Promise<{ detectedSegments: SegmentBase[], ffmpegArgs: string[] }>,
+    fn: (onSegmentDetected: (seg: SegmentBase) => void) => Promise<{ ffmpegArgs: string[] }>,
   }) => {
     if (!filePath) return;
     if (workingRef.current) return;
@@ -119,11 +119,12 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       setWorking({ text: workingText });
       setProgress(0);
 
-      const { detectedSegments, ffmpegArgs } = await fn();
+      // todo throttle?
+      const { ffmpegArgs } = await fn((detectedSegment) => {
+        console.log('Detected', name, detectedSegment);
+        loadCutSegments([detectedSegment], true);
+      });
       appendFfmpegCommandLog(ffmpegArgs);
-
-      console.log(name, detectedSegments);
-      loadCutSegments(detectedSegments, true);
     } catch (err) {
       if (!(err instanceof Error && err.name === 'AbortError')) handleError(errorText, err);
     } finally {
@@ -164,7 +165,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     setFfmpegParametersForDialog(dialogType, parameters);
     invariant(mode === '1' || mode === '2');
     invariant(filePath != null);
-    await detectSegments({ name: 'blackScenes', workingText: i18n.t('Detecting black scenes'), errorText: i18n.t('Failed to detect black scenes'), fn: async () => blackDetect({ filePath, filterOptions, boundingMode: mode === '1', onProgress: setProgress, from: start, to: end }) });
+    await detectSegments({ name: 'blackScenes', workingText: i18n.t('Detecting black scenes'), errorText: i18n.t('Failed to detect black scenes'), fn: async (onSegmentDetected) => blackDetect({ filePath, filterOptions, boundingMode: mode === '1', onProgress: setProgress, onSegmentDetected, from: start, to: end }) });
   }, [durationSafe, currentCutSeg, getFfmpegParameters, setFfmpegParametersForDialog, filePath, detectSegments, setProgress]);
 
   const detectSilentScenes = useCallback(async () => {
@@ -176,7 +177,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     const { mode, ...filterOptions } = parameters;
     invariant(mode === '1' || mode === '2');
     invariant(filePath != null);
-    await detectSegments({ name: 'silentScenes', workingText: i18n.t('Detecting silent scenes'), errorText: i18n.t('Failed to detect silent scenes'), fn: async () => silenceDetect({ filePath, filterOptions, boundingMode: mode === '1', onProgress: setProgress, from: start, to: end }) });
+    await detectSegments({ name: 'silentScenes', workingText: i18n.t('Detecting silent scenes'), errorText: i18n.t('Failed to detect silent scenes'), fn: async (onSegmentDetected) => silenceDetect({ filePath, filterOptions, boundingMode: mode === '1', onProgress: setProgress, onSegmentDetected, from: start, to: end }) });
   }, [currentCutSeg, detectSegments, durationSafe, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress]);
 
   const detectSceneChanges = useCallback(async () => {
@@ -189,7 +190,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     // eslint-disable-next-line prefer-destructuring
     const minChange = parameters['minChange'];
     invariant(minChange != null);
-    await detectSegments({ name: 'sceneChanges', workingText: i18n.t('Detecting scene changes'), errorText: i18n.t('Failed to detect scene changes'), fn: async () => ffmpegDetectSceneChanges({ filePath, minChange, onProgress: setProgress, from: start, to: end }) });
+    await detectSegments({ name: 'sceneChanges', workingText: i18n.t('Detecting scene changes'), errorText: i18n.t('Failed to detect scene changes'), fn: async (onSegmentDetected) => ffmpegDetectSceneChanges({ filePath, minChange, onProgress: setProgress, onSegmentDetected, from: start, to: end }) });
   }, [currentCutSeg, detectSegments, durationSafe, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress]);
 
   const createSegmentsFromKeyframes = useCallback(async () => {
@@ -203,7 +204,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
   const removeSegments = useCallback((removeSegmentIds: string[]) => {
     setCutSegments((existingSegments) => {
-      if (existingSegments.length === 1 && existingSegments[0]!.start == null && existingSegments[0]!.end == null) {
+      if (existingSegments.length === 1 && isInitialSegment(existingSegments[0]!)) {
         return existingSegments; // We are at initial segment, nothing more we can do (it cannot be removed)
       }
 
@@ -494,7 +495,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   const findSegmentsAtCursor = useCallback((currentTime: number) => (
     cutSegments.flatMap((segment, index) => {
       if (
-        (segment.start == null || segment.start <= currentTime)
+        (segment.start <= currentTime)
         && (segment.end != null && segment.end >= currentTime)
       ) {
         return [index];

@@ -254,56 +254,61 @@ export function mapTimesToSegments(times: number[], includeLast: boolean) {
   return segments;
 }
 
-function adjustSegmentsWithOffset({ segments, from }: { segments: { start: number, end: number | undefined }[], from?: number | undefined }) {
-  const offset = from ?? 0;
-  return segments.map(({ start, end }) => ({ start: start + offset, end: end != null ? end + offset : end }));
+interface DetectedSegment {
+  start: number,
+  end: number,
 }
 
 // https://stackoverflow.com/questions/35675529/using-ffmpeg-how-to-do-a-scene-change-detection-with-timecode
-export async function detectSceneChanges({ filePath, minChange, onProgress, from, to }: {
+export async function detectSceneChanges({ filePath, minChange, onProgress, onSegmentDetected, from, to }: {
   filePath: string,
   minChange: number | string,
   onProgress: (p: number) => void,
+  onSegmentDetected: (p: DetectedSegment) => void,
   from: number,
   to: number,
 }) {
   const args = [
     '-hide_banner',
     ...getInputSeekArgs({ filePath, from, to }),
-    '-filter_complex', `select='gt(scene,${minChange})',metadata=print:file=-`,
+    '-filter_complex', `select='gt(scene,${minChange})',metadata=print:file=-:direct=1`, // direct=1 to flush stdout immediately
     '-f', 'null', '-',
   ];
   const process = runFfmpegProcess(args, { buffer: false });
 
-  const times = [0];
-
   handleProgress(process, to - from, onProgress);
+
   assert(process.stdout != null);
   const rl = readline.createInterface({ input: process.stdout });
+
+  let lastTime: number | undefined;
+
   rl.on('line', (line) => {
     // eslint-disable-next-line unicorn/better-regex
     const match = line.match(/^frame:\d+\s+pts:\d+\s+pts_time:([\d.]+)/);
     if (!match) return;
     const time = parseFloat(match[1]!);
-    // @ts-expect-error todo
-    if (Number.isNaN(time) || time <= times.at(-1)) return;
-    times.push(time);
+    if (!Number.isNaN(time)) {
+      if (lastTime != null && time > lastTime) {
+        onSegmentDetected({ start: from + lastTime, end: from + time });
+      }
+      lastTime = time;
+    }
   });
 
   await process;
 
-  const segments = mapTimesToSegments(times, false);
-
-  return { detectedSegments: adjustSegmentsWithOffset({ segments, from }), ffmpegArgs: args };
+  return { ffmpegArgs: args };
 }
 
-async function detectIntervals({ filePath, customArgs, onProgress, from, to, matchLineTokens, boundingMode }: {
+async function detectIntervals({ filePath, customArgs, onProgress, onSegmentDetected, from, to, matchLineTokens, boundingMode }: {
   filePath: string,
   customArgs: string[],
   onProgress: (p: number) => void,
+  onSegmentDetected: (p: DetectedSegment) => void,
   from: number,
   to: number,
-  matchLineTokens: (line: string) => { start: number, end: number } | undefined,
+  matchLineTokens: (line: string) => DetectedSegment | undefined,
   boundingMode: boolean,
 }) {
   const args = [
@@ -314,8 +319,7 @@ async function detectIntervals({ filePath, customArgs, onProgress, from, to, mat
   ];
   const process = runFfmpegProcess(args, { buffer: false });
 
-  let segments: { start: number, end: number }[] = [];
-  const midpoints: number[] = [];
+  let lastMidpoint: number | undefined;
 
   function customMatcher(line: string) {
     const match = matchLineTokens(line);
@@ -323,43 +327,44 @@ async function detectIntervals({ filePath, customArgs, onProgress, from, to, mat
     const { start, end } = match;
 
     if (boundingMode) {
-      segments.push({ start, end });
+      onSegmentDetected({ start: from + start, end: from + end });
     } else {
-      midpoints.push(start + ((end - start) / 2));
+      const midpoint = start + ((end - start) / 2);
+
+      onSegmentDetected({ start: from + (lastMidpoint ?? 0), end: from + midpoint });
+      lastMidpoint = midpoint;
     }
   }
+
   handleProgress(process, to - from, onProgress, customMatcher);
 
   await process;
 
-  if (!boundingMode) {
-    segments = midpoints.flatMap((time, i) => [
-      {
-        start: midpoints[i - 1] ?? 0,
-        end: time,
-      },
-    ]);
-
-    const lastMidpoint = midpoints.at(-1);
-    if (lastMidpoint != null) {
-      segments.push({
-        start: lastMidpoint,
-        end: to - from,
-      });
-    }
+  if (!boundingMode && lastMidpoint != null) {
+    onSegmentDetected({
+      start: from + lastMidpoint,
+      end: to,
+    });
   }
 
-  return { detectedSegments: adjustSegmentsWithOffset({ segments, from }), ffmpegArgs: args };
+  return { ffmpegArgs: args };
 }
 
 const mapFilterOptions = (options: Record<string, string>) => Object.entries(options).map(([key, value]) => `${key}=${value}`).join(':');
 
-export async function blackDetect({ filePath, filterOptions, boundingMode, onProgress, from, to }: {
-  filePath: string, filterOptions: Record<string, string>, boundingMode: boolean, onProgress: (p: number) => void, from: number, to: number,
+export async function blackDetect({ filePath, filterOptions, boundingMode, onProgress, onSegmentDetected, from, to }: {
+  filePath: string,
+  filterOptions: Record<string, string>,
+  boundingMode: boolean,
+  onProgress: (p: number) => void,
+  onSegmentDetected: (p: DetectedSegment) => void,
+  from: number,
+  to: number,
 }) {
   return detectIntervals({
     filePath,
     onProgress,
+    onSegmentDetected,
     from,
     to,
     boundingMode,
@@ -383,12 +388,18 @@ export async function blackDetect({ filePath, filterOptions, boundingMode, onPro
   });
 }
 
-export async function silenceDetect({ filePath, filterOptions, boundingMode, onProgress, from, to }: {
-  filePath: string, filterOptions: Record<string, string>, boundingMode: boolean, onProgress: (p: number) => void, from: number, to: number,
+export async function silenceDetect({ filePath, filterOptions, boundingMode, onProgress, onSegmentDetected, from, to }: {
+  filePath: string,
+  filterOptions: Record<string, string>,
+  boundingMode: boolean,
+  onProgress: (p: number) => void,
+  onSegmentDetected: (p: DetectedSegment) => void,
+  from: number, to: number,
 }) {
   return detectIntervals({
     filePath,
     onProgress,
+    onSegmentDetected,
     from,
     to,
     boundingMode,

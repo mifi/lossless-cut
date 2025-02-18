@@ -67,7 +67,6 @@ export function partitionIntoOverlappingRanges<T extends SegmentBase>(array: T[]
     const item = array[i]!;
     const { start } = item;
     const prevStart = array[i - 1]!.start;
-    if (start == null || prevStart == null) throw new Error();
     if (start >= prevStart && start < getMaxEnd(ret[g]!)) {
       ret[g]!.push(item);
     } else {
@@ -142,7 +141,7 @@ export function invertSegments(sortedCutSegments: ({ start: number, end: number,
 
   if (includeFirstSegment) {
     const firstSeg = sortedCutSegments[0]!;
-    if (firstSeg.start != null && firstSeg.start > 0) {
+    if (firstSeg.start > 0) {
       ret.push({
         start: 0,
         end: firstSeg.start,
@@ -176,7 +175,7 @@ export function invertSegments(sortedCutSegments: ({ start: number, end: number,
 
   // Filter out zero length resulting segments
   // https://github.com/mifi/lossless-cut/issues/909
-  return ret.filter(({ start, end }) => end == null || start == null || end > start);
+  return ret.filter(({ start, end }) => end == null || end > start);
 }
 
 // because chapters need to be contiguous, we need to insert gaps in-between
@@ -184,9 +183,9 @@ export function convertSegmentsToChapters(sortedSegments: { start: number, end: 
   if (sortedSegments.length === 0) return [];
   if (hasAnySegmentOverlap(sortedSegments)) throw new Error('Segments cannot overlap');
 
-  const invertedSegments = invertSegments(sortedSegments, true, false).map(({ start, end, ...seg }) => {
-    invariant(start != null && end != null); // to please typescript
-    return { ...seg, start, end };
+  const invertedSegments = invertSegments(sortedSegments, true, false).map(({ end, ...seg }) => {
+    invariant(end != null); // to please typescript
+    return { ...seg, end };
   });
 
   // inverted segments will be "gap" segments. Merge together with normal segments
@@ -262,3 +261,5 @@ export function makeDurationSegments(segmentDuration: number, fileDuration: numb
   }
   return edl;
 }
+
+export const isInitialSegment = (seg: SegmentBase) => seg.start === 0 && seg.end == null;
