@@ -25,11 +25,10 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - [Example lossless use cases](#example-lossless-use-cases)
 - [Download](#download)
 - [Supported formats](#supported-formats)
-- [Typical workflow](#typical-workflow)
+- [Documentation & getting started](#documentation)
 - [Video demos](#video-demos)
 - [Featured](#featured)
 - [Attributions](#attributions)
-- [More documentation](#more-documentation)
 
 ## Features
 
@@ -60,14 +59,14 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Saves per project cut segments to project file
 - View FFmpeg last command log so you can modify and re-run recent commands on the command line
 - Undo/redo
-- Give labels to cut segments
-- Annotate segments with tags
-- [Import/export](import-export.md) segments: MP4/MKV chapter marks, Text file, YouTube, CSV, CUE, XML (DaVinci, Final Cut Pro) and more
+- Advanced segment query and mutation JS-based expression language.
+- Give labels to cut segments, annotate with tags
+- [Import/export](docs.md#import--export-projects) segments: MP4/MKV chapter marks, Text file, YouTube, CSV, CUE, XML (DaVinci, Final Cut Pro) and more
 - MKV/MP4 embedded chapters marks editor
 - View subtitles
 - Customizable keyboard hotkeys
 - Black scene detection, silent audio detection, and scene change detection
-- Divide timeline into segments with length L or into N segments or even randomized segments!
+- Divide timeline into segments of length L, size (X MB), N number of segments or even randomized segments!
 - Speed up / slow down video or audio file ([changing FPS](https://github.com/mifi/lossless-cut/issues/1712))
 - Basic [CLI](cli.md) and [HTTP API](api.md)
 - Show (DJI) embedded GPS track on a map
@@ -143,30 +142,13 @@ LosslessCut is maintained by me alone and will always remain free and open sourc
 
 ## Supported formats
 
-LosslessCut uses the Chromium browser's HTML5 video player, and not all formats/codecs are [natively supported](https://www.chromium.org/audio-video). Generally, the following file formats work: `MP4`, `MOV`, `WebM`, `Matroska`, `OGG` and `WAV`. Audio codecs: `FLAC`, `MP3`, `Opus`, `PCM`, `Vorbis` and `AAC`. Video codecs: `H264`, `AV1`, `Theora`, `VP8`, `VP9` and `H265` (with hardware decoder). Learn the [difference between a codec and a format](./issues.md#primer-video--audio-formats-vs-codecs). Codecs and formats not listed above can still be converted to a supported format/codec from the `File` menu (try the option *Fastest: FFmpeg-assisted playback* first). A low quality version of the file will then be created and opened in the player. Note that the actual cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that FFmpeg is able to decode.
+LosslessCut uses the Chromium browser's HTML5 video player, and not all formats/codecs are [natively supported](https://www.chromium.org/audio-video). Generally, the following file formats work: `MP4`, `MOV`, `WebM`, `Matroska`, `OGG` and `WAV`. Audio codecs: `FLAC`, `MP3`, `Opus`, `PCM`, `Vorbis` and `AAC`. Video codecs: `H264`, `AV1`, `Theora`, `VP8`, `VP9` and `H265` (with hardware decoder). Learn the [difference between a codec and a format](docs.md#primer-video--audio-formats-vs-codecs). Codecs and formats not listed above can still be converted to a supported format/codec from the `File` menu (try the option *Fastest: FFmpeg-assisted playback* first). A low quality version of the file will then be created and opened in the player. Note that the actual cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that FFmpeg is able to decode.
 
-## Typical workflow
+## Documentation
 
-- Drag drop a video file into player or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
-- Press <kbd>SPACE</kbd> to play/pause or <kbd>◀</kbd><kbd>▶</kbd>, <kbd>,</kbd><kbd>.</kbd> or mouse/trackpad wheel to seek back/forth.
-- Select the cut segment's start and end time by moving the time marker and then pressing <kbd>I</kbd> to set start time, and <kbd>O</kbd> to set end time.
-  - Note that all segments you create will be **preserved** and exported as new files. You can change this behavior with the **Yin Yang** symbol ☯️, in which case it will instead **remove** all selected segments and export the parts **between** segments.
-  - Note also that start times will not be accurate, see [Known issues](issues.md)
-- *(optional)* If you want to add more than one segment, move to the desired start time and press <kbd>+</kbd>, then select the next segment start/end times with <kbd>I</kbd>/<kbd>O</kbd>.
-- *(optional)* If you want to re-merge all the selected segments into one file after cutting, toggle the button `Separate files` to `Merge cuts`.
-- *(optional)* If you want to export to a certain output folder, press the `Working dir unset` button (default: Input file folder)
-- *(optional)* If you want to change orientation, press the **rotation** button
-- *(optional)* By default, audio, video and subtitle tracks from the input file will be cut and exported. Press the `Tracks` button to customise and/or add new tracks from other files.
-- *(optional)* select a new output format
-- *(optional)* In the right-hand segments panel, right click a segment for options, or drag-drop to reorder. Segments will appear in this order in the merged output.
-- **When done, press the `Export` button (or <kbd>E</kbd>) to show an overview with export options.**
-- *(optional)* adjust any export options
-- **Then press `Export` again to confirm the export**
-- Press the **Camera** button (or <kbd>C</kbd>) if you want to take a JPEG/PNG snapshot from the current time
-- If you want to move the original file to trash, press the **trash** button
-- For best results you may need to trial and error with another output format (Matroska takes nearly everything), change keyframe cut mode or disable some tracks (see [known issues](issues.md)).
-- Press <kbd>SHIFT</kbd> + <kbd>/</kbd> to view all keyboard & mouse shortcuts.
-- **Note:** The original video file will not be modified. Instead, a file is created file in the same directory as the original file with from/to timestamps in the file name.
+- **[Getting started and documentation](docs.md)**
+- [FAQ, known issues, limitations and troubleshooting](issues.md)
+- [Contributing](CONTRIBUTING.md)
 
 ### Video demos
 
@@ -174,12 +156,6 @@ LosslessCut uses the Chromium browser's HTML5 video player, and not all formats/
 - [How to add a thumbnail / cover art to an MP4](https://www.youtube.com/watch?v=4pYJ93cn80E)
 - [How to add multi-language audio to a video](https://www.youtube.com/watch?v=MRBGDsuw_WU)
 - Your video here?
-
-## More documentation
-- [Import / export](import-export.md)
-- [Command line interface (CLI)](cli.md) & [HTTP API](api.md)
-- [Known issues, limitations, troubleshooting, FAQ](issues.md)
-- [Contributing](CONTRIBUTING.md)
 
 ## Featured
 
