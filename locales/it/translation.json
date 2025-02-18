@@ -890,5 +890,12 @@
     "Mouse wheel frame seek modifier key": "Tasto modifica ricerca fotogramma con rotellina mouse",
     "File name is too long and cannot be exported.": "Il nome file è troppo lungo e non può essere esportato.",
     "Fell back to default output file name": "Torna al nome del file destinazione predefinito",
-    "Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.": "La regolazione dell'FPS in uscita e il taglio simultaneo causeranno tagli errati. Considera invece di farlo in due passaggi separati."
+    "Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.": "La regolazione dell'FPS in uscita e il taglio simultaneo causeranno tagli errati. Considera invece di farlo in due passaggi separati.",
+    "\"{{property}}\" must be a number": "\"{{property}}\" deve essere un numero",
+    "\"{{property}}\" must be a string": "\"{{property}}\" deve essere una stringa",
+    "\"{{property}}\" must be an object of strings": "\"{{property}}\" deve essere un oggetto di una stringa",
+    "{{numFrames}} frames_one": "{{numFrames}} fotogrammi",
+    "{{numFrames}} frames_other": "{{numFrames}} fotogrammi",
+    "Add a tag to every even segment": "Aggiungi un tag ad ogni segmento uniforme",
+    "Add number suffix to label": "Aggiungi suffisso numerico all'etichetta"
 }
