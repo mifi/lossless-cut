@@ -267,7 +267,7 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
           },
         },
         {
-          label: esc(t('Create fixed byte sized segments')),
+          label: esc(t('Create byte sized segments')),
           click() {
             mainWindow.webContents.send('createFixedByteSizedSegments');
           },
