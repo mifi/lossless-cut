@@ -238,24 +238,37 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     });
   }, [cutSegments, duration, haveInvalidSegs]);
 
+  // Guaranteed to have at least one segment (if user has selected none to export (selectedSegments empty), it makes no sense so select all instead.)
+  const selectedSegments = useMemo(() => (selectedSegmentsRaw.length > 0 ? selectedSegmentsRaw : cutSegments), [cutSegments, selectedSegmentsRaw]);
+
   const invertAllSegments = useCallback(() => {
-    if (inverseCutSegments.length === 0) {
+    // treat markers as 0 length
+    const sortedSegments = sortSegments(selectedSegments.map(({ end, ...rest }) => ({ ...rest, end: end ?? rest.start })));
+
+    const inverseSegmentsAndMarkers = invertSegments(sortedSegments, true, true, duration);
+
+    if (inverseSegmentsAndMarkers.length === 0) {
       errorToast(i18n.t('Make sure you have no overlapping segments.'));
       return;
     }
-    // don't reset segColorIndex (which represent colors) when inverting
-    const newInverseCutSegments = inverseCutSegments.map((inverseSegment, index) => addSegmentColorIndex(createSegment(inverseSegment), index));
+    // preserve segColorIndex (which represent colors) when inverting
+    const newInverseCutSegments = inverseSegmentsAndMarkers.map((inverseSegment, index) => addSegmentColorIndex(createSegment(inverseSegment), index));
     setCutSegments(newInverseCutSegments);
-  }, [inverseCutSegments, setCutSegments]);
+  }, [duration, selectedSegments, setCutSegments]);
 
   const fillSegmentsGaps = useCallback(() => {
-    if (inverseCutSegments.length === 0) {
+    // treat markers as 0 length
+    const sortedSegments = sortSegments(selectedSegments.map(({ end, ...rest }) => ({ ...rest, end: end ?? rest.start })));
+
+    const inverseSegmentsAndMarkers = invertSegments(sortedSegments, true, true, duration);
+
+    if (inverseSegmentsAndMarkers.length === 0) {
       errorToast(i18n.t('Make sure you have no overlapping segments.'));
       return;
     }
-    const newInverseCutSegments = inverseCutSegments.map((inverseSegment) => createIndexedSegment({ segment: inverseSegment, incrementCount: true }));
+    const newInverseCutSegments = inverseSegmentsAndMarkers.map((segment) => createIndexedSegment({ segment, incrementCount: true }));
     setCutSegments((existing) => ([...existing, ...newInverseCutSegments]));
-  }, [createIndexedSegment, inverseCutSegments, setCutSegments]);
+  }, [createIndexedSegment, duration, selectedSegments, setCutSegments]);
 
   const combineOverlappingSegments = useCallback(() => {
     setCutSegments((existingSegments) => combineOverlappingSegments2(existingSegments));
@@ -472,7 +485,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     }
   }, [checkFileOpened, getRelevantTime, setCutTime]);
 
-  const onLabelSegment = useCallback(async (index: number) => {
+  const labelSegment = useCallback(async (index: number) => {
     const { name } = cutSegments[index]!;
     const value = await labelSegmentDialog({ currentName: name, maxLength: maxLabelLength });
     if (value != null) updateSegAtIndex(index, { name: value });
@@ -558,7 +571,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     });
   }, [cutSegments.length]);
 
-  const onSelectSegmentsByLabel = useCallback(async () => {
+  const selectSegmentsByLabel = useCallback(async () => {
     const { name } = currentCutSeg;
     const value = await selectSegmentsByLabelDialog(name);
     if (value == null) return;
@@ -566,7 +579,11 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     enableSegments(segmentsToEnable);
   }, [currentCutSeg, cutSegments, enableSegments]);
 
-  const onSelectSegmentsByExpr = useCallback(async () => {
+  const selectAllMarkers = useCallback(() => {
+    enableSegments(cutSegments.filter((seg) => seg.end == null));
+  }, [cutSegments, enableSegments]);
+
+  const selectSegmentsByExpr = useCallback(async () => {
     const matchSegment = async (seg: StateSegment, index: number, expr: string) => (
       (await safeishEval(expr, { segment: getScopeSegment(seg, index) })) === true
     );
@@ -595,7 +612,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     enableSegments(segmentsToEnable);
   }, [cutSegments, enableSegments, getScopeSegment]);
 
-  const onMutateSegmentsByExpr = useCallback(async () => {
+  const mutateSegmentsByExpr = useCallback(async () => {
     async function mutateSegment(seg: StateSegment, index: number, expr: string) {
       const response = (await safeishEval(expr, { segment: getScopeSegment(seg, index) }));
       invariant(typeof response === 'object' && response != null, i18n.t('The expression must return an object'));
@@ -642,7 +659,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     safeSetCutSegments(await mutateSegments(value));
   }, [cutSegments, getScopeSegment, isSegmentSelected, safeSetCutSegments]);
 
-  const onLabelSelectedSegments = useCallback(async () => {
+  const labelSelectedSegments = useCallback(async () => {
     const firstSelectedSegment = selectedSegmentsRaw[0];
     if (firstSelectedSegment == null) return;
     const { name } = firstSelectedSegment;
@@ -653,9 +670,6 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       return existingSegment;
     }));
   }, [maxLabelLength, selectedSegmentsRaw, setCutSegments]);
-
-  // Guaranteed to have at least one segment (if user has selected none to export (selectedSegments empty), it makes no sense so select all instead.)
-  const selectedSegments = useMemo(() => (selectedSegmentsRaw.length > 0 ? selectedSegmentsRaw : cutSegments), [cutSegments, selectedSegmentsRaw]);
 
   const selectedSegmentsOrInverse = useMemo<{ start: number, end: number }[]>(() => {
     // For invertCutSegments we do not support filtering (selecting) segments
@@ -713,7 +727,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     duplicateSegment,
     setCutStart,
     setCutEnd,
-    onLabelSegment,
+    labelSegment,
     splitCurrentSegment,
     focusSegmentAtCursor,
     createNumSegments,
@@ -735,16 +749,17 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     setCurrentSegIndex,
 
     setDeselectedSegmentIds,
-    onLabelSelectedSegments,
+    labelSelectedSegments,
     deselectAllSegments,
     selectAllSegments,
     selectOnlyCurrentSegment,
     toggleCurrentSegmentSelected,
     invertSelectedSegments,
     removeSelectedSegments,
-    onSelectSegmentsByLabel,
-    onSelectSegmentsByExpr,
-    onMutateSegmentsByExpr,
+    selectSegmentsByLabel,
+    selectSegmentsByExpr,
+    selectAllMarkers,
+    mutateSegmentsByExpr,
     toggleSegmentSelected,
     selectOnlySegment,
     setCutTime,

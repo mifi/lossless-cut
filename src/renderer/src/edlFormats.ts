@@ -213,30 +213,15 @@ export function parseCuesheet(cuesheet: ICueSheet) {
   });
 }
 
-// See https://github.com/mifi/lossless-cut/issues/993#issuecomment-1037090403
+// See https://github.com/mifi/lossless-cut/issues/993
 export function parsePbf(buf: Buffer) {
   const text = buf.toString('utf16le');
-  const bookmarks = text.split('\n').map((line) => {
+
+  return text.split('\n').flatMap((line) => {
     const match = line.match(/^\d+=(\d+)\*([^*]+)*([^*]+)?/);
-    if (match) return { time: parseInt(match[1]!, 10) / 1000, name: match[2] };
-    return undefined;
-  }).filter(Boolean);
-
-  const out: SegmentBase[] = [];
-
-  for (let i = 0; i < bookmarks.length;) {
-    const bookmark = bookmarks[i]!;
-    const nextBookmark = bookmarks[i + 1];
-    if (!nextBookmark) {
-      out.push({ start: bookmark.time, end: undefined, name: bookmark.name });
-      i += 1;
-    } else {
-      out.push({ start: bookmark.time, end: nextBookmark && nextBookmark.time, name: bookmark.name });
-      i += nextBookmark.name === ' ' ? 2 : 1;
-    }
-  }
-
-  return out;
+    if (match) return [{ start: parseInt(match[1]!, 10) / 1000, name: match[2] }];
+    return [];
+  });
 }
 
 // https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/FinalCutPro_XML/VersionsoftheInterchangeFormat/VersionsoftheInterchangeFormat.html

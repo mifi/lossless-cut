@@ -446,6 +446,10 @@ const KeyboardShortcuts = memo(({
         name: t('Select all segments'),
         category: segmentsAndCutpointsCategory,
       },
+      selectAllMarkers: {
+        name: t('Select all markers'),
+        category: segmentsAndCutpointsCategory,
+      },
       toggleCurrentSegmentSelected: {
         name: t('Toggle current segment selected'),
         category: segmentsAndCutpointsCategory,

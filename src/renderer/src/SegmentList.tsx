@@ -47,6 +47,7 @@ const Segment = memo(({
   onDeselectAllSegments,
   onSelectSegmentsByLabel,
   onSelectSegmentsByExpr,
+  onSelectAllMarkers,
   onSelectAllSegments,
   onMutateSegmentsByExpr,
   jumpSegStart,
@@ -66,17 +67,18 @@ const Segment = memo(({
   onClick: (i: number) => void,
   onRemovePress: UseSegments['removeCutSegment'],
   onRemoveSelected: UseSegments['removeSelectedSegments'],
-  onLabelSelectedSegments: UseSegments['onLabelSelectedSegments'],
+  onLabelSelectedSegments: UseSegments['labelSelectedSegments'],
   onReorderPress: (i: number) => Promise<void>,
-  onLabelPress: UseSegments['onLabelSegment'],
+  onLabelPress: UseSegments['labelSegment'],
   selected: boolean,
   onSelectSingleSegment: UseSegments['selectOnlySegment'],
   onToggleSegmentSelected: UseSegments['toggleSegmentSelected'],
   onDeselectAllSegments: UseSegments['deselectAllSegments'],
-  onSelectSegmentsByLabel: UseSegments['onSelectSegmentsByLabel'],
-  onSelectSegmentsByExpr: UseSegments['onSelectSegmentsByExpr'],
+  onSelectSegmentsByLabel: UseSegments['selectSegmentsByLabel'],
+  onSelectSegmentsByExpr: UseSegments['selectSegmentsByExpr'],
+  onSelectAllMarkers: UseSegments['selectAllMarkers'],
   onSelectAllSegments: UseSegments['selectAllSegments'],
-  onMutateSegmentsByExpr: UseSegments['onMutateSegmentsByExpr'],
+  onMutateSegmentsByExpr: UseSegments['mutateSegmentsByExpr'],
   jumpSegStart: (i: number) => void,
   jumpSegEnd: (i: number) => void,
   addSegment: UseSegments['addSegment'],
@@ -112,6 +114,7 @@ const Segment = memo(({
       { label: t('Select only this segment'), click: () => onSelectSingleSegment(seg) },
       { label: t('Select all segments'), click: () => onSelectAllSegments() },
       { label: t('Deselect all segments'), click: () => onDeselectAllSegments() },
+      { label: t('Select all markers'), click: () => onSelectAllMarkers() },
       { label: t('Select segments by label'), click: () => onSelectSegmentsByLabel() },
       { label: t('Select segments by expression'), click: () => onSelectSegmentsByExpr() },
       { label: t('Invert selected segments'), click: () => onInvertSelectedSegments() },
@@ -133,7 +136,7 @@ const Segment = memo(({
       { label: t('Segment tags'), click: () => onEditSegmentTags(index) },
       ...(seg.end != null ? [{ label: t('Extract frames as image files'), click: () => onExtractSegmentFramesAsImages([seg as Pick<InverseCutSegment, 'start' | 'end'>]) }] : []),
     ];
-  }, [invertCutSegments, t, addSegment, onLabelSelectedSegments, onRemoveSelected, updateSegOrder, index, jumpSegStart, jumpSegEnd, onLabelPress, onRemovePress, onDuplicateSegmentClick, seg, onSelectSingleSegment, onSelectAllSegments, onDeselectAllSegments, onSelectSegmentsByLabel, onSelectSegmentsByExpr, onInvertSelectedSegments, onMutateSegmentsByExpr, onReorderPress, onEditSegmentTags, onExtractSegmentFramesAsImages]);
+  }, [invertCutSegments, t, addSegment, onLabelSelectedSegments, onRemoveSelected, seg, updateSegOrder, index, jumpSegStart, jumpSegEnd, onLabelPress, onRemovePress, onDuplicateSegmentClick, onSelectSingleSegment, onSelectAllSegments, onDeselectAllSegments, onSelectAllMarkers, onSelectSegmentsByLabel, onSelectSegmentsByExpr, onInvertSelectedSegments, onMutateSegmentsByExpr, onReorderPress, onEditSegmentTags, onExtractSegmentFramesAsImages]);
 
   useContextMenu(ref, contextMenuTemplate);
 
@@ -252,6 +255,7 @@ function SegmentList({
   onSelectSegmentsByLabel,
   onSelectSegmentsByExpr,
   onMutateSegmentsByExpr,
+  onSelectAllMarkers,
   onExtractSegmentFramesAsImages,
   onLabelSelectedSegments,
   onInvertSelectedSegments,
@@ -277,7 +281,7 @@ function SegmentList({
   addSegment: UseSegments['addSegment'],
   removeCutSegment: UseSegments['removeCutSegment'],
   onRemoveSelected: UseSegments['removeSelectedSegments'],
-  onLabelSegment: UseSegments['onLabelSegment'],
+  onLabelSegment: UseSegments['labelSegment'],
   currentCutSeg: UseSegments['currentCutSeg'],
   segmentAtCursor: StateSegment | undefined,
   toggleSegmentsList: () => void,
@@ -288,11 +292,12 @@ function SegmentList({
   onToggleSegmentSelected: UseSegments['toggleSegmentSelected'],
   onDeselectAllSegments: UseSegments['deselectAllSegments'],
   onSelectAllSegments: UseSegments['selectAllSegments'],
-  onSelectSegmentsByLabel: UseSegments['onSelectSegmentsByLabel'],
-  onSelectSegmentsByExpr: UseSegments['onSelectSegmentsByExpr'],
-  onMutateSegmentsByExpr: UseSegments['onMutateSegmentsByExpr'],
+  onSelectSegmentsByLabel: UseSegments['selectSegmentsByLabel'],
+  onSelectSegmentsByExpr: UseSegments['selectSegmentsByExpr'],
+  onSelectAllMarkers: UseSegments['selectAllMarkers'],
+  onMutateSegmentsByExpr: UseSegments['mutateSegmentsByExpr'],
   onExtractSegmentFramesAsImages: (segments: Pick<InverseCutSegment, 'start' | 'end'>[]) => Promise<void>,
-  onLabelSelectedSegments: UseSegments['onLabelSelectedSegments'],
+  onLabelSelectedSegments: UseSegments['labelSelectedSegments'],
   onInvertSelectedSegments: UseSegments['invertSelectedSegments'],
   onDuplicateSegmentClick: UseSegments['duplicateSegment'],
   jumpSegStart: (index: number) => void,
@@ -510,6 +515,7 @@ function SegmentList({
                   onMutateSegmentsByExpr={onMutateSegmentsByExpr}
                   onExtractSegmentFramesAsImages={onExtractSegmentFramesAsImages}
                   onLabelSelectedSegments={onLabelSelectedSegments}
+                  onSelectAllMarkers={onSelectAllMarkers}
                   onInvertSelectedSegments={onInvertSelectedSegments}
                   onDuplicateSegmentClick={onDuplicateSegmentClick}
                 />

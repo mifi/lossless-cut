@@ -183,7 +183,7 @@ it('parses xmeml - with multiple tracks', async () => {
 
 // see https://github.com/mifi/lossless-cut/issues/1195
 it('parses fcpxml 1.9', async () => {
-  expect(await parseFcpXml(await readFixture('FCPXML_1_9.fcpxml'))).toMatchSnapshot();
+  expect(parseFcpXml(await readFixture('FCPXML_1_9.fcpxml'))).toMatchSnapshot();
 });
 
 // https://github.com/mifi/lossless-cut/issues/1024
