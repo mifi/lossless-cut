@@ -7,8 +7,13 @@ import { saveColor } from './colors';
 import useUserSettings from './hooks/useUserSettings';
 
 
-function BetweenSegments({ start, end, duration, invertCutSegments }: { start: number, end: number, duration: number, invertCutSegments: boolean }) {
-  const left = `${(start / duration) * 100}%`;
+function BetweenSegments({ start, end, fileDurationNonZero, invertCutSegments }: {
+  start: number,
+  end: number,
+  fileDurationNonZero: number,
+  invertCutSegments: boolean,
+}) {
+  const left = `${(start / fileDurationNonZero) * 100}%`;
 
   const { effectiveExportMode } = useUserSettings();
 
@@ -28,7 +33,7 @@ function BetweenSegments({ start, end, duration, invertCutSegments }: { start: n
       }}
       animate={{
         left,
-        width: `${((end - start) / duration) * 100}%`,
+        width: `${((end - start) / fileDurationNonZero) * 100}%`,
       }}
       layout
       transition={mySpring}

@@ -262,4 +262,4 @@ export function makeDurationSegments(segmentDuration: number, fileDuration: numb
   return edl;
 }
 
-export const isInitialSegment = (seg: SegmentBase) => seg.start === 0 && seg.end == null;
+export const isInitialSegment = (segments: SegmentBase[]) => segments.length === 1 && segments[0]!.start === 0 && segments[0]!.end == null;

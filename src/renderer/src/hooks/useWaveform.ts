@@ -10,10 +10,10 @@ import { FFprobeStream } from '../../../../ffprobe';
 const maxWaveforms = 100;
 // const maxWaveforms = 3; // testing
 
-export default ({ filePath, relevantTime, duration, waveformEnabled, audioStream, ffmpegExtractWindow }: {
+export default ({ filePath, relevantTime, fileDuration, waveformEnabled, audioStream, ffmpegExtractWindow }: {
   filePath: string | undefined,
   relevantTime: number,
-  duration: number | undefined,
+  fileDuration: number | undefined,
   waveformEnabled: boolean,
   audioStream: FFprobeStream | undefined,
   ffmpegExtractWindow: number,
@@ -32,7 +32,7 @@ export default ({ filePath, relevantTime, duration, waveformEnabled, audioStream
   }, [filePath, audioStream, setWaveforms]);
 
   const waveformStartTime = Math.floor(relevantTime / ffmpegExtractWindow) * ffmpegExtractWindow;
-  const safeExtractDuration = duration != null ? Math.min(waveformStartTime + ffmpegExtractWindow, duration) - waveformStartTime : undefined;
+  const safeExtractDuration = fileDuration != null ? Math.min(waveformStartTime + ffmpegExtractWindow, fileDuration) - waveformStartTime : undefined;
 
   const waveformStartTimeThrottled = useThrottle(waveformStartTime, 1000);
 

@@ -70,10 +70,10 @@ function Marker({
 }
 
 function TimelineSeg({
-  seg, duration, isActive, segNum, onSegClick, invertCutSegments, formatTimecode, selected,
+  seg, fileDurationNonZero, isActive, segNum, onSegClick, invertCutSegments, formatTimecode, selected,
 } : {
   seg: StateSegment,
-  duration: number,
+  fileDurationNonZero: number,
   isActive: boolean,
   segNum: number,
   onSegClick: (a: number) => void,
@@ -88,7 +88,7 @@ function TimelineSeg({
 
   const { name } = seg;
 
-  const getTimePercent = (t: number) => `${(t / duration) * 100}%`;
+  const getTimePercent = (t: number) => `${(t / fileDurationNonZero) * 100}%`;
 
   const vertBorder = useMemo(() => {
     if (!isActive) return '2px solid transparent';
@@ -114,7 +114,7 @@ function TimelineSeg({
     );
   }
 
-  const cutSectionWidth = `${((seg.end - seg.start) / duration) * 100}%`;
+  const cutSectionWidth = `${((seg.end - seg.start) / fileDurationNonZero) * 100}%`;
 
   const wrapperStyle: MotionStyle = {
     position: 'absolute',

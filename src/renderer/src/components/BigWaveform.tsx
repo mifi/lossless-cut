@@ -5,11 +5,11 @@ import { ffmpegExtractWindow } from '../util/constants';
 import { RenderableWaveform } from '../types';
 
 
-function BigWaveform({ waveforms, relevantTime, playing, durationSafe, zoom, seekRel, darkMode }: {
+function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zoom, seekRel, darkMode }: {
   waveforms: RenderableWaveform[],
   relevantTime: number,
   playing: boolean,
-  durationSafe: number,
+  fileDurationNonZero: number,
   zoom: number,
   seekRel: (a: number) => void,
   darkMode: boolean,
@@ -105,7 +105,7 @@ function BigWaveform({ waveforms, relevantTime, playing, durationSafe, zoom, see
           width: widthPercent,
           left: leftPercent,
           borderLeft: waveform.from === 0 ? '1px solid var(--gray11)' : undefined,
-          borderRight: waveform.to >= durationSafe ? '1px solid var(--gray11)' : undefined,
+          borderRight: waveform.to >= fileDurationNonZero ? '1px solid var(--gray11)' : undefined,
           filter: darkMode ? undefined : 'invert(1)',
         };
 

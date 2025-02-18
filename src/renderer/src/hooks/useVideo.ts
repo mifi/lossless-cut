@@ -9,7 +9,7 @@ export default ({ filePath }: { filePath: string | undefined }) => {
   const [playbackRate, setPlaybackRateState] = useState(1);
   const [outputPlaybackRate, setOutputPlaybackRateState] = useState(1);
   const [playerTime, setPlayerTime] = useState<number>();
-  const [duration, setDuration] = useState<number>();
+  const [fileDuration, setFileDuration] = useState<number>();
   const playbackModeRef = useRef<PlaybackMode>();
 
   const videoRef = useRef<ChromiumHTMLVideoElement>(null);
@@ -105,7 +105,7 @@ export default ({ filePath }: { filePath: string | undefined }) => {
     // Sometimes after seeking to end of file, duration might change
     const { duration: durationNew } = e.currentTarget;
     console.log('onDurationChange', durationNew);
-    if (isDurationValid(durationNew)) setDuration(durationNew);
+    if (isDurationValid(durationNew)) setFileDuration(durationNew);
   }, []);
 
   const pause = useCallback(() => {
@@ -154,8 +154,8 @@ export default ({ filePath }: { filePath: string | undefined }) => {
     pause,
     relevantTime,
     getRelevantTime,
-    duration,
-    setDuration,
+    fileDuration,
+    setFileDuration,
     onDurationChange,
     onVideoAbort,
     compatPlayerEventId,

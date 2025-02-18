@@ -9,8 +9,11 @@ const { stat } = window.require('fs-extra');
 const mapVideoCodec = (codec: string) => ({ av1: 'libsvtav1' }[codec] ?? codec);
 
 // eslint-disable-next-line import/prefer-default-export
-export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, streams }: {
-  path: string, videoDuration: number | undefined, desiredCutFrom: number, streams: Pick<FFprobeStream, 'time_base' | 'codec_type' | 'disposition' | 'index' | 'bit_rate' | 'codec_name'>[],
+export async function getSmartCutParams({ path, fileDuration, desiredCutFrom, streams }: {
+  path: string,
+  fileDuration: number | undefined,
+  desiredCutFrom: number,
+  streams: Pick<FFprobeStream, 'time_base' | 'codec_type' | 'disposition' | 'index' | 'bit_rate' | 'codec_name'>[],
 }) {
   const videoStreams = getRealVideoStreams(streams);
   if (videoStreams.length > 1) throw new Error('Can only smart cut video with exactly one video stream');
@@ -49,8 +52,8 @@ export async function getSmartCutParams({ path, videoDuration, desiredCutFrom, s
   if (Number.isNaN(videoBitrate)) {
     console.warn('Unable to detect input bitrate');
     const stats = await stat(path);
-    if (videoDuration == null) throw new Error('Video duration is unknown, cannot estimate bitrate');
-    videoBitrate = (stats.size * 8) / videoDuration;
+    if (fileDuration == null) throw new Error('Video duration is unknown, cannot estimate bitrate');
+    videoBitrate = (stats.size * 8) / fileDuration;
   }
 
   // to account for inaccuracies and quality loss

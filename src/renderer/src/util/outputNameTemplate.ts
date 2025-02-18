@@ -164,7 +164,8 @@ function maybeTruncatePath(fileName: string, truncate: boolean) {
   ].join(pathSep);
 }
 
-export async function generateOutSegFileNames({ segments, template: desiredTemplate, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding, exportCount, currentFileExportCount }: {
+export async function generateOutSegFileNames({ fileDuration, segments: segmentsIn, template: desiredTemplate, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding, exportCount, currentFileExportCount }: {
+  fileDuration: number | undefined,
   segments: SegmentToExport[],
   template: string,
   formatTimecode: FormatTimecode,
@@ -180,6 +181,8 @@ export async function generateOutSegFileNames({ segments, template: desiredTempl
 }) {
   async function generate({ template, forceSafeOutputFileName }: { template: string, forceSafeOutputFileName: boolean }) {
     const epochMs = Date.now();
+
+    const segments = segmentsIn.length > 0 ? segmentsIn : [{ start: 0, end: fileDuration ?? 0, name: '' }];
 
     return pMap(segments, async (segment, i) => {
       const { start, end, name = '' } = segment;

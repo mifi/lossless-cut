@@ -1,6 +1,6 @@
 import { CSSProperties, Dispatch, SetStateAction, memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { WarningSignIcon, CrossIcon } from 'evergreen-ui';
+import { WarningSignIcon, CrossIcon, InfoSignIcon } from 'evergreen-ui';
 import { FaRegCheckCircle } from 'react-icons/fa';
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
@@ -21,7 +21,7 @@ import { toast } from '../swal';
 import { isMov as ffmpegIsMov } from '../util/streams';
 import useUserSettings from '../hooks/useUserSettings';
 import styles from './ExportConfirm.module.css';
-import { SegmentToExport } from '../types';
+import { SegmentBase, SegmentToExport } from '../types';
 import { defaultMergedFileTemplate, defaultOutSegTemplate, GenerateOutFileNames } from '../util/outputNameTemplate';
 import { FFprobeStream } from '../../../../ffprobe';
 import { AvoidNegativeTs, PreserveMetadata } from '../../../../types';
@@ -33,6 +33,8 @@ const boxStyle: CSSProperties = { margin: '15px 15px 50px 15px', borderRadius: 1
 const outDirStyle: CSSProperties = { ...highlightedTextStyle, wordBreak: 'break-all', cursor: 'pointer' };
 
 const warningStyle: CSSProperties = { color: 'var(--orange8)', fontSize: '80%', marginBottom: '.5em' };
+
+const infoStyle: CSSProperties = { color: 'white', fontSize: '80%', marginBottom: '.5em' };
 
 const adjustCutFromValues = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const adjustCutToValues = [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -97,7 +99,7 @@ function ExportConfirm({
   generateOutSegFileNames: GenerateOutFileNames,
   generateMergedFileNames: GenerateOutFileNames,
   currentSegIndexSafe: number,
-  nonFilteredSegmentsOrInverse: unknown[],
+  nonFilteredSegmentsOrInverse: SegmentBase[],
   mainCopiedThumbnailStreams: FFprobeStream[],
   needSmartCut: boolean,
   smartCutBitrate: number | undefined,
@@ -121,14 +123,17 @@ function ExportConfirm({
   // some thumbnail streams (png,jpg etc) cannot always be cut correctly, so we warn if they try to.
   const areWeCuttingProblematicStreams = areWeCutting && mainCopiedThumbnailStreams.length > 0;
 
-  const warnings = useMemo(() => {
-    const ret: string[] = [];
+  const notices = useMemo(() => {
+    const ret: { warning?: true, text: string }[] = [];
+    if (!areWeCutting) {
+      ret.push({ text: t('Exporting whole file without cutting, because there are no segments to export.') });
+    }
     // https://github.com/mifi/lossless-cut/issues/1809
     if (areWeCutting && outFormat === 'flac') {
-      ret.push(t('There is a known issue in FFmpeg with cutting FLAC files. The file will be re-encoded, which is still lossless, but the export may be slower.'));
+      ret.push({ warning: true, text: t('There is a known issue in FFmpeg with cutting FLAC files. The file will be re-encoded, which is still lossless, but the export may be slower.') });
     }
     if (areWeCutting && outputPlaybackRate !== 1) {
-      ret.push(t('Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.'));
+      ret.push({ warning: true, text: t('Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.') });
     }
     return ret;
   }, [areWeCutting, outFormat, outputPlaybackRate, t]);
@@ -246,14 +251,21 @@ function ExportConfirm({
 
                 <table className={styles['options']}>
                   <tbody>
-                    {warnings.map((warning) => (
-                      <tr key={warning}>
+                    {notices.map(({ warning, text }) => (
+                      <tr key={text}>
                         <td colSpan={2}>
-                          <div style={{ ...warningStyle, display: 'flex', alignItems: 'center', gap: '0 .5em' }}><WarningSignIcon verticalAlign="middle" color="warning" flexShrink="0" /> {warning}</div>
+                          <div style={{ ...(warning ? warningStyle : infoStyle), display: 'flex', alignItems: 'center', gap: '0 .5em' }}>
+                            {warning ? (
+                              <WarningSignIcon verticalAlign="middle" color="warning" flexShrink="0" />
+                            ) : (
+                              <InfoSignIcon verticalAlign="middle" color="info" flexShrink="0" />
+                            )} {text}
+                          </div>
                         </td>
                         <td />
                       </tr>
                     ))}
+
                     {selectedSegments.length !== nonFilteredSegmentsOrInverse.length && (
                       <tr>
                         <td colSpan={2}>

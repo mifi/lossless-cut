@@ -51,9 +51,9 @@ export function isCuttingStart(cutFrom: number) {
   return cutFrom > 0;
 }
 
-export function isCuttingEnd(cutTo: number, duration: number | undefined) {
-  if (!isDurationValid(duration)) return true;
-  return cutTo < duration;
+export function isCuttingEnd(cutTo: number, fileDuration: number | undefined) {
+  if (!isDurationValid(fileDuration)) return true;
+  return cutTo < fileDuration;
 }
 
 function getIntervalAroundTime(time: number, window: number) {
