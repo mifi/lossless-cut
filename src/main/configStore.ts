@@ -50,6 +50,8 @@ const defaultKeyBindings: KeyBinding[] = [
 
   { keys: 'pageup', action: 'jumpFirstSegment' },
   { keys: 'up', action: 'jumpPrevSegment' },
+  { keys: 'shift+alt+pageup', action: 'jumpSeekFirstSegment' },
+  { keys: 'shift+alt+up', action: 'jumpSeekPrevSegment' },
   { keys: 'ctrl+up', action: 'timelineZoomIn' },
   { keys: 'command+up', action: 'timelineZoomIn' },
   { keys: 'shift+up', action: 'batchPreviousFile' },
@@ -57,6 +59,8 @@ const defaultKeyBindings: KeyBinding[] = [
 
   { keys: 'pagedown', action: 'jumpLastSegment' },
   { keys: 'down', action: 'jumpNextSegment' },
+  { keys: 'shift+alt+pagedown', action: 'jumpSeekLastSegment' },
+  { keys: 'shift+alt+down', action: 'jumpSeekNextSegment' },
   { keys: 'ctrl+down', action: 'timelineZoomOut' },
   { keys: 'command+down', action: 'timelineZoomOut' },
   { keys: 'shift+down', action: 'batchNextFile' },

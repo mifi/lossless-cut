@@ -351,16 +351,32 @@ const KeyboardShortcuts = memo(({
         name: t('Jump to previous segment'),
         category: segmentsAndCutpointsCategory,
       },
+      jumpSeekPrevSegment: {
+        name: t('Jump & seek to previous segment'),
+        category: segmentsAndCutpointsCategory,
+      },
       jumpNextSegment: {
         name: t('Jump to next segment'),
+        category: segmentsAndCutpointsCategory,
+      },
+      jumpSeekNextSegment: {
+        name: t('Jump & seek to next segment'),
         category: segmentsAndCutpointsCategory,
       },
       jumpFirstSegment: {
         name: t('Jump to first segment'),
         category: segmentsAndCutpointsCategory,
       },
+      jumpSeekFirstSegment: {
+        name: t('Jump & seek to first segment'),
+        category: segmentsAndCutpointsCategory,
+      },
       jumpLastSegment: {
         name: t('Jump to last segment'),
+        category: segmentsAndCutpointsCategory,
+      },
+      jumpSeekLastSegment: {
+        name: t('Jump & seek to last segment'),
         category: segmentsAndCutpointsCategory,
       },
       reorderSegsByStartTime: {

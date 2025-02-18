@@ -691,7 +691,26 @@ function App() {
   }, [enableAutoHtml5ify, setWorking, html5ifyAndLoad, getConvertToSupportedFormat]);
 
   const getNewJumpIndex = (oldIndex: number, direction: -1 | 1) => Math.max(oldIndex + direction, 0);
-  const jumpSeg = useCallback((direction: -1 | 1) => setCurrentSegIndex((old) => Math.min(getNewJumpIndex(old, direction), cutSegments.length - 1)), [cutSegments, setCurrentSegIndex]);
+
+  const jumpSeg = useCallback((params: ({ abs: number } | { rel: -1 | 1 }) & { seek?: true }) => {
+    const clamp = (v: number) => Math.max(0, Math.min(v, cutSegments.length - 1));
+
+    const seek = (index: number) => {
+      if (params.seek && cutSegments[index]) seekAbs(cutSegments[index].start);
+    };
+
+    if ('abs' in params) {
+      const index = clamp(params.abs);
+      setCurrentSegIndex(index);
+      seek(index);
+    } else {
+      setCurrentSegIndex((old) => {
+        const index = clamp(getNewJumpIndex(old, params.rel));
+        seek(index);
+        return index;
+      });
+    }
+  }, [cutSegments, seekAbs, setCurrentSegIndex]);
 
   const togglePlay = useCallback(({ resetPlaybackRate, requestPlaybackMode }: { resetPlaybackRate?: boolean, requestPlaybackMode?: PlaybackMode } | undefined = {}) => {
     playbackModeRef.current = requestPlaybackMode;
@@ -1960,10 +1979,14 @@ function App() {
       seekForwardsKeyframe: () => seekClosestKeyframe(1),
       seekPreviousFrame: () => shortStep(-1),
       seekNextFrame: () => shortStep(1),
-      jumpPrevSegment: () => jumpSeg(-1),
-      jumpNextSegment: () => jumpSeg(1),
-      jumpFirstSegment: () => setCurrentSegIndex(0),
-      jumpLastSegment: () => setCurrentSegIndex(cutSegments.length - 1),
+      jumpPrevSegment: () => jumpSeg({ rel: -1 }),
+      jumpSeekPrevSegment: () => jumpSeg({ rel: -1, seek: true }),
+      jumpNextSegment: () => jumpSeg({ rel: 1 }),
+      jumpSeekNextSegment: () => jumpSeg({ rel: 1, seek: true }),
+      jumpFirstSegment: () => jumpSeg({ abs: 0 }),
+      jumpSeekFirstSegment: () => jumpSeg({ abs: 0, seek: true }),
+      jumpLastSegment: () => jumpSeg({ abs: cutSegments.length - 1 }),
+      jumpSeekLastSegment: () => jumpSeg({ abs: cutSegments.length - 1, seek: true }),
       jumpCutStart,
       jumpCutEnd,
       jumpTimelineStart,
@@ -2051,7 +2074,7 @@ function App() {
     };
 
     return ret;
-  }, [toggleLoopSelectedSegments, pause, timelineToggleComfortZoom, captureSnapshot, captureSnapshotAsCoverArt, setCutStart, setCutEnd, cleanupFilesDialog, splitCurrentSegment, focusSegmentAtCursor, increaseRotation, goToTimecode, jumpCutStart, jumpCutEnd, jumpTimelineStart, jumpTimelineEnd, batchOpenSelectedFile, closeBatch, addSegment, duplicateCurrentSegment, onExportPress, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, reorderSegsByStartTime, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, createFixedDurationSegments, createNumSegments, createFixedByteSizedSegments, createRandomSegments, alignSegmentTimesToKeyframes, shuffleSegments, clearSegments, toggleSegmentsList, toggleStreamsSelector, extractAllStreams, convertFormatBatch, concatBatch, toggleCaptureFormat, toggleStripAudio, toggleStripThumbnail, askStartTimeOffset, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, editCurrentSegmentTags, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, tryFixInvalidDuration, shiftAllSegmentTimes, toggleMuted, copySegmentsToClipboard, handleShowStreamsSelectorClick, openFilesDialog, openDirDialog, toggleSettings, createSegmentsFromKeyframes, toggleWaveformMode, toggleShowThumbnails, toggleShowKeyframes, showIncludeExternalStreamsDialog, toggleFullscreenVideo, selectAllMarkers, checkFileOpened, cutSegments, seekRel, keyboardSeekAccFactor, togglePlay, play, userChangePlaybackRate, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, seekRelPercent, seekClosestKeyframe, shortStep, jumpSeg, setCurrentSegIndex, zoomRel, batchFileJump, removeCutSegment, currentSegIndexSafe, cutSegmentsHistory, labelSegment, toggleLastCommands, userHtml5ifyCurrentFile, toggleKeyframeCut, setPlaybackVolume, closeFileWithConfirm, openSendReportDialogWithState, detectBlackScenes, detectSilentScenes, detectSceneChanges]);
+  }, [toggleLoopSelectedSegments, pause, timelineToggleComfortZoom, captureSnapshot, captureSnapshotAsCoverArt, setCutStart, setCutEnd, cleanupFilesDialog, splitCurrentSegment, focusSegmentAtCursor, increaseRotation, goToTimecode, jumpCutStart, jumpCutEnd, jumpTimelineStart, jumpTimelineEnd, batchOpenSelectedFile, closeBatch, addSegment, duplicateCurrentSegment, onExportPress, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, reorderSegsByStartTime, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, createFixedDurationSegments, createNumSegments, createFixedByteSizedSegments, createRandomSegments, alignSegmentTimesToKeyframes, shuffleSegments, clearSegments, toggleSegmentsList, toggleStreamsSelector, extractAllStreams, convertFormatBatch, concatBatch, toggleCaptureFormat, toggleStripAudio, toggleStripThumbnail, askStartTimeOffset, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, editCurrentSegmentTags, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, tryFixInvalidDuration, shiftAllSegmentTimes, toggleMuted, copySegmentsToClipboard, handleShowStreamsSelectorClick, openFilesDialog, openDirDialog, toggleSettings, createSegmentsFromKeyframes, toggleWaveformMode, toggleShowThumbnails, toggleShowKeyframes, showIncludeExternalStreamsDialog, toggleFullscreenVideo, selectAllMarkers, checkFileOpened, cutSegments, seekRel, keyboardSeekAccFactor, togglePlay, play, userChangePlaybackRate, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, seekRelPercent, seekClosestKeyframe, shortStep, jumpSeg, zoomRel, batchFileJump, removeCutSegment, currentSegIndexSafe, cutSegmentsHistory, labelSegment, toggleLastCommands, userHtml5ifyCurrentFile, toggleKeyframeCut, setPlaybackVolume, closeFileWithConfirm, openSendReportDialogWithState, detectBlackScenes, detectSilentScenes, detectSceneChanges]);
 
   const getKeyboardAction = useCallback((action: MainKeyboardAction) => mainActions[action], [mainActions]);
 
