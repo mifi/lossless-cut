@@ -967,24 +967,32 @@ exports[`parses fcpxml 1.9 1`] = `
 exports[`parses pbf 1`] = `
 [
   {
-    "end": 189.053,
     "name": "label 1",
     "start": 104.612,
   },
   {
-    "end": 476.194,
+    "name": " ",
+    "start": 189.053,
+  },
+  {
     "name": "label 2",
     "start": 300.448,
   },
   {
-    "end": 704.264,
+    "name": " ",
+    "start": 476.194,
+  },
+  {
     "name": "label 3",
     "start": 567.075,
   },
   {
-    "end": 855.455,
     "name": "label 4",
     "start": 704.264,
+  },
+  {
+    "name": " ",
+    "start": 855.455,
   },
 ]
 `;
@@ -992,34 +1000,32 @@ exports[`parses pbf 1`] = `
 exports[`parses pbf 2`] = `
 [
   {
-    "end": 189.053,
     "name": "label 1",
     "start": 104.612,
   },
   {
-    "end": 300.448,
     "name": "label 2",
     "start": 189.053,
   },
   {
-    "end": 476.194,
     "name": "label 3",
     "start": 300.448,
   },
   {
-    "end": 567.075,
     "name": "label 4",
     "start": 476.194,
   },
   {
-    "end": 704.264,
     "name": "label 5",
     "start": 567.075,
   },
   {
-    "end": 855.455,
     "name": "label 6",
     "start": 704.264,
+  },
+  {
+    "name": " ",
+    "start": 855.455,
   },
 ]
 `;
@@ -1027,19 +1033,28 @@ exports[`parses pbf 2`] = `
 exports[`parses pbf 3`] = `
 [
   {
-    "end": 189.053,
     "name": "A",
     "start": 104.612,
   },
   {
-    "end": 476.194,
+    "name": " ",
+    "start": 189.053,
+  },
+  {
     "name": "B",
     "start": 300.448,
   },
   {
-    "end": 704.264,
+    "name": " ",
+    "start": 476.194,
+  },
+  {
     "name": "C",
     "start": 567.075,
+  },
+  {
+    "name": " ",
+    "start": 704.264,
   },
 ]
 `;
@@ -1047,14 +1062,20 @@ exports[`parses pbf 3`] = `
 exports[`parses pbf 4`] = `
 [
   {
-    "end": 189.053,
     "name": "A",
     "start": 104.612,
   },
   {
-    "end": 476.194,
+    "name": " ",
+    "start": 189.053,
+  },
+  {
     "name": "B",
     "start": 300.448,
+  },
+  {
+    "name": " ",
+    "start": 476.194,
   },
 ]
 `;
