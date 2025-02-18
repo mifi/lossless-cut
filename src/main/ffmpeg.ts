@@ -261,7 +261,11 @@ function adjustSegmentsWithOffset({ segments, from }: { segments: { start: numbe
 
 // https://stackoverflow.com/questions/35675529/using-ffmpeg-how-to-do-a-scene-change-detection-with-timecode
 export async function detectSceneChanges({ filePath, minChange, onProgress, from, to }: {
-  filePath: string, minChange: number | string, onProgress: (p: number) => void, from: number, to: number,
+  filePath: string,
+  minChange: number | string,
+  onProgress: (p: number) => void,
+  from: number,
+  to: number,
 }) {
   const args = [
     '-hide_banner',
