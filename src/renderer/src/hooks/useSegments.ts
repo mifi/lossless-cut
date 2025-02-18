@@ -563,11 +563,11 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     if (segments) loadCutSegments(segments);
   }, [checkFileOpened, duration, loadCutSegments]);
 
-  const enableSegments = useCallback((segmentsToEnable: { segId: string }[]) => {
-    if (segmentsToEnable.length === 0 || segmentsToEnable.length === cutSegments.length) return; // no point
+  const selectSegments = useCallback((segments: { segId: string }[]) => {
+    if (segments.length === 0 || segments.length === cutSegments.length) return; // no point in selecting none or all
     setDeselectedSegmentIds((existing) => {
       const ret = { ...existing };
-      segmentsToEnable.forEach(({ segId }) => { ret[segId] = false; });
+      segments.forEach(({ segId }) => { ret[segId] = false; });
       return ret;
     });
   }, [cutSegments.length]);
@@ -576,27 +576,27 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     const { name } = currentCutSeg;
     const value = await selectSegmentsByLabelDialog(name);
     if (value == null) return;
-    const segmentsToEnable = cutSegments.filter((seg) => (seg.name || '') === value);
-    enableSegments(segmentsToEnable);
-  }, [currentCutSeg, cutSegments, enableSegments]);
+    selectSegments(cutSegments.filter((seg) => seg.name === value));
+  }, [currentCutSeg, cutSegments, selectSegments]);
 
   const selectAllMarkers = useCallback(() => {
-    enableSegments(cutSegments.filter((seg) => seg.end == null));
-  }, [cutSegments, enableSegments]);
+    selectSegments(cutSegments.filter((seg) => seg.end == null));
+  }, [cutSegments, selectSegments]);
 
   const selectSegmentsByExpr = useCallback(async () => {
     const matchSegment = async (seg: StateSegment, index: number, expr: string) => (
       (await safeishEval(expr, { segment: getScopeSegment(seg, index) })) === true
     );
 
-    const getSegmentsToEnable = async (expr: string) => (await pMap(cutSegments, async (seg, index) => (
-      ((await matchSegment(seg, index, expr)) ? [seg] : [])
-    ), { concurrency: 5 })).flat();
+    const getSegmentsToSelect = async (expr: string) => (
+      await pMap(cutSegments, async (seg, index) => (
+        ((await matchSegment(seg, index, expr)) ? [seg] : [])
+      ), { concurrency: 5 })).flat();
 
     const value = await selectSegmentsByExprDialog(async (v: string) => {
       try {
         if (v.trim().length === 0) return i18n.t('Please enter a JavaScript expression.');
-        const segments = await getSegmentsToEnable(v);
+        const segments = await getSegmentsToSelect(v);
         if (segments.length === 0) return i18n.t('No segments match this expression.');
         if (segments.length === cutSegments.length) return i18n.t('All segments match this expression.');
         return undefined;
@@ -609,9 +609,9 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     });
 
     if (value == null) return;
-    const segmentsToEnable = await getSegmentsToEnable(value);
-    enableSegments(segmentsToEnable);
-  }, [cutSegments, enableSegments, getScopeSegment]);
+    const segmentsToSelect = await getSegmentsToSelect(value);
+    selectSegments(segmentsToSelect);
+  }, [cutSegments, selectSegments, getScopeSegment]);
 
   const mutateSegmentsByExpr = useCallback(async () => {
     async function mutateSegment(seg: StateSegment, index: number, expr: string) {

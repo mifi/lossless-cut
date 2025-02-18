@@ -16,5 +16,5 @@ node_modules
 /build-resources
 /doc
 /ffmpeg
-/app.log
+/app*.log
 /ts-dist
