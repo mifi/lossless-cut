@@ -444,7 +444,7 @@ function getCodecOpts(captureFormat: CaptureFormat) {
 
 export async function captureFrames({ from, to, videoPath, outPathTemplate, quality, filter, framePts, onProgress, captureFormat }: {
   from: number,
-  to: number,
+  to?: number | undefined,
   videoPath: string,
   outPathTemplate: string,
   quality: number,
@@ -456,12 +456,20 @@ export async function captureFrames({ from, to, videoPath, outPathTemplate, qual
   const args = [
     '-ss', String(from),
     '-i', videoPath,
-    '-t', String(Math.max(0, to - from)),
+    ...(to != null ? ['-t', String(Math.max(0, to - from))] : []),
     ...getQualityOpts({ captureFormat, quality }),
-    ...(filter != null ? ['-vf', filter] : []),
-    // https://superuser.com/questions/1336285/use-ffmpeg-for-thumbnail-selections
-    ...(framePts ? ['-frame_pts', '1'] : []),
-    '-vsync', '0', // else we get a ton of duplicates (thumbnail filter)
+    // only apply filter for non-markers
+    ...(filter != null && to != null
+      ? [
+        '-vf', filter,
+        // https://superuser.com/questions/1336285/use-ffmpeg-for-thumbnail-selections
+        ...(framePts ? ['-frame_pts', '1'] : []),
+        '-vsync', '0', // else we get a ton of duplicates (thumbnail filter)
+      ]
+      : [
+        '-frames:v', '1', // for markers, just capture 1 frame
+      ]
+    ),
     ...getCodecOpts(captureFormat),
     '-f', 'image2',
     '-y', outPathTemplate,
@@ -469,9 +477,14 @@ export async function captureFrames({ from, to, videoPath, outPathTemplate, qual
 
   const process = runFfmpegProcess(args, { buffer: false });
 
-  handleProgress(process, to - from, onProgress);
+  if (to != null) {
+    handleProgress(process, to - from, onProgress);
+  }
 
   await process;
+
+  onProgress(1);
+
   return args;
 }
 

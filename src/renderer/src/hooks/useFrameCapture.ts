@@ -35,7 +35,7 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatOutputFileModifie
     filePath: string,
     fps: number,
     fromTime: number,
-    toTime: number,
+    toTime: number | undefined,
     estimatedMaxNumFiles: number,
     captureFormat: CaptureFormat,
     quality: number,

@@ -82,13 +82,13 @@ import { askForHtml5ifySpeed } from './dialogs/html5ify';
 import { askForOutDir, askForImportChapters, promptTimecode, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openExportFinishedToast, openConcatFinishedToast, showOpenDialog, showMuxNotSupported, promptDownloadMediaUrl, CleanupChoicesType, showOutputNotWritable } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
-import { sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, getPlaybackMode, getSegmentTags, filterNonMarkers } from './segments';
+import { sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, getPlaybackMode, getSegmentTags } from './segments';
 import { generateOutSegFileNames as generateOutSegFileNamesRaw, generateMergedFileNames as generateMergedFileNamesRaw, defaultOutSegTemplate, defaultCutMergedFileTemplate } from './util/outputNameTemplate';
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 import BigWaveform from './components/BigWaveform';
 
 import isDev from './isDev';
-import { BatchFile, Chapter, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, goToTimecodeDirectArgsSchema, openFilesActionArgsSchema, ParamsByStreamId, PlaybackMode, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, TunerType } from './types';
+import { BatchFile, Chapter, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, goToTimecodeDirectArgsSchema, openFilesActionArgsSchema, ParamsByStreamId, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, TunerType } from './types';
 import { CaptureFormat, KeyboardAction, Html5ifyMode, WaveformMode, ApiActionRequest } from '../../../types';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 import useLoading from './hooks/useLoading';
@@ -1192,10 +1192,14 @@ function App() {
     }, i18n.t('Failed to capture frame'));
   }, [filePath, getRelevantTime, videoRef, usingPreviewFile, captureFrameMethod, captureFrameFromFfmpeg, customOutDir, captureFormat, captureFrameQuality, captureFrameFromTag, hideAllNotifications]);
 
-  const extractSegmentFramesAsImages = useCallback(async (segments: { start: number, end: number }[]) => {
+  const extractSegmentsFramesAsImages = useCallback(async (segments: SegmentBase[]) => {
     if (!filePath || detectedFps == null || workingRef.current) return;
-    const segmentsNumFrames = segments.reduce((acc, { start, end }) => acc + (getFrameCount(end - start) ?? 0), 0);
-    const captureFramesResponse = await askExtractFramesAsImages({ segmentsNumFrames, plural: segments.length > 1, fps: detectedFps });
+    const segmentsNumFrames = segments.reduce((acc, { start, end }) => acc + (end == null ? 1 : (getFrameCount(end - start) ?? 0)), 0);
+    const areAllSegmentsMarkers = segments.every((seg) => seg.end == null);
+    const captureFramesResponse = areAllSegmentsMarkers
+      ? { filter: undefined, estimatedMaxNumFiles: segmentsNumFrames }
+      : await askExtractFramesAsImages({ segmentsNumFrames, plural: segments.length > 1, fps: detectedFps });
+
     if (captureFramesResponse == null) return;
 
     try {
@@ -1233,13 +1237,9 @@ function App() {
     }
   }, [filePath, detectedFps, workingRef, getFrameCount, setWorking, hideAllNotifications, captureFramesRange, customOutDir, captureFormat, captureFrameQuality, captureFrameFileNameFormat, showOsNotification, outputDir]);
 
-  const extractCurrentSegmentFramesAsImages = useCallback(() => {
-    const { end } = currentCutSeg;
-    invariant(currentCutSeg != null && end != null);
-    extractSegmentFramesAsImages([{ ...currentCutSeg, end }]);
-  }, [currentCutSeg, extractSegmentFramesAsImages]);
+  const extractCurrentSegmentFramesAsImages = useCallback(() => extractSegmentsFramesAsImages([currentCutSeg]), [currentCutSeg, extractSegmentsFramesAsImages]);
 
-  const extractSelectedSegmentsFramesAsImages = useCallback(() => extractSegmentFramesAsImages(filterNonMarkers(selectedSegments)), [extractSegmentFramesAsImages, selectedSegments]);
+  const extractSelectedSegmentsFramesAsImages = useCallback(() => extractSegmentsFramesAsImages(selectedSegments), [extractSegmentsFramesAsImages, selectedSegments]);
 
   const userChangePlaybackRate = useCallback((dir: number, rateMultiplier?: number) => {
     if (compatPlayerEnabled) {
@@ -2532,7 +2532,8 @@ function App() {
                       onDeselectAllSegments={deselectAllSegments}
                       onSelectAllSegments={selectAllSegments}
                       onInvertSelectedSegments={invertSelectedSegments}
-                      onExtractSegmentFramesAsImages={extractSegmentFramesAsImages}
+                      onExtractSegmentFramesAsImages={extractSegmentsFramesAsImages}
+                      onExtractSelectedSegmentsFramesAsImages={extractSelectedSegmentsFramesAsImages}
                       jumpSegStart={jumpSegStart}
                       jumpSegEnd={jumpSegEnd}
                       onSelectSegmentsByLabel={selectSegmentsByLabel}
