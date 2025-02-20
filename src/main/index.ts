@@ -319,8 +319,9 @@ const readyPromise = app.whenReady();
 // eslint-disable-next-line unicorn/prefer-top-level-await
 (async () => {
   try {
-    logger.info('Initializing config store');
+    logger.info('LosslessCut version', app.getVersion(), { isDev });
     await configStore.init({ customConfigDir: argv['configDir'] });
+    logger.info('Initialized config store');
 
     const allowMultipleInstances = configStore.get('allowMultipleInstances');
 
