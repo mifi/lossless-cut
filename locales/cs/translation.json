@@ -948,7 +948,7 @@
     "Donate": "Darování",
     "Edit segments by expression": "Upravit segmenty podle výrazu",
     "EDL": "EDL",
-    "Feather segments +5 sec": "Prodloužit segmenty +5 sek.",
+    "Feather segments +5 sec": "Plynulý přechod segmentů (Feather) +5 sek.",
     "Markers": "Značky",
     "Please input a valid size. Example: {{example}}": "Zadejte prosím platnou velikost. Příklad: {{example}}",
     "Remember window size and position": "Pamatovat velikost okna a umístění",
