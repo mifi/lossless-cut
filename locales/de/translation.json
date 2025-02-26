@@ -957,5 +957,10 @@
     "{{numFrames}} frames_other": "{{numFrames}} Frames",
     "Note that this only applies when extracting multiple frames. When \"Frame number\" is selected, frame numbers are relative to the start of the segment (starting from 1).": "Beachten Sie, dass dies nur gilt, wenn Sie mehrere Frames extrahieren. Wenn „ Frame-Nummer“ ausgewählt ist, beziehen sich die Frame-Nummern auf den Beginn des Segments (beginnend bei 1).",
     "Markers": "Markierungen",
-    "Enter a JavaScript expression which will be evaluated for each selected segment. Returned properties will be edited. <1>View available syntax.</1>": "Geben Sie einen JavaScript-Ausdruck ein, der für jedes ausgewählte Segment ausgewertet werden soll. Die zurückgegebenen Eigenschaften werden bearbeitet. <1>Verfügbare Syntax anzeigen.</1>"
+    "Enter a JavaScript expression which will be evaluated for each selected segment. Returned properties will be edited. <1>View available syntax.</1>": "Geben Sie einen JavaScript-Ausdruck ein, der für jedes ausgewählte Segment ausgewertet werden soll. Die zurückgegebenen Eigenschaften werden bearbeitet. <1>Verfügbare Syntax anzeigen.</1>",
+    "Jump & seek to first segment": "Überspringen und zum ersten Segment wechseln",
+    "Jump & seek to last segment": "Überspringen und zum letzten Segment wechseln",
+    "Jump & seek to next segment": "Überspringen und zum nächsten Segment wechseln",
+    "Jump & seek to previous segment": "Überspringen und zum vorherigen Segment wechseln",
+    "Feather segments +5 sec": "Segmente überblenden +5s"
 }
