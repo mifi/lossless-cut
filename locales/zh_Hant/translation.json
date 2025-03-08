@@ -891,5 +891,7 @@
     "Replace": "替換",
     "There is a known issue in FFmpeg with cutting FLAC files. The file will be re-encoded, which is still lossless, but the export may be slower.": "FFmpeg 切割 FLAC 檔案有一個已知問題。檔案將會被重新編碼，仍然是無損的，但匯出會變慢。",
     "You are not allowed to write the output file. This probably means that the file already exists with the wrong permissions, or you don't have write permissions to the output folder.": "不允許您寫入輸出檔案。這可能是因為現有檔案有錯誤的許可權限，或者您沒有輸出資料夾的寫入許可權限。",
-    "You can customize the file name of the merged file using special variables.": "您可以使用特殊變數來定製合併檔案的檔案名稱。"
+    "You can customize the file name of the merged file using special variables.": "您可以使用特殊變數來定製合併檔案的檔案名稱。",
+    "Clear": "清除",
+    "Donate": "捐助"
 }
