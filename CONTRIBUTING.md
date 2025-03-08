@@ -64,6 +64,8 @@ Windows store version is built as a Desktop Bridge app (with `runFullTrust` capa
 
 ## Releasing
 
+Before releasing, consider [Maintainence chores](#maintainence-chores) first.
+
 ### Build new version
 
 - `git checkout master`
@@ -147,7 +149,7 @@ Links:
 ### Keep dependencies up to date
 - ffmpeg
 - `electron`, `@electron/remote` and upgrade [electron.vite.config.ts](./electron.vite.config.ts) `target`s.
-- `package.json`
+- `package.json` / `yarn.lock`
 
 ### i18n
 ```bash
