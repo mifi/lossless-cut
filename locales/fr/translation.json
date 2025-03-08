@@ -797,5 +797,16 @@
     "kbit/s": "kbit/s",
     "Failed to merge": "La fusion a échoué",
     "Show GPS map": "Afficher la carte GPS",
-    "Reset font size": "Rétablir la taille de la police"
+    "Reset font size": "Rétablir la taille de la police",
+    "Advanced settings are currently not visible.": "Les paramètres avancés ne sont actuellement pas visibles.",
+    "All segments match this expression.": "Tous les segments correspondent à cette expression.",
+    "Downloading URL": "Téléchargement de l’URL",
+    "Combination is already bound to \"{{alreadyBoundKey}}\". Do you want to replace the existing binding?": "La combinaison est déjà attribuée à « {{alreadyBoundKey}} ». Voulez-vous remplacer l’association existante ?",
+    "Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.": "Ajuster le FPS de sortie et couper simultanément entraînera des découpes incorrectes. Préférez procéder en deux étapes distinctes.",
+    "Configuration file": "Fichier de configuration",
+    "Cut at the preceding keyframe (not accurate time.) Equiv to": "Couper à l’image clé précédente (temporalité approximative). Équivaut à",
+    "Failed to include track": "Échec de l'ajout de la piste",
+    "Failed to download URL": "Échec du téléchargement de l'URL",
+    "Failed to load subtitles from track {{index}}": "Échec du chargement des sous-titres de la piste {{index}}",
+    "Failed to import project file": "Échec de l'importation du fichier projet"
 }
