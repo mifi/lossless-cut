@@ -669,9 +669,9 @@ export async function mutateSegmentsByExprDialog(inputValidator: (v: string) => 
   return exprDialog({
     inputValidator,
     examples: {
-      center: { name: i18n.t('Feather segments +5 sec'), code: '{ start: segment.start - 5, end: segment.end + 5 }' },
-      feather: { name: i18n.t('Shrink segments -5 sec'), code: '{ start: segment.start + 5, end: segment.end - 5 }' },
-      shrink: { name: i18n.t('Center segments around start time'), code: '{ start: segment.start - 5, end: segment.start + 5 }' },
+      expand: { name: i18n.t('Expand segments +5 sec'), code: '{ start: segment.start - 5, end: segment.end + 5 }' },
+      shrink: { name: i18n.t('Shrink segments -5 sec'), code: '{ start: segment.start + 5, end: segment.end - 5 }' },
+      center: { name: i18n.t('Center segments around start time'), code: '{ start: segment.start - 5, end: segment.start + 5 }' },
       // eslint-disable-next-line no-template-curly-in-string
       addNumToLabel: { name: i18n.t('Add number suffix to label'), code: '{ label: `${segment.label} ${segment.index + 1}` }' },
       tagEven: { name: i18n.t('Add a tag to every even segment'), code: '{ tags: (segment.index + 1) % 2 === 0 ? { ...segment.tags, even: \'true\' } : segment.tags }' },
