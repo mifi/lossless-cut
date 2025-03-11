@@ -465,7 +465,7 @@
     "Do you want to merge/concatenate the files or load them for batch processing?": "여러 파일에 대한 작업 방식을 선택합니다. 파일들을 병합/결합 또는 일괄 처리 작업을 선택하세요.",
     "Multiple files": "다중 파일 작업",
     "Batch files": "파일 일괄 작업",
-    "Use this for all files until LosslessCut is restarted?": "LosslessCut을 다시 시작할 때까지 모든 파일에 이것을 사용하시겠습니까?",
+    "Use this for all files until LosslessCut is restarted?": "LosslessCut이 재시작될 때까지 모든 파일에 이것 사용",
     "Fastest: Low playback speed (audio remux), likely to fail": "가장 빠름: 낮은 재생 속도(오디오 리먹스), 실패 가능",
     "Subtitle": "자막",
     "No sanitize": "처리 안함",
@@ -519,7 +519,7 @@
     "Remove key binding": "키 할당 제거",
     "Save": "저장",
     "This is where working files and exported files are stored.": "작업 파일과 내보낸 파일이 저장되는 위치입니다.",
-    "Try to automatically convert to supported format when opening unsupported file?": "지원되지 않는 파일을 열 때 지원되는 형식으로 자동으로 변환하시겠습니까?",
+    "Try to automatically convert to supported format when opening unsupported file?": "지원되지 않는 파일을 열 때 지원되는 형식으로 자동 변환 시도",
     "Times in seconds (CSV)": "시간 (초) (CSV)",
     "Toggle inclusion of this segment in export": "내보내기에 이 세그먼트 포함/제외 전환",
     "Trash project LLC file": "프로젝트 LLC 파일을 휴지통으로 보내기",
@@ -913,8 +913,8 @@
     "Segment label (regexp)": "세그먼트 레이블(정규식)",
     "<0>If you're having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></0><1>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</1>": "<0>LosslessCut에 대한 문제나 질문이 있는 경우 먼저 <1>도움말</1> 메뉴의 링크를 확인하세요. 해결책을 찾을 수 없는 경우 <3>GitHub</3> 토론> 또는 <5>Discord</5>에서 질문을 할 수 있습니다.</0><1>LosslessCut에서 버그를 발견했다고 생각되면 <1>버그를 보고</1>할 수 있습니다.</1>",
     "Please select a working directory first": "먼저 작업 디렉터리를 선택하세요",
-    "Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied": "소스 파일의 메타데이터를 보존할지 여부. 기본값: 전역(파일 메타데이터), 트랙당 및 챕터당 메타데이터가 복사됩니다. 비-전역: 트랙당 및 챕터당 메타데이터만 복사됩니다. 없음: 메타데이터가 복사되지 않음",
-    "Feather segments +5 sec": "패더 세그먼트 +5초",
+    "Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied": "소스 파일의 메타데이터를 보존할지 여부. 기본값: 전역(파일 메타데이터), 트랙당 및 챕터당 메타데이터가 복사됩니다. 비-전역: 트랙당 및 챕터당 메타데이터만 복사됩니다. 없음: 메타데이터가 복사되지 않음.",
+    "Feather segments +5 sec": "세그먼트 확장 +5초",
     "Jump & seek to first segment": "첫 번째 세그먼트로 이동 탐색",
     "Jump & seek to last segment": "마지막 세그먼트로 이동 탐색",
     "Jump & seek to previous segment": "이전 세그먼트로 이동 탐색",
@@ -944,5 +944,6 @@
     "Jump & seek to next segment": "다음 세그먼트로 이동 탐색",
     "Note that this only applies when extracting multiple frames. When \"Frame number\" is selected, frame numbers are relative to the start of the segment (starting from 1).": "이것은 여러 프레임을 추출할 때만 적용됩니다. \"프레임 번호\"를 선택하면 프레임 번호는 세그먼트 시작(1부터 시작)을 기준으로 합니다.",
     "Please input a valid size. Example: {{example}}": "유효한 크기를 입력하세요. 예: {{example}}",
-    "The expression must return an object": "표현식은 객체를 반환해야 합니다"
+    "The expression must return an object": "표현식은 객체를 반환해야 합니다",
+    "Center segments around start time": "시작 시간 주변에 세그먼트 가운데 정렬"
 }
