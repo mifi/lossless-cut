@@ -955,5 +955,6 @@
     "Please enter a number from 1 to {{n}} to be the new order for the current segment": "Введите число от 1 до {{n}} для определения нового порядка текущего сегмента",
     "Add a tag to every even segment": "Добавить тег к каждому четному сегменту",
     "Shrink segments -5 sec": "Сократить сегменты -5 сек",
-    "Convert segments to markers": "Конвертировать сегменты в маркеры"
+    "Convert segments to markers": "Конвертировать сегменты в маркеры",
+    "Expand segments +5 sec": "Расширить сегменты +5 сек"
 }
