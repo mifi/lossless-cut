@@ -20,6 +20,8 @@ cd /path/to/directory/containing/app
 ./LosslessCut.app/Contents/MacOS/LosslessCut arguments
 ```
 
+Note that some users have reported that the Windows Store version of LosslessCut needs an [app execution alias](https://github.com/mifi/lossless-cut/issues/1136).
+
 ## Open one or more files:
 ```bash
 LosslessCut file1.mp4 file2.mkv
