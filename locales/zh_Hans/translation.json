@@ -987,5 +987,6 @@
     "Jump & seek to first segment": "跳转并搜寻首个片段",
     "Jump & seek to last segment": "跳转并搜寻最后片段",
     "Jump & seek to next segment": "跳转并搜寻下个片段",
-    "Jump & seek to previous segment": "跳转并搜寻上个片段"
+    "Jump & seek to previous segment": "跳转并搜寻上个片段",
+    "Expand segments +5 sec": "扩展片段 +5 秒"
 }
