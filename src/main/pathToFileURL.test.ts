@@ -8,7 +8,7 @@ import { pathToFileURL } from 'node:url';
 if (process.platform === 'win32') {
   describe('file uri windows only', () => {
     test('converts path to file url', () => {
-      expect(pathToFileURL('C:\\Users\\sindresorhus\\dev\\te^st.jpg').href).toEqual('file:///C:/Users/sindresorhus/dev/te^st.jpg');
+      expect(pathToFileURL('C:\\Users\\sindresorhus\\dev\\te^st.jpg').href).toEqual('file:///C:/Users/sindresorhus/dev/te%5Est.jpg');
     });
   });
 } else {
