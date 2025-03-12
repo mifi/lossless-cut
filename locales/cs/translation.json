@@ -966,5 +966,6 @@
     "Exporting whole file without cutting, because there are no segments to export.": "Exportování celého souboru bez střihu, nejsou zde totiž žádné segmenty k exportování.",
     "Jump & seek to previous segment": "Skok & posun na předchozí segment",
     "Note that this only applies when extracting multiple frames. When \"Frame number\" is selected, frame numbers are relative to the start of the segment (starting from 1).": "Všimněte si, že to platí pouze při rozbalování více snímků. Když je \"Číslo snímku\" vybráno, čísla snímků souvisí se startem segmentu (začínají od 1).",
-    "Please enter a number from 1 to {{n}} to be the new order for the current segment": "Zadejte prosím číslo od 1 do {{n}} pro nastavení nového pořadí aktuálního segmentu"
+    "Please enter a number from 1 to {{n}} to be the new order for the current segment": "Zadejte prosím číslo od 1 do {{n}} pro nastavení nového pořadí aktuálního segmentu",
+    "Expand segments +5 sec": "Rozšířit segmenty +5 sekund"
 }
