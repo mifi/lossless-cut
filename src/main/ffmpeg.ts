@@ -174,7 +174,11 @@ export async function runFfprobe(args: readonly string[], { timeout = isDev ? 10
 }
 
 export async function renderWaveformPng({ filePath, start, duration, color, streamIndex }: {
-  filePath: string, start: number, duration: number, color: string, streamIndex: number,
+  filePath: string,
+  start: number,
+  duration: number,
+  color: string,
+  streamIndex: number,
 }): Promise<Waveform> {
   const args1 = [
     '-hide_banner',
@@ -203,31 +207,21 @@ export async function renderWaveformPng({ filePath, start, duration, color, stre
   let ps1: ResultPromise<{ encoding: 'buffer' }> | undefined;
   let ps2: ResultPromise<{ encoding: 'buffer' }> | undefined;
   try {
-    ps1 = runFfmpegProcess(args1, { buffer: false }, { logCli: false });
-    ps2 = runFfmpegProcess(args2, undefined, { logCli: false });
+    const timeout = 10000;
+    ps1 = runFfmpegProcess(args1, { buffer: false, timeout }, { logCli: false });
+    ps2 = runFfmpegProcess(args2, { timeout }, { logCli: false });
     assert(ps1.stdout != null);
     assert(ps2.stdin != null);
     ps1.stdout.pipe(ps2.stdin);
 
-    const timer = setTimeout(() => {
-      ps1?.kill();
-      ps2?.kill();
-      logger.warn('ffmpeg timed out');
-    }, 10000);
-
-    let stdout;
-    try {
-      ({ stdout } = await ps2);
-    } finally {
-      clearTimeout(timer);
-    }
+    const { stdout } = await ps2;
 
     return {
       buffer: Buffer.from(stdout),
     };
   } catch (err) {
-    if (ps1) ps1.kill();
-    if (ps2) ps2.kill();
+    ps1?.kill();
+    ps2?.kill();
     throw err;
   }
 }

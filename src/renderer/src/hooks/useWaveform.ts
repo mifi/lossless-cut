@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 import sortBy from 'lodash/sortBy';
-import { useThrottle } from '@uidotdev/usehooks';
 
 import { renderWaveformPng, safeCreateBlob } from '../ffmpeg';
 import { RenderableWaveform } from '../types';
@@ -18,7 +17,6 @@ export default ({ filePath, relevantTime, fileDuration, waveformEnabled, audioSt
   audioStream: FFprobeStream | undefined,
   ffmpegExtractWindow: number,
 }) => {
-  const creatingWaveformPromise = useRef<Promise<unknown>>();
   const [waveforms, setWaveforms] = useState<RenderableWaveform[]>([]);
   const waveformsRef = useRef<RenderableWaveform[]>();
 
@@ -34,63 +32,81 @@ export default ({ filePath, relevantTime, fileDuration, waveformEnabled, audioSt
   const waveformStartTime = Math.floor(relevantTime / ffmpegExtractWindow) * ffmpegExtractWindow;
   const safeExtractDuration = fileDuration != null ? Math.min(waveformStartTime + ffmpegExtractWindow, fileDuration) - waveformStartTime : undefined;
 
-  const waveformStartTimeThrottled = useThrottle(waveformStartTime, 1000);
+  const waveformStartTimeRef = useRef(waveformStartTime);
+
+  useEffect(() => {
+    waveformStartTimeRef.current = waveformStartTime;
+  }, [waveformStartTime]);
 
   useEffect(() => {
     let aborted = false;
 
     (async () => {
-      const alreadyHaveWaveformAtTime = (waveformsRef.current ?? []).some((waveform) => waveform.from === waveformStartTimeThrottled);
-      const shouldRun = !!filePath && safeExtractDuration != null && audioStream && waveformEnabled && !alreadyHaveWaveformAtTime && !creatingWaveformPromise.current;
-      if (!shouldRun) return;
+      if (!filePath || safeExtractDuration == null || !audioStream || !waveformEnabled) {
+        return;
+      }
 
-      try {
-        const promise = renderWaveformPng({ filePath, start: waveformStartTimeThrottled, duration: safeExtractDuration, color: '##000000', streamIndex: audioStream.index });
-        creatingWaveformPromise.current = promise;
+      while (!aborted) {
+        const times = [
+          waveformStartTimeRef.current,
+          waveformStartTimeRef.current + ffmpegExtractWindow,
+          waveformStartTimeRef.current - ffmpegExtractWindow,
+        ];
 
-        setWaveforms((currentWaveforms) => {
-          const waveformsByCreatedAt = sortBy(currentWaveforms, 'createdAt');
-          return [
-            // cleanup old
-            ...(currentWaveforms.length >= maxWaveforms ? waveformsByCreatedAt.slice(1) : waveformsByCreatedAt),
-            // add new
-            {
-              from: waveformStartTimeThrottled,
-              to: waveformStartTimeThrottled + safeExtractDuration,
-              duration: safeExtractDuration,
-              createdAt: new Date(),
-            },
-          ];
-        });
+        for (const time of times) {
+          const alreadyHaveWaveformAtTime = (waveformsRef.current ?? []).some((waveform) => waveform.from === time);
+          if (!alreadyHaveWaveformAtTime) {
+            try {
+              const promise = renderWaveformPng({ filePath, start: time, duration: safeExtractDuration, color: '##000000', streamIndex: audioStream.index });
 
-        const { buffer } = await promise;
+              setWaveforms((currentWaveforms) => {
+                const waveformsByCreatedAt = sortBy(currentWaveforms, 'createdAt');
+                return [
+                  // If too many waveforms, cleanup old
+                  ...(currentWaveforms.length >= maxWaveforms ? waveformsByCreatedAt.slice(1) : waveformsByCreatedAt),
+                  // Add new waveform
+                  {
+                    from: time,
+                    to: time + safeExtractDuration,
+                    duration: safeExtractDuration,
+                    createdAt: new Date(),
+                  },
+                ];
+              });
 
-        if (aborted) {
-          setWaveforms((currentWaveforms) => currentWaveforms.filter((w) => w.from !== waveformStartTimeThrottled));
-          return;
+              const { buffer } = await promise;
+
+              if (aborted) {
+                // remove unfinished waveform
+                setWaveforms((currentWaveforms) => currentWaveforms.filter((w) => w.from !== time));
+                return;
+              }
+
+              setWaveforms((currentWaveforms) => currentWaveforms.map((w) => {
+                if (w.from !== time) {
+                  return w;
+                }
+
+                return {
+                  ...w,
+                  url: URL.createObjectURL(safeCreateBlob(buffer, { type: 'image/png' })),
+                };
+              }));
+            } catch (err) {
+              console.error('Failed to render waveform', err);
+            }
+          }
         }
 
-        setWaveforms((currentWaveforms) => currentWaveforms.map((w) => {
-          if (w.from !== waveformStartTimeThrottled) {
-            return w;
-          }
-
-          return {
-            ...w,
-            url: URL.createObjectURL(safeCreateBlob(buffer, { type: 'image/png' })),
-          };
-        }));
-      } catch (err) {
-        console.error('Failed to render waveform', err);
-      } finally {
-        creatingWaveformPromise.current = undefined;
+        // could be problematic if we spawn ffmpeg processes too often, so throttle it
+        await new Promise((r) => setTimeout(r, 100));
       }
     })();
 
     return () => {
       aborted = true;
     };
-  }, [audioStream, filePath, safeExtractDuration, waveformEnabled, waveformStartTimeThrottled]);
+  }, [audioStream, ffmpegExtractWindow, filePath, safeExtractDuration, waveformEnabled]);
 
   const lastWaveformsRef = useRef<RenderableWaveform[]>([]);
   useEffect(() => {
