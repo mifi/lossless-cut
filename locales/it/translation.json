@@ -922,5 +922,6 @@
     "Shift all end times": "Sposta tutti i tempi fine",
     "Shrink segments -5 sec": "Riiduci segmenti -5 sec",
     "The expression must return an object": "L'espressione deve restituire un oggetto",
-    "Divide timeline into a number of segments with an approximate byte size": "Dividi la timeline in un numero di segmenti con una dimensione approssimativa in byte"
+    "Divide timeline into a number of segments with an approximate byte size": "Dividi la timeline in un numero di segmenti con una dimensione approssimativa in byte",
+    "Expand segments +5 sec": "Espandi segmenti +5 sec"
 }
