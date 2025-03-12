@@ -2,11 +2,11 @@ import { memo, useEffect, useState, useCallback, useRef, CSSProperties, MouseEve
 import { Spinner } from 'evergreen-ui';
 
 import { ffmpegExtractWindow } from '../util/constants';
-import { RenderableWaveform } from '../types';
+import { WaveformSlice } from '../types';
 
 
 function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zoom, seekRel, darkMode }: {
-  waveforms: RenderableWaveform[],
+  waveforms: WaveformSlice[],
   relevantTime: number,
   playing: boolean,
   fileDurationNonZero: number,

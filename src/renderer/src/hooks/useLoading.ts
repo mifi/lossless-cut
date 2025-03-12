@@ -10,10 +10,11 @@ export default () => {
 
   // Store "working" in a ref so we can avoid race conditions
   const workingRef = useRef(!!working);
+
   const setWorking = useCallback((valOrBool?: { text: string, abortController?: AbortController } | true | undefined) => {
     workingRef.current = !!valOrBool;
     const val = valOrBool === true ? { text: t('Loading') } : valOrBool;
-    setWorkingState(val ? { text: val.text, abortController: val.abortController } : undefined);
+    setWorkingState(val);
   }, [t]);
 
   const abortWorking = useCallback(() => {

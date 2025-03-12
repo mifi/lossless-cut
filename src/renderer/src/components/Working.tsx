@@ -9,7 +9,9 @@ import loadingLottie from '../7077-magic-flow.json';
 
 
 function Working({ text, progress, onAbortClick }: {
-  text: string, progress?: number | undefined, onAbortClick: () => void
+  text: string,
+  progress?: number | undefined,
+  onAbortClick: () => void
 }) {
   return (
     <div style={{ position: 'absolute', bottom: 0, top: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

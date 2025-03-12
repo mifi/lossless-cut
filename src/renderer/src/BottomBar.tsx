@@ -350,7 +350,7 @@ function BottomBar({
               {hasAudio && (
                 <GiSoundWaves
                   size={24}
-                  style={{ padding: '0 .1em', color: waveformMode != null && ['big-waveform', 'waveform'].includes(waveformMode) ? primaryTextColor : undefined }}
+                  style={{ padding: '0 .1em', color: waveformMode != null ? primaryTextColor : undefined }}
                   role="button"
                   title={t('Show waveform')}
                   onClick={() => toggleWaveformMode()}

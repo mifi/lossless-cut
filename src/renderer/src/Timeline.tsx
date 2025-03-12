@@ -15,7 +15,9 @@ import styles from './Timeline.module.css';
 
 import { timelineBackground, darkModeTransition } from './colors';
 import { Frame } from './ffmpeg';
-import { FormatTimecode, InverseCutSegment, RenderableWaveform, StateSegment, Thumbnail } from './types';
+import { FormatTimecode, InverseCutSegment, OverviewWaveform, RenderableWaveform, WaveformSlice, StateSegment, Thumbnail } from './types';
+import Button from './components/Button';
+import { WaveformMode } from '../../../types';
 
 
 type CalculateTimelinePercent = (time: number) => string | undefined;
@@ -29,13 +31,13 @@ const Waveform = memo(({ waveform, calculateTimelinePercent, fileDurationNonZero
   fileDurationNonZero: number,
   darkMode: boolean,
 }) => {
-  const leftPos = calculateTimelinePercent(waveform.from);
+  const leftPos = 'from' in waveform ? calculateTimelinePercent(waveform.from) : '0%';
 
-  const toTruncated = Math.min(waveform.to, fileDurationNonZero);
+  const width = 'to' in waveform ? ((Math.min(waveform.to, fileDurationNonZero) - waveform.from) / fileDurationNonZero) * 100 : 100;
 
   const style = useMemo<CSSProperties>(() => ({
-    position: 'absolute', height: '100%', left: leftPos, width: `${((toTruncated - waveform.from) / fileDurationNonZero) * 100}%`, filter: darkMode ? undefined : 'invert(1)',
-  }), [darkMode, fileDurationNonZero, leftPos, toTruncated, waveform.from]);
+    pointerEvents: 'none', position: 'absolute', height: '100%', left: leftPos, width: `${width}%`, filter: darkMode ? undefined : 'invert(1)', imageRendering: 'pixelated',
+  }), [darkMode, leftPos, width]);
 
   if (waveform.url == null) {
     return <div style={{ ...style }} className={styles['loading-bg']} />;
@@ -47,16 +49,19 @@ const Waveform = memo(({ waveform, calculateTimelinePercent, fileDurationNonZero
 });
 
 // eslint-disable-next-line react/display-name
-const Waveforms = memo(({ calculateTimelinePercent, fileDurationNonZero, waveforms, zoom, height, darkMode }: {
+const Waveforms = memo(({ calculateTimelinePercent, fileDurationNonZero, waveforms, overviewWaveform, zoom, darkMode, waveformMode }: {
   calculateTimelinePercent: CalculateTimelinePercent,
   fileDurationNonZero: number,
-  waveforms: RenderableWaveform[],
+  waveforms: WaveformSlice[],
+  overviewWaveform: OverviewWaveform | undefined,
   zoom: number,
-  height: number,
   darkMode: boolean,
+  waveformMode: WaveformMode | undefined,
 }) => (
-  <div style={{ height, width: `${zoom * 100}%`, position: 'relative' }}>
-    {waveforms.map((waveform) => (
+  <div style={{ height: waveformMode === 'waveform-tall' ? '15vh' : 40, width: `${zoom * 100}%`, position: 'relative' }}>
+    {zoom === 1 && overviewWaveform != null ? (
+      <Waveform waveform={overviewWaveform} calculateTimelinePercent={calculateTimelinePercent} fileDurationNonZero={fileDurationNonZero} darkMode={darkMode} />
+    ) : waveforms.map((waveform) => (
       <Waveform key={`${waveform.from}-${waveform.to}`} waveform={waveform} calculateTimelinePercent={calculateTimelinePercent} fileDurationNonZero={fileDurationNonZero} darkMode={darkMode} />
     ))}
   </div>
@@ -95,12 +100,15 @@ function Timeline({
   formatTimecode,
   formatTimeAndFrames,
   waveforms,
+  overviewWaveform,
   shouldShowWaveform,
   shouldShowKeyframes,
   thumbnails,
   zoomWindowStartTime,
   zoomWindowEndTime,
   onZoomWindowStartTimeChange,
+  onGenerateOverviewWaveformClick,
+  waveformMode,
   waveformEnabled,
   showThumbnails,
   playing,
@@ -125,13 +133,16 @@ function Timeline({
   inverseCutSegments: InverseCutSegment[],
   formatTimecode: FormatTimecode,
   formatTimeAndFrames: (a: number) => string,
-  waveforms: RenderableWaveform[],
+  waveforms: WaveformSlice[],
+  overviewWaveform: OverviewWaveform | undefined,
   shouldShowWaveform: boolean,
   shouldShowKeyframes: boolean,
   thumbnails: Thumbnail[],
   zoomWindowStartTime: number,
   zoomWindowEndTime: number | undefined,
   onZoomWindowStartTimeChange: (a: number) => void,
+  onGenerateOverviewWaveformClick: () => void,
+  waveformMode: WaveformMode | undefined,
   waveformEnabled: boolean,
   showThumbnails: boolean,
   playing: boolean,
@@ -328,6 +339,11 @@ function Timeline({
 
   useContextMenu(timelineScrollerRef, contextMenuTemplate);
 
+  const onGenerateOverviewWaveformClick2 = useCallback<MouseEventHandler<HTMLButtonElement>>((e) => {
+    e.preventDefault(); // todo this doesn't work. dunno why
+    onGenerateOverviewWaveformClick();
+  }, [onGenerateOverviewWaveformClick]);
+
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/mouse-events-have-key-events
     <div
@@ -338,8 +354,9 @@ function Timeline({
       onMouseOut={onMouseOut}
     >
       {(waveformEnabled && !shouldShowWaveform) && (
-        <div style={{ pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'var(--gray11)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'var(--gray11)' }}>
           {t('Zoom in more to view waveform')}
+          <Button onClick={onGenerateOverviewWaveformClick2} style={{ marginLeft: '.5em' }}>{t('Load overview')}</Button>
         </div>
       )}
 
@@ -350,14 +367,15 @@ function Timeline({
         onScroll={onTimelineScroll}
         ref={timelineScrollerRef}
       >
-        {waveformEnabled && shouldShowWaveform && waveforms.length > 0 && (
+        {waveformEnabled && shouldShowWaveform && (waveforms.length > 0 || overviewWaveform != null) && (
           <Waveforms
             calculateTimelinePercent={calculateTimelinePercent}
             fileDurationNonZero={fileDurationNonZero}
             waveforms={waveforms}
+            overviewWaveform={overviewWaveform}
             zoom={zoom}
-            height={40}
             darkMode={darkMode}
+            waveformMode={waveformMode}
           />
         )}
 

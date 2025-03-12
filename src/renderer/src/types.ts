@@ -87,13 +87,22 @@ export type EdlExportType = 'csv' | 'tsv-human' | 'csv-human' | 'csv-frames' | '
 
 export type TunerType = 'wheelSensitivity' | 'keyboardNormalSeekSpeed' | 'keyboardSeekSpeed2' | 'keyboardSeekSpeed3' | 'keyboardSeekAccFactor';
 
-export interface RenderableWaveform {
+export interface WaveformBase {
   createdAt: Date,
+}
+
+export interface WaveformSlice extends WaveformBase {
   from: number,
   to: number,
   duration: number,
-  url?: string,
+  url?: string, // undefined while rendering
 }
+
+export interface OverviewWaveform extends WaveformBase {
+  url: string,
+}
+
+export type RenderableWaveform = WaveformSlice | OverviewWaveform;
 
 export type FfmpegCommandLog = { command: string, time: Date }[];
 

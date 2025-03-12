@@ -259,7 +259,10 @@ function App() {
   const toggleSegmentsList = useCallback(() => setShowRightBar((v) => !v), []);
 
   const toggleWaveformMode = useCallback(() => {
+    // eslint-disable-next-line unicorn/prefer-switch
     if (waveformMode === 'waveform') {
+      setWaveformMode('waveform-tall');
+    } else if (waveformMode === 'waveform-tall') {
       setWaveformMode('big-waveform');
     } else if (waveformMode === 'big-waveform') {
       setWaveformMode(undefined);
@@ -532,17 +535,27 @@ function App() {
   const hasAudio = !!activeAudioStream;
   const hasVideo = !!activeVideoStream;
 
-  const waveformEnabled = hasAudio && waveformMode != null && ['waveform', 'big-waveform'].includes(waveformMode);
+  const waveformEnabled = hasAudio && waveformMode != null;
   const bigWaveformEnabled = waveformEnabled && waveformMode === 'big-waveform';
   const showThumbnails = thumbnailsEnabled && hasVideo;
 
   const { thumbnailsSorted, setThumbnails } = useThumbnails({ filePath, zoomedDuration, zoomWindowStartTime, showThumbnails });
 
-  const shouldShowKeyframes = keyframesEnabled && hasVideo && calcShouldShowKeyframes(zoomedDuration);
-  const shouldShowWaveform = calcShouldShowWaveform(zoomedDuration);
-
   const { neighbouringKeyFrames, findNearestKeyFrameTime } = useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream: activeVideoStream, detectedFps, ffmpegExtractWindow });
-  const { waveforms } = useWaveform({ filePath, relevantTime, waveformEnabled, audioStream: activeAudioStream, ffmpegExtractWindow, fileDuration });
+  const { waveforms, overviewWaveform, renderOverviewWaveform } = useWaveform({ filePath, relevantTime, waveformEnabled, audioStream: activeAudioStream, ffmpegExtractWindow, fileDuration });
+
+  const onGenerateOverviewWaveformClick = useCallback(async () => {
+    if (working) return;
+    try {
+      setWorking({ text: t('Generating full overview waveform, this may take a few minutes.') });
+      await renderOverviewWaveform();
+    } finally {
+      setWorking();
+    }
+  }, [renderOverviewWaveform, setWorking, t, working]);
+
+  const shouldShowKeyframes = keyframesEnabled && hasVideo && calcShouldShowKeyframes(zoomedDuration);
+  const shouldShowWaveform = calcShouldShowWaveform(zoomedDuration) || overviewWaveform != null;
 
   const resetState = useCallback(() => {
     console.log('State reset');
@@ -2556,7 +2569,9 @@ function App() {
                 <Timeline
                   shouldShowKeyframes={shouldShowKeyframes}
                   waveforms={waveforms}
+                  overviewWaveform={overviewWaveform}
                   shouldShowWaveform={shouldShowWaveform}
+                  waveformMode={waveformMode}
                   waveformEnabled={waveformEnabled}
                   showThumbnails={showThumbnails}
                   neighbouringKeyFrames={neighbouringKeyFrames}
@@ -2578,6 +2593,7 @@ function App() {
                   zoomWindowStartTime={zoomWindowStartTime}
                   zoomWindowEndTime={zoomWindowEndTime}
                   onZoomWindowStartTimeChange={setZoomWindowStartTime}
+                  onGenerateOverviewWaveformClick={onGenerateOverviewWaveformClick}
                   playing={playing}
                   isFileOpened={isFileOpened}
                   onWheel={onTimelineWheel}
