@@ -53,6 +53,11 @@ export interface SegmentBase {
   name?: string | undefined,
 }
 
+export interface DefiniteSegmentBase {
+  start: number,
+  end: number,
+}
+
 export interface SegmentColorIndex {
   segColorIndex: number,
 }
@@ -64,16 +69,12 @@ export interface StateSegment extends SegmentBase, SegmentColorIndex {
   initial?: true,
 }
 
-export interface SegmentToExport {
-  start: number,
-  end: number,
+export interface SegmentToExport extends DefiniteSegmentBase {
   name?: string | undefined;
   tags?: SegmentTags | undefined;
 }
 
-export interface InverseCutSegment {
-  start: number,
-  end: number,
+export interface InverseCutSegment extends DefiniteSegmentBase {
   segId: string;
 }
 

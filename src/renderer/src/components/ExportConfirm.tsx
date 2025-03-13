@@ -21,11 +21,12 @@ import { toast } from '../swal';
 import { isMov as ffmpegIsMov } from '../util/streams';
 import useUserSettings from '../hooks/useUserSettings';
 import styles from './ExportConfirm.module.css';
-import { SegmentBase, SegmentToExport } from '../types';
+import { SegmentToExport } from '../types';
 import { defaultMergedFileTemplate, defaultOutSegTemplate, GenerateOutFileNames } from '../util/outputNameTemplate';
 import { FFprobeStream } from '../../../../ffprobe';
 import { AvoidNegativeTs, PreserveMetadata } from '../../../../types';
 import TextInput from './TextInput';
+import { UseSegments } from '../hooks/useSegments';
 
 
 const boxStyle: CSSProperties = { margin: '15px 15px 50px 15px', borderRadius: 10, padding: '10px 20px', minHeight: 500, position: 'relative' };
@@ -52,7 +53,6 @@ function ShiftTimes({ values, num, setNum }: { values: number[], num: number, se
 
 function ExportConfirm({
   areWeCutting,
-  selectedSegments,
   segmentsToExport,
   willMerge,
   visible,
@@ -71,7 +71,7 @@ function ExportConfirm({
   generateOutSegFileNames,
   generateMergedFileNames,
   currentSegIndexSafe,
-  nonFilteredSegmentsOrInverse,
+  segmentsOrInverse,
   mainCopiedThumbnailStreams,
   needSmartCut,
   smartCutBitrate,
@@ -80,7 +80,6 @@ function ExportConfirm({
   outputPlaybackRate,
 } : {
   areWeCutting: boolean,
-  selectedSegments: unknown[],
   segmentsToExport: SegmentToExport[],
   willMerge: boolean,
   visible: boolean,
@@ -99,7 +98,7 @@ function ExportConfirm({
   generateOutSegFileNames: GenerateOutFileNames,
   generateMergedFileNames: GenerateOutFileNames,
   currentSegIndexSafe: number,
-  nonFilteredSegmentsOrInverse: SegmentBase[],
+  segmentsOrInverse: UseSegments['segmentsOrInverse'],
   mainCopiedThumbnailStreams: FFprobeStream[],
   needSmartCut: boolean,
   smartCutBitrate: number | undefined,
@@ -266,10 +265,10 @@ function ExportConfirm({
                       </tr>
                     ))}
 
-                    {selectedSegments.length !== nonFilteredSegmentsOrInverse.length && (
+                    {segmentsOrInverse.selected.length !== segmentsOrInverse.all.length && (
                       <tr>
                         <td colSpan={2}>
-                          <FaRegCheckCircle size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: selectedSegments.length, nonFilteredSegments: nonFilteredSegmentsOrInverse.length })}
+                          <FaRegCheckCircle size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: segmentsOrInverse.selected.length, nonFilteredSegments: segmentsOrInverse.all.length })}
                         </td>
                         <td />
                       </tr>
@@ -277,10 +276,10 @@ function ExportConfirm({
 
                     <tr>
                       <td>
-                        {selectedSegments.length > 1 ? t('Export mode for {{segments}} segments', { segments: selectedSegments.length }) : t('Export mode')}
+                        {segmentsOrInverse.selected.length > 1 ? t('Export mode for {{segments}} segments', { segments: segmentsOrInverse.selected.length }) : t('Export mode')}
                       </td>
                       <td>
-                        <ExportModeButton selectedSegments={selectedSegments} />
+                        <ExportModeButton selectedSegments={segmentsOrInverse.selected} />
                       </td>
                       <td>
                         {effectiveExportMode === 'segments_to_chapters' ? (

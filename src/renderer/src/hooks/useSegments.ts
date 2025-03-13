@@ -13,7 +13,7 @@ import { createNumSegments as createNumSegmentsDialog, createFixedByteSixedSegme
 import { createSegment, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, addSegmentColorIndex, filterNonMarkers, makeDurationSegments, isInitialSegment } from '../segments';
 import { parameters as allFfmpegParameters, FfmpegDialog } from '../ffmpegParameters';
 import { maxSegmentsAllowed } from '../util/constants';
-import { ParseTimecode, SegmentBase, segmentTagsSchema, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
+import { DefiniteSegmentBase, ParseTimecode, SegmentBase, segmentTagsSchema, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
 import safeishEval from '../worker/eval';
 import { ScopeSegment } from '../../../../types';
 import { FFprobeFormat, FFprobeStream } from '../../../../ffprobe';
@@ -256,7 +256,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     if (haveInvalidSegs || !isDurationValid(fileDuration)) return [];
 
     // exclude segments that don't have a length (markers)
-    const sortedSegments = sortSegments(filterNonMarkers(cutSegments));
+    // also exclude initial segment (will cause problems later on)
+    const sortedSegments = sortSegments(filterNonMarkers(cutSegments).filter((seg) => !seg.initial));
 
     return invertSegments(sortedSegments, true, true, fileDuration).map(({ segId, end, ...rest }) => {
       // in order to please TS:
@@ -701,26 +702,30 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     });
   }, [createIndexedSegment, setCutSegments]);
 
-  const selectedSegmentsOrInverse = useMemo<{ start: number, end: number }[]>(() => {
+  const segmentsOrInverse = useMemo<{ selected: DefiniteSegmentBase[], all: DefiniteSegmentBase[] }>(() => {
     // For invertCutSegments we do not support filtering (selecting) segments
-    if (invertCutSegments) return inverseCutSegments;
+    if (invertCutSegments) {
+      return {
+        selected: inverseCutSegments,
+        all: inverseCutSegments,
+      };
+    }
 
-    // exclude markers (segments without end)
-    return filterNonMarkers(selectedSegments);
-  }, [inverseCutSegments, invertCutSegments, selectedSegments]);
-
-  // non filtered includes also non selected
-  const nonFilteredSegmentsOrInverse = useMemo(() => (invertCutSegments
-    ? inverseCutSegments
-    : filterNonMarkers(cutSegments)
-  ), [invertCutSegments, inverseCutSegments, cutSegments]);
+    return {
+      // exclude markers (segments without any end)
+      // and exclude the initial segment, to prevent cutting when not really needed (if duration changes after the segment was created)
+      selected: filterNonMarkers(selectedSegments).filter((seg) => !seg.initial),
+      // `all` includes also all non selected segments:
+      all: filterNonMarkers(cutSegments).filter((seg) => !seg.initial),
+    };
+  }, [cutSegments, inverseCutSegments, invertCutSegments, selectedSegments]);
 
   const segmentsToExport = useMemo<SegmentToExport[]>(() => {
     // segmentsToChaptersOnly is a special mode where all segments will be simply written out as chapters to one file: https://github.com/mifi/lossless-cut/issues/993#issuecomment-1037927595
     // Chapters export mode: Emulate a single segment with no cuts (full timeline)
     if (segmentsToChaptersOnly) return [];
-    return selectedSegmentsOrInverse;
-  }, [segmentsToChaptersOnly, selectedSegmentsOrInverse]);
+    return segmentsOrInverse.selected;
+  }, [segmentsOrInverse.selected, segmentsToChaptersOnly]);
 
   const removeSelectedSegments = useCallback(() => removeSegments(selectedSegmentsRaw.map((seg) => seg.segId)), [removeSegments, selectedSegmentsRaw]);
 
@@ -779,8 +784,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     loadCutSegments,
     isSegmentSelected,
     selectedSegments,
-    selectedSegmentsOrInverse,
-    nonFilteredSegmentsOrInverse,
+    segmentsOrInverse,
     segmentsToExport,
     maybeCreateFullLengthSegment,
 
