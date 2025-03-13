@@ -1,11 +1,11 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import Lottie from 'react-lottie-player/dist/LottiePlayerLight';
-import { Button } from 'evergreen-ui';
 import { Trans } from 'react-i18next';
 
 import { primaryColor } from '../colors';
 import loadingLottie from '../7077-magic-flow.json';
+import Button from './Button';
 
 
 function Working({ text, progress, onAbortClick }: {
@@ -41,7 +41,7 @@ function Working({ text, progress, onAbortClick }: {
         )}
 
         <div style={{ marginTop: 5 }}>
-          <Button intent="danger" onClick={onAbortClick} height={20}><Trans>Abort</Trans></Button>
+          <Button onClick={onAbortClick} style={{ padding: '.5em 1em' }}><Trans>Abort</Trans></Button>
         </div>
       </motion.div>
     </div>

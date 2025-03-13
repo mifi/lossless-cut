@@ -1,10 +1,10 @@
 import { memo, useState, useCallback, ChangeEventHandler } from 'react';
-import { Button } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 
 import styles from './ValueTuner.module.css';
 
 import Switch from './Switch';
+import Button from './Button';
 
 
 function ValueTuner({ title, value, setValue, onFinished, resolution, decimals, min: minIn = 0, max: maxIn = 1, resetToDefault }: {
@@ -63,8 +63,8 @@ function ValueTuner({ title, value, setValue, onFinished, resolution, decimals, 
       </div>
 
       <div style={{ textAlign: 'right' }}>
-        <Button height={20} onClick={handleResetToDefaultClick}>{t('Default')}</Button>
-        <Button height={20} intent="success" onClick={onFinished}>{t('Done')}</Button>
+        <Button onClick={handleResetToDefaultClick}>{t('Default')}</Button>
+        <Button onClick={onFinished}>{t('Done')}</Button>
       </div>
     </div>
   );

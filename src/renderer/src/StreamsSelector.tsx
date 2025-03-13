@@ -3,7 +3,7 @@ import { memo, useState, useMemo, useCallback, Dispatch, SetStateAction, CSSProp
 import { FaImage, FaCheckCircle, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
 import { MdSubtitles } from 'react-icons/md';
-import { Checkbox, BookIcon, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, Heading, SortAscIcon, SortDescIcon, Dialog, Button, ForkIcon, WarningSignIcon } from 'evergreen-ui';
+import { Checkbox, BookIcon, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, Heading, SortAscIcon, SortDescIcon, Dialog, ForkIcon, WarningSignIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 import prettyBytes from 'pretty-bytes';
 
@@ -18,6 +18,7 @@ import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 import { CustomTagsByFile, FilesMeta, FormatTimecode, ParamsByStreamId, StreamParams } from './types';
 import useUserSettings from './hooks/useUserSettings';
 import tryShowGpsMap from './gps';
+import Button from './components/Button';
 
 
 const dispositionOptions = ['default', 'dub', 'original', 'comment', 'lyrics', 'karaoke', 'forced', 'hearing_impaired', 'visual_impaired', 'clean_effects', 'attached_pic', 'captions', 'descriptions', 'dependent', 'metadata'];
@@ -472,8 +473,8 @@ function StreamsSelector({
           <div style={{ marginBottom: '1em' }}><WarningSignIcon color="warning" /> {t('Note: Cutting and including external tracks at the same time does not yet work. If you want to do both, it must be done as separate operations. See github issue #896.')}</div>
         )}
 
-        <Button iconBefore={<FaFileImport size={16} />} marginBottom="1em" onClick={showAddStreamSourceDialog}>
-          {t('Include more tracks from other file')}
+        <Button style={{ marginBottom: '1em', padding: '0.3em 1em' }} onClick={showAddStreamSourceDialog}>
+          <FaFileImport style={{ verticalAlign: 'middle', marginRight: '.5em' }} /> {t('Include more tracks from other file')}
         </Button>
 
         {nonCopiedExtraStreams.length > 0 && (
@@ -486,8 +487,8 @@ function StreamsSelector({
         {externalFilesEntries.length > 0 && (
           <div style={{ marginBottom: '1em' }}>
             <div style={{ marginBottom: '.5em' }}>{t('When tracks have different lengths, do you want to make the output file as long as the longest or the shortest track?')}</div>
-            <Button iconBefore={shortestFlag ? SortDescIcon : SortAscIcon} onClick={() => setShortestFlag((value) => !value)}>
-              {shortestFlag ? t('Shortest') : t('Longest')}
+            <Button style={{ padding: '0.3em 1em' }} onClick={() => setShortestFlag((value) => !value)}>
+              {shortestFlag ? <><SortDescIcon verticalAlign="middle" marginRight=".5em" />{t('Shortest')}</> : <><SortAscIcon verticalAlign="middle" marginRight=".5em" />{t('Longest')}</>}
             </Button>
           </div>
         )}
