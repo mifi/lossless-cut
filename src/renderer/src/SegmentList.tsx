@@ -66,7 +66,7 @@ const Segment = memo(({
   getFrameCount: GetFrameCount,
   updateSegOrder: UseSegments['updateSegOrder'],
   onClick: (i: number) => void,
-  onRemovePress: UseSegments['removeCutSegment'],
+  onRemovePress: UseSegments['removeSegment'],
   onRemoveSelected: UseSegments['removeSelectedSegments'],
   onLabelSelectedSegments: UseSegments['labelSelectedSegments'],
   onReorderPress: (i: number) => Promise<void>,
@@ -242,7 +242,7 @@ function SegmentList({
   updateSegOrder,
   updateSegOrders,
   addSegment,
-  removeCutSegment,
+  removeSegment,
   onRemoveSelected,
   onLabelSegment,
   currentCutSeg,
@@ -283,7 +283,7 @@ function SegmentList({
   updateSegOrder: UseSegments['updateSegOrder'],
   updateSegOrders: UseSegments['updateSegOrders'],
   addSegment: UseSegments['addSegment'],
-  removeCutSegment: UseSegments['removeCutSegment'],
+  removeSegment: UseSegments['removeSegment'],
   onRemoveSelected: UseSegments['removeSelectedSegments'],
   onLabelSegment: UseSegments['labelSegment'],
   currentCutSeg: UseSegments['currentCutSeg'],
@@ -377,8 +377,8 @@ function SegmentList({
             size={24}
             style={{ ...buttonBaseStyle, background: cutSegments.length >= 2 ? currentSegColor : neutralButtonColor }}
             role="button"
-            title={`${t('Remove segment')} ${currentSegIndex + 1}`}
-            onClick={() => removeCutSegment(currentSegIndex)}
+            title={t('Remove cutpoint from segment {{segmentNumber}}', { segmentNumber: currentSegIndex + 1 })}
+            onClick={() => removeSegment(currentSegIndex)}
           />
 
           {!invertCutSegments && !simpleMode && (
@@ -501,7 +501,7 @@ function SegmentList({
                   onClick={onSegClick}
                   addSegment={addSegment}
                   onRemoveSelected={onRemoveSelected}
-                  onRemovePress={removeCutSegment}
+                  onRemovePress={removeSegment}
                   onReorderPress={onReorderSegs}
                   onLabelPress={onLabelSegment}
                   jumpSegStart={jumpSegStart}

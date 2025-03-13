@@ -231,17 +231,26 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       if (newSegments.length === 0) {
         // when removing the last segments, we start over
         clearSegColorCounter();
-        return [];
       }
       return newSegments;
     });
   }, [clearSegColorCounter, safeSetCutSegments]);
 
-  const removeCutSegment = useCallback((index: number) => {
+  const removeSegment = useCallback((index: number, wholeSegment?: true) => {
     const seg = cutSegments[index];
     if (seg == null) return;
-    removeSegments([seg.segId]);
-  }, [cutSegments, removeSegments]);
+    if (wholeSegment || seg.end == null) {
+      // remove whole segment
+      removeSegments([seg.segId]);
+    } else {
+      // remove end cut point first
+      safeSetCutSegments((existingSegments) => existingSegments.map((existingSegment, i) => (
+        i === index ? {
+          ...existingSegment,
+          end: undefined,
+        } : existingSegment)));
+    }
+  }, [cutSegments, removeSegments, safeSetCutSegments]);
 
   const inverseCutSegments = useMemo(() => {
     if (haveInvalidSegs || !isDurationValid(fileDuration)) return [];
@@ -739,7 +748,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     detectBlackScenes,
     detectSilentScenes,
     detectSceneChanges,
-    removeCutSegment,
+    removeSegment,
     invertAllSegments,
     fillSegmentsGaps,
     combineOverlappingSegments,

@@ -25,7 +25,7 @@ const defaultKeyBindings: KeyBinding[] = [
   { keys: 'c', action: 'captureSnapshot' },
   { keys: 'i', action: 'setCutStart' },
   { keys: 'o', action: 'setCutEnd' },
-  { keys: 'backspace', action: 'removeCurrentSegment' },
+  { keys: 'backspace', action: 'removeCurrentCutpoint' },
   { keys: 'd', action: 'cleanupFilesDialog' },
   { keys: 'b', action: 'splitCurrentSegment' },
   { keys: 'r', action: 'increaseRotation' },
