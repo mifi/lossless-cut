@@ -396,6 +396,16 @@ function Timeline({
           style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative', backgroundColor: timelineBackground, transition: darkModeTransition }}
           ref={timelineWrapperRef}
         >
+          {inverseCutSegments.map((seg) => (
+            <BetweenSegments
+              key={seg.segId}
+              start={seg.start}
+              end={seg.end}
+              fileDurationNonZero={fileDurationNonZero}
+              invertCutSegments={invertCutSegments}
+            />
+          ))}
+
           {cutSegments.map((seg, i) => {
             const selected = invertCutSegments || isSegmentSelected({ segId: seg.segId });
 
@@ -413,16 +423,6 @@ function Timeline({
               />
             );
           })}
-
-          {inverseCutSegments.map((seg) => (
-            <BetweenSegments
-              key={seg.segId}
-              start={seg.start}
-              end={seg.end}
-              fileDurationNonZero={fileDurationNonZero}
-              invertCutSegments={invertCutSegments}
-            />
-          ))}
 
           {shouldShowKeyframes && !areKeyframesTooClose && keyFramesInZoomWindow.map((f) => (
             <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / fileDurationNonZero) * 100}%`, marginLeft: -1, width: 1, background: 'var(--gray11)', pointerEvents: 'none' }} />
