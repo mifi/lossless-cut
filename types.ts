@@ -65,6 +65,7 @@ export interface Config {
   playbackVolume: number,
   autoSaveProjectFile: boolean,
   wheelSensitivity: number,
+  waveformHeight: number,
   language: LanguageKey | undefined,
   ffmpegExperimental: boolean,
   preserveChapters: boolean,
@@ -127,7 +128,7 @@ export interface ApiActionRequest {
 
 export type Html5ifyMode = 'fastest' | 'fast-audio-remux' | 'fast-audio' | 'fast' | 'slow' | 'slow-audio' | 'slowest';
 
-export type WaveformMode = 'big-waveform' | 'waveform' | 'waveform-tall';
+export type WaveformMode = 'big-waveform' | 'waveform';
 
 // This is the contract with the user, see https://github.com/mifi/lossless-cut/blob/master/expressions.md
 export interface ScopeSegment {

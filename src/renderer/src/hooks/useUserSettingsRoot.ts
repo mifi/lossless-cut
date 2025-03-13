@@ -79,6 +79,8 @@ export default () => {
   useEffect(() => safeSetConfig({ autoSaveProjectFile }), [autoSaveProjectFile]);
   const [wheelSensitivity, setWheelSensitivity] = useState(safeGetConfigInitial('wheelSensitivity'));
   useEffect(() => safeSetConfig({ wheelSensitivity }), [wheelSensitivity]);
+  const [waveformHeight, setWaveformHeight] = useState(safeGetConfigInitial('waveformHeight'));
+  useEffect(() => safeSetConfig({ waveformHeight }), [waveformHeight]);
   const [invertTimelineScroll, setInvertTimelineScroll] = useState(safeGetConfigInitial('invertTimelineScroll'));
   useEffect(() => safeSetConfig({ invertTimelineScroll }), [invertTimelineScroll]);
   const [language, setLanguage] = useState(safeGetConfigInitial('language'));
@@ -220,6 +222,8 @@ export default () => {
     setAutoSaveProjectFile,
     wheelSensitivity,
     setWheelSensitivity,
+    waveformHeight,
+    setWaveformHeight,
     invertTimelineScroll,
     setInvertTimelineScroll,
     language,

@@ -527,7 +527,7 @@ function BottomBar({
 
         {hasVideo && (
           <>
-            {!simpleMode && <CaptureFormatButton height={20} />}
+            {!simpleMode && <CaptureFormatButton style={{ width: '3.7em', textAlign: 'center' }} />}
 
             <IoIosCamera
               style={{ paddingLeft: 5, paddingRight: 15 }}

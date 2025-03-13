@@ -108,6 +108,7 @@ const defaults: Config = {
   playbackVolume: 1,
   autoSaveProjectFile: true,
   wheelSensitivity: 0.2,
+  waveformHeight: 40,
   language: undefined,
   ffmpegExperimental: false,
   preserveChapters: true,

@@ -1,17 +1,19 @@
-import { memo, useState, useCallback, CSSProperties, ChangeEventHandler } from 'react';
+import { memo, useState, useCallback, ChangeEventHandler } from 'react';
 import { Button } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
+
+import styles from './ValueTuner.module.css';
 
 import Switch from './Switch';
 
 
-function ValueTuner({ style, title, value, setValue, onFinished, resolution = 1000, min: minIn = 0, max: maxIn = 1, resetToDefault }: {
-  style?: CSSProperties,
+function ValueTuner({ title, value, setValue, onFinished, resolution, decimals, min: minIn = 0, max: maxIn = 1, resetToDefault }: {
   title: string,
   value: number,
   setValue: (v: number) => void,
   onFinished: () => void,
-  resolution?: number,
+  resolution: number,
+  decimals: number,
   min?: number,
   max?: number,
   resetToDefault: () => void,
@@ -28,22 +30,31 @@ function ValueTuner({ style, title, value, setValue, onFinished, resolution = 10
 
   const isZoomed = !(min === minIn && max === maxIn);
 
+  const resetZoom = useCallback(() => {
+    setMin(minIn);
+    setMax(maxIn);
+  }, [maxIn, minIn]);
+
   const toggleZoom = useCallback(() => {
     if (isZoomed) {
-      setMin(minIn);
-      setMax(maxIn);
+      resetZoom();
     } else {
       const zoomWindow = (maxIn - minIn) / 100;
       setMin(Math.max(minIn, value - zoomWindow));
       setMax(Math.min(maxIn, value + zoomWindow));
     }
-  }, [isZoomed, maxIn, minIn, value]);
+  }, [isZoomed, maxIn, minIn, resetZoom, value]);
+
+  const handleResetToDefaultClick = useCallback(() => {
+    resetToDefault();
+    resetZoom();
+  }, [resetToDefault, resetZoom]);
 
   return (
-    <div style={{ background: 'var(--gray1)', color: 'var(--gray12)', position: 'absolute', bottom: 0, padding: 10, margin: 10, borderRadius: 10, ...style }}>
-      <div style={{ display: 'flex', alignItems: 'center', flexBasis: 400, marginBottom: '.2em' }}>
+    <div className={styles['value-tuner']}>
+      <div style={{ display: 'flex', alignItems: 'center', flexBasis: 400, marginBottom: '.3em' }}>
         <div>{title}</div>
-        <div style={{ marginLeft: '.5em', fontWeight: 'bold', marginRight: '.5em', textDecoration: 'underline', fontFamily: 'monospace', width: '5em' }}>{value.toFixed(4)}</div>
+        <div style={{ marginLeft: '.6em', fontSize: '1.3em', marginRight: '.5em', fontFamily: 'monospace', width: '5.5em' }}>{value.toFixed(decimals)}</div>
         <Switch checked={isZoomed} onCheckedChange={toggleZoom} style={{ flexShrink: 0 }} /><span style={{ marginLeft: '.3em' }}>{t('Precise')}</span>
       </div>
 
@@ -52,7 +63,7 @@ function ValueTuner({ style, title, value, setValue, onFinished, resolution = 10
       </div>
 
       <div style={{ textAlign: 'right' }}>
-        <Button height={20} onClick={resetToDefault}>{t('Default')}</Button>
+        <Button height={20} onClick={handleResetToDefaultClick}>{t('Default')}</Button>
         <Button height={20} intent="success" onClick={onFinished}>{t('Done')}</Button>
       </div>
     </div>

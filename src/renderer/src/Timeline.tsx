@@ -17,7 +17,6 @@ import { timelineBackground, darkModeTransition } from './colors';
 import { Frame } from './ffmpeg';
 import { FormatTimecode, InverseCutSegment, OverviewWaveform, RenderableWaveform, WaveformSlice, StateSegment, Thumbnail } from './types';
 import Button from './components/Button';
-import { WaveformMode } from '../../../types';
 
 
 type CalculateTimelinePercent = (time: number) => string | undefined;
@@ -49,16 +48,16 @@ const Waveform = memo(({ waveform, calculateTimelinePercent, fileDurationNonZero
 });
 
 // eslint-disable-next-line react/display-name
-const Waveforms = memo(({ calculateTimelinePercent, fileDurationNonZero, waveforms, overviewWaveform, zoom, darkMode, waveformMode }: {
+const Waveforms = memo(({ calculateTimelinePercent, fileDurationNonZero, waveforms, overviewWaveform, zoom, darkMode, height }: {
   calculateTimelinePercent: CalculateTimelinePercent,
   fileDurationNonZero: number,
   waveforms: WaveformSlice[],
   overviewWaveform: OverviewWaveform | undefined,
   zoom: number,
   darkMode: boolean,
-  waveformMode: WaveformMode | undefined,
+  height: number,
 }) => (
-  <div style={{ height: waveformMode === 'waveform-tall' ? '15vh' : 40, width: `${zoom * 100}%`, position: 'relative' }}>
+  <div style={{ height, width: `${zoom * 100}%`, position: 'relative' }}>
     {zoom === 1 && overviewWaveform != null ? (
       <Waveform waveform={overviewWaveform} calculateTimelinePercent={calculateTimelinePercent} fileDurationNonZero={fileDurationNonZero} darkMode={darkMode} />
     ) : waveforms.map((waveform) => (
@@ -108,8 +107,8 @@ function Timeline({
   zoomWindowEndTime,
   onZoomWindowStartTimeChange,
   onGenerateOverviewWaveformClick,
-  waveformMode,
   waveformEnabled,
+  waveformHeight,
   showThumbnails,
   playing,
   isFileOpened,
@@ -142,8 +141,8 @@ function Timeline({
   zoomWindowEndTime: number | undefined,
   onZoomWindowStartTimeChange: (a: number) => void,
   onGenerateOverviewWaveformClick: () => void,
-  waveformMode: WaveformMode | undefined,
   waveformEnabled: boolean,
+  waveformHeight: number,
   showThumbnails: boolean,
   playing: boolean,
   isFileOpened: boolean,
@@ -375,7 +374,7 @@ function Timeline({
             overviewWaveform={overviewWaveform}
             zoom={zoom}
             darkMode={darkMode}
-            waveformMode={waveformMode}
+            height={waveformHeight}
           />
         )}
 

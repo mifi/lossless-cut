@@ -329,7 +329,7 @@ function Settings({
               {t('Snapshot capture format')}
             </KeyCell>
             <td>
-              <CaptureFormatButton showIcon />
+              <CaptureFormatButton showIcon style={{ padding: '.5em 1em' }} />
             </td>
           </Row>
 
@@ -439,6 +439,15 @@ function Settings({
 
           {showAdvanced && (
             <Row>
+              <KeyCell>{t('Waveform height')}</KeyCell>
+              <td>
+                <Button iconBefore={CogIcon} onClick={() => onTunerRequested('waveformHeight')}>{t('Change value')}</Button>
+              </td>
+            </Row>
+          )}
+
+          {showAdvanced && (
+            <Row>
               <KeyCell>{t('Auto load timecode from file as an offset in the timeline?')}</KeyCell>
               <td>
                 <Switch checked={autoLoadTimecode} onCheckedChange={setAutoLoadTimecode} />
@@ -454,7 +463,6 @@ function Settings({
               </td>
             </Row>
           )}
-
 
           {showAdvanced && (
             <Row>
