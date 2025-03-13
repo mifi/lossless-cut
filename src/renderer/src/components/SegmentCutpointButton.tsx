@@ -3,10 +3,10 @@ import { FaStepForward } from 'react-icons/fa';
 
 import { useSegColors } from '../contexts';
 import useUserSettings from '../hooks/useUserSettings';
-import { SegmentBase, SegmentColorIndex } from '../types';
+import { SegmentColorIndex } from '../types';
 
 const SegmentCutpointButton = ({ currentCutSeg, side, Icon, onClick, title, style }: {
-  currentCutSeg: (SegmentBase & SegmentColorIndex) | undefined,
+  currentCutSeg: SegmentColorIndex | undefined,
   side: 'start' | 'end',
   Icon: typeof FaStepForward,
   onClick?: (() => void) | undefined,

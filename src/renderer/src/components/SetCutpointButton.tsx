@@ -3,11 +3,11 @@ import { FaHandPointUp } from 'react-icons/fa';
 
 import SegmentCutpointButton from './SegmentCutpointButton';
 import { mirrorTransform } from '../util';
-import { SegmentBase, SegmentColorIndex } from '../types';
+import { SegmentColorIndex } from '../types';
 
 // constant side because we are mirroring
 const SetCutpointButton = ({ currentCutSeg, side, title, onClick, style }: {
-  currentCutSeg: (SegmentBase & SegmentColorIndex) | undefined,
+  currentCutSeg: SegmentColorIndex | undefined,
   side: 'start' | 'end',
   title?: string,
   onClick?: () => void,

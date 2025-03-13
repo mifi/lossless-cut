@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { useTranslation, Trans } from 'react-i18next';
 
@@ -18,6 +18,8 @@ function NoFileLoaded({ mifiLink, currentCutSeg, onClick, darkMode }: {
   const { t } = useTranslation();
   const { simpleMode } = useUserSettings();
 
+  const currentCutSegOrDefault = useMemo(() => currentCutSeg ?? { segColorIndex: 0 }, [currentCutSeg]);
+
   return (
     <div
       className="no-user-select"
@@ -32,7 +34,7 @@ function NoFileLoaded({ mifiLink, currentCutSeg, onClick, darkMode }: {
       </div>
 
       <div style={{ fontSize: '1.3em', color: 'var(--gray11)' }}>
-        <Trans><SetCutpointButton currentCutSeg={currentCutSeg} side="start" style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSeg} side="end" style={{ verticalAlign: 'middle' }} /> or <kbd>I</kbd> <kbd>O</kbd> to set cutpoints</Trans>
+        <Trans><SetCutpointButton currentCutSeg={currentCutSegOrDefault} side="start" style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSegOrDefault} side="end" style={{ verticalAlign: 'middle' }} /> or <kbd>I</kbd> <kbd>O</kbd> to set cutpoints</Trans>
       </div>
 
       <div style={{ fontSize: '1.3em', color: 'var(--gray11)' }} role="button" onClick={(e) => e.stopPropagation()}>

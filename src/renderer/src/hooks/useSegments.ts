@@ -163,7 +163,13 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   const haveInvalidSegs = useMemo(() => cutSegments.some((cutSegment) => cutSegment.end != null && cutSegment.start >= cutSegment.end), [cutSegments]);
 
   const currentSegIndexSafe = Math.min(currentSegIndex, cutSegments.length - 1);
+
   const currentCutSeg = useMemo(() => cutSegments[currentSegIndexSafe], [currentSegIndexSafe, cutSegments]);
+
+  const currentCutSegOrWholeTimeline = useMemo(() => {
+    const { start = 0, end = fileDurationNonZero } = currentCutSeg ?? {};
+    return { start, end };
+  }, [currentCutSeg, fileDurationNonZero]);
 
   const selectedSegmentsRaw = useMemo(() => cutSegments.filter((segment) => isSegmentSelected(segment)), [cutSegments, isSegmentSelected]);
 
@@ -174,7 +180,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   }, [ffmpegParameters]);
 
   const detectBlackScenes = useCallback(async () => {
-    const { start = 0, end = fileDurationNonZero } = currentCutSeg ?? {};
+    const { start, end } = currentCutSegOrWholeTimeline;
     const dialogType = 'blackdetect';
     const parameters = await showParametersDialog({ title: i18n.t('Enter parameters'), dialogType, parameters: getFfmpegParameters(dialogType), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#blackdetect' });
     if (parameters == null) return;
@@ -183,10 +189,10 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     invariant(mode === '1' || mode === '2');
     invariant(filePath != null);
     await detectSegments({ name: 'blackScenes', workingText: i18n.t('Detecting black scenes'), errorText: i18n.t('Failed to detect black scenes'), fn: async (onSegmentDetected) => blackDetect({ filePath, filterOptions, boundingMode: mode === '1', onProgress: setProgress, onSegmentDetected, from: start, to: end }) });
-  }, [fileDurationNonZero, currentCutSeg, getFfmpegParameters, setFfmpegParametersForDialog, filePath, detectSegments, setProgress]);
+  }, [currentCutSegOrWholeTimeline, getFfmpegParameters, setFfmpegParametersForDialog, filePath, detectSegments, setProgress]);
 
   const detectSilentScenes = useCallback(async () => {
-    const { start = 0, end = fileDurationNonZero } = currentCutSeg ?? {};
+    const { start, end } = currentCutSegOrWholeTimeline;
     const dialogType = 'silencedetect';
     const parameters = await showParametersDialog({ title: i18n.t('Enter parameters'), dialogType, parameters: getFfmpegParameters(dialogType), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#silencedetect' });
     if (parameters == null) return;
@@ -195,10 +201,10 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     invariant(mode === '1' || mode === '2');
     invariant(filePath != null);
     await detectSegments({ name: 'silentScenes', workingText: i18n.t('Detecting silent scenes'), errorText: i18n.t('Failed to detect silent scenes'), fn: async (onSegmentDetected) => silenceDetect({ filePath, filterOptions, boundingMode: mode === '1', onProgress: setProgress, onSegmentDetected, from: start, to: end }) });
-  }, [currentCutSeg, detectSegments, fileDurationNonZero, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress]);
+  }, [currentCutSegOrWholeTimeline, detectSegments, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress]);
 
   const detectSceneChanges = useCallback(async () => {
-    const { start = 0, end = fileDurationNonZero } = currentCutSeg ?? {};
+    const { start, end } = currentCutSegOrWholeTimeline;
     const dialogType = 'sceneChange';
     const parameters = await showParametersDialog({ title: i18n.t('Enter parameters'), dialogType, parameters: getFfmpegParameters(dialogType) });
     if (parameters == null) return;
@@ -208,16 +214,16 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     const minChange = parameters['minChange'];
     invariant(minChange != null);
     await detectSegments({ name: 'sceneChanges', workingText: i18n.t('Detecting scene changes'), errorText: i18n.t('Failed to detect scene changes'), fn: async (onSegmentDetected) => ffmpegDetectSceneChanges({ filePath, minChange, onProgress: setProgress, onSegmentDetected, from: start, to: end }) });
-  }, [currentCutSeg, detectSegments, fileDurationNonZero, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress]);
+  }, [currentCutSegOrWholeTimeline, detectSegments, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress]);
 
   const createSegmentsFromKeyframes = useCallback(async () => {
-    const { start = 0, end = fileDurationNonZero } = currentCutSeg ?? {};
+    const { start, end } = currentCutSegOrWholeTimeline;
     if (!videoStream) return;
     invariant(filePath != null);
     const keyframes = (await readFrames({ filePath, from: start, to: end, streamIndex: videoStream.index })).filter((frame) => frame.keyframe);
     const newSegments = mapTimesToSegments(keyframes.map((keyframe) => keyframe.time), true);
     loadCutSegments(newSegments, true);
-  }, [currentCutSeg, fileDurationNonZero, filePath, loadCutSegments, videoStream]);
+  }, [currentCutSegOrWholeTimeline, filePath, loadCutSegments, videoStream]);
 
   const removeSegments = useCallback((removeSegmentIds: string[]) => {
     safeSetCutSegments((existingSegments) => {
@@ -408,10 +414,12 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
       if (fileDuration == null || suggestedStart >= fileDuration) return;
 
-      const newSegment = createIndexedSegment({ segment: { start: suggestedStart }, incrementCount: true });
+      const initial = isInitialSegment(cutSegments);
+
+      const newSegment = createIndexedSegment({ segment: { start: suggestedStart }, incrementCount: !initial });
 
       // if initial segment, replace it instead
-      const cutSegmentsNew = isInitialSegment(cutSegments)
+      const cutSegmentsNew = initial
         ? [
           newSegment,
         ] : [
@@ -449,13 +457,13 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   }, [currentCutSeg, duplicateSegment]);
 
   const setCutStart = useCallback(() => {
-    if (!checkFileOpened() || currentCutSeg == null) return;
+    if (!checkFileOpened()) return;
 
     const relevantTime = getRelevantTime();
     // https://github.com/mifi/lossless-cut/issues/168
-    // If current time is after the end of the current segment in the timeline,
-    // add a new segment that starts at playerTime
-    if (currentCutSeg.end != null && relevantTime >= currentCutSeg.end) {
+    // If current time is after the end of the current segment in the timeline, or there is no segment,
+    // conveniently add a new segment that starts at playerTime
+    if (currentCutSeg == null || (currentCutSeg.end != null && relevantTime >= currentCutSeg.end)) {
       addSegment();
     } else {
       try {
@@ -717,6 +725,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     if (currentCutSeg == null) return;
     selectOnlySegment(currentCutSeg);
   }, [currentCutSeg, selectOnlySegment]);
+
   const toggleCurrentSegmentSelected = useCallback(() => {
     if (currentCutSeg == null) return;
     toggleSegmentSelected(currentCutSeg);
