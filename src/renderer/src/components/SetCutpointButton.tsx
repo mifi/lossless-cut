@@ -7,7 +7,7 @@ import { SegmentBase, SegmentColorIndex } from '../types';
 
 // constant side because we are mirroring
 const SetCutpointButton = ({ currentCutSeg, side, title, onClick, style }: {
-  currentCutSeg: SegmentBase & SegmentColorIndex,
+  currentCutSeg: (SegmentBase & SegmentColorIndex) | undefined,
   side: 'start' | 'end',
   title?: string,
   onClick?: () => void,

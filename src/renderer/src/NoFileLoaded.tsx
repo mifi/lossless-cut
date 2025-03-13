@@ -11,7 +11,7 @@ const electron = window.require('electron');
 
 function NoFileLoaded({ mifiLink, currentCutSeg, onClick, darkMode }: {
   mifiLink: unknown,
-  currentCutSeg: StateSegment,
+  currentCutSeg: StateSegment | undefined,
   onClick: () => void,
   darkMode?: boolean,
 }) {

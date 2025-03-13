@@ -1,6 +1,5 @@
 import { ReactEventHandler, useCallback, useMemo, useRef, useState } from 'react';
 import { ChromiumHTMLVideoElement, PlaybackMode } from '../types';
-import { isDurationValid } from '../segments';
 import { showPlaybackFailedMessage } from '../swal';
 
 export default ({ filePath }: { filePath: string | undefined }) => {
@@ -9,7 +8,6 @@ export default ({ filePath }: { filePath: string | undefined }) => {
   const [playbackRate, setPlaybackRateState] = useState(1);
   const [outputPlaybackRate, setOutputPlaybackRateState] = useState(1);
   const [playerTime, setPlayerTime] = useState<number>();
-  const [fileDuration, setFileDuration] = useState<number>();
   const playbackModeRef = useRef<PlaybackMode>();
 
   const videoRef = useRef<ChromiumHTMLVideoElement>(null);
@@ -100,13 +98,6 @@ export default ({ filePath }: { filePath: string | undefined }) => {
   }, []);
 
   const onStartPlaying = useCallback(() => onPlayingChange(true), [onPlayingChange]);
-  const onDurationChange = useCallback<ReactEventHandler<HTMLVideoElement>>((e) => {
-    // Some files report duration infinity first, then proper duration later
-    // Sometimes after seeking to end of file, duration might change
-    const { duration: durationNew } = e.currentTarget;
-    console.log('onDurationChange', durationNew);
-    if (isDurationValid(durationNew)) setFileDuration(durationNew);
-  }, []);
 
   const pause = useCallback(() => {
     if (!filePath || !playingRef.current) return;
@@ -154,9 +145,6 @@ export default ({ filePath }: { filePath: string | undefined }) => {
     pause,
     relevantTime,
     getRelevantTime,
-    fileDuration,
-    setFileDuration,
-    onDurationChange,
     onVideoAbort,
     compatPlayerEventId,
     setCompatPlayerEventId,

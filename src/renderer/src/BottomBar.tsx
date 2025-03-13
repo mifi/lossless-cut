@@ -74,7 +74,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
   setCutTime: (type: 'start' | 'end', v: number | undefined) => void,
   startTimeOffset: number,
   seekAbs: (a: number) => void,
-  currentCutSeg: StateSegment,
+  currentCutSeg: StateSegment | undefined,
   isStart?: boolean,
   formatTimecode: FormatTimecode,
   parseTimecode: ParseTimecode,
@@ -87,7 +87,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
   // Clear manual overrides if upstream cut time has changed
   useEffect(() => {
     setCutTimeManual(undefined);
-  }, [setCutTimeManual, currentCutSeg.start, currentCutSeg.end]);
+  }, [setCutTimeManual, currentCutSeg?.start, currentCutSeg?.end]);
 
   const isCutTimeManualSet = () => cutTimeManual !== undefined;
 
@@ -232,7 +232,7 @@ function BottomBar({
   seekAbs: (a: number) => void,
   currentSegIndexSafe: number,
   cutSegments: StateSegment[],
-  currentCutSeg: StateSegment,
+  currentCutSeg: StateSegment | undefined,
   setCutStart: () => void,
   setCutEnd: () => void,
   setCurrentSegIndex: Dispatch<SetStateAction<number>>,
@@ -270,8 +270,15 @@ function BottomBar({
 
   // ok this is a bit over-engineered but what the hell!
   const loopSelectedSegmentsButtonStyle = useMemo(() => {
-    // cannot have less than 1 gradient element:
-    const selectedSegmentsSafe = (selectedSegments.length > 1 ? selectedSegments : [selectedSegments[0]!, selectedSegments[0]!]).slice(0, 10);
+    // need at least 2 gradient elements:
+    const selectedSegmentsSafe = (
+      selectedSegments.length >= 2
+        ? selectedSegments
+        : [
+          selectedSegments[0] ?? { segColorIndex: 0 },
+          selectedSegments[1] ?? { segColorIndex: 1 },
+        ]
+    ).slice(0, 10);
 
     const gradientColors = selectedSegmentsSafe.map((seg, i) => {
       const segColor = getSegColorRaw(seg);
@@ -399,7 +406,7 @@ function BottomBar({
 
         <SetCutpointButton currentCutSeg={currentCutSeg} side="start" onClick={setCutStart} title={t('Start current segment at current time')} style={{ marginRight: 5 }} />
 
-        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentCutSeg.start} setCutTime={setCutTime} isStart formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
+        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentCutSeg?.start} setCutTime={setCutTime} isStart formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
 
         <IoMdKey
           size={25}
@@ -444,7 +451,7 @@ function BottomBar({
           onClick={() => seekClosestKeyframe(1)}
         />
 
-        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentCutSeg.end} setCutTime={setCutTime} formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
+        {!simpleMode && <CutTimeInput darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentCutSeg?.end} setCutTime={setCutTime} formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
 
         <SetCutpointButton currentCutSeg={currentCutSeg} side="end" onClick={setCutEnd} title={t('End current segment at current time')} style={{ marginLeft: 5 }} />
 

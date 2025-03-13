@@ -599,7 +599,7 @@ export async function labelSegmentDialog({ currentName, maxLength }: { currentNa
   return value;
 }
 
-export async function selectSegmentsByLabelDialog(currentName: string) {
+export async function selectSegmentsByLabelDialog(currentName?: string | undefined) {
   const { value } = await Swal.fire({
     showCancelButton: true,
     title: i18n.t('Select segments by label'),

@@ -9,7 +9,7 @@ import { PlaybackMode, SegmentBase, SegmentTags, StateSegment } from './types';
 
 export const isDurationValid = (duration?: number): duration is number => duration != null && Number.isFinite(duration) && duration > 0;
 
-export const createSegment = (props?: { start?: number | undefined, end?: number | undefined, name?: string | undefined, tags?: unknown | undefined }): Omit<StateSegment, 'segColorIndex'> => ({
+export const createSegment = (props?: { start?: number | undefined, end?: number | undefined, name?: string | undefined, tags?: unknown | undefined, initial?: true }): Omit<StateSegment, 'segColorIndex'> => ({
   start: props?.start ?? 0,
   end: props?.end,
   name: props?.name || '',
@@ -20,6 +20,8 @@ export const createSegment = (props?: { start?: number | undefined, end?: number
   tags: props?.tags != null && typeof props.tags === 'object'
     ? Object.fromEntries(Object.entries(props.tags).map(([key, value]) => [key, String(value)]))
     : undefined,
+
+  ...(props?.initial && { initial: true }),
 });
 
 export const addSegmentColorIndex = (segment: Omit<StateSegment, 'segColorIndex'>, segColorIndex: number): StateSegment => ({
@@ -262,4 +264,4 @@ export function makeDurationSegments(segmentDuration: number, fileDuration: numb
   return edl;
 }
 
-export const isInitialSegment = (segments: SegmentBase[]) => segments.length === 1 && segments[0]!.start === 0 && segments[0]!.end == null;
+export const isInitialSegment = (segments: StateSegment[]) => segments.length === 0 || (segments.length === 1 && segments[0]!.initial);

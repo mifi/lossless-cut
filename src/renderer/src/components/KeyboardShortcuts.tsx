@@ -138,7 +138,10 @@ function WheelModifier({ text, wheelText, modifier }: { text: string, wheelText:
 const KeyboardShortcuts = memo(({
   keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg,
 }: {
-  keyBindings: KeyBinding[], setKeyBindings: Dispatch<SetStateAction<KeyBinding[]>>, resetKeyBindings: () => void, currentCutSeg: StateSegment,
+  keyBindings: KeyBinding[],
+  setKeyBindings: Dispatch<SetStateAction<KeyBinding[]>>,
+  resetKeyBindings: () => void,
+  currentCutSeg: StateSegment | undefined,
 }) => {
   const { t } = useTranslation();
 
@@ -835,7 +838,12 @@ const KeyboardShortcuts = memo(({
 function KeyboardShortcutsDialog({
   isShown, onHide, keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg,
 }: {
-  isShown: boolean, onHide: () => void, keyBindings: KeyBinding[], setKeyBindings: Dispatch<SetStateAction<KeyBinding[]>>, resetKeyBindings: () => void, currentCutSeg: StateSegment,
+  isShown: boolean,
+  onHide: () => void,
+  keyBindings: KeyBinding[],
+  setKeyBindings: Dispatch<SetStateAction<KeyBinding[]>>,
+  resetKeyBindings: () => void,
+  currentCutSeg: StateSegment | undefined,
 }) {
   const { t } = useTranslation();
 

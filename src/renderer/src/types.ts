@@ -61,6 +61,7 @@ export interface StateSegment extends SegmentBase, SegmentColorIndex {
   name: string;
   segId: string;
   tags?: SegmentTags | undefined;
+  initial?: true,
 }
 
 export interface SegmentToExport {

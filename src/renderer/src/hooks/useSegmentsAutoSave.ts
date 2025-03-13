@@ -4,7 +4,7 @@ import isEqual from 'lodash/isEqual';
 
 import isDev from '../isDev';
 import { saveLlcProject } from '../edlStore';
-import { createSegment, getCleanCutSegments } from '../segments';
+import { getCleanCutSegments } from '../segments';
 import { getSuffixedOutPath } from '../util';
 import { StateSegment } from '../types';
 import { errorToast } from '../swal';
@@ -35,18 +35,17 @@ export default ({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, custo
 
   useEffect(() => {
     async function save() {
-      // NOTE: Could lose a save if user closes too fast, but not a big issue I think
-      if (!autoSaveProjectFile || !debouncedSaveOperation) return;
-
       try {
-        // Initial state? Don't save (same as createInitialCutSegments but without counting)
-        if (isEqual(getCleanCutSegments(debouncedSaveOperation.cutSegments), getCleanCutSegments([createSegment()]))) return;
+        // NOTE: Could lose a save if user closes too fast, but not a big issue I think
+        if (!autoSaveProjectFile || !debouncedSaveOperation) return;
+
+        // Don't create llc file if no segments yet, or if initial segment:
+        if (debouncedSaveOperation.cutSegments.length === 0 || debouncedSaveOperation.cutSegments[0]?.initial) return;
 
         if (lastSaveOperation.current && lastSaveOperation.current.projectFileSavePath === debouncedSaveOperation.projectFileSavePath && isEqual(getCleanCutSegments(lastSaveOperation.current.cutSegments), getCleanCutSegments(debouncedSaveOperation.cutSegments))) {
           console.log('Segments unchanged, skipping save');
           return;
         }
-
         if (debouncedSaveOperation.filePath == null) {
           return;
         }
