@@ -585,13 +585,13 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   }, [checkFileOpened, fileDuration, loadCutSegments]);
 
   const selectSegments = useCallback((segments: { segId: string }[]) => {
-    if (segments.length === 0 || segments.length === cutSegments.length) return; // no point in selecting none or all
+    if (segments.length === 0) return; // no point in selecting none
     setDeselectedSegmentIds((existing) => {
       const ret = { ...existing };
       segments.forEach(({ segId }) => { ret[segId] = false; });
       return ret;
     });
-  }, [cutSegments.length]);
+  }, []);
 
   const selectSegmentsByLabel = useCallback(async () => {
     const value = await selectSegmentsByLabelDialog(currentCutSeg?.name);
