@@ -922,7 +922,7 @@
     "Smart cut is experimental and will not work on all files.": "Smart Cut ist experimentell und funktioniert nicht bei allen Dateien.",
     "There is a known issue in FFmpeg with cutting FLAC files. The file will be re-encoded, which is still lossless, but the export may be slower.": "Es gibt ein bekanntes Problem in FFmpeg beim Schneiden von FLAC-Dateien. Die Datei wird neu kodiert, was weiterhin verlustfrei ist, aber der Export kann langsamer sein.",
     "This file contains an audio track that FFmpeg is unable to mux into the MP4 format, so MOV has been auto-selected as the default output format.": "Diese Datei enthält eine Audiospur, die FFmpeg nicht in das MP4-Format muxen kann, deshalb wurde MOV automatisch als Standardausgabeformat ausgewählt.",
-    "Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied": "Ob Metadaten aus der Quelldatei erhalten bleiben sollen. Voreinstellung: Globale (Datei-Metadaten), spur- und kapitelbezogene Metadaten werden kopiert. Nicht-global: Es werden nur Metadaten pro Spur und pro Kapitel kopiert. Keine: Es werden keine Metadaten kopiert.",
+    "Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied": "Ob Metadaten aus der Quelldatei erhalten bleiben sollen. Voreinstellung: Global (Datei-Metadaten), spur- und kapitelbezogene Metadaten werden kopiert. Nicht-global: Es werden nur Metadaten pro Spur und pro Kapitel kopiert. Keine: Es werden keine Metadaten kopiert.",
     "You are not allowed to write the output file. This probably means that the file already exists with the wrong permissions, or you don't have write permissions to the output folder.": "Sie sind nicht berechtigt, die Ausgabedatei zu schreiben. Dies bedeutet wahrscheinlich, dass die Datei bereits mit den falschen Berechtigungen vorhanden ist oder dass Sie keine Schreibberechtigung für den Ausgabeordner haben.",
     "You can customize the file name of the merged file using special variables.": "Sie können den Dateinamen der zusammengeführten Datei durch die Verwendung spezieller Variablen anpassen.",
     "Combination is already bound to \"{{alreadyBoundKey}}\". Do you want to replace the existing binding?": "Die Kombination ist bereits an „{{alreadyBoundKey}}“ gebunden. Möchten Sie die bestehende Bindung ersetzen?",
@@ -962,5 +962,6 @@
     "Jump & seek to last segment": "Überspringen und zum letzten Segment wechseln",
     "Jump & seek to next segment": "Überspringen und zum nächsten Segment wechseln",
     "Jump & seek to previous segment": "Überspringen und zum vorherigen Segment wechseln",
-    "Feather segments +5 sec": "Segmente überblenden +5s"
+    "Feather segments +5 sec": "Segmente überblenden +5s",
+    "Expand segments +5 sec": "Segmente erweitern +5 sec"
 }
