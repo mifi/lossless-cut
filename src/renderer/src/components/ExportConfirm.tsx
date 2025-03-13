@@ -34,7 +34,7 @@ const outDirStyle: CSSProperties = { ...highlightedTextStyle, wordBreak: 'break-
 
 const warningStyle: CSSProperties = { color: 'var(--orange8)', fontSize: '80%', marginBottom: '.5em' };
 
-const infoStyle: CSSProperties = { color: 'white', fontSize: '80%', marginBottom: '.5em' };
+const infoStyle: CSSProperties = { color: 'var(--grey12)', fontSize: '80%', marginBottom: '.5em' };
 
 const adjustCutFromValues = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const adjustCutToValues = [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
