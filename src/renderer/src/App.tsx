@@ -2377,6 +2377,9 @@ function App() {
   const onTunerRequested = useCallback((type: TunerType) => {
     setSettingsVisible(false);
     setTunerVisible(type);
+    if (type === 'waveformHeight') {
+      setWaveformMode('waveform');
+    }
   }, []);
 
   useEffect(() => {
