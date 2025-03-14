@@ -2,26 +2,31 @@
 
 ## Typical workflow
 
-- Drag drop a video file into player or use <kbd>⌘</kbd>/<kbd>CTRL</kbd>+<kbd>O</kbd>.
-- Press <kbd>SPACE</kbd> to play/pause or <kbd>◀</kbd><kbd>▶</kbd>, <kbd>,</kbd><kbd>.</kbd> or mouse/trackpad wheel to seek back/forth.
-- Set the cut segment's start and end time by moving the time marker and then pressing <kbd>I</kbd> to set start time, and <kbd>O</kbd> to set end time. <kbd>+</kbd> to create a new segment. If you omit pressing <kbd>O</kbd>, a [marker](#markers) will be created instead.
-  - Note that all segments you create will be **preserved** and exported as new files. You can change this behavior with the **Yin Yang** symbol ☯️, in which case it will instead **remove** all selected segments and export the parts **between** segments.
-  - Note also that start times will not be accurate, see [Known issues](issues.md)
-- *(optional)* If you want to add more than one segment, move to the desired start time and press <kbd>+</kbd>, then select the next segment start/end times with <kbd>I</kbd>/<kbd>O</kbd>.
-- *(optional)* If you want to re-merge all the selected segments into one file after cutting, toggle the button `Separate files` to `Merge cuts`.
-- *(optional)* If you want to export to a certain output folder, press the `Working dir unset` button (default: Input file folder)
-- *(optional)* If you want to change orientation, press the **rotation** button
-- *(optional)* By default, audio, video and subtitle tracks from the input file will be cut and exported. Press the `Tracks` button to customise and/or add new tracks from other files.
-- *(optional)* select a new output format
+- **Drag and drop** a video file into player or use <kbd>⌘</kbd>/<kbd>CTRL</kbd> + <kbd>O</kbd>.
+- <kbd>SPACE</kbd> to play/pause or <kbd>←</kbd> <kbd>→</kbd> <kbd>,</kbd> <kbd>.</kbd> or mouse/trackpad wheel to seek back/forth.
+- Set the start/end times of the current segment by first moving the timeline cursor and then pressing <kbd>I</kbd> to set start time and <kbd>O</kbd> to set end time.
+- <kbd>+</kbd> to create a new segment.
+- <kbd>B</kbd> to split the segment at the timeline cursor.
+- <kbd>BACKSPACE</kbd> to remove cutpoint/segment.
+- If you create segments without an end time, it is a [marker](#markers) instead of a segment.
+  - Note that when exporting, all segments you create will be **preserved** and exported as new files. You can change this behavior with the **Yin Yang** symbol ☯️, in which case the behaviour is inverted and LosslessCut will instead **skip** all selected segments and export the parts **between** segments as files.
+  - Also note that start times will not be accurate, see [Known issues](issues.md).
+- *(optional)* <kbd>+</kbd> to add another segment at the current cursor time. Then select the segment end time with <kbd>O</kbd>.
+- *(optional)* If you want to merge all the selected segments into one file after cutting, change the `Export mode` from `Separate files` to `Merge cuts`.
+- *(optional)* If you want to export to a certain output folder, press the `Working dir unset` button (defaults to same folder as source file).
+- *(optional)* If you want to change orientation, press the **rotation** button.
+- *(optional)* By default, most audio, video and subtitle tracks from the input file will be cut and exported. Press the `Tracks` button to customise and/or add new tracks from other files.
+- *(optional)* Select a new output format (remux).
 - *(optional)* In the right-hand segments panel, right click a segment for options, or drag-drop to reorder. Segments will appear in this order in the merged output.
 - **When done, press the `Export` button (or <kbd>E</kbd>) to show an overview with export options.**
-- *(optional)* adjust any export options
+- *(optional)* Adjust any export options.
 - **Then press `Export` again to confirm the export**
-- Press the **Camera** button (or <kbd>C</kbd>) if you want to take a JPEG/PNG snapshot from the current time
-- If you want to move the original file to trash, press the **trash** button
-- For best results you may need to trial and error with another output format (Matroska takes nearly everything), change keyframe cut mode or disable some tracks (see [known issues](issues.md)).
+- Press the **Camera** button (or <kbd>C</kbd>) if you want to take a JPEG/PNG snapshot from the current time.
+- If you want to move the original file to trash, press the **trash** button.
+- For best results you may need to trial and error with another output format (Matroska can hold nearly everything), change keyframe cut mode or disable some tracks (see [known issues](issues.md)).
 - Press <kbd>SHIFT</kbd> + <kbd>/</kbd> to view and edit all keyboard & mouse shortcuts.
 - **Note:** The original video file will not be modified. Instead, a file is created file in the same directory as the original file with from/to timestamps in the file name.
+- See Keyboard shortcuts dialog for more custom actions. (<kbd>SHIFT</kbd> + <kbd>/</kbd>)
 
 ## Primer: Video & audio formats vs. codecs
 
