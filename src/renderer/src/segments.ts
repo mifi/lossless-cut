@@ -9,11 +9,19 @@ import { PlaybackMode, SegmentBase, SegmentTags, StateSegment } from './types';
 
 export const isDurationValid = (duration?: number): duration is number => duration != null && Number.isFinite(duration) && duration > 0;
 
-export const createSegment = (props?: { start?: number | undefined, end?: number | undefined, name?: string | undefined, tags?: unknown | undefined, initial?: true }): Omit<StateSegment, 'segColorIndex'> => ({
+export const createSegment = (props?: {
+  start?: number | undefined,
+  end?: number | undefined,
+  name?: string | undefined,
+  tags?: unknown | undefined,
+  initial?: true,
+  selected?: boolean,
+}): Omit<StateSegment, 'segColorIndex'> => ({
   start: props?.start ?? 0,
   end: props?.end,
   name: props?.name || '',
   segId: nanoid(),
+  selected: props?.selected ?? true,
 
   // `tags` is an optional object (key-value). Values must always be string
   // See https://github.com/mifi/lossless-cut/issues/879
@@ -29,11 +37,10 @@ export const addSegmentColorIndex = (segment: Omit<StateSegment, 'segColorIndex'
   segColorIndex,
 });
 
-export const getCleanCutSegments = (cs: Pick<StateSegment, 'start' | 'end' | 'name' | 'tags'>[]) => cs.map((seg) => ({
-  start: seg.start,
-  end: seg.end,
-  name: seg.name,
-  tags: seg.tags,
+export const mapSaveableSegments = (segments: StateSegment[]) => segments.map(({
+  start, end, name, tags, selected,
+}) => ({
+  start, end, name, tags, selected,
 }));
 
 // in the past we had non-string tags
@@ -103,8 +110,8 @@ export function combineOverlappingSegments<T extends SegmentBase>(existingSegmen
   });
 }
 
-export function combineSelectedSegments({ existingSegments, isSegmentSelected }: { existingSegments: StateSegment[], isSegmentSelected: (seg: StateSegment) => boolean }) {
-  const selectedSegments = existingSegments.filter((segment) => isSegmentSelected(segment));
+export function combineSelectedSegments(existingSegments: StateSegment[]) {
+  const selectedSegments = existingSegments.filter((segment) => segment.selected);
   const firstSegment = minBy(selectedSegments, (seg) => seg.start);
   const lastSegment = maxBy(selectedSegments, (seg) => seg.end ?? seg.start);
 
@@ -118,7 +125,7 @@ export function combineSelectedSegments({ existingSegments, isSegmentSelected }:
       }];
     }
 
-    if (isSegmentSelected(existingSegment)) {
+    if (existingSegment.selected) {
       return []; // remove other selected segments
     }
 

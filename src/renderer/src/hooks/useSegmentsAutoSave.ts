@@ -4,7 +4,7 @@ import isEqual from 'lodash/isEqual';
 
 import isDev from '../isDev';
 import { saveLlcProject } from '../edlStore';
-import { getCleanCutSegments } from '../segments';
+import { mapSaveableSegments } from '../segments';
 import { getSuffixedOutPath } from '../util';
 import { StateSegment } from '../types';
 import { errorToast } from '../swal';
@@ -37,16 +37,15 @@ export default ({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, custo
     async function save() {
       try {
         // NOTE: Could lose a save if user closes too fast, but not a big issue I think
-        if (!autoSaveProjectFile || !debouncedSaveOperation) return;
+        if (!autoSaveProjectFile
+          || !debouncedSaveOperation
+          || debouncedSaveOperation.filePath == null
+          // Don't create llc file if no segments yet, or if initial segment:
+          || debouncedSaveOperation.cutSegments.length === 0
+          || debouncedSaveOperation.cutSegments[0]?.initial) return;
 
-        // Don't create llc file if no segments yet, or if initial segment:
-        if (debouncedSaveOperation.cutSegments.length === 0 || debouncedSaveOperation.cutSegments[0]?.initial) return;
-
-        if (lastSaveOperation.current && lastSaveOperation.current.projectFileSavePath === debouncedSaveOperation.projectFileSavePath && isEqual(getCleanCutSegments(lastSaveOperation.current.cutSegments), getCleanCutSegments(debouncedSaveOperation.cutSegments))) {
+        if (lastSaveOperation.current && lastSaveOperation.current.projectFileSavePath === debouncedSaveOperation.projectFileSavePath && isEqual(mapSaveableSegments(lastSaveOperation.current.cutSegments), mapSaveableSegments(debouncedSaveOperation.cutSegments))) {
           console.log('Segments unchanged, skipping save');
-          return;
-        }
-        if (debouncedSaveOperation.filePath == null) {
           return;
         }
 

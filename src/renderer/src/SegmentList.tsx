@@ -251,7 +251,6 @@ function SegmentList({
   toggleSegmentsList,
   splitCurrentSegment,
   selectedSegments,
-  isSegmentSelected,
   onSelectSingleSegment,
   onToggleSegmentSelected,
   onDeselectAllSegments,
@@ -292,7 +291,6 @@ function SegmentList({
   toggleSegmentsList: () => void,
   splitCurrentSegment: UseSegments['splitCurrentSegment'],
   selectedSegments: DefiniteSegmentBase[],
-  isSegmentSelected: UseSegments['isSegmentSelected'],
   onSelectSingleSegment: UseSegments['selectOnlySegment'],
   onToggleSegmentSelected: UseSegments['toggleSegmentSelected'],
   onDeselectAllSegments: UseSegments['deselectAllSegments'],
@@ -493,7 +491,7 @@ function SegmentList({
         <div style={{ padding: '0 .1em 0 .3em', overflowX: 'hidden', overflowY: 'scroll', flexGrow: 1 }} className="consistent-scrollbar">
           <ReactSortable list={sortableList} setList={setSortableList} disabled={!!invertCutSegments} handle=".segment-handle">
             {sortableList.map(({ id, seg }, index) => {
-              const selected = !invertCutSegments && isSegmentSelected({ segId: seg.segId });
+              const selected = 'selected' in seg ? seg.selected : true;
               return (
                 <Segment
                   key={id}

@@ -355,7 +355,7 @@ function App() {
   }, [isFileOpened]);
 
   const {
-    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, labelSegment, splitCurrentSegment, focusSegmentAtCursor, createNumSegments, createFixedDurationSegments, createFixedByteSizedSegments, createRandomSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, inverseCutSegments, clearSegments, clearSegColorCounter, loadCutSegments, isSegmentSelected, setCutTime, setCurrentSegIndex, labelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, setDeselectedSegmentIds, selectSegmentsByLabel, selectSegmentsByExpr, selectAllMarkers, mutateSegmentsByExpr, toggleSegmentSelected, selectOnlySegment, selectedSegments, segmentsOrInverse, segmentsToExport, duplicateCurrentSegment, duplicateSegment, updateSegAtIndex, findSegmentsAtCursor, maybeCreateFullLengthSegment,
+    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, labelSegment, splitCurrentSegment, focusSegmentAtCursor, createNumSegments, createFixedDurationSegments, createFixedByteSizedSegments, createRandomSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, inverseCutSegments, clearSegments, clearSegColorCounter, loadCutSegments, setCutTime, setCurrentSegIndex, labelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, selectSegmentsByLabel, selectSegmentsByExpr, selectAllMarkers, mutateSegmentsByExpr, toggleSegmentSelected, selectOnlySegment, selectedSegments, segmentsOrInverse, segmentsToExport, duplicateCurrentSegment, duplicateSegment, updateSegAtIndex, findSegmentsAtCursor, maybeCreateFullLengthSegment,
   } = useSegments({ filePath, workingRef, setWorking, setProgress, videoStream: activeVideoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta });
 
   const { getEdlFilePath, projectFileSavePath, getProjectFileSavePath } = useSegmentsAutoSave({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, customOutDir, cutSegments });
@@ -622,7 +622,6 @@ function App() {
     setThumbnails([]);
     setShortestFlag(false);
     setZoomWindowStartTime(0);
-    setDeselectedSegmentIds({});
     setSubtitlesByStreamId({});
     setActiveAudioStreamIndexes(new Set());
     setActiveVideoStreamIndex(undefined);
@@ -631,7 +630,7 @@ function App() {
     setExportConfirmVisible(false);
     setOutputPlaybackRateState(1);
     setCurrentFileExportCount(0);
-  }, [videoRef, setCommandedTime, setPlaybackRate, setPlaying, playingRef, playbackModeRef, setCompatPlayerEventId, setFileDuration, cutSegmentsHistory, setFileFormat, setDetectedFileFormat, setCopyStreamIdsByFile, setThumbnails, setDeselectedSegmentIds, setSubtitlesByStreamId, setOutputPlaybackRateState]);
+  }, [videoRef, setCommandedTime, setPlaybackRate, setPlaying, playingRef, playbackModeRef, setCompatPlayerEventId, setFileDuration, cutSegmentsHistory, setFileFormat, setDetectedFileFormat, setCopyStreamIdsByFile, setThumbnails, setSubtitlesByStreamId, setOutputPlaybackRateState]);
 
 
   const showUnsupportedFileMessage = useCallback(() => {
@@ -1305,7 +1304,7 @@ function App() {
     }
   }, [compatPlayerEnabled, playingRef, setPlaybackRate, videoRef]);
 
-  const loadEdlFile = useCallback(async ({ path, type, append }: { path: string, type: EdlFileType, append?: boolean }) => {
+  const loadEdlFile = useCallback(async ({ path, type, append = false }: { path: string, type: EdlFileType, append?: boolean }) => {
     console.log('Loading EDL file', type, path, append);
     loadCutSegments(await readEdlFile({ type, path, fps: detectedFps }), append);
   }, [detectedFps, loadCutSegments]);
@@ -1350,7 +1349,7 @@ function App() {
         const edl = tryMapChaptersToEdl(chapters);
         if (edl.length > 0 && enableAskForImportChapters && (await askForImportChapters())) {
           console.log('Convert chapters to segments', edl);
-          loadCutSegments(edl);
+          loadCutSegments(edl, false);
         }
       } catch (err) {
         if (err instanceof DirectoryAccessDeclinedError) throw err;
@@ -2573,7 +2572,6 @@ function App() {
                       onRemoveSelected={removeSelectedSegments}
                       toggleSegmentsList={toggleSegmentsList}
                       splitCurrentSegment={splitCurrentSegment}
-                      isSegmentSelected={isSegmentSelected}
                       selectedSegments={segmentsOrInverse.selected}
                       onSelectSingleSegment={selectOnlySegment}
                       onToggleSegmentSelected={toggleSegmentSelected}
@@ -2633,7 +2631,6 @@ function App() {
                   isFileOpened={isFileOpened}
                   onWheel={onTimelineWheel}
                   goToTimecode={goToTimecode}
-                  isSegmentSelected={isSegmentSelected}
                   darkMode={darkMode}
                 />
 

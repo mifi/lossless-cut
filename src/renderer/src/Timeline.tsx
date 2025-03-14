@@ -115,7 +115,6 @@ function Timeline({
   onWheel,
   commandedTimeRef,
   goToTimecode,
-  isSegmentSelected,
   darkMode,
 } : {
   fileDurationNonZero: number,
@@ -149,7 +148,6 @@ function Timeline({
   onWheel: WheelEventHandler,
   commandedTimeRef: MutableRefObject<number>,
   goToTimecode: () => void,
-  isSegmentSelected: (a: { segId: string }) => boolean,
   darkMode: boolean,
 }) {
   const { t } = useTranslation();
@@ -407,7 +405,7 @@ function Timeline({
           ))}
 
           {cutSegments.map((seg, i) => {
-            const selected = invertCutSegments || isSegmentSelected({ segId: seg.segId });
+            const selected = invertCutSegments || seg.selected;
 
             return (
               <TimelineSeg

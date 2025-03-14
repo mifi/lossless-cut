@@ -42,6 +42,7 @@ export const llcProjectV2Schema = z.object({
     end: z.number().optional(),
     name: z.string(),
     tags: segmentTagsSchema.optional(),
+    selected: z.boolean().optional(),
   }).array(),
 });
 
@@ -67,6 +68,7 @@ export interface StateSegment extends SegmentBase, SegmentColorIndex {
   segId: string;
   tags?: SegmentTags | undefined;
   initial?: true,
+  selected: boolean,
 }
 
 export interface SegmentToExport extends DefiniteSegmentBase {
