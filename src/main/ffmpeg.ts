@@ -561,24 +561,24 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
     if (videoStreamIndex != null) {
       const videoFilters: string[] = [];
       if (fps != null) videoFilters.push(`fps=${fps}`);
-      // todo
-      // [libx264 @ 0x13bf07a40] height not divisible by 2 (800x333)
-      // [vost#0:0/libx264 @ 0x13bf07770] Error initializing output stream: Error while opening encoder for output stream #0:0 - maybe incorrect parameters such as bit_rate, rate, width or height
-      if (size != null) videoFilters.push(`scale=${size}:${size}:flags=lanczos:force_original_aspect_ratio=decrease`);
+      if (size != null) videoFilters.push(`scale=${size}:${size}:flags=lanczos:force_original_aspect_ratio=decrease:force_divisible_by=2`);
       const videoFiltersStr = videoFilters.length > 0 ? videoFilters.join(',') : 'null';
       graph.push(`[0:${videoStreamIndex}]${videoFiltersStr}[video]`);
     }
 
     if (audioStreamIndexes.length > 0) {
-      const indexesStr = audioStreamIndexes.map((i) => `[0:${i}]`).join('');
-      let audioFiltersStr;
       if (audioStreamIndexes.length > 1) {
+        const resampledStr = audioStreamIndexes.map((i) => `[resampled${i}]`).join('');
         const weightsStr = audioStreamIndexes.map(() => '1').join(' ');
-        audioFiltersStr = `amix=inputs=${audioStreamIndexes.length}:duration=longest:weights=${weightsStr}:normalize=0:dropout_transition=2`;
+        graph.push(
+          // First resample because else we get the lowest sample rate
+          ...audioStreamIndexes.map((i) => `[0:${i}]aresample=44100[resampled${i}]`),
+          // now mix all audio channels together
+          `${resampledStr}amix=inputs=${audioStreamIndexes.length}:duration=longest:weights=${weightsStr}:normalize=0:dropout_transition=2[audio]`,
+        );
       } else {
-        audioFiltersStr = 'anull';
+        graph.push(`[0:${audioStreamIndexes[0]}]anull[audio]`);
       }
-      graph.push(`${indexesStr}${audioFiltersStr}[audio]`);
     }
 
     if (graph.length === 0) return [];
@@ -597,13 +597,13 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
     // '-flags', 'low_delay', // this seems to ironically give a *higher* delay
     '-flush_packets', '1',
 
-    '-vsync', 'passthrough',
-
     '-ss', String(seekTo),
 
     '-noautorotate',
 
     '-i', path,
+
+    '-fps_mode', 'passthrough',
 
     ...(encode ? [
       ...getFilters(),
