@@ -63,6 +63,16 @@ describe('parseYouTube', () => {
       { start: 0, end: undefined, name: 'Test 1' },
     ]);
   });
+
+  // possibly https://github.com/mifi/lossless-cut/issues/2344
+  it('Windows crlf', () => {
+    const str = ' 00:00: Test 1\r\n00:01: Test 2';
+    const edl = parseYouTube(str);
+    expect(edl).toEqual([
+      { start: 0, end: 1, name: 'Test 1' },
+      { start: 1, end: undefined, name: 'Test 2' },
+    ]);
+  });
 });
 
 it('formatYouTube', () => {

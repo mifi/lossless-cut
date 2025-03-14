@@ -289,7 +289,7 @@ export function parseYouTube(str: string) {
     return { time, name };
   }
 
-  const lines = str.split('\n').map((line) => parseLine(line)).flatMap((line) => (line ? [line] : []));
+  const lines = str.split(/\r?\n/).map((line) => parseLine(line)).flatMap((line) => (line ? [line] : []));
 
   const linesSorted = sortBy(lines, (l) => l.time);
 
