@@ -544,9 +544,11 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     }
 
     const segment = cutSegments[firstSegmentAtCursorIndex];
-    if (segment == null) throw new Error();
+    invariant(segment != null);
 
     const getNewName = (oldName: string, suffix: string) => oldName && `${segment.name} ${suffix}`;
+
+    if (segment.start === relevantTime || segment.end === relevantTime) return; // No point
 
     const firstPart = createIndexedSegment({ segment: { name: getNewName(segment.name, '1'), start: segment.start, end: relevantTime }, incrementCount: false });
     const secondPart = createIndexedSegment({ segment: { name: getNewName(segment.name, '2'), start: relevantTime, end: segment.end }, incrementCount: true });

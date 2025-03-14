@@ -25,7 +25,8 @@ const buttonBaseStyle = {
   margin: '0 3px', borderRadius: 3, color: 'white', cursor: 'pointer',
 };
 
-const neutralButtonColor = 'var(--gray8)';
+const disabledButtonStyle = { color: 'var(--gray10)', backgroundColor: 'var(--gray6)' };
+const neutralButtonColor = 'var(--gray9)';
 
 // eslint-disable-next-line react/display-name
 const Segment = memo(({
@@ -319,6 +320,13 @@ function SegmentList({
 
   const { invertCutSegments, simpleMode, darkMode } = useUserSettings();
 
+  const getButtonColor = useCallback((seg: StateSegment | undefined, next?: boolean) => getSegColor(seg ? { segColorIndex: next ? seg.segColorIndex + 1 : seg.segColorIndex } : undefined).desaturate(0.3).lightness(darkMode ? 45 : 55).string(), [darkMode, getSegColor]);
+  const currentSegColor = useMemo(() => getButtonColor(currentCutSeg), [currentCutSeg, getButtonColor]);
+  const segAtCursorColor = useMemo(() => getButtonColor(segmentAtCursor), [getButtonColor, segmentAtCursor]);
+
+  const segmentsTotal = useMemo(() => selectedSegments.reduce((acc, seg) => (seg.end == null ? 0 : seg.end - seg.start) + acc, 0), [selectedSegments]);
+
+
   const segmentsOrInverse: (InverseCutSegment | StateSegment)[] = invertCutSegments ? inverseCutSegments : cutSegments;
 
   const sortableList = useMemo(() => segmentsOrInverse.map((seg) => ({ id: seg.segId, seg })), [segmentsOrInverse]);
@@ -356,12 +364,6 @@ function SegmentList({
   }, [cutSegments.length, t, updateSegOrder]);
 
   function renderFooter() {
-    const getButtonColor = (seg: StateSegment | undefined) => getSegColor(seg).desaturate(0.3).lightness(darkMode ? 45 : 55).string();
-    const currentSegColor = getButtonColor(currentCutSeg);
-    const segAtCursorColor = getButtonColor(segmentAtCursor);
-
-    const segmentsTotal = selectedSegments.reduce((acc, seg) => (seg.end == null ? 0 : seg.end - seg.start) + acc, 0);
-
     return (
       <>
         <div style={{ display: 'flex', padding: '5px 0', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid var(gray6)' }}>
@@ -375,7 +377,7 @@ function SegmentList({
 
           <FaMinus
             size={24}
-            style={{ ...buttonBaseStyle, background: cutSegments.length >= 2 ? currentSegColor : neutralButtonColor }}
+            style={{ ...buttonBaseStyle, ...(cutSegments.length >= 2 ? { backgroundColor: currentSegColor } : disabledButtonStyle) }}
             role="button"
             title={t('Remove cutpoint from segment {{segmentNumber}}', { segmentNumber: currentSegIndex + 1 })}
             onClick={() => removeSegment(currentSegIndex)}
@@ -387,7 +389,7 @@ function SegmentList({
                 size={16}
                 title={t('Change segment order')}
                 role="button"
-                style={{ ...buttonBaseStyle, padding: 4, background: currentSegColor }}
+                style={{ ...buttonBaseStyle, padding: 4, ...(cutSegments.length >= 2 ? { backgroundColor: currentSegColor } : disabledButtonStyle) }}
                 onClick={() => onReorderSegs(currentSegIndex)}
               />
 
@@ -395,7 +397,7 @@ function SegmentList({
                 size={16}
                 title={t('Label segment')}
                 role="button"
-                style={{ ...buttonBaseStyle, padding: 4, background: currentSegColor }}
+                style={{ ...buttonBaseStyle, padding: 4, ...(cutSegments.length > 0 ? { backgroundColor: currentSegColor } : disabledButtonStyle) }}
                 onClick={() => onLabelSegment(currentSegIndex)}
               />
             </>
@@ -405,16 +407,16 @@ function SegmentList({
             size={22}
             title={t('Split segment at cursor')}
             role="button"
-            style={{ ...buttonBaseStyle, padding: 1, background: segmentAtCursor ? segAtCursorColor : neutralButtonColor }}
+            style={{ ...buttonBaseStyle, padding: 1, ...(segmentAtCursor ? { backgroundColor: segAtCursorColor } : disabledButtonStyle) }}
             onClick={splitCurrentSegment}
           />
 
           {!invertCutSegments && (
             <FaRegCheckCircle
               size={22}
-              title={t('Invert selected segments')}
+              title={t('Invert segment selection')}
               role="button"
-              style={{ ...buttonBaseStyle, padding: 1, background: segmentAtCursor ? segAtCursorColor : neutralButtonColor }}
+              style={{ ...buttonBaseStyle, padding: 1, ...(cutSegments.length > 0 ? { backgroundColor: neutralButtonColor } : disabledButtonStyle) }}
               onClick={onInvertSelectedSegments}
             />
           )}
@@ -530,7 +532,7 @@ function SegmentList({
           </ReactSortable>
         </div>
 
-        {segmentsOrInverse.length > 0 && renderFooter()}
+        {renderFooter()}
       </motion.div>
     </>
   );
