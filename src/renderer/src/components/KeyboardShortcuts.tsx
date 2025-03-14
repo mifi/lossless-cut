@@ -15,11 +15,13 @@ import { getModifier } from '../hooks/useTimelineScroll';
 import { KeyBinding, KeyboardAction, ModifierKey } from '../../../../types';
 import { StateSegment } from '../types';
 import Sheet from './Sheet';
+import { splitKeyboardKeys } from '../util';
 
 
 type Category = string;
 
 type ActionsMap = Record<KeyboardAction, { name: string, category?: Category, before?: ReactNode }>;
+
 
 const renderKeys = (keys: string[]) => keys.map((key, i) => (
   <Fragment key={key}>
@@ -813,7 +815,7 @@ const KeyboardShortcuts = memo(({
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                     {bindingsForThisAction.map(({ keys }) => (
                       <div key={keys} style={{ display: 'flex', alignItems: 'center' }}>
-                        {renderKeys(keys.split('+'))}
+                        {renderKeys(splitKeyboardKeys(keys))}
 
                         <IconButton title={t('Remove key binding')} appearance="minimal" intent="danger" icon={DeleteIcon} onClick={() => onDeleteBindingClick({ action, keys })} />
                       </div>

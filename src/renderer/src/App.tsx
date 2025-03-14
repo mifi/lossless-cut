@@ -89,7 +89,7 @@ import BigWaveform from './components/BigWaveform';
 
 import isDev from './isDev';
 import { BatchFile, Chapter, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, goToTimecodeDirectArgsSchema, openFilesActionArgsSchema, ParamsByStreamId, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, TunerType } from './types';
-import { CaptureFormat, KeyboardAction, Html5ifyMode, WaveformMode, ApiActionRequest } from '../../../types';
+import { CaptureFormat, KeyboardAction, Html5ifyMode, WaveformMode, ApiActionRequest, KeyBinding } from '../../../types';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 import useLoading from './hooks/useLoading';
 import useVideo from './hooks/useVideo';
@@ -177,6 +177,9 @@ function App() {
   const {
     captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMetadata, preserveChapters, preserveMovData, movFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, waveformHeight, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, hideOsNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, preserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, mergedFileTemplate, setMergedFileTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, setCleanupChoices, darkMode, setDarkMode, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames, cutToAdjustmentFrames,
   } = allUserSettings;
+
+  // Note that each action may be multiple key bindings and this will only be the first binding for each action
+  const keyBindingByAction = useMemo(() => Object.fromEntries(keyBindings.map((binding) => [binding.action, binding])) as Record<KeyboardAction, KeyBinding>, [keyBindings]);
 
   const { working, setWorking, workingRef, abortWorking } = useLoading();
   const { videoRef, videoContainerRef, playbackRate, setPlaybackRate, outputPlaybackRate, setOutputPlaybackRate, commandedTime, seekAbs, playingRef, getRelevantTime, setPlaying, onSeeked, relevantTime, onStartPlaying, setCommandedTime, setCompatPlayerEventId, compatPlayerEventId, setOutputPlaybackRateState, commandedTimeRef, onStopPlaying, onVideoAbort, playerTime, setPlayerTime, playbackModeRef, playing, play, pause, seekRel } = useVideo({ filePath });
@@ -2479,7 +2482,7 @@ function App() {
 
                 {/* Middle part (also shown in fullscreen): */}
                 <div style={{ position: 'relative', flexGrow: 1, overflow: 'hidden' }} ref={videoContainerRef}>
-                  {!isFileOpened && <NoFileLoaded mifiLink={mifiLink} currentCutSeg={currentCutSeg} onClick={openFilesDialog} darkMode={darkMode} />}
+                  {!isFileOpened && <NoFileLoaded mifiLink={mifiLink} currentCutSeg={currentCutSeg} onClick={openFilesDialog} darkMode={darkMode} keyBindingByAction={keyBindingByAction} />}
 
                   <div className="no-user-select" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, visibility: !isFileOpened || !hasVideo || bigWaveformEnabled ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
                     {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
