@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 import Lottie from 'react-lottie-player/dist/LottiePlayerLight';
 import { Trans } from 'react-i18next';
 
-import { primaryColor } from '../colors';
 import loadingLottie from '../7077-magic-flow.json';
 import Button from './Button';
+import styles from './Working.module.css';
 
 
 function Working({ text, progress, onAbortClick }: {
@@ -14,9 +14,9 @@ function Working({ text, progress, onAbortClick }: {
   onAbortClick: () => void
 }) {
   return (
-    <div style={{ position: 'absolute', bottom: 0, top: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <div className={styles['wrapper']} style={{ position: 'absolute', bottom: 0, top: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <motion.div
-        style={{ background: primaryColor, boxShadow: `${primaryColor} 0px 0px 20px 25px`, borderRadius: 60, paddingBottom: 5, color: 'white', fontSize: 14, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+        className={styles['loader-box']}
         initial={{ opacity: 0, scale: 0 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0 }}
@@ -30,18 +30,18 @@ function Working({ text, progress, onAbortClick }: {
           />
         </div>
 
-        <div style={{ marginTop: 5 }}>
+        <div style={{ marginTop: '.7em', textAlign: 'center' }}>
           {text}...
         </div>
 
         {(progress != null) && (
-          <div style={{ marginTop: 5 }}>
+          <div style={{ marginTop: '.5em' }}>
             {`${(progress * 100).toFixed(1)} %`}
           </div>
         )}
 
-        <div style={{ marginTop: 5 }}>
-          <Button onClick={onAbortClick} style={{ padding: '.5em 1em' }}><Trans>Abort</Trans></Button>
+        <div style={{ marginTop: '1.5em' }}>
+          <Button onClick={onAbortClick} style={{ fontSize: '1.1em', padding: '.2em 1em' }}><Trans>Abort</Trans></Button>
         </div>
       </motion.div>
     </div>

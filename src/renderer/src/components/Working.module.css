@@ -1,0 +1,24 @@
+.wrapper {
+  background: var(--whiteA4);
+}
+
+:global(.dark-theme) .wrapper {
+  background: var(--blackA4);
+}
+
+.loader-box {
+  max-width: 16em;
+  min-width: 13em;
+  border-radius: 1.5em;
+  padding: 2.5% 1% 1.7% 1%;
+  color: white;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  background: var(--blackA6);
+  box-shadow: var(--blackA6) 0 0 .7em 0;
+  border: 1px solid var(--whiteA5);
+  backdrop-filter: blur(7px);
+}

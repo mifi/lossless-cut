@@ -6,7 +6,7 @@ import { abortFfmpegs } from '../ffmpeg';
 export default () => {
   const { t } = useTranslation();
 
-  const [working, setWorkingState] = useState<{ text: string, abortController?: AbortController | undefined }>();
+  const [working, setWorkingState] = useState<{ text: string, abortController?: AbortController | undefined } | undefined>();
 
   // Store "working" in a ref so we can avoid race conditions
   const workingRef = useRef(!!working);
