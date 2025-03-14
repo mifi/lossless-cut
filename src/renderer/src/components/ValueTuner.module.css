@@ -2,16 +2,16 @@
   min-width: 20em;
   position: absolute;
   bottom: 0;
-  padding: 2em;
-  margin: 1.3em;
+  padding: 1.2em;
+  margin: 1em;
   border-radius: 1em;
   color: var(--gray12);
-  background: var(--whiteA9);
+  background: var(--whiteA7);
   box-shadow: 0 0 .3em .3em var(--whiteA8);
-  backdrop-filter: blur(30px);
+  backdrop-filter: blur(10px);
 }
 
 :global(.dark-theme) .value-tuner {
-  background: var(--blackA9);
+  background: var(--blackA7);
   box-shadow: 0 0 .3em .3em var(--blackA8);
 }
