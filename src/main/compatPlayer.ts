@@ -5,16 +5,21 @@ import logger from './logger.js';
 import { createMediaSourceProcess, readOneJpegFrame as readOneJpegFrameRaw } from './ffmpeg.js';
 
 
-export function createMediaSourceStream({ path, videoStreamIndex, audioStreamIndex, seekTo, size, fps }: {
-  path: string, videoStreamIndex?: number | undefined, audioStreamIndex?: number | undefined, seekTo: number, size?: number | undefined, fps?: number | undefined,
+export function createMediaSourceStream({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps }: {
+  path: string,
+  videoStreamIndex?: number | undefined,
+  audioStreamIndexes: number[],
+  seekTo: number,
+  size?: number | undefined,
+  fps?: number | undefined,
 }) {
   const abortController = new AbortController();
-  logger.info('Starting preview process', { videoStreamIndex, audioStreamIndex, seekTo });
-  const process = createMediaSourceProcess({ path, videoStreamIndex, audioStreamIndex, seekTo, size, fps });
+  logger.info('Starting preview process', { videoStreamIndex, audioStreamIndexes, seekTo });
+  const process = createMediaSourceProcess({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps });
 
   // eslint-disable-next-line unicorn/prefer-add-event-listener
   abortController.signal.onabort = () => {
-    logger.info('Aborting preview process', { videoStreamIndex, audioStreamIndex, seekTo });
+    logger.info('Aborting preview process', { videoStreamIndex, audioStreamIndexes, seekTo });
     process.kill('SIGKILL');
   };
 

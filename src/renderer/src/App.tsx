@@ -138,7 +138,7 @@ function App() {
   const [shortestFlag, setShortestFlag] = useState(false);
   const [zoomWindowStartTime, setZoomWindowStartTime] = useState(0);
   const [activeVideoStreamIndex, setActiveVideoStreamIndex] = useState<number>();
-  const [activeAudioStreamIndex, setActiveAudioStreamIndex] = useState<number>();
+  const [activeAudioStreamIndexes, setActiveAudioStreamIndexes] = useState<Set<number>>(new Set());
   const [activeSubtitleStreamIndex, setActiveSubtitleStreamIndex] = useState<number>();
   const [hideMediaSourcePlayer, setHideMediaSourcePlayer] = useState(false);
   const [exportConfirmVisible, setExportConfirmVisible] = useState(false);
@@ -292,9 +292,14 @@ function App() {
   const mainVideoStream = useMemo(() => videoStreams[0], [videoStreams]);
   const mainAudioStream = useMemo(() => audioStreams[0], [audioStreams]);
 
-  const activeVideoStream = useMemo(() => (activeVideoStreamIndex != null ? videoStreams.find((stream) => stream.index === activeVideoStreamIndex) : undefined) ?? mainVideoStream, [activeVideoStreamIndex, mainVideoStream, videoStreams]);
-  const activeAudioStream = useMemo(() => (activeAudioStreamIndex != null ? audioStreams.find((stream) => stream.index === activeAudioStreamIndex) : undefined) ?? mainAudioStream, [activeAudioStreamIndex, audioStreams, mainAudioStream]);
   const activeSubtitle = useMemo(() => (activeSubtitleStreamIndex != null ? subtitlesByStreamId[activeSubtitleStreamIndex] : undefined), [activeSubtitleStreamIndex, subtitlesByStreamId]);
+  const activeVideoStream = useMemo(() => (activeVideoStreamIndex != null ? videoStreams.find((stream) => stream.index === activeVideoStreamIndex) : undefined) ?? mainVideoStream, [activeVideoStreamIndex, mainVideoStream, videoStreams]);
+  const activeAudioStreams = useMemo(() => {
+    let ret: FFprobeStream[] = [];
+    if (activeAudioStreamIndexes.size > 0) ret = audioStreams.filter((stream) => activeAudioStreamIndexes.has(stream.index));
+    if (ret.length === 0 && mainAudioStream != null) ret = [mainAudioStream];
+    return ret;
+  }, [activeAudioStreamIndexes, audioStreams, mainAudioStream]);
 
   // 360 means we don't modify rotation gtrgt
   const isRotationSet = rotation !== 360;
@@ -302,13 +307,23 @@ function App() {
 
   const zoomAbs = useCallback((fn: (v: number) => number) => setZoom((z) => Math.min(Math.max(fn(z), 1), zoomMax)), []);
   const zoomRel = useCallback((rel: number) => zoomAbs((z) => z + (rel * (1 + (z / 10)))), [zoomAbs]);
-  const compatPlayerRequired = usingDummyVideo;
-  const compatPlayerWanted = (
-    isRotationSet
-    // if user selected a custom video/audio stream, use compat player if the html5 player does not have any track index corresponding to the selected stream indexes
-    || ((activeVideoStreamIndex != null || activeAudioStreamIndex != null) && videoRef.current != null && !canHtml5PlayerPlayStreams(videoRef.current, activeVideoStreamIndex, activeAudioStreamIndex))
-  ) && !hideMediaSourcePlayer;
-  const compatPlayerEnabled = (compatPlayerRequired || compatPlayerWanted) && (activeVideoStream != null || activeAudioStream != null);
+  const compatPlayerRequired = (
+    // when using html5ified dummy video, we *have* to use canvas player
+    usingDummyVideo
+    // or if user selected an explicit video or audio stream, and the html5 player does not have any track index corresponding to the selected stream index
+    || (
+      (activeVideoStreamIndex != null || activeAudioStreamIndexes.size === 1)
+      && videoRef.current != null
+      && !canHtml5PlayerPlayStreams(videoRef.current, activeVideoStreamIndex, [...activeAudioStreamIndexes][0])
+    )
+    // or if selected multiple audio streams (html5 video element doesn't support that)
+    || activeAudioStreamIndexes.size > 1
+  );
+  // if user selected a rotation, but they might want to turn off the rotation preview
+  // but allow the user to disable
+  const compatPlayerWanted = isRotationSet && !hideMediaSourcePlayer;
+
+  const compatPlayerEnabled = (compatPlayerRequired || compatPlayerWanted) && (activeVideoStream != null || activeAudioStreams.length > 0);
 
   const shouldShowPlaybackStreamSelector = videoStreams.length > 0 || audioStreams.length > 0 || (subtitleStreams.length > 0 && !compatPlayerEnabled);
 
@@ -530,11 +545,12 @@ function App() {
     enableVideoTrack(videoRef.current, videoStreamIndex);
     setActiveVideoStreamIndex(videoStreamIndex);
   }, [videoRef]);
-  const onActiveAudioStreamChange = useCallback((audioStreamIndex?: number) => {
+
+  const onActiveAudioStreamsChange = useCallback((audioStreamIndexes: Set<number>) => {
     invariant(videoRef.current);
     setHideMediaSourcePlayer(false);
-    enableAudioTrack(videoRef.current, audioStreamIndex);
-    setActiveAudioStreamIndex(audioStreamIndex);
+    enableAudioTrack(videoRef.current, [...audioStreamIndexes][0]);
+    setActiveAudioStreamIndexes(audioStreamIndexes);
   }, [videoRef]);
 
   const allFilesMeta = useMemo(() => ({
@@ -545,7 +561,7 @@ function App() {
   // total number of streams for ALL files
   const numStreamsTotal = Object.values(allFilesMeta).flatMap(({ streams }) => streams).length;
 
-  const hasAudio = !!activeAudioStream;
+  const hasAudio = activeAudioStreams.length > 0;
   const hasVideo = !!activeVideoStream;
 
   const waveformEnabled = hasAudio && waveformMode != null;
@@ -555,7 +571,7 @@ function App() {
   const { thumbnailsSorted, setThumbnails } = useThumbnails({ filePath, zoomedDuration, zoomWindowStartTime, showThumbnails });
 
   const { neighbouringKeyFrames, findNearestKeyFrameTime } = useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream: activeVideoStream, detectedFps, ffmpegExtractWindow });
-  const { waveforms, overviewWaveform, renderOverviewWaveform } = useWaveform({ filePath, relevantTime, waveformEnabled, audioStream: activeAudioStream, ffmpegExtractWindow, fileDuration });
+  const { waveforms, overviewWaveform, renderOverviewWaveform } = useWaveform({ filePath, relevantTime, waveformEnabled, audioStream: activeAudioStreams[0], ffmpegExtractWindow, fileDuration });
 
   const onGenerateOverviewWaveformClick = useCallback(async () => {
     if (working) return;
@@ -605,7 +621,7 @@ function App() {
     setZoomWindowStartTime(0);
     setDeselectedSegmentIds({});
     setSubtitlesByStreamId({});
-    setActiveAudioStreamIndex(undefined);
+    setActiveAudioStreamIndexes(new Set());
     setActiveVideoStreamIndex(undefined);
     setActiveSubtitleStreamIndex(undefined);
     setHideMediaSourcePlayer(false);
@@ -2488,7 +2504,7 @@ function App() {
                       {renderSubtitles()}
                     </video>
 
-                    {filePath != null && compatPlayerEnabled && <MediaSourcePlayer rotate={effectiveRotation} filePath={filePath} videoStream={activeVideoStream} audioStream={activeAudioStream} playerTime={playerTime ?? 0} commandedTime={commandedTime} playing={playing} eventId={compatPlayerEventId} masterVideoRef={videoRef} mediaSourceQuality={mediaSourceQuality} playbackVolume={playbackVolume} />}
+                    {filePath != null && compatPlayerEnabled && <MediaSourcePlayer rotate={effectiveRotation} filePath={filePath} videoStream={activeVideoStream} audioStreams={activeAudioStreams} playerTime={playerTime ?? 0} commandedTime={commandedTime} playing={playing} eventId={compatPlayerEventId} masterVideoRef={videoRef} mediaSourceQuality={mediaSourceQuality} playbackVolume={playbackVolume} />}
                   </div>
 
                   {bigWaveformEnabled && <BigWaveform waveforms={waveforms} relevantTime={relevantTime} playing={playing} fileDurationNonZero={fileDurationNonZero} zoom={zoomUnrounded} seekRel={seekRel} darkMode={darkMode} />}
@@ -2513,11 +2529,11 @@ function App() {
                   )}
 
                   {isFileOpened && (
-                    <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, marginBottom: 10, display: 'flex', alignItems: 'center' }}>
+                    <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, marginBottom: 10, display: 'flex', alignItems: 'flex-end' }}>
                       <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} onToggleMutedClick={toggleMuted} />
 
                       {shouldShowPlaybackStreamSelector && (
-                        <PlaybackStreamSelector subtitleStreams={subtitleStreams} videoStreams={videoStreams} audioStreams={audioStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} activeVideoStreamIndex={activeVideoStreamIndex} activeAudioStreamIndex={activeAudioStreamIndex} onActiveSubtitleChange={onActiveSubtitleChange} onActiveVideoStreamChange={onActiveVideoStreamChange} onActiveAudioStreamChange={onActiveAudioStreamChange} />
+                        <PlaybackStreamSelector subtitleStreams={subtitleStreams} videoStreams={videoStreams} audioStreams={audioStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} activeVideoStreamIndex={activeVideoStreamIndex} activeAudioStreamIndexes={activeAudioStreamIndexes} onActiveSubtitleChange={onActiveSubtitleChange} onActiveVideoStreamChange={onActiveVideoStreamChange} onActiveAudioStreamsChange={onActiveAudioStreamsChange} />
                       )}
 
                       {!showRightBar && (

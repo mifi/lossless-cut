@@ -1,0 +1,15 @@
+.wrapper {
+  display: flex;
+  margin: 0 .3em;
+  padding: .5em;
+  border-radius: .3em;
+  color: var(--gray12);
+  background: var(--whiteA8);
+  box-shadow: 0 0 .3em .3em var(--whiteA5);
+  backdrop-filter: blur(7px);
+}
+
+:global(.dark-theme) .wrapper {
+  background: var(--blackA8);
+  box-shadow: 0 0 .3em .3em var(--blackA5);
+}

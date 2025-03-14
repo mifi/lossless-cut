@@ -42,6 +42,7 @@ function VolumeControl({ playbackVolume, setPlaybackVolume, onToggleMutedClick }
           min={0}
           max={100}
           value={playbackVolume * 100}
+          style={{ height: 30 }}
           onChange={onVolumeChange}
         />
       )}

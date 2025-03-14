@@ -37,11 +37,13 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Losslessly cut out parts of video/audio (for cutting away commercials etc.)
 - Losslessly rearrange the order of video/audio segments
 - Lossless merge/concatenation of arbitrary files (with identical codecs parameters, e.g. from the same camera)
-- Lossless stream editing
+- Lossless multi track/stream editing
   - Combine arbitrary tracks from multiple files (ex. add music or subtitle track to a video file)
   - Remove unneeded tracks
   - Replace or re-encode only some tracks
   - Extract all tracks from a file (extract video, audio, subtitle, attachments and other tracks from one file into separate files)
+- View technical data about all tracks. Edit file metadata, per-track metadata and per-track disposition
+- Select video/audio tracks for playback. Playback multiple audio tracks simultaneously.
 - Fast multi-file workflow (note: no mass/batch export yet)
 - Keyboard shortcut workflow
 - Losslessly remux video/audio into a different container (file) format
@@ -51,9 +53,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
   - Optionally include original timestamps in image file names
 - Manual input of cutpoint times
 - Apply a per-file timecode offset (and auto load timecode from file)
-- Edit file metadata, per-track metadata and per-track disposition
 - Change rotation/orientation metadata in videos
-- View technical data about all tracks
 - Timeline zoom and frame/keyframe jumping for cutting around keyframes
 - Video thumbnails and audio waveform
 - Saves per project cut segments to project file

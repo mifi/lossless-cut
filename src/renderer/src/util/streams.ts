@@ -293,6 +293,7 @@ function resetAudioTrack(video: ChromiumHTMLVideoElement) {
 // https://github.com/mifi/lossless-cut/issues/256
 export function enableVideoTrack(video: ChromiumHTMLVideoElement, index: number | undefined) {
   if (index == null) {
+    console.log('Resetting video track');
     resetVideoTrack(video);
     return;
   }
@@ -305,6 +306,7 @@ export function enableVideoTrack(video: ChromiumHTMLVideoElement, index: number 
 
 export function enableAudioTrack(video: ChromiumHTMLVideoElement, index: number | undefined) {
   if (index == null) {
+    console.log('Resetting audio track');
     resetAudioTrack(video);
     return;
   }
