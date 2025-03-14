@@ -2547,10 +2547,6 @@ function App() {
                       )}
                     </div>
                   )}
-
-                  <AnimatePresence>
-                    {working && <Working text={working.text} progress={progress} onAbortClick={abortWorking} />}
-                  </AnimatePresence>
                 </div>
 
                 <AnimatePresence>
@@ -2745,6 +2741,11 @@ function App() {
               <ConcatDialog isShown={batchFiles.length > 0 && concatDialogVisible} onHide={() => setConcatDialogVisible(false)} paths={batchFilePaths} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} exportCount={exportCount} />
 
               <KeyboardShortcuts isShown={keyboardShortcutsVisible} onHide={() => setKeyboardShortcutsVisible(false)} keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} />
+
+              {/* This should probably be last, so that it's always on top */}
+              <AnimatePresence>
+                {working && <Working text={working.text} progress={progress} onAbortClick={abortWorking} />}
+              </AnimatePresence>
             </div>
           </ThemeProvider>
         </UserSettingsContext.Provider>
