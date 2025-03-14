@@ -21,7 +21,7 @@ import { FFprobeFormat, FFprobeStream } from '../../../../ffprobe';
 const { ffmpeg: { blackDetect, silenceDetect } } = window.require('@electron/remote').require('./index.js');
 
 
-function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta }: {
+function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta, seekAbs }: {
   filePath?: string | undefined,
   workingRef: MutableRefObject<boolean>,
   setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void,
@@ -38,6 +38,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   appendFfmpegCommandLog: (args: string[]) => void,
   fileDurationNonZero: number,
   mainFileMeta: { formatData: FFprobeFormat } | undefined,
+  seekAbs: (val: number | undefined) => void,
 }) {
   // Segment related state
   const segColorCounterRef = useRef(0);
@@ -144,6 +145,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       const { ffmpegArgs } = await fn((detectedSegment) => {
         console.log('Detected', name, detectedSegment);
         loadCutSegments([detectedSegment], true);
+        seekAbs(detectedSegment.start);
       });
       appendFfmpegCommandLog(ffmpegArgs);
     } catch (err) {
@@ -152,7 +154,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [filePath, workingRef, setWorking, setProgress, appendFfmpegCommandLog, loadCutSegments]);
+  }, [filePath, workingRef, setWorking, setProgress, appendFfmpegCommandLog, loadCutSegments, seekAbs]);
 
   const getScopeSegment = useCallback((seg: Pick<StateSegment, 'name' | 'start' | 'end' | 'tags'>, index: number): ScopeSegment => {
     const { start, end, name, tags } = seg;
