@@ -988,5 +988,12 @@
     "Jump & seek to last segment": "跳转并搜寻最后片段",
     "Jump & seek to next segment": "跳转并搜寻下个片段",
     "Jump & seek to previous segment": "跳转并搜寻上个片段",
-    "Expand segments +5 sec": "扩展片段 +5 秒"
+    "Expand segments +5 sec": "扩展片段 +5 秒",
+    "Load overview": "加载概览",
+    "Remove cutpoint from segment {{segmentNumber}}": "从片段 {{segmentNumber}} 删除剪切点",
+    "Waveform height": "波形高度",
+    "Invert segment selection": "反转片段选择",
+    "Remove current segment cutpoint": "删除当前的片段剪切点",
+    "Generating full overview waveform, this may take a few minutes.": "正在生成完整的概览波形，这可能花上几分钟。",
+    "Select segments at cursor": "在光标处选择片段"
 }
