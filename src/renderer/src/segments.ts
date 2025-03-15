@@ -106,6 +106,7 @@ export function combineSelectedSegments(existingSegments: StateSegment[]) {
       return []; // remove other selected segments
     }
 
+    // pass through non selected segments
     return [existingSegment];
   });
 }

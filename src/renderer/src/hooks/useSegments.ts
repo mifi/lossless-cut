@@ -106,7 +106,10 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     safeSetCutSegments([]);
   }, [clearSegColorCounter, safeSetCutSegments]);
 
-  const shuffleSegments = useCallback(() => safeSetCutSegments((oldSegments) => shuffleArray(oldSegments)), [safeSetCutSegments]);
+  const shuffleSegments = useCallback(() => safeSetCutSegments((existingSegments) => [
+    ...existingSegments.filter((s) => !s.selected),
+    ...shuffleArray(existingSegments.filter((s) => s.selected)),
+  ]), [safeSetCutSegments]);
 
   // todo combine with safeSetCutSegments?
   const loadCutSegments = useCallback((edl: SegmentBase[], append: boolean) => {
@@ -273,6 +276,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   }, [cutSegments, fileDuration, haveInvalidSegs]);
 
   const invertAllSegments = useCallback(() => {
+    // todo leave non selected segments as is?
     // treat markers as 0 length
     const sortedSegments = sortSegments(selectedSegments.map(({ end, ...rest }) => ({ ...rest, end: end ?? rest.start })));
 
@@ -302,7 +306,10 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   }, [createIndexedSegment, fileDuration, selectedSegments, safeSetCutSegments]);
 
   const combineOverlappingSegments = useCallback(() => {
-    safeSetCutSegments((existingSegments) => combineOverlappingSegments2(existingSegments));
+    safeSetCutSegments((existingSegments) => [
+      ...existingSegments.filter((s) => !s.selected),
+      ...combineOverlappingSegments2(existingSegments.filter((s) => s.selected)), // only process selected
+    ]);
   }, [safeSetCutSegments]);
 
   const combineSelectedSegments = useCallback(() => {
@@ -693,8 +700,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     const value = await labelSegmentDialog({ currentName: name, maxLength: maxLabelLength });
     if (value == null) return;
     safeSetCutSegments((existingSegments) => existingSegments.map((existingSegment) => {
-      if (selectedSegments.some((seg) => seg.segId === existingSegment.segId)) return { ...existingSegment, name: value };
-      return existingSegment;
+      if (!existingSegment.selected) return existingSegment;
+      return { ...existingSegment, name: value };
     }));
   }, [maxLabelLength, selectedSegments, safeSetCutSegments]);
 
