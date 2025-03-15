@@ -959,5 +959,10 @@
     "Expand segments +5 sec": "Расширить сегменты +5 сек",
     "<0></0> <2></2> or <4></4> <6></6> to set cutpoints": "<0></0> <2></2> или <4></4> <6></6> для установки точек разделения",
     "Generating full overview waveform, this may take a few minutes.": "Создание полной обзорной формы сигнала может занять несколько минут.",
-    "Waveform height": "Высота формы сигнала"
+    "Waveform height": "Высота формы сигнала",
+    "Select segments at cursor": "Выбрать сегменты под курсором",
+    "Remove current segment cutpoint": "Удалить точку разделения текущего сегмента",
+    "Invert segment selection": "Инвертировать выделенный сегмент",
+    "Remove cutpoint from segment {{segmentNumber}}": "Удалить точку разделения из сегмента {{segmentNumber}}",
+    "Load overview": "Обзор нагрузки"
 }
