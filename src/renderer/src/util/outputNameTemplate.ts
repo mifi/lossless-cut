@@ -1,16 +1,19 @@
 import i18n from 'i18next';
 import { PlatformPath } from 'node:path';
 import pMap from 'p-map';
+import max from 'lodash/max';
 
 import { isMac, isWindows, hasDuplicates, filenamify, getOutFileExtension } from '../util';
 import isDev from '../isDev';
-import { getSegmentTags, formatSegNum } from '../segments';
+import { getSegmentTags, formatSegNum, getGuaranteedSegments } from '../segments';
 import { FormatTimecode, SegmentToExport } from '../types';
 import safeishEval from '../worker/eval';
 
 
 export const segNumVariable = 'SEG_NUM';
 export const segNumIntVariable = 'SEG_NUM_INT';
+export const selectedSegNumVariable = 'SELECTED_SEG_NUM';
+export const selectedSegNumIntVariable = 'SELECTED_SEG_NUM_INT';
 export const segSuffixVariable = 'SEG_SUFFIX';
 export const extVariable = 'EXT';
 export const segTagsVariable = 'SEG_TAGS';
@@ -111,7 +114,7 @@ export const defaultCutMergedFileTemplate = '${FILENAME}-cut-merged-${EPOCH_MS}$
 // eslint-disable-next-line no-template-curly-in-string
 export const defaultMergedFileTemplate = '${FILENAME}-merged-${EPOCH_MS}${EXT}';
 
-async function interpolateOutFileName(template: string, { epochMs, inputFileNameWithoutExt, ext, segSuffix, segNum, segNumPadded, segLabel, cutFrom, cutTo, tags, exportCount, currentFileExportCount }: {
+async function interpolateOutFileName(template: string, { epochMs, inputFileNameWithoutExt, ext, segSuffix, segNum, segNumPadded, selectedSegNum, selectedSegNumPadded, segLabel, cutFrom, cutTo, tags, exportCount, currentFileExportCount }: {
   epochMs: number,
   inputFileNameWithoutExt: string,
   ext: string,
@@ -121,6 +124,8 @@ async function interpolateOutFileName(template: string, { epochMs, inputFileName
   segSuffix: string,
   segNum: number,
   segNumPadded: string,
+  selectedSegNum: number,
+  selectedSegNumPadded: string,
   segLabel: string,
   cutFrom: string,
   cutTo: string,
@@ -131,7 +136,9 @@ async function interpolateOutFileName(template: string, { epochMs, inputFileName
     [segSuffixVariable]: segSuffix,
     [extVariable]: ext,
     [segNumIntVariable]: segNum,
-    [segNumVariable]: segNumPadded, // todo rename this (breaking change)
+    [segNumVariable]: segNumPadded,
+    [selectedSegNumIntVariable]: selectedSegNum,
+    [selectedSegNumVariable]: selectedSegNumPadded,
     SEG_LABEL: segLabel,
     EPOCH_MS: epochMs,
     CUT_FROM: cutFrom,
@@ -164,9 +171,9 @@ function maybeTruncatePath(fileName: string, truncate: boolean) {
   ].join(pathSep);
 }
 
-export async function generateOutSegFileNames({ fileDuration, segments: segmentsIn, template: desiredTemplate, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding, exportCount, currentFileExportCount }: {
+export async function generateOutSegFileNames({ fileDuration, segmentsToExport: segmentsToExportIn, template: desiredTemplate, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding, exportCount, currentFileExportCount }: {
   fileDuration: number | undefined,
-  segments: SegmentToExport[],
+  segmentsToExport: SegmentToExport[],
   template: string,
   formatTimecode: FormatTimecode,
   isCustomFormatSelected: boolean,
@@ -179,15 +186,19 @@ export async function generateOutSegFileNames({ fileDuration, segments: segments
   exportCount: number,
   currentFileExportCount: number,
 }) {
+  const segmentsToExport = getGuaranteedSegments(segmentsToExportIn, fileDuration);
+
   async function generate({ template, forceSafeOutputFileName }: { template: string, forceSafeOutputFileName: boolean }) {
     const epochMs = Date.now();
 
-    const segments = segmentsIn.length > 0 ? segmentsIn : [{ start: 0, end: fileDuration ?? 0, name: '' }];
+    const maxOriginalIndex = max(segmentsToExport.map((s) => s.originalIndex)) ?? 0;
 
-    return pMap(segments, async (segment, i) => {
+    return pMap(segmentsToExport, async (segment, i) => {
       const { start, end, name = '' } = segment;
-      const segNum = i + 1;
-      const segNumPadded = formatSegNum(i, segments.length, outputFileNameMinZeroPadding);
+      const selectedSegNum = i + 1;
+      const selectedSegNumPadded = formatSegNum(i, segmentsToExport.length, outputFileNameMinZeroPadding);
+      const segNum = segment.originalIndex + 1;
+      const segNumPadded = formatSegNum(segment.originalIndex, maxOriginalIndex + 1, outputFileNameMinZeroPadding);
 
       // Fields that did not come from the source file's name must be sanitized, because they may contain characters that are not supported by the target operating/file system
       // however we disable this when the user has chosen to (safeOutputFileName === false)
@@ -196,7 +207,7 @@ export async function generateOutSegFileNames({ fileDuration, segments: segments
       function getSegSuffix() {
         if (name) return `-${filenamifyOrNot(name)}`;
         // https://github.com/mifi/lossless-cut/issues/583
-        if (segments.length > 1) return `-seg${segNumPadded}`;
+        if (segmentsToExport.length > 1) return `-seg${segNumPadded}`;
         return '';
       }
 
@@ -206,8 +217,10 @@ export async function generateOutSegFileNames({ fileDuration, segments: segments
         epochMs,
         segNum,
         segNumPadded,
-        inputFileNameWithoutExt,
+        selectedSegNum,
+        selectedSegNumPadded,
         segSuffix: getSegSuffix(),
+        inputFileNameWithoutExt,
         ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath }),
         segLabel: filenamifyOrNot(name),
         cutFrom: formatTimecode({ seconds: start, fileNameFriendly: true }),
@@ -231,7 +244,7 @@ export async function generateOutSegFileNames({ fileDuration, segments: segments
   return { fileNames, problems };
 }
 
-export type GenerateOutFileNames = (a: { template: string }) => Promise<{
+export type GenerateOutFileNames = (template: string) => Promise<{
   fileNames: string[],
   problems: {
     error: string | undefined;

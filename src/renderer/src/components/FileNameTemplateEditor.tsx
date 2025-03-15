@@ -9,7 +9,7 @@ import { FaEdit } from 'react-icons/fa';
 
 import { ReactSwal } from '../swal';
 import HighlightedText from './HighlightedText';
-import { segNumVariable, segSuffixVariable, GenerateOutFileNames, extVariable, segTagsVariable, segNumIntVariable } from '../util/outputNameTemplate';
+import { segNumVariable, segSuffixVariable, GenerateOutFileNames, extVariable, segTagsVariable, segNumIntVariable, selectedSegNumVariable, selectedSegNumIntVariable } from '../util/outputNameTemplate';
 import useUserSettings from '../hooks/useUserSettings';
 import Switch from './Switch';
 import Select from './Select';
@@ -48,7 +48,7 @@ function FileNameTemplateEditor(opts: {
 
   const { t } = useTranslation();
 
-  const hasTextNumericPaddedValue = useMemo(() => [segNumVariable, segSuffixVariable].some((v) => debouncedText.includes(formatVariable(v))), [debouncedText]);
+  const hasTextNumericPaddedValue = useMemo(() => [segNumVariable, selectedSegNumVariable, segSuffixVariable].some((v) => debouncedText.includes(formatVariable(v))), [debouncedText]);
 
   useEffect(() => {
     if (debouncedText == null) {
@@ -60,7 +60,7 @@ function FileNameTemplateEditor(opts: {
     (async () => {
       try {
         // console.time('generateFileNames')
-        const outSegs = await generateFileNames({ template: debouncedText });
+        const outSegs = await generateFileNames(debouncedText);
         // console.timeEnd('generateOutSegFileNames')
         if (abortController.signal.aborted) return;
         setFileNames(outSegs.fileNames);
@@ -78,7 +78,7 @@ function FileNameTemplateEditor(opts: {
 
   const availableVariables = useMemo(() => (mergeMode
     ? ['FILENAME', extVariable, 'EPOCH_MS', 'EXPORT_COUNT']
-    : ['FILENAME', 'CUT_FROM', 'CUT_TO', segNumVariable, segNumIntVariable, 'SEG_LABEL', segSuffixVariable, extVariable, segTagsExample, 'EPOCH_MS', 'EXPORT_COUNT', 'FILE_EXPORT_COUNT']
+    : ['FILENAME', 'CUT_FROM', 'CUT_TO', segNumVariable, segNumIntVariable, selectedSegNumVariable, selectedSegNumIntVariable, 'SEG_LABEL', segSuffixVariable, extVariable, segTagsExample, 'EPOCH_MS', 'EXPORT_COUNT', 'FILE_EXPORT_COUNT']
   ), [mergeMode]);
 
   // eslint-disable-next-line no-template-curly-in-string

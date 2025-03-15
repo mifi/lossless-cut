@@ -88,7 +88,7 @@ import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './uti
 import BigWaveform from './components/BigWaveform';
 
 import isDev from './isDev';
-import { BatchFile, Chapter, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, goToTimecodeDirectArgsSchema, openFilesActionArgsSchema, ParamsByStreamId, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, SegmentToExport, StateSegment, TunerType } from './types';
+import { BatchFile, Chapter, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, goToTimecodeDirectArgsSchema, openFilesActionArgsSchema, ParamsByStreamId, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment, TunerType } from './types';
 import { CaptureFormat, KeyboardAction, Html5ifyMode, WaveformMode, ApiActionRequest, KeyBinding } from '../../../types';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 import useLoading from './hooks/useLoading';
@@ -767,7 +767,7 @@ function App() {
         if (playbackModeRef.current === 'loop-selected-segments') {
           const firstSelectedSegment = selectedSegments[0];
           if (firstSelectedSegment != null) {
-            const index = cutSegments.indexOf(firstSelectedSegment);
+            const index = cutSegments.findIndex((segment) => segment.segId === firstSelectedSegment.segId);
             if (index >= 0) setCurrentSegIndex(index);
             seekAbs(firstSelectedSegment.start);
           }
@@ -797,7 +797,7 @@ function App() {
       if (nextAction != null) {
         console.log(nextAction);
         if (nextAction.nextSegment) {
-          const index = selectedSegments.indexOf(playingSegment);
+          const index = selectedSegments.findIndex((selectedSegment) => selectedSegment.segId === playingSegment.segId);
           let newIndex = getNewJumpIndex(index >= 0 ? index : 0, 1);
           if (newIndex > selectedSegments.length - 1) newIndex = 0; // have reached end of last segment, start over
           const nextSelectedSegment = selectedSegments[newIndex];
@@ -1021,12 +1021,12 @@ function App() {
     }
   }, [cleanupFilesWithDialog, isFileOpened, setWorking, workingRef]);
 
-  const generateOutSegFileNames = useCallback(async ({ segments = segmentsToExport, template }: { segments?: SegmentToExport[], template: string }) => {
+  const generateOutSegFileNames = useCallback(async (template: string) => {
     invariant(fileFormat != null && outputDir != null && filePath != null);
-    return generateOutSegFileNamesRaw({ fileDuration, exportCount, currentFileExportCount, segments, template, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding });
+    return generateOutSegFileNamesRaw({ fileDuration, exportCount, currentFileExportCount, segmentsToExport, template, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding });
   }, [currentFileExportCount, exportCount, fileDuration, fileFormat, filePath, formatTimecode, isCustomFormatSelected, maxLabelLength, outputDir, outputFileNameMinZeroPadding, safeOutputFileName, segmentsToExport]);
 
-  const generateMergedFileNames = useCallback(async ({ template }: { template: string }) => {
+  const generateMergedFileNames = useCallback(async (template: string) => {
     invariant(fileFormat != null && filePath != null);
     return generateMergedFileNamesRaw({ template, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, exportCount, currentFileExportCount });
   }, [currentFileExportCount, exportCount, fileFormat, filePath, isCustomFormatSelected, outputDir, safeOutputFileName]);
@@ -1071,7 +1071,7 @@ function App() {
       const notices: string[] = [];
       const warnings: string[] = [];
 
-      const { fileNames: outSegFileNames, problems: outSegProblems } = await generateOutSegFileNames({ segments: segmentsToExport, template: outSegTemplateOrDefault });
+      const { fileNames: outSegFileNames, problems: outSegProblems } = await generateOutSegFileNames(outSegTemplateOrDefault);
       if (outSegProblems.error != null) {
         console.warn('Output segments file name invalid, using default instead', outSegFileNames);
         warnings.push(t('Fell back to default output file name'), outSegProblems.error);
@@ -1114,7 +1114,7 @@ function App() {
 
         const chapterNames = segmentsToChapters && !invertCutSegments ? segmentsToExport.map((s) => s.name) : undefined;
 
-        const { fileNames, problems } = await generateMergedFileNames({ template: mergedFileTemplateOrDefault });
+        const { fileNames, problems } = await generateMergedFileNames(mergedFileTemplateOrDefault);
         if (problems.error != null) {
           console.warn('Merged file name invalid, using default instead', fileNames[0]);
           warnings.push(t('Fell back to default output file name'), problems.error);
@@ -1234,7 +1234,7 @@ function App() {
   }, [filePath, getRelevantTime, videoRef, usingPreviewFile, captureFrameMethod, captureFrameFromFfmpeg, customOutDir, captureFormat, captureFrameQuality, captureFrameFromTag, hideAllNotifications]);
 
   const extractSegmentsFramesAsImages = useCallback(async (segments: SegmentBase[]) => {
-    if (!filePath || detectedFps == null || workingRef.current) return;
+    if (!filePath || detectedFps == null || workingRef.current || segments.length === 0) return;
     const segmentsNumFrames = segments.reduce((acc, { start, end }) => acc + (end == null ? 1 : (getFrameCount(end - start) ?? 0)), 0);
     const areAllSegmentsMarkers = segments.every((seg) => seg.end == null);
     const captureFramesResponse = areAllSegmentsMarkers
@@ -1901,7 +1901,7 @@ function App() {
   const toggleLoopSelectedSegments = useCallback(() => togglePlay({ resetPlaybackRate: true, requestPlaybackMode: 'loop-selected-segments' }), [togglePlay]);
 
   const copySegmentsToClipboard = useCallback(async () => {
-    if (!isFileOpened) return;
+    if (!isFileOpened || selectedSegments.length === 0) return;
     electron.clipboard.writeText(await formatTsv(selectedSegments));
   }, [isFileOpened, selectedSegments]);
 
@@ -2255,7 +2255,7 @@ function App() {
   const onVideoClick = useCallback(() => togglePlay(), [togglePlay]);
 
   const tryExportEdlFile = useCallback(async (type: EdlExportType) => {
-    if (!checkFileOpened()) return;
+    if (!checkFileOpened() || selectedSegments.length === 0) return;
     await withErrorHandling(async () => {
       await exportEdlFile({ type, cutSegments: selectedSegments, customOutDir, filePath, getFrameCount });
     }, i18n.t('Failed to export project'));

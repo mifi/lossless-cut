@@ -69,6 +69,8 @@ The following variables are available in the template to customize the filenames
 | | `${FILE_EXPORT_COUNT}` | `number` | Number of exports done since last file was opened (starts at 1).
 | | `${SEG_NUM}` | `string` | Segment index, padded string (e.g. `01`, `02` or `42`).
 | | `${SEG_NUM_INT}` | `number` | Segment index, as an integer (e.g. `1`, `2` or `42`). Can be used with numeric arithmetics, e.g. `${SEG_NUM_INT+100}`.
+| | `${SELECTED_SEG_NUM}` | `string` | Same as `SEG_NUM`, but it counts only selected segments.
+| | `${SELECTED_SEG_NUM_INT}` | `number` | Same as `SEG_NUM_INT`, but it counts only selected segments.
 | | `${SEG_LABEL}` | `string` | The label of the segment (e.g. `Getting Lunch`).
 | | `${SEG_SUFFIX}` | `string` | If a label exists for this segment, the label will be used, prepended by `-`. Otherwise, the segment index prepended by `-seg` will be used (e.g. `-Getting_Lunch`, `-seg1`).
 | | `${CUT_FROM}` | `string` | The timestamp for the beginning of the segment in `hh.mm.ss.sss` format (e.g. `00.00.27.184`).

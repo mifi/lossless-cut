@@ -4,7 +4,7 @@ import minBy from 'lodash/minBy';
 import maxBy from 'lodash/maxBy';
 import invariant from 'tiny-invariant';
 
-import { PlaybackMode, SegmentBase, SegmentTags, StateSegment } from './types';
+import { PlaybackMode, SegmentBase, SegmentTags, SegmentToExport, StateSegment } from './types';
 
 
 export const isDurationValid = (duration?: number): duration is number => duration != null && Number.isFinite(duration) && duration > 0;
@@ -285,3 +285,5 @@ export function makeDurationSegments(segmentDuration: number, fileDuration: numb
 }
 
 export const isInitialSegment = (segments: StateSegment[]) => segments.length === 0 || (segments.length === 1 && segments[0]!.initial);
+
+export const getGuaranteedSegments = <T extends SegmentToExport>(segments: T[], fileDuration: number | undefined) => (segments.length > 0 ? segments : [{ start: 0, end: fileDuration ?? 0, name: '', originalIndex: 0 }]);
