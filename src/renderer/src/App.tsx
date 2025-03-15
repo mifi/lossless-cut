@@ -82,7 +82,7 @@ import { askForHtml5ifySpeed } from './dialogs/html5ify';
 import { askForOutDir, askForImportChapters, promptTimecode, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openExportFinishedToast, openConcatFinishedToast, showOpenDialog, showMuxNotSupported, promptDownloadMediaUrl, CleanupChoicesType, showOutputNotWritable } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
-import { sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, getPlaybackMode, getSegmentTags } from './segments';
+import { sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, getPlaybackMode, getSegmentTags, filterNonMarkers } from './segments';
 import { generateOutSegFileNames as generateOutSegFileNamesRaw, generateMergedFileNames as generateMergedFileNamesRaw, defaultOutSegTemplate, defaultCutMergedFileTemplate } from './util/outputNameTemplate';
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 import BigWaveform from './components/BigWaveform';
@@ -760,12 +760,13 @@ function App() {
 
     // If we are using a special playback mode, we might need to do more:
     if (playbackModeRef.current != null) {
-      const selectedSegmentAtCursor = selectedSegments.find((selectedSegment) => selectedSegment.segId === segmentAtCursorRef.current?.segId);
+      const selectedSegmentsWithoutMarkers = filterNonMarkers(selectedSegments);
+      const selectedSegmentAtCursor = selectedSegmentsWithoutMarkers.find((selectedSegment) => selectedSegment.segId === segmentAtCursorRef.current?.segId);
       const isSomeSegmentAtCursor = selectedSegmentAtCursor != null && commandedTimeRef.current != null && selectedSegmentAtCursor.end != null && selectedSegmentAtCursor.end - commandedTimeRef.current > 0.1;
       if (!isSomeSegmentAtCursor) { // if a segment is already at cursor, don't do anything
         // if no segment at cursor, and looping playback mode, continue looping
         if (playbackModeRef.current === 'loop-selected-segments') {
-          const firstSelectedSegment = selectedSegments[0];
+          const firstSelectedSegment = selectedSegmentsWithoutMarkers[0];
           if (firstSelectedSegment != null) {
             const index = cutSegments.findIndex((segment) => segment.segId === firstSelectedSegment.segId);
             if (index >= 0) setCurrentSegIndex(index);
@@ -797,10 +798,12 @@ function App() {
       if (nextAction != null) {
         console.log(nextAction);
         if (nextAction.nextSegment) {
-          const index = selectedSegments.findIndex((selectedSegment) => selectedSegment.segId === playingSegment.segId);
+          const selectedSegmentsWithoutMarkers = filterNonMarkers(selectedSegments);
+
+          const index = selectedSegmentsWithoutMarkers.findIndex((selectedSegment) => selectedSegment.segId === playingSegment.segId);
           let newIndex = getNewJumpIndex(index >= 0 ? index : 0, 1);
-          if (newIndex > selectedSegments.length - 1) newIndex = 0; // have reached end of last segment, start over
-          const nextSelectedSegment = selectedSegments[newIndex];
+          if (newIndex > selectedSegmentsWithoutMarkers.length - 1) newIndex = 0; // have reached end of last segment, start over
+          const nextSelectedSegment = selectedSegmentsWithoutMarkers[newIndex];
           if (nextSelectedSegment != null) seekAbs(nextSelectedSegment.start);
         }
         if (nextAction.seekTo != null) {
