@@ -515,6 +515,15 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     if (value != null) updateSegAtIndex(index, { name: value });
   }, [cutSegments, updateSegAtIndex, maxLabelLength]);
 
+  const selectSegments = useCallback((segmentsToSelect: { segId: string }[]) => {
+    const segIdsToSelect = new Set(segmentsToSelect.map(({ segId }) => segId));
+    if (segIdsToSelect.size === 0) return; // no point in selecting none
+    setCutSegments((existing) => existing.map(({ selected, ...segment }) => ({
+      ...segment,
+      selected: selected || segIdsToSelect.has(segment.segId),
+    })));
+  }, [setCutSegments]);
+
   const findSegmentsAtCursor = useCallback((currentTime: number) => (
     cutSegments.flatMap((segment, index) => {
       if (
@@ -533,6 +542,11 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     if (firstSegmentAtCursorIndex == null) return;
     setCurrentSegIndex(firstSegmentAtCursorIndex);
   }, [findSegmentsAtCursor, getRelevantTime]);
+
+  const selectSegmentsAtCursor = useCallback(() => {
+    const relevantTime = getRelevantTime();
+    selectSegments(findSegmentsAtCursor(relevantTime).flatMap((index) => (cutSegments[index] ? [cutSegments[index]] : [])));
+  }, [cutSegments, findSegmentsAtCursor, getRelevantTime, selectSegments]);
 
   const splitCurrentSegment = useCallback(() => {
     const relevantTime = getRelevantTime();
@@ -587,15 +601,6 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     const segments = await createRandomSegmentsDialog(fileDuration);
     if (segments) loadCutSegments(segments, true);
   }, [checkFileOpened, fileDuration, loadCutSegments]);
-
-  const selectSegments = useCallback((segmentsToSelect: { segId: string }[]) => {
-    const segIdsToSelect = new Set(segmentsToSelect.map(({ segId }) => segId));
-    if (segIdsToSelect.size === 0) return; // no point in selecting none
-    setCutSegments((existing) => existing.map(({ selected, ...segment }) => ({
-      ...segment,
-      selected: selected || segIdsToSelect.has(segment.segId),
-    })));
-  }, [setCutSegments]);
 
   const selectSegmentsByLabel = useCallback(async () => {
     const value = await selectSegmentsByLabelDialog(currentCutSeg?.name);
@@ -782,6 +787,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     labelSegment,
     splitCurrentSegment,
     focusSegmentAtCursor,
+    selectSegmentsAtCursor,
     createNumSegments,
     createFixedDurationSegments,
     createFixedByteSizedSegments,

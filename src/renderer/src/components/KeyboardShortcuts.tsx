@@ -352,6 +352,10 @@ const KeyboardShortcuts = memo(({
         name: t('Focus segment at cursor'),
         category: segmentsAndCutpointsCategory,
       },
+      selectSegmentsAtCursor: {
+        name: t('Select segments at cursor'),
+        category: segmentsAndCutpointsCategory,
+      },
       duplicateCurrentSegment: {
         name: t('Duplicate current segment'),
         category: segmentsAndCutpointsCategory,

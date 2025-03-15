@@ -355,7 +355,7 @@ function App() {
   }, [isFileOpened]);
 
   const {
-    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, labelSegment, splitCurrentSegment, focusSegmentAtCursor, createNumSegments, createFixedDurationSegments, createFixedByteSizedSegments, createRandomSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, inverseCutSegments, clearSegments, clearSegColorCounter, loadCutSegments, setCutTime, setCurrentSegIndex, labelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, selectSegmentsByLabel, selectSegmentsByExpr, selectAllMarkers, mutateSegmentsByExpr, toggleSegmentSelected, selectOnlySegment, selectedSegments, segmentsOrInverse, segmentsToExport, duplicateCurrentSegment, duplicateSegment, updateSegAtIndex, findSegmentsAtCursor, maybeCreateFullLengthSegment,
+    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, labelSegment, splitCurrentSegment, focusSegmentAtCursor, selectSegmentsAtCursor, createNumSegments, createFixedDurationSegments, createFixedByteSizedSegments, createRandomSegments, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, inverseCutSegments, clearSegments, clearSegColorCounter, loadCutSegments, setCutTime, setCurrentSegIndex, labelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, selectSegmentsByLabel, selectSegmentsByExpr, selectAllMarkers, mutateSegmentsByExpr, toggleSegmentSelected, selectOnlySegment, selectedSegments, segmentsOrInverse, segmentsToExport, duplicateCurrentSegment, duplicateSegment, updateSegAtIndex, findSegmentsAtCursor, maybeCreateFullLengthSegment,
   } = useSegments({ filePath, workingRef, setWorking, setProgress, videoStream: activeVideoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta, seekAbs });
 
   const { getEdlFilePath, projectFileSavePath, getProjectFileSavePath } = useSegmentsAutoSave({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, customOutDir, cutSegments });
@@ -373,18 +373,13 @@ function App() {
     }
   }, [maybeCreateFullLengthSegment]);
 
-  const segmentAtCursor = useMemo(() => {
-    const segmentsAtCursorIndexes = findSegmentsAtCursor(commandedTime);
-    const firstSegmentAtCursorIndex = segmentsAtCursorIndexes[0];
-
-    if (firstSegmentAtCursorIndex == null) return undefined;
-    return cutSegments[firstSegmentAtCursorIndex];
-  }, [commandedTime, cutSegments, findSegmentsAtCursor]);
+  const segmentsAtCursor = useMemo(() => findSegmentsAtCursor(commandedTime).map((index) => cutSegments[index]), [commandedTime, cutSegments, findSegmentsAtCursor]);
+  const firstSegmentAtCursor = useMemo(() => segmentsAtCursor[0], [segmentsAtCursor]);
 
   const segmentAtCursorRef = useRef<StateSegment>();
   useEffect(() => {
-    segmentAtCursorRef.current = segmentAtCursor;
-  }, [segmentAtCursor]);
+    segmentAtCursorRef.current = firstSegmentAtCursor;
+  }, [firstSegmentAtCursor]);
 
   const seekRelPercent = useCallback((val: number) => {
     if (!isDurationValid(zoomedDuration)) return;
@@ -2009,6 +2004,7 @@ function App() {
       cleanupFilesDialog,
       splitCurrentSegment,
       focusSegmentAtCursor,
+      selectSegmentsAtCursor,
       increaseRotation,
       goToTimecode,
       seekBackwards: ({ keyup }) => seekRel2({ keyup, amount: -1 * keyboardNormalSeekSpeed }),
@@ -2119,7 +2115,7 @@ function App() {
     };
 
     return ret;
-  }, [toggleLoopSelectedSegments, pause, timelineToggleComfortZoom, captureSnapshot, captureSnapshotAsCoverArt, setCutStart, setCutEnd, cleanupFilesDialog, splitCurrentSegment, focusSegmentAtCursor, increaseRotation, goToTimecode, jumpCutStart, jumpCutEnd, jumpTimelineStart, jumpTimelineEnd, batchOpenSelectedFile, closeBatch, addSegment, duplicateCurrentSegment, onExportPress, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, reorderSegsByStartTime, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, createFixedDurationSegments, createNumSegments, createFixedByteSizedSegments, createRandomSegments, alignSegmentTimesToKeyframes, shuffleSegments, clearSegments, toggleSegmentsList, toggleStreamsSelector, extractAllStreams, convertFormatBatch, concatBatch, toggleCaptureFormat, toggleStripAudio, toggleStripThumbnail, askStartTimeOffset, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, editCurrentSegmentTags, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, tryFixInvalidDuration, shiftAllSegmentTimes, toggleMuted, copySegmentsToClipboard, handleShowStreamsSelectorClick, openFilesDialog, openDirDialog, toggleSettings, createSegmentsFromKeyframes, toggleWaveformMode, toggleShowThumbnails, toggleShowKeyframes, showIncludeExternalStreamsDialog, toggleFullscreenVideo, selectAllMarkers, checkFileOpened, cutSegments, seekRel, keyboardSeekAccFactor, togglePlay, play, userChangePlaybackRate, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, seekRelPercent, seekClosestKeyframe, shortStep, jumpSeg, zoomRel, batchFileJump, removeSegment, currentSegIndexSafe, cutSegmentsHistory, labelSegment, toggleLastCommands, userHtml5ifyCurrentFile, toggleKeyframeCut, setPlaybackVolume, closeFileWithConfirm, openSendReportDialogWithState, detectBlackScenes, detectSilentScenes, detectSceneChanges]);
+  }, [toggleLoopSelectedSegments, pause, timelineToggleComfortZoom, captureSnapshot, captureSnapshotAsCoverArt, setCutStart, setCutEnd, cleanupFilesDialog, splitCurrentSegment, focusSegmentAtCursor, selectSegmentsAtCursor, increaseRotation, goToTimecode, jumpCutStart, jumpCutEnd, jumpTimelineStart, jumpTimelineEnd, batchOpenSelectedFile, closeBatch, addSegment, duplicateCurrentSegment, onExportPress, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, reorderSegsByStartTime, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, createFixedDurationSegments, createNumSegments, createFixedByteSizedSegments, createRandomSegments, alignSegmentTimesToKeyframes, shuffleSegments, clearSegments, toggleSegmentsList, toggleStreamsSelector, extractAllStreams, convertFormatBatch, concatBatch, toggleCaptureFormat, toggleStripAudio, toggleStripThumbnail, askStartTimeOffset, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, editCurrentSegmentTags, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, tryFixInvalidDuration, shiftAllSegmentTimes, toggleMuted, copySegmentsToClipboard, handleShowStreamsSelectorClick, openFilesDialog, openDirDialog, toggleSettings, createSegmentsFromKeyframes, toggleWaveformMode, toggleShowThumbnails, toggleShowKeyframes, showIncludeExternalStreamsDialog, toggleFullscreenVideo, selectAllMarkers, checkFileOpened, cutSegments, seekRel, keyboardSeekAccFactor, togglePlay, play, userChangePlaybackRate, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, seekRelPercent, seekClosestKeyframe, shortStep, jumpSeg, zoomRel, batchFileJump, removeSegment, currentSegIndexSafe, cutSegmentsHistory, labelSegment, toggleLastCommands, userHtml5ifyCurrentFile, toggleKeyframeCut, setPlaybackVolume, closeFileWithConfirm, openSendReportDialogWithState, detectBlackScenes, detectSilentScenes, detectSceneChanges]);
 
   const getKeyboardAction = useCallback((action: MainKeyboardAction) => mainActions[action], [mainActions]);
 
@@ -2565,7 +2561,7 @@ function App() {
                       updateSegOrders={updateSegOrders}
                       onLabelSegment={labelSegment}
                       currentCutSeg={currentCutSeg}
-                      segmentAtCursor={segmentAtCursor}
+                      firstSegmentAtCursor={firstSegmentAtCursor}
                       addSegment={addSegment}
                       onDuplicateSegmentClick={duplicateSegment}
                       removeSegment={removeSegment}

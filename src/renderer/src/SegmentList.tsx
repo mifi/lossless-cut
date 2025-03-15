@@ -247,7 +247,7 @@ function SegmentList({
   onRemoveSelected,
   onLabelSegment,
   currentCutSeg,
-  segmentAtCursor,
+  firstSegmentAtCursor,
   toggleSegmentsList,
   splitCurrentSegment,
   selectedSegments,
@@ -287,7 +287,7 @@ function SegmentList({
   onRemoveSelected: UseSegments['removeSelectedSegments'],
   onLabelSegment: UseSegments['labelSegment'],
   currentCutSeg: UseSegments['currentCutSeg'],
-  segmentAtCursor: StateSegment | undefined,
+  firstSegmentAtCursor: StateSegment | undefined,
   toggleSegmentsList: () => void,
   splitCurrentSegment: UseSegments['splitCurrentSegment'],
   selectedSegments: DefiniteSegmentBase[],
@@ -320,7 +320,7 @@ function SegmentList({
 
   const getButtonColor = useCallback((seg: StateSegment | undefined, next?: boolean) => getSegColor(seg ? { segColorIndex: next ? seg.segColorIndex + 1 : seg.segColorIndex } : undefined).desaturate(0.3).lightness(darkMode ? 45 : 55).string(), [darkMode, getSegColor]);
   const currentSegColor = useMemo(() => getButtonColor(currentCutSeg), [currentCutSeg, getButtonColor]);
-  const segAtCursorColor = useMemo(() => getButtonColor(segmentAtCursor), [getButtonColor, segmentAtCursor]);
+  const segAtCursorColor = useMemo(() => getButtonColor(firstSegmentAtCursor), [getButtonColor, firstSegmentAtCursor]);
 
   const segmentsTotal = useMemo(() => selectedSegments.reduce((acc, seg) => (seg.end == null ? 0 : seg.end - seg.start) + acc, 0), [selectedSegments]);
 
@@ -405,7 +405,7 @@ function SegmentList({
             size={22}
             title={t('Split segment at cursor')}
             role="button"
-            style={{ ...buttonBaseStyle, padding: 1, ...(segmentAtCursor ? { backgroundColor: segAtCursorColor } : disabledButtonStyle) }}
+            style={{ ...buttonBaseStyle, padding: 1, ...(firstSegmentAtCursor ? { backgroundColor: segAtCursorColor } : disabledButtonStyle) }}
             onClick={splitCurrentSegment}
           />
 
