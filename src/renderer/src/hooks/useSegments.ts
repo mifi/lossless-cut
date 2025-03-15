@@ -724,13 +724,15 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       };
     }
 
+    const nonMarkers = filterNonMarkers(selectedSegments);
+
     // If user has selected no segments, default to all instead.
-    const selectedSegmentsWithFallback = selectedSegments.length > 0 ? selectedSegments : cutSegments.map((seg, i) => ({ ...seg, originalIndex: i }));
+    const selectedSegmentsWithFallback = nonMarkers.length > 0 ? nonMarkers : filterNonMarkers(cutSegments).map((seg, i) => ({ ...seg, originalIndex: i }));
 
     return {
       // exclude markers (segments without any end)
       // and exclude the initial segment, to prevent cutting when not really needed (if duration changes after the segment was created)
-      selected: filterNonMarkers(selectedSegmentsWithFallback).filter((seg) => !seg.initial),
+      selected: selectedSegmentsWithFallback.filter((seg) => !seg.initial),
 
       // `all` includes also all non selected segments:
       all: filterNonMarkers(cutSegments).filter((seg) => !seg.initial),
