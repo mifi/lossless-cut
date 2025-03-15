@@ -159,14 +159,20 @@ const Segment = memo(({
   }, 300, [isActive]);
 
   function renderNumber() {
-    if (invertCutSegments || !('segColorIndex' in seg)) return <FaSave style={{ color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
+    if (invertCutSegments || !('segColorIndex' in seg)) {
+      return <FaSave style={{ color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
+    }
 
     const segColor = getSegColor(seg);
 
     const color = segColor.desaturate(0.25).lightness(darkMode ? 35 : 55);
     const borderColor = darkMode ? color.lighten(0.5) : color.darken(0.3);
 
-    return <b style={{ cursor: 'grab', color: 'white', padding: '0 4px', marginRight: 3, marginLeft: -3, background: color.string(), border: `1px solid ${isActive ? borderColor.string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>{index + 1}</b>;
+    return (
+      <b style={{ cursor: 'grab', color: 'white', padding: '0 4px', marginRight: 3, marginLeft: -3, background: color.string(), border: `1px solid ${isActive ? borderColor.string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>
+        {index + 1}
+      </b>
+    );
   }
 
   const onDoubleClick = useCallback(() => {
