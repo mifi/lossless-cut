@@ -87,29 +87,6 @@ export function partitionIntoOverlappingRanges<T extends SegmentBase>(array: T[]
   return ret.filter((group) => group.length > 1).map((group) => sortBy(group, (seg) => seg.start));
 }
 
-export function combineOverlappingSegments<T extends SegmentBase>(existingSegments: T[]) {
-  const partitionedSegments = partitionIntoOverlappingRanges(existingSegments);
-
-  return existingSegments.flatMap((existingSegment) => {
-    const partOfPartition = partitionedSegments.find((partition) => partition.includes(existingSegment));
-    if (partOfPartition == null) {
-      return [existingSegment]; // this is not an overlapping segment, pass it through
-    }
-
-    const index = partOfPartition.indexOf(existingSegment);
-    // The first segment is the one with the lowest "start" value, so we use its start value
-    if (index === 0) {
-      return [{
-        ...existingSegment,
-        // but use the segment with the highest "end" value as the end value.
-        end: sortBy(partOfPartition, (segment) => segment.end)[partOfPartition.length - 1]!.end,
-      }];
-    }
-
-    return []; // then remove all other segments in this partition group
-  });
-}
-
 export function combineSelectedSegments(existingSegments: StateSegment[]) {
   const selectedSegments = existingSegments.filter((segment) => segment.selected);
   const firstSegment = minBy(selectedSegments, (seg) => seg.start);
@@ -131,6 +108,40 @@ export function combineSelectedSegments(existingSegments: StateSegment[]) {
 
     return [existingSegment];
   });
+}
+
+// Made by ChatGPT
+export function combineOverlappingSegments(existingSegments: StateSegment[]): StateSegment[] {
+  if (existingSegments.length === 0) return [];
+
+  // Sort segments by start time
+  const sortedSegments = [...existingSegments];
+  sortedSegments.sort((a, b) => a.start - b.start);
+
+  let currentSegment = sortedSegments[0]!;
+
+  const combinedSegments: StateSegment[] = [];
+
+  for (let i = 1; i < sortedSegments.length; i += 1) {
+    const nextSegment = sortedSegments[i]!;
+
+    // Check if the current segment overlaps or is adjacent to the next segment
+    if (currentSegment.end != null && currentSegment.end >= nextSegment.start) {
+      currentSegment = {
+        ...currentSegment,
+        end: Math.max(currentSegment.end, nextSegment.end ?? nextSegment.start),
+      };
+    } else {
+      // Push the current segment to the combined list and move to the next segment
+      combinedSegments.push(currentSegment);
+      currentSegment = nextSegment;
+    }
+  }
+
+  // Push the last segment
+  combinedSegments.push(currentSegment);
+
+  return combinedSegments;
 }
 
 export function hasAnySegmentOverlap(sortedSegments: { start: number, end: number }[]) {
