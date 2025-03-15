@@ -111,7 +111,7 @@ export function combineSelectedSegments(existingSegments: StateSegment[]) {
 }
 
 // Made by ChatGPT
-export function combineOverlappingSegments(existingSegments: StateSegment[]): StateSegment[] {
+export function combineOverlappingSegments<T extends SegmentBase>(existingSegments: T[]): T[] {
   if (existingSegments.length === 0) return [];
 
   // Sort segments by start time
@@ -120,16 +120,18 @@ export function combineOverlappingSegments(existingSegments: StateSegment[]): St
 
   let currentSegment = sortedSegments[0]!;
 
-  const combinedSegments: StateSegment[] = [];
+  const combinedSegments: T[] = [];
 
   for (let i = 1; i < sortedSegments.length; i += 1) {
     const nextSegment = sortedSegments[i]!;
 
+    const currentSegmentEndOrStart = currentSegment.end ?? currentSegment.start;
+
     // Check if the current segment overlaps or is adjacent to the next segment
-    if (currentSegment.end != null && currentSegment.end >= nextSegment.start) {
+    if (currentSegmentEndOrStart >= nextSegment.start) {
       currentSegment = {
         ...currentSegment,
-        end: Math.max(currentSegment.end, nextSegment.end ?? nextSegment.start),
+        end: Math.max(currentSegmentEndOrStart, nextSegment.end ?? nextSegment.start),
       };
     } else {
       // Push the current segment to the combined list and move to the next segment

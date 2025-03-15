@@ -1,5 +1,29 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`combineOverlappingSegments 1`] = `
+[
+  {
+    "end": 87,
+    "start": 0,
+  },
+  {
+    "end": 784,
+    "start": 229,
+  },
+  {
+    "end": 1487,
+    "start": 838,
+  },
+  {
+    "end": 1831,
+    "start": 1561,
+  },
+  {
+    "start": 2027,
+  },
+]
+`;
+
 exports[`converts segments to chapters with gaps 1`] = `
 [
   {

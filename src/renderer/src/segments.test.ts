@@ -1,6 +1,6 @@
 import { test, it, expect } from 'vitest';
 
-import { convertSegmentsToChapters, partitionIntoOverlappingRanges, formatSegNum } from './segments';
+import { convertSegmentsToChapters, partitionIntoOverlappingRanges, formatSegNum, combineOverlappingSegments } from './segments';
 
 it('converts segments to chapters with gaps', () => {
   expect(convertSegmentsToChapters([
@@ -99,6 +99,57 @@ it('detects overlapping segments', () => {
     [{ start: 11, end: 12 }, { start: 11.5, end: 13 }, { start: 11.5, end: 12.5 }],
     [{ start: 17, end: 20 }, { start: 17.5, end: 18.5 }, { start: 18, end: 19.5 }, { start: 19, end: 19.5 }, { start: 19.5, end: 22 }],
   ]);
+});
+
+test('combineOverlappingSegments', () => {
+  const segments = [
+    {
+      start: 0,
+    },
+    {
+      start: 838,
+      end: 1101,
+    },
+    {
+      start: 1101,
+      end: 1244,
+    },
+    {
+      start: 1216,
+      end: 1487,
+    },
+    {
+      start: 1487,
+    },
+    {
+      start: 1625,
+    },
+    {
+      start: 503,
+      end: 669,
+    },
+    {
+      start: 392,
+      end: 716,
+    },
+    {
+      start: 229,
+      end: 784,
+    },
+    {
+      start: 0,
+      end: 87,
+    },
+    {
+      start: 1561,
+      end: 1831,
+    },
+    {
+      start: 2027,
+    },
+  ];
+
+  expect(combineOverlappingSegments(segments)).toMatchSnapshot();
 });
 
 it('detects overlapping segments, undefined end', () => {
