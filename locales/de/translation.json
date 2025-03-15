@@ -963,5 +963,13 @@
     "Jump & seek to next segment": "Überspringen und zum nächsten Segment wechseln",
     "Jump & seek to previous segment": "Überspringen und zum vorherigen Segment wechseln",
     "Feather segments +5 sec": "Segmente überblenden +5s",
-    "Expand segments +5 sec": "Segmente erweitern +5 sec"
+    "Expand segments +5 sec": "Segmente erweitern +5 sec",
+    "Load overview": "Übersicht laden",
+    "Waveform height": "Wellenform Höhe",
+    "<0></0> <2></2> or <4></4> <6></6> to set cutpoints": "<0></0> <2></2> or <4></4> <6></6> um Schnittpunkte zu setzen",
+    "Invert segment selection": "Segmentauswahl invertieren",
+    "Generating full overview waveform, this may take a few minutes.": "Die Erstellung einer vollständigen Übersicht der Wellenform kann einige Minuten dauern.",
+    "Remove current segment cutpoint": "Aktuellen Segment-Schnittpunkt entfernen",
+    "Remove cutpoint from segment {{segmentNumber}}": "Schnittpunkt aus Segment {{segmentNumber}} entfernen",
+    "Select segments at cursor": "Segmente am Cursor auswählen"
 }
