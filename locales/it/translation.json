@@ -923,5 +923,13 @@
     "Shrink segments -5 sec": "Riiduci segmenti -5 sec",
     "The expression must return an object": "L'espressione deve restituire un oggetto",
     "Divide timeline into a number of segments with an approximate byte size": "Dividi la timeline in un numero di segmenti con una dimensione approssimativa in byte",
-    "Expand segments +5 sec": "Espandi segmenti +5 sec"
+    "Expand segments +5 sec": "Espandi segmenti +5 sec",
+    "<0></0> <2></2> or <4></4> <6></6> to set cutpoints": "<0></0> <2></2> o <4></4> <6></6> per impostare i punti di taglio",
+    "Generating full overview waveform, this may take a few minutes.": "La generazione della forma d'onda panoramica completa potrebbe richiedere alcuni minuti.",
+    "Invert segment selection": "Inverti selezione segmento",
+    "Load overview": "Carica panoramica",
+    "Remove current segment cutpoint": "Rimuovi punto di taglio segmento attuale",
+    "Remove cutpoint from segment {{segmentNumber}}": "Rimuovi punto di taglio dal segmento {{segmentNumber}}",
+    "Select segments at cursor": "Seleziona segmenti al cursore",
+    "Waveform height": "Altezza forma d'onda"
 }
