@@ -949,5 +949,7 @@
     "Markers": "マーカー",
     "Please enter a number from 1 to {{n}} to be the new order for the current segment": "現在のセグメントを新たな順番にするための、1から{{n}}までの数字を入力",
     "Shift all end times": "すべての終了時間をずらす",
-    "The expression must return an object": "式はオブジェクトを返すようにしてください"
+    "The expression must return an object": "式はオブジェクトを返すようにしてください",
+    "Select segments at cursor": "カーソル上のセグメントを選択",
+    "Invert segment selection": "セグメント選択を反転"
 }
