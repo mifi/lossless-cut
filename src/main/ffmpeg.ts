@@ -264,8 +264,9 @@ interface DetectedSegment {
 }
 
 // https://stackoverflow.com/questions/35675529/using-ffmpeg-how-to-do-a-scene-change-detection-with-timecode
-export async function detectSceneChanges({ filePath, minChange, onProgress, onSegmentDetected, from, to }: {
+export async function detectSceneChanges({ filePath, streamId, minChange, onProgress, onSegmentDetected, from, to }: {
   filePath: string,
+  streamId: number | undefined
   minChange: number | string,
   onProgress: (p: number) => void,
   onSegmentDetected: (p: DetectedSegment) => void,
@@ -275,7 +276,8 @@ export async function detectSceneChanges({ filePath, minChange, onProgress, onSe
   const args = [
     '-hide_banner',
     ...getInputSeekArgs({ filePath, from, to }),
-    '-filter_complex', `select='gt(scene,${minChange})',metadata=print:file=-:direct=1`, // direct=1 to flush stdout immediately
+    '-map', streamId != null ? `0:${streamId}` : 'v:0',
+    '-filter:v', `select='gt(scene,${minChange})',metadata=print:file=-:direct=1`, // direct=1 to flush stdout immediately
     '-f', 'null', '-',
   ];
   const process = runFfmpegProcess(args, { buffer: false });
@@ -356,8 +358,9 @@ async function detectIntervals({ filePath, customArgs, onProgress, onSegmentDete
 
 const mapFilterOptions = (options: Record<string, string>) => Object.entries(options).map(([key, value]) => `${key}=${value}`).join(':');
 
-export async function blackDetect({ filePath, filterOptions, boundingMode, onProgress, onSegmentDetected, from, to }: {
+export async function blackDetect({ filePath, streamId, filterOptions, boundingMode, onProgress, onSegmentDetected, from, to }: {
   filePath: string,
+  streamId: number | undefined,
   filterOptions: Record<string, string>,
   boundingMode: boolean,
   onProgress: (p: number) => void,
@@ -388,12 +391,16 @@ export async function blackDetect({ filePath, filterOptions, boundingMode, onPro
       }
       return { start, end };
     },
-    customArgs: ['-vf', `blackdetect=${mapFilterOptions(filterOptions)}`, '-an'],
+    customArgs: [
+      '-map', streamId != null ? `0:${streamId}` : 'v:0',
+      '-filter:v', `blackdetect=${mapFilterOptions(filterOptions)}`,
+    ],
   });
 }
 
-export async function silenceDetect({ filePath, filterOptions, boundingMode, onProgress, onSegmentDetected, from, to }: {
+export async function silenceDetect({ filePath, streamId, filterOptions, boundingMode, onProgress, onSegmentDetected, from, to }: {
   filePath: string,
+  streamId: number | undefined,
   filterOptions: Record<string, string>,
   boundingMode: boolean,
   onProgress: (p: number) => void,
@@ -424,7 +431,10 @@ export async function silenceDetect({ filePath, filterOptions, boundingMode, onP
       }
       return { start, end };
     },
-    customArgs: ['-af', `silencedetect=${mapFilterOptions(filterOptions)}`, '-vn'],
+    customArgs: [
+      '-map', streamId != null ? `0:${streamId}` : 'a:0',
+      '-filter:a', `silencedetect=${mapFilterOptions(filterOptions)}`,
+    ],
   });
 }
 
