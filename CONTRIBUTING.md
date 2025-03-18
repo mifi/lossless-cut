@@ -116,10 +116,12 @@ Find the [latest PR](https://github.com/mifi/lossless-cut/pulls) from Weblate an
 
 ## Minimum OS version
 
-Minimum supported OS versions for Electron. As of electron 22:
+Minimum supported OS versions for Electron. As of Electron 35:
 
-- MacOS High Sierra 10.13
+- MacOS 11 Big Sur
 - Windows 10
+
+Note that older versions of LosslessCut still work on older operating systems.
 
 ### MacOS [`LSMinimumSystemVersion`](https://developer.apple.com/documentation/bundleresources/information_property_list/lsminimumsystemversion)
 
