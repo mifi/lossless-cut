@@ -236,7 +236,7 @@
     "Instead of video apparently starting at 0, you can offset by a specified value. This only applies to the preview inside LosslessCut and does not modify the file in any way. Useful for viewing/cutting videos according to timecodes)": "Вместо видео, которое явно начинается с 0, вы можете компенсировать указанное значение. Это относится только к предварительному просмотру внутри LosslessCut и никоим образом не изменяет файл. Полезно для просмотра / нарезки видео по тайм-кодам)",
     "Set custom start time offset": "Установить смещение времени начала",
     "Timeline trackpad/wheel sensitivity": "Чувствительность прокрутки сенсорной панели/колеса на временной шкале",
-    "Mute preview? (will not affect output)": "Отключить звук в предпросмотре? (На результат не влияет)",
+    "Mute preview? (will not affect output)": "Выключить предпросмотр (не повлияет на результат)?",
     "Rotation preview": "Предварительный просмотр вращения",
     "DROP FILE(S)": "ПЕРЕТАЩИТЕ ФАЙЛ(Ы)",
     "Discard": "Отказаться",
