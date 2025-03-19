@@ -1,7 +1,7 @@
 {
     "MPlayer EDL": "MPlayer EDL",
     "EDL (MPlayer)": "EDL (MPlayer)",
-    "Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut": "正確な位置で切り取りますが、ファイルの最初に抜け部分ができるかもしれません。正確に切り取るには、次のキーフレーム数のフレーム前に切り取り地点を設定する必要があることがあります。",
+    "Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut": "正確な位置で切り取りますが、ファイルの最初に抜け部分ができるかもしれません。正確に切り取るには、次のキーフレーム数のフレーム前に切り取り箇所を設定する必要があることがあります。",
     "Accurate time but could leave an empty portion at the beginning of the video. Equiv to": "正確な時間だが動画の最初に抜け部分ができることも。以下に相当",
     "Will now cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files.": "指定した切り取り開始地点の前の最も近いキーフレームで切り取ります。ほとんどのファイルではこれを推奨。",
     "Report": "報告",
@@ -30,7 +30,7 @@
     "Try to set the <1>start-</1>cutpoint a <3>few frames before or after</3> the nearest keyframe (may also solve audio sync issues)": "最も近いキーフレームの<3>数フレーム前または後</3>に切り取り地点の<1>開始</1>を指定してみる (音声同期の問題も解決することも)",
     "Mark out / cut end point for current segment": "現在のセグメントにマークアウト/切り取り終了地点",
     "Mark in / cut start point for current segment": "現在のセグメントにマークイン/切り取り開始地点",
-    "Segments and cut points": "セグメントと切り取り地点",
+    "Segments and cut points": "セグメントと切り取り箇所",
     "With \"keyframe cut\", we will cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files. With \"Normal cut\" you may have to manually set the cutpoint a few frames before the next keyframe to achieve a precise cut": "「キーフレーム切り取り」は、指定した切り取り開始地点の前の最も近いキーフレームで切り取ります。ほとんどのファイルでは、これを推奨します。「通常の切り取り」では、正確な切り取りを行うために、次のキーフレームの数フレーム前に切り取り地点を手動で設定する必要があるかもしれません。",
     "Ask about what to do when opening a new file when another file is already already open?": "他のファイルを開いている時に、新しいファイルを開いたら確認",
     "Check to hide notifications": "通知を非表示",
@@ -782,14 +782,14 @@
     "Close current file": "現在のファイルを閉じる",
     "Please enter a valid number.": "有効な数字を入力してください。",
     "Enter tag value": "タグの値を入力",
-    "Extract frames from current segment as image files": "現在のセグメントから画像ファイルとしてフレームを抽出",
+    "Extract frames from current segment as image files": "現在のセグメントからフレームを画像にし抽出",
     "Name of the merged/concatenated output file when concatenating multiple segments.": "複数のセグメントを連結する結合/連結後の出力ファイルの名前。",
     "API action name: {{action}}": "API 操作名: {{action}}",
     "Merged output file name:": "結合後の出力ファイル名:",
     "Select segments by tag": "タグからセグメントを選択",
     "Quit LosslessCut": "LosslessCut を終了",
     "This option lets you losslessly change the speed at which media players will play back the exported file. For example if you double the FPS, the playback speed will double (and duration will halve), however all the frames will be intact and played back (but faster). Be careful not to set it too high, as the player might not be able to keep up (playback CPU usage will increase proportionally to the speed!)": "このオプションは、出力されたファイルをメディアプレーヤーが再生する速度を無劣化で変更できます。例えばFPSを2倍にすると、再生速度は2倍になりますが (再生時間は半分になります)、すべてのフレームはそのまま再生されます (速度は速くなります)。高すぎると、プレーヤーがついていけなくなる可能性があります (再生によるCPU使用率は速度に比例して増加します！)",
-    "Extract frames from selected segments as image files": "選択したセグメントから画像ファイルとしてフレームを抽出",
+    "Extract frames from selected segments as image files": "選択セグメントからフレームを画像にし抽出",
     "Enter tag name (in the next dialog you'll enter tag value)": "タグ名を入力 (次にタグの値を入力できます)",
     "Sanitize file names": "ファイル名の特殊文字を削除",
     "Enter tag key": "タグのキーを入力",
@@ -952,5 +952,6 @@
     "The expression must return an object": "式はオブジェクトを返すようにしてください",
     "Select segments at cursor": "カーソル上のセグメントを選択",
     "Invert segment selection": "セグメント選択を反転",
-    "<0></0> <2></2> or <4></4> <6></6> to set cutpoints": "<0></0> <2></2> や <4></4> <6></6> 切り取り個所を指定"
+    "<0></0> <2></2> or <4></4> <6></6> to set cutpoints": "<0></0> <2></2> や <4></4> <6></6> 切り取り個所を指定",
+    "Remove current segment cutpoint": "現在のセグメントの切り取り箇所を除去"
 }
