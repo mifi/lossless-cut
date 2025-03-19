@@ -149,8 +149,9 @@ Links:
 ## Maintainence chores
 
 ### Keep dependencies up to date
-- ffmpeg
-- `electron`, `@electron/remote` and upgrade [electron.vite.config.ts](./electron.vite.config.ts) `target`s.
+- FFmpeg: [ffmpeg-build-script](https://github.com/mifi/ffmpeg-build-script), [ffmpeg-builds](https://github.com/mifi/ffmpeg-builds)
+- `electron` and upgrade [electron.vite.config.ts](./electron.vite.config.ts) `target`s.
+- `@electron/remote`
 - `package.json` / `yarn.lock`
 
 ### i18n
