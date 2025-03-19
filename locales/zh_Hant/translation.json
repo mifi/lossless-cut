@@ -893,5 +893,21 @@
     "You are not allowed to write the output file. This probably means that the file already exists with the wrong permissions, or you don't have write permissions to the output folder.": "不允許您寫入輸出檔案。這可能是因為現有檔案有錯誤的許可權限，或者您沒有輸出資料夾的寫入許可權限。",
     "You can customize the file name of the merged file using special variables.": "您可以使用特殊變數來定製合併檔案的檔案名稱。",
     "Clear": "清除",
-    "Donate": "捐助"
+    "Donate": "捐助",
+    "Markers": "標記",
+    "\"{{property}}\" must be a number": "\"{{property}}\" 必須是數字",
+    "\"{{property}}\" must be a string": "\"{{property}}\" 必須是字串",
+    "\"{{property}}\" must be an object of strings": "\"{{property}}\" 必須是字串物件",
+    "{{numFrames}} frames_one": "{{numFrames}} 影格",
+    "{{numFrames}} frames_other": "{{numFrames}} 影格",
+    "Add number suffix to label": "加入數字尾綴至標籤",
+    "Add a tag to every even segment": "新增標籤至每個偶數段落",
+    "Convert markers to segments": "轉換標記為段落",
+    "Convert segments to markers": "轉換段落為標記",
+    "Create byte sized segments": "建立位元組大小的段落",
+    "Edit segments by expression": "依照表達式編輯段落",
+    "File name is too long and cannot be exported.": "檔案名稱太長，無法匯出。",
+    "Exporting whole file without cutting, because there are no segments to export.": "匯出整個檔案而不包括分割。因為沒有可匯出的段落。",
+    "Expand segments +5 sec": "擴充段落 +5 秒",
+    "Invert segment selection": "反向段落選擇"
 }
