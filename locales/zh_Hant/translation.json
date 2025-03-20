@@ -909,5 +909,7 @@
     "File name is too long and cannot be exported.": "檔案名稱太長，無法匯出。",
     "Exporting whole file without cutting, because there are no segments to export.": "匯出整個檔案而不包括分割。因為沒有可匯出的段落。",
     "Expand segments +5 sec": "擴充段落 +5 秒",
-    "Invert segment selection": "反向段落選擇"
+    "Invert segment selection": "反向段落選擇",
+    "Remember window size and position": "記住視窗尺寸與位置",
+    "Select all markers": "選擇所有標記"
 }
