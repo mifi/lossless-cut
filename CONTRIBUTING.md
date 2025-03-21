@@ -74,7 +74,7 @@ Before releasing, consider [Maintainence chores](#maintainence-chores) first.
   - `git checkout stores`
   - `npm version patch`
 - *If normal GitHub-first release*
-  - `npm version minor`
+  - `npm version minor && git --no-pager show`
 - `git push --follow-tags`
 - Wait for build and draft in Github actions
 
