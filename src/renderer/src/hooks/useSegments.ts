@@ -280,7 +280,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   const invertAllSegments = useCallback(() => {
     // todo leave non selected segments as is?
     // treat markers as 0 length
-    const sortedSegments = sortSegments(selectedSegments.map(({ end, ...rest }) => ({ ...rest, end: end ?? rest.start })));
+    const sortedSegments = sortSegments(selectedSegments);
 
     const inverseSegmentsAndMarkers = invertSegments(sortedSegments, true, true, fileDuration);
 

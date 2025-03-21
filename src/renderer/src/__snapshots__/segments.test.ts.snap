@@ -85,3 +85,63 @@ exports[`converts segments to chapters with single long segment 1`] = `
   },
 ]
 `;
+
+exports[`invertSegments > adjacent 1`] = `
+[
+  {
+    "end": 2,
+    "start": 0,
+  },
+  {
+    "end": 100,
+    "name": "Segment 2",
+    "start": 4,
+  },
+]
+`;
+
+exports[`invertSegments > none 1`] = `[]`;
+
+exports[`invertSegments > normal 1`] = `
+[
+  {
+    "end": 1,
+    "start": 0,
+  },
+  {
+    "end": 2,
+    "name": "Marker 1",
+    "start": 1,
+  },
+  {
+    "end": 5,
+    "name": "Segment 2",
+    "start": 3,
+  },
+  {
+    "end": 100,
+    "name": "Segment 3",
+    "start": 5,
+  },
+]
+`;
+
+exports[`invertSegments > overlap 1 1`] = `[]`;
+
+exports[`invertSegments > overlap 2 1`] = `[]`;
+
+exports[`invertSegments > undefined duration 1`] = `
+[
+  {
+    "end": 3,
+    "start": 0,
+  },
+  {
+    "end": undefined,
+    "name": "Marker 1",
+    "start": 3,
+  },
+]
+`;
+
+exports[`invertSegments > undefined duration 2 1`] = `[]`;

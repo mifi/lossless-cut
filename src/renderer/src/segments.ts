@@ -155,15 +155,22 @@ export function hasAnySegmentOverlap(sortedSegments: { start: number, end: numbe
 }
 
 // eslint-disable-next-line space-before-function-paren
-export function invertSegments(sortedCutSegments: ({ start: number, end: number, segId?: string | undefined })[], includeFirstSegment: boolean, includeLastSegment: boolean, duration?: number) {
-  if (sortedCutSegments.length === 0) return [];
+export function invertSegments(
+  sortedSegmentsIn: ({ start: number, end?: number | undefined, segId?: string | undefined, name?: string | undefined })[],
+  includeFirstSegment: boolean,
+  includeLastSegment: boolean,
+  duration?: number,
+) {
+  const sortedSegments = sortedSegmentsIn.map((seg) => ({ ...seg, end: seg.end ?? seg.start }));
 
-  if (hasAnySegmentOverlap(sortedCutSegments)) return [];
+  if (sortedSegments.length === 0) return [];
 
-  const ret: { start: number, end?: number | undefined, segId?: string | undefined }[] = [];
+  if (hasAnySegmentOverlap(sortedSegments)) return [];
+
+  const ret: { start: number, end?: number | undefined, segId?: string | undefined, name?: string | undefined }[] = [];
 
   if (includeFirstSegment) {
-    const firstSeg = sortedCutSegments[0]!;
+    const firstSeg = sortedSegments[0]!;
     if (firstSeg.start > 0) {
       ret.push({
         start: 0,
@@ -173,26 +180,26 @@ export function invertSegments(sortedCutSegments: ({ start: number, end: number,
     }
   }
 
-  sortedCutSegments.forEach((cutSegment, i) => {
+  sortedSegments.forEach((segment, i) => {
     if (i === 0) return;
-    const previousSeg = sortedCutSegments[i - 1]!;
-    const inverted: typeof sortedCutSegments[number] = {
+    const previousSeg = sortedSegments[i - 1]!;
+    ret.push({
       start: previousSeg.end,
-      end: cutSegment.start,
-    };
-    if (previousSeg.segId != null && cutSegment.segId != null) inverted.segId = `${previousSeg.segId}-${cutSegment.segId}`;
-    ret.push(inverted);
+      end: segment.start,
+      ...(previousSeg.segId != null && segment.segId != null && { segId: `${previousSeg.segId}-${segment.segId}` }),
+      ...(previousSeg.name != null && { name: previousSeg.name }),
+    });
   });
 
   if (includeLastSegment) {
-    const lastSeg = sortedCutSegments.at(-1)!;
+    const lastSeg = sortedSegments.at(-1)!;
     if (duration == null || (lastSeg.end != null && lastSeg.end < duration)) {
-      const inverted: typeof ret[number] = {
+      ret.push({
         start: lastSeg.end,
         end: duration,
-      };
-      if (lastSeg.segId != null) inverted.segId = `${lastSeg.segId}-end`;
-      ret.push(inverted);
+        ...(lastSeg.segId != null && { segId: `${lastSeg.segId}-end` }),
+        ...(lastSeg.name != null && { name: lastSeg.name }),
+      });
     }
   }
 
@@ -206,7 +213,8 @@ export function convertSegmentsToChapters(sortedSegments: { start: number, end: 
   if (sortedSegments.length === 0) return [];
   if (hasAnySegmentOverlap(sortedSegments)) throw new Error('Segments cannot overlap');
 
-  const invertedSegments = invertSegments(sortedSegments, true, false).map(({ end, ...seg }) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const invertedSegments = invertSegments(sortedSegments, true, false).map(({ end, name: _ignored, ...seg }) => {
     invariant(end != null); // to please typescript
     return { ...seg, end };
   });
