@@ -55,7 +55,7 @@ const Segment = memo(({
   jumpSegEnd,
   addSegment,
   onEditSegmentTags,
-  onExtractSegmentFramesAsImages,
+  onExtractSegmentsFramesAsImages,
   onExtractSelectedSegmentsFramesAsImages,
   onInvertSelectedSegments,
   onDuplicateSegmentClick,
@@ -85,7 +85,7 @@ const Segment = memo(({
   jumpSegEnd: (i: number) => void,
   addSegment: UseSegments['addSegment'],
   onEditSegmentTags: (i: number) => void,
-  onExtractSegmentFramesAsImages: (segments: Pick<SegmentBase, 'start' | 'end'>[]) => Promise<void>,
+  onExtractSegmentsFramesAsImages: (segments: Pick<SegmentBase, 'start' | 'end'>[]) => Promise<void>,
   onExtractSelectedSegmentsFramesAsImages: () => void,
   onInvertSelectedSegments: UseSegments['invertSelectedSegments'],
   onDuplicateSegmentClick: UseSegments['duplicateSegment'],
@@ -138,9 +138,9 @@ const Segment = memo(({
       { type: 'separator' },
 
       { label: t('Segment tags'), click: () => onEditSegmentTags(index) },
-      { label: t('Extract frames as image files'), click: () => onExtractSegmentFramesAsImages([seg]) },
+      { label: t('Extract frames as image files'), click: () => onExtractSegmentsFramesAsImages([seg]) },
     ];
-  }, [invertCutSegments, t, addSegment, onLabelSelectedSegments, onRemoveSelected, onExtractSelectedSegmentsFramesAsImages, updateSegOrder, index, jumpSegStart, jumpSegEnd, onLabelPress, onRemovePress, onDuplicateSegmentClick, seg, onSelectSingleSegment, onSelectAllSegments, onDeselectAllSegments, onSelectAllMarkers, onSelectSegmentsByLabel, onSelectSegmentsByExpr, onInvertSelectedSegments, onMutateSegmentsByExpr, onReorderPress, onEditSegmentTags, onExtractSegmentFramesAsImages]);
+  }, [invertCutSegments, t, addSegment, onLabelSelectedSegments, onRemoveSelected, onExtractSelectedSegmentsFramesAsImages, updateSegOrder, index, jumpSegStart, jumpSegEnd, onLabelPress, onRemovePress, onDuplicateSegmentClick, seg, onSelectSingleSegment, onSelectAllSegments, onDeselectAllSegments, onSelectAllMarkers, onSelectSegmentsByLabel, onSelectSegmentsByExpr, onInvertSelectedSegments, onMutateSegmentsByExpr, onReorderPress, onEditSegmentTags, onExtractSegmentsFramesAsImages]);
 
   useContextMenu(ref, contextMenuTemplate);
 
@@ -265,7 +265,7 @@ function SegmentList({
   onSelectSegmentsByExpr,
   onMutateSegmentsByExpr,
   onSelectAllMarkers,
-  onExtractSegmentFramesAsImages,
+  onExtractSegmentsFramesAsImages,
   onExtractSelectedSegmentsFramesAsImages,
   onLabelSelectedSegments,
   onInvertSelectedSegments,
@@ -305,7 +305,7 @@ function SegmentList({
   onSelectSegmentsByExpr: UseSegments['selectSegmentsByExpr'],
   onSelectAllMarkers: UseSegments['selectAllMarkers'],
   onMutateSegmentsByExpr: UseSegments['mutateSegmentsByExpr'],
-  onExtractSegmentFramesAsImages: (segments: Pick<SegmentBase, 'start' | 'end'>[]) => Promise<void>,
+  onExtractSegmentsFramesAsImages: (segments: Pick<SegmentBase, 'start' | 'end'>[]) => Promise<void>,
   onExtractSelectedSegmentsFramesAsImages: () => void,
   onLabelSelectedSegments: UseSegments['labelSelectedSegments'],
   onInvertSelectedSegments: UseSegments['invertSelectedSegments'],
@@ -523,7 +523,7 @@ function SegmentList({
                   onSelectSegmentsByLabel={onSelectSegmentsByLabel}
                   onSelectSegmentsByExpr={onSelectSegmentsByExpr}
                   onMutateSegmentsByExpr={onMutateSegmentsByExpr}
-                  onExtractSegmentFramesAsImages={onExtractSegmentFramesAsImages}
+                  onExtractSegmentsFramesAsImages={onExtractSegmentsFramesAsImages}
                   onExtractSelectedSegmentsFramesAsImages={onExtractSelectedSegmentsFramesAsImages}
                   onLabelSelectedSegments={onLabelSelectedSegments}
                   onSelectAllMarkers={onSelectAllMarkers}

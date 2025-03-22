@@ -1239,6 +1239,7 @@ function App() {
   const extractSegmentsFramesAsImages = useCallback(async (segments: SegmentBase[]) => {
     if (!filePath || detectedFps == null || workingRef.current || segments.length === 0) return;
     const segmentsNumFrames = segments.reduce((acc, { start, end }) => acc + (end == null ? 1 : (getFrameCount(end - start) ?? 0)), 0);
+    // If all segments are markers, we shall export every marker as a file and therefore we don't have to ask user
     const areAllSegmentsMarkers = segments.every((seg) => seg.end == null);
     const captureFramesResponse = areAllSegmentsMarkers
       ? { filter: undefined, estimatedMaxNumFiles: segmentsNumFrames }
@@ -1264,7 +1265,7 @@ function App() {
       // eslint-disable-next-line no-restricted-syntax
       for (const [index, segment] of segments.entries()) {
         const { start, end } = segment;
-        if (filePath == null) throw new Error();
+        invariant(filePath != null);
         // eslint-disable-next-line no-await-in-loop
         lastOutPath = await captureFramesRange({ customOutDir, filePath, fps: detectedFps, fromTime: start, toTime: end, estimatedMaxNumFiles: captureFramesResponse.estimatedMaxNumFiles, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, outputTimestamps: captureFrameFileNameFormat === 'timestamp', onProgress: (segmentProgress) => handleSegmentProgress(index, segmentProgress) });
       }
@@ -2577,7 +2578,7 @@ function App() {
                       onDeselectAllSegments={deselectAllSegments}
                       onSelectAllSegments={selectAllSegments}
                       onInvertSelectedSegments={invertSelectedSegments}
-                      onExtractSegmentFramesAsImages={extractSegmentsFramesAsImages}
+                      onExtractSegmentsFramesAsImages={extractSegmentsFramesAsImages}
                       onExtractSelectedSegmentsFramesAsImages={extractSelectedSegmentsFramesAsImages}
                       jumpSegStart={jumpSegStart}
                       jumpSegEnd={jumpSegEnd}

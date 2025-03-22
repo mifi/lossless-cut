@@ -92,6 +92,7 @@ export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps 
     filter = `select=gt(scene\\,${minSceneChange})`;
     // we don't know estimatedMaxNumFiles here
   }
+  // else everyFrame
 
   estimatedMaxNumFiles += 1; // just to be sure
 

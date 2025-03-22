@@ -473,16 +473,17 @@ export async function captureFrames({ from, to, videoPath, outPathTemplate, qual
     ...(to != null ? ['-t', String(Math.max(0, to - from))] : []),
     ...getQualityOpts({ captureFormat, quality }),
     // only apply filter for non-markers
-    ...(filter != null && to != null
+    ...(to == null
       ? [
-        '-vf', filter,
-        // https://superuser.com/questions/1336285/use-ffmpeg-for-thumbnail-selections
-        ...(framePts ? ['-frame_pts', '1'] : []),
-        '-vsync', '0', // else we get a ton of duplicates (thumbnail filter)
-      ]
-      : [
         '-frames:v', '1', // for markers, just capture 1 frame
-      ]
+      ] : (
+        // for segments (non markers), apply filter (but only if there is one)
+        filter != null ? [
+          '-vf', filter,
+          // https://superuser.com/questions/1336285/use-ffmpeg-for-thumbnail-selections
+          ...(framePts ? ['-frame_pts', '1'] : []),
+          '-vsync', '0', // else we get a ton of duplicates (thumbnail filter)
+        ] : [])
     ),
     ...getCodecOpts(captureFormat),
     '-f', 'image2',
