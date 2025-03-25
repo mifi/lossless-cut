@@ -438,7 +438,7 @@ export async function silenceDetect({ filePath, streamId, filterOptions, boundin
   });
 }
 
-function getFffmpegJpegQuality(quality: number) {
+function getFfmpegJpegQuality(quality: number) {
   // Normal range for JPEG is 2-31 with 31 being the worst quality.
   const qMin = 2;
   const qMax = 31;
@@ -446,7 +446,7 @@ function getFffmpegJpegQuality(quality: number) {
 }
 
 function getQualityOpts({ captureFormat, quality }: { captureFormat: CaptureFormat, quality: number }) {
-  if (captureFormat === 'jpeg') return ['-q:v', String(getFffmpegJpegQuality(quality))];
+  if (captureFormat === 'jpeg') return ['-q:v', String(getFfmpegJpegQuality(quality))];
   if (captureFormat === 'webp') return ['-q:v', String(Math.max(0, Math.min(100, Math.round(quality * 100))))];
   return [];
 }
@@ -506,7 +506,7 @@ export async function captureFrames({ from, to, videoPath, outPathTemplate, qual
 export async function captureFrame({ timestamp, videoPath, outPath, quality }: {
   timestamp: number, videoPath: string, outPath: string, quality: number,
 }) {
-  const ffmpegQuality = getFffmpegJpegQuality(quality);
+  const ffmpegQuality = getFfmpegJpegQuality(quality);
   const args = [
     '-ss', String(timestamp),
     '-i', videoPath,

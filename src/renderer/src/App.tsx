@@ -1227,8 +1227,8 @@ function App() {
       const currentTime = getRelevantTime();
       const video = videoRef.current;
       if (video == null) throw new Error();
-      const useFffmpeg = usingPreviewFile || captureFrameMethod === 'ffmpeg';
-      const outPath = useFffmpeg
+      const usingFfmpeg = usingPreviewFile || captureFrameMethod === 'ffmpeg';
+      const outPath = usingFfmpeg
         ? await captureFrameFromFfmpeg({ customOutDir, filePath, time: currentTime, captureFormat, quality: captureFrameQuality })
         : await captureFrameFromTag({ customOutDir, filePath, time: currentTime, captureFormat, quality: captureFrameQuality, video });
 
