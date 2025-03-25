@@ -65,7 +65,7 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
       transition={mySpring}
     >
       <div style={{ fontSize: 14, paddingBottom: 3, paddingTop: 0, paddingLeft: 10, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-        <div>{t('Batch file list')}</div>
+        <div>{t('Batch file list')}{batchFiles.length > 0 && ` (${batchFiles.length})`}</div>
         <div style={{ flexGrow: 1 }} />
         <FaHatWizard size={17} role="button" title={`${t('Convert to supported format')}...`} style={iconStyle} onClick={onBatchConvertToSupportedFormatClick} />
         <AiOutlineMergeCells size={20} role="button" title={`${t('Merge/concatenate files')}...`} style={iconStyle} onClick={onMergeFilesClick} />
@@ -75,8 +75,8 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
 
       <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
         <ReactSortable list={sortableList} setList={setSortableList}>
-          {sortableList.map(({ batchFile: { path, name } }) => (
-            <BatchFile key={path} path={path} name={name} isSelected={selectedBatchFiles.includes(path)} isOpen={filePath === path} onSelect={onBatchFileSelect} onDelete={batchListRemoveFile} />
+          {sortableList.map(({ batchFile: { path, name } }, index) => (
+            <BatchFile key={path} index={index} path={path} name={name} isSelected={selectedBatchFiles.includes(path)} isOpen={filePath === path} onSelect={onBatchFileSelect} onDelete={batchListRemoveFile} />
           ))}
         </ReactSortable>
       </div>
