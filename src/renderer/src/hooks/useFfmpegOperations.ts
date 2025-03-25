@@ -300,7 +300,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
     const chaptersInputIndex = copyFileStreamsFiltered.length;
 
-    const rotationArgs = rotation !== undefined ? ['-metadata:s:v:0', `rotate=${360 - rotation}`] : [];
+    const rotationArgs = rotation !== undefined ? ['-display_rotation:v:0', String(360 - rotation)] : [];
 
     // This function tries to calculate the output stream index needed for -metadata:s:x and -disposition:x arguments
     // It is based on the assumption that copyFileStreamsFiltered contains the order of the input files (and their respective streams orders) sent to ffmpeg, to hopefully calculate the same output stream index values that ffmpeg does internally.
@@ -383,6 +383,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       ...getOutputPlaybackRateArgs(),
 
+      ...rotationArgs,
+
       ...inputArgs,
 
       ...mapStreamsArgs,
@@ -404,8 +406,6 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       '-ignore_unknown',
 
       ...getExperimentalArgs(ffmpegExperimental),
-
-      ...rotationArgs,
 
       ...getVideoTimescaleArgs(videoTimebase),
 
