@@ -26,6 +26,7 @@ export const langNames = {
   sk: 'slovenčina',
   fi: 'Suomi',
   ru: 'Русский',
+  uk: 'українська',
   // sr: 'Cрпски',
   tr: 'Türkçe',
   vi: 'Tiếng Việt',
