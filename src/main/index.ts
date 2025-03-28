@@ -39,7 +39,7 @@ export * as compatPlayer from './compatPlayer.js';
 
 export * as configStore from './configStore.js';
 
-export { isLinux, isWindows, isMac, platform } from './util.js';
+export { isLinux, isWindows, isMac, platform, arch } from './util.js';
 
 export { pathToFileURL } from 'node:url';
 

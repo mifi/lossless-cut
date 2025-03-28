@@ -11,7 +11,7 @@ const remote = window.require('@electron/remote');
 
 const { app } = remote;
 
-const { platform } = remote.require('./index.js');
+const { platform, arch } = remote.require('./index.js');
 
 
 // eslint-disable-next-line import/prefer-default-export
@@ -47,6 +47,7 @@ export function openSendReportDialog(err: unknown | undefined, state?: unknown) 
     state,
 
     platform,
+    arch,
     version,
     isWindowsStoreBuild,
     isMasBuild,
