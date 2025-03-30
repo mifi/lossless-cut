@@ -220,7 +220,7 @@ function App() {
 
   const previousPlaybackVolume = useRef(playbackVolume);
   const toggleMuted = useCallback(() => {
-    setPlaybackVolume(volume => {
+    setPlaybackVolume((volume) => {
       if (volume === 0) {
         return previousPlaybackVolume.current || 1;
       }
