@@ -219,8 +219,7 @@ function App() {
   }, [detectedFileFormat, outFormatLocked, setFileFormat, setOutFormatLocked]);
 
   const toggleMuted = useCallback(() => {
-    if (playbackVolume === 0) setPlaybackVolume(1);
-    if (playbackVolume === 1) setPlaybackVolume(0);
+    setPlaybackVolume(playbackVolume === 0 ? 1 : 0);
   }, [playbackVolume, setPlaybackVolume]);
 
   const toggleShowThumbnails = useCallback(() => setThumbnailsEnabled((v) => !v), []);
