@@ -858,7 +858,7 @@
     "Losslessly download a whole media file from the specified URL, mux it into an mkv file and open it in LosslessCut. This can be useful if you need to download a video from a website, e.g. a HLS streaming video. For example in Chrome you can open Developer Tools and view the network traffic, find the playlist (e.g. m3u8) and copy paste its URL here.": "從指定網址無損下載整個媒體檔案，復用到一個 mkv 檔案並在 LosslessCut 中打開。在你需要從某個網站下載一段影片（例如 一個 HLS 串流媒體視訊）時非常有用。例如在 Chrome 瀏覽器中，你可以開啟開發人員工具並查看網路流量，尋找播放列表（如 m3u8），然後複製它的網址到此。",
     "Segment mode: \"{{mode1}}\" will create segments bounding the silent sections. \"{{mode2}}\" will create segments that start/stop at the center of each silent section.": "段落模式：「{{mode1}}」以靜音段的邊界建立段落。「{{mode2}}」以每個靜音段的中間點為起始點建立段落。",
     "This gives you an overview of the export and allows you to customise more parameters before exporting, like changing the output file name.": "這將給你匯出的一個概況，並在匯出之前讓您可自訂更多的參數，例如變更輸出檔案名稱。",
-    "All segments match this expression.": "所有匹配此表示式的段落。",
+    "All segments match this expression.": "所有匹配此表達式的段落。",
     "Cut at the preceding keyframe (not accurate time.) Equiv to": "在前導關鍵影格處剪下（非精確時間）等同於",
     "Downloading URL": "正在下載網址",
     "More settings": "更多設定",
@@ -911,5 +911,16 @@
     "Expand segments +5 sec": "擴充段落 +5 秒",
     "Invert segment selection": "反向段落選擇",
     "Remember window size and position": "記住視窗尺寸與位置",
-    "Select all markers": "選擇所有標記"
+    "Select all markers": "選擇所有標記",
+    "Jump & seek to first segment": "跳轉並尋找首個段落",
+    "Waveform height": "波形高度",
+    "Jump & seek to previous segment": "跳轉並尋找最上個段落",
+    "Generating full overview waveform, this may take a few minutes.": "正在產生完整的概覽波形，這可能需要幾分鐘。",
+    "Jump & seek to next segment": "跳轉並尋找下個段落",
+    "Load overview": "概覽波形",
+    "Select segments at cursor": "在游標處選擇段落",
+    "Shift all end times": "偏移所有結束時間",
+    "The expression must return an object": "表達式必須回傳物件",
+    "Jump & seek to last segment": "跳轉並尋找最後段落",
+    "Please input a valid size. Example: {{example}}": "請輸入有效的尺寸。例如：{{example}}"
 }
