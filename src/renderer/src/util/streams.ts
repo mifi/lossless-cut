@@ -119,7 +119,8 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
   if (stream.codec_type === 'subtitle') {
     // mp4/mov only supports mov_text, so convert it https://stackoverflow.com/a/17584272/6519037
     // https://github.com/mifi/lossless-cut/issues/418
-    if (isMov(outFormat) && stream.codec_name !== 'mov_text') {
+    // and dvb_subtitle cannot be converted to mov_text (it will give error "Subtitle encoding currently only possible from text to text or bitmap to bitmap")
+    if (isMov(outFormat) && !['dvb_subtitle', 'mov_text'].includes(stream.codec_name)) {
       addCodecArgs('mov_text');
     } else if (outFormat === 'matroska' && stream.codec_name === 'mov_text') {
       // matroska doesn't support mov_text, so convert it to SRT (popular codec)
