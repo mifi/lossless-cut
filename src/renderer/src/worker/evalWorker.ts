@@ -94,16 +94,16 @@ Object.defineProperty(Array.prototype, 'join', {
   // eslint-disable-next-line wrap-iife, func-names
   value: function (old) {
     // eslint-disable-next-line func-names
-    return function (arg: unknown[]) {
+    return function (arg?: unknown[]) {
       // @ts-expect-error dunno how to fix
       if (this.length > 500 || (arg && arg.length > 500)) {
         // eslint-disable-next-line no-throw-literal
         throw 'Exception: too many items';
       }
 
-      // eslint-disable-next-line unicorn/prefer-reflect-apply, prefer-rest-params
       // @ts-expect-error dunno how to fix
-      return old.apply(this, arg);
+      // eslint-disable-next-line unicorn/prefer-reflect-apply, prefer-rest-params
+      return old.apply(this, arguments);
     };
   }(Array.prototype.join),
 });
