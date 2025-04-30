@@ -114,19 +114,20 @@ export const defaultCutMergedFileTemplate = '${FILENAME}-cut-merged-${EPOCH_MS}$
 // eslint-disable-next-line no-template-curly-in-string
 export const defaultMergedFileTemplate = '${FILENAME}-merged-${EPOCH_MS}${EXT}';
 
-async function interpolateOutFileName(template: string, { epochMs, inputFileNameWithoutExt, ext, segSuffix, segNum, segNumPadded, selectedSegNum, selectedSegNumPadded, segLabel, cutFrom, cutTo, tags, exportCount, currentFileExportCount }: {
+
+async function interpolateOutFileName(template: string, { epochMs, inputFileNameWithoutExt, ext, segSuffix, segNum, segNumPadded, selectedSegNum, selectedSegNumPadded, segLabels, cutFrom, cutTo, tags, exportCount, currentFileExportCount }: {
   epochMs: number,
   inputFileNameWithoutExt: string,
   ext: string,
   exportCount: number,
   currentFileExportCount?: number | undefined,
+  segLabels: string[],
 } & Partial<{
   segSuffix: string,
   segNum: number,
   segNumPadded: string,
   selectedSegNum: number,
   selectedSegNumPadded: string,
-  segLabel: string,
   cutFrom: string,
   cutTo: string,
   tags: Record<string, string>,
@@ -139,7 +140,7 @@ async function interpolateOutFileName(template: string, { epochMs, inputFileName
     [segNumVariable]: segNumPadded,
     [selectedSegNumIntVariable]: selectedSegNum,
     [selectedSegNumVariable]: selectedSegNumPadded,
-    SEG_LABEL: segLabel,
+    SEG_LABEL: segLabels.length === 1 ? segLabels[0] : segLabels,
     EPOCH_MS: epochMs,
     CUT_FROM: cutFrom,
     CUT_TO: cutTo,
@@ -171,6 +172,34 @@ function maybeTruncatePath(fileName: string, truncate: boolean) {
   ].join(pathSep);
 }
 
+async function generateWithFallback({ generate, desiredTemplate, defaultTemplate, safeOutputFileName, filePath, outputDir, maxLabelLength }: {
+  generate: (a: {
+    template: string,
+    sanitizeName: (name: string) => string,
+    safeOutputFileName: boolean,
+  }) => Promise<string[]>,
+  desiredTemplate: string,
+  defaultTemplate: string,
+  safeOutputFileName: boolean,
+  filePath: string,
+  outputDir: string,
+  maxLabelLength: number,
+}) {
+  // Fields that did not come from the source file's name must be sanitized, because they may contain characters that are not supported by the target operating/file system
+  // however we disable this when the user has chosen to (safeOutputFileName === false)
+  const sanitizeName = (name: string, safe: boolean) => (safe ? filenamify(name) : name).slice(0, Math.max(0, maxLabelLength));
+
+  const originalFileNames = await generate({ template: desiredTemplate, sanitizeName: (name: string) => sanitizeName(name, safeOutputFileName), safeOutputFileName });
+
+  const problems = getTemplateProblems({ fileNames: originalFileNames, filePath, outputDir, safeOutputFileName });
+  if (problems.error != null) {
+    const fileNames = await generate({ template: defaultTemplate, sanitizeName: (name: string) => sanitizeName(name, true), safeOutputFileName: true });
+    return { fileNames, originalFileNames, problems };
+  }
+
+  return { fileNames: originalFileNames, problems };
+}
+
 export async function generateOutSegFileNames({ fileDuration, segmentsToExport: segmentsToExportIn, template: desiredTemplate, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding, exportCount, currentFileExportCount }: {
   fileDuration: number | undefined,
   segmentsToExport: SegmentToExport[],
@@ -188,101 +217,99 @@ export async function generateOutSegFileNames({ fileDuration, segmentsToExport: 
 }) {
   const segmentsToExport = getGuaranteedSegments(segmentsToExportIn, fileDuration);
 
-  async function generate({ template, forceSafeOutputFileName }: { template: string, forceSafeOutputFileName: boolean }) {
-    const epochMs = Date.now();
+  return generateWithFallback({
+    generate: async ({ template, safeOutputFileName: safeOutputFileName2, sanitizeName }) => {
+      const epochMs = Date.now();
 
-    const maxOriginalIndex = max(segmentsToExport.map((s) => s.originalIndex)) ?? 0;
+      const maxOriginalIndex = max(segmentsToExport.map((s) => s.originalIndex)) ?? 0;
 
-    return pMap(segmentsToExport, async (segment, i) => {
-      const { start, end, name = '' } = segment;
-      const selectedSegNum = i + 1;
-      const selectedSegNumPadded = formatSegNum(i, segmentsToExport.length, outputFileNameMinZeroPadding);
-      const segNum = segment.originalIndex + 1;
-      const segNumPadded = formatSegNum(segment.originalIndex, maxOriginalIndex + 1, outputFileNameMinZeroPadding);
+      return pMap(segmentsToExport, async (segment, i) => {
+        const { start, end, name = '' } = segment;
+        const selectedSegNum = i + 1;
+        const selectedSegNumPadded = formatSegNum(i, segmentsToExport.length, outputFileNameMinZeroPadding);
+        const segNum = segment.originalIndex + 1;
+        const segNumPadded = formatSegNum(segment.originalIndex, maxOriginalIndex + 1, outputFileNameMinZeroPadding);
 
-      // Fields that did not come from the source file's name must be sanitized, because they may contain characters that are not supported by the target operating/file system
-      // however we disable this when the user has chosen to (safeOutputFileName === false)
-      const filenamifyOrNot = (fileName: string) => (safeOutputFileName || forceSafeOutputFileName ? filenamify(fileName) : fileName).slice(0, Math.max(0, maxLabelLength));
+        function getSegSuffix() {
+          if (name) return `-${sanitizeName(name)}`;
+          // https://github.com/mifi/lossless-cut/issues/583
+          if (segmentsToExport.length > 1) return `-seg${segNumPadded}`;
+          return '';
+        }
 
-      function getSegSuffix() {
-        if (name) return `-${filenamifyOrNot(name)}`;
-        // https://github.com/mifi/lossless-cut/issues/583
-        if (segmentsToExport.length > 1) return `-seg${segNumPadded}`;
-        return '';
-      }
+        const { name: inputFileNameWithoutExt } = parsePath(filePath);
 
-      const { name: inputFileNameWithoutExt } = parsePath(filePath);
+        const segFileName = await interpolateOutFileName(template, {
+          epochMs,
+          segNum,
+          segNumPadded,
+          selectedSegNum,
+          selectedSegNumPadded,
+          segSuffix: getSegSuffix(),
+          inputFileNameWithoutExt,
+          ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath }),
+          segLabels: [sanitizeName(name)],
+          cutFrom: formatTimecode({ seconds: start, fileNameFriendly: true }),
+          cutTo: formatTimecode({ seconds: end, fileNameFriendly: true }),
+          tags: Object.fromEntries(Object.entries(getSegmentTags(segment)).map(([tag, value]) => [tag, sanitizeName(value)])),
+          exportCount,
+          currentFileExportCount,
+        });
 
-      const segFileName = await interpolateOutFileName(template, {
-        epochMs,
-        segNum,
-        segNumPadded,
-        selectedSegNum,
-        selectedSegNumPadded,
-        segSuffix: getSegSuffix(),
-        inputFileNameWithoutExt,
-        ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath }),
-        segLabel: filenamifyOrNot(name),
-        cutFrom: formatTimecode({ seconds: start, fileNameFriendly: true }),
-        cutTo: formatTimecode({ seconds: end, fileNameFriendly: true }),
-        tags: Object.fromEntries(Object.entries(getSegmentTags(segment)).map(([tag, value]) => [tag, filenamifyOrNot(value)])),
-        exportCount,
-        currentFileExportCount,
-      });
-
-      return maybeTruncatePath(segFileName, safeOutputFileName);
-    }, { concurrency: 5 });
-  }
-
-  let fileNames = await generate({ template: desiredTemplate, forceSafeOutputFileName: false });
-
-  const problems = getTemplateProblems({ fileNames, filePath, outputDir, safeOutputFileName });
-  if (problems.error != null) {
-    fileNames = await generate({ template: defaultOutSegTemplate, forceSafeOutputFileName: true });
-  }
-
-  return { fileNames, problems };
+        return maybeTruncatePath(segFileName, safeOutputFileName2);
+      }, { concurrency: 5 });
+    },
+    desiredTemplate,
+    defaultTemplate: defaultOutSegTemplate,
+    filePath,
+    outputDir,
+    maxLabelLength,
+    safeOutputFileName,
+  });
 }
 
 export type GenerateOutFileNames = (template: string) => Promise<{
   fileNames: string[],
+  originalFileNames?: string[] | undefined,
   problems: {
     error: string | undefined;
     sameAsInputFileNameWarning: boolean;
   },
 }>;
 
-export async function generateMergedFileNames({ template: desiredTemplate, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, epochMs = Date.now(), exportCount, currentFileExportCount }: {
+export async function generateMergedFileNames({ template: desiredTemplate, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, epochMs = Date.now(), exportCount, currentFileExportCount, segmentsToExport }: {
   template: string,
   isCustomFormatSelected: boolean,
   fileFormat: string,
   filePath: string,
   outputDir: string,
   safeOutputFileName: boolean,
+  maxLabelLength: number,
   epochMs?: number,
   exportCount: number,
   currentFileExportCount?: number,
+  segmentsToExport?: SegmentToExport[],
 }) {
-  async function generate(template: string) {
-    const { name: inputFileNameWithoutExt } = parsePath(filePath);
+  return generateWithFallback({
+    generate: async ({ template, safeOutputFileName: safeOutputFileName2, sanitizeName }) => {
+      const { name: inputFileNameWithoutExt } = parsePath(filePath);
 
-    const fileName = await interpolateOutFileName(template, {
-      epochMs,
-      inputFileNameWithoutExt,
-      ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath }),
-      exportCount,
-      currentFileExportCount,
-    });
+      const fileName = await interpolateOutFileName(template, {
+        epochMs,
+        inputFileNameWithoutExt,
+        ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath }),
+        exportCount,
+        currentFileExportCount,
+        segLabels: segmentsToExport ? segmentsToExport.map((seg) => sanitizeName(seg.name ?? '')) : [],
+      });
 
-    return maybeTruncatePath(fileName, safeOutputFileName);
-  }
-
-  let fileName = await generate(desiredTemplate);
-
-  const problems = getTemplateProblems({ fileNames: [fileName], filePath, outputDir, safeOutputFileName });
-  if (problems.error != null) {
-    fileName = await generate(defaultCutMergedFileTemplate);
-  }
-
-  return { fileNames: [fileName], problems };
+      return [maybeTruncatePath(fileName, safeOutputFileName2)];
+    },
+    desiredTemplate,
+    defaultTemplate: defaultCutMergedFileTemplate,
+    filePath,
+    outputDir,
+    maxLabelLength,
+    safeOutputFileName,
+  });
 }

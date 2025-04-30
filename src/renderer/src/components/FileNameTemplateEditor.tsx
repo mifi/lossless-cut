@@ -63,7 +63,7 @@ function FileNameTemplateEditor(opts: {
         const outSegs = await generateFileNames(debouncedText);
         // console.timeEnd('generateOutSegFileNames')
         if (abortController.signal.aborted) return;
-        setFileNames(outSegs.fileNames);
+        setFileNames(outSegs.originalFileNames ?? outSegs.fileNames);
         setProblems(outSegs.problems);
         setValidText(outSegs.problems.error == null ? debouncedText : undefined);
       } catch (err) {
@@ -77,8 +77,8 @@ function FileNameTemplateEditor(opts: {
   }, [debouncedText, generateFileNames, t]);
 
   const availableVariables = useMemo(() => (mergeMode
-    ? ['FILENAME', extVariable, 'EPOCH_MS', 'EXPORT_COUNT']
-    : ['FILENAME', 'CUT_FROM', 'CUT_TO', segNumVariable, segNumIntVariable, selectedSegNumVariable, selectedSegNumIntVariable, 'SEG_LABEL', segSuffixVariable, extVariable, segTagsExample, 'EPOCH_MS', 'EXPORT_COUNT', 'FILE_EXPORT_COUNT']
+    ? ['FILENAME', extVariable, 'EPOCH_MS', 'EXPORT_COUNT', 'FILE_EXPORT_COUNT', 'SEG_LABEL']
+    : ['FILENAME', extVariable, 'EPOCH_MS', 'EXPORT_COUNT', 'FILE_EXPORT_COUNT', 'SEG_LABEL', 'CUT_FROM', 'CUT_TO', segNumVariable, segNumIntVariable, selectedSegNumVariable, selectedSegNumIntVariable, segSuffixVariable, segTagsExample]
   ), [mergeMode]);
 
   // eslint-disable-next-line no-template-curly-in-string

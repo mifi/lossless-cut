@@ -33,7 +33,7 @@ function Alert({ text }: { text: string }) {
   );
 }
 
-function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, exportCount }: {
+function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, exportCount, maxLabelLength }: {
   isShown: boolean,
   onHide: () => void,
   paths: string[],
@@ -41,6 +41,7 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
   alwaysConcatMultipleFiles: boolean,
   setAlwaysConcatMultipleFiles: (a: boolean) => void,
   exportCount: number,
+  maxLabelLength: number,
 }) {
   const { t } = useTranslation();
   const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, safeOutputFileName, customOutDir } = useUserSettings();
@@ -99,7 +100,7 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
       // todo allow user to edit template instead of this "hack"
       if (existingOutputName == null) {
         (async () => {
-          const generated = await generateMergedFileNames({ template: defaultMergedFileTemplate, isCustomFormatSelected, fileFormat, filePath: firstPath, outputDir, safeOutputFileName, epochMs: uniqueSuffix, exportCount });
+          const generated = await generateMergedFileNames({ template: defaultMergedFileTemplate, isCustomFormatSelected, fileFormat, filePath: firstPath, outputDir, safeOutputFileName, maxLabelLength, epochMs: uniqueSuffix, exportCount });
           // todo show to user more errors?
           const [fileName] = generated.fileNames;
           invariant(fileName != null);
@@ -112,7 +113,7 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
       // make sure the last (optional) .* is replaced by .ext`
       return existingOutputName.replace(/(\.[^.]*)?$/, ext);
     });
-  }, [customOutDir, exportCount, fileFormat, firstPath, isCustomFormatSelected, safeOutputFileName, uniqueSuffix]);
+  }, [customOutDir, exportCount, fileFormat, firstPath, isCustomFormatSelected, maxLabelLength, safeOutputFileName, uniqueSuffix]);
 
   const allFilesMeta = useMemo(() => {
     if (paths.length === 0) return undefined;
