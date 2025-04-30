@@ -60,13 +60,13 @@ When exporting segments as files, LosslessCut offers you the ability to specify 
 
 The following variables are available in the template to customize the filenames:
 
-| Avail. when merging? | Variable | Type | Output |
+| Avail. for cut+merge? | Variable | Type | Output |
 | - | - | - | - |
 | ✅ | `${FILENAME}` | `string` | The original filename *without the extension* (e.g. `Beach Trip` for a file named `Beach Trip.mp4`).
 | ✅ | `${EXT}` | `string` | The extension of the file (e.g.: `.mp4`, `.mkv`).
 | ✅ | `${EPOCH_MS}` | `number` | Number of milliseconds since epoch (e.g. `1680852771465`). Useful to generate a unique file name on every export to prevent accidental overwrite.
 | ✅ | `${EXPORT_COUNT}` | `number` | Number of exports done since last LosslessCut launch (starts at 1).
-| | `${FILE_EXPORT_COUNT}` | `number` | Number of exports done since last file was opened (starts at 1).
+| ✅ | `${FILE_EXPORT_COUNT}` | `number` | Number of exports done since last file was opened (starts at 1).
 | | `${SEG_NUM}` | `string` | Segment index, padded string (e.g. `01`, `02` or `42`).
 | | `${SEG_NUM_INT}` | `number` | Segment index, as an integer (e.g. `1`, `2` or `42`). Can be used with numeric arithmetics, e.g. `${SEG_NUM_INT+100}`.
 | | `${SELECTED_SEG_NUM}` | `string` | Same as `SEG_NUM`, but it counts only selected segments.
