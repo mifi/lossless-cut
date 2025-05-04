@@ -24,12 +24,12 @@ function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete }
   useContextMenu(ref, contextMenuTemplate);
 
   return (
-    <div ref={ref} role="button" style={{ background: isSelected ? 'var(--gray7)' : undefined, fontSize: 13, padding: '3px 6px', display: 'flex', alignItems: 'center', alignContent: 'flex-start' }} title={path} onClick={() => onSelect(path)}>
+    <div ref={ref} role="button" style={{ background: isSelected ? 'var(--gray-7)' : undefined, fontSize: 13, padding: '3px 6px', display: 'flex', alignItems: 'center', alignContent: 'flex-start' }} title={path} onClick={() => onSelect(path)}>
       <FaFile size={14} style={{ color: isSelected ? primaryTextColor : undefined, flexShrink: 0 }} />
       <div style={{ flexBasis: 4, flexShrink: 0 }} />
       <div style={{ whiteSpace: 'nowrap', cursor: 'pointer', overflow: 'hidden' }}>{index + 1}. {name}</div>
       <div style={{ flexGrow: 1 }} />
-      {isOpen && <FaAngleRight size={14} style={{ color: 'var(--gray9)', marginRight: -5, flexShrink: 0 }} />}
+      {isOpen && <FaAngleRight size={14} style={{ color: 'var(--gray-9)', marginRight: -5, flexShrink: 0 }} />}
     </div>
   );
 }

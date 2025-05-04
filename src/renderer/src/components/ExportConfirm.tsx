@@ -33,9 +33,9 @@ const boxStyle: CSSProperties = { margin: '15px 15px 50px 15px', borderRadius: 1
 
 const outDirStyle: CSSProperties = { ...highlightedTextStyle, wordBreak: 'break-all', cursor: 'pointer' };
 
-const warningStyle: CSSProperties = { color: 'var(--orange8)', fontSize: '80%', marginBottom: '.5em' };
+const warningStyle: CSSProperties = { color: 'var(--orange-8)', fontSize: '80%', marginBottom: '.5em' };
 
-const infoStyle: CSSProperties = { color: 'var(--grey12)', fontSize: '80%', marginBottom: '.5em' };
+const infoStyle: CSSProperties = { color: 'var(--gray-12)', fontSize: '80%', marginBottom: '.5em' };
 
 const adjustCutFromValues = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const adjustCutToValues = [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -492,7 +492,7 @@ function ExportConfirm({
                     )}
 
                     <tr>
-                      <td style={{ paddingTop: '.5em', color: 'var(--gray11)', fontSize: '.9em' }} colSpan={2}>
+                      <td style={{ paddingTop: '.5em', color: 'var(--gray-11)', fontSize: '.9em' }} colSpan={2}>
                         {t('Depending on your specific file/player, you may have to try different options for best results.')}
                       </td>
                       <td />
@@ -631,10 +631,10 @@ function ExportConfirm({
               animate={{ opacity: 1, translateX: 0 }}
               exit={{ opacity: 0, translateX: 50 }}
               transition={{ duration: 0.4, easings: ['easeOut'] }}
-              style={{ display: 'flex', alignItems: 'flex-end', background: 'var(--gray2)' }}
+              style={{ display: 'flex', alignItems: 'flex-end', background: 'var(--gray-2)' }}
             >
               <ToggleExportConfirm size={25} />
-              <div style={{ fontSize: 13, marginLeft: 3, marginRight: 7, maxWidth: 120, lineHeight: '100%', color: exportConfirmEnabled ? 'var(--gray12)' : 'var(--gray11)', cursor: 'pointer' }} role="button" onClick={toggleExportConfirmEnabled}>{t('Show this page before exporting?')}</div>
+              <div style={{ fontSize: 13, marginLeft: 3, marginRight: 7, maxWidth: 120, lineHeight: '100%', color: exportConfirmEnabled ? 'var(--gray-12)' : 'var(--gray-11)', cursor: 'pointer' }} role="button" onClick={toggleExportConfirmEnabled}>{t('Show this page before exporting?')}</div>
             </motion.div>
 
             <motion.div

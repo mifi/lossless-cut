@@ -1,9 +1,9 @@
 .wrapper {
-  background: var(--whiteA4);
+  background: var(--white-a4);
 }
 
 :global(.dark-theme) .wrapper {
-  background: var(--blackA4);
+  background: var(--black-a4);
 }
 
 .loader-box {
@@ -17,8 +17,8 @@
   flex-direction: column;
   align-items: center;
 
-  background: var(--blackA6);
-  box-shadow: var(--blackA6) 0 0 .7em 0;
-  border: 1px solid var(--whiteA5);
+  background: var(--black-a6);
+  box-shadow: var(--black-a6) 0 0 .7em 0;
+  border: 1px solid var(--white-a5);
   backdrop-filter: blur(7px);
 }

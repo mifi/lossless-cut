@@ -97,7 +97,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
   }, [currentCutSeg, darkMode, getSegColor]);
 
   const cutTimeInputStyle: CSSProperties = {
-    border, borderRadius: 5, backgroundColor: 'var(--gray5)', transition: darkModeTransition, fontSize: 13, textAlign: 'center', padding: '1px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 0 : 5, marginRight: isStart ? 5 : 0, boxSizing: 'border-box', fontFamily: 'inherit', width: 90, outline: 'none',
+    border, borderRadius: 5, backgroundColor: 'var(--gray-5)', transition: darkModeTransition, fontSize: 13, textAlign: 'center', padding: '1px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 0 : 5, marginRight: isStart ? 5 : 0, boxSizing: 'border-box', fontFamily: 'inherit', width: 90, outline: 'none',
   };
 
   const trySetTime = useCallback((timeWithOffset: number | undefined) => {
@@ -190,7 +190,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
   return (
     <form onSubmit={handleSubmit}>
       <input
-        style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? 'var(--red11)' : 'var(--gray12)' }}
+        style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? 'var(--red-11)' : 'var(--gray-12)' }}
         type="text"
         title={isStart ? t('Manually input current segment\'s start time') : t('Manually input current segment\'s end time')}
         onChange={(e) => handleCutTimeInput(e.target.value)}
@@ -290,7 +290,7 @@ function BottomBar({
       paddingLeft: 2,
       backgroundOffset: 30,
       background: `linear-gradient(90deg, ${gradientColors})`,
-      border: '1px solid var(--gray8)',
+      border: '1px solid var(--gray-8)',
       color: 'white',
       margin: '0px 5px 0 0px',
       display: 'flex',
@@ -317,7 +317,7 @@ function BottomBar({
 
   const playbackRateRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    playbackRateRef.current?.animate([{ transform: 'scale(1.7)', color: 'var(--gray12)' }, {}], { duration: 200 });
+    playbackRateRef.current?.animate([{ transform: 'scale(1.7)', color: 'var(--gray-12)' }, {}], { duration: 200 });
   }, [playbackRate]);
 
   function renderJumpCutpointButton(direction: number) {
@@ -354,7 +354,7 @@ function BottomBar({
         <div style={{ display: 'flex', alignItems: 'center', flexBasis: leftRightWidth }}>
           {!simpleMode && (
             <>
-              <FaSun color="var(--gray12)" role="button" onClick={() => setDarkMode((v) => !v)} style={{ padding: '0 .2em 0 .3em' }} />
+              <FaSun color="var(--gray-12)" role="button" onClick={() => setDarkMode((v) => !v)} style={{ padding: '0 .2em 0 .3em' }} />
 
               {hasAudio && (
                 <GiSoundWaves
@@ -500,12 +500,12 @@ function BottomBar({
             </Select>
 
             {detectedFps != null && (
-              <div title={t('Video FPS')} role="button" onClick={handleChangePlaybackRateClick} style={{ color: 'var(--gray11)', fontSize: '.7em', marginLeft: 6 }}>{(detectedFps * outputPlaybackRate).toFixed(3)}</div>
+              <div title={t('Video FPS')} role="button" onClick={handleChangePlaybackRateClick} style={{ color: 'var(--gray-11)', fontSize: '.7em', marginLeft: 6 }}>{(detectedFps * outputPlaybackRate).toFixed(3)}</div>
             )}
 
             <IoMdSpeedometer title={t('Change FPS')} style={{ padding: '0 .2em', fontSize: '1.3em' }} role="button" onClick={handleChangePlaybackRateClick} />
 
-            <div ref={playbackRateRef} title={t('Playback rate')} style={{ color: 'var(--gray11)', fontSize: '.7em', marginLeft: '.1em' }}>{playbackRate.toFixed(1)}</div>
+            <div ref={playbackRateRef} title={t('Playback rate')} style={{ color: 'var(--gray-11)', fontSize: '.7em', marginLeft: '.1em' }}>{playbackRate.toFixed(1)}</div>
           </>
         )}
 

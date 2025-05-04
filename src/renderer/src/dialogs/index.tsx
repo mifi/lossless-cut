@@ -136,12 +136,12 @@ export async function askForFileOpenAction(inputOptions: Record<string, string>)
 
         {Object.entries(inputOptions).map(([key, text]) => (
           <button type="button" key={key} onClick={() => onClick(key)} className="button-unstyled" style={{ display: 'block', marginBottom: '.5em' }}>
-            <ArrowRightIcon style={{ color: 'var(--gray10)' }} verticalAlign="middle" /> {text}
+            <ArrowRightIcon style={{ color: 'var(--gray-10)' }} verticalAlign="middle" /> {text}
           </button>
         ))}
 
         <button type="button" onClick={() => onClick()} className="button-unstyled" style={{ display: 'block', marginTop: '.5em' }}>
-          <ArrowRightIcon style={{ color: 'var(--red11)' }} /> {i18n.t('Cancel')}
+          <ArrowRightIcon style={{ color: 'var(--red-11)' }} /> {i18n.t('Cancel')}
         </button>
 
       </div>
@@ -729,10 +729,10 @@ const ListItem = ({ icon: Icon, iconColor, children, style }: { icon: IconCompon
 );
 
 const Notices = ({ notices }: { notices: string[] }) => notices.map((msg) => (
-  <ListItem key={msg} icon={InfoSignIcon} iconColor="var(--blue9)">{msg}</ListItem>
+  <ListItem key={msg} icon={InfoSignIcon} iconColor="var(--blue-9)">{msg}</ListItem>
 ));
 const Warnings = ({ warnings }: { warnings: string[] }) => warnings.map((msg) => (
-  <ListItem key={msg} icon={WarningSignIcon} iconColor="var(--orange8)">{msg}</ListItem>
+  <ListItem key={msg} icon={WarningSignIcon} iconColor="var(--orange-8)">{msg}</ListItem>
 ));
 const OutputIncorrectSeeHelpMenu = () => (
   <ListItem icon={HelpIcon}>{i18n.t('If output does not look right, see the Help menu.')}</ListItem>
@@ -742,7 +742,7 @@ export async function openExportFinishedToast({ filePath, warnings, notices }: {
   const hasWarnings = warnings.length > 0;
   const html = (
     <UnorderedList>
-      <ListItem icon={TickCircleIcon} iconColor={hasWarnings ? 'var(--orange8)' : 'var(--green11)'} style={{ fontWeight: 'bold' }}>{hasWarnings ? i18n.t('Export finished with warning(s)', { count: warnings.length }) : i18n.t('Export is done!')}</ListItem>
+      <ListItem icon={TickCircleIcon} iconColor={hasWarnings ? 'var(--orange-8)' : 'var(--green-11)'} style={{ fontWeight: 'bold' }}>{hasWarnings ? i18n.t('Export finished with warning(s)', { count: warnings.length }) : i18n.t('Export is done!')}</ListItem>
       <ListItem icon={InfoSignIcon}>{i18n.t('Please test the output file in your desired player/editor before you delete the source file.')}</ListItem>
       <OutputIncorrectSeeHelpMenu />
       <Notices notices={notices} />

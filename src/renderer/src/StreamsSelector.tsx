@@ -306,7 +306,7 @@ function FileHeading({ path, formatData, chapters, onTrashClick, onEditClick, se
   const { t } = useTranslation();
 
   return (
-    <div style={{ display: 'flex', marginBottom: '.2em', borderBottom: '1px solid var(--gray7)' }}>
+    <div style={{ display: 'flex', marginBottom: '.2em', borderBottom: '1px solid var(--gray-7)' }}>
       <div title={path} style={{ wordBreak: 'break-all', marginRight: '1em', fontWeight: 'bold' }}>{path.replace(/.*\/([^/]+)$/, '$1')}</div>
 
       <div style={{ flexGrow: 1 }} />
@@ -322,12 +322,12 @@ function FileHeading({ path, formatData, chapters, onTrashClick, onEditClick, se
   );
 }
 
-const thStyle: CSSProperties = { borderBottom: '1px solid var(--gray6)', paddingBottom: '.5em' };
+const thStyle: CSSProperties = { borderBottom: '1px solid var(--gray-6)', paddingBottom: '.5em' };
 
 function Thead() {
   const { t } = useTranslation();
   return (
-    <thead style={{ color: 'var(--gray12)', textAlign: 'left', fontSize: '.9em' }}>
+    <thead style={{ color: 'var(--gray-12)', textAlign: 'left', fontSize: '.9em' }}>
       <tr>
         <th style={thStyle}>{t('Keep?')}</th>
         <th style={thStyle}>{t('Codec')}</th>

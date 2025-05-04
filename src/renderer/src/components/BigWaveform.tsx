@@ -85,7 +85,7 @@ function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zo
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       ref={containerRef}
-      style={{ height: '100%', width: '100%', position: 'relative', cursor: 'grab', backgroundColor: 'var(--gray3)' }}
+      style={{ height: '100%', width: '100%', position: 'relative', cursor: 'grab', backgroundColor: 'var(--gray-3)' }}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
@@ -104,8 +104,8 @@ function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zo
           height: '100%',
           width: widthPercent,
           left: leftPercent,
-          borderLeft: waveform.from === 0 ? '1px solid var(--gray11)' : undefined,
-          borderRight: waveform.to >= fileDurationNonZero ? '1px solid var(--gray11)' : undefined,
+          borderLeft: waveform.from === 0 ? '1px solid var(--gray-11)' : undefined,
+          borderRight: waveform.to >= fileDurationNonZero ? '1px solid var(--gray-11)' : undefined,
           filter: darkMode ? undefined : 'invert(1)',
         };
 
@@ -132,7 +132,7 @@ function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zo
         );
       })}
 
-      <div style={{ pointerEvents: 'none', position: 'absolute', height: '100%', backgroundColor: 'var(--red11)', width: 1, left: '50%', top: 0 }} />
+      <div style={{ pointerEvents: 'none', position: 'absolute', height: '100%', backgroundColor: 'var(--red-11)', width: 1, left: '50%', top: 0 }} />
     </div>
   );
 }

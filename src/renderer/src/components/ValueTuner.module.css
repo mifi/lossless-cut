@@ -5,13 +5,13 @@
   padding: 1.2em;
   margin: 1em;
   border-radius: 1em;
-  color: var(--gray12);
-  background: var(--whiteA7);
-  box-shadow: 0 0 .3em .3em var(--whiteA8);
+  color: var(--gray-12);
+  background: var(--white-a7);
+  box-shadow: 0 0 .3em .3em var(--white-a8);
   backdrop-filter: blur(10px);
 }
 
 :global(.dark-theme) .value-tuner {
-  background: var(--blackA7);
-  box-shadow: 0 0 .3em .3em var(--blackA8);
+  background: var(--black-a7);
+  box-shadow: 0 0 .3em .3em var(--black-a8);
 }

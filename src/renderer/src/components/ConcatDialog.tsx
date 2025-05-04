@@ -29,7 +29,7 @@ const rowStyle: CSSProperties = {
 
 function Alert({ text }: { text: string }) {
   return (
-    <div style={{ marginBottom: '1em' }}><FaExclamationTriangle style={{ color: 'var(--orange8)', fontSize: '1.3em', verticalAlign: 'middle', marginRight: '.2em' }} /> {text}</div>
+    <div style={{ marginBottom: '1em' }}><FaExclamationTriangle style={{ color: 'var(--orange-8)', fontSize: '1.3em', verticalAlign: 'middle', marginRight: '.2em' }} /> {text}</div>
   );
 }
 
@@ -206,15 +206,15 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
             {t('This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).')}
           </div>
 
-          <div style={{ backgroundColor: 'var(--gray1)', borderRadius: '.1em' }}>
+          <div style={{ backgroundColor: 'var(--gray-1)', borderRadius: '.1em' }}>
             {paths.map((path, index) => (
               <div key={path} style={rowStyle} title={path}>
                 <div>
                   {index + 1}
                   {'. '}
                   <span>{basename(path)}</span>
-                  {!allFilesMetaCache[path] && <FaQuestionCircle style={{ color: 'var(--orange8)', verticalAlign: 'middle', marginLeft: '1em' }} />}
-                  {problemsByFile[path] && <IconButton appearance="minimal" icon={FaExclamationTriangle} onClick={() => onProblemsByFileClick(path)} title={i18n.t('Mismatches detected')} style={{ color: 'var(--orange8)', marginLeft: '1em' }} />}
+                  {!allFilesMetaCache[path] && <FaQuestionCircle style={{ color: 'var(--orange-8)', verticalAlign: 'middle', marginLeft: '1em' }} />}
+                  {problemsByFile[path] && <IconButton appearance="minimal" icon={FaExclamationTriangle} onClick={() => onProblemsByFileClick(path)} title={i18n.t('Mismatches detected')} style={{ color: 'var(--orange-8)', marginLeft: '1em' }} />}
                 </div>
               </div>
             ))}

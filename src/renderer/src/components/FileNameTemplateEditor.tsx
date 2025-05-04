@@ -154,7 +154,7 @@ function FileNameTemplateEditor(opts: {
             animate={{ opacity: 1, height: 'auto', marginTop: '.5em' }}
             exit={{ opacity: 0, height: 0, marginTop: 0 }}
           >
-            <div style={{ color: 'var(--gray11)', fontSize: '.8em' }}>{t('Output file name template')}:</div>
+            <div style={{ color: 'var(--gray-11)', fontSize: '.8em' }}>{t('Output file name template')}:</div>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.2em' }}>
               <TextInput ref={inputRef} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
 
@@ -164,10 +164,10 @@ function FileNameTemplateEditor(opts: {
               {!haveImportantMessage && <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" appearance="primary" />}
             </div>
 
-            <div style={{ fontSize: '.8em', color: 'var(--gray11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
+            <div style={{ fontSize: '.8em', color: 'var(--gray-11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
               {`${i18n.t('Variables')}:`}
 
-              <IoIosHelpCircle fontSize="1.3em" color="var(--gray12)" role="button" cursor="pointer" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/docs.md#custom-exported-file-names')} />
+              <IoIosHelpCircle fontSize="1.3em" color="var(--gray-12)" role="button" cursor="pointer" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/docs.md#custom-exported-file-names')} />
               {availableVariables.map((variable) => (
                 <span key={variable} role="button" style={{ cursor: 'pointer', marginRight: '.2em', textDecoration: 'underline', textDecorationStyle: 'dashed', fontSize: '.9em' }} onClick={() => onVariableClick(variable)}>{variable}</span>
               ))}
@@ -186,7 +186,7 @@ function FileNameTemplateEditor(opts: {
               <Switch checked={safeOutputFileName} onCheckedChange={toggleSafeOutputFileName} style={{ verticalAlign: 'middle', marginRight: '.5em' }} />
               <span>{t('Sanitize file names')}</span>
 
-              {!safeOutputFileName && <WarningSignIcon color="var(--amber9)" style={{ marginLeft: '.5em', verticalAlign: 'middle' }} />}
+              {!safeOutputFileName && <WarningSignIcon color="var(--amber-9)" style={{ marginLeft: '.5em', verticalAlign: 'middle' }} />}
             </div>
           </motion.div>
         )}
@@ -194,20 +194,20 @@ function FileNameTemplateEditor(opts: {
 
       {problems.error != null ? (
         <div style={{ marginBottom: '1em' }}>
-          <ErrorIcon color="var(--red9)" size={14} verticalAlign="baseline" /> {problems.error}
+          <ErrorIcon color="var(--red-9)" size={14} verticalAlign="baseline" /> {problems.error}
         </div>
       ) : (
         <>
           {problems.sameAsInputFileNameWarning && (
             <div style={{ marginBottom: '1em' }}>
-              <WarningSignIcon verticalAlign="middle" color="var(--amber9)" />{' '}
+              <WarningSignIcon verticalAlign="middle" color="var(--amber-9)" />{' '}
               {i18n.t('Output file name is the same as the source file name. This increases the risk of accidentally overwriting or deleting source files!')}
             </div>
           )}
 
           {isMissingExtension && (
             <div style={{ marginBottom: '1em' }}>
-              <WarningSignIcon verticalAlign="middle" color="var(--amber9)" />{' '}
+              <WarningSignIcon verticalAlign="middle" color="var(--amber-9)" />{' '}
               {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVariableFormatted })}
             </div>
           )}

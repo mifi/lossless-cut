@@ -4,23 +4,23 @@
   right: 0;
   top: 0;
   bottom: 0;
-  background: var(--whiteA11);
-  color: var(--gray12);
+  background: var(--white-a11);
+  color: var(--gray-12);
   backdrop-filter: blur(30px);
   overflow-y: scroll;
   display: flex;
 }
 
 :global(.dark-theme) .sheet {
-  background: var(--blackA11);
+  background: var(--black-a11);
 }
 
 .box {
-  background: var(--whiteA11);
+  background: var(--white-a11);
 }
 
 :global(.dark-theme) .box {
-  background: var(--blackA11);
+  background: var(--black-a11);
 }
 
 table.options {

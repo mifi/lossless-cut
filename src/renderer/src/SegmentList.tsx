@@ -25,8 +25,8 @@ const buttonBaseStyle = {
   margin: '0 3px', borderRadius: 3, color: 'white', cursor: 'pointer',
 };
 
-const disabledButtonStyle = { color: 'var(--gray10)', backgroundColor: 'var(--gray6)' };
-const neutralButtonColor = 'var(--gray9)';
+const disabledButtonStyle = { color: 'var(--gray-10)', backgroundColor: 'var(--gray-6)' };
+const neutralButtonColor = 'var(--gray-9)';
 
 // eslint-disable-next-line react/display-name
 const Segment = memo(({
@@ -193,7 +193,7 @@ const Segment = memo(({
 
   const maybeOnClick = useCallback(() => !invertCutSegments && onClick(index), [index, invertCutSegments, onClick]);
 
-  const motionStyle = useMemo<MotionStyle>(() => ({ originY: 0, margin: '5px 0', background: 'var(--gray2)', border: isActive ? '1px solid var(--gray10)' : '1px solid transparent', padding: 5, borderRadius: 5, position: 'relative' }), [isActive]);
+  const motionStyle = useMemo<MotionStyle>(() => ({ originY: 0, margin: '5px 0', background: 'var(--gray-2)', border: isActive ? '1px solid var(--gray-10)' : '1px solid transparent', padding: 5, borderRadius: 5, position: 'relative' }), [isActive]);
 
   return (
     <motion.div
@@ -208,14 +208,14 @@ const Segment = memo(({
       exit={{ scaleY: 0 }}
       className="segment-list-entry"
     >
-      <div className="segment-handle" style={{ cursor, color: 'var(--gray12)', marginBottom: duration != null ? 3 : undefined, display: 'flex', alignItems: 'center', height: 16 }}>
+      <div className="segment-handle" style={{ cursor, color: 'var(--gray-12)', marginBottom: duration != null ? 3 : undefined, display: 'flex', alignItems: 'center', height: 16 }}>
         {renderNumber()}
         <span style={{ cursor, fontSize: Math.min(310 / timeStr.length, 12), whiteSpace: 'nowrap' }}>{timeStr}</span>
       </div>
 
       {'name' in seg && seg.name && <span style={{ fontSize: 12, color: primaryTextColor, marginRight: '.3em' }}>{seg.name}</span>}
       {Object.entries(tags).map(([name, value]) => (
-        <span style={{ fontSize: 11, backgroundColor: 'var(--gray5)', color: 'var(--gray12)', borderRadius: '.4em', padding: '0 .2em', marginRight: '.1em' }} key={name}>{name}:<b>{value}</b></span>
+        <span style={{ fontSize: 11, backgroundColor: 'var(--gray-5)', color: 'var(--gray-12)', borderRadius: '.4em', padding: '0 .2em', marginRight: '.1em' }} key={name}>{name}:<b>{value}</b></span>
       ))}
 
       {duration != null && (
@@ -231,7 +231,7 @@ const Segment = memo(({
 
       {!invertCutSegments && (
         <div style={{ position: 'absolute', right: 3, bottom: 3 }}>
-          <CheckIcon className="enabled" size={20} color="var(--gray12)" onClick={onToggleSegmentSelectedClick} />
+          <CheckIcon className="enabled" size={20} color="var(--gray-12)" onClick={onToggleSegmentSelectedClick} />
         </div>
       )}
     </motion.div>
@@ -369,7 +369,7 @@ function SegmentList({
   function renderFooter() {
     return (
       <>
-        <div style={{ display: 'flex', padding: '5px 0', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid var(gray6)' }}>
+        <div style={{ display: 'flex', padding: '5px 0', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid var(--gray-6)' }}>
           <FaPlus
             size={24}
             style={{ ...buttonBaseStyle, background: neutralButtonColor }}
@@ -425,7 +425,7 @@ function SegmentList({
           )}
         </div>
 
-        <div style={{ padding: '5px 10px', boxSizing: 'border-box', borderBottom: '1px solid var(gray6)', borderTop: '1px solid var(gray6)', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+        <div style={{ padding: '5px 10px', boxSizing: 'border-box', borderBottom: '1px solid var(--gray-6)', borderTop: '1px solid var(--gray-6)', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
           <div>{t('Segments total:')}</div>
           <div>{formatTimecode({ seconds: segmentsTotal })}</div>
         </div>
@@ -475,17 +475,17 @@ function SegmentList({
       </Dialog>
 
       <motion.div
-        style={{ width, background: controlsBackground, borderLeft: '1px solid var(--gray7)', color: 'var(--gray11)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
+        style={{ width, background: controlsBackground, borderLeft: '1px solid var(--gray-7)', color: 'var(--gray-11)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
         initial={{ x: width }}
         animate={{ x: 0 }}
         exit={{ x: width }}
         transition={mySpring}
       >
-        <div style={{ fontSize: 14, padding: '0 5px', color: 'var(--gray12)' }} className="no-user-select">
+        <div style={{ fontSize: 14, padding: '0 5px', color: 'var(--gray-12)' }} className="no-user-select">
           <FaAngleRight
             title={t('Close sidebar')}
             size={20}
-            style={{ verticalAlign: 'middle', color: 'var(--gray11)', cursor: 'pointer', padding: 2 }}
+            style={{ verticalAlign: 'middle', color: 'var(--gray-11)', cursor: 'pointer', padding: 2 }}
             role="button"
             onClick={toggleSegmentsList}
           />

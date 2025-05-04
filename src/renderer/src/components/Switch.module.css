@@ -2,20 +2,20 @@
   all: unset;
   width: 42px;
   height: 25px;
-  background-color: var(--gray9);
+  background-color: var(--gray-9);
   border-radius: 9999px;
   position: relative;
-  box-shadow: 0 0 0 2px var(--blackA5);
+  box-shadow: 0 0 0 2px var(--black-a5);
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 .SwitchRoot:focus {
-  box-shadow: 0 0 0 2px var(--gray11);
+  box-shadow: 0 0 0 2px var(--gray-11);
 }
 .SwitchRoot[data-state='checked'] {
-  background-color: var(--cyan9);
+  background-color: var(--cyan-9);
 }
 .SwitchRoot[data-state='checked']:focus {
-  box-shadow: 0 0 0 2px var(--cyan11);
+  box-shadow: 0 0 0 2px var(--cyan-11);
 }
 
 .SwitchThumb {

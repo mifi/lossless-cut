@@ -47,7 +47,7 @@ function Marker({
         width: 2,
         marginLeft: -1,
         overflow: 'visible',
-        backgroundColor: 'var(--gray12)',
+        backgroundColor: 'var(--gray-12)',
       }}
       layout
       transition={mySpring}
@@ -167,7 +167,7 @@ function TimelineSeg({
             style={{ width: 16, height: 16, flexShrink: 1 }}
           >
             <FaTrashAlt
-              style={{ width: '100%', color: 'var(--gray12)' }}
+              style={{ width: '100%', color: 'var(--gray-12)' }}
               size={16}
             />
           </motion.div>

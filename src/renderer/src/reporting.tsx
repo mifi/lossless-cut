@@ -65,7 +65,7 @@ export function openSendReportDialog(err: unknown | undefined, state?: unknown) 
 
         {!isStoreBuild && <p style={{ marginTop: '.2em', fontSize: '.8em', opacity: 0.7 }}><Trans>You might want to redact any sensitive information like paths.</Trans></p>}
 
-        <div style={{ fontWeight: 600, fontSize: '.75em', fontFamily: 'monospace', whiteSpace: 'pre-wrap', color: 'var(--gray11)', backgroundColor: 'var(--gray3)', padding: '.3em' }} contentEditable suppressContentEditableWarning>
+        <div style={{ fontWeight: 600, fontSize: '.75em', fontFamily: 'monospace', whiteSpace: 'pre-wrap', color: 'var(--gray-11)', backgroundColor: 'var(--gray-3)', padding: '.3em' }} contentEditable suppressContentEditableWarning>
           {text}
         </div>
       </div>

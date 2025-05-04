@@ -14,7 +14,7 @@ import { BatchFile as BatchFileType } from '../types';
 
 const iconStyle = {
   flexShrink: 0,
-  color: 'var(--gray12)',
+  color: 'var(--gray-12)',
   cursor: 'pointer',
   paddingTop: 3,
   paddingBottom: 3,
@@ -58,7 +58,7 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
   return (
     <motion.div
       className="no-user-select"
-      style={{ width, background: controlsBackground, color: 'var(--gray12)', borderRight: '1px solid var(--gray7)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden', overflowX: 'hidden', resize: 'horizontal' }}
+      style={{ width, background: controlsBackground, color: 'var(--gray-12)', borderRight: '1px solid var(--gray-7)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden', overflowX: 'hidden', resize: 'horizontal' }}
       initial={{ x: -width }}
       animate={{ x: 0 }}
       exit={{ x: -width }}
@@ -70,7 +70,7 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
         <FaHatWizard size={17} role="button" title={`${t('Convert to supported format')}...`} style={iconStyle} onClick={onBatchConvertToSupportedFormatClick} />
         <AiOutlineMergeCells size={20} role="button" title={`${t('Merge/concatenate files')}...`} style={iconStyle} onClick={onMergeFilesClick} />
         <SortIcon size={25} role="button" title={t('Sort items')} style={iconStyle} onClick={onSortClick} />
-        <FaTimes size={20} role="button" title={t('Close batch')} style={{ ...iconStyle, color: 'var(--gray11)' }} onClick={closeBatch} />
+        <FaTimes size={20} role="button" title={t('Close batch')} style={{ ...iconStyle, color: 'var(--gray-11)' }} onClick={closeBatch} />
       </div>
 
       <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>

@@ -68,7 +68,7 @@ const Waveforms = memo(({ calculateTimelinePercent, fileDurationNonZero, wavefor
 
 // eslint-disable-next-line react/display-name
 const CommandedTime = memo(({ commandedTimePercent }: { commandedTimePercent: string }) => {
-  const color = 'var(--gray12)';
+  const color = 'var(--gray-12)';
   const commonStyle: CSSProperties = { left: commandedTimePercent, position: 'absolute', pointerEvents: 'none' };
   return (
     <>
@@ -344,14 +344,14 @@ function Timeline({
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/mouse-events-have-key-events
     <div
-      style={{ position: 'relative', borderTop: '1px solid var(--gray7)', borderBottom: '1px solid var(--gray7)' }}
+      style={{ position: 'relative', borderTop: '1px solid var(--gray-7)', borderBottom: '1px solid var(--gray-7)' }}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
       onMouseOut={onMouseOut}
     >
       {(waveformEnabled && !shouldShowWaveform) && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'var(--gray11)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'var(--gray-11)' }}>
           {t('Zoom in more to view waveform')}
           <Button onClick={onGenerateOverviewWaveformClick2} style={{ marginLeft: '.5em' }}>{t('Load overview')}</Button>
         </div>
@@ -423,11 +423,11 @@ function Timeline({
           })}
 
           {shouldShowKeyframes && !areKeyframesTooClose && keyFramesInZoomWindow.map((f) => (
-            <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / fileDurationNonZero) * 100}%`, marginLeft: -1, width: 1, background: 'var(--gray11)', pointerEvents: 'none' }} />
+            <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / fileDurationNonZero) * 100}%`, marginLeft: -1, width: 1, background: 'var(--gray-11)', pointerEvents: 'none' }} />
           ))}
 
           {currentTimePercent !== undefined && (
-            <motion.div transition={{ type: 'spring', damping: 70, stiffness: 800 }} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, backgroundColor: 'var(--gray12)', width: currentTimeWidth, pointerEvents: 'none' }} />
+            <motion.div transition={{ type: 'spring', damping: 70, stiffness: 800 }} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, backgroundColor: 'var(--gray-12)', width: currentTimeWidth, pointerEvents: 'none' }} />
           )}
           {commandedTimePercent !== undefined && (
             <CommandedTime commandedTimePercent={commandedTimePercent} />

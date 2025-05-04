@@ -14,7 +14,7 @@ function SimpleModeButton({ size = 20, style }: { size?: number, style: CSSPrope
     <FaBaby
       title={t('Toggle advanced view')}
       size={size}
-      style={{ color: simpleMode ? primaryTextColor : 'var(--gray12)', ...style }}
+      style={{ color: simpleMode ? primaryTextColor : 'var(--gray-12)', ...style }}
       onClick={toggleSimpleMode}
     />
   );

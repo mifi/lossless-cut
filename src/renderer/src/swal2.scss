@@ -1,10 +1,10 @@
 @import 'sweetalert2/src/variables';
 
 // see colors.ts primaryColor
-$swal2-confirm-button-background-color: var(--cyan9);
+$swal2-confirm-button-background-color: var(--cyan-9);
 
-$myswal-background: var(--gray1);
-$myswal-foreground: var(--gray12);
+$myswal-background: var(--gray-1);
+$myswal-foreground: var(--gray-12);
 $swal2-outline-color: lighten($swal2-outline-color, 10%);
 
 $swal2-background: $myswal-background;
@@ -12,25 +12,25 @@ $swal2-html-container-color: $myswal-foreground;
 $swal2-title-color: $myswal-foreground;
 $swal2-backdrop: rgba(0, 0, 0, .75);
 
-$swal2-close-button-color: var(--gray11);
+$swal2-close-button-color: var(--gray-11);
 
 // FOOTER
-$swal2-footer-border-color: var(--gray2);
+$swal2-footer-border-color: var(--gray-2);
 $swal2-footer-color: $myswal-background;
 
 // TIMER POGRESS BAR
-$swal2-timer-progress-bar-background: var(--gray8);
+$swal2-timer-progress-bar-background: var(--gray-8);
 
 // INPUT
 $swal2-input-color: $myswal-foreground;
-$swal2-input-background: var(--gray3);
+$swal2-input-background: var(--gray-3);
 
 // VALIDATION MESSAGE
-$swal2-validation-message-background: var(--gray3);
+$swal2-validation-message-background: var(--gray-3);
 $swal2-validation-message-color: $myswal-foreground;
 
 // QUEUE
-$swal2-progress-step-background: var(--gray5);
+$swal2-progress-step-background: var(--gray-5);
 
 // COMMON VARIABLES FOR CONFIRM AND CANCEL BUTTONS
 $swal2-button-focus-box-shadow: 0 0 0 1px $swal2-background, 0 0 0 3px $swal2-outline-color;
@@ -40,7 +40,7 @@ $swal2-toast-background: $myswal-background;
 $swal2-toast-button-focus-box-shadow: 0 0 0 1px $swal2-background, 0 0 0 3px $swal2-outline-color;
 
 .swal2-textarea::placeholder {
-  color: var(--gray8);
+  color: var(--gray-8);
 }
 
 @import 'sweetalert2/src/sweetalert2.scss';

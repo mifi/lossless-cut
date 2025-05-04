@@ -14,11 +14,11 @@
 }
 
 .settings tr.header {
-  background-color: var(--blackA3);
+  background-color: var(--black-a3);
 }
 
 :global(.dark-theme) .settings tr.header {
-  background-color: var(--whiteA6);
+  background-color: var(--white-a6);
 }
 
 .settings {

@@ -4,19 +4,19 @@ https://www.radix-ui.com/docs/colors/palette-composition/understanding-the-scale
 */
 @import '@radix-ui/colors/red.css';
 @import '@radix-ui/colors/orange.css';
-@import '@radix-ui/colors/redDark.css';
+@import '@radix-ui/colors/red-dark.css';
 @import '@radix-ui/colors/amber.css';
-@import '@radix-ui/colors/amberDark.css';
+@import '@radix-ui/colors/amber-dark.css';
 @import '@radix-ui/colors/green.css';
-@import '@radix-ui/colors/greenDark.css';
+@import '@radix-ui/colors/green-dark.css';
 @import '@radix-ui/colors/cyan.css';
-@import '@radix-ui/colors/cyanDark.css';
+@import '@radix-ui/colors/cyan-dark.css';
 @import '@radix-ui/colors/blue.css';
-@import '@radix-ui/colors/blueDark.css';
+@import '@radix-ui/colors/blue-dark.css';
 @import '@radix-ui/colors/gray.css';
-@import '@radix-ui/colors/grayDark.css';
-@import '@radix-ui/colors/blackA.css';
-@import '@radix-ui/colors/whiteA.css';
+@import '@radix-ui/colors/gray-dark.css';
+@import '@radix-ui/colors/black-alpha.css';
+@import '@radix-ui/colors/white-alpha.css';
 
 
 html {
@@ -45,17 +45,17 @@ kbd {
     padding: 3px 5px;
     font-size: 11px;
     line-height: 10px;
-    color: var(--gray11);
+    color: var(--gray-11);
     vertical-align: middle;
-    background-color: var(--gray4);
-    border: solid 1px var(--gray8);
-    border-bottom-color: var(--gray8);
+    background-color: var(--gray-4);
+    border: solid 1px var(--gray-8);
+    border-bottom-color: var(--gray-8);
     border-radius: 3px;
-    box-shadow: inset 0 -1px 0 var(--gray8);
+    box-shadow: inset 0 -1px 0 var(--gray-8);
 }
 
 code.highlighted {
-  background-color: var(--gray4);
+  background-color: var(--gray-4);
   border-radius: .2em;
 }
 
@@ -70,7 +70,7 @@ code.highlighted {
   background: transparent;
 }
 .consistent-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--gray11);
+  background: var(--gray-11);
   border-radius: .1em;
 }
 

@@ -38,16 +38,16 @@ function BetweenSegments({ start, end, fileDurationNonZero, invertCutSegments }:
       layout
       transition={mySpring}
     >
-      <div style={{ flexGrow: 1, borderBottom: '1px dashed var(--gray10)', marginLeft: 5, marginRight: 5 }} />
+      <div style={{ flexGrow: 1, borderBottom: '1px dashed var(--gray-10)', marginLeft: 5, marginRight: 5 }} />
       {/* https://github.com/mifi/lossless-cut/issues/2157 */}
       {effectiveExportMode !== 'segments_to_chapters' && (
         <>
           {invertCutSegments ? (
             <FaSave style={{ color: saveColor }} size={16} />
           ) : (
-            <FaTrashAlt style={{ color: 'var(--gray10)' }} size={16} />
+            <FaTrashAlt style={{ color: 'var(--gray-10)' }} size={16} />
           )}
-          <div style={{ flexGrow: 1, borderBottom: '1px dashed var(--gray10)', marginLeft: 5, marginRight: 5 }} />
+          <div style={{ flexGrow: 1, borderBottom: '1px dashed var(--gray-10)', marginLeft: 5, marginRight: 5 }} />
         </>
       )}
     </motion.div>

@@ -2444,7 +2444,7 @@ function App() {
 
   // throw new Error('Test error boundary');
 
-  const baseColorStyle = useMemo(() => ({ color: 'var(--gray12)', background: 'var(--gray1)', colorScheme: darkMode ? 'only dark' : 'only light' }), [darkMode]);
+  const baseColorStyle = useMemo(() => ({ color: 'var(--gray-12)', background: 'var(--gray-1)', colorScheme: darkMode ? 'only dark' : 'only light' }), [darkMode]);
 
   return (
     <>
@@ -2549,7 +2549,7 @@ function App() {
                           title={t('Show sidebar')}
                           size={30}
                           role="button"
-                          style={{ marginRight: 10, color: 'var(--gray12)', opacity: 0.7 }}
+                          style={{ marginRight: 10, color: 'var(--gray-12)', opacity: 0.7 }}
                           onClick={toggleSegmentsList}
                         />
                       )}
