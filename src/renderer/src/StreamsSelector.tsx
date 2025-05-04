@@ -33,7 +33,12 @@ interface EditingStream {
 
 // eslint-disable-next-line react/display-name
 const EditFileDialog = memo(({ editingFile, allFilesMeta, customTagsByFile, setCustomTagsByFile, editingTag, setEditingTag }: {
-  editingFile: string, allFilesMeta: FilesMeta, customTagsByFile: CustomTagsByFile, setCustomTagsByFile: Dispatch<SetStateAction<CustomTagsByFile>>, editingTag: string | undefined, setEditingTag: (tag: string | undefined) => void
+  editingFile: string,
+  allFilesMeta: FilesMeta,
+  customTagsByFile: CustomTagsByFile,
+  setCustomTagsByFile: Dispatch<SetStateAction<CustomTagsByFile>>,
+  editingTag: string | undefined,
+  setEditingTag: (tag: string | undefined) => void,
 }) => {
   const { t } = useTranslation();
 
@@ -98,7 +103,11 @@ function StreamParametersEditor({ stream, streamParams, updateStreamParams }: {
 
 // eslint-disable-next-line react/display-name
 const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, setEditingStream, allFilesMeta, paramsByStreamId, updateStreamParams }: {
-  editingStream: EditingStream, setEditingStream: Dispatch<SetStateAction<EditingStream | undefined>>, allFilesMeta: FilesMeta, paramsByStreamId: ParamsByStreamId, updateStreamParams: UpdateStreamParams,
+  editingStream: EditingStream,
+  setEditingStream: Dispatch<SetStateAction<EditingStream | undefined>>,
+  allFilesMeta: FilesMeta,
+  paramsByStreamId: ParamsByStreamId,
+  updateStreamParams: UpdateStreamParams,
 }) => {
   const { t } = useTranslation();
   const [editingTag, setEditingTag] = useState<string>();
@@ -496,6 +505,7 @@ function StreamsSelector({
 
       <Dialog
         title={t('Edit file metadata')}
+        width="80%"
         isShown={editingFile != null}
         hasCancel={false}
         confirmLabel={t('Done')}
