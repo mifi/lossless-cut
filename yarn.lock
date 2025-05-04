@@ -1440,10 +1440,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/colors@npm:1":
-  version: 1.0.1
-  resolution: "@radix-ui/colors@npm:1.0.1"
-  checksum: 10/8b5efa9da60b3cf8c1ec4112c46a634f7a53042dc43ecd2179f6930c96dcdb8a5c384ec7a377b91a6e64ed91df40cd5dd7ded11f87d4cf5d0b61346307714e45
+"@radix-ui/colors@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@radix-ui/colors@npm:3.0.0"
+  checksum: 10/bc9ffb01b3964f16482dc278cf6d86d85b73eae7cb94a77018fbd53b103b3d5ec1ecf77882cfbf8892f28c2c6057db8e19bf4d66234ed330a430373b092c5cfe
   languageName: node
   linkType: hard
 
@@ -7841,7 +7841,7 @@ __metadata:
     "@electron/remote": "npm:^2.1.2"
     "@fontsource/open-sans": "npm:^4.5.14"
     "@octokit/core": "npm:5"
-    "@radix-ui/colors": "npm:1"
+    "@radix-ui/colors": "npm:^3.0.0"
     "@radix-ui/react-checkbox": "npm:^1.2.3"
     "@radix-ui/react-dialog": "npm:^1.1.11"
     "@radix-ui/react-switch": "npm:^1.2.2"
