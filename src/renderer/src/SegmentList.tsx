@@ -7,8 +7,8 @@ import { ReactSortable } from 'react-sortablejs';
 import isEqual from 'lodash/isEqual';
 import useDebounce from 'react-use/lib/useDebounce';
 import scrollIntoView from 'scroll-into-view-if-needed';
-import { Dialog } from 'evergreen-ui';
 
+import Dialog, { ConfirmButton } from './components/Dialog';
 import Swal from './swal';
 import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
@@ -458,21 +458,19 @@ function SegmentList({
     onSegmentTagsCloseComplete();
   }, [editingSegmentTags, editingSegmentTagsSegmentIndex, onSegmentTagsCloseComplete, updateSegAtIndex]);
 
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
   return (
     <>
-      <Dialog
-        title={t('Edit segment tags')}
-        isShown={editingSegmentTagsSegmentIndex != null}
-        hasCancel={false}
-        isConfirmDisabled={editingTag != null}
-        confirmLabel={t('Save')}
-        onConfirm={onSegmentTagsConfirm}
-        onCloseComplete={onSegmentTagsCloseComplete}
-      >
-        <div style={{ color: 'black' }}>
-          <TagEditor customTags={editingSegmentTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add segment tag')} addTagText={t('Enter tag key')} />
-        </div>
-      </Dialog>
+      {editingSegmentTagsSegmentIndex != null && (
+        <Dialog ref={dialogRef} autoOpen onClose={onSegmentTagsCloseComplete} style={{ width: '100%', maxWidth: '40em' }}>
+          <h1 style={{ marginTop: 0 }}>{t('Edit segment tags')}</h1>
+
+          <TagEditor customTags={editingSegmentTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add segment tag')} />
+
+          <ConfirmButton onClick={onSegmentTagsConfirm} disabled={editingTag != null}><FaSave style={{ verticalAlign: 'baseline', fontSize: '.8em', marginRight: '.3em' }} />{t('Save')}</ConfirmButton>
+        </Dialog>
+      )}
 
       <motion.div
         style={{ width, background: controlsBackground, borderLeft: '1px solid var(--gray-7)', color: 'var(--gray-11)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}

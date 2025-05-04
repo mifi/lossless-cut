@@ -378,18 +378,6 @@ export async function askForAlignSegments() {
   };
 }
 
-export async function askForMetadataKey({ title, text }: { title: string, text: string }) {
-  const { value } = await Swal.fire<string>({
-    title,
-    text,
-    input: 'text',
-    showCancelButton: true,
-    inputPlaceholder: 'key',
-    inputValidator: (v) => (v.includes('=') ? i18n.t('Invalid character(s) found in key') : null),
-  });
-  return value;
-}
-
 export async function confirmExtractAllStreamsDialog() {
   const { value } = await Swal.fire<string>({
     text: i18n.t('Please confirm that you want to extract all tracks as separate files'),

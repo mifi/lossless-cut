@@ -14,5 +14,5 @@
 
 .button:disabled {
   opacity: .5;
-  cursor: initial;
+  cursor: not-allowed;
 }

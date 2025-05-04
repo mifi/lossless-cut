@@ -1,6 +1,6 @@
-import { memo, useState, useCallback, useEffect, useMemo, CSSProperties } from 'react';
+import { memo, useState, useCallback, useEffect, useMemo, CSSProperties, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IconButton, Checkbox as EvergreenCheckbox, Dialog, Paragraph } from 'evergreen-ui';
+import { IconButton } from 'evergreen-ui';
 import { AiOutlineMergeCells } from 'react-icons/ai';
 import { FaQuestionCircle, FaExclamationTriangle, FaCog } from 'react-icons/fa';
 import i18n from 'i18next';
@@ -19,6 +19,7 @@ import Sheet from './Sheet';
 import TextInput from './TextInput';
 import Button from './Button';
 import { defaultMergedFileTemplate, generateMergedFileNames, maxFileNameLength } from '../util/outputNameTemplate';
+import Dialog from './Dialog';
 
 const { basename } = window.require('path');
 
@@ -196,6 +197,8 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
     onConcat({ paths, includeAllStreams, streams: fileMeta!.streams, outFileName, fileFormat, clearBatchFilesAfterConcat });
   }, [clearBatchFilesAfterConcat, fileFormat, fileMeta, includeAllStreams, onConcat, outFileName, paths]);
 
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
   return (
     <>
       <Sheet visible={isShown} onClosePress={onHide} maxWidth="100%" style={{ padding: '0 2em' }}>
@@ -251,21 +254,25 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
         )}
       </Sheet>
 
-      <Dialog isShown={settingsVisible} onCloseComplete={() => setSettingsVisible(false)} title={t('Merge options')} hasCancel={false} confirmLabel={t('Close')}>
-        <EvergreenCheckbox checked={includeAllStreams} onChange={(e) => setIncludeAllStreams(e.target.checked)} label={`${t('Include all tracks?')} ${t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}`} />
+      {settingsVisible && (
+        <Dialog ref={dialogRef} autoOpen onClose={() => setSettingsVisible(false)} style={{ maxWidth: '40em' }}>
+          <h1 style={{ marginTop: 0 }}>{t('Merge options')}</h1>
 
-        <EvergreenCheckbox checked={preserveMetadataOnMerge} onChange={(e) => setPreserveMetadataOnMerge(e.target.checked)} label={t('Preserve original metadata when merging? (slow)')} />
+          <Checkbox checked={includeAllStreams} onCheckedChange={(checked) => setIncludeAllStreams(checked === true)} label={`${t('Include all tracks?')} ${t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}`} />
 
-        {fileFormat != null && isMov(fileFormat) && <EvergreenCheckbox checked={preserveMovData} onChange={(e) => setPreserveMovData(e.target.checked)} label={t('Preserve all MP4/MOV metadata?')} />}
+          <Checkbox checked={preserveMetadataOnMerge} onCheckedChange={(checked) => setPreserveMetadataOnMerge(checked === true)} label={t('Preserve original metadata when merging? (slow)')} />
 
-        <EvergreenCheckbox checked={segmentsToChapters} onChange={(e) => setSegmentsToChapters(e.target.checked)} label={t('Create chapters from merged segments? (slow)')} />
+          {fileFormat != null && isMov(fileFormat) && <Checkbox checked={preserveMovData} onCheckedChange={(checked) => setPreserveMovData(checked === true)} label={t('Preserve all MP4/MOV metadata?')} />}
 
-        <EvergreenCheckbox checked={alwaysConcatMultipleFiles} onChange={(e) => setAlwaysConcatMultipleFiles(e.target.checked)} label={t('Always open this dialog when opening multiple files')} />
+          <Checkbox checked={segmentsToChapters} onCheckedChange={(checked) => setSegmentsToChapters(checked === true)} label={t('Create chapters from merged segments? (slow)')} />
 
-        <EvergreenCheckbox checked={clearBatchFilesAfterConcat} onChange={(e) => setClearBatchFilesAfterConcat(e.target.checked)} label={t('Clear batch file list after merge')} />
+          <Checkbox checked={alwaysConcatMultipleFiles} onCheckedChange={(checked) => setAlwaysConcatMultipleFiles(checked === true)} label={t('Always open this dialog when opening multiple files')} />
 
-        <Paragraph>{t('Note that also other settings from the normal export dialog apply to this merge function. For more information about all options, see the export dialog.')}</Paragraph>
-      </Dialog>
+          <Checkbox checked={clearBatchFilesAfterConcat} onCheckedChange={(checked) => setClearBatchFilesAfterConcat(checked === true)} label={t('Clear batch file list after merge')} />
+
+          <p>{t('Note that also other settings from the normal export dialog apply to this merge function. For more information about all options, see the export dialog.')}</p>
+        </Dialog>
+      )}
     </>
   );
 }

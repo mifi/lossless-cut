@@ -1,6 +1,6 @@
 import { memo, Fragment, useEffect, useMemo, useCallback, useState, ReactNode, SetStateAction, Dispatch, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SearchInput, PlusIcon, InlineAlert, UndoIcon, Paragraph, TakeActionIcon, IconButton, Button, DeleteIcon, AddIcon, Dialog } from 'evergreen-ui';
+import { SearchInput, PlusIcon, UndoIcon, TakeActionIcon, IconButton, Button, DeleteIcon, AddIcon } from 'evergreen-ui';
 import { FaMouse, FaPlus, FaStepForward, FaStepBackward } from 'react-icons/fa';
 import Mousetrap from 'mousetrap';
 import groupBy from 'lodash/groupBy';
@@ -8,7 +8,6 @@ import orderBy from 'lodash/orderBy';
 import uniq from 'lodash/uniq';
 
 import useUserSettings from '../hooks/useUserSettings';
-import Swal from '../swal';
 import SetCutpointButton from './SetCutpointButton';
 import SegmentCutpointButton from './SegmentCutpointButton';
 import { getModifier } from '../hooks/useTimelineScroll';
@@ -16,6 +15,7 @@ import { KeyBinding, KeyboardAction, ModifierKey } from '../../../../types';
 import { StateSegment } from '../types';
 import Sheet from './Sheet';
 import { splitKeyboardKeys } from '../util';
+import Dialog, { ConfirmButton } from './Dialog';
 
 
 type Category = string;
@@ -92,32 +92,30 @@ const CreateBinding = memo(({
 
   const isComboInvalid = validKeysDown.length === 0 && keysDown.length > 0;
 
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  const fixedKeys = useMemo(() => fixKeys(keysDown), [keysDown]);
+
+  if (!isShown) return null;
+
   return (
-    <Dialog
-      title={t('Bind new key to action')}
-      isShown={action != null}
-      confirmLabel={t('Save')}
-      cancelLabel={t('Cancel')}
-      onCloseComplete={() => setCreatingBinding(undefined)}
-      onConfirm={() => action != null && onNewKeyBindingConfirmed(action, keysDown)}
-      onCancel={() => setCreatingBinding(undefined)}
-    >
-      {isShown ? (
-        <div style={{ color: 'black' }}>
-          <Paragraph marginBottom={10}><TakeActionIcon verticalAlign="middle" marginRight={5} /> {actionsMap[action].name} <span style={{ color: 'rgba(0,0,0,0.5)' }}>({action})</span></Paragraph>
+    <Dialog ref={dialogRef} autoOpen onClose={() => setCreatingBinding(undefined)} style={{ maxWidth: '40em' }}>
+      <h1 style={{ marginTop: 0 }}>{t('Bind new key to action')}</h1>
 
-          <Paragraph>{t('Please press your desired key combination. Make sure it doesn\'t conflict with any other binding or system hotkeys.')}</Paragraph>
+      <p><TakeActionIcon verticalAlign="middle" marginRight={5} /> {actionsMap[action].name} <span style={{ color: 'var(--gray-10)' }}>({action})</span></p>
 
-          <div style={{ margin: '20px 0' }}>{renderKeys(validKeysDown.length > 0 ? validKeysDown : keysDown)}</div>
+      <p>{t('Please press your desired key combination. Make sure it doesn\'t conflict with any other binding or system hotkeys.')}</p>
 
-          {isComboInvalid && <InlineAlert marginBottom={20} intent="danger">{t('Combination is invalid')}</InlineAlert>}
+      <div style={{ margin: '20px 0' }}>{renderKeys(validKeysDown.length > 0 ? validKeysDown : keysDown)}</div>
 
-          <div>
-            {!keysDown.includes('esc') && <Button iconBefore={PlusIcon} onClick={() => addKeyDown('esc')}>ESC</Button>}
-            {keysDown.length > 0 && <Button intent="warning" iconBefore={UndoIcon} onClick={() => setKeysDown([])}>{t('Start over')}</Button>}
-          </div>
-        </div>
-      ) : <div />}
+      {isComboInvalid && <p>{t('Combination is invalid')}</p>}
+
+      <div style={{ marginBottom: '1em' }}>
+        {!keysDown.includes('esc') && <Button iconBefore={PlusIcon} onClick={() => addKeyDown('esc')}>ESC</Button>}
+        {keysDown.length > 0 && <Button intent="warning" iconBefore={UndoIcon} onClick={() => setKeysDown([])}>{t('Start over')}</Button>}
+      </div>
+
+      <ConfirmButton disabled={fixedKeys.length === 0 || isComboInvalid} onClick={() => action != null && onNewKeyBindingConfirmed(action, keysDown)}>{t('Save')}</ConfirmButton>
     </Dialog>
   );
 });
@@ -758,22 +756,15 @@ const KeyboardShortcuts = memo(({
   const stringifyKeys = (keys: string[]) => keys.join('+');
 
   const onNewKeyBindingConfirmed = useCallback(async (action: KeyboardAction, keys: string[]) => {
-    const fixedKeys = fixKeys(keys);
-    if (fixedKeys.length === 0) return;
-    const keysStr = stringifyKeys(fixedKeys);
+    const keysStr = stringifyKeys(keys);
     console.log('new key binding', action, keysStr);
 
     const duplicate = keyBindings.find((existingBinding) => existingBinding.keys === keysStr);
     let shouldReplaceDuplicate: KeyBinding | undefined;
     if (duplicate) {
-      const { isConfirmed } = await Swal.fire({
-        icon: 'warning',
-        title: t('Duplicate keyboard combination'),
-        text: t('Combination is already bound to "{{alreadyBoundKey}}". Do you want to replace the existing binding?', { alreadyBoundKey: actionsMap[duplicate.action]?.name }),
-        confirmButtonText: t('Replace'),
-        focusCancel: true,
-        showCancelButton: true,
-      });
+      // eslint-disable-next-line no-alert
+      const isConfirmed = window.confirm(t('Combination is already bound to "{{alreadyBoundKey}}". Do you want to replace the existing binding?', { alreadyBoundKey: actionsMap[duplicate.action]?.name }));
+
       if (isConfirmed) {
         shouldReplaceDuplicate = duplicate;
       } else {

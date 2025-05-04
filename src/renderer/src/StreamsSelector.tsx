@@ -1,12 +1,13 @@
-import { memo, useState, useMemo, useCallback, Dispatch, SetStateAction, CSSProperties, ReactNode, ChangeEventHandler } from 'react';
+import { memo, useState, useMemo, useCallback, Dispatch, SetStateAction, CSSProperties, ReactNode, ChangeEventHandler, useRef } from 'react';
 
 import { FaImage, FaCheckCircle, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
 import { MdSubtitles } from 'react-icons/md';
-import { Checkbox, BookIcon, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, Heading, SortAscIcon, SortDescIcon, Dialog, ForkIcon, WarningSignIcon } from 'evergreen-ui';
+import { BookIcon, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, SortAscIcon, SortDescIcon, ForkIcon, WarningSignIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 import prettyBytes from 'pretty-bytes';
 
+import Dialog from './components/Dialog';
 import AutoExportToggler from './components/AutoExportToggler';
 import Select from './components/Select';
 import { showJson5Dialog } from './dialogs';
@@ -19,6 +20,7 @@ import { CustomTagsByFile, FilesMeta, FormatTimecode, ParamsByStreamId, StreamPa
 import useUserSettings from './hooks/useUserSettings';
 import tryShowGpsMap from './gps';
 import Button from './components/Button';
+import Checkbox from './components/Checkbox';
 
 
 const dispositionOptions = ['default', 'dub', 'original', 'comment', 'lyrics', 'karaoke', 'forced', 'hearing_impaired', 'visual_impaired', 'clean_effects', 'attached_pic', 'captions', 'descriptions', 'dependent', 'metadata'];
@@ -58,7 +60,7 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, customTagsByFile, setC
     });
   }, [editingFile, setCustomTagsByFile]);
 
-  return <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} addTagText={t('Enter metadata key')} />;
+  return <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} />;
 });
 
 const getStreamDispositionsObj = (stream: FFprobeStream) => ((stream && stream.disposition) || {});
@@ -82,13 +84,13 @@ function StreamParametersEditor({ stream, streamParams, updateStreamParams }: {
   if (stream.codec_name === 'h264') {
     ui.push(
       // eslint-disable-next-line no-param-reassign
-      <Checkbox key="bsfH264Mp4toannexb" checked={!!streamParams.bsfH264Mp4toannexb} label={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'h264_mp4toannexb' })} onChange={(e) => updateStreamParams((params) => { params.bsfH264Mp4toannexb = e.target.checked; })} />,
+      <Checkbox key="bsfH264Mp4toannexb" checked={!!streamParams.bsfH264Mp4toannexb} label={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'h264_mp4toannexb' })} onCheckedChange={(checked) => updateStreamParams((params) => { params.bsfH264Mp4toannexb = checked === true; })} />,
     );
   }
   if (stream.codec_name === 'hevc') {
     ui.push(
       // eslint-disable-next-line no-param-reassign
-      <Checkbox key="bsfHevcMp4toannexb" checked={!!streamParams.bsfHevcMp4toannexb} label={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_mp4toannexb' })} onChange={(e) => updateStreamParams((params) => { params.bsfHevcMp4toannexb = e.target.checked; })} />,
+      <Checkbox key="bsfHevcMp4toannexb" checked={!!streamParams.bsfHevcMp4toannexb} label={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_mp4toannexb' })} onCheckedChange={(checked) => updateStreamParams((params) => { params.bsfHevcMp4toannexb = checked === true; })} />,
     );
   }
 
@@ -140,21 +142,19 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     });
   }, [editingFile, editingStreamId, updateStreamParams]);
 
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  if (!editingStream) return null;
+
   return (
-    <Dialog
-      title={t('Edit track {{trackNum}} metadata', { trackNum: editingStream && (editingStream.index + 1) })}
-      isShown={!!editingStream}
-      hasCancel={false}
-      isConfirmDisabled={editingTag != null}
-      confirmLabel={t('Done')}
-      onCloseComplete={() => setEditingStream(undefined)}
-    >
-      <div style={{ color: 'black' }}>
-        <Heading>Parameters</Heading>
-        {editingStream != null && <StreamParametersEditor stream={editingStream} streamParams={streamParams} updateStreamParams={(setter) => updateStreamParams(editingFile, editingStreamId, setter)} />}
-        <Heading>Tags</Heading>
-        <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} addTagText={t('Enter metadata key')} />
-      </div>
+    <Dialog ref={dialogRef} autoOpen onClose={() => setEditingStream(undefined)} style={{ maxWidth: '40em' }}>
+      <h1 style={{ marginTop: 0 }}>{t('Edit track {{trackNum}} metadata', { trackNum: editingStream && (editingStream.index + 1) })}</h1>
+
+      <h2>Parameters</h2>
+      {editingStream != null && <StreamParametersEditor stream={editingStream} streamParams={streamParams} updateStreamParams={(setter) => updateStreamParams(editingFile, editingStreamId, setter)} />}
+
+      <h2>Tags</h2>
+      <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} />
     </Dialog>
   );
 });
@@ -416,6 +416,8 @@ function StreamsSelector({
     showJson5Dialog({ title, json, darkMode });
   }, [darkMode]);
 
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
   return (
     <>
       <p style={{ margin: '.5em 2em .5em 1em' }}>{t('Click to select which tracks to keep when exporting:')}</p>
@@ -503,19 +505,13 @@ function StreamsSelector({
         )}
       </div>
 
-      <Dialog
-        title={t('Edit file metadata')}
-        width="80%"
-        isShown={editingFile != null}
-        hasCancel={false}
-        confirmLabel={t('Done')}
-        onCloseComplete={() => setEditingFile(undefined)}
-        isConfirmDisabled={editingTag != null}
-      >
-        <div style={{ color: 'black' }}>
-          {editingFile != null && <EditFileDialog editingFile={editingFile} editingTag={editingTag} setEditingTag={setEditingTag} allFilesMeta={allFilesMeta} customTagsByFile={customTagsByFile} setCustomTagsByFile={setCustomTagsByFile} />}
-        </div>
-      </Dialog>
+      {editingFile != null && (
+        <Dialog ref={dialogRef} autoOpen onClose={() => setEditingFile(undefined)} style={{ maxWidth: '40em' }}>
+          <h1 style={{ marginTop: 0 }}>{t('Edit file metadata')}</h1>
+
+          <EditFileDialog editingFile={editingFile} editingTag={editingTag} setEditingTag={setEditingTag} allFilesMeta={allFilesMeta} customTagsByFile={customTagsByFile} setCustomTagsByFile={setCustomTagsByFile} />
+        </Dialog>
+      )}
 
       {editingStream != null && (
         <EditStreamDialog

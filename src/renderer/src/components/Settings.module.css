@@ -18,7 +18,7 @@
 }
 
 :global(.dark-theme) .settings tr.header {
-  background-color: var(--white-a6);
+  background-color: var(--white-a3);
 }
 
 .settings {

@@ -3,6 +3,7 @@
 }
 
 .CheckboxRoot {
+  flex-shrink: 0;
   background-color: var(--gray-8);
   width: 1em;
   height: 1em;

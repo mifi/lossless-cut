@@ -1,14 +1,16 @@
-import { memo, useCallback } from 'react';
+import { memo, ReactNode, useCallback } from 'react';
 import { FaClipboard } from 'react-icons/fa';
-import { useTranslation } from 'react-i18next';
 import { MotionStyle, motion, useAnimation } from 'framer-motion';
+import i18n from '../i18n';
 
 const electron = window.require('electron');
 const { clipboard } = electron;
 
-function CopyClipboardButton({ text, style }: { text: string, style?: MotionStyle }) {
-  const { t } = useTranslation();
-
+function CopyClipboardButton({ text, style, children = ({ onClick }) => <FaClipboard title={i18n.t('Copy to clipboard')} onClick={onClick} /> }: {
+  text: string,
+  style?: MotionStyle,
+  children?: (p: { onClick: () => void }) => ReactNode,
+}) {
   const animation = useAnimation();
 
   const onClick = useCallback(() => {
@@ -21,7 +23,7 @@ function CopyClipboardButton({ text, style }: { text: string, style?: MotionStyl
 
   return (
     <motion.span animate={animation} style={{ display: 'inline-block', cursor: 'pointer', ...style }}>
-      <FaClipboard title={t('Copy to clipboard')} onClick={onClick} />
+      {children({ onClick })}
     </motion.span>
   );
 }
