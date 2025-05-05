@@ -17,6 +17,7 @@ import Select from './Select';
 
 import { getModifierKeyNames } from '../hooks/useTimelineScroll';
 import { TunerType } from '../types';
+import Truncated from './Truncated';
 
 
 const Row = (props: HTMLMotionProps<'tr'>) => (
@@ -185,7 +186,7 @@ function Settings({
                 <Button iconBefore={CogIcon} onClick={changeCustomFfPath}>
                   {customFfPath ? t('Using external ffmpeg') : t('Using built-in ffmpeg')}
                 </Button>
-                <div>{customFfPath}</div>
+                <Truncated maxWidth="15em">{customFfPath}</Truncated>
               </td>
             </Row>
           )}
@@ -237,7 +238,7 @@ function Settings({
               </div>
             </KeyCell>
             <td>
-              <div>{customOutDir}</div>
+              <Truncated maxWidth="15em">{customOutDir}</Truncated>
               <Button iconBefore={customOutDir ? FolderCloseIcon : DocumentIcon} onClick={changeOutDir}>
                 {customOutDir ? t('Custom working directory') : t('Same directory as input file')}...
               </Button>
