@@ -133,10 +133,18 @@ export const utimesWithRetry = async (path: string, atime: number, mtime: number
 
 export const getFrameDuration = (fps?: number) => 1 / (fps ?? 30);
 
-export async function transferTimestamps({ inPath, outPath, cutFrom = 0, cutTo = 0, duration = 0, treatInputFileModifiedTimeAsStart = true, treatOutputFileModifiedTimeAsStart }: {
-  inPath: string, outPath: string, cutFrom?: number | undefined, cutTo?: number | undefined, duration?: number | undefined, treatInputFileModifiedTimeAsStart?: boolean | null | undefined, treatOutputFileModifiedTimeAsStart: boolean | null | undefined
+export async function transferTimestamps({ inPath, outPath, cutFrom = 0, cutTo: cutToIn, duration = 0, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart }: {
+  inPath: string,
+  outPath: string,
+  cutFrom?: number | undefined,
+  cutTo?: number | undefined,
+  duration: number | undefined,
+  treatInputFileModifiedTimeAsStart: boolean,
+  treatOutputFileModifiedTimeAsStart: boolean | null | undefined,
 }) {
-  if (treatOutputFileModifiedTimeAsStart == null) return; // null means disabled;
+  if (treatOutputFileModifiedTimeAsStart == null) return; // null means time transfer is disabled (use current time);
+
+  const cutTo = cutToIn ?? duration;
 
   // see https://github.com/mifi/lossless-cut/issues/1017#issuecomment-1049097115
   function calculateTime(fileTime: number) {

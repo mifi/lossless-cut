@@ -78,7 +78,7 @@ async function pathExists(path: string) {
 
 function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, smartCutCustomBitrate, appendFfmpegCommandLog }: {
   filePath: string | undefined,
-  treatInputFileModifiedTimeAsStart: boolean | null | undefined,
+  treatInputFileModifiedTimeAsStart: boolean,
   treatOutputFileModifiedTimeAsStart: boolean | null | undefined,
   enableOverwriteOutput: boolean,
   needSmartCut: boolean,
@@ -223,13 +223,13 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       const result = await runFfmpegConcat({ ffmpegArgs, concatTxt, totalDuration, onProgress });
       logStdoutStderr(result);
 
-      await transferTimestamps({ inPath: metadataFromPath, outPath, treatOutputFileModifiedTimeAsStart });
+      await transferTimestamps({ inPath: metadataFromPath, outPath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, duration: totalDuration });
 
       return { haveExcludedStreams: excludedStreamIds.length > 0 };
     } finally {
       if (chaptersPath) await tryDeleteFiles([chaptersPath]);
     }
-  }, [appendLastCommandsLog, shouldSkipExistingFile, treatOutputFileModifiedTimeAsStart]);
+  }, [appendLastCommandsLog, shouldSkipExistingFile, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   const losslessCutSingle = useCallback(async ({
     keyframeCut: ssBeforeInput, avoidNegativeTs, copyFileStreams, cutFrom, cutTo, chaptersPath, onProgress, outPath,
@@ -771,9 +771,9 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     console.log(new TextDecoder().decode(stdout));
 
     invariant(outPath != null);
-    await transferTimestamps({ inPath: filePathArg, outPath, treatOutputFileModifiedTimeAsStart });
+    await transferTimestamps({ inPath: filePathArg, outPath, duration, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
     return outPath;
-  }, [appendFfmpegCommandLog, treatOutputFileModifiedTimeAsStart]);
+  }, [appendFfmpegCommandLog, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   // This is just used to load something into the player with correct duration,
   // so that the user can seek and then we render frames using ffmpeg & MediaSource
@@ -800,8 +800,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const result = await runFfmpegWithProgress({ ffmpegArgs, duration, onProgress });
     logStdoutStderr(result);
 
-    await transferTimestamps({ inPath: filePathArg, outPath, treatOutputFileModifiedTimeAsStart });
-  }, [appendFfmpegCommandLog, treatOutputFileModifiedTimeAsStart]);
+    await transferTimestamps({ inPath: filePathArg, outPath, duration, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
+  }, [appendFfmpegCommandLog, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   // https://stackoverflow.com/questions/34118013/how-to-determine-webm-duration-using-ffprobe
   const fixInvalidDuration = useCallback(async ({ fileFormat, customOutDir, onProgress }: {
@@ -831,10 +831,10 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const result = await runFfmpegWithProgress({ ffmpegArgs, onProgress });
     logStdoutStderr(result);
 
-    await transferTimestamps({ inPath: filePath, outPath, treatOutputFileModifiedTimeAsStart });
+    await transferTimestamps({ inPath: filePath, outPath, duration: undefined, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
 
     return outPath;
-  }, [appendFfmpegCommandLog, filePath, treatOutputFileModifiedTimeAsStart]);
+  }, [appendFfmpegCommandLog, filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   function getPreferredCodecFormat(stream: LiteFFprobeStream) {
     const map = {

@@ -25,9 +25,10 @@ function getFrameFromVideo(video: HTMLVideoElement, format: CaptureFormat, quali
   return dataUriToBuffer(dataUri);
 }
 
-export default ({ appendFfmpegCommandLog, formatTimecode, treatOutputFileModifiedTimeAsStart }: {
+export default ({ appendFfmpegCommandLog, formatTimecode, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart }: {
   appendFfmpegCommandLog: (args: string[]) => void,
   formatTimecode: FormatTimecode,
+  treatInputFileModifiedTimeAsStart: boolean,
   treatOutputFileModifiedTimeAsStart?: boolean | undefined | null,
 }) => {
   const captureFramesRange = useCallback(async ({ customOutDir, filePath, fps, fromTime, toTime, estimatedMaxNumFiles, captureFormat, quality, filter, onProgress, outputTimestamps }: {
@@ -102,9 +103,9 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatOutputFileModifie
     const args = await ffmpeg.captureFrame({ timestamp: time, videoPath: filePath, outPath, quality });
     appendFfmpegCommandLog(args);
 
-    await transferTimestamps({ inPath: filePath, outPath, cutFrom: time, treatOutputFileModifiedTimeAsStart });
+    await transferTimestamps({ inPath: filePath, outPath, cutFrom: time, cutTo: time, duration: 0, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
     return outPath;
-  }, [appendFfmpegCommandLog, formatTimecode, treatOutputFileModifiedTimeAsStart]);
+  }, [appendFfmpegCommandLog, formatTimecode, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   const captureFrameFromTag = useCallback(async ({ customOutDir, filePath, time, captureFormat, quality, video }: {
     customOutDir?: string | undefined,
@@ -122,9 +123,9 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatOutputFileModifie
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `${timecode}.${ext}` });
     await writeFile(outPath, buf);
 
-    await transferTimestamps({ inPath: filePath, outPath, cutFrom: time, treatOutputFileModifiedTimeAsStart });
+    await transferTimestamps({ inPath: filePath, outPath, cutFrom: time, cutTo: time, duration: 0, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
     return outPath;
-  }, [formatTimecode, treatOutputFileModifiedTimeAsStart]);
+  }, [formatTimecode, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   return {
     captureFramesRange,
