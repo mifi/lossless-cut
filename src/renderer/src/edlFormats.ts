@@ -47,16 +47,15 @@ export const getFrameValParser = (fps: number) => (str: string) => {
 };
 
 export async function parseCsv(csvStr: string, parseTimeFn: (a: string) => number | undefined) {
-  const rows = csvParse(csvStr, {}) as [string, string, string][];
+  const rows = csvParse(csvStr, {}) as ([string, string] | [string, string, string])[];
   if (rows.length === 0) throw new Error(i18n.t('No rows found'));
-  if (!rows.every((row) => row.length === 3)) throw new Error(i18n.t('One or more rows does not have 3 columns'));
+  if (!rows.every((row) => row.length >= 2 && row.length <= 3)) throw new Error(i18n.t('One or more rows does not have 3 columns'));
 
-  const mapped = rows
-    .map(([start, end, name]) => ({
-      start: parseTimeFn(start) ?? 0,
-      end: parseTimeFn(end),
-      name: name.trim(),
-    }));
+  const mapped = rows.map(([start, end, name]) => ({
+    start: parseTimeFn(start) ?? 0,
+    end: parseTimeFn(end),
+    name: name?.trim(),
+  }));
 
   if (!mapped.every(({ start, end }) => (
     !Number.isNaN(start)

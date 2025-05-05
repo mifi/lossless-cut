@@ -244,6 +244,15 @@ it('parses csv with timestamps', async () => {
   ]);
 });
 
+it('parses csv with 2 only columns', async () => {
+  const parsed = await parseCsv('1,2\n3,4\n', parseCsvTime);
+
+  expect(parsed).toEqual([
+    { start: 1, end: 2 },
+    { start: 3, end: 4 },
+  ]);
+});
+
 const cutlistStr = `
 [General]
 Application=SomeApplication.exe
