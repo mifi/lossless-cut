@@ -1,0 +1,14 @@
+.table {
+  font-size: .8em;
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    padding-bottom: .3em;
+  }
+
+  th, td {
+    padding-left: .2em;
+    padding-right: .2em;
+  }
+}

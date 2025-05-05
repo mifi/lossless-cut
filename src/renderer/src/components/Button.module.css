@@ -7,12 +7,20 @@
   color: var(--gray-12);
   border-radius: .3em;
   padding: 0 .5em 0 .3em;
-  outline: .05em solid var(--gray-8);
   border: .05em solid var(--gray-7);
   cursor: pointer;
+  outline-offset: 0;
 }
 
 .button:disabled {
   opacity: .5;
   cursor: not-allowed;
+}
+
+.button:focus {
+  outline: .05em solid var(--gray-11);
+}
+
+.button:hover {
+  filter: brightness(1.1);
 }

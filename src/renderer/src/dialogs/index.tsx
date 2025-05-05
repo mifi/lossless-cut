@@ -16,6 +16,7 @@ import Checkbox from '../components/Checkbox';
 import { isWindows, showItemInFolder } from '../util';
 import { ParseTimecode } from '../types';
 import { FindKeyframeMode } from '../ffmpeg';
+import Action from '../components/Action';
 
 const remote = window.require('@electron/remote');
 const { dialog, shell } = remote;
@@ -600,15 +601,16 @@ export async function selectSegmentsByLabelDialog(currentName?: string | undefin
   return value;
 }
 
-export async function exprDialog({ inputValidator, examples, title, description, variables }: {
+export async function exprDialog({ inputValidator, examples, title, description, variables, inputValue }: {
   inputValidator: (v: string) => Promise<string | undefined>,
-  examples: Record<string, { name: string, code: string }>,
+  examples: { name: string, code: string }[],
   title: string,
   description: ReactNode,
-  variables: string[]
+  variables?: string[],
+  inputValue?: string | undefined,
 }) {
-  function addExample(type: string) {
-    Swal.getInput()!.value = examples[type]?.code ?? '';
+  function addExample(code: string) {
+    Swal.getInput()!.value = code;
   }
 
   const { value } = await ReactSwal.fire<string>({
@@ -622,17 +624,18 @@ export async function exprDialog({ inputValidator, examples, title, description,
           {description}
         </div>
 
-        <div style={{ marginBottom: '1em' }}><b>{i18n.t('Variables')}:</b> {variables.join(', ')}</div>
+        {variables && <div style={{ marginBottom: '1em' }}>{i18n.t('Variables')}: <span style={{ display: 'inline-flex', gap: '.5em' }}>{variables.map((v) => <code key={v} className="highlighted">{v}</code>)}</span></div>}
 
         <div><b>{i18n.t('Examples')}:</b></div>
 
-        {Object.entries(examples).map(([key, { name }]) => (
-          <button key={key} type="button" onClick={() => addExample(key)} className="link-button" style={{ display: 'block', marginBottom: '.1em' }}>
+        {examples.map(({ name, code }) => (
+          <button key={code} type="button" onClick={() => addExample(code)} className="link-button" style={{ display: 'block', marginBottom: '.1em' }}>
             {name}
           </button>
         ))}
       </div>
     ),
+    inputValue,
     inputPlaceholder: i18n.t('Enter JavaScript expression'),
     inputValidator,
   });
@@ -642,33 +645,53 @@ export async function exprDialog({ inputValidator, examples, title, description,
 export async function selectSegmentsByExprDialog(inputValidator: (v: string) => Promise<string | undefined>) {
   return exprDialog({
     inputValidator,
-    examples: {
-      duration: { name: i18n.t('Segment duration less than 5 seconds'), code: 'segment.duration < 5' },
-      start: { name: i18n.t('Segment starts after 01:00'), code: 'segment.start > 60' },
-      label: { name: i18n.t('Segment label (exact)'), code: "segment.label === 'My label'" },
-      regexp: { name: i18n.t('Segment label (regexp)'), code: '/^My label/.test(segment.label)' },
-      tag: { name: i18n.t('Segment tag value'), code: "segment.tags.myTag === 'tag value'" },
-      markers: { name: i18n.t('Markers'), code: 'segment.end == null' },
-    },
+    examples: [
+      { name: i18n.t('Segment duration less than 5 seconds'), code: 'segment.duration < 5' },
+      { name: i18n.t('Segment starts after 01:00'), code: 'segment.start > 60' },
+      { name: i18n.t('Segment label (exact)'), code: "segment.label === 'My label'" },
+      { name: i18n.t('Segment label (regexp)'), code: '/^My label/.test(segment.label)' },
+      { name: i18n.t('Segment tag value'), code: "segment.tags.myTag === 'tag value'" },
+      { name: i18n.t('Markers'), code: 'segment.end == null' },
+    ],
     title: i18n.t('Select segments by expression'),
     description: <Trans>Enter a JavaScript expression which will be evaluated for each segment. Segments for which the expression evaluates to &quot;true&quot; will be selected. <button type="button" className="link-button" onClick={() => shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/expressions.md')}>View available syntax.</button></Trans>,
     variables: ['segment.index', 'segment.label', 'segment.start', 'segment.end', 'segment.duration', 'segment.tags.*'],
   });
 }
 
+export async function filterEnabledStreamsDialog({ validator, value }: {
+  validator: (v: string) => Promise<string | undefined>,
+  value: string | undefined,
+}) {
+  return exprDialog({
+    inputValidator: validator,
+    examples: [
+      { name: i18n.t('Audio tracks'), code: "track.codec_type === 'audio'" },
+      { name: i18n.t('Video tracks'), code: "track.codec_type === 'video'" },
+      { name: i18n.t('English language tracks'), code: "track.tags?.language === 'eng'" },
+      { name: i18n.t('Tracks with at least 720p video'), code: 'track.height >= 720' },
+      { name: i18n.t('Tracks with H264 codec'), code: "track.codec_name === 'h264'" },
+      { name: i18n.t('1st, 2nd and 3rd track'), code: 'track.index >= 0 && track.index <= 2' },
+    ],
+    title: i18n.t('Toggle tracks by expression'),
+    description: <Trans>Enter a JavaScript filter expression which will be evaluated for each track of the current file. Tracks for which the expression evaluates to &quot;true&quot; will be selected or deselected. You may also the <Action name="toggleStripCurrentFilter" /> keyboard action to run this filter.</Trans>,
+    inputValue: value ?? '',
+  });
+}
+
 export async function mutateSegmentsByExprDialog(inputValidator: (v: string) => Promise<string | undefined>) {
   return exprDialog({
     inputValidator,
-    examples: {
-      expand: { name: i18n.t('Expand segments +5 sec'), code: '{ start: segment.start - 5, end: segment.end + 5 }' },
-      shrink: { name: i18n.t('Shrink segments -5 sec'), code: '{ start: segment.start + 5, end: segment.end - 5 }' },
-      center: { name: i18n.t('Center segments around start time'), code: '{ start: segment.start - 5, end: segment.start + 5 }' },
+    examples: [
+      { name: i18n.t('Expand segments +5 sec'), code: '{ start: segment.start - 5, end: segment.end + 5 }' },
+      { name: i18n.t('Shrink segments -5 sec'), code: '{ start: segment.start + 5, end: segment.end - 5 }' },
+      { name: i18n.t('Center segments around start time'), code: '{ start: segment.start - 5, end: segment.start + 5 }' },
       // eslint-disable-next-line no-template-curly-in-string
-      addNumToLabel: { name: i18n.t('Add number suffix to label'), code: '{ label: `${segment.label} ${segment.index + 1}` }' },
-      tagEven: { name: i18n.t('Add a tag to every even segment'), code: '{ tags: (segment.index + 1) % 2 === 0 ? { ...segment.tags, even: \'true\' } : segment.tags }' },
-      segmentsToMarkers: { name: i18n.t('Convert segments to markers'), code: '{ end: undefined }' },
-      markersToSegments: { name: i18n.t('Convert markers to segments'), code: '{ ...(segment.end == null && { end: segment.start + 5 }) }' },
-    },
+      { name: i18n.t('Add number suffix to label'), code: '{ label: `${segment.label} ${segment.index + 1}` }' },
+      { name: i18n.t('Add a tag to every even segment'), code: '{ tags: (segment.index + 1) % 2 === 0 ? { ...segment.tags, even: \'true\' } : segment.tags }' },
+      { name: i18n.t('Convert segments to markers'), code: '{ end: undefined }' },
+      { name: i18n.t('Convert markers to segments'), code: '{ ...(segment.end == null && { end: segment.start + 5 }) }' },
+    ],
     title: i18n.t('Edit segments by expression'),
     description: <Trans>Enter a JavaScript expression which will be evaluated for each selected segment. Returned properties will be edited. <button type="button" className="link-button" onClick={() => shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/expressions.md')}>View available syntax.</button></Trans>,
     variables: ['segment.index', 'segment.label', 'segment.start', 'segment.end', 'segment.tags.*'],
@@ -686,6 +709,7 @@ export function showJson5Dialog({ title, json, darkMode }: { title: string, json
     showCloseButton: true,
     title,
     html,
+    width: '50em',
   });
 }
 

@@ -1,11 +1,12 @@
 import { memo, Fragment, useEffect, useMemo, useCallback, useState, ReactNode, SetStateAction, Dispatch, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SearchInput, PlusIcon, UndoIcon, TakeActionIcon, IconButton, Button, DeleteIcon, AddIcon } from 'evergreen-ui';
+import { UndoIcon, IconButton, DeleteIcon, AddIcon } from 'evergreen-ui';
 import { FaMouse, FaPlus, FaStepForward, FaStepBackward } from 'react-icons/fa';
 import Mousetrap from 'mousetrap';
 import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
 import uniq from 'lodash/uniq';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import useUserSettings from '../hooks/useUserSettings';
 import SetCutpointButton from './SetCutpointButton';
@@ -16,6 +17,10 @@ import { StateSegment } from '../types';
 import Sheet from './Sheet';
 import { splitKeyboardKeys } from '../util';
 import Dialog, { ConfirmButton } from './Dialog';
+import Warning from './Warning';
+import Button from './Button';
+import Action from './Action';
+import TextInput from './TextInput';
 
 
 type Category = string;
@@ -25,7 +30,7 @@ type ActionsMap = Record<KeyboardAction, { name: string, category?: Category, be
 
 const renderKeys = (keys: string[]) => keys.map((key, i) => (
   <Fragment key={key}>
-    {i > 0 && <FaPlus style={{ fontSize: '.4em', opacity: 0.8, marginLeft: '.4em', marginRight: '.4em' }} />}
+    {i > 0 && <FaPlus style={{ verticalAlign: 'middle', fontSize: '.4em', opacity: 0.8, marginLeft: '.4em', marginRight: '.4em' }} />}
     <kbd>{key.toUpperCase()}</kbd>
   </Fragment>
 ));
@@ -92,27 +97,35 @@ const CreateBinding = memo(({
 
   const isComboInvalid = validKeysDown.length === 0 && keysDown.length > 0;
 
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
   const fixedKeys = useMemo(() => fixKeys(keysDown), [keysDown]);
 
   if (!isShown) return null;
 
   return (
-    <Dialog ref={dialogRef} autoOpen onClose={() => setCreatingBinding(undefined)} style={{ maxWidth: '40em' }}>
+    <Dialog autoOpen onClose={() => setCreatingBinding(undefined)} style={{ maxWidth: '40em' }}>
       <h1 style={{ marginTop: 0 }}>{t('Bind new key to action')}</h1>
 
-      <p><TakeActionIcon verticalAlign="middle" marginRight={5} /> {actionsMap[action].name} <span style={{ color: 'var(--gray-10)' }}>({action})</span></p>
+      <p>{t('Action:')} {actionsMap[action].name} <span style={{ color: 'var(--gray-10)', marginLeft: '.5em' }}><Action name={action} /></span></p>
 
       <p>{t('Please press your desired key combination. Make sure it doesn\'t conflict with any other binding or system hotkeys.')}</p>
 
-      <div style={{ margin: '20px 0' }}>{renderKeys(validKeysDown.length > 0 ? validKeysDown : keysDown)}</div>
+      <div style={{ minHeight: '2em' }}>{renderKeys(validKeysDown.length > 0 ? validKeysDown : keysDown)}</div>
 
-      {isComboInvalid && <p>{t('Combination is invalid')}</p>}
+      <AnimatePresence>
+        {isComboInvalid && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+          >
+            <Warning style={{ paddingBottom: '1em' }}>{t('Combination is invalid')}</Warning>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div style={{ marginBottom: '1em' }}>
-        {!keysDown.includes('esc') && <Button iconBefore={PlusIcon} onClick={() => addKeyDown('esc')}>ESC</Button>}
-        {keysDown.length > 0 && <Button intent="warning" iconBefore={UndoIcon} onClick={() => setKeysDown([])}>{t('Start over')}</Button>}
+        <Button disabled={keysDown.includes('esc')} style={{ padding: '.2em .4em' }} onClick={() => addKeyDown('esc')}>ESC</Button>
+        {keysDown.length > 0 && <Button style={{ padding: '.2em .4em' }} onClick={() => setKeysDown([])}><UndoIcon size={10} marginRight=".3em" />{t('Start over')}</Button>}
       </div>
 
       <ConfirmButton disabled={fixedKeys.length === 0 || isComboInvalid} onClick={() => action != null && onNewKeyBindingConfirmed(action, keysDown)}>{t('Save')}</ConfirmButton>
@@ -535,6 +548,10 @@ const KeyboardShortcuts = memo(({
         name: t('Set current frame as cover art'),
         category: outputCategory,
       },
+      exportYouTube: {
+        name: t('Start times as YouTube Chapters'),
+        category: outputCategory,
+      },
       extractCurrentSegmentFramesAsImages: {
         name: t('Extract frames from current segment as image files'),
         category: outputCategory,
@@ -603,8 +620,24 @@ const KeyboardShortcuts = memo(({
         name: t('Keep or discard audio tracks'),
         category: otherCategory,
       },
+      toggleStripVideo: {
+        name: t('Keep or discard video tracks'),
+        category: otherCategory,
+      },
+      toggleStripSubtitle: {
+        name: t('Keep or discard subtitle tracks'),
+        category: otherCategory,
+      },
       toggleStripThumbnail: {
         name: t('Keep or discard thumbnail tracks'),
+        category: otherCategory,
+      },
+      toggleStripAll: {
+        name: t('Keep or discard all tracks'),
+        category: otherCategory,
+      },
+      toggleStripCurrentFilter: {
+        name: t('Toggle tracks using current filter'),
         category: otherCategory,
       },
       increaseRotation: {
@@ -647,6 +680,10 @@ const KeyboardShortcuts = memo(({
         name: t('Settings'),
         category: otherCategory,
       },
+      toggleDarkMode: {
+        name: t('Toggle dark mode'),
+        category: otherCategory,
+      },
       openSendReportDialog: {
         name: t('Report an error'),
         category: otherCategory,
@@ -657,10 +694,6 @@ const KeyboardShortcuts = memo(({
       },
       openDirDialog: {
         name: t('Open folder'),
-        category: otherCategory,
-      },
-      exportYouTube: {
-        name: t('Start times as YouTube Chapters'),
         category: otherCategory,
       },
       closeActiveScreen: {
@@ -720,16 +753,16 @@ const KeyboardShortcuts = memo(({
     searchInputRef.current?.focus();
   }, []);
 
+  const searchQueryTrimmed = searchQuery.toLowerCase().trim();
+  const isSearching = !!searchQueryTrimmed;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const actionEntries = useMemo(() => (Object.entries(actionsMap) as any as [keyof typeof actionsMap, typeof actionsMap[keyof typeof actionsMap]][]).filter(([key, { name, category }]) => {
-    const searchQueryTrimmed = searchQuery.toLowerCase().trim();
-    return (
-      !searchQuery
-      || key.toLocaleLowerCase().includes(searchQueryTrimmed)
-      || name.toLowerCase().includes(searchQueryTrimmed)
-      || (category != null && category.toLowerCase().includes(searchQueryTrimmed))
-    );
-  }), [actionsMap, searchQuery]);
+  const actionEntries = useMemo(() => (Object.entries(actionsMap) as any as [keyof typeof actionsMap, typeof actionsMap[keyof typeof actionsMap]][]).filter(([key, { name, category }]) => (
+    !isSearching
+    || key.toLocaleLowerCase().includes(searchQueryTrimmed)
+    || name.toLowerCase().includes(searchQueryTrimmed)
+    || (category != null && category.toLowerCase().includes(searchQueryTrimmed))
+  )), [actionsMap, isSearching, searchQueryTrimmed]);
 
   const categoriesWithActions = useMemo(() => Object.entries(groupBy(actionEntries, ([, { category }]) => category)), [actionEntries]);
 
@@ -744,7 +777,7 @@ const KeyboardShortcuts = memo(({
 
   const onResetClick = useCallback(() => {
     // eslint-disable-next-line no-alert
-    if (!window.confirm(t('Are you sure?'))) return;
+    if (!window.confirm(t('Are you sure you want to reset all keyboard bindings?'))) return;
 
     resetKeyBindings();
   }, [resetKeyBindings, t]);
@@ -784,7 +817,7 @@ const KeyboardShortcuts = memo(({
     <>
       <div style={{ marginBottom: '1em' }}>
         <div style={{ marginBottom: '1em' }}>
-          <SearchInput ref={searchInputRef} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search" width="100%" />
+          <TextInput ref={searchInputRef} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search" style={{ width: '100%', padding: '.4em .8em' }} />
         </div>
 
         {categoriesWithActions.map(([category, actionsInCategory]) => (
@@ -829,7 +862,7 @@ const KeyboardShortcuts = memo(({
         ))}
       </div>
 
-      <Button intent="danger" onClick={onResetClick}>{t('Reset')}</Button>
+      {!isSearching && <Button onClick={onResetClick} style={{ marginBottom: '1em' }}>{t('Reset')}</Button>}
 
       <CreateBinding actionsMap={actionsMap} action={creatingBinding} setCreatingBinding={setCreatingBinding} onNewKeyBindingConfirmed={onNewKeyBindingConfirmed} />
     </>
@@ -850,11 +883,9 @@ function KeyboardShortcutsDialog({
 
   return (
     <Sheet visible={isShown} onClosePress={onHide} maxWidth="40em" style={{ padding: '0 2em' }}>
-      <h2>{t('Keyboard & mouse shortcuts')}</h2>
+      <h1>{t('Keyboard & mouse shortcuts')}</h1>
 
       <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} />
-      <Button onClick={onHide}>{t('Done')}</Button>
-
     </Sheet>
   );
 }

@@ -1,9 +1,9 @@
-import { memo, useState, useMemo, useCallback, Dispatch, SetStateAction, CSSProperties, ReactNode, ChangeEventHandler, useRef } from 'react';
+import { memo, useState, useMemo, useCallback, Dispatch, SetStateAction, CSSProperties, ReactNode, ChangeEventHandler } from 'react';
 
-import { FaImage, FaCheckCircle, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport } from 'react-icons/fa';
+import { FaImage, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
 import { MdSubtitles } from 'react-icons/md';
-import { BookIcon, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, SortAscIcon, SortDescIcon, ForkIcon, WarningSignIcon } from 'evergreen-ui';
+import { BookIcon, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, SortAscIcon, SortDescIcon, ForkIcon, WarningSignIcon, EyeOpenIcon, FilterIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 import prettyBytes from 'pretty-bytes';
 
@@ -21,6 +21,7 @@ import useUserSettings from './hooks/useUserSettings';
 import tryShowGpsMap from './gps';
 import Button from './components/Button';
 import Checkbox from './components/Checkbox';
+import styles from './StreamsSelector.module.css';
 
 
 const dispositionOptions = ['default', 'dub', 'original', 'comment', 'lyrics', 'karaoke', 'forced', 'hearing_impaired', 'visual_impaired', 'clean_effects', 'attached_pic', 'captions', 'descriptions', 'dependent', 'metadata'];
@@ -142,12 +143,10 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     });
   }, [editingFile, editingStreamId, updateStreamParams]);
 
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
   if (!editingStream) return null;
 
   return (
-    <Dialog ref={dialogRef} autoOpen onClose={() => setEditingStream(undefined)} style={{ maxWidth: '40em' }}>
+    <Dialog autoOpen onClose={() => setEditingStream(undefined)} style={{ width: '100%', maxWidth: '40em' }}>
       <h1 style={{ marginTop: 0 }}>{t('Edit track {{trackNum}} metadata', { trackNum: editingStream && (editingStream.index + 1) })}</h1>
 
       <h2>Parameters</h2>
@@ -160,8 +159,19 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
 });
 
 // eslint-disable-next-line react/display-name
-const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress, paramsByStreamId, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments, onInfoClick }: {
-  filePath: string, stream: FFprobeStream, onToggle: (a: number) => void, batchSetCopyStreamIds: (filter: (a: FFprobeStream) => boolean, enabled: boolean) => void, copyStream: boolean, fileDuration: number | undefined, setEditingStream: (a: EditingStream) => void, onExtractStreamPress?: () => void, paramsByStreamId: ParamsByStreamId, updateStreamParams: UpdateStreamParams, formatTimecode: FormatTimecode, loadSubtitleTrackToSegments?: (index: number) => void, onInfoClick: (json: unknown, title: string) => void,
+const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress, paramsByStreamId, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments, onInfoClick }: {
+  filePath: string,
+  stream: FFprobeStream,
+  onToggle: (a: number) => void,
+  toggleCopyStreamIds: (filter: (a: FFprobeStream) => boolean) => void,
+  copyStream: boolean, fileDuration: number | undefined,
+  setEditingStream: (a: EditingStream) => void,
+  onExtractStreamPress?: () => void,
+  paramsByStreamId: ParamsByStreamId,
+  updateStreamParams: UpdateStreamParams,
+  formatTimecode: FormatTimecode,
+  loadSubtitleTrackToSegments?: (index: number) => void,
+  onInfoClick: (json: unknown, title: string) => void,
 }) => {
   const { t } = useTranslation();
 
@@ -283,11 +293,8 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
               </Menu.Group>
               <Menu.Divider />
               <Menu.Group>
-                <Menu.Item icon={<Icon color="black" />} intent="success" onClick={() => batchSetCopyStreamIds((s) => s.codec_type === stream.codec_type, true)}>
-                  {t('Keep all {{type}} tracks', { type: codecTypeHuman })}
-                </Menu.Item>
-                <Menu.Item icon={<FaBan color="black" />} intent="danger" onClick={() => batchSetCopyStreamIds((s) => s.codec_type === stream.codec_type, false)}>
-                  {t('Discard all {{type}} tracks', { type: codecTypeHuman })}
+                <Menu.Item icon={<EyeOpenIcon color="black" />} intent="success" onClick={() => toggleCopyStreamIds((s) => s.codec_type === stream.codec_type)}>
+                  {t('Toggle {{type}} tracks', { type: codecTypeHuman })}
                 </Menu.Item>
               </Menu.Group>
             </Menu>
@@ -300,8 +307,16 @@ const Stream = memo(({ filePath, stream, onToggle, batchSetCopyStreamIds, copySt
   );
 });
 
-function FileHeading({ path, formatData, chapters, onTrashClick, onEditClick, setCopyAllStreams, onExtractAllStreamsPress, onInfoClick }: {
-  path: string, formatData: FFprobeFormat | undefined, chapters?: FFprobeChapter[] | undefined, onTrashClick?: (() => void) | undefined, onEditClick?: (() => void) | undefined, setCopyAllStreams: (a: boolean) => void, onExtractAllStreamsPress?: () => Promise<void>, onInfoClick: (json: unknown, title: string) => void,
+function FileHeading({ path, formatData, chapters, onTrashClick, onEditClick, toggleCopyAllStreams, onExtractAllStreamsPress, onInfoClick, changeEnabledStreamsFilter }: {
+  path: string,
+  formatData: FFprobeFormat | undefined,
+  chapters?: FFprobeChapter[] | undefined,
+  onTrashClick?: (() => void) | undefined,
+  onEditClick?: (() => void) | undefined,
+  toggleCopyAllStreams: () => void,
+  onExtractAllStreamsPress?: () => Promise<void>,
+  onInfoClick: (json: unknown, title: string) => void,
+  changeEnabledStreamsFilter?: (() => void) | undefined,
 }) {
   const { t } = useTranslation();
 
@@ -311,44 +326,42 @@ function FileHeading({ path, formatData, chapters, onTrashClick, onEditClick, se
 
       <div style={{ flexGrow: 1 }} />
 
-      <IconButton icon={InfoSignIcon} title={t('File info')} onClick={() => onInfoClick(formatData, t('File info'))} appearance="minimal" iconSize={18} />
       {chapters && chapters.length > 0 && <IconButton icon={BookIcon} onClick={() => onInfoClick(chapters, t('Chapters'))} appearance="minimal" iconSize={18} />}
+      <IconButton iconSize={18} icon={EyeOpenIcon} title={t('Toggle all tracks')} onClick={() => toggleCopyAllStreams()} appearance="minimal" />
+      {changeEnabledStreamsFilter && <IconButton icon={FilterIcon} title={t('Filter tracks')} onClick={changeEnabledStreamsFilter} appearance="minimal" iconSize={18} />}
+      <IconButton icon={InfoSignIcon} title={t('File info')} onClick={() => onInfoClick(formatData, t('File info'))} appearance="minimal" iconSize={18} />
       {onEditClick && <IconButton icon={EditIcon} title={t('Edit file metadata')} onClick={onEditClick} appearance="minimal" iconSize={18} />}
-      {onTrashClick && <IconButton icon={TrashIcon} onClick={onTrashClick} appearance="minimal" iconSize={18} />}
-      <IconButton iconSize={18} color="#52BD95" icon={FaCheckCircle} title={t('Keep all tracks')} onClick={() => setCopyAllStreams(true)} appearance="minimal" />
-      <IconButton iconSize={18} color="#D14343" icon={FaBan} title={t('Discard all tracks')} onClick={() => setCopyAllStreams(false)} appearance="minimal" />
       {onExtractAllStreamsPress && <IconButton iconSize={16} title={t('Export each track as individual files')} icon={ForkIcon} onClick={onExtractAllStreamsPress} appearance="minimal" />}
+
+      {onTrashClick && <IconButton icon={TrashIcon} onClick={onTrashClick} appearance="minimal" intent="danger" iconSize={18} />}
     </div>
   );
 }
-
-const thStyle: CSSProperties = { borderBottom: '1px solid var(--gray-6)', paddingBottom: '.5em' };
 
 function Thead() {
   const { t } = useTranslation();
   return (
     <thead style={{ color: 'var(--gray-12)', textAlign: 'left', fontSize: '.9em' }}>
       <tr>
-        <th style={thStyle}>{t('Keep?')}</th>
-        <th style={thStyle}>{t('Codec')}</th>
-        <th style={thStyle}>{t('Duration')}</th>
-        <th style={thStyle}>{t('Bitrate')}</th>
-        <th style={thStyle}>{t('Title')}</th>
-        <th style={thStyle}>{t('Lang')}</th>
-        <th style={thStyle}>{t('Data')}</th>
-        <th style={thStyle}>{t('Disposition')}</th>
-        <th style={thStyle} />
+        <th>{t('Keep?')}</th>
+        <th>{t('Codec')}</th>
+        <th>{t('Duration')}</th>
+        <th>{t('Bitrate')}</th>
+        <th>{t('Title')}</th>
+        <th>{t('Lang')}</th>
+        <th>{t('Data')}</th>
+        <th>{t('Disposition')}</th>
+        <th />
       </tr>
     </thead>
   );
 }
 
-const tableStyle: CSSProperties = { fontSize: 14, width: '100%', borderCollapse: 'collapse' };
 const fileStyle: CSSProperties = { margin: '1.5em 1em 1.5em 1em', padding: 5, overflowX: 'auto' };
 
 
 function StreamsSelector({
-  mainFilePath, mainFileFormatData, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId, setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta, showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, customTagsByFile, setCustomTagsByFile, paramsByStreamId, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments,
+  mainFilePath, mainFileFormatData, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId, setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta, showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, customTagsByFile, setCustomTagsByFile, paramsByStreamId, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments, toggleCopyStreamIds, changeEnabledStreamsFilter, toggleCopyAllStreamsForPath,
 }: {
   mainFilePath: string,
   mainFileFormatData: FFprobeFormat | undefined,
@@ -372,6 +385,9 @@ function StreamsSelector({
   updateStreamParams: UpdateStreamParams,
   formatTimecode: FormatTimecode,
   loadSubtitleTrackToSegments: (index: number) => void,
+  toggleCopyStreamIds: (path: string, filter: (a: FFprobeStream) => boolean) => void,
+  changeEnabledStreamsFilter: () => void,
+  toggleCopyAllStreamsForPath: (path: string) => void,
 }) {
   const [editingFile, setEditingFile] = useState<string>();
   const [editingStream, setEditingStream] = useState<EditingStream>();
@@ -395,28 +411,11 @@ function StreamsSelector({
     });
   }
 
-  function batchSetCopyStreamIdsForPath(path: string, streams: FFprobeStream[], filter: (a: FFprobeStream) => boolean, enabled: boolean) {
-    setCopyStreamIdsForPath(path, (old) => {
-      const ret = { ...old };
-      // eslint-disable-next-line unicorn/no-array-callback-reference
-      streams.filter(filter).forEach(({ index }) => {
-        ret[index] = enabled;
-      });
-      return ret;
-    });
-  }
-
-  function setCopyAllStreamsForPath(path: string, enabled: boolean) {
-    setCopyStreamIdsForPath(path, (old) => Object.fromEntries(Object.entries(old).map(([streamId]) => [streamId, enabled])));
-  }
-
   const externalFilesEntries = Object.entries(externalFilesMeta);
 
   const onInfoClick = useCallback((json: unknown, title: string) => {
     showJson5Dialog({ title, json, darkMode });
   }, [darkMode]);
-
-  const dialogRef = useRef<HTMLDialogElement>(null);
 
   return (
     <>
@@ -424,8 +423,8 @@ function StreamsSelector({
 
       <div style={fileStyle}>
         {/* We only support editing main file metadata for now */}
-        <FileHeading onInfoClick={onInfoClick} path={mainFilePath} formatData={mainFileFormatData} chapters={mainFileChapters} onEditClick={() => setEditingFile(mainFilePath)} setCopyAllStreams={(enabled) => setCopyAllStreamsForPath(mainFilePath, enabled)} onExtractAllStreamsPress={onExtractAllStreamsPress} />
-        <table style={tableStyle}>
+        <FileHeading onInfoClick={onInfoClick} path={mainFilePath} formatData={mainFileFormatData} chapters={mainFileChapters} onEditClick={() => setEditingFile(mainFilePath)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(mainFilePath)} onExtractAllStreamsPress={onExtractAllStreamsPress} changeEnabledStreamsFilter={changeEnabledStreamsFilter} />
+        <table className={styles['table']}>
           <Thead />
 
           <tbody>
@@ -436,7 +435,7 @@ function StreamsSelector({
                 stream={stream}
                 copyStream={isCopyingStreamId(mainFilePath, stream.index)}
                 onToggle={(streamId) => toggleCopyStreamId(mainFilePath, streamId)}
-                batchSetCopyStreamIds={(filter: (a: FFprobeStream) => boolean, enabled: boolean) => batchSetCopyStreamIdsForPath(mainFilePath, mainFileStreams, filter, enabled)}
+                toggleCopyStreamIds={(filter: (a: FFprobeStream) => boolean) => toggleCopyStreamIds(mainFilePath, filter)}
                 setEditingStream={setEditingStream}
                 fileDuration={getFormatDuration(mainFileFormatData)}
                 onExtractStreamPress={() => onExtractStreamPress(stream.index)}
@@ -453,9 +452,9 @@ function StreamsSelector({
 
       {externalFilesEntries.map(([path, { streams: externalFileStreams, formatData }]) => (
         <div key={path} style={fileStyle}>
-          <FileHeading path={path} formatData={formatData} onTrashClick={() => removeFile(path)} setCopyAllStreams={(enabled) => setCopyAllStreamsForPath(path, enabled)} onInfoClick={onInfoClick} />
+          <FileHeading path={path} formatData={formatData} onTrashClick={() => removeFile(path)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(path)} onInfoClick={onInfoClick} />
 
-          <table style={tableStyle}>
+          <table className={styles['table']}>
             <Thead />
             <tbody>
               {externalFileStreams.map((stream) => (
@@ -465,7 +464,7 @@ function StreamsSelector({
                   stream={stream}
                   copyStream={isCopyingStreamId(path, stream.index)}
                   onToggle={(streamId) => toggleCopyStreamId(path, streamId)}
-                  batchSetCopyStreamIds={(filter: (a: FFprobeStream) => boolean, enabled: boolean) => batchSetCopyStreamIdsForPath(path, externalFileStreams, filter, enabled)}
+                  toggleCopyStreamIds={(filter: (a: FFprobeStream) => boolean) => toggleCopyStreamIds(path, filter)}
                   setEditingStream={setEditingStream}
                   fileDuration={getFormatDuration(formatData)}
                   paramsByStreamId={paramsByStreamId}
@@ -506,7 +505,7 @@ function StreamsSelector({
       </div>
 
       {editingFile != null && (
-        <Dialog ref={dialogRef} autoOpen onClose={() => setEditingFile(undefined)} style={{ maxWidth: '40em' }}>
+        <Dialog autoOpen onClose={() => setEditingFile(undefined)} style={{ width: '100%', maxWidth: '40em' }}>
           <h1 style={{ marginTop: 0 }}>{t('Edit file metadata')}</h1>
 
           <EditFileDialog editingFile={editingFile} editingTag={editingTag} setEditingTag={setEditingTag} allFilesMeta={allFilesMeta} customTagsByFile={customTagsByFile} setCustomTagsByFile={setCustomTagsByFile} />

@@ -183,6 +183,8 @@ export default () => {
     };
   }, []);
 
+  const toggleDarkMode = useCallback(() => setDarkMode((v) => !v), []);
+
   return {
     captureFormat,
     setCaptureFormat,
@@ -300,7 +302,7 @@ export default () => {
     allowMultipleInstances,
     setAllowMultipleInstances,
     darkMode,
-    setDarkMode,
+    toggleDarkMode,
     preferStrongColors,
     setPreferStrongColors,
     outputFileNameMinZeroPadding,

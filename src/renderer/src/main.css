@@ -108,3 +108,8 @@ code.highlighted {
 .link-button:focus {
   outline: revert;
 }
+
+input:focus-visible, select:focus-visible {
+  outline: 0.1em solid var(--gray-11);
+  outline-offset: 0;
+}

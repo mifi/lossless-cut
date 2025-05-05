@@ -1,7 +1,7 @@
 import { CSSProperties, ReactNode, memo, useCallback, useEffect, useRef } from 'react';
 import { IoIosSettings } from 'react-icons/io';
 import { FaLock, FaUnlock } from 'react-icons/fa';
-import { CrossIcon, ListIcon, VolumeUpIcon, VolumeOffIcon } from 'evergreen-ui';
+import { CrossIcon, FilterIcon, ListIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 import Button from './components/Button';
 
@@ -21,8 +21,9 @@ const exportModeStyle = { flexGrow: 0, flexBasis: 140 };
 function TopMenu({
   filePath,
   fileFormat,
-  copyAnyAudioTrack,
-  toggleStripAudio,
+  changeEnabledStreamsFilter,
+  applyEnabledStreamsFilter,
+  enabledStreamsFilter,
   renderOutFmt,
   numStreamsToCopy,
   numStreamsTotal,
@@ -34,8 +35,9 @@ function TopMenu({
 }: {
   filePath: string | undefined,
   fileFormat: string | undefined,
-  copyAnyAudioTrack: boolean,
-  toggleStripAudio: () => void,
+  changeEnabledStreamsFilter: () => void,
+  applyEnabledStreamsFilter: () => void,
+  enabledStreamsFilter: string | undefined,
   renderOutFmt: (style: CSSProperties) => ReactNode,
   numStreamsToCopy: number,
   numStreamsTotal: number,
@@ -86,15 +88,20 @@ function TopMenu({
             {t('Tracks')} ({numStreamsToCopy}/{numStreamsTotal})
           </Button>
 
+          {enabledStreamsFilter != null && (
+            <FilterIcon
+              role="button"
+              tabIndex={0}
+              style={{ width: 20 }}
+              onClick={withBlur(() => applyEnabledStreamsFilter())}
+              title={t('Toggle tracks using current filter')}
+            />
+          )}
+
           <Button
-            title={copyAnyAudioTrack ? t('Keep audio tracks') : t('Discard audio tracks')}
-            onClick={withBlur(toggleStripAudio)}
+            onClick={changeEnabledStreamsFilter}
           >
-            {copyAnyAudioTrack ? (
-              <><VolumeUpIcon size={'1em' as unknown as number} verticalAlign="middle" marginRight=".3em" />{t('Keep audio')}</>
-            ) : (
-              <><VolumeOffIcon size={'1em' as unknown as number} verticalAlign="middle" marginRight=".3em" />{t('Discard audio')}</>
-            )}
+            {t('Filter tracks')}
           </Button>
         </>
       )}

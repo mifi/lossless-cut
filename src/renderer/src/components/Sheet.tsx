@@ -1,13 +1,17 @@
 import { CSSProperties, ReactNode, memo } from 'react';
-import { IoIosCloseCircleOutline } from 'react-icons/io';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { FaTimes } from 'react-icons/fa';
 
 import styles from './Sheet.module.css';
 
 
 function Sheet({ visible, onClosePress, children, maxWidth = 800, style }: {
-  visible: boolean, onClosePress: () => void, children: ReactNode, maxWidth?: number | string, style?: CSSProperties
+  visible: boolean,
+  onClosePress: () => void,
+  children: ReactNode,
+  maxWidth?: number | string,
+  style?: CSSProperties,
 }) {
   const { t } = useTranslation();
 
@@ -25,7 +29,7 @@ function Sheet({ visible, onClosePress, children, maxWidth = 800, style }: {
               {children}
             </div>
 
-            <IoIosCloseCircleOutline role="button" onClick={onClosePress} title={t('Close')} size={30} style={{ position: 'absolute', padding: '1em', right: 0, top: 0, cursor: 'pointer' }} />
+            <FaTimes role="button" className={styles['close']} onClick={onClosePress} title={t('Close')} />
           </div>
         </motion.div>
       )}

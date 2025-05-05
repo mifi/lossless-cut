@@ -7,8 +7,32 @@
   background: var(--white-a11);
   color: var(--gray-12);
   backdrop-filter: blur(30px);
+
+  h1 {
+    text-transform: uppercase;
+    font-size: 1.3em;
+  }
 }
 
 :global(.dark-theme) .sheet {
   background: var(--black-a11);
+}
+
+.close {
+  position: absolute;
+  padding: .5em;
+  margin: .2em;
+  right: 0;
+  top: 0;
+  cursor: pointer;
+  border-radius: 100%;
+  font-size: 1.3em;
+
+  color: var(--gray-12);
+  background-color: none;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.close:hover {
+  background-color: var(--gray-4);
 }

@@ -9,6 +9,23 @@
   backdrop-filter: blur(30px);
   overflow-y: scroll;
   display: flex;
+
+  table.options {
+    width: 100%;
+  }
+  
+  table.options td:nth-child(2) {
+    text-align: right;
+  }
+  
+  table.options td:last-child {
+    text-align: center;
+    width: 1.7em;
+  }
+  
+  table.options td {
+    vertical-align: top;
+  }
 }
 
 :global(.dark-theme) .sheet {
@@ -21,21 +38,4 @@
 
 :global(.dark-theme) .box {
   background: var(--black-a11);
-}
-
-table.options {
-  width: 100%;
-}
-
-table.options td:nth-child(2) {
-  text-align: right;
-}
-
-table.options td:last-child {
-  text-align: center;
-  width: 1.7em;
-}
-
-table.options td {
-  vertical-align: top;
 }

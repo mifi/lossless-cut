@@ -212,7 +212,7 @@ function BottomBar({
   jumpTimelineStart, jumpTimelineEnd, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime,
   playing, shortStep, togglePlay, toggleLoopSelectedSegments, hasAudio,
   keyframesEnabled, toggleShowKeyframes, seekClosestKeyframe, detectedFps, isFileOpened, selectedSegments,
-  darkMode, setDarkMode,
+  darkMode, toggleDarkMode,
   toggleShowThumbnails, toggleWaveformMode, waveformMode, showThumbnails,
   outputPlaybackRate, setOutputPlaybackRate,
   formatTimecode, parseTimecode, playbackRate,
@@ -254,7 +254,7 @@ function BottomBar({
   isFileOpened: boolean,
   selectedSegments: SegmentColorIndex[],
   darkMode: boolean,
-  setDarkMode: Dispatch<SetStateAction<boolean>>,
+  toggleDarkMode: () => void,
   toggleShowThumbnails: () => void,
   toggleWaveformMode: () => void,
   waveformMode: WaveformMode | undefined,
@@ -354,7 +354,7 @@ function BottomBar({
         <div style={{ display: 'flex', alignItems: 'center', flexBasis: leftRightWidth }}>
           {!simpleMode && (
             <>
-              <FaSun color="var(--gray-12)" role="button" onClick={() => setDarkMode((v) => !v)} style={{ padding: '0 .2em 0 .3em' }} />
+              <FaSun color="var(--gray-12)" role="button" onClick={toggleDarkMode} style={{ padding: '0 .2em 0 .3em' }} title={t('Toggle dark mode')} />
 
               {hasAudio && (
                 <GiSoundWaves

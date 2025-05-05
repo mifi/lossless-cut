@@ -18,7 +18,7 @@ function LastCommandsSheet({ visible, onTogglePress, ffmpegCommandLog, setFfmpeg
 
   return (
     <Sheet visible={visible} onClosePress={onTogglePress} style={{ padding: '0 1em' }} maxWidth={2000}>
-      <h2>{t('Last ffmpeg commands')}</h2>
+      <h1>{t('Last ffmpeg commands')}</h1>
 
       {ffmpegCommandLog.length > 0 ? (
         <div>

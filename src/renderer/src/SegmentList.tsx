@@ -458,12 +458,10 @@ function SegmentList({
     onSegmentTagsCloseComplete();
   }, [editingSegmentTags, editingSegmentTagsSegmentIndex, onSegmentTagsCloseComplete, updateSegAtIndex]);
 
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
   return (
     <>
       {editingSegmentTagsSegmentIndex != null && (
-        <Dialog ref={dialogRef} autoOpen onClose={onSegmentTagsCloseComplete} style={{ width: '100%', maxWidth: '40em' }}>
+        <Dialog autoOpen onClose={onSegmentTagsCloseComplete} style={{ width: '100%', maxWidth: '40em' }}>
           <h1 style={{ marginTop: 0 }}>{t('Edit segment tags')}</h1>
 
           <TagEditor customTags={editingSegmentTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add segment tag')} />

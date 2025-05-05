@@ -2,12 +2,14 @@ import { memo, useRef, useState, useMemo, useCallback, useEffect, FormEventHandl
 import { useTranslation } from 'react-i18next';
 import { TrashIcon, ResetIcon, TickIcon, EditIcon, PlusIcon, IconButton } from 'evergreen-ui';
 import invariant from 'tiny-invariant';
+import { motion } from 'framer-motion';
 
 import { SegmentTags, segmentTagsSchema } from '../types';
 import CopyClipboardButton from './CopyClipboardButton';
 import { errorToast } from '../swal';
 import TextInput from './TextInput';
 import Button from './Button';
+import Warning from './Warning';
 
 
 const { clipboard } = window.require('electron');
@@ -110,9 +112,11 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
     ref.current?.focus();
   }, [editingTag]);
 
+  const canAdd = !newTagKey && (editingTag == null || mergedTags[editingTag] == null);
+
   return (
     <>
-      <table style={{ marginBottom: 10 }}>
+      <table style={{ marginBottom: '1em' }}>
         <tbody>
           {Object.keys(mergedTags).map((tag) => {
             const editingThis = tag === editingTag;
@@ -121,7 +125,14 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
             const thisTagNew = existingTags[tag] == null;
 
             return (
-              <tr key={tag}>
+              <motion.tr
+                transition={{ duration: 0.2 }}
+                layout
+                key={tag}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
                 <td style={{ paddingRight: '1em', color: thisTagNew ? activeColor : 'var(--gray-11)' }}>{tag}</td>
 
                 <td style={{ display: 'flex', alignItems: 'center' }}>
@@ -135,24 +146,20 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
                   {(editingTag == null || editingThis) && <IconButton icon={Icon} title={t('Edit')} appearance="minimal" style={{ marginLeft: '.4em' }} onClick={() => onEditClick(tag)} intent={editingThis ? 'success' : 'none'} />}
                   {editingThis && <IconButton icon={thisTagNew ? TrashIcon : ResetIcon} title={thisTagNew ? t('Delete') : t('Reset')} appearance="minimal" onClick={onResetClick} intent="danger" />}
                 </td>
-              </tr>
+              </motion.tr>
             );
           })}
         </tbody>
       </table>
 
-      {(!newTagKey && (editingTag == null || mergedTags[editingTag] == null)) && (
-        <>
-          <form onSubmit={onAddSubmit}>
-            <TextInput value={newTagKeyInput} onChange={(e) => setNewTagKeyInput(e.target.value)} placeholder={addTagTitle} style={{ marginBottom: '1em', padding: '.4em', marginRight: '1em' }} />
-            <Button type="button" title={addTagTitle} onClick={add} style={{ padding: '.3em' }}><PlusIcon style={{ verticalAlign: 'middle' }} /></Button>
-          </form>
+      <form onSubmit={onAddSubmit} style={{ opacity: canAdd ? undefined : 0.5 }}>
+        <TextInput ref={ref} disabled={!canAdd} value={newTagKeyInput} onChange={(e) => setNewTagKeyInput(e.target.value)} placeholder={addTagTitle} style={{ marginBottom: '1em', padding: '.4em', marginRight: '1em' }} />
+        <Button type="button" disabled={!canAdd} title={addTagTitle} onClick={add} style={{ padding: '.3em' }}><PlusIcon style={{ verticalAlign: 'middle' }} /></Button>
+      </form>
 
-          {newTagKeyInputError && <div>{t('Invalid character(s) found in key')}</div>}
-        </>
-      )}
+      {newTagKeyInputError && <Warning>{t('Invalid character(s) found in key')}</Warning>}
 
-      <div style={{ marginTop: '1em', marginBottom: '1em' }}>
+      <div style={{ marginBottom: '1em' }}>
         <CopyClipboardButton text={JSON.stringify(mergedTags, null, 2)} style={{ marginRight: '.3em', verticalAlign: 'middle' }}>
           {({ onClick }) => <Button onClick={onClick} style={{ display: 'block' }}>{t('Copy to clipboard')}</Button>}
         </CopyClipboardButton>

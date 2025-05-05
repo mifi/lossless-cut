@@ -27,13 +27,14 @@ import { FFprobeStream } from '../../../../ffprobe';
 import { AvoidNegativeTs, PreserveMetadata } from '../../../../types';
 import TextInput from './TextInput';
 import { UseSegments } from '../hooks/useSegments';
+import Warning from './Warning';
 
 
 const boxStyle: CSSProperties = { margin: '15px 15px 50px 15px', borderRadius: 10, padding: '10px 20px', minHeight: 500, position: 'relative' };
 
 const outDirStyle: CSSProperties = { ...highlightedTextStyle, wordBreak: 'break-all', cursor: 'pointer' };
 
-const warningStyle: CSSProperties = { color: 'var(--orange-8)', fontSize: '80%', marginBottom: '.5em' };
+const warningStyle: CSSProperties = { fontSize: '80%', marginBottom: '.5em' };
 
 const infoStyle: CSSProperties = { color: 'var(--gray-12)', fontSize: '80%', marginBottom: '.5em' };
 
@@ -246,14 +247,14 @@ function ExportConfirm({
               <div style={boxStyle} className={styles['box']}>
                 <CrossIcon size={24} style={{ position: 'absolute', right: 0, top: 0, padding: 15, boxSizing: 'content-box', cursor: 'pointer' }} role="button" onClick={onClosePress} />
 
-                <h2 style={{ marginTop: 0, marginBottom: '.5em' }}>{t('Export options')}</h2>
+                <h1 style={{ textTransform: 'uppercase', fontSize: '1.4em', marginTop: 0, marginBottom: '.5em' }}>{t('Export options')}</h1>
 
                 <table className={styles['options']}>
                   <tbody>
                     {notices.map(({ warning, text }) => (
                       <tr key={text}>
                         <td colSpan={2}>
-                          <div style={{ ...(warning ? warningStyle : infoStyle), display: 'flex', alignItems: 'center', gap: '0 .5em' }}>
+                          <div style={{ ...(warning ? { ...warningStyle, color: 'var(--orange-8)' } : infoStyle), display: 'flex', alignItems: 'center', gap: '0 .5em' }}>
                             {warning ? (
                               <WarningSignIcon verticalAlign="middle" color="warning" flexShrink="0" />
                             ) : (
@@ -306,7 +307,7 @@ function ExportConfirm({
                       <td>
                         <Trans>Input has {{ numStreamsTotal }} tracks</Trans>
                         {areWeCuttingProblematicStreams && (
-                          <div style={warningStyle}><Trans>Warning: Cutting thumbnail tracks is known to cause problems. Consider disabling track {{ trackNumber: mainCopiedThumbnailStreams[0] ? mainCopiedThumbnailStreams[0].index + 1 : 0 }}.</Trans></div>
+                          <Warning style={warningStyle}><Trans>Warning: Cutting thumbnail tracks is known to cause problems. Consider disabling track {{ trackNumber: mainCopiedThumbnailStreams[0] ? mainCopiedThumbnailStreams[0].index + 1 : 0 }}.</Trans></Warning>
                         )}
                       </td>
                       <td>
@@ -405,7 +406,7 @@ function ExportConfirm({
                           </td>
                           <td>
                             <Switch checked={movFastStart} onCheckedChange={toggleMovFastStart} />
-                            {isIpod && !movFastStart && <div style={warningStyle}>{t('For the ipod format, it is recommended to activate this option')}</div>}
+                            {isIpod && !movFastStart && <Warning style={warningStyle}>{t('For the ipod format, it is recommended to activate this option')}</Warning>}
                           </td>
                           <td>
                             {isIpod && !movFastStart ? (
@@ -419,7 +420,7 @@ function ExportConfirm({
                         <tr>
                           <td>
                             {t('Preserve all MP4/MOV metadata?')}
-                            {isIpod && preserveMovData && <div style={warningStyle}>{t('For the ipod format, it is recommended to deactivate this option')}</div>}
+                            {isIpod && preserveMovData && <Warning style={warningStyle}>{t('For the ipod format, it is recommended to deactivate this option')}</Warning>}
                           </td>
                           <td>
                             <Switch checked={preserveMovData} onCheckedChange={togglePreserveMovData} />
@@ -503,7 +504,7 @@ function ExportConfirm({
                         <tr>
                           <td>
                             {t('Smart cut (experimental):')}
-                            {needSmartCut && <div style={warningStyle}>{t('Smart cut is experimental and will not work on all files.')}</div>}
+                            {needSmartCut && <Warning style={warningStyle}>{t('Smart cut is experimental and will not work on all files.')}</Warning>}
                           </td>
                           <td>
 
@@ -542,7 +543,7 @@ function ExportConfirm({
                           <tr>
                             <td>
                               {t('Keyframe cut mode')}
-                              {!keyframeCut && <div style={warningStyle}>{t('Note: Keyframe cut is recommended for most common files')}</div>}
+                              {!keyframeCut && <Warning style={warningStyle}>{t('Note: Keyframe cut is recommended for most common files')}</Warning>}
                             </td>
                             <td>
                               <Switch checked={keyframeCut} onCheckedChange={() => toggleKeyframeCut()} />
@@ -577,7 +578,7 @@ function ExportConfirm({
                         <tr>
                           <td>
                             &quot;ffmpeg&quot; <code className="highlighted">avoid_negative_ts</code>
-                            {avoidNegativeTsWarn != null && <div style={warningStyle}>{avoidNegativeTsWarn}</div>}
+                            {avoidNegativeTsWarn != null && <Warning style={warningStyle}>{avoidNegativeTsWarn}</Warning>}
                           </td>
                           <td>
                             <Select value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value as AvoidNegativeTs)} style={{ height: 20, marginLeft: 5 }}>
@@ -634,7 +635,7 @@ function ExportConfirm({
               style={{ display: 'flex', alignItems: 'flex-end', background: 'var(--gray-2)' }}
             >
               <ToggleExportConfirm size={25} />
-              <div style={{ fontSize: 13, marginLeft: 3, marginRight: 7, maxWidth: 120, lineHeight: '100%', color: exportConfirmEnabled ? 'var(--gray-12)' : 'var(--gray-11)', cursor: 'pointer' }} role="button" onClick={toggleExportConfirmEnabled}>{t('Show this page before exporting?')}</div>
+              <div style={{ fontSize: 13, marginLeft: 3, marginRight: 7, maxWidth: 120, lineHeight: '100%', color: exportConfirmEnabled ? 'var(--gray-12)' : 'var(--gray-11)' }} role="button" onClick={toggleExportConfirmEnabled}>{t('Show this page before exporting?')}</div>
             </motion.div>
 
             <motion.div

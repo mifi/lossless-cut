@@ -1,5 +1,6 @@
 import { FaTimes } from 'react-icons/fa';
-import { DetailedHTMLProps, DialogHTMLAttributes, useCallback, useEffect, forwardRef } from 'react';
+import { DetailedHTMLProps, DialogHTMLAttributes, useCallback, useEffect, forwardRef, useRef } from 'react';
+import invariant from 'tiny-invariant';
 
 import styles from './Dialog.module.css';
 import Button, { ButtonProps } from './Button';
@@ -11,13 +12,23 @@ type Props = Omit<DetailedHTMLProps<DialogHTMLAttributes<HTMLDialogElement>, HTM
 };
 
 // eslint-disable-next-line react/display-name
-const Dialog = forwardRef<HTMLDialogElement, Props>(({ children, autoOpen, onClose, onClick, ...props }, ref) => {
+const Dialog = forwardRef<HTMLDialogElement, Props>(({ children, autoOpen, onClose, onClick, ...props }, refArg) => {
+  const localRef = useRef<HTMLDialogElement>(null);
+  const ref = refArg ?? localRef;
+
   useEffect(() => {
+    invariant('current' in ref);
     // eslint-disable-next-line react/destructuring-assignment
-    if (autoOpen) (ref as React.RefObject<HTMLDialogElement>).current?.showModal();
-    // eslint-disable-next-line react/destructuring-assignment
-    else (ref as React.RefObject<HTMLDialogElement>).current?.close();
+    if (autoOpen) {
+      ref.current?.showModal();
+    }
+    return undefined;
   }, [autoOpen, ref]);
+
+  const handleClose = useCallback((e: React.MouseEvent<HTMLDialogElement>) => {
+    invariant('current' in ref);
+    onClose?.(e);
+  }, [onClose, ref]);
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLDialogElement>) => {
     if (!(ref != null && 'current' in ref && ref.current != null)) return;
@@ -26,14 +37,14 @@ const Dialog = forwardRef<HTMLDialogElement, Props>(({ children, autoOpen, onClo
       || e.clientX > dialogDimensions.right
       || e.clientY < dialogDimensions.top
       || e.clientY > dialogDimensions.bottom) {
-      onClose?.(e);
+      ref.current?.close();
     }
     onClick?.(e);
-  }, [onClick, onClose, ref]);
+  }, [onClick, ref]);
 
   return (
     // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, react/jsx-props-no-spreading
-    <dialog {...props} ref={ref} onClose={onClose} onClick={handleClick}>
+    <dialog {...props} className={styles['dialog']} ref={ref} onClose={handleClose} onClick={handleClick}>
       {children}
 
       <form method="dialog">

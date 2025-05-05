@@ -1,36 +1,66 @@
-dialog::backdrop {
-  background-color: var(--black-a7);
-  animation: overlayShow 400ms cubic-bezier(0.16, 1, 0.3, 1);
-}
+.dialog {
+  --duration: 0.2s;
 
-dialog {
-  border: .1em solid var(--black-a3);
+  border: .1em solid var(--black-a5);
   background: var(--white-a8);
   color: var(--gray-12);
   backdrop-filter: blur(2em);
   border-radius: .5em;
   padding: 1.7em;
-  animation: contentShow 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 1em .3em var(--black-a1);
+  transform-origin: center;
+  transition:
+    translate var(--duration) ease-out, 
+    scale     var(--duration) ease-out,
+    opacity   var(--duration) ease-out,
+    display   var(--duration) ease-out allow-discrete;
+
+  &[open] {
+    /* Post-Entry (Normal) State */
+    scale: 1;
+    opacity: 1;
+
+    /* Pre-Entry State */
+    @starting-style {
+      scale: 0.6;
+      opacity: 0;
+    }
+  }
+
+  &::backdrop {
+    background-color: var(--black-a7);
+    animation: overlayShow 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  h1 {
+    text-transform: uppercase;
+    font-size: 1.3em;
+    margin-top: 0;
+  }
 }
 
-:global(.dark-theme) dialog {
-  border: .1em solid var(--white-a2);
+:global(.dark-theme) .dialog {
+  border: .1em solid var(--white-a3);
   background: var(--black-a4);
+  box-shadow: 0 0 1em .3em var(--black-a2);
 }
 
 .close {
   all: unset;
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  cursor: pointer;
   border-radius: 100%;
   height: 2em;
   width: 2em;
+  border: .1em solid transparent;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--gray-12);
-  position: absolute;
-  top: 1em;
-  right: 1em;
-  background-color: var(--gray-3);
+  background-color: none;
+  transition: background-color 0.2s ease-in-out;
 }
 
 .close:hover {
@@ -38,7 +68,7 @@ dialog {
 }
 
 .close:focus {
-  box-shadow: 0 0 0 .1em var(--gray-7);
+  border: .1em solid var(--gray-4);
 }
 
 @keyframes overlayShow {
@@ -48,15 +78,4 @@ dialog {
   to {
     opacity: 1;
   }
-}
-
-@keyframes contentShow {
-  from {
-    opacity: 0;
-    transform: translate(0, -5%) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translate(0, 0) scale(1);
-  }
-}
+}  

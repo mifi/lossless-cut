@@ -1,4 +1,4 @@
-import { memo, useState, useCallback, useEffect, useMemo, CSSProperties, useRef } from 'react';
+import { memo, useState, useCallback, useEffect, useMemo, CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconButton } from 'evergreen-ui';
 import { AiOutlineMergeCells } from 'react-icons/ai';
@@ -20,6 +20,7 @@ import TextInput from './TextInput';
 import Button from './Button';
 import { defaultMergedFileTemplate, generateMergedFileNames, maxFileNameLength } from '../util/outputNameTemplate';
 import Dialog from './Dialog';
+import { primaryColor } from '../colors';
 
 const { basename } = window.require('path');
 
@@ -197,12 +198,10 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
     onConcat({ paths, includeAllStreams, streams: fileMeta!.streams, outFileName, fileFormat, clearBatchFilesAfterConcat });
   }, [clearBatchFilesAfterConcat, fileFormat, fileMeta, includeAllStreams, onConcat, outFileName, paths]);
 
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
   return (
     <>
       <Sheet visible={isShown} onClosePress={onHide} maxWidth="100%" style={{ padding: '0 2em' }}>
-        <h2>{t('Merge/concatenate files')}</h2>
+        <h1>{t('Merge/concatenate files')}</h1>
 
         <div style={{ marginBottom: '1em' }}>
           <div style={{ whiteSpace: 'pre-wrap', fontSize: '.9em', marginBottom: '1em' }}>
@@ -234,28 +233,27 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
           )}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end', marginBottom: '1em' }}>
-          <div style={{ marginRight: '.5em' }}>{t('Output file name')}:</div>
-          <TextInput value={outFileName || ''} onChange={(e) => setOutFileName(e.target.value)} />
-          <Button disabled={detectedFileFormat == null || !isOutFileNameValid} onClick={onConcatClick} style={{ fontSize: '1.3em', padding: '0 .3em', marginLeft: '1em' }}>
-            <AiOutlineMergeCells style={{ fontSize: '1.4em', verticalAlign: 'middle' }} /> {t('Merge!')}
-          </Button>
-        </div>
-
         {isOutFileNameTooLong && (
           <Alert text={t('File name is too long and cannot be exported.')} />
         )}
-
         {enableReadFileMeta && (!allFilesMeta || Object.values(problemsByFile).length > 0) && (
           <Alert text={t('A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.')} />
         )}
         {!enableReadFileMeta && (
           <Alert text={t('File compatibility check is not enabled, so the merge operation might not produce a valid output. Enable "Check compatibility" below to check file compatibility before merging.')} />
         )}
+
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end', marginBottom: '1em' }}>
+          <div style={{ marginRight: '.5em' }}>{t('Output file name')}:</div>
+          <TextInput value={outFileName || ''} onChange={(e) => setOutFileName(e.target.value)} />
+          <Button disabled={detectedFileFormat == null || !isOutFileNameValid} onClick={onConcatClick} style={{ fontSize: '1.3em', padding: '0 .3em', marginLeft: '1em', background: primaryColor, color: 'white', border: 'none' }}>
+            <AiOutlineMergeCells style={{ fontSize: '1.4em', verticalAlign: 'middle' }} /> {t('Merge!')}
+          </Button>
+        </div>
       </Sheet>
 
       {settingsVisible && (
-        <Dialog ref={dialogRef} autoOpen onClose={() => setSettingsVisible(false)} style={{ maxWidth: '40em' }}>
+        <Dialog autoOpen onClose={() => setSettingsVisible(false)} style={{ maxWidth: '40em' }}>
           <h1 style={{ marginTop: 0 }}>{t('Merge options')}</h1>
 
           <Checkbox checked={includeAllStreams} onCheckedChange={(checked) => setIncludeAllStreams(checked === true)} label={`${t('Include all tracks?')} ${t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}`} />

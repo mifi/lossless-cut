@@ -30,6 +30,8 @@ const defaultKeyBindings: KeyBinding[] = [
   { keys: 'b', action: 'splitCurrentSegment' },
   { keys: 'r', action: 'increaseRotation' },
   { keys: 'g', action: 'goToTimecode' },
+  { keys: 't', action: 'toggleStripAll' },
+  { keys: 'shift+t', action: 'toggleStripCurrentFilter' },
 
   { keys: 'left', action: 'seekBackwards' },
   { keys: 'ctrl+shift+left', action: 'seekBackwards2' },
