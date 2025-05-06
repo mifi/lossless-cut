@@ -107,8 +107,6 @@ function TimelineSeg({
   const onThisSegClick = useCallback(() => onSegClick(segNum), [onSegClick, segNum]);
 
   if (seg.end == null) {
-    if (invertCutSegments) return null;
-
     return (
       <Marker seg={seg} segNum={segNum} color={segColor} selected={selected} isActive={isActive} onClick={onThisSegClick} getTimePercent={getTimePercent} formatTimecode={formatTimecode} />
     );
