@@ -9,6 +9,8 @@
   backdrop-filter: blur(30px);
   overflow-y: scroll;
   display: flex;
+  justify-content: center;
+  align-items: flex-start;
 
   table.options {
     width: 100%;
@@ -33,6 +35,13 @@
 }
 
 .box {
+  margin: 15px 15px 50px 15px;
+  border-radius: 10px;
+  padding: 10px 20px;
+  min-height: 500px;
+  position: relative;
+  max-width: 100%;
+  width: 50em;
   background: var(--white-a11);
 }
 

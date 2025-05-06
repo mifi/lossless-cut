@@ -7,7 +7,7 @@ import { primaryTextColor } from '../colors';
 import useUserSettings from '../hooks/useUserSettings';
 
 
-function ToggleExportConfirm({ size = 23, style }: { size?: number | undefined, style?: CSSProperties }) {
+function ToggleExportConfirm({ size = 23, style }: { size?: string | number | undefined, style?: CSSProperties }) {
   const { t } = useTranslation();
   const { exportConfirmEnabled, toggleExportConfirmEnabled } = useUserSettings();
 

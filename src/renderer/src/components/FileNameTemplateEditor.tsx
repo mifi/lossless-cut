@@ -131,11 +131,13 @@ function FileNameTemplateEditor(opts: {
   }, [text]);
 
   return (
-    <motion.div style={{ maxWidth: 600 }} animate={{ margin: needToShow ? '1.5em 0' : '0 0 .3em 0' }}>
+    <>
       {fileNames != null && (
-        <>
-          <div>{(mergeMode ? t('Merged output file name:') : t('Output name(s):', { count: fileNames.length }))}</div>
+        <div>{(mergeMode ? t('Merged output file name:') : t('Output name(s):', { count: fileNames.length }))}</div>
+      )}
 
+      <motion.div animate={{ marginBottom: needToShow ? '1.5em' : '.3em' }}>
+        {fileNames != null && (
           <div style={{ marginBottom: '.3em' }}>
             <HighlightedText role="button" onClick={onShowClick} style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>
               {/* eslint-disable-next-line react/destructuring-assignment */}
@@ -143,77 +145,78 @@ function FileNameTemplateEditor(opts: {
               {!needToShow && <FaEdit style={{ fontSize: '.9em', marginLeft: '.4em', verticalAlign: 'middle' }} />}
             </HighlightedText>
           </div>
-        </>
-      )}
+        )}
 
-      <AnimatePresence>
-        {needToShow && (
-          <motion.div
-            key="1"
-            initial={{ opacity: 0, height: 0, marginTop: 0 }}
-            animate={{ opacity: 1, height: 'auto', marginTop: '.5em' }}
-            exit={{ opacity: 0, height: 0, marginTop: 0 }}
-          >
-            <div style={{ color: 'var(--gray-11)', fontSize: '.8em' }}>{t('Output file name template')}:</div>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.2em' }}>
-              <TextInput ref={inputRef} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
+        <AnimatePresence>
+          {needToShow && (
+            <motion.div
+              key="1"
+              style={{ background: 'var(--gray-1)', padding: '.3em .5em', borderRadius: '.3em', margin: '0 -.5em' }}
+              initial={{ opacity: 0, height: 0, marginTop: 0 }}
+              animate={{ opacity: 1, height: 'auto', marginTop: '.7em' }}
+              exit={{ opacity: 0, height: 0, marginTop: 0 }}
+            >
+              <div style={{ color: 'var(--gray-11)', fontSize: '.8em' }}>{t('Output file name template')}:</div>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.2em' }}>
+                <TextInput ref={inputRef} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
 
-              {!mergeMode && fileNames != null && <Button height={20} onClick={onAllFilesPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
+                {!mergeMode && fileNames != null && <Button height={20} onClick={onAllFilesPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
 
-              <IconButton title={t('Reset')} icon={ResetIcon} height={20} onClick={reset} marginLeft={5} intent="danger" />
-              {!haveImportantMessage && <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" appearance="primary" />}
-            </div>
+                <IconButton title={t('Reset')} icon={ResetIcon} height={20} onClick={reset} marginLeft={5} intent="danger" />
+                {!haveImportantMessage && <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" appearance="primary" />}
+              </div>
 
-            <div style={{ fontSize: '.8em', color: 'var(--gray-11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
-              {`${i18n.t('Variables')}:`}
+              <div style={{ fontSize: '.8em', color: 'var(--gray-11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
+                {`${i18n.t('Variables')}:`}
 
-              <IoIosHelpCircle fontSize="1.3em" color="var(--gray-12)" role="button" cursor="pointer" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/docs.md#custom-exported-file-names')} />
-              {availableVariables.map((variable) => (
-                <span key={variable} role="button" style={{ cursor: 'pointer', marginRight: '.2em', textDecoration: 'underline', textDecorationStyle: 'dashed', fontSize: '.9em' }} onClick={() => onVariableClick(variable)}>{variable}</span>
-              ))}
-            </div>
+                <IoIosHelpCircle fontSize="1.3em" color="var(--gray-12)" role="button" cursor="pointer" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/docs.md#custom-exported-file-names')} />
+                {availableVariables.map((variable) => (
+                  <span key={variable} role="button" style={{ cursor: 'pointer', marginRight: '.2em', textDecoration: 'underline', textDecorationStyle: 'dashed', fontSize: '.9em' }} onClick={() => onVariableClick(variable)}>{variable}</span>
+                ))}
+              </div>
 
-            {hasTextNumericPaddedValue && (
-              <div style={{ marginBottom: '.3em' }}>
-                <Select value={outputFileNameMinZeroPadding} onChange={(e) => setOutputFileNameMinZeroPadding(parseInt(e.target.value, 10))} style={{ marginRight: '.5em', fontSize: '1em' }}>
-                  {Array.from({ length: 10 }).map((_v, i) => i + 1).map((v) => <option key={v} value={v}>{v}</option>)}
-                </Select>
-                {t('Minimum numeric padded length')}
+              {hasTextNumericPaddedValue && (
+                <div style={{ marginBottom: '.3em' }}>
+                  <Select value={outputFileNameMinZeroPadding} onChange={(e) => setOutputFileNameMinZeroPadding(parseInt(e.target.value, 10))} style={{ marginRight: '.5em', fontSize: '1em' }}>
+                    {Array.from({ length: 10 }).map((_v, i) => i + 1).map((v) => <option key={v} value={v}>{v}</option>)}
+                  </Select>
+                  {t('Minimum numeric padded length')}
+                </div>
+              )}
+
+              <div title={t('Whether or not to sanitize output file names (sanitizing removes special characters)')} style={{ marginBottom: '.3em' }}>
+                <Switch checked={safeOutputFileName} onCheckedChange={toggleSafeOutputFileName} style={{ verticalAlign: 'middle', marginRight: '.5em' }} />
+                <span>{t('Sanitize file names')}</span>
+
+                {!safeOutputFileName && <WarningSignIcon color="var(--amber-9)" style={{ marginLeft: '.5em', verticalAlign: 'middle' }} />}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {problems.error != null ? (
+          <div style={{ marginBottom: '1em' }}>
+            <ErrorIcon color="var(--red-9)" size={14} verticalAlign="baseline" /> {problems.error}
+          </div>
+        ) : (
+          <>
+            {problems.sameAsInputFileNameWarning && (
+              <div style={{ marginBottom: '1em' }}>
+                <WarningSignIcon verticalAlign="middle" color="var(--amber-9)" />{' '}
+                {i18n.t('Output file name is the same as the source file name. This increases the risk of accidentally overwriting or deleting source files!')}
               </div>
             )}
 
-            <div title={t('Whether or not to sanitize output file names (sanitizing removes special characters)')} style={{ marginBottom: '.3em' }}>
-              <Switch checked={safeOutputFileName} onCheckedChange={toggleSafeOutputFileName} style={{ verticalAlign: 'middle', marginRight: '.5em' }} />
-              <span>{t('Sanitize file names')}</span>
-
-              {!safeOutputFileName && <WarningSignIcon color="var(--amber-9)" style={{ marginLeft: '.5em', verticalAlign: 'middle' }} />}
-            </div>
-          </motion.div>
+            {isMissingExtension && (
+              <div style={{ marginBottom: '1em' }}>
+                <WarningSignIcon verticalAlign="middle" color="var(--amber-9)" />{' '}
+                {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVariableFormatted })}
+              </div>
+            )}
+          </>
         )}
-      </AnimatePresence>
-
-      {problems.error != null ? (
-        <div style={{ marginBottom: '1em' }}>
-          <ErrorIcon color="var(--red-9)" size={14} verticalAlign="baseline" /> {problems.error}
-        </div>
-      ) : (
-        <>
-          {problems.sameAsInputFileNameWarning && (
-            <div style={{ marginBottom: '1em' }}>
-              <WarningSignIcon verticalAlign="middle" color="var(--amber-9)" />{' '}
-              {i18n.t('Output file name is the same as the source file name. This increases the risk of accidentally overwriting or deleting source files!')}
-            </div>
-          )}
-
-          {isMissingExtension && (
-            <div style={{ marginBottom: '1em' }}>
-              <WarningSignIcon verticalAlign="middle" color="var(--amber-9)" />{' '}
-              {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVariableFormatted })}
-            </div>
-          )}
-        </>
-      )}
-    </motion.div>
+      </motion.div>
+    </>
   );
 }
 
