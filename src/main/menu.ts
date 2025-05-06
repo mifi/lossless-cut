@@ -364,13 +364,17 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
     },
 
     // On Windows the windowMenu has a close Ctrl+W which clashes with File->Close shortcut
-    ...(process.platform === 'darwin'
-      ? [{ role: 'windowMenu' as const, label: esc(t('Window')) }]
-      : [{
+    ...(process.platform === 'darwin' ? [
+      { role: 'windowMenu' as const, label: esc(t('Window')) },
+    ] : [
+      {
         label: esc(t('Window')),
-        submenu: [{ role: 'minimize' as const, label: esc(t('Minimize')) }],
-      }]
-    ),
+        submenu: [
+          { role: 'minimize' as const, label: esc(t('Minimize')) },
+          { role: 'zoom' as const, label: esc(t('Zoom')) },
+        ],
+      },
+    ]),
 
     {
       label: esc(t('Tools')),
