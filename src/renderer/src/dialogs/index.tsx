@@ -25,7 +25,12 @@ const { downloadMediaUrl } = remote.require('./index.js');
 
 
 export async function promptTimecode({ initialValue, title, text, inputPlaceholder, parseTimecode, allowRelative = false }: {
-  initialValue?: string | undefined, title: string, text?: string | undefined, inputPlaceholder: string, parseTimecode: ParseTimecode, allowRelative?: boolean,
+  initialValue?: string | undefined,
+  title: string,
+  text?: string | undefined,
+  inputPlaceholder: string,
+  parseTimecode: ParseTimecode,
+  allowRelative?: boolean,
 }) {
   const { value } = await Swal.fire<string>({
     title,
@@ -49,9 +54,9 @@ export async function promptTimecode({ initialValue, title, text, inputPlacehold
     else if (value.startsWith('+')) relDirection = 1;
   }
 
-  const value2 = allowRelative ? value.replace(/^[+-]/, '') : value;
+  const withoutPrefix = allowRelative ? value.replace(/^[+-]/, '') : value;
 
-  const duration = parseTimecode(value2);
+  const duration = parseTimecode(withoutPrefix);
   // Invalid, try again
   if (duration === undefined) return promptTimecode({ initialValue: value, title, text, inputPlaceholder, parseTimecode, allowRelative });
 

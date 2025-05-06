@@ -43,13 +43,16 @@ export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, show
   return `${sign}${hoursPart}${minutesPadded}${delim}${secondsPadded}${fraction}`;
 }
 
+const exactDurationRegex = /^-?\d{2}:\d{2}:\d{2}.\d{3}$/;
+const durationRegex = /^(-?)(?:(?:(\d+):)?(\d{1,2}):)?(\d+(?:[,.]\d+)?)$/;
+
 // todo adapt also to frame counts and frame fractions?
-export const isExactDurationMatch = (str: string) => /^-?\d{2}:\d{2}:\d{2}.\d{3}$/.test(str);
+export const isExactDurationMatch = (str: string) => exactDurationRegex.test(str);
 
 // See also parseYoutube
 export function parseDuration(str: string, fps?: number) {
   // eslint-disable-next-line unicorn/better-regex
-  const match = str.replaceAll(/\s/g, '').match(/^(-?)(?:(?:(\d{1,}):)?(\d{1,2}):)?(\d{1,2}(?:[.,]\d{1,3})?)$/);
+  const match = str.replaceAll(/\s/g, '').match(durationRegex);
 
   if (!match) return undefined;
 
@@ -68,7 +71,6 @@ export function parseDuration(str: string, fps?: number) {
   }
 
   if (min > 59) return undefined;
-  if (sec >= 60) return undefined;
 
   let time = (((hour * 60) + min) * 60 + sec);
 
