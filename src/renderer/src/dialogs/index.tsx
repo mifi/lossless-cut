@@ -246,7 +246,7 @@ export async function askForSegmentDuration({ totalDuration, inputPlaceholder, p
       const segmentDuration = parseTimecode(v);
       if (segmentDuration != null) {
         const numSegments = Math.ceil(totalDuration / segmentDuration);
-        if (segmentDuration > 0 && segmentDuration < fileDuration && numSegments <= maxSegments) return null;
+        if (segmentDuration > 0 && segmentDuration < totalDuration && numSegments <= maxSegments) return null;
       }
       return i18n.t('Please input a valid duration. Example: {{example}}', { example: inputPlaceholder });
     },
