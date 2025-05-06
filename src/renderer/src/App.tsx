@@ -2233,31 +2233,46 @@ function App() {
     console.error('onVideoError', error.message, error.code);
 
     try {
+      const PIPELINE_ERROR_READ = 2; // e.g. file has been moved after opening https://github.com/mifi/lossless-cut/issues/2423
       const PIPELINE_ERROR_DECODE = 3; // This usually happens when the user presses play or seeks, but the video is not actually playable. To reproduce: "RX100VII PCM audio timecode.MP4" or see https://github.com/mifi/lossless-cut/issues/804
       const MEDIA_ERR_SRC_NOT_SUPPORTED = 4; // Test: issue-668-3.20.1.m2ts - NOTE: DEMUXER_ERROR_COULD_NOT_OPEN and DEMUXER_ERROR_NO_SUPPORTED_STREAMS is also 4
-      if (!([MEDIA_ERR_SRC_NOT_SUPPORTED, PIPELINE_ERROR_DECODE].includes(error.code) && !usingPreviewFile && filePath)) return;
 
-      // this error can happen half way into playback if the file has some corruption
-      // example: "DEMUXER_ERROR_COULD_NOT_PARSE: FFmpegDemuxer: PTS is not defined 4"
-      if (error.code === MEDIA_ERR_SRC_NOT_SUPPORTED && error.message?.startsWith('DEMUXER_ERROR_COULD_NOT_PARSE')) return;
+      if (
+        (
+          (
+            // MEDIA_ERR_SRC_NOT_SUPPORTED generally means we need to convert to supported format,
+            error.code === MEDIA_ERR_SRC_NOT_SUPPORTED
+            // _however_ this error can also happen half way into playback if the file has some corruption
+            // but in that case we also get: "DEMUXER_ERROR_COULD_NOT_PARSE: FFmpegDemuxer: PTS is not defined 4"
+            // and we don't want to auto convert in that case:
+            && !error.message?.startsWith('DEMUXER_ERROR_COULD_NOT_PARSE')
+          )
+          || error.code === PIPELINE_ERROR_DECODE
+        )
+        && !usingPreviewFile
+        && filePath
+        && !(error.code === MEDIA_ERR_SRC_NOT_SUPPORTED && error.message?.startsWith('DEMUXER_ERROR_COULD_NOT_PARSE'))
+      ) {
+        if (workingRef.current) return;
+        try {
+          setWorking({ text: i18n.t('Converting to supported format') });
 
-      if (workingRef.current) return;
-      try {
-        setWorking({ text: i18n.t('Converting to supported format') });
+          console.log('Trying to create preview');
 
-        console.log('Trying to create preview');
+          if (!isDurationValid(await getDuration(filePath))) throw new Error('Invalid duration');
 
-        if (!isDurationValid(await getDuration(filePath))) throw new Error('Invalid duration');
-
-        if (hasVideo || hasAudio) {
-          await html5ifyAndLoadWithPreferences(customOutDir, filePath, 'fastest', hasVideo, hasAudio);
-          showUnsupportedFileMessage();
+          if (hasVideo || hasAudio) {
+            await html5ifyAndLoadWithPreferences(customOutDir, filePath, 'fastest', hasVideo, hasAudio);
+            showUnsupportedFileMessage();
+          }
+        } catch (err) {
+          console.error(err);
+          showPlaybackFailedMessage();
+        } finally {
+          setWorking(undefined);
         }
-      } catch (err) {
-        console.error(err);
-        showPlaybackFailedMessage();
-      } finally {
-        setWorking(undefined);
+      } else if (error.code === PIPELINE_ERROR_READ) { // file is not readable or was removed
+        toast.fire({ icon: 'error', timer: 10000, text: i18n.t('Failed to read file. Perhaps it has been moved?') });
       }
     } catch (err) {
       handleError(err);
