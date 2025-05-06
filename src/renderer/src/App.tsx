@@ -74,6 +74,7 @@ import {
   getDownloadMediaOutPath,
   isAbortedError,
   withErrorHandling,
+  shootConfetti,
 } from './util';
 import { toast, errorToast, showPlaybackFailedMessage } from './swal';
 import { adjustRate } from './util/rate-calculator';
@@ -1182,6 +1183,8 @@ function App() {
         openExportFinishedToast({ filePath: revealPath, warnings, notices });
       }
 
+      shootConfetti({ ticks: 50 });
+
       if (cleanupChoices.cleanupAfterExport) await cleanupFilesWithDialog();
 
       setExportCount((c) => c + 1);
@@ -1230,19 +1233,26 @@ function App() {
 
   const captureSnapshot = useCallback(async () => {
     if (!filePath) return;
+    if (workingRef.current) return;
+    try {
+      setWorking({ text: i18n.t('Exporting') });
 
-    await withErrorHandling(async () => {
-      const currentTime = getRelevantTime();
-      const video = videoRef.current;
-      if (video == null) throw new Error();
-      const usingFfmpeg = usingPreviewFile || captureFrameMethod === 'ffmpeg';
-      const outPath = usingFfmpeg
-        ? await captureFrameFromFfmpeg({ customOutDir, filePath, time: currentTime, captureFormat, quality: captureFrameQuality })
-        : await captureFrameFromTag({ customOutDir, filePath, time: currentTime, captureFormat, quality: captureFrameQuality, video });
+      await withErrorHandling(async () => {
+        const currentTime = getRelevantTime();
+        const video = videoRef.current;
+        if (video == null) throw new Error();
+        const usingFfmpeg = usingPreviewFile || captureFrameMethod === 'ffmpeg';
+        const outPath = usingFfmpeg
+          ? await captureFrameFromFfmpeg({ customOutDir, filePath, time: currentTime, captureFormat, quality: captureFrameQuality })
+          : await captureFrameFromTag({ customOutDir, filePath, time: currentTime, captureFormat, quality: captureFrameQuality, video });
 
-      if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: outPath, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
-    }, i18n.t('Failed to capture frame'));
-  }, [filePath, getRelevantTime, videoRef, usingPreviewFile, captureFrameMethod, captureFrameFromFfmpeg, customOutDir, captureFormat, captureFrameQuality, captureFrameFromTag, hideAllNotifications]);
+        shootConfetti();
+        if (!hideAllNotifications) openDirToast({ icon: 'success', filePath: outPath, text: `${i18n.t('Screenshot captured to:')} ${outPath}` });
+      }, i18n.t('Failed to capture frame'));
+    } finally {
+      setWorking(undefined);
+    }
+  }, [filePath, workingRef, setWorking, getRelevantTime, videoRef, usingPreviewFile, captureFrameMethod, captureFrameFromFfmpeg, customOutDir, captureFormat, captureFrameQuality, captureFrameFromTag, hideAllNotifications]);
 
   const extractSegmentsFramesAsImages = useCallback(async (segments: SegmentBase[]) => {
     if (!filePath || detectedFps == null || workingRef.current || segments.length === 0) return;

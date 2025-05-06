@@ -5,6 +5,7 @@ import prettyBytes from 'pretty-bytes';
 import sortBy from 'lodash/sortBy';
 import pRetry, { Options } from 'p-retry';
 import { ExecaError } from 'execa';
+import confetti from 'canvas-confetti';
 
 import isDev from './isDev';
 import Swal, { errorToast, toast } from './swal';
@@ -527,3 +528,20 @@ export const calcShouldShowKeyframes = (zoomedDuration: number | undefined) => (
 export const mediaSourceQualities = ['HD', 'SD', 'OG']; // OG is original
 
 export const splitKeyboardKeys = (keys: string) => keys.split('+');
+
+export function shootConfetti(options?: confetti.Options) {
+  confetti({
+    particleCount: 30,
+    angle: 110,
+    startVelocity: 30,
+    spread: 40,
+    ticks: 25,
+    disableForReducedMotion: true,
+    origin: {
+      x: 0.98,
+      // since they fall down, start a bit higher than random
+      y: 1.03,
+    },
+    ...options,
+  });
+}

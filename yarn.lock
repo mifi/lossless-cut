@@ -1954,6 +1954,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/canvas-confetti@npm:^1":
+  version: 1.9.0
+  resolution: "@types/canvas-confetti@npm:1.9.0"
+  checksum: 10/7c7423972465d21fc70a7842091735c51875bb7b4466bb623f11462de247272497c5e4a668aad6033e4bf5be3aaf0b57b059c9b26ac02592f4e02df423b86982
+  languageName: node
+  linkType: hard
+
 "@types/color-convert@npm:*":
   version: 2.0.3
   resolution: "@types/color-convert@npm:2.0.3"
@@ -3468,6 +3475,13 @@ __metadata:
   version: 1.0.30001704
   resolution: "caniuse-lite@npm:1.0.30001704"
   checksum: 10/76bf9a90aa49f04fd3c0224846f3c5d890b361a9931d43f5acbb8a16c622fa034cbf7951851ec7800d4b30b05cb7fd034a61dfc0b4db8b3af80eb19d041b7a21
+  languageName: node
+  linkType: hard
+
+"canvas-confetti@npm:^1.9.3":
+  version: 1.9.3
+  resolution: "canvas-confetti@npm:1.9.3"
+  checksum: 10/50378c45a10030f0e6c5d2e93972d6e01170dd197b74ef150dcc2ef0166c8e3eb600ea0e930cf923143be6ae4c7ff15ccf74fb6c347a177e6aa4de966afcb610
   languageName: node
   linkType: hard
 
@@ -7692,6 +7706,7 @@ __metadata:
     "@tsconfig/node20": "npm:^20.1.4"
     "@tsconfig/strictest": "npm:^2.0.2"
     "@tsconfig/vite-react": "npm:^3.0.0"
+    "@types/canvas-confetti": "npm:^1"
     "@types/color": "npm:^3.0.6"
     "@types/css-modules": "npm:^1.0.5"
     "@types/eslint": "npm:^8"
@@ -7714,6 +7729,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:^6.12.0"
     "@uidotdev/usehooks": "npm:^2.4.1"
     "@vitejs/plugin-react": "npm:^4.3.4"
+    canvas-confetti: "npm:^1.9.3"
     color: "npm:^3.1.0"
     concurrently: "npm:^6.0.0"
     csv-parse: "npm:^5.6.0"
