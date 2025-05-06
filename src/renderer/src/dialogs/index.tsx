@@ -203,10 +203,8 @@ async function askForNumSegments() {
   const { value } = await Swal.fire({
     input: 'number',
     inputAttributes: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      min: 0 as any as string,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      max: maxSegments as any as string,
+      min: 0 as unknown as string,
+      max: maxSegments as unknown as string,
     },
     showCancelButton: true,
     inputValue: '2',
@@ -234,8 +232,8 @@ export async function createNumSegments(fileDuration: number) {
   return edl;
 }
 
-export async function askForSegmentDuration({ fileDuration, inputPlaceholder, parseTimecode }: {
-  fileDuration: number,
+export async function askForSegmentDuration({ totalDuration, inputPlaceholder, parseTimecode }: {
+  totalDuration: number,
   inputPlaceholder: string,
   parseTimecode: ParseTimecode,
 }) {
@@ -245,10 +243,10 @@ export async function askForSegmentDuration({ fileDuration, inputPlaceholder, pa
     inputValue: inputPlaceholder,
     text: i18n.t('Divide timeline into a number of segments with the specified length'),
     inputValidator: (v) => {
-      const duration = parseTimecode(v);
-      if (duration != null) {
-        const numSegments = Math.ceil(fileDuration / duration);
-        if (duration > 0 && duration < fileDuration && numSegments <= maxSegments) return null;
+      const segmentDuration = parseTimecode(v);
+      if (segmentDuration != null) {
+        const numSegments = Math.ceil(totalDuration / segmentDuration);
+        if (segmentDuration > 0 && segmentDuration < fileDuration && numSegments <= maxSegments) return null;
       }
       return i18n.t('Please input a valid duration. Example: {{example}}', { example: inputPlaceholder });
     },
@@ -497,7 +495,7 @@ export async function createFixedByteSixedSegments({ fileDuration, fileSize }: {
 }
 
 
-export async function createRandomSegments(fileDuration: number) {
+export async function createRandomSegments(totalDuration: number) {
   const response = await askForSegmentsRandomDurationRange();
   if (response == null) return undefined;
 
@@ -506,8 +504,8 @@ export async function createRandomSegments(fileDuration: number) {
   const randomInRange = (min: number, max: number) => min + Math.random() * (max - min);
 
   const edl: { start: number, end: number }[] = [];
-  for (let start = randomInRange(gapMin, gapMax); start < fileDuration && edl.length < maxSegments; start += randomInRange(gapMin, gapMax)) {
-    const end = Math.min(fileDuration, start + randomInRange(durationMin, durationMax));
+  for (let start = randomInRange(gapMin, gapMax); start < totalDuration && edl.length < maxSegments; start += randomInRange(gapMin, gapMax)) {
+    const end = Math.min(totalDuration, start + randomInRange(durationMin, durationMax));
     edl.push({ start, end });
     start = end;
   }
