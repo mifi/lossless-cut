@@ -84,6 +84,7 @@ function Settings({
 
   const timecodeFormatOptions = useMemo<Record<TimecodeFormat, string>>(() => ({
     frameCount: t('Frame counts'),
+    seconds: t('Total seconds'),
     timecodeWithDecimalFraction: t('Millisecond fractions'),
     timecodeWithFramesFraction: t('Frame fractions'),
   }), [t]);

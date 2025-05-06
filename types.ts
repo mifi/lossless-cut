@@ -39,7 +39,7 @@ export const langNames = {
 
 export type LanguageKey = keyof typeof langNames;
 
-export type TimecodeFormat = 'timecodeWithDecimalFraction' | 'frameCount' | 'timecodeWithFramesFraction';
+export type TimecodeFormat = 'timecodeWithDecimalFraction' | 'frameCount' | 'seconds' | 'timecodeWithFramesFraction';
 
 export type AvoidNegativeTs = 'make_zero' | 'auto' | 'make_non_negative' | 'disabled';
 

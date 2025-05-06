@@ -18,6 +18,9 @@ export default ({ detectedFps, timecodeFormat }: {
       const frameCount = getFrameCount(seconds);
       return frameCount != null ? String(frameCount) : '';
     }
+    if (timecodeFormat === 'seconds') {
+      return seconds.toFixed(3);
+    }
     if (timecodeFormat === 'timecodeWithFramesFraction') {
       return formatDuration({ seconds, shorten, fileNameFriendly, fps: detectedFps });
     }
@@ -30,6 +33,9 @@ export default ({ detectedFps, timecodeFormat }: {
     if (timecodeFormat === 'frameCount') {
       const parsed = parseInt(val, 10);
       return frameCountToDuration(parsed);
+    }
+    if (timecodeFormat === 'seconds') {
+      return parseFloat(val);
     }
     if (timecodeFormat === 'timecodeWithFramesFraction') {
       return parseDuration(val, detectedFps);
