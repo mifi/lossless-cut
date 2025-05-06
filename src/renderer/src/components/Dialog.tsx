@@ -1,10 +1,9 @@
-import { FaTimes } from 'react-icons/fa';
 import { DetailedHTMLProps, DialogHTMLAttributes, useCallback, useEffect, forwardRef, useRef } from 'react';
 import invariant from 'tiny-invariant';
 
 import styles from './Dialog.module.css';
 import Button, { ButtonProps } from './Button';
-import i18n from '../i18n';
+import CloseButton from './CloseButton';
 
 
 type Props = Omit<DetailedHTMLProps<DialogHTMLAttributes<HTMLDialogElement>, HTMLDialogElement>, 'open'> & {
@@ -48,9 +47,7 @@ const Dialog = forwardRef<HTMLDialogElement, Props>(({ children, autoOpen, onClo
       {children}
 
       <form method="dialog">
-        <Button type="submit" className={styles['close']} aria-label={i18n.t('Close')}>
-          <FaTimes />
-        </Button>
+        <CloseButton type="submit" style={{ top: 0, right: 0 }} />
       </form>
     </dialog>
   );

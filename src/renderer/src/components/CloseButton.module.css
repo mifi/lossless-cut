@@ -1,0 +1,26 @@
+.close-button {
+  all: unset;
+  position: absolute;
+  padding: .5em;
+  margin: .2em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 100%;
+  font-size: 1.3em;
+
+  border: .1em solid transparent;
+  color: var(--gray-12);
+  background-color: none;
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.close-button:hover {
+  background-color: var(--gray-4);
+  transform: rotate(180deg);
+}
+
+.close-button:focus {
+  border: .1em solid var(--gray-4);
+}

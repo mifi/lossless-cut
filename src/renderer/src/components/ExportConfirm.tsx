@@ -1,6 +1,6 @@
 import { CSSProperties, Dispatch, SetStateAction, memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { WarningSignIcon, CrossIcon, InfoSignIcon } from 'evergreen-ui';
+import { WarningSignIcon, InfoSignIcon } from 'evergreen-ui';
 import { FaRegCheckCircle } from 'react-icons/fa';
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
@@ -28,6 +28,7 @@ import { AvoidNegativeTs, PreserveMetadata } from '../../../../types';
 import TextInput from './TextInput';
 import { UseSegments } from '../hooks/useSegments';
 import Warning from './Warning';
+import CloseButton from './CloseButton';
 
 
 const boxStyle: CSSProperties = { margin: '15px 15px 50px 15px', borderRadius: 10, padding: '10px 20px', minHeight: 500, position: 'relative' };
@@ -245,9 +246,9 @@ function ExportConfirm({
           >
             <div style={{ margin: 'auto' }}>
               <div style={boxStyle} className={styles['box']}>
-                <CrossIcon size={24} style={{ position: 'absolute', right: 0, top: 0, padding: 15, boxSizing: 'content-box', cursor: 'pointer' }} role="button" onClick={onClosePress} />
-
                 <h1 style={{ textTransform: 'uppercase', fontSize: '1.4em', marginTop: 0, marginBottom: '.5em' }}>{t('Export options')}</h1>
+
+                <CloseButton type="submit" style={{ top: 0, right: 0 }} onClick={onClosePress} />
 
                 <table className={styles['options']}>
                   <tbody>

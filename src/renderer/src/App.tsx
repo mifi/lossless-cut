@@ -643,7 +643,7 @@ function App() {
   }, [showNotification]);
 
   const areWeCutting = useMemo(() => segmentsToExport.some(({ start, end }) => isCuttingStart(start) || isCuttingEnd(end, fileDuration)), [fileDuration, segmentsToExport]);
-  const needSmartCut = !!(areWeCutting && enableSmartCut);
+  const needSmartCut = areWeCutting && enableSmartCut;
 
   const {
     concatFiles, html5ifyDummy, cutMultiple, concatCutSegments, html5ify, fixInvalidDuration, extractStreams, tryDeleteFiles,

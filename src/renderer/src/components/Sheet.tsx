@@ -1,9 +1,8 @@
 import { CSSProperties, ReactNode, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
-import { FaTimes } from 'react-icons/fa';
 
 import styles from './Sheet.module.css';
+import CloseButton from './CloseButton';
 
 
 function Sheet({ visible, onClosePress, children, maxWidth = 800, style }: {
@@ -13,8 +12,6 @@ function Sheet({ visible, onClosePress, children, maxWidth = 800, style }: {
   maxWidth?: number | string,
   style?: CSSProperties,
 }) {
-  const { t } = useTranslation();
-
   return (
     <AnimatePresence>
       {visible && (
@@ -29,7 +26,7 @@ function Sheet({ visible, onClosePress, children, maxWidth = 800, style }: {
               {children}
             </div>
 
-            <FaTimes role="button" className={styles['close']} onClick={onClosePress} title={t('Close')} />
+            <CloseButton style={{ top: 0, right: 0 }} onClick={onClosePress} />
           </div>
         </motion.div>
       )}
