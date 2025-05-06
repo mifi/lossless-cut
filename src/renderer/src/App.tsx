@@ -1,4 +1,4 @@
-import { memo, useEffect, useState, useCallback, useRef, useMemo, CSSProperties, ReactEventHandler, FocusEventHandler } from 'react';
+import { memo, useEffect, useState, useCallback, useRef, useMemo, CSSProperties, ReactEventHandler, FocusEventHandler, DragEventHandler } from 'react';
 import { FaAngleLeft, FaRegTimesCircle } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence } from 'framer-motion';
@@ -2392,15 +2392,29 @@ function App() {
     };
   }, [checkFileOpened, customOutDir, detectedFps, filePath, getFrameCount, getKeyboardAction, goToTimecodeDirect, importEdlFile, loadCutSegments, mainActions, promptDownloadMediaUrlWrapper, selectedSegments, toggleKeyboardShortcuts, tryExportEdlFile, userOpenFiles]);
 
+  const handleBatchFilesDrop = useCallback<DragEventHandler<HTMLDivElement>>((ev) => {
+    ev.preventDefault();
+    if (!ev.dataTransfer) return;
+    const filePaths = [...ev.dataTransfer.files].map((f) => electron.webUtils.getPathForFile(f));
+    focusWindow();
+    batchLoadPaths(filePaths, true);
+  }, [batchLoadPaths]);
+
+  const handleStreamSourceFileDrop = useCallback<DragEventHandler<HTMLDivElement>>((ev) => {
+    ev.preventDefault();
+    if (!ev.dataTransfer) return;
+    const filePaths = [...ev.dataTransfer.files].map((f) => electron.webUtils.getPathForFile(f));
+    if (filePaths.length !== 1) return;
+    focusWindow();
+    addStreamSourceFile(filePaths[0]!);
+  }, [addStreamSourceFile]);
+
   useEffect(() => {
     async function onDrop(ev: DragEvent) {
       ev.preventDefault();
       if (!ev.dataTransfer) return;
-      const { files } = ev.dataTransfer;
-      const filePaths = [...files].map((f) => electron.webUtils.getPathForFile(f));
-
+      const filePaths = [...ev.dataTransfer.files].map((f) => electron.webUtils.getPathForFile(f));
       focusWindow();
-
       userOpenFiles(filePaths);
     }
     const element = videoContainerRef.current;
@@ -2504,6 +2518,7 @@ function App() {
                       closeBatch={closeBatch}
                       onMergeFilesClick={concatBatch}
                       onBatchConvertToSupportedFormatClick={convertFormatBatch}
+                      onDrop={handleBatchFilesDrop}
                     />
                   )}
                 </AnimatePresence>
@@ -2748,6 +2763,7 @@ function App() {
                     toggleCopyStreamIds={toggleCopyStreamIds}
                     changeEnabledStreamsFilter={changeEnabledStreamsFilter}
                     toggleCopyAllStreamsForPath={toggleCopyAllStreamsForPath}
+                    onStreamSourceFileDrop={handleStreamSourceFileDrop}
                   />
                 )}
               </Sheet>

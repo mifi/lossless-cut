@@ -1,4 +1,4 @@
-import { memo, useCallback, useState } from 'react';
+import { DragEventHandler, memo, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { FaTimes, FaHatWizard } from 'react-icons/fa';
@@ -21,7 +21,7 @@ const iconStyle = {
   padding: '3px 5px',
 };
 
-function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBatchFiles, onBatchFileSelect, batchListRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick }: {
+function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBatchFiles, onBatchFileSelect, batchListRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick, onDrop }: {
   selectedBatchFiles: string[],
   filePath: string | undefined,
   width: number,
@@ -32,6 +32,7 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
   closeBatch: () => void,
   onMergeFilesClick: () => void,
   onBatchConvertToSupportedFormatClick: () => void,
+  onDrop: DragEventHandler<HTMLDivElement>,
 }) {
   const { t } = useTranslation();
 
@@ -63,6 +64,7 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
       animate={{ x: 0 }}
       exit={{ x: -width }}
       transition={mySpring}
+      onDrop={onDrop}
     >
       <div style={{ fontSize: 14, paddingBottom: 3, paddingTop: 0, paddingLeft: 10, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
         <div>{t('Batch file list')}{batchFiles.length > 0 && ` (${batchFiles.length})`}</div>
