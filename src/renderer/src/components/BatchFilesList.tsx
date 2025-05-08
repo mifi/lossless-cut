@@ -7,7 +7,7 @@ import { ReactSortable } from 'react-sortablejs';
 import { SortAlphabeticalIcon, SortAlphabeticalDescIcon } from 'evergreen-ui';
 
 import BatchFile from './BatchFile';
-import { controlsBackground, darkModeTransition } from '../colors';
+import { controlsBackground, darkModeTransition, primaryColor } from '../colors';
 import { mySpring } from '../animations';
 import { BatchFile as BatchFileType } from '../types';
 
@@ -70,8 +70,8 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
         <div>{t('Batch file list')}{batchFiles.length > 0 && ` (${batchFiles.length})`}</div>
         <div style={{ flexGrow: 1 }} />
         <FaHatWizard size={17} role="button" title={`${t('Convert to supported format')}...`} style={iconStyle} onClick={onBatchConvertToSupportedFormatClick} />
-        <AiOutlineMergeCells size={20} role="button" title={`${t('Merge/concatenate files')}...`} style={iconStyle} onClick={onMergeFilesClick} />
         <SortIcon size={25} role="button" title={t('Sort items')} style={iconStyle} onClick={onSortClick} />
+        <AiOutlineMergeCells size={20} role="button" title={`${t('Merge/concatenate files')}...`} style={{ ...iconStyle, color: 'white', background: primaryColor, borderRadius: '.5em' }} onClick={onMergeFilesClick} />
         <FaTimes size={20} role="button" title={t('Close batch')} style={{ ...iconStyle, color: 'var(--gray-11)' }} onClick={closeBatch} />
       </div>
 

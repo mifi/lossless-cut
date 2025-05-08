@@ -1,50 +1,16 @@
-.sheet {
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  background: var(--white-a11);
-  color: var(--gray-12);
-  backdrop-filter: blur(30px);
-  overflow-y: scroll;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-
-  table.options {
-    width: 100%;
-  }
-  
-  table.options td:nth-child(2) {
-    text-align: right;
-  }
-  
-  table.options td:last-child {
-    text-align: center;
-    width: 1.7em;
-  }
-  
-  table.options td {
-    vertical-align: top;
-  }
+table.options {
+  width: 100%;
 }
 
-:global(.dark-theme) .sheet {
-  background: var(--black-a11);
+table.options td:nth-child(2) {
+  text-align: right;
 }
 
-.box {
-  margin: 15px 15px 50px 15px;
-  border-radius: 10px;
-  padding: 10px 20px;
-  min-height: 500px;
-  position: relative;
-  max-width: 100%;
-  width: 50em;
-  background: var(--white-a11);
+table.options td:last-child {
+  text-align: center;
+  width: 1.7em;
 }
 
-:global(.dark-theme) .box {
-  background: var(--black-a11);
+table.options td {
+  vertical-align: top;
 }

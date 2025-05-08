@@ -15,12 +15,12 @@ import useUserSettings from '../hooks/useUserSettings';
 import { isMov } from '../util/streams';
 import { getOutDir, getOutFileExtension } from '../util';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../../ffprobe';
-import Sheet from './Sheet';
 import TextInput from './TextInput';
 import Button from './Button';
 import { defaultMergedFileTemplate, generateMergedFileNames, maxFileNameLength } from '../util/outputNameTemplate';
 import Dialog from './Dialog';
 import { primaryColor } from '../colors';
+import ExportDialog from './ExportDialog';
 
 const { basename } = window.require('path');
 
@@ -193,45 +193,55 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
   const onOutputFormatUserChange = useCallback((newFormat: string) => setFileFormat(newFormat), [setFileFormat]);
 
   const onConcatClick = useCallback(() => {
-    if (outFileName == null) throw new Error();
-    if (fileFormat == null) throw new Error();
+    invariant(outFileName != null);
+    invariant(fileFormat != null);
     onConcat({ paths, includeAllStreams, streams: fileMeta!.streams, outFileName, fileFormat, clearBatchFilesAfterConcat });
   }, [clearBatchFilesAfterConcat, fileFormat, fileMeta, includeAllStreams, onConcat, outFileName, paths]);
 
   return (
-    <>
-      <Sheet visible={isShown} onClosePress={onHide} maxWidth="100%" style={{ padding: '0 2em' }}>
-        <h1>{t('Merge/concatenate files')}</h1>
+    <ExportDialog
+      visible={isShown}
+      title={t('Merge/concatenate files')}
+      onClosePress={onHide}
+      renderButton={() => (
+        <Button className="export-animation" disabled={detectedFileFormat == null || !isOutFileNameValid} onClick={onConcatClick} style={{ fontSize: '1.3em', padding: '0 .3em', marginLeft: '1em', background: primaryColor, color: 'white', border: 'none' }}>
+          <AiOutlineMergeCells style={{ fontSize: '1.4em', verticalAlign: 'middle' }} /> {t('Merge!')}
+        </Button>
+      )}
+      width="70em"
+    >
+      <div style={{ marginBottom: '1em' }}>
+        <div style={{ whiteSpace: 'pre-wrap', fontSize: '.9em', marginBottom: '1em' }}>
+          {t('This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).')}
+        </div>
 
-        <div style={{ marginBottom: '1em' }}>
-          <div style={{ whiteSpace: 'pre-wrap', fontSize: '.9em', marginBottom: '1em' }}>
-            {t('This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).')}
-          </div>
-
-          <div style={{ backgroundColor: 'var(--gray-1)', borderRadius: '.1em' }}>
-            {paths.map((path, index) => (
-              <div key={path} style={rowStyle} title={path}>
-                <div>
-                  {index + 1}
-                  {'. '}
-                  <span>{basename(path)}</span>
-                  {!allFilesMetaCache[path] && <FaQuestionCircle style={{ color: 'var(--orange-8)', verticalAlign: 'middle', marginLeft: '1em' }} />}
-                  {problemsByFile[path] && <IconButton appearance="minimal" icon={FaExclamationTriangle} onClick={() => onProblemsByFileClick(path)} title={i18n.t('Mismatches detected')} style={{ color: 'var(--orange-8)', marginLeft: '1em' }} />}
-                </div>
+        <div style={{ backgroundColor: 'var(--gray-1)', borderRadius: '.1em' }}>
+          {paths.map((path, index) => (
+            <div key={path} style={rowStyle} title={path}>
+              <div>
+                <span style={{ opacity: 0.7, marginRight: '.4em' }}>{`${index + 1}.`}</span>
+                <span>{basename(path)}</span>
+                {!allFilesMetaCache[path] && <FaQuestionCircle style={{ color: 'var(--orange-8)', verticalAlign: 'middle', marginLeft: '1em' }} />}
+                {problemsByFile[path] && <IconButton appearance="minimal" icon={FaExclamationTriangle} onClick={() => onProblemsByFileClick(path)} title={i18n.t('Mismatches detected')} style={{ color: 'var(--orange-8)', marginLeft: '1em' }} />}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
+      </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', marginBottom: '.5em', gap: '.5em' }}>
-          <Checkbox checked={enableReadFileMeta} onCheckedChange={(checked) => setEnableReadFileMeta(!!checked)} label={t('Check compatibility')} />
+      <div style={{ marginBottom: '1em' }}>
+        <Checkbox style={{ marginBottom: '.7em' }} checked={enableReadFileMeta} onCheckedChange={(checked) => setEnableReadFileMeta(!!checked)} label={t('Check compatibility')} />
 
-          <Button onClick={() => setSettingsVisible(true)} style={{ height: '1.7em' }}><FaCog style={{ fontSize: '1em', verticalAlign: 'middle' }} /> {t('Options')}</Button>
+        <Button onClick={() => setSettingsVisible(true)} style={{ padding: '.3em .5em', marginBottom: '.5em' }}><FaCog style={{ verticalAlign: 'top', fontSize: '1.4em', marginRight: '.2em' }} /> {t('Options')}</Button>
 
-          {fileFormat && detectedFileFormat && (
-            <OutputFormatSelect style={{ height: '1.7em', maxWidth: '20em' }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
-          )}
-        </div>
+        <div>{t('Output container format:')}</div>
+
+        {fileFormat && detectedFileFormat && (
+          <OutputFormatSelect style={{ height: '1.7em', maxWidth: '20em', marginBottom: '.7em' }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
+        )}
+
+        <div style={{ marginBottom: '.3em' }}>{t('Output file name')}:</div>
+        <TextInput style={{ width: '100%', fontSize: '1.2em', padding: '.1em .3em', marginBottom: '.7em' }} value={outFileName || ''} onChange={(e) => setOutFileName(e.target.value)} />
 
         {isOutFileNameTooLong && (
           <Alert text={t('File name is too long and cannot be exported.')} />
@@ -242,15 +252,7 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
         {!enableReadFileMeta && (
           <Alert text={t('File compatibility check is not enabled, so the merge operation might not produce a valid output. Enable "Check compatibility" below to check file compatibility before merging.')} />
         )}
-
-        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end', marginBottom: '1em' }}>
-          <div style={{ marginRight: '.5em' }}>{t('Output file name')}:</div>
-          <TextInput value={outFileName || ''} onChange={(e) => setOutFileName(e.target.value)} />
-          <Button disabled={detectedFileFormat == null || !isOutFileNameValid} onClick={onConcatClick} style={{ fontSize: '1.3em', padding: '0 .3em', marginLeft: '1em', background: primaryColor, color: 'white', border: 'none' }}>
-            <AiOutlineMergeCells style={{ fontSize: '1.4em', verticalAlign: 'middle' }} /> {t('Merge!')}
-          </Button>
-        </div>
-      </Sheet>
+      </div>
 
       {settingsVisible && (
         <Dialog autoOpen onClose={() => setSettingsVisible(false)} style={{ maxWidth: '40em' }}>
@@ -271,7 +273,7 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
           <p>{t('Note that also other settings from the normal export dialog apply to this merge function. For more information about all options, see the export dialog.')}</p>
         </Dialog>
       )}
-    </>
+    </ExportDialog>
   );
 }
 

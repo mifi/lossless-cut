@@ -1,0 +1,32 @@
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--white-a11);
+  color: var(--gray-12);
+  backdrop-filter: blur(30px);
+  overflow-y: scroll;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+:global(.dark-theme) .sheet {
+  background: var(--black-a11);
+}
+
+.box {
+  margin: 15px 15px 50px 15px;
+  border-radius: 10px;
+  padding: 10px 20px;
+  min-height: 500px;
+  position: relative;
+  max-width: 100%;
+  background: var(--white-a11);
+}
+
+:global(.dark-theme) .box {
+  background: var(--black-a11);
+}
