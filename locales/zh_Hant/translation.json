@@ -876,7 +876,7 @@
     "Seek one key frame": "搜尋關鍵幀",
     "Smart cut is experimental and will not work on all files.": "智能切割是實驗性功能，無法在所有檔案上正常工作。",
     "This file contains an audio track that FFmpeg is unable to mux into the MP4 format, so MOV has been auto-selected as the default output format.": "此檔案包含一個 FFmpeg 無法嵌入到 MP4 格式的音軌，所以自動選擇 MOVE 作為默認輸出格式。",
-    "Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied": "是否保留原始檔中的中繼資料。預設值：全域（檔案中繼資料），複製每個軌道和每個章節的中繼資料。非全域：僅複製每個軌道和每個章節的中繼資料。無：不複製中繼資料",
+    "Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied": "是否保留原始檔中的中繼資料。預設值：全域（檔案中繼資料），複製每個軌道和每個章節的中繼資料。非全域：僅複製每個軌道和每個章節的中繼資料。無：不複製中繼資料。",
     "Combination is already bound to \"{{alreadyBoundKey}}\". Do you want to replace the existing binding?": "組合已被繫結到 {{alreadyBoundKey}} 。您想替換已有的繫結嗎？",
     "Configuration file": "設定檔",
     "Failed to download URL": "下載網址失敗",
@@ -922,5 +922,17 @@
     "Shift all end times": "偏移所有結束時間",
     "The expression must return an object": "表達式必須回傳物件",
     "Jump & seek to last segment": "跳轉並尋找最後段落",
-    "Please input a valid size. Example: {{example}}": "請輸入有效的尺寸。例如：{{example}}"
+    "Please input a valid size. Example: {{example}}": "請輸入有效的尺寸。例如：{{example}}",
+    "<0></0> <2></2> or <4></4> <6></6> to set cutpoints": "<0></0> <2></2> 或 <4></4> <6></6> 要設定剪下點",
+    "Note that this only applies when extracting multiple frames. When \"Frame number\" is selected, frame numbers are relative to the start of the segment (starting from 1).": "請注意，這僅適用於提取多個幀時。當選擇了「幀號」，幀號相對於片段的開頭（從 1 開始）編號。",
+    "Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.": "調整輸出 FPS 和同時進行剪下會導致不正確的剪下。請考慮分兩個單獨的步驟來執行。",
+    "Center segments around start time": "居中開始時間旁的片段",
+    "Divide timeline into a number of segments with an approximate byte size": "劃分時間軸為具有近似位元組大小的多個片段",
+    "EDL": "EDL",
+    "Please enter a number from 1 to {{n}} to be the new order for the current segment": "請輸入從 1 到 {{n}} 的數字作為當前片段的序號",
+    "Shrink segments -5 sec": "縮短片段 -5 秒",
+    "Remove current segment cutpoint": "刪除當前片段剪下點",
+    "Enter a JavaScript expression which will be evaluated for each selected segment. Returned properties will be edited. <1>View available syntax.</1>": "輸入一個 JavaScript 表示式，將為每個選定片段計算此表示式。表示式返回的屬性將被編輯。<1>查看可用語法。</1>",
+    "Fell back to default output file name": "回退到預設輸出檔案名稱",
+    "Remove cutpoint from segment {{segmentNumber}}": "從片段 {{segmentNumber}} 移除剪下點"
 }
