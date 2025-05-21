@@ -138,6 +138,12 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
                 mainWindow.webContents.send('importEdlFile', 'dv-analyzer-summary-txt');
               },
             },
+            {
+              label: esc(t('OpenTimelineIO')),
+              click() {
+                mainWindow.webContents.send('importEdlFile', 'otio');
+              },
+            },
           ],
         },
         {
