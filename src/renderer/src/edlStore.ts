@@ -3,7 +3,7 @@ import i18n from 'i18next';
 import invariant from 'tiny-invariant';
 import { ZodError } from 'zod';
 
-import { parseSrtToSegments, formatSrt, parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parseCutlist, parsePbf, parseEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, parseCsvTime, getFrameValParser, parseDvAnalyzerSummaryTxt } from './edlFormats';
+import { parseSrtToSegments, formatSrt, parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parseCutlist, parsePbf, parseEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, parseCsvTime, getFrameValParser, parseDvAnalyzerSummaryTxt, parseOtio } from './edlFormats';
 import { askForYouTubeInput, showOpenDialog } from './dialogs';
 import { getOutPath } from './util';
 import { EdlExportType, EdlFileType, EdlImportType, GetFrameCount, LlcProject, llcProjectV1Schema, llcProjectV2Schema, SegmentBase, StateSegment } from './types';
@@ -125,6 +125,10 @@ export async function loadLlcProject(path: string) {
   return project;
 }
 
+export async function loadOtio(path: string) {
+  return parseOtio(JSON.parse(await readFile(path, 'utf8')));
+}
+
 export async function readEdlFile({ type, path, fps }: {
   type: EdlFileType,
   path: string,
@@ -143,6 +147,7 @@ export async function readEdlFile({ type, path, fps }: {
   if (type === 'cue') return loadCue(path);
   if (type === 'pbf') return loadPbf(path);
   if (type === 'srt') return loadSrt(path);
+  if (type === 'otio') return loadOtio(path);
   if (type === 'llc') {
     const project = await loadLlcProject(path);
     return project.cutSegments;

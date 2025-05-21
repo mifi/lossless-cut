@@ -12,6 +12,65 @@ Subtitle 2 line 2
 "
 `;
 
+exports[`otio 1`] = `
+[
+  {
+    "end": 4.5,
+    "name": "2004-2-汐洛定制女包专营店.mp4",
+    "start": 0,
+    "tags": {
+      "otioClip": "2",
+      "otioTrack": "1",
+    },
+  },
+  {
+    "end": 482.23333333333335,
+    "name": "2004-2-汐洛定制女包专营店.mp4",
+    "start": 66.36666666666666,
+    "tags": {
+      "otioClip": "2",
+      "otioTrack": "1",
+    },
+  },
+  {
+    "end": 66.36666666666667,
+    "name": "2004-2-汐洛定制女包专营店.mp4",
+    "start": 4.5,
+    "tags": {
+      "otioClip": "2",
+      "otioTrack": "1",
+    },
+  },
+  {
+    "end": 4.5,
+    "name": "2004-2-汐洛定制女包专营店.mp4",
+    "start": 0,
+    "tags": {
+      "otioClip": "2",
+      "otioTrack": "1",
+    },
+  },
+  {
+    "end": 482.23333333333335,
+    "name": "2004-2-汐洛定制女包专营店.mp4",
+    "start": 66.36666666666666,
+    "tags": {
+      "otioClip": "2",
+      "otioTrack": "1",
+    },
+  },
+  {
+    "end": 66.36666666666667,
+    "name": "2004-2-汐洛定制女包专营店.mp4",
+    "start": 4.5,
+    "tags": {
+      "otioClip": "2",
+      "otioTrack": "1",
+    },
+  },
+]
+`;
+
 exports[`parseGpsLine 1`] = `
 {
   "alt": 19,

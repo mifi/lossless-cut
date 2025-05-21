@@ -7,10 +7,11 @@ import { parse as csvParse } from 'csv-parse/browser/esm/sync';
 import { stringify as csvStringify } from 'csv-stringify/browser/esm/sync';
 import sortBy from 'lodash/sortBy';
 import type { ICueSheet, ITrack } from 'cue-parser/lib/types';
+import { z } from 'zod';
 
 import { formatDuration } from './util/duration';
 import { invertSegments, sortSegments } from './segments';
-import { GetFrameCount, SegmentBase } from './types';
+import { GetFrameCount, SegmentBase, SegmentTags } from './types';
 import parseCmx3600 from './cmx3600';
 
 export const getTimeFromFrameNum = (detectedFps: number, frameNum: number) => frameNum / detectedFps;
@@ -450,4 +451,62 @@ export function parseGpsLine(line: string) {
     horizontalSpeed: parseFloat(gpsMatch[11]!),
     verticalSpeed: parseFloat(gpsMatch[12]!),
   };
+}
+
+const otioSchema = z.object({
+  OTIO_SCHEMA: z.string().refine((val) => val.startsWith('Timeline.'), { message: 'Invalid OTIO schema' }),
+  name: z.string(),
+  tracks: z.object({
+    OTIO_SCHEMA: z.string().refine((val) => val.startsWith('Stack.'), { message: 'Invalid OTIO schema for tracks' }),
+    children: z.array(
+      z.object({
+        OTIO_SCHEMA: z.string().refine((val) => val.startsWith('Track.'), { message: 'Invalid OTIO schema for track' }),
+        children: z.array(
+          z.object({
+            OTIO_SCHEMA: z.string().refine((val) => val.startsWith('Clip.'), { message: 'Invalid OTIO schema for clip' }),
+            name: z.string(),
+            source_range: z.object({
+              start_time: z.object({
+                value: z.number(),
+                rate: z.number(),
+              }),
+              duration: z.object({
+                value: z.number(),
+                rate: z.number(),
+              }),
+            }),
+          }),
+        ),
+      }),
+    ),
+  }),
+});
+
+export type Otio = z.infer<typeof otioSchema>;
+
+// implemented by OpenAI:
+export function parseOtio(data: unknown): SegmentBase[] {
+  const schema = otioSchema.parse(data);
+
+  const segments: (SegmentBase & { tags: SegmentTags })[] = [];
+
+  schema.tracks.children.forEach((track) => {
+    track.children.forEach((clip) => {
+      const start = clip.source_range.start_time.value / clip.source_range.start_time.rate;
+      const duration = clip.source_range.duration.value / clip.source_range.duration.rate;
+      const end = start + duration;
+
+      segments.push({
+        start,
+        end,
+        name: clip.name,
+        tags: {
+          otioTrack: track.OTIO_SCHEMA.replace(/^Track\./, ''),
+          otioClip: clip.OTIO_SCHEMA.replace(/^Clip\./, ''),
+        },
+      });
+    });
+  });
+
+  return segments;
 }
