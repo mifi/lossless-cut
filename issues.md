@@ -70,10 +70,10 @@ If you are trying to cut a FLAC file but your output has the same duration as in
 ## Merge / concat results in corrupt or broken parts
 
 This can happen when trying to merge files that are not compatible. Make sure they have the exact same codec parameters before merging. If you are sure they are the same, you can try to first running each of the files separately through LosslessCut before merging the outputs:
-1. First open each file separately and just export without cutting anything
-  - Changing format to `mp4` is [known to fix certain issues like `Non-monotonous DTS in output stream`](https://github.com/mifi/lossless-cut/issues/1713#issuecomment-1726325218)
-  - If you're seeing incorrect output duration, sped up or slowed down segments, then changing format to TS is [known to give the files a common timebase](https://github.com/mifi/lossless-cut/issues/455), which sometimes makes it possible to merge them.
-3. Then merge the exported files.
+1. First open each file separately and just export without cutting anything, but before exporting
+  - change the format to `mp4` is [known to fix certain issues like `Non-monotonous DTS in output stream`](https://github.com/mifi/lossless-cut/issues/1713#issuecomment-1726325218)
+  - change the format to TS (`mpegts`) is [known to give the files a common timebase](https://github.com/mifi/lossless-cut/issues/455), which sometimes makes it possible to merge them, or fixes incorrect output duration, sped up or slowed down segments.
+3. Then merge the resulting exported files.
 
 Doing this first might "clean up" certain parameters in the files, to make them more compatible for merging. If this doesn't work, you can also try to change `avoid_negative_ts` (in export options). Also try to disable most tracks (see above). If this doesn't resolve the issue, then it probably means that you're hitting a bug or limitation in FFmpeg with the particular file that you're cutting/merging. Unfortunately there's not much to do other than trying different output settings, different cut time or waiting for improvements in FFmpeg.
 
