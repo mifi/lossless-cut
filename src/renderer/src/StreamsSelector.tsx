@@ -3,7 +3,7 @@ import { memo, useState, useMemo, useCallback, Dispatch, SetStateAction, CSSProp
 import { FaImage, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
 import { MdSubtitles } from 'react-icons/md';
-import { BookIcon, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, SortAscIcon, SortDescIcon, ForkIcon, WarningSignIcon, EyeOpenIcon, FilterIcon } from 'evergreen-ui';
+import { BookIcon, MoreIcon, Position, Popover, Menu, TrashIcon, EditIcon, InfoSignIcon, IconButton, SortAscIcon, SortDescIcon, ForkIcon, EyeOpenIcon, FilterIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 import prettyBytes from 'pretty-bytes';
 
@@ -480,10 +480,6 @@ function StreamsSelector({
       ))}
 
       <div style={{ margin: '1em 1em' }}>
-        {externalFilesEntries.length > 0 && (
-          <div style={{ marginBottom: '1em' }}><WarningSignIcon color="warning" /> {t('Note: Cutting and including external tracks at the same time does not yet work. If you want to do both, it must be done as separate operations. See github issue #896.')}</div>
-        )}
-
         <Button style={{ marginBottom: '1em', padding: '0.3em 1em' }} onClick={showAddStreamSourceDialog}>
           <FaFileImport style={{ verticalAlign: 'middle', marginRight: '.5em' }} /> {t('Include more tracks from other file')}
         </Button>

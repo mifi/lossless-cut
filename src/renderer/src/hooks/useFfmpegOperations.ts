@@ -277,24 +277,18 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const copyFileStreamsFiltered = copyFileStreams.filter(({ streamIds }) => streamIds.length > 0);
 
     // remove -avoid_negative_ts make_zero when not cutting start (no -ss), or else some videos get blank first frame in QuickLook
-    const avoidNegativeTsArgs = cuttingStart && avoidNegativeTs ? ['-avoid_negative_ts', String(avoidNegativeTs)] : [];
+    const avoidNegativeTsArgs = cuttingStart && avoidNegativeTs && ssBeforeInput ? ['-avoid_negative_ts', String(avoidNegativeTs)] : [];
 
-    const inputFilesArgs = flatMap(copyFileStreamsFiltered, ({ path }) => ['-i', path]);
-    const inputFilesArgsWithCuts = ssBeforeInput ? [
-      ...cutFromArgs,
-      ...inputFilesArgs,
-      ...cutToArgs,
-      ...avoidNegativeTsArgs,
-    ] : [
-      ...inputFilesArgs,
-      ...cutFromArgs,
-      ...cutToArgs,
-    ];
-
-    const inputArgs = [
-      ...inputFilesArgsWithCuts,
-      ...getChaptersInputArgs(chaptersPath),
-    ];
+    // If cutting multiple files, `-ss` must be before `-i`, regardless of `ssBeforeInput` choice
+    // and it seems that `-t` must be after `-i` #896
+    const inputFilesArgs = copyFileStreamsFiltered.length > 1
+      ? flatMap(copyFileStreamsFiltered, ({ path }) => [...cutFromArgs, '-i', path, ...cutToArgs])
+      : [
+        ...(ssBeforeInput ? cutFromArgs : []),
+        '-i', copyFileStreamsFiltered[0]!.path,
+        ...(!ssBeforeInput ? cutFromArgs : []),
+        ...cutToArgs,
+      ];
 
     const chaptersInputIndex = copyFileStreamsFiltered.length;
 
@@ -383,7 +377,10 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       ...rotationArgs,
 
-      ...inputArgs,
+      ...inputFilesArgs,
+      ...getChaptersInputArgs(chaptersPath),
+
+      ...avoidNegativeTsArgs,
 
       ...mapStreamsArgs,
 
