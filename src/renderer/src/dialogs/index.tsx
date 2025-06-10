@@ -202,7 +202,7 @@ export async function askForImportChapters() {
   return isConfirmed;
 }
 
-const maxSegments = 300;
+const maxSegments = 1000;
 
 async function askForNumSegments() {
   const { value } = await Swal.fire({
