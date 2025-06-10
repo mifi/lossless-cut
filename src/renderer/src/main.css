@@ -22,6 +22,7 @@ https://www.radix-ui.com/docs/colors/palette-composition/understanding-the-scale
 html {
   font-family: 'Open Sans', 'Noto Sans SemiCondensed', 'Noto Sans', sans-serif;
   font-size: 16px;
+  overflow: hidden;
 }
 
 body {
@@ -82,11 +83,11 @@ code.highlighted {
   text-align: left;
 }
 
-.segment-list-entry .enabled {
+.segment-list-entry .selected {
   display: none;
 }
 
-.segment-list-entry:hover .enabled {
+.segment-list-entry:hover .selected {
   display: inherit;
 }
 

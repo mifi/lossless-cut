@@ -1,12 +1,13 @@
-import { memo, useMemo, useRef, useCallback, useState, SetStateAction, Dispatch, ReactNode, MouseEventHandler } from 'react';
+import { memo, useMemo, useRef, useCallback, useState, SetStateAction, Dispatch, ReactNode, MouseEventHandler, CSSProperties, useEffect } from 'react';
 import { FaYinYang, FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaRegCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
-import { MotionStyle, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTranslation, Trans } from 'react-i18next';
-import { ReactSortable } from 'react-sortablejs';
-import isEqual from 'lodash/isEqual';
-import useDebounce from 'react-use/lib/useDebounce';
-import scrollIntoView from 'scroll-into-view-if-needed';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay, UniqueIdentifier } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from '@dnd-kit/sortable';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { CSS } from '@dnd-kit/utilities';
 
 import Dialog, { ConfirmButton } from './components/Dialog';
 import Swal from './swal';
@@ -32,7 +33,8 @@ const neutralButtonColor = 'var(--gray-9)';
 const Segment = memo(({
   seg,
   index,
-  currentSegIndex,
+  isActive,
+  dragging,
   formatTimecode,
   getFrameCount,
   updateSegOrder,
@@ -62,7 +64,8 @@ const Segment = memo(({
 }: {
   seg: StateSegment | InverseCutSegment,
   index: number,
-  currentSegIndex: number,
+  isActive?: boolean | undefined,
+  dragging?: boolean | undefined,
   formatTimecode: FormatTimecode,
   getFrameCount: GetFrameCount,
   updateSegOrder: UseSegments['updateSegOrder'],
@@ -72,7 +75,7 @@ const Segment = memo(({
   onLabelSelectedSegments: UseSegments['labelSelectedSegments'],
   onReorderPress: (i: number) => Promise<void>,
   onLabelPress: UseSegments['labelSegment'],
-  selected: boolean,
+  selected: boolean | undefined,
   onSelectSingleSegment: UseSegments['selectOnlySegment'],
   onToggleSegmentSelected: UseSegments['toggleSegmentSelected'],
   onDeselectAllSegments: UseSegments['deselectAllSegments'],
@@ -94,7 +97,7 @@ const Segment = memo(({
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
 
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
 
   const contextMenuTemplate = useMemo<ContextMenuTemplate>(() => {
     if (invertCutSegments) return [];
@@ -152,12 +155,6 @@ const Segment = memo(({
       : `${formatTimecode({ seconds: seg.start })} - ${formatTimecode({ seconds: seg.end })}`
   ), [formatTimecode, seg]);
 
-  const isActive = !invertCutSegments && currentSegIndex === index;
-
-  useDebounce(() => {
-    if (isActive && ref.current) scrollIntoView(ref.current, { behavior: 'smooth', scrollMode: 'if-needed' });
-  }, 300, [isActive]);
-
   function renderNumber() {
     if (invertCutSegments || !('segColorIndex' in seg)) {
       return <FaSave style={{ color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
@@ -169,7 +166,7 @@ const Segment = memo(({
     const borderColor = darkMode ? color.lighten(0.5) : color.darken(0.3);
 
     return (
-      <b style={{ cursor: 'grab', color: 'white', padding: '0 4px', marginRight: 3, marginLeft: -3, background: color.string(), border: `1px solid ${isActive ? borderColor.string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>
+      <b style={{ color: 'white', padding: '0 4px', marginRight: 3, marginLeft: -3, background: color.string(), border: `1px solid ${isActive ? borderColor.string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>
         {index + 1}
       </b>
     );
@@ -187,28 +184,64 @@ const Segment = memo(({
     onToggleSegmentSelected(seg);
   }, [onToggleSegmentSelected, seg]);
 
-  const cursor = invertCutSegments ? undefined : 'grab';
+  const cursor = invertCutSegments ? undefined : (dragging ? 'grabbing' : 'grab');
 
   const tags = useMemo(() => getSegmentTags('tags' in seg ? seg : {}), [seg]);
 
   const maybeOnClick = useCallback(() => !invertCutSegments && onClick(index), [index, invertCutSegments, onClick]);
 
-  const motionStyle = useMemo<MotionStyle>(() => ({ originY: 0, margin: '5px 0', background: 'var(--gray-2)', border: isActive ? '1px solid var(--gray-10)' : '1px solid transparent', padding: 5, borderRadius: 5, position: 'relative' }), [isActive]);
+  const sortable = useSortable({
+    id: seg.segId,
+    transition: {
+      duration: 150,
+      easing: 'ease-in-out',
+    },
+    disabled: invertCutSegments,
+  });
+
+  const style = useMemo<CSSProperties>(() => {
+    const transitions = [
+      ...(sortable.transition ? [sortable.transition] : []),
+      'opacity 100ms ease-out',
+    ];
+    return {
+      visibility: sortable.isDragging ? 'hidden' : undefined,
+      padding: '3px 5px',
+      margin: '1px 0',
+      boxSizing: 'border-box',
+      originY: 0,
+      position: 'relative',
+      transform: CSS.Transform.toString(sortable.transform),
+      transition: transitions.length > 0 ? transitions.join(', ') : undefined,
+      background: 'var(--gray-2)',
+      border: `1px solid ${isActive ? 'var(--gray-10)' : 'transparent'}`,
+      borderRadius: 5,
+      opacity: !selected && !invertCutSegments ? 0.5 : undefined,
+    };
+  }, [invertCutSegments, isActive, selected, sortable.isDragging, sortable.transform, sortable.transition]);
+
+  const setRef = useCallback((node: HTMLDivElement | null) => {
+    sortable.setNodeRef(node);
+    ref.current = node;
+  }, [sortable]);
 
   return (
-    <motion.div
-      ref={ref}
+    <div
+      ref={setRef}
       role="button"
       onClick={maybeOnClick}
       onDoubleClick={onDoubleClick}
-      layout
-      style={motionStyle}
-      initial={{ scaleY: 0 }}
-      animate={{ scaleY: 1, opacity: !selected && !invertCutSegments ? 0.5 : undefined }}
-      exit={{ scaleY: 0 }}
+      style={style}
       className="segment-list-entry"
     >
-      <div className="segment-handle" style={{ cursor, color: 'var(--gray-12)', marginBottom: duration != null ? 3 : undefined, display: 'flex', alignItems: 'center', height: 16 }}>
+      <div
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        {...sortable.attributes}
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        {...sortable.listeners}
+        role="button"
+        style={{ cursor, color: 'var(--gray-12)', marginBottom: duration != null ? 3 : undefined, display: 'flex', alignItems: 'center', height: 16 }}
+      >
         {renderNumber()}
         <span style={{ cursor, fontSize: Math.min(310 / timeStr.length, 12), whiteSpace: 'nowrap' }}>{timeStr}</span>
       </div>
@@ -229,12 +262,12 @@ const Segment = memo(({
         </>
       )}
 
-      {!invertCutSegments && (
+      {!invertCutSegments && selected != null && (
         <div style={{ position: 'absolute', right: 3, bottom: 3 }}>
-          <CheckIcon className="enabled" size={20} color="var(--gray-12)" onClick={onToggleSegmentSelectedClick} />
+          <CheckIcon className="selected" size={20} color="var(--gray-12)" onClick={onToggleSegmentSelectedClick} />
         </div>
       )}
-    </motion.div>
+    </div>
   );
 });
 
@@ -321,6 +354,7 @@ function SegmentList({
 }) {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
+  const [draggingId, setDraggingId] = useState<UniqueIdentifier | undefined>();
 
   const { invertCutSegments, simpleMode, darkMode } = useUserSettings();
 
@@ -333,11 +367,6 @@ function SegmentList({
   const segmentsOrInverse: (InverseCutSegment | StateSegment)[] = invertCutSegments ? inverseCutSegments : cutSegments;
 
   const sortableList = useMemo(() => segmentsOrInverse.map((seg) => ({ id: seg.segId, seg })), [segmentsOrInverse]);
-
-  const setSortableList = useCallback((newList: typeof sortableList) => {
-    if (isEqual(segmentsOrInverse.map((s) => s.segId), newList.map((l) => l.id))) return; // No change
-    updateSegOrders(newList.map((list) => list.id));
-  }, [segmentsOrInverse, updateSegOrders]);
 
   let header: ReactNode = t('Segments to export:');
   if (segmentsOrInverse.length === 0) {
@@ -458,6 +487,88 @@ function SegmentList({
     onSegmentTagsCloseComplete();
   }, [editingSegmentTags, editingSegmentTagsSegmentIndex, onSegmentTagsCloseComplete, updateSegAtIndex]);
 
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  const sensors = useSensors(useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 10,
+    },
+  }));
+
+  const rowVirtualizer = useVirtualizer({
+    count: sortableList.length,
+    getScrollElement: () => scrollerRef.current,
+    estimateSize: () => 66, // todo this probably needs to be changed if the segment height changes
+    overscan: 5,
+    getItemKey: (index) => sortableList[index]!.id,
+  });
+
+  useEffect(() => {
+    if (invertCutSegments) return;
+    rowVirtualizer.scrollToIndex(currentSegIndex, { behavior: 'smooth', align: 'auto' });
+  }, [currentSegIndex, invertCutSegments, rowVirtualizer]);
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setDraggingId(event.active.id);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setDraggingId(undefined);
+    const { active, over } = event;
+    if (over != null && active.id !== over?.id) {
+      const ids = sortableList.map((s) => s.id);
+      const oldIndex = ids.indexOf(active.id as string);
+      const newIndex = ids.indexOf(over.id as string);
+      const newList = arrayMove(sortableList, oldIndex, newIndex);
+      updateSegOrders(newList.map((item) => item.id));
+    }
+  };
+
+  const draggingSeg = useMemo(() => sortableList.find((s) => s.id === draggingId), [sortableList, draggingId]);
+
+  function renderSegment({ seg, index, selected, isActive, dragging }: {
+    seg: StateSegment | InverseCutSegment,
+    index: number,
+    selected?: boolean,
+    isActive?: boolean,
+    dragging?: boolean,
+  }) {
+    return (
+      <Segment
+        seg={seg}
+        index={index}
+        isActive={isActive}
+        dragging={dragging}
+        selected={selected}
+        onClick={onSegClick}
+        addSegment={addSegment}
+        onRemoveSelected={onRemoveSelected}
+        onRemovePress={removeSegment}
+        onReorderPress={onReorderSegs}
+        onLabelPress={onLabelSegment}
+        jumpSegStart={jumpSegStart}
+        jumpSegEnd={jumpSegEnd}
+        updateSegOrder={updateSegOrder}
+        getFrameCount={getFrameCount}
+        formatTimecode={formatTimecode}
+        onSelectSingleSegment={onSelectSingleSegment}
+        onToggleSegmentSelected={onToggleSegmentSelected}
+        onDeselectAllSegments={onDeselectAllSegments}
+        onSelectAllSegments={onSelectAllSegments}
+        onEditSegmentTags={onEditSegmentTags}
+        onSelectSegmentsByLabel={onSelectSegmentsByLabel}
+        onSelectSegmentsByExpr={onSelectSegmentsByExpr}
+        onMutateSegmentsByExpr={onMutateSegmentsByExpr}
+        onExtractSegmentsFramesAsImages={onExtractSegmentsFramesAsImages}
+        onExtractSelectedSegmentsFramesAsImages={onExtractSelectedSegmentsFramesAsImages}
+        onLabelSelectedSegments={onLabelSelectedSegments}
+        onSelectAllMarkers={onSelectAllMarkers}
+        onInvertSelectedSegments={onInvertSelectedSegments}
+        onDuplicateSegmentClick={onDuplicateSegmentClick}
+      />
+    );
+  }
+
   return (
     <>
       {editingSegmentTagsSegmentIndex != null && (
@@ -471,7 +582,7 @@ function SegmentList({
       )}
 
       <motion.div
-        style={{ width, background: controlsBackground, borderLeft: '1px solid var(--gray-7)', color: 'var(--gray-11)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
+        style={{ width, background: controlsBackground, borderLeft: '1px solid var(--gray-7)', color: 'var(--gray-11)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
         initial={{ x: width }}
         animate={{ x: 0 }}
         exit={{ x: width }}
@@ -489,47 +600,40 @@ function SegmentList({
           {header}
         </div>
 
-        <div style={{ padding: '0 .1em 0 .3em', overflowX: 'hidden', overflowY: 'scroll', flexGrow: 1 }} className="consistent-scrollbar">
-          <ReactSortable list={sortableList} setList={setSortableList} disabled={!!invertCutSegments} handle=".segment-handle">
-            {sortableList.map(({ id, seg }, index) => {
-              const selected = 'selected' in seg ? seg.selected : true;
-              return (
-                <Segment
-                  key={id}
-                  seg={seg}
-                  index={index}
-                  selected={selected}
-                  onClick={onSegClick}
-                  addSegment={addSegment}
-                  onRemoveSelected={onRemoveSelected}
-                  onRemovePress={removeSegment}
-                  onReorderPress={onReorderSegs}
-                  onLabelPress={onLabelSegment}
-                  jumpSegStart={jumpSegStart}
-                  jumpSegEnd={jumpSegEnd}
-                  updateSegOrder={updateSegOrder}
-                  getFrameCount={getFrameCount}
-                  formatTimecode={formatTimecode}
-                  currentSegIndex={currentSegIndex}
-                  onSelectSingleSegment={onSelectSingleSegment}
-                  onToggleSegmentSelected={onToggleSegmentSelected}
-                  onDeselectAllSegments={onDeselectAllSegments}
-                  onSelectAllSegments={onSelectAllSegments}
-                  onEditSegmentTags={onEditSegmentTags}
-                  onSelectSegmentsByLabel={onSelectSegmentsByLabel}
-                  onSelectSegmentsByExpr={onSelectSegmentsByExpr}
-                  onMutateSegmentsByExpr={onMutateSegmentsByExpr}
-                  onExtractSegmentsFramesAsImages={onExtractSegmentsFramesAsImages}
-                  onExtractSelectedSegmentsFramesAsImages={onExtractSelectedSegmentsFramesAsImages}
-                  onLabelSelectedSegments={onLabelSelectedSegments}
-                  onSelectAllMarkers={onSelectAllMarkers}
-                  onInvertSelectedSegments={onInvertSelectedSegments}
-                  onDuplicateSegmentClick={onDuplicateSegmentClick}
-                />
-              );
-            })}
-          </ReactSortable>
-        </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} modifiers={[restrictToVerticalAxis]}>
+          <SortableContext items={sortableList} strategy={verticalListSortingStrategy}>
+            <div ref={scrollerRef} style={{ padding: '0 .1em 0 .3em', overflowX: 'hidden', overflowY: 'scroll', flexGrow: 1 }} className="consistent-scrollbar">
+              <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative', overflowX: 'hidden' }}>
+                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const { id, seg } = sortableList[virtualRow.index]!;
+                  const selected = 'selected' in seg ? seg.selected : true;
+                  const isActive = !invertCutSegments && currentSegIndex === virtualRow.index;
+
+                  return (
+                    <div
+                      key={id}
+                      data-index={virtualRow.index}
+                      ref={rowVirtualizer.measureElement}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                    >
+                      {renderSegment({ seg, index: virtualRow.index, selected, isActive })}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </SortableContext>
+
+          <DragOverlay>
+            {draggingSeg ? renderSegment({ seg: draggingSeg.seg, index: sortableList.indexOf(draggingSeg), dragging: true }) : null}
+          </DragOverlay>
+        </DndContext>
 
         {renderFooter()}
       </motion.div>

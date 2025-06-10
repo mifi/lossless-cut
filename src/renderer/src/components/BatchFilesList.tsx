@@ -1,10 +1,12 @@
-import { DragEventHandler, memo, useCallback, useState } from 'react';
+import { DragEventHandler, memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { FaTimes, FaHatWizard } from 'react-icons/fa';
 import { AiOutlineMergeCells } from 'react-icons/ai';
-import { ReactSortable } from 'react-sortablejs';
 import { SortAlphabeticalIcon, SortAlphabeticalDescIcon } from 'evergreen-ui';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay, UniqueIdentifier } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
 import BatchFile from './BatchFile';
 import { controlsBackground, darkModeTransition, primaryColor } from '../colors';
@@ -37,12 +39,9 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
   const { t } = useTranslation();
 
   const [sortDesc, setSortDesc] = useState<boolean>();
+  const [draggingId, setDraggingId] = useState<UniqueIdentifier | undefined>();
 
   const sortableList = batchFiles.map((batchFile) => ({ id: batchFile.path, batchFile }));
-
-  const setSortableList = useCallback((newList: { batchFile: BatchFileType }[]) => {
-    setBatchFiles(newList.map(({ batchFile }) => batchFile));
-  }, [setBatchFiles]);
 
   const onSortClick = useCallback(() => {
     const newSortDesc = sortDesc == null ? false : !sortDesc;
@@ -55,6 +54,30 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
   }, [batchFiles, setBatchFiles, sortDesc]);
 
   const SortIcon = sortDesc ? SortAlphabeticalDescIcon : SortAlphabeticalIcon;
+
+  const sensors = useSensors(useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 10,
+    },
+  }));
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setDraggingId(event.active.id);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setDraggingId(undefined);
+    const { active, over } = event;
+    if (over != null && active.id !== over?.id) {
+      const ids = sortableList.map((s) => s.id);
+      const oldIndex = ids.indexOf(active.id as string);
+      const newIndex = ids.indexOf(over.id as string);
+      const newList = arrayMove(sortableList, oldIndex, newIndex);
+      setBatchFiles(newList.map((item) => item.batchFile));
+    }
+  };
+
+  const draggingFile = useMemo(() => sortableList.find((s) => s.id === draggingId), [sortableList, draggingId]);
 
   return (
     <motion.div
@@ -75,13 +98,19 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
         <FaTimes size={20} role="button" title={t('Close batch')} style={{ ...iconStyle, color: 'var(--gray-11)' }} onClick={closeBatch} />
       </div>
 
-      <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
-        <ReactSortable list={sortableList} setList={setSortableList}>
-          {sortableList.map(({ batchFile: { path, name } }, index) => (
-            <BatchFile key={path} index={index} path={path} name={name} isSelected={selectedBatchFiles.includes(path)} isOpen={filePath === path} onSelect={onBatchFileSelect} onDelete={batchListRemoveFile} />
-          ))}
-        </ReactSortable>
-      </div>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} modifiers={[restrictToVerticalAxis]}>
+        <SortableContext items={sortableList} strategy={verticalListSortingStrategy}>
+          <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
+            {sortableList.map(({ batchFile: { path, name } }, index) => (
+              <BatchFile key={path} index={index} path={path} name={name} isSelected={selectedBatchFiles.includes(path)} isOpen={filePath === path} onSelect={onBatchFileSelect} onDelete={batchListRemoveFile} />
+            ))}
+          </div>
+        </SortableContext>
+
+        <DragOverlay>
+          {draggingFile ? <BatchFile dragging index={sortableList.indexOf(draggingFile)} path={draggingFile.batchFile.path} name={draggingFile.batchFile.name} /> : null}
+        </DragOverlay>
+      </DndContext>
     </motion.div>
   );
 }

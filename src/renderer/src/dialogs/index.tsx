@@ -208,8 +208,8 @@ async function askForNumSegments() {
   const { value } = await Swal.fire({
     input: 'number',
     inputAttributes: {
-      min: 0 as unknown as string,
-      max: maxSegments as unknown as string,
+      min: String(0),
+      max: String(maxSegments),
     },
     showCancelButton: true,
     inputValue: '2',
@@ -226,13 +226,13 @@ async function askForNumSegments() {
   return parseInt(value, 10);
 }
 
-export async function createNumSegments(fileDuration: number) {
+export async function createNumSegments(totalDuration: number) {
   const numSegments = await askForNumSegments();
   if (numSegments == null) return undefined;
   const edl: { start: number, end: number }[] = [];
-  const segDuration = fileDuration / numSegments;
+  const segDuration = totalDuration / numSegments;
   for (let i = 0; i < numSegments; i += 1) {
-    edl.push({ start: i * segDuration, end: i === numSegments - 1 ? fileDuration : (i + 1) * segDuration });
+    edl.push({ start: i * segDuration, end: i === numSegments - 1 ? totalDuration : (i + 1) * segDuration });
   }
   return edl;
 }
