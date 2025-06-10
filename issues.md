@@ -101,7 +101,7 @@ If you have an issue with the Snap or Flatpak version of LosslessCut, try instea
 ## Windows specific issues
 
 - I get an error/crash immediately when starting up LosslessCut
-  - Try to disable your anti-virus or whitelist LosslessCut. See [#18](https://github.com/mifi/lossless-cut/issues/18) [#1114](https://github.com/mifi/lossless-cut/issues/1114)
+  - Try to disable your anti-virus or whitelist LosslessCut. See [#18](https://github.com/mifi/lossless-cut/issues/18) [#1114](https://github.com/mifi/lossless-cut/issues/1114). Also make sure you run LosslessCut from C: drive [#2215](https://github.com/mifi/lossless-cut/issues/2215#issuecomment-2925706575).
 - Completely white window when starting up?
   - Try to run with `--disable-gpu` - See [781](https://github.com/mifi/lossless-cut/issues/781).
 - How to uninstall LosslessCut?
