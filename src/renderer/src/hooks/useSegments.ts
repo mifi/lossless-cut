@@ -81,21 +81,34 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     segColorCounterRef.current = 0;
   }, [segColorCounterRef]);
 
-  const clampValue = useCallback((val: number | undefined) => {
-    if (val == null || Number.isNaN(val)) return undefined;
-    const clamped = Math.max(val, 0);
-    if (fileDuration == null) return clamped;
-    return Math.min(clamped, fileDuration);
-  }, [fileDuration]);
-
   const safeSetCutSegments = useCallback((newSegmentsOrFn: StateSegment[] | ((a: StateSegment[]) => StateSegment[])) => {
+    function clampValue(val: number | undefined) {
+      if (val == null || Number.isNaN(val)) return undefined;
+      const clamped = Math.max(val, 0);
+      if (fileDuration == null) return clamped;
+      return Math.min(clamped, fileDuration);
+    }
+
     // delete "initial" after modifying segments
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const map = (newSegments: StateSegment[]) => newSegments.map(({ start, end, initial: _ignored, ...rest }) => ({
-      ...rest,
-      start: clampValue(start) ?? 0,
-      end: clampValue(end),
-    })).filter((segment) => segment.end == null || segment.end > segment.start);
+    const map = (newSegments: StateSegment[]) => newSegments.flatMap(({ start, end, initial: _ignored, ...rest }) => {
+      const startClamped = clampValue(start) ?? 0;
+      const endClamped = clampValue(end);
+
+      // convert 0 length segments into a markers
+      if (endClamped == null || endClamped <= startClamped) {
+        return [{
+          ...rest,
+          start: startClamped,
+        }];
+      }
+
+      return [{
+        ...rest,
+        start: startClamped,
+        end: endClamped,
+      }];
+    });
 
     if (typeof newSegmentsOrFn === 'function') {
       setCutSegments((existing) => map(newSegmentsOrFn(existing)));
@@ -103,7 +116,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     }
 
     setCutSegments(map(newSegmentsOrFn));
-  }, [clampValue, setCutSegments]);
+  }, [fileDuration, setCutSegments]);
 
   const clearSegments = useCallback(() => {
     clearSegColorCounter();
@@ -117,20 +130,15 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
   // todo combine with safeSetCutSegments?
   const loadCutSegments = useCallback((edl: SegmentBase[], append: boolean, getCurrentSegIndex?: (newEdl: SegmentBase[]) => number) => {
-    const validEdl = edl.filter((row) => (
-      row.start >= 0
-      && (row.end == null || row.start < row.end)
-    ));
+    if (edl.length === 0) throw new Error(i18n.t('No valid segments found'));
 
-    if (validEdl.length === 0) throw new Error(i18n.t('No valid segments found'));
-
-    if (validEdl.length > maxSegmentsAllowed) throw new Error(i18n.t('Tried to create too many segments (max {{maxSegmentsAllowed}}.)', { maxSegmentsAllowed }));
+    if (edl.length > maxSegmentsAllowed) throw new Error(i18n.t('Tried to create too many segments (max {{maxSegmentsAllowed}}.)', { maxSegmentsAllowed }));
 
     if (!append) clearSegColorCounter();
 
     safeSetCutSegments((existingSegments) => {
       const needToAppend = append && !isInitialSegment(existingSegments);
-      let newSegments = validEdl.map((segment, i) => createIndexedSegment({ segment, incrementCount: needToAppend || i > 0 }));
+      let newSegments = edl.map((segment, i) => createIndexedSegment({ segment, incrementCount: needToAppend || i > 0 }));
       if (needToAppend) newSegments = [...existingSegments, ...newSegments];
       if (getCurrentSegIndex) setCurrentSegIndex(getCurrentSegIndex(newSegments));
       return newSegments;
