@@ -1781,15 +1781,13 @@ function App() {
 
       lastOpenedPathRef.current = filePaths[0]!;
 
+      let firstFilePath = filePaths[0]!;
+
       // first check if it is a single directory, and if so, read it recursively
-      if (filePaths.length === 1) {
-        const firstFilePath = filePaths[0]!;
-        const firstFileStat = await lstat(firstFilePath);
-        if (firstFileStat.isDirectory()) {
-          console.log('Reading directory...');
-          invariant(firstFilePath != null);
-          filePaths = await readDirRecursively(firstFilePath);
-        }
+      if (filePaths.length === 1 && (await lstat(firstFilePath)).isDirectory()) {
+        console.log('Reading directory...');
+        invariant(firstFilePath != null);
+        filePaths = await readDirRecursively(firstFilePath);
       }
 
       // Only allow opening regular files
@@ -1816,7 +1814,7 @@ function App() {
       }
 
       // filePaths.length is now 1
-      const [firstFilePath] = filePaths;
+      firstFilePath = filePaths[0]!;
       invariant(firstFilePath != null);
 
       // https://en.wikibooks.org/wiki/Inside_DVD-Video/Directory_Structure

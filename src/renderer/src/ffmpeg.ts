@@ -198,19 +198,19 @@ export function findNearestKeyFrameTime({ frames, time, direction, fps }: { fram
 
 export function tryMapChaptersToEdl(chapters: FFprobeChapter[]) {
   try {
-    return chapters.map((chapter) => {
+    return chapters.flatMap((chapter) => {
       const start = parseFloat(chapter.start_time);
       const end = parseFloat(chapter.end_time);
-      if (Number.isNaN(start) || Number.isNaN(end)) return undefined;
+      if (Number.isNaN(start) || Number.isNaN(end)) return [];
 
       const name = chapter.tags && typeof chapter.tags.title === 'string' ? chapter.tags.title : undefined;
 
-      return {
+      return [{
         start,
         end,
         name,
-      };
-    }).flatMap((it) => (it ? [it] : []));
+      }];
+    });
   } catch (err) {
     console.error('Failed to read chapters from file', err);
     return [];
