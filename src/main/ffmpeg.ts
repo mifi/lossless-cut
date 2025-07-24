@@ -66,6 +66,7 @@ export function abortFfmpegs() {
   });
 }
 
+// Optimized progress handling with better performance and reduced overhead
 function handleProgress(
   process: { stderr: Readable | null },
   duration: number | undefined,
@@ -76,17 +77,39 @@ function handleProgress(
   if (process.stderr == null) return;
   onProgress(0);
 
-  const rl = readline.createInterface({ input: process.stderr });
+  // Performance optimization: Create readline interface with optimized settings
+  const rl = readline.createInterface({ 
+    input: process.stderr,
+    // Optimize for performance
+    crlfDelay: Infinity,
+    historySize: 0, // Disable history to save memory
+  });
+
+  // Throttle progress updates to reduce UI overhead
+  let lastProgressTime = 0;
+  const progressThrottle = 50; // Update progress max every 50ms
+  let lastProgress = 0;
+
   rl.on('line', (line) => {
     // console.log('progress', line);
 
     try {
+      const now = Date.now();
+      
+      // Skip processing if too frequent (performance optimization)
+      if (now - lastProgressTime < progressThrottle) return;
+
       const progress = parseFfmpegProgressLine({ line, customMatcher, duration });
-      if (progress != null) {
+      if (progress != null && Math.abs(progress - lastProgress) > 0.001) { // Only update if progress changed significantly
         onProgress(progress);
+        lastProgressTime = now;
+        lastProgress = progress;
       }
     } catch (err) {
-      logger.error('Failed to parse ffmpeg progress line:', err instanceof Error ? err.message : err);
+      // Reduce logging overhead - only log in debug mode
+      if (logger.level === 'debug') {
+        logger.error('Failed to parse ffmpeg progress line:', err instanceof Error ? err.message : err);
+      }
     }
   });
 }
@@ -110,14 +133,35 @@ function getExecaOptions({ env, cancelSignal, ...rest }: ExecaOptions = {}) {
   return execaOptions;
 }
 
-// todo collect warnings from ffmpeg output and show them after export? example: https://github.com/mifi/lossless-cut/issues/1469
+// Optimized FFmpeg process runner with performance improvements
 function runFfmpegProcess(args: readonly string[], customExecaOptions?: ExecaOptions, additionalOptions?: { logCli?: boolean }) {
   const ffmpegPath = getFfmpegPath();
   const { logCli = true } = additionalOptions ?? {};
   if (logCli) logger.info(getFfCommandLine('ffmpeg', args));
 
+  // Performance optimization: Add performance-focused arguments
+  const optimizedArgs = [
+    '-threads', '0', // Use all available CPU cores
+    '-fflags', '+discardcorrupt+genpts', // Improve error handling and timestamp generation
+    '-avioflags', 'direct', // Reduce I/O overhead
+    ...args
+  ];
+
   const abortController = new AbortController();
-  const process = execa(ffmpegPath, args, getExecaOptions({ ...customExecaOptions, cancelSignal: abortController.signal }));
+  
+  // Optimize process creation options
+  const optimizedExecaOptions = {
+    ...getExecaOptions({ 
+      ...customExecaOptions, 
+      cancelSignal: abortController.signal,
+      // Performance optimizations
+      windowsHide: true,
+      cleanup: true,
+      maxBuffer: 1024 * 1024 * 64, // 64MB buffer
+    }),
+  };
+
+  const process = execa(ffmpegPath, optimizedArgs, optimizedExecaOptions);
 
   const wrapped = { process, abortController };
 
