@@ -13,17 +13,11 @@ import { FFprobeStream } from '../../../../ffprobe';
 import { AvoidNegativeTs, Html5ifyMode, PreserveMetadata } from '../../../../types';
 import { AllFilesMeta, Chapter, CopyfileStreams, CustomTagsByFile, LiteFFprobeStream, ParamsByStreamId, SegmentToExport } from '../types';
 
-// Import performance optimization functions
-import { optimizeFFmpegArgs, createOptimizedBatchProcessor, getOptimizedCodecArgs } from '../../../main/ffmpeg-optimizations';
-
 const { join, resolve, dirname } = window.require('path');
 const { writeFile, mkdir, access, constants: { F_OK, W_OK } } = window.require('fs/promises');
 
 // Performance optimization: Increase concurrency for file operations
 const OPTIMIZED_CONCURRENCY = Math.max(2, Math.min(8, navigator.hardwareConcurrency || 4));
-
-// Performance optimization: Batch size for segment processing
-const SEGMENT_BATCH_SIZE = 5;
 
 
 export class OutputNotWritableError extends Error {
