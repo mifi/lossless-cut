@@ -26,6 +26,7 @@ import useUserSettings from './hooks/useUserSettings';
 import { askForPlaybackRate } from './dialogs';
 import { FormatTimecode, ParseTimecode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
 import { WaveformMode } from '../../../types';
+import { Frame } from './ffmpeg';
 
 const { clipboard } = window.require('electron');
 
@@ -150,10 +151,10 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
     trySetTime(timeWithOffset);
   }, [isEmptyEndTime, parseTimecode, trySetTime]);
 
-  function handleCutTimeInput(text: string) {
+  const handleCutTimeInput = useCallback((text: string) => {
     if (isExactDurationMatch(text) || isEmptyEndTime(text)) parseAndSetCutTime(text);
     else setCutTimeManual(text);
-  }
+  }, [isEmptyEndTime, parseAndSetCutTime]);
 
   const tryPaste = useCallback((clipboardText: string) => {
     try {
@@ -190,7 +191,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
   return (
     <form onSubmit={handleSubmit}>
       <input
-        style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? 'var(--red-11)' : 'var(--gray-12)' }}
+        style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? 'var(--gray-12)' : 'var(--gray-11)' }}
         type="text"
         title={isStart ? t('Manually input current segment\'s start time') : t('Manually input current segment\'s end time')}
         onChange={(e) => handleCutTimeInput(e.target.value)}
@@ -216,6 +217,7 @@ function BottomBar({
   toggleShowThumbnails, toggleWaveformMode, waveformMode, showThumbnails,
   outputPlaybackRate, setOutputPlaybackRate,
   formatTimecode, parseTimecode, playbackRate,
+  currentFrame,
 }: {
   zoom: number,
   setZoom: (fn: (z: number) => number) => void,
@@ -264,6 +266,7 @@ function BottomBar({
   formatTimecode: FormatTimecode,
   parseTimecode: ParseTimecode,
   playbackRate: number,
+  currentFrame: Frame | undefined,
 }) {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
@@ -301,6 +304,10 @@ function BottomBar({
       borderRadius: 4,
     };
   }, [selectedSegments]);
+
+  const keyframeStyle = useMemo(() => ({
+    color: currentFrame != null && currentFrame.keyframe ? primaryTextColor : undefined,
+  }), [currentFrame]);
 
   const { invertCutSegments, setInvertCutSegments, simpleMode, toggleSimpleMode, exportConfirmEnabled } = useUserSettings();
 
@@ -414,7 +421,7 @@ function BottomBar({
           size={25}
           role="button"
           title={t('Seek previous keyframe')}
-          style={{ flexShrink: 0, marginRight: 2, transform: mirrorTransform }}
+          style={{ flexShrink: 0, marginRight: 2, transform: mirrorTransform, ...keyframeStyle }}
           onClick={() => seekClosestKeyframe(-1)}
         />
 
@@ -446,7 +453,7 @@ function BottomBar({
         )}
 
         <IoMdKey
-          style={{ flexShrink: 0, marginLeft: 2 }}
+          style={{ flexShrink: 0, marginLeft: 2, ...keyframeStyle }}
           size={25}
           role="button"
           title={t('Seek next keyframe')}

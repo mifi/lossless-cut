@@ -63,12 +63,9 @@ function getIntervalAroundTime(time: number, window: number) {
   };
 }
 
-interface Keyframe {
+export interface Frame {
   time: number,
   createdAt: Date,
-}
-
-export interface Frame extends Keyframe {
   keyframe: boolean
 }
 
@@ -99,14 +96,14 @@ export async function readKeyframesAroundTime({ filePath, streamIndex, aroundTim
   return frames.filter((frame) => frame.keyframe);
 }
 
-export const findKeyframeAtExactTime = (keyframes: Keyframe[], time: number) => keyframes.find((keyframe) => Math.abs(keyframe.time - time) < 0.000001);
-export const findNextKeyframe = (keyframes: Keyframe[], time: number) => keyframes.find((keyframe) => keyframe.time >= time); // (assume they are already sorted)
-const findPreviousKeyframe = (keyframes: Keyframe[], time: number) => keyframes.findLast((keyframe) => keyframe.time <= time);
-const findNearestKeyframe = (keyframes: Keyframe[], time: number) => minBy(keyframes, (keyframe) => Math.abs(keyframe.time - time));
+export const findKeyframeAtExactTime = (keyframes: Frame[], time: number) => keyframes.find((keyframe) => Math.abs(keyframe.time - time) < 0.000001);
+export const findNextKeyframe = (keyframes: Frame[], time: number) => keyframes.find((keyframe) => keyframe.time >= time); // (assume they are already sorted)
+const findPreviousKeyframe = (keyframes: Frame[], time: number) => keyframes.findLast((keyframe) => keyframe.time <= time);
+const findNearestKeyframe = (keyframes: Frame[], time: number) => minBy(keyframes, (keyframe) => Math.abs(keyframe.time - time));
 
 export type FindKeyframeMode = 'nearest' | 'before' | 'after';
 
-function findKeyframe(keyframes: Keyframe[], time: number, mode: FindKeyframeMode) {
+function findKeyframe(keyframes: Frame[], time: number, mode: FindKeyframeMode) {
   switch (mode) {
     case 'nearest': {
       return findNearestKeyframe(keyframes, time);
@@ -139,7 +136,7 @@ export async function findKeyframeNearTime({ filePath, streamIndex, time, mode }
 // todo this is not in use
 // https://stackoverflow.com/questions/14005110/how-to-split-a-video-using-ffmpeg-so-that-each-chunk-starts-with-a-key-frame
 // http://kicherer.org/joomla/index.php/de/blog/42-avcut-frame-accurate-video-cutting-with-only-small-quality-loss
-export function getSafeCutTime(frames: (Frame & { time: number })[], cutTime: number, nextMode: boolean) {
+export function getSafeCutTime(frames: Frame[], cutTime: number, nextMode: boolean) {
   const sigma = 0.01;
   const isCloseTo = (time1: number, time2: number) => Math.abs(time1 - time2) < sigma;
 

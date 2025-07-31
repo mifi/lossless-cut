@@ -4,6 +4,7 @@ import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out thi
 
 import { readFramesAroundTime, findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime, Frame } from '../ffmpeg';
 import { FFprobeStream } from '../../../../ffprobe';
+import { getFrameCountRaw } from '../edlFormats';
 
 const maxKeyframes = 1000;
 // const maxKeyframes = 100;
@@ -19,6 +20,16 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
   const readingKeyframesPromise = useRef<Promise<unknown>>();
   const [neighbouringKeyFramesMap, setNeighbouringKeyFrames] = useState<Record<string, Frame>>({});
   const neighbouringKeyFrames = useMemo(() => Object.values(neighbouringKeyFramesMap), [neighbouringKeyFramesMap]);
+
+  const keyframeByNumber = useMemo(() => {
+    const map: Record<number, Frame> = {};
+    if (detectedFps != null) {
+      neighbouringKeyFrames.forEach((frame) => {
+        map[getFrameCountRaw(detectedFps, frame.time)!] = frame;
+      });
+    }
+    return map;
+  }, [detectedFps, neighbouringKeyFrames]);
 
   const findNearestKeyFrameTime = useCallback(({ time, direction }: { time: number, direction: number }) => ffmpegFindNearestKeyFrameTime({ frames: neighbouringKeyFrames, time, direction, fps: detectedFps }), [neighbouringKeyFrames, detectedFps]);
 
@@ -64,7 +75,7 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
   }, 500, [keyframesEnabled, filePath, commandedTime, videoStream, ffmpegExtractWindow]);
 
   return {
-    neighbouringKeyFrames, findNearestKeyFrameTime,
+    neighbouringKeyFrames, findNearestKeyFrameTime, keyframeByNumber,
   };
 }
 

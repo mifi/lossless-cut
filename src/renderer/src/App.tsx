@@ -575,8 +575,14 @@ function App() {
 
   const { thumbnailsSorted, setThumbnails } = useThumbnails({ filePath, zoomedDuration, zoomWindowStartTime, showThumbnails });
 
-  const { neighbouringKeyFrames, findNearestKeyFrameTime } = useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream: activeVideoStream, detectedFps, ffmpegExtractWindow });
+  const { neighbouringKeyFrames, findNearestKeyFrameTime, keyframeByNumber } = useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream: activeVideoStream, detectedFps, ffmpegExtractWindow });
   const { waveforms, overviewWaveform, renderOverviewWaveform } = useWaveform({ filePath, relevantTime, waveformEnabled, audioStream: activeAudioStreams[0], ffmpegExtractWindow, fileDuration });
+
+  const currentFrame = useMemo(() => {
+    const frameNum = getFrameCount(commandedTime);
+    if (frameNum == null) return undefined;
+    return keyframeByNumber[frameNum];
+  }, [commandedTime, getFrameCount, keyframeByNumber]);
 
   const onGenerateOverviewWaveformClick = useCallback(async () => {
     if (working) return;
@@ -2734,6 +2740,7 @@ function App() {
                   formatTimecode={formatTimecode}
                   parseTimecode={parseTimecode}
                   playbackRate={playbackRate}
+                  currentFrame={currentFrame}
                 />
               </div>
 
