@@ -831,7 +831,7 @@ function App() {
         }
       }
     }
-  }, [commandedTimeRef, cutSegments, findSegmentsAtCursor, pause, playbackModeRef, playerTime, seekAbs, selectedSegments, setPlayerTime]);
+  }, [commandedTimeRef, cutSegments, findSegmentsAtCursor, pause, playbackModeRef, playerTime, seekAbs, selectedSegments, setCurrentSegIndex, setPlayerTime]);
 
   const closeFileWithConfirm = useCallback(() => {
     if (!isFileOpened || workingRef.current) return;
