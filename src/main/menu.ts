@@ -412,6 +412,12 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
           },
         },
         {
+          label: esc(t('Read all keyframes')),
+          click() {
+            mainWindow.webContents.send('readAllKeyframes');
+          },
+        },
+        {
           label: esc(t('Create segments from keyframes')),
           click() {
             mainWindow.webContents.send('createSegmentsFromKeyframes');

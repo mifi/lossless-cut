@@ -672,6 +672,10 @@ const KeyboardShortcuts = memo(({
         name: t('Show keyframes'),
         category: otherCategory,
       },
+      readAllKeyframes: {
+        name: t('Read all keyframes'),
+        category: otherCategory,
+      },
       toggleFullscreenVideo: {
         name: 'Toggle full screen video',
         category: otherCategory,

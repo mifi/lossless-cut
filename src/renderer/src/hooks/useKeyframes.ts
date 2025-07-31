@@ -1,24 +1,33 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import sortBy from 'lodash/sortBy';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
+import { useTranslation } from 'react-i18next';
 
-import { readFramesAroundTime, findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime, Frame } from '../ffmpeg';
+import { readFramesAroundTime, findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime, Frame, readFrames } from '../ffmpeg';
 import { FFprobeStream } from '../../../../ffprobe';
 import { getFrameCountRaw } from '../edlFormats';
+import { handleError } from '../util';
 
-const maxKeyframes = 1000;
-// const maxKeyframes = 100;
 
-function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, detectedFps, ffmpegExtractWindow }: {
+const toObj = (map: Frame[]) => Object.fromEntries(map.map((frame) => [frame.time, frame]));
+
+function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, detectedFps, ffmpegExtractWindow, maxKeyframes, currentCutSegOrWholeTimeline, setWorking, setMaxKeyframes }: {
   keyframesEnabled: boolean,
   filePath: string | undefined,
   commandedTime: number,
   videoStream: FFprobeStream | undefined,
   detectedFps: number | undefined,
   ffmpegExtractWindow: number,
+  maxKeyframes: number,
+  currentCutSegOrWholeTimeline: { start: number, end: number },
+  setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void,
+  setMaxKeyframes: (max: number) => void,
 }) {
+  const { t } = useTranslation();
+
   const readingKeyframesPromise = useRef<Promise<unknown>>();
   const [neighbouringKeyFramesMap, setNeighbouringKeyFrames] = useState<Record<string, Frame>>({});
+
   const neighbouringKeyFrames = useMemo(() => Object.values(neighbouringKeyFramesMap), [neighbouringKeyFramesMap]);
 
   const keyframeByNumber = useMemo(() => {
@@ -56,7 +65,6 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
           if (existingFrames.length >= maxKeyframes) {
             existingFrames = sortBy(existingFrames, 'createdAt').slice(newKeyFrames.length);
           }
-          const toObj = (map: Frame[]) => Object.fromEntries(map.map((frame) => [frame.time, frame]));
           return {
             ...toObj(existingFrames),
             ...toObj(newKeyFrames),
@@ -72,10 +80,29 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
     return () => {
       aborted = true;
     };
-  }, 500, [keyframesEnabled, filePath, commandedTime, videoStream, ffmpegExtractWindow]);
+    // NOTE: you have to manually pass dependencies here, eslint doesn't recognize it
+  }, 500, [keyframesEnabled, filePath, commandedTime, videoStream, ffmpegExtractWindow, maxKeyframes]);
+
+  const readAllKeyframes = useCallback(async () => {
+    const { start, end } = currentCutSegOrWholeTimeline;
+
+    if (!filePath || !videoStream) return;
+    try {
+      setWorking({ text: t('Reading all keyframes') });
+      const newFrames = await readFrames({ filePath, from: start, to: end, streamIndex: videoStream.index });
+      const newKeyFrames = newFrames.filter((frame) => frame.keyframe);
+      setNeighbouringKeyFrames(toObj(newKeyFrames));
+      setMaxKeyframes(newKeyFrames.length);
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setWorking(undefined);
+    }
+  }, [currentCutSegOrWholeTimeline, filePath, setMaxKeyframes, setWorking, t, videoStream]);
+
 
   return {
-    neighbouringKeyFrames, findNearestKeyFrameTime, keyframeByNumber,
+    neighbouringKeyFrames, findNearestKeyFrameTime, keyframeByNumber, readAllKeyframes,
   };
 }
 
