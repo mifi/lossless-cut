@@ -223,7 +223,7 @@ export function convertSegmentsToChapters(sortedSegments: { start: number, end: 
   return sortSegments([...sortedSegments, ...invertedSegments]);
 }
 
-export function getPlaybackMode({ playbackMode, currentTime, playingSegment }: {
+export function getPlaybackAction({ playbackMode, currentTime, playingSegment }: {
   playbackMode: PlaybackMode,
   currentTime: number,
   playingSegment: { start: number, end: number },

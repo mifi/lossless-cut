@@ -83,7 +83,7 @@ import { askForHtml5ifySpeed } from './dialogs/html5ify';
 import { askForOutDir, askForImportChapters, promptTimecode, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openExportFinishedToast, openConcatFinishedToast, showOpenDialog, showMuxNotSupported, promptDownloadMediaUrl, CleanupChoicesType, showOutputNotWritable } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
-import { sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, getPlaybackMode, getSegmentTags, filterNonMarkers } from './segments';
+import { sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, getPlaybackAction, getSegmentTags, filterNonMarkers } from './segments';
 import { generateOutSegFileNames as generateOutSegFileNamesRaw, generateMergedFileNames as generateMergedFileNamesRaw, defaultOutSegTemplate, defaultCutMergedFileTemplate } from './util/outputNameTemplate';
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 import BigWaveform from './components/BigWaveform';
@@ -806,7 +806,7 @@ function App() {
     const playingSegment = firstSegmentAtCursorIndex != null ? cutSegments[firstSegmentAtCursorIndex] : undefined;
 
     if (playbackMode != null && playingSegment && playingSegment.end != null) { // todo and is currently playing?
-      const nextAction = getPlaybackMode({ playbackMode, currentTime, playingSegment: { start: playingSegment.start, end: playingSegment.end } });
+      const nextAction = getPlaybackAction({ playbackMode, currentTime, playingSegment: { start: playingSegment.start, end: playingSegment.end } });
 
       if (nextAction != null) {
         console.log(nextAction);
@@ -817,7 +817,10 @@ function App() {
           let newIndex = getNewJumpIndex(index >= 0 ? index : 0, 1);
           if (newIndex > selectedSegmentsWithoutMarkers.length - 1) newIndex = 0; // have reached end of last segment, start over
           const nextSelectedSegment = selectedSegmentsWithoutMarkers[newIndex];
-          if (nextSelectedSegment != null) seekAbs(nextSelectedSegment.start);
+          if (nextSelectedSegment != null) {
+            seekAbs(nextSelectedSegment.start);
+            setCurrentSegIndex(newIndex);
+          }
         }
         if (nextAction.seekTo != null) {
           seekAbs(nextAction.seekTo);
