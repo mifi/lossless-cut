@@ -171,7 +171,8 @@ export async function transferTimestamps({ inPath, outPath, cutFrom = 0, cutTo: 
 }
 
 export function filenamify(name: string) {
-  return name.replaceAll(/[^\p{L}\p{N}.-_]/gu, '_');
+  // \p{L}\p{N} are unicode letters and numbers
+  return name.replaceAll(/[^\p{L}\p{N} .-_]/gu, '_');
 }
 
 // eslint-disable-next-line space-before-function-paren
