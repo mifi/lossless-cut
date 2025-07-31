@@ -115,7 +115,7 @@ export const defaultCutMergedFileTemplate = '${FILENAME}-cut-merged-${EPOCH_MS}$
 export const defaultMergedFileTemplate = '${FILENAME}-merged-${EPOCH_MS}${EXT}';
 
 
-async function interpolateOutFileName(template: string, { epochMs, inputFileNameWithoutExt, ext, segSuffix, segNum, segNumPadded, selectedSegNum, selectedSegNumPadded, segLabels, cutFrom, cutTo, tags, exportCount, currentFileExportCount }: {
+async function interpolateOutFileName(template: string, { epochMs, inputFileNameWithoutExt, ext, segSuffix, segNum, segNumPadded, selectedSegNum, selectedSegNumPadded, segLabels, cutFrom, cutFromStr, cutTo, cutToStr, cutDurationStr, tags, exportCount, currentFileExportCount }: {
   epochMs: number,
   inputFileNameWithoutExt: string,
   ext: string,
@@ -128,8 +128,11 @@ async function interpolateOutFileName(template: string, { epochMs, inputFileName
   segNumPadded: string,
   selectedSegNum: number,
   selectedSegNumPadded: string,
-  cutFrom: string,
-  cutTo: string,
+  cutFrom: number,
+  cutFromStr: string,
+  cutTo: number,
+  cutToStr: string,
+  cutDurationStr: string,
   tags: Record<string, string>,
 }>) {
   const context = {
@@ -142,8 +145,11 @@ async function interpolateOutFileName(template: string, { epochMs, inputFileName
     [selectedSegNumVariable]: selectedSegNumPadded,
     SEG_LABEL: segLabels.length === 1 ? segLabels[0] : segLabels,
     EPOCH_MS: epochMs,
-    CUT_FROM: cutFrom,
-    CUT_TO: cutTo,
+    CUT_FROM: cutFromStr,
+    CUT_FROM_NUM: cutFrom,
+    CUT_TO: cutToStr,
+    CUT_TO_NUM: cutTo,
+    CUT_DURATION: cutDurationStr,
     [segTagsVariable]: tags && {
       // allow both original case and uppercase
       ...tags,
@@ -239,6 +245,8 @@ export async function generateOutSegFileNames({ fileDuration, segmentsToExport: 
 
         const { name: inputFileNameWithoutExt } = parsePath(filePath);
 
+        const cutDuration = end - start;
+
         const segFileName = await interpolateOutFileName(template, {
           epochMs,
           segNum,
@@ -249,8 +257,11 @@ export async function generateOutSegFileNames({ fileDuration, segmentsToExport: 
           inputFileNameWithoutExt,
           ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath }),
           segLabels: [sanitizeName(name)],
-          cutFrom: formatTimecode({ seconds: start, fileNameFriendly: true }),
-          cutTo: formatTimecode({ seconds: end, fileNameFriendly: true }),
+          cutFrom: start,
+          cutFromStr: formatTimecode({ seconds: start, fileNameFriendly: true }),
+          cutTo: end,
+          cutToStr: formatTimecode({ seconds: end, fileNameFriendly: true }),
+          cutDurationStr: formatTimecode({ seconds: cutDuration, fileNameFriendly: true }),
           tags: Object.fromEntries(Object.entries(getSegmentTags(segment)).map(([tag, value]) => [tag, sanitizeName(value)])),
           exportCount,
           currentFileExportCount,

@@ -36,7 +36,7 @@ function FileNameTemplateEditor(opts: {
 })) {
   const { template: templateIn, setTemplate, defaultTemplate, generateFileNames, mergeMode } = opts;
 
-  const { safeOutputFileName, toggleSafeOutputFileName, outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding } = useUserSettings();
+  const { safeOutputFileName, toggleSafeOutputFileName, outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding, simpleMode } = useUserSettings();
 
   const [text, setText] = useState(templateIn);
   const [debouncedText] = useDebounce(text, 500);
@@ -78,8 +78,20 @@ function FileNameTemplateEditor(opts: {
 
   const availableVariables = useMemo(() => (mergeMode
     ? ['FILENAME', extVariable, 'EPOCH_MS', 'EXPORT_COUNT', 'FILE_EXPORT_COUNT', 'SEG_LABEL']
-    : ['FILENAME', extVariable, 'EPOCH_MS', 'EXPORT_COUNT', 'FILE_EXPORT_COUNT', 'SEG_LABEL', 'CUT_FROM', 'CUT_TO', segNumVariable, segNumIntVariable, selectedSegNumVariable, selectedSegNumIntVariable, segSuffixVariable, segTagsExample]
-  ), [mergeMode]);
+    : [
+      'FILENAME', extVariable, 'EPOCH_MS', 'EXPORT_COUNT', 'FILE_EXPORT_COUNT', 'SEG_LABEL',
+      'CUT_FROM',
+      ...(!simpleMode ? ['CUT_FROM_NUM'] : []),
+      'CUT_TO',
+      ...(!simpleMode ? ['CUT_TO_NUM'] : []),
+      'CUT_DURATION',
+      segNumVariable,
+      ...(!simpleMode ? [segNumIntVariable] : []),
+      selectedSegNumVariable,
+      ...(!simpleMode ? [selectedSegNumIntVariable] : []),
+      segSuffixVariable, segTagsExample,
+    ]
+  ), [mergeMode, simpleMode]);
 
   // eslint-disable-next-line no-template-curly-in-string
   const isMissingExtension = validText != null && !validText.endsWith(extVariableFormatted);
