@@ -491,7 +491,7 @@
     "Increase segment order": "Переместить сегмент вниз",
     "Include ONLY this segment in export": "Включить в экспорт ТОЛЬКО этот сегмент",
     "Include all segments in export": "Включить все сегменты в экспорт",
-    "Auto load timecode from file as an offset in the timeline?": "Автоматическая загрузка тайм-кода из файла в качестве смещения на временной шкале",
+    "Auto load timecode from file as an offset in the timeline?": "Автоматически загружать тайм-код из файла как смещение на временной шкале",
     "Click to toggle track inclusion when exporting": "Нажмите, чтобы выбрать дорожки для экспорта",
     "This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).\n\nDrag and drop to change the order of your files here:": "Это диалоговое окно может быть использовано для последовательного сцепления файлов, например, один за другим:\n[файл1] [файл2] [файл3] \nЕго НЕЛЬЗЯ использовать для параллельного объединения дорожек (например, добавления звуковой дорожки к видео). \nУбедитесь, что все файлы имеют одинаковые кодеки и параметры кодека (fps, разрешение и т. д.). \n\nПеретащите, чтобы изменить порядок файлов здесь:",
     "Unchanged": "Без изменений",
