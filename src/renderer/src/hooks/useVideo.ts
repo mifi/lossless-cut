@@ -83,8 +83,8 @@ export default ({ filePath }: { filePath: string | undefined }) => {
   const onPlayingChange = useCallback((val: boolean) => {
     playingRef.current = val;
     setPlaying(val);
-    if (!val) {
-      setCommandedTime(videoRef.current!.currentTime);
+    if (!val && videoRef.current) {
+      setCommandedTime(videoRef.current.currentTime);
     }
   }, [setCommandedTime]);
 
@@ -101,7 +101,7 @@ export default ({ filePath }: { filePath: string | undefined }) => {
 
   const pause = useCallback(() => {
     if (!filePath || !playingRef.current) return;
-    videoRef.current!.pause();
+    videoRef.current?.pause();
   }, [filePath, playingRef, videoRef]);
 
   const play = useCallback((resetPlaybackRate?: boolean) => {

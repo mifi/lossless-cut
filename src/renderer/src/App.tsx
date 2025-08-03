@@ -395,11 +395,13 @@ function App() {
   }, [seekRel, zoomedDuration]);
 
   const shortStep = useCallback((direction: number) => {
+    if (!videoRef.current) return;
+
     // If we don't know fps, just assume 30 (for example if unknown audio file)
     const fps = detectedFps || 30;
 
     // try to align with frame
-    const currentTimeNearestFrameNumber = getFrameCountRaw(fps, videoRef.current!.currentTime);
+    const currentTimeNearestFrameNumber = getFrameCountRaw(fps, videoRef.current.currentTime);
     invariant(currentTimeNearestFrameNumber != null);
     const nextFrame = currentTimeNearestFrameNumber + direction;
     seekAbs(nextFrame / fps);
