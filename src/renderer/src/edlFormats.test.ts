@@ -205,9 +205,9 @@ const csvFramesStr = `\
 688,747,EP106_SQ020_SH0010
 `;
 
-it('parses csv with frames', async () => {
+it('parses csv with frames', () => {
   const fps = 30;
-  const parsed = await parseCsv(csvFramesStr, getFrameValParser(fps));
+  const parsed = parseCsv(csvFramesStr, getFrameValParser(fps));
 
   expect(parsed).toEqual([
     { end: 5.166666666666667, name: 'EP106_SQ010_SH0010', start: 0 },
@@ -216,11 +216,11 @@ it('parses csv with frames', async () => {
     { end: 24.9, name: 'EP106_SQ020_SH0010', start: 22.933333333333334 },
   ]);
 
-  const formatted = await formatCsvFrames({
+  const formatted = formatCsvFrames({
     cutSegments: parsed,
     getFrameCount: (sec) => getFrameCountRaw(fps, sec),
   });
-  expect(formatted).toEqual(csvFramesStr);
+  expect(formatted).toEqual(`${['Start', 'End', 'Name'].join(',')}\n${csvFramesStr}`);
 });
 
 const csvTimestampStr = `\
@@ -232,8 +232,8 @@ const csvTimestampStr = `\
 0:2,0:3,F
 `;
 
-it('parses csv with timestamps', async () => {
-  const parsed = await parseCsv(csvTimestampStr, parseCsvTime);
+it('parses csv with timestamps', () => {
+  const parsed = parseCsv(csvTimestampStr, parseCsvTime);
 
   expect(parsed).toEqual([
     { end: 189.053, name: 'A', start: 114.612 },
@@ -245,12 +245,47 @@ it('parses csv with timestamps', async () => {
   ]);
 });
 
-it('parses csv with 2 only columns', async () => {
-  const parsed = await parseCsv('1,2\n3,4\n', parseCsvTime);
+it('parses csv with 2 columns (no name)', () => {
+  const parsed = parseCsv('1,2\n3,4\n', parseCsvTime);
 
   expect(parsed).toEqual([
     { start: 1, end: 2 },
     { start: 3, end: 4 },
+  ]);
+});
+
+it('parses csv with 1 column (markers)', () => {
+  const parsed = parseCsv('1\n2\n3\n', parseCsvTime);
+  expect(parsed).toEqual([
+    { start: 1 },
+    { start: 2 },
+    { start: 3 },
+  ]);
+});
+
+const csvWithTagsHeader = 'Start,End,Name,group,Name';
+const csvWithTags = `\
+1,2,Name1,group1,This is a tag which is also called Name
+3,4,Name2,,Name
+5,6,Name3,"Group 2",`;
+
+it('parses csv with tags', () => {
+  const csv = `${csvWithTagsHeader}\n${csvWithTags}\n`;
+
+  const parsed = parseCsv(csv, parseCsvTime);
+  expect(parsed).toEqual([
+    { start: 1, end: 2, name: 'Name1', tags: { group: 'group1', Name: 'This is a tag which is also called Name' } },
+    { start: 3, end: 4, name: 'Name2', tags: { Name: 'Name' } },
+    { start: 5, end: 6, name: 'Name3', tags: { group: 'Group 2' } },
+  ]);
+});
+
+it('parses csv with tags but no header', () => {
+  const parsed = parseCsv(csvWithTags, parseCsvTime);
+  expect(parsed).toEqual([
+    { start: 1, end: 2, name: 'Name1', tags: { tag1: 'group1', tag2: 'This is a tag which is also called Name' } },
+    { start: 3, end: 4, name: 'Name2', tags: { tag2: 'Name' } },
+    { start: 5, end: 6, name: 'Name3', tags: { tag1: 'Group 2' } },
   ]);
 });
 

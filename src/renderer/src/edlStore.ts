@@ -3,7 +3,7 @@ import i18n from 'i18next';
 import invariant from 'tiny-invariant';
 import { ZodError } from 'zod';
 
-import { parseSrtToSegments, formatSrt, parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parseCutlist, parsePbf, parseEdl, formatCsvHuman, formatTsv, formatCsvFrames, formatCsvSeconds, parseCsvTime, getFrameValParser, parseDvAnalyzerSummaryTxt, parseOtio } from './edlFormats';
+import { parseSrtToSegments, formatSrt, parseCuesheet, parseXmeml, parseFcpXml, parseCsv, parseCutlist, parsePbf, parseEdl, formatCsvHuman, formatTsvHuman, formatCsvFrames, formatCsvSeconds, parseCsvTime, getFrameValParser, parseDvAnalyzerSummaryTxt, parseOtio } from './edlFormats';
 import { askForYouTubeInput, showOpenDialog } from './dialogs';
 import { getOutPath } from './util';
 import { EdlExportType, EdlFileType, EdlImportType, GetFrameCount, LlcProject, llcProjectV1Schema, llcProjectV2Schema, SegmentBase, StateSegment } from './types';
@@ -17,7 +17,7 @@ const { basename } = window.require('path');
 const { dialog } = window.require('@electron/remote');
 
 
-async function loadCsvSeconds(path: string) {
+async function loadCsv(path: string) {
   return parseCsv(await readFile(path, 'utf8'), parseCsvTime);
 }
 
@@ -58,11 +58,11 @@ async function loadSrt(path: string) {
 }
 
 export async function saveCsv(path: string, cutSegments: SegmentBase[]) {
-  await writeFile(path, await formatCsvSeconds(cutSegments));
+  await writeFile(path, formatCsvSeconds(cutSegments));
 }
 
 export async function saveCsvHuman(path: string, cutSegments: SegmentBase[]) {
-  await writeFile(path, await formatCsvHuman(cutSegments));
+  await writeFile(path, formatCsvHuman(cutSegments));
 }
 
 export async function saveCsvFrames({ path, cutSegments, getFrameCount }: {
@@ -74,7 +74,7 @@ export async function saveCsvFrames({ path, cutSegments, getFrameCount }: {
 }
 
 export async function saveTsv(path: string, cutSegments: SegmentBase[]) {
-  await writeFile(path, await formatTsv(cutSegments));
+  await writeFile(path, formatTsvHuman(cutSegments));
 }
 
 export async function saveSrt(path: string, cutSegments: SegmentBase[]) {
@@ -134,7 +134,7 @@ export async function readEdlFile({ type, path, fps }: {
   path: string,
   fps: number | undefined,
 }) {
-  if (type === 'csv') return loadCsvSeconds(path);
+  if (type === 'csv') return loadCsv(path);
   if (type === 'csv-frames' || type === 'edl') {
     invariant(fps != null, 'The loaded media has an unknown framerate');
     if (type === 'csv-frames') return loadCsvFrames(path, fps);

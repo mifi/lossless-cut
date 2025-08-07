@@ -14,6 +14,7 @@ import { invertSegments, sortSegments } from './segments';
 import { GetFrameCount, SegmentBase, SegmentTags } from './types';
 import parseCmx3600 from './cmx3600';
 
+
 export const getTimeFromFrameNum = (detectedFps: number, frameNum: number) => frameNum / detectedFps;
 
 export function getFrameCountRaw(detectedFps: number | undefined, sec: number) {
@@ -47,16 +48,51 @@ export const getFrameValParser = (fps: number) => (str: string) => {
   return getTimeFromFrameNum(fps, frameCount);
 };
 
-export async function parseCsv(csvStr: string, parseTimeFn: (a: string) => number | undefined) {
-  const rows = csvParse(csvStr, {}) as ([string, string] | [string, string, string])[];
-  if (rows.length === 0) throw new Error(i18n.t('No rows found'));
-  if (!rows.every((row) => row.length >= 2 && row.length <= 3)) throw new Error(i18n.t('One or more rows does not have 3 columns'));
+const csvHeader = [
+  'Start',
+  'End',
+  'Name',
+] as const;
 
-  const mapped = rows.map(([start, end, name]) => ({
-    start: parseTimeFn(start) ?? 0,
-    end: parseTimeFn(end),
-    name: name?.trim(),
-  }));
+export function parseCsv(csvStr: string, parseTimeFn: (a: string) => number | undefined) {
+  const rows: string[][] = csvParse(csvStr, {});
+
+  if (rows.length === 0) throw new Error(i18n.t('No rows found'));
+  invariant(rows.every((row) => row.length > 0), 'One row had no columns.');
+
+  // from header
+  let tagsKeys: string[] | undefined;
+
+  const mapped = rows.flatMap(([start, end, name, ...tagsColumns], rowIndex) => {
+    invariant(start != null, `Row ${rowIndex + 1} has no start time`);
+
+    if (rowIndex === 0
+      && start === csvHeader[0]
+      && (end == null || end === csvHeader[1])
+      && (name == null || name === csvHeader[2])
+    ) {
+      if (end === csvHeader[1] && name === csvHeader[2]) {
+        tagsKeys = tagsColumns.map((tag) => tag.trim());
+      }
+      // skip header row
+      return [];
+    }
+
+    return [{
+      start: parseTimeFn(start) ?? 0,
+      ...(end != null && { end: parseTimeFn(end) }),
+      ...(name != null && { name: name?.trim() }),
+      ...(tagsColumns.length > 0 && {
+        tags: Object.fromEntries(tagsColumns.flatMap((tagValue, tagIndex) => {
+          if (tagValue.trim() === '') return [];
+          return [[
+            tagsKeys?.[tagIndex] ?? `tag${tagIndex + 1}`,
+            tagValue.trim(),
+          ]];
+        })),
+      }),
+    }];
+  });
 
   if (!mapped.every(({ start, end }) => (
     !Number.isNaN(start)
@@ -312,35 +348,43 @@ export function formatYouTube(segments: { start: number, name?: string }[]) {
 // because null/undefined is also valid values (start/end of timeline)
 const safeFormatDuration = (duration: number | undefined) => (duration != null ? formatDuration({ seconds: duration }) : '');
 
-export const formatSegmentsTimes = (cutSegments: SegmentBase[]) => cutSegments.map(({ start, end, name }) => [
-  safeFormatDuration(start),
-  safeFormatDuration(end),
-  name,
-]);
+type Segment = SegmentBase & { tags?: SegmentTags | undefined };
 
-export async function formatCsvFrames({ cutSegments, getFrameCount }: { cutSegments: SegmentBase[], getFrameCount: GetFrameCount }) {
-  const safeFormatFrameCount = (seconds: number | undefined) => (seconds != null ? getFrameCount(seconds) : '');
+const segmentToColumns = (segments: Segment[], formatTime: (t: number | undefined) => string) => {
+  const tagsColumnNames = sortBy([...new Set(segments.flatMap((segment) => (segment.tags != null ? Object.keys(segment.tags) : [])))]);
+  const header = [
+    ...csvHeader,
+    ...tagsColumnNames,
+  ];
 
-  const formatted = cutSegments.map(({ start, end, name }) => [
-    safeFormatFrameCount(start),
-    safeFormatFrameCount(end),
-    name,
-  ]);
+  return [
+    header,
+    ...segments.map(({ start, end, name, tags }) => [
+      formatTime(start),
+      formatTime(end),
+      name ?? '',
+      ...tagsColumnNames.map((key) => tags?.[key] ?? ''),
+    ]),
+  ];
+};
 
-  return csvStringify(formatted);
+
+export function formatCsvFrames({ cutSegments, getFrameCount }: { cutSegments: Segment[], getFrameCount: GetFrameCount }) {
+  const safeFormatFrameCount = (seconds: number | undefined) => String((seconds != null ? getFrameCount(seconds) : undefined) ?? '');
+
+  return csvStringify(segmentToColumns(cutSegments, safeFormatFrameCount));
 }
 
-export async function formatCsvSeconds(cutSegments: SegmentBase[]) {
-  const rows = cutSegments.map(({ start, end, name }) => [start, end, name]);
-  return csvStringify(rows);
+export function formatCsvSeconds(cutSegments: Segment[]) {
+  return csvStringify(segmentToColumns(cutSegments, String));
 }
 
-export async function formatCsvHuman(cutSegments: SegmentBase[]) {
-  return csvStringify(formatSegmentsTimes(cutSegments));
+export function formatCsvHuman(cutSegments: Segment[]) {
+  return csvStringify(segmentToColumns(cutSegments, safeFormatDuration));
 }
 
-export async function formatTsv(cutSegments: SegmentBase[]) {
-  return csvStringify(formatSegmentsTimes(cutSegments), { delimiter: '\t' });
+export function formatTsvHuman(cutSegments: Segment[]) {
+  return csvStringify(segmentToColumns(cutSegments, safeFormatDuration), { delimiter: '\t' });
 }
 
 export function parseDvAnalyzerSummaryTxt(txt: string) {

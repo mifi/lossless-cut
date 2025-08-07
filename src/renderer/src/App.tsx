@@ -63,7 +63,7 @@ import {
 } from './ffmpeg';
 import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback, getSubtitleStreams, enableVideoTrack, enableAudioTrack, canHtml5PlayerPlayStreams } from './util/streams';
 import { exportEdlFile, readEdlFile, loadLlcProject, askForEdlImport } from './edlStore';
-import { formatYouTube, getFrameCountRaw, formatTsv } from './edlFormats';
+import { formatYouTube, getFrameCountRaw, formatTsvHuman } from './edlFormats';
 import {
   getOutPath, getSuffixedOutPath, handleError, getOutDir,
   isStoreBuild, dragPreventer,
@@ -1934,7 +1934,7 @@ function App() {
 
   const copySegmentsToClipboard = useCallback(async () => {
     if (!isFileOpened || selectedSegments.length === 0) return;
-    electron.clipboard.writeText(await formatTsv(selectedSegments));
+    electron.clipboard.writeText(formatTsvHuman(selectedSegments));
   }, [isFileOpened, selectedSegments]);
 
   const showIncludeExternalStreamsDialog = useCallback(async () => {
