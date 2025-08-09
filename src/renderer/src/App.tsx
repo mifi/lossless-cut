@@ -61,7 +61,7 @@ import {
   mapRecommendedDefaultFormat,
   getFfCommandLine,
 } from './ffmpeg';
-import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback, getSubtitleStreams, enableVideoTrack, enableAudioTrack, canHtml5PlayerPlayStreams } from './util/streams';
+import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback, getSubtitleStreams, enableVideoTrack, enableAudioTrack, canHtml5PlayerPlayStreams, isMatroska } from './util/streams';
 import { exportEdlFile, readEdlFile, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube, getFrameCountRaw, formatTsvHuman } from './edlFormats';
 import {
@@ -83,7 +83,7 @@ import { askForHtml5ifySpeed } from './dialogs/html5ify';
 import { askForOutDir, askForImportChapters, promptTimecode, askForFileOpenAction, confirmExtractAllStreamsDialog, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, openDirToast, openExportFinishedToast, openConcatFinishedToast, showOpenDialog, showMuxNotSupported, promptDownloadMediaUrl, CleanupChoicesType, showOutputNotWritable } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
-import { sortSegments, convertSegmentsToChapters, hasAnySegmentOverlap, isDurationValid, getPlaybackAction, getSegmentTags, filterNonMarkers } from './segments';
+import { sortSegments, convertSegmentsToChaptersWithGaps, hasAnySegmentOverlap, isDurationValid, getPlaybackAction, getSegmentTags, filterNonMarkers } from './segments';
 import { generateOutSegFileNames as generateOutSegFileNamesRaw, generateMergedFileNames as generateMergedFileNamesRaw, defaultOutSegTemplate, defaultCutMergedFileTemplate } from './util/outputNameTemplate';
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 import BigWaveform from './components/BigWaveform';
@@ -443,7 +443,7 @@ function App() {
     setRotation((r) => (r + 90) % 450);
     setHideMediaSourcePlayer(false);
     // Matroska is known not to work, so we warn user. See https://github.com/mifi/lossless-cut/discussions/661
-    const supportsRotation = !(fileFormat != null && ['matroska', 'webm'].includes(fileFormat));
+    const supportsRotation = !isMatroska(fileFormat);
     if (!supportsRotation) showNotification({ text: i18n.t('Lossless rotation might not work with this file format. You may try changing to MP4') });
   }, [fileFormat, showNotification]);
 
@@ -1085,7 +1085,8 @@ function App() {
           errorToast(i18n.t('Make sure you have no overlapping segments.'));
           return;
         }
-        chaptersToAdd = convertSegmentsToChapters(sortedSegments);
+        // matroska supports gaps, so we can use segments directly
+        chaptersToAdd = isMatroska(fileFormat) ? sortedSegments : convertSegmentsToChaptersWithGaps(sortedSegments);
       }
 
       console.log('outSegTemplateOrDefault', outSegTemplateOrDefault);

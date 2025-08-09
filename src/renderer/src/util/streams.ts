@@ -101,6 +101,8 @@ export function getActiveDisposition(disposition: FFprobeStreamDisposition | und
 
 export const isMov = (format: string | undefined) => format != null && ['ismv', 'ipod', 'mp4', 'mov'].includes(format);
 
+export const isMatroska = (format: string | undefined) => format != null && ['matroska', 'webm'].includes(format);
+
 type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
 
 function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined, areWeCutting }: {

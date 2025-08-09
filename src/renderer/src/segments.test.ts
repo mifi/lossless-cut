@@ -1,9 +1,9 @@
 import { test, it, expect, describe } from 'vitest';
 
-import { convertSegmentsToChapters, partitionIntoOverlappingRanges, formatSegNum, combineOverlappingSegments, invertSegments } from './segments';
+import { convertSegmentsToChaptersWithGaps, partitionIntoOverlappingRanges, formatSegNum, combineOverlappingSegments, invertSegments } from './segments';
 
 it('converts segments to chapters with gaps', () => {
-  expect(convertSegmentsToChapters([
+  expect(convertSegmentsToChaptersWithGaps([
     {
       start: 104.612,
       end: 189.053,
@@ -27,8 +27,8 @@ it('converts segments to chapters with gaps', () => {
   ])).toMatchSnapshot();
 });
 
-it('converts segments to chapters with no gaps', () => {
-  expect(convertSegmentsToChapters([
+it('converts segments to chapters with no gaps when adjacent', () => {
+  expect(convertSegmentsToChaptersWithGaps([
     {
       start: 0,
       end: 2,
@@ -43,7 +43,7 @@ it('converts segments to chapters with no gaps', () => {
 });
 
 it('converts segments to chapters with single long segment', () => {
-  expect(convertSegmentsToChapters([
+  expect(convertSegmentsToChaptersWithGaps([
     {
       start: 0,
       end: 1,

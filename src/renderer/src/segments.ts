@@ -4,7 +4,7 @@ import minBy from 'lodash/minBy';
 import maxBy from 'lodash/maxBy';
 import invariant from 'tiny-invariant';
 
-import { PlaybackMode, SegmentBase, SegmentTags, SegmentToExport, StateSegment } from './types';
+import { DefiniteSegmentBase, PlaybackMode, SegmentBase, SegmentTags, SegmentToExport, StateSegment } from './types';
 
 
 export const isDurationValid = (duration?: number): duration is number => duration != null && Number.isFinite(duration) && duration > 0;
@@ -208,19 +208,16 @@ export function invertSegments(
   return ret.filter(({ start, end }) => end == null || end > start);
 }
 
-// because chapters need to be contiguous, we need to insert gaps in-between
-export function convertSegmentsToChapters(sortedSegments: { start: number, end: number, name?: string | undefined }[]) {
-  if (sortedSegments.length === 0) return [];
-  if (hasAnySegmentOverlap(sortedSegments)) throw new Error('Segments cannot overlap');
-
+// because chapters need to be contiguous in formats like MP4, we insert "gap" segments in-between, so that end times will be correct
+export function convertSegmentsToChaptersWithGaps(sortedSegments: (DefiniteSegmentBase & { name?: string | undefined })[]) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const invertedSegments = invertSegments(sortedSegments, true, false).map(({ end, name: _ignored, ...seg }) => {
+  const invertedSegmentsWithoutName = invertSegments(sortedSegments, true, false).map(({ end, name: _ignored, ...seg }) => {
     invariant(end != null); // to please typescript
     return { ...seg, end };
   });
 
   // inverted segments will be "gap" segments. Merge together with normal segments
-  return sortSegments([...sortedSegments, ...invertedSegments]);
+  return sortSegments([...sortedSegments, ...invertedSegmentsWithoutName]);
 }
 
 export function getPlaybackAction({ playbackMode, currentTime, playingSegment }: {
