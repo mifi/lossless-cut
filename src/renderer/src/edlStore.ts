@@ -17,16 +17,16 @@ const { basename } = window.require('path');
 const { dialog } = window.require('@electron/remote');
 
 
-async function loadCsv(path: string) {
-  return parseCsv(await readFile(path, 'utf8'), parseCsvTime);
-}
+// When readFile is used with 'utf8', ef bb bf is its UTF-8 representation of BOM. As BOM is considered white-space, it can be stripped by .trim(). Node.js does not strip BOM, it is a userland task.
+// https://github.com/nodejs/node/issues/20649#issuecomment-388016410
+const trimBom = (text: string) => text.trim();
 
-async function loadCsvFrames(path: string, fps: number) {
-  return parseCsv(await readFile(path, 'utf8'), getFrameValParser(fps));
+async function loadCsv(path: string, parseTimeFn: (a: string) => number | undefined) {
+  return parseCsv(trimBom(await readFile(path, 'utf8')), parseTimeFn);
 }
 
 async function loadCutlistSeconds(path: string) {
-  return parseCutlist(await readFile(path, 'utf8'));
+  return parseCutlist(trimBom(await readFile(path, 'utf8')));
 }
 
 async function loadXmeml(path: string) {
@@ -38,7 +38,7 @@ async function loadFcpXml(path: string) {
 }
 
 async function loadDvAnalyzerSummaryTxt(path: string) {
-  return parseDvAnalyzerSummaryTxt(await readFile(path, 'utf8'));
+  return parseDvAnalyzerSummaryTxt(trimBom(await readFile(path, 'utf8')));
 }
 
 async function loadPbf(path: string) {
@@ -46,7 +46,7 @@ async function loadPbf(path: string) {
 }
 
 async function loadEdl(path: string, fps: number) {
-  return parseEdl(await readFile(path, 'utf8'), fps);
+  return parseEdl(trimBom(await readFile(path, 'utf8')), fps);
 }
 
 async function loadCue(path: string) {
@@ -134,10 +134,10 @@ export async function readEdlFile({ type, path, fps }: {
   path: string,
   fps: number | undefined,
 }) {
-  if (type === 'csv') return loadCsv(path);
+  if (type === 'csv') return loadCsv(path, parseCsvTime);
   if (type === 'csv-frames' || type === 'edl') {
     invariant(fps != null, 'The loaded media has an unknown framerate');
-    if (type === 'csv-frames') return loadCsvFrames(path, fps);
+    if (type === 'csv-frames') return loadCsv(path, getFrameValParser(fps));
     if (type === 'edl') return loadEdl(path, fps);
   }
   if (type === 'cutlist') return loadCutlistSeconds(path);
