@@ -76,6 +76,21 @@ exports[`converts segments to chapters with no gaps 1`] = `
 ]
 `;
 
+exports[`converts segments to chapters with no gaps when adjacent 1`] = `
+[
+  {
+    "end": 2,
+    "name": "label 1",
+    "start": 0,
+  },
+  {
+    "end": 3,
+    "name": "label 2",
+    "start": 2,
+  },
+]
+`;
+
 exports[`converts segments to chapters with single long segment 1`] = `
 [
   {
