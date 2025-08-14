@@ -7915,7 +7915,7 @@ __metadata:
     smpte-timecode: "npm:^1.2.3"
     sortablejs: "npm:^1.13.0"
     string-to-stream: "npm:^3.0.1"
-    sweetalert2: "npm:^11.11.0"
+    sweetalert2: "npm:^11.22.4"
     sweetalert2-react-content: "npm:^5.0.7"
     tiny-invariant: "npm:^1.3.3"
     tsx: "npm:^4.7.1"
@@ -10749,10 +10749,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sweetalert2@npm:^11.11.0":
-  version: 11.21.0
-  resolution: "sweetalert2@npm:11.21.0"
-  checksum: 10/97d216b459a5e6502e179cc37aacc47885b6d76b2b0930109b3d55b44fe6f072549974b43045ce684b9107bf737c37fc702a6b82cd3fd01cee128ac017057def
+"sweetalert2@npm:^11.22.4":
+  version: 11.22.4
+  resolution: "sweetalert2@npm:11.22.4"
+  checksum: 10/ff2aa7a407bbd0325ee6182bba4a4d21115d56284d73ec83093dcedff80e379e1b6bb0558cf8ac300254e24e05cb284914baf9ec06de400d6276862601f20f9d
   languageName: node
   linkType: hard
 
