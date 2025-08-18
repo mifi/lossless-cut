@@ -99,7 +99,7 @@ function Segment({
     const horizontalBorderWidth = '1px';
     const verticalBorderWidth = '1.5px';
 
-    if (!isActive) {
+    if (isActive) {
       const horizontalColor = darkMode ? color.desaturate(0.1).lightness(60) : color.desaturate(0.2).lightness(40);
       const verticalColor = darkMode ? color.desaturate(0.1).lightness(90) : color.desaturate(0.2).lightness(10);
       return {
