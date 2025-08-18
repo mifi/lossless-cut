@@ -20,6 +20,7 @@ const defaultKeyBindings: KeyBinding[] = [
   { keys: 'l', action: 'increasePlaybackRate' },
   { keys: 'shift+l', action: 'increasePlaybackRateMore' },
   { keys: 'z', action: 'timelineToggleComfortZoom' },
+  { keys: 'shift+z', action: 'makeCursorTimeZero' },
   { keys: ',', action: 'seekPreviousFrame' },
   { keys: '.', action: 'seekNextFrame' },
   { keys: 'c', action: 'captureSnapshot' },

@@ -90,16 +90,12 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
     setCutTimeManual(undefined);
   }, [setCutTimeManual, currentCutSeg?.start, currentCutSeg?.end]);
 
-  const isCutTimeManualSet = () => cutTimeManual !== undefined;
+  const isCutTimeManualSet = useCallback(() => cutTimeManual !== undefined, [cutTimeManual]);
 
   const border = useMemo(() => {
     const segColor = getSegColor(currentCutSeg);
     return `.1em solid ${darkMode ? segColor.desaturate(0.4).lightness(50).string() : segColor.desaturate(0.2).lightness(60).string()}`;
   }, [currentCutSeg, darkMode, getSegColor]);
-
-  const cutTimeInputStyle: CSSProperties = {
-    border, borderRadius: 5, backgroundColor: 'var(--gray-5)', transition: darkModeTransition, fontSize: 13, textAlign: 'center', padding: '1px 5px', marginTop: 0, marginBottom: 0, marginLeft: isStart ? 0 : 5, marginRight: isStart ? 5 : 0, boxSizing: 'border-box', fontFamily: 'inherit', width: 90, outline: 'none',
-  };
 
   const trySetTime = useCallback((timeWithOffset: number | undefined) => {
     try {
@@ -182,6 +178,25 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
     if (text) tryPaste(text);
   }, [tryPaste]);
 
+  const style = useMemo<CSSProperties>(() => ({
+    border,
+    borderRadius: 5,
+    backgroundColor: 'var(--gray-5)',
+    transition: darkModeTransition,
+    fontSize: 13,
+    textAlign: 'center',
+    padding: '1px 3px',
+    marginTop: 0,
+    marginBottom: 0,
+    marginLeft: isStart ? 0 : 5,
+    marginRight: isStart ? 5 : 0,
+    boxSizing: 'border-box',
+    fontFamily: 'inherit',
+    width: 90,
+    outline: 'none',
+    color: isCutTimeManualSet() ? 'var(--gray-12)' : 'var(--gray-11)',
+  }), [border, isCutTimeManualSet, isStart]);
+
   function renderValue() {
     if (isCutTimeManualSet()) return cutTimeManual;
     if (cutTime == null) return '';
@@ -191,7 +206,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
   return (
     <form onSubmit={handleSubmit}>
       <input
-        style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? 'var(--gray-12)' : 'var(--gray-11)' }}
+        style={style}
         type="text"
         title={isStart ? t('Manually input current segment\'s start time') : t('Manually input current segment\'s end time')}
         onChange={(e) => handleCutTimeInput(e.target.value)}

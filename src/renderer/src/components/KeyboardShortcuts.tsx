@@ -233,6 +233,10 @@ const KeyboardShortcuts = memo(({
         name: t('Convert to supported format'),
         category: playbackCategory,
       },
+      makeCursorTimeZero: {
+        name: t('Make cursor time zero'),
+        category: playbackCategory,
+      },
 
       // selectivePlaybackCategory
       togglePlayOnlyCurrentSegment: {
