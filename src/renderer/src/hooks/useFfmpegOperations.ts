@@ -364,6 +364,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
     function getPreserveChapters() {
       if (chaptersPath) return ['-map_chapters', String(chaptersInputIndex)];
+      // todo should preserve chapters be hardcoded (and disabled in UI) when segmentsToChaptersOnly mode is enabled?
       if (!preserveChapters) return ['-map_chapters', '-1']; // https://github.com/mifi/lossless-cut/issues/2176
       return []; // default: includes chapters from input
     }

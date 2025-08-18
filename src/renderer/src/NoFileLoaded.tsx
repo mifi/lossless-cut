@@ -1,4 +1,5 @@
-import { Fragment, memo, useMemo } from 'react';
+import { Fragment, memo, useMemo, useState } from 'react';
+import { motion, MotionStyle } from 'framer-motion';
 
 import { useTranslation, Trans } from 'react-i18next';
 
@@ -18,6 +19,24 @@ function Keys({ keys }: { keys: string }) {
   ));
 }
 
+const dropzoneStyle: MotionStyle = {
+  position: 'absolute',
+  left: 0,
+  right: 0,
+  top: 0,
+  bottom: 0,
+  color: 'var(--gray-12)',
+  margin: '2em',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  whiteSpace: 'nowrap',
+  borderWidth: '.7em',
+  borderStyle: 'dashed',
+  borderColor: 'var(--gray-3)',
+};
+
 function NoFileLoaded({ mifiLink, currentCutSeg, onClick, darkMode, keyBindingByAction }: {
   mifiLink: unknown,
   currentCutSeg: StateSegment | undefined,
@@ -27,13 +46,17 @@ function NoFileLoaded({ mifiLink, currentCutSeg, onClick, darkMode, keyBindingBy
 }) {
   const { t } = useTranslation();
   const { simpleMode } = useUserSettings();
+  const [dragging, setDragging] = useState(false);
 
   const currentCutSegOrDefault = useMemo(() => currentCutSeg ?? { segColorIndex: 0 }, [currentCutSeg]);
 
   return (
-    <div
+    <motion.div
       className="no-user-select"
-      style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, border: '.7em dashed var(--gray-3)', color: 'var(--gray-12)', margin: '2em', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap' }}
+      style={dropzoneStyle}
+      animate={{ borderColor: dragging ? 'var(--gray-9)' : 'var(--gray-3)' }}
+      onDragOver={() => setDragging(true)}
+      onDragLeave={() => setDragging(false)}
       role="button"
       onClick={onClick}
     >
@@ -62,7 +85,7 @@ function NoFileLoaded({ mifiLink, currentCutSeg, onClick, darkMode, keyBindingBy
           <div style={{ width: '100%', height: '100%', position: 'absolute', cursor: 'pointer' }} role="button" onClick={(e) => { e.stopPropagation(); if ('targetUrl' in mifiLink && typeof mifiLink.targetUrl === 'string') electron.shell.openExternal(mifiLink.targetUrl); }} />
         </div>
       ) : undefined}
-    </div>
+    </motion.div>
   );
 }
 
