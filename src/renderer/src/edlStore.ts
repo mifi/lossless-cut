@@ -70,7 +70,7 @@ export async function saveCsvFrames({ path, cutSegments, getFrameCount }: {
   cutSegments: SegmentBase[],
   getFrameCount: GetFrameCount,
 }) {
-  await writeFile(path, await formatCsvFrames({ cutSegments, getFrameCount }));
+  await writeFile(path, formatCsvFrames({ cutSegments, getFrameCount }));
 }
 
 export async function saveTsv(path: string, cutSegments: SegmentBase[]) {
