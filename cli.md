@@ -36,7 +36,7 @@ LosslessCut --settings-json '{captureFormat:"jpeg", "keyframeCut":true}'
 ## Other options
 
 - `--locales-path` Customise path to locales (useful for [translators](./translation.md)).
-- `--disable-networking` Turn off all network requests.
+- `--disable-networking` Turn off all network requests (see [#1418](https://github.com/mifi/lossless-cut/issues/1418)).
 - `--http-api` Start the [HTTP server with an API](./api.md) to control LosslessCut, optionally specifying a port (default `8080`).
 - `--keyboard-action` Run a keyboard action (see below.)
 - `--config-dir` Path to a directory where the `config.json` file will be stored and loaded from. Note: don't include `config.json` in the path (only the directory containing it).
