@@ -95,9 +95,23 @@ function Segment({
   const { darkMode } = useUserSettings();
   const { name } = seg;
 
-  const vertBorder = useMemo(() => {
-    if (!isActive) return '2px solid transparent';
-    return `1.5px solid ${darkMode ? color.desaturate(0.1).lightness(70).string() : color.desaturate(0.2).lightness(40).string()}`;
+  const border = useMemo(() => {
+    const horizontalBorderWidth = '1px';
+    const verticalBorderWidth = '1.5px';
+
+    if (!isActive) {
+      const horizontalColor = darkMode ? color.desaturate(0.1).lightness(60) : color.desaturate(0.2).lightness(40);
+      const verticalColor = darkMode ? color.desaturate(0.1).lightness(90) : color.desaturate(0.2).lightness(10);
+      return {
+        horizontal: `${horizontalBorderWidth} solid ${horizontalColor.string()}`,
+        vertical: `${verticalBorderWidth} solid ${verticalColor.string()}`,
+      };
+    }
+
+    return {
+      horizontal: `${horizontalBorderWidth} solid transparent`,
+      vertical: `${verticalBorderWidth} solid transparent`,
+    };
   }, [darkMode, isActive, color]);
 
   const backgroundColor = useMemo(() => {
@@ -134,15 +148,18 @@ function Segment({
       color: 'white',
       overflow: 'hidden',
 
-      borderLeft: vertBorder,
+      borderLeft: border.vertical,
       borderTopLeftRadius: vertBorderRadius,
       borderBottomLeftRadius: vertBorderRadius,
 
-      borderRight: vertBorder,
+      borderRight: border.vertical,
       borderTopRightRadius: vertBorderRadius,
       borderBottomRightRadius: vertBorderRadius,
+
+      borderTop: border.horizontal,
+      borderBottom: border.horizontal,
     };
-  }, [getTimePercent, seg.end, seg.start, vertBorder]);
+  }, [getTimePercent, seg.end, seg.start, border]);
 
   return (
     <motion.div
