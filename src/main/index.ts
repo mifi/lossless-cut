@@ -5,7 +5,7 @@ process.traceProcessWarnings = true;
 // eslint-disable-next-line import/no-extraneous-dependencies
 import electron, { BrowserWindow, BrowserWindowConstructorOptions, nativeTheme, shell, app, ipcMain, Notification, NotificationConstructorOptions } from 'electron';
 import i18n from 'i18next';
-import debounce from 'lodash.debounce';
+import debounce from 'lodash.debounce/index.js';
 import yargsParser from 'yargs-parser';
 import JSON5 from 'json5';
 import remote from '@electron/remote/main';
