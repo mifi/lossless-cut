@@ -26,6 +26,7 @@ import TextInput from './TextInput';
 import { UseSegments } from '../hooks/useSegments';
 import ExportDialog from './ExportDialog';
 import ToggleExportConfirm from './ToggleExportConfirm';
+import { LossyMode } from '../../../main';
 
 
 const outDirStyle: CSSProperties = { ...highlightedTextStyle, wordBreak: 'break-all', cursor: 'pointer' };
@@ -92,10 +93,12 @@ function ExportConfirm({
   segmentsOrInverse,
   mainCopiedThumbnailStreams,
   needSmartCut,
-  smartCutBitrate,
-  setSmartCutBitrate,
+  isEncoding,
+  encBitrate,
+  setEncBitrate,
   toggleSettings,
   outputPlaybackRate,
+  lossyMode,
 } : {
   areWeCutting: boolean,
   segmentsToExport: SegmentToExport[],
@@ -119,10 +122,12 @@ function ExportConfirm({
   segmentsOrInverse: UseSegments['segmentsOrInverse'],
   mainCopiedThumbnailStreams: FFprobeStream[],
   needSmartCut: boolean,
-  smartCutBitrate: number | undefined,
-  setSmartCutBitrate: Dispatch<SetStateAction<number | undefined>>,
+  isEncoding: boolean,
+  encBitrate: number | undefined,
+  setEncBitrate: Dispatch<SetStateAction<number | undefined>>,
   toggleSettings: () => void,
   outputPlaybackRate: number,
+  lossyMode: LossyMode | undefined,
 }) {
   const { t } = useTranslation();
 
@@ -147,8 +152,8 @@ function ExportConfirm({
       movFastStart: isMov && isIpod && !movFastStart ? { warning: true, text: t('For the ipod format, it is recommended to activate this option') } : undefined,
       preserveMovData: isMov && isIpod && preserveMovData ? { warning: true, text: t('For the ipod format, it is recommended to deactivate this option') } : undefined,
       smartCut: areWeCutting && needSmartCut ? { warning: true, text: t('Smart cut is experimental and will not work on all files.') } : undefined,
-      cutMode: areWeCutting && !needSmartCut && !keyframeCut ? { text: t('Note: Keyframe cut is recommended for most common files') } : undefined,
-      avoidNegativeTs: !needSmartCut ? (() => {
+      cutMode: areWeCutting && !isEncoding && !keyframeCut ? { text: t('Note: Keyframe cut is recommended for most common files') } : undefined,
+      avoidNegativeTs: !isEncoding ? (() => {
         if (willMerge) {
           if (avoidNegativeTs !== 'make_non_negative') {
             return { text: t('When merging, it\'s generally recommended to set this to "make_non_negative"') };
@@ -181,7 +186,7 @@ function ExportConfirm({
       specific,
       totalNum: generic.filter((n) => n.warning).length + Object.values(specific).filter((n) => n != null && n.warning).length,
     };
-  }, [areWeCutting, areWeCuttingProblematicStreams, avoidNegativeTs, effectiveExportMode, enableOverwriteOutput, isIpod, isMov, keyframeCut, mainCopiedThumbnailStreams, movFastStart, needSmartCut, outFormat, outputPlaybackRate, preserveMovData, t, willMerge]);
+  }, [areWeCutting, areWeCuttingProblematicStreams, avoidNegativeTs, effectiveExportMode, enableOverwriteOutput, isEncoding, isIpod, isMov, keyframeCut, mainCopiedThumbnailStreams, movFastStart, needSmartCut, outFormat, outputPlaybackRate, preserveMovData, t, willMerge]);
 
   const exportModeDescription = useMemo(() => ({
     segments_to_chapters: t('Don\'t cut the file, but instead export an unmodified original which has chapters generated from segments'),
@@ -266,15 +271,15 @@ function ExportConfirm({
 
   const canEditSegTemplate = !willMerge || !autoDeleteMergedSegments;
 
-  const handleSmartCutBitrateToggle = useCallback((checked: boolean) => {
-    setSmartCutBitrate(() => (checked ? undefined : 10000));
-  }, [setSmartCutBitrate]);
+  const handleEncBitrateToggle = useCallback((checked: boolean) => {
+    setEncBitrate(() => (checked ? undefined : 10000));
+  }, [setEncBitrate]);
 
-  const handleSmartCutBitrateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEncBitrateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const v = parseInt(e.target.value, 10);
     if (Number.isNaN(v) || v <= 0) return;
-    setSmartCutBitrate(v);
-  }, [setSmartCutBitrate]);
+    setEncBitrate(v);
+  }, [setEncBitrate]);
 
   return (
     <ExportDialog
@@ -541,27 +546,7 @@ function ExportConfirm({
                 </td>
               </tr>
 
-              {needSmartCut && (
-                <tr>
-                  <td>
-                    {t('Smart cut auto detect bitrate')}
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                      {smartCutBitrate != null && (
-                        <>
-                          <TextInput value={smartCutBitrate} onChange={handleSmartCutBitrateChange} style={{ width: '4em', flexGrow: 0, marginRight: '.3em' }} />
-                          <span style={{ marginRight: '.3em' }}>{t('kbit/s')}</span>
-                        </>
-                      )}
-                      <span><Switch checked={smartCutBitrate == null} onCheckedChange={handleSmartCutBitrateToggle} /></span>
-                    </div>
-                  </td>
-                  <td />
-                </tr>
-              )}
-
-              {!needSmartCut && (
+              {!isEncoding && (
                 <tr>
                   <td>
                     {t('Keyframe cut mode')}
@@ -578,7 +563,41 @@ function ExportConfirm({
             </>
           )}
 
-          {!needSmartCut && (
+
+          {isEncoding && (
+            <tr>
+              <td>
+                {t('Smart cut auto detect bitrate')}
+              </td>
+              <td>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                  {encBitrate != null && (
+                    <>
+                      <TextInput value={encBitrate} onChange={handleEncBitrateChange} style={{ width: '4em', flexGrow: 0, marginRight: '.3em' }} />
+                      <span style={{ marginRight: '.3em' }}>{t('kbit/s')}</span>
+                    </>
+                  )}
+                  <span><Switch checked={encBitrate == null} onCheckedChange={handleEncBitrateToggle} /></span>
+                </div>
+              </td>
+              <td />
+            </tr>
+          )}
+
+          {lossyMode != null && (
+            <tr>
+              <td>
+                Lossy mode
+              </td>
+              <td>
+                <Switch disabled checked={lossyMode != null} />
+                <div>{lossyMode.videoEncoder}</div>
+              </td>
+              <td />
+            </tr>
+          )}
+
+          {!isEncoding && (
             <tr>
               <td>
                 &quot;ffmpeg&quot; <code className="highlighted">avoid_negative_ts</code>

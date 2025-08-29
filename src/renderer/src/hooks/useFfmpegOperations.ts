@@ -7,11 +7,12 @@ import invariant from 'tiny-invariant';
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
-import { getSmartCutParams } from '../smartcut';
+import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
 import { FFprobeStream } from '../../../../ffprobe';
 import { AvoidNegativeTs, Html5ifyMode, PreserveMetadata } from '../../../../types';
 import { AllFilesMeta, Chapter, CopyfileStreams, CustomTagsByFile, LiteFFprobeStream, ParamsByStreamId, SegmentToExport } from '../types';
+import { LossyMode } from '../../../main';
 
 const { join, resolve, dirname } = window.require('path');
 const { writeFile, mkdir, access, constants: { F_OK, W_OK } } = window.require('fs/promises');
@@ -76,17 +77,18 @@ async function pathExists(path: string) {
   }
 }
 
-function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, smartCutCustomBitrate, appendFfmpegCommandLog }: {
+function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, encCustomBitrate, appendFfmpegCommandLog }: {
   filePath: string | undefined,
   treatInputFileModifiedTimeAsStart: boolean,
   treatOutputFileModifiedTimeAsStart: boolean | null | undefined,
   enableOverwriteOutput: boolean,
-  needSmartCut: boolean,
+  isEncoding: boolean,
+  lossyMode: LossyMode | undefined,
   outputPlaybackRate: number,
   cutFromAdjustmentFrames: number,
   cutToAdjustmentFrames: number,
   appendLastCommandsLog: (a: string) => void,
-  smartCutCustomBitrate: number | undefined,
+  encCustomBitrate: number | undefined,
   appendFfmpegCommandLog: (args: string[]) => void,
 }) {
   const shouldSkipExistingFile = useCallback(async (path: string) => {
@@ -524,6 +526,9 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     // then it will cut the part *from* the keyframe to "end", and concat them together and return the concated file
     // so that for the calling code it looks as if it's just a normal segment
     async function cutSegment({ start: desiredCutFrom, end: cutTo }: { start: number, end: number }, i: number) {
+      const onProgress = (progress: number) => onSingleProgress(i, progress / 2);
+      const onConcatProgress = (progress: number) => onSingleProgress(i, (1 + progress) / 2);
+
       const finalOutPath = join(outputDir, outSegFileNames[i]!);
 
       if (await shouldSkipExistingFile(finalOutPath)) return { path: finalOutPath, created: false };
@@ -533,7 +538,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       const actualOutputDir = dirname(finalOutPath);
       if (actualOutputDir !== outputDir) await mkdir(actualOutputDir, { recursive: true });
 
-      if (!needSmartCut) {
+      if (!isEncoding) {
+        // simple lossless cut
         invariant(outFormat != null);
         await losslessCutSingle({
           cutFrom: desiredCutFrom, cutTo, chaptersPath, outPath: finalOutPath, copyFileStreams, keyframeCut, avoidNegativeTs, fileDuration, rotation, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMovData, preserveChapters, movFastStart, customTagsByFile, paramsByStreamId, onProgress: (progress) => onSingleProgress(i, progress),
@@ -541,6 +547,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         return { path: finalOutPath, created: true };
       }
 
+      // we are probably encoding (smart cut or lossy mode)
       invariant(filePath != null);
 
       // smart cut only supports cutting main file (no externally added files)
@@ -551,36 +558,47 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
           return match ? [match] : [];
         });
 
-      const { losslessCutFrom, segmentNeedsSmartCut, videoCodec, videoBitrate: detectedVideoBitrate, videoStreamIndex, videoTimebase } = await getSmartCutParams({ path: filePath, fileDuration, desiredCutFrom, streams: streamsToCopyFromMainFile });
+      const sourceCodecParams = await getCodecParams({ path: filePath, fileDuration, streams: streamsToCopyFromMainFile });
+      const { videoStream, videoTimebase } = sourceCodecParams;
 
-      if (segmentNeedsSmartCut && !detectedFps) throw new Error('Smart cut is not possible when FPS is unknown');
-
-      console.log('Smart cut on video stream', videoStreamIndex);
-
-      const onProgress = (progress: number) => onSingleProgress(i, progress / 2);
-      const onConcatProgress = (progress: number) => onSingleProgress(i, (1 + progress) / 2);
+      const videoCodec = lossyMode ? lossyMode.videoEncoder : sourceCodecParams.videoCodec;
 
       const copyFileStreamsFiltered = [{
         path: filePath,
         // with smart cut, we only copy/cut *one* video stream, and *all* other non-video streams (main file only)
-        streamIds: streamsToCopyFromMainFile.filter((stream) => stream.index === videoStreamIndex || stream.codec_type !== 'video').map((stream) => stream.index),
+        streamIds: streamsToCopyFromMainFile.filter((stream) => stream.index === videoStream.index || stream.codec_type !== 'video').map((stream) => stream.index),
       }];
 
       // eslint-disable-next-line no-shadow
       async function cutEncodeSmartPartWrapper({ cutFrom, cutTo, outPath }: { cutFrom: number, cutTo: number, outPath: string }) {
         if (await shouldSkipExistingFile(outPath)) return;
-        if (videoCodec == null || detectedVideoBitrate == null || videoTimebase == null) throw new Error();
+        invariant(videoCodec != null);
+        invariant(sourceCodecParams.videoBitrate != null);
+        invariant(sourceCodecParams.videoTimebase != null);
         invariant(filePath != null);
         invariant(outFormat != null);
-        await cutEncodeSmartPart({ cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate: smartCutCustomBitrate != null ? smartCutCustomBitrate * 1000 : detectedVideoBitrate, videoStreamIndex, videoTimebase, allFilesMeta, copyFileStreams: copyFileStreamsFiltered, ffmpegExperimental });
+        await cutEncodeSmartPart({ cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate: encCustomBitrate != null ? encCustomBitrate * 1000 : sourceCodecParams.videoBitrate, videoStreamIndex: videoStream.index, videoTimebase: sourceCodecParams.videoTimebase, allFilesMeta, copyFileStreams: copyFileStreamsFiltered, ffmpegExperimental });
       }
+
+      const cutEncodeWholePart = async () => {
+        await cutEncodeSmartPartWrapper({ cutFrom: desiredCutFrom, cutTo, outPath: finalOutPath });
+        return { path: finalOutPath, created: true };
+      };
+
+      if (lossyMode) {
+        console.log('Lossy mode: cutting/encoding the whole segment', { desiredCutFrom, cutTo });
+        return cutEncodeWholePart();
+      }
+
+      const { losslessCutFrom, segmentNeedsSmartCut } = await needsSmartCut({ path: filePath, desiredCutFrom, videoStream });
+      if (segmentNeedsSmartCut && !detectedFps) throw new Error('Smart cut is not possible when FPS is unknown');
+      console.log('Smart cut on video stream', videoStream.index);
 
       // If we are cutting within two keyframes, just encode the whole part and return that
       // See https://github.com/mifi/lossless-cut/pull/1267#issuecomment-1236381740
       if (segmentNeedsSmartCut && losslessCutFrom > cutTo) {
         console.log('Segment is between two keyframes, cutting/encoding the whole segment', { desiredCutFrom, losslessCutFrom, cutTo });
-        await cutEncodeSmartPartWrapper({ cutFrom: desiredCutFrom, cutTo, outPath: finalOutPath });
-        return { path: finalOutPath, created: true };
+        return cutEncodeWholePart();
       }
 
       invariant(outFormat != null);
@@ -631,7 +649,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     } finally {
       if (chaptersPath) await tryDeleteFiles([chaptersPath]);
     }
-  }, [needSmartCut, filePath, losslessCutSingle, shouldSkipExistingFile, cutEncodeSmartPart, smartCutCustomBitrate, concatFiles]);
+  }, [shouldSkipExistingFile, isEncoding, filePath, losslessCutSingle, cutEncodeSmartPart, encCustomBitrate, lossyMode, concatFiles]);
 
   const concatCutSegments = useCallback(async ({ customOutDir, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapterNames, preserveMetadataOnMerge, mergedOutFilePath }: {
     customOutDir: string | undefined,

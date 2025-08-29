@@ -8,20 +8,11 @@ const { stat } = window.require('fs-extra');
 
 const mapVideoCodec = (codec: string) => ({ av1: 'libsvtav1' }[codec] ?? codec);
 
-// eslint-disable-next-line import/prefer-default-export
-export async function getSmartCutParams({ path, fileDuration, desiredCutFrom, streams }: {
+export async function needsSmartCut({ path, desiredCutFrom, videoStream }: {
   path: string,
-  fileDuration: number | undefined,
   desiredCutFrom: number,
-  streams: Pick<FFprobeStream, 'time_base' | 'codec_type' | 'disposition' | 'index' | 'bit_rate' | 'codec_name'>[],
+  videoStream: Pick<FFprobeStream, 'index'>,
 }) {
-  const videoStreams = getRealVideoStreams(streams);
-  if (videoStreams.length > 1) throw new Error('Can only smart cut video with exactly one video stream');
-
-  const [videoStream] = videoStreams;
-
-  if (videoStream == null) throw new Error('Smart cut only works on videos');
-
   const readKeyframes = async (window: number) => readKeyframesAroundTime({ filePath: path, streamIndex: videoStream.index, aroundTime: desiredCutFrom, window });
 
   let keyframes = await readKeyframes(10);
@@ -32,7 +23,6 @@ export async function getSmartCutParams({ path, fileDuration, desiredCutFrom, st
 
     return {
       losslessCutFrom: keyframeAtExactTime.time,
-      videoStreamIndex: videoStream.index,
       segmentNeedsSmartCut: false,
     };
   }
@@ -48,12 +38,32 @@ export async function getSmartCutParams({ path, fileDuration, desiredCutFrom, st
 
   console.log('Smart cut from keyframe', { keyframe: nextKeyframe.time, desiredCutFrom });
 
+  return {
+    losslessCutFrom: nextKeyframe.time,
+    segmentNeedsSmartCut: true,
+  };
+}
+
+// eslint-disable-next-line import/prefer-default-export
+export async function getCodecParams({ path, fileDuration, streams }: {
+  path: string,
+  fileDuration: number | undefined,
+  streams: Pick<FFprobeStream, 'time_base' | 'codec_type' | 'disposition' | 'index' | 'bit_rate' | 'codec_name'>[],
+}) {
+  const videoStreams = getRealVideoStreams(streams);
+  if (videoStreams.length > 1) throw new Error('Can only smart cut video with exactly one video stream');
+
+  const [videoStream] = videoStreams;
+
+  if (videoStream == null) throw new Error('Smart cut only works on videos');
+
   let videoBitrate = parseInt(videoStream.bit_rate!, 10);
   if (Number.isNaN(videoBitrate)) {
-    console.warn('Unable to detect input bitrate');
+    console.warn('Unable to detect input bitrate.');
     const stats = await stat(path);
     if (fileDuration == null) throw new Error('Video duration is unknown, cannot estimate bitrate');
     videoBitrate = (stats.size * 8) / fileDuration;
+    console.warn('Estimated bitrate.', videoBitrate / 1e6, 'Mbit/s');
   }
 
   // to account for inaccuracies and quality loss
@@ -74,9 +84,7 @@ export async function getSmartCutParams({ path, fileDuration, desiredCutFrom, st
   // const videoProfile = parseProfile(videoStream);
 
   return {
-    losslessCutFrom: nextKeyframe.time,
-    videoStreamIndex: videoStream.index,
-    segmentNeedsSmartCut: true,
+    videoStream,
     videoCodec,
     videoBitrate: Math.floor(videoBitrate),
     videoTimebase: timebase,

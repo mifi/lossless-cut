@@ -108,7 +108,7 @@ const { exists } = window.require('fs-extra');
 const { lstat } = window.require('fs/promises');
 const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('path');
 
-const { focusWindow, hasDisabledNetworking, quitApp, pathToFileURL, setProgressBar, sendOsNotification } = window.require('@electron/remote').require('./index.js');
+const { focusWindow, hasDisabledNetworking, quitApp, pathToFileURL, setProgressBar, sendOsNotification, lossyMode } = window.require('@electron/remote').require('./index.js');
 
 
 const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
@@ -164,7 +164,7 @@ function App() {
   const [editingSegmentTagsSegmentIndex, setEditingSegmentTagsSegmentIndex] = useState<number>();
   const [editingSegmentTags, setEditingSegmentTags] = useState<SegmentTags>();
   const [mediaSourceQuality, setMediaSourceQuality] = useState(0);
-  const [smartCutBitrate, setSmartCutBitrate] = useState<number | undefined>();
+  const [encBitrate, setEncBitrate] = useState<number | undefined>();
   const [exportCount, setExportCount] = useState(0);
   const [maxKeyframes, setMaxKeyframes] = useState(1000);
 
@@ -654,10 +654,11 @@ function App() {
 
   const areWeCutting = useMemo(() => segmentsToExport.some(({ start, end }) => isCuttingStart(start) || isCuttingEnd(end, fileDuration)), [fileDuration, segmentsToExport]);
   const needSmartCut = areWeCutting && enableSmartCut;
+  const isEncoding = needSmartCut || lossyMode != null;
 
   const {
     concatFiles, html5ifyDummy, cutMultiple, concatCutSegments, html5ify, fixInvalidDuration, extractStreams, tryDeleteFiles,
-  } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, needSmartCut, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, smartCutCustomBitrate: smartCutBitrate, appendFfmpegCommandLog });
+  } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, encCustomBitrate: encBitrate, appendFfmpegCommandLog });
 
   const { captureFrameFromTag, captureFrameFromFfmpeg, captureFramesRange } = useFrameCapture({ appendFfmpegCommandLog, formatTimecode, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
 
@@ -2759,7 +2760,7 @@ function App() {
 
               {/* Dialogs */}
 
-              <ExportConfirm areWeCutting={areWeCutting} segmentsOrInverse={segmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} mergedFileTemplate={mergedFileTemplateOrDefault} setMergedFileTemplate={setMergedFileTemplate} generateOutSegFileNames={generateOutSegFileNames} generateMergedFileNames={generateMergedFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} needSmartCut={needSmartCut} smartCutBitrate={smartCutBitrate} setSmartCutBitrate={setSmartCutBitrate} toggleSettings={toggleSettings} outputPlaybackRate={outputPlaybackRate} />
+              <ExportConfirm areWeCutting={areWeCutting} segmentsOrInverse={segmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmVisible} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} setOutSegTemplate={setOutSegTemplate} outSegTemplate={outSegTemplateOrDefault} mergedFileTemplate={mergedFileTemplateOrDefault} setMergedFileTemplate={setMergedFileTemplate} generateOutSegFileNames={generateOutSegFileNames} generateMergedFileNames={generateMergedFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} needSmartCut={needSmartCut} isEncoding={isEncoding} encBitrate={encBitrate} setEncBitrate={setEncBitrate} toggleSettings={toggleSettings} outputPlaybackRate={outputPlaybackRate} lossyMode={lossyMode} />
 
               <Sheet visible={streamsSelectorShown} onClosePress={() => setStreamsSelectorShown(false)} maxWidth={1000}>
                 {mainStreams && filePath != null && (

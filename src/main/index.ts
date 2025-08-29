@@ -12,6 +12,7 @@ import remote from '@electron/remote/main';
 import { stat } from 'node:fs/promises';
 import assert from 'node:assert';
 import timers from 'node:timers/promises';
+import { z } from 'zod';
 
 import logger from './logger.js';
 import menu from './menu.js';
@@ -220,11 +221,18 @@ function parseCliArgs(rawArgv = process.argv) {
 
   return yargsParser(argsWithoutAppName, {
     boolean: ['allow-multiple-instances', 'disable-networking'],
-    string: ['settings-json', 'config-dir'],
+    string: ['settings-json', 'config-dir', 'lossy-mode'],
   });
 }
 
 const argv = parseCliArgs();
+
+const lossyModeSchema = z.object({ videoEncoder: z.union([z.literal('libx264'), z.literal('libx265'), z.literal('libsvtav1')]) });
+// eslint-disable-next-line prefer-destructuring
+const lossyMode = argv['lossyMode'] ? lossyModeSchema.parse(JSON5.parse(argv['lossyMode'])) : undefined;
+export { lossyMode };
+
+export type LossyMode = z.infer<typeof lossyModeSchema>;
 
 if (argv['localesPath'] != null) i18nCommon.setCustomLocalesPath(argv['localesPath']);
 
