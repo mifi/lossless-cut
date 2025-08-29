@@ -81,14 +81,14 @@ export async function saveSrt(path: string, cutSegments: SegmentBase[]) {
   await writeFile(path, formatSrt(cutSegments));
 }
 
-export async function saveLlcProject({ savePath, filePath, cutSegments }: {
+export async function saveLlcProject({ savePath, mediaFilePath, cutSegments }: {
   savePath: string,
-  filePath: string,
+  mediaFilePath: string,
   cutSegments: StateSegment[],
 }) {
   const projectData: LlcProject = {
     version: 2,
-    mediaFileName: basename(filePath),
+    mediaFileName: basename(mediaFilePath),
     cutSegments: mapSaveableSegments(cutSegments),
   };
   await writeFile(savePath, JSON5.stringify(projectData, null, 2));
@@ -222,6 +222,6 @@ export async function exportEdlFile({ type, cutSegments, customOutDir, filePath,
   else if (type === 'tsv-human') await saveTsv(savePath, cutSegments);
   else if (type === 'csv-human') await saveCsvHuman(savePath, cutSegments);
   else if (type === 'csv-frames') await saveCsvFrames({ path: savePath, cutSegments, getFrameCount });
-  else if (type === 'llc') await saveLlcProject({ savePath, filePath, cutSegments });
+  else if (type === 'llc') await saveLlcProject({ savePath, mediaFilePath: filePath, cutSegments });
   else if (type === 'srt') await saveSrt(savePath, cutSegments);
 }

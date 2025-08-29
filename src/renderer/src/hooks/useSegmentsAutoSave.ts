@@ -29,6 +29,7 @@ export default ({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, custo
     return { cutSegments, projectFileSavePath, filePath };
   }, [cutSegments, filePath, projectFileSavePath]);
 
+  // NOTE: Could lose a save if user closes too fast, but not a big issue I think
   const [debouncedSaveOperation] = useDebounce(currentSaveOperation, isDev ? 2000 : 500);
 
   const lastSaveOperation = useRef<typeof debouncedSaveOperation>();
@@ -36,7 +37,6 @@ export default ({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, custo
   useEffect(() => {
     async function save() {
       try {
-        // NOTE: Could lose a save if user closes too fast, but not a big issue I think
         if (!autoSaveProjectFile
           || !debouncedSaveOperation
           || debouncedSaveOperation.filePath == null
@@ -49,7 +49,8 @@ export default ({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, custo
           return;
         }
 
-        await saveLlcProject({ savePath: debouncedSaveOperation.projectFileSavePath, filePath: debouncedSaveOperation.filePath, cutSegments: debouncedSaveOperation.cutSegments });
+        console.log('Saving project file', debouncedSaveOperation.projectFileSavePath, debouncedSaveOperation.cutSegments);
+        await saveLlcProject({ savePath: debouncedSaveOperation.projectFileSavePath, mediaFilePath: debouncedSaveOperation.filePath, cutSegments: debouncedSaveOperation.cutSegments });
         lastSaveOperation.current = debouncedSaveOperation;
       } catch (err) {
         errorToast(i18n.t('Unable to save project file'));
