@@ -1337,7 +1337,9 @@ function App() {
 
   const loadEdlFile = useCallback(async ({ path, type, append = false }: { path: string, type: EdlFileType, append?: boolean }) => {
     console.log('Loading EDL file', type, path, append);
-    loadCutSegments(await readEdlFile({ type, path, fps: detectedFps }), append);
+    // cannot clamDuration because the duration is null (if no file loaded) or duration of a different file (if switching files)
+    // because of how react state works
+    loadCutSegments({ segments: await readEdlFile({ type, path, fps: detectedFps }), append });
   }, [detectedFps, loadCutSegments]);
 
   const loadSubtitleTrackToSegments = useCallback(async (streamId: number) => {
@@ -1345,11 +1347,11 @@ function App() {
     setWorking(true);
     try {
       setStreamsSelectorShown(false);
-      loadCutSegments(await extractSubtitleTrackToSegments(filePath, streamId), true);
+      loadCutSegments({ segments: await extractSubtitleTrackToSegments(filePath, streamId), append: true, clampDuration: fileDuration });
     } finally {
       setWorking(undefined);
     }
-  }, [filePath, loadCutSegments, setWorking]);
+  }, [fileDuration, filePath, loadCutSegments, setWorking]);
 
   const loadMedia = useCallback(async ({ filePath: fp, projectPath }: { filePath: string, projectPath?: string | undefined }) => {
     async function tryOpenProjectPath(path: string) {
@@ -1380,7 +1382,7 @@ function App() {
         const edl = tryMapChaptersToEdl(chapters);
         if (edl.length > 0 && enableAskForImportChapters && (await askForImportChapters())) {
           console.log('Convert chapters to segments', edl);
-          loadCutSegments(edl, false);
+          loadCutSegments({ segments: edl, append: false });
         }
       } catch (err) {
         if (err instanceof DirectoryAccessDeclinedError) throw err;
@@ -2324,9 +2326,9 @@ function App() {
 
     await withErrorHandling(async () => {
       const edl = await askForEdlImport({ type, fps: detectedFps });
-      if (edl.length > 0) loadCutSegments(edl, true);
+      if (edl.length > 0) loadCutSegments({ segments: edl, append: true, clampDuration: fileDuration });
     }, i18n.t('Failed to import project file'));
-  }, [checkFileOpened, detectedFps, loadCutSegments]);
+  }, [checkFileOpened, detectedFps, fileDuration, loadCutSegments]);
 
   useEffect(() => {
     const openFiles = (filePaths: string[]) => { userOpenFiles(filePaths.map((p) => resolvePathIfNeeded(p))); };
