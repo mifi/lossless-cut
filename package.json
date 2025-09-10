@@ -131,7 +131,7 @@
     "typescript": "^5.7.2",
     "use-debounce": "^5.1.0",
     "use-trace-update": "^1.3.0",
-    "vite": "^6.3.5",
+    "vite": "^6.3.6",
     "vitest": "^3.0.8"
   },
   "dependencies": {
