@@ -26,7 +26,7 @@ import useFrameCapture from './hooks/useFrameCapture';
 import useSegments from './hooks/useSegments';
 import useDirectoryAccess from './hooks/useDirectoryAccess';
 
-import { UserSettingsContext, SegColorsContext, UserSettingsContextType } from './contexts';
+import { UserSettingsContext, SegColorsContext, UserSettingsContextType, AppContext } from './contexts';
 
 import NoFileLoaded from './NoFileLoaded';
 import MediaSourcePlayer from './MediaSourcePlayer';
@@ -511,6 +511,10 @@ function App() {
     }
     setStoreProjectInWorkingDir(newValue);
   }, [ensureAccessToSourceDir, getProjectFileSavePath, setStoreProjectInWorkingDir, storeProjectInWorkingDir]);
+
+  const appContext = useMemo(() => ({
+    setWorking,
+  }), [setWorking]);
 
   const userSettingsContext = useMemo<UserSettingsContextType>(() => ({
     ...allUserSettings, toggleCaptureFormat, changeOutDir, toggleKeyframeCut, toggleExportConfirmEnabled, toggleSimpleMode, toggleSafeOutputFileName, effectiveExportMode,
@@ -2512,6 +2516,7 @@ function App() {
 
   return (
     <>
+      <AppContext.Provider value={appContext}>
       <SegColorsContext.Provider value={segColorsContext}>
         <UserSettingsContext.Provider value={userSettingsContext}>
           <ThemeProvider value={theme}>
@@ -2827,6 +2832,7 @@ function App() {
           </ThemeProvider>
         </UserSettingsContext.Provider>
       </SegColorsContext.Provider>
+      </AppContext.Provider>
 
       <div id="swal2-container-wrapper" className={darkMode ? 'dark-theme' : undefined} style={baseColorStyle} />
     </>

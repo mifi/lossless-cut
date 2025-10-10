@@ -3,6 +3,7 @@ import Color from 'color';
 
 import useUserSettingsRoot from './hooks/useUserSettingsRoot';
 import { ExportMode, SegmentColorIndex } from './types';
+import type useLoading from './hooks/useLoading';
 
 
 export type UserSettingsContextType = ReturnType<typeof useUserSettingsRoot> & {
@@ -19,8 +20,15 @@ interface SegColorsContextType {
   getSegColor: (seg: SegmentColorIndex | undefined) => Color
 }
 
+interface AppContextType {
+  setWorking: ReturnType<typeof useLoading>['setWorking'],
+  working: ReturnType<typeof useLoading>['working'],
+}
+
+
 export const UserSettingsContext = React.createContext<UserSettingsContextType | undefined>(undefined);
 export const SegColorsContext = React.createContext<SegColorsContextType | undefined>(undefined);
+export const AppContext = React.createContext<AppContextType | undefined>(undefined);
 
 export const useSegColors = () => {
   const context = useContext(SegColorsContext);
