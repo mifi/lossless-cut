@@ -801,7 +801,7 @@
     "You have enabled the \"invert segments\" mode <1></1> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <3></3> symbol below to disable this mode. Alternatively you may combine overlapping segments from the menu.": "You have enabled the \"invert segments\" mode <1></1> which will cut away selected segments instead of keeping them. But there is no space between any segments, or at least two segments are overlapping. This would not produce any output. Either make room between segments or click the Yinyang <3></3> symbol below to disable this mode. Alternatively you may combine overlapping segments from the menu.",
     "You have no write access to the directory of this file": "You have no write access to the directory of this file",
     "You have no write access to the directory of this file, please select a custom working dir": "You have no write access to the directory of this file, please select a custom working dir",
-    "You might want to redact any sensitive information like paths.": "You might want to redact any sensitive information like paths.",
+    "You might want to redact any sensitive information like paths.": "You might want to redact any sensitive information like paths and GPS location.",
     "You need to open a media file first": "You need to open a media file first",
     "You opened a new file. What do you want to do?": "You opened a new file. What do you want to do?",
     "You ran out of space": "You ran out of space",
