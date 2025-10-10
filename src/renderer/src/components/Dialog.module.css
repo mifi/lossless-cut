@@ -1,6 +1,7 @@
 .dialog {
   --duration: 0.2s;
 
+  box-sizing: border-box;
   border: .1em solid var(--black-a5);
   background: var(--white-a8);
   color: var(--gray-12);
