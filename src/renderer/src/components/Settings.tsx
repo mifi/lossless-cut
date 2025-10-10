@@ -287,12 +287,12 @@ function Settings({
                 {keyframeCut ? (
                   <>
                     <b>{t('Keyframe cut')}</b>: {t('Cut at the preceding keyframe (not accurate time.) Equiv to')}:<br />
-                    <code className="highlighted">ffmpeg -ss -i input.mp4</code>
+                    <code className="highlighted">ffmpeg -ss N -i input.mp4</code>
                   </>
                 ) : (
                   <>
                     <b>{t('Normal cut')}</b>: {t('Accurate time but could leave an empty portion at the beginning of the video. Equiv to')}:<br />
-                    <code className="highlighted">ffmpeg -i -ss input.mp4</code>
+                    <code className="highlighted">ffmpeg -i input -ss N</code>
                   </>
                 )}
               </div>
