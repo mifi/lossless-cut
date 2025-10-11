@@ -513,8 +513,9 @@ function App() {
   }, [ensureAccessToSourceDir, getProjectFileSavePath, setStoreProjectInWorkingDir, storeProjectInWorkingDir]);
 
   const appContext = useMemo(() => ({
+    working,
     setWorking,
-  }), [setWorking]);
+  }), [setWorking, working]);
 
   const userSettingsContext = useMemo<UserSettingsContextType>(() => ({
     ...allUserSettings, toggleCaptureFormat, changeOutDir, toggleKeyframeCut, toggleExportConfirmEnabled, toggleSimpleMode, toggleSafeOutputFileName, effectiveExportMode,
