@@ -68,7 +68,7 @@ export default ({ filePath }: { filePath: string | undefined }) => {
 
     smoothSeek(outVal);
     setCommandedTime(outVal);
-    setCompatPlayerEventId((id) => id + 1); // To make sure that we can seek even to the same commanded time that we are already add (e.g. loop current segment)
+    if (video.currentTime === val) setCompatPlayerEventId((id) => id + 1); // To make sure that we can seek even to the same commanded time that we are already add (e.g. loop current segment)
   }, [setCommandedTime, smoothSeek]);
 
   // Relevant time is the player's playback position if we're currently playing - if not, it's the user's commanded time.

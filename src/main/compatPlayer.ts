@@ -5,17 +5,11 @@ import logger from './logger.js';
 import { createMediaSourceProcess, readOneJpegFrame as readOneJpegFrameRaw } from './ffmpeg.js';
 
 
-export function createMediaSourceStream({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps }: {
-  path: string,
-  videoStreamIndex?: number | undefined,
-  audioStreamIndexes: number[],
-  seekTo: number,
-  size?: number | undefined,
-  fps?: number | undefined,
-}) {
+export function createMediaSourceStream(params: Parameters<typeof createMediaSourceProcess>[0]) {
   const abortController = new AbortController();
+  const { videoStreamIndex, audioStreamIndexes, seekTo } = params;
   logger.info('Starting preview process', { videoStreamIndex, audioStreamIndexes, seekTo });
-  const process = createMediaSourceProcess({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps });
+  const process = createMediaSourceProcess(params);
 
   // eslint-disable-next-line unicorn/prefer-add-event-listener
   abortController.signal.onabort = () => {
@@ -82,9 +76,9 @@ export function createMediaSourceStream({ path, videoStreamIndex, audioStreamInd
   return { abort, readChunk };
 }
 
-export function readOneJpegFrame({ path, seekTo, videoStreamIndex }: { path: string, seekTo: number, videoStreamIndex: number }) {
+export function readOneJpegFrame(params: Parameters<typeof readOneJpegFrameRaw>[0]) {
   const abortController = new AbortController();
-  const process = readOneJpegFrameRaw({ path, seekTo, videoStreamIndex });
+  const process = readOneJpegFrameRaw(params);
 
   // eslint-disable-next-line unicorn/prefer-add-event-listener
   abortController.signal.onabort = () => process.kill('SIGKILL');

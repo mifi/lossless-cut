@@ -532,13 +532,18 @@ export async function getDuration(filePath: string) {
   return parseFloat((await readFormatData(filePath)).duration);
 }
 
-export function readOneJpegFrame({ path, seekTo, videoStreamIndex }: { path: string, seekTo: number, videoStreamIndex: number }) {
+export function readOneJpegFrame({ path, seekTo, videoStreamIndex, rotate }: {
+  path: string,
+  seekTo: number,
+  videoStreamIndex: number,
+  rotate: number | undefined,
+}) {
   const args = [
     '-hide_banner', '-loglevel', 'error',
 
     '-ss', String(seekTo),
 
-    '-noautorotate',
+    ...(rotate != null ? ['-noautorotate'] : []),
 
     '-i', path,
 
@@ -551,20 +556,21 @@ export function readOneJpegFrame({ path, seekTo, videoStreamIndex }: { path: str
     '-',
   ];
 
-  // logger.info(getFfCommandLine('ffmpeg', args));
+  logger.info(getFfCommandLine('ffmpeg', args));
   return runFfmpegProcess(args, undefined, { logCli: false });
 }
 
 const enableLog = false;
 const encode = true;
 
-export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps }: {
+export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps, rotate }: {
   path: string,
   videoStreamIndex?: number | undefined,
   audioStreamIndexes: number[],
   seekTo: number,
   size?: number | undefined,
   fps?: number | undefined,
+  rotate: number | undefined,
 }) {
   function getFilters() {
     const graph: string[] = [];
@@ -610,7 +616,10 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
 
     '-ss', String(seekTo),
 
-    '-noautorotate',
+    ...(rotate != null ? [
+      '-display_rotation', '0',
+      '-noautorotate',
+    ] : []),
 
     '-i', path,
 
@@ -638,7 +647,7 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
     '-f', 'mp4', '-movflags', '+frag_keyframe+empty_moov+default_base_moof', '-',
   ];
 
-  if (enableLog) logger.info(getFfCommandLine('ffmpeg', args));
+  logger.info(getFfCommandLine('ffmpeg', args));
 
   return execa(getFfmpegPath(), args, { encoding: 'buffer', buffer: false, stderr: enableLog ? 'inherit' : 'pipe' });
 }

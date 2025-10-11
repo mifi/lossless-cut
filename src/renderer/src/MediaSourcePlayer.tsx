@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo, memo, CSSProperties, RefObject, ReactEventHandler, FocusEventHandler } from 'react';
 import { Spinner } from 'evergreen-ui';
 import { useDebounce } from 'use-debounce';
+import invariant from 'tiny-invariant';
 
 import isDev from './isDev';
 import { ChromiumHTMLVideoElement } from './types';
@@ -9,18 +10,19 @@ import { FFprobeStream } from '../../../ffprobe';
 const { compatPlayer: { createMediaSourceStream, readOneJpegFrame } } = window.require('@electron/remote').require('./index.js');
 
 
-async function startPlayback({ path, video, videoStreamIndex, audioStreamIndexes, seekTo, signal, playSafe, onCanPlay, getTargetTime, size, fps }: {
+async function startPlayback({ path, video, videoStreamIndex, audioStreamIndexes, seekTo, signal, onPlayRequested, onCanPlay, getTargetTime, size, fps, rotate }: {
   path: string,
   video: ChromiumHTMLVideoElement,
   videoStreamIndex?: number | undefined,
   audioStreamIndexes: number[],
   seekTo: number,
   signal: AbortSignal,
-  playSafe: () => void,
+  onPlayRequested: () => void,
   onCanPlay: () => void,
   getTargetTime: () => number,
   size?: number | undefined,
   fps?: number | undefined,
+  rotate: number | undefined,
 }) {
   let canPlay = false;
   let bufferEndTime: number | undefined;
@@ -104,7 +106,7 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndexes
   };
 
   sourceBuffer.addEventListener('updateend', () => {
-    playSafe();
+    onPlayRequested();
   }, { once: true });
 
   let firstChunkReceived = false;
@@ -183,7 +185,7 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndexes
     processChunk();
   });
 
-  stream = createMediaSourceStream({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps });
+  stream = createMediaSourceStream({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps, rotate });
 
   interval = setInterval(() => {
     if (mediaSource.readyState !== 'open') {
@@ -207,7 +209,7 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndexes
 
     if ((video.paused || video.ended) && !done) {
       console.warn('Resuming unexpectedly paused video');
-      playSafe();
+      onPlayRequested();
     }
 
     // make sure the playback keeps up
@@ -230,31 +232,22 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndexes
   processChunk();
 }
 
-function drawJpegFrame(canvas: HTMLCanvasElement | null, jpegImage: Uint8Array) {
-  if (!canvas) return;
-
-  const ctx = canvas.getContext('2d');
-
-  const img = new Image();
-  if (ctx == null) {
-    console.error('Canvas context is null');
-    return;
-  }
-  // eslint-disable-next-line unicorn/prefer-add-event-listener
-  img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  // eslint-disable-next-line unicorn/prefer-add-event-listener
-  img.onerror = (error) => console.error('Canvas JPEG image error', error);
-  // todo use Blob?
-  img.src = `data:image/jpeg;base64,${Buffer.from(jpegImage).toString('base64')}`;
-}
-
-async function createPauseImage({ path, seekTo, videoStreamIndex, canvas, signal }: {
-  path: string, seekTo: number, videoStreamIndex: number, canvas: HTMLCanvasElement | null, signal: AbortSignal,
+async function createPauseImage({ path, seekTo, videoStreamIndex, image, rotate, signal }: {
+  path: string,
+  seekTo: number,
+  videoStreamIndex: number,
+  image: HTMLImageElement | null,
+  rotate: number | undefined,
+  signal: AbortSignal,
 }) {
-  const { promise, abort } = readOneJpegFrame({ path, seekTo, videoStreamIndex });
+  const { promise, abort } = readOneJpegFrame({ path, seekTo, videoStreamIndex, rotate });
   signal.addEventListener('abort', () => abort());
   const jpegImage = await promise;
-  drawJpegFrame(canvas, jpegImage);
+
+  invariant(image);
+  if (image.src) URL.revokeObjectURL(image.src);
+  // eslint-disable-next-line no-param-reassign
+  image.src = URL.createObjectURL(new Blob([Buffer.from(jpegImage)], { type: 'image/jpeg' }));
 }
 
 function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStreams, commandedTime, playing, eventId, masterVideoRef, mediaSourceQuality, playbackVolume }: {
@@ -271,7 +264,7 @@ function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStr
   playbackVolume: number,
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
   const [loading, setLoading] = useState(true);
 
   const onVideoError = useCallback<ReactEventHandler<HTMLVideoElement>>((error) => {
@@ -294,7 +287,7 @@ function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStr
     // console.log('debouncedState', debouncedState);
   }, [debouncedState]);
 
-  const playSafe = useCallback(async () => {
+  const onPlayRequested = useCallback(async () => {
     try {
       await videoRef.current?.play();
     } catch (err) {
@@ -305,31 +298,31 @@ function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStr
   useEffect(() => {
     setLoading(true);
 
-    if (debouncedState.startTime == null) {
+    let { startTime: seekTo } = debouncedState;
+
+    const video = videoRef.current;
+    invariant(video != null);
+
+    const masterVideo = masterVideoRef.current;
+    invariant(masterVideo != null);
+
+    if (seekTo >= masterVideo.duration) seekTo = 0; // start over if reached end
+
+    if (seekTo == null) {
       return () => undefined;
     }
 
-    const clearCanvas = () => {
-      if (canvasRef.current == null) return;
-      canvasRef.current.getContext('2d')?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-    };
-
     const onCanPlay = () => {
-      clearCanvas();
       setLoading(false);
     };
-    const getTargetTime = () => masterVideoRef.current!.currentTime - debouncedState.startTime;
+    const getTargetTime = () => masterVideoRef.current!.currentTime - seekTo;
 
     const abortController = new AbortController();
 
-    const video = videoRef.current;
-
     (async () => {
       try {
-        // When playing, we use a secondary video element, but when paused we use a canvas
+        // When playing, we use a secondary video element, but when paused we use an img
         if (debouncedState.playing) {
-          if (video == null) throw new Error('No video ref');
-
           let size: number | undefined;
           if (videoStream != null) {
             if (mediaSourceQuality === 0) size = 800;
@@ -340,12 +333,13 @@ function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStr
           if (mediaSourceQuality === 0) fps = 30;
           else if (mediaSourceQuality === 1) fps = 15;
 
-          await startPlayback({ path: filePath, video, videoStreamIndex: videoStream?.index, audioStreamIndexes, seekTo: debouncedState.startTime, signal: abortController.signal, playSafe, onCanPlay, getTargetTime, size, fps });
-        } else { // paused
-          if (videoStream != null) {
-            await createPauseImage({ path: filePath, seekTo: debouncedState.startTime, videoStreamIndex: videoStream.index, canvas: canvasRef.current, signal: abortController.signal });
+          await startPlayback({ signal: abortController.signal, path: filePath, video, videoStreamIndex: videoStream?.index, audioStreamIndexes, seekTo, onPlayRequested, onCanPlay, getTargetTime, size, fps, rotate });
+        } else if (videoStream != null) { // paused
+          try {
+            await createPauseImage({ signal: abortController.signal, path: filePath, videoStreamIndex: videoStream.index, seekTo, image: imgRef.current, rotate });
+          } finally {
+            setLoading(false);
           }
-          setLoading(false);
         }
       } catch (err) {
         console.error('Preview failed', err);
@@ -354,33 +348,35 @@ function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStr
 
     return () => abortController.abort();
     // Important that we also have eventId in the deps, so that we can restart the preview when the eventId changes
-  }, [debouncedState.startTime, debouncedState.eventId, filePath, masterVideoRef, playSafe, debouncedState.playing, videoStream, mediaSourceQuality, audioStreamIndexes]);
+  }, [debouncedState.startTime, debouncedState.eventId, filePath, masterVideoRef, onPlayRequested, debouncedState.playing, videoStream, mediaSourceQuality, audioStreamIndexes, rotate, debouncedState]);
 
   useEffect(() => {
     if (videoRef.current) videoRef.current.volume = playbackVolume;
   }, [playbackVolume]);
 
-  const onFocus = useCallback<FocusEventHandler<HTMLVideoElement | HTMLCanvasElement>>((e) => {
+  const onFocus = useCallback<FocusEventHandler<HTMLVideoElement | HTMLImageElement>>((e) => {
     // prevent video element from stealing focus in fullscreen mode https://github.com/mifi/lossless-cut/issues/543#issuecomment-1868167775
     e.target.blur();
   }, []);
 
-  const { videoStyle, canvasStyle } = useMemo(() => {
-    const sharedStyle: CSSProperties = { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'block', width: '100%', height: '100%', objectFit: 'contain', transform: rotate ? `rotate(${rotate}deg)` : undefined };
+  const { videoStyle, imgStyle } = useMemo<{ videoStyle: CSSProperties, imgStyle: CSSProperties }>(() => {
+    const sharedStyle: CSSProperties = {
+      position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'block', width: '100%', height: '100%', objectFit: 'contain', transform: rotate ? `rotate(${rotate}deg)` : undefined,
+    };
 
-    const shouldShowCanvas = !debouncedState.playing;
+    const shouldShowImage = !debouncedState.playing;
 
     return {
       videoStyle: { ...sharedStyle, visibility: loading || !debouncedState.playing ? 'hidden' : undefined },
-      canvasStyle: { ...sharedStyle, visibility: shouldShowCanvas ? undefined : 'hidden' },
-    } as { videoStyle: CSSProperties, canvasStyle: CSSProperties };
+      imgStyle: { ...sharedStyle, visibility: shouldShowImage ? undefined : 'hidden' },
+    };
   }, [loading, debouncedState.playing, rotate]);
 
   return (
     <div style={{ width: '100%', height: '100%', left: 0, right: 0, top: 0, bottom: 0, position: 'absolute', overflow: 'hidden', background: 'black', pointerEvents: 'none' }}>
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <video style={videoStyle} ref={videoRef} playsInline onError={onVideoError} tabIndex={-1} onFocusCapture={onFocus} />
-      {videoStream != null && <canvas width={videoStream.width} height={videoStream.height} ref={canvasRef} style={canvasStyle} tabIndex={-1} onFocusCapture={onFocus} />}
+      {videoStream != null && <img alt="" width={videoStream.width} height={videoStream.height} ref={imgRef} style={imgStyle} tabIndex={-1} onFocusCapture={onFocus} />}
 
       {loading && (
         <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}><Spinner /></div>
