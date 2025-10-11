@@ -92,7 +92,7 @@
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "eslint-plugin-unicorn": "^51.0.1",
-    "evergreen-ui": "^6.13.1",
+    "evergreen-ui": "^7.1.9",
     "fast-xml-parser": "^4.4.1",
     "framer-motion": "^9.0.3",
     "i18next-parser": "^9.0.1",

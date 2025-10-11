@@ -41,15 +41,17 @@ const customTheme: ProviderProps<DefaultTheme>['value'] = {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           color: ((_theme: unknown, props: { color: string, intent: IntentTypes }) => props.color || colorKeyForIntent(props.intent)) as any as string, // todo types
 
-          _hover: {
-            backgroundColor: 'var(--gray-4)',
-          },
-          _active: {
-            backgroundColor: 'var(--gray-5)',
-          },
-          _focus: {
-            backgroundColor: 'var(--gray-5)',
-            boxShadow: '0 0 0 1px var(--gray-8)',
+          selectors: {
+            _hover: {
+              backgroundColor: 'var(--gray-4)',
+            },
+            _active: {
+              backgroundColor: 'var(--gray-5)',
+            },
+            _focus: {
+              backgroundColor: 'var(--gray-5)',
+              boxShadow: '0 0 0 1px var(--gray-8)',
+            },
           },
           disabled: {
             opacity: 0.5,
@@ -63,11 +65,13 @@ const customTheme: ProviderProps<DefaultTheme>['value'] = {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           color: ((_theme: unknown, props: { color: string, intent: IntentTypes }) => props.color || colorKeyForIntent(props.intent)) as any as string, // todo types
 
-          _hover: {
-            backgroundColor: 'var(--gray-4)',
-          },
-          _active: {
-            backgroundColor: 'var(--gray-5)',
+          selectors: {
+            _hover: {
+              backgroundColor: 'var(--gray-4)',
+            },
+            _active: {
+              backgroundColor: 'var(--gray-5)',
+            },
           },
           disabled: {
             opacity: 0.5,
