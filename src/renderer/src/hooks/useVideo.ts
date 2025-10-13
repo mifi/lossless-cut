@@ -4,7 +4,6 @@ import { showPlaybackFailedMessage } from '../swal';
 
 export default ({ filePath }: { filePath: string | undefined }) => {
   const [commandedTime, setCommandedTimeRaw] = useState(0);
-  const [compatPlayerEventId, setCompatPlayerEventId] = useState(0);
   const [playbackRate, setPlaybackRateState] = useState(1);
   const [outputPlaybackRate, setOutputPlaybackRateState] = useState(1);
   const [playerTime, setPlayerTime] = useState<number>();
@@ -68,7 +67,6 @@ export default ({ filePath }: { filePath: string | undefined }) => {
 
     smoothSeek(outVal);
     setCommandedTime(outVal);
-    if (video.currentTime === val) setCompatPlayerEventId((id) => id + 1); // To make sure that we can seek even to the same commanded time that we are already add (e.g. loop current segment)
   }, [setCommandedTime, smoothSeek]);
 
   // Relevant time is the player's playback position if we're currently playing - if not, it's the user's commanded time.
@@ -146,8 +144,6 @@ export default ({ filePath }: { filePath: string | undefined }) => {
     relevantTime,
     getRelevantTime,
     onVideoAbort,
-    compatPlayerEventId,
-    setCompatPlayerEventId,
     setOutputPlaybackRateState,
     playbackModeRef,
     playerTime,

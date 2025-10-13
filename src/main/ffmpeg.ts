@@ -532,34 +532,6 @@ export async function getDuration(filePath: string) {
   return parseFloat((await readFormatData(filePath)).duration);
 }
 
-export function readOneJpegFrame({ path, seekTo, videoStreamIndex, rotate }: {
-  path: string,
-  seekTo: number,
-  videoStreamIndex: number,
-  rotate: number | undefined,
-}) {
-  const args = [
-    '-hide_banner', '-loglevel', 'error',
-
-    '-ss', String(seekTo),
-
-    ...(rotate != null ? ['-noautorotate'] : []),
-
-    '-i', path,
-
-    '-map', `0:${videoStreamIndex}`,
-    '-vcodec', 'mjpeg',
-
-    '-frames:v', '1',
-
-    '-f', 'image2pipe',
-    '-',
-  ];
-
-  logger.info(getFfCommandLine('ffmpeg', args));
-  return runFfmpegProcess(args, undefined, { logCli: false });
-}
-
 const enableLog = false;
 const encode = true;
 
@@ -602,6 +574,18 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
     return ['-filter_complex', graph.join(';')];
   }
 
+  const videoEncodeArgs = [
+    'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '10',
+
+    // should, in theory, set the private options of x264 or x265 automatically
+    // https://www.reddit.com/r/ffmpeg/comments/jlk2zn/how_to_encode_using_bt709/
+    '-colorspace:v', 'bt709', '-color_primaries:v', 'bt709', '-color_trc:v', 'bt709', '-color_range:v', 'tv',
+    '-pix_fmt:v', 'yuv420p',
+  ];
+
+  // const videoEncodeArgs = ['h264_videotoolbox', '-b:v', '5M']
+
+
   // https://stackoverflow.com/questions/16658873/how-to-minimize-the-delay-in-a-live-streaming-with-ffmpeg
   // https://unix.stackexchange.com/questions/25372/turn-off-buffering-in-pipe
   const args = [
@@ -625,12 +609,16 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
 
     '-fps_mode', 'passthrough',
 
+    '-map_metadata', '-1',
+    '-map_chapters', '-1',
+
     ...(encode ? [
       ...getFilters(),
 
       ...(videoStreamIndex != null ? [
         '-map', '[video]',
-        '-pix_fmt', 'yuv420p', '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '10',
+        '-c:v', ...videoEncodeArgs,
+
         '-g', '1', // reduces latency and buffering
       ] : ['-vn']),
 

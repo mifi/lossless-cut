@@ -1,63 +1,69 @@
 import { useEffect, useRef, useState, useCallback, useMemo, memo, CSSProperties, RefObject, ReactEventHandler, FocusEventHandler } from 'react';
 import { Spinner } from 'evergreen-ui';
-import { useDebounce } from 'use-debounce';
 import invariant from 'tiny-invariant';
+import debounce from 'lodash/debounce.js';
 
 import isDev from './isDev';
 import { ChromiumHTMLVideoElement } from './types';
 import { FFprobeStream } from '../../../ffprobe';
 
-const { compatPlayer: { createMediaSourceStream, readOneJpegFrame } } = window.require('@electron/remote').require('./index.js');
+const { compatPlayer: { createMediaSourceStream } } = window.require('@electron/remote').require('./index.js');
 
 
-async function startPlayback({ path, video, videoStreamIndex, audioStreamIndexes, seekTo, signal, onPlayRequested, onCanPlay, getTargetTime, size, fps, rotate }: {
+async function startPlayback({ path, slaveVideo, masterVideo, videoStreamIndex, audioStreamIndexes, seekTo, signal, size, fps, rotate, onCanPlay, onResetNeeded, onWaiting }: {
   path: string,
-  video: ChromiumHTMLVideoElement,
+  slaveVideo: ChromiumHTMLVideoElement,
+  masterVideo: ChromiumHTMLVideoElement,
   videoStreamIndex?: number | undefined,
   audioStreamIndexes: number[],
   seekTo: number,
   signal: AbortSignal,
-  onPlayRequested: () => void,
-  onCanPlay: () => void,
-  getTargetTime: () => number,
   size?: number | undefined,
   fps?: number | undefined,
   rotate: number | undefined,
+  onCanPlay: () => void,
+  onResetNeeded: () => void,
+  onWaiting: () => void,
 }) {
   let canPlay = false;
   let bufferEndTime: number | undefined;
-  let bufferStartTime = 0;
+  let bufferStartTime = seekTo;
   let stream: ReturnType<typeof createMediaSourceStream> | undefined;
-  let done = false;
   let interval: NodeJS.Timeout | undefined;
+  let interval2: NodeJS.Timeout | undefined;
   let objectUrl: string | undefined;
   let processChunkTimeout: NodeJS.Timeout;
 
-  function cleanup() {
+  signal.addEventListener('abort', () => {
     console.log('Cleanup');
-    done = true;
-    video.pause();
+    slaveVideo.pause();
     if (interval != null) clearInterval(interval);
+    if (interval2 != null) clearInterval(interval2);
     if (processChunkTimeout != null) clearInterval(processChunkTimeout);
     stream?.abort();
     if (objectUrl != null) URL.revokeObjectURL(objectUrl);
-    video.removeAttribute('src');
-  }
-
-  signal.addEventListener('abort', cleanup);
+    slaveVideo.removeAttribute('src');
+  });
 
   // See chrome://media-internals
 
-  const mediaSource = new MediaSource();
-
   let streamTimestamp: number | undefined;
-  let lastRemoveTimestamp = 0;
+  let lastRemoveTimestamp = seekTo;
 
-  function setStandardPlaybackRate() {
-    // set it a bit faster, so that we don't easily fall behind (better too fast than too slow)
+  const setPlaybackRate = (r: number) => {
+    const maxAllowedPlaybackRate = 16; // or else we get an error in Chromium
+    const newAdjustedRate = Math.min(maxAllowedPlaybackRate, r * masterVideo.playbackRate);
+    if (slaveVideo.playbackRate === newAdjustedRate) {
+      return false;
+    }
+
     // eslint-disable-next-line no-param-reassign
-    video.playbackRate = 1.05;
-  }
+    slaveVideo.playbackRate = newAdjustedRate;
+    return true;
+  };
+
+  // set it a bit faster, so that we don't easily fall behind (better too fast than too slow)
+  const setStandardPlaybackRate = () => setPlaybackRate(1.05);
 
   setStandardPlaybackRate();
 
@@ -80,15 +86,20 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndexes
     throw new Error(`Unsupported MIME type or codec: ${mimeCodec}`);
   }
 
+  const mediaSource = new MediaSource();
+
   // console.log(mediaSource.readyState); // closed
   objectUrl = URL.createObjectURL(mediaSource);
   // eslint-disable-next-line no-param-reassign
-  video.src = objectUrl;
+  slaveVideo.src = objectUrl;
 
   await new Promise((resolve) => mediaSource.addEventListener('sourceopen', resolve, { once: true }));
   // console.log(mediaSource.readyState); // open
 
   const sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
+  sourceBuffer.timestampOffset = seekTo;
+
+  signal.addEventListener('abort', () => sourceBuffer.abort());
 
   const getBufferEndTime = () => {
     if (mediaSource.readyState !== 'open') {
@@ -105,10 +116,6 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndexes
     return sourceBuffer.buffered.end(0);
   };
 
-  sourceBuffer.addEventListener('updateend', () => {
-    onPlayRequested();
-  }, { once: true });
-
   let firstChunkReceived = false;
 
   const processChunk = async () => {
@@ -118,7 +125,8 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndexes
         console.log('End of stream');
         return;
       }
-      if (done) return;
+
+      if (signal.aborted) return;
 
       if (!firstChunkReceived) {
         firstChunkReceived = true;
@@ -134,18 +142,46 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndexes
 
   sourceBuffer.addEventListener('error', (err) => console.error('sourceBuffer error, check DevTools ▶ More Tools ▶ Media', err));
 
-  // video.addEventListener('loadeddata', () => console.log('loadeddata'));
-  // video.addEventListener('play', () => console.log('play'));
-  video.addEventListener('canplay', () => {
+  const handleCanPlay = () => {
     console.log('canplay');
-    if (!canPlay) {
-      canPlay = true;
-      onCanPlay();
-    }
-  }, { once: true });
+    canPlay = true;
+    onCanPlay();
+  };
+  slaveVideo.addEventListener('canplay', handleCanPlay);
+
+  const handleEnded = () => {
+    console.log('ended');
+  };
+  slaveVideo.addEventListener('ended', handleEnded);
+
+  const handleStalled = () => {
+    console.log('stalled');
+  };
+  slaveVideo.addEventListener('stalled', handleStalled);
+
+  const handleWaiting = () => {
+    if (slaveVideo.paused || slaveVideo.ended) return; // we don't care if paused
+    console.log('waiting');
+    onWaiting();
+  };
+
+  slaveVideo.addEventListener('waiting', handleWaiting);
+
+  const handlePlaying = () => {
+    console.log('playing');
+  };
+  slaveVideo.addEventListener('playing', handlePlaying);
+
+  signal.addEventListener('abort', () => {
+    slaveVideo.removeEventListener('canplay', handleCanPlay);
+    slaveVideo.removeEventListener('ended', handleEnded);
+    slaveVideo.removeEventListener('stalled', handleStalled);
+    slaveVideo.removeEventListener('waiting', handleWaiting);
+    slaveVideo.removeEventListener('playing', handlePlaying);
+  });
 
   sourceBuffer.addEventListener('updateend', ({ timeStamp }) => {
-    if (done) return;
+    if (signal.aborted) return;
 
     streamTimestamp = timeStamp; // apparently this timestamp cannot be trusted much
 
@@ -154,13 +190,10 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndexes
 
     bufferEndTime = getBufferEndTime();
 
-    // console.log('updateend', { bufferEndTime })
     if (bufferEndTime != null) {
-      const targetTime = getTargetTime();
+      const bufferedDuration = bufferEndTime - lastRemoveTimestamp;
 
-      const bufferedTime = bufferEndTime - lastRemoveTimestamp;
-
-      if (bufferedTime > bufferMaxSec && !sourceBuffer.updating) {
+      if (bufferedDuration > bufferMaxSec && !sourceBuffer.updating) {
         try {
           lastRemoveTimestamp = bufferEndTime;
           const removeTo = bufferEndTime - bufferMaxSec;
@@ -173,7 +206,7 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndexes
         }
       }
 
-      const bufferAheadSec = bufferEndTime - targetTime;
+      const bufferAheadSec = bufferEndTime - masterVideo.currentTime;
       if (bufferAheadSec > bufferThrottleSec) {
         console.debug(`buffer ahead by ${bufferAheadSec}, throttling stream read`);
         processChunkTimeout = setTimeout(processChunk, 1000);
@@ -188,195 +221,186 @@ async function startPlayback({ path, video, videoStreamIndex, audioStreamIndexes
   stream = createMediaSourceStream({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps, rotate });
 
   interval = setInterval(() => {
+    if (!canPlay) return;
+
     if (mediaSource.readyState !== 'open') {
       console.warn('mediaSource.readyState was not open, but:', mediaSource.readyState);
       // else we will get: Uncaught DOMException: Failed to execute 'end' on 'TimeRanges': The index provided (0) is greater than or equal to the maximum bound (0).
       return;
     }
 
-    const targetTime = getTargetTime();
-    const playbackDiff = targetTime != null ? targetTime - video.currentTime : undefined;
-
-    const streamTimestampDiff = streamTimestamp != null && bufferEndTime != null ? (streamTimestamp / 1000) - bufferEndTime : undefined; // not really needed, but log for curiosity
-    console.debug('bufferStartTime', bufferStartTime, 'bufferEndTime', bufferEndTime, 'targetTime', targetTime, 'playback:', video.currentTime, 'playbackDiff:', playbackDiff, 'streamTimestamp diff:', streamTimestampDiff);
-
-    if (!canPlay || targetTime == null) return;
+    console.log(`bufferStartTime: ${bufferStartTime}, bufferEndTime: ${bufferEndTime}, master time: ${masterVideo.currentTime}, slave time: ${slaveVideo.currentTime} (diff: ${masterVideo.currentTime - slaveVideo.currentTime}), streamTimestamp: ${streamTimestamp}`);
+    // console.log(sourceBuffer.buffered.length, sourceBuffer.buffered.start(0), sourceBuffer.buffered.end(0))
 
     if (sourceBuffer.buffered.length !== 1) {
       // not sure why this would happen or how to handle this
       console.warn('sourceBuffer.buffered.length was', sourceBuffer.buffered.length);
     }
+  }, 1000);
 
-    if ((video.paused || video.ended) && !done) {
-      console.warn('Resuming unexpectedly paused video');
-      onPlayRequested();
-    }
+  // Synchronize state between the two video elements
+  interval2 = setInterval(async () => {
+    try {
+      const maxSecAfterBufferToWaitFor = 5;
+      if (masterVideo.currentTime < bufferStartTime || (bufferEndTime != null && masterVideo.currentTime - bufferEndTime > maxSecAfterBufferToWaitFor)) {
+        console.log('Seeked before/after buffered range, resetting playback');
+        onResetNeeded();
+        return;
+      }
 
-    // make sure the playback keeps up
-    // https://stackoverflow.com/questions/23301496/how-to-keep-a-live-mediasource-video-stream-in-sync
-    if (playbackDiff != null && playbackDiff > 1) {
-      console.warn(`playback severely behind by ${playbackDiff}s, seeking to desired time`);
-      // eslint-disable-next-line no-param-reassign
-      video.currentTime = targetTime;
-      setStandardPlaybackRate();
-    } else if (playbackDiff != null && playbackDiff > 0.3) {
-      console.warn(`playback behind by ${playbackDiff}s, speeding up playback`);
-      // eslint-disable-next-line no-param-reassign
-      video.playbackRate = 1.5;
-    } else {
-      setStandardPlaybackRate();
+      if (masterVideo.paused || masterVideo.ended) {
+        const resolution = 1000;
+        if (Math.round(slaveVideo.currentTime * resolution) !== Math.round(masterVideo.currentTime * resolution)) {
+          // eslint-disable-next-line no-param-reassign
+          slaveVideo.currentTime = masterVideo.currentTime;
+        }
+      } else { // playing
+        // make sure the playback keeps up while playing
+        // or when seeking while playing
+        // https://stackoverflow.com/questions/23301496/how-to-keep-a-live-mediasource-video-stream-in-sync
+        const playbackDiff = masterVideo.currentTime - slaveVideo.currentTime;
+        if (Math.abs(playbackDiff) > 1) {
+          console.log(`Playback ${playbackDiff > 0 ? 'behind' : 'ahead'} master player time by ${playbackDiff}s, jumping to desired time`);
+          // eslint-disable-next-line no-param-reassign
+          slaveVideo.currentTime = masterVideo.currentTime;
+          setStandardPlaybackRate();
+        } else if (playbackDiff != null && playbackDiff > 0.3) {
+          // eslint-disable-next-line no-param-reassign
+          if (setPlaybackRate(1.5)) {
+            console.warn(`Playback behind by ${playbackDiff}s, speeding up playback`);
+          }
+        } else {
+          setStandardPlaybackRate();
+        }
+      }
+
+      if (slaveVideo.volume !== masterVideo.volume) {
+        // eslint-disable-next-line no-param-reassign
+        slaveVideo.volume = masterVideo.volume;
+      }
+
+      const masterStopped = masterVideo.paused || masterVideo.ended;
+      const slaveStopped = slaveVideo.paused || slaveVideo.ended;
+
+      if (slaveStopped && !masterStopped) {
+        await slaveVideo.play();
+      } else if (!slaveStopped && masterStopped) {
+        slaveVideo.pause();
+      }
+    } catch (err) {
+      console.error('play/pause failed', err);
     }
-  }, 200);
+  }, 30); // todo requestAnimationFrame?
 
   // OK, everything initialized and ready to stream!
   processChunk();
 }
 
-async function createPauseImage({ path, seekTo, videoStreamIndex, image, rotate, signal }: {
-  path: string,
-  seekTo: number,
-  videoStreamIndex: number,
-  image: HTMLImageElement | null,
-  rotate: number | undefined,
-  signal: AbortSignal,
-}) {
-  const { promise, abort } = readOneJpegFrame({ path, seekTo, videoStreamIndex, rotate });
-  signal.addEventListener('abort', () => abort());
-  const jpegImage = await promise;
-
-  invariant(image);
-  if (image.src) URL.revokeObjectURL(image.src);
-  // eslint-disable-next-line no-param-reassign
-  image.src = URL.createObjectURL(new Blob([Buffer.from(jpegImage)], { type: 'image/jpeg' }));
-}
-
-function MediaSourcePlayer({ rotate, filePath, playerTime, videoStream, audioStreams, commandedTime, playing, eventId, masterVideoRef, mediaSourceQuality, playbackVolume }: {
+function MediaSourcePlayer({ rotate, filePath, videoStream, audioStreams, masterVideoRef, mediaSourceQuality }: {
   rotate: number | undefined,
   filePath: string,
-  playerTime: number,
   videoStream: FFprobeStream | undefined,
   audioStreams: FFprobeStream[],
-  commandedTime: number,
-  playing: boolean,
-  eventId: number,
   masterVideoRef: RefObject<HTMLVideoElement>,
   mediaSourceQuality: number,
-  playbackVolume: number,
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [loading, setLoading] = useState(true);
+  const [showCanvas, setShowCanvas] = useState(false);
 
   const onVideoError = useCallback<ReactEventHandler<HTMLVideoElement>>((error) => {
     console.error('video error', error);
   }, []);
 
-  const state = useMemo(() => (playing
-    ? { startTime: commandedTime, playing, eventId }
-    : { startTime: playerTime, playing, eventId }
-  ), [commandedTime, eventId, playerTime, playing]);
-
   const audioStreamIndexes = useMemo(() => audioStreams.map((s) => s.index), [audioStreams]);
 
-  const [debouncedState] = useDebounce(state, 300, {
-    equalityFn: (a, b) => a.startTime === b.startTime && a.playing === b.playing && a.eventId === b.eventId,
-    leading: true,
-  });
-
   useEffect(() => {
-    // console.log('debouncedState', debouncedState);
-  }, [debouncedState]);
-
-  const onPlayRequested = useCallback(async () => {
-    try {
-      await videoRef.current?.play();
-    } catch (err) {
-      console.error('play failed', err);
-    }
-  }, []);
-
-  useEffect(() => {
-    setLoading(true);
-
-    let { startTime: seekTo } = debouncedState;
-
     const video = videoRef.current;
     invariant(video != null);
 
     const masterVideo = masterVideoRef.current;
     invariant(masterVideo != null);
 
-    if (seekTo >= masterVideo.duration) seekTo = 0; // start over if reached end
+    const canvas = canvasRef.current;
+    invariant(canvas != null);
 
-    if (seekTo == null) {
-      return () => undefined;
-    }
+    let abortController: AbortController;
+    let startDebounced: () => void;
 
-    const onCanPlay = () => {
-      setLoading(false);
-    };
-    const getTargetTime = () => masterVideoRef.current!.currentTime - seekTo;
+    const start = async () => {
+      abortController = new AbortController();
 
-    const abortController = new AbortController();
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
+      setShowCanvas(true);
+      setLoading(true);
 
-    (async () => {
+      const seekTo = masterVideo.currentTime;
+
       try {
-        // When playing, we use a secondary video element, but when paused we use an img
-        if (debouncedState.playing) {
-          let size: number | undefined;
-          if (videoStream != null) {
-            if (mediaSourceQuality === 0) size = 800;
-            else if (mediaSourceQuality === 1) size = 420;
-          }
-
-          let fps: number | undefined;
-          if (mediaSourceQuality === 0) fps = 30;
-          else if (mediaSourceQuality === 1) fps = 15;
-
-          await startPlayback({ signal: abortController.signal, path: filePath, video, videoStreamIndex: videoStream?.index, audioStreamIndexes, seekTo, onPlayRequested, onCanPlay, getTargetTime, size, fps, rotate });
-        } else if (videoStream != null) { // paused
-          try {
-            await createPauseImage({ signal: abortController.signal, path: filePath, videoStreamIndex: videoStream.index, seekTo, image: imgRef.current, rotate });
-          } finally {
-            setLoading(false);
-          }
+        let size: number | undefined;
+        if (videoStream != null) {
+          if (mediaSourceQuality === 0) size = 800;
+          else if (mediaSourceQuality === 1) size = 420;
         }
+
+        let fps: number | undefined;
+        if (mediaSourceQuality === 0) fps = 30;
+        else if (mediaSourceQuality === 1) fps = 15;
+
+        await startPlayback({
+          signal: abortController.signal,
+          path: filePath,
+          slaveVideo: video,
+          masterVideo,
+          videoStreamIndex: videoStream?.index,
+          audioStreamIndexes,
+          seekTo,
+          size,
+          fps,
+          rotate,
+          onCanPlay: () => {
+            setLoading(false);
+            setShowCanvas(false);
+          },
+          onResetNeeded: () => {
+            abortController.abort();
+            startDebounced();
+          },
+          onWaiting: () => {
+            setLoading(true);
+          },
+        });
       } catch (err) {
         console.error('Preview failed', err);
       }
-    })();
+    };
+
+    startDebounced = debounce(start, 500, { leading: true, trailing: true });
+
+    startDebounced();
 
     return () => abortController.abort();
     // Important that we also have eventId in the deps, so that we can restart the preview when the eventId changes
-  }, [debouncedState.startTime, debouncedState.eventId, filePath, masterVideoRef, onPlayRequested, debouncedState.playing, videoStream, mediaSourceQuality, audioStreamIndexes, rotate, debouncedState]);
+  }, [audioStreamIndexes, filePath, masterVideoRef, mediaSourceQuality, rotate, videoStream]);
 
-  useEffect(() => {
-    if (videoRef.current) videoRef.current.volume = playbackVolume;
-  }, [playbackVolume]);
-
-  const onFocus = useCallback<FocusEventHandler<HTMLVideoElement | HTMLImageElement>>((e) => {
+  const onFocus = useCallback<FocusEventHandler<HTMLVideoElement>>((e) => {
     // prevent video element from stealing focus in fullscreen mode https://github.com/mifi/lossless-cut/issues/543#issuecomment-1868167775
     e.target.blur();
   }, []);
 
-  const { videoStyle, imgStyle } = useMemo<{ videoStyle: CSSProperties, imgStyle: CSSProperties }>(() => {
-    const sharedStyle: CSSProperties = {
-      position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'block', width: '100%', height: '100%', objectFit: 'contain', transform: rotate ? `rotate(${rotate}deg)` : undefined,
-    };
-
-    const shouldShowImage = !debouncedState.playing;
-
-    return {
-      videoStyle: { ...sharedStyle, visibility: loading || !debouncedState.playing ? 'hidden' : undefined },
-      imgStyle: { ...sharedStyle, visibility: shouldShowImage ? undefined : 'hidden' },
-    };
-  }, [loading, debouncedState.playing, rotate]);
+  const videoStyle = useMemo<CSSProperties>(() => ({
+    position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'block', width: '100%', height: '100%', objectFit: 'contain', transform: rotate ? `rotate(${rotate}deg)` : undefined,
+  }), [rotate]);
 
   return (
     <div style={{ width: '100%', height: '100%', left: 0, right: 0, top: 0, bottom: 0, position: 'absolute', overflow: 'hidden', background: 'black', pointerEvents: 'none' }}>
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-      <video style={videoStyle} ref={videoRef} playsInline onError={onVideoError} tabIndex={-1} onFocusCapture={onFocus} />
-      {videoStream != null && <img alt="" width={videoStream.width} height={videoStream.height} ref={imgRef} style={imgStyle} tabIndex={-1} onFocusCapture={onFocus} />}
+      <video style={{ ...videoStyle, visibility: showCanvas ? 'hidden' : 'initial' }} ref={videoRef} playsInline onError={onVideoError} tabIndex={-1} onFocusCapture={onFocus} />
+      <canvas style={{ ...videoStyle, display: showCanvas ? 'initial' : 'none' }} ref={canvasRef} />
 
       {loading && (
         <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}><Spinner /></div>
