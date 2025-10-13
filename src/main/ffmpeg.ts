@@ -550,7 +550,29 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
     if (videoStreamIndex != null) {
       const videoFilters: string[] = [];
       if (fps != null) videoFilters.push(`fps=${fps}`);
-      if (size != null) videoFilters.push(`scale=${size}:${size}:flags=lanczos:force_original_aspect_ratio=decrease:force_divisible_by=2`);
+      const scaleFilterOptions: string[] = [];
+      if (size != null) scaleFilterOptions.push(`${size}:${size}:flags=lanczos:force_original_aspect_ratio=decrease:force_divisible_by=2`);
+
+      // we need to reduce the color space to bt709 for compatibility with most OS'es and hardware combinations
+      // especially because of this bug https://github.com/electron/electron/issues/47947
+      // see also https://www.reddit.com/r/ffmpeg/comments/jlk2zn/how_to_encode_using_bt709/
+      scaleFilterOptions.push('in_color_matrix=auto:in_range=auto:out_color_matrix=bt709:out_range=tv');
+      if (scaleFilterOptions.length > 0) videoFilters.push(`scale=${scaleFilterOptions.join(':')}`);
+
+      // alternatively we could have used `tonemap=hable` instead, but it's slower because it's an additional separate filter.
+      // videoFilters.push('tonemap=hable');
+      // the best would be to use zscale, but it's not yet available in our ffmpeg build, and I think it's slower.
+      // https://gist.github.com/goyuix/033d35846b05733d77f568b754e7c3ea
+      // https://superuser.com/questions/1732301/convert-10bit-hdr-video-to-8bit-frames/1732684#1732684
+
+      videoFilters.push(
+        // most compatible pixel format:
+        'format=yuv420p',
+
+        // setparams is always needed when converting hdr to sdr:
+        'setparams=color_primaries=bt709:color_trc=bt709:colorspace=bt709',
+      );
+
       const videoFiltersStr = videoFilters.length > 0 ? videoFilters.join(',') : 'null';
       graph.push(`[0:${videoStreamIndex}]${videoFiltersStr}[video]`);
     }
@@ -576,11 +598,6 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
 
   const videoEncodeArgs = [
     'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency', '-crf', '10',
-
-    // should, in theory, set the private options of x264 or x265 automatically
-    // https://www.reddit.com/r/ffmpeg/comments/jlk2zn/how_to_encode_using_bt709/
-    '-colorspace:v', 'bt709', '-color_primaries:v', 'bt709', '-color_trc:v', 'bt709', '-color_range:v', 'tv',
-    '-pix_fmt:v', 'yuv420p',
   ];
 
   // const videoEncodeArgs = ['h264_videotoolbox', '-b:v', '5M']

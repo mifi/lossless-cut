@@ -1,7 +1,6 @@
 import invariant from 'tiny-invariant';
 import { FFprobeStream, FFprobeStreamDisposition } from '../../../../ffprobe';
 import { AllFilesMeta, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, LiteFFprobeStream } from '../types';
-import { isMasBuild } from '../util';
 
 
 // taken from `ffmpeg -codecs`
@@ -368,8 +367,10 @@ export async function doesPlayerSupportHevcPlayback() {
 // so we will detect these codecs and convert to dummy
 // "properly handle" here means either play it back or give a playback error if the video codec is not supported
 // todo maybe improve https://github.com/mifi/lossless-cut/issues/88#issuecomment-1363828563
-export function willPlayerProperlyHandleVideo({ streams, hevcPlaybackSupported }: {
-  streams: FFprobeStream[], hevcPlaybackSupported: boolean,
+export function willPlayerProperlyHandleVideo({ streams, hevcPlaybackSupported, isMasBuild }: {
+  streams: FFprobeStream[],
+  hevcPlaybackSupported: boolean,
+  isMasBuild: boolean,
 }) {
   const realVideoStreams = getRealVideoStreams(streams);
   // If audio-only format, assume all is OK
@@ -378,7 +379,7 @@ export function willPlayerProperlyHandleVideo({ streams, hevcPlaybackSupported }
   // https://github.com/mifi/lossless-cut/issues/2562
   // https://github.com/mifi/lossless-cut/issues/2548
   // https://github.com/electron/electron/issues/47947
-  if (isMasBuild && realVideoStreams.some((s) => s.pix_fmt === 'yuv420p10le' && s.color_space === 'bt2020nc' && s.color_primaries === 'bt2020')) {
+  if (isMasBuild && realVideoStreams.some((s) => s.color_space != null && ['bt2020nc', 'bt2020_ncl', 'bt2020c', 'bt2020_cl'].includes(s.color_space) && s.color_primaries === 'bt2020')) {
     return false;
   }
 

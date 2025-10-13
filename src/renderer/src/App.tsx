@@ -75,6 +75,7 @@ import {
   isAbortedError,
   withErrorHandling,
   shootConfetti,
+  isMasBuild,
 } from './util';
 import { toast, errorToast, showPlaybackFailedMessage } from './swal';
 import { adjustRate } from './util/rate-calculator';
@@ -1444,7 +1445,7 @@ function App() {
 
       const existingHtml5FriendlyFile = await findExistingHtml5FriendlyFile(fp, cod);
 
-      const needsAutoHtml5ify = !existingHtml5FriendlyFile && !willPlayerProperlyHandleVideo({ streams: fileMeta.streams, hevcPlaybackSupported }) && validDuration;
+      const needsAutoHtml5ify = !existingHtml5FriendlyFile && !willPlayerProperlyHandleVideo({ streams: fileMeta.streams, hevcPlaybackSupported, isMasBuild }) && validDuration;
 
       console.log('loadMedia', { filePath: fp, customOutDir: cod, projectPath });
 
