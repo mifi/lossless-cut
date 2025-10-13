@@ -740,7 +740,7 @@
     "The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}": "Медиафайл, на который ссылается файл проекта, который вы пытались открыть, не существует в том же каталоге, что и файл проекта: {{mediaFileName}}",
     "Tried to create too many segments (max {{maxSegmentsAllowed}}.)": "Попытка создать слишком много сегментов (макс. {{maxSegmentsAllowed}}).",
     "This experimental feature will re-encode the part of the video from the cutpoint until the next keyframe in order to attempt to make a 100% accurate cut. Only works on some files. I've had success with some h264 files, and only a few h265 files. See more here: {{url}}": "Эта экспериментальная функция перекодирует часть видео от точки среза до следующего ключевого кадра, чтобы попытаться сделать монтаж со 100% точностью. Работает только с некоторыми файлами. Я успешно работал с некоторыми файлами h264 и только с несколькими файлами h265. Подробнее см. здесь: {{url}}",
-    "You might want to redact any sensitive information like paths.": "Возможно, вы захотите отредактировать конфиденциальную информацию, например пути.",
+    "You might want to redact any sensitive information like paths.": "Возможно, вы захотите отредактировать конфиденциальную информацию, например маршруты и местоположение GPS.",
     "Export mode": "Режим экспорта",
     "Files merged with warning(s)_one": "Файлы объединены с предупреждением",
     "Files merged with warning(s)_other": "Файлы объединены с предупреждениями",
