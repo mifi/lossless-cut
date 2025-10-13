@@ -807,7 +807,7 @@
     "Video track": "Video parçası",
     "What do you want to do after exporting a file or when pressing the \"delete source file\" button?": "Bir dosyayı dışa aktardıktan sonra veya \"kaynak dosyayı sil\" düğmesine bastığınızda ne yapmak istiyorsunuz?",
     "When merging, it's generally recommended to set this to \"make_non_negative\"": "Birleştirirken, genellikle bunu \"make_non_negative\" olarak ayarlamanız tavsiye edilir",
-    "You might want to redact any sensitive information like paths.": "Yollar gibi hassas bilgileri çıkarmak isteyebilirsiniz.",
+    "You might want to redact any sensitive information like paths.": "Yollar ve GPS konumu gibi hassas bilgileri çıkarmak isteyebilirsiniz.",
     "Timeline keyboard seek interval (longer)": "Zaman çizelgesi klavye arama aralığı (daha uzun)",
     "At least one resulting file name contains invalid character(s): {{invalidChars}}": "Ortaya çıkan en az bir dosya adı geçersiz karakter(ler) içeriyor: {{invalidChars}}",
     "Batch": "Toplu iş",
