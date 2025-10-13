@@ -1,6 +1,7 @@
 import invariant from 'tiny-invariant';
 import { FFprobeStream, FFprobeStreamDisposition } from '../../../../ffprobe';
 import { AllFilesMeta, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, LiteFFprobeStream } from '../types';
+import { isMasBuild } from '../util';
 
 
 // taken from `ffmpeg -codecs`
@@ -373,6 +374,14 @@ export function willPlayerProperlyHandleVideo({ streams, hevcPlaybackSupported }
   const realVideoStreams = getRealVideoStreams(streams);
   // If audio-only format, assume all is OK
   if (realVideoStreams.length === 0) return true;
+
+  // https://github.com/mifi/lossless-cut/issues/2562
+  // https://github.com/mifi/lossless-cut/issues/2548
+  // https://github.com/electron/electron/issues/47947
+  if (isMasBuild && realVideoStreams.some((s) => s.pix_fmt === 'yuv420p10le' && s.color_space === 'bt2020nc' && s.color_primaries === 'bt2020')) {
+    return false;
+  }
+
   // If we have at least one video that is NOT of the unsupported formats, assume the player will be able to play it natively
   // But cover art / thumbnail streams don't count e.g. hevc with a png stream (disposition.attached_pic=1)
   // https://github.com/mifi/lossless-cut/issues/595
