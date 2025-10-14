@@ -715,7 +715,7 @@
     "Please test the output file in your desired player/editor before you delete the source file.": "在删除源文件之前，请在您期望的播放器/编辑器中测试输出文件。",
     "Please test the output files in your desired player/editor before you delete the source files.": "在删除源文件之前，请在您期望的播放器/编辑器中测试输出文件。",
     "Unable to merge files": "无法合并文件",
-    "You might want to redact any sensitive information like paths.": "您可能想要编辑任何敏感信息，例如路径。",
+    "You might want to redact any sensitive information like paths.": "您可能想要编辑任何敏感信息，例如路径和全球定位系统位置。",
     "thumbnail": "缩略图",
     "Track {{num}} info": "轨道{{num}}的信息",
     "Experimental functionality has been activated!": "实验性功能已激活 ！",
