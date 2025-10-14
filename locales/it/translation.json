@@ -660,7 +660,7 @@
     "XML files": "File XML",
     "Yes": "Sì",
     "You have no write access to the directory of this file": "Non hai accesso in scrittura alla cartella di questo file",
-    "You might want to redact any sensitive information like paths.": "Potresti voler oscurare qualsiasi informazione sensibile come i percorsi.",
+    "You might want to redact any sensitive information like paths.": "Potresti voler oscurare eventuali informazioni sensibili come percorsi e posizione GPS.",
     "subtitle": "sottotitolo",
     "thumbnail": "miniatura",
     "Timestamps (CSV)": "Punti temporali (CSV)",
