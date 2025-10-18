@@ -93,17 +93,18 @@ export function combineSelectedSegments(existingSegments: StateSegment[]) {
   const lastSegment = maxBy(selectedSegments, (seg) => seg.end ?? seg.start);
 
   return existingSegments.flatMap((existingSegment) => {
-    invariant(lastSegment != null);
-    if (existingSegment === firstSegment) {
-      return [{
-        ...firstSegment,
-        start: firstSegment.start,
-        end: lastSegment.end ?? lastSegment.start, // for markers use their start
-      }];
-    }
+    if (lastSegment != null) {
+      if (existingSegment === firstSegment) {
+        return [{
+          ...firstSegment,
+          start: firstSegment.start,
+          end: lastSegment.end ?? lastSegment.start, // for markers use their start
+        }];
+      }
 
-    if (existingSegment.selected) {
-      return []; // remove other selected segments
+      if (existingSegment.selected) {
+        return []; // remove other selected segments
+      }
     }
 
     // pass through non selected segments
