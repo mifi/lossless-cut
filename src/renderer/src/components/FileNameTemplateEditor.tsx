@@ -43,7 +43,17 @@ function FileNameTemplateEditor(opts: {
   const [validText, setValidText] = useState<string>();
   const [problems, setProblems] = useState<{ error?: string | undefined, sameAsInputFileNameWarning?: boolean | undefined }>({ error: undefined, sameAsInputFileNameWarning: false });
   const [fileNames, setFileNames] = useState<string[]>();
-  const [shown, setShown] = useState<boolean>();
+
+  const haveImportantMessage = problems.error != null || problems.sameAsInputFileNameWarning;
+  const [shown, setShown] = useState(haveImportantMessage);
+  useEffect(() => {
+    // if an important message appears, make sure we don't auto-close after it's resolved
+    // https://github.com/mifi/lossless-cut/issues/2567
+    if (haveImportantMessage) setShown(true);
+  }, [haveImportantMessage]);
+
+  const needToShow = shown || haveImportantMessage;
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { t } = useTranslation();
@@ -126,9 +136,6 @@ function FileNameTemplateEditor(opts: {
   }, [shown]);
 
   const onTextChange = useCallback<ChangeEventHandler<HTMLInputElement>>((e) => setText(e.target.value), []);
-
-  const haveImportantMessage = problems.error != null || problems.sameAsInputFileNameWarning;
-  const needToShow = shown || haveImportantMessage;
 
   const onVariableClick = useCallback((variable: string) => {
     const input = inputRef.current;
