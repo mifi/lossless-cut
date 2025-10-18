@@ -7,27 +7,36 @@ import { FaMapMarkerAlt } from 'react-icons/fa';
 import { extractSrtGpsTrack } from './ffmpeg';
 import { ReactSwal } from './swal';
 import { handleError } from './util';
-import { parseGpsLine } from './edlFormats';
+import { parseDjiGps1, parseDjiGps2 } from './edlFormats';
 
 
 export default async function tryShowGpsMap(filePath: string, streamIndex: number) {
   try {
     const subtitles = await extractSrtGpsTrack(filePath, streamIndex);
-    const gpsPoints = subtitles.flatMap((subtitle) => {
-      const firstLine = subtitle.lines[0];
+    const allGpsPoints = subtitles.flatMap((subtitle) => {
       const { index } = subtitle;
-      if (firstLine == null || index == null) return [];
+      if (index == null) return [];
 
-      const parsed = parseGpsLine(firstLine);
+      const parsed = parseDjiGps1(subtitle.lines) ?? parseDjiGps2(subtitle.lines);
       if (parsed == null) return [];
 
       return [{
         ...parsed,
         index,
-        raw: firstLine,
+        raw: subtitle.lines,
       }];
     });
-    // console.log(gpsPoints)
+    // console.log(allGpsPoints)
+
+    // limit number of points, or else severe map slowdown
+    const maxPointsToShow = 500;
+    let gpsPoints = allGpsPoints;
+    if (allGpsPoints.length > maxPointsToShow) {
+      gpsPoints = Array.from({ length: maxPointsToShow }).flatMap((_, i) => {
+        const p = allGpsPoints[Math.floor(i * (allGpsPoints.length / maxPointsToShow))];
+        return p != null ? [p] : [];
+      });
+    }
 
     const firstPoint = gpsPoints[0];
 

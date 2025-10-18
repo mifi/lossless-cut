@@ -71,7 +71,7 @@ exports[`otio 1`] = `
 ]
 `;
 
-exports[`parseGpsLine 1`] = `
+exports[`parseDjiGps1 1`] = `
 {
   "alt": 19,
   "distance": 67.78,
@@ -88,7 +88,7 @@ exports[`parseGpsLine 1`] = `
 }
 `;
 
-exports[`parseGpsLine 2`] = `
+exports[`parseDjiGps1 2`] = `
 {
   "alt": 26,
   "distance": 0.57,
@@ -102,6 +102,14 @@ exports[`parseGpsLine 2`] = `
   "lng": 56.5019,
   "ss": 678.52,
   "verticalSpeed": -0,
+}
+`;
+
+exports[`parseDjiGps2 1`] = `
+{
+  "altitude": 1245.046,
+  "lat": 62.229033,
+  "lng": 6.552877,
 }
 `;
 

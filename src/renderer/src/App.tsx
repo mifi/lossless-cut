@@ -60,6 +60,7 @@ import {
   RefuseOverwriteError, extractSubtitleTrackToSegments,
   mapRecommendedDefaultFormat,
   getFfCommandLine,
+  FileMeta,
 } from './ffmpeg';
 import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback, getSubtitleStreams, enableVideoTrack, enableAudioTrack, canHtml5PlayerPlayStreams, isMatroska } from './util/streams';
 import { exportEdlFile, readEdlFile, loadLlcProject, askForEdlImport } from './edlStore';
@@ -133,7 +134,7 @@ function App() {
   const [customTagsByFile, setCustomTagsByFile] = useState<CustomTagsByFile>({});
   const [paramsByStreamId, setParamsByStreamId] = useState<ParamsByStreamId>(new Map());
   const [detectedFps, setDetectedFps] = useState<number>();
-  const [mainFileMeta, setMainFileMeta] = useState<{ streams: FFprobeStream[], formatData: FFprobeFormat, chapters: FFprobeChapter[] }>();
+  const [mainFileMeta, setMainFileMeta] = useState<{ streams: FileMeta['streams'], formatData: FFprobeFormat, chapters: FFprobeChapter[] }>();
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
   const [concatDialogVisible, setConcatDialogVisible] = useState(false);
   const [zoomUnrounded, setZoom] = useState(1);

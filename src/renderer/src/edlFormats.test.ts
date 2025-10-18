@@ -1,6 +1,6 @@
 import { it, describe, expect, test } from 'vitest';
 
-import { parseSrtToSegments, formatSrt, parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, parseCsvTime, getFrameValParser, formatCsvFrames, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt, parseCutlist, parseGpsLine, Otio, parseOtio } from './edlFormats';
+import { parseSrtToSegments, formatSrt, parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, parseCsvTime, getFrameValParser, formatCsvFrames, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt, parseCutlist, parseDjiGps1, Otio, parseOtio, parseDjiGps2 } from './edlFormats';
 import { readFixture, readFixtureBinary } from './test/util';
 import otioFixture from './test/fixtures/otio';
 
@@ -365,10 +365,19 @@ it('parses DV Analyzer Summary.txt', async () => {
   expect(parseDvAnalyzerSummaryTxt(await readFixture('DV Analyzer Summary.txt', 'utf8'))).toMatchSnapshot();
 });
 
-test('parseGpsLine', () => {
-  expect(parseGpsLine('F/2.8, SS 776.89, ISO 100, EV -1.0, GPS (15.0732, 67.9771, 19), D 67.78m, H 20.30m, H.S 1.03m/s, V.S 0.00m/s')).toMatchSnapshot();
+test('parseDjiGps1', () => {
+  expect(parseDjiGps1(['F/2.8, SS 776.89, ISO 100, EV -1.0, GPS (15.0732, 67.9771, 19), D 67.78m, H 20.30m, H.S 1.03m/s, V.S 0.00m/s'])).toMatchSnapshot();
   // https://github.com/mifi/lossless-cut/issues/2072#issuecomment-2325755148
-  expect(parseGpsLine('F/2.8, SS 678.52, ISO 100, EV 0, DZOOM 1.000, GPS (-3.9130, 56.5019, 26), D 0.57m, H 102.40m, H.S 0.00m/s, V.S -0.00m/s')).toMatchSnapshot();
+  expect(parseDjiGps1(['F/2.8, SS 678.52, ISO 100, EV 0, DZOOM 1.000, GPS (-3.9130, 56.5019, 26), D 0.57m, H 102.40m, H.S 0.00m/s, V.S -0.00m/s'])).toMatchSnapshot();
+});
+
+test('parseDjiGps2', () => {
+  // SRT format DJI Air 3
+  expect(parseDjiGps2([
+    '<font size="28">FrameCnt: 446, DiffTime: 34ms',
+    '2025-09-15 14:35:09.229',
+    '[iso: 120] [shutter: 1/3388.79] [fnum: 1.7] [ev: 0] [color_md : default] [focal_len: 24.00] [latitude: 62.229033] [longitude: 6.552877] [rel_alt: 3.700 abs_alt: 1245.046] [ct: 5341] </font>',
+  ])).toMatchSnapshot();
 });
 
 test('otio', () => {

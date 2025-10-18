@@ -11,7 +11,7 @@ import Dialog from './components/Dialog';
 import AutoExportToggler from './components/AutoExportToggler';
 import Select from './components/Select';
 import { showJson5Dialog } from './dialogs';
-import { getStreamFps } from './ffmpeg';
+import { FileStream, getStreamFps } from './ffmpeg';
 import { deleteDispositionValue } from './util';
 import { getActiveDisposition, attachedPicDisposition, isGpsStream } from './util/streams';
 import TagEditor from './components/TagEditor';
@@ -161,7 +161,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
 // eslint-disable-next-line react/display-name
 const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress, paramsByStreamId, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments, onInfoClick }: {
   filePath: string,
-  stream: FFprobeStream,
+  stream: FileStream,
   onToggle: (a: number) => void,
   toggleCopyStreamIds: (filter: (a: FFprobeStream) => boolean) => void,
   copyStream: boolean, fileDuration: number | undefined,
@@ -365,7 +365,7 @@ function StreamsSelector({
 }: {
   mainFilePath: string,
   mainFileFormatData: FFprobeFormat | undefined,
-  mainFileStreams: FFprobeStream[],
+  mainFileStreams: FileStream[],
   mainFileChapters: FFprobeChapter[] | undefined,
   isCopyingStreamId: (path: string | undefined, streamId: number) => boolean,
   toggleCopyStreamId: (path: string, index: number) => void,

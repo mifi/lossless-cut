@@ -1,6 +1,7 @@
 import type { MenuItem, MenuItemConstructorOptions } from 'electron';
 import { z } from 'zod';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
+import type { FileStream } from './ffmpeg';
 
 
 export interface ChromiumHTMLVideoElement extends HTMLVideoElement {
@@ -128,7 +129,7 @@ export type ContextMenuTemplate = (MenuItemConstructorOptions | MenuItem)[];
 export type ExportMode = 'segments_to_chapters' | 'merge' | 'merge+separate' | 'separate';
 
 export type FilesMeta = Record<string, {
-  streams: FFprobeStream[];
+  streams: FileStream[];
   formatData: FFprobeFormat;
   chapters: FFprobeChapter[];
 }>

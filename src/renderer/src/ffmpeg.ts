@@ -360,8 +360,15 @@ export async function readFileMeta(filePath: string) {
       console.log('ffprobe stdout:', decoded ?? stdout);
       throw new Error('ffprobe returned malformed data');
     }
-    const { streams = [], format, chapters = [] } = parsedJson;
+    const { format, chapters = [] } = parsedJson;
     invariant(format != null);
+
+    const streams = (parsedJson.streams ?? []).map((s) => {
+      if (/DJI_[^/\\]+SRT$/.test(filePath)) {
+        return { ...s, guessedType: 'dji-gps-srt' as const };
+      }
+      return { ...s, guessedType: undefined };
+    });
     return { format, streams, chapters };
   } catch (err) {
     if (isExecaError(err)) {
@@ -370,6 +377,9 @@ export async function readFileMeta(filePath: string) {
     throw err;
   }
 }
+
+export type FileMeta = Awaited<ReturnType<typeof readFileMeta>>;
+export type FileStream = FileMeta['streams'][number];
 
 async function renderThumbnail(filePath: string, timestamp: number, signal: AbortSignal) {
   const args = [
