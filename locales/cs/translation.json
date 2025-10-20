@@ -705,7 +705,7 @@
     "If your source files have more than two tracks, the extra tracks might have been removed. You can change this option before merging.": "Pokud vaše zdrojové soubory obsahují více než dvě stopy, další stopy mohly být odebrány. Tuto možnost můžete změnit před spojováním.",
     "Please test the output file in your desired player/editor before you delete the source file.": "Prosím před smazáním zdrojového souboru přehrajte výstupní soubor pro kontrolu, že je v pořádku.",
     "Please test the output files in your desired player/editor before you delete the source files.": "Prosím před smazáním zdrojových souborů přehrajte výstupní soubory pro kontrolu, že jsou v pořádku.",
-    "You might want to redact any sensitive information like paths.": "Možná budete chtít upravit citlivé informace jako jsou cesty.",
+    "You might want to redact any sensitive information like paths.": "Možná budete chtít upravit citlivé informace jako jsou cesty a GPS poloha.",
     "Try each of the following before merging again:": "Zkuste každý z následujících před dalším spojováním:",
     "Align segment times to keyframes": "Zarovnat časy segmentů na časy klíčových snímků",
     "Aligning segments to keyframes": "Zarovnávání časů segmentů na klíčové snímky",
