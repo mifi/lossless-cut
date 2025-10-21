@@ -741,7 +741,7 @@
     "Try each of the following before merging again:": "Próbálja ki a következők mindegyikét az újbóli összevonás előtt:",
     "Unable to export unprocessable streams.": "A feldolgozhatatlan adatfolyamok nem exportálhatók.",
     "Unable to merge files": "Nem lehet egyesíteni a fájlokat",
-    "You might want to redact any sensitive information like paths.": "Érdemes leszedni az olyan érzékeny információkat, mint például az elérési utak.",
+    "You might want to redact any sensitive information like paths.": "Érdemes törölni az olyan érzékeny információkat, mint az útvonalak és a GPS-helyzet.",
     "Shortest": "Legrövidebb",
     "Show": "Mutat",
     "The video inside segments will be kept, while the video outside will be discarded.": "A szegmenseken belüli videó megmarad, míg a szegmenseken kívüli videó elvetésre kerül.",
