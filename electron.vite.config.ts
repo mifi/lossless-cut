@@ -9,7 +9,7 @@ export default defineConfig({
     // However, until we use ESM for electron main, we need to include ESM-only deps in the bundle: (exclude from externalize)
     plugins: [externalizeDepsPlugin({ exclude: ['p-map', 'execa', 'nanoid', 'file-type'] })],
     build: {
-      target: 'node22.14',
+      target: 'node22.18',
       sourcemap: true,
     },
   },
@@ -17,14 +17,14 @@ export default defineConfig({
     // https://electron-vite.org/guide/dev#dependencies-vs-devdependencies
     plugins: [externalizeDepsPlugin({ exclude: [] })],
     build: {
-      target: 'node22.14',
+      target: 'node22.18',
       sourcemap: true,
     },
   },
   renderer: {
     plugins: [react()],
     build: {
-      target: 'chrome134',
+      target: 'chrome140',
       sourcemap: true,
       chunkSizeWarningLimit: 3e6,
     },
