@@ -135,7 +135,7 @@
     "vitest": "^3.0.8"
   },
   "dependencies": {
-    "@electron/remote": "^2.1.2",
+    "@electron/remote": "^2.1.3",
     "@octokit/core": "5",
     "cue-parser": "^0.3.0",
     "electron-store": "5.1.1",
