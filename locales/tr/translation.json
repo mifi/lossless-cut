@@ -968,5 +968,6 @@
     "Total seconds": "Toplam saniye",
     "Tracks with at least 720p video": "En az 720p videoya sahip parçalar",
     "Tracks with H264 codec": "H264 kodek içeren parçalar",
-    "Video tracks": "Video parçaları"
+    "Video tracks": "Video parçaları",
+    "Make cursor time zero": "İmleç zamanını sıfır yap"
 }
