@@ -166,7 +166,7 @@ LosslessCut uses the Chromium browser's HTML5 video player, and not all formats/
 
 ### How does `lossless-cut` work under the hood?
 
-Check out this interactive walkthrough of the `lossless-cut` codebase on CodeCanvas [here](https://www.code-canvas.com/?session=unauthenticatedGithub&repo=lossless-cut&owner=mifi&branch=master&OnboardingTutorial=true).
+Check out this interactive walkthrough of the `lossless-cut` codebase on the CodeCanvas [diagram](https://www.code-canvas.com/?session=unauthenticatedGithub&repo=lossless-cut&owner=mifi&branch=master&OnboardingTutorial=true).
 
 To refine existing dataflow simulation or create new ones, follow the quick tutorial [here](https://docs.code-canvas.com/updating-diagram).
 
