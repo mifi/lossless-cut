@@ -133,7 +133,7 @@ async function startPlayback({ path, slaveVideo, masterVideo, videoStreamIndex, 
         console.log('First chunk received');
       }
 
-      sourceBuffer.appendBuffer(chunk);
+      sourceBuffer.appendBuffer(chunk as BufferSource);
     } catch (err) {
       console.error('processChunk failed', err);
       processChunkTimeout = setTimeout(processChunk, 1000);
