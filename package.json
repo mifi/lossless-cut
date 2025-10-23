@@ -82,7 +82,7 @@
     "csv-stringify": "^6.5.2",
     "data-uri-to-buffer": "^4.0.0",
     "electron": "^38.3.0",
-    "electron-builder": "^24.13.3",
+    "electron-builder": "26.0.12",
     "electron-devtools-installer": "^4.0.0",
     "electron-vite": "^2.3.0",
     "eslint": "^8.2.0",
