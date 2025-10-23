@@ -170,8 +170,7 @@ Check out this interactive walkthrough of the `lossless-cut` codebase on CodeCan
 
 To refine existing dataflow simulation or create new ones, follow the quick tutorial [here](https://docs.code-canvas.com/updating-diagram).
 
-<img width="1916" alt="CodeCanvas Screenshot" src="https://codecanvas-media-public.s3.amazonaws.com/images/codecanvas-readme-screenshot.png" />
-
+<img width="1287" height="657" alt="image" src="https://github.com/user-attachments/assets/ca8d9211-dde9-4031-baa9-62c67477a2e3" />
 
 ### Video demos
 
