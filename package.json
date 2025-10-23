@@ -83,7 +83,7 @@
     "data-uri-to-buffer": "^4.0.0",
     "electron": "^38.3.0",
     "electron-builder": "^24.13.3",
-    "electron-devtools-installer": "^3.2.0",
+    "electron-devtools-installer": "^4.0.0",
     "electron-vite": "^2.3.0",
     "eslint": "^8.2.0",
     "eslint-config-mifi": "^0.0.3",
