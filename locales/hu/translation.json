@@ -830,5 +830,6 @@
     "Total seconds": "Összes másodperc",
     "Tracks with at least 720p video": "Legalább 720p felbontású videósávok",
     "Tracks with H264 codec": "H264 kódekkel rendelkező sávok",
-    "Video tracks": "Videó sávok"
+    "Video tracks": "Videó sávok",
+    "Make cursor time zero": "Állítsa a kurzor idejét nullára"
 }
