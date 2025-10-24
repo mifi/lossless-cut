@@ -112,7 +112,7 @@ async function sendApiAction(action: string, args?: unknown[]) {
 }
 
 // https://github.com/electron/electron/issues/526#issuecomment-563010533
-function getSizeOptions() {
+function getSavedBounds() {
   const bounds = configStore.get('windowBounds');
   const options: BrowserWindowConstructorOptions = {};
   if (bounds) {
@@ -133,7 +133,10 @@ function getSizeOptions() {
       options.height = bounds.height;
     }
   }
-  return options;
+  return {
+    options,
+    isMaximized: bounds != null ? bounds.isMaximized : false,
+  };
 }
 
 function createWindow() {
@@ -142,8 +145,10 @@ function createWindow() {
   // https://www.electronjs.org/docs/latest/tutorial/dark-mode
   if (darkMode) nativeTheme.themeSource = 'dark';
 
+  const savedBounds = getSavedBounds();
+
   mainWindow = new BrowserWindow({
-    ...getSizeOptions(),
+    ...savedBounds.options,
     darkTheme: true,
     webPreferences: {
       contextIsolation: false,
@@ -153,6 +158,8 @@ function createWindow() {
     },
     backgroundColor: darkMode ? '#333' : '#fff',
   });
+
+  if (savedBounds.isMaximized) mainWindow.maximize();
 
   remote.enable(mainWindow.webContents);
 
@@ -189,12 +196,16 @@ function createWindow() {
     }
   });
 
+  // TODO replace with `windowStatePersistence` in the future? https://github.com/electron/rfcs/pull/16
   const debouncedSaveWindowState = debounce(() => {
     if (!mainWindow || !configStore.get('storeWindowBounds')) return;
     const { x, y, width, height } = mainWindow.getNormalBounds();
-    configStore.set('windowBounds', { x, y, width, height });
+    const isMaximized = mainWindow.isMaximized();
+    configStore.set('windowBounds', { x, y, width, height, isMaximized });
   }, 500);
 
+  mainWindow.on('maximize', debouncedSaveWindowState);
+  mainWindow.on('unmaximize', debouncedSaveWindowState);
   mainWindow.on('resize', debouncedSaveWindowState);
   mainWindow.on('move', debouncedSaveWindowState);
 }

@@ -90,7 +90,7 @@ export interface Config {
   treatOutputFileModifiedTimeAsStart: boolean | undefined | null,
   outFormatLocked: string | undefined,
   safeOutputFileName: boolean,
-  windowBounds: { x: number, y: number, width: number, height: number } | undefined,
+  windowBounds: { x: number, y: number, width: number, height: number, isMaximized?: boolean } | undefined,
   storeWindowBounds: boolean,
   enableAutoHtml5ify: boolean,
   keyBindings: KeyBinding[],
