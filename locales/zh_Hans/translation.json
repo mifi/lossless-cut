@@ -1022,5 +1022,6 @@
     "Total seconds": "总秒数",
     "Tracks with at least 720p video": "有至少 720p 视频的轨道",
     "Tracks with H264 codec": "采用 H264 编码的音轨",
-    "Video tracks": "视频轨道"
+    "Video tracks": "视频轨道",
+    "Make cursor time zero": "将光标时间设为零"
 }
