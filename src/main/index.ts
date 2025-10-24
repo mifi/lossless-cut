@@ -157,6 +157,8 @@ function createWindow() {
       webSecurity: !isDev,
     },
     backgroundColor: darkMode ? '#333' : '#fff',
+    minWidth: 300,
+    minHeight: 300,
   });
 
   if (savedBounds.isMaximized) mainWindow.maximize();
