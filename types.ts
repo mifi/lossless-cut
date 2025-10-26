@@ -47,6 +47,8 @@ export type ModifierKey = 'ctrl' | 'shift' | 'alt' | 'meta';
 
 export type PreserveMetadata = 'default' | 'nonglobal' | 'none'
 
+export type WaveformMode = 'big-waveform' | 'waveform';
+
 
 export interface Config {
   captureFormat: CaptureFormat,
@@ -115,6 +117,9 @@ export interface Config {
   cutFromAdjustmentFrames: number,
   cutToAdjustmentFrames: number,
   invertTimelineScroll: boolean | undefined,
+  waveformMode: WaveformMode | undefined,
+  thumbnailsEnabled: boolean,
+  keyframesEnabled: boolean,
 }
 
 export interface Waveform {
@@ -128,8 +133,6 @@ export interface ApiActionRequest {
 }
 
 export type Html5ifyMode = 'fastest' | 'fast-audio-remux' | 'fast-audio' | 'fast' | 'slow' | 'slow-audio' | 'slowest';
-
-export type WaveformMode = 'big-waveform' | 'waveform';
 
 // This is the contract with the user, see https://github.com/mifi/lossless-cut/blob/master/expressions.md
 export interface ScopeSegment {

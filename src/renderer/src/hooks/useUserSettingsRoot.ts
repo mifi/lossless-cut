@@ -169,6 +169,13 @@ export default () => {
   useEffect(() => safeSetConfig({ cutToAdjustmentFrames }), [cutToAdjustmentFrames]);
   const [storeWindowBounds, setStoreWindowBounds] = useState(safeGetConfigInitial('storeWindowBounds'));
   useEffect(() => safeSetConfig({ storeWindowBounds }), [storeWindowBounds]);
+  const [waveformMode, setWaveformMode] = useState(safeGetConfigInitial('waveformMode'));
+  useEffect(() => safeSetConfig({ waveformMode }), [waveformMode]);
+  const [thumbnailsEnabled, setThumbnailsEnabled] = useState(safeGetConfigInitial('thumbnailsEnabled'));
+  useEffect(() => safeSetConfig({ thumbnailsEnabled }), [thumbnailsEnabled]);
+  const [keyframesEnabled, setKeyframesEnabled] = useState(safeGetConfigInitial('keyframesEnabled'));
+  useEffect(() => safeSetConfig({ keyframesEnabled }), [keyframesEnabled]);
+
 
   const resetKeyBindings = useCallback(() => {
     configStore.reset('keyBindings');
@@ -313,5 +320,11 @@ export default () => {
     setCutToAdjustmentFrames,
     storeWindowBounds,
     setStoreWindowBounds,
+    waveformMode,
+    setWaveformMode,
+    thumbnailsEnabled,
+    setThumbnailsEnabled,
+    keyframesEnabled,
+    setKeyframesEnabled,
   };
 };

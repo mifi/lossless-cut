@@ -160,6 +160,9 @@ const defaults: Config = {
   cutToAdjustmentFrames: 0,
   invertTimelineScroll: undefined,
   storeWindowBounds: true,
+  waveformMode: undefined,
+  thumbnailsEnabled: false,
+  keyframesEnabled: true,
 };
 
 const configFileName = 'config.json'; // note: this is also hard-coded inside electron-store

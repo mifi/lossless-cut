@@ -92,7 +92,7 @@ import BigWaveform from './components/BigWaveform';
 
 import isDev from './isDev';
 import { BatchFile, Chapter, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, goToTimecodeDirectArgsSchema, openFilesActionArgsSchema, ParamsByStreamId, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment, TunerType } from './types';
-import { CaptureFormat, KeyboardAction, Html5ifyMode, WaveformMode, ApiActionRequest, KeyBinding } from '../../../types';
+import { CaptureFormat, KeyboardAction, Html5ifyMode, ApiActionRequest, KeyBinding } from '../../../types';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 import useLoading from './hooks/useLoading';
 import useVideo from './hooks/useVideo';
@@ -152,9 +152,6 @@ function App() {
 
   // State per application launch
   const lastOpenedPathRef = useRef<string>();
-  const [waveformMode, setWaveformMode] = useState<WaveformMode>();
-  const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
-  const [keyframesEnabled, setKeyframesEnabled] = useState(true);
   const [showRightBar, setShowRightBar] = useState(true);
   const [rememberConvertToSupportedFormat, setRememberConvertToSupportedFormat] = useState<Html5ifyMode>();
   const [lastCommandsVisible, setLastCommandsVisible] = useState(false);
@@ -179,7 +176,7 @@ function App() {
   const allUserSettings = useUserSettingsRoot();
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMetadata, preserveChapters, preserveMovData, movFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, waveformHeight, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, hideOsNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, preserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, mergedFileTemplate, setMergedFileTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, setCleanupChoices, darkMode, toggleDarkMode, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames, cutToAdjustmentFrames,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMetadata, preserveChapters, preserveMovData, movFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, setInvertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, waveformHeight, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, hideOsNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, preserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, mergedFileTemplate, setMergedFileTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, setCleanupChoices, darkMode, toggleDarkMode, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames, cutToAdjustmentFrames, waveformMode: waveformModePreference, setWaveformMode, thumbnailsEnabled, setThumbnailsEnabled, keyframesEnabled, setKeyframesEnabled,
   } = allUserSettings;
 
   // Note that each action may be multiple key bindings and this will only be the first binding for each action
@@ -233,7 +230,7 @@ function App() {
     });
   }, [setPlaybackVolume]);
 
-  const toggleShowThumbnails = useCallback(() => setThumbnailsEnabled((v) => !v), []);
+  const toggleShowThumbnails = useCallback(() => setThumbnailsEnabled((v) => !v), [setThumbnailsEnabled]);
 
   const hideAllNotifications = hideNotifications === 'all';
 
@@ -263,7 +260,7 @@ function App() {
       }
       return enabled;
     });
-  }, [showNotification, zoomedDuration]);
+  }, [setKeyframesEnabled, showNotification, zoomedDuration]);
 
   const appendLastCommandsLog = useCallback((command: string) => {
     setFfmpegCommandLog((old) => [...old, { command, time: new Date() }]);
@@ -271,18 +268,6 @@ function App() {
   const appendFfmpegCommandLog = useCallback((args: string[]) => appendLastCommandsLog(getFfCommandLine('ffmpeg', args)), [appendLastCommandsLog]);
 
   const toggleSegmentsList = useCallback(() => setShowRightBar((v) => !v), []);
-
-  const toggleWaveformMode = useCallback(() => {
-    // eslint-disable-next-line unicorn/prefer-switch
-    if (waveformMode === 'waveform') {
-      setWaveformMode('big-waveform');
-    } else if (waveformMode === 'big-waveform') {
-      setWaveformMode(undefined);
-    } else {
-      showNotification({ text: i18n.t('Mini-waveform has been enabled. Click again to enable full-screen waveform') });
-      setWaveformMode('waveform');
-    }
-  }, [showNotification, waveformMode]);
 
   const toggleSafeOutputFileName = useCallback(() => setSafeOutputFileName((v) => {
     if (v) showNotification({ icon: 'info', text: i18n.t('Output file name will not be sanitized, and any special characters will be preserved. This may cause the export to fail and can cause other funny issues. Use at your own risk!') });
@@ -575,8 +560,26 @@ function App() {
   // total number of streams for ALL files
   const numStreamsTotal = Object.values(allFilesMeta).flatMap(({ streams }) => streams).length;
 
-  const hasAudio = activeAudioStreams.length > 0;
-  const hasVideo = !!activeVideoStream;
+  const hasAudio = !!mainAudioStream;
+  const hasVideo = !!mainVideoStream;
+
+  const forceBigWaveform = !hasVideo && hasAudio;
+
+  const toggleWaveformMode = useCallback(() => {
+    if (forceBigWaveform) return;
+
+    // eslint-disable-next-line unicorn/prefer-switch
+    if (waveformModePreference === 'waveform') {
+      setWaveformMode('big-waveform');
+    } else if (waveformModePreference === 'big-waveform') {
+      setWaveformMode(undefined);
+    } else {
+      showNotification({ text: i18n.t('Mini-waveform has been enabled. Click again to enable full-screen waveform') });
+      setWaveformMode('waveform');
+    }
+  }, [forceBigWaveform, setWaveformMode, showNotification, waveformModePreference]);
+
+  const waveformMode = forceBigWaveform ? 'big-waveform' : waveformModePreference;
 
   const waveformEnabled = hasAudio && waveformMode != null;
   const bigWaveformEnabled = waveformEnabled && waveformMode === 'big-waveform';
@@ -1424,11 +1427,8 @@ function App() {
 
       const timecode = autoLoadTimecode ? getTimecodeFromStreams(fileMeta.streams) : undefined;
 
-      const [videoStream] = getRealVideoStreams(fileMeta.streams);
-      const [audioStream] = getAudioStreams(fileMeta.streams);
-
-      const haveVideoStream = !!videoStream;
-      const haveAudioStream = !!audioStream;
+      const [firstVideoStream] = getRealVideoStreams(fileMeta.streams);
+      const [firstAudioStream] = getAudioStreams(fileMeta.streams);
 
       const copyStreamIdsForPathNew = fromPairs(fileMeta.streams.map((stream) => [
         stream.index, shouldCopyStreamByDefault(stream),
@@ -1464,7 +1464,7 @@ function App() {
       if (needsAutoHtml5ify) {
         // Try to auto-html5ify if there are known issues with this file
         // 'fastest' works with almost all video files
-        await html5ifyAndLoadWithPreferences(cod, fp, 'fastest', haveVideoStream, haveAudioStream);
+        await html5ifyAndLoadWithPreferences(cod, fp, 'fastest', firstVideoStream != null, firstAudioStream != null);
       }
 
       // eslint-disable-next-line unicorn/prefer-ternary
@@ -1478,14 +1478,13 @@ function App() {
 
       // eslint-disable-next-line no-inner-declarations
       function getFps() {
-        if (haveVideoStream) return getStreamFps(videoStream);
-        if (haveAudioStream) return getStreamFps(audioStream);
+        if (firstVideoStream != null) return getStreamFps(firstVideoStream);
+        if (firstAudioStream != null) return getStreamFps(firstAudioStream);
         return undefined;
       }
 
       if (timecode) setStartTimeOffset(timecode);
       setDetectedFps(getFps());
-      if (!haveVideoStream) setWaveformMode('big-waveform');
       setMainFileMeta({ streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters });
       setCopyStreamIdsForPath(fp, () => copyStreamIdsForPathNew);
       setDetectedFileFormat(fileFormatNew);
@@ -2475,7 +2474,7 @@ function App() {
     if (type === 'waveformHeight') {
       setWaveformMode('waveform');
     }
-  }, []);
+  }, [setWaveformMode]);
 
   useEffect(() => {
     if (!isStoreBuild && !hasDisabledNetworking()) loadMifiLink().then(setMifiLink);
