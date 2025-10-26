@@ -49,7 +49,7 @@ const InvertCutModeButton = memo(({ invertCutSegments, setInvertCutSegments }: {
   }, [setInvertCutSegments, t]);
 
   return (
-    <div style={{ marginLeft: 5 }}>
+    <div style={{ marginRight: 5 }}>
       <motion.div
         style={{ width: 24, height: 24 }}
         animate={{ rotateX: invertCutSegments ? 0 : 180 }}
@@ -504,14 +504,14 @@ function BottomBar({
         className="no-user-select"
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '3px 4px' }}
       >
+        <InvertCutModeButton invertCutSegments={invertCutSegments} setInvertCutSegments={setInvertCutSegments} />
+
         <SimpleModeButton style={{ flexShrink: 0 }} />
 
         {simpleMode && <div role="button" onClick={toggleSimpleMode} style={{ marginLeft: 5, fontSize: '90%' }}>{t('Toggle advanced view')}</div>}
 
         {!simpleMode && (
           <>
-            <InvertCutModeButton invertCutSegments={invertCutSegments} setInvertCutSegments={setInvertCutSegments} />
-
             <div role="button" style={{ marginRight: 5, marginLeft: 10 }} title={t('Zoom')} onClick={timelineToggleComfortZoom}>{Math.floor(zoom)}x</div>
 
             <Select style={{ height: 20, flexBasis: 85, flexGrow: 0 }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur((e) => setZoom(() => parseInt(e.target.value, 10)))}>
