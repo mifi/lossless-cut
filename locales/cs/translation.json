@@ -699,7 +699,7 @@
     "Unable to merge files": "Není možné spojit soubory",
     "Warning: Cutting thumbnail tracks is known to cause problems. Consider disabling track {{trackNumber}}.": "Varování: Střih stop s náhledy/miniaturami může způsobit problémy. Zvažte tedy vypnutí stopy {{trackNumber}}.",
     "thumbnail": "náhled",
-    "It's generally recommended to set this to one of: {{values}}": "Doporučuje se nastavit toto na jednu z: {{values}}",
+    "It's generally recommended to set this to one of: {{values}}": "Doporučuje se nastavit toto na: {{values}}",
     "Cutpoints may be inaccurate.": "Body střihu nemusí být přesné.",
     "Experimental functionality has been activated!": "Experimentální funkce byla zapnuta!",
     "If your source files have more than two tracks, the extra tracks might have been removed. You can change this option before merging.": "Pokud vaše zdrojové soubory obsahují více než dvě stopy, další stopy mohly být odebrány. Tuto možnost můžete změnit před spojováním.",
