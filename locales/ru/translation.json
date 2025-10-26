@@ -990,5 +990,6 @@
     "Total seconds": "Всего секунд",
     "Tracks with at least 720p video": "Видеодорожки с разрешением от 720p и выше",
     "Tracks with H264 codec": "Дорожки с кодеком H264",
-    "Video tracks": "Видеодорожки"
+    "Video tracks": "Видеодорожки",
+    "Make cursor time zero": "Сделать время курсора нулевым"
 }
