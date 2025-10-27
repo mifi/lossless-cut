@@ -921,7 +921,7 @@
     "Smart cut is experimental and will not work on all files.": "Přesný střih je ve zkušebním stavu a nebude fungovat u všech souborů.",
     "This file contains an audio track that FFmpeg is unable to mux into the MP4 format, so MOV has been auto-selected as the default output format.": "Tento soubor obsahuje zvukovou stopu, kterou FFmpeg nedokáže muxovat do formátu MP4, takže jako výchozí výstupní formát byl automaticky zvolen MOV.",
     "There is a known issue in FFmpeg with cutting FLAC files. The file will be re-encoded, which is still lossless, but the export may be slower.": "Ve FFmpeg je známý problém se stříháním souborů FLAC. Soubor bude překódován, což je stále bezeztrátové, ale export může být pomalejší.",
-    "Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied": "Zda se mají zachovat metadata získaná ze zdrojového souboru. Výchozí hodnota: Globální (metadata souboru), metadata pro jednotlivé stopy a kapitoly budou kopírována. Ne-globální: pouze metadata pro jednotlivé stopy a kapitoly budou kopírována. Žádné: Nebudou kopírována žádná metadata.",
+    "Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied": "Zda se mají zachovat metadata získaná ze zdrojového souboru. Výchozí: Globální (metadata souboru) - metadata pro jednotlivé stopy a kapitoly budou kopírována. Ne-globální: pouze metadata pro jednotlivé stopy a kapitoly budou kopírována. Žádná: Nebudou kopírována žádná metadata.",
     "You are not allowed to write the output file. This probably means that the file already exists with the wrong permissions, or you don't have write permissions to the output folder.": "Výstupní soubor nemáte povoleno zapisovat. To pravděpodobně znamená, že soubor již existuje s nesprávnými právy, nebo nemáte právo k zápisu do výstupní složky.",
     "Failed to import project file": "Selhalo importování souboru projektu",
     "Failed to include track": "Selhalo zahrnutí stopy",
@@ -1001,5 +1001,6 @@
     "Total seconds": "Celkem sekund",
     "Tracks with at least 720p video": "Stopy s videem větším než 720p",
     "Tracks with H264 codec": "Stopy s kodekem H264",
-    "Video tracks": "Video stopy"
+    "Video tracks": "Video stopy",
+    "Make cursor time zero": "Nastavit čas v místě kurzoru jako nulový"
 }
