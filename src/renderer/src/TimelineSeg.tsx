@@ -3,7 +3,6 @@ import { motion, AnimatePresence, MotionStyle } from 'framer-motion';
 import { FaTrashAlt } from 'react-icons/fa';
 import Color from 'color';
 
-import { mySpring } from './animations';
 import useUserSettings from './hooks/useUserSettings';
 import { useSegColors } from './contexts';
 import { FormatTimecode, StateSegment } from './types';
@@ -23,7 +22,7 @@ function Marker({
   getTimePercent: (a: number) => string,
   formatTimecode: FormatTimecode,
 }) {
-  const { darkMode } = useUserSettings();
+  const { darkMode, prefersReducedMotion, springAnimation } = useUserSettings();
 
   const pinColor = darkMode ? color.saturate(0.2).lightness(40).string() : color.desaturate(0.2).lightness(50).string();
 
@@ -59,8 +58,8 @@ function Marker({
   return (
     <motion.div
       style={style}
-      layout
-      transition={mySpring}
+      layout={!prefersReducedMotion}
+      transition={springAnimation}
       initial={{ opacity: 0, scale: 0 }}
       animate={{ opacity: selected ? 1 : 0.5, scale: 1 }}
       exit={{ opacity: 0, scale: 0 }}
@@ -92,7 +91,7 @@ function Segment({
   formatTimecode: FormatTimecode,
   invertCutSegments: boolean,
 }) {
-  const { darkMode } = useUserSettings();
+  const { darkMode, prefersReducedMotion, springAnimation } = useUserSettings();
   const { name } = seg;
 
   const border = useMemo(() => {
@@ -164,8 +163,8 @@ function Segment({
   return (
     <motion.div
       style={wrapperStyle}
-      layout
-      transition={mySpring}
+      layout={!prefersReducedMotion}
+      transition={springAnimation}
       initial={{ opacity: 0, scaleX: 0 }}
       animate={{ opacity: 1, scaleX: 1, backgroundColor }}
       exit={{ opacity: 0, scaleX: 0 }}

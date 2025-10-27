@@ -152,7 +152,7 @@ function Timeline({
 }) {
   const { t } = useTranslation();
 
-  const { invertCutSegments } = useUserSettings();
+  const { invertCutSegments, springAnimation } = useUserSettings();
 
   const timelineScrollerRef = useRef<HTMLDivElement>(null);
   const timelineScrollerSkipEventRef = useRef<boolean>(false);
@@ -427,7 +427,7 @@ function Timeline({
           ))}
 
           {currentTimePercent !== undefined && (
-            <motion.div transition={{ type: 'spring', damping: 70, stiffness: 800 }} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, backgroundColor: 'var(--gray-12)', width: currentTimeWidth, pointerEvents: 'none' }} />
+            <motion.div transition={springAnimation} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, backgroundColor: 'var(--gray-12)', width: currentTimeWidth, pointerEvents: 'none' }} />
           )}
           {commandedTimePercent !== undefined && (
             <CommandedTime commandedTimePercent={commandedTimePercent} />

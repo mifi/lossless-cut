@@ -15,7 +15,6 @@ import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
 import { saveColor, controlsBackground, primaryTextColor, darkModeTransition } from './colors';
 import { useSegColors } from './contexts';
-import { mySpring } from './animations';
 import { getSegmentTags } from './segments';
 import TagEditor from './components/TagEditor';
 import { ContextMenuTemplate, DefiniteSegmentBase, FormatTimecode, GetFrameCount, InverseCutSegment, SegmentBase, SegmentTags, StateSegment } from './types';
@@ -356,7 +355,7 @@ function SegmentList({
   const { getSegColor } = useSegColors();
   const [draggingId, setDraggingId] = useState<UniqueIdentifier | undefined>();
 
-  const { invertCutSegments, simpleMode, darkMode } = useUserSettings();
+  const { invertCutSegments, simpleMode, darkMode, springAnimation } = useUserSettings();
 
   const getButtonColor = useCallback((seg: StateSegment | undefined, next?: boolean) => getSegColor(seg ? { segColorIndex: next ? seg.segColorIndex + 1 : seg.segColorIndex } : undefined).desaturate(0.3).lightness(darkMode ? 45 : 55).string(), [darkMode, getSegColor]);
   const currentSegColor = useMemo(() => getButtonColor(currentCutSeg), [currentCutSeg, getButtonColor]);
@@ -586,7 +585,7 @@ function SegmentList({
         initial={{ x: width }}
         animate={{ x: 0 }}
         exit={{ x: width }}
-        transition={mySpring}
+        transition={springAnimation}
       >
         <div style={{ fontSize: 14, padding: '0 5px', color: 'var(--gray-12)' }} className="no-user-select">
           <FaAngleRight

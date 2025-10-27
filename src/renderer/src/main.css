@@ -125,5 +125,10 @@ input:focus-visible, select:focus-visible {
 
 /* because some people have a hard time finding the button */
 .export-animation {
-  animation: pulse 2s linear infinite
+  animation: pulse 2s linear infinite;
+}
+
+.no-animations * {
+  transition: none !important;
+  animation: none !important;
 }

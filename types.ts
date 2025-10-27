@@ -120,6 +120,7 @@ export interface Config {
   waveformMode: WaveformMode | undefined,
   thumbnailsEnabled: boolean,
   keyframesEnabled: boolean,
+  reducedMotion: 'always' | 'never' | 'user',
 }
 
 export interface Waveform {

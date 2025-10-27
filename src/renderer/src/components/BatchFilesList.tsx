@@ -10,8 +10,8 @@ import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
 import BatchFile from './BatchFile';
 import { controlsBackground, darkModeTransition, primaryColor } from '../colors';
-import { mySpring } from '../animations';
 import { BatchFile as BatchFileType } from '../types';
+import useUserSettings from '../hooks/useUserSettings';
 
 
 const iconStyle = {
@@ -37,6 +37,7 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
   onDrop: DragEventHandler<HTMLDivElement>,
 }) {
   const { t } = useTranslation();
+  const { springAnimation } = useUserSettings();
 
   const [sortDesc, setSortDesc] = useState<boolean>();
   const [draggingId, setDraggingId] = useState<UniqueIdentifier | undefined>();
@@ -86,7 +87,7 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
       initial={{ x: -width }}
       animate={{ x: 0 }}
       exit={{ x: -width }}
-      transition={mySpring}
+      transition={springAnimation}
       onDrop={onDrop}
     >
       <div style={{ fontSize: 14, paddingBottom: 3, paddingTop: 0, paddingLeft: 10, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap' }}>

@@ -11,7 +11,7 @@ import Switch from './Switch';
 import useUserSettings from '../hooks/useUserSettings';
 import { askForFfPath } from '../dialogs';
 import { isMasBuild, isStoreBuild } from '../util';
-import { LanguageKey, ModifierKey, TimecodeFormat, langNames } from '../../../../types';
+import { Config, LanguageKey, ModifierKey, TimecodeFormat, langNames } from '../../../../types';
 import styles from './Settings.module.css';
 import Select from './Select';
 
@@ -74,7 +74,7 @@ function Settings({
   const { t } = useTranslation();
   const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
 
-  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, hideOsNotifications, setHideOsNotifications, autoLoadTimecode, setAutoLoadTimecode, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, setMouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, setMouseWheelKeyframeSeekModifierKey, captureFrameMethod, setCaptureFrameMethod, captureFrameQuality, setCaptureFrameQuality, captureFrameFileNameFormat, setCaptureFrameFileNameFormat, enableNativeHevc, setEnableNativeHevc, enableUpdateCheck, setEnableUpdateCheck, allowMultipleInstances, setAllowMultipleInstances, preferStrongColors, setPreferStrongColors, treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, setTreatOutputFileModifiedTimeAsStart, exportConfirmEnabled, toggleExportConfirmEnabled, storeWindowBounds, setStoreWindowBounds } = useUserSettings();
+  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, hideOsNotifications, setHideOsNotifications, autoLoadTimecode, setAutoLoadTimecode, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, setMouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, setMouseWheelKeyframeSeekModifierKey, captureFrameMethod, setCaptureFrameMethod, captureFrameQuality, setCaptureFrameQuality, captureFrameFileNameFormat, setCaptureFrameFileNameFormat, enableNativeHevc, setEnableNativeHevc, enableUpdateCheck, setEnableUpdateCheck, allowMultipleInstances, setAllowMultipleInstances, preferStrongColors, setPreferStrongColors, treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, setTreatOutputFileModifiedTimeAsStart, exportConfirmEnabled, toggleExportConfirmEnabled, storeWindowBounds, setStoreWindowBounds, reducedMotion, setReducedMotion } = useUserSettings();
 
   const onLangChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
     const { value } = e.target;
@@ -479,6 +479,17 @@ function Settings({
             <KeyCell>{t('Prefer strong colors')}</KeyCell>
             <td>
               <Switch checked={preferStrongColors} onCheckedChange={setPreferStrongColors} />
+            </td>
+          </Row>
+
+          <Row>
+            <KeyCell>{t('Reduce motion in user interface')}</KeyCell>
+            <td>
+              <Select value={reducedMotion} onChange={(e) => setReducedMotion(e.target.value as Config['reducedMotion'])}>
+                {Object.entries({ user: t('System default'), always: t('Yes'), never: t('No') } satisfies Record<Config['reducedMotion'], string>).map(([key, value]) => (
+                  <option key={key} value={key}>{value}</option>
+                ))}
+              </Select>
             </td>
           </Row>
 

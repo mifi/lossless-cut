@@ -1,7 +1,7 @@
 import { memo, useEffect, useState, useCallback, useRef, useMemo, CSSProperties, ReactEventHandler, FocusEventHandler, DragEventHandler } from 'react';
 import { FaAngleLeft, FaRegTimesCircle } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, MotionConfig } from 'framer-motion';
 import { ThemeProvider } from 'evergreen-ui';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
@@ -176,7 +176,7 @@ function App() {
   const allUserSettings = useUserSettingsRoot();
 
   const {
-    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMetadata, preserveChapters, preserveMovData, movFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, waveformHeight, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, hideOsNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, preserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, mergedFileTemplate, setMergedFileTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, setCleanupChoices, darkMode, toggleDarkMode, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames, cutToAdjustmentFrames, waveformMode: waveformModePreference, setWaveformMode, thumbnailsEnabled, setThumbnailsEnabled, keyframesEnabled, setKeyframesEnabled,
+    captureFormat, setCaptureFormat, customOutDir, setCustomOutDir, keyframeCut, setKeyframeCut, preserveMetadata, preserveChapters, preserveMovData, movFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, autoExportExtraStreams, askBeforeClose, enableAskForImportChapters, enableAskForFileOpenAction, playbackVolume, setPlaybackVolume, autoSaveProjectFile, wheelSensitivity, waveformHeight, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, hideOsNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, setExportConfirmEnabled, segmentsToChapters, preserveMetadataOnMerge, simpleMode, setSimpleMode, outSegTemplate, setOutSegTemplate, mergedFileTemplate, setMergedFileTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, setOutFormatLocked, safeOutputFileName, setSafeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, setKeyBindings, resetKeyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, setStoreProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, setCleanupChoices, darkMode, toggleDarkMode, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames, cutToAdjustmentFrames, waveformMode: waveformModePreference, setWaveformMode, thumbnailsEnabled, setThumbnailsEnabled, keyframesEnabled, setKeyframesEnabled, prefersReducedMotion, reducedMotion,
   } = allUserSettings;
 
   // Note that each action may be multiple key bindings and this will only be the first binding for each action
@@ -2513,13 +2513,20 @@ function App() {
 
   const baseColorStyle = useMemo(() => ({ color: 'var(--gray-12)', background: 'var(--gray-1)', colorScheme: darkMode ? 'only dark' : 'only light' }), [darkMode]);
 
+  const rootClass = useMemo(() => [
+    ...(darkMode ? ['dark-theme'] : []),
+    ...(prefersReducedMotion ? ['no-animations'] : []),
+  ].join(' '), [darkMode, prefersReducedMotion]);
+
+  const rootStyle = useMemo<CSSProperties>(() => ({ ...baseColorStyle, display: 'flex', flexDirection: 'column', height: '100vh', transition: darkModeTransition }), [baseColorStyle]);
+
   return (
-    <>
+    <MotionConfig reducedMotion={reducedMotion}>
       <AppContext.Provider value={appContext}>
         <SegColorsContext.Provider value={segColorsContext}>
           <UserSettingsContext.Provider value={userSettingsContext}>
             <ThemeProvider value={theme}>
-              <div className={darkMode ? 'dark-theme' : undefined} style={{ ...baseColorStyle, display: 'flex', flexDirection: 'column', height: '100vh', transition: darkModeTransition }}>
+              <div className={rootClass} style={rootStyle}>
                 <TopMenu
                   filePath={filePath}
                   fileFormat={fileFormat}
@@ -2834,7 +2841,7 @@ function App() {
       </AppContext.Provider>
 
       <div id="swal2-container-wrapper" className={darkMode ? 'dark-theme' : undefined} style={baseColorStyle} />
-    </>
+    </MotionConfig>
   );
 }
 

@@ -1,11 +1,17 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import i18n from 'i18next';
+import { Transition } from 'framer-motion';
+
 import { Config } from '../../../../types';
 
 import { errorToast } from '../swal';
 import isDev from '../isDev';
+import { mySpring, setPrefersReducedMotion } from '../animations';
 
 const { configStore } = window.require('@electron/remote').require('./index.js');
+const { systemPreferences } = window.require('@electron/remote');
+
+const animationSettings = systemPreferences.getAnimationSettings();
 
 export default () => {
   const firstUpdateRef = useRef(true);
@@ -175,6 +181,8 @@ export default () => {
   useEffect(() => safeSetConfig({ thumbnailsEnabled }), [thumbnailsEnabled]);
   const [keyframesEnabled, setKeyframesEnabled] = useState(safeGetConfigInitial('keyframesEnabled'));
   useEffect(() => safeSetConfig({ keyframesEnabled }), [keyframesEnabled]);
+  const [reducedMotion, setReducedMotion] = useState(safeGetConfigInitial('reducedMotion'));
+  useEffect(() => safeSetConfig({ reducedMotion }), [reducedMotion]);
 
 
   const resetKeyBindings = useCallback(() => {
@@ -191,6 +199,19 @@ export default () => {
   }, []);
 
   const toggleDarkMode = useCallback(() => setDarkMode((v) => !v), []);
+
+  const prefersReducedMotion = useMemo(() => {
+    if (reducedMotion !== 'user') return reducedMotion === 'always';
+    // fallback to electron detected system setting
+    // note: user has to restart app for changes here to be detected
+    return animationSettings.prefersReducedMotion;
+  }, [reducedMotion]);
+
+  useEffect(() => {
+    setPrefersReducedMotion(prefersReducedMotion);
+  }, [prefersReducedMotion]);
+
+  const springAnimation = useMemo<Transition>(() => (prefersReducedMotion ? { duration: 0 } : mySpring), [prefersReducedMotion]);
 
   return {
     captureFormat,
@@ -326,5 +347,9 @@ export default () => {
     setThumbnailsEnabled,
     keyframesEnabled,
     setKeyframesEnabled,
+    reducedMotion,
+    prefersReducedMotion,
+    setReducedMotion,
+    springAnimation,
   };
 };

@@ -1,18 +1,16 @@
 import SwalRaw from 'sweetalert2/dist/sweetalert2.js';
 import type { SweetAlertOptions } from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+
 import i18n from './i18n';
+import { prefersReducedMotion } from './animations';
 
-
-const { systemPreferences } = window.require('@electron/remote');
-
-const animationSettings = systemPreferences.getAnimationSettings();
 
 let commonSwalOptions: SweetAlertOptions = {
   target: '#swal2-container-wrapper',
 };
 
-if (animationSettings.prefersReducedMotion) {
+if (prefersReducedMotion()) {
   commonSwalOptions = {
     ...commonSwalOptions,
     showClass: {

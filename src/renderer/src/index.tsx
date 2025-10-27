@@ -1,6 +1,5 @@
 import { Suspense, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { MotionConfig } from 'framer-motion';
 import { enableMapSet } from 'immer';
 import * as Electron from 'electron';
 import Remote from '@electron/remote';
@@ -77,9 +76,7 @@ root.render(
   <StrictMode>
     <ErrorBoundary>
       <Suspense fallback={<div />}>
-        <MotionConfig reducedMotion="user">
-          <App />
-        </MotionConfig>
+        <App />
       </Suspense>
     </ErrorBoundary>
   </StrictMode>,
