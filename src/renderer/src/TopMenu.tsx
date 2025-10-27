@@ -1,6 +1,6 @@
 import { CSSProperties, ReactNode, memo, useCallback, useEffect, useRef } from 'react';
 import { IoIosSettings } from 'react-icons/io';
-import { FaLock, FaUnlock } from 'react-icons/fa';
+import { FaFilter, FaLock, FaUnlock } from 'react-icons/fa';
 import { CrossIcon, FilterIcon, ListIcon } from 'evergreen-ui';
 import { useTranslation } from 'react-i18next';
 import Button from './components/Button';
@@ -101,6 +101,7 @@ function TopMenu({
           <Button
             onClick={changeEnabledStreamsFilter}
           >
+            <FaFilter style={{ fontSize: '.7em', marginRight: '.4em' }} />
             {t('Filter tracks')}
           </Button>
         </>
