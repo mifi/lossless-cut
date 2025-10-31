@@ -4,7 +4,7 @@
   right: 0;
   top: 0;
   bottom: 0;
-  background: var(--white-a11);
+  background: var(--white-a9);
   color: var(--gray-12);
   backdrop-filter: blur(30px);
   overflow-y: scroll;
@@ -14,7 +14,7 @@
 }
 
 :global(.dark-theme) .sheet {
-  background: var(--black-a11);
+  background: var(--black-a9);
 }
 
 .box {

@@ -5,9 +5,10 @@ import withReactContent from 'sweetalert2-react-content';
 import i18n from './i18n';
 import { prefersReducedMotion } from './animations';
 
+export const swalContainerWrapperId = 'swal2-container-wrapper';
 
 let commonSwalOptions: SweetAlertOptions = {
-  target: '#swal2-container-wrapper',
+  target: `#${swalContainerWrapperId}`,
 };
 
 if (prefersReducedMotion()) {

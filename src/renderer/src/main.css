@@ -121,11 +121,24 @@ input:focus-visible, select:focus-visible {
   50% { transform: scale(1.15) }
   55% { transform: scale(1.03) }
   100% { transform: scale(1) }
-}  
+}
+
+@keyframes spin {
+  0% { transform: rotate(0) }
+  100% { transform: rotate(360deg); }
+}
 
 /* because some people have a hard time finding the button */
 .export-animation {
   animation: pulse 2s linear infinite;
+}
+
+.spinner-animation {
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-animation {
+  animation: pulse 1s linear infinite;
 }
 
 .no-animations * {

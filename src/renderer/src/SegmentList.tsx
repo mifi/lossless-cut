@@ -9,7 +9,6 @@ import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { CSS } from '@dnd-kit/utilities';
 
-import Dialog, { ConfirmButton } from './components/Dialog';
 import Swal from './swal';
 import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
@@ -19,6 +18,7 @@ import { getSegmentTags } from './segments';
 import TagEditor from './components/TagEditor';
 import { ContextMenuTemplate, DefiniteSegmentBase, FormatTimecode, GetFrameCount, InverseCutSegment, SegmentBase, SegmentTags, StateSegment } from './types';
 import { UseSegments } from './hooks/useSegments';
+import * as Dialog from './components/Dialog';
 
 
 const buttonBaseStyle = {
@@ -156,7 +156,7 @@ const Segment = memo(({
 
   function renderNumber() {
     if (invertCutSegments || !('segColorIndex' in seg)) {
-      return <FaSave style={{ color: saveColor, marginRight: 5, verticalAlign: 'middle' }} size={14} />;
+      return <FaSave style={{ color: saveColor, marginRight: '.2em', verticalAlign: 'middle' }} size={14} />;
     }
 
     const segColor = getSegColor(seg);
@@ -165,7 +165,7 @@ const Segment = memo(({
     const borderColor = darkMode ? color.lighten(0.5) : color.darken(0.3);
 
     return (
-      <b style={{ color: 'white', padding: '0 4px', marginRight: 3, marginLeft: -3, background: color.string(), border: `1px solid ${isActive ? borderColor.string() : 'transparent'}`, borderRadius: 10, fontSize: 12 }}>
+      <b style={{ color: 'white', padding: '0 .3em', marginRight: '.3em', marginLeft: '-.23em', background: color.string(), border: `.05em solid ${isActive ? borderColor.string() : 'transparent'}`, borderRadius: '.35em', fontSize: '.7em' }}>
         {index + 1}
       </b>
     );
@@ -212,7 +212,7 @@ const Segment = memo(({
       position: 'relative',
       transform: CSS.Transform.toString(sortable.transform),
       transition: transitions.length > 0 ? transitions.join(', ') : undefined,
-      background: 'var(--gray-2)',
+      background: 'var(--gray-1)',
       border: `1px solid ${isActive ? 'var(--gray-10)' : 'transparent'}`,
       borderRadius: 5,
       opacity: !selected && !invertCutSegments ? 0.5 : undefined,
@@ -496,6 +496,7 @@ function SegmentList({
 
   const rowVirtualizer = useVirtualizer({
     count: sortableList.length,
+    gap: 7,
     getScrollElement: () => scrollerRef.current,
     estimateSize: () => 66, // todo this probably needs to be changed if the segment height changes
     overscan: 5,
@@ -570,15 +571,23 @@ function SegmentList({
 
   return (
     <>
-      {editingSegmentTagsSegmentIndex != null && (
-        <Dialog autoOpen onClose={onSegmentTagsCloseComplete} style={{ width: '100%', maxWidth: '40em' }}>
-          <h1 style={{ marginTop: 0 }}>{t('Edit segment tags')}</h1>
+      <Dialog.Root open={editingSegmentTagsSegmentIndex != null} onOpenChange={onSegmentTagsCloseComplete}>
+        <Dialog.Portal>
+          <Dialog.Overlay />
+          <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
+            <Dialog.Title>{t('Edit segment tags')}</Dialog.Title>
 
-          <TagEditor customTags={editingSegmentTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add segment tag')} />
+            <TagEditor customTags={editingSegmentTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add segment tag')} />
 
-          <ConfirmButton onClick={onSegmentTagsConfirm} disabled={editingTag != null}><FaSave style={{ verticalAlign: 'baseline', fontSize: '.8em', marginRight: '.3em' }} />{t('Save')}</ConfirmButton>
-        </Dialog>
-      )}
+            <Dialog.ConfirmButton onClick={onSegmentTagsConfirm} disabled={editingTag != null}>
+              <FaSave style={{ verticalAlign: 'baseline', fontSize: '.8em', marginRight: '.3em' }} />
+              {t('Save')}
+            </Dialog.ConfirmButton>
+
+            <Dialog.CloseButton />
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
 
       <motion.div
         style={{ width, background: controlsBackground, borderLeft: '1px solid var(--gray-7)', color: 'var(--gray-11)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
@@ -587,11 +596,11 @@ function SegmentList({
         exit={{ x: width }}
         transition={springAnimation}
       >
-        <div style={{ fontSize: 14, padding: '0 5px', color: 'var(--gray-12)' }} className="no-user-select">
+        <div style={{ fontSize: '.8em', padding: '.3em .5em', color: 'var(--gray-12)' }} className="no-user-select">
           <FaAngleRight
             title={t('Close sidebar')}
             size={20}
-            style={{ verticalAlign: 'middle', color: 'var(--gray-11)', cursor: 'pointer', padding: 2 }}
+            style={{ verticalAlign: 'middle', color: 'var(--gray-11)', cursor: 'pointer', padding: '.1em' }}
             role="button"
             onClick={toggleSegmentsList}
           />
@@ -601,7 +610,7 @@ function SegmentList({
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} modifiers={[restrictToVerticalAxis]}>
           <SortableContext items={sortableList} strategy={verticalListSortingStrategy}>
-            <div ref={scrollerRef} style={{ padding: '0 .1em 0 .3em', overflowX: 'hidden', overflowY: 'scroll', flexGrow: 1 }} className="consistent-scrollbar">
+            <div ref={scrollerRef} style={{ padding: '0 .2em 0 .5em', overflowX: 'hidden', overflowY: 'scroll', flexGrow: 1 }} className="consistent-scrollbar">
               <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative', overflowX: 'hidden' }}>
                 {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                   const { id, seg } = sortableList[virtualRow.index]!;

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import { IoIosCamera, IoMdKey, IoMdSpeedometer } from 'react-icons/io';
-import { FaYinYang, FaTrashAlt, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey, FaSun } from 'react-icons/fa';
+import { FaYinYang, FaTrashAlt, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey } from 'react-icons/fa';
 import { GiSoundWaves } from 'react-icons/gi';
 // import useTraceUpdate from 'use-trace-update';
 import invariant from 'tiny-invariant';
@@ -228,7 +228,7 @@ function BottomBar({
   jumpTimelineStart, jumpTimelineEnd, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime,
   playing, shortStep, togglePlay, toggleLoopSelectedSegments, hasAudio,
   keyframesEnabled, toggleShowKeyframes, seekClosestKeyframe, detectedFps, isFileOpened, selectedSegments,
-  darkMode, toggleDarkMode,
+  darkMode,
   toggleShowThumbnails, toggleWaveformMode, waveformMode, showThumbnails,
   outputPlaybackRate, setOutputPlaybackRate,
   formatTimecode, parseTimecode, playbackRate,
@@ -271,7 +271,6 @@ function BottomBar({
   isFileOpened: boolean,
   selectedSegments: SegmentColorIndex[],
   darkMode: boolean,
-  toggleDarkMode: () => void,
   toggleShowThumbnails: () => void,
   toggleWaveformMode: () => void,
   waveformMode: WaveformMode | undefined,
@@ -286,8 +285,20 @@ function BottomBar({
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
 
+  const playStyle = useMemo<CSSProperties>(() => ({
+    paddingLeft: playing ? 0 : '.1em',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '2.3em',
+    height: '2.3em',
+    borderRadius: '50%',
+    boxSizing: 'border-box',
+  }), [playing]);
+
   // ok this is a bit over-engineered but what the hell!
-  const loopSelectedSegmentsButtonStyle = useMemo(() => {
+  const loopSelectedSegmentsButtonStyle = useMemo<CSSProperties>(() => {
     // need at least 2 gradient elements:
     const selectedSegmentsSafe = (
       selectedSegments.length >= 2
@@ -305,20 +316,14 @@ function BottomBar({
     }).join(', ');
 
     return {
-      paddingLeft: 2,
+      ...playStyle,
+      fontSize: '.7em',
+      margin: '.1em .2em 0 -.6em',
       backgroundOffset: 30,
       background: `linear-gradient(90deg, ${gradientColors})`,
-      border: '1px solid var(--gray-8)',
-      color: 'white',
-      margin: '0px 5px 0 0px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: 20,
-      height: 24,
-      borderRadius: 4,
+      border: '1px solid var(--gray-10)',
     };
-  }, [selectedSegments]);
+  }, [playStyle, selectedSegments]);
 
   const keyframeStyle = useMemo(() => ({
     color: currentFrame != null && currentFrame.keyframe ? primaryTextColor : undefined,
@@ -376,8 +381,6 @@ function BottomBar({
         <div style={{ display: 'flex', alignItems: 'center', flexBasis: leftRightWidth }}>
           {!simpleMode && (
             <>
-              <FaSun color="var(--gray-12)" role="button" onClick={toggleDarkMode} style={{ padding: '0 .2em 0 .3em' }} title={t('Toggle dark mode')} />
-
               {hasAudio && (
                 <GiSoundWaves
                   size={24}
@@ -390,16 +393,14 @@ function BottomBar({
               {hasVideo && (
                 <>
                   <FaImages
-                    size={20}
-                    style={{ padding: '0 .2em', color: showThumbnails ? primaryTextColor : undefined }}
+                    style={{ fontSize: '1em', padding: '0 .2em', color: showThumbnails ? primaryTextColor : undefined }}
                     role="button"
                     title={t('Show thumbnails')}
                     onClick={toggleShowThumbnails}
                   />
 
                   <FaKey
-                    size={16}
-                    style={{ padding: '0 .2em', color: keyframesEnabled ? primaryTextColor : undefined }}
+                    style={{ fontSize: '.9em', padding: '0 .2em', color: keyframesEnabled ? primaryTextColor : undefined }}
                     role="button"
                     title={t('Show keyframes')}
                     onClick={toggleShowKeyframes}
@@ -450,11 +451,12 @@ function BottomBar({
           />
         )}
 
-        <div role="button" onClick={() => togglePlay()} style={{ background: primaryColor, margin: '2px 5px 0 5px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 17, color: 'white' }}>
-          <PlayPause
-            style={{ paddingLeft: playing ? 0 : 2 }}
-            size={16}
-          />
+        <div role="button" onClick={() => togglePlay()} style={{ ...playStyle, margin: '.1em .1em 0 .2em', background: primaryColor }}>
+          <PlayPause style={{ fontSize: '.9em' }} />
+        </div>
+
+        <div role="button" onClick={toggleLoopSelectedSegments} title={t('Play selected segments in order')} style={loopSelectedSegmentsButtonStyle}>
+          <PlayPause style={{ fontSize: '.9em' }} />
         </div>
 
         {!simpleMode && (
@@ -535,10 +537,9 @@ function BottomBar({
 
         {hasVideo && (
           <>
-            <span style={{ textAlign: 'right', display: 'inline-block' }}>{isRotationSet && rotationStr}</span>
+            <span style={{ textAlign: 'right', display: 'inline-block', fontSize: '.8em', marginRight: '.3em' }}>{isRotationSet && rotationStr}</span>
             <MdRotate90DegreesCcw
-              size={24}
-              style={{ margin: '0px 0px 0 2px', verticalAlign: 'middle', color: isRotationSet ? primaryTextColor : undefined }}
+              style={{ fontSize: '1.2em', verticalAlign: 'middle', color: isRotationSet ? primaryTextColor : undefined }}
               title={`${t('Set output rotation. Current: ')} ${isRotationSet ? rotationStr : t('Don\'t modify')}`}
               onClick={increaseRotation}
               role="button"
@@ -549,8 +550,7 @@ function BottomBar({
         {!simpleMode && isFileOpened && (
           <FaTrashAlt
             title={t('Close file and clean up')}
-            style={{ padding: '5px 10px' }}
-            size={16}
+            style={{ padding: '0 .7em', fontSize: '1em' }}
             onClick={cleanupFilesDialog}
             role="button"
           />
@@ -561,7 +561,7 @@ function BottomBar({
             {!simpleMode && <CaptureFormatButton style={{ width: '3.7em', textAlign: 'center' }} />}
 
             <IoIosCamera
-              style={{ paddingLeft: 5, paddingRight: 15 }}
+              style={{ paddingLeft: '.1em', paddingRight: '.5em' }}
               size={25}
               title={t('Capture frame')}
               onClick={captureSnapshot}
@@ -569,13 +569,7 @@ function BottomBar({
           </>
         )}
 
-        <div role="button" onClick={toggleLoopSelectedSegments} title={t('Play selected segments in order')} style={loopSelectedSegmentsButtonStyle}>
-          <FaPlay
-            size={14}
-          />
-        </div>
-
-        {(!simpleMode || !exportConfirmEnabled) && <ToggleExportConfirm style={{ marginRight: 5 }} />}
+        {(!simpleMode || !exportConfirmEnabled) && <ToggleExportConfirm style={{ marginRight: '.5em' }} />}
 
         <ExportButton size={1.3} segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={onExportPress} />
       </div>

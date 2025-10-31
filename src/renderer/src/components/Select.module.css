@@ -1,12 +1,12 @@
 .select {
   appearance: none;
   font: inherit;
-  line-height: 120%;
+  line-height: 1.2;
   font-size: .8em;
   background-color: var(--gray-3);
   color: var(--gray-12);
   border-radius: .3em;
-  padding: 0 1.2em 0 .3em;
+  padding: 0 1.4em 0 .3em;
   outline: .05em solid var(--gray-8);
   border: .05em solid var(--gray-7);
 
@@ -15,6 +15,10 @@
   background-position-x: 100%;
   background-position-y: 0;
   background-size: auto 100%;
+}
+
+.select:hover {
+  filter: brightness(1.2);
 }
 
 :global(.dark-theme) .select {

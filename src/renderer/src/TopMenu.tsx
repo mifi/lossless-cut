@@ -1,7 +1,6 @@
 import { CSSProperties, ReactNode, memo, useCallback, useEffect, useRef } from 'react';
 import { IoIosSettings } from 'react-icons/io';
-import { FaFilter, FaLock, FaUnlock } from 'react-icons/fa';
-import { CrossIcon, FilterIcon, ListIcon } from 'evergreen-ui';
+import { FaFilter, FaList, FaLock, FaMoon, FaSun, FaTimes, FaUnlock } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import Button from './components/Button';
 
@@ -10,12 +9,13 @@ import ExportModeButton from './components/ExportModeButton';
 import { withBlur } from './util';
 import { primaryTextColor, controlsBackground, darkModeTransition } from './colors';
 import useUserSettings from './hooks/useUserSettings';
+import styles from './TopMenu.module.css';
 
 
 const { stat } = window.require('fs/promises');
 const { webUtils } = window.require('electron');
 
-const outFmtStyle = { height: 20, maxWidth: 100 };
+const outFmtStyle = { maxWidth: 100 };
 const exportModeStyle = { flexGrow: 0, flexBasis: 140 };
 
 function TopMenu({
@@ -32,6 +32,7 @@ function TopMenu({
   selectedSegments,
   isCustomFormatSelected,
   clearOutDir,
+  toggleDarkMode,
 }: {
   filePath: string | undefined,
   fileFormat: string | undefined,
@@ -46,10 +47,13 @@ function TopMenu({
   selectedSegments: unknown[],
   isCustomFormatSelected: boolean,
   clearOutDir: () => void,
+  toggleDarkMode: () => void,
 }) {
   const { t } = useTranslation();
-  const { customOutDir, changeOutDir, setCustomOutDir, simpleMode, outFormatLocked, setOutFormatLocked } = useUserSettings();
+  const { customOutDir, changeOutDir, setCustomOutDir, simpleMode, outFormatLocked, setOutFormatLocked, darkMode } = useUserSettings();
   const workingDirButtonRef = useRef<HTMLButtonElement>(null);
+
+  const DarkMode = darkMode ? FaSun : FaMoon;
 
   const onOutFormatLockedClick = useCallback(() => setOutFormatLocked((v) => (v ? undefined : fileFormat)), [fileFormat, setOutFormatLocked]);
 
@@ -57,7 +61,11 @@ function TopMenu({
 
   function renderFormatLock() {
     const Icon = outFormatLocked ? FaLock : FaUnlock;
-    return <Icon onClick={onOutFormatLockedClick} title={t('Lock/unlock output format')} size={14} style={{ marginRight: 7, marginLeft: 2, color: outFormatLocked ? primaryTextColor : undefined }} />;
+    return (
+      <Button style={{ marginRight: '.7em' }}>
+        <Icon onClick={onOutFormatLockedClick} title={t('Lock/unlock output format')} style={{ fontSize: '.8em', color: outFormatLocked ? primaryTextColor : undefined }} />
+      </Button>
+    );
   }
 
   // Convenience for drag and drop: https://github.com/mifi/lossless-cut/issues/2147
@@ -78,30 +86,31 @@ function TopMenu({
 
   return (
     <div
-      className="no-user-select"
-      style={{ background: controlsBackground, transition: darkModeTransition, display: 'flex', alignItems: 'center', padding: '3px 5px', justifyContent: 'space-between', flexWrap: 'wrap' }}
+      className={`no-user-select ${styles['wrapper']}`}
+      style={{ background: controlsBackground, transition: darkModeTransition, display: 'flex', alignItems: 'center', padding: '.3em .3em', gap: '.3em', justifyContent: 'space-between', flexWrap: 'wrap' }}
     >
       {filePath && (
         <>
           <Button onClick={withBlur(() => setStreamsSelectorShown(true))}>
-            <ListIcon size={'1em' as unknown as number} verticalAlign="middle" marginRight=".3em" />
+            <FaList style={{ fontSize: '.7em', marginRight: '.5em' }} />
             {t('Tracks')} ({numStreamsToCopy}/{numStreamsTotal})
           </Button>
 
           {enabledStreamsFilter != null && (
-            <FilterIcon
-              role="button"
-              tabIndex={0}
-              style={{ width: 20 }}
+            <Button
               onClick={withBlur(() => applyEnabledStreamsFilter())}
               title={t('Toggle tracks using current filter')}
-            />
+            >
+              <FaFilter
+                style={{ fontSize: '.8em', verticalAlign: 'middle' }}
+              />
+            </Button>
           )}
 
           <Button
             onClick={changeEnabledStreamsFilter}
           >
-            <FaFilter style={{ fontSize: '.7em', marginRight: '.4em' }} />
+            {enabledStreamsFilter == null && <FaFilter style={{ fontSize: '.7em', marginRight: '.4em' }} />}
             {t('Filter tracks')}
           </Button>
         </>
@@ -110,20 +119,21 @@ function TopMenu({
       <div style={{ flexGrow: 1 }} />
 
       {showClearWorkingDirButton && (
-        <CrossIcon
-          role="button"
-          tabIndex={0}
-          style={{ width: 20 }}
+        <Button
           onClick={withBlur(clearOutDir)}
           title={t('Clear working directory')}
-        />
+        >
+          <FaTimes
+            style={{ fontSize: '.9em', verticalAlign: 'middle' }}
+          />
+        </Button>
       )}
 
       <Button
         ref={workingDirButtonRef}
         onClick={withBlur(changeOutDir)}
         title={customOutDir}
-        style={{ paddingLeft: showClearWorkingDirButton ? 4 : undefined }}
+        style={{ paddingLeft: showClearWorkingDirButton ? '.4em' : undefined }}
       >
         {customOutDir ? t('Working dir set') : t('Working dir unset')}
       </Button>
@@ -138,7 +148,15 @@ function TopMenu({
         </>
       )}
 
-      <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ marginLeft: 5 }} />
+      {!simpleMode && (
+        <Button onClick={toggleDarkMode} title={t('Toggle dark mode')}>
+          <DarkMode style={{ verticalAlign: 'middle', fontSize: '.9em' }} />
+        </Button>
+      )}
+
+      <Button onClick={toggleSettings}>
+        <IoIosSettings style={{ fontSize: '1em', verticalAlign: 'bottom' }} />
+      </Button>
     </div>
   );
 }

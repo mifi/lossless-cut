@@ -2,10 +2,9 @@ import { memo, useState, useEffect, useCallback, useRef, useMemo, ChangeEventHan
 import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { WarningSignIcon, ErrorIcon, Button, IconButton, TickIcon, ResetIcon } from 'evergreen-ui';
 import { IoIosHelpCircle } from 'react-icons/io';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaEdit } from 'react-icons/fa';
+import { FaCheck, FaEdit, FaExclamationTriangle, FaUndo } from 'react-icons/fa';
 
 import { ReactSwal } from '../swal';
 import HighlightedText from './HighlightedText';
@@ -14,6 +13,7 @@ import useUserSettings from '../hooks/useUserSettings';
 import Switch from './Switch';
 import Select from './Select';
 import TextInput from './TextInput';
+import Button from './Button';
 
 const electron = window.require('electron');
 
@@ -179,10 +179,14 @@ function FileNameTemplateEditor(opts: {
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.2em' }}>
                 <TextInput ref={inputRef} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
 
-                {!mergeMode && fileNames != null && <Button height={20} onClick={onAllFilesPreviewPress} marginLeft={5}>{t('Preview')}</Button>}
+                {!mergeMode && fileNames != null && (
+                  <Button onClick={onAllFilesPreviewPress} style={{ marginLeft: '.3em' }}>{t('Preview')}</Button>
+                )}
 
-                <IconButton title={t('Reset')} icon={ResetIcon} height={20} onClick={reset} marginLeft={5} intent="danger" />
-                {!haveImportantMessage && <IconButton title={t('Close')} icon={TickIcon} height={20} onClick={onHideClick} marginLeft={5} intent="success" appearance="primary" />}
+                <Button title={t('Reset')} onClick={reset} style={{ marginLeft: '.3em' }}><FaUndo style={{ fontSize: '.8em', color: 'var(--red-11)' }} /></Button>
+                {!haveImportantMessage && (
+                  <Button title={t('Close')} onClick={onHideClick} style={{ marginLeft: '.3em' }}><FaCheck style={{ fontSize: '.8em' }} /></Button>
+                )}
               </div>
 
               <div style={{ fontSize: '.8em', color: 'var(--gray-11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
@@ -207,28 +211,28 @@ function FileNameTemplateEditor(opts: {
                 <Switch checked={safeOutputFileName} onCheckedChange={toggleSafeOutputFileName} style={{ verticalAlign: 'middle', marginRight: '.5em' }} />
                 <span>{t('Sanitize file names')}</span>
 
-                {!safeOutputFileName && <WarningSignIcon color="var(--amber-9)" style={{ marginLeft: '.5em', verticalAlign: 'middle' }} />}
+                {!safeOutputFileName && <FaExclamationTriangle color="var(--amber-9)" style={{ marginLeft: '.5em', verticalAlign: 'middle' }} />}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
         {problems.error != null ? (
-          <div style={{ marginBottom: '1em' }}>
-            <ErrorIcon color="var(--red-9)" size={14} verticalAlign="baseline" /> {problems.error}
+          <div style={{ marginBottom: '1em', fontSize: '.9em' }}>
+            <FaExclamationTriangle color="var(--red-9)" style={{ verticalAlign: 'middle', fontSize: '1.1em' }} /> {problems.error}
           </div>
         ) : (
           <>
             {problems.sameAsInputFileNameWarning && (
               <div style={{ marginBottom: '1em' }}>
-                <WarningSignIcon verticalAlign="middle" color="var(--amber-9)" />{' '}
+                <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.3em' }} color="var(--amber-9)" />
                 {i18n.t('Output file name is the same as the source file name. This increases the risk of accidentally overwriting or deleting source files!')}
               </div>
             )}
 
             {isMissingExtension && (
               <div style={{ marginBottom: '1em' }}>
-                <WarningSignIcon verticalAlign="middle" color="var(--amber-9)" />{' '}
+                <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.3em' }} color="var(--amber-9)" />
                 {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVariableFormatted })}
               </div>
             )}

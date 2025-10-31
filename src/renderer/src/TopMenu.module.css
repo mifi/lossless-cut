@@ -1,0 +1,11 @@
+.wrapper button, .wrapper select {
+  background-color: var(--gray-1);
+}
+
+.wrapper button {
+  padding: .3em .3em;
+}
+
+.wrapper select {
+  padding: .3em 1.4em .3em .3em;
+}

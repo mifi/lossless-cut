@@ -12,5 +12,9 @@ table.options td:last-child {
 }
 
 table.options td {
+  padding: .5em 0em;
+}
+
+table.options td {
   vertical-align: top;
 }

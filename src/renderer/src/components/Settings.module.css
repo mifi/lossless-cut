@@ -3,10 +3,10 @@
 }
 
 .settings td:first-child, .settings th:first-child {
-  padding: 1em 2em 1em 2em;
+  padding: 1em 1em 1em 0;
 }
 .settings td:nth-child(2), .settings th:nth-child(2) {
-  padding: 1em 2em 1em 0em;
+  padding: 1em 0 1em 0;
 }
 
 .settings th {
@@ -14,11 +14,11 @@
 }
 
 .settings tr.header {
-  background-color: var(--black-a3);
+  border-bottom: .1em solid var(--black-a3);
 }
 
 :global(.dark-theme) .settings tr.header {
-  background-color: var(--white-a3);
+  border-bottom: .1em solid var(--white-a4);
 }
 
 .settings {

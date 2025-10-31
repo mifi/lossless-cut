@@ -1,7 +1,6 @@
 import { memo, Fragment, useEffect, useMemo, useCallback, useState, ReactNode, SetStateAction, Dispatch, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { UndoIcon, IconButton, DeleteIcon, AddIcon } from 'evergreen-ui';
-import { FaMouse, FaPlus, FaStepForward, FaStepBackward } from 'react-icons/fa';
+import { FaMouse, FaPlus, FaStepForward, FaStepBackward, FaUndo, FaTrash, FaSave } from 'react-icons/fa';
 import Mousetrap from 'mousetrap';
 import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
@@ -14,9 +13,8 @@ import SegmentCutpointButton from './SegmentCutpointButton';
 import { getModifier } from '../hooks/useTimelineScroll';
 import { KeyBinding, KeyboardAction, ModifierKey } from '../../../../types';
 import { StateSegment } from '../types';
-import Sheet from './Sheet';
 import { splitKeyboardKeys } from '../util';
-import Dialog, { ConfirmButton } from './Dialog';
+import * as Dialog from './Dialog';
 import Warning from './Warning';
 import Button from './Button';
 import Action from './Action';
@@ -99,37 +97,46 @@ const CreateBinding = memo(({
 
   const fixedKeys = useMemo(() => fixKeys(keysDown), [keysDown]);
 
-  if (!isShown) return null;
+  if (action == null) return null;
 
   return (
-    <Dialog autoOpen onClose={() => setCreatingBinding(undefined)} style={{ maxWidth: '40em' }}>
-      <h1 style={{ marginTop: 0 }}>{t('Bind new key to action')}</h1>
+    <Dialog.Root open={isShown} onOpenChange={(v) => v === false && setCreatingBinding(undefined)}>
+      <Dialog.Portal>
+        <Dialog.Overlay />
+        <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
+          <Dialog.Title>{t('Bind new key to action')}</Dialog.Title>
 
-      <p>{t('Action:')} {actionsMap[action].name} <span style={{ color: 'var(--gray-10)', marginLeft: '.5em' }}><Action name={action} /></span></p>
+          <p>{t('Action:')} {actionsMap[action].name} <span style={{ color: 'var(--gray-10)', marginLeft: '.5em' }}><Action name={action} /></span></p>
 
-      <p>{t('Please press your desired key combination. Make sure it doesn\'t conflict with any other binding or system hotkeys.')}</p>
+          <p>{t('Please press your desired key combination. Make sure it doesn\'t conflict with any other binding or system hotkeys.')}</p>
 
-      <div style={{ minHeight: '2em' }}>{renderKeys(validKeysDown.length > 0 ? validKeysDown : keysDown)}</div>
+          <div style={{ minHeight: '2em' }}>{renderKeys(validKeysDown.length > 0 ? validKeysDown : keysDown)}</div>
 
-      <AnimatePresence>
-        {isComboInvalid && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-          >
-            <Warning style={{ paddingBottom: '1em' }}>{t('Combination is invalid')}</Warning>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          <AnimatePresence>
+            {isComboInvalid && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+              >
+                <Warning style={{ paddingBottom: '1em' }}>{t('Combination is invalid')}</Warning>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-      <div style={{ marginBottom: '1em' }}>
-        <Button disabled={keysDown.includes('esc')} style={{ padding: '.2em .4em' }} onClick={() => addKeyDown('esc')}>ESC</Button>
-        {keysDown.length > 0 && <Button style={{ padding: '.2em .4em' }} onClick={() => setKeysDown([])}><UndoIcon size={10} marginRight=".3em" />{t('Start over')}</Button>}
-      </div>
+          <div style={{ marginBottom: '1em', display: 'flex', gap: '.5em', flexWrap: 'wrap' }}>
+            {!keysDown.includes('esc') && <Button style={{ padding: '.2em .4em' }} onClick={() => addKeyDown('esc')}>ESC</Button>}
+            {keysDown.length > 0 && (
+              <Button onClick={() => setKeysDown([])}><FaUndo style={{ fontSize: '.8em', verticalAlign: 'middle', marginRight: '.3em' }} />{t('Start over')}</Button>
+            )}
+          </div>
 
-      <ConfirmButton disabled={fixedKeys.length === 0 || isComboInvalid} onClick={() => action != null && onNewKeyBindingConfirmed(action, keysDown)}>{t('Save')}</ConfirmButton>
-    </Dialog>
+          <Dialog.ConfirmButton disabled={fixedKeys.length === 0 || isComboInvalid} onClick={() => action != null && onNewKeyBindingConfirmed(action, keysDown)}><FaSave style={{ marginRight: '.3em', verticalAlign: 'middle' }} />{t('Save')}</Dialog.ConfirmButton>
+
+          <Dialog.CloseButton />
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 });
 
@@ -764,8 +771,7 @@ const KeyboardShortcuts = memo(({
   const searchQueryTrimmed = searchQuery.toLowerCase().trim();
   const isSearching = !!searchQueryTrimmed;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const actionEntries = useMemo(() => (Object.entries(actionsMap) as any as [keyof typeof actionsMap, typeof actionsMap[keyof typeof actionsMap]][]).filter(([key, { name, category }]) => (
+  const actionEntries = useMemo(() => (Object.entries(actionsMap) as unknown as [keyof typeof actionsMap, typeof actionsMap[keyof typeof actionsMap]][]).filter(([key, { name, category }]) => (
     !isSearching
     || key.toLocaleLowerCase().includes(searchQueryTrimmed)
     || name.toLowerCase().includes(searchQueryTrimmed)
@@ -784,6 +790,9 @@ const KeyboardShortcuts = memo(({
 
 
   const onResetClick = useCallback(() => {
+    // Double confirmation!
+    // eslint-disable-next-line no-alert
+    if (!window.confirm(t('Are you sure you want to reset all keyboard bindings?'))) return;
     // eslint-disable-next-line no-alert
     if (!window.confirm(t('Are you sure you want to reset all keyboard bindings?'))) return;
 
@@ -825,7 +834,7 @@ const KeyboardShortcuts = memo(({
     <>
       <div style={{ marginBottom: '1em' }}>
         <div style={{ marginBottom: '1em' }}>
-          <TextInput ref={searchInputRef} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search" style={{ width: '100%', padding: '.4em .8em' }} />
+          <TextInput ref={searchInputRef} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search" style={{ width: '100%', padding: '.4em .8em', boxSizing: 'border-box' }} />
         </div>
 
         {categoriesWithActions.map(([category, actionsInCategory]) => (
@@ -853,14 +862,14 @@ const KeyboardShortcuts = memo(({
                       <div key={keys} style={{ display: 'flex', alignItems: 'center' }}>
                         {renderKeys(splitKeyboardKeys(keys))}
 
-                        <IconButton title={t('Remove key binding')} appearance="minimal" intent="danger" icon={DeleteIcon} onClick={() => onDeleteBindingClick({ action, keys })} />
+                        <Button title={t('Remove key binding')} onClick={() => onDeleteBindingClick({ action, keys })} style={{ marginLeft: '.9em' }}><FaTrash style={{ fontSize: '.8em', verticalAlign: 'middle' }} /></Button>
                       </div>
                     ))}
 
                     {bindingsForThisAction.length === 0 && <span style={{ opacity: 0.8, fontSize: '.8em' }}>{t('No binding')}</span>}
                   </div>
 
-                  <IconButton title={t('Bind new key to action')} appearance="minimal" intent="success" icon={AddIcon} onClick={() => onAddBindingClick(action)} />
+                  <Button title={t('Bind new key to action')} onClick={() => onAddBindingClick(action)} style={{ marginLeft: '.5em' }}><FaPlus style={{ fontSize: '.8em', verticalAlign: 'middle' }} /></Button>
                 </div>
               );
             })}
@@ -870,7 +879,7 @@ const KeyboardShortcuts = memo(({
         ))}
       </div>
 
-      {!isSearching && <Button onClick={onResetClick} style={{ marginBottom: '1em' }}>{t('Reset')}</Button>}
+      {!isSearching && <Button onClick={onResetClick} style={{ marginBottom: '1em' }}><FaUndo style={{ marginRight: '.3em', verticalAlign: 'middle', padding: '.5em' }} />{t('Reset')}</Button>}
 
       <CreateBinding actionsMap={actionsMap} action={creatingBinding} setCreatingBinding={setCreatingBinding} onNewKeyBindingConfirmed={onNewKeyBindingConfirmed} />
     </>
@@ -890,11 +899,18 @@ function KeyboardShortcutsDialog({
   const { t } = useTranslation();
 
   return (
-    <Sheet visible={isShown} onClosePress={onHide} maxWidth="40em" style={{ padding: '0 2em' }}>
-      <h1>{t('Keyboard & mouse shortcuts')}</h1>
+    <Dialog.Root open={isShown} onOpenChange={(v) => v === false && onHide()}>
+      <Dialog.Portal>
+        <Dialog.Overlay />
+        <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
+          <Dialog.Title>{t('Keyboard & mouse shortcuts')}</Dialog.Title>
 
-      <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} />
-    </Sheet>
+          <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} />
+
+          <Dialog.CloseButton />
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 

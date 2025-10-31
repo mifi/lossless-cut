@@ -1,12 +1,9 @@
 import { CSSProperties, ReactNode, useState } from 'react';
-import { ArrowRightIcon, HelpIcon, TickCircleIcon, WarningSignIcon, InfoSignIcon, IconComponent } from 'evergreen-ui';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { tomorrow as lightSyntaxStyle, tomorrowNight as darkSyntaxStyle } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import JSON5 from 'json5';
 import type { SweetAlertOptions } from 'sweetalert2';
 import invariant from 'tiny-invariant';
+import { FaArrowRight, FaCheckCircle, FaExclamationTriangle, FaInfoCircle, FaQuestionCircle } from 'react-icons/fa';
 
 import { formatDuration } from '../util/duration';
 import Swal, { ReactSwal, swalToastOptions, toast } from '../swal';
@@ -142,12 +139,12 @@ export async function askForFileOpenAction(inputOptions: Record<string, string>)
 
         {Object.entries(inputOptions).map(([key, text]) => (
           <button type="button" key={key} onClick={() => onClick(key)} className="button-unstyled" style={{ display: 'block', marginBottom: '.5em' }}>
-            <ArrowRightIcon style={{ color: 'var(--gray-10)' }} verticalAlign="middle" /> {text}
+            <FaArrowRight style={{ color: 'var(--gray-10)', verticalAlign: 'middle' }} /> {text}
           </button>
         ))}
 
         <button type="button" onClick={() => onClick()} className="button-unstyled" style={{ display: 'block', marginTop: '.5em' }}>
-          <ArrowRightIcon style={{ color: 'var(--red-11)' }} /> {i18n.t('Cancel')}
+          <FaArrowRight style={{ color: 'var(--red-11)' }} /> {i18n.t('Cancel')}
         </button>
 
       </div>
@@ -701,21 +698,6 @@ export async function mutateSegmentsByExprDialog(inputValidator: (v: string) => 
   });
 }
 
-export function showJson5Dialog({ title, json, darkMode }: { title: string, json: unknown, darkMode: boolean }) {
-  const html = (
-    <SyntaxHighlighter language="javascript" style={darkMode ? darkSyntaxStyle : lightSyntaxStyle} customStyle={{ textAlign: 'left', maxHeight: 300, overflowY: 'auto', fontSize: 14 }}>
-      {JSON5.stringify(json, null, 2)}
-    </SyntaxHighlighter>
-  );
-
-  ReactSwal.fire({
-    showCloseButton: true,
-    title,
-    html,
-    width: '50em',
-  });
-}
-
 export async function openDirToast({ filePath, text, html, ...props }: SweetAlertOptions & { filePath: string }) {
   const swal = text ? toast : ReactSwal;
 
@@ -736,29 +718,29 @@ export async function openDirToast({ filePath, text, html, ...props }: SweetAler
 const UnorderedList = ({ children }: { children: ReactNode }) => (
   <ul style={{ paddingLeft: '1em' }}>{children}</ul>
 );
-const ListItem = ({ icon: Icon, iconColor, children, style }: { icon: IconComponent, iconColor?: string, children: ReactNode, style?: CSSProperties }) => (
-  <li style={{ listStyle: 'none', ...style }}>
-    {Icon && <Icon style={{ color: iconColor }} size={14} marginRight=".4em" />}
+const ListItem = ({ icon, iconColor, children, style }: { icon: ReactNode, iconColor?: string, children: ReactNode, style?: CSSProperties }) => (
+  <li style={{ listStyle: 'none', color: iconColor, ...style }}>
+    <span style={{ fontSize: '.8em', marginRight: '.3em' }}>{icon}</span>
     {children}
   </li>
 );
 
 const Notices = ({ notices }: { notices: string[] }) => notices.map((msg) => (
-  <ListItem key={msg} icon={InfoSignIcon} iconColor="var(--blue-9)">{msg}</ListItem>
+  <ListItem key={msg} icon={<FaInfoCircle />} iconColor="var(--blue-9)">{msg}</ListItem>
 ));
 const Warnings = ({ warnings }: { warnings: string[] }) => warnings.map((msg) => (
-  <ListItem key={msg} icon={WarningSignIcon} iconColor="var(--orange-8)">{msg}</ListItem>
+  <ListItem key={msg} icon={<FaExclamationTriangle />} iconColor="var(--orange-8)">{msg}</ListItem>
 ));
 const OutputIncorrectSeeHelpMenu = () => (
-  <ListItem icon={HelpIcon}>{i18n.t('If output does not look right, see the Help menu.')}</ListItem>
+  <ListItem icon={<FaQuestionCircle />}>{i18n.t('If output does not look right, see the Help menu.')}</ListItem>
 );
 
 export async function openExportFinishedToast({ filePath, warnings, notices }: { filePath: string, warnings: string[], notices: string[] }) {
   const hasWarnings = warnings.length > 0;
   const html = (
     <UnorderedList>
-      <ListItem icon={TickCircleIcon} iconColor={hasWarnings ? 'var(--orange-8)' : 'var(--green-11)'} style={{ fontWeight: 'bold' }}>{hasWarnings ? i18n.t('Export finished with warning(s)', { count: warnings.length }) : i18n.t('Export is done!')}</ListItem>
-      <ListItem icon={InfoSignIcon}>{i18n.t('Please test the output file in your desired player/editor before you delete the source file.')}</ListItem>
+      <ListItem icon={<FaCheckCircle />} iconColor={hasWarnings ? 'var(--orange-8)' : 'var(--green-11)'} style={{ fontWeight: 'bold' }}>{hasWarnings ? i18n.t('Export finished with warning(s)', { count: warnings.length }) : i18n.t('Export is done!')}</ListItem>
+      <ListItem icon={<FaInfoCircle />}>{i18n.t('Please test the output file in your desired player/editor before you delete the source file.')}</ListItem>
       <OutputIncorrectSeeHelpMenu />
       <Notices notices={notices} />
       <Warnings warnings={warnings} />
@@ -773,8 +755,8 @@ export async function openConcatFinishedToast({ filePath, warnings, notices }: {
   const hasWarnings = warnings.length > 0;
   const html = (
     <UnorderedList>
-      <ListItem icon={TickCircleIcon} iconColor={hasWarnings ? 'warning' : 'success'} style={{ fontWeight: 'bold' }}>{hasWarnings ? i18n.t('Files merged with warning(s)', { count: warnings.length }) : i18n.t('Files merged!')}</ListItem>
-      <ListItem icon={InfoSignIcon}>{i18n.t('Please test the output files in your desired player/editor before you delete the source files.')}</ListItem>
+      <ListItem icon={<FaCheckCircle />} iconColor={hasWarnings ? 'warning' : 'success'} style={{ fontWeight: 'bold' }}>{hasWarnings ? i18n.t('Files merged with warning(s)', { count: warnings.length }) : i18n.t('Files merged!')}</ListItem>
+      <ListItem icon={<FaInfoCircle />}>{i18n.t('Please test the output files in your desired player/editor before you delete the source files.')}</ListItem>
       <OutputIncorrectSeeHelpMenu />
       <Notices notices={notices} />
       <Warnings warnings={warnings} />

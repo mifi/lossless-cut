@@ -52,7 +52,7 @@ function ExportModeButton({ selectedSegments, style }: { selectedSegments: unkno
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <Select
-      style={{ height: 20, ...style }}
+      style={style}
       value={effectiveExportMode}
       onChange={withBlur((e) => onChange(e.target.value as ExportMode))}
     >

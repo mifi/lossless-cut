@@ -423,7 +423,7 @@ function Timeline({
           })}
 
           {shouldShowKeyframes && !areKeyframesTooClose && keyFramesInZoomWindow.map((f) => (
-            <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / fileDurationNonZero) * 100}%`, marginLeft: -1, width: 1, background: 'var(--gray-11)', pointerEvents: 'none' }} />
+            <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / fileDurationNonZero) * 100}%`, marginLeft: -1, width: 1, background: 'var(--gray-10)', pointerEvents: 'none' }} />
           ))}
 
           {currentTimePercent !== undefined && (

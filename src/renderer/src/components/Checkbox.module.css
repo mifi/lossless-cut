@@ -4,9 +4,10 @@
 
 .CheckboxRoot {
   flex-shrink: 0;
-  background-color: var(--gray-8);
+  background-color: var(--gray-1);
   width: 1em;
   height: 1em;
+  border: .1em solid var(--gray-8);
   border-radius: .2em;
   display: flex;
   align-items: center;
@@ -14,7 +15,7 @@
   box-shadow: 0 2px 10px var(--gray-1);
 }
 .CheckboxRoot:hover {
-  background-color: var(--gray-9);
+  background-color: var(--gray-3);
 }
 .CheckboxRoot:focus {
   box-shadow: 0 0 0 2px var(--gray-1);

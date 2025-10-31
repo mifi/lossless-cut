@@ -15,7 +15,7 @@ function ExportDialog({
 } : {
   visible: boolean,
   renderBottom?: (() => ReactNode | null) | undefined,
-  renderButton?: (() => ReactNode | null) | undefined,
+  renderButton: (() => ReactNode | null),
   children: ReactNode,
   onClosePress: () => void,
   title: string,
@@ -43,15 +43,17 @@ function ExportDialog({
           </motion.div>
 
           <div style={{ position: 'fixed', right: 0, bottom: 0, display: 'flex', alignItems: 'center', margin: 5 }}>
-            <motion.div
-              initial={{ opacity: 0, translateX: 50 }}
-              animate={{ opacity: 1, translateX: 0 }}
-              exit={{ opacity: 0, translateX: 50 }}
-              transition={{ duration: 0.4, easings: ['easeOut'] }}
-              style={{ display: 'flex', alignItems: 'flex-end', background: 'var(--gray-2)', borderRadius: '.5em', padding: '.3em' }}
-            >
-              {renderBottom?.()}
-            </motion.div>
+            {renderBottom != null && (
+              <motion.div
+                initial={{ opacity: 0, translateX: 50 }}
+                animate={{ opacity: 1, translateX: 0 }}
+                exit={{ opacity: 0, translateX: 50 }}
+                transition={{ duration: 0.4, easings: ['easeOut'] }}
+                style={{ display: 'flex', alignItems: 'flex-end', background: 'var(--gray-2)', borderRadius: '.5em', padding: '.3em' }}
+              >
+                {renderBottom?.()}
+              </motion.div>
+            )}
 
             <motion.div
               style={{ transformOrigin: 'bottom right' }}
@@ -60,7 +62,7 @@ function ExportDialog({
               exit={{ scale: 0.7, opacity: 0 }}
               transition={{ duration: 0.4, easings: ['easeOut'] }}
             >
-              {renderButton?.()}
+              {renderButton()}
             </motion.div>
           </div>
         </>

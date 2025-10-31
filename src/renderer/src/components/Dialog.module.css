@@ -1,56 +1,113 @@
-.dialog {
-  --duration: 0.2s;
+.DialogOverlay {
+	background-color: var(--black-a9);
+	position: fixed;
+	inset: 0;
 
-  box-sizing: border-box;
-  border: .1em solid var(--black-a5);
-  background: var(--white-a8);
+	&[data-state="open"] {
+		animation: overlayShow 500ms cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	&[data-state="closed"] {
+		animation: overlayHide 500ms cubic-bezier(0.16, 1, 0.3, 1);
+	}
+}
+
+:global(.dark-theme) .DialogOverlay {
+	background-color: var(--black-a8);
+}
+
+.DialogContent {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	box-sizing: border-box;
+
+	overflow: scroll;
+
+	max-width: 90vw;
+	max-height: 85vh;
+
+	border: .1em solid var(--black-a2);
+  background: var(--white-a11);
   color: var(--gray-12);
   backdrop-filter: blur(2em);
   border-radius: .5em;
   padding: 1.7em;
   box-shadow: 0 0 1em .3em var(--black-a1);
-  transform-origin: center;
-  transition:
-    translate var(--duration) ease-out, 
-    scale     var(--duration) ease-out,
-    opacity   var(--duration) ease-out,
-    display   var(--duration) ease-out allow-discrete;
 
-  &[open] {
-    /* Post-Entry (Normal) State */
-    scale: 1;
-    opacity: 1;
+	&[data-state="open"] {
+		animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+	}
 
-    /* Pre-Entry State */
-    @starting-style {
-      scale: 0.6;
-      opacity: 0;
-    }
-  }
-
-  &::backdrop {
-    background-color: var(--black-a7);
-    animation: overlayShow 600ms cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  h1 {
-    text-transform: uppercase;
-    font-size: 1.3em;
-    margin-top: 0;
-  }
+	&[data-state="closed"] {
+		animation: contentHide 150ms cubic-bezier(0.16, 1, 0.3, 1);
+	}
 }
 
-:global(.dark-theme) .dialog {
+:global(.dark-theme) .DialogContent {
   border: .1em solid var(--white-a3);
   background: var(--black-a4);
   box-shadow: 0 0 1em .3em var(--black-a2);
 }
 
+.DialogContent:focus {
+	outline: none;
+}
+
+.DialogTitle {
+	margin-top: 0;
+	margin-bottom: .5em;
+	font-weight: 500;
+	font-size: 1.3em;
+	padding-bottom: .3em;
+  border-bottom: .1em solid var(--black-a3);
+}
+
+:global(.dark-theme) .DialogTitle {
+  border-bottom: .1em solid var(--white-a4);
+}
+
+.DialogDescription {
+	margin-bottom: 1em;
+}
+
 @keyframes overlayShow {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}  
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes overlayHide {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes contentShow {
+	from {
+		opacity: 0;
+		transform: translate(-50%, -48%) scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1);
+	}
+}
+
+@keyframes contentHide {
+	from {
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1);
+	}
+	to {
+		opacity: 0;
+		transform: translate(-50%, -48%) scale(0.96);
+	}
+}

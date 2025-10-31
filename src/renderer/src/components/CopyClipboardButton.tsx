@@ -16,8 +16,8 @@ function CopyClipboardButton({ text, style, children = ({ onClick }) => <FaClipb
   const onClick = useCallback(() => {
     clipboard.writeText(text);
     animation.start({
-      scale: [1, 2, 1],
-      transition: { duration: 0.3 },
+      scale: [1, 1.5, 1],
+      transition: { duration: 0.2 },
     });
   }, [animation, text]);
 

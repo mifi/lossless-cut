@@ -8,6 +8,7 @@
   }
 
   th, td {
+    vertical-align: top;
     padding-left: .2em;
     padding-right: .2em;
   }

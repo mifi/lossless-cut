@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo, memo, CSSProperties, RefObject, ReactEventHandler, FocusEventHandler } from 'react';
-import { Spinner } from 'evergreen-ui';
 import invariant from 'tiny-invariant';
 import debounce from 'lodash/debounce.js';
+import { FaVideo } from 'react-icons/fa';
 
 import isDev from './isDev';
 import { ChromiumHTMLVideoElement } from './types';
@@ -403,7 +403,9 @@ function MediaSourcePlayer({ rotate, filePath, videoStream, audioStreams, master
       <canvas style={{ ...videoStyle, display: showCanvas ? 'initial' : 'none' }} ref={canvasRef} />
 
       {loading && (
-        <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}><Spinner /></div>
+        <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <FaVideo className="loading-animation" style={{ padding: '1em', background: 'rgba(0,0,0,0.2)', borderRadius: '50%' }} />
+        </div>
       )}
     </div>
   );

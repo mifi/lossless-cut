@@ -1,12 +1,11 @@
 import { memo, useState, useCallback, useEffect, useMemo, CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IconButton } from 'evergreen-ui';
 import { AiOutlineMergeCells } from 'react-icons/ai';
 import { FaQuestionCircle, FaExclamationTriangle, FaCog } from 'react-icons/fa';
 import i18n from 'i18next';
 import invariant from 'tiny-invariant';
-import Checkbox from './Checkbox';
 
+import Checkbox from './Checkbox';
 import { ReactSwal } from '../swal';
 import { readFileMeta, getDefaultOutFormat, mapRecommendedDefaultFormat } from '../ffmpeg';
 import useFileFormatState from '../hooks/useFileFormatState';
@@ -18,9 +17,9 @@ import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../../ffprob
 import TextInput from './TextInput';
 import Button from './Button';
 import { defaultMergedFileTemplate, generateMergedFileNames, maxFileNameLength } from '../util/outputNameTemplate';
-import Dialog from './Dialog';
 import { primaryColor } from '../colors';
 import ExportDialog from './ExportDialog';
+import * as Dialog from './Dialog';
 
 const { basename } = window.require('path');
 
@@ -222,7 +221,7 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
                 <span style={{ opacity: 0.7, marginRight: '.4em' }}>{`${index + 1}.`}</span>
                 <span>{basename(path)}</span>
                 {!allFilesMetaCache[path] && <FaQuestionCircle style={{ color: 'var(--orange-8)', verticalAlign: 'middle', marginLeft: '1em' }} />}
-                {problemsByFile[path] && <IconButton appearance="minimal" icon={FaExclamationTriangle} onClick={() => onProblemsByFileClick(path)} title={i18n.t('Mismatches detected')} style={{ color: 'var(--orange-8)', marginLeft: '1em' }} />}
+                {problemsByFile[path] && <Button onClick={() => onProblemsByFileClick(path)} title={i18n.t('Mismatches detected')} style={{ color: 'var(--orange-8)', marginLeft: '1em' }}><FaExclamationTriangle /></Button>}
               </div>
             </div>
           ))}
@@ -254,25 +253,30 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
         )}
       </div>
 
-      {settingsVisible && (
-        <Dialog autoOpen onClose={() => setSettingsVisible(false)} style={{ maxWidth: '40em' }}>
-          <h1 style={{ marginTop: 0 }}>{t('Merge options')}</h1>
+      <Dialog.Root open={settingsVisible} onOpenChange={setSettingsVisible}>
+        <Dialog.Portal>
+          <Dialog.Overlay />
+          <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
+            <Dialog.Title>{t('Merge options')}</Dialog.Title>
 
-          <Checkbox checked={includeAllStreams} onCheckedChange={(checked) => setIncludeAllStreams(checked === true)} label={`${t('Include all tracks?')} - ${t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}`} />
+            <Checkbox checked={includeAllStreams} onCheckedChange={(checked) => setIncludeAllStreams(checked === true)} label={`${t('Include all tracks?')} - ${t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}`} />
 
-          <Checkbox checked={preserveMetadataOnMerge} onCheckedChange={(checked) => setPreserveMetadataOnMerge(checked === true)} label={t('Preserve original metadata when merging? (slow)')} />
+            <Checkbox checked={preserveMetadataOnMerge} onCheckedChange={(checked) => setPreserveMetadataOnMerge(checked === true)} label={t('Preserve original metadata when merging? (slow)')} />
 
-          {fileFormat != null && isMov(fileFormat) && <Checkbox checked={preserveMovData} onCheckedChange={(checked) => setPreserveMovData(checked === true)} label={t('Preserve all MP4/MOV metadata?')} />}
+            {fileFormat != null && isMov(fileFormat) && <Checkbox checked={preserveMovData} onCheckedChange={(checked) => setPreserveMovData(checked === true)} label={t('Preserve all MP4/MOV metadata?')} />}
 
-          <Checkbox checked={segmentsToChapters} onCheckedChange={(checked) => setSegmentsToChapters(checked === true)} label={t('Create chapters from merged segments? (slow)')} />
+            <Checkbox checked={segmentsToChapters} onCheckedChange={(checked) => setSegmentsToChapters(checked === true)} label={t('Create chapters from merged segments? (slow)')} />
 
-          <Checkbox checked={alwaysConcatMultipleFiles} onCheckedChange={(checked) => setAlwaysConcatMultipleFiles(checked === true)} label={t('Always open this dialog when opening multiple files')} />
+            <Checkbox checked={alwaysConcatMultipleFiles} onCheckedChange={(checked) => setAlwaysConcatMultipleFiles(checked === true)} label={t('Always open this dialog when opening multiple files')} />
 
-          <Checkbox checked={clearBatchFilesAfterConcat} onCheckedChange={(checked) => setClearBatchFilesAfterConcat(checked === true)} label={t('Clear batch file list after merge')} />
+            <Checkbox checked={clearBatchFilesAfterConcat} onCheckedChange={(checked) => setClearBatchFilesAfterConcat(checked === true)} label={t('Clear batch file list after merge')} />
 
-          <p>{t('Note that also other settings from the normal export dialog apply to this merge function. For more information about all options, see the export dialog.')}</p>
-        </Dialog>
-      )}
+            <p>{t('Note that also other settings from the normal export dialog apply to this merge function. For more information about all options, see the export dialog.')}</p>
+
+            <Dialog.CloseButton />
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </ExportDialog>
   );
 }

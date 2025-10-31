@@ -1,9 +1,8 @@
 import { DragEventHandler, memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { FaTimes, FaHatWizard } from 'react-icons/fa';
+import { FaTimes, FaHatWizard, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import { AiOutlineMergeCells } from 'react-icons/ai';
-import { SortAlphabeticalIcon, SortAlphabeticalDescIcon } from 'evergreen-ui';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay, UniqueIdentifier } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
@@ -54,7 +53,7 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
     setSortDesc(newSortDesc);
   }, [batchFiles, setBatchFiles, sortDesc]);
 
-  const SortIcon = sortDesc ? SortAlphabeticalDescIcon : SortAlphabeticalIcon;
+  const SortIcon = sortDesc ? FaSortAlphaDown : FaSortAlphaUp;
 
   const sensors = useSensors(useSensor(PointerSensor, {
     activationConstraint: {
@@ -90,13 +89,13 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
       transition={springAnimation}
       onDrop={onDrop}
     >
-      <div style={{ fontSize: 14, paddingBottom: 3, paddingTop: 0, paddingLeft: 10, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-        <div>{t('Batch file list')}{batchFiles.length > 0 && ` (${batchFiles.length})`}</div>
+      <div style={{ paddingBottom: '.5em', paddingTop: 0, paddingLeft: '.5em', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: '.2em' }}>
+        <div style={{ fontSize: '.9em' }}>{t('Batch file list')}{batchFiles.length > 0 && ` (${batchFiles.length})`}</div>
         <div style={{ flexGrow: 1 }} />
-        <FaHatWizard size={17} role="button" title={`${t('Convert to supported format')}...`} style={iconStyle} onClick={onBatchConvertToSupportedFormatClick} />
-        <SortIcon size={25} role="button" title={t('Sort items')} style={iconStyle} onClick={onSortClick} />
-        <AiOutlineMergeCells size={20} role="button" title={`${t('Merge/concatenate files')}...`} style={{ ...iconStyle, color: 'white', background: primaryColor, borderRadius: '.5em' }} onClick={onMergeFilesClick} />
-        <FaTimes size={20} role="button" title={t('Close batch')} style={{ ...iconStyle, color: 'var(--gray-11)' }} onClick={closeBatch} />
+        <FaHatWizard role="button" title={`${t('Convert to supported format')}...`} style={iconStyle} onClick={onBatchConvertToSupportedFormatClick} />
+        <SortIcon role="button" title={t('Sort items')} style={iconStyle} onClick={onSortClick} />
+        <AiOutlineMergeCells className="export-animation" role="button" title={`${t('Merge/concatenate files')}...`} style={{ ...iconStyle, color: 'white', background: primaryColor, borderRadius: '.5em' }} onClick={onMergeFilesClick} />
+        <FaTimes role="button" title={t('Close batch')} style={{ ...iconStyle, color: 'var(--gray-11)' }} onClick={closeBatch} />
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} modifiers={[restrictToVerticalAxis]}>

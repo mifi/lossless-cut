@@ -40,7 +40,9 @@ const rightIconStyle: CSSProperties = { fontSize: '1.2em', verticalAlign: 'middl
 const adjustCutFromValues = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const adjustCutToValues = [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-const HelpIcon = ({ onClick, style }: { onClick: () => void, style?: CSSProperties }) => <IoIosHelpCircle size={20} role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', color: primaryTextColor, verticalAlign: 'middle', ...style }} />;
+const HelpIcon = ({ onClick, style }: { onClick: () => void, style?: CSSProperties }) => (
+  <IoIosHelpCircle role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', color: primaryTextColor, verticalAlign: 'middle', fontSize: '1.5em', ...style }} />
+);
 
 function ShiftTimes({ values, num, setNum }: { values: number[], num: number, setNum: (n: number) => void }) {
   const { t } = useTranslation();
@@ -330,7 +332,7 @@ function ExportConfirm({
               {renderNotice(notices.specific['exportMode'])}
             </td>
             <td>
-              <ExportModeButton selectedSegments={segmentsOrInverse.selected} />
+              <ExportModeButton selectedSegments={segmentsOrInverse.selected} style={{ height: '1.8em' }} />
             </td>
             <td>
               {renderNoticeIcon(notices.specific['exportMode'], rightIconStyle) ?? <HelpIcon onClick={onExportModeHelpPress} />}
@@ -342,7 +344,7 @@ function ExportConfirm({
               {t('Output container format:')}
             </td>
             <td>
-              {renderOutFmt({ height: 20, maxWidth: 150 })}
+              {renderOutFmt({ height: '1.8em', maxWidth: 150 })}
             </td>
             <td>
               <HelpIcon onClick={onOutFmtHelpPress} />
@@ -413,6 +415,13 @@ function ExportConfirm({
 
       <table className={styles['options']}>
         <tbody>
+          <tr>
+            <td style={{ paddingTop: '.5em', color: 'var(--gray-11)', fontSize: '.9em' }} colSpan={2}>
+              {t('Depending on your specific file/player, you may have to try different options for best results.')}
+            </td>
+            <td />
+          </tr>
+
           {areWeCutting && (
             <>
               <tr>
@@ -523,13 +532,6 @@ function ExportConfirm({
               </tr>
             </>
           )}
-
-          <tr>
-            <td style={{ paddingTop: '.5em', color: 'var(--gray-11)', fontSize: '.9em' }} colSpan={2}>
-              {t('Depending on your specific file/player, you may have to try different options for best results.')}
-            </td>
-            <td />
-          </tr>
 
           {areWeCutting && (
             <>

@@ -1,8 +1,8 @@
 import { memo, useEffect, useState, useCallback, useRef, CSSProperties, MouseEventHandler, WheelEventHandler, useMemo } from 'react';
-import { Spinner } from 'evergreen-ui';
 
 import { ffmpegExtractWindow } from '../util/constants';
 import { WaveformSlice } from '../types';
+import Spinner from './Spinner';
 
 
 function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zoom, seekRel, darkMode }: {
