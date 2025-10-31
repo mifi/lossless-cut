@@ -495,7 +495,7 @@ function ExportConfirm({
             </td>
             <td>
               <Select value={preserveMetadata} onChange={(e) => setPreserveMetadata(e.target.value as PreserveMetadata)} style={{ height: 20, marginLeft: 5 }}>
-                <option value={'default' as PreserveMetadata}>{t('Default')}</option>
+                <option value={'default' satisfies PreserveMetadata}>{t('Default')}</option>
                 <option value={'none' satisfies PreserveMetadata}>{t('None')}</option>
                 <option value={'nonglobal' satisfies PreserveMetadata}>{t('Non-global')}</option>
               </Select>
@@ -607,7 +607,7 @@ function ExportConfirm({
               </td>
               <td>
                 <Select value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value as AvoidNegativeTs)} style={{ height: 20, marginLeft: 5 }}>
-                  <option value={'auto' as AvoidNegativeTs}>auto</option>
+                  <option value={'auto' satisfies AvoidNegativeTs}>auto</option>
                   <option value={'make_zero' satisfies AvoidNegativeTs}>make_zero</option>
                   <option value={'make_non_negative' satisfies AvoidNegativeTs}>make_non_negative</option>
                   <option value={'disabled' satisfies AvoidNegativeTs}>disabled</option>

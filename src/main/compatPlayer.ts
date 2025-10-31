@@ -69,7 +69,7 @@ export function createMediaSourceStream(params: Parameters<typeof createMediaSou
         return;
       }
 
-      logger.warn((err as Error).message);
+      logger.warn(err instanceof Error ? err.message : String(err));
       logger.warn(stderr.toString('utf8'));
     }
   })();

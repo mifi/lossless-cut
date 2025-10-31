@@ -150,4 +150,6 @@ const modifiedFormats = {
 
 modifiedFormats.ipod = 'M4A - Audio for iTunes';
 
+export type FfmpegFormat = keyof typeof modifiedFormats;
+
 export default modifiedFormats;
