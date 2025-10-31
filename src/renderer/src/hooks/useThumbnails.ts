@@ -48,7 +48,7 @@ export default ({ filePath, zoomedDuration, zoomWindowStartTime, showThumbnails 
 
     return () => {
       abortController.abort();
-      console.log('Cleanup thumbnails', thumbnails2.map((t) => t.time));
+      if (thumbnails2.length > 0) console.log('Cleanup thumbnails', thumbnails2.map((t) => t.time));
       thumbnails2.forEach((thumbnail) => URL.revokeObjectURL(thumbnail.url));
       setThumbnails([]);
     };
