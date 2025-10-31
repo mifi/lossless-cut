@@ -539,7 +539,7 @@ export async function showExportFailedDialog({ fileFormat, safeOutputFileName }:
     </div>
   );
 
-  const { value } = await ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, timer: null as unknown as undefined, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
+  const { value } = await ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
   return value;
 }
 
@@ -559,7 +559,7 @@ export async function showConcatFailedDialog({ fileFormat }: { fileFormat: strin
     </div>
   );
 
-  const { value } = await ReactSwal.fire({ title: i18n.t('Unable to merge files'), html, timer: null as unknown as undefined, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
+  const { value } = await ReactSwal.fire({ title: i18n.t('Unable to merge files'), html, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
   return value;
 }
 

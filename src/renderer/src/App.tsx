@@ -740,7 +740,7 @@ function App() {
           setTotalProgress();
         }
 
-        if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}`, timer: null as unknown as undefined, showConfirmButton: true });
+        if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}`, timer: undefined, showConfirmButton: true });
       }, i18n.t('Failed to batch convert to supported format'));
     } finally {
       setWorking(undefined);
