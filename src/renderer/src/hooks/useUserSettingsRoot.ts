@@ -35,10 +35,12 @@ export default () => {
 
   function safeGetConfig<T extends keyof Config>(key: T) {
     const rawVal = configStore.get(key);
-    if (rawVal === undefined) return undefined as typeof rawVal;
     // NOTE: Need to clone any non-primitive in renderer, or it will become very slow
     // I think because Electron is proxying objects over the bridge
-    const cloned: typeof rawVal = JSON.parse(JSON.stringify(rawVal));
+    const cloned: typeof rawVal = rawVal === undefined
+      ? undefined
+      : JSON.parse(JSON.stringify(rawVal));
+
     return cloned;
   }
 
