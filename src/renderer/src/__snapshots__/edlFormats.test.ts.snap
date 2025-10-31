@@ -81,8 +81,8 @@ exports[`parseDjiGps1 1`] = `
   "height": 20.3,
   "horizontalSpeed": 1.03,
   "iso": 100,
-  "lat": 15.0732,
-  "lng": 67.9771,
+  "lat": 67.9771,
+  "lng": 15.0732,
   "ss": 776.89,
   "verticalSpeed": 0,
 }
@@ -98,8 +98,8 @@ exports[`parseDjiGps1 2`] = `
   "height": 102.4,
   "horizontalSpeed": 0,
   "iso": 100,
-  "lat": -3.913,
-  "lng": 56.5019,
+  "lat": 56.5019,
+  "lng": -3.913,
   "ss": 678.52,
   "verticalSpeed": -0,
 }
