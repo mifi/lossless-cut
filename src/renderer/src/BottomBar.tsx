@@ -82,10 +82,12 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
   const { getSegColor } = useSegColors();
 
   const [cutTimeManual, setCutTimeManual] = useState<string>();
+  const [error, setError] = useState<boolean>(false);
 
   // Clear manual overrides if upstream cut time has changed
   useEffect(() => {
     setCutTimeManual(undefined);
+    setError(false);
   }, [setCutTimeManual, currentCutSeg?.start, currentCutSeg?.end]);
 
   const isCutTimeManualSet = useCallback(() => cutTimeManual !== undefined, [cutTimeManual]);
@@ -95,24 +97,23 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
     return `.1em solid ${darkMode ? segColor.desaturate(0.4).lightness(50).string() : segColor.desaturate(0.2).lightness(60).string()}`;
   }, [currentCutSeg, darkMode, getSegColor]);
 
-  const trySetTime = useCallback((timeWithOffset: number | undefined) => {
-    try {
-      if (timeWithOffset == null) { // clear time
-        invariant(!isStart);
-        setCutTime('end', undefined);
-        setCutTimeManual(undefined);
-        return;
-      }
+  const setTime = useCallback((timeWithOffset: number | undefined) => {
+    // Note: If we get an error from setCutTime, remain in the editing state (cutTimeManual)
+    // https://github.com/mifi/lossless-cut/issues/988
 
-      const timeWithoutOffset = Math.max(timeWithOffset - startTimeOffset, 0);
-      setCutTime(isStart ? 'start' : 'end', timeWithoutOffset);
-      seekAbs(timeWithoutOffset);
+    if (timeWithOffset == null) { // clear time
+      invariant(!isStart);
+      setCutTime('end', undefined);
       setCutTimeManual(undefined);
-    } catch (err) {
-      console.error('Cannot set cut time', err);
-      // If we get an error from setCutTime, remain in the editing state (cutTimeManual)
-      // https://github.com/mifi/lossless-cut/issues/988
+      setError(false);
+      return;
     }
+
+    const timeWithoutOffset = Math.max(timeWithOffset - startTimeOffset, 0);
+    setCutTime(isStart ? 'start' : 'end', timeWithoutOffset);
+    seekAbs(timeWithoutOffset);
+    setCutTimeManual(undefined);
+    setError(false);
   }, [isStart, seekAbs, setCutTime, startTimeOffset]);
 
   const isEmptyEndTime = useCallback((v: string | undefined) => !isStart && v?.trim() === '', [isStart]);
@@ -120,21 +121,25 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
   const handleSubmit = useCallback((e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (isEmptyEndTime(cutTimeManual)) {
-      trySetTime(undefined); // clear time
-      return;
+    try {
+      if (isEmptyEndTime(cutTimeManual)) {
+        setTime(undefined); // clear time
+        return;
+      }
+
+      // Don't proceed if not a valid time value
+      const timeWithOffset = cutTimeManual != null ? parseTimecode(cutTimeManual) : undefined;
+      if (timeWithOffset === undefined) return;
+
+      setTime(timeWithOffset);
+    } catch (err) {
+      console.warn('Cannot submit cut time', err);
     }
-
-    // Don't proceed if not a valid time value
-    const timeWithOffset = cutTimeManual != null ? parseTimecode(cutTimeManual) : undefined;
-    if (timeWithOffset === undefined) return;
-
-    trySetTime(timeWithOffset);
-  }, [cutTimeManual, isEmptyEndTime, parseTimecode, trySetTime]);
+  }, [cutTimeManual, isEmptyEndTime, parseTimecode, setTime]);
 
   const parseAndSetCutTime = useCallback((text: string) => {
     if (isEmptyEndTime(text)) {
-      trySetTime(undefined); // clear time
+      setTime(undefined); // clear time
       return;
     }
 
@@ -142,22 +147,28 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
     const timeWithOffset = parseTimecode(text);
     if (timeWithOffset === undefined) return;
 
-    trySetTime(timeWithOffset);
-  }, [isEmptyEndTime, parseTimecode, trySetTime]);
+    setTime(timeWithOffset);
+  }, [isEmptyEndTime, parseTimecode, setTime]);
 
   const handleCutTimeInput = useCallback((text: string) => {
-    if (isExactDurationMatch(text) || isEmptyEndTime(text)) parseAndSetCutTime(text);
-    else setCutTimeManual(text);
+    try {
+      if (isExactDurationMatch(text) || isEmptyEndTime(text)) {
+        parseAndSetCutTime(text);
+        return;
+      }
+    } catch (err) {
+      console.warn(err);
+      setError(true);
+    }
+
+    // else or if error, just set manual value, to make sure it doesn't jump to end https://github.com/mifi/lossless-cut/issues/988#issuecomment-3475870072
+    setCutTimeManual(text);
   }, [isEmptyEndTime, parseAndSetCutTime]);
 
-  const tryPaste = useCallback((clipboardText: string) => {
-    try {
-      setCutTimeManual(clipboardText);
-      parseAndSetCutTime(clipboardText);
-    } catch (err) {
-      console.error(err);
-    }
-  }, [parseAndSetCutTime]);
+  const handleInputBlur = useCallback(() => {
+    setCutTimeManual(undefined);
+    setError(false);
+  }, []);
 
   const handleCutTimePaste = useCallback((e: ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -166,15 +177,26 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
       const clipboardData = e.clipboardData.getData('Text');
       setCutTimeManual(clipboardData);
       parseAndSetCutTime(clipboardData);
+      setError(false);
     } catch (err) {
-      console.error(err);
+      console.warn(err);
+      setError(true);
     }
   }, [parseAndSetCutTime]);
 
   const handleContextMenu = useCallback(() => {
     const text = clipboard.readText();
-    if (text) tryPaste(text);
-  }, [tryPaste]);
+    if (text) {
+      try {
+        setCutTimeManual(text);
+        parseAndSetCutTime(text);
+        setError(false);
+      } catch (err) {
+        console.warn(err);
+        setError(true);
+      }
+    }
+  }, [parseAndSetCutTime]);
 
   const style = useMemo<CSSProperties>(() => ({
     border,
@@ -192,8 +214,8 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
     fontFamily: 'inherit',
     width: 90,
     outline: 'none',
-    color: isCutTimeManualSet() ? 'var(--gray-12)' : 'var(--gray-11)',
-  }), [border, isCutTimeManualSet, isStart]);
+    color: error ? dangerColor : (isCutTimeManualSet() ? 'var(--gray-12)' : 'var(--gray-11)'),
+  }), [border, error, isCutTimeManualSet, isStart]);
 
   function renderValue() {
     if (isCutTimeManualSet()) return cutTimeManual;
@@ -209,7 +231,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
         title={isStart ? t('Manually input current segment\'s start time') : t('Manually input current segment\'s end time')}
         onChange={(e) => handleCutTimeInput(e.target.value)}
         onPaste={handleCutTimePaste}
-        onBlur={() => setCutTimeManual(undefined)}
+        onBlur={handleInputBlur}
         onContextMenu={handleContextMenu}
         value={renderValue()}
       />
