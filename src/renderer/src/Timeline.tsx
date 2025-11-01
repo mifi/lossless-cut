@@ -314,13 +314,20 @@ function Timeline({
   }, [getMouseTimelinePos, handleScrub, seekAbs]);
 
   const timeRef = useRef<HTMLDivElement>(null);
+  const timeFadeTimeoutRef = useRef<NodeJS.Timeout>();
 
   const onMouseMove = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
     // need to manually check, because we cannot use css :hover when pointer-events: none
     // and we need pointer-events: none on time because we want to be able to click through it to segments behind (and they are not parent)
     const rect = timeRef.current?.getBoundingClientRect();
     const isInBounds = rect && e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
-    timeRef.current?.style.setProperty('opacity', isInBounds ? '0.2' : '1');
+    const showHide = (show: boolean) => timeRef.current?.style.setProperty('opacity', show ? '0.2' : '1');
+    if (isInBounds != null) showHide(isInBounds);
+    console.log('isInBounds', isInBounds);
+
+    // https://github.com/mifi/lossless-cut/issues/2592#issuecomment-3476211496
+    if (timeFadeTimeoutRef.current) clearTimeout(timeFadeTimeoutRef.current);
+    timeFadeTimeoutRef.current = setTimeout(() => showHide(false), 1000);
 
     if (!mouseDownRef.current) { // no button pressed
       setHoveringTime(getMouseTimelinePos(e.nativeEvent));
