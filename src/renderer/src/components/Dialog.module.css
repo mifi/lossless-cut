@@ -1,5 +1,9 @@
 /* Keep in sync with AlertDialog.module.css */
 
+/* TODO
+- fix the close button and title on top?
+*/
+
 .DialogOverlay {
 	background-color: var(--black-a9);
 	position: fixed;
