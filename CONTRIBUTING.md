@@ -172,8 +172,12 @@ Then deploy.
 
 https://github.com/mifi/lossless-cut/security/dependabot
 
-## ffmpeg builds
+## FFmpeg builds
 
 - https://github.com/BtbN/FFmpeg-Builds
 - https://www.gyan.dev/ffmpeg/builds/
 - https://github.com/m-ab-s/media-autobuild_suite
+
+## Other
+
+- Update `copyrightYear`
