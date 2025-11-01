@@ -957,5 +957,6 @@
     "Total seconds": "Totale secondi",
     "Tracks with at least 720p video": "Tracce con almeno un video 720p",
     "Tracks with H264 codec": "Tracce con codec H264",
-    "Video tracks": "Tracce video"
+    "Video tracks": "Tracce video",
+    "Make cursor time zero": "Rendi il tempo del cursore zero"
 }
