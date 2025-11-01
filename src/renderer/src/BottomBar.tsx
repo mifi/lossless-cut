@@ -197,7 +197,7 @@ const CutTimeInput = memo(({ darkMode, cutTime, setCutTime, startTimeOffset, see
 
   function renderValue() {
     if (isCutTimeManualSet()) return cutTimeManual;
-    if (cutTime == null) return '';
+    if (cutTime == null) return formatTimecode({ seconds: 0 }); // marker, see https://github.com/mifi/lossless-cut/issues/2590
     return formatTimecode({ seconds: cutTime + startTimeOffset });
   }
 
