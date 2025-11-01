@@ -6,12 +6,12 @@ import { useTranslation } from 'react-i18next';
 import { readFramesAroundTime, findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime, Frame, readFrames } from '../ffmpeg';
 import { FFprobeStream } from '../../../../ffprobe';
 import { getFrameCountRaw } from '../edlFormats';
-import { handleError } from '../util';
+import { HandleError } from '../contexts';
 
 
 const toObj = (map: Frame[]) => Object.fromEntries(map.map((frame) => [frame.time, frame]));
 
-function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, detectedFps, ffmpegExtractWindow, maxKeyframes, currentCutSegOrWholeTimeline, setWorking, setMaxKeyframes }: {
+function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, detectedFps, ffmpegExtractWindow, maxKeyframes, currentCutSegOrWholeTimeline, setWorking, setMaxKeyframes, handleError }: {
   keyframesEnabled: boolean,
   filePath: string | undefined,
   commandedTime: number,
@@ -22,6 +22,7 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
   currentCutSegOrWholeTimeline: { start: number, end: number },
   setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void,
   setMaxKeyframes: (max: number) => void,
+  handleError: HandleError,
 }) {
   const { t } = useTranslation();
 
@@ -94,11 +95,11 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
       setNeighbouringKeyFrames(toObj(newKeyFrames));
       setMaxKeyframes(newKeyFrames.length);
     } catch (err) {
-      handleError(err);
+      handleError({ err });
     } finally {
       setWorking(undefined);
     }
-  }, [currentCutSegOrWholeTimeline, filePath, setMaxKeyframes, setWorking, t, videoStream]);
+  }, [currentCutSegOrWholeTimeline, filePath, handleError, setMaxKeyframes, setWorking, t, videoStream]);
 
 
   return {

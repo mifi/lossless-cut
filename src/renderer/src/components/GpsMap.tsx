@@ -5,9 +5,9 @@ import 'leaflet/dist/leaflet.css';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 
 import { extractSrtGpsTrack } from '../ffmpeg';
-import { handleError } from '../util';
 import { parseDjiGps1, parseDjiGps2 } from '../edlFormats';
 import * as Dialog from './Dialog';
+import { useAppContext } from '../contexts';
 
 
 // https://www.openstreetmap.org/copyright
@@ -33,6 +33,7 @@ export default function GpsMap({ filePath, streamIndex }: {
   filePath: string,
   streamIndex: number,
 }) {
+  const { handleError } = useAppContext();
   const [points, setPoints] = useState<Awaited<ReturnType<typeof getGpsTrack>>>();
 
   useEffect(() => {
@@ -56,10 +57,10 @@ export default function GpsMap({ filePath, streamIndex }: {
 
         setPoints(gpsPoints);
       } catch (err) {
-        handleError(err);
+        handleError({ err });
       }
     })();
-  }, [filePath, streamIndex]);
+  }, [filePath, handleError, streamIndex]);
 
   const firstPoint = points?.[0];
 

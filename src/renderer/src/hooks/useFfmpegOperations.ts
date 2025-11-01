@@ -1001,3 +1001,5 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 }
 
 export default useFfmpegOperations;
+
+export type FfmpegOperations = ReturnType<typeof useFfmpegOperations>;

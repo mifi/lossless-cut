@@ -144,11 +144,11 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
                     <span style={{ padding: '.5em 0', color: thisTagCustom ? activeColor : 'var(--gray-11)', fontWeight: thisTagCustom ? 'bold' : undefined }}>{mergedTags[tag] ? String(mergedTags[tag]) : `<${t('empty')}>`}</span>
                   )}
                   {(editingTag == null || editingThis) && (
-                    <Button title={t('Edit')} style={{ marginLeft: '.4em' }} onClick={() => onEditClick(tag)}><Icon style={{ fontSize: '.9em', padding: '.7em', verticalAlign: 'middle' }} /></Button>
+                    <Button title={t('Edit')} style={{ marginLeft: '.4em' }} onClick={() => onEditClick(tag)}><Icon style={{ fontSize: '.9em', padding: '.5em', verticalAlign: 'middle' }} /></Button>
                   )}
                   {editingThis && (
                     <Button title={thisTagNew ? t('Delete') : t('Reset')} onClick={onResetClick}>
-                      {thisTagNew ? <FaTrash style={{ fontSize: '.9em', padding: '.7em', verticalAlign: 'middle' }} /> : <FaUndo style={{ fontSize: '.9em', padding: '.7em', verticalAlign: 'middle' }} />}
+                      {thisTagNew ? <FaTrash style={{ fontSize: '.9em', padding: '.5em', verticalAlign: 'middle' }} /> : <FaUndo style={{ fontSize: '.9em', padding: '.5em', verticalAlign: 'middle' }} />}
                     </Button>
                   )}
                 </td>
@@ -160,7 +160,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
 
       <form onSubmit={onAddSubmit} style={{ opacity: canAdd ? undefined : 0.5, marginBottom: '1em' }}>
         <TextInput ref={ref} disabled={!canAdd} value={newTagKeyInput} onChange={(e) => setNewTagKeyInput(e.target.value)} placeholder={addTagTitle} style={{ padding: '.4em', marginRight: '1em', verticalAlign: 'middle' }} />
-        <Button type="button" disabled={!canAdd} title={addTagTitle} onClick={add}><FaPlus style={{ padding: '.6em', verticalAlign: 'middle' }} /></Button>
+        <Button type="submit" disabled={!canAdd} title={addTagTitle} onClick={add}><FaPlus style={{ padding: '.6em', verticalAlign: 'middle' }} /></Button>
       </form>
 
       {newTagKeyInputError && <Warning>{t('Invalid character(s) found in key')}</Warning>}

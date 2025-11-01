@@ -6,7 +6,6 @@ import i18n from 'i18next';
 import invariant from 'tiny-invariant';
 
 import Checkbox from './Checkbox';
-import { ReactSwal } from '../swal';
 import { readFileMeta, getDefaultOutFormat, mapRecommendedDefaultFormat } from '../ffmpeg';
 import useFileFormatState from '../hooks/useFileFormatState';
 import OutputFormatSelect from './OutputFormatSelect';
@@ -15,10 +14,10 @@ import { isMov } from '../util/streams';
 import { getOutDir, getOutFileExtension } from '../util';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../../ffprobe';
 import TextInput from './TextInput';
-import Button from './Button';
+import Button, { DialogButton } from './Button';
 import { defaultMergedFileTemplate, generateMergedFileNames, maxFileNameLength } from '../util/outputNameTemplate';
 import { primaryColor } from '../colors';
-import ExportDialog from './ExportDialog';
+import ExportSheet from './ExportSheet';
 import * as Dialog from './Dialog';
 
 const { basename } = window.require('path');
@@ -34,7 +33,7 @@ function Alert({ text }: { text: string }) {
   );
 }
 
-function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, exportCount, maxLabelLength }: {
+function ConcatSheet({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, exportCount, maxLabelLength }: {
   isShown: boolean,
   onHide: () => void,
   paths: string[],
@@ -156,17 +155,6 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
     return errors;
   }, [allFilesMeta]);
 
-  const onProblemsByFileClick = useCallback((path: string) => {
-    ReactSwal.fire({
-      title: i18n.t('Mismatches detected'),
-      html: (
-        <ul style={{ margin: '10px 0', textAlign: 'left' }}>
-          {(problemsByFile[path] || []).map((problem) => <li key={problem}>{problem}</li>)}
-        </ul>
-      ),
-    });
-  }, [problemsByFile]);
-
   useEffect(() => {
     if (!isShown || !enableReadFileMeta) return undefined;
 
@@ -198,7 +186,7 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
   }, [clearBatchFilesAfterConcat, fileFormat, fileMeta, includeAllStreams, onConcat, outFileName, paths]);
 
   return (
-    <ExportDialog
+    <ExportSheet
       visible={isShown}
       title={t('Merge/concatenate files')}
       onClosePress={onHide}
@@ -221,7 +209,26 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
                 <span style={{ opacity: 0.7, marginRight: '.4em' }}>{`${index + 1}.`}</span>
                 <span>{basename(path)}</span>
                 {!allFilesMetaCache[path] && <FaQuestionCircle style={{ color: 'var(--orange-8)', verticalAlign: 'middle', marginLeft: '1em' }} />}
-                {problemsByFile[path] && <Button onClick={() => onProblemsByFileClick(path)} title={i18n.t('Mismatches detected')} style={{ color: 'var(--orange-8)', marginLeft: '1em' }}><FaExclamationTriangle /></Button>}
+                {problemsByFile[path] && (
+                  <Dialog.Root>
+                    <Dialog.Trigger asChild>
+                      <Button title={i18n.t('Mismatches detected')} style={{ color: 'var(--orange-8)', marginLeft: '1em' }}><FaExclamationTriangle /></Button>
+                    </Dialog.Trigger>
+
+                    <Dialog.Portal>
+                      <Dialog.Overlay />
+                      <Dialog.Content aria-describedby={undefined}>
+                        <Dialog.Title>{t('Mismatches detected')}</Dialog.Title>
+
+                        <ul style={{ margin: '10px 0', textAlign: 'left' }}>
+                          {(problemsByFile[path] || []).map((problem) => <li key={problem}>{problem}</li>)}
+                        </ul>
+
+                        <Dialog.CloseButton />
+                      </Dialog.Content>
+                    </Dialog.Portal>
+                  </Dialog.Root>
+                )}
               </div>
             </div>
           ))}
@@ -273,12 +280,18 @@ function ConcatDialog({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFi
 
             <p>{t('Note that also other settings from the normal export dialog apply to this merge function. For more information about all options, see the export dialog.')}</p>
 
+            <Dialog.ButtonRow>
+              <Dialog.Close asChild>
+                <DialogButton primary>{t('Done')}</DialogButton>
+              </Dialog.Close>
+            </Dialog.ButtonRow>
+
             <Dialog.CloseButton />
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
-    </ExportDialog>
+    </ExportSheet>
   );
 }
 
-export default memo(ConcatDialog);
+export default memo(ConcatSheet);

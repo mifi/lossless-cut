@@ -16,7 +16,7 @@ import { StateSegment } from '../types';
 import { splitKeyboardKeys } from '../util';
 import * as Dialog from './Dialog';
 import Warning from './Warning';
-import Button from './Button';
+import Button, { DialogButton } from './Button';
 import Action from './Action';
 import TextInput from './TextInput';
 
@@ -131,7 +131,11 @@ const CreateBinding = memo(({
             )}
           </div>
 
-          <Dialog.ConfirmButton disabled={fixedKeys.length === 0 || isComboInvalid} onClick={() => action != null && onNewKeyBindingConfirmed(action, keysDown)}><FaSave style={{ marginRight: '.3em', verticalAlign: 'middle' }} />{t('Save')}</Dialog.ConfirmButton>
+          <Dialog.ButtonRow>
+            <DialogButton disabled={fixedKeys.length === 0 || isComboInvalid} onClick={() => action != null && onNewKeyBindingConfirmed(action, keysDown)} primary>
+              <FaSave style={{ marginRight: '.3em', verticalAlign: 'middle' }} />{t('Save')}
+            </DialogButton>
+          </Dialog.ButtonRow>
 
           <Dialog.CloseButton />
         </Dialog.Content>

@@ -1,29 +1,41 @@
-import { useCallback, useRef, useMemo, useState, MutableRefObject } from 'react';
+import { useCallback, useRef, useMemo, useState, MutableRefObject, FormEvent, useEffect } from 'react';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import i18n from 'i18next';
 import pMap from 'p-map';
 import invariant from 'tiny-invariant';
 import sortBy from 'lodash/sortBy';
+import { Trans, useTranslation } from 'react-i18next';
+import { FaLink } from 'react-icons/fa';
 
+import TextInput from '../components/TextInput';
 import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToSegments, findKeyframeNearTime } from '../ffmpeg';
-import { handleError, shuffleArray } from '../util';
+import { shuffleArray, toastError } from '../util';
 import { errorToast } from '../swal';
-import { showParametersDialog } from '../dialogs/parameters';
-import { createNumSegments as createNumSegmentsDialog, createFixedByteSixedSegments as createFixedByteSixedSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, selectSegmentsByExprDialog, mutateSegmentsByExprDialog, askForSegmentDuration } from '../dialogs';
+import { createNumSegments as createNumSegmentsDialog, createFixedByteSixedSegments as createFixedByteSixedSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, askForSegmentDuration } from '../dialogs';
 import { createSegment, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, addSegmentColorIndex, filterNonMarkers, makeDurationSegments, isInitialSegment } from '../segments';
-import { parameters as allFfmpegParameters, FfmpegDialog } from '../ffmpegParameters';
+import { parameters as allFfmpegParameters, FfmpegDialog, getHint, getLabel } from '../ffmpegParameters';
 import { maxSegmentsAllowed } from '../util/constants';
 import { DefiniteSegmentBase, ParseTimecode, SegmentBase, segmentTagsSchema, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
 import safeishEval from '../worker/eval';
 import { ScopeSegment } from '../../../../types';
 import { FFprobeFormat, FFprobeStream } from '../../../../ffprobe';
+import { HandleError } from '../contexts';
+import { ShowGenericDialog, useGenericDialogContext } from '../components/GenericDialog';
+import ExpressionDialog from '../components/ExpressionDialog';
+import Button, { DialogButton } from '../components/Button';
+import { ButtonRow } from '../components/Dialog';
+import * as AlertDialog from '../components/AlertDialog';
 
-const { ffmpeg: { blackDetect, silenceDetect } } = window.require('@electron/remote').require('./index.js');
+const remote = window.require('@electron/remote');
+const { shell } = remote;
+const { ffmpeg: { blackDetect, silenceDetect } } = remote.require('./index.js');
 
+
+type ParameterDialogParameters = Record<string, string>;
 
 const offsetSegments = (segments: DefiniteSegmentBase[], offset: number) => segments.map((s) => ({ start: s.start + offset, end: s.end + offset }));
 
-function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta, seekAbs, activeVideoStreamIndex, activeAudioStreamIndexes }: {
+function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta, seekAbs, activeVideoStreamIndex, activeAudioStreamIndexes, handleError, showGenericDialog }: {
   filePath?: string | undefined,
   workingRef: MutableRefObject<boolean>,
   setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void,
@@ -43,7 +55,11 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   seekAbs: (val: number | undefined) => void,
   activeVideoStreamIndex: number | undefined,
   activeAudioStreamIndexes: Set<number>,
+  handleError: HandleError,
+  showGenericDialog: ShowGenericDialog,
 }) {
+  const { t } = useTranslation();
+
   // Segment related state
   const segColorCounterRef = useRef(0);
 
@@ -170,12 +186,12 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       });
       appendFfmpegCommandLog(ffmpegArgs);
     } catch (err) {
-      if (!(err instanceof Error && err.name === 'AbortError')) handleError(errorText, err);
+      if (!(err instanceof Error && err.name === 'AbortError')) handleError({ err, title: errorText });
     } finally {
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [filePath, workingRef, setWorking, setProgress, appendFfmpegCommandLog, loadCutSegments, fileDuration, seekAbs]);
+  }, [filePath, workingRef, setWorking, setProgress, appendFfmpegCommandLog, loadCutSegments, fileDuration, seekAbs, handleError]);
 
   const getScopeSegment = useCallback((seg: Pick<StateSegment, 'name' | 'start' | 'end' | 'tags'>, index: number): ScopeSegment => {
     const { start, end, name, tags } = seg;
@@ -207,6 +223,78 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     return parameters;
   }, [ffmpegParameters]);
 
+  const showParametersDialog = useCallback(async ({ title, description, dialogType, parameters: parametersIn, docUrl }: {
+    title?: string,
+    description?: string,
+    dialogType: FfmpegDialog,
+    parameters: ParameterDialogParameters,
+    docUrl?: string,
+  }) => new Promise<ParameterDialogParameters | undefined>((resolve) => {
+    function Dialog() {
+      const { onOpenChange } = useGenericDialogContext();
+
+      const firstInputRef = useRef<HTMLInputElement>(null);
+      const [parameters, setParameters] = useState(parametersIn);
+
+      const getParameter = (key: string) => parameters[key];
+
+      const handleChange = (key: string, value: string) => setParameters((existing) => ({ ...existing, [key]: value }));
+
+      const handleSubmit = useCallback((e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        resolve(parameters);
+        onOpenChange(false);
+      }, [onOpenChange, parameters]);
+
+      useEffect(() => {
+        firstInputRef.current?.focus();
+      }, []);
+
+      return (
+        <AlertDialog.Content aria-describedby={undefined} style={{ width: '80vw' }}>
+          <AlertDialog.Title>{title}</AlertDialog.Title>
+
+          <AlertDialog.Description>{description}</AlertDialog.Description>
+
+          {docUrl && <p><Button onClick={() => shell.openExternal(docUrl)}><FaLink style={{ fontSize: '.8em' }} /> Read more</Button></p>}
+
+          <form onSubmit={handleSubmit}>
+            {Object.entries(parametersIn).map(([key, parameter], i) => {
+              const id = `parameter-${key}`;
+              return (
+                <div key={key} style={{ marginBottom: '.5em' }}>
+                  <label htmlFor={id} style={{ display: 'block', fontFamily: 'monospace', marginBottom: '.3em' }}>{getLabel(dialogType, parameter) || key}</label>
+                  <TextInput
+                    id={id}
+                    ref={i === 0 ? firstInputRef : undefined}
+                    value={getParameter(key)}
+                    onChange={(e) => handleChange(key, e.target.value)}
+                    style={{ marginBottom: '.2em' }}
+                  />
+                  {getHint(dialogType, key) && <div style={{ opacity: 0.6, fontSize: '0.8em' }}>{getHint(dialogType, key)}</div>}
+                </div>
+              );
+            })}
+
+            <ButtonRow>
+              <AlertDialog.Cancel asChild>
+                <DialogButton>{t('Cancel')}</DialogButton>
+              </AlertDialog.Cancel>
+
+              <DialogButton type="submit" primary>{t('Confirm')}</DialogButton>
+            </ButtonRow>
+          </form>
+        </AlertDialog.Content>
+      );
+    }
+
+    showGenericDialog({
+      isAlert: true,
+      content: <Dialog />,
+      onClose: () => resolve(undefined),
+    });
+  }), [showGenericDialog, t]);
+
   const detectBlackScenes = useCallback(async () => {
     const { start, end } = currentCutSegOrWholeTimeline;
     deleteCurrentCutSeg();
@@ -218,7 +306,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     invariant(mode === '1' || mode === '2');
     invariant(filePath != null);
     await detectSegments({ name: 'blackScenes', workingText: i18n.t('Detecting black scenes'), errorText: i18n.t('Failed to detect black scenes'), fn: async (onSegmentDetected) => blackDetect({ filePath, streamId: activeVideoStreamIndex, filterOptions, boundingMode: mode === '1', onProgress: setProgress, onSegmentDetected, from: start, to: end }) });
-  }, [currentCutSegOrWholeTimeline, deleteCurrentCutSeg, getFfmpegParameters, setFfmpegParametersForDialog, filePath, detectSegments, activeVideoStreamIndex, setProgress]);
+  }, [currentCutSegOrWholeTimeline, deleteCurrentCutSeg, showParametersDialog, getFfmpegParameters, setFfmpegParametersForDialog, filePath, detectSegments, activeVideoStreamIndex, setProgress]);
 
   const detectSilentScenes = useCallback(async () => {
     const { start, end } = currentCutSegOrWholeTimeline;
@@ -231,7 +319,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     invariant(mode === '1' || mode === '2');
     invariant(filePath != null);
     await detectSegments({ name: 'silentScenes', workingText: i18n.t('Detecting silent scenes'), errorText: i18n.t('Failed to detect silent scenes'), fn: async (onSegmentDetected) => silenceDetect({ filePath, streamId: [...activeAudioStreamIndexes][0], filterOptions, boundingMode: mode === '1', onProgress: setProgress, onSegmentDetected, from: start, to: end }) });
-  }, [activeAudioStreamIndexes, currentCutSegOrWholeTimeline, deleteCurrentCutSeg, detectSegments, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress]);
+  }, [activeAudioStreamIndexes, currentCutSegOrWholeTimeline, deleteCurrentCutSeg, detectSegments, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress, showParametersDialog]);
 
   const detectSceneChanges = useCallback(async () => {
     const { start, end } = currentCutSegOrWholeTimeline;
@@ -245,7 +333,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     const minChange = parameters['minChange'];
     invariant(minChange != null);
     await detectSegments({ name: 'sceneChanges', workingText: i18n.t('Detecting scene changes'), errorText: i18n.t('Failed to detect scene changes'), fn: async (onSegmentDetected) => ffmpegDetectSceneChanges({ filePath, streamId: activeVideoStreamIndex, minChange, onProgress: setProgress, onSegmentDetected, from: start, to: end }) });
-  }, [activeVideoStreamIndex, currentCutSegOrWholeTimeline, deleteCurrentCutSeg, detectSegments, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress]);
+  }, [activeVideoStreamIndex, currentCutSegOrWholeTimeline, deleteCurrentCutSeg, detectSegments, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress, showParametersDialog]);
 
   const createSegmentsFromKeyframes = useCallback(async () => {
     const { start, end } = currentCutSegOrWholeTimeline;
@@ -418,11 +506,11 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
         return newSegment;
       });
     } catch (err) {
-      handleError(err);
+      handleError({ err });
     } finally {
       setWorking(undefined);
     }
-  }, [filePath, videoStream, modifySelectedSegmentTimes, setWorking, workingRef]);
+  }, [videoStream, workingRef, setWorking, modifySelectedSegmentTimes, filePath, handleError]);
 
   const updateSegOrder = useCallback((index: number, newOrder: number) => {
     if (newOrder > cutSegments.length - 1 || newOrder < 0) return;
@@ -513,7 +601,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
         } */
         setCutTime('start', startTime);
       } catch (err) {
-        handleError(err);
+        toastError(err);
       }
     }
   }, [checkFileOpened, getRelevantTime, currentCutSeg, addSegment, setCutTime]);
@@ -530,7 +618,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       } */
       setCutTime('end', endTime);
     } catch (err) {
-      handleError(err);
+      toastError(err);
     }
   }, [checkFileOpened, getRelevantTime, setCutTime]);
 
@@ -655,25 +743,43 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
         ((await matchSegment(seg, index, expr)) ? [seg] : [])
       ), { concurrency: 5 })).flat();
 
-    const value = await selectSegmentsByExprDialog(async (v: string) => {
+    const onSubmit = async (value: string) => {
       try {
-        if (v.trim().length === 0) return i18n.t('Please enter a JavaScript expression.');
-        const segments = await getSegmentsToSelect(v);
-        if (segments.length === 0) return i18n.t('No segments match this expression.');
-        if (segments.length === cutSegments.length) return i18n.t('All segments match this expression.');
+        if (value.trim().length === 0) return { error: i18n.t('Please enter a JavaScript expression.') };
+        const segmentsToSelect = await getSegmentsToSelect(value);
+        if (segmentsToSelect.length === 0) return { error: i18n.t('No segments match this expression.') };
+        if (segmentsToSelect.length === cutSegments.length) return { error: i18n.t('All segments match this expression.') };
+        selectSegments(segmentsToSelect);
         return undefined;
       } catch (err) {
         if (err instanceof Error) {
-          return i18n.t('Expression failed: {{errorMessage}}', { errorMessage: err.message });
+          return { error: i18n.t('Expression failed: {{errorMessage}}', { errorMessage: err.message }) };
         }
         throw err;
       }
-    });
+    };
 
-    if (value == null) return;
-    const segmentsToSelect = await getSegmentsToSelect(value);
-    selectSegments(segmentsToSelect);
-  }, [cutSegments, selectSegments, getScopeSegment]);
+    showGenericDialog({
+      isAlert: true,
+      content: (
+        <ExpressionDialog
+          onSubmit={onSubmit}
+          confirmButtonText={t('Select segments')}
+          examples={[
+            { name: i18n.t('Segment duration less than 5 seconds'), code: 'segment.duration < 5' },
+            { name: i18n.t('Segment starts after 01:00'), code: 'segment.start > 60' },
+            { name: i18n.t('Segment label (exact)'), code: "segment.label === 'My label'" },
+            { name: i18n.t('Segment label (regexp)'), code: '/^My label/.test(segment.label)' },
+            { name: i18n.t('Segment tag value'), code: "segment.tags.myTag === 'tag value'" },
+            { name: i18n.t('Markers'), code: 'segment.end == null' },
+          ]}
+          title={i18n.t('Select segments by expression')}
+          description={<Trans>Enter a JavaScript expression which will be evaluated for each segment. Segments for which the expression evaluates to &quot;true&quot; will be selected. <button type="button" className="link-button" onClick={() => shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/expressions.md')}>View available syntax.</button></Trans>}
+          variables={['segment.index', 'segment.label', 'segment.start', 'segment.end', 'segment.duration', 'segment.tags.*']}
+        />
+      ),
+    });
+  }, [showGenericDialog, t, getScopeSegment, cutSegments, selectSegments]);
 
   const mutateSegmentsByExpr = useCallback(async () => {
     async function mutateSegment(seg: StateSegment, index: number, expr: string) {
@@ -705,22 +811,45 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       ...(seg.selected && await mutateSegment(seg, index, expr)),
     }), { concurrency: 5 })).flat();
 
-    const value = await mutateSegmentsByExprDialog(async (v: string) => {
+    const onSubmit = async (value: string) => {
       try {
-        if (v.trim().length === 0) return i18n.t('Please enter a JavaScript expression.');
-        await mutateSegments(v);
+        if (value.trim().length === 0) return { error: i18n.t('Please enter a JavaScript expression.') };
+        const mutated = await mutateSegments(value);
+
+        safeSetCutSegments(mutated, fileDuration);
+
         return undefined;
       } catch (err) {
         if (err instanceof Error) {
-          return i18n.t('Expression failed: {{errorMessage}}', { errorMessage: err.message });
+          return { error: i18n.t('Expression failed: {{errorMessage}}', { errorMessage: err.message }) };
         }
         throw err;
       }
-    });
+    };
 
-    if (value == null) return;
-    safeSetCutSegments(await mutateSegments(value), fileDuration);
-  }, [cutSegments, fileDuration, getScopeSegment, safeSetCutSegments]);
+    showGenericDialog({
+      isAlert: true,
+      content: (
+        <ExpressionDialog
+          onSubmit={onSubmit}
+          confirmButtonText={t('Apply change')}
+          examples={[
+            { name: i18n.t('Expand segments +5 sec'), code: '{ start: segment.start - 5, end: segment.end + 5 }' },
+            { name: i18n.t('Shrink segments -5 sec'), code: '{ start: segment.start + 5, end: segment.end - 5 }' },
+            { name: i18n.t('Center segments around start time'), code: '{ start: segment.start - 5, end: segment.start + 5 }' },
+            // eslint-disable-next-line no-template-curly-in-string
+            { name: i18n.t('Add number suffix to label'), code: '{ label: `${segment.label} ${segment.index + 1}` }' },
+            { name: i18n.t('Add a tag to every even segment'), code: '{ tags: (segment.index + 1) % 2 === 0 ? { ...segment.tags, even: \'true\' } : segment.tags }' },
+            { name: i18n.t('Convert segments to markers'), code: '{ end: undefined }' },
+            { name: i18n.t('Convert markers to segments'), code: '{ ...(segment.end == null && { end: segment.start + 5 }) }' },
+          ]}
+          title={i18n.t('Edit segments by expression')}
+          description={<Trans>Enter a JavaScript expression which will be evaluated for each selected segment. Returned properties will be edited. <button type="button" className="link-button" onClick={() => shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/expressions.md')}>View available syntax.</button></Trans>}
+          variables={['segment.index', 'segment.label', 'segment.start', 'segment.end', 'segment.tags.*']}
+        />
+      ),
+    });
+  }, [cutSegments, fileDuration, getScopeSegment, safeSetCutSegments, showGenericDialog, t]);
 
   const labelSelectedSegments = useCallback(async () => {
     const firstSelectedSegment = selectedSegments[0];

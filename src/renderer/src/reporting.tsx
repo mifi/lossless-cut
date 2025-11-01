@@ -15,7 +15,11 @@ const { platform, arch } = remote.require('./index.js');
 
 
 // eslint-disable-next-line import/prefer-default-export
-export function openSendReportDialog(err: unknown | undefined, state?: unknown) {
+export function openSendReportDialog({ err, message, state }: {
+  err?: unknown | undefined,
+  message?: string,
+  state?: unknown,
+}) {
   const reportInstructions = isStoreBuild
     ? (
       <p><Trans>Please send an email to <span className="link-button" role="button" onClick={() => electron.shell.openExternal('mailto:losslesscut@mifi.no')}>losslesscut@mifi.no</span> where you describe what you were doing.</Trans></p>
@@ -32,7 +36,12 @@ export function openSendReportDialog(err: unknown | undefined, state?: unknown) 
 
   const version = app.getVersion();
 
-  const text = `${err instanceof Error ? err.stack : 'No error occurred.'}\n\n${JSON.stringify({
+  const errorText = (() => {
+    if (err == null) return 'No error occurred.';
+    return err instanceof Error ? err.stack : String(err);
+  })();
+
+  const jsonReport = JSON.stringify({
     err: isExecaError(err) && {
       code: err.code,
       isTerminated: err.isTerminated,
@@ -51,7 +60,17 @@ export function openSendReportDialog(err: unknown | undefined, state?: unknown) 
     version,
     isWindowsStoreBuild,
     isMasBuild,
-  }, null, 2)}`;
+  }, null, 2);
+
+  const lines = [
+    ...(message != null ? [message] : []),
+    errorText,
+    '',
+    'App state:',
+    jsonReport,
+  ];
+
+  const text = lines.join('\n');
 
   ReactSwal.fire({
     showCloseButton: true,

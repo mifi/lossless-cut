@@ -46,6 +46,7 @@ export const swalToastOptions: SweetAlertOptions = {
     self.addEventListener('mouseenter', Swal.stopTimer);
     self.addEventListener('mouseleave', Swal.resumeTimer);
   },
+  reverseButtons: true,
 };
 
 export const toast = Swal.mixin(swalToastOptions);

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import pMap from 'p-map';
 import invariant from 'tiny-invariant';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { isStreamThumbnail, shouldCopyStreamByDefault } from '../util/streams';
 import StreamsSelector from '../StreamsSelector';
@@ -8,15 +9,20 @@ import { FFprobeStream } from '../../../../ffprobe';
 import { FilesMeta } from '../types';
 import safeishEval from '../worker/eval';
 import i18n from '../i18n';
-import { filterEnabledStreamsDialog } from '../dialogs';
+import Action from '../components/Action';
+import ExpressionDialog from '../components/ExpressionDialog';
+import { ShowGenericDialog } from '../components/GenericDialog';
 
 
-export default ({ mainStreams, externalFilesMeta, filePath, autoExportExtraStreams }: {
+export default function useStreamsMeta({ mainStreams, externalFilesMeta, filePath, autoExportExtraStreams, showGenericDialog }: {
   mainStreams: FFprobeStream[],
   externalFilesMeta: FilesMeta,
   filePath: string | undefined,
   autoExportExtraStreams: boolean,
-}) => {
+  showGenericDialog: ShowGenericDialog,
+}) {
+  const { t } = useTranslation();
+
   const [copyStreamIdsByFile, setCopyStreamIdsByFile] = useState<Record<string, Record<string, boolean>>>({});
   // this will be remembered between files:
   const [enabledStreamsFilter, setEnabledStreamsFilter] = useState<string>();
@@ -86,34 +92,49 @@ export default ({ mainStreams, externalFilesMeta, filePath, autoExportExtraStrea
 
     const isEmpty = (v: string) => v.trim().length === 0;
 
-    const expr = await filterEnabledStreamsDialog({
-      validator: async (v: string) => {
-        try {
-          if (isEmpty(v)) return undefined;
-          const streams = await filterEnabledStreams(v);
-          if (streams.length === 0) return i18n.t('No tracks match this expression.');
-          return undefined;
-        } catch (err) {
-          if (err instanceof Error) {
-            return i18n.t('Expression failed: {{errorMessage}}', { errorMessage: err.message });
-          }
-          throw err;
-        }
-      },
-      value: enabledStreamsFilter,
+    showGenericDialog({
+      isAlert: true,
+      content: (
+        <ExpressionDialog
+          confirmButtonText={t('Apply filter')}
+          onSubmit={async (value: string) => {
+            try {
+              if (isEmpty(value)) return undefined;
+              const streams = await filterEnabledStreams(value);
+              if (streams.length === 0) return { error: i18n.t('No tracks match this expression.') };
+
+              if (isEmpty(value)) {
+                // allow user to reset filter
+                setEnabledStreamsFilter(undefined);
+                return undefined;
+              }
+
+              setEnabledStreamsFilter(value);
+
+              await applyEnabledStreamsFilter(value);
+              return undefined;
+            } catch (err) {
+              if (err instanceof Error) {
+                return { error: i18n.t('Expression failed: {{errorMessage}}', { errorMessage: err.message }) };
+              }
+              throw err;
+            }
+          }}
+          examples={[
+            { name: i18n.t('Audio tracks'), code: "track.codec_type === 'audio'" },
+            { name: i18n.t('Video tracks'), code: "track.codec_type === 'video'" },
+            { name: i18n.t('English language tracks'), code: "track.tags?.language === 'eng'" },
+            { name: i18n.t('Tracks with at least 720p video'), code: 'track.height >= 720' },
+            { name: i18n.t('Tracks with H264 codec'), code: "track.codec_name === 'h264'" },
+            { name: i18n.t('1st, 2nd and 3rd track'), code: 'track.index >= 0 && track.index <= 2' },
+          ]}
+          title={i18n.t('Toggle tracks by expression')}
+          description={<Trans>Enter a JavaScript filter expression which will be evaluated for each track of the current file. Tracks for which the expression evaluates to &quot;true&quot; will be selected or deselected. You may also the <Action name="toggleStripCurrentFilter" /> keyboard action to run this filter.</Trans>}
+          inputValue={enabledStreamsFilter ?? ''}
+        />
+      ),
     });
-
-    if (expr == null) return;
-
-    if (isEmpty(expr)) {
-      setEnabledStreamsFilter(undefined);
-      return;
-    }
-
-    setEnabledStreamsFilter(expr);
-
-    await applyEnabledStreamsFilter(expr);
-  }, [applyEnabledStreamsFilter, enabledStreamsFilter, filePath, filterEnabledStreams]);
+  }, [applyEnabledStreamsFilter, enabledStreamsFilter, filePath, filterEnabledStreams, showGenericDialog, t]);
 
   const toggleStripCodecType = useCallback((codecType: FFprobeStream['codec_type']) => toggleCopyStreamIds(filePath!, (stream) => stream.codec_type === codecType), [filePath, toggleCopyStreamIds]);
   const toggleStripAudio = useCallback(() => toggleStripCodecType('audio'), [toggleStripCodecType]);
@@ -128,4 +149,4 @@ export default ({ mainStreams, externalFilesMeta, filePath, autoExportExtraStrea
   }, [setCopyStreamIdsForPath]);
 
   return { nonCopiedExtraStreams, exportExtraStreams, mainCopiedThumbnailStreams, numStreamsToCopy, toggleStripAudio, toggleStripVideo, toggleStripSubtitle, toggleStripThumbnail, toggleStripAll, copyStreamIdsByFile, setCopyStreamIdsByFile, copyFileStreams, mainCopiedStreams, setCopyStreamIdsForPath, toggleCopyStreamId, isCopyingStreamId, toggleCopyStreamIds, changeEnabledStreamsFilter, applyEnabledStreamsFilter, enabledStreamsFilter, toggleCopyAllStreamsForPath };
-};
+}

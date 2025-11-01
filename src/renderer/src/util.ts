@@ -8,10 +8,9 @@ import { ExecaError } from 'execa';
 import confetti from 'canvas-confetti';
 
 import isDev from './isDev';
-import Swal, { errorToast, toast } from './swal';
+import Swal, { toast } from './swal';
 import { ffmpegExtractWindow } from './util/constants';
 import { appName } from '../../main/common';
-import { DirectoryAccessDeclinedError, UnsupportedFileError } from '../errors';
 import { Html5ifyMode } from '../../../types';
 import { prefersReducedMotion } from './animations';
 
@@ -332,53 +331,11 @@ export const isMuxNotSupported = (err: InvariantExecaError) => (
   && /Could not write header .*incorrect codec parameters .*Invalid argument/.test(getStdioString(err.stderr) ?? '')
 );
 
-export function handleError(arg1: unknown, arg2?: unknown) {
-  console.error('handleError', arg1, arg2);
-
-  let err: Error | undefined;
-  let str: string | undefined;
-
-  if (typeof arg1 === 'string') str = arg1;
-  else if (typeof arg2 === 'string') str = arg2;
-
-  if (arg1 instanceof Error) err = arg1;
-  else if (arg2 instanceof Error) err = arg2;
-
-  if (err instanceof UnsupportedFileError) {
-    errorToast(i18n.t('Unsupported file'));
-  } else {
-    Swal.fire({
-      icon: 'error',
-      title: str || i18n.t('An error has occurred.'),
-      text: err?.message ? err?.message.slice(0, 300) : undefined,
-    });
-  }
-}
-
-/**
- * Run an operation with error handling
- */
-export async function withErrorHandling(operation: () => Promise<void>, errorMsgOrFn?: string | ((err: unknown) => string)) {
-  try {
-    await operation();
-  } catch (err) {
-    if (err instanceof DirectoryAccessDeclinedError || isAbortedError(err)) return;
-
-    if (err instanceof UnsupportedFileError) {
-      errorToast(i18n.t('Unsupported file'));
-      return;
-    }
-
-    let errorMsg: string | undefined;
-    if (typeof errorMsgOrFn === 'string') errorMsg = errorMsgOrFn;
-    if (typeof errorMsgOrFn === 'function') errorMsg = errorMsgOrFn(err);
-    if (errorMsg != null) {
-      console.error(errorMsg, err);
-      handleError(errorMsg, err);
-    } else {
-      handleError(err);
-    }
-  }
+export function toastError(err: unknown) {
+  console.error('toastError', err);
+  const text = err instanceof Error ? err.message : String(err);
+  const textTruncated = text.slice(0, 300);
+  toast.fire({ icon: 'error', title: i18n.t('Error'), text: textTruncated });
 }
 
 export async function checkAppPath() {

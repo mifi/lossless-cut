@@ -8,7 +8,7 @@ import { FfmpegCommandLog } from './types';
 import Button from './components/Button';
 import * as Dialog from './components/Dialog';
 
-function LastCommandsSheet({ visible, onTogglePress, ffmpegCommandLog, setFfmpegCommandLog }: {
+function LastCommands({ visible, onTogglePress, ffmpegCommandLog, setFfmpegCommandLog }: {
   visible: boolean,
   onTogglePress: () => void,
   ffmpegCommandLog: FfmpegCommandLog,
@@ -46,4 +46,4 @@ function LastCommandsSheet({ visible, onTogglePress, ffmpegCommandLog, setFfmpeg
   );
 }
 
-export default memo(LastCommandsSheet);
+export default memo(LastCommands);

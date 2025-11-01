@@ -2,8 +2,8 @@ import ky from 'ky';
 
 import { runFfmpegStartupCheck, getFfmpegPath } from './ffmpeg';
 import Swal from './swal';
-import { handleError } from './util';
 import isDev from './isDev';
+import { openSendReportDialog } from './reporting';
 
 
 export async function loadMifiLink() {
@@ -41,6 +41,6 @@ export async function runStartupCheck({ customFfPath }: { customFfPath: string |
       }
     }
 
-    handleError('Fatal: ffmpeg non-functional', err);
+    openSendReportDialog({ message: 'FFmpeg is non-functional', err });
   }
 }

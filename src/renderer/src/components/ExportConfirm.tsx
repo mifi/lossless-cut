@@ -24,7 +24,7 @@ import { FFprobeStream } from '../../../../ffprobe';
 import { AvoidNegativeTs, PreserveMetadata } from '../../../../types';
 import TextInput from './TextInput';
 import { UseSegments } from '../hooks/useSegments';
-import ExportDialog from './ExportDialog';
+import ExportSheet from './ExportSheet';
 import ToggleExportConfirm from './ToggleExportConfirm';
 import { LossyMode } from '../../../main';
 
@@ -284,7 +284,7 @@ function ExportConfirm({
   }, [setEncBitrate]);
 
   return (
-    <ExportDialog
+    <ExportSheet
       width="50em"
       visible={visible}
       title={t('Export options')}
@@ -642,7 +642,7 @@ function ExportConfirm({
           </tr>
         </tbody>
       </table>
-    </ExportDialog>
+    </ExportSheet>
   );
 }
 

@@ -16,7 +16,7 @@ import { getActiveDisposition, attachedPicDisposition, isGpsStream } from './uti
 import TagEditor from './components/TagEditor';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
 import { CustomTagsByFile, FilesMeta, FormatTimecode, ParamsByStreamId, StreamParams } from './types';
-import Button from './components/Button';
+import Button, { DialogButton } from './components/Button';
 import Checkbox from './components/Checkbox';
 import styles from './StreamsSelector.module.css';
 import Json5Dialog from './components/Json5Dialog';
@@ -154,6 +154,12 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
 
           <h2>Tags</h2>
           <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} />
+
+          <Dialog.ButtonRow>
+            <Dialog.Close asChild>
+              <DialogButton primary>{t('Done')}</DialogButton>
+            </Dialog.Close>
+          </Dialog.ButtonRow>
 
           <Dialog.CloseButton />
         </Dialog.Content>
@@ -537,6 +543,12 @@ function StreamsSelector({
               <Dialog.Title>{t('Edit file metadata')}</Dialog.Title>
 
               <EditFileDialog editingFile={editingFile} editingTag={editingTag} setEditingTag={setEditingTag} allFilesMeta={allFilesMeta} customTagsByFile={customTagsByFile} setCustomTagsByFile={setCustomTagsByFile} />
+
+              <Dialog.ButtonRow>
+                <Dialog.Close asChild>
+                  <DialogButton primary>{t('Done')}</DialogButton>
+                </Dialog.Close>
+              </Dialog.ButtonRow>
 
               <Dialog.CloseButton />
             </Dialog.Content>

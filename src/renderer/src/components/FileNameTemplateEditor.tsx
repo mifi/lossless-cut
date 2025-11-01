@@ -4,9 +4,8 @@ import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { IoIosHelpCircle } from 'react-icons/io';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaCheck, FaEdit, FaExclamationTriangle, FaUndo } from 'react-icons/fa';
+import { FaCheck, FaEdit, FaExclamationTriangle, FaFile, FaUndo } from 'react-icons/fa';
 
-import { ReactSwal } from '../swal';
 import HighlightedText from './HighlightedText';
 import { segNumVariable, segSuffixVariable, GenerateOutFileNames, extVariable, segTagsVariable, segNumIntVariable, selectedSegNumVariable, selectedSegNumIntVariable } from '../util/outputNameTemplate';
 import useUserSettings from '../hooks/useUserSettings';
@@ -14,6 +13,7 @@ import Switch from './Switch';
 import Select from './Select';
 import TextInput from './TextInput';
 import Button from './Button';
+import * as Dialog from './Dialog';
 
 const electron = window.require('electron');
 
@@ -106,18 +106,6 @@ function FileNameTemplateEditor(opts: {
   // eslint-disable-next-line no-template-curly-in-string
   const isMissingExtension = validText != null && !validText.endsWith(extVariableFormatted);
 
-  const onAllFilesPreviewPress = useCallback(() => {
-    if (fileNames == null) return;
-    ReactSwal.fire({
-      title: t('Resulting segment file names', { count: fileNames.length }),
-      html: (
-        <div style={{ textAlign: 'left', overflowY: 'auto', maxHeight: 400 }}>
-          {fileNames.map((f) => <div key={f} style={{ marginBottom: 7 }}>{f}</div>)}
-        </div>
-      ),
-    });
-  }, [fileNames, t]);
-
   useEffect(() => {
     if (validText != null) setTemplate(validText);
   }, [validText, setTemplate]);
@@ -180,7 +168,24 @@ function FileNameTemplateEditor(opts: {
                 <TextInput ref={inputRef} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
 
                 {!mergeMode && fileNames != null && (
-                  <Button onClick={onAllFilesPreviewPress} style={{ marginLeft: '.3em' }}>{t('Preview')}</Button>
+                  <Dialog.Root>
+                    <Dialog.Trigger asChild>
+                      <Button style={{ marginLeft: '.3em' }}>{t('Preview')}</Button>
+                    </Dialog.Trigger>
+
+                    <Dialog.Portal>
+                      <Dialog.Overlay />
+                      <Dialog.Content aria-describedby={undefined}>
+                        <Dialog.Title>{t('Resulting segment file names', { count: fileNames.length })}</Dialog.Title>
+
+                        <div style={{ overflowY: 'auto', maxHeight: 400 }}>
+                          {fileNames.map((f) => <div key={f} style={{ marginBottom: '.5em' }}><FaFile style={{ verticalAlign: 'middle', marginRight: '.5em' }} />{f}</div>)}
+                        </div>
+
+                        <Dialog.CloseButton />
+                      </Dialog.Content>
+                    </Dialog.Portal>
+                  </Dialog.Root>
                 )}
 
                 <Button title={t('Reset')} onClick={reset} style={{ marginLeft: '.3em' }}><FaUndo style={{ fontSize: '.8em', color: 'var(--red-11)' }} /></Button>

@@ -44,4 +44,11 @@ $swal2-button-focus-box-shadow: 0 0 0 1px $swal2-background, 0 0 0 3px $swal2-ou
   color: var(--gray-8);
 }
 
+// Because radix-ui Dialog uses pointer-events: none on the whole app when a dialog is open, but we still want to interact with swal2 popups (which are on top)
+// Note that this is still kind of broken (clicks may go through the popup and scroll doesn't work), but better than nothing.
+// TODO remove usage of sweetalert2 and use our own dialog component instead.
+.swal2-popup {
+  pointer-events: auto;
+}
+
 @import 'sweetalert2/src/sweetalert2.scss';

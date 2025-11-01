@@ -1,6 +1,6 @@
-/* Keep in sync with AlertDialog.module.css */
+/* Keep in sync with Dialog.module.css */
 
-.DialogOverlay {
+.AlertDialogOverlay {
 	background-color: var(--black-a9);
 	position: fixed;
 	inset: 0;
@@ -14,11 +14,11 @@
 	}
 }
 
-:global(.dark-theme) .DialogOverlay {
+:global(.dark-theme) .AlertDialogOverlay {
 	background-color: var(--black-a8);
 }
 
-.DialogContent {
+.AlertDialogContent {
 	position: fixed;
 	top: 50%;
 	left: 50%;
@@ -47,17 +47,17 @@
 	}
 }
 
-:global(.dark-theme) .DialogContent {
+:global(.dark-theme) .AlertDialogContent {
   border: .1em solid var(--white-a3);
   background: var(--black-a4);
   box-shadow: 0 0 1em .3em var(--black-a2);
 }
 
-.DialogContent:focus {
+.AlertDialogContent:focus {
 	outline: none;
 }
 
-.DialogTitle {
+.AlertDialogTitle {
 	margin-top: 0;
 	margin-bottom: .5em;
 	font-weight: 500;
@@ -66,11 +66,11 @@
   border-bottom: .1em solid var(--black-a3);
 }
 
-:global(.dark-theme) .DialogTitle {
+:global(.dark-theme) .AlertDialogTitle {
   border-bottom: .1em solid var(--white-a4);
 }
 
-.DialogDescription {
+.AlertDialogDescription {
 	margin-bottom: 1em;
 }
 

@@ -1,12 +1,14 @@
 import React, { useContext } from 'react';
 import Color from 'color';
 
-import useUserSettingsRoot from './hooks/useUserSettingsRoot';
+import { UserSettingsRoot } from './hooks/useUserSettingsRoot';
 import { ExportMode, SegmentColorIndex } from './types';
 import type useLoading from './hooks/useLoading';
+import { GenericError } from './components/ErrorDialog';
+import { ShowGenericDialog } from './components/GenericDialog';
 
 
-export type UserSettingsContextType = ReturnType<typeof useUserSettingsRoot> & {
+export type UserSettingsContextType = Omit<UserSettingsRoot, 'settings'> & UserSettingsRoot['settings'] & {
   toggleCaptureFormat: () => void,
   changeOutDir: () => Promise<void>,
   toggleKeyframeCut: (showMessage?: boolean) => void,
@@ -20,15 +22,25 @@ interface SegColorsContextType {
   getSegColor: (seg: SegmentColorIndex | undefined) => Color
 }
 
+export type HandleError = (error: GenericError) => void;
+
 interface AppContextType {
   setWorking: ReturnType<typeof useLoading>['setWorking'],
   working: ReturnType<typeof useLoading>['working'],
+  handleError: HandleError,
+  showGenericDialog: ShowGenericDialog,
 }
 
 
 export const UserSettingsContext = React.createContext<UserSettingsContextType | undefined>(undefined);
 export const SegColorsContext = React.createContext<SegColorsContextType | undefined>(undefined);
 export const AppContext = React.createContext<AppContextType | undefined>(undefined);
+
+export function useAppContext() {
+  const context = useContext(AppContext);
+  if (context == null) throw new Error('AppContext nullish');
+  return context;
+}
 
 export const useSegColors = () => {
   const context = useContext(SegColorsContext);

@@ -19,6 +19,7 @@ import TagEditor from './components/TagEditor';
 import { ContextMenuTemplate, DefiniteSegmentBase, FormatTimecode, GetFrameCount, InverseCutSegment, SegmentBase, SegmentTags, StateSegment } from './types';
 import { UseSegments } from './hooks/useSegments';
 import * as Dialog from './components/Dialog';
+import { DialogButton } from './components/Button';
 
 
 const buttonBaseStyle = {
@@ -579,10 +580,12 @@ function SegmentList({
 
             <TagEditor customTags={editingSegmentTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add segment tag')} />
 
-            <Dialog.ConfirmButton onClick={onSegmentTagsConfirm} disabled={editingTag != null}>
-              <FaSave style={{ verticalAlign: 'baseline', fontSize: '.8em', marginRight: '.3em' }} />
-              {t('Save')}
-            </Dialog.ConfirmButton>
+            <Dialog.ButtonRow>
+              <DialogButton onClick={onSegmentTagsConfirm} disabled={editingTag != null} primary>
+                <FaSave style={{ verticalAlign: 'baseline', fontSize: '.8em', marginRight: '.3em' }} />
+                {t('Save')}
+              </DialogButton>
+            </Dialog.ButtonRow>
 
             <Dialog.CloseButton />
           </Dialog.Content>

@@ -6,7 +6,7 @@ import { openSendReportDialog } from './reporting';
 
 class ErrorBoundary extends Component<{ children: ReactNode }> {
   // eslint-disable-next-line react/state-in-constructor
-  override state: { error: { message: string } | undefined };
+  override state: { error: unknown };
 
   constructor(props: { children: ReactNode }) {
     super(props);
@@ -27,8 +27,8 @@ class ErrorBoundary extends Component<{ children: ReactNode }> {
       return (
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
           <h1><Trans>Something went wrong</Trans></h1>
-          <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{error.message}</div>
-          <p><button type="button" onClick={() => openSendReportDialog(error)} style={{ padding: 10, fontSize: 20 }}><Trans>Report error</Trans></button></p>
+          <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{error instanceof Error ? error.message : String(error)}</div>
+          <p><button type="button" onClick={() => openSendReportDialog({ err: error })} style={{ padding: 10, fontSize: 20 }}><Trans>Report error</Trans></button></p>
         </div>
       );
     }
