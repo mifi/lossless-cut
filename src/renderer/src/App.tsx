@@ -1427,7 +1427,7 @@ function App() {
       } else if (needsAutoHtml5ify) {
         showUnsupportedFileMessage();
       } else if (isAudioDefinitelyNotSupported(fileMeta.streams)) {
-        showNotification({ icon: 'info', text: i18n.t('The audio track is not supported. You can convert to a supported format from the menu') });
+        showNotification({ icon: 'info', text: i18n.t('The audio track is not supported while previewing. You can convert to a supported format from the menu') });
       } else if (!validDuration) {
         toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
       }
