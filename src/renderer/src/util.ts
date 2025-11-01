@@ -21,7 +21,9 @@ const { ipcRenderer } = window.require('electron');
 const remote = window.require('@electron/remote');
 const { isWindows, isMac } = remote.require('./index.js');
 
-export { isWindows, isMac };
+const appVersion = remote.app.getVersion();
+
+export { isWindows, isMac, appVersion };
 
 
 const trashFile = async (path: string) => ipcRenderer.invoke('tryTrashItem', path);
@@ -435,7 +437,7 @@ export function setDocumentTitle({ filePath, working, progress }: {
     parts.push(basename(filePath));
   }
 
-  parts.push(appName);
+  parts.push(`${appName} ${appVersion}`);
 
   document.title = parts.join(' - ');
 }

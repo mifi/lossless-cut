@@ -2,14 +2,12 @@ import i18n from 'i18next';
 import { Trans } from 'react-i18next';
 
 import CopyClipboardButton from './components/CopyClipboardButton';
-import { isStoreBuild, isMasBuild, isWindowsStoreBuild, isExecaError } from './util';
+import { isStoreBuild, isMasBuild, isWindowsStoreBuild, isExecaError, appVersion } from './util';
 import { ReactSwal } from './swal';
 
 const electron = window.require('electron');
 
 const remote = window.require('@electron/remote');
-
-const { app } = remote;
 
 const { platform, arch } = remote.require('./index.js');
 
@@ -34,8 +32,6 @@ export function openSendReportDialog({ err, message, state }: {
       </Trans>
     );
 
-  const version = app.getVersion();
-
   const errorText = (() => {
     if (err == null) return 'No error occurred.';
     return err instanceof Error ? err.stack : String(err);
@@ -57,7 +53,7 @@ export function openSendReportDialog({ err, message, state }: {
 
     platform,
     arch,
-    version,
+    version: appVersion,
     isWindowsStoreBuild,
     isMasBuild,
   }, null, 2);
