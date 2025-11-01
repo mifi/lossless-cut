@@ -105,7 +105,7 @@ LosslessCut also allows importing/exporting your project (segments) in a variety
 ```csv
 ,56.9568,First segment starting at 0
 70,842.33,"Another quoted label"
-1234,,Last segment
+1234,,Last marker starting at 1234 seconds
 ```
 
 ### TSV files
