@@ -437,7 +437,7 @@ export function setDocumentTitle({ filePath, working, progress }: {
     parts.push(basename(filePath));
   }
 
-  parts.push(`${appName} ${appVersion}`);
+  parts.push(isStoreBuild ? appName : `${appName} ${appVersion}`);
 
   document.title = parts.join(' - ');
 }
