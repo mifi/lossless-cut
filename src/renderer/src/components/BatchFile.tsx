@@ -1,11 +1,11 @@
 import { memo, useRef, useMemo, useCallback, CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaAngleRight, FaFile } from 'react-icons/fa';
+import { FaAngleRight, FaFile, FaTimes } from 'react-icons/fa';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
 import useContextMenu from '../hooks/useContextMenu';
-import { primaryTextColor } from '../colors';
+import { dangerColor, primaryTextColor } from '../colors';
 
 function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, dragging }: {
   path: string,
@@ -45,7 +45,7 @@ function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, 
     transform: CSS.Transform.toString(sortable.transform),
     transition: sortable.transition,
     background: isSelected ? 'var(--gray-7)' : undefined,
-    cursor: dragging ? 'grabbing' : 'pointer',
+    cursor: dragging ? 'grabbing' : 'default',
     fontSize: 13,
     padding: '3px 6px',
     display: 'flex',
@@ -69,7 +69,11 @@ function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, 
       <div style={{ flexBasis: 4, flexShrink: 0 }} />
       <div style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>{index + 1}. {name}</div>
       <div style={{ flexGrow: 1 }} />
-      {isOpen && <FaAngleRight size={14} style={{ color: 'var(--gray-9)', marginRight: -5, flexShrink: 0 }} />}
+      {isOpen ? (
+        <FaAngleRight style={{ color: 'var(--gray-9)', fontSize: '.9em', marginRight: '-.3em', flexShrink: 0 }} />
+      ) : (
+        onDelete && <FaTimes style={{ color: dangerColor, fontSize: '.9em', marginRight: '-.3em', flexShrink: 0, cursor: 'pointer', padding: '.3em' }} role="button" onClick={() => onDelete(path)} />
+      )}
     </div>
   );
 }
