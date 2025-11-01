@@ -191,7 +191,7 @@ function ConcatSheet({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFil
       title={t('Merge/concatenate files')}
       onClosePress={onHide}
       renderButton={() => (
-        <Button className={simpleMode ? 'export-animation' : undefined} disabled={detectedFileFormat == null || !isOutFileNameValid} onClick={onConcatClick} style={{ fontSize: '1.3em', padding: '0 .3em', marginLeft: '1em', background: primaryColor, color: 'white', border: 'none' }}>
+        <Button className={simpleMode ? 'export-animation' : undefined} disabled={detectedFileFormat == null || !isOutFileNameValid || outFileName == null} onClick={onConcatClick} style={{ fontSize: '1.3em', padding: '0 .3em', marginLeft: '1em', background: primaryColor, color: 'white', border: 'none' }}>
           <AiOutlineMergeCells style={{ fontSize: '1.4em', verticalAlign: 'middle' }} /> {t('Merge!')}
         </Button>
       )}
@@ -247,7 +247,7 @@ function ConcatSheet({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFil
         )}
 
         <div style={{ marginBottom: '.3em' }}>{t('Output file name')}:</div>
-        <TextInput style={{ width: '100%', fontSize: '1.2em', padding: '.1em .3em', marginBottom: '.7em' }} value={outFileName || ''} onChange={(e) => setOutFileName(e.target.value)} />
+        <TextInput style={{ width: '100%', fontSize: '1.2em', padding: '.1em .3em', marginBottom: '.7em' }} value={outFileName ?? ''} onChange={(e) => setOutFileName(e.target.value)} />
 
         {isOutFileNameTooLong && (
           <Alert text={t('File name is too long and cannot be exported.')} />
