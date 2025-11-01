@@ -44,7 +44,7 @@ function ConcatSheet({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFil
   maxLabelLength: number,
 }) {
   const { t } = useTranslation();
-  const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, safeOutputFileName, customOutDir } = useUserSettings();
+  const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, safeOutputFileName, customOutDir, simpleMode } = useUserSettings();
 
   const [includeAllStreams, setIncludeAllStreams] = useState(false);
   const [fileMeta, setFileMeta] = useState<{ format: FFprobeFormat, streams: FFprobeStream[], chapters: FFprobeChapter[] }>();
@@ -191,7 +191,7 @@ function ConcatSheet({ isShown, onHide, paths, onConcat, alwaysConcatMultipleFil
       title={t('Merge/concatenate files')}
       onClosePress={onHide}
       renderButton={() => (
-        <Button className="export-animation" disabled={detectedFileFormat == null || !isOutFileNameValid} onClick={onConcatClick} style={{ fontSize: '1.3em', padding: '0 .3em', marginLeft: '1em', background: primaryColor, color: 'white', border: 'none' }}>
+        <Button className={simpleMode ? 'export-animation' : undefined} disabled={detectedFileFormat == null || !isOutFileNameValid} onClick={onConcatClick} style={{ fontSize: '1.3em', padding: '0 .3em', marginLeft: '1em', background: primaryColor, color: 'white', border: 'none' }}>
           <AiOutlineMergeCells style={{ fontSize: '1.4em', verticalAlign: 'middle' }} /> {t('Merge!')}
         </Button>
       )}

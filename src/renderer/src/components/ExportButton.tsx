@@ -18,7 +18,7 @@ function ExportButton({ segmentsToExport, areWeCutting, onClick, size = 1 }: {
 
   const { t } = useTranslation();
 
-  const { autoMerge } = useUserSettings();
+  const { autoMerge, simpleMode } = useUserSettings();
 
   let title = t('Export');
   if (segmentsToExport.length === 1) {
@@ -31,7 +31,7 @@ function ExportButton({ segmentsToExport, areWeCutting, onClick, size = 1 }: {
 
   return (
     <div
-      className="export-animation"
+      className={simpleMode ? 'export-animation' : undefined}
       style={{ cursor: 'pointer', background: primaryColor, color: 'white', borderRadius: size * 5, paddingTop: size * 1, paddingBottom: size * 2.5, paddingLeft: size * 7, paddingRight: size * 7, fontSize: size * 13, whiteSpace: 'nowrap' }}
       onClick={onClick}
       title={title}

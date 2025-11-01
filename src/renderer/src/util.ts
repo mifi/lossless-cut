@@ -11,7 +11,6 @@ import isDev from './isDev';
 import { ffmpegExtractWindow } from './util/constants';
 import { appName } from '../../main/common';
 import { Html5ifyMode } from '../../../types';
-import { prefersReducedMotion } from './animations';
 import getSwal from './swal';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
@@ -491,8 +490,6 @@ export const mediaSourceQualities = ['HD', 'SD', 'OG']; // OG is original
 export const splitKeyboardKeys = (keys: string) => keys.split('+');
 
 export function shootConfetti(options?: confetti.Options) {
-  if (prefersReducedMotion()) return;
-
   confetti({
     particleCount: 30,
     angle: 110,

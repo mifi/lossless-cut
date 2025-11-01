@@ -1136,7 +1136,7 @@ function App() {
         openCutFinishedDialog({ filePath: revealPath, warnings, notices });
       }
 
-      shootConfetti({ ticks: 50 });
+      if (simpleMode && !prefersReducedMotion) shootConfetti({ ticks: 50 });
 
       if (cleanupChoices.cleanupAfterExport) await cleanupFilesWithDialog();
 
@@ -1171,7 +1171,7 @@ function App() {
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [filePath, numStreamsToCopy, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, cutMultiple, outputDir, customOutDir, fileFormat, fileDuration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, segmentsToExport, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, hideAllNotifications, cleanupChoices.cleanupAfterExport, cleanupFilesWithDialog, segmentsOrInverse.selected, t, mergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateMergedFileNames, concatCutSegments, autoDeleteMergedSegments, tryDeleteFiles, nonCopiedExtraStreams, extractStreams, showOsNotification, openCutFinishedDialog, handleExportFailed]);
+  }, [filePath, numStreamsToCopy, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, outSegTemplateOrDefault, generateOutSegFileNames, cutMultiple, outputDir, customOutDir, fileFormat, fileDuration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, segmentsToExport, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, hideAllNotifications, simpleMode, prefersReducedMotion, cleanupChoices.cleanupAfterExport, cleanupFilesWithDialog, segmentsOrInverse.selected, t, mergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateMergedFileNames, concatCutSegments, autoDeleteMergedSegments, tryDeleteFiles, nonCopiedExtraStreams, extractStreams, showOsNotification, openCutFinishedDialog, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath) return;
@@ -1199,13 +1199,13 @@ function App() {
           ? await captureFrameFromFfmpeg({ customOutDir, filePath, time: currentTime, captureFormat, quality: captureFrameQuality })
           : await captureFrameFromTag({ customOutDir, filePath, time: currentTime, captureFormat, quality: captureFrameQuality, video });
 
-        shootConfetti();
+        if (simpleMode && !prefersReducedMotion) shootConfetti();
         if (!hideAllNotifications) openExportFinishedDialog({ filePath: outPath, children: `${i18n.t('Screenshot captured to:')} ${outPath}` });
       }, i18n.t('Failed to capture frame'));
     } finally {
       setWorking(undefined);
     }
-  }, [filePath, workingRef, setWorking, withErrorHandling, getRelevantTime, videoRef, usingPreviewFile, captureFrameMethod, captureFrameFromFfmpeg, customOutDir, captureFormat, captureFrameQuality, captureFrameFromTag, hideAllNotifications, openExportFinishedDialog]);
+  }, [filePath, workingRef, setWorking, withErrorHandling, getRelevantTime, videoRef, usingPreviewFile, captureFrameMethod, captureFrameFromFfmpeg, customOutDir, captureFormat, captureFrameQuality, captureFrameFromTag, simpleMode, prefersReducedMotion, hideAllNotifications, openExportFinishedDialog]);
 
   const extractSegmentsFramesAsImages = useCallback(async (segments: SegmentBase[]) => {
     if (!filePath || detectedFps == null || workingRef.current || segments.length === 0) return;

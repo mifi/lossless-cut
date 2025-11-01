@@ -36,7 +36,7 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
   onDrop: DragEventHandler<HTMLDivElement>,
 }) {
   const { t } = useTranslation();
-  const { springAnimation } = useUserSettings();
+  const { springAnimation, simpleMode } = useUserSettings();
 
   const [sortDesc, setSortDesc] = useState<boolean>();
   const [draggingId, setDraggingId] = useState<UniqueIdentifier | undefined>();
@@ -94,7 +94,7 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
         <div style={{ flexGrow: 1 }} />
         <FaHatWizard role="button" title={`${t('Convert to supported format')}...`} style={iconStyle} onClick={onBatchConvertToSupportedFormatClick} />
         <SortIcon role="button" title={t('Sort items')} style={iconStyle} onClick={onSortClick} />
-        <AiOutlineMergeCells className="export-animation" role="button" title={`${t('Merge/concatenate files')}...`} style={{ ...iconStyle, color: 'white', background: primaryColor, borderRadius: '.5em' }} onClick={onMergeFilesClick} />
+        <AiOutlineMergeCells className={simpleMode ? 'export-animation' : undefined} role="button" title={`${t('Merge/concatenate files')}...`} style={{ ...iconStyle, color: 'white', background: primaryColor, borderRadius: '.5em' }} onClick={onMergeFilesClick} />
         <FaTimes role="button" title={t('Close batch')} style={{ ...iconStyle, color: 'var(--gray-11)' }} onClick={closeBatch} />
       </div>
 
