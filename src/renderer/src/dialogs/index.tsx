@@ -13,6 +13,7 @@ import Checkbox from '../components/Checkbox';
 import { isWindows, showItemInFolder } from '../util';
 import { ParseTimecode } from '../types';
 import { FindKeyframeMode } from '../ffmpeg';
+import { dangerColor } from '../colors';
 
 const remote = window.require('@electron/remote');
 const { dialog } = remote;
@@ -100,7 +101,7 @@ export async function askForFileOpenAction(inputOptions: Record<string, string>)
         ))}
 
         <button type="button" onClick={() => onClick()} className="button-unstyled" style={{ display: 'block', marginTop: '.5em' }}>
-          <FaArrowRight style={{ color: 'var(--red-11)' }} /> {i18n.t('Cancel')}
+          <FaArrowRight style={{ color: dangerColor, verticalAlign: 'middle' }} /> {i18n.t('Cancel')}
         </button>
 
       </div>

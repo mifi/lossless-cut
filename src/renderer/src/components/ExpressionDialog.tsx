@@ -6,6 +6,7 @@ import { DialogButton } from './Button';
 import TextInput from './TextInput';
 import { useGenericDialogContext } from './GenericDialog';
 import { ButtonRow } from './Dialog';
+import { dangerColor } from '../colors';
 
 
 interface Props {
@@ -73,11 +74,11 @@ const ExpressionDialog = forwardRef<HTMLDivElement, Props>(({ onSubmit, examples
           placeholder={t('Enter JavaScript expression')}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          style={{ margin: '1em 0', width: '100%', boxSizing: 'border-box' }}
+          style={{ margin: '1em 0', padding: '1em', width: '100%', boxSizing: 'border-box', fontFamily: 'monospace' }}
         />
 
         {error != null && (
-          <div style={{ color: 'var(--red-9)', fontWeight: 'bold' }}>
+          <div style={{ color: dangerColor, fontWeight: 'bold' }}>
             {error}
           </div>
         )}

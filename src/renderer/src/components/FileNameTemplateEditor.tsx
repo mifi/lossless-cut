@@ -14,6 +14,7 @@ import Select from './Select';
 import TextInput from './TextInput';
 import Button from './Button';
 import * as Dialog from './Dialog';
+import { dangerColor } from '../colors';
 
 const electron = window.require('electron');
 
@@ -188,7 +189,7 @@ function FileNameTemplateEditor(opts: {
                   </Dialog.Root>
                 )}
 
-                <Button title={t('Reset')} onClick={reset} style={{ marginLeft: '.3em' }}><FaUndo style={{ fontSize: '.8em', color: 'var(--red-11)' }} /></Button>
+                <Button title={t('Reset')} onClick={reset} style={{ marginLeft: '.3em' }}><FaUndo style={{ fontSize: '.8em', color: dangerColor }} /></Button>
                 {!haveImportantMessage && (
                   <Button title={t('Close')} onClick={onHideClick} style={{ marginLeft: '.3em' }}><FaCheck style={{ fontSize: '.8em' }} /></Button>
                 )}
@@ -224,7 +225,7 @@ function FileNameTemplateEditor(opts: {
 
         {problems.error != null ? (
           <div style={{ marginBottom: '1em', fontSize: '.9em' }}>
-            <FaExclamationTriangle color="var(--red-9)" style={{ verticalAlign: 'middle', fontSize: '1.1em' }} /> {problems.error}
+            <FaExclamationTriangle color={dangerColor} style={{ verticalAlign: 'middle', fontSize: '1.1em' }} /> {problems.error}
           </div>
         ) : (
           <>

@@ -1,4 +1,5 @@
 export const saveColor = 'var(--green-11)';
+export const dangerColor = 'var(--red-11)';
 export const primaryColor = 'var(--cyan-9)';
 export const primaryTextColor = 'var(--cyan-11)';
 export const controlsBackground = 'var(--gray-4)';

@@ -6,15 +6,14 @@ import { primaryTextColor } from '../colors';
 import useUserSettings from '../hooks/useUserSettings';
 
 
-function SimpleModeButton({ size = 20, style }: { size?: number, style: CSSProperties }) {
+function SimpleModeButton({ style }: { style?: CSSProperties } = {}) {
   const { t } = useTranslation();
   const { simpleMode, toggleSimpleMode } = useUserSettings();
 
   return (
     <FaBaby
       title={t('Toggle advanced view')}
-      size={size}
-      style={{ color: simpleMode ? primaryTextColor : 'var(--gray-12)', ...style }}
+      style={{ fontSize: '1.2em', color: simpleMode ? primaryTextColor : 'var(--gray-12)', ...style }}
       onClick={toggleSimpleMode}
     />
   );

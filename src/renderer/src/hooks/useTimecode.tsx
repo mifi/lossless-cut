@@ -11,6 +11,7 @@ import * as AlertDialog from '../components/AlertDialog';
 import TextInput from '../components/TextInput';
 import { ButtonRow } from '../components/Dialog';
 import { DialogButton } from '../components/Button';
+import { dangerColor } from '../colors';
 
 
 export default ({ detectedFps, timecodeFormat, showGenericDialog }: {
@@ -119,7 +120,7 @@ export default ({ detectedFps, timecodeFormat, showGenericDialog }: {
             />
 
             {error != null && (
-              <div style={{ color: 'var(--red-9)', fontWeight: 'bold' }}>
+              <div style={{ color: dangerColor, fontWeight: 'bold' }}>
                 {error}
               </div>
             )}
