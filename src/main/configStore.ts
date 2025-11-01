@@ -108,7 +108,7 @@ const defaults: Config = {
   askBeforeClose: false,
   enableAskForImportChapters: true,
   enableAskForFileOpenAction: true,
-  playbackVolume: 1,
+  playbackVolume: 0.3, // so that we don't shock new users with loud volume
   autoSaveProjectFile: true,
   wheelSensitivity: 0.2,
   waveformHeight: 40,
