@@ -83,7 +83,7 @@ export interface InverseCutSegment extends DefiniteSegmentBase {
 }
 
 
-export type PlaybackMode = 'loop-segment-start-end' | 'loop-segment' | 'play-segment-once' | 'loop-selected-segments';
+export type PlaybackMode = 'loop-segment-start-end' | 'loop-segment' | 'play-segment-once' | 'play-selected-segments' | 'loop-selected-segments';
 
 export type EdlFileType = 'llc' | 'csv' | 'csv-frames' | 'cutlist' | 'xmeml' | 'fcpxml' | 'dv-analyzer-summary-txt' | 'cue' | 'pbf' | 'edl' | 'srt' | 'otio';
 

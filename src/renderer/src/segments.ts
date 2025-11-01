@@ -257,6 +257,7 @@ export function getPlaybackAction({ playbackMode, currentTime, playingSegment }:
       break;
     }
 
+    case 'play-selected-segments':
     case 'loop-selected-segments': {
       if (currentTime >= playingSegment.end) {
         return { nextSegment: true };

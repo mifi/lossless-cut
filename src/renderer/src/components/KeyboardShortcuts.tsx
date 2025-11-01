@@ -262,8 +262,12 @@ const KeyboardShortcuts = memo(({
         name: t('Loop beginning and end of current segment'),
         category: selectivePlaybackCategory,
       },
-      toggleLoopSelectedSegments: {
+      togglePlaySelectedSegments: {
         name: t('Play selected segments in order'),
+        category: selectivePlaybackCategory,
+      },
+      toggleLoopSelectedSegments: {
+        name: t('Loop selected segments in order'),
         category: selectivePlaybackCategory,
       },
 

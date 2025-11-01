@@ -721,7 +721,7 @@ function App() {
       const isSomeSegmentAtCursor = selectedSegmentAtCursor != null && commandedTimeRef.current != null && selectedSegmentAtCursor.end != null && selectedSegmentAtCursor.end - commandedTimeRef.current > 0.1;
       if (!isSomeSegmentAtCursor) { // if a segment is already at cursor, don't do anything
         // if no segment at cursor, and looping playback mode, continue looping
-        if (playbackModeRef.current === 'loop-selected-segments') {
+        if (playbackModeRef.current === 'play-selected-segments' || playbackModeRef.current === 'loop-selected-segments') {
           const firstSelectedSegment = selectedSegmentsWithoutMarkers[0];
           if (firstSelectedSegment != null) {
             const index = cutSegments.findIndex((segment) => segment.segId === firstSelectedSegment.segId);
@@ -751,6 +751,11 @@ function App() {
     if (playbackMode != null && playingSegment && playingSegment.end != null) { // todo and is currently playing?
       const nextAction = getPlaybackAction({ playbackMode, currentTime, playingSegment: { start: playingSegment.start, end: playingSegment.end } });
 
+      const exit = () => {
+        playbackModeRef.current = undefined;
+        pause();
+      };
+
       if (nextAction != null) {
         console.log(nextAction);
         if (nextAction.nextSegment) {
@@ -758,7 +763,11 @@ function App() {
 
           const index = selectedSegmentsWithoutMarkers.findIndex((selectedSegment) => selectedSegment.segId === playingSegment.segId);
           let newIndex = getNewJumpIndex(index >= 0 ? index : 0, 1);
-          if (newIndex > selectedSegmentsWithoutMarkers.length - 1) newIndex = 0; // have reached end of last segment, start over
+          if (newIndex > selectedSegmentsWithoutMarkers.length - 1) {
+            // have reached end of last segment
+            if (playbackMode === 'loop-selected-segments') newIndex = 0; // start over
+            else if (playbackMode === 'play-selected-segments') exit();
+          }
           const nextSelectedSegment = selectedSegmentsWithoutMarkers[newIndex];
           if (nextSelectedSegment != null) {
             seekAbs(nextSelectedSegment.start);
@@ -769,8 +778,7 @@ function App() {
           seekAbs(nextAction.seekTo);
         }
         if (nextAction.exit) {
-          playbackModeRef.current = undefined;
-          pause();
+          exit();
         }
       }
     }
@@ -1829,6 +1837,7 @@ function App() {
     setConcatSheetOpen(true);
   }, [batchFiles.length, openFilesDialog]);
 
+  const togglePlaySelectedSegments = useCallback(() => togglePlay({ resetPlaybackRate: true, requestPlaybackMode: 'play-selected-segments' }), [togglePlay]);
   const toggleLoopSelectedSegments = useCallback(() => togglePlay({ resetPlaybackRate: true, requestPlaybackMode: 'loop-selected-segments' }), [togglePlay]);
 
   const copySegmentsToClipboard = useCallback(async () => {
@@ -1920,6 +1929,7 @@ function App() {
       togglePlayOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, requestPlaybackMode: 'play-segment-once' }),
       toggleLoopOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, requestPlaybackMode: 'loop-segment' }),
       toggleLoopStartEndOnlyCurrentSegment: () => togglePlay({ resetPlaybackRate: true, requestPlaybackMode: 'loop-segment-start-end' }),
+      togglePlaySelectedSegments,
       toggleLoopSelectedSegments,
       play: () => play(),
       pause,
@@ -2053,7 +2063,7 @@ function App() {
     };
 
     return ret;
-  }, [toggleLoopSelectedSegments, pause, timelineToggleComfortZoom, captureSnapshot, captureSnapshotAsCoverArt, setCutStart, setCutEnd, cleanupFilesDialog, splitCurrentSegment, focusSegmentAtCursor, selectSegmentsAtCursor, increaseRotation, goToTimecode, jumpCutStart, jumpCutEnd, jumpTimelineStart, jumpTimelineEnd, batchOpenSelectedFile, closeBatch, addSegment, duplicateCurrentSegment, onExportPress, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, reorderSegsByStartTime, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, createFixedDurationSegments, createNumSegments, createFixedByteSizedSegments, createRandomSegments, alignSegmentTimesToKeyframes, shuffleSegments, clearSegments, toggleSegmentsList, toggleStreamsSelector, extractAllStreams, convertFormatBatch, concatBatch, toggleCaptureFormat, toggleStripAudio, toggleStripVideo, toggleStripSubtitle, toggleStripThumbnail, toggleStripAll, toggleDarkMode, askStartTimeOffset, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, editCurrentSegmentTags, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, tryFixInvalidDuration, shiftAllSegmentTimes, toggleMuted, copySegmentsToClipboard, handleShowStreamsSelectorClick, openFilesDialog, openDirDialog, toggleSettings, readAllKeyframes, createSegmentsFromKeyframes, toggleWaveformMode, toggleShowThumbnails, toggleShowKeyframes, showIncludeExternalStreamsDialog, toggleFullscreenVideo, selectAllMarkers, checkFileOpened, cutSegments, seekRel, keyboardSeekAccFactor, togglePlay, play, userChangePlaybackRate, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, seekRelPercent, seekClosestKeyframe, shortStep, jumpSeg, zoomRel, batchFileJump, removeSegment, currentSegIndexSafe, cutSegmentsHistory, labelSegment, toggleLastCommands, userHtml5ifyCurrentFile, toggleKeyframeCut, applyEnabledStreamsFilter, setPlaybackVolume, commandedTimeRef, closeFileWithConfirm, openSendReportDialogWithState, detectBlackScenes, detectSilentScenes, detectSceneChanges]);
+  }, [togglePlaySelectedSegments, toggleLoopSelectedSegments, pause, timelineToggleComfortZoom, captureSnapshot, captureSnapshotAsCoverArt, setCutStart, setCutEnd, cleanupFilesDialog, splitCurrentSegment, focusSegmentAtCursor, selectSegmentsAtCursor, increaseRotation, jumpCutStart, jumpCutEnd, jumpTimelineStart, jumpTimelineEnd, batchOpenSelectedFile, closeBatch, addSegment, duplicateCurrentSegment, onExportPress, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, reorderSegsByStartTime, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, createFixedDurationSegments, createNumSegments, createFixedByteSizedSegments, createRandomSegments, alignSegmentTimesToKeyframes, shuffleSegments, clearSegments, toggleSegmentsList, toggleStreamsSelector, extractAllStreams, convertFormatBatch, concatBatch, toggleCaptureFormat, toggleStripAudio, toggleStripVideo, toggleStripSubtitle, toggleStripThumbnail, toggleStripAll, toggleDarkMode, askStartTimeOffset, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, editCurrentSegmentTags, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, tryFixInvalidDuration, shiftAllSegmentTimes, toggleMuted, copySegmentsToClipboard, handleShowStreamsSelectorClick, openFilesDialog, openDirDialog, toggleSettings, readAllKeyframes, createSegmentsFromKeyframes, toggleWaveformMode, toggleShowThumbnails, toggleShowKeyframes, showIncludeExternalStreamsDialog, toggleFullscreenVideo, selectAllMarkers, checkFileOpened, cutSegments, seekRel, keyboardSeekAccFactor, togglePlay, play, userChangePlaybackRate, goToTimecode, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, seekRelPercent, seekClosestKeyframe, shortStep, jumpSeg, zoomRel, batchFileJump, removeSegment, currentSegIndexSafe, cutSegmentsHistory, labelSegment, toggleLastCommands, userHtml5ifyCurrentFile, toggleKeyframeCut, applyEnabledStreamsFilter, setPlaybackVolume, commandedTimeRef, closeFileWithConfirm, openSendReportDialogWithState, detectBlackScenes, detectSilentScenes, detectSceneChanges]);
 
   const getKeyboardAction = useCallback((action: MainKeyboardAction) => mainActions[action], [mainActions]);
 
