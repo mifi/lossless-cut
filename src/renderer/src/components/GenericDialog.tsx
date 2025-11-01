@@ -1,10 +1,13 @@
 import React, { MouseEventHandler, ReactNode, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
+import { FaCheckCircle, FaInfoCircle } from 'react-icons/fa';
 
 import * as Dialog from './Dialog';
 import * as AlertDialog from './AlertDialog';
 import { DialogButton } from './Button';
+import { showItemInFolder } from '../util';
+import { ListItem, Notices, OutputIncorrectSeeHelpMenu, UnorderedList, Warnings } from '../dialogs';
 
 
 export interface GenericDialogParams {
@@ -56,7 +59,9 @@ export default function GenericDialog({ dialog, onOpenChange }: {
       <Dialog.Portal>
         <Dialog.Overlay />
 
-        {dialog?.content}
+        <GenericDialogContext.Provider value={context}>
+          {dialog?.content}
+        </GenericDialogContext.Provider>
       </Dialog.Portal>
     </Dialog.Root>
   );
@@ -120,10 +125,89 @@ export function useDialog() {
     });
   }), [showGenericDialog, t]);
 
+  const openExportFinishedDialog = useCallback(async ({ filePath, children, width = '30em' }: { filePath: string, children: ReactNode, width?: string }) => {
+    const response = await new Promise<boolean>((resolve) => {
+      function ExportFinishedDialog() {
+        const { onOpenChange } = useGenericDialogContext();
+
+        const handleConfirmClick = useCallback<MouseEventHandler<HTMLButtonElement>>((e) => {
+          e.preventDefault();
+          resolve(true);
+          onOpenChange(false);
+        }, [onOpenChange]);
+
+        return (
+          <Dialog.Content aria-describedby={undefined} style={{ width }}>
+            <Dialog.Title>{t('Success!')}</Dialog.Title>
+
+            {children}
+
+            <Dialog.ButtonRow>
+              <Dialog.Close asChild>
+                <DialogButton>{t('Close')}</DialogButton>
+              </Dialog.Close>
+
+              <DialogButton primary onClick={handleConfirmClick}>{t('Show')}</DialogButton>
+            </Dialog.ButtonRow>
+          </Dialog.Content>
+        );
+      }
+
+      showGenericDialog({
+        content: <ExportFinishedDialog />,
+        onClose: () => resolve(false),
+      });
+    });
+
+    if (response) {
+      showItemInFolder(filePath);
+    }
+  }, [showGenericDialog, t]);
+
+  const openCutFinishedDialog = useCallback(async ({ filePath, warnings, notices }: { filePath: string, warnings: string[], notices: string[] }) => {
+    const hasWarnings = warnings.length > 0;
+
+    // https://github.com/mifi/lossless-cut/issues/2048
+    await openExportFinishedDialog({
+      filePath,
+      width: '60em',
+      children: (
+        <UnorderedList>
+          <ListItem icon={<FaCheckCircle />} iconColor={hasWarnings ? 'var(--orange-8)' : 'var(--green-11)'} style={{ fontWeight: 'bold' }}>{hasWarnings ? t('Export finished with warning(s)', { count: warnings.length }) : t('Export is done!')}</ListItem>
+          <ListItem icon={<FaInfoCircle />}>{t('Please test the output file in your desired player/editor before you delete the source file.')}</ListItem>
+          <OutputIncorrectSeeHelpMenu />
+          <Notices notices={notices} />
+          <Warnings warnings={warnings} />
+        </UnorderedList>
+      ),
+    });
+  }, [openExportFinishedDialog, t]);
+
+  const openConcatFinishedDialog = useCallback(async ({ filePath, warnings, notices }: { filePath: string, warnings: string[], notices: string[] }) => {
+    const hasWarnings = warnings.length > 0;
+
+    await openExportFinishedDialog({
+      filePath,
+      width: '60em',
+      children: (
+        <UnorderedList>
+          <ListItem icon={<FaCheckCircle />} iconColor={hasWarnings ? 'warning' : 'success'} style={{ fontWeight: 'bold' }}>{hasWarnings ? t('Files merged with warning(s)', { count: warnings.length }) : t('Files merged!')}</ListItem>
+          <ListItem icon={<FaInfoCircle />}>{t('Please test the output files in your desired player/editor before you delete the source files.')}</ListItem>
+          <OutputIncorrectSeeHelpMenu />
+          <Notices notices={notices} />
+          <Warnings warnings={warnings} />
+        </UnorderedList>
+      ),
+    });
+  }, [openExportFinishedDialog, t]);
+
   return {
     genericDialog,
     closeGenericDialog,
     showGenericDialog,
     confirmDialog,
+    openExportFinishedDialog,
+    openCutFinishedDialog,
+    openConcatFinishedDialog,
   };
 }

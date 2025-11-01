@@ -1,16 +1,15 @@
 import { CSSProperties, ReactNode, useState } from 'react';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
-import type { SweetAlertOptions } from 'sweetalert2';
 import invariant from 'tiny-invariant';
-import { FaArrowRight, FaCheckCircle, FaExclamationTriangle, FaInfoCircle, FaQuestionCircle } from 'react-icons/fa';
+import { FaArrowRight, FaExclamationTriangle, FaInfoCircle, FaQuestionCircle } from 'react-icons/fa';
 
 import { formatDuration } from '../util/duration';
-import Swal, { ReactSwal, swalToastOptions, toast } from '../swal';
+import Swal, { ReactSwal } from '../swal';
 import { parseYouTube } from '../edlFormats';
 import CopyClipboardButton from '../components/CopyClipboardButton';
 import Checkbox from '../components/Checkbox';
-import { isWindows, showItemInFolder } from '../util';
+import { isWindows } from '../util';
 import { ParseTimecode } from '../types';
 import { FindKeyframeMode } from '../ffmpeg';
 import { dangerColor } from '../colors';
@@ -549,73 +548,25 @@ export async function selectSegmentsByLabelDialog(currentName?: string | undefin
   return value;
 }
 
-export async function openDirToast({ filePath, text, html, ...props }: SweetAlertOptions & { filePath: string }) {
-  const swal = text ? toast : ReactSwal;
-
-  // @ts-expect-error todo
-  const { value } = await swal.fire<string>({
-    ...swalToastOptions,
-    showConfirmButton: true,
-    confirmButtonText: i18n.t('Show'),
-    showCancelButton: true,
-    cancelButtonText: i18n.t('Close'),
-    text,
-    html,
-    ...props,
-  });
-  if (value) showItemInFolder(filePath);
-}
-
-const UnorderedList = ({ children }: { children: ReactNode }) => (
+export const UnorderedList = ({ children }: { children: ReactNode }) => (
   <ul style={{ paddingLeft: '1em' }}>{children}</ul>
 );
-const ListItem = ({ icon, iconColor, children, style }: { icon: ReactNode, iconColor?: string, children: ReactNode, style?: CSSProperties }) => (
+export const ListItem = ({ icon, iconColor, children, style }: { icon: ReactNode, iconColor?: string, children: ReactNode, style?: CSSProperties }) => (
   <li style={{ listStyle: 'none', color: iconColor, ...style }}>
     <span style={{ fontSize: '.8em', marginRight: '.3em' }}>{icon}</span>
     {children}
   </li>
 );
 
-const Notices = ({ notices }: { notices: string[] }) => notices.map((msg) => (
+export const Notices = ({ notices }: { notices: string[] }) => notices.map((msg) => (
   <ListItem key={msg} icon={<FaInfoCircle />} iconColor="var(--blue-9)">{msg}</ListItem>
 ));
-const Warnings = ({ warnings }: { warnings: string[] }) => warnings.map((msg) => (
+export const Warnings = ({ warnings }: { warnings: string[] }) => warnings.map((msg) => (
   <ListItem key={msg} icon={<FaExclamationTriangle />} iconColor="var(--orange-8)">{msg}</ListItem>
 ));
-const OutputIncorrectSeeHelpMenu = () => (
+export const OutputIncorrectSeeHelpMenu = () => (
   <ListItem icon={<FaQuestionCircle />}>{i18n.t('If output does not look right, see the Help menu.')}</ListItem>
 );
-
-export async function openExportFinishedToast({ filePath, warnings, notices }: { filePath: string, warnings: string[], notices: string[] }) {
-  const hasWarnings = warnings.length > 0;
-  const html = (
-    <UnorderedList>
-      <ListItem icon={<FaCheckCircle />} iconColor={hasWarnings ? 'var(--orange-8)' : 'var(--green-11)'} style={{ fontWeight: 'bold' }}>{hasWarnings ? i18n.t('Export finished with warning(s)', { count: warnings.length }) : i18n.t('Export is done!')}</ListItem>
-      <ListItem icon={<FaInfoCircle />}>{i18n.t('Please test the output file in your desired player/editor before you delete the source file.')}</ListItem>
-      <OutputIncorrectSeeHelpMenu />
-      <Notices notices={notices} />
-      <Warnings warnings={warnings} />
-    </UnorderedList>
-  );
-
-  // https://github.com/mifi/lossless-cut/issues/2048
-  await openDirToast({ filePath, html, width: 800, position: 'center', timer: undefined });
-}
-
-export async function openConcatFinishedToast({ filePath, warnings, notices }: { filePath: string, warnings: string[], notices: string[] }) {
-  const hasWarnings = warnings.length > 0;
-  const html = (
-    <UnorderedList>
-      <ListItem icon={<FaCheckCircle />} iconColor={hasWarnings ? 'warning' : 'success'} style={{ fontWeight: 'bold' }}>{hasWarnings ? i18n.t('Files merged with warning(s)', { count: warnings.length }) : i18n.t('Files merged!')}</ListItem>
-      <ListItem icon={<FaInfoCircle />}>{i18n.t('Please test the output files in your desired player/editor before you delete the source files.')}</ListItem>
-      <OutputIncorrectSeeHelpMenu />
-      <Notices notices={notices} />
-      <Warnings warnings={warnings} />
-    </UnorderedList>
-  );
-
-  await openDirToast({ filePath, html, width: 800, position: 'center', timer: 30000 });
-}
 
 export async function askForPlaybackRate({ detectedFps, outputPlaybackRate }: { detectedFps: number | undefined, outputPlaybackRate: number }) {
   const fps = detectedFps || 1;

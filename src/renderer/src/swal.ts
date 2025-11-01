@@ -33,7 +33,7 @@ const Swal = SwalRaw.mixin({
 
 export default Swal;
 
-export const swalToastOptions: SweetAlertOptions = {
+const swalToastOptions: SweetAlertOptions = {
   ...commonSwalOptions,
   toast: true,
   width: '50vw',
