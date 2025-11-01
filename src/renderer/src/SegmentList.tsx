@@ -9,7 +9,6 @@ import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { CSS } from '@dnd-kit/utilities';
 
-import Swal from './swal';
 import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
 import { saveColor, controlsBackground, primaryTextColor, darkModeTransition } from './colors';
@@ -20,6 +19,7 @@ import { ContextMenuTemplate, DefiniteSegmentBase, FormatTimecode, GetFrameCount
 import { UseSegments } from './hooks/useSegments';
 import * as Dialog from './components/Dialog';
 import { DialogButton } from './components/Button';
+import getSwal from './swal';
 
 
 const buttonBaseStyle = {
@@ -377,7 +377,7 @@ function SegmentList({
 
   const onReorderSegs = useCallback(async (index: number) => {
     if (cutSegments.length < 2) return;
-    const { value } = await Swal.fire({
+    const { value } = await getSwal().Swal.fire({
       title: `${t('Change order of segment')} ${index + 1}`,
       text: t('Please enter a number from 1 to {{n}} to be the new order for the current segment', { n: cutSegments.length }),
       input: 'text',

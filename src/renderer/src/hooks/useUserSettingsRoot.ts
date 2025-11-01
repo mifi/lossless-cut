@@ -6,7 +6,7 @@ import { Config } from '../../../../types';
 
 import { errorToast } from '../swal';
 import isDev from '../isDev';
-import { mySpring, setPrefersReducedMotion } from '../animations';
+import { mySpring, emitter as animationsEmitter } from '../animations';
 
 const { configStore } = window.require('@electron/remote').require('./index.js');
 const { systemPreferences } = window.require('@electron/remote');
@@ -210,7 +210,7 @@ export default function useUserSettingsRoot() {
   }, [reducedMotion]);
 
   useEffect(() => {
-    setPrefersReducedMotion(prefersReducedMotion);
+    animationsEmitter.emit('reducedMotion', prefersReducedMotion);
   }, [prefersReducedMotion]);
 
   const springAnimation = useMemo<Transition>(() => (prefersReducedMotion ? { duration: 0 } : mySpring), [prefersReducedMotion]);

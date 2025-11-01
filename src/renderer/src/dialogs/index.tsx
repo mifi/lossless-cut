@@ -5,7 +5,6 @@ import invariant from 'tiny-invariant';
 import { FaArrowRight, FaExclamationTriangle, FaInfoCircle, FaQuestionCircle } from 'react-icons/fa';
 
 import { formatDuration } from '../util/duration';
-import Swal, { ReactSwal } from '../swal';
 import { parseYouTube } from '../edlFormats';
 import CopyClipboardButton from '../components/CopyClipboardButton';
 import Checkbox from '../components/Checkbox';
@@ -13,6 +12,7 @@ import { isWindows } from '../util';
 import { ParseTimecode } from '../types';
 import { FindKeyframeMode } from '../ffmpeg';
 import { dangerColor } from '../colors';
+import getSwal from '../swal';
 
 const remote = window.require('@electron/remote');
 const { dialog } = remote;
@@ -30,7 +30,7 @@ export const showOpenDialog = async ({
 
 export async function askForYouTubeInput() {
   const example = i18n.t('YouTube video description\n00:00 Intro\n00:01 Chapter 2\n00:00:02.123 Chapter 3');
-  const { value } = await Swal.fire({
+  const { value } = await getSwal().Swal.fire({
     title: i18n.t('Import text chapters / YouTube'),
     input: 'textarea',
     inputPlaceholder: example,
@@ -85,10 +85,10 @@ export async function askForFileOpenAction(inputOptions: Record<string, string>)
   let value;
   function onClick(key?: string) {
     value = key;
-    Swal.close();
+    getSwal().Swal.close();
   }
 
-  const swal = ReactSwal.fire({
+  const swal = getSwal().Swal.fire({
     html: (
       <div style={{ textAlign: 'left' }}>
         <div style={{ marginBottom: '1em' }}>{i18n.t('You opened a new file. What do you want to do?')}</div>
@@ -116,35 +116,35 @@ export async function askForFileOpenAction(inputOptions: Record<string, string>)
 }
 
 export async function showDiskFull() {
-  await Swal.fire({
+  await getSwal().Swal.fire({
     icon: 'error',
     text: i18n.t('You ran out of space'),
   });
 }
 
 export async function showMuxNotSupported() {
-  await Swal.fire({
+  await getSwal().Swal.fire({
     icon: 'error',
     text: i18n.t('At least one codec is not supported by the selected output file format. Try another output format or try to disable one or more tracks.'),
   });
 }
 
 export async function showOutputNotWritable() {
-  await Swal.fire({
+  await getSwal().Swal.fire({
     icon: 'error',
     text: i18n.t('You are not allowed to write the output file. This probably means that the file already exists with the wrong permissions, or you don\'t have write permissions to the output folder.'),
   });
 }
 
 export async function showRefuseToOverwrite() {
-  await Swal.fire({
+  await getSwal().Swal.fire({
     icon: 'warning',
     text: i18n.t('Output file already exists, refusing to overwrite. You can turn on overwriting in settings.'),
   });
 }
 
 export async function askForImportChapters() {
-  const { isConfirmed } = await Swal.fire({
+  const { isConfirmed } = await getSwal().Swal.fire({
     icon: 'question',
     text: i18n.t('This file has embedded chapters. Do you want to import the chapters as cut-segments?'),
     showCancelButton: true,
@@ -158,7 +158,7 @@ export async function askForImportChapters() {
 const maxSegments = 1000;
 
 async function askForNumSegments() {
-  const { value } = await Swal.fire({
+  const { value } = await getSwal().Swal.fire({
     input: 'number',
     inputAttributes: {
       min: String(0),
@@ -195,7 +195,7 @@ export async function askForSegmentDuration({ totalDuration, inputPlaceholder, p
   inputPlaceholder: string,
   parseTimecode: ParseTimecode,
 }) {
-  const { value } = await Swal.fire({
+  const { value } = await getSwal().Swal.fire({
     input: 'text',
     showCancelButton: true,
     inputValue: inputPlaceholder,
@@ -233,7 +233,7 @@ async function askForSegmentsRandomDurationRange() {
     return { durationMin, durationMax, gapMin, gapMax };
   }
 
-  const { value } = await Swal.fire({
+  const { value } = await getSwal().Swal.fire({
     input: 'text',
     showCancelButton: true,
     inputValue: 'Duration 3 to 5, Gap 0 to 2',
@@ -251,7 +251,7 @@ async function askForSegmentsRandomDurationRange() {
 }
 
 async function askForSegmentsStartOrEnd(text: string) {
-  const { value } = await Swal.fire<string>({
+  const { value } = await getSwal().Swal.fire<string>({
     input: 'radio',
     showCancelButton: true,
     inputOptions: {
@@ -285,7 +285,7 @@ export async function askForShiftSegments({ inputPlaceholder, parseTimecode }: {
     return undefined;
   }
 
-  const { value } = await Swal.fire<string>({
+  const { value } = await getSwal().Swal.fire<string>({
     input: 'text',
     showCancelButton: true,
     inputValue: inputPlaceholder,
@@ -315,7 +315,7 @@ export async function askForAlignSegments() {
   const startOrEnd = await askForSegmentsStartOrEnd(i18n.t('Do you want to align the segment start or end timestamps to keyframes?'));
   if (startOrEnd == null) return undefined;
 
-  const { value: mode } = await Swal.fire<FindKeyframeMode>({
+  const { value: mode } = await getSwal().Swal.fire<FindKeyframeMode>({
     input: 'radio',
     showCancelButton: true,
     inputOptions: {
@@ -393,7 +393,7 @@ const CleanupChoices = ({ cleanupChoicesInitial, onChange: onChangeProp }: { cle
 export async function showCleanupFilesDialog(cleanupChoicesIn: CleanupChoicesType) {
   let cleanupChoices = cleanupChoicesIn;
 
-  const { value } = await ReactSwal.fire<string>({
+  const { value } = await getSwal().Swal.fire<string>({
     title: i18n.t('Cleanup files?'),
     html: <CleanupChoices cleanupChoicesInitial={cleanupChoices} onChange={(newChoices) => { cleanupChoices = newChoices; }} />,
     confirmButtonText: i18n.t('Confirm'),
@@ -422,7 +422,7 @@ export async function createFixedByteSixedSegments({ fileDuration, fileSize }: {
   fileDuration: number, fileSize: number,
 }) {
   const example = '100 MB';
-  const { value } = await Swal.fire({
+  const { value } = await getSwal().Swal.fire({
     input: 'text',
     showCancelButton: true,
     inputValue: example,
@@ -486,7 +486,7 @@ export async function showExportFailedDialog({ fileFormat, safeOutputFileName }:
     </div>
   );
 
-  const { value } = await ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
+  const { value } = await getSwal().Swal.fire({ title: i18n.t('Unable to export this file'), html, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
   return value;
 }
 
@@ -506,12 +506,12 @@ export async function showConcatFailedDialog({ fileFormat }: { fileFormat: strin
     </div>
   );
 
-  const { value } = await ReactSwal.fire({ title: i18n.t('Unable to merge files'), html, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
+  const { value } = await getSwal().Swal.fire({ title: i18n.t('Unable to merge files'), html, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
   return value;
 }
 
 export async function openYouTubeChaptersDialog(text: string) {
-  await ReactSwal.fire({
+  await getSwal().Swal.fire({
     showCloseButton: true,
     title: i18n.t('YouTube Chapters'),
     html: (
@@ -528,7 +528,7 @@ export async function openYouTubeChaptersDialog(text: string) {
 }
 
 export async function labelSegmentDialog({ currentName, maxLength }: { currentName: string, maxLength: number }) {
-  const { value } = await Swal.fire({
+  const { value } = await getSwal().Swal.fire({
     showCancelButton: true,
     title: i18n.t('Label current segment'),
     inputValue: currentName,
@@ -539,7 +539,7 @@ export async function labelSegmentDialog({ currentName, maxLength }: { currentNa
 }
 
 export async function selectSegmentsByLabelDialog(currentName?: string | undefined) {
-  const { value } = await Swal.fire({
+  const { value } = await getSwal().Swal.fire({
     showCancelButton: true,
     title: i18n.t('Select segments by label'),
     inputValue: currentName,
@@ -582,7 +582,7 @@ export async function askForPlaybackRate({ detectedFps, outputPlaybackRate }: { 
     return undefined;
   }
 
-  const { value, isConfirmed } = await Swal.fire<string>({
+  const { value, isConfirmed } = await getSwal().Swal.fire<string>({
     title: i18n.t('Change FPS'),
     input: 'text',
     inputValue: currentFps.toFixed(5),
@@ -601,7 +601,7 @@ export async function askForPlaybackRate({ detectedFps, outputPlaybackRate }: { 
 }
 
 export async function promptDownloadMediaUrl(outPath: string) {
-  const { value } = await Swal.fire<string>({
+  const { value } = await getSwal().Swal.fire<string>({
     title: i18n.t('Open media from URL'),
     input: 'text',
     inputPlaceholder: 'https://example.com/video.m3u8',

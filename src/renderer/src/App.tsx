@@ -76,7 +76,7 @@ import {
   isMasBuild,
   toastError,
 } from './util';
-import { toast, errorToast, showPlaybackFailedMessage } from './swal';
+import getSwal, { errorToast, showPlaybackFailedMessage } from './swal';
 import { adjustRate } from './util/rate-calculator';
 import { askExtractFramesAsImages } from './dialogs/extractFrames';
 import { askForOutDir, askForImportChapters, askForFileOpenAction, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, showOpenDialog, showMuxNotSupported, promptDownloadMediaUrl, CleanupChoicesType, showOutputNotWritable } from './dialogs';
@@ -237,7 +237,7 @@ function App() {
 
   const showNotification = useCallback((opts: SweetAlertOptions) => {
     if (!hideAllNotifications) {
-      toast.fire(opts);
+      getSwal().toast.fire(opts);
     }
   }, [hideAllNotifications]);
 
@@ -321,7 +321,7 @@ function App() {
 
   const checkFileOpened = useCallback(() => {
     if (isFileOpened) return true;
-    toast.fire({ icon: 'info', title: i18n.t('You need to open a media file first') });
+    getSwal().toast.fire({ icon: 'info', title: i18n.t('You need to open a media file first') });
     return false;
   }, [isFileOpened]);
 
@@ -1429,7 +1429,7 @@ function App() {
       } else if (isAudioDefinitelyNotSupported(fileMeta.streams)) {
         showNotification({ icon: 'info', text: i18n.t('The audio track is not supported while previewing. You can convert to a supported format from the menu') });
       } else if (!validDuration) {
-        toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
+        getSwal().toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
       }
 
       // This needs to be last, because it triggers <video> to load the video
@@ -2190,7 +2190,7 @@ function App() {
           setWorking(undefined);
         }
       } else if (error.code === PIPELINE_ERROR_READ) { // file is not readable or was removed
-        toast.fire({ icon: 'error', timer: 10000, text: i18n.t('Failed to read file. Perhaps it has been moved?') });
+        getSwal().toast.fire({ icon: 'error', timer: 10000, text: i18n.t('Failed to read file. Perhaps it has been moved?') });
       }
     } catch (err) {
       toastError(err);

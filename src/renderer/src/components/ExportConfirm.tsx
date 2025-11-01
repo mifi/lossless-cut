@@ -14,7 +14,7 @@ import Switch from './Switch';
 
 import { primaryTextColor } from '../colors';
 import { withBlur } from '../util';
-import { toast } from '../swal';
+import getSwal from '../swal';
 import { isMov as ffmpegIsMov } from '../util/streams';
 import useUserSettings from '../hooks/useUserSettings';
 import styles from './ExportConfirm.module.css';
@@ -197,59 +197,59 @@ function ExportConfirm({
     separate: t('Export each segment to a separate file'),
   })[effectiveExportMode], [effectiveExportMode, t]);
 
-  const showHelpText = useCallback(({ icon = 'info', timer = 10000, text }: { icon?: SweetAlertIcon, timer?: number, text: string }) => toast.fire({ icon, timer, text }), []);
+  const showHelpText = useCallback(({ icon = 'info', timer = 10000, text }: { icon?: SweetAlertIcon, timer?: number, text: string }) => getSwal().toast.fire({ icon, timer, text }), []);
 
   const onPreserveChaptersPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Whether to preserve chapters from source file.') });
-  }, []);
+    showHelpText({ text: i18n.t('Whether to preserve chapters from source file.') });
+  }, [showHelpText]);
 
   const onPreserveMovDataHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Preserve all MOV/MP4 metadata tags (e.g. EXIF, GPS position etc.) from source file? Note that some players have trouble playing back files where all metadata is preserved, like iTunes and other Apple software') });
-  }, []);
+    showHelpText({ text: i18n.t('Preserve all MOV/MP4 metadata tags (e.g. EXIF, GPS position etc.) from source file? Note that some players have trouble playing back files where all metadata is preserved, like iTunes and other Apple software') });
+  }, [showHelpText]);
 
   const onPreserveMetadataHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied') });
-  }, []);
+    showHelpText({ text: i18n.t('Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied') });
+  }, [showHelpText]);
 
   const onMovFastStartHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Enabling this will allow faster playback of the exported file. This makes processing use 3 times as much export I/O, which is negligible for small files but might slow down exporting of large files.') });
-  }, []);
+    showHelpText({ text: i18n.t('Enabling this will allow faster playback of the exported file. This makes processing use 3 times as much export I/O, which is negligible for small files but might slow down exporting of large files.') });
+  }, [showHelpText]);
 
   const onOutFmtHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Defaults to same format as input file. You can losslessly change the file format (container) of the file with this option. Not all formats support all codecs. Matroska/MP4/MOV support the most common codecs. Sometimes it\'s even impossible to export to the same output format as input.') });
-  }, []);
+    showHelpText({ text: i18n.t('Defaults to same format as input file. You can losslessly change the file format (container) of the file with this option. Not all formats support all codecs. Matroska/MP4/MOV support the most common codecs. Sometimes it\'s even impossible to export to the same output format as input.') });
+  }, [showHelpText]);
 
   const onKeyframeCutHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('With "keyframe cut", we will cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files. With "Normal cut" you may have to manually set the cutpoint a few frames before the next keyframe to achieve a precise cut') });
-  }, []);
+    showHelpText({ text: i18n.t('With "keyframe cut", we will cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files. With "Normal cut" you may have to manually set the cutpoint a few frames before the next keyframe to achieve a precise cut') });
+  }, [showHelpText]);
 
   const onSmartCutHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('This experimental feature will re-encode the part of the video from the cutpoint until the next keyframe in order to attempt to make a 100% accurate cut. Only works on some files. I\'ve had success with some h264 files, and only a few h265 files. See more here: {{url}}', { url: 'https://github.com/mifi/lossless-cut/issues/126' }) });
-  }, []);
+    showHelpText({ text: i18n.t('This experimental feature will re-encode the part of the video from the cutpoint until the next keyframe in order to attempt to make a 100% accurate cut. Only works on some files. I\'ve had success with some h264 files, and only a few h265 files. See more here: {{url}}', { url: 'https://github.com/mifi/lossless-cut/issues/126' }) });
+  }, [showHelpText]);
 
   const onTracksHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('Not all formats support all track types, and LosslessCut is unable to properly cut some track types, so you may have to sacrifice some tracks by disabling them in order to get correct result.') });
-  }, []);
+    showHelpText({ text: i18n.t('Not all formats support all track types, and LosslessCut is unable to properly cut some track types, so you may have to sacrifice some tracks by disabling them in order to get correct result.') });
+  }, [showHelpText]);
 
   const onSegmentsToChaptersHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('When merging, do you want to create chapters in the merged file, according to the cut segments? NOTE: This may dramatically increase processing time') });
-  }, []);
+    showHelpText({ text: i18n.t('When merging, do you want to create chapters in the merged file, according to the cut segments? NOTE: This may dramatically increase processing time') });
+  }, [showHelpText]);
 
   const onPreserveMetadataOnMergeHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('When merging, do you want to preserve metadata from your original file? NOTE: This may dramatically increase processing time') });
-  }, []);
+    showHelpText({ text: i18n.t('When merging, do you want to preserve metadata from your original file? NOTE: This may dramatically increase processing time') });
+  }, [showHelpText]);
 
   const onOutSegTemplateHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('You can customize the file name of the output segment(s) using special variables.', { count: segmentsToExport.length }) });
-  }, [segmentsToExport.length]);
+    showHelpText({ text: i18n.t('You can customize the file name of the output segment(s) using special variables.', { count: segmentsToExport.length }) });
+  }, [segmentsToExport.length, showHelpText]);
 
   const onMergedFileTemplateHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('You can customize the file name of the merged file using special variables.') });
-  }, []);
+    showHelpText({ text: i18n.t('You can customize the file name of the merged file using special variables.') });
+  }, [showHelpText]);
 
   const onExportModeHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: exportModeDescription });
-  }, [exportModeDescription]);
+    showHelpText({ text: exportModeDescription });
+  }, [exportModeDescription, showHelpText]);
 
   const onAvoidNegativeTsHelpPress = useCallback(() => {
     // https://ffmpeg.org/ffmpeg-all.html#Format-Options
@@ -260,16 +260,16 @@ function ExportConfirm({
       auto: i18n.t('Enables shifting when required by the target format.'),
       disabled: i18n.t('Disables shifting of timestamp.'),
     };
-    toast.fire({ icon: 'info', timer: 10000, text: `${avoidNegativeTs}: ${texts[avoidNegativeTs]}` });
-  }, [avoidNegativeTs]);
+    showHelpText({ text: `${avoidNegativeTs}: ${texts[avoidNegativeTs]}` });
+  }, [avoidNegativeTs, showHelpText]);
 
   const onCutFromAdjustmentFramesHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: i18n.t('This option allows you to shift all segment start times forward by one or more frames before cutting. This can be useful if the output video starts from the wrong (preceding) keyframe.') });
-  }, []);
+    showHelpText({ text: i18n.t('This option allows you to shift all segment start times forward by one or more frames before cutting. This can be useful if the output video starts from the wrong (preceding) keyframe.') });
+  }, [showHelpText]);
 
   const onFfmpegExperimentalHelpPress = useCallback(() => {
-    toast.fire({ icon: 'info', timer: 10000, text: t('Enable experimental ffmpeg features flag?') });
-  }, [t]);
+    showHelpText({ text: t('Enable experimental ffmpeg features flag?') });
+  }, [showHelpText, t]);
 
   const canEditSegTemplate = !willMerge || !autoDeleteMergedSegments;
 

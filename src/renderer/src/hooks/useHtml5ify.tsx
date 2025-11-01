@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Html5ifyMode } from '../../../../types';
 import { DirectoryAccessDeclinedError } from '../../errors';
-import { toast } from '../swal';
+import getSwal from '../swal';
 import Checkbox from '../components/Checkbox';
 import { getSuffixedOutPath, html5dummySuffix, html5ifiedPrefix } from '../util';
 import { SetWorking } from './useLoading';
@@ -229,7 +229,7 @@ export default function useHtml5ify({ filePath, hasVideo, hasAudio, workingRef, 
           setTotalProgress();
         }
 
-        if (failedFiles.length > 0) toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}`, timer: undefined, showConfirmButton: true });
+        if (failedFiles.length > 0) getSwal().toast.fire({ title: `${i18n.t('Failed to convert files:')} ${failedFiles.join(' ')}`, timer: undefined, showConfirmButton: true });
       }, i18n.t('Failed to batch convert to supported format'));
     } finally {
       setWorking(undefined);

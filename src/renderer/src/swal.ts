@@ -1,55 +1,68 @@
 import SwalRaw from 'sweetalert2/dist/sweetalert2.js';
 import type { SweetAlertOptions } from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
+import withReactContent, { ReactSweetAlert, SweetAlert2 } from 'sweetalert2-react-content';
 
 import i18n from './i18n';
-import { prefersReducedMotion } from './animations';
+import { emitter as animationsEmitter } from './animations';
+
 
 export const swalContainerWrapperId = 'swal2-container-wrapper';
 
-let commonSwalOptions: SweetAlertOptions = {
-  target: `#${swalContainerWrapperId}`,
-};
+let Swal: typeof SwalRaw;
+let toast: typeof SwalRaw;
+let ReactSwal: SweetAlert2 & ReactSweetAlert;
 
-if (prefersReducedMotion()) {
-  commonSwalOptions = {
-    ...commonSwalOptions,
-    showClass: {
-      popup: '',
-      backdrop: '',
-      icon: '',
-    },
-    hideClass: {
-      popup: '',
-      backdrop: '',
-      icon: '',
-    },
+function initSwal(reducedMotion = false) {
+  const commonSwalOptions: SweetAlertOptions = {
+    target: `#${swalContainerWrapperId}`,
+    ...(reducedMotion && {
+      showClass: {
+        popup: '',
+        backdrop: '',
+        icon: '',
+      },
+      hideClass: {
+        popup: '',
+        backdrop: '',
+        icon: '',
+      },
+    }),
   };
+
+  Swal = SwalRaw.mixin({
+    ...commonSwalOptions,
+  });
+
+  toast = Swal.mixin({
+    ...commonSwalOptions,
+    toast: true,
+    width: '50vw',
+    position: 'top',
+    showConfirmButton: false,
+    showCloseButton: true,
+    timer: 5000,
+    timerProgressBar: true,
+    didOpen: (self) => {
+      self.addEventListener('mouseenter', Swal.stopTimer);
+      self.addEventListener('mouseleave', Swal.resumeTimer);
+    },
+    reverseButtons: true,
+  });
+
+  ReactSwal = withReactContent(Swal);
 }
 
-const Swal = SwalRaw.mixin({
-  ...commonSwalOptions,
-});
+animationsEmitter.on('reducedMotion', (reducedMotion) => initSwal(reducedMotion));
 
-export default Swal;
+initSwal();
 
-const swalToastOptions: SweetAlertOptions = {
-  ...commonSwalOptions,
-  toast: true,
-  width: '50vw',
-  position: 'top',
-  showConfirmButton: false,
-  showCloseButton: true,
-  timer: 5000,
-  timerProgressBar: true,
-  didOpen: (self) => {
-    self.addEventListener('mouseenter', Swal.stopTimer);
-    self.addEventListener('mouseleave', Swal.resumeTimer);
-  },
-  reverseButtons: true,
-};
-
-export const toast = Swal.mixin(swalToastOptions);
+export default function getSwal() {
+  return {
+    Swal,
+    ReactSwal,
+    toast,
+  };
+}
 
 export const errorToast = (text: string) => toast.fire({
   icon: 'error',
@@ -57,5 +70,3 @@ export const errorToast = (text: string) => toast.fire({
 });
 
 export const showPlaybackFailedMessage = () => errorToast(i18n.t('Unable to playback this file. Try to convert to supported format from the menu'));
-
-export const ReactSwal = withReactContent(Swal);

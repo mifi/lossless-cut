@@ -1,11 +1,11 @@
 import i18n from 'i18next';
 
-import Swal from '../swal';
+import getSwal from '../swal';
 
 
 // eslint-disable-next-line import/prefer-default-export
 export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps }: { segmentsNumFrames: number, plural: boolean, fps: number }) {
-  const { value: captureChoice } = await Swal.fire<string>({
+  const { value: captureChoice } = await getSwal().Swal.fire<string>({
     text: i18n.t(plural ? 'Extract frames of the selected segments as images' : 'Extract frames of the current segment as images'),
     icon: 'question',
     input: 'radio',
@@ -27,7 +27,7 @@ export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps 
   let estimatedMaxNumFiles = segmentsNumFrames;
 
   if (captureChoice === 'thumbnailFilter') {
-    const { value } = await Swal.fire({
+    const { value } = await getSwal().Swal.fire({
       text: i18n.t('Capture the best image every nth second'),
       icon: 'question',
       input: 'text',
@@ -46,7 +46,7 @@ export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps 
   if (captureChoice === 'selectNthSec' || captureChoice === 'selectNthFrame') {
     let nthFrame: number;
     if (captureChoice === 'selectNthFrame') {
-      const { value } = await Swal.fire({
+      const { value } = await getSwal().Swal.fire({
         text: i18n.t('Capture exactly one image every nth frame'),
         icon: 'question',
         input: 'number',
@@ -59,7 +59,7 @@ export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps 
       if (Number.isNaN(intervalFrames) || intervalFrames < 1) return undefined;
       nthFrame = intervalFrames;
     } else {
-      const { value } = await Swal.fire({
+      const { value } = await getSwal().Swal.fire({
         text: i18n.t('Capture exactly one image every nth second'),
         icon: 'question',
         input: 'text',
@@ -77,7 +77,7 @@ export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps 
     estimatedMaxNumFiles = Math.round(segmentsNumFrames / nthFrame);
   }
   if (captureChoice === 'selectScene') {
-    const { value } = await Swal.fire({
+    const { value } = await getSwal().Swal.fire({
       text: i18n.t('Capture frames that differ the most from the previous frame'),
       icon: 'question',
       input: 'text',
@@ -97,7 +97,7 @@ export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps 
   estimatedMaxNumFiles += 1; // just to be sure
 
   if (estimatedMaxNumFiles > 1000) {
-    const { isConfirmed } = await Swal.fire({
+    const { isConfirmed } = await getSwal().Swal.fire({
       icon: 'warning',
       text: i18n.t('Note that depending on input parameters, up to {{estimatedMaxNumFiles}} files may be produced!', { estimatedMaxNumFiles }),
       showCancelButton: true,

@@ -1,9 +1,9 @@
 import ky from 'ky';
 
 import { runFfmpegStartupCheck, getFfmpegPath } from './ffmpeg';
-import Swal from './swal';
 import isDev from './isDev';
 import { openSendReportDialog } from './reporting';
+import getSwal from './swal';
 
 
 export async function loadMifiLink() {
@@ -23,7 +23,7 @@ export async function runStartupCheck({ customFfPath }: { customFfPath: string |
   } catch (err) {
     if (err instanceof Error) {
       if (!customFfPath && 'code' in err && typeof err.code === 'string' && ['EPERM', 'EACCES'].includes(err.code)) {
-        Swal.fire({
+        getSwal().Swal.fire({
           icon: 'error',
           title: 'Fatal: ffmpeg not accessible',
           text: `Got ${err.code}. This probably means that anti-virus is blocking execution of ffmpeg. Please make sure the following file exists and is executable:\n\n${getFfmpegPath()}\n\nSee this issue: https://github.com/mifi/lossless-cut/issues/1114`,
@@ -32,7 +32,7 @@ export async function runStartupCheck({ customFfPath }: { customFfPath: string |
       }
 
       if (customFfPath && 'code' in err && err.code === 'ENOENT') {
-        Swal.fire({
+        getSwal().Swal.fire({
           icon: 'error',
           title: 'Fatal: ffmpeg not found',
           text: `Make sure that ffmpeg executable exists: ${getFfmpegPath()}`,

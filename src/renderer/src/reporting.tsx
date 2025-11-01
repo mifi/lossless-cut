@@ -3,7 +3,7 @@ import { Trans } from 'react-i18next';
 
 import CopyClipboardButton from './components/CopyClipboardButton';
 import { isStoreBuild, isMasBuild, isWindowsStoreBuild, isExecaError, appVersion } from './util';
-import { ReactSwal } from './swal';
+import getSwal from './swal';
 
 const electron = window.require('electron');
 
@@ -68,7 +68,7 @@ export function openSendReportDialog({ err, message, state }: {
 
   const text = lines.join('\n');
 
-  ReactSwal.fire({
+  getSwal().ReactSwal.fire({
     showCloseButton: true,
     title: i18n.t('Send problem report'),
     showConfirmButton: false,

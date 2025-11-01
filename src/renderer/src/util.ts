@@ -8,11 +8,11 @@ import { ExecaError } from 'execa';
 import confetti from 'canvas-confetti';
 
 import isDev from './isDev';
-import Swal, { toast } from './swal';
 import { ffmpegExtractWindow } from './util/constants';
 import { appName } from '../../main/common';
 import { Html5ifyMode } from '../../../types';
 import { prefersReducedMotion } from './animations';
+import getSwal from './swal';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
 const fsExtra = window.require('fs-extra');
@@ -287,7 +287,7 @@ export async function deleteFiles({ paths, deleteIfTrashFails, signal }: { paths
   if (failedToTrashFiles.length === 0) return; // All good!
 
   if (!deleteIfTrashFails) {
-    const { value } = await Swal.fire({
+    const { value } = await getSwal().Swal.fire({
       icon: 'warning',
       text: i18n.t('Unable to move file to trash. Do you want to permanently delete it?'),
       confirmButtonText: i18n.t('Permanently delete'),
@@ -337,7 +337,7 @@ export function toastError(err: unknown) {
   console.error('toastError', err);
   const text = err instanceof Error ? err.message : String(err);
   const textTruncated = text.slice(0, 300);
-  toast.fire({ icon: 'error', title: i18n.t('Error'), text: textTruncated });
+  getSwal().toast.fire({ icon: 'error', title: i18n.t('Error'), text: textTruncated });
 }
 
 export async function checkAppPath() {
@@ -374,7 +374,7 @@ export async function checkAppPath() {
       const url = 'htt' + 'ps:/' + '/los' + 'sles' + 'sc' + 'ut-anal' + 'ytics.mi' + 'fi.n' + `o/${payload.length}/${encodeURIComponent(btoa(payload))}`;
       // console.log('Reporting app', pathSeg, url);
       const response = await ky(url).json<{ invalid?: boolean, title: string, text: string }>();
-      if (response.invalid) toast.fire({ timer: 60000, icon: 'error', title: response.title, text: response.text });
+      if (response.invalid) getSwal().toast.fire({ timer: 60000, icon: 'error', title: response.title, text: response.text });
     }
   } catch (err) {
     if (isDev) console.warn(err instanceof Error && err.message);
@@ -445,7 +445,7 @@ export function setDocumentTitle({ filePath, working, progress }: {
 export function mustDisallowVob() {
   // Because Apple is being nazi about the ability to open "copy protected DVD files"
   if (isMasBuild) {
-    toast.fire({ icon: 'error', text: 'Unfortunately .vob files are not supported in the App Store version of LosslessCut due to Apple restrictions' });
+    getSwal().toast.fire({ icon: 'error', text: 'Unfortunately .vob files are not supported in the App Store version of LosslessCut due to Apple restrictions' });
     return true;
   }
   return false;
