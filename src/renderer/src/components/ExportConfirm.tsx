@@ -193,8 +193,8 @@ function ExportConfirm({
   const exportModeDescription = useMemo(() => ({
     segments_to_chapters: t('Don\'t cut the file, but instead export an unmodified original which has chapters generated from segments'),
     merge: t('Auto merge segments to one file after export'),
-    'merge+separate': t('Auto merge segments to one file after export, but keep segments too'),
-    separate: t('Export to separate files'),
+    'merge+separate': t('Auto merge segments into one file after export, but keep exported per-segment files too'),
+    separate: t('Export each segment to a separate file'),
   })[effectiveExportMode], [effectiveExportMode, t]);
 
   const showHelpText = useCallback(({ icon = 'info', timer = 10000, text }: { icon?: SweetAlertIcon, timer?: number, text: string }) => toast.fire({ icon, timer, text }), []);
