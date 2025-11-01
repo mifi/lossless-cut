@@ -8,8 +8,8 @@ import { emitter as animationsEmitter } from './animations';
 
 export const swalContainerWrapperId = 'swal2-container-wrapper';
 
-let Swal: typeof SwalRaw;
-let toast: typeof SwalRaw;
+let Swal: SweetAlert2;
+let toast: SweetAlert2;
 let ReactSwal: SweetAlert2 & ReactSweetAlert;
 
 function initSwal(reducedMotion = false) {

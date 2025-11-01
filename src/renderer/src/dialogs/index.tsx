@@ -88,7 +88,7 @@ export async function askForFileOpenAction(inputOptions: Record<string, string>)
     getSwal().Swal.close();
   }
 
-  const swal = getSwal().Swal.fire({
+  const swal = getSwal().ReactSwal.fire({
     html: (
       <div style={{ textAlign: 'left' }}>
         <div style={{ marginBottom: '1em' }}>{i18n.t('You opened a new file. What do you want to do?')}</div>
@@ -393,7 +393,7 @@ const CleanupChoices = ({ cleanupChoicesInitial, onChange: onChangeProp }: { cle
 export async function showCleanupFilesDialog(cleanupChoicesIn: CleanupChoicesType) {
   let cleanupChoices = cleanupChoicesIn;
 
-  const { value } = await getSwal().Swal.fire<string>({
+  const { value } = await getSwal().ReactSwal.fire<string>({
     title: i18n.t('Cleanup files?'),
     html: <CleanupChoices cleanupChoicesInitial={cleanupChoices} onChange={(newChoices) => { cleanupChoices = newChoices; }} />,
     confirmButtonText: i18n.t('Confirm'),
@@ -486,7 +486,7 @@ export async function showExportFailedDialog({ fileFormat, safeOutputFileName }:
     </div>
   );
 
-  const { value } = await getSwal().Swal.fire({ title: i18n.t('Unable to export this file'), html, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
+  const { value } = await getSwal().ReactSwal.fire({ title: i18n.t('Unable to export this file'), html, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
   return value;
 }
 
@@ -506,12 +506,12 @@ export async function showConcatFailedDialog({ fileFormat }: { fileFormat: strin
     </div>
   );
 
-  const { value } = await getSwal().Swal.fire({ title: i18n.t('Unable to merge files'), html, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
+  const { value } = await getSwal().ReactSwal.fire({ title: i18n.t('Unable to merge files'), html, showConfirmButton: true, showCancelButton: true, cancelButtonText: i18n.t('OK'), confirmButtonText: i18n.t('Report'), reverseButtons: true, focusCancel: true });
   return value;
 }
 
 export async function openYouTubeChaptersDialog(text: string) {
-  await getSwal().Swal.fire({
+  await getSwal().ReactSwal.fire({
     showCloseButton: true,
     title: i18n.t('YouTube Chapters'),
     html: (
