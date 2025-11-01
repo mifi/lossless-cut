@@ -1,6 +1,6 @@
 import { memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence, MotionStyle } from 'framer-motion';
-import { FaTrashAlt } from 'react-icons/fa';
+import { FaSave, FaTrashAlt } from 'react-icons/fa';
 import Color from 'color';
 
 import useUserSettings from './hooks/useUserSettings';
@@ -91,7 +91,7 @@ function Segment({
   formatTimecode: FormatTimecode,
   invertCutSegments: boolean,
 }) {
-  const { darkMode, prefersReducedMotion, springAnimation } = useUserSettings();
+  const { darkMode, prefersReducedMotion, springAnimation, simpleMode } = useUserSettings();
   const { name } = seg;
 
   const border = useMemo(() => {
@@ -180,12 +180,19 @@ function Segment({
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
-            style={{ width: 16, height: 16, flexShrink: 1 }}
+            style={{ flexShrink: 1 }}
           >
-            <FaTrashAlt
-              style={{ width: '100%', color: 'var(--gray-12)' }}
-              size={16}
-            />
+            <FaTrashAlt style={{ display: 'block', width: '100%', minWidth: '.4em', color: 'white', marginRight: '.1em' }} />
+          </motion.div>
+        )}
+        {!invertCutSegments && simpleMode && (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            style={{ flexShrink: 1 }}
+          >
+            <FaSave style={{ display: 'block', width: '100%', minWidth: '.4em', color: 'white', marginRight: '.1em' }} />
           </motion.div>
         )}
       </AnimatePresence>

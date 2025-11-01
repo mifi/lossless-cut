@@ -42,9 +42,9 @@ function BetweenSegments({ start, end, fileDurationNonZero, invertCutSegments }:
       {effectiveExportMode !== 'segments_to_chapters' && (
         <>
           {invertCutSegments ? (
-            <FaSave style={{ color: saveColor }} size={16} />
+            <FaSave style={{ color: saveColor }} />
           ) : (
-            <FaTrashAlt style={{ color: 'var(--gray-10)' }} size={16} />
+            <FaTrashAlt style={{ color: 'var(--gray-10)' }} />
           )}
           <div style={{ flexGrow: 1, borderBottom: '1px dashed var(--gray-10)', marginLeft: 5, marginRight: 5 }} />
         </>
