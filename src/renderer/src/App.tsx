@@ -1039,13 +1039,14 @@ function App() {
 
       console.log('outSegTemplateOrDefault', outSegTemplateOrDefault);
 
-      const notices: string[] = [];
-      const warnings: string[] = [];
+      const notices = new Set<string>();
+      const warnings = new Set<string>();
 
       const { fileNames: outSegFileNames, problems: outSegProblems } = await generateOutSegFileNames(outSegTemplateOrDefault);
       if (outSegProblems.error != null) {
         console.warn('Output segments file name invalid, using default instead', outSegFileNames);
-        warnings.push(t('Fell back to default output file name'), outSegProblems.error);
+        warnings.add(t('Fell back to default output file name'));
+        warnings.add(outSegProblems.error);
       }
 
       // throw (() => { const err = new Error('test'); err.code = 'ENOENT'; return err; })();
@@ -1088,7 +1089,8 @@ function App() {
         const { fileNames, problems } = await generateMergedFileNames(mergedFileTemplateOrDefault);
         if (problems.error != null) {
           console.warn('Merged file name invalid, using default instead', fileNames[0]);
-          warnings.push(t('Fell back to default output file name'), problems.error);
+          warnings.add(t('Fell back to default output file name'));
+          warnings.add(problems.error);
         }
 
         const [fileName] = fileNames;
@@ -1113,35 +1115,35 @@ function App() {
         if (autoDeleteMergedSegments) await tryDeleteFiles(createdOutFiles);
       }
 
-      if (!enableOverwriteOutput) warnings.push(i18n.t('Overwrite output setting is disabled and some files might have been skipped.'));
+      if (!enableOverwriteOutput) warnings.add(i18n.t('Overwrite output setting is disabled and some files might have been skipped.'));
 
-      if (!exportConfirmEnabled) notices.push(i18n.t('Export options are not shown. You can enable export options by clicking the icon right next to the export button.'));
+      if (!exportConfirmEnabled) notices.add(i18n.t('Export options are not shown. You can enable export options by clicking the icon right next to the export button.'));
 
       invariant(mainFileFormatData != null);
       // https://github.com/mifi/lossless-cut/issues/329
-      if (isIphoneHevc(mainFileFormatData, mainStreams)) warnings.push(i18n.t('There is a known issue with cutting iPhone HEVC videos. The output file may not work in all players.'));
+      if (isIphoneHevc(mainFileFormatData, mainStreams)) warnings.add(i18n.t('There is a known issue with cutting iPhone HEVC videos. The output file may not work in all players.'));
 
       // https://github.com/mifi/lossless-cut/issues/280
-      if (!ffmpegExperimental && isProblematicAvc1(fileFormat, mainStreams)) warnings.push(i18n.t('There is a known problem with this file type, and the output might not be playable. You can work around this problem by enabling the "Experimental flag" under Settings.'));
+      if (!ffmpegExperimental && isProblematicAvc1(fileFormat, mainStreams)) warnings.add(i18n.t('There is a known problem with this file type, and the output might not be playable. You can work around this problem by enabling the "Experimental flag" under Settings.'));
 
       if (exportExtraStreams) {
         try {
           setProgress(undefined); // If extracting extra streams takes a long time, prevent loader from being stuck at 100%
           setWorking({ text: i18n.t('Extracting {{count}} unprocessable tracks', { count: nonCopiedExtraStreams.length }) });
           await extractStreams({ customOutDir, streams: nonCopiedExtraStreams });
-          notices.push(i18n.t('Unprocessable streams were exported as separate files.'));
+          notices.add(i18n.t('Unprocessable streams were exported as separate files.'));
         } catch (err) {
           console.error('Extra stream export failed', err);
-          warnings.push(i18n.t('Unable to export unprocessable streams.'));
+          warnings.add(i18n.t('Unable to export unprocessable streams.'));
         }
       }
 
-      if (areWeCutting) notices.push(i18n.t('Cutpoints may be inaccurate.'));
+      if (areWeCutting) notices.add(i18n.t('Cutpoints may be inaccurate.'));
 
       const revealPath = willMerge && mergedOutFilePath != null ? mergedOutFilePath : outFiles[0]!.path;
       if (!hideAllNotifications) {
         showOsNotification(i18n.t('Export finished'));
-        openCutFinishedDialog({ filePath: revealPath, warnings, notices });
+        openCutFinishedDialog({ filePath: revealPath, warnings: [...warnings], notices: [...notices] });
       }
 
       if (simpleMode && !prefersReducedMotion) shootConfetti({ ticks: 50 });
