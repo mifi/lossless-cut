@@ -57,6 +57,9 @@ function getFfPath(cmd: string) {
 }
 
 const getFfprobePath = () => getFfPath('ffprobe');
+/**
+ * ⚠️ Do not use directly when running ffmpeg, because we need to add certain options before running, like `LD_LIBRARY_PATH` on linux
+ */
 export const getFfmpegPath = () => getFfPath('ffmpeg');
 
 export function abortFfmpegs() {
@@ -654,7 +657,7 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
 
   logger.info(getFfCommandLine('ffmpeg', args));
 
-  return execa(getFfmpegPath(), args, { encoding: 'buffer', buffer: false, stderr: enableLog ? 'inherit' : 'pipe' });
+  return execa(getFfmpegPath(), args, getExecaOptions({ buffer: false, stderr: enableLog ? 'inherit' : 'pipe' }));
 }
 
 export async function downloadMediaUrl(url: string, outPath: string) {
@@ -671,5 +674,5 @@ export async function downloadMediaUrl(url: string, outPath: string) {
   await runFfmpegProcess(args);
 }
 
-// Don't pass complex objects over the bridge (process)
+// Don't pass complex objects over the bridge (the process), so just convert it to a promise
 export const runFfmpeg = async (...args: Parameters<typeof runFfmpegProcess>) => runFfmpegProcess(...args);
