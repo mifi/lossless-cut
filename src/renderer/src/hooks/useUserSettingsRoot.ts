@@ -109,10 +109,12 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ segmentsToChapters }), [segmentsToChapters]);
   const [simpleMode, setSimpleMode] = useState(safeGetConfigInitial('simpleMode'));
   useEffect(() => safeSetConfig({ simpleMode }), [simpleMode]);
-  const [outSegTemplate, setOutSegTemplate] = useState(safeGetConfigInitial('outSegTemplate'));
-  useEffect(() => safeSetConfig({ outSegTemplate }), [outSegTemplate]);
-  const [mergedFileTemplate, setMergedFileTemplate] = useState(safeGetConfigInitial('mergedFileTemplate'));
-  useEffect(() => safeSetConfig({ mergedFileTemplate }), [mergedFileTemplate]);
+  const [cutFileTemplate, setCutFileTemplate] = useState(safeGetConfigInitial('outSegTemplate'));
+  useEffect(() => safeSetConfig({ outSegTemplate: cutFileTemplate }), [cutFileTemplate]);
+  const [cutMergedFileTemplate, setCutMergedFileTemplate] = useState(safeGetConfigInitial('mergedFileTemplate'));
+  useEffect(() => safeSetConfig({ mergedFileTemplate: cutMergedFileTemplate }), [cutMergedFileTemplate]);
+  const [mergedFileTemplate, setMergedFileTemplate] = useState(safeGetConfigInitial('mergedFilesTemplate'));
+  useEffect(() => safeSetConfig({ mergedFilesTemplate: mergedFileTemplate }), [mergedFileTemplate]);
   const [keyboardSeekAccFactor, setKeyboardSeekAccFactor] = useState(safeGetConfigInitial('keyboardSeekAccFactor'));
   useEffect(() => safeSetConfig({ keyboardSeekAccFactor }), [keyboardSeekAccFactor]);
   const [keyboardNormalSeekSpeed, setKeyboardNormalSeekSpeed] = useState(safeGetConfigInitial('keyboardNormalSeekSpeed'));
@@ -246,7 +248,8 @@ export default function useUserSettingsRoot() {
     exportConfirmEnabled,
     segmentsToChapters,
     simpleMode,
-    outSegTemplate,
+    cutFileTemplate,
+    cutMergedFileTemplate,
     mergedFileTemplate,
     keyboardSeekAccFactor,
     keyboardNormalSeekSpeed,
@@ -318,7 +321,8 @@ export default function useUserSettingsRoot() {
     setExportConfirmEnabled,
     setSegmentsToChapters,
     setSimpleMode,
-    setOutSegTemplate,
+    setCutFileTemplate,
+    setCutMergedFileTemplate,
     setMergedFileTemplate,
     setKeyboardSeekAccFactor,
     setKeyboardNormalSeekSpeed,

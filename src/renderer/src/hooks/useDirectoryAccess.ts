@@ -21,7 +21,7 @@ const simulateMasBuild = false;
 
 const masMode = isMasBuild || simulateMasBuild;
 
-export default ({ setCustomOutDir }: { setCustomOutDir: (a: string | undefined) => void }) => {
+export default function useDirectoryAccess({ setCustomOutDir }: { setCustomOutDir: (a: string | undefined) => void }) {
   const ensureAccessToSourceDir = useCallback(async (inputPath: string) => {
     // Called if we need to read/write to the source file's directory (probably to read/write the project file)
     const inputFileDir = getFileDir(inputPath);
@@ -93,4 +93,6 @@ export default ({ setCustomOutDir }: { setCustomOutDir: (a: string | undefined) 
     ensureAccessToSourceDir,
     ensureWritableOutDir,
   };
-};
+}
+
+export type EnsureWritableOutDir = ReturnType<typeof useDirectoryAccess>['ensureWritableOutDir'];

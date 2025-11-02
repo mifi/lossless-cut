@@ -19,7 +19,7 @@ import { isMov as ffmpegIsMov } from '../util/streams';
 import useUserSettings from '../hooks/useUserSettings';
 import styles from './ExportConfirm.module.css';
 import { SegmentToExport } from '../types';
-import { defaultMergedFileTemplate, defaultOutSegTemplate, GenerateOutFileNames } from '../util/outputNameTemplate';
+import { defaultCutFileTemplate, defaultCutMergedFileTemplate, GenerateOutFileNames } from '../util/outputNameTemplate';
 import { FFprobeStream } from '../../../../ffprobe';
 import { AvoidNegativeTs, PreserveMetadata } from '../../../../types';
 import TextInput from './TextInput';
@@ -85,12 +85,10 @@ function ExportConfirm({
   numStreamsTotal,
   numStreamsToCopy,
   onShowStreamsSelectorClick,
-  outSegTemplate,
-  setOutSegTemplate,
-  mergedFileTemplate,
-  setMergedFileTemplate,
-  generateOutSegFileNames,
-  generateMergedFileNames,
+  cutFileTemplate,
+  cutMergedFileTemplate,
+  generateCutFileNames,
+  generateCutMergedFileNames,
   currentSegIndexSafe,
   segmentsOrInverse,
   mainCopiedThumbnailStreams,
@@ -114,12 +112,10 @@ function ExportConfirm({
   numStreamsTotal: number,
   numStreamsToCopy: number,
   onShowStreamsSelectorClick: () => void,
-  outSegTemplate: string,
-  setOutSegTemplate: (a: string) => void,
-  mergedFileTemplate: string,
-  setMergedFileTemplate: (a: string) => void,
-  generateOutSegFileNames: GenerateOutFileNames,
-  generateMergedFileNames: GenerateOutFileNames,
+  cutFileTemplate: string,
+  cutMergedFileTemplate: string,
+  generateCutFileNames: GenerateOutFileNames,
+  generateCutMergedFileNames: GenerateOutFileNames,
   currentSegIndexSafe: number,
   segmentsOrInverse: UseSegments['segmentsOrInverse'],
   mainCopiedThumbnailStreams: FFprobeStream[],
@@ -133,7 +129,7 @@ function ExportConfirm({
 }) {
   const { t } = useTranslation();
 
-  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames } = useUserSettings();
+  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate } = useUserSettings();
 
   const togglePreserveChapters = useCallback(() => setPreserveChapters((val) => !val), [setPreserveChapters]);
   const togglePreserveMovData = useCallback(() => setPreserveMovData((val) => !val), [setPreserveMovData]);
@@ -239,11 +235,11 @@ function ExportConfirm({
     showHelpText({ text: i18n.t('When merging, do you want to preserve metadata from your original file? NOTE: This may dramatically increase processing time') });
   }, [showHelpText]);
 
-  const onOutSegTemplateHelpPress = useCallback(() => {
+  const onCutFileTemplateHelpPress = useCallback(() => {
     showHelpText({ text: i18n.t('You can customize the file name of the output segment(s) using special variables.', { count: segmentsToExport.length }) });
   }, [segmentsToExport.length, showHelpText]);
 
-  const onMergedFileTemplateHelpPress = useCallback(() => {
+  const onCutMergedFileTemplateHelpPress = useCallback(() => {
     showHelpText({ text: i18n.t('You can customize the file name of the merged file using special variables.') });
   }, [showHelpText]);
 
@@ -377,10 +373,10 @@ function ExportConfirm({
           {canEditSegTemplate && (
             <tr>
               <td colSpan={2}>
-                <FileNameTemplateEditor template={outSegTemplate} setTemplate={setOutSegTemplate} defaultTemplate={defaultOutSegTemplate} generateFileNames={generateOutSegFileNames} currentSegIndexSafe={currentSegIndexSafe} />
+                <FileNameTemplateEditor mode="separate" template={cutFileTemplate} setTemplate={setCutFileTemplate} defaultTemplate={defaultCutFileTemplate} generateFileNames={generateCutFileNames} currentSegIndexSafe={currentSegIndexSafe} />
               </td>
               <td>
-                <HelpIcon onClick={onOutSegTemplateHelpPress} />
+                <HelpIcon onClick={onCutFileTemplateHelpPress} />
               </td>
             </tr>
           )}
@@ -388,10 +384,10 @@ function ExportConfirm({
           {willMerge && (
             <tr>
               <td colSpan={2}>
-                <FileNameTemplateEditor template={mergedFileTemplate} setTemplate={setMergedFileTemplate} defaultTemplate={defaultMergedFileTemplate} generateFileNames={generateMergedFileNames} mergeMode />
+                <FileNameTemplateEditor mode="merge-segments" template={cutMergedFileTemplate} setTemplate={setCutMergedFileTemplate} defaultTemplate={defaultCutMergedFileTemplate} generateFileNames={generateCutMergedFileNames} />
               </td>
               <td>
-                <HelpIcon onClick={onMergedFileTemplateHelpPress} />
+                <HelpIcon onClick={onCutMergedFileTemplateHelpPress} />
               </td>
             </tr>
           )}

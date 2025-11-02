@@ -77,6 +77,14 @@ async function pathExists(path: string) {
   }
 }
 
+export async function maybeMkdirOutDir({ outputDir, fileOutPath }: { outputDir: string, fileOutPath: string }) {
+  // cutFileNames might contain slashes and therefore might have a subdir(tree) that we need to mkdir
+  // https://github.com/mifi/lossless-cut/issues/1532
+  const actualOutputDir = dirname(fileOutPath);
+  if (actualOutputDir !== outputDir) await mkdir(actualOutputDir, { recursive: true });
+}
+
+
 function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, encCustomBitrate, appendFfmpegCommandLog }: {
   filePath: string | undefined,
   treatInputFileModifiedTimeAsStart: boolean,
@@ -482,12 +490,12 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   }, [appendFfmpegCommandLog, filePath]);
 
   const cutMultiple = useCallback(async ({
-    outputDir, customOutDir, segments: segmentsIn, outSegFileNames, fileDuration, rotation, detectedFps, onProgress: onTotalProgress, keyframeCut, copyFileStreams, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, chapters,
+    outputDir, customOutDir, segments: segmentsIn, cutFileNames, fileDuration, rotation, detectedFps, onProgress: onTotalProgress, keyframeCut, copyFileStreams, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, chapters,
   }: {
     outputDir: string,
     customOutDir: string | undefined,
     segments: SegmentToExport[],
-    outSegFileNames: string[],
+    cutFileNames: string[],
     fileDuration: number | undefined,
     rotation: number | undefined,
     detectedFps: number | undefined,
@@ -529,14 +537,11 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       const onProgress = (progress: number) => onSingleProgress(i, progress / 2);
       const onConcatProgress = (progress: number) => onSingleProgress(i, (1 + progress) / 2);
 
-      const finalOutPath = join(outputDir, outSegFileNames[i]!);
+      const finalOutPath = join(outputDir, cutFileNames[i]!);
 
       if (await shouldSkipExistingFile(finalOutPath)) return { path: finalOutPath, created: false };
 
-      // outSegFileNames might contain slashes and therefore might have a subdir(tree) that we need to mkdir
-      // https://github.com/mifi/lossless-cut/issues/1532
-      const actualOutputDir = dirname(finalOutPath);
-      if (actualOutputDir !== outputDir) await mkdir(actualOutputDir, { recursive: true });
+      await maybeMkdirOutDir({ outputDir, fileOutPath: finalOutPath });
 
       if (!isEncoding) {
         // simple lossless cut
@@ -649,7 +654,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     } finally {
       if (chaptersPath) await tryDeleteFiles([chaptersPath]);
     }
-  }, [shouldSkipExistingFile, isEncoding, filePath, losslessCutSingle, cutEncodeSmartPart, encCustomBitrate, lossyMode, concatFiles]);
+  }, [shouldSkipExistingFile, isEncoding, filePath, lossyMode, losslessCutSingle, cutEncodeSmartPart, encCustomBitrate, concatFiles]);
 
   const concatCutSegments = useCallback(async ({ customOutDir, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapterNames, preserveMetadataOnMerge, mergedOutFilePath }: {
     customOutDir: string | undefined,

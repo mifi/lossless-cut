@@ -138,14 +138,12 @@ function TopMenu({
         {customOutDir ? t('Working dir set') : t('Working dir unset')}
       </Button>
 
+      {renderOutFmt(outFmtStyle)}
+
+      {!simpleMode && (isCustomFormatSelected || outFormatLocked) && renderFormatLock()}
+
       {filePath && (
-        <>
-          {renderOutFmt(outFmtStyle)}
-
-          {!simpleMode && (isCustomFormatSelected || outFormatLocked) && renderFormatLock()}
-
-          <ExportModeButton selectedSegments={selectedSegments} style={exportModeStyle} />
-        </>
+        <ExportModeButton selectedSegments={selectedSegments} style={exportModeStyle} />
       )}
 
       {!simpleMode && (

@@ -468,6 +468,7 @@ const DifferentFileSuggestion = () => <li><Trans>Try with a <b>Different file</b
 const HelpSuggestion = () => <li><Trans>See <b>Help</b></Trans> menu</li>;
 const ErrorReportSuggestion = () => <li><Trans>If nothing helps, you can send an <b>Error report</b></Trans></li>;
 
+// todo Dialog component
 export async function showExportFailedDialog({ fileFormat, safeOutputFileName }: { fileFormat: string | undefined, safeOutputFileName: boolean }) {
   const html = (
     <div style={{ textAlign: 'left' }}>
@@ -490,6 +491,7 @@ export async function showExportFailedDialog({ fileFormat, safeOutputFileName }:
   return value;
 }
 
+// todo Dialog component
 export async function showConcatFailedDialog({ fileFormat }: { fileFormat: string | undefined }) {
   const html = (
     <div style={{ textAlign: 'left' }}>

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaCheck, FaEdit, FaExclamationTriangle, FaFile, FaUndo } from 'react-icons/fa';
 
 import HighlightedText from './HighlightedText';
-import { segNumVariable, segSuffixVariable, GenerateOutFileNames, extVariable, segTagsVariable, segNumIntVariable, selectedSegNumVariable, selectedSegNumIntVariable } from '../util/outputNameTemplate';
+import { segNumVariable, segSuffixVariable, GenerateOutFileNames, extVariable, segTagsVariable, segNumIntVariable, selectedSegNumVariable, selectedSegNumIntVariable, GeneratedOutFileNames } from '../util/outputNameTemplate';
 import useUserSettings from '../hooks/useUserSettings';
 import Switch from './Switch';
 import Select from './Select';
@@ -31,21 +31,19 @@ function FileNameTemplateEditor(opts: {
   generateFileNames: GenerateOutFileNames,
 } & ({
   currentSegIndexSafe: number,
-  mergeMode?: false
+  mode: 'separate'
 } | {
-  mergeMode: true
+  mode: 'merge-segments' | 'merge-files'
 })) {
-  const { template: templateIn, setTemplate, defaultTemplate, generateFileNames, mergeMode } = opts;
+  const { template: templateIn, setTemplate, defaultTemplate, generateFileNames, mode } = opts;
 
   const { safeOutputFileName, toggleSafeOutputFileName, outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding, simpleMode } = useUserSettings();
 
   const [text, setText] = useState(templateIn);
   const [debouncedText] = useDebounce(text, 500);
-  const [validText, setValidText] = useState<string>();
-  const [problems, setProblems] = useState<{ error?: string | undefined, sameAsInputFileNameWarning?: boolean | undefined }>({ error: undefined, sameAsInputFileNameWarning: false });
-  const [fileNames, setFileNames] = useState<string[]>();
+  const [generated, setGenerated] = useState<GeneratedOutFileNames>();
 
-  const haveImportantMessage = problems.error != null || problems.sameAsInputFileNameWarning;
+  const haveImportantMessage = generated != null && (generated.problems.error != null || generated.problems.sameAsInputFileNameWarning);
   const [shown, setShown] = useState(haveImportantMessage);
   useEffect(() => {
     // if an important message appears, make sure we don't auto-close after it's resolved
@@ -71,45 +69,47 @@ function FileNameTemplateEditor(opts: {
     (async () => {
       try {
         // console.time('generateFileNames')
-        const outSegs = await generateFileNames(debouncedText);
-        // console.timeEnd('generateOutSegFileNames')
+        const newGenerated = await generateFileNames(debouncedText);
+        // console.timeEnd('generateCutFileNames')
         if (abortController.signal.aborted) return;
-        setFileNames(outSegs.originalFileNames ?? outSegs.fileNames);
-        setProblems(outSegs.problems);
-        setValidText(outSegs.problems.error == null ? debouncedText : undefined);
+        setGenerated(newGenerated);
       } catch (err) {
-        console.error(err);
-        setValidText(undefined);
-        setProblems({ error: err instanceof Error ? err.message : String(err) });
+        console.error(err); // shouldn't really happen
       }
     })();
 
     return () => abortController.abort();
   }, [debouncedText, generateFileNames, t]);
 
-  const availableVariables = useMemo(() => (mergeMode
-    ? ['FILENAME', extVariable, 'EPOCH_MS', 'EXPORT_COUNT', 'FILE_EXPORT_COUNT', 'SEG_LABEL']
-    : [
-      'FILENAME', extVariable, 'EPOCH_MS', 'EXPORT_COUNT', 'FILE_EXPORT_COUNT', 'SEG_LABEL',
-      'CUT_FROM',
-      ...(!simpleMode ? ['CUT_FROM_NUM'] : []),
-      'CUT_TO',
-      ...(!simpleMode ? ['CUT_TO_NUM'] : []),
-      'CUT_DURATION',
-      segNumVariable,
-      ...(!simpleMode ? [segNumIntVariable] : []),
-      selectedSegNumVariable,
-      ...(!simpleMode ? [selectedSegNumIntVariable] : []),
-      segSuffixVariable, segTagsExample,
-    ]
-  ), [mergeMode, simpleMode]);
+  const availableVariables = useMemo(() => {
+    const common = ['FILENAME', extVariable, 'EPOCH_MS', 'SEG_LABEL', 'EXPORT_COUNT'];
+    if (mode === 'merge-segments') {
+      return [...common, 'FILE_EXPORT_COUNT'];
+    }
+    if (mode === 'separate') {
+      return [
+        ...common,
+        'CUT_FROM',
+        ...(!simpleMode ? ['CUT_FROM_NUM'] : []),
+        'CUT_TO',
+        ...(!simpleMode ? ['CUT_TO_NUM'] : []),
+        'CUT_DURATION',
+        segNumVariable,
+        ...(!simpleMode ? [segNumIntVariable] : []),
+        selectedSegNumVariable,
+        ...(!simpleMode ? [selectedSegNumIntVariable] : []),
+        segSuffixVariable, segTagsExample,
+      ];
+    }
+    // merge-files
+    return common;
+  }, [mode, simpleMode]);
 
-  // eslint-disable-next-line no-template-curly-in-string
-  const isMissingExtension = validText != null && !validText.endsWith(extVariableFormatted);
+  const isMissingExtension = !debouncedText.endsWith(extVariableFormatted);
 
   useEffect(() => {
-    if (validText != null) setTemplate(validText);
-  }, [validText, setTemplate]);
+    setTemplate(debouncedText);
+  }, [debouncedText, setTemplate]);
 
   const reset = useCallback(() => {
     setTemplate(defaultTemplate);
@@ -117,8 +117,8 @@ function FileNameTemplateEditor(opts: {
   }, [defaultTemplate, setTemplate]);
 
   const onHideClick = useCallback(() => {
-    if (problems.error == null) setShown(false);
-  }, [problems.error]);
+    if (generated != null && generated.problems.error == null) setShown(false);
+  }, [generated]);
 
   const onShowClick = useCallback(() => {
     if (!shown) setShown(true);
@@ -138,18 +138,34 @@ function FileNameTemplateEditor(opts: {
     setText(newValue);
   }, [text]);
 
+  function formatCurrentSegFileOrFirst(names: string[]) {
+    if (mode === 'separate') {
+      const { currentSegIndexSafe } = opts;
+      const fileName = names[currentSegIndexSafe];
+      if (fileName != null) {
+        return fileName;
+      }
+    }
+    return names[0] ?? '-';
+  }
+
   return (
     <>
-      {fileNames != null && (
-        <div>{(mergeMode ? t('Merged output file name:') : t('Output name(s):', { count: fileNames.length }))}</div>
+      {generated != null && (
+        <div>{
+          (mode === 'merge-files' || mode === 'merge-segments')
+            ? t('Merged output file name:')
+            : t('Output name(s):', { count: generated.fileNames.length })
+          }
+        </div>
       )}
 
       <motion.div animate={{ marginBottom: needToShow ? '1.5em' : '.3em' }}>
-        {fileNames != null && (
+        {generated != null && (
           <div style={{ marginBottom: '.3em' }}>
-            <HighlightedText role="button" onClick={onShowClick} style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>
-              {/* eslint-disable-next-line react/destructuring-assignment */}
-              {('currentSegIndexSafe' in opts ? fileNames[opts.currentSegIndexSafe] : undefined) || fileNames[0] || '-'}
+            <HighlightedText role="button" onClick={onShowClick} style={{ wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>
+              {generated.originalFileNames != null && formatCurrentSegFileOrFirst(generated.fileNames)}
+              <span style={generated.originalFileNames != null ? { textDecoration: 'line-through', marginLeft: '.3em', color: dangerColor } : undefined}>{formatCurrentSegFileOrFirst(generated.originalFileNames ?? generated.fileNames)}</span>
               {!needToShow && <FaEdit style={{ fontSize: '.9em', marginLeft: '.4em', verticalAlign: 'middle' }} />}
             </HighlightedText>
           </div>
@@ -168,7 +184,7 @@ function FileNameTemplateEditor(opts: {
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.2em' }}>
                 <TextInput ref={inputRef} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
 
-                {!mergeMode && fileNames != null && (
+                {generated != null && generated.fileNames.length > 1 && (
                   <Dialog.Root>
                     <Dialog.Trigger asChild>
                       <Button style={{ marginLeft: '.3em' }}>{t('Preview')}</Button>
@@ -177,10 +193,10 @@ function FileNameTemplateEditor(opts: {
                     <Dialog.Portal>
                       <Dialog.Overlay />
                       <Dialog.Content aria-describedby={undefined}>
-                        <Dialog.Title>{t('Resulting segment file names', { count: fileNames.length })}</Dialog.Title>
+                        <Dialog.Title>{t('Resulting segment file names', { count: generated.fileNames.length })}</Dialog.Title>
 
                         <div style={{ overflowY: 'auto', maxHeight: 400 }}>
-                          {fileNames.map((f) => <div key={f} style={{ marginBottom: '.5em' }}><FaFile style={{ verticalAlign: 'middle', marginRight: '.5em' }} />{f}</div>)}
+                          {generated.fileNames.map((f) => <div key={f} style={{ marginBottom: '.5em' }}><FaFile style={{ verticalAlign: 'middle', marginRight: '.5em' }} />{f}</div>)}
                         </div>
 
                         <Dialog.CloseButton />
@@ -223,26 +239,28 @@ function FileNameTemplateEditor(opts: {
           )}
         </AnimatePresence>
 
-        {problems.error != null ? (
+        {generated?.problems.error != null ? (
           <div style={{ marginBottom: '1em', fontSize: '.9em' }}>
-            <FaExclamationTriangle color={dangerColor} style={{ verticalAlign: 'middle', fontSize: '1.1em' }} /> {problems.error}
+            <FaExclamationTriangle color={dangerColor} style={{ verticalAlign: 'middle', fontSize: '1.1em' }} /> {generated.problems.error}
           </div>
         ) : (
-          <>
-            {problems.sameAsInputFileNameWarning && (
-              <div style={{ marginBottom: '1em' }}>
-                <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.3em' }} color="var(--amber-9)" />
-                {i18n.t('Output file name is the same as the source file name. This increases the risk of accidentally overwriting or deleting source files!')}
-              </div>
-            )}
+          generated != null && (
+            <>
+              {generated.problems.sameAsInputFileNameWarning && (
+                <div style={{ marginBottom: '1em' }}>
+                  <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.3em' }} color="var(--amber-9)" />
+                  {i18n.t('Output file name is the same as the source file name. This increases the risk of accidentally overwriting or deleting source files!')}
+                </div>
+              )}
 
-            {isMissingExtension && (
-              <div style={{ marginBottom: '1em' }}>
-                <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.3em' }} color="var(--amber-9)" />
-                {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVariableFormatted })}
-              </div>
-            )}
-          </>
+              {isMissingExtension && (
+                <div style={{ marginBottom: '1em' }}>
+                  <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.3em' }} color="var(--amber-9)" />
+                  {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVariableFormatted })}
+                </div>
+              )}
+            </>
+          )
         )}
       </motion.div>
     </>

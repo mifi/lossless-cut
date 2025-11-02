@@ -174,10 +174,10 @@ export function useDialog() {
       children: (
         <UnorderedList>
           <ListItem icon={<FaCheckCircle />} iconColor={hasWarnings ? 'var(--orange-8)' : 'var(--green-11)'} style={{ fontWeight: 'bold' }}>{hasWarnings ? t('Export finished with warning(s)', { count: warnings.length }) : t('Export is done!')}</ListItem>
+          <Warnings warnings={warnings} />
           <ListItem icon={<FaInfoCircle />}>{t('Please test the output file in your desired player/editor before you delete the source file.')}</ListItem>
           <OutputIncorrectSeeHelpMenu />
           <Notices notices={notices} />
-          <Warnings warnings={warnings} />
         </UnorderedList>
       ),
     });
@@ -192,10 +192,10 @@ export function useDialog() {
       children: (
         <UnorderedList>
           <ListItem icon={<FaCheckCircle />} iconColor={hasWarnings ? 'warning' : 'success'} style={{ fontWeight: 'bold' }}>{hasWarnings ? t('Files merged with warning(s)', { count: warnings.length }) : t('Files merged!')}</ListItem>
+          <Warnings warnings={warnings} />
           <ListItem icon={<FaInfoCircle />}>{t('Please test the output files in your desired player/editor before you delete the source files.')}</ListItem>
           <OutputIncorrectSeeHelpMenu />
           <Notices notices={notices} />
-          <Warnings warnings={warnings} />
         </UnorderedList>
       ),
     });

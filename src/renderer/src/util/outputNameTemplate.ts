@@ -2,6 +2,7 @@ import i18n from 'i18next';
 import { PlatformPath } from 'node:path';
 import pMap from 'p-map';
 import max from 'lodash/max';
+import invariant from 'tiny-invariant';
 
 import { isMac, isWindows, hasDuplicates, filenamify, getOutFileExtension } from '../util';
 import isDev from '../isDev';
@@ -24,6 +25,25 @@ export const maxFileNameLength = 200;
 const { parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, basename }: PlatformPath = window.require('path');
 
 
+export interface GeneratedOutFileNames {
+  fileNames: string[],
+  originalFileNames?: string[] | undefined,
+  problems: {
+    error: string | undefined;
+    sameAsInputFileNameWarning?: boolean;
+  },
+}
+
+export type GenerateOutFileNames = (template: string) => Promise<GeneratedOutFileNames>;
+
+export interface GenerateMergedOutFileNamesParams {
+  template: string;
+  filePaths: string[];
+  fileFormat: string;
+  outputDir: string;
+  epochMs: number;
+}
+
 function getTemplateProblems({ fileNames, filePath, outputDir, safeOutputFileName }: {
   fileNames: string[],
   filePath: string,
@@ -31,6 +51,7 @@ function getTemplateProblems({ fileNames, filePath, outputDir, safeOutputFileNam
   safeOutputFileName: boolean,
 }) {
   let error: string | undefined;
+
   let sameAsInputFileNameWarning = false;
 
   for (const fileName of fileNames) {
@@ -108,7 +129,7 @@ function getTemplateProblems({ fileNames, filePath, outputDir, safeOutputFileNam
 
 // This is used as a fallback and so it has to always generate unique file names
 // eslint-disable-next-line no-template-curly-in-string
-export const defaultOutSegTemplate = '${FILENAME}-${CUT_FROM}-${CUT_TO}${SEG_SUFFIX}${EXT}';
+export const defaultCutFileTemplate = '${FILENAME}-${CUT_FROM}-${CUT_TO}${SEG_SUFFIX}${EXT}';
 // eslint-disable-next-line no-template-curly-in-string
 export const defaultCutMergedFileTemplate = '${FILENAME}-cut-merged-${EPOCH_MS}${EXT}';
 // eslint-disable-next-line no-template-curly-in-string
@@ -195,18 +216,29 @@ async function generateWithFallback({ generate, desiredTemplate, defaultTemplate
   // however we disable this when the user has chosen to (safeOutputFileName === false)
   const sanitizeName = (name: string, safe: boolean) => (safe ? filenamify(name) : name).slice(0, Math.max(0, maxLabelLength));
 
-  const originalFileNames = await generate({ template: desiredTemplate, sanitizeName: (name: string) => sanitizeName(name, safeOutputFileName), safeOutputFileName });
+  let originalFileNames: string[] | undefined;
+  let problems: GeneratedOutFileNames['problems'];
 
-  const problems = getTemplateProblems({ fileNames: originalFileNames, filePath, outputDir, safeOutputFileName });
+  try {
+    originalFileNames = await generate({ template: desiredTemplate, sanitizeName: (name: string) => sanitizeName(name, safeOutputFileName), safeOutputFileName });
+    problems = getTemplateProblems({ fileNames: originalFileNames, filePath, outputDir, safeOutputFileName });
+  } catch (err) {
+    console.warn(err);
+    problems = {
+      error: i18n.t('Template error: {{error}}', { error: err instanceof Error ? err.message : String(err) }),
+    };
+  }
+
   if (problems.error != null) {
     const fileNames = await generate({ template: defaultTemplate, sanitizeName: (name: string) => sanitizeName(name, true), safeOutputFileName: true });
     return { fileNames, originalFileNames, problems };
   }
 
+  invariant(originalFileNames != null);
   return { fileNames: originalFileNames, problems };
 }
 
-export async function generateOutSegFileNames({ fileDuration, segmentsToExport: segmentsToExportIn, template: desiredTemplate, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding, exportCount, currentFileExportCount }: {
+export async function generateCutFileNames({ fileDuration, segmentsToExport: segmentsToExportIn, template: desiredTemplate, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding, exportCount, currentFileExportCount }: {
   fileDuration: number | undefined,
   segmentsToExport: SegmentToExport[],
   template: string,
@@ -271,7 +303,7 @@ export async function generateOutSegFileNames({ fileDuration, segmentsToExport: 
       }, { concurrency: 5 });
     },
     desiredTemplate,
-    defaultTemplate: defaultOutSegTemplate,
+    defaultTemplate: defaultCutFileTemplate,
     filePath,
     outputDir,
     maxLabelLength,
@@ -279,16 +311,9 @@ export async function generateOutSegFileNames({ fileDuration, segmentsToExport: 
   });
 }
 
-export type GenerateOutFileNames = (template: string) => Promise<{
-  fileNames: string[],
-  originalFileNames?: string[] | undefined,
-  problems: {
-    error: string | undefined;
-    sameAsInputFileNameWarning: boolean;
-  },
-}>;
+export type GenerateMergedOutFileNames = (params: GenerateMergedOutFileNamesParams) => Promise<GeneratedOutFileNames>;
 
-export async function generateMergedFileNames({ template: desiredTemplate, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, epochMs = Date.now(), exportCount, currentFileExportCount, segmentsToExport }: {
+export async function generateCutMergedFileNames({ template: desiredTemplate, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, exportCount, currentFileExportCount, segLabels, epochMs = Date.now() }: {
   template: string,
   isCustomFormatSelected: boolean,
   fileFormat: string,
@@ -296,10 +321,10 @@ export async function generateMergedFileNames({ template: desiredTemplate, isCus
   outputDir: string,
   safeOutputFileName: boolean,
   maxLabelLength: number,
-  epochMs?: number,
   exportCount: number,
-  currentFileExportCount?: number,
-  segmentsToExport?: SegmentToExport[],
+  currentFileExportCount: number,
+  segLabels: string[],
+  epochMs?: number,
 }) {
   return generateWithFallback({
     generate: async ({ template, safeOutputFileName: safeOutputFileName2, sanitizeName }) => {
@@ -311,7 +336,7 @@ export async function generateMergedFileNames({ template: desiredTemplate, isCus
         ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath }),
         exportCount,
         currentFileExportCount,
-        segLabels: segmentsToExport ? segmentsToExport.map((seg) => sanitizeName(seg.name ?? '')) : [],
+        segLabels: segLabels.map((label) => sanitizeName(label)),
       });
 
       return [maybeTruncatePath(fileName, safeOutputFileName2)];
@@ -319,6 +344,43 @@ export async function generateMergedFileNames({ template: desiredTemplate, isCus
     desiredTemplate,
     defaultTemplate: defaultCutMergedFileTemplate,
     filePath,
+    outputDir,
+    maxLabelLength,
+    safeOutputFileName,
+  });
+}
+
+export async function generateMergedFileNames({ template: desiredTemplate, isCustomFormatSelected, fileFormat, filePaths, outputDir, safeOutputFileName, maxLabelLength, exportCount, epochMs }: {
+  template: string,
+  isCustomFormatSelected: boolean,
+  fileFormat: string,
+  filePaths: string[],
+  outputDir: string,
+  safeOutputFileName: boolean,
+  maxLabelLength: number,
+  exportCount: number,
+  epochMs: number,
+}) {
+  const [firstPath] = filePaths;
+  invariant(firstPath != null);
+
+  return generateWithFallback({
+    generate: async ({ template, safeOutputFileName: safeOutputFileName2, sanitizeName }) => {
+      const { name: inputFileNameWithoutExt } = parsePath(firstPath);
+
+      const fileName = await interpolateOutFileName(template, {
+        epochMs,
+        inputFileNameWithoutExt,
+        ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath: firstPath }),
+        exportCount,
+        segLabels: filePaths.map((filePath) => sanitizeName(basename(filePath))),
+      });
+
+      return [maybeTruncatePath(fileName, safeOutputFileName2)];
+    },
+    desiredTemplate,
+    defaultTemplate: defaultCutMergedFileTemplate,
+    filePath: firstPath,
     outputDir,
     maxLabelLength,
     safeOutputFileName,

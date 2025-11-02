@@ -82,8 +82,12 @@ export interface Config {
   autoLoadTimecode: boolean,
   segmentsToChapters: boolean,
   simpleMode: boolean,
-  outSegTemplate: string | undefined,
+  /** todo: rename to cutFileTemplate */
+  outSegTemplate: string | undefined
+  /** todo: rename to cutMergedFileTemplate */
   mergedFileTemplate: string | undefined,
+  /** todo: rename to mergedFileTemplate */
+  mergedFilesTemplate: string | undefined,
   keyboardSeekAccFactor: number,
   keyboardNormalSeekSpeed: number,
   keyboardSeekSpeed2: number,

@@ -127,6 +127,7 @@ const defaults: Config = {
   simpleMode: true,
   outSegTemplate: undefined,
   mergedFileTemplate: undefined,
+  mergedFilesTemplate: undefined,
   keyboardSeekAccFactor: 1.03,
   keyboardNormalSeekSpeed: 1,
   keyboardSeekSpeed2: 10,
