@@ -991,5 +991,21 @@
     "Tracks with at least 720p video": "Видеодорожки с разрешением от 720p и выше",
     "Tracks with H264 codec": "Дорожки с кодеком H264",
     "Video tracks": "Видеодорожки",
-    "Make cursor time zero": "Сделать время курсора нулевым"
+    "Make cursor time zero": "Сделать время курсора нулевым",
+    "Apply change": "Применить изменение",
+    "Apply filter": "Применить фильтр",
+    "Auto merge segments into one file after export, but keep exported per-segment files too": "Автоматически объединять сегменты в один файл после экспорта, но при этом сохранять экспортированные файлы по сегментам",
+    "Error": "Ошибка",
+    "Export each segment to a separate file": "Экспортировать каждый сегмент в отдельный файл",
+    "Go": "Вперёд",
+    "Invalid timecode format": "Неверный формат таймкода",
+    "Loop selected segments in order": "Повторить выбранные сегменты по порядку",
+    "Please confirm": "Пожалуйста, подтвердите",
+    "Reduce motion in user interface": "Уменьшить движение в пользовательском интерфейсе",
+    "Select segments": "Выбор сегментов",
+    "Setting": "Настройка",
+    "Success!": "Успешно!",
+    "System default": "Системные настройки по умолчанию",
+    "Template error: {{error}}": "Ошибка шаблона: {{error}}",
+    "The audio track is not supported while previewing. You can convert to a supported format from the menu": "Звуковая дорожка не поддерживается при предварительном просмотре. Вы можете конвертировать её в поддерживаемый формат из меню"
 }
