@@ -82,7 +82,8 @@ export async function askForFfPath(defaultPath?: string | undefined) {
 }
 
 export async function askForFileOpenAction(inputOptions: Record<string, string>) {
-  let value;
+  let value: string | undefined;
+
   function onClick(key?: string) {
     value = key;
     getSwal().Swal.close();

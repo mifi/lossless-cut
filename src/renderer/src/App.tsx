@@ -1707,29 +1707,27 @@ function App() {
     });
   }, []);
 
-  const userOpenFiles = useCallback(async (filePathsIn?: string[]) => {
+  const userOpenFiles = useCallback(async (newFilePathsIn?: string[]) => {
     await withErrorHandling(async () => {
-      let filePaths = filePathsIn;
-      if (!filePaths || filePaths.length === 0) return;
+      let newFilePaths = newFilePathsIn;
+      if (!newFilePaths || newFilePaths.length === 0) return;
 
       console.log('userOpenFiles');
-      console.log(filePaths.join('\n'));
+      console.log(newFilePaths.join('\n'));
 
-      lastOpenedPathRef.current = filePaths[0]!;
+      lastOpenedPathRef.current = newFilePaths[0]!;
 
-      let firstFilePath = filePaths[0]!;
+      let firstNewFilePath = newFilePaths[0]!;
 
       // first check if it is a single directory, and if so, read it recursively
-      if (filePaths.length === 1 && (await lstat(firstFilePath)).isDirectory()) {
+      if (newFilePaths.length === 1 && (await lstat(firstNewFilePath)).isDirectory()) {
         console.log('Reading directory...');
-        invariant(firstFilePath != null);
-        filePaths = await readDirRecursively(firstFilePath);
+        invariant(firstNewFilePath != null);
+        newFilePaths = await readDirRecursively(firstNewFilePath);
       }
 
       // Only allow opening regular files
-      // eslint-disable-next-line no-restricted-syntax
-      for (const path of filePaths) {
-        // eslint-disable-next-line no-await-in-loop
+      for (const path of newFilePaths) {
         const fileStat = await lstat(path);
 
         if (!fileStat.isFile()) {
@@ -1739,98 +1737,93 @@ function App() {
         }
       }
 
-      if (filePaths.length > 1) {
-        if (alwaysConcatMultipleFiles) {
-          batchLoadPaths(filePaths);
-          setConcatSheetOpen(true);
-        } else {
-          batchLoadPaths(filePaths, true);
-        }
+      if (newFilePaths.length > 1 && alwaysConcatMultipleFiles) {
+        batchLoadPaths(newFilePaths);
+        setConcatSheetOpen(true);
         return;
       }
 
-      // filePaths.length is now 1
-      firstFilePath = filePaths[0]!;
-      invariant(firstFilePath != null);
+      firstNewFilePath = newFilePaths[0]!;
+      invariant(firstNewFilePath != null);
 
       // https://en.wikibooks.org/wiki/Inside_DVD-Video/Directory_Structure
-      if (/^video_ts$/i.test(basename(firstFilePath))) {
+      if (newFilePaths.length === 1 && /^video_ts$/i.test(basename(firstNewFilePath))) {
         if (mustDisallowVob()) return;
-        filePaths = await readVideoTs(firstFilePath);
+        newFilePaths = await readVideoTs(firstNewFilePath);
       }
 
       if (workingRef.current) return;
       try {
         setWorking({ text: i18n.t('Loading file') });
 
-        // Import segments for for already opened file
-        const matchingImportProjectType = getImportProjectType(firstFilePath);
+        // If it's a project file (not llc) and we have an already opened file, import segments from the project
+        const matchingImportProjectType = getImportProjectType(firstNewFilePath);
         if (matchingImportProjectType) {
           if (!checkFileOpened()) return;
-          await loadEdlFile({ path: firstFilePath, type: matchingImportProjectType, append: true });
+          await loadEdlFile({ path: firstNewFilePath, type: matchingImportProjectType, append: true });
           return;
         }
 
-        const filePathLowerCase = firstFilePath.toLowerCase();
+        const filePathLowerCase = firstNewFilePath.toLowerCase();
         const isLlcProject = filePathLowerCase.endsWith('.llc');
 
         // Need to ask the user what to do if more than one option
-        const inputOptions: { open: string, project?: string, tracks?: string, subtitles?: string, addToBatch?: string, mergeWithCurrentFile?: string } = {
-          open: isFileOpened ? i18n.t('Open the file instead of the current one') : i18n.t('Open the file'),
-        };
+        const inputOptions: { open?: string, project?: string, tracks?: string, subtitles?: string, addToBatch?: string, mergeWithCurrentFile?: string } = {};
 
-        if (isFileOpened) {
+        if (newFilePaths.length === 1) {
+          inputOptions.open = isFileOpened ? i18n.t('Open the file instead of the current one') : i18n.t('Open the file');
+        }
+
+        if (isFileOpened && newFilePaths.length === 1) {
           if (isLlcProject) inputOptions.project = i18n.t('Load segments from the new file, but keep the current media');
-          if (filePathLowerCase.endsWith('.srt')) inputOptions.subtitles = i18n.t('Convert subtitiles into segments');
+          else if (filePathLowerCase.endsWith('.srt')) inputOptions.subtitles = i18n.t('Convert subtitiles into segments');
           inputOptions.tracks = i18n.t('Include all tracks from the new file');
         }
 
-        if (batchFiles.length > 0) inputOptions.addToBatch = i18n.t('Add the file to the batch list');
-        else if (isFileOpened) inputOptions.mergeWithCurrentFile = i18n.t('Merge/concatenate with current file');
+        if (isFileOpened) inputOptions.mergeWithCurrentFile = i18n.t('Merge/concatenate with current file');
+        if (batchFiles.length > 0 || newFilePaths.length > 1) inputOptions.addToBatch = i18n.t('Add the file to the batch list');
 
-        if (Object.keys(inputOptions).length > 1) {
-          const openFileResponse = enableAskForFileOpenAction ? await askForFileOpenAction(inputOptions) : 'open';
+        const inputOptionsKeys = Object.keys(inputOptions);
 
-          if (openFileResponse === 'open') {
-            await userOpenSingleFile({ path: firstFilePath, isLlcProject });
-            return;
-          }
-          if (openFileResponse === 'project') {
-            await loadEdlFile({ path: firstFilePath, type: 'llc' });
-            return;
-          }
-          if (openFileResponse === 'subtitles') {
-            await loadEdlFile({ path: firstFilePath, type: 'srt' });
-            return;
-          }
-          if (openFileResponse === 'tracks') {
-            await addStreamSourceFile(firstFilePath);
-            setStreamsSelectorShown(true);
-            return;
-          }
-          if (openFileResponse === 'addToBatch') {
-            batchLoadPaths([firstFilePath], true);
-            return;
-          }
-          if (openFileResponse === 'mergeWithCurrentFile') {
-            const batchPaths = new Set<string>();
-            if (filePath) batchPaths.add(filePath);
-            filePaths.forEach((path) => batchPaths.add(path));
-            batchLoadPaths([...batchPaths]);
-            if (batchPaths.size > 1) setConcatSheetOpen(true);
-            return;
-          }
+        let openFileResponse: string | undefined;
+        if (inputOptionsKeys.length === 1) [openFileResponse] = inputOptionsKeys;
+        if (enableAskForFileOpenAction && inputOptionsKeys.length > 1) openFileResponse = await askForFileOpenAction(inputOptions);
+        else if (newFilePaths.length === 1) openFileResponse = 'open';
 
-          // Dialog canceled:
+        if (openFileResponse === 'open') {
+          await userOpenSingleFile({ path: firstNewFilePath, isLlcProject });
           return;
         }
-
-        await userOpenSingleFile({ path: firstFilePath, isLlcProject });
+        if (openFileResponse === 'project') {
+          await loadEdlFile({ path: firstNewFilePath, type: 'llc' });
+          return;
+        }
+        if (openFileResponse === 'subtitles') {
+          await loadEdlFile({ path: firstNewFilePath, type: 'srt' });
+          return;
+        }
+        if (openFileResponse === 'tracks') {
+          await addStreamSourceFile(firstNewFilePath);
+          setStreamsSelectorShown(true);
+          return;
+        }
+        if (openFileResponse === 'addToBatch') {
+          batchLoadPaths(newFilePaths, true);
+          return;
+        }
+        if (openFileResponse === 'mergeWithCurrentFile') {
+          const batchPaths = new Set<string>();
+          if (filePath) batchPaths.add(filePath);
+          newFilePaths.forEach((path) => batchPaths.add(path));
+          batchLoadPaths([...batchPaths]);
+          if (batchPaths.size > 1) setConcatSheetOpen(true);
+        }
+        // else: no match means dialog canceled or nothing useful to do:
       } finally {
         setWorking(undefined);
       }
     }, i18n.t('Failed to open file'));
-  }, [withErrorHandling, workingRef, alwaysConcatMultipleFiles, batchLoadPaths, setWorking, isFileOpened, batchFiles.length, userOpenSingleFile, checkFileOpened, loadEdlFile, enableAskForFileOpenAction, addStreamSourceFile, filePath]);
+  }, [withErrorHandling, alwaysConcatMultipleFiles, workingRef, batchLoadPaths, setWorking, isFileOpened, batchFiles.length, enableAskForFileOpenAction, checkFileOpened, loadEdlFile, userOpenSingleFile, addStreamSourceFile, filePath]);
 
   const openFilesDialog = useCallback(async () => {
     // On Windows and Linux an open dialog can not be both a file selector and a directory selector, so if you set `properties` to `['openFile', 'openDirectory']` on these platforms, a directory selector will be shown. #1995
