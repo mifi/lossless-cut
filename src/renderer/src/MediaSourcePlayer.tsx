@@ -6,6 +6,7 @@ import { FaVideo } from 'react-icons/fa';
 import isDev from './isDev';
 import { ChromiumHTMLVideoElement } from './types';
 import { FFprobeStream } from '../../../ffprobe';
+import { getFrameDuration } from './util';
 
 const { compatPlayer: { createMediaSourceStream } } = window.require('@electron/remote').require('./index.js');
 
@@ -97,7 +98,7 @@ async function startPlayback({ path, slaveVideo, masterVideo, videoStreamIndex, 
   // console.log(mediaSource.readyState); // open
 
   const sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
-  sourceBuffer.timestampOffset = seekTo;
+  sourceBuffer.timestampOffset = seekTo - getFrameDuration(fps); // subtract 1 frame in order to attempt to avoid this issue: https://github.com/mifi/lossless-cut/issues/2591#issuecomment-3478018458
 
   signal.addEventListener('abort', () => sourceBuffer.abort());
 
