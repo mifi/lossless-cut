@@ -969,5 +969,20 @@
     "Tracks with at least 720p video": "En az 720p videoya sahip parçalar",
     "Tracks with H264 codec": "H264 kodek içeren parçalar",
     "Video tracks": "Video parçaları",
-    "Make cursor time zero": "İmleç zamanını sıfır yap"
+    "Make cursor time zero": "İmleç zamanını sıfır yap",
+    "Apply change": "Değişikliği uygula",
+    "Apply filter": "Filtre uygula",
+    "Auto merge segments into one file after export, but keep exported per-segment files too": "Dışa aktardıktan sonra parçaları tek bir dosyada otomatik olarak birleştir, ancak dışa aktarılan parça dosyaları da sakla",
+    "Error": "Hata",
+    "Export each segment to a separate file": "Her parçayı ayrı dosyaya dışa aktar",
+    "Go": "Git",
+    "Invalid timecode format": "Geçersiz zaman kodu biçimi",
+    "Loop selected segments in order": "Seçilen parçaları sırayla döngüye al",
+    "Please confirm": "Lütfen onaylayın",
+    "Reduce motion in user interface": "Kullanıcı arayüzündeki hareketi azalt",
+    "Select segments": "Parçaları seç",
+    "Setting": "Ayarlanıyor",
+    "Success!": "Başarılı!",
+    "System default": "Sistem öntanımlı değeri",
+    "The audio track is not supported while previewing. You can convert to a supported format from the menu": "Ön izleme sırasında ses parçası desteklenmiyor. Menüden desteklenen bir biçime dönüştürebilirsiniz"
 }
