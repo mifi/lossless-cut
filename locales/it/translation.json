@@ -958,5 +958,20 @@
     "Tracks with at least 720p video": "Tracce con almeno un video 720p",
     "Tracks with H264 codec": "Tracce con codec H264",
     "Video tracks": "Tracce video",
-    "Make cursor time zero": "Rendi il tempo del cursore zero"
+    "Make cursor time zero": "Rendi il tempo del cursore zero",
+    "Apply change": "Applica modifiche",
+    "Apply filter": "Applica filtro",
+    "Auto merge segments into one file after export, but keep exported per-segment files too": "Dopo l'esportazione unisci automaticamente i segmenti in un unico file , ma conserva anche i file esportati per segmento",
+    "Error": "Errore",
+    "Export each segment to a separate file": "Esporta ogni segmento in un file separato",
+    "Go": "Vai",
+    "Invalid timecode format": "Formato timecode non valido",
+    "Loop selected segments in order": "Ripeti segmenti selezionati in ordine",
+    "Please confirm": "Conferma",
+    "Reduce motion in user interface": "Riduci movimento interfaccia utente",
+    "Select segments": "Seleziona segmenti",
+    "Setting": "Impostazioni",
+    "Success!": "Completato!",
+    "System default": "Predefinito sistema",
+    "The audio track is not supported while previewing. You can convert to a supported format from the menu": "Durante l'anteprima la traccia audio non è supportata. Puoi convertire in un formato supportato dal menu"
 }
