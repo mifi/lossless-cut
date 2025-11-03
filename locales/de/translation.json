@@ -998,5 +998,21 @@
     "Tracks with at least 720p video": "Spuren mit mindestens 720p-Video",
     "Tracks with H264 codec": "Spuren mit H264-Codec",
     "Video tracks": "Videospuren",
-    "Make cursor time zero": "Cursorzeit auf Null setzen"
+    "Make cursor time zero": "Cursorzeit auf Null setzen",
+    "Template error: {{error}}": "Vorlagenfehler: {{error}}",
+    "Apply change": "Änderung anwenden",
+    "Apply filter": "Filter anwenden",
+    "Error": "Fehler",
+    "Export each segment to a separate file": "Jedes Segment in eine separate Datei exportieren",
+    "Go": "Los",
+    "Invalid timecode format": "Ungültiges Zeitcode-Format",
+    "Loop selected segments in order": "Ausgewählte Segmente der Reihe nach wiederholen",
+    "Please confirm": "Bitte bestätigen",
+    "Reduce motion in user interface": "Bewegungen in der Benutzeroberfläche reduzieren",
+    "Select segments": "Segmente auswählen",
+    "Setting": "Einstellung",
+    "Success!": "Erfolg!",
+    "System default": "Systemvorgabe",
+    "The audio track is not supported while previewing. You can convert to a supported format from the menu": "Die Audiospur wird während der Vorschau nicht unterstützt. Sie können sie über das Menü in ein unterstütztes Format konvertieren",
+    "Auto merge segments into one file after export, but keep exported per-segment files too": "Segmente nach dem Export automatisch in einer Datei zusammenführen, aber auch die exportierten Dateien pro Segment beibehalten"
 }
