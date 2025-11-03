@@ -973,5 +973,6 @@
     "Setting": "Impostazioni",
     "Success!": "Completato!",
     "System default": "Predefinito sistema",
-    "The audio track is not supported while previewing. You can convert to a supported format from the menu": "Durante l'anteprima la traccia audio non è supportata. Puoi convertire in un formato supportato dal menu"
+    "The audio track is not supported while previewing. You can convert to a supported format from the menu": "Durante l'anteprima la traccia audio non è supportata. Puoi convertire in un formato supportato dal menu",
+    "Template error: {{error}}": "Errore modello: {{error}}"
 }
