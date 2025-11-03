@@ -1023,5 +1023,21 @@
     "Tracks with at least 720p video": "有至少 720p 视频的轨道",
     "Tracks with H264 codec": "采用 H264 编码的音轨",
     "Video tracks": "视频轨道",
-    "Make cursor time zero": "将光标时间设为零"
+    "Make cursor time zero": "将光标时间设为零",
+    "Apply change": "应用更改",
+    "Apply filter": "应用筛选",
+    "Auto merge segments into one file after export, but keep exported per-segment files too": "导出后自动将各片段合并为一个文件，但同时保留按片段导出的文件",
+    "Error": "出错",
+    "Export each segment to a separate file": "导出每个片段为单独的文件",
+    "Go": "转至",
+    "Invalid timecode format": "无效时间码格式",
+    "Loop selected segments in order": "按顺序循环选中片段",
+    "Please confirm": "请确认",
+    "Reduce motion in user interface": "减少用户界面动态效果",
+    "Select segments": "选择片段",
+    "Setting": "设置",
+    "Success!": "成功！",
+    "System default": "系统默认",
+    "Template error: {{error}}": "模板出错：{{error}}",
+    "The audio track is not supported while previewing. You can convert to a supported format from the menu": "预览时不支持该音轨。您可以从菜单中将其转换为支持的格式"
 }
