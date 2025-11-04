@@ -91,7 +91,7 @@ function Segment({
   formatTimecode: FormatTimecode,
   invertCutSegments: boolean,
 }) {
-  const { darkMode, prefersReducedMotion, springAnimation, simpleMode } = useUserSettings();
+  const { darkMode, prefersReducedMotion, springAnimation } = useUserSettings();
   const { name } = seg;
 
   const border = useMemo(() => {
@@ -185,7 +185,7 @@ function Segment({
             <FaTrashAlt style={{ display: 'block', width: '100%', minWidth: '.4em', color: 'white', marginRight: '.1em' }} />
           </motion.div>
         )}
-        {!invertCutSegments && simpleMode && (
+        {!invertCutSegments && !seg.name && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
