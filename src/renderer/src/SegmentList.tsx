@@ -1,5 +1,5 @@
-import { memo, useMemo, useRef, useCallback, useState, SetStateAction, Dispatch, ReactNode, MouseEventHandler, CSSProperties, useEffect } from 'react';
-import { FaYinYang, FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaRegCheckCircle, FaRegCircle } from 'react-icons/fa';
+import { memo, useMemo, useRef, useCallback, useState, SetStateAction, Dispatch, MouseEventHandler, CSSProperties, useEffect } from 'react';
+import { FaYinYang, FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaRegCheckCircle, FaRegCircle, FaTimes } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 import { useTranslation, Trans } from 'react-i18next';
@@ -608,16 +608,15 @@ function SegmentList({
         exit={{ x: width }}
         transition={springAnimation}
       >
-        <div style={{ fontSize: '.8em', padding: '.3em .5em', color: 'var(--gray-12)' }} className="no-user-select">
-          <FaAngleRight
+        <div style={{ padding: '.2em .5em', color: 'var(--gray-12)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '.2em' }} className="no-user-select">
+          <span style={{ fontSize: '.8em' }}>{getHeader()}</span>
+
+          <FaTimes
             title={t('Close sidebar')}
-            size={20}
-            style={{ verticalAlign: 'middle', color: 'var(--gray-11)', cursor: 'pointer', padding: '.1em' }}
+            style={{ fontSize: '1.1em', verticalAlign: 'middle', color: 'var(--gray-11)', cursor: 'pointer', padding: '.2em .3em' }}
             role="button"
             onClick={toggleSegmentsList}
           />
-
-          {getHeader()}
         </div>
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} modifiers={[restrictToVerticalAxis]}>

@@ -17,9 +17,7 @@ const iconStyle = {
   flexShrink: 0,
   color: 'var(--gray-12)',
   cursor: 'pointer',
-  paddingTop: 3,
-  paddingBottom: 3,
-  padding: '3px 5px',
+  padding: '.2em .3em',
 };
 
 function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBatchFiles, onBatchFileSelect, batchListRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick, onDrop }: {
@@ -90,12 +88,12 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
       onDrop={onDrop}
     >
       <div style={{ paddingBottom: '.5em', paddingTop: 0, paddingLeft: '.5em', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: '.2em' }}>
-        <div style={{ fontSize: '.9em' }}>{t('Batch file list')}{batchFiles.length > 0 && ` (${batchFiles.length})`}</div>
+        <div style={{ fontSize: '.8em' }}>{t('Batch file list')}{batchFiles.length > 0 && ` (${batchFiles.length})`}</div>
         <div style={{ flexGrow: 1 }} />
         <FaHatWizard role="button" title={`${t('Convert to supported format')}...`} style={iconStyle} onClick={onBatchConvertToSupportedFormatClick} />
         <SortIcon role="button" title={t('Sort items')} style={iconStyle} onClick={onSortClick} />
         <AiOutlineMergeCells className={simpleMode ? 'export-animation' : undefined} role="button" title={`${t('Merge/concatenate files')}...`} style={{ ...iconStyle, color: 'white', background: primaryColor, borderRadius: '.5em' }} onClick={onMergeFilesClick} />
-        <FaTimes role="button" title={t('Close batch')} style={{ ...iconStyle, color: 'var(--gray-11)' }} onClick={closeBatch} />
+        <FaTimes role="button" title={t('Close batch')} style={{ ...iconStyle, fontSize: '1.1em', color: 'var(--gray-11)' }} onClick={closeBatch} />
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} modifiers={[restrictToVerticalAxis]}>
