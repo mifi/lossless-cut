@@ -18,7 +18,6 @@ import { primaryColor } from '../colors';
 import ExportSheet from './ExportSheet';
 import * as Dialog from './Dialog';
 import FileNameTemplateEditor from './FileNameTemplateEditor';
-import { EnsureWritableOutDir } from '../hooks/useDirectoryAccess';
 
 const { basename } = window.require('path');
 
@@ -33,7 +32,7 @@ function Alert({ text }: { text: string }) {
   );
 }
 
-function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMergedFileNames, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, ensureWritableOutDir, fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, onOutputFormatUserChange }: {
+function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMergedFileNames, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, onOutputFormatUserChange }: {
   isShown: boolean,
   onHide: () => void,
   paths: string[],
@@ -42,7 +41,6 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
   onConcat: (a: { paths: string[], includeAllStreams: boolean, streams: FFprobeStream[], fileFormat: string, clearBatchFilesAfterConcat: boolean, generatedFileNames: GeneratedOutFileNames }) => Promise<void>,
   alwaysConcatMultipleFiles: boolean,
   setAlwaysConcatMultipleFiles: (a: boolean) => void,
-  ensureWritableOutDir: EnsureWritableOutDir,
   fileFormat: string | undefined,
   setFileFormat: Dispatch<SetStateAction<string | undefined>>,
   detectedFileFormat: string | undefined,
@@ -162,19 +160,11 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
     invariant(fileFormat != null);
     invariant(firstPath != null);
 
-    // need to ensure the output dir is writable, because the user might not yet have opened a file, and so MAS might not yet have access to write the dir
-    const newCustomOutDir = await ensureWritableOutDir({ inputPath: firstPath, outDir: customOutDir });
-    if (newCustomOutDir !== customOutDir) {
-      // throw user back to dialog because now things might have changed (which could affect overwriting files etc!)
-      return;
-    }
-
     const outputDir = getOutDir(customOutDir, firstPath);
-
     const generatedFileNames = await generateMergedFileNames({ template: mergedFileTemplate, filePaths: paths, fileFormat, outputDir, epochMs: uniqueSuffix });
 
     await onConcat({ paths, includeAllStreams, streams: fileMeta!.streams, fileFormat, clearBatchFilesAfterConcat, generatedFileNames });
-  }, [clearBatchFilesAfterConcat, customOutDir, ensureWritableOutDir, fileFormat, fileMeta, firstPath, generateMergedFileNames, includeAllStreams, mergedFileTemplate, onConcat, paths, uniqueSuffix]);
+  }, [clearBatchFilesAfterConcat, customOutDir, fileFormat, fileMeta, firstPath, generateMergedFileNames, includeAllStreams, mergedFileTemplate, onConcat, paths, uniqueSuffix]);
 
   return (
     <ExportSheet

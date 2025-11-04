@@ -15,7 +15,7 @@ import { SweetAlertOptions } from 'sweetalert2';
 
 import useTimelineScroll from './hooks/useTimelineScroll';
 import useUserSettingsRoot from './hooks/useUserSettingsRoot';
-import useFfmpegOperations, { maybeMkdirOutDir, OutputNotWritableError } from './hooks/useFfmpegOperations';
+import useFfmpegOperations, { maybeMkDeepOutDir, OutputNotWritableError } from './hooks/useFfmpegOperations';
 import useKeyframes from './hooks/useKeyframes';
 import useWaveform from './hooks/useWaveform';
 import useKeyboard from './hooks/useKeyboard';
@@ -878,12 +878,22 @@ function App() {
     generatedFileNames: GeneratedOutFileNames,
   }) => {
     if (workingRef.current) return;
+
+    const firstPath = paths[0];
+    if (!firstPath) return;
+
     try {
+      // need to ensure the output dir is writable, because the user might not yet have opened a file, and so MAS might not yet have access to write the dir
+      const newCustomOutDir = await ensureWritableOutDir({ inputPath: firstPath, outDir: customOutDir });
+      if (newCustomOutDir !== customOutDir) {
+        // throw user back to the concat dialog because now things might have changed (which could affect overwriting files etc!)
+        // also if the user cancels the dialog, `DirectoryAccessDeclinedError` will be thrown and we will return (see catch below)
+        return;
+      }
+
+      // only after ensuring out dir access, we can close the concat dialog
       setConcatSheetOpen(false);
       setWorking({ text: i18n.t('Merging') });
-
-      const firstPath = paths[0];
-      if (!firstPath) return;
 
       const warnings = new Set<string>();
       const notices = new Set<string>();
@@ -913,7 +923,7 @@ function App() {
       const metadataFromPath = paths[0];
       invariant(metadataFromPath != null);
 
-      await maybeMkdirOutDir({ outputDir: outDir, fileOutPath: outPath });
+      await maybeMkDeepOutDir({ outputDir: outDir, fileOutPath: outPath });
 
       const { haveExcludedStreams } = await concatFiles({ paths, outPath, outDir, outFormat, metadataFromPath, includeAllStreams, streams, ffmpegExperimental, onProgress: setProgress, preserveMovData, movFastStart, preserveMetadataOnMerge, chapters: chaptersFromSegments });
 
@@ -953,13 +963,13 @@ function App() {
         return;
       }
 
-      const reportState = { includeAllStreams, streams, outFormat, segmentsToChapters, clearBatchFilesAfterConcat };
+      const reportState = { includeAllStreams, streams, outFormat, clearBatchFilesAfterConcat };
       handleConcatFailed(err, reportState);
     } finally {
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [workingRef, setWorking, customOutDir, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, enableOverwriteOutput, hideAllNotifications, t, showOsNotification, openConcatFinishedDialog, handleConcatFailed]);
+  }, [workingRef, ensureWritableOutDir, customOutDir, setWorking, segmentsToChapters, concatFiles, ffmpegExperimental, preserveMovData, movFastStart, preserveMetadataOnMerge, closeBatch, enableOverwriteOutput, hideAllNotifications, t, showOsNotification, openConcatFinishedDialog, handleConcatFailed]);
 
   const cleanupFiles = useCallback(async (cleanupChoices2: CleanupChoicesType) => {
     // Store paths before we reset state
@@ -2750,7 +2760,7 @@ function App() {
                 </Dialog.Portal>
               </Dialog.Root>
 
-              <ConcatSheet isShown={batchFiles.length > 0 && concatSheetOpen} onHide={() => setConcatSheetOpen(false)} paths={batchFilePaths} mergedFileTemplate={mergedFileTemplateOrDefault} generateMergedFileNames={generateMergedFileNames} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} ensureWritableOutDir={ensureWritableOutDir} fileFormat={fileFormat} setFileFormat={setFileFormat} detectedFileFormat={detectedFileFormat} setDetectedFileFormat={setDetectedFileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
+              <ConcatSheet isShown={batchFiles.length > 0 && concatSheetOpen} onHide={() => setConcatSheetOpen(false)} paths={batchFilePaths} mergedFileTemplate={mergedFileTemplateOrDefault} generateMergedFileNames={generateMergedFileNames} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} fileFormat={fileFormat} setFileFormat={setFileFormat} detectedFileFormat={detectedFileFormat} setDetectedFileFormat={setDetectedFileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
 
               <KeyboardShortcuts isShown={keyboardShortcutsVisible} onHide={() => setKeyboardShortcutsVisible(false)} keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} />
 

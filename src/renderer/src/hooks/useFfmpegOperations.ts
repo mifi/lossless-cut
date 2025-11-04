@@ -77,7 +77,7 @@ async function pathExists(path: string) {
   }
 }
 
-export async function maybeMkdirOutDir({ outputDir, fileOutPath }: { outputDir: string, fileOutPath: string }) {
+export async function maybeMkDeepOutDir({ outputDir, fileOutPath }: { outputDir: string, fileOutPath: string }) {
   // cutFileNames might contain slashes and therefore might have a subdir(tree) that we need to mkdir
   // https://github.com/mifi/lossless-cut/issues/1532
   const actualOutputDir = dirname(fileOutPath);
@@ -541,7 +541,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       if (await shouldSkipExistingFile(finalOutPath)) return { path: finalOutPath, created: false };
 
-      await maybeMkdirOutDir({ outputDir, fileOutPath: finalOutPath });
+      await maybeMkDeepOutDir({ outputDir, fileOutPath: finalOutPath });
 
       if (!isEncoding) {
         // simple lossless cut

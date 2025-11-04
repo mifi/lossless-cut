@@ -31,16 +31,19 @@ export default function useDirectoryAccess({ setCustomOutDir }: { setCustomOutDi
 
     // If we are MAS, we need to loop try to make the user confirm the dialog with the same path as the defaultPath.
     for (;;) {
-      // eslint-disable-next-line no-await-in-loop
+      // First check if we already have access, if so, we are done
       if (await checkDirWriteAccess(inputFileDir) && !simulateMasPermissionError) break;
 
+      // If we are not MAS, but we don't have access, then we can't do anything
       if (!masMode) {
-        // don't know what to do; fail right away
+        // so just fail right away
         errorToast(i18n.t('You have no write access to the directory of this file'));
         throw new DirectoryAccessDeclinedError();
       }
 
-      // We are now mas, so we need to try to encourage the user to allow access to the dir
+      // We are now MAS, so we need to try to encourage the user to allow access to the dir
+      // If the user keeps choosing the wrong dir, we will keep asking
+      // Normally Apple grants access to the dir of the file that was selected in a file open dialog or drag-droppen, but maybe the user opened a file from the batch list, for example.
       // eslint-disable-next-line no-await-in-loop
       const userSelectedDir = await askForInputDir(inputFileDir);
 
