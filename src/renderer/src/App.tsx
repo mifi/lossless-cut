@@ -2245,7 +2245,7 @@ function App() {
     if (!checkFileOpened()) return;
 
     await withErrorHandling(async () => {
-      const edl = await askForEdlImport({ type, fps: detectedFps });
+      const edl = await askForEdlImport({ type, fps: detectedFps, fileDuration });
       if (edl.length > 0) loadCutSegments({ segments: edl, append: true, clampDuration: fileDuration });
     }, i18n.t('Failed to import project file'));
   }, [checkFileOpened, detectedFps, fileDuration, loadCutSegments, withErrorHandling]);

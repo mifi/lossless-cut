@@ -28,7 +28,7 @@ export const showOpenDialog = async ({
   dialog.showOpenDialog({ ...props, title, ...(filters != null ? { filters } : {}) })
 );
 
-export async function askForYouTubeInput() {
+export async function askForYouTubeInput({ fileDuration }: { fileDuration?: number | undefined }) {
   const example = i18n.t('YouTube video description\n00:00 Intro\n00:01 Chapter 2\n00:00:02.123 Chapter 3');
   const { value } = await getSwal().Swal.fire({
     title: i18n.t('Import text chapters / YouTube'),
@@ -47,7 +47,12 @@ export async function askForYouTubeInput() {
 
   if (value == null) return [];
 
-  return parseYouTube(value);
+  const parsed = parseYouTube(value);
+
+  // last segment shouldn't be a marker https://github.com/mifi/lossless-cut/discussions/2552
+  return parsed.map((segment, i) => (
+    i === parsed.length - 1 ? { ...segment, end: fileDuration } : segment
+  ));
 }
 
 export async function askForInputDir(defaultPath?: string | undefined) {
