@@ -14,7 +14,7 @@ import Select from './Select';
 import TextInput from './TextInput';
 import Button from './Button';
 import * as Dialog from './Dialog';
-import { dangerColor } from '../colors';
+import { dangerColor, saveColor } from '../colors';
 
 const electron = window.require('electron');
 
@@ -207,7 +207,7 @@ function FileNameTemplateEditor(opts: {
 
                 <Button title={t('Reset')} onClick={reset} style={{ marginLeft: '.3em' }}><FaUndo style={{ fontSize: '.8em', color: dangerColor }} /></Button>
                 {!haveImportantMessage && (
-                  <Button title={t('Close')} onClick={onHideClick} style={{ marginLeft: '.3em' }}><FaCheck style={{ fontSize: '.8em' }} /></Button>
+                  <Button title={t('Close')} onClick={onHideClick} style={{ marginLeft: '.3em', color: saveColor }}><FaCheck style={{ fontSize: '.8em' }} /></Button>
                 )}
               </div>
 
