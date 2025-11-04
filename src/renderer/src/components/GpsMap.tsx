@@ -3,11 +3,13 @@ import { MapContainer, Popup, TileLayer } from 'react-leaflet';
 import { Marker } from '@adamscybot/react-leaflet-component-marker';
 import 'leaflet/dist/leaflet.css';
 import { FaMapMarkerAlt } from 'react-icons/fa';
+import i18n from 'i18next';
 
 import { extractSrtGpsTrack } from '../ffmpeg';
 import { parseDjiGps1, parseDjiGps2 } from '../edlFormats';
 import * as Dialog from './Dialog';
 import { useAppContext } from '../contexts';
+import { UserFacingError } from '../../errors';
 
 
 // https://www.openstreetmap.org/copyright
@@ -52,7 +54,7 @@ export default function GpsMap({ filePath, streamIndex }: {
         }
 
         if (gpsPoints.length === 0) {
-          throw new Error('No GPS points found');
+          throw new UserFacingError(i18n.t('No GPS points found'));
         }
 
         setPoints(gpsPoints);

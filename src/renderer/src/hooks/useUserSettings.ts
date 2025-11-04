@@ -1,10 +1,11 @@
 import { useContext } from 'react';
+import invariant from 'tiny-invariant';
 
 import { UserSettingsContext } from '../contexts';
 
 
 export default () => {
   const context = useContext(UserSettingsContext);
-  if (context == null) throw new Error('UserSettingsContext nullish');
+  invariant(context != null);
   return context;
 };

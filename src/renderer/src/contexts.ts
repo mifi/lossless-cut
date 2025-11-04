@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import Color from 'color';
+import invariant from 'tiny-invariant';
 
 import { UserSettingsRoot } from './hooks/useUserSettingsRoot';
 import { ExportMode, SegmentColorIndex } from './types';
@@ -38,12 +39,12 @@ export const AppContext = React.createContext<AppContextType | undefined>(undefi
 
 export function useAppContext() {
   const context = useContext(AppContext);
-  if (context == null) throw new Error('AppContext nullish');
+  invariant(context != null);
   return context;
 }
 
 export const useSegColors = () => {
   const context = useContext(SegColorsContext);
-  if (context == null) throw new Error('SegColorsContext nullish');
+  invariant(context != null);
   return context;
 };

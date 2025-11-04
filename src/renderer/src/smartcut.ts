@@ -1,7 +1,10 @@
+import i18n from 'i18next';
+
 import { getRealVideoStreams, getVideoTimebase } from './util/streams';
 
 import { readKeyframesAroundTime, findNextKeyframe, findKeyframeAtExactTime } from './ffmpeg';
 import { FFprobeStream } from '../../../ffprobe';
+import { UserFacingError } from '../errors';
 
 const { stat } = window.require('fs-extra');
 
@@ -34,7 +37,7 @@ export async function needsSmartCut({ path, desiredCutFrom, videoStream }: {
     keyframes = await readKeyframes(60);
     nextKeyframe = findNextKeyframe(keyframes, desiredCutFrom);
   }
-  if (nextKeyframe == null) throw new Error('Cannot find any keyframe after the desired start cut point');
+  if (nextKeyframe == null) throw new UserFacingError(i18n.t('Cannot find any keyframe after the desired start cut point'));
 
   console.log('Smart cut from keyframe', { keyframe: nextKeyframe.time, desiredCutFrom });
 

@@ -9,6 +9,7 @@ import isDev from '../isDev';
 import { getSegmentTags, formatSegNum, getGuaranteedSegments } from '../segments';
 import { FormatTimecode, SegmentToExport } from '../types';
 import safeishEval from '../worker/eval';
+import { UserFacingError } from '../../errors';
 
 
 export const segNumVariable = 'SEG_NUM';
@@ -181,7 +182,7 @@ async function interpolateOutFileName(template: string, { epochMs, inputFileName
   };
 
   const ret = (await safeishEval(`\`${template}\``, context));
-  if (typeof ret !== 'string') throw new Error('Expression did not lead to a string');
+  if (typeof ret !== 'string') throw new UserFacingError(i18n.t('Expression did not lead to a string'));
   return ret;
 }
 

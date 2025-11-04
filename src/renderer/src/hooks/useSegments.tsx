@@ -25,6 +25,7 @@ import ExpressionDialog from '../components/ExpressionDialog';
 import Button, { DialogButton } from '../components/Button';
 import { ButtonRow } from '../components/Dialog';
 import * as AlertDialog from '../components/AlertDialog';
+import { UserFacingError } from '../../errors';
 
 const remote = window.require('@electron/remote');
 const { shell } = remote;
@@ -151,9 +152,9 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     clampDuration?: number | undefined,
     getNextCurrentSegIndex?: (newEdl: SegmentBase[]) => number,
   }) => {
-    if (segments.length === 0) throw new Error(i18n.t('No valid segments found'));
+    if (segments.length === 0) throw new UserFacingError(i18n.t('No valid segments found'));
 
-    if (segments.length > maxSegmentsAllowed) throw new Error(i18n.t('Tried to create too many segments (max {{maxSegmentsAllowed}}.)', { maxSegmentsAllowed }));
+    if (segments.length > maxSegmentsAllowed) throw new UserFacingError(i18n.t('Tried to create too many segments (max {{maxSegmentsAllowed}}.)', { maxSegmentsAllowed }));
 
     if (!append) clearSegColorCounter();
 
@@ -435,7 +436,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     if (index < 0) return;
     const cutSegmentsNew = [...cutSegments];
     const existing = cutSegments[index];
-    if (existing == null) throw new Error();
+    invariant(existing != null);
     cutSegmentsNew.splice(index, 1, { ...existing, ...newProps });
     safeSetCutSegments(cutSegmentsNew, fileDuration);
   }, [cutSegments, safeSetCutSegments, fileDuration]);
@@ -497,7 +498,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
           invariant(filePath != null);
           if (time != null) {
             const keyframe = await findKeyframeNearTime({ filePath, streamIndex: videoStream.index, time, mode });
-            if (keyframe == null) throw new Error(`Cannot find any keyframe within 60 seconds of frame ${time}`);
+            if (keyframe == null) throw new UserFacingError(i18n.t('Cannot find any keyframe within 60 seconds of frame {{time}}', { time }));
             newSegment[key] = keyframe;
           }
         };
@@ -516,7 +517,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     if (newOrder > cutSegments.length - 1 || newOrder < 0) return;
     const newSegments = [...cutSegments];
     const removedSeg = newSegments.splice(index, 1)[0];
-    if (removedSeg == null) throw new Error();
+    invariant(removedSeg != null);
     newSegments.splice(newOrder, 0, removedSeg);
     safeSetCutSegments(newSegments);
     setCurrentSegIndex(newOrder);
@@ -787,20 +788,20 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       invariant(typeof response === 'object' && response != null, i18n.t('The expression must return an object'));
       const ret: Partial<Pick<StateSegment, 'name' | 'start' | 'end' | 'tags'>> = {};
       if ('label' in response) {
-        if (typeof response.label !== 'string') throw new Error(i18n.t('"{{property}}" must be a string', { property: 'label' }));
+        if (typeof response.label !== 'string') throw new UserFacingError(i18n.t('"{{property}}" must be a string', { property: 'label' }));
         ret.name = response.label;
       }
       if ('start' in response) {
-        if (typeof response.start !== 'number') throw new Error(i18n.t('"{{property}}" must be a number', { property: 'start' }));
+        if (typeof response.start !== 'number') throw new UserFacingError(i18n.t('"{{property}}" must be a number', { property: 'start' }));
         ret.start = response.start;
       }
       if ('end' in response) {
-        if (!(typeof response.end === 'number' || response.end === undefined)) throw new Error(i18n.t('"{{property}}" must be a number', { property: 'end' }));
+        if (!(typeof response.end === 'number' || response.end === undefined)) throw new UserFacingError(i18n.t('"{{property}}" must be a number', { property: 'end' }));
         ret.end = response.end;
       }
       if ('tags' in response) {
         const tags = segmentTagsSchema.safeParse(response.tags);
-        if (!tags.success) throw new Error(i18n.t('"{{property}}" must be an object of strings', { property: 'tags' }));
+        if (!tags.success) throw new UserFacingError(i18n.t('"{{property}}" must be an object of strings', { property: 'tags' }));
         ret.tags = tags.data;
       }
       return ret;

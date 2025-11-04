@@ -100,7 +100,7 @@ import useSubtitles from './hooks/useSubtitles';
 import useStreamsMeta from './hooks/useStreamsMeta';
 import { bottomStyle, videoStyle } from './styles';
 import styles from './App.module.css';
-import { DirectoryAccessDeclinedError } from '../errors';
+import { DirectoryAccessDeclinedError, UserFacingError } from '../errors';
 import SwalContainer from './components/SwalContainer';
 import ErrorDialog from './components/ErrorDialog';
 import useErrorHandling from './hooks/useErrorHandling';
@@ -405,7 +405,7 @@ function App() {
     index += 1;
     if (index >= captureFormats.length) index = 0;
     const newCaptureFormat = captureFormats[index];
-    if (newCaptureFormat == null) throw new Error();
+    invariant(newCaptureFormat != null);
     return newCaptureFormat;
   }), [setCaptureFormat]);
 
@@ -1228,7 +1228,7 @@ function App() {
       await withErrorHandling(async () => {
         const currentTime = getRelevantTime();
         const video = videoRef.current;
-        if (video == null) throw new Error();
+        invariant(video != null);
         const usingFfmpeg = usingPreviewFile || captureFrameMethod === 'ffmpeg';
         const outPath = usingFfmpeg
           ? await captureFrameFromFfmpeg({ customOutDir, filePath, time: currentTime, captureFormat, quality: captureFrameQuality })
@@ -1711,7 +1711,7 @@ function App() {
         return [...existingFiles, ...mapPathsToFiles(newUniquePaths)];
       }
       const [firstNewPath] = newPaths;
-      if (firstNewPath == null) throw new Error();
+      invariant(firstNewPath != null);
       setSelectedBatchFiles([firstNewPath]);
       return mapPathsToFiles(newPaths);
     });
@@ -1884,7 +1884,7 @@ function App() {
         console.warn('No video tag to full screen');
         return;
       }
-      if (videoContainerRef.current == null) throw new Error('videoContainerRef.current == null');
+      invariant(videoContainerRef.current != null);
       await screenfull.toggle(videoContainerRef.current, { navigationUI: 'hide' });
     } catch (err) {
       console.error('Failed to toggle fullscreen', err);
@@ -2207,7 +2207,7 @@ function App() {
 
           console.log('Trying to create preview');
 
-          if (!isDurationValid(await getDuration(filePath))) throw new Error('Invalid duration');
+          if (!isDurationValid(await getDuration(filePath))) throw new UserFacingError(i18n.t('Invalid duration'));
 
           if (hasVideo || hasAudio) {
             await html5ifyAndLoadWithPreferences(customOutDir, filePath, 'fastest', hasVideo, hasAudio);

@@ -6,12 +6,14 @@ import sortBy from 'lodash/sortBy';
 import pRetry, { Options } from 'p-retry';
 import { ExecaError } from 'execa';
 import confetti from 'canvas-confetti';
+import invariant from 'tiny-invariant';
 
 import isDev from './isDev';
 import { ffmpegExtractWindow } from './util/constants';
 import { appName } from '../../main/common';
 import { Html5ifyMode } from '../../../types';
 import getSwal from './swal';
+import { UserFacingError } from '../errors';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
 const fsExtra = window.require('fs-extra');
@@ -234,7 +236,7 @@ export async function findExistingHtml5FriendlyFile(fp: string, cod: string | un
   const prefix = getSuffixedFileName(fp, html5ifiedPrefix);
 
   const outDir = getOutDir(cod, fp);
-  if (outDir == null) throw new Error();
+  invariant(outDir != null);
   const dirEntries = await readdir(outDir);
 
   const html5ifiedDirEntries = dirEntries.filter((entry) => entry.startsWith(prefix));
@@ -454,7 +456,7 @@ export async function readVideoTs(videoTsPath: string) {
   const files = await readdir(videoTsPath);
   const relevantFiles = files.filter((file) => /^vts_\d+_\d+\.vob$/i.test(file) && !/^vts_\d+_00\.vob$/i.test(file)); // skip menu
   const ret = sortBy(relevantFiles).map((file) => join(videoTsPath, file));
-  if (ret.length === 0) throw new Error('No VTS vob files found in folder');
+  if (ret.length === 0) throw new UserFacingError(i18n.t('No VTS vob files found in folder'));
   return ret;
 }
 
@@ -470,7 +472,7 @@ export async function readDirRecursively(dirPath: string) {
     return [absPath];
   }, { concurrency: 5 })).flat();
 
-  if (ret.length === 0) throw new Error('No files found in folder');
+  if (ret.length === 0) throw new UserFacingError(i18n.t('No files found in folder'));
   return ret;
 }
 

@@ -53,7 +53,7 @@ export const sortSegments = <T extends { start: number }>(segments: T[]) => sort
 // https://stackoverflow.com/a/30472982/6519037
 export function partitionIntoOverlappingRanges<T extends SegmentBase>(array: T[]) {
   const [firstItem] = array;
-  if (firstItem == null) throw new Error('No segments');
+  invariant(firstItem != null);
 
   const ret: T[][] = [
     [firstItem],
@@ -68,7 +68,7 @@ export function partitionIntoOverlappingRanges<T extends SegmentBase>(array: T[]
       if (getSegmentEnd(a) > getSegmentEnd(b)) return -1;
       return 0;
     });
-    if (array2[0] == null) throw new Error();
+    invariant(array2[0] != null);
     return getSegmentEnd(array2[0]);
   };
 

@@ -3,6 +3,7 @@ import flatMap from 'lodash/flatMap';
 import sum from 'lodash/sum';
 import pMap from 'p-map';
 import invariant from 'tiny-invariant';
+import i18n from 'i18next';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
@@ -13,6 +14,7 @@ import { FFprobeStream } from '../../../../ffprobe';
 import { AvoidNegativeTs, Html5ifyMode, PreserveMetadata } from '../../../../types';
 import { AllFilesMeta, Chapter, CopyfileStreams, CustomTagsByFile, LiteFFprobeStream, ParamsByStreamId, SegmentToExport } from '../types';
 import { LossyMode } from '../../../main';
+import { UserFacingError } from '../../errors';
 
 const { join, resolve, dirname } = window.require('path');
 const { writeFile, mkdir, access, constants: { F_OK, W_OK } } = window.require('fs/promises');
@@ -596,7 +598,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       }
 
       const { losslessCutFrom, segmentNeedsSmartCut } = await needsSmartCut({ path: filePath, desiredCutFrom, videoStream });
-      if (segmentNeedsSmartCut && !detectedFps) throw new Error('Smart cut is not possible when FPS is unknown');
+      if (segmentNeedsSmartCut && !detectedFps) throw new UserFacingError(i18n.t('Smart cut is not possible when FPS is unknown'));
       console.log('Smart cut on video stream', videoStream.index);
 
       // If we are cutting within two keyframes, just encode the whole part and return that
@@ -951,7 +953,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const outPaths = await pMap(streams, async ({ index, codec_name: codec, codec_type: type }) => {
       const ext = codec || 'bin';
       const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
-      if (outPath == null) throw new Error();
+      invariant(outPath != null);
       if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
 
       streamArgs = [

@@ -13,6 +13,7 @@ import { formatDuration } from './util/duration';
 import { invertSegments, sortSegments } from './segments';
 import { GetFrameCount, SegmentBase, SegmentTags } from './types';
 import parseCmx3600 from './cmx3600';
+import { UserFacingError } from '../errors';
 
 
 export const getTimeFromFrameNum = (detectedFps: number, frameNum: number) => frameNum / detectedFps;
@@ -57,7 +58,7 @@ const csvHeader = [
 export function parseCsv(csvStr: string, parseTimeFn: (a: string) => number | undefined) {
   const rows: string[][] = csvParse(csvStr, {});
 
-  if (rows.length === 0) throw new Error(i18n.t('No rows found'));
+  if (rows.length === 0) throw new UserFacingError(i18n.t('No rows found'));
   invariant(rows.every((row) => row.length > 0), 'One row had no columns.');
 
   // from header
@@ -99,7 +100,7 @@ export function parseCsv(csvStr: string, parseTimeFn: (a: string) => number | un
     && (end === undefined || !Number.isNaN(end))
   ))) {
     console.log(mapped);
-    throw new Error(i18n.t('Invalid start or end value. Must contain a number of seconds'));
+    throw new UserFacingError(i18n.t('Invalid start or end value. Must contain a number of seconds'));
   }
 
   return mapped;
@@ -194,7 +195,7 @@ export async function parseMplayerEdl(text: string) {
     ...map(sceneMarkers, 'Scene Marker', 2),
     ...map(commercialBreaks, 'Commercial Break', 3),
   ];
-  if (out.length === 0) throw new Error(i18n.t('Invalid EDL data found'));
+  if (out.length === 0) throw new UserFacingError(i18n.t('Invalid EDL data found'));
   return out;
 }
 

@@ -1,5 +1,5 @@
 import { memo, useMemo, useRef, useCallback, useState, SetStateAction, Dispatch, MouseEventHandler, CSSProperties, useEffect } from 'react';
-import { FaYinYang, FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaAngleRight, FaRegCheckCircle, FaRegCircle, FaTimes } from 'react-icons/fa';
+import { FaYinYang, FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaRegCheckCircle, FaRegCircle, FaTimes } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 import { useTranslation, Trans } from 'react-i18next';
@@ -8,6 +8,7 @@ import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } 
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { CSS } from '@dnd-kit/utilities';
+import invariant from 'tiny-invariant';
 
 import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
@@ -479,7 +480,7 @@ function SegmentList({
   })), [setEditingSegmentTags]);
 
   const onTagReset = useCallback((tag: string) => setEditingSegmentTags((tags) => {
-    if (tags == null) throw new Error();
+    invariant(tags != null);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [tag]: deleted, ...rest } = tags;
     return rest;
@@ -491,7 +492,7 @@ function SegmentList({
   }, [setEditingSegmentTags, setEditingSegmentTagsSegmentIndex]);
 
   const onSegmentTagsConfirm = useCallback(() => {
-    if (editingSegmentTagsSegmentIndex == null) throw new Error();
+    invariant(editingSegmentTagsSegmentIndex != null);
     updateSegAtIndex(editingSegmentTagsSegmentIndex, { tags: editingSegmentTags });
     onSegmentTagsCloseComplete();
   }, [editingSegmentTags, editingSegmentTagsSegmentIndex, onSegmentTagsCloseComplete, updateSegAtIndex]);

@@ -11,3 +11,10 @@ export class UnsupportedFileError extends Error {
     this.name = 'UnsupportedFileError';
   }
 }
+
+export class UserFacingError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'UserFacingError';
+  }
+}
