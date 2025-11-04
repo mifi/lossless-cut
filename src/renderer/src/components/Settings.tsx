@@ -1,9 +1,9 @@
 import { CSSProperties, ChangeEventHandler, TdHTMLAttributes, memo, useCallback, useMemo, useState } from 'react';
 import { FaYinYang, FaKeyboard, FaGlobe, FaBroom, FaCogs, FaHashtag, FaClock, FaFolder, FaFile, FaTimes } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
-import { HTMLMotionProps, motion } from 'framer-motion';
 import invariant from 'tiny-invariant';
 
+import Row from './AnimatedTr';
 import CaptureFormatButton from './CaptureFormatButton';
 import AutoExportToggler from './AutoExportToggler';
 import Switch from './Switch';
@@ -25,16 +25,6 @@ const Button = ({ style, ...props }: ButtonProps) => <ButtonRaw style={{ padding
 const Select = ({ style, ...props }: SelectProps) => <SelectRaw style={{ padding: '.5em 1.9em .5em .9em', ...style }} {...props} />;
 
 
-const Row = (props: HTMLMotionProps<'tr'>) => (
-  <motion.tr
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    {...props}
-    transition={{ duration: 0.5, ease: 'easeIn' }}
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-  />
-);
 // eslint-disable-next-line react/jsx-props-no-spreading
 const KeyCell = (props: TdHTMLAttributes<HTMLTableCellElement>) => <td {...props} />;
 
@@ -106,8 +96,13 @@ function Settings({
 
   const changeCustomFfPath = useCallback(async () => {
     const newCustomFfPath = await askForFfPath(customFfPath);
+    if (newCustomFfPath == null) return;
     setCustomFfPath(newCustomFfPath);
   }, [customFfPath, setCustomFfPath]);
+
+  const clearCustomFfPath = useCallback(() => {
+    setCustomFfPath(undefined);
+  }, [setCustomFfPath]);
 
   return (
     <table className={styles['settings']}>
@@ -185,10 +180,15 @@ function Settings({
               </div>
             </KeyCell>
             <td>
+              <Truncated maxWidth="15em">{customFfPath}</Truncated>
               <Button onClick={changeCustomFfPath}>
                 <FaCogs style={{ verticalAlign: 'middle', marginRight: '.4em' }} />{customFfPath ? t('Using external ffmpeg') : t('Using built-in ffmpeg')}
               </Button>
-              <Truncated maxWidth="15em">{customFfPath}</Truncated>
+              {customFfPath && (
+                <Button onClick={clearCustomFfPath} title={t('Clear')}>
+                  <FaTimes />
+                </Button>
+              )}
             </td>
           </Row>
         )}
@@ -246,8 +246,8 @@ function Settings({
               {customOutDir ? t('Custom working directory') : t('Same directory as input file')}...
             </Button>
             {customOutDir && (
-              <Button onClick={clearOutDir}>
-                <FaTimes style={{ marginRight: '.3em' }} />{t('Clear working directory')}
+              <Button onClick={clearOutDir} title={t('Clear')}>
+                <FaTimes />
               </Button>
             )}
           </td>

@@ -35,7 +35,7 @@ function ExportSheet({
             transition={{ duration: 0.3, easings: ['easeOut'] }}
           >
             <div className={styles['box']} style={{ width }}>
-              <h1 style={{ textTransform: 'uppercase', fontSize: '1.4em', marginTop: 0, marginBottom: '.5em' }}>{title}</h1>
+              <h1 style={{ fontSize: '1.4em', marginTop: 0, marginBottom: '.5em' }}>{title}</h1>
 
               <CloseButton type="submit" style={{ top: 0, right: 0 }} onClick={onClosePress} />
 

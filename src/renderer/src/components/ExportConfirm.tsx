@@ -1,4 +1,4 @@
-import { CSSProperties, Dispatch, ReactNode, SetStateAction, memo, useCallback, useMemo } from 'react';
+import { CSSProperties, Dispatch, ReactNode, SetStateAction, memo, useCallback, useMemo, useState } from 'react';
 import { FaExclamationTriangle, FaInfoCircle, FaRegCheckCircle } from 'react-icons/fa';
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
@@ -27,11 +27,12 @@ import { UseSegments } from '../hooks/useSegments';
 import ExportSheet from './ExportSheet';
 import ToggleExportConfirm from './ToggleExportConfirm';
 import { LossyMode } from '../../../main';
+import AnimatedTr from './AnimatedTr';
 
 
 const outDirStyle: CSSProperties = { ...highlightedTextStyle, wordBreak: 'break-all', cursor: 'pointer' };
 
-const noticeStyle: CSSProperties = { fontSize: '85%', marginBottom: '.5em' };
+const noticeStyle: CSSProperties = { marginBottom: '.5em' };
 const infoStyle: CSSProperties = { ...noticeStyle, color: 'var(--blue-12)' };
 const warningStyle: CSSProperties = { ...noticeStyle, color: 'var(--orange-8)' };
 
@@ -62,11 +63,11 @@ function renderNoticeIcon(notice: { warning?: boolean | undefined } | undefined,
   );
 }
 
-function renderNotice(notice: { warning?: boolean | undefined, text: ReactNode } | undefined) {
+function renderNotice(notice: { warning?: boolean | undefined, text: ReactNode } | undefined, { key, style }: { key?: string, style?: CSSProperties }) {
   if (notice == null) return null;
   const { warning, text } = notice;
   return (
-    <div style={{ ...(warning ? warningStyle : infoStyle), gap: '0 .5em' }}>
+    <div key={key} style={{ ...(warning ? warningStyle : infoStyle), gap: '0 .5em', ...style }}>
       {renderNoticeIcon({ warning })} {text}
     </div>
   );
@@ -129,7 +130,9 @@ function ExportConfirm({
 }) {
   const { t } = useTranslation();
 
-  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate } = useUserSettings();
+  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate, simpleMode } = useUserSettings();
+
+  const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
 
   const togglePreserveChapters = useCallback(() => setPreserveChapters((val) => !val), [setPreserveChapters]);
   const togglePreserveMovData = useCallback(() => setPreserveMovData((val) => !val), [setPreserveMovData]);
@@ -171,6 +174,7 @@ function ExportConfirm({
     if (effectiveExportMode === 'separate' && !areWeCutting) {
       generic.push({ text: t('Exporting whole file without cutting, because there are no segments to export.') });
     }
+
     // https://github.com/mifi/lossless-cut/issues/1809
     if (areWeCutting && outFormat === 'flac') {
       generic.push({ warning: true, text: t('There is a known issue in FFmpeg with cutting FLAC files. The file will be re-encoded, which is still lossless, but the export may be slower.') });
@@ -302,16 +306,14 @@ function ExportConfirm({
     >
       <table className={styles['options']}>
         <tbody>
-          {notices.generic.map(({ warning, text }) => (
-            <tr key={text}>
-              <td colSpan={2}>
-                <div style={{ ...(warning ? { ...noticeStyle, color: 'var(--orange-8)' } : infoStyle), display: 'flex', alignItems: 'center', gap: '0 .5em' }}>
-                  {renderNotice({ warning, text })}
-                </div>
-              </td>
-              <td />
-            </tr>
-          ))}
+          <tr>
+            <td colSpan={2}>
+              {notices.generic.map(({ warning, text }) => (
+                renderNotice({ warning, text }, { key: text })
+              ))}
+            </td>
+            <td />
+          </tr>
 
           {segmentsOrInverse.selected.length !== segmentsOrInverse.all.length && (
             <tr>
@@ -325,7 +327,7 @@ function ExportConfirm({
           <tr>
             <td>
               {segmentsOrInverse.selected.length > 1 ? t('Export mode for {{segments}} segments', { segments: segmentsOrInverse.selected.length }) : t('Export mode')}
-              {renderNotice(notices.specific['exportMode'])}
+              {renderNotice(notices.specific['exportMode'], { style: { fontSize: '85%' } })}
             </td>
             <td>
               <ExportModeButton selectedSegments={segmentsOrInverse.selected} style={{ height: '1.8em' }} />
@@ -350,7 +352,7 @@ function ExportConfirm({
           <tr>
             <td>
               <Trans>Input has {{ numStreamsTotal }} tracks</Trans>
-              {renderNotice(notices.specific['problematicStreams'])}
+              {renderNotice(notices.specific['problematicStreams'], { style: { fontSize: '85%' } })}
             </td>
             <td>
               <HighlightedText style={{ cursor: 'pointer' }} onClick={onShowStreamsSelectorClick}><Trans>Keeping {{ numStreamsToCopy }} tracks</Trans></HighlightedText>
@@ -395,7 +397,7 @@ function ExportConfirm({
           <tr>
             <td>
               {t('Overwrite existing files')}
-              {renderNotice(notices.specific['overwriteOutput'])}
+              {renderNotice(notices.specific['overwriteOutput'], { style: { fontSize: '85%' } })}
             </td>
             <td>
               <Switch checked={enableOverwriteOutput} onCheckedChange={setEnableOverwriteOutput} />
@@ -418,224 +420,240 @@ function ExportConfirm({
             <td />
           </tr>
 
-          {areWeCutting && (
-            <>
-              <tr>
-                <td>
-                  {t('Shift all start times')}
-                </td>
-                <td>
-                  <ShiftTimes values={adjustCutFromValues} num={cutFromAdjustmentFrames} setNum={setCutFromAdjustmentFrames} />
-                </td>
-                <td>
-                  <HelpIcon onClick={onCutFromAdjustmentFramesHelpPress} />
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  {t('Shift all end times')}
-                </td>
-                <td>
-                  <ShiftTimes values={adjustCutToValues} num={cutToAdjustmentFrames} setNum={setCutToAdjustmentFrames} />
-                </td>
-                <td />
-              </tr>
-            </>
+          {simpleMode && (
+            <tr>
+              <td>
+                {t('Show advanced options')}
+              </td>
+              <td>
+                <Switch checked={showAdvanced} onCheckedChange={setShowAdvanced} />
+              </td>
+              <td />
+            </tr>
           )}
 
-          {isMov && (
+          {showAdvanced && (
             <>
-              <tr>
-                <td>
-                  {t('Enable MOV Faststart?')}
-                </td>
-                <td>
-                  <Switch checked={movFastStart} onCheckedChange={toggleMovFastStart} />
-                  {renderNotice(notices.specific['movFastStart'])}
-                </td>
-                <td>
-                  {renderNoticeIcon(notices.specific['movFastStart'], rightIconStyle) ?? <HelpIcon onClick={onMovFastStartHelpPress} />}
-                </td>
-              </tr>
+              {areWeCutting && (
+                <>
+                  <AnimatedTr>
+                    <td>
+                      {t('Shift all start times')}
+                    </td>
+                    <td>
+                      <ShiftTimes values={adjustCutFromValues} num={cutFromAdjustmentFrames} setNum={setCutFromAdjustmentFrames} />
+                    </td>
+                    <td>
+                      <HelpIcon onClick={onCutFromAdjustmentFramesHelpPress} />
+                    </td>
+                  </AnimatedTr>
+                  <AnimatedTr>
+                    <td>
+                      {t('Shift all end times')}
+                    </td>
+                    <td>
+                      <ShiftTimes values={adjustCutToValues} num={cutToAdjustmentFrames} setNum={setCutToAdjustmentFrames} />
+                    </td>
+                    <td />
+                  </AnimatedTr>
+                </>
+              )}
 
-              <tr>
-                <td>
-                  {t('Preserve all MP4/MOV metadata?')}
-                  {renderNotice(notices.specific['preserveMovData'])}
-                </td>
-                <td>
-                  <Switch checked={preserveMovData} onCheckedChange={togglePreserveMovData} />
-                </td>
-                <td>
-                  {renderNoticeIcon(notices.specific['preserveMovData'], rightIconStyle) ?? <HelpIcon onClick={onPreserveMovDataHelpPress} />}
-                </td>
-              </tr>
-            </>
-          )}
+              {isMov && (
+                <>
+                  <AnimatedTr>
+                    <td>
+                      {t('Enable MOV Faststart?')}
+                    </td>
+                    <td>
+                      <Switch checked={movFastStart} onCheckedChange={toggleMovFastStart} />
+                      {renderNotice(notices.specific['movFastStart'], { style: { fontSize: '85%' } })}
+                    </td>
+                    <td>
+                      {renderNoticeIcon(notices.specific['movFastStart'], rightIconStyle) ?? <HelpIcon onClick={onMovFastStartHelpPress} />}
+                    </td>
+                  </AnimatedTr>
 
-          <tr>
-            <td>
-              {t('Preserve chapters')}
-            </td>
-            <td>
-              <Switch checked={preserveChapters} onCheckedChange={togglePreserveChapters} />
-            </td>
-            <td>
-              <HelpIcon onClick={onPreserveChaptersPress} />
-            </td>
-          </tr>
+                  <AnimatedTr>
+                    <td>
+                      {t('Preserve all MP4/MOV metadata?')}
+                      {renderNotice(notices.specific['preserveMovData'], { style: { fontSize: '85%' } })}
+                    </td>
+                    <td>
+                      <Switch checked={preserveMovData} onCheckedChange={togglePreserveMovData} />
+                    </td>
+                    <td>
+                      {renderNoticeIcon(notices.specific['preserveMovData'], rightIconStyle) ?? <HelpIcon onClick={onPreserveMovDataHelpPress} />}
+                    </td>
+                  </AnimatedTr>
+                </>
+              )}
 
-          <tr>
-            <td>
-              {t('Preserve metadata')}
-            </td>
-            <td>
-              <Select value={preserveMetadata} onChange={(e) => setPreserveMetadata(e.target.value as PreserveMetadata)} style={{ height: 20, marginLeft: 5 }}>
-                <option value={'default' satisfies PreserveMetadata}>{t('Default')}</option>
-                <option value={'none' satisfies PreserveMetadata}>{t('None')}</option>
-                <option value={'nonglobal' satisfies PreserveMetadata}>{t('Non-global')}</option>
-              </Select>
-            </td>
-            <td>
-              <HelpIcon onClick={onPreserveMetadataHelpPress} />
-            </td>
-          </tr>
+              <AnimatedTr>
+                <td>
+                  {t('Preserve chapters')}
+                </td>
+                <td>
+                  <Switch checked={preserveChapters} onCheckedChange={togglePreserveChapters} />
+                </td>
+                <td>
+                  <HelpIcon onClick={onPreserveChaptersPress} />
+                </td>
+              </AnimatedTr>
 
-          {willMerge && (
-            <>
-              <tr>
+              <AnimatedTr>
                 <td>
-                  {t('Create chapters from merged segments? (slow)')}
+                  {t('Preserve metadata')}
                 </td>
                 <td>
-                  <Switch checked={segmentsToChapters} onCheckedChange={toggleSegmentsToChapters} />
+                  <Select value={preserveMetadata} onChange={(e) => setPreserveMetadata(e.target.value as PreserveMetadata)} style={{ height: 20, marginLeft: 5 }}>
+                    <option value={'default' satisfies PreserveMetadata}>{t('Default')}</option>
+                    <option value={'none' satisfies PreserveMetadata}>{t('None')}</option>
+                    <option value={'nonglobal' satisfies PreserveMetadata}>{t('Non-global')}</option>
+                  </Select>
                 </td>
                 <td>
-                  <HelpIcon onClick={onSegmentsToChaptersHelpPress} />
+                  <HelpIcon onClick={onPreserveMetadataHelpPress} />
                 </td>
-              </tr>
+              </AnimatedTr>
 
-              <tr>
-                <td>
-                  {t('Preserve original metadata when merging? (slow)')}
-                </td>
-                <td>
-                  <Switch checked={preserveMetadataOnMerge} onCheckedChange={togglePreserveMetadataOnMerge} />
-                </td>
-                <td>
-                  <HelpIcon onClick={onPreserveMetadataOnMergeHelpPress} />
-                </td>
-              </tr>
-            </>
-          )}
+              {willMerge && (
+                <>
+                  <AnimatedTr>
+                    <td>
+                      {t('Create chapters from merged segments? (slow)')}
+                    </td>
+                    <td>
+                      <Switch checked={segmentsToChapters} onCheckedChange={toggleSegmentsToChapters} />
+                    </td>
+                    <td>
+                      <HelpIcon onClick={onSegmentsToChaptersHelpPress} />
+                    </td>
+                  </AnimatedTr>
 
-          {areWeCutting && (
-            <>
-              <tr>
-                <td>
-                  {t('Smart cut (experimental):')}
-                  {renderNotice(notices.specific['smartCut'])}
-                </td>
-                <td>
-                  <Switch checked={enableSmartCut} onCheckedChange={() => setEnableSmartCut((v) => !v)} />
-                </td>
-                <td>
-                  {renderNoticeIcon(notices.specific['smartCut'], rightIconStyle) ?? <HelpIcon onClick={onSmartCutHelpPress} />}
-                </td>
-              </tr>
+                  <AnimatedTr>
+                    <td>
+                      {t('Preserve original metadata when merging? (slow)')}
+                    </td>
+                    <td>
+                      <Switch checked={preserveMetadataOnMerge} onCheckedChange={togglePreserveMetadataOnMerge} />
+                    </td>
+                    <td>
+                      <HelpIcon onClick={onPreserveMetadataOnMergeHelpPress} />
+                    </td>
+                  </AnimatedTr>
+                </>
+              )}
+
+              {areWeCutting && (
+                <>
+                  <AnimatedTr>
+                    <td>
+                      {t('Smart cut (experimental):')}
+                      {renderNotice(notices.specific['smartCut'], { style: { fontSize: '85%' } })}
+                    </td>
+                    <td>
+                      <Switch checked={enableSmartCut} onCheckedChange={() => setEnableSmartCut((v) => !v)} />
+                    </td>
+                    <td>
+                      {renderNoticeIcon(notices.specific['smartCut'], rightIconStyle) ?? <HelpIcon onClick={onSmartCutHelpPress} />}
+                    </td>
+                  </AnimatedTr>
+
+                  {!isEncoding && (
+                    <AnimatedTr>
+                      <td>
+                        {t('Keyframe cut mode')}
+                        {renderNotice(notices.specific['cutMode'], { style: { fontSize: '85%' } })}
+                      </td>
+                      <td>
+                        <Switch checked={keyframeCut} onCheckedChange={() => toggleKeyframeCut()} />
+                      </td>
+                      <td>
+                        {renderNoticeIcon(notices.specific['cutMode'], rightIconStyle) ?? <HelpIcon onClick={onKeyframeCutHelpPress} />}
+                      </td>
+                    </AnimatedTr>
+                  )}
+                </>
+              )}
+
+
+              {isEncoding && (
+                <AnimatedTr>
+                  <td>
+                    {t('Smart cut auto detect bitrate')}
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                      {encBitrate != null && (
+                        <>
+                          <TextInput value={encBitrate} onChange={handleEncBitrateChange} style={{ width: '4em', flexGrow: 0, marginRight: '.3em' }} />
+                          <span style={{ marginRight: '.3em' }}>{t('kbit/s')}</span>
+                        </>
+                      )}
+                      <span><Switch checked={encBitrate == null} onCheckedChange={handleEncBitrateToggle} /></span>
+                    </div>
+                  </td>
+                  <td />
+                </AnimatedTr>
+              )}
+
+              {lossyMode != null && (
+                <AnimatedTr>
+                  <td>
+                    Lossy mode
+                  </td>
+                  <td>
+                    <Switch disabled checked={lossyMode != null} />
+                    <div>{lossyMode.videoEncoder}</div>
+                  </td>
+                  <td />
+                </AnimatedTr>
+              )}
 
               {!isEncoding && (
-                <tr>
+                <AnimatedTr>
                   <td>
-                    {t('Keyframe cut mode')}
-                    {renderNotice(notices.specific['cutMode'])}
+                    &quot;ffmpeg&quot; <code className="highlighted">avoid_negative_ts</code>
+                    {renderNotice(notices.specific['avoidNegativeTs'], { style: { fontSize: '85%' } })}
                   </td>
                   <td>
-                    <Switch checked={keyframeCut} onCheckedChange={() => toggleKeyframeCut()} />
+                    <Select value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value as AvoidNegativeTs)} style={{ height: 20, marginLeft: 5 }}>
+                      <option value={'auto' satisfies AvoidNegativeTs}>auto</option>
+                      <option value={'make_zero' satisfies AvoidNegativeTs}>make_zero</option>
+                      <option value={'make_non_negative' satisfies AvoidNegativeTs}>make_non_negative</option>
+                      <option value={'disabled' satisfies AvoidNegativeTs}>disabled</option>
+                    </Select>
                   </td>
                   <td>
-                    {renderNoticeIcon(notices.specific['cutMode'], rightIconStyle) ?? <HelpIcon onClick={onKeyframeCutHelpPress} />}
+                    {renderNoticeIcon(notices.specific['avoidNegativeTs'], rightIconStyle) ?? <HelpIcon onClick={onAvoidNegativeTsHelpPress} />}
                   </td>
-                </tr>
+                </AnimatedTr>
               )}
+
+              <AnimatedTr>
+                <td>
+                  {t('"ffmpeg" experimental flag')}
+                </td>
+                <td>
+                  <Switch checked={ffmpegExperimental} onCheckedChange={setFfmpegExperimental} />
+                </td>
+                <td>
+                  <HelpIcon onClick={onFfmpegExperimentalHelpPress} />
+                </td>
+              </AnimatedTr>
+
+              <AnimatedTr>
+                <td>
+                  {t('More settings')}
+                </td>
+                <td>
+                  <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ marginLeft: 5 }} />
+                </td>
+                <td />
+              </AnimatedTr>
             </>
           )}
-
-
-          {isEncoding && (
-            <tr>
-              <td>
-                {t('Smart cut auto detect bitrate')}
-              </td>
-              <td>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                  {encBitrate != null && (
-                    <>
-                      <TextInput value={encBitrate} onChange={handleEncBitrateChange} style={{ width: '4em', flexGrow: 0, marginRight: '.3em' }} />
-                      <span style={{ marginRight: '.3em' }}>{t('kbit/s')}</span>
-                    </>
-                  )}
-                  <span><Switch checked={encBitrate == null} onCheckedChange={handleEncBitrateToggle} /></span>
-                </div>
-              </td>
-              <td />
-            </tr>
-          )}
-
-          {lossyMode != null && (
-            <tr>
-              <td>
-                Lossy mode
-              </td>
-              <td>
-                <Switch disabled checked={lossyMode != null} />
-                <div>{lossyMode.videoEncoder}</div>
-              </td>
-              <td />
-            </tr>
-          )}
-
-          {!isEncoding && (
-            <tr>
-              <td>
-                &quot;ffmpeg&quot; <code className="highlighted">avoid_negative_ts</code>
-                {renderNotice(notices.specific['avoidNegativeTs'])}
-              </td>
-              <td>
-                <Select value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value as AvoidNegativeTs)} style={{ height: 20, marginLeft: 5 }}>
-                  <option value={'auto' satisfies AvoidNegativeTs}>auto</option>
-                  <option value={'make_zero' satisfies AvoidNegativeTs}>make_zero</option>
-                  <option value={'make_non_negative' satisfies AvoidNegativeTs}>make_non_negative</option>
-                  <option value={'disabled' satisfies AvoidNegativeTs}>disabled</option>
-                </Select>
-              </td>
-              <td>
-                {renderNoticeIcon(notices.specific['avoidNegativeTs'], rightIconStyle) ?? <HelpIcon onClick={onAvoidNegativeTsHelpPress} />}
-              </td>
-            </tr>
-          )}
-
-          <tr>
-            <td>
-              {t('"ffmpeg" experimental flag')}
-            </td>
-            <td>
-              <Switch checked={ffmpegExperimental} onCheckedChange={setFfmpegExperimental} />
-            </td>
-            <td>
-              <HelpIcon onClick={onFfmpegExperimentalHelpPress} />
-            </td>
-          </tr>
-
-          <tr>
-            <td>
-              {t('More settings')}
-            </td>
-            <td>
-              <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ marginLeft: 5 }} />
-            </td>
-            <td />
-          </tr>
         </tbody>
       </table>
     </ExportSheet>
