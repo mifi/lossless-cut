@@ -169,7 +169,7 @@ const KeyboardShortcuts = memo(({
 }) => {
   const { t } = useTranslation();
 
-  const { mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey } = useUserSettings();
+  const { mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, segmentMouseModifierKey } = useUserSettings();
 
   const { actionsMap, extraLinesPerCategory } = useMemo(() => {
     const playbackCategory = t('Playback');
@@ -749,13 +749,22 @@ const KeyboardShortcuts = memo(({
 
         <WheelModifier key="4" text={t('Zoom in/out timeline')} wheelText={t('Mouse scroll/wheel up/down')} modifier={mouseWheelZoomModifierKey} />,
       ],
+      [segmentsAndCutpointsCategory]: [
+        <div key="1" style={{ ...rowStyle, alignItems: 'center' }}>
+          <span>{t('Manipulate segments on timeline')}</span>
+          <div style={{ flexGrow: 1 }} />
+          <kbd style={{ marginRight: '.7em' }}>{segmentMouseModifierKey}</kbd>
+          <FaMouse style={{ marginRight: '.3em' }} />
+          <span>{t('Mouse click and drag')}</span>
+        </div>,
+      ],
     };
 
     return {
       extraLinesPerCategory,
       actionsMap,
     };
-  }, [currentCutSeg, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, mouseWheelZoomModifierKey, t]);
+  }, [currentCutSeg, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, mouseWheelZoomModifierKey, segmentMouseModifierKey, t]);
 
   useEffect(() => {
     // cleanup invalid bindings, to prevent renamed actions from blocking user to rebind

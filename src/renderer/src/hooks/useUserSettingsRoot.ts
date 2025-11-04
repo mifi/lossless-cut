@@ -153,6 +153,8 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ mouseWheelFrameSeekModifierKey }), [mouseWheelFrameSeekModifierKey]);
   const [mouseWheelKeyframeSeekModifierKey, setMouseWheelKeyframeSeekModifierKey] = useState(safeGetConfigInitial('mouseWheelKeyframeSeekModifierKey'));
   useEffect(() => safeSetConfig({ mouseWheelKeyframeSeekModifierKey }), [mouseWheelKeyframeSeekModifierKey]);
+  const [segmentMouseModifierKey, setSegmentMouseModifierKey] = useState(safeGetConfigInitial('segmentMouseModifierKey'));
+  useEffect(() => safeSetConfig({ segmentMouseModifierKey }), [segmentMouseModifierKey]);
   const [captureFrameMethod, setCaptureFrameMethod] = useState(safeGetConfigInitial('captureFrameMethod'));
   useEffect(() => safeSetConfig({ captureFrameMethod }), [captureFrameMethod]);
   const [captureFrameQuality, setCaptureFrameQuality] = useState(safeGetConfigInitial('captureFrameQuality'));
@@ -269,6 +271,7 @@ export default function useUserSettingsRoot() {
     mouseWheelZoomModifierKey,
     mouseWheelFrameSeekModifierKey,
     mouseWheelKeyframeSeekModifierKey,
+    segmentMouseModifierKey,
     captureFrameMethod,
     captureFrameQuality,
     captureFrameFileNameFormat,
@@ -343,6 +346,7 @@ export default function useUserSettingsRoot() {
     setMouseWheelZoomModifierKey,
     setMouseWheelFrameSeekModifierKey,
     setMouseWheelKeyframeSeekModifierKey,
+    setSegmentMouseModifierKey,
     setCaptureFrameMethod,
     setCaptureFrameQuality,
     setCaptureFrameFileNameFormat,

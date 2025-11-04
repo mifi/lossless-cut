@@ -145,6 +145,7 @@ const defaults: Config = {
   mouseWheelZoomModifierKey: 'ctrl',
   mouseWheelFrameSeekModifierKey: 'alt',
   mouseWheelKeyframeSeekModifierKey: 'shift',
+  segmentMouseModifierKey: 'shift',
   captureFrameMethod: 'videotag', // we don't default to ffmpeg because ffmpeg might choose a frame slightly off
   captureFrameQuality: 0.95,
   captureFrameFileNameFormat: 'timestamp',

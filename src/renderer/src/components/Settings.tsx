@@ -17,6 +17,7 @@ import ButtonRaw, { ButtonProps } from './Button';
 import { getModifierKeyNames } from '../hooks/useTimelineScroll';
 import { TunerType } from '../types';
 import Truncated from './Truncated';
+import { primaryColor } from '../colors';
 
 // eslint-disable-next-line react/jsx-props-no-spreading
 const Button = ({ style, ...props }: ButtonProps) => <ButtonRaw style={{ padding: '.5em .9em', ...style }} {...props} />;
@@ -56,20 +57,19 @@ function Settings({
   onKeyboardShortcutsDialogRequested,
   askForCleanupChoices,
   toggleStoreProjectInWorkingDir,
-  simpleMode,
   clearOutDir,
 }: {
   onTunerRequested: (type: TunerType) => void,
   onKeyboardShortcutsDialogRequested: () => void,
   askForCleanupChoices: () => Promise<unknown>,
   toggleStoreProjectInWorkingDir: () => Promise<void>,
-  simpleMode: boolean,
   clearOutDir: () => Promise<void>,
 }) {
   const { t } = useTranslation();
-  const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
 
-  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, hideOsNotifications, setHideOsNotifications, autoLoadTimecode, setAutoLoadTimecode, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, setMouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, setMouseWheelKeyframeSeekModifierKey, captureFrameMethod, setCaptureFrameMethod, captureFrameQuality, setCaptureFrameQuality, captureFrameFileNameFormat, setCaptureFrameFileNameFormat, enableNativeHevc, setEnableNativeHevc, enableUpdateCheck, setEnableUpdateCheck, allowMultipleInstances, setAllowMultipleInstances, preferStrongColors, setPreferStrongColors, treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, setTreatOutputFileModifiedTimeAsStart, exportConfirmEnabled, toggleExportConfirmEnabled, storeWindowBounds, setStoreWindowBounds, reducedMotion, setReducedMotion } = useUserSettings();
+  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, hideOsNotifications, setHideOsNotifications, autoLoadTimecode, setAutoLoadTimecode, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, setMouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, setMouseWheelKeyframeSeekModifierKey, segmentMouseModifierKey, setSegmentMouseModifierKey, captureFrameMethod, setCaptureFrameMethod, captureFrameQuality, setCaptureFrameQuality, captureFrameFileNameFormat, setCaptureFrameFileNameFormat, enableNativeHevc, setEnableNativeHevc, enableUpdateCheck, setEnableUpdateCheck, allowMultipleInstances, setAllowMultipleInstances, preferStrongColors, setPreferStrongColors, treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, setTreatOutputFileModifiedTimeAsStart, exportConfirmEnabled, toggleExportConfirmEnabled, storeWindowBounds, setStoreWindowBounds, reducedMotion, setReducedMotion, simpleMode } = useUserSettings();
+
+  const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
 
   const onLangChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
     const { value } = e.target;
@@ -227,7 +227,7 @@ function Settings({
           </KeyCell>
           <td>
             <Button onClick={() => setInvertCutSegments((v) => !v)}>
-              <FaYinYang style={{ verticalAlign: 'middle', marginRight: '.3em' }} /> {invertCutSegments ? t('Remove') : t('Keep')}
+              <FaYinYang style={{ verticalAlign: 'middle', marginRight: '.3em', color: invertCutSegments ? primaryColor : undefined }} /> {invertCutSegments ? t('Remove') : t('Keep')}
             </Button>
           </td>
         </Row>
@@ -380,6 +380,7 @@ function Settings({
           </td>
         </Row>
 
+        <ModifierKeySetting text={t('Segment manipulation mouse modifier key')} value={segmentMouseModifierKey} setValue={setSegmentMouseModifierKey} />
         <ModifierKeySetting text={t('Mouse wheel zoom modifier key')} value={mouseWheelZoomModifierKey} setValue={setMouseWheelZoomModifierKey} />
         <ModifierKeySetting text={t('Mouse wheel frame seek modifier key')} value={mouseWheelFrameSeekModifierKey} setValue={setMouseWheelFrameSeekModifierKey} />
         <ModifierKeySetting text={t('Mouse wheel keyframe seek modifier key')} value={mouseWheelKeyframeSeekModifierKey} setValue={setMouseWheelKeyframeSeekModifierKey} />

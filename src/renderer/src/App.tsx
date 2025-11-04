@@ -2624,6 +2624,7 @@ function App() {
                   cutSegments={cutSegments}
                   setCurrentSegIndex={setCurrentSegIndex}
                   currentSegIndexSafe={currentSegIndexSafe}
+                  currentCutSeg={currentCutSeg}
                   inverseCutSegments={inverseCutSegments}
                   formatTimecode={formatTimecode}
                   formatTimeAndFrames={formatTimeAndFrames}
@@ -2636,6 +2637,7 @@ function App() {
                   onWheel={onTimelineWheel}
                   goToTimecode={goToTimecode}
                   darkMode={darkMode}
+                  setCutTime={setCutTime}
                 />
 
                 <BottomBar
@@ -2752,7 +2754,6 @@ function App() {
                       onKeyboardShortcutsDialogRequested={toggleKeyboardShortcuts}
                       askForCleanupChoices={askForCleanupChoices}
                       toggleStoreProjectInWorkingDir={toggleStoreProjectInWorkingDir}
-                      simpleMode={simpleMode}
                       clearOutDir={clearOutDir}
                     />
                     <Dialog.CloseButton />

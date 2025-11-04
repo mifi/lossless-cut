@@ -441,21 +441,31 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     safeSetCutSegments(cutSegmentsNew, fileDuration);
   }, [cutSegments, safeSetCutSegments, fileDuration]);
 
-  const setCutTime = useCallback((type: 'start' | 'end', time: number | undefined) => {
+  const setCutTime = useCallback((type: 'start' | 'end' | 'move', time: number | undefined) => {
     if (!isDurationValid(fileDuration) || currentCutSeg == null) return;
+
+    const clampStart = (start: number) => Math.min(Math.max(start, 0), fileDuration);
+    const clampEnd = (end?: number | undefined) => (end != null ? Math.min(Math.max(end, 0), fileDuration) : undefined);
 
     if (type === 'start') {
       invariant(time != null);
       if (currentCutSeg.end != null && time >= currentCutSeg.end) {
-        throw new Error('Start time must precede end time');
+        throw new UserFacingError(i18n.t('Segment start time must precede end time'));
       }
-      updateSegAtIndex(currentSegIndexSafe, { start: Math.min(Math.max(time, 0), fileDuration) });
+      updateSegAtIndex(currentSegIndexSafe, { start: clampStart(time) });
     }
     if (type === 'end') {
       if (time != null && time <= currentCutSeg.start) {
-        throw new Error('Start time must precede end time');
+        throw new UserFacingError(i18n.t('Segment start time must precede end time'));
       }
-      updateSegAtIndex(currentSegIndexSafe, { end: time != null ? Math.min(Math.max(time, 0), fileDuration) : undefined });
+      updateSegAtIndex(currentSegIndexSafe, { end: clampEnd(time) });
+    }
+    if (type === 'move') {
+      invariant(time != null);
+      updateSegAtIndex(currentSegIndexSafe, {
+        start: clampStart(time),
+        ...(currentCutSeg.end != null && { end: clampEnd(time + (currentCutSeg.end - currentCutSeg.start)) }),
+      });
     }
   }, [currentSegIndexSafe, currentCutSeg, fileDuration, updateSegAtIndex]);
 

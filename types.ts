@@ -106,6 +106,7 @@ export interface Config {
   mouseWheelZoomModifierKey: ModifierKey,
   mouseWheelFrameSeekModifierKey: ModifierKey,
   mouseWheelKeyframeSeekModifierKey: ModifierKey,
+  segmentMouseModifierKey: ModifierKey,
   captureFrameMethod: 'videotag' | 'ffmpeg',
   captureFrameQuality: number,
   captureFrameFileNameFormat: 'timestamp' | 'index',
