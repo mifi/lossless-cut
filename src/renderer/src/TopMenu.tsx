@@ -1,6 +1,6 @@
 import { CSSProperties, ReactNode, memo, useCallback, useEffect, useRef } from 'react';
 import { IoIosSettings } from 'react-icons/io';
-import { FaFilter, FaList, FaLock, FaMoon, FaSun, FaTimes, FaUnlock } from 'react-icons/fa';
+import { FaFilter, FaList, FaLock, FaMoon, FaSun, FaTimes, FaUnlock, FaScissors } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import Button from './components/Button';
 
@@ -33,6 +33,7 @@ function TopMenu({
   isCustomFormatSelected,
   clearOutDir,
   toggleDarkMode,
+  toggleTimeRangeImport,
 }: {
   filePath: string | undefined,
   fileFormat: string | undefined,
@@ -48,6 +49,7 @@ function TopMenu({
   isCustomFormatSelected: boolean,
   clearOutDir: () => void,
   toggleDarkMode: () => void,
+  toggleTimeRangeImport: () => void,
 }) {
   const { t } = useTranslation();
   const { customOutDir, changeOutDir, setCustomOutDir, simpleMode, outFormatLocked, setOutFormatLocked, darkMode } = useUserSettings();
@@ -151,6 +153,10 @@ function TopMenu({
           <DarkMode style={{ verticalAlign: 'middle', fontSize: '.9em' }} />
         </Button>
       )}
+
+      <Button onClick={toggleTimeRangeImport} title={t('Import time ranges')}>
+        <FaScissors style={{ fontSize: '.9em', verticalAlign: 'middle' }} />
+      </Button>
 
       <Button onClick={toggleSettings}>
         <IoIosSettings style={{ fontSize: '1em', verticalAlign: 'bottom' }} />
