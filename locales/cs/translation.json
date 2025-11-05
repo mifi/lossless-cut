@@ -1002,5 +1002,21 @@
     "Tracks with at least 720p video": "Stopy s videem větším než 720p",
     "Tracks with H264 codec": "Stopy s kodekem H264",
     "Video tracks": "Video stopy",
-    "Make cursor time zero": "Nastavit čas v místě kurzoru jako nulový"
+    "Make cursor time zero": "Nastavit čas v místě kurzoru jako nulový",
+    "Apply change": "Uplatnit změny",
+    "Apply filter": "Uplatnit filtr",
+    "Auto merge segments into one file after export, but keep exported per-segment files too": "Po exportu automaticky sloučit segmenty do jednoho souboru, ale ponechat také exportované soubory s jednotlivými segmenty",
+    "Error": "Chyba",
+    "Export each segment to a separate file": "Exportovat každý segment jako zvlášť soubor",
+    "Go": "Gb",
+    "Invalid timecode format": "Neplatný formát časového kódu",
+    "Loop selected segments in order": "Udělat smyčku z označených segmentů v pořadí",
+    "Please confirm": "Potvrďte",
+    "Reduce motion in user interface": "Snížit pohyb v uživatelském rozhraní",
+    "Select segments": "Vyberte segmenty",
+    "Setting": "Nastavení",
+    "Success!": "Úspěch!",
+    "System default": "Systémové výchozí",
+    "Template error: {{error}}": "Chyba šablony: {{error}}",
+    "The audio track is not supported while previewing. You can convert to a supported format from the menu": "V náhledu není zvuková stopa podporována. Je možné z nabídky převést do podporovaného formátu"
 }
