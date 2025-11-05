@@ -112,8 +112,8 @@ If you have an issue with the Snap or Flatpak version of LosslessCut, try instea
   - This probably means that Chromium (which LosslessCut uses for playback) doesn't support your particular file (maybe it's 10-bit). [#2228](https://github.com/mifi/lossless-cut/discussions/2228), [#1767](https://github.com/mifi/lossless-cut/discussions/1767), [#2307](https://github.com/mifi/lossless-cut/issues/2307).
   1. If H265/HEVC file, go to settings and disable "Hardware HEVC decoding".
   2. Use FFmpeg-assisted software decoding playback by going to *File* -> *Convert to supported format*
-- Video preview playback slow, stuttering, flickering inside LosslessCut (NVIDIA)
-  - See [#922](https://github.com/mifi/lossless-cut/issues/922) [#1904](https://github.com/mifi/lossless-cut/issues/1904) [#1915](https://github.com/mifi/lossless-cut/issues/1915) [#922](https://github.com/mifi/lossless-cut/issues/922) [#2083](https://github.com/mifi/lossless-cut/issues/2083)
+- Video preview playback slow, stuttering, low FPS, flickering (NVIDIA)
+  - See [#922](https://github.com/mifi/lossless-cut/issues/922) [#1904](https://github.com/mifi/lossless-cut/issues/1904) [#1915](https://github.com/mifi/lossless-cut/issues/1915) [#922](https://github.com/mifi/lossless-cut/issues/922) [#2083](https://github.com/mifi/lossless-cut/issues/2083) [#2556](https://github.com/mifi/lossless-cut/issues/2556)
 - Why no `.exe`/`.zip`/`.appx` downloads?
   - I decided to stop distributing exe/zip and instead just [7zip](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z), due to the [problems](https://github.com/mifi/lossless-cut/issues/1072#issuecomment-1066026323) that the (self-extracting) exe was causing and the large size of `.zip` files. `appx` is unsigned and [**does not work**](https://github.com/mifi/lossless-cut/issues/337).
 - I'm getting a `KERNEL32.dll` error
