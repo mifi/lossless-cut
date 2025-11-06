@@ -420,17 +420,15 @@ function ExportConfirm({
             <td />
           </tr>
 
-          {simpleMode && (
-            <tr>
-              <td>
-                {t('Show advanced options')}
-              </td>
-              <td>
-                <Switch checked={showAdvanced} onCheckedChange={setShowAdvanced} />
-              </td>
-              <td />
-            </tr>
-          )}
+          <tr>
+            <td>
+              {t('Show advanced options')}
+            </td>
+            <td>
+              <Switch checked={showAdvanced} onCheckedChange={setShowAdvanced} />
+            </td>
+            <td />
+          </tr>
 
           {showAdvanced && (
             <>
