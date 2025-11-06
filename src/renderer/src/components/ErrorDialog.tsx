@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { FaExclamationTriangle } from 'react-icons/fa';
 
 import * as Dialog from './Dialog';
 import { DialogButton } from './Button';
@@ -26,6 +27,7 @@ export default function ErrorDialog({ error, onOpenChange }: {
           {error != null && (
             <>
               <Dialog.Title>
+                <FaExclamationTriangle style={{ color: 'var(--orange-6)', marginRight: '.5em', verticalAlign: 'middle' }} />
                 {error.title ?? t('Error')}
               </Dialog.Title>
 
@@ -36,7 +38,9 @@ export default function ErrorDialog({ error, onOpenChange }: {
           )}
 
           <Dialog.ButtonRow>
-            <DialogButton primary>{t('OK')}</DialogButton>
+            <Dialog.Close asChild>
+              <DialogButton primary>{t('OK')}</DialogButton>
+            </Dialog.Close>
           </Dialog.ButtonRow>
 
           <Dialog.CloseButton />
