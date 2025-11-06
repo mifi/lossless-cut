@@ -61,6 +61,8 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ preserveMetadataOnMerge }), [preserveMetadataOnMerge]);
   const [preserveMovData, setPreserveMovData] = useState(safeGetConfigInitial('preserveMovData'));
   useEffect(() => safeSetConfig({ preserveMovData }), [preserveMovData]);
+  const [fixCodecTag, setFixCodecTag] = useState(safeGetConfigInitial('fixCodecTag'));
+  useEffect(() => safeSetConfig({ fixCodecTag }), [fixCodecTag]);
   const [preserveChapters, setPreserveChapters] = useState(safeGetConfigInitial('preserveChapters'));
   useEffect(() => safeSetConfig({ preserveChapters }), [preserveChapters]);
   const [movFastStart, setMovFastStart] = useState(safeGetConfigInitial('movFastStart'));
@@ -227,6 +229,7 @@ export default function useUserSettingsRoot() {
     preserveMetadataOnMerge,
     preserveMovData,
     preserveChapters,
+    fixCodecTag,
     movFastStart,
     avoidNegativeTs,
     autoMerge,
@@ -301,6 +304,7 @@ export default function useUserSettingsRoot() {
     setPreserveMetadataOnMerge,
     setPreserveMovData,
     setPreserveChapters,
+    setFixCodecTag,
     setMovFastStart,
     setAvoidNegativeTs,
     setAutoMerge,

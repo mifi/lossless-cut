@@ -49,6 +49,8 @@ export type PreserveMetadata = 'default' | 'nonglobal' | 'none'
 
 export type WaveformMode = 'big-waveform' | 'waveform';
 
+export type FixCodecTagOption = 'always' | 'never' | 'auto';
+
 
 export interface Config {
   version: number,
@@ -76,6 +78,7 @@ export interface Config {
   preserveMetadata: PreserveMetadata,
   preserveMetadataOnMerge: boolean,
   preserveMovData: boolean,
+  fixCodecTag: FixCodecTagOption,
   movFastStart: boolean,
   avoidNegativeTs: AvoidNegativeTs,
   hideNotifications: 'all' | undefined,

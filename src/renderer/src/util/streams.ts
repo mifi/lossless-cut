@@ -2,6 +2,7 @@ import invariant from 'tiny-invariant';
 import { FFprobeStream, FFprobeStreamDisposition } from '../../../../ffprobe';
 import { AllFilesMeta, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, LiteFFprobeStream } from '../types';
 import type { FileStream } from '../ffmpeg';
+import { FixCodecTagOption } from '../../../../types';
 
 
 // taken from `ffmpeg -codecs`
@@ -106,8 +107,14 @@ export const isMatroska = (format: string | undefined) => format != null && ['ma
 
 type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
 
-function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined, areWeCutting }: {
-  stream: LiteFFprobeStream, outputIndex: number, outFormat: string | undefined, manuallyCopyDisposition?: boolean | undefined, getVideoArgs?: GetVideoArgsFn | undefined, areWeCutting: boolean | undefined
+function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined, areWeCutting, fixCodecTag }: {
+  stream: LiteFFprobeStream,
+  outputIndex: number,
+  outFormat: string | undefined,
+  manuallyCopyDisposition?: boolean | undefined,
+  getVideoArgs?: GetVideoArgsFn | undefined,
+  areWeCutting: boolean | undefined,
+  fixCodecTag: FixCodecTagOption | undefined,
 }) {
   let args: string[] = [];
 
@@ -179,7 +186,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
     if (isMov(outFormat)) {
       // 0x31766568 see https://github.com/mifi/lossless-cut/issues/1444
       // eslint-disable-next-line unicorn/prefer-switch, unicorn/no-lonely-if
-      if (['0x0000', '0x31637668', '0x31766568'].includes(stream.codec_tag) && stream.codec_name === 'hevc') {
+      if (fixCodecTag === 'always' || (fixCodecTag === 'auto' && ['0x0000', '0x31637668', '0x31766568'].includes(stream.codec_tag) && stream.codec_name === 'hevc')) {
         addArgs(`-tag:${outputIndex}`, 'hvc1');
       }
     }
@@ -200,7 +207,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
   return args;
 }
 
-export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition, getVideoArgs, areWeCutting }: {
+export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition, getVideoArgs, areWeCutting, fixCodecTag }: {
   startIndex?: number,
   outFormat: string | undefined,
   allFilesMeta: Record<string, Pick<AllFilesMeta[string], 'streams'>>,
@@ -208,6 +215,7 @@ export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, cop
   manuallyCopyDisposition?: boolean,
   getVideoArgs?: GetVideoArgsFn,
   areWeCutting?: boolean,
+  fixCodecTag?: FixCodecTagOption,
 }) {
   let args: string[] = [];
   let outputIndex = startIndex;
@@ -220,7 +228,7 @@ export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, cop
       args = [
         ...args,
         '-map', `${fileIndex}:${streamId}`,
-        ...getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition, getVideoArgs, areWeCutting }),
+        ...getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition, getVideoArgs, areWeCutting, fixCodecTag }),
       ];
       outputIndex += 1;
     });
