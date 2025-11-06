@@ -746,7 +746,7 @@ function App() {
     const firstSegmentAtCursorIndex = segmentsAtCursorIndexes[0];
     const playingSegment = firstSegmentAtCursorIndex != null ? cutSegments[firstSegmentAtCursorIndex] : undefined;
 
-    if (playbackModeRef.current != null && playingSegment && playingSegment.end != null) { // todo and is currently playing?
+    if (playbackModeRef.current != null && playingRef.current && playingSegment && playingSegment.end != null) { // todo and is currently playing?
       const nextAction = getPlaybackAction({ playbackMode: playbackModeRef.current, currentTime, playingSegment: { start: playingSegment.start, end: playingSegment.end } });
 
       const exit = () => {
@@ -780,7 +780,7 @@ function App() {
         }
       }
     }
-  }, [commandedTimeRef, cutSegments, findSegmentsAtCursor, pause, playbackModeRef, playerTime, seekAbs, selectedSegments, setCurrentSegIndex, setPlaybackMode, setPlayerTime]);
+  }, [commandedTimeRef, cutSegments, findSegmentsAtCursor, pause, playbackModeRef, playerTime, playingRef, seekAbs, selectedSegments, setCurrentSegIndex, setPlaybackMode, setPlayerTime]);
 
   const closeFileWithConfirm = useCallback(() => {
     if (!isFileOpened || workingRef.current) return;
