@@ -19,7 +19,7 @@ export default function WhatsNew() {
   const [initialLastAppVersion] = useState(lastAppVersion);
 
   useEffect(() => {
-    //setLastAppVersion(appVersion);
+    setLastAppVersion(appVersion);
   }, [setLastAppVersion]);
 
   const matchingVersions = useMemo(() => versions
