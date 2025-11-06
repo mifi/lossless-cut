@@ -17,13 +17,13 @@ import CaptureFormatButton from './components/CaptureFormatButton';
 import Select from './components/Select';
 
 import SimpleModeButton from './components/SimpleModeButton';
-import { withBlur, mirrorTransform, checkAppPath } from './util';
+import { withBlur, mirrorTransform } from './util';
 import getSwal from './swal';
 import { getSegColor as getSegColorRaw } from './util/colors';
 import { useSegColors } from './contexts';
 import { isExactDurationMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
-import { askForPlaybackRate } from './dialogs';
+import { askForPlaybackRate, checkAppPath } from './dialogs';
 import { FormatTimecode, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
 import { WaveformMode } from '../../../types';
 import { Frame } from './ffmpeg';

@@ -4,7 +4,7 @@ import withReactContent, { ReactSweetAlert, SweetAlert2 } from 'sweetalert2-reac
 
 import i18n from './i18n';
 import { emitter as animationsEmitter } from './animations';
-
+import { dialogButtonOrder } from './util';
 
 export const swalContainerWrapperId = 'swal2-container-wrapper';
 
@@ -27,6 +27,7 @@ function initSwal(reducedMotion = false) {
         icon: '',
       },
     }),
+    reverseButtons: dialogButtonOrder === 'ltr',
   };
 
   Swal = SwalRaw.mixin({
@@ -46,7 +47,6 @@ function initSwal(reducedMotion = false) {
       self.addEventListener('mouseenter', Swal.stopTimer);
       self.addEventListener('mouseleave', Swal.resumeTimer);
     },
-    reverseButtons: true,
   });
 
   ReactSwal = withReactContent(Swal);

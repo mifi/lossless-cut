@@ -3,16 +3,19 @@ import i18n from 'i18next';
 import { Trans } from 'react-i18next';
 import invariant from 'tiny-invariant';
 import { FaArrowRight, FaExclamationTriangle, FaInfoCircle, FaQuestionCircle } from 'react-icons/fa';
+import ky from 'ky';
+import pMap from 'p-map';
 
 import { formatDuration } from '../util/duration';
 import { parseYouTube } from '../edlFormats';
 import CopyClipboardButton from '../components/CopyClipboardButton';
 import Checkbox from '../components/Checkbox';
-import { isWindows } from '../util';
+import { appPath, isMac, isMasBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry } from '../util';
 import { ParseTimecode } from '../types';
 import { FindKeyframeMode } from '../ffmpeg';
 import { dangerColor } from '../colors';
 import getSwal from '../swal';
+import isDev from '../isDev';
 
 const remote = window.require('@electron/remote');
 const { dialog } = remote;
@@ -621,4 +624,94 @@ export async function promptDownloadMediaUrl(outPath: string) {
 
   await downloadMediaUrl(value, outPath);
   return true;
+}
+
+
+export async function deleteFiles({ paths, deleteIfTrashFails, signal }: { paths: string[], deleteIfTrashFails?: boolean | undefined, signal: AbortSignal }) {
+  const failedToTrashFiles: string[] = [];
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const path of paths) {
+    try {
+      if (testFailFsOperation) throw new Error('test trash failure');
+      // eslint-disable-next-line no-await-in-loop
+      await trashFile(path);
+      signal.throwIfAborted();
+    } catch (err) {
+      console.error(err);
+      failedToTrashFiles.push(path);
+    }
+  }
+
+  if (failedToTrashFiles.length === 0) return; // All good!
+
+  if (!deleteIfTrashFails) {
+    const { value } = await getSwal().Swal.fire({
+      icon: 'warning',
+      text: i18n.t('Unable to move file to trash. Do you want to permanently delete it?'),
+      confirmButtonText: i18n.t('Permanently delete'),
+      showCancelButton: true,
+    });
+    if (!value) return;
+  }
+
+  await pMap(failedToTrashFiles, async (path) => unlinkWithRetry(path, { signal }), { concurrency: 5 });
+}
+
+
+export function toastError(err: unknown) {
+  console.error('toastError', err);
+  const text = err instanceof Error ? err.message : String(err);
+  const textTruncated = text.slice(0, 300);
+  getSwal().toast.fire({ icon: 'error', title: i18n.t('Error'), text: textTruncated });
+}
+
+export async function checkAppPath() {
+  try {
+    const forceCheckMs = false;
+    const forceCheckTitle = false;
+    // this code is purposefully obfuscated to try to detect the most basic cloned app submissions to the MS Store
+    // eslint-disable-next-line no-useless-concat, one-var, one-var-declaration-per-line
+    const mf = 'mi' + 'fi.no', ap = 'Los' + 'slessC' + 'ut';
+    let payload: string | undefined;
+    if (isWindowsStoreBuild || (isDev && forceCheckMs)) {
+      const appPathOrMock = isDev ? 'C:\\Program Files\\WindowsApps\\37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84' : appPath;
+      const pathMatch = appPathOrMock.replaceAll('\\', '/').match(/Windows ?Apps\/([^/]+)/); // find the first component after WindowsApps
+      // example pathMatch: 37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84
+      if (!pathMatch) {
+        console.warn('Unknown path match', appPathOrMock);
+        return;
+      }
+      const pathSeg = pathMatch[1];
+      if (pathSeg == null) return;
+      if (pathSeg.startsWith(`57275${mf}.${ap}_`)) return;
+      // this will report the path and may return a msg
+      payload = `msstore-app-id:${pathSeg}`;
+      // also check non ms store fakes (different title:)
+    } else if (isMac || isWindows || (isDev && forceCheckTitle)) {
+      const { title } = document;
+      if (!title.includes(ap)) {
+        payload = `app-title:${title}`;
+      }
+    }
+
+    if (payload) {
+      // eslint-disable-next-line no-useless-concat
+      const url = 'htt' + 'ps:/' + '/los' + 'sles' + 'sc' + 'ut-anal' + 'ytics.mi' + 'fi.n' + `o/${payload.length}/${encodeURIComponent(btoa(payload))}`;
+      // console.log('Reporting app', pathSeg, url);
+      const response = await ky(url).json<{ invalid?: boolean, title: string, text: string }>();
+      if (response.invalid) getSwal().toast.fire({ timer: 60000, icon: 'error', title: response.title, text: response.text });
+    }
+  } catch (err) {
+    if (isDev) console.warn(err instanceof Error && err.message);
+  }
+}
+
+export function mustDisallowVob() {
+  // Because Apple is being nazi about the ability to open "copy protected DVD files"
+  if (isMasBuild) {
+    getSwal().toast.fire({ icon: 'error', text: 'Unfortunately .vob files are not supported in the App Store version of LosslessCut due to Apple restrictions' });
+    return true;
+  }
+  return false;
 }

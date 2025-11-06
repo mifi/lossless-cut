@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import styles from './Dialog.module.css';
 import { withClass } from './util';
 import CloseButtonRaw from './CloseButton';
+import { dialogButtonOrder } from '../util';
 
 export * from '@radix-ui/react-dialog';
 
@@ -26,7 +27,7 @@ export const CloseButton = () => (
 
 export function ButtonRow({ children }: { children: ReactNode }) {
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5em', justifyContent: 'flex-end', marginTop: '1em' }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5em', justifyContent: dialogButtonOrder === 'rtl' ? 'flex-start' : 'flex-end', marginTop: '1em', direction: dialogButtonOrder }}>
       {children}
     </div>
   );

@@ -9,9 +9,9 @@ import { FaLink } from 'react-icons/fa';
 
 import TextInput from '../components/TextInput';
 import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToSegments, findKeyframeNearTime } from '../ffmpeg';
-import { shuffleArray, toastError } from '../util';
+import { shuffleArray } from '../util';
 import { errorToast } from '../swal';
-import { createNumSegments as createNumSegmentsDialog, createFixedByteSixedSegments as createFixedByteSixedSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, askForSegmentDuration } from '../dialogs';
+import { createNumSegments as createNumSegmentsDialog, createFixedByteSixedSegments as createFixedByteSixedSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, askForSegmentDuration, toastError } from '../dialogs';
 import { createSegment, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, addSegmentColorIndex, filterNonMarkers, makeDurationSegments, isInitialSegment } from '../segments';
 import { parameters as allFfmpegParameters, FfmpegDialog, getHint, getLabel } from '../ffmpegParameters';
 import { maxSegmentsAllowed } from '../util/constants';

@@ -1,6 +1,5 @@
 import i18n from 'i18next';
 import pMap from 'p-map';
-import ky from 'ky';
 import prettyBytes from 'pretty-bytes';
 import sortBy from 'lodash/sortBy';
 import pRetry, { Options } from 'p-retry';
@@ -8,11 +7,9 @@ import { ExecaError } from 'execa';
 import confetti from 'canvas-confetti';
 import invariant from 'tiny-invariant';
 
-import isDev from './isDev';
 import { ffmpegExtractWindow } from './util/constants';
 import { appName } from '../../main/common';
 import { Html5ifyMode } from '../../../types';
-import getSwal from './swal';
 import { UserFacingError } from '../errors';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
@@ -28,7 +25,7 @@ const appPath = remote.app.getAppPath();
 export { isWindows, isMac, appVersion, appPath };
 
 
-const trashFile = async (path: string) => ipcRenderer.invoke('tryTrashItem', path);
+export const trashFile = async (path: string) => ipcRenderer.invoke('tryTrashItem', path);
 
 export const showItemInFolder = async (path: string) => ipcRenderer.invoke('showItemInFolder', path);
 
@@ -111,8 +108,8 @@ export async function dirExists(dirPath: string) {
   return (await pathExists(dirPath)) && (await lstat(dirPath)).isDirectory();
 }
 
-// const testFailFsOperation = isDev;
-const testFailFsOperation = false;
+// export const testFailFsOperation = isDev;
+export const testFailFsOperation = false;
 
 // Retry because sometimes write operations fail on windows due to the file being locked for various reasons (often anti-virus) #272 #1797 #1704
 export async function fsOperationWithRetry(operation: () => Promise<unknown>, { signal, retries = 10, minTimeout = 100, maxTimeout = 2000, ...opts }: Options & { retries?: number | undefined, minTimeout?: number | undefined, maxTimeout?: number | undefined } = {}) {
@@ -270,36 +267,6 @@ export function getHtml5ifiedPath(cod: string | undefined, fp: string, type: Htm
   return getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${type}.${ext}` });
 }
 
-export async function deleteFiles({ paths, deleteIfTrashFails, signal }: { paths: string[], deleteIfTrashFails?: boolean | undefined, signal: AbortSignal }) {
-  const failedToTrashFiles: string[] = [];
-
-  // eslint-disable-next-line no-restricted-syntax
-  for (const path of paths) {
-    try {
-      if (testFailFsOperation) throw new Error('test trash failure');
-      // eslint-disable-next-line no-await-in-loop
-      await trashFile(path);
-      signal.throwIfAborted();
-    } catch (err) {
-      console.error(err);
-      failedToTrashFiles.push(path);
-    }
-  }
-
-  if (failedToTrashFiles.length === 0) return; // All good!
-
-  if (!deleteIfTrashFails) {
-    const { value } = await getSwal().Swal.fire({
-      icon: 'warning',
-      text: i18n.t('Unable to move file to trash. Do you want to permanently delete it?'),
-      confirmButtonText: i18n.t('Permanently delete'),
-      showCancelButton: true,
-    });
-    if (!value) return;
-  }
-
-  await pMap(failedToTrashFiles, async (path) => unlinkWithRetry(path, { signal }), { concurrency: 5 });
-}
 
 export const deleteDispositionValue = 'llc_disposition_remove';
 
@@ -334,54 +301,6 @@ export const isMuxNotSupported = (err: InvariantExecaError) => (
   && err.stderr != null
   && /Could not write header .*incorrect codec parameters .*Invalid argument/.test(getStdioString(err.stderr) ?? '')
 );
-
-export function toastError(err: unknown) {
-  console.error('toastError', err);
-  const text = err instanceof Error ? err.message : String(err);
-  const textTruncated = text.slice(0, 300);
-  getSwal().toast.fire({ icon: 'error', title: i18n.t('Error'), text: textTruncated });
-}
-
-export async function checkAppPath() {
-  try {
-    const forceCheckMs = false;
-    const forceCheckTitle = false;
-    // this code is purposefully obfuscated to try to detect the most basic cloned app submissions to the MS Store
-    // eslint-disable-next-line no-useless-concat, one-var, one-var-declaration-per-line
-    const mf = 'mi' + 'fi.no', ap = 'Los' + 'slessC' + 'ut';
-    let payload: string | undefined;
-    if (isWindowsStoreBuild || (isDev && forceCheckMs)) {
-      const appPathOrMock = isDev ? 'C:\\Program Files\\WindowsApps\\37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84' : appPath;
-      const pathMatch = appPathOrMock.replaceAll('\\', '/').match(/Windows ?Apps\/([^/]+)/); // find the first component after WindowsApps
-      // example pathMatch: 37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84
-      if (!pathMatch) {
-        console.warn('Unknown path match', appPathOrMock);
-        return;
-      }
-      const pathSeg = pathMatch[1];
-      if (pathSeg == null) return;
-      if (pathSeg.startsWith(`57275${mf}.${ap}_`)) return;
-      // this will report the path and may return a msg
-      payload = `msstore-app-id:${pathSeg}`;
-      // also check non ms store fakes (different title:)
-    } else if (isMac || isWindows || (isDev && forceCheckTitle)) {
-      const { title } = document;
-      if (!title.includes(ap)) {
-        payload = `app-title:${title}`;
-      }
-    }
-
-    if (payload) {
-      // eslint-disable-next-line no-useless-concat
-      const url = 'htt' + 'ps:/' + '/los' + 'sles' + 'sc' + 'ut-anal' + 'ytics.mi' + 'fi.n' + `o/${payload.length}/${encodeURIComponent(btoa(payload))}`;
-      // console.log('Reporting app', pathSeg, url);
-      const response = await ky(url).json<{ invalid?: boolean, title: string, text: string }>();
-      if (response.invalid) getSwal().toast.fire({ timer: 60000, icon: 'error', title: response.title, text: response.text });
-    }
-  } catch (err) {
-    if (isDev) console.warn(err instanceof Error && err.message);
-  }
-}
 
 // https://stackoverflow.com/a/2450976/6519037
 export function shuffleArray<T>(arrayIn: T[]) {
@@ -444,15 +363,6 @@ export function setDocumentTitle({ filePath, working, progress }: {
   document.title = parts.join(' - ');
 }
 
-export function mustDisallowVob() {
-  // Because Apple is being nazi about the ability to open "copy protected DVD files"
-  if (isMasBuild) {
-    getSwal().toast.fire({ icon: 'error', text: 'Unfortunately .vob files are not supported in the App Store version of LosslessCut due to Apple restrictions' });
-    return true;
-  }
-  return false;
-}
-
 export async function readVideoTs(videoTsPath: string) {
   const files = await readdir(videoTsPath);
   const relevantFiles = files.filter((file) => /^vts_\d+_\d+\.vob$/i.test(file) && !/^vts_\d+_00\.vob$/i.test(file)); // skip menu
@@ -506,6 +416,8 @@ export function getMetaKeyName() {
   if (isWindows) return i18n.t('⊞ Win');
   return i18n.t('Meta');
 }
+
+export const dialogButtonOrder = isWindows ? 'rtl' : 'ltr'; // use ltr for mac and linux, rtl for windows
 
 export function formatKeyboardKey(key: string) {
   const map: Record<string, string> = {
