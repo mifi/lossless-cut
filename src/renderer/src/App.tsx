@@ -184,7 +184,7 @@ function App() {
   const keyBindingByAction = useMemo(() => Object.fromEntries(keyBindings.map((binding) => [binding.action, binding])), [keyBindings]);
 
   const { working, setWorking, workingRef, abortWorking } = useLoading();
-  const { videoRef, videoContainerRef, playbackRate, setPlaybackRate, outputPlaybackRate, setOutputPlaybackRate, commandedTime, seekAbs, playingRef, getRelevantTime, setPlaying, onSeeked, relevantTime, onStartPlaying, setCommandedTime, setOutputPlaybackRateState, commandedTimeRef, onStopPlaying, onVideoAbort, playerTime, setPlayerTime, playbackModeRef, playing, play, pause, seekRel } = useVideo({ filePath });
+  const { videoRef, videoContainerRef, playbackRate, setPlaybackRate, outputPlaybackRate, setOutputPlaybackRate, commandedTime, seekAbs, playingRef, getRelevantTime, setPlaying, onSeeked, relevantTime, onStartPlaying, setCommandedTime, setOutputPlaybackRateState, commandedTimeRef, onStopPlaying, onVideoAbort, playerTime, setPlayerTime, playbackMode, setPlaybackMode, playbackModeRef, playing, play, pause, seekRel } = useVideo({ filePath });
   const { timecodePlaceholder, formatTimecode, formatTimeAndFrames, parseTimecode, getFrameCount, promptTimecode } = useTimecode({ detectedFps, timecodeFormat, showGenericDialog });
   const { loadSubtitle, subtitlesByStreamId, setSubtitlesByStreamId } = useSubtitles();
 
@@ -638,7 +638,7 @@ function App() {
     setUsingDummyVideo(false);
     setPlaying(false);
     playingRef.current = false;
-    playbackModeRef.current = undefined;
+    setPlaybackMode(undefined);
     setFileDuration(undefined);
     cutSegmentsHistory.go(0);
     setDetectedFileFormat(undefined);
@@ -665,7 +665,7 @@ function App() {
     setExportConfirmOpen(false);
     setOutputPlaybackRateState(1);
     setCurrentFileExportCount(0);
-  }, [videoRef, setCommandedTime, setPlaybackRate, setPreviewFilePath, setUsingDummyVideo, setPlaying, playingRef, playbackModeRef, cutSegmentsHistory, setDetectedFileFormat, setCopyStreamIdsByFile, setThumbnails, setSubtitlesByStreamId, setHideCompatPlayer, setOutputPlaybackRateState]);
+  }, [videoRef, setCommandedTime, setPlaybackRate, setPreviewFilePath, setUsingDummyVideo, setPlaying, playingRef, setPlaybackMode, cutSegmentsHistory, setDetectedFileFormat, setCopyStreamIdsByFile, setThumbnails, setSubtitlesByStreamId, setOutputPlaybackRateState]);
 
 
   const showUnsupportedFileMessage = useCallback(() => {
@@ -707,7 +707,7 @@ function App() {
   }, [cutSegments, seekAbs, setCurrentSegIndex]);
 
   const togglePlay = useCallback(({ resetPlaybackRate, requestPlaybackMode }: { resetPlaybackRate?: boolean, requestPlaybackMode?: PlaybackMode } | undefined = {}) => {
-    playbackModeRef.current = requestPlaybackMode;
+    setPlaybackMode(requestPlaybackMode);
 
     if (playingRef.current) {
       pause();
@@ -735,24 +735,22 @@ function App() {
       }
     }
     play(resetPlaybackRate);
-  }, [playbackModeRef, playingRef, play, pause, selectedSegments, commandedTimeRef, cutSegments, setCurrentSegIndex, seekAbs, currentCutSeg]);
+  }, [setPlaybackMode, playingRef, playbackModeRef, play, pause, selectedSegments, commandedTimeRef, currentCutSeg, cutSegments, setCurrentSegIndex, seekAbs]);
 
   const onTimeUpdate = useCallback<ReactEventHandler<HTMLVideoElement>>((e) => {
     const { currentTime } = e.currentTarget;
     if (playerTime === currentTime) return;
     setPlayerTime(currentTime);
 
-    const playbackMode = playbackModeRef.current;
-
     const segmentsAtCursorIndexes = findSegmentsAtCursor(commandedTimeRef.current);
     const firstSegmentAtCursorIndex = segmentsAtCursorIndexes[0];
     const playingSegment = firstSegmentAtCursorIndex != null ? cutSegments[firstSegmentAtCursorIndex] : undefined;
 
-    if (playbackMode != null && playingSegment && playingSegment.end != null) { // todo and is currently playing?
-      const nextAction = getPlaybackAction({ playbackMode, currentTime, playingSegment: { start: playingSegment.start, end: playingSegment.end } });
+    if (playbackModeRef.current != null && playingSegment && playingSegment.end != null) { // todo and is currently playing?
+      const nextAction = getPlaybackAction({ playbackMode: playbackModeRef.current, currentTime, playingSegment: { start: playingSegment.start, end: playingSegment.end } });
 
       const exit = () => {
-        playbackModeRef.current = undefined;
+        setPlaybackMode(undefined);
         pause();
       };
 
@@ -765,8 +763,8 @@ function App() {
           let newIndex = getNewJumpIndex(index >= 0 ? index : 0, 1);
           if (newIndex > selectedSegmentsWithoutMarkers.length - 1) {
             // have reached end of last segment
-            if (playbackMode === 'loop-selected-segments') newIndex = 0; // start over
-            else if (playbackMode === 'play-selected-segments') exit();
+            if (playbackModeRef.current === 'loop-selected-segments') newIndex = 0; // start over
+            else if (playbackModeRef.current === 'play-selected-segments') exit();
           }
           const nextSelectedSegment = selectedSegmentsWithoutMarkers[newIndex];
           if (nextSelectedSegment != null) {
@@ -782,7 +780,7 @@ function App() {
         }
       }
     }
-  }, [commandedTimeRef, cutSegments, findSegmentsAtCursor, pause, playbackModeRef, playerTime, seekAbs, selectedSegments, setCurrentSegIndex, setPlayerTime]);
+  }, [commandedTimeRef, cutSegments, findSegmentsAtCursor, pause, playbackModeRef, playerTime, seekAbs, selectedSegments, setCurrentSegIndex, setPlaybackMode, setPlayerTime]);
 
   const closeFileWithConfirm = useCallback(() => {
     if (!isFileOpened || workingRef.current) return;
@@ -2694,6 +2692,7 @@ function App() {
                   parseTimecode={parseTimecode}
                   playbackRate={playbackRate}
                   currentFrame={currentFrame}
+                  playbackMode={playbackMode}
                 />
               </div>
 

@@ -7,7 +7,13 @@ export default ({ filePath }: { filePath: string | undefined }) => {
   const [playbackRate, setPlaybackRateState] = useState(1);
   const [outputPlaybackRate, setOutputPlaybackRateState] = useState(1);
   const [playerTime, setPlayerTime] = useState<number>();
+  const [playbackMode, setPlaybackModeState] = useState<PlaybackMode>();
   const playbackModeRef = useRef<PlaybackMode>();
+
+  const setPlaybackMode = useCallback((mode: PlaybackMode | undefined) => {
+    playbackModeRef.current = mode;
+    setPlaybackModeState(mode);
+  }, []);
 
   const videoRef = useRef<ChromiumHTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
@@ -92,8 +98,8 @@ export default ({ filePath }: { filePath: string | undefined }) => {
 
   const onVideoAbort = useCallback(() => {
     setPlaying(false); // we want to preserve current time https://github.com/mifi/lossless-cut/issues/1674#issuecomment-1658937716
-    playbackModeRef.current = undefined;
-  }, []);
+    setPlaybackMode(undefined);
+  }, [setPlaybackMode]);
 
   const onStartPlaying = useCallback(() => onPlayingChange(true), [onPlayingChange]);
 
@@ -145,6 +151,8 @@ export default ({ filePath }: { filePath: string | undefined }) => {
     getRelevantTime,
     onVideoAbort,
     setOutputPlaybackRateState,
+    playbackMode,
+    setPlaybackMode,
     playbackModeRef,
     playerTime,
     setPlayerTime,

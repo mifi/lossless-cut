@@ -24,7 +24,7 @@ import { useSegColors } from './contexts';
 import { isExactDurationMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
 import { askForPlaybackRate } from './dialogs';
-import { FormatTimecode, ParseTimecode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
+import { FormatTimecode, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
 import { WaveformMode } from '../../../types';
 import { Frame } from './ffmpeg';
 
@@ -252,7 +252,7 @@ function BottomBar({
   toggleShowThumbnails, toggleWaveformMode, waveformMode, showThumbnails,
   outputPlaybackRate, setOutputPlaybackRate,
   formatTimecode, parseTimecode, playbackRate,
-  currentFrame,
+  currentFrame, playbackMode,
 }: {
   zoom: number,
   setZoom: (fn: (z: number) => number) => void,
@@ -301,6 +301,7 @@ function BottomBar({
   parseTimecode: ParseTimecode,
   playbackRate: number,
   currentFrame: Frame | undefined,
+  playbackMode: PlaybackMode | undefined,
 }) {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
@@ -338,7 +339,6 @@ function BottomBar({
     return {
       ...playStyle,
       fontSize: '.7em',
-      margin: '.1em .2em 0 -.6em',
       backgroundOffset: 30,
       background: `linear-gradient(90deg, ${gradientColors})`,
       border: '1px solid var(--gray-10)',
@@ -392,6 +392,7 @@ function BottomBar({
   }
 
   const PlayPause = playing ? FaPause : FaPlay;
+  const PlayPauseMode = playing && (playbackMode === 'play-selected-segments' || playbackMode === 'loop-selected-segments') ? FaPause : FaPlay;
 
   const currentCutSegOrDefault = useMemo(() => currentCutSeg ?? { segColorIndex: 0 }, [currentCutSeg]);
 
@@ -473,10 +474,6 @@ function BottomBar({
         )}
 
         <div role="button" onClick={() => togglePlay()} style={{ ...playStyle, margin: '.1em .1em 0 .2em', background: primaryColor }}>
-          <PlayPause style={{ fontSize: '.9em' }} />
-        </div>
-
-        <div role="button" onClick={toggleLoopSelectedSegments} title={t('Play selected segments in order')} style={loopSelectedSegmentsButtonStyle}>
           <PlayPause style={{ fontSize: '.9em' }} />
         </div>
 
@@ -594,6 +591,12 @@ function BottomBar({
             />
 
             {!simpleMode && <CaptureFormatButton style={{ width: '3.7em', textAlign: 'center', marginLeft: '.1em' }} />}
+          </div>
+        )}
+
+        {!simpleMode && (
+          <div role="button" onClick={toggleLoopSelectedSegments} title={t('Play selected segments in order')} style={loopSelectedSegmentsButtonStyle}>
+            <PlayPauseMode />
           </div>
         )}
 
