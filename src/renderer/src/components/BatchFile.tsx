@@ -71,9 +71,11 @@ function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, 
       title={path}
       onClick={handleClick}
     >
-      <FaFile size={14} style={{ color: isSelected ? primaryTextColor : undefined, flexShrink: 0 }} />
-      <div style={{ flexBasis: 4, flexShrink: 0 }} />
-      <div style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>{index + 1}. {name}</div>
+      <FaFile style={{ color: isSelected ? primaryTextColor : undefined, flexShrink: 0, fontSize: '1em', marginRight: '.1em' }} />
+      <div style={{ flexShrink: 0, marginRight: '.1em' }}>{index + 1}.</div>
+      <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', direction: 'rtl' }}>
+        {name}
+      </div>
       <div style={{ flexGrow: 1 }} />
       {isOpen ? (
         <FaAngleRight style={{ color: 'var(--gray-9)', fontSize: '.9em', marginRight: '-.3em', flexShrink: 0 }} />
