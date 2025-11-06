@@ -115,11 +115,19 @@ input:focus-visible, select:focus-visible {
 }
 
 @keyframes pulse {
-  0% { transform: scale(1) }
-  45% { transform: scale(1.03) }
-  50% { transform: scale(1.15) }
-  55% { transform: scale(1.03) }
-  100% { transform: scale(1) }
+  0% { transform: scaleY(1) }
+  40% { transform: scaleY(1) }
+  50% { transform: scaleY(1.2) }
+  60% { transform: scaleY(1) }
+  100% { transform: scaleY(1) }
+}
+
+@keyframes bounce {
+  0% { transform: translateY(0) scaleY(1) }
+  47% { transform: translateY(0) scaleY(1) }
+  50% { transform: translateY(-.1em) scaleY(1.1) }
+  53% { transform: translateY(0) scaleY(1) }
+  100% { transform: translateY(0) scaleY(1) }
 }
 
 @keyframes spin {
@@ -129,7 +137,7 @@ input:focus-visible, select:focus-visible {
 
 /* because some people have a hard time finding the button */
 .export-animation {
-  animation: pulse 2s linear infinite;
+  animation: bounce 5s linear infinite;
 }
 
 .spinner-animation {
