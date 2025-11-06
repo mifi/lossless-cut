@@ -6,7 +6,7 @@
     "emitDeclarationOnly": true,
     "outDir": "ts-dist",
     "tsBuildInfoFile": "ts-dist/tsconfig.tsbuildinfo",
-    "lib": ["es2023"],
+    "lib": ["ES2024"],
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Bundler",

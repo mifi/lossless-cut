@@ -52,7 +52,7 @@
     "@radix-ui/react-switch": "^1.2.2",
     "@tanstack/react-virtual": "^3.13.10",
     "@tsconfig/node18": "^18.2.2",
-    "@tsconfig/node20": "^20.1.4",
+    "@tsconfig/node22": "^22.0.2",
     "@tsconfig/strictest": "^2.0.2",
     "@tsconfig/vite-react": "^3.0.0",
     "@types/canvas-confetti": "^1",
