@@ -42,8 +42,11 @@ const InvertCutModeButton = memo(({ invertCutSegments, setInvertCutSegments }: {
   const onYinYangClick = useCallback(() => {
     setInvertCutSegments((v) => {
       const newVal = !v;
-      if (newVal) getSwal().toast.fire({ title: t('When you export, selected segments on the timeline will be REMOVED - the surrounding areas will be KEPT') });
-      else getSwal().toast.fire({ title: t('When you export, selected segments on the timeline will be KEPT - the surrounding areas will be REMOVED.') });
+      getSwal().toast.fire({
+        title: newVal
+          ? t('When you export, selected segments on the timeline will be REMOVED - the surrounding areas will be KEPT')
+          : t('When you export, selected segments on the timeline will be KEPT - the surrounding areas will be REMOVED.'),
+      });
       return newVal;
     });
   }, [setInvertCutSegments, t]);
