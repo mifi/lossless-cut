@@ -7,7 +7,8 @@ import * as Dialog from './Dialog';
 import * as AlertDialog from './AlertDialog';
 import { DialogButton } from './Button';
 import { showItemInFolder } from '../util';
-import { ListItem, Notices, OutputIncorrectSeeHelpMenu, UnorderedList, Warnings } from '../dialogs';
+import { CleanupChoice, CleanupChoicesType, ListItem, Notices, OutputIncorrectSeeHelpMenu, UnorderedList, Warnings } from '../dialogs';
+import Checkbox from './Checkbox';
 
 
 export interface GenericDialogParams {
@@ -201,6 +202,79 @@ export function useDialog() {
     });
   }, [openExportFinishedDialog, t]);
 
+  async function openCleanupFilesDialog(cleanupChoicesInitial: CleanupChoicesType) {
+    return new Promise<CleanupChoicesType | undefined>((resolve) => {
+      function CleanupChoices() {
+        const [choices, setChoices] = useState(cleanupChoicesInitial);
+
+        const getVal = (key: CleanupChoice) => !!choices[key];
+
+        const onChange = (key: CleanupChoice, val: boolean | string) => setChoices((oldChoices) => {
+          const newChoices = { ...oldChoices, [key]: Boolean(val) };
+          if ((newChoices.trashSourceFile || newChoices.trashTmpFiles) && !newChoices.closeFile) {
+            newChoices.closeFile = true;
+          }
+          return newChoices;
+        });
+
+        const trashTmpFiles = getVal('trashTmpFiles');
+        const trashSourceFile = getVal('trashSourceFile');
+        const trashProjectFile = getVal('trashProjectFile');
+        const deleteIfTrashFails = getVal('deleteIfTrashFails');
+        const closeFile = getVal('closeFile');
+        const askForCleanup = getVal('askForCleanup');
+        const cleanupAfterExport = getVal('cleanupAfterExport');
+
+        const { onOpenChange } = useGenericDialogContext();
+
+        const handleOkClick = useCallback(() => {
+          resolve(choices);
+          onOpenChange(false);
+        }, [choices, onOpenChange]);
+
+        return (
+          <AlertDialog.Content aria-describedby={undefined} style={{ width: '80vw' }}>
+            <AlertDialog.Title>
+              {t('Cleanup files?')}
+            </AlertDialog.Title>
+
+            <AlertDialog.Description>
+              {t('What do you want to do after exporting a file or when pressing the "delete source file" button?')}
+            </AlertDialog.Description>
+
+            <Checkbox label={t('Close currently opened file')} checked={closeFile} disabled={trashSourceFile || trashTmpFiles} onCheckedChange={(checked) => onChange('closeFile', checked)} />
+
+            <div style={{ marginBottom: '2em' }}>
+              <Checkbox label={t('Trash auto-generated files')} checked={trashTmpFiles} onCheckedChange={(checked) => onChange('trashTmpFiles', checked)} />
+              <Checkbox label={t('Trash original source file')} checked={trashSourceFile} onCheckedChange={(checked) => onChange('trashSourceFile', checked)} />
+              <Checkbox label={t('Trash project LLC file')} checked={trashProjectFile} onCheckedChange={(checked) => onChange('trashProjectFile', checked)} />
+              <Checkbox label={t('Permanently delete the files if trash fails?')} disabled={!(trashTmpFiles || trashProjectFile || trashSourceFile)} checked={deleteIfTrashFails} onCheckedChange={(checked) => onChange('deleteIfTrashFails', checked)} />
+            </div>
+
+            <div style={{ marginBottom: '2em' }}>
+              <Checkbox label={t('Show this dialog every time?')} checked={askForCleanup} onCheckedChange={(checked) => onChange('askForCleanup', checked)} />
+              <Checkbox label={t('Do all of this automatically after exporting a file?')} checked={cleanupAfterExport} onCheckedChange={(checked) => onChange('cleanupAfterExport', checked)} />
+            </div>
+
+            <Dialog.ButtonRow>
+              <AlertDialog.Cancel asChild>
+                <DialogButton>{t('Cancel')}</DialogButton>
+              </AlertDialog.Cancel>
+
+              <DialogButton onClick={handleOkClick} primary>{t('Confirm')}</DialogButton>
+            </Dialog.ButtonRow>
+          </AlertDialog.Content>
+        );
+      }
+
+      showGenericDialog({
+        isAlert: true,
+        content: <CleanupChoices />,
+        onClose: () => resolve(undefined),
+      });
+    });
+  }
+
   return {
     genericDialog,
     closeGenericDialog,
@@ -209,5 +283,6 @@ export function useDialog() {
     openExportFinishedDialog,
     openCutFinishedDialog,
     openConcatFinishedDialog,
+    openCleanupFilesDialog,
   };
 }

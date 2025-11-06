@@ -1,4 +1,4 @@
-import { CSSProperties, ReactNode, useState } from 'react';
+import { CSSProperties, ReactNode } from 'react';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
 import invariant from 'tiny-invariant';
@@ -9,7 +9,6 @@ import pMap from 'p-map';
 import { formatDuration } from '../util/duration';
 import { parseYouTube } from '../edlFormats';
 import CopyClipboardButton from '../components/CopyClipboardButton';
-import Checkbox from '../components/Checkbox';
 import { appPath, isMac, isMasBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry } from '../util';
 import { ParseTimecode } from '../types';
 import { FindKeyframeMode } from '../ffmpeg';
@@ -354,66 +353,6 @@ export interface CleanupChoicesType {
   deleteIfTrashFails?: boolean,
 }
 export type CleanupChoice = keyof CleanupChoicesType;
-
-
-const CleanupChoices = ({ cleanupChoicesInitial, onChange: onChangeProp }: { cleanupChoicesInitial: CleanupChoicesType, onChange: (v: CleanupChoicesType) => void }) => {
-  const [choices, setChoices] = useState(cleanupChoicesInitial);
-
-  const getVal = (key: CleanupChoice) => !!choices[key];
-
-  const onChange = (key: CleanupChoice, val: boolean | string) => setChoices((oldChoices) => {
-    const newChoices = { ...oldChoices, [key]: Boolean(val) };
-    if ((newChoices.trashSourceFile || newChoices.trashTmpFiles) && !newChoices.closeFile) {
-      newChoices.closeFile = true;
-    }
-    onChangeProp(newChoices);
-    return newChoices;
-  });
-
-  const trashTmpFiles = getVal('trashTmpFiles');
-  const trashSourceFile = getVal('trashSourceFile');
-  const trashProjectFile = getVal('trashProjectFile');
-  const deleteIfTrashFails = getVal('deleteIfTrashFails');
-  const closeFile = getVal('closeFile');
-  const askForCleanup = getVal('askForCleanup');
-  const cleanupAfterExport = getVal('cleanupAfterExport');
-
-  return (
-    <div style={{ textAlign: 'left' }}>
-      <p>{i18n.t('What do you want to do after exporting a file or when pressing the "delete source file" button?')}</p>
-
-      <Checkbox label={i18n.t('Close currently opened file')} checked={closeFile} disabled={trashSourceFile || trashTmpFiles} onCheckedChange={(checked) => onChange('closeFile', checked)} />
-
-      <div style={{ marginTop: 25 }}>
-        <Checkbox label={i18n.t('Trash auto-generated files')} checked={trashTmpFiles} onCheckedChange={(checked) => onChange('trashTmpFiles', checked)} />
-        <Checkbox label={i18n.t('Trash original source file')} checked={trashSourceFile} onCheckedChange={(checked) => onChange('trashSourceFile', checked)} />
-        <Checkbox label={i18n.t('Trash project LLC file')} checked={trashProjectFile} onCheckedChange={(checked) => onChange('trashProjectFile', checked)} />
-        <Checkbox label={i18n.t('Permanently delete the files if trash fails?')} disabled={!(trashTmpFiles || trashProjectFile || trashSourceFile)} checked={deleteIfTrashFails} onCheckedChange={(checked) => onChange('deleteIfTrashFails', checked)} />
-      </div>
-
-      <div style={{ marginTop: 25 }}>
-        <Checkbox label={i18n.t('Show this dialog every time?')} checked={askForCleanup} onCheckedChange={(checked) => onChange('askForCleanup', checked)} />
-        <Checkbox label={i18n.t('Do all of this automatically after exporting a file?')} checked={cleanupAfterExport} onCheckedChange={(checked) => onChange('cleanupAfterExport', checked)} />
-      </div>
-    </div>
-  );
-};
-
-export async function showCleanupFilesDialog(cleanupChoicesIn: CleanupChoicesType) {
-  let cleanupChoices = cleanupChoicesIn;
-
-  const { value } = await getSwal().ReactSwal.fire<string>({
-    title: i18n.t('Cleanup files?'),
-    html: <CleanupChoices cleanupChoicesInitial={cleanupChoices} onChange={(newChoices) => { cleanupChoices = newChoices; }} />,
-    confirmButtonText: i18n.t('Confirm'),
-    confirmButtonColor: '#d33',
-    showCancelButton: true,
-    cancelButtonText: i18n.t('Cancel'),
-  });
-
-  if (value) return cleanupChoices;
-  return undefined;
-}
 
 function parseBytesHuman(str: string) {
   const match = str.replaceAll(/\s/g, '').match(/^(\d+)([gkmt]?)b$/i);

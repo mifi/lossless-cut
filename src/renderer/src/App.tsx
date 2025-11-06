@@ -78,7 +78,7 @@ import {
 import getSwal, { errorToast, showPlaybackFailedMessage } from './swal';
 import { adjustRate } from './util/rate-calculator';
 import { askExtractFramesAsImages } from './dialogs/extractFrames';
-import { askForOutDir, askForImportChapters, askForFileOpenAction, showCleanupFilesDialog, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, showOpenDialog, showMuxNotSupported, promptDownloadMediaUrl, CleanupChoicesType, showOutputNotWritable, deleteFiles, mustDisallowVob, toastError } from './dialogs';
+import { askForOutDir, askForImportChapters, askForFileOpenAction, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, showOpenDialog, showMuxNotSupported, promptDownloadMediaUrl, CleanupChoicesType, showOutputNotWritable, deleteFiles, mustDisallowVob, toastError } from './dialogs';
 import { openSendReportDialog } from './reporting';
 import { fallbackLng } from './i18n';
 import { sortSegments, convertSegmentsToChaptersWithGaps, hasAnySegmentOverlap, isDurationValid, getPlaybackAction, getSegmentTags, filterNonMarkers } from './segments';
@@ -178,7 +178,7 @@ function App() {
 
   const { withErrorHandling, handleError, genericError, setGenericError } = useErrorHandling();
 
-  const { showGenericDialog, genericDialog, closeGenericDialog, confirmDialog, openExportFinishedDialog, openCutFinishedDialog, openConcatFinishedDialog } = useDialog();
+  const { showGenericDialog, genericDialog, closeGenericDialog, confirmDialog, openExportFinishedDialog, openCutFinishedDialog, openConcatFinishedDialog, openCleanupFilesDialog } = useDialog();
 
   // Note that each action may be multiple key bindings and this will only be the first binding for each action
   const keyBindingByAction = useMemo(() => Object.fromEntries(keyBindings.map((binding) => [binding.action, binding])), [keyBindings]);
@@ -995,13 +995,12 @@ function App() {
     }, (err) => i18n.t('Unable to delete file: {{message}}', { message: err instanceof Error ? err.message : String(err) }));
   }, [batchListRemoveFile, clearSegments, filePath, previewFilePath, projectFileSavePath, resetState, setWorking, withErrorHandling]);
 
-  // todo convert to Dialog component
   const askForCleanupChoices = useCallback(async () => {
-    const trashResponse = await showCleanupFilesDialog(cleanupChoices);
+    const trashResponse = await openCleanupFilesDialog(cleanupChoices);
     if (!trashResponse) return undefined; // Canceled
     setCleanupChoices(trashResponse); // Store for next time
     return trashResponse;
-  }, [cleanupChoices, setCleanupChoices]);
+  }, [cleanupChoices, openCleanupFilesDialog, setCleanupChoices]);
 
   const cleanupFilesWithDialog = useCallback(async () => {
     let response: CleanupChoicesType | undefined = cleanupChoices;
