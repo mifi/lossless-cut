@@ -97,6 +97,7 @@ const defaultKeyBindings: KeyBinding[] = [
 
 const defaults: Config = {
   version: 1,
+  lastAppVersion: app.getVersion(),
   captureFormat: 'jpeg',
   customOutDir: undefined,
   keyframeCut: true,

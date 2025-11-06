@@ -54,6 +54,7 @@ export type FixCodecTagOption = 'always' | 'never' | 'auto';
 
 export interface Config {
   version: number,
+  lastAppVersion: string,
   captureFormat: CaptureFormat,
   customOutDir: string | undefined,
   keyframeCut: boolean,

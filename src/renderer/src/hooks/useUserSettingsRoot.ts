@@ -49,6 +49,8 @@ export default function useUserSettingsRoot() {
   // Without this there was a huge performance issue https://github.com/mifi/lossless-cut/issues/1097
   const safeGetConfigInitial = <T extends keyof Config>(key: T) => () => safeGetConfig(key);
 
+  const [lastAppVersion, setLastAppVersion] = useState(safeGetConfigInitial('lastAppVersion'));
+  useEffect(() => safeSetConfig({ lastAppVersion }), [lastAppVersion]);
   const [captureFormat, setCaptureFormat] = useState(safeGetConfigInitial('captureFormat'));
   useEffect(() => safeSetConfig({ captureFormat }), [captureFormat]);
   const [customOutDir, setCustomOutDir] = useState(safeGetConfigInitial('customOutDir'));
@@ -222,6 +224,7 @@ export default function useUserSettingsRoot() {
   const springAnimation = useMemo<Transition>(() => (prefersReducedMotion ? { duration: 0 } : mySpring), [prefersReducedMotion]);
 
   const settings = {
+    lastAppVersion,
     captureFormat,
     customOutDir,
     keyframeCut,
@@ -297,6 +300,7 @@ export default function useUserSettingsRoot() {
   return {
     settings,
 
+    setLastAppVersion,
     setCaptureFormat,
     setCustomOutDir,
     setKeyframeCut,
