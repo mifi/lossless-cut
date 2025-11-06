@@ -23,8 +23,9 @@ const remote = window.require('@electron/remote');
 const { isWindows, isMac } = remote.require('./index.js');
 
 const appVersion = remote.app.getVersion();
+const appPath = remote.app.getAppPath();
 
-export { isWindows, isMac, appVersion };
+export { isWindows, isMac, appVersion, appPath };
 
 
 const trashFile = async (path: string) => ipcRenderer.invoke('tryTrashItem', path);
@@ -350,11 +351,11 @@ export async function checkAppPath() {
     const mf = 'mi' + 'fi.no', ap = 'Los' + 'slessC' + 'ut';
     let payload: string | undefined;
     if (isWindowsStoreBuild || (isDev && forceCheckMs)) {
-      const appPath = isDev ? 'C:\\Program Files\\WindowsApps\\37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84' : remote.app.getAppPath();
-      const pathMatch = appPath.replaceAll('\\', '/').match(/Windows ?Apps\/([^/]+)/); // find the first component after WindowsApps
+      const appPathOrMock = isDev ? 'C:\\Program Files\\WindowsApps\\37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84' : appPath;
+      const pathMatch = appPathOrMock.replaceAll('\\', '/').match(/Windows ?Apps\/([^/]+)/); // find the first component after WindowsApps
       // example pathMatch: 37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84
       if (!pathMatch) {
-        console.warn('Unknown path match', appPath);
+        console.warn('Unknown path match', appPathOrMock);
         return;
       }
       const pathSeg = pathMatch[1];

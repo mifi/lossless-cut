@@ -2,7 +2,7 @@ import i18n from 'i18next';
 import { Trans } from 'react-i18next';
 
 import CopyClipboardButton from './components/CopyClipboardButton';
-import { isStoreBuild, isMasBuild, isWindowsStoreBuild, isExecaError, appVersion } from './util';
+import { isStoreBuild, isMasBuild, isWindowsStoreBuild, isExecaError, appVersion, appPath } from './util';
 import getSwal from './swal';
 
 const electron = window.require('electron');
@@ -12,6 +12,7 @@ const remote = window.require('@electron/remote');
 const { platform, arch } = remote.require('./index.js');
 
 
+// This cannot be a radix dialog, because it needs to be called even if the React tree is broken.
 // eslint-disable-next-line import/prefer-default-export
 export function openSendReportDialog({ err, message, state }: {
   err?: unknown | undefined,
@@ -51,6 +52,7 @@ export function openSendReportDialog({ err, message, state }: {
 
     state,
 
+    appPath,
     platform,
     arch,
     version: appVersion,
