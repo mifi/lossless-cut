@@ -18,7 +18,7 @@
   background-color: var(--gray-3);
 }
 .CheckboxRoot:focus {
-  box-shadow: 0 0 0 2px var(--gray-1);
+  box-shadow: 0 0 0 .1em var(--gray-10);
 }
 
 .CheckboxIndicator {

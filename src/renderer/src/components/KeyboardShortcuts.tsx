@@ -1,7 +1,6 @@
 import { memo, Fragment, useEffect, useMemo, useCallback, useState, ReactNode, SetStateAction, Dispatch, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaMouse, FaPlus, FaStepForward, FaStepBackward, FaUndo, FaTrash, FaSave } from 'react-icons/fa';
-import Mousetrap from 'mousetrap';
 import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
 import uniq from 'lodash/uniq';
@@ -13,7 +12,7 @@ import SegmentCutpointButton from './SegmentCutpointButton';
 import { getModifier } from '../hooks/useTimelineScroll';
 import { KeyBinding, KeyboardAction, ModifierKey } from '../../../../types';
 import { StateSegment } from '../types';
-import { splitKeyboardKeys } from '../util';
+import { allModifiers, altModifiers, controlModifiers, formatKeyboardKey, metaModifiers, shiftModifiers, splitKeyboardKeys } from '../util';
 import * as Dialog from './Dialog';
 import Warning from './Warning';
 import Button, { DialogButton } from './Button';
@@ -29,25 +28,18 @@ type ActionsMap = Record<KeyboardAction, { name: string, category?: Category, be
 const renderKeys = (keys: string[]) => keys.map((key, i) => (
   <Fragment key={key}>
     {i > 0 && <FaPlus style={{ verticalAlign: 'middle', fontSize: '.4em', opacity: 0.8, marginLeft: '.4em', marginRight: '.4em' }} />}
-    <kbd>{key.toUpperCase()}</kbd>
+    <kbd>{formatKeyboardKey(key)}</kbd>
   </Fragment>
 ));
 
-// From https://craig.is/killing/mice
 // For modifier keys you can use shift, ctrl, alt, or meta.
 // You can substitute option for alt and command for meta.
-const allModifiers = new Set(['shift', 'ctrl', 'alt', 'meta']);
 function fixKeys(keys: string[]) {
-  const replaced = keys.map((key) => {
-    if (key === 'option') return 'alt';
-    if (key === 'command') return 'meta';
-    return key;
-  });
-  const uniqed = uniq(replaced);
+  const uniqed = uniq(keys);
   const nonModifierKeys = keys.filter((key) => !allModifiers.has(key));
   if (nonModifierKeys.length === 0) return []; // only modifiers is invalid
   if (nonModifierKeys.length > 1) return []; // can only have one non-modifier
-  return orderBy(uniqed, [(key) => key !== 'shift', (key) => key !== 'ctrl', (key) => key !== 'alt', (key) => key !== 'meta', (key) => key]);
+  return orderBy(uniqed, [(key) => !shiftModifiers.has(key), (key) => !controlModifiers.has(key), (key) => !altModifiers.has(key), (key) => !metaModifiers.has(key), (key) => key]);
 }
 
 // eslint-disable-next-line react/display-name
@@ -78,18 +70,17 @@ const CreateBinding = memo(({
   useEffect(() => {
     if (!isShown) return undefined;
 
-    const mousetrap = new Mousetrap();
-    function handleKey(character: string, _modifiers: unknown, e: { type: string, preventDefault: () => void }) {
-      if (['keydown', 'keypress'].includes(e.type)) {
-        addKeyDown(character);
-      }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // console.log(e)
+      addKeyDown(e.code);
       e.preventDefault();
-    }
-    const handleKeyOrig = mousetrap.handleKey;
-    mousetrap.handleKey = handleKey;
+      e.stopPropagation();
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      mousetrap.handleKey = handleKeyOrig;
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [addKeyDown, isShown]);
 
@@ -151,7 +142,7 @@ function WheelModifier({ text, wheelText, modifier }: { text: string, wheelText:
     <div style={{ ...rowStyle, alignItems: 'center' }}>
       <span>{text}</span>
       <div style={{ flexGrow: 1 }} />
-      {getModifier(modifier).map((v) => <kbd key={v} style={{ marginRight: '.7em' }}>{v}</kbd>)}
+      <kbd style={{ marginRight: '.7em' }}>{getModifier(modifier)}</kbd>
       <FaMouse style={{ marginRight: '.3em' }} />
       <span>{wheelText}</span>
     </div>

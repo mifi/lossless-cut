@@ -8,7 +8,8 @@ import SimpleModeButton from './components/SimpleModeButton';
 import useUserSettings from './hooks/useUserSettings';
 import { StateSegment } from './types';
 import { KeyBinding } from '../../../types';
-import { splitKeyboardKeys } from './util';
+import { formatKeyboardKey, splitKeyboardKeys } from './util';
+import { getModifier } from './hooks/useTimelineScroll';
 
 const electron = window.require('electron');
 
@@ -18,7 +19,7 @@ function Keys({ keys }: { keys: string | undefined }) {
   }
   const split = splitKeyboardKeys(keys);
   return split.map((key, i) => (
-    <Fragment key={key}><kbd>{key.toUpperCase()}</kbd>{i < split.length - 1 && <span style={{ fontSize: '.7em', marginLeft: '-.2em', marginRight: '-.2em' }}>{' + '}</span>}</Fragment>
+    <Fragment key={key}><kbd>{formatKeyboardKey(key)}</kbd>{i < split.length - 1 && <span style={{ fontSize: '.7em', marginLeft: '-.2em', marginRight: '-.2em' }}>{' + '}</span>}</Fragment>
   ));
 }
 
@@ -70,7 +71,7 @@ function NoFileLoaded({ mifiLink, currentCutSeg, onClick, darkMode, keyBindingBy
       </div>
 
       <div style={{ fontSize: '1.3em', color: 'var(--gray-11)' }}>
-        <Trans><SetCutpointButton currentCutSeg={currentCutSegOrDefault} side="start" style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSegOrDefault} side="end" style={{ verticalAlign: 'middle' }} />, <Keys keys={keyBindingByAction['setCutStart']?.keys} /> <Keys keys={keyBindingByAction['setCutEnd']?.keys} /> or <span><kbd style={{ marginRight: '.1em' }}>{segmentMouseModifierKey}</kbd></span>+<FaMouse style={{ marginRight: '.1em', verticalAlign: 'middle' }} /> to set cutpoints</Trans>
+        <Trans><SetCutpointButton currentCutSeg={currentCutSegOrDefault} side="start" style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSegOrDefault} side="end" style={{ verticalAlign: 'middle' }} />, <Keys keys={keyBindingByAction['setCutStart']?.keys} /> <Keys keys={keyBindingByAction['setCutEnd']?.keys} /> or <span><kbd style={{ marginRight: '.1em' }}>{getModifier(segmentMouseModifierKey)}</kbd></span>+<FaMouse style={{ marginRight: '.1em', verticalAlign: 'middle' }} /> to set cutpoints</Trans>
       </div>
 
       <div style={{ fontSize: '1.3em', color: 'var(--gray-11)' }} role="button" onClick={(e) => e.stopPropagation()}>

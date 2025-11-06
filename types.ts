@@ -51,6 +51,7 @@ export type WaveformMode = 'big-waveform' | 'waveform';
 
 
 export interface Config {
+  version: number,
   captureFormat: CaptureFormat,
   customOutDir: string | undefined,
   keyframeCut: boolean,

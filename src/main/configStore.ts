@@ -3,6 +3,7 @@ import Store from 'electron-store';
 import electron from 'electron';
 import { join, dirname } from 'node:path';
 import { pathExists } from 'fs-extra';
+import assert from 'node:assert';
 
 import { KeyBinding, Config } from '../../types.js';
 import logger from './logger.js';
@@ -12,88 +13,89 @@ const { app } = electron;
 
 
 const defaultKeyBindings: KeyBinding[] = [
-  { keys: 'plus', action: 'addSegment' },
-  { keys: 'space', action: 'togglePlayResetSpeed' },
-  { keys: 'k', action: 'togglePlayNoResetSpeed' },
-  { keys: 'j', action: 'reducePlaybackRate' },
-  { keys: 'shift+j', action: 'reducePlaybackRateMore' },
-  { keys: 'l', action: 'increasePlaybackRate' },
-  { keys: 'shift+l', action: 'increasePlaybackRateMore' },
-  { keys: 'z', action: 'timelineToggleComfortZoom' },
-  { keys: 'shift+z', action: 'makeCursorTimeZero' },
-  { keys: ',', action: 'seekPreviousFrame' },
-  { keys: '.', action: 'seekNextFrame' },
-  { keys: 'c', action: 'captureSnapshot' },
-  { keys: 'i', action: 'setCutStart' },
-  { keys: 'o', action: 'setCutEnd' },
-  { keys: 'backspace', action: 'removeCurrentCutpoint' },
-  { keys: 'd', action: 'cleanupFilesDialog' },
-  { keys: 'b', action: 'splitCurrentSegment' },
-  { keys: 'r', action: 'increaseRotation' },
-  { keys: 'g', action: 'goToTimecode' },
-  { keys: 't', action: 'toggleStripAll' },
-  { keys: 'shift+t', action: 'toggleStripCurrentFilter' },
+  { keys: 'ShiftLeft+Equal', action: 'addSegment' },
+  { keys: 'Space', action: 'togglePlayResetSpeed' },
+  { keys: 'KeyK', action: 'togglePlayNoResetSpeed' },
+  { keys: 'KeyJ', action: 'reducePlaybackRate' },
+  { keys: 'ShiftLeft+KeyJ', action: 'reducePlaybackRateMore' },
+  { keys: 'KeyL', action: 'increasePlaybackRate' },
+  { keys: 'ShiftLeft+KeyL', action: 'increasePlaybackRateMore' },
+  { keys: 'KeyZ', action: 'timelineToggleComfortZoom' },
+  { keys: 'ShiftLeft+KeyZ', action: 'makeCursorTimeZero' },
+  { keys: 'Comma', action: 'seekPreviousFrame' },
+  { keys: 'Period', action: 'seekNextFrame' },
+  { keys: 'KeyC', action: 'captureSnapshot' },
+  { keys: 'KeyI', action: 'setCutStart' },
+  { keys: 'KeyO', action: 'setCutEnd' },
+  { keys: 'Backspace', action: 'removeCurrentCutpoint' },
+  { keys: 'KeyD', action: 'cleanupFilesDialog' },
+  { keys: 'KeyB', action: 'splitCurrentSegment' },
+  { keys: 'KeyR', action: 'increaseRotation' },
+  { keys: 'KeyG', action: 'goToTimecode' },
+  { keys: 'KeyT', action: 'toggleStripAll' },
+  { keys: 'ShiftLeft+KeyT', action: 'toggleStripCurrentFilter' },
 
-  { keys: 'left', action: 'seekBackwards' },
-  { keys: 'ctrl+shift+left', action: 'seekBackwards2' },
-  { keys: 'ctrl+left', action: 'seekBackwardsPercent' },
-  { keys: 'command+left', action: 'seekBackwardsPercent' },
-  { keys: 'alt+left', action: 'seekBackwardsKeyframe' },
-  { keys: 'shift+left', action: 'jumpCutStart' },
+  { keys: 'ArrowLeft', action: 'seekBackwards' },
+  { keys: 'ControlLeft+ShiftLeft+ArrowLeft', action: 'seekBackwards2' },
+  { keys: 'ControlLeft+ArrowLeft', action: 'seekBackwardsPercent' },
+  { keys: 'MetaLeft+ArrowLeft', action: 'seekBackwardsPercent' },
+  { keys: 'AltLeft+ArrowLeft', action: 'seekBackwardsKeyframe' },
+  { keys: 'ShiftLeft+ArrowLeft', action: 'jumpCutStart' },
 
-  { keys: 'right', action: 'seekForwards' },
-  { keys: 'ctrl+shift+right', action: 'seekForwards2' },
-  { keys: 'ctrl+right', action: 'seekForwardsPercent' },
-  { keys: 'command+right', action: 'seekForwardsPercent' },
-  { keys: 'alt+right', action: 'seekForwardsKeyframe' },
-  { keys: 'shift+right', action: 'jumpCutEnd' },
+  { keys: 'ArrowRight', action: 'seekForwards' },
+  { keys: 'ControlLeft+ShiftLeft+ArrowRight', action: 'seekForwards2' },
+  { keys: 'ControlLeft+ArrowRight', action: 'seekForwardsPercent' },
+  { keys: 'MetaLeft+ArrowRight', action: 'seekForwardsPercent' },
+  { keys: 'AltLeft+ArrowRight', action: 'seekForwardsKeyframe' },
+  { keys: 'ShiftLeft+ArrowRight', action: 'jumpCutEnd' },
 
-  { keys: 'ctrl+home', action: 'jumpTimelineStart' },
-  { keys: 'ctrl+end', action: 'jumpTimelineEnd' },
+  { keys: 'ControlLeft+Home', action: 'jumpTimelineStart' },
+  { keys: 'ControlLeft+End', action: 'jumpTimelineEnd' },
 
-  { keys: 'pageup', action: 'jumpFirstSegment' },
-  { keys: 'up', action: 'jumpPrevSegment' },
-  { keys: 'shift+alt+pageup', action: 'jumpSeekFirstSegment' },
-  { keys: 'shift+alt+up', action: 'jumpSeekPrevSegment' },
-  { keys: 'ctrl+up', action: 'timelineZoomIn' },
-  { keys: 'command+up', action: 'timelineZoomIn' },
-  { keys: 'shift+up', action: 'batchPreviousFile' },
-  { keys: 'ctrl+shift+up', action: 'batchOpenPreviousFile' },
+  { keys: 'PageUp', action: 'jumpFirstSegment' },
+  { keys: 'ArrowUp', action: 'jumpPrevSegment' },
+  { keys: 'ShiftLeft+AltLeft+PageUp', action: 'jumpSeekFirstSegment' },
+  { keys: 'ShiftLeft+AltLeft+ArrowUp', action: 'jumpSeekPrevSegment' },
+  { keys: 'ControlLeft+ArrowUp', action: 'timelineZoomIn' },
+  { keys: 'MetaLeft+ArrowUp', action: 'timelineZoomIn' },
+  { keys: 'ShiftLeft+ArrowUp', action: 'batchPreviousFile' },
+  { keys: 'ControlLeft+ShiftLeft+ArrowUp', action: 'batchOpenPreviousFile' },
 
-  { keys: 'pagedown', action: 'jumpLastSegment' },
-  { keys: 'down', action: 'jumpNextSegment' },
-  { keys: 'shift+alt+pagedown', action: 'jumpSeekLastSegment' },
-  { keys: 'shift+alt+down', action: 'jumpSeekNextSegment' },
-  { keys: 'ctrl+down', action: 'timelineZoomOut' },
-  { keys: 'command+down', action: 'timelineZoomOut' },
-  { keys: 'shift+down', action: 'batchNextFile' },
-  { keys: 'ctrl+shift+down', action: 'batchOpenNextFile' },
+  { keys: 'PageDown', action: 'jumpLastSegment' },
+  { keys: 'ArrowDown', action: 'jumpNextSegment' },
+  { keys: 'ShiftLeft+AltLeft+PageDown', action: 'jumpSeekLastSegment' },
+  { keys: 'ShiftLeft+AltLeft+ArrowDown', action: 'jumpSeekNextSegment' },
+  { keys: 'ControlLeft+ArrowDown', action: 'timelineZoomOut' },
+  { keys: 'MetaLeft+ArrowDown', action: 'timelineZoomOut' },
+  { keys: 'ShiftLeft+ArrowDown', action: 'batchNextFile' },
+  { keys: 'ControlLeft+ShiftLeft+ArrowDown', action: 'batchOpenNextFile' },
 
-  { keys: 'shift+enter', action: 'batchOpenSelectedFile' },
+  { keys: 'ShiftLeft+Enter', action: 'batchOpenSelectedFile' },
 
   // https://github.com/mifi/lossless-cut/issues/610
-  { keys: 'ctrl+z', action: 'undo' },
-  { keys: 'command+z', action: 'undo' },
-  { keys: 'ctrl+shift+z', action: 'redo' },
-  { keys: 'command+shift+z', action: 'redo' },
+  { keys: 'ControlLeft+KeyZ', action: 'undo' },
+  { keys: 'MetaLeft+KeyZ', action: 'undo' },
+  { keys: 'ControlLeft+ShiftLeft+KeyZ', action: 'redo' },
+  { keys: 'MetaLeft+ShiftLeft+KeyZ', action: 'redo' },
 
-  { keys: 'ctrl+c', action: 'copySegmentsToClipboard' },
-  { keys: 'command+c', action: 'copySegmentsToClipboard' },
+  { keys: 'ControlLeft+KeyC', action: 'copySegmentsToClipboard' },
+  { keys: 'MetaLeft+KeyC', action: 'copySegmentsToClipboard' },
 
-  { keys: 'f', action: 'toggleFullscreenVideo' },
+  { keys: 'KeyF', action: 'toggleFullscreenVideo' },
 
-  { keys: 'enter', action: 'labelCurrentSegment' },
+  { keys: 'Enter', action: 'labelCurrentSegment' },
 
-  { keys: 'e', action: 'export' },
-  { keys: 'shift+/', action: 'toggleKeyboardShortcuts' },
-  { keys: 'escape', action: 'closeActiveScreen' },
+  { keys: 'KeyE', action: 'export' },
+  { keys: 'ShiftLeft+Slash', action: 'toggleKeyboardShortcuts' },
+  { keys: 'Escape', action: 'closeActiveScreen' },
 
-  { keys: 'alt+up', action: 'increaseVolume' },
-  { keys: 'alt+down', action: 'decreaseVolume' },
-  { keys: 'm', action: 'toggleMuted' },
+  { keys: 'AltLeft+ArrowUp', action: 'increaseVolume' },
+  { keys: 'AltLeft+ArrowDown', action: 'decreaseVolume' },
+  { keys: 'KeyM', action: 'toggleMuted' },
 ];
 
 const defaults: Config = {
+  version: 1,
   captureFormat: 'jpeg',
   customOutDir: undefined,
   keyframeCut: true,
@@ -244,5 +246,142 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
   if (cleanupChoices != null && cleanupChoices.closeFile == null) {
     logger.info('Migrating cleanupChoices.closeFile');
     set('cleanupChoices', { ...cleanupChoices, closeFile: true });
+  }
+
+  const configVersion: number = store.get('version');
+
+  // todo remove after a while
+  if (configVersion === 1) {
+    const keyBindings: KeyBinding[] = store.get('keyBindings');
+    const newBindings = keyBindings.map(({ keys: keysStr, action }) => {
+      try {
+        const keysOrig = keysStr.split('+');
+        assert(keysOrig.length > 0 && keysOrig.every((k) => k.length > 0), 'Invalid keys');
+
+        const map: Record<string, string> = {
+          /* eslint-disable quote-props */
+          'esc': 'Escape',
+          '1': 'Digit1',
+          '2': 'Digit2',
+          '3': 'Digit3',
+          '4': 'Digit4',
+          '5': 'Digit5',
+          '6': 'Digit6',
+          '7': 'Digit7',
+          '8': 'Digit8',
+          '9': 'Digit9',
+          '0': 'Digit0',
+          '-': 'Minus',
+          '=': 'Equal',
+          'backspace': 'Backspace',
+          'tab': 'Tab',
+          'q': 'KeyQ',
+          'w': 'KeyW',
+          'e': 'KeyE',
+          'r': 'KeyR',
+          't': 'KeyT',
+          'y': 'KeyY',
+          'u': 'KeyU',
+          'i': 'KeyI',
+          'o': 'KeyO',
+          'p': 'KeyP',
+          '[': 'BracketLeft',
+          ']': 'BracketRight',
+          'enter': 'Enter',
+          'a': 'KeyA',
+          's': 'KeyS',
+          'd': 'KeyD',
+          'f': 'KeyF',
+          'g': 'KeyG',
+          'h': 'KeyH',
+          'j': 'KeyJ',
+          'k': 'KeyK',
+          'l': 'KeyL',
+          ';': 'Semicolon',
+          '\'': 'Quote',
+          '`': 'Backquote',
+          '\\': 'Backslash',
+          'z': 'KeyZ',
+          'x': 'KeyX',
+          'c': 'KeyC',
+          'v': 'KeyV',
+          'b': 'KeyB',
+          'n': 'KeyN',
+          'm': 'KeyM',
+          ',': 'Comma',
+          '.': 'Period',
+          '/': 'Slash',
+          '*': 'NumpadMultiply',
+          'space': 'Space',
+          'capslock': 'CapsLock',
+          'f1': 'F1',
+          'f2': 'F2',
+          'f3': 'F3',
+          'f4': 'F4',
+          'f5': 'F5',
+          'f6': 'F6',
+          'f7': 'F7',
+          'f8': 'F8',
+          'f9': 'F9',
+          'f10': 'F10',
+          'pause': 'Pause',
+          'f11': 'F11',
+          'f12': 'F12',
+          'f13': 'F13',
+          'f14': 'F14',
+          'f15': 'F15',
+          'f16': 'F16',
+          'f17': 'F17',
+          'f18': 'F18',
+          'f19': 'F19',
+          'f20': 'F20',
+          'f21': 'F21',
+          'f22': 'F22',
+          'f23': 'F23',
+          'f24': 'F24',
+          '(': 'NumpadParenLeft',
+          ')': 'NumpadParenRight',
+          'help': 'Help',
+          'numlock': 'NumLock',
+          'home': 'Home',
+          'up': 'ArrowUp',
+          'pageup': 'PageUp',
+          'left': 'ArrowLeft',
+          'right': 'ArrowRight',
+          'end': 'End',
+          'down': 'ArrowDown',
+          'pagedown': 'PageDown',
+          'ins': 'Insert',
+          'del': 'Delete',
+
+          // modifiers
+          'ctrl': 'ControlLeft',
+          'shift': 'ShiftLeft',
+          'alt': 'AltLeft',
+          'meta': 'MetaLeft',
+          /* eslint-enable quote-props */
+        };
+
+        const newKeys = keysOrig.flatMap((k) => {
+          if (k === 'plus') return ['shift', '='];
+          if (k === 'command') return ['meta'];
+          if (k === 'option') return ['alt'];
+          return [k];
+        }).map((k) => {
+          const mapped = map[k.toLowerCase()];
+          assert(mapped != null, `Unknown key: ${k}`);
+          return mapped;
+        });
+
+        return { keys: newKeys.join('+'), action };
+      } catch (err) {
+        logger.error('Failed to migrate old keyboard binding', keysStr, action, err);
+        return { keys: keysStr, action };
+      }
+    });
+    set('keyBindings', newBindings);
+
+    logger.info('Migrated config to version 2');
+    set('version', 2);
   }
 }

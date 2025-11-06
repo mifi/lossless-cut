@@ -42,8 +42,8 @@ function ModifierKeySetting({ text, value, setValue }: { text: string, value: Mo
       <KeyCell>{text}</KeyCell>
       <td>
         <Select value={value} onChange={(e) => setValue(e.target.value as ModifierKey)}>
-          {Object.entries(getModifierKeyNames()).map(([key, values]) => (
-            <option key={key} value={key}>{values.join(' / ')}</option>
+          {Object.entries(getModifierKeyNames()).map(([key, name]) => (
+            <option key={key} value={key}>{name}</option>
           ))}
         </Select>
       </td>

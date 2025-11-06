@@ -997,6 +997,7 @@ function App() {
     }, (err) => i18n.t('Unable to delete file: {{message}}', { message: err instanceof Error ? err.message : String(err) }));
   }, [batchListRemoveFile, clearSegments, filePath, previewFilePath, projectFileSavePath, resetState, setWorking, withErrorHandling]);
 
+  // todo convert to Dialog component
   const askForCleanupChoices = useCallback(async () => {
     const trashResponse = await showCleanupFilesDialog(cleanupChoices);
     if (!trashResponse) return undefined; // Canceled
@@ -1928,20 +1929,12 @@ function App() {
       await openYouTubeChaptersDialog(formatYouTube(cutSegments));
     }
 
-    function seekReset() {
-      seekAccelerationRef.current = 1;
-    }
-
-    function seekRel2({ keyup, amount }: { keyup: boolean | undefined, amount: number }) {
-      if (keyup) {
-        seekReset();
-        return;
-      }
+    function seekRelAccelerated(amount: number) {
       seekRel(seekAccelerationRef.current * amount);
       seekAccelerationRef.current *= keyboardSeekAccFactor;
     }
 
-    const ret: Record<MainKeyboardAction, ((a: { keyup?: boolean | undefined }) => boolean) | ((a: { keyup?: boolean | undefined }) => void)> = {
+    const ret: Record<MainKeyboardAction, (() => boolean) | (() => void)> = {
       // NOTE: Do not change these keys because users have bound keys by these names in their config files
       // For actions, see also KeyboardShortcuts.jsx
       togglePlayNoResetSpeed: () => togglePlay(),
@@ -1968,12 +1961,12 @@ function App() {
       selectSegmentsAtCursor,
       increaseRotation,
       goToTimecode: () => { goToTimecode(); return false; },
-      seekBackwards: ({ keyup }) => seekRel2({ keyup, amount: -1 * keyboardNormalSeekSpeed }),
-      seekBackwards2: ({ keyup }) => seekRel2({ keyup, amount: -1 * keyboardSeekSpeed2 }),
-      seekBackwards3: ({ keyup }) => seekRel2({ keyup, amount: -1 * keyboardSeekSpeed3 }),
-      seekForwards: ({ keyup }) => seekRel2({ keyup, amount: keyboardNormalSeekSpeed }),
-      seekForwards2: ({ keyup }) => seekRel2({ keyup, amount: keyboardSeekSpeed2 }),
-      seekForwards3: ({ keyup }) => seekRel2({ keyup, amount: keyboardSeekSpeed3 }),
+      seekBackwards: () => seekRelAccelerated(-1 * keyboardNormalSeekSpeed),
+      seekBackwards2: () => seekRelAccelerated(-1 * keyboardSeekSpeed2),
+      seekBackwards3: () => seekRelAccelerated(-1 * keyboardSeekSpeed3),
+      seekForwards: () => seekRelAccelerated(keyboardNormalSeekSpeed),
+      seekForwards2: () => seekRelAccelerated(keyboardSeekSpeed2),
+      seekForwards3: () => seekRelAccelerated(keyboardSeekSpeed3),
       seekBackwardsPercent: () => { seekRelPercent(-0.01); return false; },
       seekForwardsPercent: () => { seekRelPercent(0.01); return false; },
       seekBackwardsKeyframe: () => seekClosestKeyframe(-1),
@@ -2063,15 +2056,9 @@ function App() {
       openDirDialog,
       toggleSettings,
       openSendReportDialog: () => { openSendReportDialogWithState(); },
-      detectBlackScenes: ({ keyup }) => {
-        if (keyup) detectBlackScenes();
-      },
-      detectSilentScenes: ({ keyup }) => {
-        if (keyup) detectSilentScenes();
-      },
-      detectSceneChanges: ({ keyup }) => {
-        if (keyup) detectSceneChanges();
-      },
+      detectBlackScenes: () => { detectBlackScenes(); return false; },
+      detectSilentScenes: () => { detectSilentScenes(); return false; },
+      detectSceneChanges: () => { detectSceneChanges(); return false; },
       readAllKeyframes,
       createSegmentsFromKeyframes,
       toggleWaveformMode,
@@ -2087,11 +2074,30 @@ function App() {
 
   const getKeyboardAction = useCallback((action: MainKeyboardAction) => mainActions[action], [mainActions]);
 
-  const onKeyPress = useCallback(({ action, keyup }: { action: KeyboardAction, keyup?: boolean | undefined }) => {
+  const onKeyUp = useCallback(({ action }: { action: KeyboardAction }) => {
+    function seekReset() {
+      seekAccelerationRef.current = 1;
+    }
+
+    const keyUpActions = {
+      seekBackwards: () => seekReset(),
+      seekBackwards2: () => seekReset(),
+      seekBackwards3: () => seekReset(),
+      seekForwards: () => seekReset(),
+      seekForwards2: () => seekReset(),
+      seekForwards3: () => seekReset(),
+    };
+    const fn = keyUpActions[action as keyof typeof keyUpActions];
+    if (fn == null) return true;
+    fn();
+    return true;
+  }, [seekAccelerationRef]);
+
+  const onKeyDown = useCallback(({ action }: { action: KeyboardAction }) => {
     function tryMainActions(mainAction: MainKeyboardAction) {
       const fn = getKeyboardAction(mainAction);
       if (!fn) return { match: false };
-      const bubble = fn({ keyup });
+      const bubble = fn();
       if (bubble === undefined) return { match: true };
       return { match: true, bubble };
     }
@@ -2111,7 +2117,7 @@ function App() {
     }
 
     if (concatSheetOpen || keyboardShortcutsVisible || genericDialog != null) {
-      return true; // don't allow any further hotkeys
+      return true; // don't allow any further hotkeys, but bubble
     }
 
     if (exportConfirmOpen) {
@@ -2130,7 +2136,7 @@ function App() {
     return true; // bubble the event
   }, [closeExportConfirm, concatSheetOpen, exportConfirmOpen, genericDialog, getKeyboardAction, keyboardShortcutsVisible, onExportConfirm, toggleKeyboardShortcuts]);
 
-  useKeyboard({ keyBindings, onKeyPress });
+  useKeyboard({ keyBindings, onKeyDown, onKeyUp });
 
   useEffect(() => {
     // eslint-disable-next-line unicorn/prefer-add-event-listener
@@ -2291,7 +2297,7 @@ function App() {
         key,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         async () => {
-          fn({ keyup: true });
+          fn();
         },
       ] as const),
       // also called from menu:
