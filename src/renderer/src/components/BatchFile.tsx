@@ -1,4 +1,4 @@
-import { memo, useRef, useMemo, useCallback, CSSProperties } from 'react';
+import { memo, useRef, useMemo, useCallback, CSSProperties, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaAngleRight, FaFile, FaTimes } from 'react-icons/fa';
 import { useSortable } from '@dnd-kit/sortable';
@@ -53,6 +53,11 @@ function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, 
     alignContent: 'flex-start',
   }), [sortable.isDragging, sortable.transform, sortable.transition, isSelected, dragging]);
 
+  const handleClick = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
+    onSelect?.(path);
+    e.currentTarget.blur();
+  }, [onSelect, path]);
+
   return (
     <div
       // eslint-disable-next-line react/jsx-props-no-spreading
@@ -61,9 +66,10 @@ function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, 
       {...sortable.listeners}
       ref={setRef}
       role="button"
+      tabIndex={-1}
       style={style}
       title={path}
-      onClick={() => onSelect?.(path)}
+      onClick={handleClick}
     >
       <FaFile size={14} style={{ color: isSelected ? primaryTextColor : undefined, flexShrink: 0 }} />
       <div style={{ flexBasis: 4, flexShrink: 0 }} />

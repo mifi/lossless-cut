@@ -189,7 +189,14 @@ const Segment = memo(({
 
   const tags = useMemo(() => getSegmentTags('tags' in seg ? seg : {}), [seg]);
 
-  const maybeOnClick = useCallback(() => !invertCutSegments && onClick(index), [index, invertCutSegments, onClick]);
+  const handleSegmentClick = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
+    e.currentTarget.blur();
+    if (!invertCutSegments) onClick(index);
+  }, [index, invertCutSegments, onClick]);
+
+  const handleDraggableClick = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
+    e.currentTarget.blur();
+  }, []);
 
   const sortable = useSortable({
     id: seg.segId,
@@ -230,7 +237,7 @@ const Segment = memo(({
     <div
       ref={setRef}
       role="button"
-      onClick={maybeOnClick}
+      onClick={handleSegmentClick}
       onDoubleClick={onDoubleClick}
       style={style}
       className="segment-list-entry"
@@ -241,7 +248,9 @@ const Segment = memo(({
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...sortable.listeners}
         role="button"
+        tabIndex={-1}
         style={{ cursor, color: 'var(--gray-12)', marginBottom: duration != null ? 3 : undefined, display: 'flex', alignItems: 'center', height: 16 }}
+        onClick={handleDraggableClick}
       >
         {renderNumber()}
         <span style={{ cursor, fontSize: Math.min(310 / timeStr.length, 12), whiteSpace: 'nowrap' }}>{timeStr}</span>
