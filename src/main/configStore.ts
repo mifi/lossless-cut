@@ -4,6 +4,7 @@ import electron from 'electron';
 import { join, dirname } from 'node:path';
 import { pathExists } from 'fs-extra';
 import assert from 'node:assert';
+import { copyFile } from 'node:fs/promises';
 
 import { KeyBinding, Config } from '../../types.js';
 import logger from './logger.js';
@@ -229,6 +230,17 @@ let customStoragePath: string | undefined;
 
 export const getConfigPath = () => customStoragePath ?? join(app.getPath('userData'), configFileName); // custom path, or default used by electron-store
 
+async function tryBackupConfigFile(oldConfigVersion: number, appVersion: string) {
+  try {
+    const configPath = getConfigPath();
+    const backupPath = `${configPath}.backup-v${appVersion}-${oldConfigVersion}-${Date.now()}`;
+    await copyFile(configPath, backupPath);
+    logger.info(`Backed up config file to ${backupPath}`);
+  } catch (err) {
+    logger.error('Failed to backup config file', err);
+  }
+}
+
 export async function init({ customConfigDir }: { customConfigDir: string | undefined }) {
   customStoragePath = customConfigDir ?? await lookForNeighbourConfigFile();
   if (customStoragePath) logger.info('customStoragePath', customStoragePath);
@@ -253,6 +265,8 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
 
   // todo remove after a while
   if (configVersion === 1) {
+    await tryBackupConfigFile(1, app.getVersion());
+
     const keyBindings: KeyBinding[] = store.get('keyBindings');
     const newBindings = keyBindings.map(({ keys: keysStr, action }) => {
       try {
