@@ -2406,8 +2406,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    runStartupCheck({ customFfPath });
-  }, [customFfPath]);
+    runStartupCheck({ onError: ({ title, message }) => setGenericError({ title, err: message }) });
+  }, [customFfPath, setGenericError]);
 
   const haveBoundAlt = useMemo(() => keyBindings.some(({ keys }) => keys.split('+').includes('alt')), [keyBindings]);
 
