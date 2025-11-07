@@ -57,7 +57,7 @@ const ExpressionDialog = forwardRef<HTMLDivElement, Props>(({ onSubmit, examples
       {description && <AlertDialog.Description>{description}</AlertDialog.Description>}
 
       {variables && (
-        <div style={{ marginBottom: '1em' }}>{t('Variables')}: {variables.map((v) => <code style={{ display: 'inline-block', marginRight: '.3em' }} key={v} className="highlighted">{v}</code>)}</div>
+        <div style={{ marginBottom: '1em' }}>{t('Variables')}: {variables.map((v) => <code style={{ marginRight: '.3em' }} key={v} className="highlighted">{v}</code>)}</div>
       )}
 
       <div><b>{t('Examples')}:</b></div>
