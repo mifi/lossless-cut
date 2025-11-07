@@ -86,7 +86,6 @@ import { generateCutFileNames as generateCutFileNamesRaw, generateCutMergedFileN
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 import BigWaveform from './components/BigWaveform';
 
-import isDev from './isDev';
 import { BatchFile, Chapter, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, goToTimecodeDirectArgsSchema, openFilesActionArgsSchema, ParamsByStreamId, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment, TunerType } from './types';
 import { CaptureFormat, KeyboardAction, ApiActionRequest } from '../../../types';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
@@ -118,7 +117,6 @@ const { focusWindow, hasDisabledNetworking, quitApp, pathToFileURL, setProgressB
 const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
 // eslint-disable-next-line unicorn/prefer-top-level-await
 hevcPlaybackSupportedPromise.catch((err) => console.error(err));
-
 
 function App() {
   const { t } = useTranslation();
@@ -1913,7 +1911,7 @@ function App() {
     }
   }, [customOutDir, ensureWritableOutDir, loadMedia, setWorking, t, withErrorHandling]);
 
-  type MainKeyboardAction = Exclude<KeyboardAction, 'closeActiveScreen' | 'toggleKeyboardShortcuts' | 'goToTimecodeDirect'>;
+  type MainKeyboardAction = Exclude<KeyboardAction, 'goToTimecodeDirect'>;
 
   const mainActions = useMemo(() => {
     async function exportYouTube() {
@@ -1952,15 +1950,15 @@ function App() {
       focusSegmentAtCursor,
       selectSegmentsAtCursor,
       increaseRotation,
-      goToTimecode: () => { goToTimecode(); return false; },
+      goToTimecode: () => goToTimecode(),
       seekBackwards: () => seekRelAccelerated(-1 * keyboardNormalSeekSpeed),
       seekBackwards2: () => seekRelAccelerated(-1 * keyboardSeekSpeed2),
       seekBackwards3: () => seekRelAccelerated(-1 * keyboardSeekSpeed3),
       seekForwards: () => seekRelAccelerated(keyboardNormalSeekSpeed),
       seekForwards2: () => seekRelAccelerated(keyboardSeekSpeed2),
       seekForwards3: () => seekRelAccelerated(keyboardSeekSpeed3),
-      seekBackwardsPercent: () => { seekRelPercent(-0.01); return false; },
-      seekForwardsPercent: () => { seekRelPercent(0.01); return false; },
+      seekBackwardsPercent: () => seekRelPercent(-0.01),
+      seekForwardsPercent: () => seekRelPercent(0.01),
       seekBackwardsKeyframe: () => seekClosestKeyframe(-1),
       seekForwardsKeyframe: () => seekClosestKeyframe(1),
       seekPreviousFrame: () => shortStep(-1),
@@ -1977,8 +1975,8 @@ function App() {
       jumpCutEnd,
       jumpTimelineStart,
       jumpTimelineEnd,
-      timelineZoomIn: () => { zoomRel(1); return false; },
-      timelineZoomOut: () => { zoomRel(-1); return false; },
+      timelineZoomIn: () => zoomRel(1),
+      timelineZoomOut: () => zoomRel(-1),
       batchPreviousFile: () => batchFileJump(-1, false),
       batchNextFile: () => batchFileJump(1, false),
       batchOpenPreviousFile: () => batchFileJump(-1, true),
@@ -1989,11 +1987,11 @@ function App() {
       removeCurrentCutpoint: () => removeSegment(currentSegIndexSafe),
       undo: () => cutSegmentsHistory.back(),
       redo: () => cutSegmentsHistory.forward(),
-      labelCurrentSegment: () => { labelSegment(currentSegIndexSafe); return false; },
+      labelCurrentSegment: () => labelSegment(currentSegIndexSafe),
       addSegment,
       duplicateCurrentSegment,
-      toggleLastCommands: () => { toggleLastCommands(); return false; },
-      export: onExportPress,
+      toggleLastCommands,
+      export: () => onExportPress(),
       extractCurrentSegmentFramesAsImages,
       extractSelectedSegmentsFramesAsImages,
       reorderSegsByStartTime,
@@ -2048,9 +2046,9 @@ function App() {
       openDirDialog,
       toggleSettings,
       openSendReportDialog: () => { openSendReportDialogWithState(); },
-      detectBlackScenes: () => { detectBlackScenes(); return false; },
-      detectSilentScenes: () => { detectSilentScenes(); return false; },
-      detectSceneChanges: () => { detectSceneChanges(); return false; },
+      detectBlackScenes,
+      detectSilentScenes,
+      detectSceneChanges,
       readAllKeyframes,
       createSegmentsFromKeyframes,
       toggleWaveformMode,
@@ -2059,19 +2057,20 @@ function App() {
       showIncludeExternalStreamsDialog,
       toggleFullscreenVideo,
       selectAllMarkers,
+      // also called from menu (note: no longer a toggle. Esc must be used to close it because it's a dialog now):
+      toggleKeyboardShortcuts,
     };
 
     return ret;
-  }, [togglePlaySelectedSegments, toggleLoopSelectedSegments, pause, timelineToggleComfortZoom, captureSnapshot, captureSnapshotAsCoverArt, setCutStart, setCutEnd, cleanupFilesDialog, splitCurrentSegment, focusSegmentAtCursor, selectSegmentsAtCursor, increaseRotation, jumpCutStart, jumpCutEnd, jumpTimelineStart, jumpTimelineEnd, batchOpenSelectedFile, closeBatch, addSegment, duplicateCurrentSegment, onExportPress, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, reorderSegsByStartTime, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, createFixedDurationSegments, createNumSegments, createFixedByteSizedSegments, createRandomSegments, alignSegmentTimesToKeyframes, shuffleSegments, clearSegments, toggleSegmentsList, toggleStreamsSelector, extractAllStreams, convertFormatBatch, concatBatch, toggleCaptureFormat, toggleStripAudio, toggleStripVideo, toggleStripSubtitle, toggleStripThumbnail, toggleStripAll, toggleDarkMode, askStartTimeOffset, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, editCurrentSegmentTags, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, tryFixInvalidDuration, shiftAllSegmentTimes, toggleMuted, copySegmentsToClipboard, handleShowStreamsSelectorClick, openFilesDialog, openDirDialog, toggleSettings, readAllKeyframes, createSegmentsFromKeyframes, toggleWaveformMode, toggleShowThumbnails, toggleShowKeyframes, showIncludeExternalStreamsDialog, toggleFullscreenVideo, selectAllMarkers, checkFileOpened, cutSegments, seekRel, keyboardSeekAccFactor, togglePlay, play, userChangePlaybackRate, goToTimecode, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, seekRelPercent, seekClosestKeyframe, shortStep, jumpSeg, zoomRel, batchFileJump, removeSegment, currentSegIndexSafe, cutSegmentsHistory, labelSegment, toggleLastCommands, userHtml5ifyCurrentFile, toggleKeyframeCut, applyEnabledStreamsFilter, setPlaybackVolume, commandedTimeRef, closeFileWithConfirm, openSendReportDialogWithState, detectBlackScenes, detectSilentScenes, detectSceneChanges]);
+  }, [togglePlaySelectedSegments, toggleLoopSelectedSegments, pause, timelineToggleComfortZoom, captureSnapshot, captureSnapshotAsCoverArt, setCutStart, setCutEnd, cleanupFilesDialog, splitCurrentSegment, focusSegmentAtCursor, selectSegmentsAtCursor, increaseRotation, jumpCutStart, jumpCutEnd, jumpTimelineStart, jumpTimelineEnd, batchOpenSelectedFile, closeBatch, addSegment, duplicateCurrentSegment, onExportPress, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, reorderSegsByStartTime, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, createFixedDurationSegments, createNumSegments, createFixedByteSizedSegments, createRandomSegments, alignSegmentTimesToKeyframes, shuffleSegments, clearSegments, toggleSegmentsList, toggleStreamsSelector, extractAllStreams, convertFormatBatch, concatBatch, toggleCaptureFormat, toggleStripAudio, toggleStripVideo, toggleStripSubtitle, toggleStripThumbnail, toggleStripAll, toggleDarkMode, askStartTimeOffset, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, editCurrentSegmentTags, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, tryFixInvalidDuration, shiftAllSegmentTimes, toggleMuted, copySegmentsToClipboard, handleShowStreamsSelectorClick, openFilesDialog, openDirDialog, toggleSettings, readAllKeyframes, createSegmentsFromKeyframes, toggleWaveformMode, toggleShowThumbnails, toggleShowKeyframes, showIncludeExternalStreamsDialog, toggleFullscreenVideo, selectAllMarkers, checkFileOpened, cutSegments, seekRel, keyboardSeekAccFactor, togglePlay, play, userChangePlaybackRate, goToTimecode, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, seekRelPercent, seekClosestKeyframe, shortStep, jumpSeg, zoomRel, batchFileJump, removeSegment, currentSegIndexSafe, cutSegmentsHistory, labelSegment, toggleLastCommands, userHtml5ifyCurrentFile, toggleKeyframeCut, applyEnabledStreamsFilter, setPlaybackVolume, commandedTimeRef, closeFileWithConfirm, openSendReportDialogWithState, detectBlackScenes, detectSilentScenes, detectSceneChanges, toggleKeyboardShortcuts]);
 
   const getKeyboardAction = useCallback((action: MainKeyboardAction) => mainActions[action], [mainActions]);
 
-  const onKeyUp = useCallback(({ action }: { action: KeyboardAction }) => {
+  const keyUpActions = useMemo(() => {
     function seekReset() {
       seekAccelerationRef.current = 1;
     }
-
-    const keyUpActions = {
+    return {
       seekBackwards: () => seekReset(),
       seekBackwards2: () => seekReset(),
       seekBackwards3: () => seekReset(),
@@ -2079,56 +2078,9 @@ function App() {
       seekForwards2: () => seekReset(),
       seekForwards3: () => seekReset(),
     };
-    const fn = keyUpActions[action as keyof typeof keyUpActions];
-    if (fn == null) return true;
-    fn();
-    return true;
-  }, [seekAccelerationRef]);
+  }, []);
 
-  const onKeyDown = useCallback(({ action }: { action: KeyboardAction }) => {
-    function tryMainActions(mainAction: MainKeyboardAction) {
-      const fn = getKeyboardAction(mainAction);
-      if (!fn) return { match: false };
-      const bubble = fn();
-      if (bubble === undefined) return { match: true };
-      return { match: true, bubble };
-    }
-
-    if (isDev) console.log('key event', action);
-
-    // always allow
-    if (action === 'closeActiveScreen') {
-      closeExportConfirm();
-      setConcatSheetOpen(false);
-      return false;
-    }
-
-    if (action === 'toggleKeyboardShortcuts') {
-      toggleKeyboardShortcuts();
-      return false;
-    }
-
-    if (concatSheetOpen || keyboardShortcutsVisible || genericDialog != null) {
-      return true; // don't allow any further hotkeys, but bubble
-    }
-
-    if (exportConfirmOpen) {
-      // only allow export hotkey on export confirm screen
-      if (action === 'export') {
-        onExportConfirm();
-        return false; // don't bubble
-      }
-      return true; // don't allow any other hotkeys, but bubble
-    }
-
-    // allow main actions
-    const { match, bubble } = tryMainActions(action);
-    if (match) return bubble;
-
-    return true; // bubble the event
-  }, [closeExportConfirm, concatSheetOpen, exportConfirmOpen, genericDialog, getKeyboardAction, keyboardShortcutsVisible, onExportConfirm, toggleKeyboardShortcuts]);
-
-  const { keyboardLayoutMap, updateKeyboardLayout } = useKeyboard({ keyBindings, onKeyDown, onKeyUp });
+  const { keyboardLayoutMap, updateKeyboardLayout } = useKeyboard({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfirm, exportConfirmOpen, concatSheetOpen, setConcatSheetOpen });
 
   useEffect(() => {
     // eslint-disable-next-line unicorn/prefer-add-event-listener
@@ -2292,8 +2244,6 @@ function App() {
           fn();
         },
       ] as const),
-      // also called from menu:
-      ['toggleKeyboardShortcuts', async () => toggleKeyboardShortcuts()] as const,
     ];
 
     const allActionsMap = Object.fromEntries(allActions);
@@ -2394,26 +2344,6 @@ function App() {
   useEffect(() => {
     runStartupCheck({ onError: ({ title, message }) => setGenericError({ title, err: message }) });
   }, [customFfPath, setGenericError]);
-
-  const haveBoundAlt = useMemo(() => keyBindings.some(({ keys }) => keys.split('+').includes('alt')), [keyBindings]);
-
-  useEffect(() => {
-    const handleKeydown = (e: KeyboardEvent) => {
-      // Keyboard scroll prevention:
-      // https://stackoverflow.com/questions/8916620/disable-arrow-key-scrolling-in-users-browser
-      if (e.target === document.body && [32, 37, 38, 39, 40].includes(e.keyCode)) {
-        e.preventDefault();
-      }
-
-      // if the user has bound alt in any of their keybindings, prevent alt from triggering the menu https://github.com/mifi/lossless-cut/issues/2180
-      if (haveBoundAlt && e.code === 'AltLeft') {
-        e.preventDefault();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeydown);
-    return () => window.removeEventListener('keydown', handleKeydown);
-  }, [haveBoundAlt]);
 
   const appContext = useMemo<AppContextType>(() => ({
     working,

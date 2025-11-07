@@ -713,10 +713,6 @@ const KeyboardShortcuts = memo(({
         name: t('Open folder'),
         category: otherCategory,
       },
-      closeActiveScreen: {
-        name: t('Close current screen'),
-        category: otherCategory,
-      },
       closeCurrentFile: {
         name: t('Close current file'),
         category: otherCategory,

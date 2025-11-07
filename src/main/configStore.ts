@@ -88,7 +88,6 @@ const defaultKeyBindings: KeyBinding[] = [
 
   { keys: 'KeyE', action: 'export' },
   { keys: 'ShiftLeft+Slash', action: 'toggleKeyboardShortcuts' },
-  { keys: 'Escape', action: 'closeActiveScreen' },
 
   { keys: 'AltLeft+ArrowUp', action: 'increaseVolume' },
   { keys: 'AltLeft+ArrowDown', action: 'decreaseVolume' },
