@@ -8,7 +8,7 @@ import type { SweetAlertIcon } from 'sweetalert2';
 import ExportButton from './ExportButton';
 import ExportModeButton from './ExportModeButton';
 import FileNameTemplateEditor from './FileNameTemplateEditor';
-import HighlightedText, { highlightedTextStyle } from './HighlightedText';
+import HighlightedText from './HighlightedText';
 import Select from './Select';
 import Switch from './Switch';
 
@@ -29,8 +29,6 @@ import ToggleExportConfirm from './ToggleExportConfirm';
 import { LossyMode } from '../../../main';
 import AnimatedTr from './AnimatedTr';
 
-
-const outDirStyle: CSSProperties = { ...highlightedTextStyle, wordBreak: 'break-all', cursor: 'pointer' };
 
 const noticeStyle: CSSProperties = { marginBottom: '.5em' };
 const infoStyle: CSSProperties = { ...noticeStyle, color: 'var(--blue-12)' };
@@ -373,7 +371,7 @@ function ExportConfirm({
               {t('Save output to path:')}
             </td>
             <td>
-              <span role="button" onClick={changeOutDir} style={outDirStyle}>{outputDir}</span>
+              <HighlightedText role="button" onClick={changeOutDir} style={{ wordBreak: 'break-all', cursor: 'pointer' }}>{outputDir}</HighlightedText>
             </td>
             <td />
           </tr>

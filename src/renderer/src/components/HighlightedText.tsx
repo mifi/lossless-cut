@@ -1,12 +1,13 @@
 import { CSSProperties, HTMLAttributes, memo } from 'react';
 
 import { primaryTextColor } from '../colors';
+import styles from './HighlightedText.module.css';
 
-export const highlightedTextStyle: CSSProperties = { textDecoration: 'underline', textUnderlineOffset: '.2em', textDecorationColor: primaryTextColor, color: 'var(--gray-12)', borderRadius: '.4em' };
+export const highlightedTextStyle: CSSProperties = { textDecorationColor: primaryTextColor };
 
-function HighlightedText({ children, style, ...props }: HTMLAttributes<HTMLSpanElement>) {
+function HighlightedText({ children, style, ...props }: HTMLAttributes<HTMLButtonElement>) {
   // eslint-disable-next-line react/jsx-props-no-spreading
-  return <span {...props} style={{ ...highlightedTextStyle, ...style }}>{children}</span>;
+  return <button type="button" {...props} className={styles['button']} style={{ ...highlightedTextStyle, ...style }}>{children}</button>;
 }
 
 export default memo(HighlightedText);

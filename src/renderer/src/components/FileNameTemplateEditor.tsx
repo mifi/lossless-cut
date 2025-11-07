@@ -163,7 +163,7 @@ function FileNameTemplateEditor(opts: {
       <motion.div animate={{ marginBottom: needToShow ? '1.5em' : '.3em' }}>
         {generated != null && (
           <div style={{ marginBottom: '.3em' }}>
-            <HighlightedText role="button" onClick={onShowClick} tabIndex={0} style={{ wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>
+            <HighlightedText role="button" onClick={onShowClick} style={{ wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>
               {generated.originalFileNames != null && formatCurrentSegFileOrFirst(generated.fileNames)}
               <span style={generated.originalFileNames != null ? { textDecoration: 'line-through', marginLeft: '.3em', color: dangerColor } : undefined}>{formatCurrentSegFileOrFirst(generated.originalFileNames ?? generated.fileNames)}</span>
               {!needToShow && <FaEdit style={{ fontSize: '.9em', marginLeft: '.4em', verticalAlign: 'middle' }} />}

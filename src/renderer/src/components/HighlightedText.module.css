@@ -1,0 +1,11 @@
+.button {
+  all: unset;
+  text-decoration: underline;
+  text-underline-offset: .2em;
+  color: var(--gray-12);
+  border-radius: .4em;
+}
+
+.button:focus {
+  outline: .1em solid var(--gray-12);
+}
