@@ -2,12 +2,17 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import semver from 'semver';
 import { FaCode, FaFile } from 'react-icons/fa';
+import Markdown from 'react-markdown';
 
 import * as Dialog from './Dialog';
 import useUserSettings from '../hooks/useUserSettings';
 import { appVersion, isMasBuild } from '../util';
-import versions from '../versions';
+import versionsJson from '../versions.json';
 import Button from './Button';
+
+
+// see also generateVersions.mts
+const versions: { version: string, highlightsMd?: string | undefined }[] = versionsJson;
 
 const remote = window.require('@electron/remote');
 const { shell } = remote;
@@ -38,18 +43,26 @@ export default function WhatsNew() {
           </Dialog.Title>
 
           <div>
-            {matchingVersions.map(({ version, highlights }, i) => {
+            {matchingVersions.map(({ version, highlightsMd }, i) => {
               // +1 because reverse order
               const prevVersion = matchingVersions[i + 1]?.version ?? initialLastAppVersion;
 
               return (
                 <div key={version}>
                   {!(isMasBuild && matchingVersions.length === 1) && <h2>v{version}</h2>}
-                  <ul>
-                    {highlights?.map((h) => (
-                      <li key={h}>{h}</li>
-                    ))}
-                  </ul>
+                  {highlightsMd != null && (
+                    <Markdown
+                      components={{
+                        // eslint-disable-next-line react/no-unstable-nested-components
+                        code(props) {
+                          // eslint-disable-next-line react/jsx-props-no-spreading
+                          return <code className="highlighted" {...props} />;
+                        },
+                      }}
+                    >
+                      {highlightsMd}
+                    </Markdown>
+                  )}
 
                   <Button style={{ padding: '.5em 1em' }} onClick={() => shell.openExternal(`https://github.com/mifi/lossless-cut/releases/tag/v${version}`)}><FaFile style={{ verticalAlign: 'middle' }} /> {t('All release notes')}</Button>
                   <Button style={{ padding: '.5em 1em' }} onClick={() => shell.openExternal(`https://github.com/mifi/lossless-cut/compare/v${prevVersion}...v${version}`)}><FaCode style={{ verticalAlign: 'middle' }} /> {t('All code changes')}</Button>

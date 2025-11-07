@@ -115,6 +115,7 @@
     "react-icons": "^4.1.0",
     "react-leaflet": "^4.2.1",
     "react-lottie-player": "^1.5.0",
+    "react-markdown": "^10.1.0",
     "react-syntax-highlighter": "^15.4.3",
     "react-use": "^17.4.0",
     "rimraf": "^5.0.5",

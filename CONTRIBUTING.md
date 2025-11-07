@@ -66,10 +66,14 @@ Windows store version is built as a Desktop Bridge app (with `runFullTrust` capa
 
 Before releasing, consider [Maintainence chores](#maintainence-chores) first.
 
-### Build new version
+### Prepare and build new version
 
 - `git checkout master`
 - `git merge stores` (in case there's an old unmerged stores hotfix)
+- **Prepare release notes** from commit history
+- Create a new file `versions/x.y.z.md` and write the most important highlights from the release notes
+- `tsx script/generateVersions.mts`
+- Commit changes
 - *If Store-only hotfix release*
   - `git checkout stores`
   - `npm version patch`
@@ -80,14 +84,14 @@ Before releasing, consider [Maintainence chores](#maintainence-chores) first.
 
 ### Release built version
 
-- Open draft in github and add Release notes
+- Open draft in github and add the prepared release notes
 - Add prefix `-DO-NOT-DOWNLOAD` to `LosslessCut-mac-universal.pkg` and `LosslessCut-win-x64.appx`
 - *If GitHub release*
   - Release the draft
 - *If Store-only hotfix release*
   - Remove all other artifacts and release the draft as **pre-release**
 
-#### After releasing on GitHub
+#### After releasing in GitHub
 
 - *If Stores-only hotfix release*
   - `git checkout master`
