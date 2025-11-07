@@ -4,6 +4,7 @@ import { FaBan, FaFileExport } from 'react-icons/fa';
 
 import useUserSettings from '../hooks/useUserSettings';
 import Button from './Button';
+import { dangerColor } from '../colors';
 
 function AutoExportToggler() {
   const { t } = useTranslation();
@@ -13,7 +14,7 @@ function AutoExportToggler() {
 
   return (
     <Button style={{ padding: '0.3em 1em' }} onClick={() => setAutoExportExtraStreams(!autoExportExtraStreams)}>
-      <Icon style={{ verticalAlign: 'middle', marginRight: '.5em' }} />{autoExportExtraStreams ? t('Extract') : t('Discard')}
+      <Icon style={{ verticalAlign: 'middle', marginRight: '.5em', color: autoExportExtraStreams ? undefined : dangerColor }} />{autoExportExtraStreams ? t('Extract') : t('Discard')}
     </Button>
   );
 }

@@ -60,7 +60,7 @@ const InvertCutModeButton = memo(({ invertCutSegments, setInvertCutSegments }: {
         <FaYinYang
           role="button"
           title={invertCutSegments ? t('Discard selected segments') : t('Keep selected segments')}
-          style={{ display: 'block', fontSize: '1.5em', color: invertCutSegments ? primaryTextColor : undefined }}
+          style={{ display: 'block', fontSize: '1.5em', color: invertCutSegments ? dangerColor : undefined }}
           onClick={onYinYangClick}
         />
       </motion.div>

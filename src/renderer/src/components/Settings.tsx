@@ -17,7 +17,7 @@ import ButtonRaw, { ButtonProps } from './Button';
 import { getModifierKeyNames } from '../hooks/useTimelineScroll';
 import { TunerType } from '../types';
 import Truncated from './Truncated';
-import { primaryColor } from '../colors';
+import { dangerColor } from '../colors';
 
 // eslint-disable-next-line react/jsx-props-no-spreading
 const Button = ({ style, ...props }: ButtonProps) => <ButtonRaw style={{ padding: '.5em .9em', ...style }} {...props} />;
@@ -227,7 +227,7 @@ function Settings({
           </KeyCell>
           <td>
             <Button onClick={() => setInvertCutSegments((v) => !v)}>
-              <FaYinYang style={{ verticalAlign: 'middle', marginRight: '.3em', color: invertCutSegments ? primaryColor : undefined }} /> {invertCutSegments ? t('Remove') : t('Keep')}
+              <FaYinYang style={{ verticalAlign: 'middle', marginRight: '.3em', color: invertCutSegments ? dangerColor : undefined }} /> {invertCutSegments ? t('Remove') : t('Keep')}
             </Button>
           </td>
         </Row>
