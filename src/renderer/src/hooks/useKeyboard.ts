@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { KeyBinding, KeyboardAction } from '../../../../types';
 import { allModifiers, altModifiers, controlModifiers, metaModifiers, shiftModifiers } from '../util';
+import { KeyboardLayoutMap } from '../types';
 
 
 /* Keyboard testing points (when making large changes):
@@ -24,6 +25,8 @@ export default ({ keyBindings, onKeyDown: onKeyDownProp, onKeyUp: onKeyUpProp }:
   onKeyDown: ((a: { action: KeyboardAction }) => boolean) | ((a: { action: KeyboardAction }) => void),
   onKeyUp: ((a: { action: KeyboardAction }) => boolean) | ((a: { action: KeyboardAction }) => void),
 }) => {
+  const [keyboardLayoutMap, setKeyboardLayoutMap] = useState<KeyboardLayoutMap | undefined>();
+
   // optimization to prevent re-binding all the time:
   const onKeyDownRef = useRef<(a: StoredAction) => void>();
   useEffect(() => {
@@ -119,4 +122,13 @@ export default ({ keyBindings, onKeyDown: onKeyDownProp, onKeyUp: onKeyUpProp }:
       document.removeEventListener('keyup', handleKeyUp);
     };
   }, [keyBindings]);
+
+  const updateKeyboardLayout = useCallback(async () => {
+    setKeyboardLayoutMap(await navigator.keyboard.getLayoutMap());
+  }, [setKeyboardLayoutMap]);
+
+  return {
+    keyboardLayoutMap,
+    updateKeyboardLayout,
+  };
 };

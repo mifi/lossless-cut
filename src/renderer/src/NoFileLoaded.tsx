@@ -8,8 +8,9 @@ import SimpleModeButton from './components/SimpleModeButton';
 import useUserSettings from './hooks/useUserSettings';
 import { StateSegment } from './types';
 import { KeyBinding } from '../../../types';
-import { formatKeyboardKey, splitKeyboardKeys } from './util';
+import { splitKeyboardKeys } from './util';
 import { getModifier } from './hooks/useTimelineScroll';
+import Kbd from './components/Kbd';
 
 const electron = window.require('electron');
 
@@ -19,7 +20,7 @@ function Keys({ keys }: { keys: string | undefined }) {
   }
   const split = splitKeyboardKeys(keys);
   return split.map((key, i) => (
-    <Fragment key={key}><kbd>{formatKeyboardKey(key)}</kbd>{i < split.length - 1 && <span style={{ fontSize: '.7em', marginLeft: '-.2em', marginRight: '-.2em' }}>{' + '}</span>}</Fragment>
+    <Fragment key={key}><Kbd code={key} />{i < split.length - 1 && <span style={{ fontSize: '.7em', marginLeft: '-.2em', marginRight: '-.2em' }}>{' + '}</span>}</Fragment>
   ));
 }
 

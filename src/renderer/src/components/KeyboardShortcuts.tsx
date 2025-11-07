@@ -12,12 +12,14 @@ import SegmentCutpointButton from './SegmentCutpointButton';
 import { getModifier } from '../hooks/useTimelineScroll';
 import { KeyBinding, KeyboardAction, ModifierKey } from '../../../../types';
 import { StateSegment } from '../types';
-import { allModifiers, altModifiers, controlModifiers, formatKeyboardKey, metaModifiers, shiftModifiers, splitKeyboardKeys } from '../util';
+import { allModifiers, altModifiers, controlModifiers, metaModifiers, shiftModifiers, splitKeyboardKeys } from '../util';
 import * as Dialog from './Dialog';
 import Warning from './Warning';
 import Button, { DialogButton } from './Button';
 import Action from './Action';
 import TextInput from './TextInput';
+import Kbd from './Kbd';
+import { useAppContext } from '../contexts';
 
 
 type Category = string;
@@ -28,7 +30,7 @@ type ActionsMap = Record<KeyboardAction, { name: string, category?: Category, be
 const renderKeys = (keys: string[]) => keys.map((key, i) => (
   <Fragment key={key}>
     {i > 0 && <FaPlus style={{ verticalAlign: 'middle', fontSize: '.4em', opacity: 0.8, marginLeft: '.4em', marginRight: '.4em' }} />}
-    <kbd>{formatKeyboardKey(key)}</kbd>
+    <Kbd code={key} />
   </Fragment>
 ));
 
@@ -159,6 +161,7 @@ const KeyboardShortcuts = memo(({
   currentCutSeg: StateSegment | undefined,
 }) => {
   const { t } = useTranslation();
+  const { updateKeyboardLayout } = useAppContext();
 
   const { mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, segmentMouseModifierKey } = useUserSettings();
 
@@ -744,7 +747,7 @@ const KeyboardShortcuts = memo(({
         <div key="1" style={{ ...rowStyle, alignItems: 'center' }}>
           <span>{t('Manipulate segments on timeline')}</span>
           <div style={{ flexGrow: 1 }} />
-          <kbd style={{ marginRight: '.7em' }}>{segmentMouseModifierKey}</kbd>
+          <kbd style={{ marginRight: '.7em' }}>{getModifier(segmentMouseModifierKey)}</kbd>
           <FaMouse style={{ marginRight: '.3em' }} />
           <span>{t('Mouse click and drag')}</span>
         </div>,
@@ -756,6 +759,10 @@ const KeyboardShortcuts = memo(({
       actionsMap,
     };
   }, [currentCutSeg, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, mouseWheelZoomModifierKey, segmentMouseModifierKey, t]);
+
+  useEffect(() => {
+    updateKeyboardLayout();
+  }, [updateKeyboardLayout]);
 
   useEffect(() => {
     // cleanup invalid bindings, to prevent renamed actions from blocking user to rebind
@@ -792,7 +799,7 @@ const KeyboardShortcuts = memo(({
     // eslint-disable-next-line no-alert
     if (!window.confirm(t('Are you sure?'))) return;
 
-    console.log('delete key binding', action, keys);
+    console.log('Delete key binding', action, keys);
     setKeyBindings((existingBindings) => existingBindings.filter((existingBinding) => !(existingBinding.keys === keys && existingBinding.action === action)));
   }, [setKeyBindings, t]);
 
@@ -815,7 +822,7 @@ const KeyboardShortcuts = memo(({
 
   const onNewKeyBindingConfirmed = useCallback(async (action: KeyboardAction, keys: string[]) => {
     const keysStr = stringifyKeys(keys);
-    console.log('new key binding', action, keysStr);
+    console.log('New key binding', action, keysStr);
 
     const duplicate = keyBindings.find((existingBinding) => existingBinding.keys === keysStr);
     let shouldReplaceDuplicate: KeyBinding | undefined;

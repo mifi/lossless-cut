@@ -41,6 +41,7 @@ body {
 }
 
 kbd {
+    white-space: nowrap;
     display: inline-block;
     padding: 3px 5px;
     font-size: 11px;

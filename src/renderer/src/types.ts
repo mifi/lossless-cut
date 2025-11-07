@@ -163,3 +163,5 @@ export interface BatchFile {
   path: string,
   name: string,
 }
+
+export type KeyboardLayoutMap = Map<string, string>;

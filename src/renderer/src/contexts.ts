@@ -3,7 +3,7 @@ import Color from 'color';
 import invariant from 'tiny-invariant';
 
 import { UserSettingsRoot } from './hooks/useUserSettingsRoot';
-import { ExportMode, SegmentColorIndex } from './types';
+import { ExportMode, KeyboardLayoutMap, SegmentColorIndex } from './types';
 import type useLoading from './hooks/useLoading';
 import { GenericError } from './components/ErrorDialog';
 import { ShowGenericDialog } from './components/GenericDialog';
@@ -25,11 +25,13 @@ interface SegColorsContextType {
 
 export type HandleError = (error: GenericError) => void;
 
-interface AppContextType {
+export interface AppContextType {
   setWorking: ReturnType<typeof useLoading>['setWorking'],
   working: ReturnType<typeof useLoading>['working'],
   handleError: HandleError,
   showGenericDialog: ShowGenericDialog,
+  keyboardLayoutMap: KeyboardLayoutMap | undefined,
+  updateKeyboardLayout: () => Promise<void>,
 }
 
 

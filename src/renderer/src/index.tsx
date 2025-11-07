@@ -31,6 +31,7 @@ import './i18n';
 
 import './main.css';
 import './swal2.scss';
+import { KeyboardLayoutMap } from './types';
 
 
 // something wrong with the tyep
@@ -59,6 +60,11 @@ declare global {
       T extends 'cue-parser' ? typeof cueParser :
       never
     );
+  }
+  interface Navigator {
+    keyboard: {
+      getLayoutMap(): Promise<KeyboardLayoutMap>;
+    }
   }
 }
 

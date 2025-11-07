@@ -24,7 +24,7 @@ import useFrameCapture from './hooks/useFrameCapture';
 import useSegments from './hooks/useSegments';
 import useDirectoryAccess from './hooks/useDirectoryAccess';
 
-import { UserSettingsContext, SegColorsContext, UserSettingsContextType, AppContext } from './contexts';
+import { UserSettingsContext, SegColorsContext, UserSettingsContextType, AppContext, AppContextType } from './contexts';
 
 import NoFileLoaded from './NoFileLoaded';
 import MediaSourcePlayer from './MediaSourcePlayer';
@@ -458,13 +458,6 @@ function App() {
     }
     setStoreProjectInWorkingDir(newValue);
   }, [ensureAccessToSourceDir, getProjectFileSavePath, setStoreProjectInWorkingDir, storeProjectInWorkingDir]);
-
-  const appContext = useMemo(() => ({
-    working,
-    setWorking,
-    handleError,
-    showGenericDialog,
-  }), [handleError, setWorking, showGenericDialog, working]);
 
   const userSettingsContext = useMemo<UserSettingsContextType>(() => {
     const { settings, ...rest } = allUserSettings;
@@ -2135,7 +2128,7 @@ function App() {
     return true; // bubble the event
   }, [closeExportConfirm, concatSheetOpen, exportConfirmOpen, genericDialog, getKeyboardAction, keyboardShortcutsVisible, onExportConfirm, toggleKeyboardShortcuts]);
 
-  useKeyboard({ keyBindings, onKeyDown, onKeyUp });
+  const { keyboardLayoutMap, updateKeyboardLayout } = useKeyboard({ keyBindings, onKeyDown, onKeyUp });
 
   useEffect(() => {
     // eslint-disable-next-line unicorn/prefer-add-event-listener
@@ -2291,7 +2284,7 @@ function App() {
           await (fn as (...args2: unknown[]) => Promise<void>)(...args);
         },
       ] as const),
-      // all main actions (no arguments, so simulate keyup):
+      // all main actions (no arguments):
       ...Object.entries(mainActions).map(([key, fn]) => [
         key,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -2300,13 +2293,7 @@ function App() {
         },
       ] as const),
       // also called from menu:
-      [
-        'toggleKeyboardShortcuts',
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        async () => {
-          toggleKeyboardShortcuts();
-        },
-      ] as const,
+      ['toggleKeyboardShortcuts', async () => toggleKeyboardShortcuts()] as const,
     ];
 
     const allActionsMap = Object.fromEntries(allActions);
@@ -2427,6 +2414,16 @@ function App() {
     window.addEventListener('keydown', handleKeydown);
     return () => window.removeEventListener('keydown', handleKeydown);
   }, [haveBoundAlt]);
+
+  const appContext = useMemo<AppContextType>(() => ({
+    working,
+    setWorking,
+    handleError,
+    showGenericDialog,
+    keyboardLayoutMap,
+    updateKeyboardLayout,
+  }), [handleError, keyboardLayoutMap, setWorking, showGenericDialog, updateKeyboardLayout, working]);
+
 
   const showLeftBar = batchFiles.length > 0;
 
