@@ -900,7 +900,7 @@
     "Audio tracks": "Ścieżki audio",
     "Auto merge segments into one file after export, but keep exported per-segment files too": "Automatyczne łączenie segmentów w jeden plik po wyeksportowaniu, ale także zachowanie wyeksportowanych plików poszczególnych segmentów",
     "Cannot find any keyframe after the desired start cut point": "Nie można znaleźć żadnej klatki kluczowej po żądanym początkowym punkcie cięcia",
-    "Cannot find any keyframe within 60 seconds of frame {{time}}": "Nie można znaleźć żadnej klatki kluczowej w ciągu 60 sekund od klatki {{time}}",
+    "Cannot find any keyframe within 60 seconds of frame {{time}}": "Nie można znaleźć żadnej klatki kluczowej w ciągu 60 sekund z klatki {{time}}",
     "English language tracks": "Ścieżki w języku angielskim",
     "Enter a JavaScript filter expression which will be evaluated for each track of the current file. Tracks for which the expression evaluates to \"true\" will be selected or deselected. You may also the <1></1> keyboard action to run this filter.": "Wpisz wyrażenie filtru JavaScript, które zostanie obliczone dla każdej ścieżki bieżącego pliku. Ścieżki, dla których wyrażenie ma wartość \"true\" zostanie zaznaczone lub odznaczone. Można również użyć akcji klawiaturowej <1></1>, aby uruchomić ten filtr.",
     "Error": "Błąd",
