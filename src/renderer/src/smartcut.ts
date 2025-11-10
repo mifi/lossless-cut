@@ -3,7 +3,7 @@ import i18n from 'i18next';
 import { getRealVideoStreams, getVideoTimebase } from './util/streams';
 
 import { readKeyframesAroundTime, findNextKeyframe, findKeyframeAtExactTime } from './ffmpeg';
-import { FFprobeStream } from '../../../ffprobe';
+import { FFprobeStream } from '../../common/ffprobe';
 import { UserFacingError } from '../errors';
 
 const { stat } = window.require('fs-extra');

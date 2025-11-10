@@ -9,6 +9,7 @@
   },
   "references": [
     { "path": "./tsconfig.main.json" },
+    { "path": "./tsconfig.common.json" },
   ],
   "include": [
     "src/renderer/**/*",

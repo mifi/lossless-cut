@@ -4,7 +4,7 @@ import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out thi
 import { useTranslation } from 'react-i18next';
 
 import { readFramesAroundTime, findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime, Frame, readFrames } from '../ffmpeg';
-import { FFprobeStream } from '../../../../ffprobe';
+import { FFprobeStream } from '../../../common/ffprobe';
 import { getFrameCountRaw } from '../edlFormats';
 import { HandleError } from '../contexts';
 

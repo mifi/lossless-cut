@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import Select from './Select';
 import Switch from './Switch';
 import styles from './PlaybackStreamSelector.module.css';
-import { FFprobeStream } from '../../../../ffprobe';
+import { FFprobeStream } from '../../../common/ffprobe';
 
 
 function PlaybackStreamSelector({

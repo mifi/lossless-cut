@@ -9,7 +9,7 @@ import invariant from 'tiny-invariant';
 
 import { ffmpegExtractWindow } from './util/constants';
 import { appName } from '../../main/common';
-import { Html5ifyMode } from '../../../types';
+import { Html5ifyMode } from '../../common/types';
 import { UserFacingError } from '../errors';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');

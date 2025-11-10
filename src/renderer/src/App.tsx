@@ -86,8 +86,8 @@ import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './uti
 import BigWaveform from './components/BigWaveform';
 
 import { BatchFile, Chapter, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, goToTimecodeDirectArgsSchema, openFilesActionArgsSchema, ParamsByStreamId, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment, TunerType } from './types';
-import { CaptureFormat, KeyboardAction, ApiActionRequest } from '../../../types';
-import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
+import { CaptureFormat, KeyboardAction, ApiActionRequest } from '../../common/types.js';
+import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../common/ffprobe.js';
 import useLoading from './hooks/useLoading';
 import useVideo from './hooks/useVideo';
 import useTimecode from './hooks/useTimecode';

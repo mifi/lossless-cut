@@ -1,8 +1,8 @@
 import invariant from 'tiny-invariant';
-import { FFprobeStream, FFprobeStreamDisposition } from '../../../../ffprobe';
+import { FFprobeStream, FFprobeStreamDisposition } from '../../../common/ffprobe';
 import { AllFilesMeta, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, LiteFFprobeStream } from '../types';
 import type { FileStream } from '../ffmpeg';
-import { FixCodecTagOption } from '../../../../types';
+import { FixCodecTagOption } from '../../../common/types';
 
 
 // taken from `ffmpeg -codecs`

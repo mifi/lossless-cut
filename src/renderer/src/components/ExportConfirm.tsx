@@ -20,8 +20,8 @@ import useUserSettings from '../hooks/useUserSettings';
 import styles from './ExportConfirm.module.css';
 import { SegmentToExport } from '../types';
 import { defaultCutFileTemplate, defaultCutMergedFileTemplate, GenerateOutFileNames } from '../util/outputNameTemplate';
-import { FFprobeStream } from '../../../../ffprobe';
-import { AvoidNegativeTs, FixCodecTagOption, PreserveMetadata } from '../../../../types';
+import { FFprobeStream } from '../../../common/ffprobe';
+import { AvoidNegativeTs, FixCodecTagOption, PreserveMetadata } from '../../../common/types';
 import TextInput from './TextInput';
 import { UseSegments } from '../hooks/useSegments';
 import ExportSheet from './ExportSheet';
@@ -619,7 +619,7 @@ function ExportConfirm({
               {lossyMode != null && (
                 <AnimatedTr>
                   <td>
-                    Lossy mode
+                    {t('Lossy mode')}
                   </td>
                   <td>
                     <Switch disabled checked={lossyMode != null} />

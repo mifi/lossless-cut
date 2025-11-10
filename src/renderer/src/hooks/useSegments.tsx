@@ -17,8 +17,8 @@ import { parameters as allFfmpegParameters, FfmpegDialog, getHint, getLabel } fr
 import { maxSegmentsAllowed } from '../util/constants';
 import { DefiniteSegmentBase, ParseTimecode, SegmentBase, segmentTagsSchema, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
 import safeishEval from '../worker/eval';
-import { ScopeSegment } from '../../../../types';
-import { FFprobeFormat, FFprobeStream } from '../../../../ffprobe';
+import { ScopeSegment } from '../../../common/types';
+import { FFprobeFormat, FFprobeStream } from '../../../common/ffprobe';
 import { HandleError } from '../contexts';
 import { ShowGenericDialog, useGenericDialogContext } from '../components/GenericDialog';
 import ExpressionDialog from '../components/ExpressionDialog';
@@ -257,7 +257,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
           <AlertDialog.Description>{description}</AlertDialog.Description>
 
-          {docUrl && <p><Button onClick={() => shell.openExternal(docUrl)}><FaLink style={{ fontSize: '.8em' }} /> Read more</Button></p>}
+          {docUrl && <p><Button onClick={() => shell.openExternal(docUrl)}><FaLink style={{ fontSize: '.8em' }} /> {t('Read more')}</Button></p>}
 
           <form onSubmit={handleSubmit}>
             {Object.entries(parametersIn).map(([key, parameter], i) => {

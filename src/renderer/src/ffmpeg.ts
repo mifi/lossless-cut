@@ -8,7 +8,7 @@ import invariant from 'tiny-invariant';
 import { pcmAudioCodecs, isMov } from './util/streams';
 import { isExecaError } from './util';
 import { isDurationValid } from './segments';
-import { FFprobeChapter, FFprobeFormat, FFprobeProbeResult, FFprobeStream } from '../../../ffprobe';
+import { FFprobeChapter, FFprobeFormat, FFprobeProbeResult, FFprobeStream } from '../../common/ffprobe';
 import { parseSrt, parseSrtToSegments } from './edlFormats';
 import { UnsupportedFileError, UserFacingError } from '../errors';
 

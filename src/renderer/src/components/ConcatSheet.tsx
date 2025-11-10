@@ -11,7 +11,7 @@ import OutputFormatSelect from './OutputFormatSelect';
 import useUserSettings from '../hooks/useUserSettings';
 import { isMov } from '../util/streams';
 import { getOutDir } from '../util';
-import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../../ffprobe';
+import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../common/ffprobe';
 import Button, { DialogButton } from './Button';
 import { defaultMergedFileTemplate, GeneratedOutFileNames, GenerateMergedOutFileNames } from '../util/outputNameTemplate';
 import { primaryColor, saveColor, warningColor } from '../colors';

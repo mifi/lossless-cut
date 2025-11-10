@@ -1,0 +1,13 @@
+{
+  "extends": ["@tsconfig/strictest", "@tsconfig/node22/tsconfig.json"],
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+
+    "outDir": "common-ts-dist",
+    "tsBuildInfoFile": "common-ts-dist/tsconfig.tsbuildinfo",
+  },
+  "include": [
+    "src/common/**/*",
+  ],
+}

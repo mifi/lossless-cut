@@ -6,7 +6,7 @@ import { pathExists } from 'fs-extra';
 import assert from 'node:assert';
 import { copyFile } from 'node:fs/promises';
 
-import { KeyBinding, Config } from '../../types.js';
+import { KeyBinding, Config } from '../common/types.js';
 import logger from './logger.js';
 import { isWindows } from './util.js';
 import { fallbackLng } from './i18nCommon.js';

@@ -2,7 +2,7 @@ import { useState, useCallback, ChangeEventHandler } from 'react';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 
-import { Html5ifyMode } from '../../../../types';
+import { Html5ifyMode } from '../../../common/types';
 import { DirectoryAccessDeclinedError } from '../../errors';
 import getSwal from '../swal';
 import Checkbox from '../components/Checkbox';

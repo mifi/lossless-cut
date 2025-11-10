@@ -8,7 +8,7 @@ import { Readable } from 'node:stream';
 import { app } from 'electron';
 
 import { platform, arch, isWindows, isLinux } from './util.js';
-import { CaptureFormat, Waveform } from '../../types.js';
+import { CaptureFormat, Waveform } from '../common/types.js';
 import isDev from './isDev.js';
 import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';

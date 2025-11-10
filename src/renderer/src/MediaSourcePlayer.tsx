@@ -5,7 +5,7 @@ import { FaVideo } from 'react-icons/fa';
 
 import isDev from './isDev';
 import { ChromiumHTMLVideoElement } from './types';
-import { FFprobeStream } from '../../../ffprobe';
+import { FFprobeStream } from '../../common/ffprobe';
 import { getFrameDuration } from './util';
 
 const { compatPlayer: { createMediaSourceStream } } = window.require('@electron/remote').require('./index.js');

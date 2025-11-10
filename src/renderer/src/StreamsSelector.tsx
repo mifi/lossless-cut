@@ -14,7 +14,7 @@ import { FileStream, getStreamFps } from './ffmpeg';
 import { deleteDispositionValue } from './util';
 import { getActiveDisposition, attachedPicDisposition, isGpsStream } from './util/streams';
 import TagEditor from './components/TagEditor';
-import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../ffprobe';
+import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../common/ffprobe';
 import { CustomTagsByFile, FilesMeta, FormatTimecode, ParamsByStreamId, StreamParams } from './types';
 import Button, { DialogButton } from './components/Button';
 import Checkbox from './components/Checkbox';
@@ -149,7 +149,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
         <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
           <Dialog.Title>{t('Edit track {{trackNum}} metadata', { trackNum: editingStream && (editingStream.index + 1) })}</Dialog.Title>
 
-          <h2>Parameters</h2>
+          <h2>{t('Parameters')}</h2>
           {editingStream != null && <StreamParametersEditor stream={editingStream} streamParams={streamParams} updateStreamParams={(setter) => updateStreamParams(editingFile, editingStreamId, setter)} />}
 
           <h2>Tags</h2>

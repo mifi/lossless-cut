@@ -30,7 +30,7 @@ import { checkNewVersion } from './updateChecker.js';
 import * as i18nCommon from './i18nCommon.js';
 
 import './i18n.js';
-import { ApiActionRequest } from '../../types.js';
+import { ApiActionRequest } from '../common/types.js';
 
 export * as ffmpeg from './ffmpeg.js';
 

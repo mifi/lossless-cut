@@ -10,8 +10,8 @@ import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, 
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
-import { FFprobeStream } from '../../../../ffprobe';
-import { AvoidNegativeTs, FixCodecTagOption, Html5ifyMode, PreserveMetadata } from '../../../../types';
+import { FFprobeStream } from '../../../common/ffprobe';
+import { AvoidNegativeTs, FixCodecTagOption, Html5ifyMode, PreserveMetadata } from '../../../common/types';
 import { AllFilesMeta, Chapter, CopyfileStreams, CustomTagsByFile, LiteFFprobeStream, ParamsByStreamId, SegmentToExport } from '../types';
 import { LossyMode } from '../../../main';
 import { UserFacingError } from '../../errors';

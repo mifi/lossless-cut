@@ -10,7 +10,7 @@ import useUserSettings from '../hooks/useUserSettings';
 import SetCutpointButton from './SetCutpointButton';
 import SegmentCutpointButton from './SegmentCutpointButton';
 import { getModifier } from '../hooks/useTimelineScroll';
-import { KeyBinding, KeyboardAction, ModifierKey } from '../../../../types';
+import { KeyBinding, KeyboardAction, ModifierKey } from '../../../common/types';
 import { StateSegment } from '../types';
 import { allModifiers, altModifiers, controlModifiers, metaModifiers, shiftModifiers, splitKeyboardKeys } from '../util';
 import * as Dialog from './Dialog';

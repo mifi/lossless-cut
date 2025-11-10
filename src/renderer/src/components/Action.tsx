@@ -1,5 +1,5 @@
 import { FaBolt } from 'react-icons/fa';
-import { KeyboardAction } from '../../../../types';
+import { KeyboardAction } from '../../../common/types';
 
 
 export default function Action({ name }: { name: KeyboardAction }) {

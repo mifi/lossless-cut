@@ -1,6 +1,6 @@
 // This code is for future use (e.g. creating black video to fill in using same codec parameters)
 
-import { FFprobeStream } from '../../../ffprobe';
+import { FFprobeStream } from '../../common/ffprobe';
 
 export function parseLevel(videoStream: FFprobeStream) {
   const { level: levelNumeric, codec_name: videoCodec } = videoStream;

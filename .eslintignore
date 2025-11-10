@@ -1,3 +1,4 @@
 /dist
 /out
-/ts-dist
+/main-ts-dist
+/common-ts-dist

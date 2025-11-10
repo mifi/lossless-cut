@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import i18n from 'i18next';
 import { Transition } from 'framer-motion';
 
-import { Config } from '../../../../types';
+import { Config } from '../../../common/types.js';
 
 import { errorToast } from '../swal';
 import isDev from '../isDev';

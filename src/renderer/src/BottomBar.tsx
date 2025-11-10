@@ -25,7 +25,7 @@ import { isExactDurationMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
 import { askForPlaybackRate, checkAppPath } from './dialogs';
 import { FormatTimecode, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
-import { WaveformMode } from '../../../types';
+import { WaveformMode } from '../../common/types';
 import { Frame } from './ffmpeg';
 
 const { clipboard } = window.require('electron');

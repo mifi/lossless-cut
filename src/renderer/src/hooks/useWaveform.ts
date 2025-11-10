@@ -4,7 +4,7 @@ import invariant from 'tiny-invariant';
 
 import { renderWaveformPng, safeCreateBlob } from '../ffmpeg';
 import { OverviewWaveform, WaveformSlice } from '../types';
-import { FFprobeStream } from '../../../../ffprobe';
+import { FFprobeStream } from '../../../common/ffprobe';
 
 
 const maxWaveforms = 100;

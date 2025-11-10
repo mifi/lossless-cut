@@ -7,7 +7,7 @@
   "main": "./out/main/index.js",
   "homepage": "./",
   "scripts": {
-    "clean": "rimraf dist out ts-dist build-resources icon-build",
+    "clean": "rimraf dist out common-ts-dist main-ts-dist build-resources icon-build",
     "start": "electron-vite preview",
     "dev": "electron-vite dev -w",
     "icon-gen": "mkdirp icon-build build-resources/appx && tsx script/icon-gen.mts",
@@ -25,7 +25,7 @@
     "postinstall": "electron-builder install-app-deps",
     "version": "tsx script/postversion.mts && git add no.mifi.losslesscut.appdata.xml",
     "pack-linux": "yarn build && electron-builder --linux",
-    "scan-i18n": "i18next --config i18next-parser.config.mjs",
+    "scan-i18n": "i18next-cli extract",
     "generate-licenses": "yarn licenses generate-disclaimer > licenses.txt && echo '\n\nffmpeg is licensed under GPL v2+:\n\nhttp://www.gnu.org/licenses/old-licenses/gpl-2.0.html' >> licenses.txt"
   },
   "author": {
@@ -96,6 +96,7 @@
     "eslint-plugin-unicorn": "^51.0.1",
     "fast-xml-parser": "^4.4.1",
     "framer-motion": "^9.0.3",
+    "i18next-cli": "^1.22.2",
     "i18next-parser": "^9.0.1",
     "icon-gen": "^4.0.0",
     "immer": "^10.0.2",
@@ -111,7 +112,7 @@
     "pretty-bytes": "^6.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-i18next": "^15.0.0",
+    "react-i18next": "^16.2.4",
     "react-icons": "^4.1.0",
     "react-leaflet": "^4.2.1",
     "react-lottie-player": "^1.5.0",
@@ -147,7 +148,7 @@
     "express-async-handler": "^1.2.0",
     "file-type": "patch:file-type@npm%3A19.4.1#~/.yarn/patches/file-type-npm-19.4.1-d18086444c.patch",
     "fs-extra": "^8.1.0",
-    "i18next": "^23.12.2",
+    "i18next": "^25.6.1",
     "i18next-fs-backend": "^2.3.2",
     "json5": "^2.2.2",
     "lodash.debounce": "^4.0.8",

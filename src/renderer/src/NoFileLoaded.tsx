@@ -7,7 +7,7 @@ import SetCutpointButton from './components/SetCutpointButton';
 import SimpleModeButton from './components/SimpleModeButton';
 import useUserSettings from './hooks/useUserSettings';
 import { StateSegment } from './types';
-import { KeyBinding } from '../../../types';
+import { KeyBinding } from '../../common/types';
 import { splitKeyboardKeys } from './util';
 import { getModifier } from './hooks/useTimelineScroll';
 import Kbd from './components/Kbd';

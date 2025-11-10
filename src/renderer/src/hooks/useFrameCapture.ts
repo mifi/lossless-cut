@@ -7,7 +7,7 @@ import { getNumDigits } from '../segments';
 
 import * as ffmpeg from '../ffmpeg';
 import { FormatTimecode } from '../types';
-import { CaptureFormat } from '../../../../types';
+import { CaptureFormat } from '../../../common/types';
 
 const mime = window.require('mime-types');
 const { rename, readdir, writeFile } = window.require('fs/promises');

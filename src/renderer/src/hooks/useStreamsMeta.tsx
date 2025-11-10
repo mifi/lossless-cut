@@ -5,7 +5,7 @@ import { Trans, useTranslation } from 'react-i18next';
 
 import { isStreamThumbnail, shouldCopyStreamByDefault } from '../util/streams';
 import StreamsSelector from '../StreamsSelector';
-import { FFprobeStream } from '../../../../ffprobe';
+import { FFprobeStream } from '../../../common/ffprobe';
 import { FilesMeta } from '../types';
 import safeishEval from '../worker/eval';
 import i18n from '../i18n';

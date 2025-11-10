@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { FormatTimecode, ParseTimecode } from '../types';
 import { getFrameCountRaw } from '../edlFormats';
 import { getFrameDuration } from '../util';
-import { TimecodeFormat } from '../../../../types';
+import { TimecodeFormat } from '../../../common/types';
 import { formatDuration, parseDuration } from '../util/duration';
 import { ShowGenericDialog, useGenericDialogContext } from '../components/GenericDialog';
 import * as AlertDialog from '../components/AlertDialog';

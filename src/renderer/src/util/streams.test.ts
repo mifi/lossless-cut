@@ -1,7 +1,7 @@
 import { test, expect } from 'vitest';
 
 import { getMapStreamsArgs, getStreamIdsToCopy } from './streams';
-import { FFprobeStreamDisposition } from '../../../../ffprobe';
+import { FFprobeStreamDisposition } from '../../../common/ffprobe';
 import { LiteFFprobeStream } from '../types';
 
 

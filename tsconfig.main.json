@@ -4,16 +4,18 @@
     "composite": true,
 
     "emitDeclarationOnly": true,
-    "outDir": "ts-dist",
-    "tsBuildInfoFile": "ts-dist/tsconfig.tsbuildinfo",
+    "outDir": "main-ts-dist",
+    "tsBuildInfoFile": "main-ts-dist/tsconfig.tsbuildinfo",
     "lib": ["ES2024"],
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "types": ["vite/client"],
   },
+  "references": [
+    { "path": "./tsconfig.common.json" },
+  ],
   "include": [
     "src/main/**/*",
-    "types.ts",
   ],
 }
