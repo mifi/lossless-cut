@@ -5,7 +5,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
 import useContextMenu from '../hooks/useContextMenu';
-import { dangerColor, primaryTextColor } from '../colors';
+import { dangerColor, primaryColor, primaryTextColor } from '../colors';
 
 function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, dragging }: {
   path: string,
@@ -51,7 +51,7 @@ function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, 
     display: 'flex',
     alignItems: 'center',
     alignContent: 'flex-start',
-    borderRight: `.3em solid ${isOpen ? 'var(--gray-8)' : 'transparent'}`,
+    borderRight: `.3em solid ${isOpen ? primaryColor : 'transparent'}`,
   }), [sortable.isDragging, sortable.transform, sortable.transition, dragging, isSelected, isOpen]);
 
   const handleClick = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
