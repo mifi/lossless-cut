@@ -1024,5 +1024,6 @@
     "Tracks with H264 codec": "H264 코덱이 있는 트랙",
     "Video tracks": "비디오 트랙",
     "Waveform height": "파형 높이",
-    "What's new in LosslessCut?": "LosslessCut의 새로운 기능은?"
+    "What's new in LosslessCut?": "LosslessCut의 새로운 기능은?",
+    "<0></0> <2></2>, <4></4> <6></6> or <8><0>{getModifier(segmentMouseModifierKey)}</0></8>+<10></10> to set cutpoints": "절단지점 설정은 <0></0> <2></2>, <4></4> <6></6> 또는 <8><0>{getModifier(segmentMouseModifierKey)}</0></8>+<10></10> 사용"
 }
