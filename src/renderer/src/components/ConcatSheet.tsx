@@ -103,7 +103,6 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
 
   useEffect(() => {
     const abortController = new AbortController();
-    console.log('wat', fileFormat);
 
     (async () => {
       // in simple mode, set merged file template to a generated name based on first file, so they don't *have to* deal with variables

@@ -9,6 +9,7 @@ import { copyFile } from 'node:fs/promises';
 import { KeyBinding, Config } from '../../types.js';
 import logger from './logger.js';
 import { isWindows } from './util.js';
+import { fallbackLng } from './i18nCommon.js';
 
 const { app } = electron;
 
@@ -117,7 +118,7 @@ const defaults: Config = {
   autoSaveProjectFile: true,
   wheelSensitivity: 0.2,
   waveformHeight: 40,
-  language: undefined,
+  language: fallbackLng,
   ffmpegExperimental: false,
   preserveChapters: true,
   preserveMetadata: 'default',

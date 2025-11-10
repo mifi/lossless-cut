@@ -4,6 +4,7 @@
 import { app } from 'electron';
 import { join } from 'node:path';
 import { InitOptions } from 'i18next';
+import { ElectronLanguageKey, SupportedLanguage } from '../../types';
 
 
 let customLocalesPath: string | undefined;
@@ -20,22 +21,47 @@ function getLangPath(subPath: string) {
 // Weblate hardcodes different lang codes than electron
 // https://www.electronjs.org/docs/api/app#appgetlocale
 // https://source.chromium.org/chromium/chromium/src/+/master:ui/base/l10n/l10n_util.cc
-const mapLang = (lng: string) => ({
-  nb: 'nb_NO',
-  no: 'nb_NO',
-  zh: 'zh_Hans',
-  // https://source.chromium.org/chromium/chromium/src/+/master:ui/base/l10n/l10n_util.cc;l=354
-  'zh-CN': 'zh_Hans', // Chinese simplified (mainland China)
-  'zh-TW': 'zh_Hant', // Chinese traditional (Taiwan)
-  fr: 'fr',
-  'fr-CA': 'fr',
-  'fr-CH': 'fr',
-  'fr-FR': 'fr',
-  it: 'it',
-  'it-CH': 'it',
-  'it-IT': 'it',
-  'ru-RU': 'ru',
-}[lng] || lng);
+function mapLang(lng: ElectronLanguageKey) {
+  const map: Partial<Record<ElectronLanguageKey, string>> = {
+    'de-AT': 'de',
+    'de-CH': 'de',
+    'de-DE': 'de',
+    'de-LI': 'de',
+
+    'es-419': 'es',
+    'es-AR': 'es',
+    'es-CL': 'es',
+    'es-CO': 'es',
+    'es-CR': 'es',
+    'es-ES': 'es',
+    'es-HN': 'es',
+    'es-MX': 'es',
+    'es-PE': 'es',
+    'es-US': 'es',
+    'es-UY': 'es',
+    'es-VE': 'es',
+
+    'fr-CA': 'fr',
+    'fr-CH': 'fr',
+    'fr-FR': 'fr',
+
+    nb: 'nb_NO',
+    no: 'nb_NO',
+
+    zh: 'zh_Hans',
+    'zh-CN': 'zh_Hans',
+    'zh-TW': 'zh_Hant',
+    'zh-HK': 'zh_Hant',
+
+    'pt-BR': 'pt_BR',
+    'pt-PT': 'pt',
+
+    'it-CH': 'it',
+    'it-IT': 'it',
+  };
+
+  return map[lng] ?? lng;
+}
 
 export const fallbackLng = 'en';
 
@@ -53,5 +79,5 @@ export const commonI18nOptions: InitOptions = {
   nsSeparator: false,
 };
 
-export const loadPath = (lng: string, ns: string) => getLangPath(`${mapLang(lng)}/${ns}.json`);
-export const addPath = (lng: string, ns: string) => getLangPath(`${mapLang(lng)}/${ns}.missing.json`);
+export const loadPath = (lng: SupportedLanguage, ns: string) => getLangPath(`${mapLang(lng)}/${ns}.json`);
+export const addPath = (lng: SupportedLanguage, ns: string) => getLangPath(`${mapLang(lng)}/${ns}.missing.json`);

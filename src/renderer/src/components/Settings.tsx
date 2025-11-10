@@ -10,7 +10,7 @@ import Switch from './Switch';
 import useUserSettings from '../hooks/useUserSettings';
 import { askForFfPath } from '../dialogs';
 import { isMasBuild, isStoreBuild } from '../util';
-import { Config, LanguageKey, ModifierKey, TimecodeFormat, langNames } from '../../../../types';
+import { Config, SupportedLanguage, ModifierKey, TimecodeFormat, langNames } from '../../../../types';
 import styles from './Settings.module.css';
 import SelectRaw, { SelectProps } from './Select';
 import ButtonRaw, { ButtonProps } from './Button';
@@ -74,7 +74,7 @@ function Settings({
   const onLangChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
     const { value } = e.target;
     const l = value !== '' ? value : undefined;
-    setLanguage(l as LanguageKey | undefined);
+    setLanguage(l as SupportedLanguage | undefined);
   }, [setLanguage]);
 
   const timecodeFormatOptions = useMemo<Record<TimecodeFormat, string>>(() => ({

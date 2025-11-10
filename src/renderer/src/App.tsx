@@ -80,7 +80,6 @@ import { adjustRate } from './util/rate-calculator';
 import { askExtractFramesAsImages } from './dialogs/extractFrames';
 import { askForOutDir, askForImportChapters, askForFileOpenAction, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, showOpenDialog, showMuxNotSupported, promptDownloadMediaUrl, CleanupChoicesType, showOutputNotWritable, deleteFiles, mustDisallowVob, toastError } from './dialogs';
 import { openSendReportDialog } from './reporting';
-import { fallbackLng } from './i18n';
 import { sortSegments, convertSegmentsToChaptersWithGaps, hasAnySegmentOverlap, isDurationValid, getPlaybackAction, getSegmentTags, filterNonMarkers } from './segments';
 import { generateCutFileNames as generateCutFileNamesRaw, generateCutMergedFileNames as generateCutMergedFileNamesRaw, generateMergedFileNames as generateMergedFileNamesRaw, defaultCutFileTemplate, defaultCutMergedFileTemplate, defaultMergedFileTemplate, GenerateMergedOutFileNamesParams, GeneratedOutFileNames } from './util/outputNameTemplate';
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
@@ -204,9 +203,8 @@ function App() {
   const mergedFileTemplateOrDefault = mergedFileTemplate || defaultMergedFileTemplate;
 
   useEffect(() => {
-    const l = language || fallbackLng;
-    i18n.changeLanguage(l).catch(console.error);
-    electron.ipcRenderer.send('setLanguage', l);
+    i18n.changeLanguage(language).catch(console.error);
+    electron.ipcRenderer.send('setLanguage', language);
   }, [language]);
 
 
