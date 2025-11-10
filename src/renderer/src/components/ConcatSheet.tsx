@@ -1,7 +1,7 @@
 import { memo, useState, useCallback, useEffect, useMemo, CSSProperties, Dispatch, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AiOutlineMergeCells } from 'react-icons/ai';
-import { FaQuestionCircle, FaExclamationTriangle, FaCog } from 'react-icons/fa';
+import { FaQuestionCircle, FaExclamationTriangle, FaCog, FaCheck } from 'react-icons/fa';
 import i18n from 'i18next';
 import invariant from 'tiny-invariant';
 
@@ -14,7 +14,7 @@ import { getOutDir } from '../util';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../../ffprobe';
 import Button, { DialogButton } from './Button';
 import { defaultMergedFileTemplate, GeneratedOutFileNames, GenerateMergedOutFileNames } from '../util/outputNameTemplate';
-import { primaryColor } from '../colors';
+import { primaryColor, saveColor, warningColor } from '../colors';
 import ExportSheet from './ExportSheet';
 import * as Dialog from './Dialog';
 import FileNameTemplateEditor from './FileNameTemplateEditor';
@@ -23,12 +23,12 @@ const { basename } = window.require('path');
 
 
 const rowStyle: CSSProperties = {
-  fontSize: '1em', margin: '.3em 0', overflowY: 'auto', whiteSpace: 'nowrap',
+  margin: '.3em 0', overflowY: 'auto', whiteSpace: 'nowrap',
 };
 
 function Alert({ text }: { text: string }) {
   return (
-    <div style={{ marginBottom: '1em' }}><FaExclamationTriangle style={{ color: 'var(--orange-8)', fontSize: '1.3em', verticalAlign: 'middle', marginRight: '.2em' }} /> {text}</div>
+    <div style={{ marginBottom: '1em' }}><FaExclamationTriangle style={{ color: warningColor, verticalAlign: 'middle', marginRight: '.2em' }} /> {text}</div>
   );
 }
 
@@ -62,19 +62,32 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
     return paths[0];
   }, [paths]);
 
+  const generateFileNames = useCallback(async (template: string) => {
+    invariant(firstPath != null && fileFormat != null);
+    const outputDir = getOutDir(customOutDir, firstPath);
+
+    return generateMergedFileNames({ template, filePaths: paths, fileFormat, outputDir, epochMs: uniqueSuffix });
+  }, [customOutDir, fileFormat, firstPath, generateMergedFileNames, paths, uniqueSuffix]);
+
   useEffect(() => {
-    if (!isShown) return undefined;
-
-    let aborted = false;
-
-    (async () => {
+    if (!isShown) {
       setFileMeta(undefined);
       setFileFormat(undefined);
       setDetectedFileFormat(undefined);
+    }
+  }, [isShown, setDetectedFileFormat, setFileFormat]);
+
+  useEffect(() => {
+    if (!isShown) return undefined;
+
+    const abortController = new AbortController();
+
+    (async () => {
       invariant(firstPath != null);
       const fileMetaNew = await readFileMeta(firstPath);
       const fileFormatNew = await getDefaultOutFormat({ filePath: firstPath, fileMeta: fileMetaNew });
-      if (aborted) return;
+      if (abortController.signal.aborted) return;
+
       setFileMeta(fileMetaNew);
       setDetectedFileFormat(fileFormatNew);
       if (outFormatLocked) {
@@ -85,17 +98,24 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
       setUniqueSuffix(Date.now());
     })().catch(console.error);
 
-    return () => {
-      aborted = true;
-    };
-  }, [firstPath, isShown, outFormatLocked, setDetectedFileFormat, setFileFormat]);
+    return () => abortController.abort();
+  }, [firstPath, isShown, outFormatLocked, setDetectedFileFormat, setFileFormat, setMergedFileTemplate, simpleMode]);
 
-  const generateFileNames = useCallback(async (template: string) => {
-    invariant(firstPath != null && fileFormat != null);
-    const outputDir = getOutDir(customOutDir, firstPath);
+  useEffect(() => {
+    const abortController = new AbortController();
+    console.log('wat', fileFormat);
 
-    return generateMergedFileNames({ template, filePaths: paths, fileFormat, outputDir, epochMs: uniqueSuffix });
-  }, [customOutDir, fileFormat, firstPath, generateMergedFileNames, paths, uniqueSuffix]);
+    (async () => {
+      // in simple mode, set merged file template to a generated name based on first file, so they don't *have to* deal with variables
+      if (isShown && simpleMode && firstPath != null && fileFormat != null) {
+        const generated = await generateFileNames(defaultMergedFileTemplate);
+        if (abortController.signal.aborted) return;
+        setMergedFileTemplate(generated.fileNames[0]);
+      }
+    })().catch(console.error);
+
+    return () => abortController.abort();
+  }, [fileFormat, firstPath, generateFileNames, isShown, setMergedFileTemplate, simpleMode]);
 
   const allFilesMeta = useMemo(() => {
     if (paths.length === 0) return undefined;
@@ -137,12 +157,12 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
   useEffect(() => {
     if (!isShown || !enableReadFileMeta) return undefined;
 
-    let aborted = false;
+    const abortController = new AbortController();
 
     (async () => {
       // eslint-disable-next-line no-restricted-syntax
       for (const path of paths) {
-        if (aborted) return;
+        if (abortController.signal.aborted) return;
         if (!allFilesMetaCache[path]) {
           // eslint-disable-next-line no-await-in-loop
           const fileMetaNew = await readFileMeta(path);
@@ -151,9 +171,7 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
       }
     })().catch(console.error);
 
-    return () => {
-      aborted = true;
-    };
+    return () => abortController.abort();
   }, [allFilesMetaCache, enableReadFileMeta, isShown, paths]);
 
   const onConcatClick = useCallback(async () => {
@@ -165,6 +183,11 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
 
     await onConcat({ paths, includeAllStreams, streams: fileMeta!.streams, fileFormat, clearBatchFilesAfterConcat, generatedFileNames });
   }, [clearBatchFilesAfterConcat, customOutDir, fileFormat, fileMeta, firstPath, generateMergedFileNames, includeAllStreams, mergedFileTemplate, onConcat, paths, uniqueSuffix]);
+
+  const handleReadFileMetaCheckedChange = useCallback((checked: boolean) => {
+    setEnableReadFileMeta(checked);
+    setAllFilesMetaCache({});
+  }, []);
 
   return (
     <ExportSheet
@@ -179,38 +202,42 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
       width="70em"
     >
       <div style={{ marginBottom: '1em' }}>
-        <div style={{ whiteSpace: 'pre-wrap', fontSize: '.9em', marginBottom: '1em' }}>
+        <div style={{ whiteSpace: 'pre-wrap', marginBottom: '1em' }}>
           {t('This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).')}
         </div>
 
-        <div style={{ backgroundColor: 'var(--gray-1)', borderRadius: '.1em' }}>
+        <div>
           {paths.map((path, index) => (
             <div key={path} style={rowStyle} title={path}>
               <div>
                 <span style={{ opacity: 0.7, marginRight: '.4em' }}>{`${index + 1}.`}</span>
                 <span>{basename(path)}</span>
 
-                {!allFilesMetaCache[path] && <FaQuestionCircle style={{ color: 'var(--orange-8)', verticalAlign: 'middle', marginLeft: '1em' }} />}
+                {allFilesMetaCache[path] ? (
+                  problemsByFile[path] ? (
+                    <Dialog.Root>
+                      <Dialog.Trigger asChild>
+                        <Button title={i18n.t('Mismatches detected')} style={{ color: warningColor, marginLeft: '1em', padding: '.2em .4em' }}><FaExclamationTriangle /></Button>
+                      </Dialog.Trigger>
 
-                {problemsByFile[path] && (
-                  <Dialog.Root>
-                    <Dialog.Trigger asChild>
-                      <Button title={i18n.t('Mismatches detected')} style={{ color: 'var(--orange-8)', marginLeft: '1em', padding: '.2em .4em' }}><FaExclamationTriangle /></Button>
-                    </Dialog.Trigger>
+                      <Dialog.Portal>
+                        <Dialog.Overlay />
+                        <Dialog.Content aria-describedby={undefined}>
+                          <Dialog.Title>{t('Mismatches detected')}</Dialog.Title>
 
-                    <Dialog.Portal>
-                      <Dialog.Overlay />
-                      <Dialog.Content aria-describedby={undefined}>
-                        <Dialog.Title>{t('Mismatches detected')}</Dialog.Title>
+                          <ul style={{ margin: '10px 0', textAlign: 'left' }}>
+                            {(problemsByFile[path] || []).map((problem) => <li key={problem}>{problem}</li>)}
+                          </ul>
 
-                        <ul style={{ margin: '10px 0', textAlign: 'left' }}>
-                          {(problemsByFile[path] || []).map((problem) => <li key={problem}>{problem}</li>)}
-                        </ul>
-
-                        <Dialog.CloseButton />
-                      </Dialog.Content>
-                    </Dialog.Portal>
-                  </Dialog.Root>
+                          <Dialog.CloseButton />
+                        </Dialog.Content>
+                      </Dialog.Portal>
+                    </Dialog.Root>
+                  ) : (
+                    <FaCheck style={{ color: saveColor, verticalAlign: 'middle', marginLeft: '1em' }} />
+                  )
+                ) : (
+                  <FaQuestionCircle style={{ color: warningColor, verticalAlign: 'middle', marginLeft: '1em' }} />
                 )}
               </div>
             </div>
@@ -218,12 +245,12 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
         </div>
       </div>
 
-      <div style={{ marginBottom: '1em' }}>
-        <Checkbox style={{ marginBottom: '.7em' }} checked={enableReadFileMeta} onCheckedChange={(checked) => setEnableReadFileMeta(!!checked)} label={t('Check compatibility')} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1em', marginBottom: '1em', flexWrap: 'wrap' }}>
+        <Checkbox checked={enableReadFileMeta} onCheckedChange={handleReadFileMetaCheckedChange} label={t('Check compatibility')} />
 
         <Dialog.Root>
           <Dialog.Trigger asChild>
-            <Button style={{ padding: '.3em .5em', marginBottom: '.5em' }}><FaCog style={{ verticalAlign: 'top', fontSize: '1.4em', marginRight: '.2em' }} /> {t('Options')}</Button>
+            <Button style={{ padding: '.3em .5em' }}><FaCog style={{ verticalAlign: 'middle', fontSize: '1.4em', marginRight: '.2em' }} /> {t('Options')}</Button>
           </Dialog.Trigger>
 
           <Dialog.Portal>
@@ -247,7 +274,7 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
 
               <Dialog.ButtonRow>
                 <Dialog.Close asChild>
-                  <DialogButton primary>{t('Done')}</DialogButton>
+                  <DialogButton primary>{t('Close')}</DialogButton>
                 </Dialog.Close>
               </Dialog.ButtonRow>
 
@@ -256,23 +283,23 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
           </Dialog.Portal>
         </Dialog.Root>
 
-        <div>{t('Output container format:')}</div>
-
         {fileFormat != null && detectedFileFormat != null && (
-          <OutputFormatSelect style={{ height: '1.7em', maxWidth: '20em', marginBottom: '.7em' }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
-        )}
-
-        {fileFormat != null && (
-          <FileNameTemplateEditor mode="merge-files" template={mergedFileTemplate} setTemplate={setMergedFileTemplate} defaultTemplate={defaultMergedFileTemplate} generateFileNames={generateFileNames} />
-        )}
-
-        {enableReadFileMeta && (!allFilesMeta || Object.values(problemsByFile).length > 0) && (
-          <Alert text={t('A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.')} />
-        )}
-        {!enableReadFileMeta && (
-          <Alert text={t('File compatibility check is not enabled, so the merge operation might not produce a valid output. Enable "Check compatibility" below to check file compatibility before merging.')} />
+          <OutputFormatSelect style={{ height: '2.1em', maxWidth: '20em' }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
         )}
       </div>
+
+      {fileFormat != null && (
+        <div style={{ marginBottom: '1em' }}>
+          <FileNameTemplateEditor mode="merge-files" template={mergedFileTemplate} setTemplate={setMergedFileTemplate} defaultTemplate={defaultMergedFileTemplate} generateFileNames={generateFileNames} />
+        </div>
+      )}
+
+      {enableReadFileMeta && (!allFilesMeta || Object.values(problemsByFile).length > 0) && (
+        <Alert text={t('A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.')} />
+      )}
+      {!enableReadFileMeta && (
+        <Alert text={t('File compatibility check is not enabled, so the merge operation might not produce a valid output. Enable "Check compatibility" below to check file compatibility before merging.')} />
+      )}
     </ExportSheet>
   );
 }

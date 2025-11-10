@@ -12,7 +12,7 @@ import CopyClipboardButton from '../components/CopyClipboardButton';
 import { appPath, isMac, isMasBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry } from '../util';
 import { ParseTimecode } from '../types';
 import { FindKeyframeMode } from '../ffmpeg';
-import { dangerColor } from '../colors';
+import { dangerColor, primaryColor, warningColor } from '../colors';
 import getSwal from '../swal';
 import isDev from '../isDev';
 
@@ -509,10 +509,10 @@ export const ListItem = ({ icon, iconColor, children, style }: { icon: ReactNode
 );
 
 export const Notices = ({ notices }: { notices: string[] }) => notices.map((msg) => (
-  <ListItem key={msg} icon={<FaInfoCircle />} iconColor="var(--blue-9)">{msg}</ListItem>
+  <ListItem key={msg} icon={<FaInfoCircle />} iconColor={primaryColor}>{msg}</ListItem>
 ));
 export const Warnings = ({ warnings }: { warnings: string[] }) => warnings.map((msg) => (
-  <ListItem key={msg} icon={<FaExclamationTriangle />} iconColor="var(--orange-8)">{msg}</ListItem>
+  <ListItem key={msg} icon={<FaExclamationTriangle />} iconColor={warningColor}>{msg}</ListItem>
 ));
 export const OutputIncorrectSeeHelpMenu = () => (
   <ListItem icon={<FaQuestionCircle />}>{i18n.t('If output does not look right, see the Help menu.')}</ListItem>

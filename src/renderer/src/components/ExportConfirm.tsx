@@ -12,7 +12,7 @@ import HighlightedText from './HighlightedText';
 import Select from './Select';
 import Switch from './Switch';
 
-import { primaryTextColor } from '../colors';
+import { primaryTextColor, warningColor } from '../colors';
 import { withBlur } from '../util';
 import getSwal from '../swal';
 import { isMov as ffmpegIsMov } from '../util/streams';
@@ -31,8 +31,8 @@ import AnimatedTr from './AnimatedTr';
 
 
 const noticeStyle: CSSProperties = { marginBottom: '.5em' };
-const infoStyle: CSSProperties = { ...noticeStyle, color: 'var(--blue-12)' };
-const warningStyle: CSSProperties = { ...noticeStyle, color: 'var(--orange-8)' };
+const infoStyle: CSSProperties = { ...noticeStyle, color: primaryTextColor };
+const warningStyle: CSSProperties = { ...noticeStyle, color: warningColor };
 
 const rightIconStyle: CSSProperties = { fontSize: '1.2em', verticalAlign: 'middle' };
 
@@ -55,7 +55,7 @@ function ShiftTimes({ values, num, setNum }: { values: number[], num: number, se
 function renderNoticeIcon(notice: { warning?: boolean | undefined } | undefined, style?: CSSProperties) {
   if (!notice) return undefined;
   return notice.warning ? (
-    <FaExclamationTriangle style={{ flexShrink: '0', fontSize: '.8em', verticalAlign: 'baseline', color: 'var(--orange-9)', ...style }} />
+    <FaExclamationTriangle style={{ flexShrink: '0', fontSize: '.8em', verticalAlign: 'baseline', color: warningColor, ...style }} />
   ) : (
     <FaInfoCircle style={{ flexShrink: '0', fontSize: '.8em', verticalAlign: 'baseline', color: 'var(--blue-10)', ...style }} />
   );

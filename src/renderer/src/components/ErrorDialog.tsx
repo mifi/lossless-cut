@@ -3,6 +3,7 @@ import { FaExclamationTriangle } from 'react-icons/fa';
 
 import * as Dialog from './Dialog';
 import { DialogButton } from './Button';
+import { warningColor } from '../colors';
 
 
 export interface GenericError {
@@ -27,7 +28,7 @@ export default function ErrorDialog({ error, onOpenChange }: {
           {error != null && (
             <>
               <Dialog.Title>
-                <FaExclamationTriangle style={{ color: 'var(--orange-6)', marginRight: '.5em', verticalAlign: 'middle' }} />
+                <FaExclamationTriangle style={{ color: warningColor, marginRight: '.5em', verticalAlign: 'middle' }} />
                 {error.title ?? t('Error')}
               </Dialog.Title>
 

@@ -9,6 +9,7 @@ import { DialogButton } from './Button';
 import { showItemInFolder } from '../util';
 import { CleanupChoice, CleanupChoicesType, ListItem, Notices, OutputIncorrectSeeHelpMenu, UnorderedList, Warnings } from '../dialogs';
 import Checkbox from './Checkbox';
+import { saveColor, warningColor } from '../colors';
 
 
 export interface GenericDialogParams {
@@ -174,7 +175,7 @@ export function useDialog() {
       width: '60em',
       children: (
         <UnorderedList>
-          <ListItem icon={<FaCheckCircle />} iconColor={hasWarnings ? 'var(--orange-8)' : 'var(--green-11)'} style={{ fontWeight: 'bold' }}>{hasWarnings ? t('Export finished with warning(s)', { count: warnings.length }) : t('Export is done!')}</ListItem>
+          <ListItem icon={<FaCheckCircle />} iconColor={hasWarnings ? warningColor : saveColor} style={{ fontWeight: 'bold' }}>{hasWarnings ? t('Export finished with warning(s)', { count: warnings.length }) : t('Export is done!')}</ListItem>
           <Warnings warnings={warnings} />
           <ListItem icon={<FaInfoCircle />}>{t('Please test the output file in your desired player/editor before you delete the source file.')}</ListItem>
           <OutputIncorrectSeeHelpMenu />

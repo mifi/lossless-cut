@@ -4,7 +4,7 @@ import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { IoIosHelpCircle } from 'react-icons/io';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaCheck, FaEdit, FaExclamationTriangle, FaFile, FaUndo } from 'react-icons/fa';
+import { FaCaretUp, FaEdit, FaExclamationTriangle, FaEye, FaFile, FaUndo } from 'react-icons/fa';
 
 import HighlightedText from './HighlightedText';
 import { segNumVariable, segSuffixVariable, GenerateOutFileNames, extVariable, segTagsVariable, segNumIntVariable, selectedSegNumVariable, selectedSegNumIntVariable, GeneratedOutFileNames } from '../util/outputNameTemplate';
@@ -14,7 +14,7 @@ import Select from './Select';
 import TextInput from './TextInput';
 import Button from './Button';
 import * as Dialog from './Dialog';
-import { dangerColor, saveColor } from '../colors';
+import { dangerColor, warningColor } from '../colors';
 
 const electron = window.require('electron');
 
@@ -29,6 +29,7 @@ function FileNameTemplateEditor(opts: {
   setTemplate: (text: string) => void,
   defaultTemplate: string,
   generateFileNames: GenerateOutFileNames,
+  ignoreMissingExtensionWarning?: boolean,
 } & ({
   currentSegIndexSafe: number,
   mode: 'separate'
@@ -44,14 +45,17 @@ function FileNameTemplateEditor(opts: {
   const [generated, setGenerated] = useState<GeneratedOutFileNames>();
 
   const haveImportantMessage = generated != null && (generated.problems.error != null || generated.problems.sameAsInputFileNameWarning);
-  const [shown, setShown] = useState(haveImportantMessage);
+  const [open, setOpen] = useState(haveImportantMessage);
+
   useEffect(() => {
     // if an important message appears, make sure we don't auto-close after it's resolved
     // https://github.com/mifi/lossless-cut/issues/2567
-    if (haveImportantMessage) setShown(true);
+    if (haveImportantMessage) setOpen(true);
   }, [haveImportantMessage]);
 
-  const needToShow = shown || haveImportantMessage;
+  useEffect(() => {
+    setText(templateIn);
+  }, [templateIn]);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -111,18 +115,18 @@ function FileNameTemplateEditor(opts: {
     setTemplate(debouncedText);
   }, [debouncedText, setTemplate]);
 
+  useEffect(() => {
+    if (open) inputRef.current?.focus();
+  }, [open]);
+
   const reset = useCallback(() => {
     setTemplate(defaultTemplate);
     setText(defaultTemplate);
   }, [defaultTemplate, setTemplate]);
 
-  const onHideClick = useCallback(() => {
-    if (generated != null && generated.problems.error == null) setShown(false);
-  }, [generated]);
-
-  const onShowClick = useCallback(() => {
-    if (!shown) setShown(true);
-  }, [shown]);
+  const handleSampleClick = useCallback(() => {
+    setOpen((v) => !v);
+  }, []);
 
   const onTextChange = useCallback<ChangeEventHandler<HTMLInputElement>>((e) => setText(e.target.value), []);
 
@@ -138,6 +142,9 @@ function FileNameTemplateEditor(opts: {
     setText(newValue);
   }, [text]);
 
+  // In simple mode for merge-files, we auto generate file name, so there will be no ${EXT} variable
+  const shouldIgnoreMissingExtension = useMemo(() => simpleMode && mode === 'merge-files', [simpleMode, mode]);
+
   function formatCurrentSegFileOrFirst(names: string[]) {
     if (mode === 'separate') {
       const { currentSegIndexSafe } = opts;
@@ -146,7 +153,8 @@ function FileNameTemplateEditor(opts: {
         return fileName;
       }
     }
-    return names[0] ?? '-';
+
+    return names[0];
   }
 
   return (
@@ -160,34 +168,42 @@ function FileNameTemplateEditor(opts: {
         </div>
       )}
 
-      <motion.div animate={{ marginBottom: needToShow ? '1.5em' : '.3em' }}>
+      <div>
         {generated != null && (
           <div style={{ marginBottom: '.3em' }}>
-            <HighlightedText role="button" onClick={onShowClick} style={{ wordBreak: 'break-word', cursor: needToShow ? undefined : 'pointer' }}>
+            <HighlightedText title={open ? t('Close') : t('Edit')} role="button" onClick={handleSampleClick} style={{ wordBreak: 'break-word', cursor: 'pointer' }}>
+              {generated.problems.error != null && <FaExclamationTriangle style={{ color: dangerColor, marginRight: '.2em', verticalAlign: 'middle' }} />}
               {generated.originalFileNames != null && formatCurrentSegFileOrFirst(generated.fileNames)}
-              <span style={generated.originalFileNames != null ? { textDecoration: 'line-through', marginLeft: '.3em', color: dangerColor } : undefined}>{formatCurrentSegFileOrFirst(generated.originalFileNames ?? generated.fileNames)}</span>
-              {!needToShow && <FaEdit style={{ fontSize: '.9em', marginLeft: '.4em', verticalAlign: 'middle' }} />}
+              <span style={generated.originalFileNames != null ? { textDecoration: 'line-through', marginLeft: '.3em', color: dangerColor } : undefined}>
+                {formatCurrentSegFileOrFirst(generated.originalFileNames ?? generated.fileNames)}
+              </span>
+              {open ? (
+                <FaCaretUp style={{ fontSize: '.9em', marginLeft: '.4em', verticalAlign: 'middle' }} />
+              ) : (
+                <FaEdit style={{ fontSize: '.9em', marginLeft: '.4em', verticalAlign: 'middle' }} />
+              )}
             </HighlightedText>
           </div>
         )}
 
         <AnimatePresence>
-          {needToShow && (
+          {open && (
             <motion.div
               key="1"
-              style={{ background: 'var(--gray-1)', padding: '.3em .5em', borderRadius: '.3em', margin: '0 -.5em' }}
-              initial={{ opacity: 0, height: 0, marginTop: 0 }}
-              animate={{ opacity: 1, height: 'auto', marginTop: '.7em' }}
-              exit={{ opacity: 0, height: 0, marginTop: 0 }}
+              style={{ border: '.1em solid var(--gray-5)', padding: '.5em .7em', borderRadius: '.3em' }}
+              initial={{ opacity: 0, height: 0, marginTop: 0, marginBottom: 0 }}
+              animate={{ opacity: 1, height: 'auto', marginTop: '.7em', marginBottom: '1em' }}
+              exit={{ opacity: 0, height: 0, marginTop: 0, marginBottom: 0 }}
             >
               <div style={{ color: 'var(--gray-11)', fontSize: '.8em' }}>{t('Output file name template')}:</div>
+
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.2em' }}>
-                <TextInput ref={inputRef} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" />
+                <TextInput ref={inputRef} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" style={{ padding: '.3em' }} />
 
                 {generated != null && generated.fileNames.length > 1 && (
                   <Dialog.Root>
                     <Dialog.Trigger asChild>
-                      <Button style={{ marginLeft: '.3em' }}>{t('Preview')}</Button>
+                      <Button style={{ marginLeft: '.3em', padding: '.3em' }} title={t('Preview')}><FaEye /></Button>
                     </Dialog.Trigger>
 
                     <Dialog.Portal>
@@ -205,18 +221,15 @@ function FileNameTemplateEditor(opts: {
                   </Dialog.Root>
                 )}
 
-                <Button title={t('Reset')} onClick={reset} style={{ marginLeft: '.3em' }}><FaUndo style={{ fontSize: '.8em', color: dangerColor }} /></Button>
-                {!haveImportantMessage && (
-                  <Button title={t('Close')} onClick={onHideClick} style={{ marginLeft: '.3em', color: saveColor }}><FaCheck style={{ fontSize: '.8em' }} /></Button>
-                )}
+                <Button title={t('Reset')} onClick={reset} style={{ marginLeft: '.3em', padding: '.3em' }}><FaUndo style={{ fontSize: '.8em', color: dangerColor }} /></Button>
               </div>
 
-              <div style={{ fontSize: '.8em', color: 'var(--gray-11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
+              <div style={{ fontSize: '.9em', color: 'var(--gray-11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
                 {`${i18n.t('Variables')}:`}
 
                 <IoIosHelpCircle fontSize="1.3em" color="var(--gray-12)" role="button" cursor="pointer" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/docs.md#custom-exported-file-names')} />
                 {availableVariables.map((variable) => (
-                  <span key={variable} role="button" style={{ cursor: 'pointer', marginRight: '.2em', textDecoration: 'underline', textDecorationStyle: 'dashed', fontSize: '.9em' }} onClick={() => onVariableClick(variable)}>{variable}</span>
+                  <span key={variable} role="button" style={{ cursor: 'copy', marginRight: '.2em', textDecoration: 'underline', textDecorationStyle: 'dashed', fontSize: '.9em' }} onClick={() => onVariableClick(variable)}>{variable}</span>
                 ))}
               </div>
 
@@ -233,36 +246,36 @@ function FileNameTemplateEditor(opts: {
                 <Switch checked={safeOutputFileName} onCheckedChange={toggleSafeOutputFileName} style={{ verticalAlign: 'middle', marginRight: '.5em' }} />
                 <span>{t('Sanitize file names')}</span>
 
-                {!safeOutputFileName && <FaExclamationTriangle color="var(--amber-9)" style={{ marginLeft: '.5em', verticalAlign: 'middle' }} />}
+                {!safeOutputFileName && <FaExclamationTriangle color={warningColor} style={{ marginLeft: '.5em', verticalAlign: 'middle' }} />}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
         {generated?.problems.error != null ? (
-          <div style={{ marginBottom: '1em', fontSize: '.9em' }}>
-            <FaExclamationTriangle color={dangerColor} style={{ verticalAlign: 'middle', fontSize: '1.1em' }} /> {generated.problems.error}
+          <div style={{ marginBottom: '1em' }}>
+            <FaExclamationTriangle color={dangerColor} style={{ verticalAlign: 'middle', marginRight: '.3em' }} />{generated.problems.error}
           </div>
         ) : (
           generated != null && (
             <>
               {generated.problems.sameAsInputFileNameWarning && (
                 <div style={{ marginBottom: '1em' }}>
-                  <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.3em' }} color="var(--amber-9)" />
+                  <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.3em' }} color={warningColor} />
                   {i18n.t('Output file name is the same as the source file name. This increases the risk of accidentally overwriting or deleting source files!')}
                 </div>
               )}
 
-              {isMissingExtension && (
+              {!shouldIgnoreMissingExtension && isMissingExtension && (
                 <div style={{ marginBottom: '1em' }}>
-                  <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.3em' }} color="var(--amber-9)" />
+                  <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.3em' }} color={warningColor} />
                   {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVariableFormatted })}
                 </div>
               )}
             </>
           )
         )}
-      </motion.div>
+      </div>
     </>
   );
 }
