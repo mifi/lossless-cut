@@ -1,6 +1,6 @@
 import { memo, useRef, useMemo, useCallback, CSSProperties, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaAngleRight, FaFile, FaTimes } from 'react-icons/fa';
+import { FaFile, FaTimes } from 'react-icons/fa';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -47,11 +47,12 @@ function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, 
     background: isSelected ? 'var(--gray-7)' : undefined,
     cursor: dragging ? 'grabbing' : 'default',
     fontSize: 13,
-    padding: '3px 6px',
+    padding: '.2em .2em .2em .4em',
     display: 'flex',
     alignItems: 'center',
     alignContent: 'flex-start',
-  }), [sortable.isDragging, sortable.transform, sortable.transition, isSelected, dragging]);
+    borderRight: `.3em solid ${isOpen ? 'var(--gray-8)' : 'transparent'}`,
+  }), [sortable.isDragging, sortable.transform, sortable.transition, dragging, isSelected, isOpen]);
 
   const handleClick = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
     onSelect?.(path);
@@ -74,14 +75,10 @@ function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, 
       <FaFile style={{ color: isSelected ? primaryTextColor : undefined, flexShrink: 0, fontSize: '1em', marginRight: '.1em' }} />
       <div style={{ flexShrink: 0, marginRight: '.1em' }}>{index + 1}.</div>
       <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', direction: 'rtl' }}>
-        {name}
+        <span style={{ direction: 'ltr', unicodeBidi: 'isolate', display: 'inline-block' }}>{name}</span>
       </div>
       <div style={{ flexGrow: 1 }} />
-      {isOpen ? (
-        <FaAngleRight style={{ color: 'var(--gray-9)', fontSize: '.9em', marginRight: '-.3em', flexShrink: 0 }} />
-      ) : (
-        onDelete && <FaTimes style={{ color: dangerColor, fontSize: '.9em', marginRight: '-.3em', flexShrink: 0, cursor: 'pointer', padding: '.3em' }} role="button" onClick={() => onDelete(path)} />
-      )}
+      {onDelete && <FaTimes style={{ color: dangerColor, fontSize: '.9em', marginRight: '-.3em', flexShrink: 0, cursor: 'pointer', padding: '.3em' }} role="button" onClick={() => onDelete(path)} />}
     </div>
   );
 }
