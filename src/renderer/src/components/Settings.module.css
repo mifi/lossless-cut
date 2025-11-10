@@ -7,6 +7,7 @@
 }
 .settings td:nth-child(2), .settings th:nth-child(2) {
   padding: 1em 0 1em 0;
+  width: 15em;
 }
 
 .settings th {
