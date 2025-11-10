@@ -208,7 +208,7 @@
     "Auto save project": "Projekt automatisch speichern",
     "The project will be stored along with the output files as a CSV file": "Das Projekt wird zusammen mit den Ausgabedateien als CSV Datei gespeichert",
     "Auto save project file?": "Projektdatei automatisch speichern",
-    "(data tracks such as GoPro GPS, telemetry etc. are not copied over by default because ffmpeg cannot cut them, thus they will cause the media duration to stay the same after cutting video/audio)": "Datenspuren wie GoPro-GPS, Telemetrie usw. werden standardmäßig nicht kopiert, da FFmpeg sie nicht schneiden kann. Daher bleibt die Medienlänge nach dem Schneiden von Video/Audio unverändert.",
+    "(data tracks such as GoPro GPS, telemetry etc. are not copied over by default because ffmpeg cannot cut them, thus they will cause the media duration to stay the same after cutting video/audio)": "(Datenspuren wie GoPro-GPS, Telemetrie usw. werden standardmäßig nicht kopiert, da ffmpeg sie nicht schneiden kann, was dazu führen würde, dass die Mediendauer nach dem Schneiden von Video/Audio gleich bliebe)",
     "Extract unprocessable tracks to separate files or discard them?": "Nicht verarbeitbare Spuren in separate Dateien extrahieren oder verwerfen",
     "The video inside segments will be discarded, while the video surrounding them will be kept.": "Das Video innerhalb der Segmente wird verworfen, während das Video um die Segmente herum beibehalten wird.",
     "Remove": "Entfernen",
