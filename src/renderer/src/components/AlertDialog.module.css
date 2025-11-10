@@ -25,7 +25,7 @@
 	transform: translate(-50%, -50%);
 	box-sizing: border-box;
 
-	overflow: scroll;
+	overflow: auto;
 
 	max-width: 90vw;
 	max-height: 85vh;
