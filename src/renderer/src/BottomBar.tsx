@@ -564,7 +564,7 @@ function BottomBar({
           </>
         )}
 
-        {hasVideo && (
+        {!simpleMode && hasVideo && (
           <div onClick={increaseRotation} role="button">
             <MdRotate90DegreesCcw
               style={{ fontSize: '1.3em', verticalAlign: 'middle', color: isRotationSet ? primaryTextColor : undefined }}
@@ -599,11 +599,9 @@ function BottomBar({
           </div>
         )}
 
-        {!simpleMode && (
-          <div role="button" onClick={toggleLoopSelectedSegments} title={t('Play selected segments in order')} style={loopSelectedSegmentsButtonStyle}>
-            <PlayPauseMode />
-          </div>
-        )}
+        <div role="button" onClick={toggleLoopSelectedSegments} title={t('Play selected segments in order')} style={loopSelectedSegmentsButtonStyle}>
+          <PlayPauseMode />
+        </div>
 
         {(!simpleMode || !exportConfirmEnabled) && <ToggleExportConfirm style={{ marginLeft: '.4em' }} />}
 
