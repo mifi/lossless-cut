@@ -986,32 +986,22 @@ function App() {
 
   const askForCleanupChoices = useCallback(async () => {
     const trashResponse = await openCleanupFilesDialog(cleanupChoices);
-    if (!trashResponse) return undefined; // Canceled
-    setCleanupChoices(trashResponse); // Store for next time
+    if (trashResponse != null) setCleanupChoices(trashResponse); // Store for next time, if not canceled
     return trashResponse;
   }, [cleanupChoices, openCleanupFilesDialog, setCleanupChoices]);
-
-  const cleanupFilesWithDialog = useCallback(async () => {
-    let response: CleanupChoicesType | undefined = cleanupChoices;
-    if (cleanupChoices.askForCleanup) {
-      response = await askForCleanupChoices();
-      console.log('trashResponse', response);
-      if (!response) return; // Canceled
-    }
-
-    await cleanupFiles(response);
-  }, [askForCleanupChoices, cleanupChoices, cleanupFiles]);
 
   const cleanupFilesDialog = useCallback(async () => {
     if (!isFileOpened) return;
     if (workingRef.current) return;
 
     try {
-      await cleanupFilesWithDialog();
+      const newCleanupChoices = cleanupChoices.askForCleanup ? await askForCleanupChoices() : cleanupChoices;
+      // only if not canceled
+      if (newCleanupChoices != null) await cleanupFiles(newCleanupChoices);
     } finally {
       setWorking(undefined);
     }
-  }, [cleanupFilesWithDialog, isFileOpened, setWorking, workingRef]);
+  }, [askForCleanupChoices, cleanupChoices, cleanupFiles, isFileOpened, setWorking, workingRef]);
 
   const closeExportConfirm = useCallback(() => setExportConfirmOpen(false), []);
 
@@ -1154,15 +1144,20 @@ function App() {
 
       if (areWeCutting) notices.add(i18n.t('Cutpoints may be inaccurate.'));
 
+      if (simpleMode && !prefersReducedMotion) shootConfetti({ ticks: 50 });
+
+      if (cleanupChoices.cleanupAfterExport) {
+        const newCleanupChoices = cleanupChoices.askForCleanup ? await askForCleanupChoices() : cleanupChoices;
+        // only if not canceled
+        if (newCleanupChoices) await cleanupFiles(newCleanupChoices);
+      }
+
+      // Note: this should be after cleanup, so we don't accidentally open two dialogs at the same time, leading to error *and* success dialog simultaneously https://github.com/mifi/lossless-cut/issues/2609
       const revealPath = willMerge && mergedOutFilePath != null ? mergedOutFilePath : outFiles[0]!.path;
       if (!hideAllNotifications) {
         showOsNotification(i18n.t('Export finished'));
         openCutFinishedDialog({ filePath: revealPath, warnings: [...warnings], notices: [...notices] });
       }
-
-      if (simpleMode && !prefersReducedMotion) shootConfetti({ ticks: 50 });
-
-      if (cleanupChoices.cleanupAfterExport) await cleanupFilesWithDialog();
 
       setExportCount((c) => c + 1);
       setCurrentFileExportCount((c) => c + 1);
@@ -1195,7 +1190,7 @@ function App() {
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [filePath, numStreamsToCopy, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, cutFileTemplateOrDefault, generateCutFileNames, cutMultiple, outputDir, customOutDir, fileFormat, fileDuration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, segmentsToExport, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, fixCodecTag, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, hideAllNotifications, simpleMode, prefersReducedMotion, cleanupChoices.cleanupAfterExport, cleanupFilesWithDialog, segmentsOrInverse.selected, t, cutMergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateCutMergedFileNames, concatCutSegments, autoDeleteMergedSegments, tryDeleteFiles, nonCopiedExtraStreams, extractStreams, showOsNotification, openCutFinishedDialog, handleExportFailed]);
+  }, [filePath, numStreamsToCopy, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, cutFileTemplateOrDefault, generateCutFileNames, cutMultiple, outputDir, customOutDir, fileFormat, fileDuration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, segmentsToExport, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, fixCodecTag, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, simpleMode, prefersReducedMotion, cleanupChoices, hideAllNotifications, segmentsOrInverse.selected, t, cutMergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateCutMergedFileNames, concatCutSegments, autoDeleteMergedSegments, tryDeleteFiles, nonCopiedExtraStreams, extractStreams, askForCleanupChoices, cleanupFiles, showOsNotification, openCutFinishedDialog, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath) return;
