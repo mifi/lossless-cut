@@ -5,6 +5,7 @@ import styles from './ValueTuner.module.css';
 
 import Switch from './Switch';
 import Button from './Button';
+import { primaryColor } from '../colors';
 
 
 function ValueTuner({ title, value, setValue, onFinished, resolution, decimals, min: minIn = 0, max: maxIn = 1, resetToDefault }: {
@@ -62,9 +63,9 @@ function ValueTuner({ title, value, setValue, onFinished, resolution, decimals, 
         <input style={{ width: '100%' }} type="range" min="0" max="1000" step="1" value={((value - min) / (max - min)) * resolution} onChange={onChange} />
       </div>
 
-      <div style={{ textAlign: 'right' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '.3em' }}>
         <Button onClick={handleResetToDefaultClick}>{t('Default')}</Button>
-        <Button onClick={onFinished}>{t('Done')}</Button>
+        <Button onClick={onFinished} style={{ backgroundColor: primaryColor, color: 'white' }}>{t('Done')}</Button>
       </div>
     </div>
   );

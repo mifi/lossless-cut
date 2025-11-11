@@ -13,11 +13,19 @@
   border: .1em solid transparent;
   color: var(--gray-12);
   background-color: none;
-  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.close-button svg {
+  transition: transform 0.2s ease-in-out;
 }
 
 .close-button:hover {
   background-color: var(--gray-4);
+}
+
+/* need to rotate the inner svg because https://github.com/mifi/lossless-cut/issues/2606#issuecomment-3512693358 */
+.close-button:hover svg {
   transform: rotate(180deg);
 }
 

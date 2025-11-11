@@ -271,12 +271,6 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
       </td>
 
       <td style={{ textAlign: 'right', fontSize: '1.1em' }}>
-        <Json5Dialog title={t('Track {{num}} info', { num: stream.index + 1 })} json={stream}>
-          <Button title={t('Track {{num}} info', { num: stream.index + 1 })}>
-            <FaInfoCircle style={{ verticalAlign: 'middle', padding: '.4em' }} />
-          </Button>
-        </Json5Dialog>
-
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <Button><FaHamburger style={{ verticalAlign: 'middle', padding: '.4em' }} /></Button>
@@ -284,10 +278,19 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
 
           <DropdownMenu.Portal>
             <DropdownMenu.Content sideOffset={5}>
+              <Json5Dialog title={t('Track {{num}} info', { num: stream.index + 1 })} json={stream}>
+                <DropdownMenu.Item onSelect={(e) => e.preventDefault()}>
+                  <FaInfoCircle style={{ verticalAlign: 'middle', marginRight: '.3em' }} />
+                  {t('Track {{num}} info', { num: stream.index + 1 })}
+                </DropdownMenu.Item>
+              </Json5Dialog>
+
               <DropdownMenu.Item onClick={() => setEditingStream({ streamId: stream.index, path: filePath })}>
                 <FaEdit style={{ marginRight: '.3em' }} />
                 {t('Edit track metadata')}
               </DropdownMenu.Item>
+
+              <DropdownMenu.Separator />
 
               {onExtractStreamPress && (
                 <DropdownMenu.Item onClick={onExtractStreamPress}>
@@ -361,7 +364,7 @@ function FileHeading({ path, formatData, chapters, onTrashClick, onEditClick, to
 
       <div style={{ flexGrow: 1 }} />
 
-      <div style={{ fontSize: '1.3em', marginBottom: '.2em' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.2em', fontSize: '1.3em', marginBottom: '.2em' }}>
         {chapters && chapters.length > 0 && (
           <Json5Dialog title={t('Chapters')} json={chapters}>
             <Button title={t('Chapters')}><FaBook style={{ verticalAlign: 'middle' }} /></Button>
