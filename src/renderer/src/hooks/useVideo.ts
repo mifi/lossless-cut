@@ -65,6 +65,7 @@ export default ({ filePath }: { filePath: string | undefined }) => {
   }, []);
 
   const seekAbs = useCallback((val: number | undefined) => {
+    if (filePath == null) return;
     const video = videoRef.current;
     if (video == null || val == null || Number.isNaN(val)) return;
     let outVal = val;
@@ -73,7 +74,7 @@ export default ({ filePath }: { filePath: string | undefined }) => {
 
     smoothSeek(outVal);
     setCommandedTime(outVal);
-  }, [setCommandedTime, smoothSeek]);
+  }, [filePath, setCommandedTime, smoothSeek]);
 
   // Relevant time is the player's playback position if we're currently playing - if not, it's the user's commanded time.
   const relevantTime = useMemo(() => (playing ? playerTime : commandedTime) || 0, [commandedTime, playerTime, playing]);
