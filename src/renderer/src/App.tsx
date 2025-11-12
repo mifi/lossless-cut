@@ -198,9 +198,9 @@ function App() {
     ffmpegSetCustomFfPath(customFfPath);
   }, [customFfPath]);
 
-  const cutFileTemplateOrDefault = cutFileTemplate || defaultCutFileTemplate;
-  const cutMergedFileTemplateOrDefault = cutMergedFileTemplate || defaultCutMergedFileTemplate;
-  const mergedFileTemplateOrDefault = mergedFileTemplate || defaultMergedFileTemplate;
+  const cutFileTemplateOrDefault = cutFileTemplate ?? defaultCutFileTemplate;
+  const cutMergedFileTemplateOrDefault = cutMergedFileTemplate ?? defaultCutMergedFileTemplate;
+  const mergedFileTemplateOrDefault = mergedFileTemplate ?? defaultMergedFileTemplate;
 
   useEffect(() => {
     i18n.changeLanguage(language).catch(console.error);
