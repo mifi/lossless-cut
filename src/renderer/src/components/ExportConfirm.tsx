@@ -495,7 +495,7 @@ function ExportConfirm({
                     </td>
                     <td>
                       <Select value={fixCodecTag} onChange={(e) => setFixCodecTag(e.target.value as FixCodecTagOption)} style={{ height: 20, marginLeft: 5 }}>
-                        <option value={'auto' satisfies FixCodecTagOption}>{t('Always')}</option>
+                        <option value={'auto' satisfies FixCodecTagOption}>{t('Auto')}</option>
                         <option value={'always' satisfies FixCodecTagOption}>{t('Always')}</option>
                         <option value={'never' satisfies FixCodecTagOption}>{t('Never')}</option>
                       </Select>
