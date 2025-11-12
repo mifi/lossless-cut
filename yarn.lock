@@ -7892,9 +7892,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next-cli@npm:^1.22.2":
-  version: 1.22.2
-  resolution: "i18next-cli@npm:1.22.2"
+"i18next-cli@npm:^1.23.7":
+  version: 1.23.7
+  resolution: "i18next-cli@npm:1.23.7"
   dependencies:
     "@swc/core": "npm:1.13.19"
     chalk: "npm:5.6.2"
@@ -7911,7 +7911,7 @@ __metadata:
     swc-walk: "npm:1.0.0"
   bin:
     i18next-cli: dist/esm/cli.js
-  checksum: 10/4b8738b1b04f49a3686df5a89fc9f870bdc408c7b1069ea211685a4425dfa48ea5b73d2250795ae29889a982f0d472489d6c0e321ad3bcff39db9e236991fa77
+  checksum: 10/288dc06521f3f7818483912cf450dbf52c8f031d0bf5730a9ded71970c9addbac0f38c7b6e1d4ba2829c558978fc66124cc24414bc4d7a1eb15b37a3adb3848a
   languageName: node
   linkType: hard
 
@@ -9134,7 +9134,7 @@ __metadata:
     framer-motion: "npm:^9.0.3"
     fs-extra: "npm:^8.1.0"
     i18next: "npm:^25.6.1"
-    i18next-cli: "npm:^1.22.2"
+    i18next-cli: "npm:^1.23.7"
     i18next-fs-backend: "npm:^2.3.2"
     i18next-parser: "npm:^9.0.1"
     icon-gen: "npm:^4.0.0"

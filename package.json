@@ -31,7 +31,7 @@
   "author": {
     "name": "Mikael Finstad",
     "email": "finstaden@gmail.com",
-    "url": "https://mifi.no/losslesscut/"
+    "url": "https://losslesscut.app/"
   },
   "repository": {
     "type": "git",
@@ -96,7 +96,7 @@
     "eslint-plugin-unicorn": "^51.0.1",
     "fast-xml-parser": "^4.4.1",
     "framer-motion": "^9.0.3",
-    "i18next-cli": "^1.22.2",
+    "i18next-cli": "^1.23.7",
     "i18next-parser": "^9.0.1",
     "icon-gen": "^4.0.0",
     "immer": "^10.0.2",
