@@ -107,7 +107,7 @@ function ExportConfirm({
   onExportConfirm: () => void,
   outFormat: string | undefined,
   renderOutFmt: (style: CSSProperties) => JSX.Element,
-  outputDir: string,
+  outputDir: string | undefined,
   numStreamsTotal: number,
   numStreamsToCopy: number,
   onShowStreamsSelectorClick: () => void,

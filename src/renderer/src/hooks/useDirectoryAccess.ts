@@ -71,7 +71,7 @@ export default function useDirectoryAccess({ setCustomOutDir }: { setCustomOutDi
     if (!newCustomOutDir && !inputPath) return newCustomOutDir;
 
     const effectiveOutDirPath = getOutDir(newCustomOutDir, inputPath);
-    const hasDirWriteAccess = await checkDirWriteAccess(effectiveOutDirPath);
+    const hasDirWriteAccess = effectiveOutDirPath != null && await checkDirWriteAccess(effectiveOutDirPath);
     if (!hasDirWriteAccess || simulateMasBuild) {
       if (masMode) {
         const newOutDir = await askForOutDir(effectiveOutDirPath);

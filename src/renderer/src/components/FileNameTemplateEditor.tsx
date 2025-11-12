@@ -45,7 +45,7 @@ function FileNameTemplateEditor(opts: {
   const [generated, setGenerated] = useState<GeneratedOutFileNames>();
 
   const haveImportantMessage = generated != null && (generated.problems.error != null || generated.problems.sameAsInputFileNameWarning);
-  const [open, setOpen] = useState(haveImportantMessage);
+  const [open, setOpen] = useState(haveImportantMessage || (simpleMode && mode === 'merge-files'));
 
   useEffect(() => {
     // if an important message appears, make sure we don't auto-close after it's resolved

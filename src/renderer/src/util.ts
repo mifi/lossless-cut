@@ -34,7 +34,10 @@ export function getFileDir(filePath?: string) {
   return filePath ? dirname(filePath) : undefined;
 }
 
-export function getOutDir<T1 extends string | undefined, T2 extends string | undefined>(customOutDir?: T1, filePath?: T2): T1 extends string ? string : T2 extends string ? string : undefined;
+export function getOutDir(customOutDir: string | undefined, filePath: string): string;
+export function getOutDir(customOutDir: string, filePath: undefined): string;
+export function getOutDir(customOutDir: undefined, filePath: undefined): undefined;
+export function getOutDir(customOutDir: string | undefined, filePath: string | undefined): string | undefined;
 export function getOutDir(customOutDir?: string | undefined, filePath?: string | undefined) {
   if (customOutDir != null) return customOutDir;
   if (filePath != null) return getFileDir(filePath);

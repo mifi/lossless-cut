@@ -848,7 +848,7 @@ function App() {
   }, [currentFileExportCount, exportCount, fileDuration, fileFormat, filePath, formatTimecode, isCustomFormatSelected, maxLabelLength, outputDir, outputFileNameMinZeroPadding, safeOutputFileName, segmentsToExport]);
 
   const generateCutMergedFileNames = useCallback(async (template: string) => {
-    invariant(fileFormat != null && filePath != null);
+    invariant(fileFormat != null && outputDir != null && filePath != null);
     return generateCutMergedFileNamesRaw({ template, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, exportCount, currentFileExportCount, segLabels: segmentsToExport.map((seg) => seg.name ?? '') });
   }, [currentFileExportCount, exportCount, fileFormat, filePath, isCustomFormatSelected, maxLabelLength, outputDir, safeOutputFileName, segmentsToExport]);
 
@@ -1008,7 +1008,7 @@ function App() {
   const willMerge = segmentsToExport.length > 1 && autoMerge;
 
   const onExportConfirm = useCallback(async () => {
-    invariant(filePath != null);
+    invariant(filePath != null && outputDir != null);
 
     if (numStreamsToCopy === 0) {
       errorToast(i18n.t('No tracks selected for export'));

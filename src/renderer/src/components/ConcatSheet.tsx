@@ -18,6 +18,7 @@ import { primaryColor, saveColor, warningColor } from '../colors';
 import ExportSheet from './ExportSheet';
 import * as Dialog from './Dialog';
 import FileNameTemplateEditor from './FileNameTemplateEditor';
+import HighlightedText from './HighlightedText';
 
 const { basename } = window.require('path');
 
@@ -48,7 +49,7 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
   onOutputFormatUserChange: (newFormat: string) => void,
 }) {
   const { t } = useTranslation();
-  const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, customOutDir, simpleMode, setMergedFileTemplate, outFormatLocked } = useUserSettings();
+  const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, customOutDir, simpleMode, setMergedFileTemplate, outFormatLocked, changeOutDir } = useUserSettings();
 
   const [includeAllStreams, setIncludeAllStreams] = useState(false);
   const [fileMeta, setFileMeta] = useState<{ format: FFprobeFormat, streams: FFprobeStream[], chapters: FFprobeChapter[] }>();
@@ -62,18 +63,17 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
     return paths[0];
   }, [paths]);
 
+  const outputDir = getOutDir(customOutDir, firstPath);
+
   const generateFileNames = useCallback(async (template: string) => {
-    invariant(firstPath != null && fileFormat != null);
-    const outputDir = getOutDir(customOutDir, firstPath);
+    invariant(firstPath != null && fileFormat != null && outputDir != null);
 
     return generateMergedFileNames({ template, filePaths: paths, fileFormat, outputDir, epochMs: uniqueSuffix });
-  }, [customOutDir, fileFormat, firstPath, generateMergedFileNames, paths, uniqueSuffix]);
+  }, [fileFormat, firstPath, generateMergedFileNames, outputDir, paths, uniqueSuffix]);
 
   useEffect(() => {
     if (!isShown) {
       setFileMeta(undefined);
-      setFileFormat(undefined);
-      setDetectedFileFormat(undefined);
     }
   }, [isShown, setDetectedFileFormat, setFileFormat]);
 
@@ -176,12 +176,12 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
   const onConcatClick = useCallback(async () => {
     invariant(fileFormat != null);
     invariant(firstPath != null);
+    invariant(outputDir != null);
 
-    const outputDir = getOutDir(customOutDir, firstPath);
     const generatedFileNames = await generateMergedFileNames({ template: mergedFileTemplate, filePaths: paths, fileFormat, outputDir, epochMs: uniqueSuffix });
 
     await onConcat({ paths, includeAllStreams, streams: fileMeta!.streams, fileFormat, clearBatchFilesAfterConcat, generatedFileNames });
-  }, [clearBatchFilesAfterConcat, customOutDir, fileFormat, fileMeta, firstPath, generateMergedFileNames, includeAllStreams, mergedFileTemplate, onConcat, paths, uniqueSuffix]);
+  }, [clearBatchFilesAfterConcat, fileFormat, fileMeta, firstPath, generateMergedFileNames, includeAllStreams, mergedFileTemplate, onConcat, outputDir, paths, uniqueSuffix]);
 
   const handleReadFileMetaCheckedChange = useCallback((checked: boolean) => {
     setEnableReadFileMeta(checked);
@@ -285,6 +285,11 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
         {fileFormat != null && detectedFileFormat != null && (
           <OutputFormatSelect style={{ height: '2.1em', maxWidth: '20em' }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
         )}
+      </div>
+
+      <div style={{ marginBottom: '1em' }}>
+        {t('Save output to path:')}<br />
+        <HighlightedText role="button" onClick={changeOutDir} style={{ wordBreak: 'break-all', cursor: 'pointer' }}>{outputDir}</HighlightedText>
       </div>
 
       {fileFormat != null && (
