@@ -23,8 +23,8 @@ import { DialogButton } from './components/Button';
 import getSwal from './swal';
 
 
-const buttonBaseStyle = {
-  margin: '0 3px', borderRadius: 3, color: 'white', cursor: 'pointer',
+const buttonBaseStyle: CSSProperties = {
+  margin: '0 3px', borderRadius: 3, color: 'white', cursor: 'pointer', userSelect: 'none',
 };
 
 const disabledButtonStyle = { color: 'var(--gray-10)', backgroundColor: 'var(--gray-6)' };
