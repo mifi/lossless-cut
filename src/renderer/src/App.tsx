@@ -40,7 +40,7 @@ import ValueTuners from './components/ValueTuners';
 import VolumeControl from './components/VolumeControl';
 import PlaybackStreamSelector from './components/PlaybackStreamSelector';
 import BatchFilesList from './components/BatchFilesList';
-import ConcatSheet from './components/ConcatSheet';
+import ConcatDialog from './components/ConcatDialog';
 import KeyboardShortcuts from './components/KeyboardShortcuts';
 import Working from './components/Working';
 import OutputFormatSelect from './components/OutputFormatSelect';
@@ -133,7 +133,7 @@ function App() {
   const [detectedFps, setDetectedFps] = useState<number>();
   const [mainFileMeta, setMainFileMeta] = useState<{ streams: FileMeta['streams'], formatData: FFprobeFormat, chapters: FFprobeChapter[] }>();
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
-  const [concatSheetOpen, setConcatSheetOpen] = useState(false);
+  const [concatDialogOpen, setConcatDialogOpen] = useState(false);
   const [zoomUnrounded, setZoom] = useState(1);
   const [shortestFlag, setShortestFlag] = useState(false);
   const [zoomWindowStartTime, setZoomWindowStartTime] = useState(0);
@@ -880,7 +880,7 @@ function App() {
       }
 
       // only after ensuring out dir access, we can close the concat dialog
-      setConcatSheetOpen(false);
+      setConcatDialogOpen(false);
       setWorking({ text: i18n.t('Merging') });
 
       const warnings = new Set<string>();
@@ -1749,7 +1749,7 @@ function App() {
 
       if (newFilePaths.length > 1 && alwaysConcatMultipleFiles) {
         batchLoadPaths(newFilePaths);
-        setConcatSheetOpen(true);
+        setConcatDialogOpen(true);
         return;
       }
 
@@ -1826,7 +1826,7 @@ function App() {
           if (filePath) batchPaths.add(filePath);
           newFilePaths.forEach((path) => batchPaths.add(path));
           batchLoadPaths([...batchPaths]);
-          if (batchPaths.size > 1) setConcatSheetOpen(true);
+          if (batchPaths.size > 1) setConcatDialogOpen(true);
         }
         // else: no match means dialog canceled or nothing useful to do:
       } finally {
@@ -1854,7 +1854,7 @@ function App() {
       return;
     }
 
-    setConcatSheetOpen(true);
+    setConcatDialogOpen(true);
   }, [batchFiles.length, openFilesDialog]);
 
   const togglePlaySelectedSegments = useCallback(() => togglePlay({ resetPlaybackRate: true, requestPlaybackMode: 'play-selected-segments' }), [togglePlay]);
@@ -2090,7 +2090,7 @@ function App() {
     };
   }, []);
 
-  const { keyboardLayoutMap, updateKeyboardLayout } = useKeyboard({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfirm, exportConfirmOpen, concatSheetOpen, setConcatSheetOpen });
+  const { keyboardLayoutMap, updateKeyboardLayout } = useKeyboard({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfirm, exportConfirmOpen });
 
   useEffect(() => {
     // eslint-disable-next-line unicorn/prefer-add-event-listener
@@ -2704,7 +2704,7 @@ function App() {
                 </Dialog.Portal>
               </Dialog.Root>
 
-              <ConcatSheet isShown={batchFiles.length > 0 && concatSheetOpen} onHide={() => setConcatSheetOpen(false)} paths={batchFilePaths} mergedFileTemplate={mergedFileTemplateOrDefault} generateMergedFileNames={generateMergedFileNames} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} fileFormat={fileFormat} setFileFormat={setFileFormat} detectedFileFormat={detectedFileFormat} setDetectedFileFormat={setDetectedFileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
+              <ConcatDialog isShown={batchFiles.length > 0 && concatDialogOpen} onHide={() => setConcatDialogOpen(false)} paths={batchFilePaths} mergedFileTemplate={mergedFileTemplateOrDefault} generateMergedFileNames={generateMergedFileNames} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} fileFormat={fileFormat} setFileFormat={setFileFormat} detectedFileFormat={detectedFileFormat} setDetectedFileFormat={setDetectedFileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
 
               <KeyboardShortcuts isShown={keyboardShortcutsVisible} onHide={() => setKeyboardShortcutsVisible(false)} keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} />
 

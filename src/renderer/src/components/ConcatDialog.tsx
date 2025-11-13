@@ -15,7 +15,6 @@ import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../common/ff
 import Button, { DialogButton } from './Button';
 import { defaultMergedFileTemplate, GeneratedOutFileNames, GenerateMergedOutFileNames } from '../util/outputNameTemplate';
 import { primaryColor, saveColor, warningColor } from '../colors';
-import ExportSheet from './ExportSheet';
 import * as Dialog from './Dialog';
 import FileNameTemplateEditor from './FileNameTemplateEditor';
 import HighlightedText from './HighlightedText';
@@ -33,7 +32,7 @@ function Alert({ text }: { text: string }) {
   );
 }
 
-function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMergedFileNames, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, onOutputFormatUserChange }: {
+function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMergedFileNames, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, onOutputFormatUserChange }: {
   isShown: boolean,
   onHide: () => void,
   paths: string[],
@@ -189,123 +188,128 @@ function ConcatSheet({ isShown, onHide, paths, mergedFileTemplate, generateMerge
   }, []);
 
   return (
-    <ExportSheet
-      visible={isShown}
-      title={t('Merge/concatenate files')}
-      onClosePress={onHide}
-      renderButton={() => (
-        <Button className={simpleMode ? 'export-animation' : undefined} disabled={fileFormat == null} onClick={onConcatClick} style={{ fontSize: '1.3em', padding: '0 .3em', marginLeft: '1em', background: primaryColor, color: 'white', border: 'none' }}>
-          <AiOutlineMergeCells style={{ fontSize: '1.4em', verticalAlign: 'middle' }} /> {t('Merge!')}
-        </Button>
-      )}
-      width="70em"
-    >
-      <div style={{ marginBottom: '1em' }}>
-        <div style={{ whiteSpace: 'pre-wrap', marginBottom: '1em' }}>
-          {t('This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).')}
-        </div>
+    <Dialog.Root open={isShown} onOpenChange={(open) => !open && onHide()}>
+      <Dialog.Portal>
+        <Dialog.Overlay />
+        <Dialog.Content style={{ width: '60em' }}>
+          <Dialog.Title>{t('Merge/concatenate files')}</Dialog.Title>
+          <Dialog.Description style={{ whiteSpace: 'pre-wrap' }}>{t('This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).')}</Dialog.Description>
 
-        <div>
-          {paths.map((path, index) => (
-            <div key={path} style={rowStyle} title={path}>
-              <div>
-                <span style={{ opacity: 0.7, marginRight: '.4em' }}>{`${index + 1}.`}</span>
-                <span>{basename(path)}</span>
+          <div style={{ marginBottom: '1em' }}>
+            <div>
+              {paths.map((path, index) => (
+                <div key={path} style={rowStyle} title={path}>
+                  <div>
+                    <span style={{ opacity: 0.7, marginRight: '.4em' }}>{`${index + 1}.`}</span>
+                    <span>{basename(path)}</span>
 
-                {allFilesMetaCache[path] ? (
-                  problemsByFile[path] ? (
-                    <Dialog.Root>
-                      <Dialog.Trigger asChild>
-                        <Button title={i18n.t('Mismatches detected')} style={{ color: warningColor, marginLeft: '1em', padding: '.2em .4em' }}><FaExclamationTriangle /></Button>
-                      </Dialog.Trigger>
+                    {allFilesMetaCache[path] ? (
+                      problemsByFile[path] ? (
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <Button title={i18n.t('Mismatches detected')} style={{ color: warningColor, marginLeft: '1em', padding: '.2em .4em' }}><FaExclamationTriangle /></Button>
+                          </Dialog.Trigger>
 
-                      <Dialog.Portal>
-                        <Dialog.Overlay />
-                        <Dialog.Content aria-describedby={undefined}>
-                          <Dialog.Title>{t('Mismatches detected')}</Dialog.Title>
+                          <Dialog.Portal>
+                            <Dialog.Overlay />
+                            <Dialog.Content aria-describedby={undefined}>
+                              <Dialog.Title>{t('Mismatches detected')}</Dialog.Title>
 
-                          <ul style={{ margin: '10px 0', textAlign: 'left' }}>
-                            {(problemsByFile[path] || []).map((problem) => <li key={problem}>{problem}</li>)}
-                          </ul>
+                              <ul style={{ margin: '10px 0', textAlign: 'left' }}>
+                                {(problemsByFile[path] || []).map((problem) => <li key={problem}>{problem}</li>)}
+                              </ul>
 
-                          <Dialog.CloseButton />
-                        </Dialog.Content>
-                      </Dialog.Portal>
-                    </Dialog.Root>
-                  ) : (
-                    <FaCheck style={{ color: saveColor, verticalAlign: 'middle', marginLeft: '1em' }} />
-                  )
-                ) : (
-                  <FaQuestionCircle style={{ color: warningColor, verticalAlign: 'middle', marginLeft: '1em' }} />
-                )}
-              </div>
+                              <Dialog.CloseButton />
+                            </Dialog.Content>
+                          </Dialog.Portal>
+                        </Dialog.Root>
+                      ) : (
+                        <FaCheck style={{ color: saveColor, verticalAlign: 'middle', marginLeft: '1em' }} />
+                      )
+                    ) : (
+                      <FaQuestionCircle style={{ color: warningColor, verticalAlign: 'middle', marginLeft: '1em' }} />
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1em', marginBottom: '1em', flexWrap: 'wrap' }}>
-        <Checkbox checked={enableReadFileMeta} onCheckedChange={handleReadFileMetaCheckedChange} label={t('Check compatibility')} />
+          <div style={{ marginBottom: '1em' }}>
+            {t('Save output to path:')}<br />
+            <HighlightedText role="button" onClick={changeOutDir} style={{ wordBreak: 'break-all', cursor: 'pointer' }}>{outputDir}</HighlightedText>
+          </div>
 
-        <Dialog.Root>
-          <Dialog.Trigger asChild>
-            <Button style={{ padding: '.3em .5em' }}><FaCog style={{ verticalAlign: 'middle', fontSize: '1.4em', marginRight: '.2em' }} /> {t('Options')}</Button>
-          </Dialog.Trigger>
+          {fileFormat != null && (
+            <div style={{ marginBottom: '1em' }}>
+              <FileNameTemplateEditor mode="merge-files" template={mergedFileTemplate} setTemplate={setMergedFileTemplate} defaultTemplate={defaultMergedFileTemplate} generateFileNames={generateFileNames} />
+            </div>
+          )}
 
-          <Dialog.Portal>
-            <Dialog.Overlay />
-            <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
-              <Dialog.Title>{t('Merge options')}</Dialog.Title>
+          {enableReadFileMeta && (!allFilesMeta || Object.values(problemsByFile).length > 0) && (
+            <Alert text={t('A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.')} />
+          )}
+          {!enableReadFileMeta && (
+            <Alert text={t('File compatibility check is not enabled, so the merge operation might not produce a valid output. Enable "Check compatibility" below to check file compatibility before merging.')} />
+          )}
 
-              <Checkbox checked={includeAllStreams} onCheckedChange={(checked) => setIncludeAllStreams(checked === true)} label={`${t('Include all tracks?')} - ${t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}`} />
+          <Dialog.ButtonRow>
+            <Checkbox checked={enableReadFileMeta} onCheckedChange={handleReadFileMetaCheckedChange} label={t('Check compatibility')} />
 
-              <Checkbox checked={preserveMetadataOnMerge} onCheckedChange={(checked) => setPreserveMetadataOnMerge(checked === true)} label={t('Preserve original metadata when merging? (slow)')} />
+            <Dialog.Close asChild>
+              <DialogButton>{t('Cancel')}</DialogButton>
+            </Dialog.Close>
 
-              {fileFormat != null && isMov(fileFormat) && <Checkbox checked={preserveMovData} onCheckedChange={(checked) => setPreserveMovData(checked === true)} label={t('Preserve all MP4/MOV metadata?')} />}
+            <Dialog.Root>
+              <Dialog.Trigger asChild>
+                <Button style={{ padding: '.3em .5em' }}><FaCog style={{ verticalAlign: 'middle', fontSize: '1.4em', marginRight: '.2em' }} /> {t('Options')}</Button>
+              </Dialog.Trigger>
 
-              <Checkbox checked={segmentsToChapters} onCheckedChange={(checked) => setSegmentsToChapters(checked === true)} label={t('Create chapters from merged segments? (slow)')} />
+              <Dialog.Portal>
+                <Dialog.Overlay />
+                <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
+                  <Dialog.Title>{t('Merge options')}</Dialog.Title>
 
-              <Checkbox checked={alwaysConcatMultipleFiles} onCheckedChange={(checked) => setAlwaysConcatMultipleFiles(checked === true)} label={t('Always open this dialog when opening multiple files')} />
+                  <Checkbox checked={includeAllStreams} onCheckedChange={(checked) => setIncludeAllStreams(checked === true)} label={`${t('Include all tracks?')} - ${t('If this is checked, all audio/video/subtitle/data tracks will be included. This may not always work for all file types. If not checked, only default streams will be included.')}`} />
 
-              <Checkbox checked={clearBatchFilesAfterConcat} onCheckedChange={(checked) => setClearBatchFilesAfterConcat(checked === true)} label={t('Clear batch file list after merge')} />
+                  <Checkbox checked={preserveMetadataOnMerge} onCheckedChange={(checked) => setPreserveMetadataOnMerge(checked === true)} label={t('Preserve original metadata when merging? (slow)')} />
 
-              <p>{t('Note that also other settings from the normal export dialog apply to this merge function. For more information about all options, see the export dialog.')}</p>
+                  {fileFormat != null && isMov(fileFormat) && <Checkbox checked={preserveMovData} onCheckedChange={(checked) => setPreserveMovData(checked === true)} label={t('Preserve all MP4/MOV metadata?')} />}
 
-              <Dialog.ButtonRow>
-                <Dialog.Close asChild>
-                  <DialogButton primary>{t('Close')}</DialogButton>
-                </Dialog.Close>
-              </Dialog.ButtonRow>
+                  <Checkbox checked={segmentsToChapters} onCheckedChange={(checked) => setSegmentsToChapters(checked === true)} label={t('Create chapters from merged segments? (slow)')} />
 
-              <Dialog.CloseButton />
-            </Dialog.Content>
-          </Dialog.Portal>
-        </Dialog.Root>
+                  <Checkbox checked={alwaysConcatMultipleFiles} onCheckedChange={(checked) => setAlwaysConcatMultipleFiles(checked === true)} label={t('Always open this dialog when opening multiple files')} />
 
-        {fileFormat != null && detectedFileFormat != null && (
-          <OutputFormatSelect style={{ height: '2.1em', maxWidth: '20em' }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
-        )}
-      </div>
+                  <Checkbox checked={clearBatchFilesAfterConcat} onCheckedChange={(checked) => setClearBatchFilesAfterConcat(checked === true)} label={t('Clear batch file list after merge')} />
 
-      <div style={{ marginBottom: '1em' }}>
-        {t('Save output to path:')}<br />
-        <HighlightedText role="button" onClick={changeOutDir} style={{ wordBreak: 'break-all', cursor: 'pointer' }}>{outputDir}</HighlightedText>
-      </div>
+                  <p>{t('Note that also other settings from the normal export dialog apply to this merge function. For more information about all options, see the export dialog.')}</p>
 
-      {fileFormat != null && (
-        <div style={{ marginBottom: '1em' }}>
-          <FileNameTemplateEditor mode="merge-files" template={mergedFileTemplate} setTemplate={setMergedFileTemplate} defaultTemplate={defaultMergedFileTemplate} generateFileNames={generateFileNames} />
-        </div>
-      )}
+                  <Dialog.ButtonRow>
+                    <Dialog.Close asChild>
+                      <DialogButton primary>{t('Close')}</DialogButton>
+                    </Dialog.Close>
+                  </Dialog.ButtonRow>
 
-      {enableReadFileMeta && (!allFilesMeta || Object.values(problemsByFile).length > 0) && (
-        <Alert text={t('A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.')} />
-      )}
-      {!enableReadFileMeta && (
-        <Alert text={t('File compatibility check is not enabled, so the merge operation might not produce a valid output. Enable "Check compatibility" below to check file compatibility before merging.')} />
-      )}
-    </ExportSheet>
+                  <Dialog.CloseButton />
+                </Dialog.Content>
+              </Dialog.Portal>
+            </Dialog.Root>
+
+            {fileFormat != null && detectedFileFormat != null && (
+              <OutputFormatSelect style={{ height: '2.1em', maxWidth: '20em' }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
+            )}
+
+            <DialogButton disabled={fileFormat == null} onClick={onConcatClick} primary style={{ backgroundColor: primaryColor }}>
+              <AiOutlineMergeCells style={{ fontSize: '1.4em', verticalAlign: 'middle' }} />
+              {t('Merge files')}
+            </DialogButton>
+          </Dialog.ButtonRow>
+
+          <Dialog.CloseButton />
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
-export default memo(ConcatSheet);
+export default memo(ConcatDialog);

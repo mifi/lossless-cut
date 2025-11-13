@@ -21,14 +21,12 @@ See also https://github.com/mifi/lossless-cut/issues/2515
 
 interface KeyEventParams { e: KeyboardEvent, action: KeyboardAction | undefined }
 
-export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfirm, exportConfirmOpen, concatSheetOpen, setConcatSheetOpen }: {
+export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfirm, exportConfirmOpen }: {
   keyBindings: KeyBinding[],
   keyUpActions: Record<string, () => void>,
   getKeyboardAction: (action: KeyboardAction) => (() => boolean) | (() => void),
   exportConfirmOpen: boolean,
   closeExportConfirm: () => void,
-  concatSheetOpen: boolean,
-  setConcatSheetOpen: (open: boolean) => void,
 }) => {
   const [keyboardLayoutMap, setKeyboardLayoutMap] = useState<KeyboardLayoutMap | undefined>();
 
@@ -53,14 +51,6 @@ export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfi
       if (action !== 'export') {
         return; // stop here, don't allow other key actions than export while dialog is open
       }
-    }
-    if (concatSheetOpen) {
-      if (isEscape) {
-        setConcatSheetOpen(false);
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      return; // don't allow any other key actions while dialog is open
     }
 
     // From now on, only handle key events when focus is on document body
@@ -94,7 +84,7 @@ export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfi
     }
 
     if (isDev) console.log('key event', e.code, action, { defaultPrevented: e.defaultPrevented });
-  }, [closeExportConfirm, concatSheetOpen, exportConfirmOpen, getKeyboardAction, setConcatSheetOpen]);
+  }, [closeExportConfirm, exportConfirmOpen, getKeyboardAction]);
 
 
   // optimization to prevent re-binding all the time:

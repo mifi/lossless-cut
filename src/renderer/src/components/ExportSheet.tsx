@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import styles from './ExportSheet.module.css';
 import CloseButton from './CloseButton';
 
-// TODO use Dialog component instead, but we need to first remove usage of sweetalert2 inside export confirm and concat dialog because they don't play well together
+// TODO use Dialog component instead, but we need to first remove usage of sweetalert2 inside export confirm because they don't play well together
 function ExportSheet({
   visible,
   children,
