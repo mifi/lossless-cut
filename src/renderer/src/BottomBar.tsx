@@ -403,7 +403,7 @@ function BottomBar({
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: isFileOpened ? 1 : 0.5 }}>
         <div style={{ display: 'flex', alignItems: 'center', flexBasis: leftRightWidth }}>
           {!simpleMode && (
             <>
@@ -529,19 +529,19 @@ function BottomBar({
 
       <div
         className="no-user-select"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.2em .3em', gap: '.5em' }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.1em .3em', gap: '.5em', height: '2em' }}
       >
         <InvertCutModeButton invertCutSegments={invertCutSegments} setInvertCutSegments={setInvertCutSegments} />
 
-        <div>
-          <SimpleModeButton style={{ verticalAlign: 'middle' }} />
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <SimpleModeButton />
 
           {simpleMode && (
-            <span role="button" onClick={toggleSimpleMode} style={{ fontSize: '.8em', marginLeft: '.1em' }}>{t('Toggle advanced view')}</span>
+            <div role="button" onClick={toggleSimpleMode} style={{ fontSize: '.8em', marginLeft: '.2em' }}>{t('Toggle advanced view')}</div>
           )}
         </div>
 
-        {!simpleMode && (
+        {isFileOpened && !simpleMode && (
           <>
             <div role="button" title={t('Zoom')} onClick={timelineToggleComfortZoom}>{Math.floor(zoom)}x</div>
 
@@ -564,7 +564,7 @@ function BottomBar({
           </>
         )}
 
-        {!simpleMode && hasVideo && (
+        {isFileOpened && !simpleMode && hasVideo && (
           <div onClick={increaseRotation} role="button">
             <MdRotate90DegreesCcw
               style={{ fontSize: '1.3em', verticalAlign: 'middle', color: isRotationSet ? primaryTextColor : undefined }}
@@ -573,7 +573,6 @@ function BottomBar({
             <span style={{ textAlign: 'right', display: 'inline-block', fontSize: '.8em', marginLeft: '.1em' }}>{isRotationSet && rotationStr}</span>
           </div>
         )}
-
 
         <div style={{ flexGrow: 1 }} />
 
@@ -599,13 +598,17 @@ function BottomBar({
           </div>
         )}
 
-        <div role="button" onClick={toggleLoopSelectedSegments} title={t('Play selected segments in order')} style={loopSelectedSegmentsButtonStyle}>
-          <PlayPauseMode />
-        </div>
+        {isFileOpened && (
+          <div role="button" onClick={toggleLoopSelectedSegments} title={t('Play selected segments in order')} style={loopSelectedSegmentsButtonStyle}>
+            <PlayPauseMode />
+          </div>
+        )}
 
         {(!simpleMode || !exportConfirmEnabled) && <ToggleExportConfirm style={{ marginLeft: '.4em' }} />}
 
-        <ExportButton size={1.3} segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={onExportPress} />
+        {isFileOpened && (
+          <ExportButton segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={onExportPress} />
+        )}
       </div>
     </>
   );

@@ -294,7 +294,7 @@ function ExportConfirm({
       title={t('Export options')}
       onClosePress={onClosePress}
       renderButton={() => (
-        <ExportButton segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={() => onExportConfirm()} size={1.7} />
+        <ExportButton segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={() => onExportConfirm()} style={{ fontSize: '1.3em' }} />
       )}
       renderBottom={() => (
         <>
