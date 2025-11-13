@@ -62,15 +62,22 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   const { t } = useTranslation();
 
   // Segment related state
+  const [segColorCounter, setSegColorCounterState] = useState(0);
   const segColorCounterRef = useRef(0);
+  const setSegColorCounter = useCallback((v: number) => {
+    segColorCounterRef.current = v;
+    setSegColorCounterState(v);
+  }, []);
 
   const createIndexedSegment = useCallback(({ segment, incrementCount }: {
     segment?: Parameters<typeof createSegment>[0],
     incrementCount?: boolean,
   } = {}) => {
-    if (incrementCount) segColorCounterRef.current += 1;
+    if (incrementCount) {
+      setSegColorCounter(segColorCounterRef.current + 1);
+    }
     return addSegmentColorIndex(createSegment(segment), segColorCounterRef.current);
-  }, []);
+  }, [setSegColorCounter]);
 
   const [cutSegments, setCutSegments, cutSegmentsHistory] = useStateWithHistory<StateSegment[], StateSegment[]>(
     [],
@@ -95,8 +102,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
   const clearSegColorCounter = useCallback(() => {
     // eslint-disable-next-line no-param-reassign
-    segColorCounterRef.current = 0;
-  }, [segColorCounterRef]);
+    setSegColorCounter(0);
+  }, [setSegColorCounter]);
 
   const safeSetCutSegments = useCallback((newSegmentsOrFn: StateSegment[] | ((a: StateSegment[]) => StateSegment[]), clampDuration?: number) => {
     function clampValue(val: number | undefined) {
@@ -1003,6 +1010,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     updateSegAtIndex,
     findSegmentsAtCursor,
     currentCutSegOrWholeTimeline,
+    segColorCounter,
   };
 }
 

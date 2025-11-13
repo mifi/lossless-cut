@@ -19,8 +19,9 @@ export type UserSettingsContextType = Omit<UserSettingsRoot, 'settings'> & UserS
   effectiveExportMode: ExportMode,
 }
 
-interface SegColorsContextType {
-  getSegColor: (seg: SegmentColorIndex | undefined) => Color
+export interface SegColorsContextType {
+  getSegColor: (seg: SegmentColorIndex | undefined) => Color,
+  nextSegColorIndex: number,
 }
 
 export type HandleError = (error: GenericError) => void;
