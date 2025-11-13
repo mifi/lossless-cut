@@ -15,8 +15,12 @@ function renderFormatOptions(formats: FfmpegFormat[]) {
   ));
 }
 
-function OutputFormatSelect({ style, detectedFileFormat, fileFormat, onOutputFormatUserChange }: {
-  style: CSSProperties, detectedFileFormat?: string | undefined, fileFormat?: string | undefined, onOutputFormatUserChange: (a: string) => void,
+function OutputFormatSelect({ style, disabled, detectedFileFormat, fileFormat, onOutputFormatUserChange }: {
+  style: CSSProperties,
+  disabled?: boolean,
+  detectedFileFormat?: string | undefined,
+  fileFormat?: string | undefined,
+  onOutputFormatUserChange: (a: string) => void,
 }) {
   const commonVideoAudioFormatsExceptDetectedFormat = useMemo(() => commonVideoAudioFormats.filter((f) => f !== detectedFileFormat), [detectedFileFormat]);
   const commonAudioFormatsExceptDetectedFormat = useMemo(() => commonAudioFormats.filter((f) => f !== detectedFileFormat), [detectedFileFormat]);
@@ -27,7 +31,7 @@ function OutputFormatSelect({ style, detectedFileFormat, fileFormat, onOutputFor
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <Select style={style} value={fileFormat || ''} title={i18n.t('Output container format:')} onChange={withBlur((e) => onOutputFormatUserChange(e.target.value))}>
+    <Select style={style} disabled={disabled} value={fileFormat || ''} title={i18n.t('Output container format:')} onChange={withBlur((e) => onOutputFormatUserChange(e.target.value))}>
       <option key="disabled1" value="" disabled>{i18n.t('Output container format:')}</option>
 
       {detectedFileFormat && (

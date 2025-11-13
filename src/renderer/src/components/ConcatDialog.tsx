@@ -1,7 +1,7 @@
 import { memo, useState, useCallback, useEffect, useMemo, CSSProperties, Dispatch, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AiOutlineMergeCells } from 'react-icons/ai';
-import { FaQuestionCircle, FaExclamationTriangle, FaCog, FaCheck } from 'react-icons/fa';
+import { FaQuestionCircle, FaExclamationTriangle, FaCog, FaCheck, FaNotEqual } from 'react-icons/fa';
 import i18n from 'i18next';
 import invariant from 'tiny-invariant';
 
@@ -14,7 +14,7 @@ import { getOutDir } from '../util';
 import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../common/ffprobe';
 import Button, { DialogButton } from './Button';
 import { defaultMergedFileTemplate, GeneratedOutFileNames, GenerateMergedOutFileNames } from '../util/outputNameTemplate';
-import { primaryColor, saveColor, warningColor } from '../colors';
+import { dangerColor, saveColor, warningColor } from '../colors';
 import * as Dialog from './Dialog';
 import FileNameTemplateEditor from './FileNameTemplateEditor';
 import HighlightedText from './HighlightedText';
@@ -31,6 +31,9 @@ function Alert({ text }: { text: string }) {
     <div style={{ marginBottom: '1em' }}><FaExclamationTriangle style={{ color: warningColor, verticalAlign: 'middle', marginRight: '.2em' }} /> {text}</div>
   );
 }
+
+type Problem = { index: number, type: 'extraneous' }
+  | { index: number, type: 'parameter_mismatch', key: string, values: [string | number | undefined, string | number | undefined] };
 
 function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMergedFileNames, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, onOutputFormatUserChange }: {
   isShown: boolean,
@@ -125,18 +128,18 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
     if (!allFilesMeta) return {};
     const allFilesMetaExceptFirstFile = allFilesMeta.slice(1);
     const [, firstFileMeta] = allFilesMeta[0]!;
-    const errors: Record<string, string[]> = {};
+    const problems: Record<string, Problem[]> = {};
 
-    function addError(path: string, error: string) {
-      if (!errors[path]) errors[path] = [];
-      errors[path]!.push(error);
+    function addProblem(path: string, error: Problem) {
+      if (!problems[path]) problems[path] = [];
+      problems[path]!.push(error);
     }
 
     allFilesMetaExceptFirstFile.forEach(([path, { streams }]) => {
       streams.forEach((stream, i) => {
         const referenceStream = firstFileMeta.streams[i];
         if (!referenceStream) {
-          addError(path, i18n.t('Extraneous track {{index}}', { index: stream.index + 1 }));
+          addProblem(path, { type: 'extraneous', index: stream.index });
           return;
         }
         // check all these parameters
@@ -144,12 +147,12 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
           const val = stream[key];
           const referenceVal = referenceStream[key];
           if (val !== referenceVal) {
-            addError(path, i18n.t('Track {{index}} mismatch: {{key1}} {{value1}} != {{value2}}', { index: stream.index + 1, key1: key, value1: val || 'none', value2: referenceVal || 'none' }));
+            addProblem(path, { type: 'parameter_mismatch', index: stream.index, key, values: [String(val), referenceVal] });
           }
         });
       });
     });
-    return errors;
+    return problems;
   }, [allFilesMeta]);
 
   useEffect(() => {
@@ -195,44 +198,58 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
           <Dialog.Title>{t('Merge/concatenate files')}</Dialog.Title>
           <Dialog.Description style={{ whiteSpace: 'pre-wrap' }}>{t('This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).')}</Dialog.Description>
 
-          <div style={{ marginBottom: '1em' }}>
-            <div>
-              {paths.map((path, index) => (
-                <div key={path} style={rowStyle} title={path}>
-                  <div>
-                    <span style={{ opacity: 0.7, marginRight: '.4em' }}>{`${index + 1}.`}</span>
-                    <span>{basename(path)}</span>
+          <div style={{ marginBottom: '1em', maxHeight: '30vh', overflowY: 'auto' }}>
+            {paths.map((path, index) => (
+              <div key={path} style={rowStyle} title={path}>
+                <div>
+                  <span style={{ opacity: 0.7, marginRight: '.4em' }}>{`${index + 1}.`}</span>
 
-                    {allFilesMetaCache[path] ? (
-                      problemsByFile[path] ? (
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <Button title={i18n.t('Mismatches detected')} style={{ color: warningColor, marginLeft: '1em', padding: '.2em .4em' }}><FaExclamationTriangle /></Button>
-                          </Dialog.Trigger>
+                  <span>{basename(path)}</span>
 
-                          <Dialog.Portal>
-                            <Dialog.Overlay />
-                            <Dialog.Content aria-describedby={undefined}>
-                              <Dialog.Title>{t('Mismatches detected')}</Dialog.Title>
+                  {allFilesMetaCache[path] ? (
+                    problemsByFile[path] ? (
+                      <Dialog.Root>
+                        <Dialog.Trigger asChild>
+                          <Button title={i18n.t('Mismatches detected')} style={{ color: warningColor, marginLeft: '1em' }}><FaExclamationTriangle /></Button>
+                        </Dialog.Trigger>
 
-                              <ul style={{ margin: '10px 0', textAlign: 'left' }}>
-                                {(problemsByFile[path] || []).map((problem) => <li key={problem}>{problem}</li>)}
-                              </ul>
+                        <Dialog.Portal>
+                          <Dialog.Overlay />
+                          <Dialog.Content aria-describedby={undefined}>
+                            <Dialog.Title>{t('Mismatches detected')}</Dialog.Title>
 
-                              <Dialog.CloseButton />
-                            </Dialog.Content>
-                          </Dialog.Portal>
-                        </Dialog.Root>
-                      ) : (
-                        <FaCheck style={{ color: saveColor, verticalAlign: 'middle', marginLeft: '1em' }} />
-                      )
+                            <ul style={{ margin: '10px 0', textAlign: 'left' }}>
+                              {(problemsByFile[path] ?? []).map((problem) => (
+                                <li key={JSON.stringify(problem)}>
+                                  <span style={{ marginRight: '.5em', color: 'var(--gray-11)' }}>{t('Track {{num}}', { num: problem.index + 1 })}:</span>
+
+                                  {problem.type === 'extraneous' && t('Extraneous')}
+
+                                  {problem.type === 'parameter_mismatch' && (
+                                    <>
+                                      <span style={{ marginRight: '1em' }}>{problem.key}</span>
+                                      <span style={{ fontWeight: 'bold' }}>{problem.values[0] ?? t('N/A')}</span>
+                                      <FaNotEqual style={{ fontSize: '.7em', marginLeft: '.7em', marginRight: '.7em', color: dangerColor, fontWeight: 'bold' }} />
+                                      <span style={{ fontWeight: 'bold', color: dangerColor }}>{problem.values[1] ?? t('N/A')}</span>
+                                    </>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+
+                            <Dialog.CloseButton />
+                          </Dialog.Content>
+                        </Dialog.Portal>
+                      </Dialog.Root>
                     ) : (
-                      <FaQuestionCircle style={{ color: warningColor, verticalAlign: 'middle', marginLeft: '1em' }} />
-                    )}
-                  </div>
+                      <FaCheck style={{ color: saveColor, verticalAlign: 'middle', marginLeft: '1em' }} />
+                    )
+                  ) : (
+                    <FaQuestionCircle style={{ color: warningColor, verticalAlign: 'middle', marginLeft: '1em' }} />
+                  )}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
 
           <div style={{ marginBottom: '1em' }}>
@@ -246,12 +263,14 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
             </div>
           )}
 
-          {enableReadFileMeta && (!allFilesMeta || Object.values(problemsByFile).length > 0) && (
-            <Alert text={t('A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.')} />
-          )}
-          {!enableReadFileMeta && (
-            <Alert text={t('File compatibility check is not enabled, so the merge operation might not produce a valid output. Enable "Check compatibility" below to check file compatibility before merging.')} />
-          )}
+          <div style={{ minHeight: '2.7em' }}>
+            {enableReadFileMeta && (!allFilesMeta || Object.values(problemsByFile).length > 0) && (
+              <Alert text={t('A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.')} />
+            )}
+            {!enableReadFileMeta && (
+              <Alert text={t('File compatibility check is not enabled, so the merge operation might not produce a valid output. Enable "Check compatibility" below to check file compatibility before merging.')} />
+            )}
+          </div>
 
           <Dialog.ButtonRow>
             <Checkbox checked={enableReadFileMeta} onCheckedChange={handleReadFileMetaCheckedChange} label={t('Check compatibility')} />
@@ -295,12 +314,10 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
               </Dialog.Portal>
             </Dialog.Root>
 
-            {fileFormat != null && detectedFileFormat != null && (
-              <OutputFormatSelect style={{ height: '2.1em', maxWidth: '20em' }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
-            )}
+            <OutputFormatSelect disabled={fileFormat == null || detectedFileFormat == null} style={{ height: '2.1em', maxWidth: '20em' }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
 
-            <DialogButton disabled={fileFormat == null} onClick={onConcatClick} primary style={{ backgroundColor: primaryColor }}>
-              <AiOutlineMergeCells style={{ fontSize: '1.4em', verticalAlign: 'middle' }} />
+            <DialogButton disabled={fileFormat == null} onClick={onConcatClick} primary>
+              <AiOutlineMergeCells style={{ fontSize: '1.3em', verticalAlign: 'middle', marginRight: '.3em' }} />
               {t('Merge files')}
             </DialogButton>
           </Dialog.ButtonRow>
