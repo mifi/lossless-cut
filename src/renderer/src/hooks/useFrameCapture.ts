@@ -100,7 +100,7 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatInputFileModified
     const timecode = formatTimecode({ seconds: time, fileNameFriendly: true });
     const nameSuffix = `${timecode}.${captureFormat}`;
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix });
-    const args = await ffmpeg.captureFrame({ timestamp: time, videoPath: filePath, outPath, quality });
+    const args = await ffmpeg.captureFrameToFile({ timestamp: time, videoPath: filePath, outPath, quality });
     appendFfmpegCommandLog(args);
 
     await transferTimestamps({ inPath: filePath, outPath, cutFrom: time, cutTo: time, duration: 0, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
@@ -127,9 +127,16 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatInputFileModified
     return outPath;
   }, [formatTimecode, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
+  const captureFrameToClipboard = useCallback(async ({ filePath, time, quality }: {
+    filePath: string,
+    time: number,
+    quality: number,
+ }) => ffmpeg.captureFrameToClipboard({ timestamp: time, videoPath: filePath, quality }), []);
+
   return {
     captureFramesRange,
     captureFrameFromFfmpeg,
     captureFrameFromTag,
+    captureFrameToClipboard,
   };
 };

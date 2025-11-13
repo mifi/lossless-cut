@@ -27,6 +27,10 @@ const defaultKeyBindings: KeyBinding[] = [
   { keys: 'Comma', action: 'seekPreviousFrame' },
   { keys: 'Period', action: 'seekNextFrame' },
   { keys: 'KeyC', action: 'captureSnapshot' },
+  { keys: 'ControlLeft+KeyC', action: 'copySegmentsToClipboard' },
+  { keys: 'MetaLeft+KeyC', action: 'copySegmentsToClipboard' },
+  { keys: 'ShiftLeft+KeyC', action: 'captureSnapshotToClipboard' },
+
   { keys: 'KeyI', action: 'setCutStart' },
   { keys: 'KeyO', action: 'setCutEnd' },
   { keys: 'Backspace', action: 'removeCurrentCutpoint' },
@@ -79,9 +83,6 @@ const defaultKeyBindings: KeyBinding[] = [
   { keys: 'MetaLeft+KeyZ', action: 'undo' },
   { keys: 'ControlLeft+ShiftLeft+KeyZ', action: 'redo' },
   { keys: 'MetaLeft+ShiftLeft+KeyZ', action: 'redo' },
-
-  { keys: 'ControlLeft+KeyC', action: 'copySegmentsToClipboard' },
-  { keys: 'MetaLeft+KeyC', action: 'copySegmentsToClipboard' },
 
   { keys: 'KeyF', action: 'toggleFullscreenVideo' },
 

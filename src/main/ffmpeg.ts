@@ -5,7 +5,7 @@ import { execa, Options as ExecaOptions, ResultPromise } from 'execa';
 import assert from 'node:assert';
 import { Readable } from 'node:stream';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { app } from 'electron';
+import { app, clipboard, nativeImage } from 'electron';
 
 import { platform, arch, isWindows, isLinux } from './util.js';
 import { CaptureFormat, Waveform } from '../common/types.js';
@@ -506,15 +506,44 @@ export async function captureFrames({ from, to, videoPath, outPathTemplate, qual
   return args;
 }
 
-export async function captureFrame({ timestamp, videoPath, outPath, quality }: {
-  timestamp: number, videoPath: string, outPath: string, quality: number,
+function getCaptureFrameArgs({ timestamp, videoPath, quality }: {
+  timestamp: number,
+  videoPath: string,
+  quality: number,
 }) {
   const ffmpegQuality = getFfmpegJpegQuality(quality);
-  const args = [
+  return [
     '-ss', String(timestamp),
     '-i', videoPath,
-    '-vframes', '1',
+    '-frames:v', '1',
     '-q:v', String(ffmpegQuality),
+  ];
+}
+
+export async function captureFrameToClipboard({ timestamp, videoPath, quality }: {
+  timestamp: number,
+  videoPath: string,
+  quality: number,
+}) {
+  const args = [
+    ...getCaptureFrameArgs({ timestamp, videoPath, quality }),
+    '-c:v', 'mjpeg',
+    '-f', 'image2',
+    '-',
+  ];
+  const { stdout } = await runFfmpegProcess(args);
+
+  clipboard.writeImage(nativeImage.createFromBuffer(Buffer.from(stdout)));
+}
+
+export async function captureFrameToFile({ timestamp, videoPath, outPath, quality }: {
+  timestamp: number,
+  videoPath: string,
+  outPath: string,
+  quality: number,
+}) {
+  const args = [
+    ...getCaptureFrameArgs({ timestamp, videoPath, quality }),
     '-y', outPath,
   ];
   await runFfmpegProcess(args);

@@ -561,6 +561,10 @@ const KeyboardShortcuts = memo(({
         name: t('Set current frame as cover art'),
         category: outputCategory,
       },
+      captureSnapshotToClipboard: {
+        name: t('Capture snapshot to clipboard'),
+        category: outputCategory,
+      },
       exportYouTube: {
         name: t('Start times as YouTube Chapters'),
         category: outputCategory,

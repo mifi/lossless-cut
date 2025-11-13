@@ -127,7 +127,11 @@ export function useDialog() {
     });
   }), [showGenericDialog, t]);
 
-  const openExportFinishedDialog = useCallback(async ({ filePath, children, width = '30em' }: { filePath: string, children: ReactNode, width?: string }) => {
+  const openExportFinishedDialog = useCallback(async ({ filePath, children, width = '30em' }: {
+    filePath: string,
+    children: ReactNode,
+    width?: string,
+  }) => {
     const response = await new Promise<boolean>((resolve) => {
       function ExportFinishedDialog() {
         const { onOpenChange } = useGenericDialogContext();
