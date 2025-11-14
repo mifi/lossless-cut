@@ -71,7 +71,7 @@ Before releasing, consider [Maintainence chores](#maintainence-chores) first.
 - `git checkout master`
 - `git merge stores` (in case there's an old unmerged stores hotfix)
 - **Prepare release notes** from commit history
-- Create a new file `versions/x.y.z.md` and write the most important highlights from the release notes
+- Create a new file `versions/x.y.z.md` and write the most important highlights from the release notes, but **remove github issue #references**
 - `tsx script/generateVersions.mts`
 - Commit changes
 - *If Store-only hotfix release*
