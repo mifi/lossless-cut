@@ -9,5 +9,9 @@
   {
     "version": "3.67.0",
     "highlightsMd": "- Improve UI, accessibility and dark/light mode\n- Allow <kbd>Shift</kbd> + mouse click/drag to move/resize segments (configurable modifier key)\n- Use native web keyboard events: This makes keybindings consistently independent of keyboard layout.\n- New action `play-selected-segments` (play once, no loop)\n- Use file name template also for merge files\n- Persist more app state\n- New, improved reduce motion setting to override OS default\n- Dialog button positions are now OS-dependent\n- Add \"What's new\" (this dialog!)\n"
+  },
+  {
+    "version": "3.67.1",
+    "highlightsMd": "- Improve concat dialog\n- Bugfixes and improvements #2606 #2605 #2609\n- Enable system language support #2608 #2278 #346\n- capture snapshot to clipboard `captureSnapshotToClipboard` #2612\n"
   }
 ]
