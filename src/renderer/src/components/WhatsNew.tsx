@@ -10,6 +10,8 @@ import { appVersion, isMasBuild } from '../util';
 import versionsJson from '../versions.json';
 import Button from './Button';
 
+import styles from './WhatsNew.module.css';
+
 
 // see also generateVersions.mts
 const versions: { version: string, highlightsMd?: string | undefined }[] = versionsJson;
@@ -48,8 +50,14 @@ export default function WhatsNew() {
               const prevVersion = matchingVersions[i + 1]?.version ?? initialLastAppVersion;
 
               return (
-                <div key={version}>
-                  {!(isMasBuild && matchingVersions.length === 1) && <h2>v{version}</h2>}
+                <div key={version} className={styles['version']}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1em' }}>
+                    {!(isMasBuild && matchingVersions.length === 1) && <h2>v{version}</h2>}
+                    <Button onClick={() => shell.openExternal(`https://github.com/mifi/lossless-cut/releases/tag/v${version}`)}><FaFile style={{ verticalAlign: 'middle' }} /> {t('All release notes')}</Button>
+                    <Button onClick={() => shell.openExternal(`https://github.com/mifi/lossless-cut/compare/v${prevVersion}...v${version}`)}><FaCode style={{ verticalAlign: 'middle' }} /> {t('All code changes')}</Button>
+                  </div>
+
+
                   {highlightsMd != null && (
                     <Markdown
                       components={{
@@ -63,9 +71,6 @@ export default function WhatsNew() {
                       {highlightsMd}
                     </Markdown>
                   )}
-
-                  <Button style={{ padding: '.5em 1em' }} onClick={() => shell.openExternal(`https://github.com/mifi/lossless-cut/releases/tag/v${version}`)}><FaFile style={{ verticalAlign: 'middle' }} /> {t('All release notes')}</Button>
-                  <Button style={{ padding: '.5em 1em' }} onClick={() => shell.openExternal(`https://github.com/mifi/lossless-cut/compare/v${prevVersion}...v${version}`)}><FaCode style={{ verticalAlign: 'middle' }} /> {t('All code changes')}</Button>
                 </div>
               );
             })}

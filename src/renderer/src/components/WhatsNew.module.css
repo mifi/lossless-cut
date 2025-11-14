@@ -1,0 +1,15 @@
+.version {
+  ul {
+    margin: .3em 0;
+  }
+  li {
+    line-height: 1.2;
+  }
+  h2 {
+    font-size: 1.1em;
+    margin-top: 0;
+    margin-bottom: .1em;
+  }
+
+  margin-bottom: 1.5em;
+}
