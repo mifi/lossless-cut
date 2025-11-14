@@ -12,6 +12,6 @@
   },
   {
     "version": "3.67.1",
-    "highlightsMd": "- Improve concat dialog\n- Bugfixes and improvements #2606 #2605 #2609\n- Enable system language support #2608 #2278 #346\n- capture snapshot to clipboard `captureSnapshotToClipboard` #2612\n"
+    "highlightsMd": "- Improve concat dialog\n- Enable system language support\n- Capture snapshot to clipboard `captureSnapshotToClipboard`\n- Bugfixes and improvements\n"
   }
 ]
