@@ -19,7 +19,7 @@
 }
 
 .button:focus {
-  outline: .05em solid var(--gray-11);
+  outline: .1em solid var(--gray-12);
 }
 
 .button:hover {
