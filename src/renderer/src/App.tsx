@@ -203,7 +203,7 @@ function App() {
   const mergedFileTemplateOrDefault = mergedFileTemplate ?? defaultMergedFileTemplate;
 
   useEffect(() => {
-    i18n.changeLanguage(language).catch(console.error);
+    i18n.changeLanguage(language ?? undefined).catch(console.error);
     electron.ipcRenderer.send('setLanguage', language);
   }, [language]);
 

@@ -74,8 +74,8 @@ function Settings({
 
   const onLangChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
     const { value } = e.target;
-    const l = value !== '' ? value : undefined;
-    setLanguage(l as SupportedLanguage | undefined);
+    const l = value !== '' ? value : null;
+    setLanguage(l as SupportedLanguage | null);
   }, [setLanguage]);
 
   const timecodeFormatOptions = useMemo<Record<TimecodeFormat, string>>(() => ({
@@ -118,7 +118,7 @@ function Settings({
         <Row>
           <KeyCell><FaGlobe style={{ verticalAlign: 'middle', fontSize: '1.2em', marginRight: '.3em' }} /> App language</KeyCell>
           <td>
-            <Select value={language || ''} onChange={onLangChange} style={{ fontSize: '1em' }}>
+            <Select value={language ?? ''} onChange={onLangChange} style={{ fontSize: '1em' }}>
               <option key="" value="">{t('System language')}</option>
               {Object.keys(langNames).map((lang) => <option key={lang} value={lang}>{langNames[lang as keyof typeof langNames]}</option>)}
             </Select>

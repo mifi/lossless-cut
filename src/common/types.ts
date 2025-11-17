@@ -42,7 +42,7 @@ export interface Config {
   autoSaveProjectFile: boolean,
   wheelSensitivity: number,
   waveformHeight: number,
-  language: SupportedLanguage | undefined,
+  language: SupportedLanguage | null,
   ffmpegExperimental: boolean,
   preserveChapters: boolean,
   preserveMetadata: PreserveMetadata,
