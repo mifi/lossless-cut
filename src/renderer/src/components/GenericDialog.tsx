@@ -132,7 +132,7 @@ export function useDialog() {
     });
   }), [showGenericDialog, t]);
 
-  const openExportFinishedDialog = useCallback(async ({ filePath, children, width = '30em' }: {
+  const openExportFinishedDialog = useCallback(async ({ filePath, children, width }: {
     filePath: string,
     children: ReactNode,
     width?: string,

@@ -1216,7 +1216,7 @@ function App() {
           : await captureFrameFromTag({ customOutDir, filePath, time: currentTime, captureFormat, quality: captureFrameQuality, video });
 
         if (simpleMode && !prefersReducedMotion) shootConfetti();
-        if (!hideAllNotifications) openExportFinishedDialog({ filePath: outPath, children: `${i18n.t('Screenshot captured to:')} ${outPath}` });
+        if (!hideAllNotifications) openExportFinishedDialog({ filePath: outPath, children: <div style={{ wordWrap: 'break-word' }}>{i18n.t('Screenshot captured to:')} {outPath}</div> });
       }, i18n.t('Failed to capture frame'));
     } finally {
       setWorking(undefined);
@@ -1275,7 +1275,7 @@ function App() {
       }
       if (!hideAllNotifications && lastOutPath != null) {
         showOsNotification(i18n.t('Frames have been extracted'));
-        openExportFinishedDialog({ filePath: lastOutPath, children: i18n.t('Frames extracted to: {{path}}', { path: outputDir }) });
+        openExportFinishedDialog({ filePath: lastOutPath, children: <div style={{ wordWrap: 'break-word' }}>{i18n.t('Frames extracted to: {{path}}', { path: outputDir })}</div> });
       }
     } catch (err) {
       showOsNotification(i18n.t('Failed to extract frames'));
