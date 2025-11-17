@@ -1,4 +1,4 @@
-import { CSSProperties, ChangeEventHandler, TdHTMLAttributes, memo, useCallback, useMemo, useState } from 'react';
+import { CSSProperties, ChangeEventHandler, TdHTMLAttributes, memo, useCallback, useMemo } from 'react';
 import { FaYinYang, FaKeyboard, FaGlobe, FaBroom, FaCogs, FaHashtag, FaClock, FaFolder, FaFile, FaTimes } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
@@ -59,18 +59,20 @@ function Settings({
   askForCleanupChoices,
   toggleStoreProjectInWorkingDir,
   clearOutDir,
+  showAdvancedSettings,
+  setShowAdvancedSettings,
 }: {
   onTunerRequested: (type: TunerType) => void,
   onKeyboardShortcutsDialogRequested: () => void,
   askForCleanupChoices: () => Promise<unknown>,
   toggleStoreProjectInWorkingDir: () => Promise<void>,
   clearOutDir: () => Promise<void>,
+  showAdvancedSettings: boolean,
+  setShowAdvancedSettings: (v: boolean) => void,
 }) {
   const { t } = useTranslation();
 
-  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, hideOsNotifications, setHideOsNotifications, autoLoadTimecode, setAutoLoadTimecode, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, setMouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, setMouseWheelKeyframeSeekModifierKey, segmentMouseModifierKey, setSegmentMouseModifierKey, captureFrameMethod, setCaptureFrameMethod, captureFrameQuality, setCaptureFrameQuality, captureFrameFileNameFormat, setCaptureFrameFileNameFormat, enableNativeHevc, setEnableNativeHevc, enableUpdateCheck, setEnableUpdateCheck, allowMultipleInstances, setAllowMultipleInstances, preferStrongColors, setPreferStrongColors, treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, setTreatOutputFileModifiedTimeAsStart, exportConfirmEnabled, toggleExportConfirmEnabled, storeWindowBounds, setStoreWindowBounds, reducedMotion, setReducedMotion, simpleMode } = useUserSettings();
-
-  const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
+  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableAskForImportChapters, setEnableAskForImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, hideOsNotifications, setHideOsNotifications, autoLoadTimecode, setAutoLoadTimecode, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, setMouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, setMouseWheelKeyframeSeekModifierKey, segmentMouseModifierKey, setSegmentMouseModifierKey, captureFrameMethod, setCaptureFrameMethod, captureFrameQuality, setCaptureFrameQuality, captureFrameFileNameFormat, setCaptureFrameFileNameFormat, enableNativeHevc, setEnableNativeHevc, enableUpdateCheck, setEnableUpdateCheck, allowMultipleInstances, setAllowMultipleInstances, preferStrongColors, setPreferStrongColors, treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, setTreatOutputFileModifiedTimeAsStart, exportConfirmEnabled, toggleExportConfirmEnabled, storeWindowBounds, setStoreWindowBounds, reducedMotion, setReducedMotion } = useUserSettings();
 
   const onLangChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
     const { value } = e.target;
@@ -129,11 +131,11 @@ function Settings({
           <KeyCell>
             {t('Show advanced settings')}
             <div style={detailsStyle}>
-              {!showAdvanced && t('Advanced settings are currently not visible.')}
+              {!showAdvancedSettings && t('Advanced settings are currently not visible.')}
             </div>
           </KeyCell>
           <td>
-            <Switch checked={showAdvanced} onCheckedChange={setShowAdvanced} />
+            <Switch checked={showAdvancedSettings} onCheckedChange={setShowAdvancedSettings} />
           </td>
         </Row>
 
@@ -149,7 +151,7 @@ function Settings({
           </td>
         </Row>
 
-        {showAdvanced && (
+        {showAdvancedSettings && (
           <Row>
             <KeyCell>
               {t('Auto save project file?')}<br />
@@ -160,7 +162,7 @@ function Settings({
           </Row>
         )}
 
-        {showAdvanced && (
+        {showAdvancedSettings && (
           <Row>
             <KeyCell>{t('Store project file (.llc) in the working directory or next to loaded media file?')}</KeyCell>
             <td>
@@ -172,7 +174,7 @@ function Settings({
           </Row>
         )}
 
-        {showAdvanced && !isMasBuild && (
+        {showAdvancedSettings && !isMasBuild && (
           <Row>
             <KeyCell>
               {t('Custom FFmpeg directory (experimental)')}<br />
@@ -194,7 +196,7 @@ function Settings({
           </Row>
         )}
 
-        {showAdvanced && !isStoreBuild && (
+        {showAdvancedSettings && !isStoreBuild && (
           <Row>
             <KeyCell>{t('Check for updates on startup?')}</KeyCell>
             <td>
@@ -203,7 +205,7 @@ function Settings({
           </Row>
         )}
 
-        {showAdvanced && (
+        {showAdvancedSettings && (
           <Row>
             <KeyCell>{t('Allow multiple instances of LosslessCut to run concurrently? (experimental)')}</KeyCell>
             <td>
@@ -254,7 +256,7 @@ function Settings({
           </td>
         </Row>
 
-        {showAdvanced && (
+        {showAdvancedSettings && (
           <Row>
             <KeyCell>{t('Set file modification date/time of output files to:')}</KeyCell>
             <td>
@@ -267,7 +269,7 @@ function Settings({
           </Row>
         )}
 
-        {showAdvanced && (
+        {showAdvancedSettings && (
           <Row>
             <KeyCell>{t('Treat source file modification date/time as:')}</KeyCell>
             <td>
@@ -308,7 +310,7 @@ function Settings({
           </td>
         </Row>
 
-        {showAdvanced && (
+        {showAdvancedSettings && (
           <Row>
             <KeyCell>
               {t('Extract unprocessable tracks to separate files or discard them?')}<br />
@@ -334,7 +336,7 @@ function Settings({
           </td>
         </Row>
 
-        {showAdvanced && (
+        {showAdvancedSettings && (
           <Row>
             <KeyCell>
               {t('Snapshot capture method')}
@@ -356,7 +358,7 @@ function Settings({
           </td>
         </Row>
 
-        {showAdvanced && (
+        {showAdvancedSettings && (
           <Row>
             <KeyCell>
               {t('File names of extracted video frames')}
@@ -431,7 +433,7 @@ function Settings({
 
         <Header title={t('User interface')} />
 
-        {showAdvanced && (
+        {showAdvancedSettings && (
           <Row>
             <KeyCell>{t('Remember window size and position')}</KeyCell>
             <td>
@@ -440,7 +442,7 @@ function Settings({
           </Row>
         )}
 
-        {showAdvanced && (
+        {showAdvancedSettings && (
           <Row>
             <KeyCell>{t('Waveform height')}</KeyCell>
             <td>
@@ -449,7 +451,7 @@ function Settings({
           </Row>
         )}
 
-        {showAdvanced && (
+        {showAdvancedSettings && (
           <Row>
             <KeyCell>{t('Auto load timecode from file as an offset in the timeline?')}</KeyCell>
             <td>
@@ -458,7 +460,7 @@ function Settings({
           </Row>
         )}
 
-        {showAdvanced && (
+        {showAdvancedSettings && (
           <Row>
             <KeyCell>{t('Enable HEVC / H265 hardware decoding (you may need to turn this off if you have problems with HEVC files)')}</KeyCell>
             <td>
@@ -467,7 +469,7 @@ function Settings({
           </Row>
         )}
 
-        {showAdvanced && (
+        {showAdvancedSettings && (
           <Row>
             <KeyCell>{t('Try to automatically convert to supported format when opening unsupported file?')}</KeyCell>
             <td>
@@ -529,7 +531,7 @@ function Settings({
           </td>
         </Row>
 
-        {showAdvanced && (
+        {showAdvancedSettings && (
           <Row>
             <KeyCell>{t('Ask about what to do when opening a new file when another file is already already open?')}</KeyCell>
             <td>
@@ -538,7 +540,7 @@ function Settings({
           </Row>
         )}
 
-        {showAdvanced && (
+        {showAdvancedSettings && (
           <Row>
             <KeyCell>{t('Ask about importing chapters from opened file?')}</KeyCell>
             <td>
