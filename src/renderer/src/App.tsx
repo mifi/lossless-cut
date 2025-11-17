@@ -772,22 +772,20 @@ function App() {
     }
   }, [commandedTimeRef, cutSegments, findSegmentsAtCursor, pause, playbackModeRef, playerTime, playingRef, seekAbs, selectedSegments, setCurrentSegIndex, setPlaybackMode, setPlayerTime]);
 
-  const closeFileWithConfirm = useCallback(() => {
+  const closeFileWithConfirm = useCallback(async () => {
     if (!isFileOpened || workingRef.current) return;
 
-    // eslint-disable-next-line no-alert
-    if (askBeforeClose && !window.confirm(i18n.t('Are you sure you want to close the current file?'))) return;
+    if (askBeforeClose && !(await confirmDialog({ focusConfirm: true, description: i18n.t('Are you sure you want to close the current file?') }))) return;
 
     resetState();
     clearSegments();
-  }, [isFileOpened, workingRef, askBeforeClose, resetState, clearSegments]);
+  }, [isFileOpened, workingRef, askBeforeClose, confirmDialog, resetState, clearSegments]);
 
-  const closeBatch = useCallback(() => {
-    // eslint-disable-next-line no-alert
-    if (askBeforeClose && !window.confirm(i18n.t('Are you sure you want to close the loaded batch of files?'))) return;
+  const closeBatch = useCallback(async () => {
+    if (askBeforeClose && !(await confirmDialog({ focusConfirm: true, description: i18n.t('Are you sure you want to close the loaded batch of files?') }))) return;
     setBatchFiles([]);
     setSelectedBatchFiles([]);
-  }, [askBeforeClose]);
+  }, [askBeforeClose, confirmDialog]);
 
   const batchListRemoveFile = useCallback((path: string | undefined) => {
     setBatchFiles((existingBatch) => {
@@ -2360,9 +2358,10 @@ function App() {
     setWorking,
     handleError,
     showGenericDialog,
+    confirmDialog,
     keyboardLayoutMap,
     updateKeyboardLayout,
-  }), [handleError, keyboardLayoutMap, setWorking, showGenericDialog, updateKeyboardLayout, working]);
+  }), [confirmDialog, handleError, keyboardLayoutMap, setWorking, showGenericDialog, updateKeyboardLayout, working]);
 
 
   const showLeftBar = batchFiles.length > 0;

@@ -161,7 +161,7 @@ const KeyboardShortcuts = memo(({
   currentCutSeg: StateSegment | undefined,
 }) => {
   const { t } = useTranslation();
-  const { updateKeyboardLayout } = useAppContext();
+  const { updateKeyboardLayout, confirmDialog } = useAppContext();
 
   const { mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, segmentMouseModifierKey } = useUserSettings();
 
@@ -795,24 +795,21 @@ const KeyboardShortcuts = memo(({
 
   const categoriesWithActions = useMemo(() => Object.entries(groupBy(actionEntries, ([, { category }]) => category)), [actionEntries]);
 
-  const onDeleteBindingClick = useCallback(({ action, keys }: { action: KeyboardAction, keys: string }) => {
-    // eslint-disable-next-line no-alert
-    if (!window.confirm(t('Are you sure?'))) return;
+  const onDeleteBindingClick = useCallback(async ({ action, keys }: { action: KeyboardAction, keys: string }) => {
+    if (!(await confirmDialog({ description: t('Are you sure?') }))) return;
 
     console.log('Delete key binding', action, keys);
     setKeyBindings((existingBindings) => existingBindings.filter((existingBinding) => !(existingBinding.keys === keys && existingBinding.action === action)));
-  }, [setKeyBindings, t]);
+  }, [confirmDialog, setKeyBindings, t]);
 
 
-  const onResetClick = useCallback(() => {
+  const onResetClick = useCallback(async () => {
     // Double confirmation!
-    // eslint-disable-next-line no-alert
-    if (!window.confirm(t('Are you sure you want to reset all keyboard bindings?'))) return;
-    // eslint-disable-next-line no-alert
-    if (!window.confirm(t('Are you sure you want to reset all keyboard bindings?'))) return;
+    if (!(await confirmDialog({ description: t('Are you sure you want to reset all keyboard bindings?') }))) return;
+    if (!(await confirmDialog({ description: t('Are you sure you want to reset all keyboard bindings?') }))) return;
 
     resetKeyBindings();
-  }, [resetKeyBindings, t]);
+  }, [confirmDialog, resetKeyBindings, t]);
 
   const onAddBindingClick = useCallback((action: KeyboardAction) => {
     setCreatingBinding(action);
@@ -827,8 +824,7 @@ const KeyboardShortcuts = memo(({
     const duplicate = keyBindings.find((existingBinding) => existingBinding.keys === keysStr);
     let shouldReplaceDuplicate: KeyBinding | undefined;
     if (duplicate) {
-      // eslint-disable-next-line no-alert
-      const isConfirmed = window.confirm(t('Combination is already bound to "{{alreadyBoundKey}}". Do you want to replace the existing binding?', { alreadyBoundKey: actionsMap[duplicate.action]?.name }));
+      const isConfirmed = await confirmDialog({ confirmButtonText: t('Replace'), description: t('Combination is already bound to "{{alreadyBoundKey}}". Do you want to replace the existing binding?', { alreadyBoundKey: actionsMap[duplicate.action]?.name }) });
 
       if (isConfirmed) {
         shouldReplaceDuplicate = duplicate;
@@ -843,7 +839,7 @@ const KeyboardShortcuts = memo(({
       const filtered = !shouldReplaceDuplicate ? existingBindings : existingBindings.filter((existing) => existing.keys !== shouldReplaceDuplicate.keys);
       return [...filtered, { action, keys: keysStr }];
     });
-  }, [actionsMap, keyBindings, setKeyBindings, t]);
+  }, [actionsMap, confirmDialog, keyBindings, setKeyBindings, t]);
 
   return (
     <>

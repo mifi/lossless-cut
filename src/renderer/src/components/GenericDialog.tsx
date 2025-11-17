@@ -307,3 +307,5 @@ export function useDialog() {
     openCleanupFilesDialog,
   };
 }
+
+export type ConfirmDialog = ReturnType<typeof useDialog>['confirmDialog'];

@@ -6,7 +6,7 @@ import { UserSettingsRoot } from './hooks/useUserSettingsRoot';
 import { ExportMode, KeyboardLayoutMap, SegmentColorIndex } from './types';
 import type useLoading from './hooks/useLoading';
 import { GenericError } from './components/ErrorDialog';
-import { ShowGenericDialog } from './components/GenericDialog';
+import { ConfirmDialog, ShowGenericDialog } from './components/GenericDialog';
 
 
 export type UserSettingsContextType = Omit<UserSettingsRoot, 'settings'> & UserSettingsRoot['settings'] & {
@@ -31,6 +31,7 @@ export interface AppContextType {
   working: ReturnType<typeof useLoading>['working'],
   handleError: HandleError,
   showGenericDialog: ShowGenericDialog,
+  confirmDialog: ConfirmDialog,
   keyboardLayoutMap: KeyboardLayoutMap | undefined,
   updateKeyboardLayout: () => Promise<void>,
 }
