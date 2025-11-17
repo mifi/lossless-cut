@@ -672,7 +672,7 @@ function App() {
     setUsingDummyVideo(false);
   }, [setHideCompatPlayer, setPreviewFilePath, setUsingDummyVideo]);
 
-  const { captureFrameFromTag, captureFrameFromFfmpeg, captureFrameToClipboard, captureFramesRange } = useFrameCapture({ appendFfmpegCommandLog, formatTimecode, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
+  const { captureFrameFromTag, captureFrameFromFfmpeg, captureFrameToClipboard, captureFramesRange } = useFrameCapture({ appendFfmpegCommandLog, formatTimecode, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, fileDuration });
 
   const getNewJumpIndex = (oldIndex: number, direction: -1 | 1) => Math.max(oldIndex + direction, 0);
 
