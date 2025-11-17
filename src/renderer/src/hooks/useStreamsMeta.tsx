@@ -94,7 +94,7 @@ export default function useStreamsMeta({ mainStreams, externalFilesMeta, filePat
 
     showGenericDialog({
       isAlert: true,
-      content: (
+      render: () => (
         <ExpressionDialog
           confirmButtonText={t('Apply filter')}
           onSubmit={async (value: string) => {

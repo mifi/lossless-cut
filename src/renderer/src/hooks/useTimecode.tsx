@@ -1,4 +1,4 @@
-import { FormEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FormEventHandler, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { FormatTimecode, ParseTimecode } from '../types';
@@ -7,7 +7,7 @@ import { getFrameDuration } from '../util';
 import { TimecodeFormat } from '../../../common/types';
 import { formatDuration, parseDuration } from '../util/duration';
 import { ShowGenericDialog, useGenericDialogContext } from '../components/GenericDialog';
-import * as AlertDialog from '../components/AlertDialog';
+import * as Dialog from '../components/Dialog';
 import TextInput from '../components/TextInput';
 import { ButtonRow } from '../components/Dialog';
 import { DialogButton } from '../components/Button';
@@ -97,22 +97,15 @@ export default ({ detectedFps, timecodeFormat, showGenericDialog }: {
         }
       }, [onOpenChange, t, value]);
 
-      const valueRef = useRef<HTMLInputElement>(null);
-
-      useEffect(() => {
-        valueRef.current?.focus();
-      }, []);
-
       return (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        <AlertDialog.Content aria-describedby={undefined} style={{ width: '80vw' }}>
-          <AlertDialog.Title>{title}</AlertDialog.Title>
+        <Dialog.Content aria-describedby={undefined} style={{ width: '80vw' }}>
+          <Dialog.Title>{title}</Dialog.Title>
 
-          {description && <AlertDialog.Description>{description}</AlertDialog.Description>}
+          {description && <Dialog.Description>{description}</Dialog.Description>}
 
           <form onSubmit={handleSubmit}>
             <TextInput
-              ref={valueRef}
               value={value}
               placeholder={inputPlaceholder}
               onChange={(e) => setValue(e.target.value)}
@@ -126,20 +119,19 @@ export default ({ detectedFps, timecodeFormat, showGenericDialog }: {
             )}
 
             <ButtonRow>
-              <AlertDialog.Cancel asChild>
+              <Dialog.Close asChild>
                 <DialogButton>{t('Cancel')}</DialogButton>
-              </AlertDialog.Cancel>
+              </Dialog.Close>
 
               <DialogButton type="submit" primary>{t('Go')}</DialogButton>
             </ButtonRow>
           </form>
-        </AlertDialog.Content>
+        </Dialog.Content>
       );
     }
 
     showGenericDialog({
-      isAlert: true,
-      content: <TimecodeDialog />,
+      render: () => <TimecodeDialog />,
       onClose: () => resolve(undefined),
     });
   }), [parseTimecode, showGenericDialog]);

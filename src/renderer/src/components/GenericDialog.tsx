@@ -14,7 +14,7 @@ import { saveColor, warningColor } from '../colors';
 
 export interface GenericDialogParams {
   isAlert?: boolean;
-  content: React.ReactNode;
+  render: () => React.ReactNode;
   onClose?: () => void;
 }
 
@@ -38,34 +38,30 @@ export default function GenericDialog({ dialog, onOpenChange }: {
 }) {
   const context = useMemo(() => ({ onOpenChange }), [onOpenChange]);
 
-  if (dialog == null) {
-    return null;
-  }
+  return (
+    <>
+      {/* Non-alert dialog */ }
+      <Dialog.Root open={dialog != null && !dialog.isAlert} onOpenChange={onOpenChange}>
+        <Dialog.Portal>
+          <Dialog.Overlay />
 
-  if (dialog.isAlert) {
-    return (
-      <AlertDialog.Root open={dialog != null} onOpenChange={onOpenChange}>
+          <GenericDialogContext.Provider value={context}>
+            {dialog != null && !dialog.isAlert && dialog.render()}
+          </GenericDialogContext.Provider>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Alert dialog */ }
+      <AlertDialog.Root open={dialog != null && !!dialog.isAlert} onOpenChange={onOpenChange}>
         <AlertDialog.Portal>
           <AlertDialog.Overlay />
 
           <GenericDialogContext.Provider value={context}>
-            {dialog.content}
+            {dialog != null && dialog.isAlert && dialog.render()}
           </GenericDialogContext.Provider>
         </AlertDialog.Portal>
       </AlertDialog.Root>
-    );
-  }
-
-  return (
-    <Dialog.Root open={dialog != null} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay />
-
-        <GenericDialogContext.Provider value={context}>
-          {dialog?.content}
-        </GenericDialogContext.Provider>
-      </Dialog.Portal>
-    </Dialog.Root>
+    </>
   );
 }
 
@@ -88,14 +84,16 @@ export function useDialog() {
     setGenericDialog(undefined);
   }, []);
 
-  const confirmDialog = useCallback(({ title = t('Please confirm'), description, confirmButtonText = t('Confirm'), cancelButtonText = t('Cancel') }: {
+  const confirmDialog = useCallback(({ title = t('Please confirm'), description, confirmButtonText = t('Confirm'), cancelButtonText = t('Cancel'), focusConfirm = false }: {
     title?: ReactNode,
     description?: string,
     confirmButtonText?: string,
     cancelButtonText?: string,
+    focusConfirm?: boolean,
   }) => new Promise<boolean>((resolve) => {
     function ConfirmDialog() {
       const { onOpenChange } = useGenericDialogContext();
+      const confirmRef = useRef<HTMLButtonElement>(null);
 
       const handleConfirmClick = useCallback<MouseEventHandler<HTMLButtonElement>>((e) => {
         e.preventDefault();
@@ -103,8 +101,15 @@ export function useDialog() {
         onOpenChange(false);
       }, [onOpenChange]);
 
+      const handleOpenAutoFocus = useCallback((e: Event) => {
+        if (focusConfirm && confirmRef.current) {
+          e.preventDefault();
+          confirmRef.current.focus();
+        }
+      }, []);
+
       return (
-        <AlertDialog.Content aria-describedby={description} style={{ width: '40vw' }}>
+        <AlertDialog.Content aria-describedby={description} style={{ width: '40vw' }} onOpenAutoFocus={handleOpenAutoFocus}>
           <AlertDialog.Title>{title}</AlertDialog.Title>
 
           {description && <AlertDialog.Description>{description}</AlertDialog.Description>}
@@ -114,7 +119,7 @@ export function useDialog() {
               <DialogButton>{cancelButtonText}</DialogButton>
             </AlertDialog.Cancel>
 
-            <DialogButton primary onClick={handleConfirmClick}>{confirmButtonText}</DialogButton>
+            <DialogButton primary onClick={handleConfirmClick} ref={confirmRef}>{confirmButtonText}</DialogButton>
           </Dialog.ButtonRow>
         </AlertDialog.Content>
       );
@@ -122,7 +127,7 @@ export function useDialog() {
 
     showGenericDialog({
       isAlert: true,
-      content: <ConfirmDialog />,
+      render: () => <ConfirmDialog />,
       onClose: () => resolve(false),
     });
   }), [showGenericDialog, t]);
@@ -160,7 +165,7 @@ export function useDialog() {
       }
 
       showGenericDialog({
-        content: <ExportFinishedDialog />,
+        render: () => <ExportFinishedDialog />,
         onClose: () => resolve(false),
       });
     });
@@ -237,15 +242,27 @@ export function useDialog() {
           onOpenChange(false);
         }, [choices, onOpenChange]);
 
-        return (
-          <AlertDialog.Content aria-describedby={undefined} style={{ width: '80vw' }}>
-            <AlertDialog.Title>
-              {t('Cleanup files?')}
-            </AlertDialog.Title>
+        // for convenience, focus confirm button when opening dialog
+        // they probably just want to use current options
+        // https://github.com/mifi/lossless-cut/issues/2622
+        const confirmRef = useRef<HTMLButtonElement>(null);
 
-            <AlertDialog.Description>
+        const handleOpenAutoFocus = useCallback((e: Event) => {
+          if (confirmRef.current) {
+            e.preventDefault();
+            confirmRef.current.focus();
+          }
+        }, []);
+
+        return (
+          <Dialog.Content aria-describedby={undefined} style={{ width: '80vw' }} onOpenAutoFocus={handleOpenAutoFocus}>
+            <Dialog.Title>
+              {t('Cleanup files?')}
+            </Dialog.Title>
+
+            <Dialog.Description>
               {t('What do you want to do after exporting a file or when pressing the "delete source file" button?')}
-            </AlertDialog.Description>
+            </Dialog.Description>
 
             <Checkbox label={t('Close currently opened file')} checked={closeFile} disabled={trashSourceFile || trashTmpFiles} onCheckedChange={(checked) => onChange('closeFile', checked)} />
 
@@ -262,19 +279,18 @@ export function useDialog() {
             </div>
 
             <Dialog.ButtonRow>
-              <AlertDialog.Cancel asChild>
+              <Dialog.Close asChild>
                 <DialogButton>{t('Cancel')}</DialogButton>
-              </AlertDialog.Cancel>
+              </Dialog.Close>
 
-              <DialogButton onClick={handleOkClick} primary>{t('Confirm')}</DialogButton>
+              <DialogButton ref={confirmRef} onClick={handleOkClick} primary>{t('Confirm')}</DialogButton>
             </Dialog.ButtonRow>
-          </AlertDialog.Content>
+          </Dialog.Content>
         );
       }
 
       showGenericDialog({
-        isAlert: true,
-        content: <CleanupChoices />,
+        render: () => <CleanupChoices />,
         onClose: () => resolve(undefined),
       });
     });

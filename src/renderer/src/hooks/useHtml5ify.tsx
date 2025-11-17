@@ -11,7 +11,7 @@ import { SetWorking } from './useLoading';
 import { WithErrorHandling } from './useErrorHandling';
 import { FfmpegOperations } from './useFfmpegOperations';
 import { ShowGenericDialog, useGenericDialogContext } from '../components/GenericDialog';
-import * as AlertDialog from '../components/AlertDialog';
+import * as Dialog from '../components/Dialog';
 import { ButtonRow } from '../components/Dialog';
 import { DialogButton } from '../components/Button';
 
@@ -99,20 +99,20 @@ export default function useHtml5ify({ filePath, hasVideo, hasAudio, workingRef, 
 
         const onRememberChange = useCallback((checked: boolean) => setRemember(checked), []);
 
-        const handleOkClick = useCallback(() => {
+        const handleConfirmClick = useCallback(() => {
           resolve({ selectedOption: option, rememberChoice: remember });
           onOpenChange(false);
         }, [onOpenChange, option, remember]);
 
         return (
-          <AlertDialog.Content aria-describedby={undefined} style={{ width: '80vw' }}>
-            <AlertDialog.Title>
+          <Dialog.Content aria-describedby={undefined} style={{ width: '80vw' }}>
+            <Dialog.Title>
               {i18n.t('Convert to supported format')}
-            </AlertDialog.Title>
+            </Dialog.Title>
 
-            <AlertDialog.Description>
+            <Dialog.Description>
               {i18n.t('These options will let you convert files to a format that is supported by the player. You can try different options and see which works with your file. Note that the conversion is for preview only. When you run an export, the output will still be lossless with full quality')}
-            </AlertDialog.Description>
+            </Dialog.Description>
 
             {Object.entries(inputOptions).map(([value, label]) => {
               const id = `html5ify-${value}`;
@@ -135,19 +135,18 @@ export default function useHtml5ify({ filePath, hasVideo, hasAudio, workingRef, 
             {showRemember && <Checkbox checked={remember} onCheckedChange={onRememberChange} label={t('Use this for all files until LosslessCut is restarted?')} style={{ marginTop: '.5em' }} />}
 
             <ButtonRow>
-              <AlertDialog.Cancel asChild>
+              <Dialog.Close asChild>
                 <DialogButton>{t('Cancel')}</DialogButton>
-              </AlertDialog.Cancel>
+              </Dialog.Close>
 
-              <DialogButton onClick={handleOkClick} primary>{t('OK')}</DialogButton>
+              <DialogButton onClick={handleConfirmClick} primary>{t('OK')}</DialogButton>
             </ButtonRow>
-          </AlertDialog.Content>
+          </Dialog.Content>
         );
       }
 
       showGenericDialog({
-        isAlert: true,
-        content: <AskForHtml5ifySpeed />,
+        render: () => <AskForHtml5ifySpeed />,
         onClose: () => resolve(undefined),
       });
     });

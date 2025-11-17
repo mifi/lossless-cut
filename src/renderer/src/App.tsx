@@ -1605,7 +1605,7 @@ function App() {
   const extractAllStreams = useCallback(async () => {
     if (!filePath) return;
 
-    if (!(await confirmDialog({ description: t('Please confirm that you want to extract all tracks as separate files'), confirmButtonText: t('Extract all tracks') }))) return;
+    if (!(await confirmDialog({ focusConfirm: true, description: t('Please confirm that you want to extract all tracks as separate files'), confirmButtonText: t('Extract all tracks') }))) return;
 
     if (workingRef.current) return;
     try {

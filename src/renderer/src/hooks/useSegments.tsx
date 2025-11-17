@@ -24,7 +24,7 @@ import { ShowGenericDialog, useGenericDialogContext } from '../components/Generi
 import ExpressionDialog from '../components/ExpressionDialog';
 import Button, { DialogButton } from '../components/Button';
 import { ButtonRow } from '../components/Dialog';
-import * as AlertDialog from '../components/AlertDialog';
+import * as Dialog from '../components/Dialog';
 import { UserFacingError } from '../../errors';
 
 const remote = window.require('@electron/remote');
@@ -238,7 +238,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     parameters: ParameterDialogParameters,
     docUrl?: string,
   }) => new Promise<ParameterDialogParameters | undefined>((resolve) => {
-    function Dialog() {
+    function ParametersDialog() {
       const { onOpenChange } = useGenericDialogContext();
 
       const firstInputRef = useRef<HTMLInputElement>(null);
@@ -259,10 +259,10 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       }, []);
 
       return (
-        <AlertDialog.Content aria-describedby={undefined} style={{ width: '80vw' }}>
-          <AlertDialog.Title>{title}</AlertDialog.Title>
+        <Dialog.Content aria-describedby={undefined} style={{ width: '80vw' }}>
+          <Dialog.Title>{title}</Dialog.Title>
 
-          <AlertDialog.Description>{description}</AlertDialog.Description>
+          <Dialog.Description>{description}</Dialog.Description>
 
           {docUrl && <p><Button onClick={() => shell.openExternal(docUrl)}><FaLink style={{ fontSize: '.8em' }} /> {t('Read more')}</Button></p>}
 
@@ -285,20 +285,19 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
             })}
 
             <ButtonRow>
-              <AlertDialog.Cancel asChild>
+              <Dialog.Close asChild>
                 <DialogButton>{t('Cancel')}</DialogButton>
-              </AlertDialog.Cancel>
+              </Dialog.Close>
 
               <DialogButton type="submit" primary>{t('Confirm')}</DialogButton>
             </ButtonRow>
           </form>
-        </AlertDialog.Content>
+        </Dialog.Content>
       );
     }
 
     showGenericDialog({
-      isAlert: true,
-      content: <Dialog />,
+      render: () => <ParametersDialog />,
       onClose: () => resolve(undefined),
     });
   }), [showGenericDialog, t]);
@@ -779,7 +778,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
     showGenericDialog({
       isAlert: true,
-      content: (
+      render: () => (
         <ExpressionDialog
           onSubmit={onSubmit}
           confirmButtonText={t('Select segments')}
@@ -847,7 +846,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
     showGenericDialog({
       isAlert: true,
-      content: (
+      render: () => (
         <ExpressionDialog
           onSubmit={onSubmit}
           confirmButtonText={t('Apply change')}
