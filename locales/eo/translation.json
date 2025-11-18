@@ -1,1 +1,4 @@
-{}
+{
+  "\"{{property}}\" must be a number": "\"{{property}}\" devas esti nombro",
+  "\"{{property}}\" must be a string": "\"{{property}}\" devas esti signoĉeno"
+}
