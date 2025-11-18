@@ -607,7 +607,7 @@ function BottomBar({
         {(!simpleMode || !exportConfirmEnabled) && <ToggleExportConfirm style={{ marginLeft: '.4em' }} />}
 
         {isFileOpened && (
-          <ExportButton segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={onExportPress} />
+          <ExportButton segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={withBlur(onExportPress)} />
         )}
       </div>
     </>

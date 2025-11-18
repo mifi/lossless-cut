@@ -1,4 +1,4 @@
-import { CSSProperties, memo } from 'react';
+import { CSSProperties, forwardRef, MouseEventHandler } from 'react';
 import { FiScissors } from 'react-icons/fi';
 import { FaFileExport } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
@@ -6,14 +6,23 @@ import { useTranslation } from 'react-i18next';
 import { primaryColor } from '../colors';
 import useUserSettings from '../hooks/useUserSettings';
 import { SegmentToExport } from '../types';
+import styles from './ExportButton.module.css';
 
 
-function ExportButton({ segmentsToExport, areWeCutting, onClick, style }: {
+interface Props {
   segmentsToExport: SegmentToExport[],
   areWeCutting: boolean,
-  onClick: () => void,
+  onClick: MouseEventHandler<HTMLButtonElement>,
   style?: CSSProperties,
-}) {
+}
+
+// eslint-disable-next-line react/display-name
+const ExportButton = forwardRef<HTMLButtonElement, Props>(({
+  segmentsToExport,
+  areWeCutting,
+  onClick,
+  style,
+}, ref) => {
   const CutIcon = areWeCutting ? FiScissors : FaFileExport;
 
   const { t } = useTranslation();
@@ -31,9 +40,10 @@ function ExportButton({ segmentsToExport, areWeCutting, onClick, style }: {
 
   return (
     <button
+      ref={ref}
       type="button"
-      className={simpleMode ? 'export-animation' : undefined}
-      style={{ all: 'unset', cursor: 'pointer', background: primaryColor, color: 'white', borderRadius: '.3em', paddingBottom: '.1em', paddingLeft: '.2em', paddingRight: '.2em', whiteSpace: 'nowrap', ...style }}
+      className={[...(simpleMode ? ['export-animation'] : []), styles['exportButton']].join(' ')}
+      style={{ backgroundColor: primaryColor, ...style }}
       onClick={onClick}
       title={title}
     >
@@ -43,6 +53,6 @@ function ExportButton({ segmentsToExport, areWeCutting, onClick, style }: {
       {text}
     </button>
   );
-}
+});
 
-export default memo(ExportButton);
+export default ExportButton;

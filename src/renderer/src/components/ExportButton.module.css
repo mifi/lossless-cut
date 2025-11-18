@@ -1,0 +1,14 @@
+.exportButton {
+  all: unset;
+  cursor: pointer;
+  color: white;
+  border-radius: .3em;
+  padding-bottom: .1em;
+  padding-left: .4em;
+  padding-right: .4em;
+  white-space: nowrap;
+}
+
+.exportButton:focus {
+  outline: .1em solid white;
+}
