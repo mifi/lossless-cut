@@ -738,7 +738,7 @@ function App() {
     const firstSegmentAtCursorIndex = segmentsAtCursorIndexes[0];
     const playingSegment = firstSegmentAtCursorIndex != null ? cutSegments[firstSegmentAtCursorIndex] : undefined;
 
-    if (playbackModeRef.current != null && playingRef.current && playingSegment && playingSegment.end != null) { // todo and is currently playing?
+    if (playbackModeRef.current != null && playingRef.current && playingSegment && playingSegment.end != null) {
       const nextAction = getPlaybackAction({ playbackMode: playbackModeRef.current, currentTime, playingSegment: { start: playingSegment.start, end: playingSegment.end } });
 
       const exit = () => {
@@ -752,16 +752,17 @@ function App() {
           const selectedSegmentsWithoutMarkers = filterNonMarkers(selectedSegments);
 
           const index = selectedSegmentsWithoutMarkers.findIndex((selectedSegment) => selectedSegment.segId === playingSegment.segId);
-          let newIndex = getNewJumpIndex(index >= 0 ? index : 0, 1);
-          if (newIndex > selectedSegmentsWithoutMarkers.length - 1) {
+          let newSelectedSegmentIndex = getNewJumpIndex(index >= 0 ? index : 0, 1);
+          if (newSelectedSegmentIndex > selectedSegmentsWithoutMarkers.length - 1) {
             // have reached end of last segment
-            if (playbackModeRef.current === 'loop-selected-segments') newIndex = 0; // start over
+            if (playbackModeRef.current === 'loop-selected-segments') newSelectedSegmentIndex = 0; // start over
             else if (playbackModeRef.current === 'play-selected-segments') exit();
           }
-          const nextSelectedSegment = selectedSegmentsWithoutMarkers[newIndex];
+          const nextSelectedSegment = selectedSegmentsWithoutMarkers[newSelectedSegmentIndex];
           if (nextSelectedSegment != null) {
             seekAbs(nextSelectedSegment.start);
-            setCurrentSegIndex(newIndex);
+            const newIndex = cutSegments.findIndex((segment) => segment.segId === nextSelectedSegment.segId);
+            if (newIndex !== -1) setCurrentSegIndex(newIndex);
           }
         }
         if (nextAction.seekTo != null) {
