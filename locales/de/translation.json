@@ -447,7 +447,7 @@
   "Experimental flag": "Experimentelle Funktionen",
   "This template will result in invalid file names": "Diese Vorlage führt zu ungültigen Dateinamen",
   "Advanced view has been enabled. You will now also see non-essential buttons and functions": "Die erweiterte Ansicht wurde aktiviert. Dadurch sind nun auch weniger relevante Schaltflächen und Funktionen sichtbar.",
-  "Select a different output <1>Format</1> (<3>matroska</3> and <5>mp4</5> support most codecs)": "Wählen Sie ein anderes Ausgabe-<1>Format</1> (<3>Matroska</3> and <5>MP4</5> unterstützen die meisten Codecs)",
+  "Select a different output <1>Format</1> (<3>matroska</3> and <5>mp4</5> support most codecs)": "Wählen Sie ein anderes Ausgabe-<1>Format</1> (<3>Matroska</3> und <5>MP4</5> unterstützen die meisten Codecs)",
   "Create num segments": "Numerische Segmente erstellen",
   "You do not have permission to access this file": "Sie haben keine Berechtigung zum Zugriff auf diese Datei",
   "The media you tried to open does not exist": "Die zu öffnenden Medien existieren nicht",
