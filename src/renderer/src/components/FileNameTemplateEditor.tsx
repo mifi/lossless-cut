@@ -197,7 +197,7 @@ function FileNameTemplateEditor(opts: {
             >
               <div style={{ color: 'var(--gray-11)', fontSize: '.8em' }}>{t('Output file name template')}:</div>
 
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.2em' }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.2em', gap: '.5em' }}>
                 <TextInput ref={inputRef} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" style={{ padding: '.3em' }} />
 
                 {generated != null && generated.fileNames.length > 1 && (
@@ -221,7 +221,7 @@ function FileNameTemplateEditor(opts: {
                   </Dialog.Root>
                 )}
 
-                <Button title={t('Reset')} onClick={reset} style={{ marginLeft: '.3em', padding: '.3em' }}><FaUndo style={{ fontSize: '.8em', color: dangerColor }} /></Button>
+                <Button onClick={reset} style={{ marginLeft: '.3em', padding: '.3em' }}><FaUndo style={{ fontSize: '.8em', color: dangerColor, marginRight: '.5em' }} />{t('Reset')}</Button>
               </div>
 
               <div style={{ fontSize: '.9em', color: 'var(--gray-11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
