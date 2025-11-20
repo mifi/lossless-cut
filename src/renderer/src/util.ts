@@ -11,6 +11,7 @@ import { ffmpegExtractWindow } from './util/constants';
 import { appName } from '../../main/common';
 import { Html5ifyMode } from '../../common/types';
 import { UserFacingError } from '../errors';
+import { FFprobeFormat } from '../../common/ffprobe';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
 const fsExtra = window.require('fs-extra');
@@ -396,6 +397,12 @@ export function getImportProjectType(filePath: string) {
   const matchingExt = Object.keys(edlFormatForExtension).find((ext) => filePath.toLowerCase().endsWith(`.${ext}`)) as keyof typeof edlFormatForExtension | undefined;
   if (!matchingExt) return undefined;
   return edlFormatForExtension[matchingExt];
+}
+
+export function getFileSize(formatData: FFprobeFormat) {
+  const fileSize = parseInt(formatData.size, 10);
+  if (Number.isNaN(fileSize)) return undefined;
+  return fileSize;
 }
 
 export const calcShouldShowWaveform = (zoomedDuration: number | undefined) => (zoomedDuration != null && zoomedDuration < ffmpegExtractWindow * 8);

@@ -9,6 +9,7 @@ import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { CSS } from '@dnd-kit/utilities';
 import invariant from 'tiny-invariant';
+import prettyBytes from 'pretty-bytes';
 
 import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
@@ -62,6 +63,7 @@ const Segment = memo(({
   onExtractSelectedSegmentsFramesAsImages,
   onInvertSelectedSegments,
   onDuplicateSegmentClick,
+  getSegEstimatedSize,
 }: {
   seg: StateSegment | InverseCutSegment,
   index: number,
@@ -93,6 +95,7 @@ const Segment = memo(({
   onExtractSelectedSegmentsFramesAsImages: () => void,
   onInvertSelectedSegments: UseSegments['invertSelectedSegments'],
   onDuplicateSegmentClick: UseSegments['duplicateSegment'],
+  getSegEstimatedSize: UseSegments['getSegEstimatedSize'],
 }) => {
   const { invertCutSegments, darkMode } = useUserSettings();
   const { t } = useTranslation();
@@ -149,6 +152,7 @@ const Segment = memo(({
   useContextMenu(ref, contextMenuTemplate);
 
   const duration = useMemo(() => (seg.end == null ? undefined : seg.end - seg.start), [seg]);
+  const estimatedSize = useMemo(() => getSegEstimatedSize(seg), [getSegEstimatedSize, seg]);
 
   const timeStr = useMemo(() => (
     seg.end == null
@@ -249,25 +253,32 @@ const Segment = memo(({
         {...sortable.listeners}
         role="button"
         tabIndex={-1}
-        style={{ cursor, color: 'var(--gray-12)', marginBottom: duration != null ? 3 : undefined, display: 'flex', alignItems: 'center', height: 16 }}
+        style={{ cursor, color: 'var(--gray-12)', marginBottom: duration != null ? '.1em' : undefined, display: 'flex', alignItems: 'center', height: '1em' }}
         onClick={handleDraggableClick}
       >
         {renderNumber()}
-        <span style={{ cursor, fontSize: Math.min(310 / timeStr.length, 12), whiteSpace: 'nowrap' }}>{timeStr}</span>
+        <span style={{ cursor, fontSize: `${Math.min(1, 26 / timeStr.length) * 0.75}em`, whiteSpace: 'nowrap' }}>{timeStr}</span>
       </div>
 
-      {'name' in seg && seg.name && <span style={{ fontSize: 12, color: primaryTextColor, marginRight: '.3em' }}>{seg.name}</span>}
+      {'name' in seg && seg.name && <span style={{ fontSize: '.75em', color: primaryTextColor, marginRight: '.3em' }}>{seg.name}</span>}
       {Object.entries(tags).map(([name, value]) => (
-        <span style={{ fontSize: 11, backgroundColor: 'var(--gray-5)', color: 'var(--gray-12)', borderRadius: '.4em', padding: '0 .2em', marginRight: '.1em' }} key={name}>{name}:<b>{value}</b></span>
+        <span style={{ fontSize: '.7em', backgroundColor: 'var(--gray-5)', color: 'var(--gray-12)', borderRadius: '.4em', padding: '0 .2em', marginRight: '.1em' }} key={name}>{name}:<b>{value}</b></span>
       ))}
 
       {duration != null && (
         <>
-          <div style={{ fontSize: 13 }}>
+          <div style={{ fontSize: '.75em' }}>
             {t('Duration')} {formatTimecode({ seconds: duration, shorten: true })}
           </div>
-          <div style={{ fontSize: 12 }}>
-            <Trans>{{ durationMsFormatted: Math.floor(duration * 1000) }} ms, {{ frameCount: (duration && getFrameCount(duration)) ?? '?' }} frames</Trans>
+          <div style={{ fontSize: '.75em' }}>
+            <Trans>{{ durationMsFormatted: Math.floor(duration * 1000) }} ms</Trans>
+            <span>, <Trans>{{ frameCount: (duration && getFrameCount(duration)) ?? '?' }} frames</Trans></span>
+            {estimatedSize != null && (
+              <span style={{ fontSize: '.9em' }}>
+                , ~{prettyBytes(estimatedSize, { space: false, maximumFractionDigits: 1, minimumFractionDigits: 0 })}
+              </span>
+            )}
+
           </div>
         </>
       )}
@@ -321,6 +332,7 @@ function SegmentList({
   setEditingSegmentTags,
   setEditingSegmentTagsSegmentIndex,
   onEditSegmentTags,
+  getSegEstimatedSize,
 }: {
   width: number,
   formatTimecode: FormatTimecode,
@@ -361,6 +373,7 @@ function SegmentList({
   setEditingSegmentTags: Dispatch<SetStateAction<SegmentTags | undefined>>,
   setEditingSegmentTagsSegmentIndex: Dispatch<SetStateAction<number | undefined>>,
   onEditSegmentTags: (index: number) => void,
+  getSegEstimatedSize: UseSegments['getSegEstimatedSize'],
 }) {
   const { t } = useTranslation();
   const { getSegColor, nextSegColorIndex } = useSegColors();
@@ -474,7 +487,7 @@ function SegmentList({
           )}
         </div>
 
-        <div style={{ padding: '5px 10px', boxSizing: 'border-box', borderBottom: '1px solid var(--gray-6)', borderTop: '1px solid var(--gray-6)', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+        <div style={{ padding: '5px 10px', boxSizing: 'border-box', borderBottom: '1px solid var(--gray-6)', borderTop: '1px solid var(--gray-6)', display: 'flex', justifyContent: 'space-between', fontSize: '.8em' }}>
           <div>{t('Segments total:')}</div>
           <div>{formatTimecode({ seconds: segmentsTotal })}</div>
         </div>
@@ -586,6 +599,7 @@ function SegmentList({
         onSelectAllMarkers={onSelectAllMarkers}
         onInvertSelectedSegments={onInvertSelectedSegments}
         onDuplicateSegmentClick={onDuplicateSegmentClick}
+        getSegEstimatedSize={getSegEstimatedSize}
       />
     );
   }

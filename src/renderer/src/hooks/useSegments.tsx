@@ -9,7 +9,7 @@ import { FaLink } from 'react-icons/fa';
 
 import TextInput from '../components/TextInput';
 import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToSegments, findKeyframeNearTime } from '../ffmpeg';
-import { shuffleArray } from '../util';
+import { getFileSize, shuffleArray } from '../util';
 import { errorToast } from '../swal';
 import { createNumSegments as createNumSegmentsDialog, createFixedByteSixedSegments as createFixedByteSixedSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, askForSegmentDuration, toastError } from '../dialogs';
 import { createSegment, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, addSegmentColorIndex, filterNonMarkers, makeDurationSegments, isInitialSegment } from '../segments';
@@ -725,12 +725,21 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
   const createFixedByteSizedSegments = useCallback(async () => {
     if (!checkFileOpened() || !isDurationValid(fileDuration)) return;
-    const fileSize = mainFileMeta && parseInt(mainFileMeta.formatData.size, 10);
-    invariant(fileSize != null && !Number.isNaN(fileSize));
+    invariant(mainFileMeta != null);
+    const fileSize = getFileSize(mainFileMeta.formatData);
+    invariant(fileSize != null);
     const segmentDuration = await createFixedByteSixedSegmentsDialog({ fileDuration, fileSize });
     if (segmentDuration == null) return;
     loadCutSegments({ segments: makeDurationSegments(segmentDuration, fileDuration), append: true, clampDuration: fileDuration });
   }, [checkFileOpened, fileDuration, loadCutSegments, mainFileMeta]);
+
+  const getSegEstimatedSize = useCallback((segment: Pick<StateSegment, 'start' | 'end'>) => {
+    if (mainFileMeta == null || !isDurationValid(fileDuration) || segment.end == null) return undefined;
+    const fileSize = getFileSize(mainFileMeta.formatData);
+    if (fileSize == null) return undefined;
+    const segDuration = segment.end - segment.start;
+    return Math.round((segDuration / fileDuration) * fileSize);
+  }, [fileDuration, mainFileMeta]);
 
   const createRandomSegments = useCallback(async () => {
     if (!checkFileOpened() || currentCutSegOrWholeTimeline.duration <= 0) return;
@@ -978,6 +987,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     createFixedDurationSegments,
     createFixedByteSizedSegments,
     createRandomSegments,
+    getSegEstimatedSize,
     haveInvalidSegs,
     currentSegIndexSafe,
     currentCutSeg,

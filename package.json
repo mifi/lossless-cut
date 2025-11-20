@@ -109,7 +109,7 @@
     "nanoid": "^5.0.9",
     "p-map": "^5.5.0",
     "p-retry": "^6.2.0",
-    "pretty-bytes": "^6.0.0",
+    "pretty-bytes": "^7.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^16.2.4",
