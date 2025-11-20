@@ -125,7 +125,7 @@ const defaults: Config = {
   preserveMetadata: 'default',
   preserveMetadataOnMerge: false,
   preserveMovData: false,
-  fixCodecTag: 'auto',
+  fixCodecTag: 'never',
   movFastStart: true,
   avoidNegativeTs: 'make_zero',
   hideNotifications: undefined,

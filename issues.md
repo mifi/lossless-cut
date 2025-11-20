@@ -85,9 +85,13 @@ Smart cut is experimental, so don't expect too much. But if you're having proble
 - If Smart cut gives you repeated (duplicate) segments, you can try to enable the Export Option "Shift all start times".
 - Sometimes it helps to convert (remux) your videos [to mp4 first](https://github.com/mifi/lossless-cut/discussions/1292#discussioncomment-10425084) (e.g. from mkv) using LosslessCut, before smart cutting them.
 
-## MP4/MOV issues
+## MP4/MOV extension
 
 MP4 and MOV are technically almost the same format. Sometimes files have the extension `.mp4` but are in reality the MOV format (and vice versa). MOV tends to be more lenient in which codecs it supports. FFmpeg has problems exporting some MP4 files as MP4, so MOV needs to be selected instead. Unfortunately I don't know any way to fix this. Sometimes certain players are not able to play back certain exported `.mov` files ([Adobe Premiere](https://github.com/mifi/lossless-cut/issues/1075#issuecomment-2327459890) 👀). You can try to rename the exported MOV file extension to `.mp4` and see if it helps. Or vice versa, rename an exported MP4 file to `.mov`.
+
+## MP4/MOV playback exported file fails
+
+If you cannot playback the output video file even when exporting without doing any cuts at all, this might be due to FFmpeg applying the wrong output video codec tag (`hev1` vs `hvc1`). You can try to set the export option "Fix video codec tag / ID" to "Auto" or "Always". See [#2518](https://github.com/mifi/lossless-cut/issues/2518) [#1444](https://github.com/mifi/lossless-cut/issues/1444) [#2626](https://github.com/mifi/lossless-cut/issues/2626)
 
 ## Output file name is missing characters (Chinese, accents etc)
 
