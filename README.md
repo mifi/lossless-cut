@@ -88,45 +88,29 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 
 ## Example lossless use cases
 
-- Cut out commercials from a recorded TV show (and re-format from TS to MP4)
-- Remove audio tracks from a file
-- Extract music track from a video and cut it to your needs
-- Add music to a video (or replace existing audio track)
-- Combine audio and video tracks from separate recordings
+- Cut out commercials from a recorded TV show (and re-format from TS to MP4).
+- Remove audio tracks from a file.
+- Extract music track from a video and cut it to your needs.
+- Add music to a video (or replace existing audio track).
+- Combine audio and video tracks from separate recordings.
 - Include an external subtitle into a video
-- Quickly change a H264/H265 MKV video to MOV or MP4 for playback on iPhone
-- Import a list of cut times from other tool as a EDL (edit decision list, CSV) and run these cuts with LosslessCut
-- Export a list of cut times as a CSV EDL and process these in another tool
-- Quickly cut a file by its MP4/MKV chapters
-- Quickly cut a [YouTube video](https://youtube-dl.org/) by its chapters (or music times from a comment)
-- Change the language of a file's audio/subtitle tracks
-- Attach cover art / thumbnail to videos / audio from an external JPEG file or from a frame on the timeline
-- Change author, title, GPS position, recording time of a video
-- Fix rotation of a video that has the wrong orientation flag set
-  - Great for rotating phone videos that come out the wrong way without actually re-encoding the video.
-- Loop a video / audio clip X times quickly without re-encoding
-  - See [#284](https://github.com/mifi/lossless-cut/issues/284)
+- Quickly change a H264/H265 MKV video to MOV or MP4 for playback on iPhone.
+- Import a list of cut times from other tool as a EDL (edit decision list, CSV) and run these cuts with LosslessCut.
+- Export a list of cut times as a CSV EDL and process these in another tool.
+- Quickly cut a file by its MP4/MKV chapters.
+- Quickly cut a [YouTube video](https://youtube-dl.org/) by its chapters (or music times from a comment).
+- Change the language of a file's audio/subtitle tracks.
+- Attach cover art / thumbnail to videos / audio from an external JPEG file or from a frame on the timeline.
+- Change author, title, GPS position, recording time of a video.
+- Fix rotation of a video that has the wrong orientation flag set.
+- Loop a video / audio clip X times quickly without re-encoding, see [#284](https://github.com/mifi/lossless-cut/issues/284).
 - Convert a video or parts of it into X image files (not lossless)
 - Losslessly split a video into one file per scene (note you probably have to shift segments, see [#330](https://github.com/mifi/lossless-cut/issues/330).)
-- Cut away silent parts of an audio/video
-- Split video into segments to for example respect Twitter's 140 second limit
+- Cut away silent parts from an audio/video file.
+- Split video into segments to for example respect Twitter's 140 second limit.
 - Annotate each segment with one or more tags, then use those tags to organize your segments or use it to create an output folder structure or hierarchy for your segments.
 
-### Export cut times as YouTube Chapters
-1. Export with Merge and "Create chapters from merged segments" enabled
-2. Open the exported file and select "Import chapters" in the dialog
-3. File -> Export project -> YouTube Chapters
-
-### Re-encode only the audio track, keeping the lossless video track
-
-First export each track as individual files. Then use Handbrake or similar to re-encode the audio file (if mp4 file, encode as AAC.) Then open the extracted video stream in LosslessCut. The open your encoded audio file and select "Include all tracks from the new file". Then export.
-
-### Advanced multi-step workflows
-
-**Tip:** you can use LosslessCut in multiple passes in order to achieve separate trimming of individual tracks:
-1. Open a file an export all tracks as individual files
-2. Open the exported track files independently and cut them as desired
-3. Add the track back to the video and combine them to one output video
+See also [Recipe cookbook](./recipes.md)
 
 ## Download
 

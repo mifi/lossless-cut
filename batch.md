@@ -1,6 +1,6 @@
 # Batch processing ⏩
 
-I get a lot of questions about whether LosslessCut can help automate the same operation on X number of files. For example given a folder of 100 files, cut off 10 seconds from the beginning of every file, or split each file into 30 second files. LosslessCut was not designed to be a batch processing toolkit and generally cannot not do these things, however the good news is that often it's not very hard to automate with a simple script.
+I get a lot of questions about whether LosslessCut can help automate the **exact same operation on X number of files**. For example given a folder of 100 files, cut off 10 seconds from the beginning of every file, or split each file into 30 second files. LosslessCut was not designed to be a batch processing toolkit and generally cannot not do these things, however the good news is that often it's not very hard to automate with a simple script.
 
 See also [#868](https://github.com/mifi/lossless-cut/issues/868).
 
@@ -26,7 +26,7 @@ If there's a particular operation from LosslessCut you want to automate across m
 
 I wish more people were aware of this: large language models like ChatGPT can be incredibly useful for helping non-programmers with simple scripting tasks as well as helping you learn things and debug error messages, and it's free! Basically you just ask the AI to write a script for you to do whatever you need. If it doesn't work, you can continue the conversation with the AI and give it the error messages you received and it will try to help your get it working.
 
-Start your sentence with your operating system, e.g. "I am using Windows 10", then try to be so exact and concise as possible to describe what kind of files you have and what you want to do with them to the AI using FFmpeg. Example prompt:
+Start your sentence with your operating system, e.g. "I am using Windows 10", then try to be so exact and concise as possible to describe what kind of files you have and what you want to do with them to the AI using FFmpeg. Example prompt to the AI:
 
 > I am on macOS. Please help me write a script that for each *.mp4 file in a specified folder, losslessly removes the first 10 seconds from each file? Also how do I run the script? The files are inside the folder `/Users/user/my-files`. I have FFmpeg installed and running as `ffmpeg`.
 

@@ -28,9 +28,9 @@
 - **Note:** The original video file will not be modified. Instead, a file is created file in the same directory as the original file with from/to timestamps in the file name.
 - See Keyboard shortcuts dialog for more custom actions. (<kbd>SHIFT</kbd> + <kbd>/</kbd>)
 
-## Primer: Video & audio formats vs. codecs
+## Primer: Video/audio codecs vs. formats
 
-Here's a little primer about video and audio formats for those not familiar. A common mistake when dealing with audio and video files, is to confuse *formats*, *codecs*, and *file names*. In short: A file's media format is a *container* that holds one or more *codecs* (audio/video/subtitle) inside of it. For example `.mov` is a *container format*, and `H265`/`HEVC` is a *codec*. Some formats support only a few codecs inside of them, while others support more codecs. The most common formats are MP4/MOV (often `.mp4`,`.mov`,`.m4a`) and Matroska (often `.mkv`,`.mka`). Example: If you have a file named `My video.mp4`, this file most likely (but not necessarily) has the *format* `MP4`. Note that the extension of a file (in this case `.mp4`) doesn't really mean anything, and the file could in reality for example have the `MOV` format, or the extension could be `.txt`. Inside `My video.mp4` there are multiple tracks/streams, each with their own *codec*. In this example, let's say that it contains one `H264` track and one `AAC` track. In LosslessCut you can view and add/delete/modify these tracks.
+Here's a little primer about video and audio formats for those not familiar. A common mistake when dealing with audio and video files, is to confuse *formats*, *codecs*, and *file names*. In short: A file's media format is a *container* that holds one or more *codecs* (audio/video/subtitle) inside of it. For example `.mov` is a *container format*, and `H265`/`HEVC` is a *codec*. Some formats support only a few kinds of codecs inside of them (e.g. `.wav`), while others support almost all codecs (e.g. Matroska). The most common formats are MP4/MOV (often `.mp4`,`.mov`,`.m4a`) and Matroska (often `.mkv`,`.mka`). Example: If you have a file named `My video.mp4`, this file most likely (but not necessarily) has the *format* `MP4`. Note that the extension of a file (in this case `.mp4`) doesn't really mean anything, and the file could in reality for example have the `MOV` format, or the extension could be `.txt`. Inside `My video.mp4` there are multiple tracks/streams, each with their own *codec*. In this example, let's say that it contains one `H264` track and one `AAC` track. In LosslessCut you can view and add/delete/modify these tracks.
 
 **Remuxing**: If you change the output format in LosslessCut and export a file, you are *remuxing* the tracks/codecs into a different container format. When you do this, the operation is in theory lossless, meaning you will not lose any codec data and the different tracks will remain exactly the same, even though the format is now different (but some format metadata might get lost due to incompatibilities between container formats). There are limitations: Some popular codecs like VP8 or VP9 are not supported in popular formats like MP4, and some popular formats like Matroska (`.mkv`) are not natively supported in popular video players like iPhone or QuickTime.
 
@@ -43,12 +43,12 @@ Here is a great introduction to audio/video: [howvideo.works](https://howvideo.w
 
 ## Segments
 
-Segments are the first class citizens of LosslessCut. A segment is a time-slice of your media file, defined by a *start time* and an *end time*. When a segment has no *end time*, it's called a [marker](#markers).
+Segments are the first class citizens of LosslessCut. A segment is a time-slice of your source media file, defined by a *start time* and an *end time*. When a segment has no *end time*, it's called a *[marker](#markers)*.
 Segments have a segment number (their export order), and can optionally have a label and tags. Segments are be the basis of what gets exported.
 
 ### Markers
 
-A segment that has no *end time* is called a *marker*. It has no length and will be excluded from exports, but behaves similar to segments. Markers are distinctively visualized on the timeline with a vertical line and a number on top. You can convert markers to segments by setting their out-point (<kbd>O</kbd>). This can be done manually or by one of the many tools in LosslessCut. For example you can invert all segments on the timeline to convert all markers into segments.
+A segment that has no *end time* is called a *marker*. It has no length and will be excluded from exports, but behaves similar to segments. Markers are distinctively visualized on the timeline with a vertical line and a number on top. You can convert markers to segments by setting their out-point (<kbd>O</kbd>). This can be done manually or automated with one of the many tools in LosslessCut. For example you can invert all segments on the timeline to convert all markers into segments.
 
 ## Tracks
 
@@ -56,7 +56,7 @@ The LosslessCut tracks panel is used to selectively enable/disable individual tr
 
 ## Custom exported file names
 
-When exporting segments as files, LosslessCut offers you the ability to specify how the output files will be named in sequence using a *template string*. The template string is evaluated as a [JavaScript template string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), so you can use JavaScript syntax inside of it.
+When exporting segments as files, LosslessCut offers you the ability to specify how the output files will be named in sequence using a *template*. The template is evaluated as a [JavaScript template string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), so you can use JavaScript syntax inside of it.
 
 The following variables are available in the template to customize the filenames:
 
@@ -80,19 +80,17 @@ The following variables are available in the template to customize the filenames
 | | | `${CUT_DURATION}` | `string` | The duration of the segment (`CUT_TO-CUT_FROM`) in `hh.mm.ss.sss` format (e.g. `00.00.28.000`).
 | | | `${SEG_TAGS.XX}` | `object` | Allows you to retrieve the tags for a given segment by name. If a tag is called foo, it can be accessed with `${SEG_TAGS.foo}`. Note that if the tag does not exist, it will yield the text `undefined`. You can work around this as follows: `${SEG_TAGS.foo ?? ''}`
 
-Your files must always include at least one unique identifer (such as `${SEG_NUM}` or `${CUT_FROM}`), and it should end in `${EXT}` (or else players might not recognise the files). For instance, to achieve a filename sequence of `Beach Trip - 1.mp4`, `Beach Trip - 2.mp4`, `Beach Trip - 3.mp4`, your format should read `${FILENAME} - ${SEG_NUM}${EXT}`. If your template gives at least two duplicate output file names, LosslessCut will revert to using the default template instead.
+Your files must always include at least one unique identifer (such as `${SEG_NUM}` or `${CUT_FROM}`), and it should end in `${EXT}` (or else players might not recognise the files). For instance, to achieve a filename sequence of `Beach Trip - 1.mp4`, `Beach Trip - 2.mp4`, `Beach Trip - 3.mp4`, your format should read `${FILENAME} - ${SEG_NUM}${EXT}`. If your template gives at least two duplicate output file names, LosslessCut will revert to using the default template instead. You can ask AI to help you create a template string by referring it to this page.
 
-### JavaScript expression tips
+## Padding numbers
 
-#### Padding numbers
-
-If you need to pad a number, you can use this JavaScript code around the variable. For example to pad the `FILE_EXPORT_COUNT` variable to 2 digits with leading zeros: `${String(FILE_EXPORT_COUNT).padStart(2, '0')}`
+If you need to pad a number, you can use this JavaScript code around the variable. For example to pad the `FILE_EXPORT_COUNT` variable to 2 digits with leading zeros, we convert it to a `String` and then call `padStart` on the string: `${String(FILE_EXPORT_COUNT).padStart(2, '0')}`
 
 If you need more help, you can ask an AI to help you with this, e.g. "How to pad a number with JavaScript?"
 
 ## Import / export projects
 
-LosslessCut also allows importing/exporting your project (segments) in a variety of file formats. See [list of supported formats](https://github.com/mifi/lossless-cut/issues/1340).
+LosslessCut default project file `.llc` is in a JSON5 format. It contains information about the segments in your timeline. LosslessCut also allows importing/exporting your project (segments) in a variety of file formats. See [list of supported formats](https://github.com/mifi/lossless-cut/issues/1340).
 
 ### CSV files
 
@@ -114,6 +112,7 @@ Same as CSV but `<tab>` instead.
 
 ## More
 
-- [FAQ, known issues, limitations and troubleshooting](issues.md)
-- [Command line interface (CLI)](cli.md)
-- [HTTP API](api.md)
+- [❓ FAQ, known issues, limitations and troubleshooting](issues.md)
+- [💻 Command line interface (CLI)](cli.md)
+- [🕸️ HTTP API](api.md)
+- [📝 Recipe cookbook](./recipes.md)
