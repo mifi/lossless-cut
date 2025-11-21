@@ -1,6 +1,6 @@
 import { memo, Fragment, useEffect, useMemo, useCallback, useState, ReactNode, SetStateAction, Dispatch, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaMouse, FaPlus, FaStepForward, FaStepBackward, FaUndo, FaTrash, FaSave } from 'react-icons/fa';
+import { FaMouse, FaPlus, FaStepForward, FaStepBackward, FaUndo, FaTrash, FaSave, FaHammer } from 'react-icons/fa';
 import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
 import uniq from 'lodash/uniq';
@@ -153,12 +153,13 @@ function WheelModifier({ text, wheelText, modifier }: { text: string, wheelText:
 
 // eslint-disable-next-line react/display-name
 const KeyboardShortcuts = memo(({
-  keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg,
+  keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg, onTriggerActionClick,
 }: {
   keyBindings: KeyBinding[],
   setKeyBindings: Dispatch<SetStateAction<KeyBinding[]>>,
   resetKeyBindings: () => void,
   currentCutSeg: StateSegment | undefined,
+  onTriggerActionClick: (action: KeyboardAction) => void,
 }) => {
   const { t } = useTranslation();
   const { updateKeyboardLayout, confirmDialog } = useAppContext();
@@ -867,7 +868,7 @@ const KeyboardShortcuts = memo(({
                   <div>
                     {beforeContent}
                     <span title={action} style={{ marginRight: '.5em', opacity: 0.9 }}>{actionName}</span>
-                    <div style={{ fontSize: '.8em', opacity: 0.3 }} title={t('API action name: {{action}}', { action })}>{action}</div>
+                    <div style={{ fontSize: '.8em', opacity: 0.3 }} title={t('API action name: {{action}}', { action })}>{action} <Button onClick={() => onTriggerActionClick(action)}><FaHammer /></Button></div>
                   </div>
 
                   <div style={{ flexGrow: 1 }} />
@@ -902,7 +903,7 @@ const KeyboardShortcuts = memo(({
 });
 
 function KeyboardShortcutsDialog({
-  isShown, onHide, keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg,
+  isShown, onHide, keyBindings, setKeyBindings, resetKeyBindings, currentCutSeg, getKeyboardAction,
 }: {
   isShown: boolean,
   onHide: () => void,
@@ -910,8 +911,15 @@ function KeyboardShortcutsDialog({
   setKeyBindings: Dispatch<SetStateAction<KeyBinding[]>>,
   resetKeyBindings: () => void,
   currentCutSeg: StateSegment | undefined,
+  getKeyboardAction: (action: KeyboardAction) => () => void,
 }) {
   const { t } = useTranslation();
+
+  const handleTriggerActionClick = useCallback((action: KeyboardAction) => {
+    onHide();
+    getKeyboardAction(action)();
+  }, [getKeyboardAction, onHide]);
+
 
   return (
     <Dialog.Root open={isShown} onOpenChange={(v) => v === false && onHide()}>
@@ -920,7 +928,7 @@ function KeyboardShortcutsDialog({
         <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
           <Dialog.Title>{t('Keyboard & mouse shortcuts')}</Dialog.Title>
 
-          <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} />
+          <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} onTriggerActionClick={handleTriggerActionClick} />
 
           <Dialog.CloseButton />
         </Dialog.Content>
