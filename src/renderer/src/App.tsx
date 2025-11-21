@@ -1934,7 +1934,7 @@ function App() {
       seekAccelerationRef.current *= keyboardSeekAccFactor;
     }
 
-    const ret: Record<MainKeyboardAction, (() => boolean) | (() => void)> = {
+    const ret: Record<MainKeyboardAction, () => void> = {
       // NOTE: Do not change these keys because users have bound keys by these names in their config files
       // For actions, see also KeyboardShortcuts.jsx
       togglePlayNoResetSpeed: () => togglePlay(),
