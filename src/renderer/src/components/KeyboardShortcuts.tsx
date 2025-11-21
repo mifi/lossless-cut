@@ -681,6 +681,10 @@ const KeyboardShortcuts = memo(({
         name: t('Show waveform'),
         category: otherCategory,
       },
+      generateOverviewWaveform: {
+        name: t('Load overview'),
+        category: otherCategory,
+      },
       toggleShowThumbnails: {
         name: t('Show thumbnails'),
         category: otherCategory,
