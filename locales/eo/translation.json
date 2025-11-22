@@ -1,4 +1,6 @@
 {
   "\"{{property}}\" must be a number": "\"{{property}}\" devas esti nombro",
-  "\"{{property}}\" must be a string": "\"{{property}}\" devas esti signoĉeno"
+  "\"{{property}}\" must be a string": "\"{{property}}\" devas esti signoĉeno",
+  "\"{{property}}\" must be an object of strings": "\"{{property}}\" devas esti objekto de ĉenoj",
+  "\"ffmpeg\" experimental flag": "Eksperimenta flago de \"ffmpeg\""
 }
