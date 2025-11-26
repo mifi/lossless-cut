@@ -763,10 +763,37 @@ function App() {
             seekAbs(nextSelectedSegment.start);
             const newIndex = cutSegments.findIndex((segment) => segment.segId === nextSelectedSegment.segId);
             if (newIndex !== -1) setCurrentSegIndex(newIndex);
+            // Ensure playback continues when jumping to next segment in loop mode
+            if (playbackModeRef.current === 'loop-selected-segments') {
+              setTimeout(() => {
+                if (playingRef.current && videoRef.current?.paused) {
+                  videoRef.current.play().catch((err) => {
+                    if (!(err instanceof Error && err.name === 'AbortError')) {
+                      console.error('Error resuming playback after segment jump:', err);
+                    }
+                  });
+                }
+              }, 50);
+            }
           }
         }
         if (nextAction.seekTo != null) {
           seekAbs(nextAction.seekTo);
+          // Ensure playback continues after seeking in loop modes
+          // Sometimes seeking can pause the video, so we need to resume it
+          if (playbackModeRef.current === 'loop-segment' || playbackModeRef.current === 'loop-segment-start-end' || playbackModeRef.current === 'loop-selected-segments') {
+            // Use a small timeout to ensure seek completes before resuming playback
+            setTimeout(() => {
+              if (playingRef.current && videoRef.current?.paused) {
+                videoRef.current.play().catch((err) => {
+                  // Ignore AbortError which can occur if playback is interrupted
+                  if (!(err instanceof Error && err.name === 'AbortError')) {
+                    console.error('Error resuming playback after loop seek:', err);
+                  }
+                });
+              }
+            }, 50);
+          }
         }
         if (nextAction.exit) {
           exit();
