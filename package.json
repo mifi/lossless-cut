@@ -471,6 +471,22 @@
         "default",
         "removable-media"
       ]
+    },
+    "flatpak": {
+      "runtime": "org.freedesktop.Platform",
+      "runtimeVersion": "23.08",
+      "sdk": "org.freedesktop.Sdk",
+      "base": "org.electronjs.Electron2.BaseApp",
+      "baseVersion": "23.08",
+      "finishArgs": [
+        "--share=network",
+        "--socket=x11",
+        "--socket=wayland",
+        "--device=dri",
+        "--socket=pulseaudio",
+        "--filesystem=home",
+        "--talk-name=org.freedesktop.Notifications"
+      ]
     }
   },
   "packageManager": "yarn@4.11.0"

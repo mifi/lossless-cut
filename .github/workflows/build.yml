@@ -69,6 +69,13 @@ jobs:
       - name: (Linux) Install and login to Snapcraft
         uses: samuelmeuli/action-snapcraft@v2
         if: startsWith(matrix.os, 'ubuntu')
+      
+      - name: (Linux) Setup flatpak
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+          flatpak --user remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
       - name: Save provisioning profile
         if: startsWith(matrix.os, 'macos')
