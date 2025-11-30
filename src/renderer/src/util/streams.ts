@@ -107,13 +107,13 @@ export const isMatroska = (format: string | undefined) => format != null && ['ma
 
 type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
 
-function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined, areWeCutting, fixCodecTag }: {
+function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined, needFlac, fixCodecTag }: {
   stream: LiteFFprobeStream,
   outputIndex: number,
   outFormat: string | undefined,
   manuallyCopyDisposition?: boolean | undefined,
   getVideoArgs?: GetVideoArgsFn | undefined,
-  areWeCutting: boolean | undefined,
+  needFlac: boolean | undefined,
   fixCodecTag: FixCodecTagOption | undefined,
 }) {
   let args: string[] = [];
@@ -170,7 +170,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
       // I think DV format only supports PCM_S16LE https://github.com/FFmpeg/FFmpeg/blob/b92028346c35dad837dd1160930435d88bd838b5/libavformat/dvenc.c#L450
       addCodecArgs('pcm_s16le');
       addArgs(`-ar:${outputIndex}`, '48000'); // maybe technically not lossless?
-    } else if (outFormat === 'flac' && areWeCutting && stream.codec_name === 'flac') { // https://github.com/mifi/lossless-cut/issues/1809
+    } else if (outFormat === 'flac' && needFlac && stream.codec_name === 'flac') { // https://github.com/mifi/lossless-cut/issues/1809
       addCodecArgs('flac'); // lossless because flac is a lossless codec
     } else {
       addCodecArgs('copy');
@@ -207,14 +207,14 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
   return args;
 }
 
-export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition, getVideoArgs, areWeCutting, fixCodecTag }: {
+export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition, getVideoArgs, needFlac, fixCodecTag }: {
   startIndex?: number,
   outFormat: string | undefined,
   allFilesMeta: Record<string, Pick<AllFilesMeta[string], 'streams'>>,
   copyFileStreams: CopyfileStreams,
   manuallyCopyDisposition?: boolean,
   getVideoArgs?: GetVideoArgsFn,
-  areWeCutting?: boolean,
+  needFlac?: boolean,
   fixCodecTag?: FixCodecTagOption,
 }) {
   let args: string[] = [];
@@ -228,7 +228,7 @@ export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, cop
       args = [
         ...args,
         '-map', `${fileIndex}:${streamId}`,
-        ...getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition, getVideoArgs, areWeCutting, fixCodecTag }),
+        ...getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition, getVideoArgs, needFlac, fixCodecTag }),
       ];
       outputIndex += 1;
     });

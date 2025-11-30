@@ -190,6 +190,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         outFormat,
         manuallyCopyDisposition: true,
         fixCodecTag,
+        needFlac: true, // https://github.com/mifi/lossless-cut/issues/2636
       });
 
       // Keep this similar to losslessCutSingle()
@@ -335,7 +336,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       ...flatMap(Object.entries(customTagsByFile[filePath] || []), ([key, value]) => ['-metadata', `${key}=${value}`]),
     ];
 
-    const mapStreamsArgs = getMapStreamsArgs({ copyFileStreams: copyFileStreamsFiltered, allFilesMeta, outFormat, areWeCutting, fixCodecTag });
+    const mapStreamsArgs = getMapStreamsArgs({ copyFileStreams: copyFileStreamsFiltered, allFilesMeta, outFormat, needFlac: areWeCutting, fixCodecTag });
 
     const customParamsArgs = (() => {
       const ret: string[] = [];
@@ -716,8 +717,6 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     // h264/aac_at: No licensing when using HW encoder (Video/Audio Toolbox on Mac)
     // https://github.com/mifi/lossless-cut/issues/372#issuecomment-810766512
 
-    const targetHeight = 400;
-
     switch (video) {
       case 'hq': {
         // eslint-disable-next-line unicorn/prefer-ternary
@@ -735,6 +734,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         break;
       }
       case 'lq': {
+        const targetHeight = 400;
+
         // eslint-disable-next-line unicorn/prefer-ternary
         if (isMac) {
           videoArgs = ['-vf', `scale=-2:${targetHeight},format=yuv420p`, '-allow_sw', '1', '-sws_flags', 'lanczos', '-vcodec', 'h264', '-b:v', '1500k'];
