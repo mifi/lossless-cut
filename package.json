@@ -453,6 +453,10 @@
           "target": "snap"
         },
         {
+          "arch": "x64",
+          "target": "flatpak"
+        },
+        {
           "arch": "arm64",
           "target": "tar.bz2"
         },
