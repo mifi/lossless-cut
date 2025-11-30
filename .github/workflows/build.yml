@@ -176,5 +176,6 @@ jobs:
             dist/LosslessCut-linux-arm64.tar.bz2
             dist/LosslessCut-linux-armv7l.tar.bz2
             dist/LosslessCut-linux-x64.tar.bz2
+            dist/LosslessCut-linux-x86_64.flatpak
             screenshot.jpeg
 
