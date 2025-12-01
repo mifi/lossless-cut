@@ -119,6 +119,8 @@ const PAGE_HEIGHT = 800;
  *         Firefox v4/Win7  |     undefined    |       3
  *
  */
+type LegacyWheelEvent = WheelEvent<Element> & { axis?: number, HORIZONTAL_AXIS?: number };
+
 export default function normalizeWheel(/* object */ event: WheelEvent<Element>) /* object */ {
   let sX = 0; let sY = 0; // spinX, spinY
   let pX = 0; let pY = 0; // pixelX, pixelY
@@ -130,8 +132,8 @@ export default function normalizeWheel(/* object */ event: WheelEvent<Element>) 
   if ('wheelDeltaX' in event) { sX = -(event.wheelDeltaX as number) / 120; }
 
   // side scrolling on FF with DOMMouseScroll
-  // @ts-expect-error todo
-  if ('axis' in event && event.axis === event.HORIZONTAL_AXIS) {
+  const legacyEvent = event as LegacyWheelEvent;
+  if ('axis' in legacyEvent && legacyEvent.axis === legacyEvent.HORIZONTAL_AXIS) {
     sX = sY;
     sY = 0;
   }
