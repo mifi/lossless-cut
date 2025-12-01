@@ -1,4 +1,4 @@
-import type { Menu as MenuType, MenuItemConstructorOptions, MenuItem } from 'electron';
+import type { Menu as MenuType, MenuItemConstructorOptions, MenuItem, PopupOptions } from 'electron';
 import { useCallback, useMemo } from 'react';
 
 // TODO pull out?
@@ -17,13 +17,14 @@ export default function useNativeMenu(
   const { x, y, onContext, onClose } = options;
 
   const openMenu = useCallback((e: MouseEvent) => {
-    // @ts-expect-error todo
-    menu.popup({
+    const popupOptions: PopupOptions = {
       window: remote.getCurrentWindow(),
       x,
       y,
       callback: onClose,
-    });
+    };
+
+    menu.popup(popupOptions);
 
     if (onContext) onContext(e);
   }, [menu, onClose, onContext, x, y]);
