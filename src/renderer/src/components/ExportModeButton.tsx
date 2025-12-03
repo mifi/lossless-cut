@@ -64,7 +64,6 @@ function ExportModeButton({ selectedSegments, style }: { selectedSegments: unkno
           merge: t('Merge cuts'),
           'merge+separate': t('Merge & Separate'),
           separate: t('Separate files'),
-          description: t('Export to separate files'),
         };
 
         const title = titles[mode];
