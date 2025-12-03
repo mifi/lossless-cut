@@ -1046,11 +1046,20 @@ function App() {
       const notices = new Set<string>();
       const warnings = new Set<string>();
 
-      const { fileNames: cutFileNames, problems: cutFilesProblems } = await generateCutFileNames(cutFileTemplateOrDefault);
-      if (cutFilesProblems.error != null) {
-        console.warn('Output segments file name invalid, using default instead', cutFileNames);
-        warnings.add(cutFilesProblems.error);
-        warnings.add(t('Fell back to default output file name'));
+      let cutFileNames: string[];
+      // When deleting merged segments, use the default template so that we e.g. don't risk creating a folder structure
+      // https://github.com/mifi/lossless-cut/issues/2637
+      if (willMerge && autoDeleteMergedSegments) {
+        const generated = await generateCutFileNames(defaultCutFileTemplate);
+        cutFileNames = generated.fileNames;
+      } else {
+        const generated = await generateCutFileNames(cutFileTemplateOrDefault);
+        cutFileNames = generated.fileNames;
+        if (generated.problems.error != null) {
+          console.warn('Output segments file name invalid, using default instead', generated.fileNames);
+          warnings.add(generated.problems.error);
+          warnings.add(t('Fell back to default output file name'));
+        }
       }
 
       // throw (() => { const err = new Error('test'); err.code = 'ENOENT'; return err; })();

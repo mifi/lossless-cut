@@ -230,7 +230,8 @@ async function generateWithFallback({ generate, desiredTemplate, defaultTemplate
     };
   }
 
-  if (problems.error != null) {
+  // Try again with default template if there was an error
+  if (problems.error != null && desiredTemplate !== defaultTemplate) {
     const fileNames = await generate({ template: defaultTemplate, sanitizeName: (name: string) => sanitizeName(name, true), safeOutputFileName: true });
     return { fileNames, originalFileNames, problems };
   }
