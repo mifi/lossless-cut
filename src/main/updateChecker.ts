@@ -37,8 +37,7 @@ export async function checkNewVersion() {
     if (semver.lt(currentVersion, newestVersion)) return newestVersion;
     return undefined;
   } catch (err) {
-    // @ts-expect-error todo
-    logger.error('Failed to check github version', err.message);
+    logger.error('Failed to check github version', err instanceof Error ? err.message : String(err));
     return undefined;
   }
 }

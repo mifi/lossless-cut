@@ -317,8 +317,7 @@ function initApp() {
     try {
       await stat(path);
     } catch (err) {
-      // @ts-expect-error todo
-      if (err.code === 'ENOENT') return;
+      if (err instanceof Error && 'code' in err && err.code === 'ENOENT') return;
     }
     await shell.trashItem(path);
   });
