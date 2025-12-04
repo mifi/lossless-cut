@@ -13,5 +13,9 @@
   {
     "version": "3.67.1",
     "highlightsMd": "- Improve concat dialog\n- Enable system language support\n- Capture snapshot to clipboard `captureSnapshotToClipboard`\n- Bugfixes and improvements\n"
+  },
+  {
+    "version": "3.67.2",
+    "highlightsMd": "- Remove \"Fix video codec tag / ID\" option: **Codec tag will no longer be auto corrected**, as it turned out to cause problems with some files. Instead you can override codec tag for individual tracks in the \"tracks\" dialog\n- Add a `hevc_metadata=aud=insert` bitstream filter in the track editor\n- New action `generateOverviewWaveform` to generate a full waveform overview\n- Minor improvements and fixes\n"
   }
 ]
