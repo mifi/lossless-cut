@@ -25,7 +25,7 @@
     "postinstall": "electron-builder install-app-deps",
     "version": "tsx script/postversion.mts && git add no.mifi.losslesscut.appdata.xml",
     "pack-linux": "yarn build && electron-builder --linux",
-    "scan-i18n": "i18next-cli extract",
+    "scan-i18n": "i18next-cli -c i18next.config.scan.ts extract",
     "generate-licenses": "yarn licenses generate-disclaimer > licenses.txt && echo '\n\nffmpeg is licensed under GPL v2+:\n\nhttp://www.gnu.org/licenses/old-licenses/gpl-2.0.html' >> licenses.txt"
   },
   "author": {
