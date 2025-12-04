@@ -91,7 +91,7 @@ MP4 and MOV are technically almost the same format. Sometimes files have the ext
 
 ## MP4/MOV playback exported file fails
 
-If you cannot playback the output video file even when exporting without doing any cuts at all, this might be due to FFmpeg applying the wrong output video codec tag (`hev1` vs `hvc1`). You can try to set the export option "Fix video codec tag / ID" to "Auto" or "Always". See [#2518](https://github.com/mifi/lossless-cut/issues/2518) [#1444](https://github.com/mifi/lossless-cut/issues/1444) [#2626](https://github.com/mifi/lossless-cut/issues/2626)
+If you cannot playback the output video file (even if you try to export the whole file without performing any cuts at all), this could be due to FFmpeg applying the wrong output video codec tag (for example `hev1` vs `hvc1` for H265 video). You can try a different video player such as VLC. Or try to change the codec tag or enable the bitstream filter `hevc_metadata=aud=insert` for the particular track in the "tracks" dialog. See also [#2518](https://github.com/mifi/lossless-cut/issues/2518) and [#2626](https://github.com/mifi/lossless-cut/issues/2626).
 
 ## Output file name is missing characters (Chinese, accents etc)
 

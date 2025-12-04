@@ -2,7 +2,6 @@ import invariant from 'tiny-invariant';
 import { FFprobeStream, FFprobeStreamDisposition } from '../../../common/ffprobe';
 import { AllFilesMeta, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, LiteFFprobeStream } from '../types';
 import type { FileStream } from '../ffmpeg';
-import { FixCodecTagOption } from '../../../common/types';
 
 
 // taken from `ffmpeg -codecs`
@@ -107,14 +106,13 @@ export const isMatroska = (format: string | undefined) => format != null && ['ma
 
 type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
 
-function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined, needFlac, fixCodecTag }: {
+function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined, needFlac }: {
   stream: LiteFFprobeStream,
   outputIndex: number,
   outFormat: string | undefined,
   manuallyCopyDisposition?: boolean | undefined,
   getVideoArgs?: GetVideoArgsFn | undefined,
   needFlac: boolean | undefined,
-  fixCodecTag: FixCodecTagOption | undefined,
 }) {
   let args: string[] = [];
 
@@ -182,14 +180,6 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
     } else {
       addCodecArgs('copy');
     }
-
-    if (isMov(outFormat)) {
-      // 0x31766568 see https://github.com/mifi/lossless-cut/issues/1444
-      // eslint-disable-next-line unicorn/prefer-switch, unicorn/no-lonely-if
-      if (fixCodecTag === 'always' || (fixCodecTag === 'auto' && ['0x0000', '0x31637668', '0x31766568'].includes(stream.codec_tag) && stream.codec_name === 'hevc')) {
-        addArgs(`-tag:${outputIndex}`, 'hvc1');
-      }
-    }
   } else { // other stream types
     addCodecArgs('copy');
   }
@@ -207,7 +197,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
   return args;
 }
 
-export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition, getVideoArgs, needFlac, fixCodecTag }: {
+export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition, getVideoArgs, needFlac }: {
   startIndex?: number,
   outFormat: string | undefined,
   allFilesMeta: Record<string, Pick<AllFilesMeta[string], 'streams'>>,
@@ -215,7 +205,6 @@ export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, cop
   manuallyCopyDisposition?: boolean,
   getVideoArgs?: GetVideoArgsFn,
   needFlac?: boolean,
-  fixCodecTag?: FixCodecTagOption,
 }) {
   let args: string[] = [];
   let outputIndex = startIndex;
@@ -228,7 +217,7 @@ export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, cop
       args = [
         ...args,
         '-map', `${fileIndex}:${streamId}`,
-        ...getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition, getVideoArgs, needFlac, fixCodecTag }),
+        ...getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition, getVideoArgs, needFlac }),
       ];
       outputIndex += 1;
     });

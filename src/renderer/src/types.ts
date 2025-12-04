@@ -156,6 +156,8 @@ export interface StreamParams {
   disposition?: string,
   bsfH264Mp4toannexb?: boolean,
   bsfHevcMp4toannexb?: boolean,
+  bsfHevcAudInsert?: boolean,
+  tag?: string | undefined,
 }
 export type ParamsByStreamId = Map<string, Map<number, StreamParams>>;
 

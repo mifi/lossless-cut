@@ -52,12 +52,11 @@ test('getMapStreamsArgs', () => {
     allFilesMeta,
     copyFileStreams: [{ path, streamIds: streams1.map((stream) => stream.index) }],
     outFormat,
-    fixCodecTag: 'auto',
   })).toEqual([
     '-map', '0:0', '-c:0', 'copy',
     '-map', '0:1', '-c:1', 'copy',
     '-map', '0:2', '-c:2', 'copy',
-    '-map', '0:3', '-c:3', 'copy', '-tag:3', 'hvc1',
+    '-map', '0:3', '-c:3', 'copy',
     '-map', '0:4', '-c:4', 'copy',
     '-map', '0:5', '-c:5', 'copy',
     '-map', '0:6', '-c:6', 'copy',

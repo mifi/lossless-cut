@@ -21,7 +21,7 @@ import styles from './ExportConfirm.module.css';
 import { SegmentToExport } from '../types';
 import { defaultCutFileTemplate, defaultCutMergedFileTemplate, GenerateOutFileNames } from '../util/outputNameTemplate';
 import { FFprobeStream } from '../../../common/ffprobe';
-import { AvoidNegativeTs, FixCodecTagOption, PreserveMetadata } from '../../../common/types';
+import { AvoidNegativeTs, PreserveMetadata } from '../../../common/types';
 import TextInput from './TextInput';
 import { UseSegments } from '../hooks/useSegments';
 import ExportSheet from './ExportSheet';
@@ -128,7 +128,7 @@ function ExportConfirm({
 }) {
   const { t } = useTranslation();
 
-  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, setFixCodecTag, fixCodecTag, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate, simpleMode } = useUserSettings();
+  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate, simpleMode } = useUserSettings();
 
   const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
 
@@ -169,7 +169,7 @@ function ExportConfirm({
 
     const generic: { warning?: true, text: string }[] = [];
 
-    if (effectiveExportMode === 'separate' && !areWeCutting) {
+    if ((effectiveExportMode === 'separate' || effectiveExportMode === 'merge' || effectiveExportMode === 'merge+separate') && !areWeCutting) {
       generic.push({ text: t('Exporting whole file without cutting, because there are no segments to export.') });
     }
 
@@ -248,12 +248,6 @@ function ExportConfirm({
   const onExportModeHelpPress = useCallback(() => {
     showHelpText({ text: exportModeDescription });
   }, [exportModeDescription, showHelpText]);
-
-  // https://github.com/mifi/lossless-cut/issues/2518
-  // https://github.com/mifi/lossless-cut/issues/1444
-  const onFixCodecTagHelpPress = useCallback(() => {
-    showHelpText({ text: i18n.t('Some video files have incorrect codec tags which may cause problems playing back the video track in some players. On the flip side, fixing the codec tag will also cause problems in some players, so you might have to try both settings.') });
-  }, [showHelpText]);
 
   const onAvoidNegativeTsHelpPress = useCallback(() => {
     // https://ffmpeg.org/ffmpeg-all.html#Format-Options
@@ -486,22 +480,6 @@ function ExportConfirm({
                     </td>
                     <td>
                       {renderNoticeIcon(notices.specific['preserveMovData'], rightIconStyle) ?? <HelpIcon onClick={onPreserveMovDataHelpPress} />}
-                    </td>
-                  </AnimatedTr>
-
-                  <AnimatedTr>
-                    <td>
-                      {t('Fix video codec tag / ID')}
-                    </td>
-                    <td>
-                      <Select value={fixCodecTag} onChange={(e) => setFixCodecTag(e.target.value as FixCodecTagOption)} style={{ height: 20, marginLeft: 5 }}>
-                        <option value={'auto' satisfies FixCodecTagOption}>{t('Auto')}</option>
-                        <option value={'always' satisfies FixCodecTagOption}>{t('Always')}</option>
-                        <option value={'never' satisfies FixCodecTagOption}>{t('Never')}</option>
-                      </Select>
-                    </td>
-                    <td>
-                      <HelpIcon onClick={onFixCodecTagHelpPress} />
                     </td>
                   </AnimatedTr>
                 </>

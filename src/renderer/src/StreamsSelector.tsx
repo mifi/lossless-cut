@@ -21,6 +21,7 @@ import Checkbox from './components/Checkbox';
 import styles from './StreamsSelector.module.css';
 import Json5Dialog from './components/Json5Dialog';
 import GpsMap from './components/GpsMap';
+import TextInput from './components/TextInput';
 
 
 const dispositionOptions = ['default', 'dub', 'original', 'comment', 'lyrics', 'karaoke', 'forced', 'hearing_impaired', 'visual_impaired', 'clean_effects', 'attached_pic', 'captions', 'descriptions', 'dependent', 'metadata'];
@@ -75,7 +76,9 @@ function getStreamEffectiveDisposition(paramsByStreamId: ParamsByStreamId, fileI
 
 
 function StreamParametersEditor({ stream, streamParams, updateStreamParams }: {
-  stream: FFprobeStream, streamParams: StreamParams, updateStreamParams: (setter: (a: StreamParams) => void) => void,
+  stream: FFprobeStream,
+  streamParams: StreamParams,
+  updateStreamParams: (setter: (a: StreamParams) => void) => void,
 }) {
   const { t } = useTranslation();
 
@@ -91,11 +94,23 @@ function StreamParametersEditor({ stream, streamParams, updateStreamParams }: {
     ui.push(
       // eslint-disable-next-line no-param-reassign
       <Checkbox key="bsfHevcMp4toannexb" checked={!!streamParams.bsfHevcMp4toannexb} label={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_mp4toannexb' })} onCheckedChange={(checked) => updateStreamParams((params) => { params.bsfHevcMp4toannexb = checked === true; })} />,
+      // eslint-disable-next-line no-param-reassign
+      <Checkbox key="bsfHevcAudInsert" checked={!!streamParams.bsfHevcAudInsert} label={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_metadata=aud=insert' })} onCheckedChange={(checked) => updateStreamParams((params) => { params.bsfHevcAudInsert = checked === true; })} />,
+    );
+  }
+
+  if (stream.codec_type === 'video' || stream.codec_type === 'audio') {
+    ui.push(
+      <div style={{ display: 'flex', gap: '1em', flexWrap: 'wrap' }}>
+        {t('Codec tag')}
+        {/* eslint-disable-next-line no-param-reassign */}
+        <TextInput key="tag" placeholder={t('Default')} value={streamParams.tag ?? ''} onChange={(e) => updateStreamParams((params) => { params.tag = e.target.value.trim() === '' ? undefined : e.target.value; })} />
+      </div>,
     );
   }
 
   return (
-    <div style={{ marginBottom: '1em' }}>
+    <div style={{ marginBottom: '1em', display: 'flex', flexDirection: 'column', gap: '1em' }}>
       {ui.length > 0
         ? ui
         : t('No editable parameters for this stream.')}
