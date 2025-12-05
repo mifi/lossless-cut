@@ -1025,5 +1025,19 @@
   "Video tracks": "비디오 트랙",
   "Waveform height": "파형 높이",
   "What's new in LosslessCut?": "LosslessCut의 새로운 기능은?",
-  "<0></0> <2></2>, <4></4> <6></6> or <8><0>{getModifier(segmentMouseModifierKey)}</0></8>+<10></10> to set cutpoints": "절단지점 설정은 <0></0> <2></2>, <4></4> <6></6> 또는 <8><0>{getModifier(segmentMouseModifierKey)}</0></8>+<10></10> 사용"
+  "<0></0> <2></2>, <4></4> <6></6> or <8><0>{getModifier(segmentMouseModifierKey)}</0></8>+<10></10> to set cutpoints": "절단지점 설정은 <0></0> <2></2>, <4></4> <6></6> 또는 <8><0>{getModifier(segmentMouseModifierKey)}</0></8>+<10></10> 사용",
+  "{{durationMsFormatted}} ms": "{{durationMsFormatted}} ms",
+  "{{frameCount}} frames": "{{frameCount}} 프레임",
+  "<0></0> <2></2>, <4></4> <6></6> or <8><0>{{getModifier}}</0></8>+<11></11> to set cutpoints": "절단지점을 설정하려면 <0></0> <2></2>, <4></4> <6></6> 또는 <8><0>{{getModifier}}</0></8>+<11></11>",
+  "Capture snapshot to clipboard": "스냅샷을 클립보드에 캡처",
+  "Codec tag": "코덱 태그",
+  "Extract frames of the current segment as images": "현재 세그먼트의 프레임을 이미지로 추출",
+  "Extract frames of the selected segments as images": "선택된 세그먼트의 프레임을 이미지로 추출",
+  "Extraneous": "Extraneous",
+  "Lossy mode": "손실 모드",
+  "N/A": "N/A",
+  "Parameters": "매개 변수",
+  "Read more": "더 읽어보기",
+  "Screenshot captured clipboard": "스크린샷이 클립보드에 캡처되었습니다.",
+  "Track {{num}}": "트랙 {{num}}"
 }
