@@ -1068,5 +1068,19 @@
   "Smart cut is not possible when FPS is unknown": "当帧率未知时，无法进行智能剪辑",
   "Some video files have incorrect codec tags which may cause problems playing back the video track in some players. On the flip side, fixing the codec tag will also cause problems in some players, so you might have to try both settings.": "有些视频文件的编解码器标签不正确，这可能会导致在某些播放器中播放视频轨道时出现问题。另一方面，修复编解码器标签也会在某些播放器中引发问题，因此你可能需要尝试这两种设置。",
   "What's new in LosslessCut?": "LosslessCut 有什么新功能 ？",
-  "Meta": "元数据"
+  "Meta": "元数据",
+  "{{durationMsFormatted}} ms": "{{durationMsFormatted}} 毫秒",
+  "{{frameCount}} frames": "{{frameCount}} 帧",
+  "Capture snapshot to clipboard": "捕获快照到剪贴板",
+  "Codec tag": "编解码器标签",
+  "Extract frames of the current segment as images": "提取当前片段的帧为图像",
+  "Extract frames of the selected segments as images": "提取选定片段的帧为图像",
+  "Extraneous": "冗余",
+  "Lossy mode": "有损模式",
+  "N/A": "未知",
+  "Parameters": "参数",
+  "Read more": "了解更多",
+  "Screenshot captured clipboard": "屏幕截图剪贴板",
+  "Track {{num}}": "轨道 {{num}}",
+  "<0></0> <2></2>, <4></4> <6></6> or <8><0>{{getModifier}}</0></8>+<11></11> to set cutpoints": "<0></0> <2></2>、 <4></4> <6></6> 或 <8><0>{{getModifier}}</0></8>+<11></11> 设置剪切点"
 }
