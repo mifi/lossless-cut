@@ -1047,5 +1047,19 @@
   "Show advanced options": "Zobrazit pokročilé možnosti",
   "Smart cut is not possible when FPS is unknown": "Přesný střih není možný když je FPS neznámé",
   "Some video files have incorrect codec tags which may cause problems playing back the video track in some players. On the flip side, fixing the codec tag will also cause problems in some players, so you might have to try both settings.": "Některé video soubory mají nesprávné štítky kodeku, což může způsobit problémy při přehrávání videa v některých přehrávačích. Na druhou stranu, oprava štítku kodeku způsobí problémy v některých přehrávačích, takže možná budete muset vyzkoušet obě možnosti.",
-  "What's new in LosslessCut?": "Co je nového v LosslessCut?"
+  "What's new in LosslessCut?": "Co je nového v LosslessCut?",
+  "{{durationMsFormatted}} ms": "{{durationMsFormatted}} ms",
+  "{{frameCount}} frames": "{{frameCount}} snímků",
+  "<0></0> <2></2>, <4></4> <6></6> or <8><0>{{getModifier}}</0></8>+<11></11> to set cutpoints": "<0></0> <2></2>, <4></4> <6></6> nebo <8><0>{{getModifier}}</0></8>+<11></11> pro nastavení bodů střihu",
+  "Capture snapshot to clipboard": "Zachytit snímek do schránky",
+  "Codec tag": "Štítek kodeku",
+  "Extract frames of the current segment as images": "Extrahovat snímky současného segmentu jako obrázky",
+  "Extract frames of the selected segments as images": "Extrahovat snímky vybraných segmentů jako obrázky",
+  "Extraneous": "Nadbytečné",
+  "Lossy mode": "Ztrátový režim",
+  "N/A": "N/A",
+  "Parameters": "Parametry",
+  "Read more": "Číst více",
+  "Screenshot captured clipboard": "Snímek obrazovky vložen do schránky",
+  "Track {{num}}": "Stopa {{num}}"
 }
