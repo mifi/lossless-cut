@@ -1080,7 +1080,7 @@
   "N/A": "未知",
   "Parameters": "参数",
   "Read more": "了解更多",
-  "Screenshot captured clipboard": "屏幕截图剪贴板",
+  "Screenshot captured clipboard": "截图已复制到剪贴板",
   "Track {{num}}": "轨道 {{num}}",
   "<0></0> <2></2>, <4></4> <6></6> or <8><0>{{getModifier}}</0></8>+<11></11> to set cutpoints": "<0></0> <2></2>、 <4></4> <6></6> 或 <8><0>{{getModifier}}</0></8>+<11></11> 设置剪切点"
 }
