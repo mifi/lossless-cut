@@ -388,7 +388,20 @@ export async function createFixedByteSixedSegments({ fileDuration, fileSize }: {
   const parsed = parseBytesHuman(value);
   invariant(parsed != null);
 
-  return fileDuration * (parsed / fileSize);
+  // Use a conservative estimate based on average bytes per second and a safety margin
+  // so that the estimated segment size (including margin) stays within the user limit.
+  const safetyFactor = 1.1; // 10% overhead margin for container / bitrate variations
+
+  const avgBytesPerSecond = fileSize / fileDuration;
+  if (!Number.isFinite(avgBytesPerSecond) || avgBytesPerSecond <= 0) {
+    // Fallback: keep previous behaviour if we for some reason cannot estimate
+    return fileDuration * (parsed / fileSize);
+  }
+
+  const maxBytesPerSegment = parsed / safetyFactor;
+  const segmentDuration = maxBytesPerSegment / avgBytesPerSecond;
+
+  return segmentDuration;
 }
 
 
