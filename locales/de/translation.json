@@ -1043,5 +1043,19 @@
   "Smart cut is not possible when FPS is unknown": "Intelligenter Schnitt ist nicht möglich, wenn die FPS unbekannt sind",
   "Some video files have incorrect codec tags which may cause problems playing back the video track in some players. On the flip side, fixing the codec tag will also cause problems in some players, so you might have to try both settings.": "Einige Videodateien haben fehlerhafte Codec-Tags, was bei einigen Playern zu Problemen bei der Wiedergabe der Videospur führen kann. Andererseits kann die Korrektur des Codec-Tags bei einigen Playern ebenfalls Probleme verursachen, daher sollten Sie möglicherweise beide Einstellungen ausprobieren.",
   "What's new in LosslessCut?": "Was ist neu in LosslessCut?",
-  "Error code: {{errorCode}}. This could mean that anti-virus or something else is blocking the execution of FFmpeg. Make sure the following file exists and is executable:": "Fehlercode: {{errorCode}}. Dies könnte bedeuten, dass ein Antivirenprogramm oder etwas anderes die Ausführung von FFmpeg blockiert. Stellen Sie sicher, dass die folgende Datei existiert und ausführbar ist:"
+  "Error code: {{errorCode}}. This could mean that anti-virus or something else is blocking the execution of FFmpeg. Make sure the following file exists and is executable:": "Fehlercode: {{errorCode}}. Dies könnte bedeuten, dass ein Antivirenprogramm oder etwas anderes die Ausführung von FFmpeg blockiert. Stellen Sie sicher, dass die folgende Datei existiert und ausführbar ist:",
+  "{{durationMsFormatted}} ms": "{{durationMsFormatted}} ms",
+  "{{frameCount}} frames": "{{frameCount}} Frames",
+  "<0></0> <2></2>, <4></4> <6></6> or <8><0>{{getModifier}}</0></8>+<11></11> to set cutpoints": "<0></0> <2></2>, <4></4> <6></6> oder <8><0>{{getModifier}}</0></8>+<11></11>, um Schnittpunkte zu setzen",
+  "Capture snapshot to clipboard": "Schnappschuss aufnehmen und in die Zwischenablage kopieren",
+  "Codec tag": "Codec-Tag",
+  "Extract frames of the selected segments as images": "Frames der ausgewählten Segmente als Bilder extrahieren",
+  "Extract frames of the current segment as images": "Frames des aktuellen Segments als Bilder extrahieren",
+  "Extraneous": "Überflüssig",
+  "Lossy mode": "Verlustbehafteter Modus",
+  "N/A": "n. v.",
+  "Parameters": "Parameter",
+  "Read more": "Mehr dazu",
+  "Track {{num}}": "Spur {{num}}",
+  "Screenshot captured clipboard": "Bildschirmaufnahme in die Zwischenablage kopiert"
 }
