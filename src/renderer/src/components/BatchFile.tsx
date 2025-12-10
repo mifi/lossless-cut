@@ -59,6 +59,12 @@ function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, 
     e.currentTarget.blur();
   }, [onSelect, path]);
 
+  const handleDeleteClick = useCallback<MouseEventHandler<SVGElement>>((e) => {
+    e.stopPropagation();
+    onDelete?.(path);
+    e.currentTarget.blur();
+  }, [onDelete, path]);
+
   return (
     <div
       // eslint-disable-next-line react/jsx-props-no-spreading
@@ -78,7 +84,7 @@ function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, 
         <span style={{ direction: 'ltr', unicodeBidi: 'isolate', display: 'inline-block' }}>{name}</span>
       </div>
       <div style={{ flexGrow: 1 }} />
-      {onDelete && <FaTimes style={{ color: dangerColor, fontSize: '.9em', marginRight: '-.3em', flexShrink: 0, cursor: 'pointer', padding: '.3em' }} role="button" onClick={() => onDelete(path)} />}
+      {onDelete && <FaTimes style={{ color: dangerColor, fontSize: '.9em', marginRight: '-.3em', flexShrink: 0, cursor: 'pointer', padding: '.3em' }} role="button" onClick={handleDeleteClick} />}
     </div>
   );
 }
