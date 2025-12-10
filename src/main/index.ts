@@ -233,7 +233,7 @@ function parseCliArgs(rawArgv = process.argv) {
   const argsWithoutAppName = rawArgv.length > ignoreFirstArgs ? rawArgv.slice(ignoreFirstArgs) : [];
 
   return yargsParser(argsWithoutAppName, {
-    boolean: ['allow-multiple-instances', 'disable-networking'],
+    boolean: ['disable-networking'],
     string: ['settings-json', 'config-dir', 'lossy-mode'],
   });
 }
