@@ -969,5 +969,7 @@
   "Video tracks": "Ścieżki wideo",
   "Waveform height": "Wysokość fali",
   "What's new in LosslessCut?": "Co nowego w LosslessCut?",
-  "Yes": "Tak"
+  "Yes": "Tak",
+  "{{durationMsFormatted}} ms": "{{durationMsFormatted}} ms",
+  "{{frameCount}} frames": "{{frameCount}} klatek"
 }
