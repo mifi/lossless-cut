@@ -70,13 +70,6 @@ jobs:
         uses: samuelmeuli/action-snapcraft@v2
         if: startsWith(matrix.os, 'ubuntu')
       
-      - name: (Linux) Setup flatpak
-        if: startsWith(matrix.os, 'ubuntu')
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y flatpak flatpak-builder
-          flatpak --user remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-
       - name: Save provisioning profile
         if: startsWith(matrix.os, 'macos')
         env:
@@ -176,6 +169,5 @@ jobs:
             dist/LosslessCut-linux-arm64.tar.bz2
             dist/LosslessCut-linux-armv7l.tar.bz2
             dist/LosslessCut-linux-x64.tar.bz2
-            dist/LosslessCut-linux-x86_64.flatpak
             screenshot.jpeg
 
