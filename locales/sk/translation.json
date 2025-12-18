@@ -893,5 +893,20 @@
   "Tracks with H264 codec": "Stopy s kodekom H264",
   "Video tracks": "Video stopy",
   "What's new in LosslessCut?": "Čo je nové v programe LosslessCut?",
-  "Yes": "Áno"
+  "Yes": "Áno",
+  "{{durationMsFormatted}} ms": "{{durationMsFormatted}} ms",
+  "{{frameCount}} frames": "{{frameCount}} snímkov",
+  "<0></0> <2></2>, <4></4> <6></6> or <8><0>{{getModifier}}</0></8>+<11></11> to set cutpoints": "<0></0> <2></2>, <4></4> <6></6> or <8><0>{{getModifier}}</0></8>+<11></11>nastaviť hraničné hodnoty",
+  "Capture snapshot to clipboard": "Zachytiť snímku do schránky",
+  "Codec tag": "Štítok kodeku",
+  "Extract frames of the current segment as images": "Extrahovať snímky aktuálneho segmentu ako obrázky",
+  "Extract frames of the selected segments as images": "Extrahovať snímky vybraných segmentov ako obrázky",
+  "Extraneous": "Mimoriadne",
+  "Lossy mode": "Stratový režim",
+  "Merge files": "Zlúčiť súbory",
+  "N/A": "N/A",
+  "Parameters": "Parametre",
+  "Read more": "Viac informácií",
+  "Screenshot captured clipboard": "Snímka obrazovky uložená do schránky",
+  "Track {{num}}": "Stopa {{num}}"
 }
