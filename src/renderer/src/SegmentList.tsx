@@ -647,7 +647,7 @@ function SegmentList({
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} modifiers={[restrictToVerticalAxis]}>
           <SortableContext items={sortableList} strategy={verticalListSortingStrategy}>
             <div ref={scrollerRef} style={{ padding: '0 .2em 0 .5em', overflowX: 'hidden', overflowY: 'scroll', flexGrow: 1 }} className="consistent-scrollbar">
-              <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative', overflowX: 'hidden' }}>
+              <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative', overflow: 'hidden' }}>
                 {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                   const { id, seg } = sortableList[virtualRow.index]!;
                   const selected = 'selected' in seg ? seg.selected : true;
