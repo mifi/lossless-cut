@@ -1003,5 +1003,20 @@
   "Show advanced options": "Visualizza opzioni avanzate",
   "Smart cut is not possible when FPS is unknown": "Il taglio intelligente non è possibile quando l'FPS è sconosciuto",
   "Some video files have incorrect codec tags which may cause problems playing back the video track in some players. On the flip side, fixing the codec tag will also cause problems in some players, so you might have to try both settings.": "Alcuni file video hanno tag codec errati che potrebbero causare problemi nella riproduzione della traccia video in alcuni lettori. D'altro canto, anche la correzione del tag del codec causerà problemi in alcuni lettori, quindi potresti dover provare entrambe le impostazioni.",
-  "What's new in LosslessCut?": "Quali sono le novità in LosslessCut?"
+  "What's new in LosslessCut?": "Quali sono le novità in LosslessCut?",
+  "{{durationMsFormatted}} ms": "{{durationMsFormatted}} ms",
+  "{{frameCount}} frames": "{{frameCount}} fotogrammi",
+  "<0></0> <2></2>, <4></4> <6></6> or <8><0>{{getModifier}}</0></8>+<11></11> to set cutpoints": "<0></0> <2></2>, <4></4> <6></6> or <8><0>{{getModifier}}</0></8>+<11></11> per impostare punti taglio",
+  "Capture snapshot to clipboard": "Cattura schermata e copiala negli appunti",
+  "Codec tag": "Tag codec",
+  "Extract frames of the current segment as images": "Estrai fotogrammi del segmento attuale come immagini",
+  "Extract frames of the selected segments as images": "Estrai fotogrammi dei segmenti selezionati come immagini",
+  "Extraneous": "Estraneo",
+  "Lossy mode": "Modo lossy",
+  "Merge files": "Unisci file",
+  "N/A": "N/D",
+  "Parameters": "Parametri",
+  "Read more": "Maggiori info",
+  "Screenshot captured clipboard": "Schermata copiata negli appunti",
+  "Track {{num}}": "Traccia {{num}}"
 }
