@@ -293,7 +293,7 @@ function ExportConfirm({
       renderBottom={() => (
         <>
           <ToggleExportConfirm size="1.5em" />
-          <div style={{ fontSize: '.8em', marginLeft: '.4em', marginRight: '.5em', maxWidth: '8.5em', lineHeight: '100%', color: exportConfirmEnabled ? 'var(--gray-12)' : 'var(--gray-11)' }} role="button" onClick={toggleExportConfirmEnabled}>
+          <div style={{ fontSize: '.8em', marginLeft: '.4em', marginRight: '.5em', maxWidth: '8.5em', lineHeight: '100%', color: exportConfirmEnabled ? 'var(--gray-12)' : 'var(--gray-11)', cursor: 'pointer' }} role="button" onClick={toggleExportConfirmEnabled}>
             {t('Show this page before exporting?')}
           </div>
           {notices.totalNum > 0 && (
