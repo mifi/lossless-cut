@@ -371,7 +371,7 @@ export async function readFileMeta(filePath: string) {
     });
     return { format, streams, chapters };
   } catch (err) {
-    if (isExecaError(err)) {
+    if (isExecaError(err) && err.code == null && err.exitCode != null) {
       throw new UnsupportedFileError(err.message);
     }
     throw err;

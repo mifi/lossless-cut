@@ -1,7 +1,6 @@
 import i18n from 'i18next';
 import { useCallback, useState } from 'react';
 
-import { errorToast } from '../swal';
 import { DirectoryAccessDeclinedError, UnsupportedFileError } from '../../errors';
 import { isAbortedError } from '../util';
 import { GenericError } from '../components/ErrorDialog';
@@ -25,7 +24,7 @@ export default function useErrorHandling() {
       if (err instanceof DirectoryAccessDeclinedError || isAbortedError(err)) return;
 
       if (err instanceof UnsupportedFileError) {
-        errorToast(i18n.t('Unsupported file'));
+        handleError({ err: i18n.t('Unsupported file') });
         return;
       }
 
