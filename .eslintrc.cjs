@@ -35,6 +35,7 @@ module.exports = {
           devDependencies: true,
           optionalDependencies: false,
         }],
+        "no-console": 0,
       },
     },
   ],

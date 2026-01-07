@@ -27,3 +27,5 @@ jobs:
       - run: yarn test
       - run: yarn tsc
       - run: yarn lint
+      - run: yarn build
+      - run: yarn generate-licenses
