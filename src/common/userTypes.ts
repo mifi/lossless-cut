@@ -2,6 +2,7 @@
 // ‼️ DO NOT change these types without considering the user impact!
 // See https://github.com/mifi/lossless-cut/blob/master/expressions.md
 // https://github.com/mifi/lossless-cut/blob/master/docs.md#custom-exported-file-names
+// JSDoc comments get converted to user documentation.
 
 /**
  * Properties of a source file made available to the user in the export file name template.
@@ -26,6 +27,7 @@ export interface SourceFile {
 
 /**
  * The global context made available to the user in the export file name template.
+ * See docs/file-name-template.md documentation for details.
  */
 export interface FileNameTemplateContext {
   FILENAME: string;
@@ -46,4 +48,22 @@ export interface FileNameTemplateContext {
   SEG_TAGS?: Record<string, string> | undefined;
   FILE_EXPORT_COUNT?: number | undefined;
   EXPORT_COUNT?: number | undefined;
+}
+
+/**
+ * See https://github.com/mifi/lossless-cut/blob/master/docs/expressions.md
+ */
+export interface Segment {
+  /** Index of the segment in the segment list, starting with 0 */
+  index: number,
+  /** Name of the segment */
+  label: string,
+  /** Segment start time in seconds */
+  start: number,
+  /** Segment end time in seconds, or undefined for markers */
+  end?: number | undefined,
+  /** Duration in seconds (effectively `end` minus `start` or 0 for markers) */
+  duration: number,
+  /** Tags associated with this segment */
+  tags: Record<string, string>,
 }

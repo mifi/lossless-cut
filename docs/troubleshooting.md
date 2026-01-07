@@ -1,37 +1,6 @@
-# FAQ
+# Troubleshooting, known issues and limitation
 
-Please read this first:
-
-- **Q:** Can LosslessCut **crop, resize, stretch, mirror/flip, overlay text/images, watermark, blur, redact, reduce quality/re-encode, create GIF, slideshow, burn subtitles, color grading, fade/transition between video clips, fade/combine/mix/merge audio tracks, mute audio channels or change audio volume**?
-  - **A:** No, these are all lossy operations (meaning you *have* to re-encode the file), but in the future I may start to implement such features. [See #372](https://github.com/mifi/lossless-cut/issues/372). Related: [#643](https://github.com/mifi/lossless-cut/issues/643).
-- **Q:** Is there a keyboard shortcut to do X?
-  - **A:** First check the Keyboard shortcuts dialog. If you cannot find your shortcut there, [see this issue.](https://github.com/mifi/lossless-cut/issues/254)
-- **Q:** Can LosslessCut do the same batch conversion operation on multiple files?
-  - [**A:** Probably not, but you can probably do it! See here.](./batch.md)
-- **Q:** Can LosslessCut be automated using a CLI or API or do external post-processing?
-  - **A:** While it was never designed for advanced batching/automation, it does have a [basic CLI and a HTTP API](./cli.md). More info: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868).
-- **Q:** How to *cut away* a middle part of a video?
-  - **A:** Enable "advanced view" and then click the Yin Yang symbol. It will invert the segments.
-- **Q:** When will you implement feature X?
-  - **A:** I have limited time and I have a lot of projects to work on, so I cannot promise any timeline. I will usually prioritize the issues with the most likes, [see here for a list of the most popular issues](https://github.com/mifi/lossless-cut/issues/691).
-- **Q:** Is LosslessCut a portable app? Where is application data, settings and temp files stored?
-  - **A:** See LosslessCut is *not* a [portable app](https://github.com/mifi/lossless-cut/issues/645). See [Installation and files](./installation.md).
-- **Q:** Can I export and replace the input file in-place?
-  - **A:** No, but you can export and automatically delete the input file.
-- **Q:** Can you publish through [winget](https://github.com/mifi/lossless-cut/issues/1279), [Flatpak](https://github.com/mifi/lossless-cut/pull/1813), [Docker](https://github.com/mifi/lossless-cut/issues/1086) or other software mangers?
-  - **A:** In general I don't want to maintain more build systems, but I could be open to linking to externally maintained build systems.
-- **Q:** How to sync/shift audio/video tracks?
-  - **A:** This is not natively supported but it can be done with a workaround, see [#216](https://github.com/mifi/lossless-cut/issues/216).
-
-## App Stores and GitHub difference
-
-LosslessCut version in the App Stores is often a few versions behind the latest GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. The GitHub version will contain new, untested features and may contain some bugs (even in existing functionality). I consider the newest GitHub versions to be a public "beta" test. Then, once I'm sure that the new version works well, I will release it in the App Stores as well to give a frictionless as possible experience for customers. They have exactly the same in-app features, except for a few platform limitations: Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps run in a sandbox, and therefore need to prompt for output directory before allowing writing files.
-
-# Primer: Video & audio formats vs. codecs
-
-Learn the [difference between a codec and a format](docs.md#primer-video--audio-formats-vs-codecs).
-
-# Common / known issues & troubleshooting
+When troubleshooting or trying to understand a problem, it can be beneficial to first read the [documentation](index.md) so that you get a deep understanding of how the app works. In particular, the [difference between a codec and a format](index.md#primer-videoaudio-codecs-vs-formats).
 
 ## The exported video has a problem
 
@@ -109,12 +78,11 @@ If you have an issue with the Snap or Flatpak version of LosslessCut, please try
 - I get an error/crash or completely white/blank LosslessCut window immediately after app launch
   - Try not to move the LosslessCut folder after installation. Make sure you run LosslessCut from `C:` drive (not network drive or similar) [#2215](https://github.com/mifi/lossless-cut/issues/2215#issuecomment-2925706575) [#2215](https://github.com/mifi/lossless-cut/issues/2215).
   - Make sure LosslessCut folder is **not** inside a folder hierarchy that contains special characters (like Chinese or Japanese or emoji ⚠️).
-  - Try to run LosslessCut from the [command line](./cli.md) with `--disable-gpu` and/or `--disable-features=VizDisplayCompositor` (see [#781](https://github.com/mifi/lossless-cut/issues/781))
+  - Try to run LosslessCut from the [command line](cli.md) with `--disable-gpu` and/or `--disable-features=VizDisplayCompositor` (see [#781](https://github.com/mifi/lossless-cut/issues/781))
   - Try [removing the AppContainer restrictions](https://github.com/mifi/lossless-cut/discussions/2043#discussioncomment-14909957) on LosslessCut.
   - Disable your anti-virus or whitelist LosslessCut. See [#18](https://github.com/mifi/lossless-cut/issues/18), [#1114](https://github.com/mifi/lossless-cut/issues/1114). 
-
 - How to uninstall LosslessCut?
-  - There is no installer. Just delete the folder. [More info](./installation.md).
+  - There is no installer. Just delete the folder. [More info](installation.md).
 - Preview is completely black/blank, corrupted or just won't play back?
   - This probably means that Chromium (which LosslessCut uses for playback) doesn't support your particular file (maybe it's 10-bit). [#2228](https://github.com/mifi/lossless-cut/discussions/2228), [#1767](https://github.com/mifi/lossless-cut/discussions/1767), [#2307](https://github.com/mifi/lossless-cut/issues/2307).
   1. If H265/HEVC file, go to settings and disable "Hardware HEVC decoding".

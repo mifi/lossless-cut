@@ -1,10 +1,10 @@
-# HTTP API
+# HTTP API 🧪
 
-LosslessCut can be controlled via a HTTP API, if it is being run with the command line option `--http-api`. See also [CLI](./cli.md). **Note that the HTTP API is experimental and may change at any time.**
+LosslessCut can be controlled via a HTTP API, if it is being run with the command line option `--http-api`. See also [CLI](cli.md). **Note that the HTTP API is experimental and may change at any time.**
 
 ## Programmatically opening a file
 
-This must be done with [the CLI](./cli.md).
+This must be done with [the CLI](cli.md).
 
 ## Enabling the API
 
@@ -18,7 +18,7 @@ LosslessCut --http-api
 
 Execute a keyboard shortcut `action`, similar to the `--keyboard-action` CLI option. This is different from the CLI in that most of the actions will wait for the action to finish before responding to the HTTP request (but not all).
 
-#### [Available keyboard actions](./cli.md#available-keyboard-actions)
+#### [Available keyboard actions](cli.md#available-keyboard-actions)
 
 #### Example
 

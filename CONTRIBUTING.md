@@ -1,6 +1,6 @@
 # Contributing
 
-## [Translation](translation.md)
+## [Translations](docs/translation.md)
 
 ## Development environment setup
 
@@ -115,11 +115,11 @@ For per-platform build/signing setup, see [this article](https://mifi.no/blog/au
 
 Find the [latest PR](https://github.com/mifi/lossless-cut/pulls) from Weblate and **rebase+merge** it.
 
-**Warning:** Do not squash and merge (see [here why](translation.md#weblate))!
+**Warning:** Do not squash and merge (see [here why](docs/translation.md#weblate))!
 
 ## Minimum OS version
 
-See [requirements](./requirements.md).
+See [requirements](docs/requirements.md).
 
 ### MacOS [`LSMinimumSystemVersion`](https://developer.apple.com/documentation/bundleresources/information_property_list/lsminimumsystemversion)
 

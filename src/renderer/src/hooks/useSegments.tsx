@@ -17,7 +17,6 @@ import { parameters as allFfmpegParameters, FfmpegDialog, getHint, getLabel } fr
 import { maxSegmentsAllowed } from '../util/constants';
 import { DefiniteSegmentBase, ParseTimecode, SegmentBase, segmentTagsSchema, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
 import safeishEval from '../worker/eval';
-import { ScopeSegment } from '../../../common/types';
 import { FFprobeFormat, FFprobeStream } from '../../../common/ffprobe';
 import { HandleError } from '../contexts';
 import { ShowGenericDialog, useGenericDialogContext } from '../components/GenericDialog';
@@ -26,7 +25,8 @@ import Button, { DialogButton } from '../components/Button';
 import { ButtonRow } from '../components/Dialog';
 import * as Dialog from '../components/Dialog';
 import { UserFacingError } from '../../errors';
-import { jsExpressionHelpUrl } from '../../../common/constants';
+import { editSegmentByExpressionHelpUrl, selectSegmentByExpressionHelpUrl } from '../../../common/constants';
+import { Segment as ScopeSegment } from '../../../common/userTypes';
 
 const remote = window.require('@electron/remote');
 const { shell } = remote;
@@ -801,7 +801,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
             { name: i18n.t('Markers'), code: 'segment.end == null' },
           ]}
           title={i18n.t('Select segments by expression')}
-          description={<Trans>Enter a JavaScript expression which will be evaluated for each segment. Segments for which the expression evaluates to &quot;true&quot; will be selected. <button type="button" className="link-button" onClick={() => shell.openExternal(jsExpressionHelpUrl)}>View available syntax.</button></Trans>}
+          description={<Trans>Enter a JavaScript expression which will be evaluated for each segment. Segments for which the expression evaluates to &quot;true&quot; will be selected. <button type="button" className="link-button" onClick={() => shell.openExternal(selectSegmentByExpressionHelpUrl)}>View available syntax.</button></Trans>}
           variables={['segment.index', 'segment.label', 'segment.start', 'segment.end', 'segment.duration', 'segment.tags.*']}
         />
       ),
@@ -871,7 +871,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
             { name: i18n.t('Convert markers to segments'), code: '{ ...(segment.end == null && { end: segment.start + 5 }) }' },
           ]}
           title={i18n.t('Edit segments by expression')}
-          description={<Trans>Enter a JavaScript expression which will be evaluated for each selected segment. Returned properties will be edited. <button type="button" className="link-button" onClick={() => shell.openExternal(jsExpressionHelpUrl)}>View available syntax.</button></Trans>}
+          description={<Trans>Enter a JavaScript expression which will be evaluated for each selected segment. Returned properties will be edited. <button type="button" className="link-button" onClick={() => shell.openExternal(editSegmentByExpressionHelpUrl)}>View available syntax.</button></Trans>}
           variables={['segment.index', 'segment.label', 'segment.start', 'segment.end', 'segment.tags.*']}
         />
       ),

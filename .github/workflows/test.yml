@@ -28,4 +28,12 @@ jobs:
       - run: yarn tsc
       - run: yarn lint
       - run: yarn build
-      - run: yarn generate-licenses
+      - name: Check docs
+        run: |
+          yarn generate-docs
+          git diff --quiet HEAD
+          git reset --hard HEAD
+      - name: Generate licenses
+        run: |
+          yarn generate-licenses
+          git reset --hard HEAD

@@ -27,7 +27,7 @@ App settings and keyboard shortcuts are stored inside the `config.json` file ins
 
 ### Custom `config.json` path
 
-On Windows, if you create a `config.json` file with the contents `{}` next to the `LosslessCut.exe` file, LosslessCut will read/store settings from this file instead of the one inside `appData`. Note that other temporary files will still be stored in `appData`. Alternatively you can specify a custom path to a folder containing `config.json` by using the [CLI option](./cli.md) `--config-dir`. See also [#645](https://github.com/mifi/lossless-cut/issues/645).
+On Windows, if you create a `config.json` file with the contents `{}` next to the `LosslessCut.exe` file, LosslessCut will read/store settings from this file instead of the one inside `appData`. Note that other temporary files will still be stored in `appData`. Alternatively you can specify a custom path to a folder containing `config.json` by using the [CLI option](cli.md) `--config-dir`. See also [#645](https://github.com/mifi/lossless-cut/issues/645).
 
 ## How to uninstall
 

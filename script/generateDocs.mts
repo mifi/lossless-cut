@@ -26,4 +26,4 @@ memoryFile.getInterfaces().forEach((iface) => {
   md += '\n```\n\n';
 });
 
-fs.writeFileSync('docs/types.md', md);
+fs.writeFileSync('docs/generated/types.md', md);

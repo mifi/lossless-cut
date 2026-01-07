@@ -110,13 +110,3 @@ export interface ApiActionRequest {
 }
 
 export type Html5ifyMode = 'fastest' | 'fast-audio-remux' | 'fast-audio' | 'fast' | 'slow' | 'slow-audio' | 'slowest';
-
-// This is the contract with the user, see https://github.com/mifi/lossless-cut/blob/master/expressions.md
-export interface ScopeSegment {
-  index: number,
-  label: string,
-  start: number,
-  end?: number | undefined,
-  duration: number,
-  tags: Record<string, string>,
-}

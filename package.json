@@ -26,7 +26,8 @@
     "pack-linux": "yarn build && electron-builder --linux",
     "scan-i18n": "i18next-cli -c i18next.config.scan.ts extract",
     "generate-icon": "mkdirp icon-build build-resources/appx && tsx script/generateIcon.mts",
-    "generate-licenses": "yarn licenses generate-disclaimer > licenses.txt && echo '\n\nffmpeg is licensed under GPL v2+:\n\nhttp://www.gnu.org/licenses/old-licenses/gpl-2.0.html' >> licenses.txt"
+    "generate-licenses": "yarn licenses generate-disclaimer > licenses.txt && echo '\n\nffmpeg is licensed under GPL v2+:\n\nhttp://www.gnu.org/licenses/old-licenses/gpl-2.0.html' >> licenses.txt",
+    "generate-docs": "tsx script/generateDocs.mts"
   },
   "author": {
     "name": "Mikael Finstad",
@@ -129,6 +130,7 @@
     "sweetalert2": "^11.22.4",
     "sweetalert2-react-content": "^5.0.7",
     "tiny-invariant": "^1.3.3",
+    "ts-morph": "^27.0.2",
     "tsx": "^4.7.1",
     "type-fest": "^4.23.0",
     "typescript": "^5.9.3",
