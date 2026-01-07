@@ -15,3 +15,7 @@ segment.duration < 5
 LosslessCut has support for normal JavaScript expressions. You will be given a variable `segment` for each selected segment and can return a new segment with modified properties.
 
 See more examples in-app.
+
+## Output name template
+
+You can also use JavaScript expressions when referring to variables inside `${}` in output file name templates, e.g. `${FILENAME.toLowerCase()}`.
