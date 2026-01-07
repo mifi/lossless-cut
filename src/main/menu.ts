@@ -2,7 +2,7 @@
 import electron, { BrowserWindow, MenuItem, MenuItemConstructorOptions } from 'electron';
 import { t } from 'i18next';
 
-import { homepageUrl, getReleaseUrl, licensesUrl, thanksUrl, issuesUrl, usageUrl, faqUrl, troubleshootingUrl } from '../common/constants.js';
+import { homepageUrl, getReleaseUrl, licensesUrl, thanksUrl, usageUrl, faqUrl, troubleshootingUrl, featureRequestUrl } from '../common/constants.js';
 import { logFilePath } from './logger.js';
 import { getConfigPath } from './configStore.js';
 
@@ -464,7 +464,7 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
         },
         {
           label: esc(t('Feature request')),
-          click() { electron.shell.openExternal(issuesUrl); },
+          click() { electron.shell.openExternal(featureRequestUrl); },
         },
         ...(!isStoreBuild ? [{
           label: esc(`${t('Donate')} ❤️`),
