@@ -14,7 +14,7 @@ node_modules
 /out
 /icon-build
 /build-resources
-/doc
+/notes
 /ffmpeg
 /app*.log
 /main-ts-dist

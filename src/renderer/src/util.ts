@@ -332,7 +332,9 @@ export function escapeRegExp(str: string) {
   return str.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
-export const readFileSize = async (path: string) => (await stat(path)).size;
+export const readFileStats = async (path: string) => stat(path);
+
+export const readFileSize = async (path: string) => (await readFileStats(path)).size;
 
 export const readFileSizes = (paths: string[]) => pMap(paths, async (path) => readFileSize(path), { concurrency: 5 });
 
@@ -398,8 +400,8 @@ export function getImportProjectType(filePath: string) {
   return edlFormatForExtension[matchingExt];
 }
 
-export function getFileSize(formatData: FFprobeFormat) {
-  const fileSize = parseInt(formatData.size, 10);
+export function getFileSize(format: FFprobeFormat) {
+  const fileSize = parseInt(format.size, 10);
   if (Number.isNaN(fileSize)) return undefined;
   return fileSize;
 }

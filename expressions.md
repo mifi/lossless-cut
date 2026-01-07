@@ -1,6 +1,6 @@
 # Expressions
 
-LosslessCut has support for normal JavaScript expressions.
+LosslessCut has support for JavaScript expressions in certain dialogs. This is a base JavaScript environment with [core JavaScript functionality](https://developer.mozilla.org/en-US/docs/Web/JavaScript) available for you to use.
 
 ## Select segments by expression
 

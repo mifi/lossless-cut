@@ -51,14 +51,14 @@ import { darkModeTransition } from './colors';
 import { getSegColor } from './util/colors';
 import {
   getStreamFps, isCuttingStart, isCuttingEnd,
-  readFileMeta, getDefaultOutFormat,
+  readFileFfprobeMeta, getDefaultOutFormat,
   setCustomFfPath as ffmpegSetCustomFfPath,
   isIphoneHevc, isProblematicAvc1, tryMapChaptersToEdl,
   getDuration, getTimecodeFromStreams, createChaptersFromSegments,
   RefuseOverwriteError, extractSubtitleTrackToSegments,
   mapRecommendedDefaultFormat,
   getFfCommandLine,
-  FileMeta,
+  FileFfprobeMeta,
 } from './ffmpeg';
 import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback, getSubtitleStreams, enableVideoTrack, enableAudioTrack, canHtml5PlayerPlayStreams, isMatroska } from './util/streams';
 import { exportEdlFile, readEdlFile, loadLlcProject, askForEdlImport } from './edlStore';
@@ -74,6 +74,7 @@ import {
   isAbortedError,
   shootConfetti,
   isMasBuild,
+  readFileStats,
 } from './util';
 import getSwal, { errorToast, showPlaybackFailedMessage } from './swal';
 import { adjustRate } from './util/rate-calculator';
@@ -85,9 +86,9 @@ import { generateCutFileNames as generateCutFileNamesRaw, generateCutMergedFileN
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 import BigWaveform from './components/BigWaveform';
 
-import { BatchFile, Chapter, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, goToTimecodeDirectArgsSchema, openFilesActionArgsSchema, ParamsByStreamId, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment, TunerType } from './types';
+import { BatchFile, Chapter, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, FileStats, goToTimecodeDirectArgsSchema, openFilesActionArgsSchema, ParamsByStreamId, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment, TunerType } from './types';
 import { CaptureFormat, KeyboardAction, ApiActionRequest } from '../../common/types.js';
-import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../common/ffprobe.js';
+import { FFprobeChapter, FFprobeStream } from '../../common/ffprobe.js';
 import useLoading from './hooks/useLoading';
 import useVideo from './hooks/useVideo';
 import useTimecode from './hooks/useTimecode';
@@ -131,7 +132,7 @@ function App() {
   const [customTagsByFile, setCustomTagsByFile] = useState<CustomTagsByFile>({});
   const [paramsByStreamId, setParamsByStreamId] = useState<ParamsByStreamId>(new Map());
   const [detectedFps, setDetectedFps] = useState<number>();
-  const [mainFileMeta, setMainFileMeta] = useState<{ streams: FileMeta['streams'], formatData: FFprobeFormat, chapters: FFprobeChapter[] }>();
+  const [mainFileMeta, setMainFileMeta] = useState<{ ffprobeMeta: FileFfprobeMeta, stats: FileStats }>();
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
   const [concatDialogOpen, setConcatDialogOpen] = useState(false);
   const [zoomUnrounded, setZoom] = useState(1);
@@ -278,9 +279,9 @@ function App() {
     if (videoRef.current) videoRef.current.volume = playbackVolume;
   }, [playbackVolume, videoRef]);
 
-  const mainStreams = useMemo(() => mainFileMeta?.streams ?? [], [mainFileMeta?.streams]);
-  const mainFileFormatData = useMemo(() => mainFileMeta?.formatData, [mainFileMeta?.formatData]);
-  const mainFileChapters = useMemo(() => mainFileMeta?.chapters, [mainFileMeta?.chapters]);
+  const mainStreams = useMemo(() => mainFileMeta?.ffprobeMeta.streams ?? [], [mainFileMeta?.ffprobeMeta.streams]);
+  const mainFileFormat = useMemo(() => mainFileMeta?.ffprobeMeta.format, [mainFileMeta?.ffprobeMeta.format]);
+  const mainFileChapters = useMemo(() => mainFileMeta?.ffprobeMeta.chapters, [mainFileMeta?.ffprobeMeta.chapters]);
 
   const subtitleStreams = useMemo(() => getSubtitleStreams(mainStreams), [mainStreams]);
   const videoStreams = useMemo(() => getRealVideoStreams(mainStreams), [mainStreams]);
@@ -326,7 +327,7 @@ function App() {
 
   const {
     cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, labelSegment, splitCurrentSegment, focusSegmentAtCursor, selectSegmentsAtCursor, createNumSegments, createFixedDurationSegments, createFixedByteSizedSegments, createRandomSegments, getSegEstimatedSize, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, inverseCutSegments, clearSegments, clearSegColorCounter, loadCutSegments, setCutTime, setCurrentSegIndex, labelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, selectSegmentsByLabel, selectSegmentsByExpr, selectAllMarkers, mutateSegmentsByExpr, toggleSegmentSelected, selectOnlySegment, selectedSegments, segmentsOrInverse, segmentsToExport, duplicateCurrentSegment, duplicateSegment, updateSegAtIndex, findSegmentsAtCursor, maybeCreateFullLengthSegment, currentCutSegOrWholeTimeline, segColorCounter,
-  } = useSegments({ filePath, workingRef, setWorking, setProgress, videoStream: activeVideoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta, seekAbs, activeVideoStreamIndex, activeAudioStreamIndexes, handleError, showGenericDialog });
+  } = useSegments({ filePath, workingRef, setWorking, setProgress, videoStream: activeVideoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta: mainFileMeta?.ffprobeMeta, seekAbs, activeVideoStreamIndex, activeAudioStreamIndexes, handleError, showGenericDialog });
 
   const { getEdlFilePath, projectFileSavePath, getProjectFileSavePath } = useSegmentsAutoSave({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, customOutDir, cutSegments });
 
@@ -513,7 +514,7 @@ function App() {
 
   const allFilesMeta = useMemo(() => ({
     ...externalFilesMeta,
-    ...(filePath && mainFileMeta != null ? { [filePath]: mainFileMeta } : {}),
+    ...(filePath && mainFileMeta != null ? { [filePath]: mainFileMeta.ffprobeMeta } : {}),
   }), [externalFilesMeta, filePath, mainFileMeta]);
 
   // total number of streams for ALL files
@@ -821,14 +822,14 @@ function App() {
       mainStreams,
       copyStreamIdsByFile,
       cutSegments: cutSegments.map((s) => ({ start: s.start, end: s.end })),
-      mainFileFormatData,
+      mainFileFormat,
       rotation,
       shortestFlag,
       effectiveExportMode,
     };
 
     openSendReportDialog({ err, state });
-  }, [commonSettings, copyStreamIdsByFile, cutSegments, effectiveExportMode, externalFilesMeta, fileFormat, filePath, mainFileFormatData, mainStreams, rotation, shortestFlag]);
+  }, [commonSettings, copyStreamIdsByFile, cutSegments, effectiveExportMode, externalFilesMeta, fileFormat, filePath, mainFileFormat, mainStreams, rotation, shortestFlag]);
 
   const openSendConcatReportDialogWithState = useCallback(async (err: unknown, reportState?: object) => {
     const state = { ...commonSettings, ...reportState };
@@ -847,16 +848,16 @@ function App() {
 
   const generateCutFileNames = useCallback(async (template: string) => {
     invariant(fileFormat != null && outputDir != null && filePath != null);
-    return generateCutFileNamesRaw({ fileDuration, exportCount, currentFileExportCount, segmentsToExport, template, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding });
-  }, [currentFileExportCount, exportCount, fileDuration, fileFormat, filePath, formatTimecode, isCustomFormatSelected, maxLabelLength, outputDir, outputFileNameMinZeroPadding, safeOutputFileName, segmentsToExport]);
+    return generateCutFileNamesRaw({ fileDuration, exportCount, currentFileExportCount, segmentsToExport, template, formatTimecode, isCustomFormatSelected, fileFormat, sourceFile: { path: filePath, ...mainFileMeta }, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding });
+  }, [currentFileExportCount, exportCount, fileDuration, fileFormat, filePath, formatTimecode, isCustomFormatSelected, mainFileMeta, maxLabelLength, outputDir, outputFileNameMinZeroPadding, safeOutputFileName, segmentsToExport]);
 
   const generateCutMergedFileNames = useCallback(async (template: string) => {
     invariant(fileFormat != null && outputDir != null && filePath != null);
-    return generateCutMergedFileNamesRaw({ template, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, exportCount, currentFileExportCount, segLabels: segmentsToExport.map((seg) => seg.name ?? '') });
+    return generateCutMergedFileNamesRaw({ template, isCustomFormatSelected, fileFormat, sourceFile: { path: filePath }, outputDir, safeOutputFileName, maxLabelLength, exportCount, currentFileExportCount, segLabels: segmentsToExport.map((seg) => seg.name ?? '') });
   }, [currentFileExportCount, exportCount, fileFormat, filePath, isCustomFormatSelected, maxLabelLength, outputDir, safeOutputFileName, segmentsToExport]);
 
   const generateMergedFileNames = useCallback(async (params: GenerateMergedOutFileNamesParams) => (
-    generateMergedFileNamesRaw({ template: params.template, isCustomFormatSelected, fileFormat: params.fileFormat, filePaths: params.filePaths, outputDir: params.outputDir, safeOutputFileName, maxLabelLength, exportCount, epochMs: params.epochMs })
+    generateMergedFileNamesRaw({ ...params, isCustomFormatSelected, safeOutputFileName, maxLabelLength, exportCount })
   ), [exportCount, isCustomFormatSelected, maxLabelLength, safeOutputFileName]);
 
   const userConcatFiles = useCallback(async ({ paths, includeAllStreams, streams, fileFormat: outFormat, clearBatchFilesAfterConcat, generatedFileNames }: {
@@ -1132,9 +1133,9 @@ function App() {
 
       if (!exportConfirmEnabled) notices.add(i18n.t('Export options are not shown. You can enable export options by clicking the icon right next to the export button.'));
 
-      invariant(mainFileFormatData != null);
+      invariant(mainFileFormat != null);
       // https://github.com/mifi/lossless-cut/issues/329
-      if (isIphoneHevc(mainFileFormatData, mainStreams)) warnings.add(i18n.t('There is a known issue with cutting iPhone HEVC videos. The output file may not work in all players.'));
+      if (isIphoneHevc(mainFileFormat, mainStreams)) warnings.add(i18n.t('There is a known issue with cutting iPhone HEVC videos. The output file may not work in all players.'));
 
       // https://github.com/mifi/lossless-cut/issues/280
       if (!ffmpegExperimental && isProblematicAvc1(fileFormat, mainStreams)) warnings.add(i18n.t('There is a known problem with this file type, and the output might not be playable. You can work around this problem by enabling the "Experimental flag" under Settings.'));
@@ -1199,7 +1200,7 @@ function App() {
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [filePath, numStreamsToCopy, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, cutFileTemplateOrDefault, generateCutFileNames, cutMultiple, outputDir, customOutDir, fileFormat, fileDuration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, segmentsToExport, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormatData, mainStreams, exportExtraStreams, areWeCutting, simpleMode, prefersReducedMotion, cleanupChoices, hideAllNotifications, segmentsOrInverse.selected, t, cutMergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateCutMergedFileNames, concatCutSegments, autoDeleteMergedSegments, tryDeleteFiles, nonCopiedExtraStreams, extractStreams, askForCleanupChoices, cleanupFiles, showOsNotification, openCutFinishedDialog, handleExportFailed]);
+  }, [filePath, numStreamsToCopy, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, cutFileTemplateOrDefault, generateCutFileNames, cutMultiple, outputDir, customOutDir, fileFormat, fileDuration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, segmentsToExport, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormat, mainStreams, exportExtraStreams, areWeCutting, simpleMode, prefersReducedMotion, cleanupChoices, hideAllNotifications, segmentsOrInverse.selected, t, cutMergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateCutMergedFileNames, concatCutSegments, autoDeleteMergedSegments, tryDeleteFiles, nonCopiedExtraStreams, extractStreams, askForCleanupChoices, cleanupFiles, showOsNotification, openCutFinishedDialog, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath) return;
@@ -1388,22 +1389,23 @@ function App() {
         return;
       }
 
-      const fileMeta = await readFileMeta(fp);
+      const ffprobeMeta = await readFileFfprobeMeta(fp);
+      const fileStats = await readFileStats(fp);
       // console.log('file meta read', fileMeta);
 
-      const fileFormatNew = await getDefaultOutFormat({ filePath: fp, fileMeta });
+      const fileFormatNew = await getDefaultOutFormat({ filePath: fp, fileMeta: ffprobeMeta });
       if (!fileFormatNew) throw new Error('Unable to determine file format');
 
-      const timecode = autoLoadTimecode ? getTimecodeFromStreams(fileMeta.streams) : undefined;
+      const timecode = autoLoadTimecode ? getTimecodeFromStreams(ffprobeMeta.streams) : undefined;
 
-      const [firstVideoStream] = getRealVideoStreams(fileMeta.streams);
-      const [firstAudioStream] = getAudioStreams(fileMeta.streams);
+      const [firstVideoStream] = getRealVideoStreams(ffprobeMeta.streams);
+      const [firstAudioStream] = getAudioStreams(ffprobeMeta.streams);
 
-      const copyStreamIdsForPathNew = fromPairs(fileMeta.streams.map((stream) => [
+      const copyStreamIdsForPathNew = fromPairs(ffprobeMeta.streams.map((stream) => [
         stream.index, shouldCopyStreamByDefault(stream),
       ]));
 
-      const validDuration = isDurationValid(parseFloat(fileMeta.format.duration));
+      const validDuration = isDurationValid(parseFloat(ffprobeMeta.format.duration));
 
       const hevcPlaybackSupported = enableNativeHevc && await hevcPlaybackSupportedPromise;
 
@@ -1415,7 +1417,7 @@ function App() {
 
       const existingHtml5FriendlyFile = await findExistingHtml5FriendlyFile(fp, cod);
 
-      const needsAutoHtml5ify = !existingHtml5FriendlyFile && !willPlayerProperlyHandleVideo({ streams: fileMeta.streams, hevcPlaybackSupported, isMasBuild }) && validDuration;
+      const needsAutoHtml5ify = !existingHtml5FriendlyFile && !willPlayerProperlyHandleVideo({ streams: ffprobeMeta.streams, hevcPlaybackSupported, isMasBuild }) && validDuration;
 
       console.log('loadMedia', { filePath: fp, customOutDir: cod, projectPath });
 
@@ -1440,7 +1442,7 @@ function App() {
       if (projectPath) {
         await loadEdlFile({ path: projectPath, type: 'llc' });
       } else {
-        await tryFindAndLoadProjectFile({ chapters: fileMeta.chapters, cod });
+        await tryFindAndLoadProjectFile({ chapters: ffprobeMeta.chapters, cod });
       }
 
       // throw new Error('test');
@@ -1454,13 +1456,13 @@ function App() {
 
       if (timecode) setStartTimeOffset(timecode);
       setDetectedFps(getFps());
-      setMainFileMeta({ streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters });
+      setMainFileMeta({ ffprobeMeta, stats: { size: fileStats.size, atime: fileStats.atimeMs, mtime: fileStats.mtimeMs, ctime: fileStats.ctimeMs, birthtime: fileStats.birthtimeMs } });
       setCopyStreamIdsForPath(fp, () => copyStreamIdsForPathNew);
       setDetectedFileFormat(fileFormatNew);
       if (outFormatLocked) {
         setFileFormat(outFormatLocked);
       } else {
-        const recommendedDefaultFormat = mapRecommendedDefaultFormat({ sourceFormat: fileFormatNew, streams: fileMeta.streams });
+        const recommendedDefaultFormat = mapRecommendedDefaultFormat({ sourceFormat: fileFormatNew, streams: ffprobeMeta.streams });
         if (recommendedDefaultFormat.message) showNotification({ icon: 'info', text: recommendedDefaultFormat.message });
         setFileFormat(recommendedDefaultFormat.format);
       }
@@ -1470,7 +1472,7 @@ function App() {
         showPreviewFileLoadedMessage(basename(existingHtml5FriendlyFile.path));
       } else if (needsAutoHtml5ify) {
         showUnsupportedFileMessage();
-      } else if (isAudioDefinitelyNotSupported(fileMeta.streams)) {
+      } else if (isAudioDefinitelyNotSupported(ffprobeMeta.streams)) {
         showNotification({ icon: 'info', text: i18n.t('The audio track is not supported while previewing. You can convert to a supported format from the menu') });
       } else if (!validDuration) {
         getSwal().toast.fire({ icon: 'warning', timer: 10000, text: i18n.t('This file does not have a valid duration. This may cause issues. You can try to fix the file\'s duration from the File menu') });
@@ -1677,9 +1679,9 @@ function App() {
 
   const addStreamSourceFile = useCallback(async (path: string) => {
     if (allFilesMeta[path]) return undefined; // Already added?
-    const fileMeta = await readFileMeta(path);
+    const fileMeta = await readFileFfprobeMeta(path);
     // console.log('streams', fileMeta.streams);
-    setExternalFilesMeta((old) => ({ ...old, [path]: { streams: fileMeta.streams, formatData: fileMeta.format, chapters: fileMeta.chapters } }));
+    setExternalFilesMeta((old) => ({ ...old, [path]: fileMeta }));
     setCopyStreamIdsForPath(path, () => fromPairs(fileMeta.streams.map(({ index }) => [index, true])));
     return fileMeta;
   }, [allFilesMeta, setCopyStreamIdsForPath]);
@@ -2662,7 +2664,7 @@ function App() {
                     {mainStreams && filePath != null && (
                       <StreamsSelector
                         mainFilePath={filePath}
-                        mainFileFormatData={mainFileFormatData}
+                        mainFileFormat={mainFileFormat}
                         mainFileChapters={mainFileChapters}
                         allFilesMeta={allFilesMeta}
                         externalFilesMeta={externalFilesMeta}

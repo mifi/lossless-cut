@@ -4,12 +4,15 @@ import pMap from 'p-map';
 import max from 'lodash/max';
 import invariant from 'tiny-invariant';
 
+import type { FileNameTemplateContext } from '../../../common/userTypes.ts';
+
 import { isMac, isWindows, hasDuplicates, filenamify, getOutFileExtension } from '../util';
 import isDev from '../isDev';
 import { getSegmentTags, formatSegNum, getGuaranteedSegments } from '../segments';
-import { FormatTimecode, SegmentToExport } from '../types';
+import { FileStats, FormatTimecode, SegmentToExport } from '../types';
 import safeishEval from '../worker/eval';
 import { UserFacingError } from '../../errors';
+import { FileFfprobeMeta } from '../ffmpeg';
 
 
 export const segNumVariable = 'SEG_NUM';
@@ -37,9 +40,11 @@ export interface GeneratedOutFileNames {
 
 export type GenerateOutFileNames = (template: string) => Promise<GeneratedOutFileNames>;
 
+export interface SourceFile { path: string, ffprobeMeta?: FileFfprobeMeta | undefined, stats?: FileStats | undefined }
+
 export interface GenerateMergedOutFileNamesParams {
   template: string;
-  filePaths: string[];
+  sourceFiles: SourceFile[];
   fileFormat: string;
   outputDir: string;
   epochMs: number;
@@ -137,8 +142,28 @@ export const defaultCutMergedFileTemplate = '${FILENAME}-cut-merged-${EPOCH_MS}$
 export const defaultMergedFileTemplate = '${FILENAME}-merged-${EPOCH_MS}${EXT}';
 
 
-async function interpolateOutFileName(template: string, { epochMs, inputFileNameWithoutExt, ext, segSuffix, segNum, segNumPadded, selectedSegNum, selectedSegNumPadded, segLabels, cutFrom, cutFromStr, cutTo, cutToStr, cutDurationStr, tags, exportCount, currentFileExportCount }: {
+async function interpolateOutFileName(template: string, {
+  epochMs,
+  sourceFiles,
+  inputFileNameWithoutExt,
+  ext,
+  exportCount,
+  currentFileExportCount,
+  segLabels,
+  segSuffix,
+  segNum,
+  segNumPadded,
+  selectedSegNum,
+  selectedSegNumPadded,
+  cutFrom,
+  cutFromStr,
+  cutTo,
+  cutToStr,
+  cutDurationStr,
+  tags,
+}: {
   epochMs: number,
+  sourceFiles: SourceFile[],
   inputFileNameWithoutExt: string,
   ext: string,
   exportCount: number,
@@ -159,6 +184,15 @@ async function interpolateOutFileName(template: string, { epochMs, inputFileName
 }>) {
   const context = {
     FILENAME: inputFileNameWithoutExt,
+    FILES: sourceFiles.map((sf) => ({
+      path: sf.path,
+      name: basename(sf.path),
+      size: sf.stats?.size,
+      atime: sf.stats?.atime,
+      mtime: sf.stats?.mtime,
+      ctime: sf.stats?.ctime,
+      birthtime: sf.stats?.birthtime,
+    })),
     [segSuffixVariable]: segSuffix,
     [extVariable]: ext,
     [segNumIntVariable]: segNum,
@@ -179,7 +213,7 @@ async function interpolateOutFileName(template: string, { epochMs, inputFileName
     },
     FILE_EXPORT_COUNT: currentFileExportCount != null ? currentFileExportCount + 1 : undefined,
     EXPORT_COUNT: exportCount != null ? exportCount + 1 : undefined,
-  };
+  } satisfies FileNameTemplateContext;
 
   const ret = (await safeishEval(`\`${template}\``, context));
   if (typeof ret !== 'string') throw new UserFacingError(i18n.t('Expression did not lead to a string'));
@@ -240,14 +274,14 @@ async function generateWithFallback({ generate, desiredTemplate, defaultTemplate
   return { fileNames: originalFileNames, problems };
 }
 
-export async function generateCutFileNames({ fileDuration, segmentsToExport: segmentsToExportIn, template: desiredTemplate, formatTimecode, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding, exportCount, currentFileExportCount }: {
+export async function generateCutFileNames({ fileDuration, segmentsToExport: segmentsToExportIn, template: desiredTemplate, formatTimecode, isCustomFormatSelected, fileFormat, sourceFile, outputDir, safeOutputFileName, maxLabelLength, outputFileNameMinZeroPadding, exportCount, currentFileExportCount }: {
   fileDuration: number | undefined,
   segmentsToExport: SegmentToExport[],
   template: string,
   formatTimecode: FormatTimecode,
   isCustomFormatSelected: boolean,
   fileFormat: string,
-  filePath: string,
+  sourceFile: SourceFile,
   outputDir: string,
   safeOutputFileName: boolean,
   maxLabelLength: number,
@@ -277,7 +311,7 @@ export async function generateCutFileNames({ fileDuration, segmentsToExport: seg
           return '';
         }
 
-        const { name: inputFileNameWithoutExt } = parsePath(filePath);
+        const { name: inputFileNameWithoutExt } = parsePath(sourceFile.path);
 
         const cutDuration = end - start;
 
@@ -288,8 +322,9 @@ export async function generateCutFileNames({ fileDuration, segmentsToExport: seg
           selectedSegNum,
           selectedSegNumPadded,
           segSuffix: getSegSuffix(),
+          sourceFiles: [sourceFile],
           inputFileNameWithoutExt,
-          ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath }),
+          ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath: sourceFile.path }),
           segLabels: [sanitizeName(name)],
           cutFrom: start,
           cutFromStr: formatTimecode({ seconds: start, fileNameFriendly: true }),
@@ -306,7 +341,7 @@ export async function generateCutFileNames({ fileDuration, segmentsToExport: seg
     },
     desiredTemplate,
     defaultTemplate: defaultCutFileTemplate,
-    filePath,
+    filePath: sourceFile.path,
     outputDir,
     maxLabelLength,
     safeOutputFileName,
@@ -315,11 +350,11 @@ export async function generateCutFileNames({ fileDuration, segmentsToExport: seg
 
 export type GenerateMergedOutFileNames = (params: GenerateMergedOutFileNamesParams) => Promise<GeneratedOutFileNames>;
 
-export async function generateCutMergedFileNames({ template: desiredTemplate, isCustomFormatSelected, fileFormat, filePath, outputDir, safeOutputFileName, maxLabelLength, exportCount, currentFileExportCount, segLabels, epochMs = Date.now() }: {
+export async function generateCutMergedFileNames({ template: desiredTemplate, isCustomFormatSelected, fileFormat, sourceFile, outputDir, safeOutputFileName, maxLabelLength, exportCount, currentFileExportCount, segLabels, epochMs = Date.now() }: {
   template: string,
   isCustomFormatSelected: boolean,
   fileFormat: string,
-  filePath: string,
+  sourceFile: SourceFile,
   outputDir: string,
   safeOutputFileName: boolean,
   maxLabelLength: number,
@@ -330,12 +365,13 @@ export async function generateCutMergedFileNames({ template: desiredTemplate, is
 }) {
   return generateWithFallback({
     generate: async ({ template, safeOutputFileName: safeOutputFileName2, sanitizeName }) => {
-      const { name: inputFileNameWithoutExt } = parsePath(filePath);
+      const { name: inputFileNameWithoutExt } = parsePath(sourceFile.path);
 
       const fileName = await interpolateOutFileName(template, {
         epochMs,
+        sourceFiles: [sourceFile],
         inputFileNameWithoutExt,
-        ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath }),
+        ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath: sourceFile.path }),
         exportCount,
         currentFileExportCount,
         segLabels: segLabels.map((label) => sanitizeName(label)),
@@ -345,44 +381,45 @@ export async function generateCutMergedFileNames({ template: desiredTemplate, is
     },
     desiredTemplate,
     defaultTemplate: defaultCutMergedFileTemplate,
-    filePath,
+    filePath: sourceFile.path,
     outputDir,
     maxLabelLength,
     safeOutputFileName,
   });
 }
 
-export async function generateMergedFileNames({ template: desiredTemplate, isCustomFormatSelected, fileFormat, filePaths, outputDir, safeOutputFileName, maxLabelLength, exportCount, epochMs }: {
+export async function generateMergedFileNames({ template: desiredTemplate, isCustomFormatSelected, fileFormat, sourceFiles, outputDir, safeOutputFileName, maxLabelLength, exportCount, epochMs }: {
   template: string,
   isCustomFormatSelected: boolean,
   fileFormat: string,
-  filePaths: string[],
+  sourceFiles: SourceFile[],
   outputDir: string,
   safeOutputFileName: boolean,
   maxLabelLength: number,
   exportCount: number,
   epochMs: number,
 }) {
-  const [firstPath] = filePaths;
-  invariant(firstPath != null);
+  const [firstFile] = sourceFiles;
+  invariant(firstFile != null);
 
   return generateWithFallback({
     generate: async ({ template, safeOutputFileName: safeOutputFileName2, sanitizeName }) => {
-      const { name: inputFileNameWithoutExt } = parsePath(firstPath);
+      const { name: inputFileNameWithoutExt } = parsePath(firstFile.path);
 
       const fileName = await interpolateOutFileName(template, {
         epochMs,
+        sourceFiles,
         inputFileNameWithoutExt,
-        ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath: firstPath }),
+        ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath: firstFile.path }),
         exportCount,
-        segLabels: filePaths.map((filePath) => sanitizeName(basename(filePath))),
+        segLabels: sourceFiles.map((file) => sanitizeName(basename(file.path))),
       });
 
       return [maybeTruncatePath(fileName, safeOutputFileName2)];
     },
     desiredTemplate,
     defaultTemplate: defaultCutMergedFileTemplate,
-    filePath: firstPath,
+    filePath: firstFile.path,
     outputDir,
     maxLabelLength,
     safeOutputFileName,

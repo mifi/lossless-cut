@@ -130,7 +130,7 @@ export type ExportMode = 'segments_to_chapters' | 'merge' | 'merge+separate' | '
 
 export type FilesMeta = Record<string, {
   streams: FileStream[];
-  formatData: FFprobeFormat;
+  format: FFprobeFormat;
   chapters: FFprobeChapter[];
 }>
 
@@ -143,9 +143,17 @@ export interface Chapter { start: number, end: number, name?: string | undefined
 
 export type LiteFFprobeStream = Pick<FFprobeStream, 'index' | 'codec_type' | 'codec_tag' | 'codec_name' | 'disposition' | 'tags' | 'sample_rate' | 'time_base'>;
 
+export interface FileStats {
+  size: number | bigint,
+  atime: number,
+  mtime: number,
+  ctime: number,
+  birthtime: number,
+}
+
 export type AllFilesMeta = Record<string, {
   streams: LiteFFprobeStream[];
-  formatData: FFprobeFormat;
+  format: FFprobeFormat;
   chapters: FFprobeChapter[];
 }>
 

@@ -15,6 +15,7 @@ import TextInput from './TextInput';
 import Button from './Button';
 import * as Dialog from './Dialog';
 import { dangerColor, warningColor } from '../colors';
+import { exportedFileNameTemplateHelpUrl } from '../../../common/constants';
 
 const electron = window.require('electron');
 
@@ -227,7 +228,7 @@ function FileNameTemplateEditor(opts: {
               <div style={{ fontSize: '.9em', color: 'var(--gray-11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
                 {`${i18n.t('Variables')}:`}
 
-                <IoIosHelpCircle fontSize="1.3em" color="var(--gray-12)" role="button" cursor="pointer" onClick={() => electron.shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/docs.md#custom-exported-file-names')} />
+                <IoIosHelpCircle fontSize="1.3em" color="var(--gray-12)" role="button" cursor="pointer" onClick={() => electron.shell.openExternal(exportedFileNameTemplateHelpUrl)} />
                 {availableVariables.map((variable) => (
                   <span key={variable} role="button" style={{ cursor: 'copy', marginRight: '.2em', textDecoration: 'underline', textDecorationStyle: 'dashed', fontSize: '.9em' }} onClick={() => onVariableClick(variable)}>{variable}</span>
                 ))}

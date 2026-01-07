@@ -26,6 +26,7 @@ import Button, { DialogButton } from '../components/Button';
 import { ButtonRow } from '../components/Dialog';
 import * as Dialog from '../components/Dialog';
 import { UserFacingError } from '../../errors';
+import { jsExpressionHelpUrl } from '../../../common/constants';
 
 const remote = window.require('@electron/remote');
 const { shell } = remote;
@@ -52,7 +53,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   parseTimecode: ParseTimecode,
   appendFfmpegCommandLog: (args: string[]) => void,
   fileDurationNonZero: number,
-  mainFileMeta: { formatData: FFprobeFormat } | undefined,
+  mainFileMeta: { format: FFprobeFormat } | undefined,
   seekAbs: (val: number | undefined) => void,
   activeVideoStreamIndex: number | undefined,
   activeAudioStreamIndexes: Set<number>,
@@ -726,7 +727,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   const createFixedByteSizedSegments = useCallback(async () => {
     if (!checkFileOpened() || !isDurationValid(fileDuration)) return;
     invariant(mainFileMeta != null);
-    const fileSize = getFileSize(mainFileMeta.formatData);
+    const fileSize = getFileSize(mainFileMeta.format);
     invariant(fileSize != null);
     const segmentDuration = await createFixedByteSixedSegmentsDialog({ fileDuration, fileSize });
     if (segmentDuration == null) return;
@@ -735,7 +736,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
   const getSegEstimatedSize = useCallback((segment: Pick<StateSegment, 'start' | 'end'>) => {
     if (mainFileMeta == null || !isDurationValid(fileDuration) || segment.end == null) return undefined;
-    const fileSize = getFileSize(mainFileMeta.formatData);
+    const fileSize = getFileSize(mainFileMeta.format);
     if (fileSize == null) return undefined;
     const segDuration = segment.end - segment.start;
     return Math.round((segDuration / fileDuration) * fileSize);
@@ -800,7 +801,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
             { name: i18n.t('Markers'), code: 'segment.end == null' },
           ]}
           title={i18n.t('Select segments by expression')}
-          description={<Trans>Enter a JavaScript expression which will be evaluated for each segment. Segments for which the expression evaluates to &quot;true&quot; will be selected. <button type="button" className="link-button" onClick={() => shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/expressions.md')}>View available syntax.</button></Trans>}
+          description={<Trans>Enter a JavaScript expression which will be evaluated for each segment. Segments for which the expression evaluates to &quot;true&quot; will be selected. <button type="button" className="link-button" onClick={() => shell.openExternal(jsExpressionHelpUrl)}>View available syntax.</button></Trans>}
           variables={['segment.index', 'segment.label', 'segment.start', 'segment.end', 'segment.duration', 'segment.tags.*']}
         />
       ),
@@ -870,7 +871,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
             { name: i18n.t('Convert markers to segments'), code: '{ ...(segment.end == null && { end: segment.start + 5 }) }' },
           ]}
           title={i18n.t('Edit segments by expression')}
-          description={<Trans>Enter a JavaScript expression which will be evaluated for each selected segment. Returned properties will be edited. <button type="button" className="link-button" onClick={() => shell.openExternal('https://github.com/mifi/lossless-cut/blob/master/expressions.md')}>View available syntax.</button></Trans>}
+          description={<Trans>Enter a JavaScript expression which will be evaluated for each selected segment. Returned properties will be edited. <button type="button" className="link-button" onClick={() => shell.openExternal(jsExpressionHelpUrl)}>View available syntax.</button></Trans>}
           variables={['segment.index', 'segment.label', 'segment.start', 'segment.end', 'segment.tags.*']}
         />
       ),

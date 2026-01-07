@@ -45,8 +45,8 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, customTagsByFile, setC
 }) => {
   const { t } = useTranslation();
 
-  const { formatData } = allFilesMeta[editingFile]!;
-  const existingTags = formatData.tags || {};
+  const { format } = allFilesMeta[editingFile]!;
+  const existingTags = format.tags || {};
   const customTags = customTagsByFile[editingFile] || {};
 
   const onTagsChange = useCallback((keyValues: Record<string, string>) => {
@@ -361,9 +361,9 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
   );
 });
 
-function FileHeading({ path, formatData, chapters, onTrashClick, onEditClick, toggleCopyAllStreams, onExtractAllStreamsPress, changeEnabledStreamsFilter }: {
+function FileHeading({ path, format, chapters, onTrashClick, onEditClick, toggleCopyAllStreams, onExtractAllStreamsPress, changeEnabledStreamsFilter }: {
   path: string,
-  formatData: FFprobeFormat | undefined,
+  format: FFprobeFormat | undefined,
   chapters?: FFprobeChapter[] | undefined,
   onTrashClick?: (() => void) | undefined,
   onEditClick?: (() => void) | undefined,
@@ -385,7 +385,7 @@ function FileHeading({ path, formatData, chapters, onTrashClick, onEditClick, to
             <Button title={t('Chapters')}><FaBook style={{ verticalAlign: 'middle' }} /></Button>
           </Json5Dialog>
         )}
-        <Json5Dialog title={t('File info')} json={formatData}>
+        <Json5Dialog title={t('File info')} json={format}>
           <Button title={t('File info')}><FaInfoCircle style={{ verticalAlign: 'middle' }} /></Button>
         </Json5Dialog>
         {onEditClick && <Button title={t('Edit file metadata')} onClick={onEditClick}><FaEdit style={{ verticalAlign: 'middle' }} /></Button>}
@@ -422,10 +422,10 @@ const fileStyle: CSSProperties = { marginBottom: '2em', padding: '.5em 0', overf
 
 
 function StreamsSelector({
-  mainFilePath, mainFileFormatData, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId, setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta, showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, customTagsByFile, setCustomTagsByFile, paramsByStreamId, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments, toggleCopyStreamIds, changeEnabledStreamsFilter, toggleCopyAllStreamsForPath, onStreamSourceFileDrop,
+  mainFilePath, mainFileFormat, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId, setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta, showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, customTagsByFile, setCustomTagsByFile, paramsByStreamId, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments, toggleCopyStreamIds, changeEnabledStreamsFilter, toggleCopyAllStreamsForPath, onStreamSourceFileDrop,
 }: {
   mainFilePath: string,
-  mainFileFormatData: FFprobeFormat | undefined,
+  mainFileFormat: FFprobeFormat | undefined,
   mainFileStreams: FileStream[],
   mainFileChapters: FFprobeChapter[] | undefined,
   isCopyingStreamId: (path: string | undefined, streamId: number) => boolean,
@@ -456,9 +456,9 @@ function StreamsSelector({
   const [editingTag, setEditingTag] = useState<string>();
   const { t } = useTranslation();
 
-  function getFormatDuration(formatData: FFprobeFormat | undefined) {
-    if (!formatData || !formatData.duration) return undefined;
-    const parsed = parseFloat(formatData.duration);
+  function getFormatDuration(format: FFprobeFormat | undefined) {
+    if (!format || !format.duration) return undefined;
+    const parsed = parseFloat(format.duration);
     if (Number.isNaN(parsed)) return undefined;
     return parsed;
   }
@@ -478,7 +478,7 @@ function StreamsSelector({
     <>
       <div style={fileStyle} onDrop={onStreamSourceFileDrop}>
         {/* We only support editing main file metadata for now */}
-        <FileHeading path={mainFilePath} formatData={mainFileFormatData} chapters={mainFileChapters} onEditClick={() => setEditingFile(mainFilePath)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(mainFilePath)} onExtractAllStreamsPress={onExtractAllStreamsPress} changeEnabledStreamsFilter={changeEnabledStreamsFilter} />
+        <FileHeading path={mainFilePath} format={mainFileFormat} chapters={mainFileChapters} onEditClick={() => setEditingFile(mainFilePath)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(mainFilePath)} onExtractAllStreamsPress={onExtractAllStreamsPress} changeEnabledStreamsFilter={changeEnabledStreamsFilter} />
         <table className={styles['table']}>
           <Thead />
 
@@ -492,7 +492,7 @@ function StreamsSelector({
                 onToggle={(streamId) => toggleCopyStreamId(mainFilePath, streamId)}
                 toggleCopyStreamIds={(filter: (a: FFprobeStream) => boolean) => toggleCopyStreamIds(mainFilePath, filter)}
                 setEditingStream={setEditingStream}
-                fileDuration={getFormatDuration(mainFileFormatData)}
+                fileDuration={getFormatDuration(mainFileFormat)}
                 onExtractStreamPress={() => onExtractStreamPress(stream.index)}
                 paramsByStreamId={paramsByStreamId}
                 updateStreamParams={updateStreamParams}
@@ -504,9 +504,9 @@ function StreamsSelector({
         </table>
       </div>
 
-      {externalFilesEntries.map(([path, { streams: externalFileStreams, formatData }]) => (
+      {externalFilesEntries.map(([path, { streams: externalFileStreams, format }]) => (
         <div key={path} style={fileStyle}>
-          <FileHeading path={path} formatData={formatData} onTrashClick={() => removeFile(path)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(path)} />
+          <FileHeading path={path} format={format} onTrashClick={() => removeFile(path)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(path)} />
 
           <table className={styles['table']}>
             <Thead />
@@ -520,7 +520,7 @@ function StreamsSelector({
                   onToggle={(streamId) => toggleCopyStreamId(path, streamId)}
                   toggleCopyStreamIds={(filter: (a: FFprobeStream) => boolean) => toggleCopyStreamIds(path, filter)}
                   setEditingStream={setEditingStream}
-                  fileDuration={getFormatDuration(formatData)}
+                  fileDuration={getFormatDuration(format)}
                   paramsByStreamId={paramsByStreamId}
                   updateStreamParams={updateStreamParams}
                   formatTimecode={formatTimecode}

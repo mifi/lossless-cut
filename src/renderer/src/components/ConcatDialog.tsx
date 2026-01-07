@@ -4,20 +4,22 @@ import { AiOutlineMergeCells } from 'react-icons/ai';
 import { FaQuestionCircle, FaExclamationTriangle, FaCog, FaCheck, FaNotEqual } from 'react-icons/fa';
 import i18n from 'i18next';
 import invariant from 'tiny-invariant';
+import pMap from 'p-map';
 
 import Checkbox from './Checkbox';
-import { readFileMeta, getDefaultOutFormat, mapRecommendedDefaultFormat } from '../ffmpeg';
+import { readFileFfprobeMeta, getDefaultOutFormat, mapRecommendedDefaultFormat, FileFfprobeMeta } from '../ffmpeg';
 import OutputFormatSelect from './OutputFormatSelect';
 import useUserSettings from '../hooks/useUserSettings';
 import { isMov } from '../util/streams';
-import { getOutDir } from '../util';
-import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../../common/ffprobe';
+import { getOutDir, readFileStats } from '../util';
+import { FFprobeStream } from '../../../common/ffprobe';
 import Button, { DialogButton } from './Button';
 import { defaultMergedFileTemplate, GeneratedOutFileNames, GenerateMergedOutFileNames } from '../util/outputNameTemplate';
 import { dangerColor, saveColor, warningColor } from '../colors';
 import * as Dialog from './Dialog';
 import FileNameTemplateEditor from './FileNameTemplateEditor';
 import HighlightedText from './HighlightedText';
+import { FileStats } from '../types';
 
 const { basename } = window.require('path');
 
@@ -54,54 +56,31 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
   const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, customOutDir, simpleMode, setMergedFileTemplate, outFormatLocked, changeOutDir } = useUserSettings();
 
   const [includeAllStreams, setIncludeAllStreams] = useState(false);
-  const [fileMeta, setFileMeta] = useState<{ format: FFprobeFormat, streams: FFprobeStream[], chapters: FFprobeChapter[] }>();
-  const [allFilesMetaCache, setAllFilesMetaCache] = useState<Record<string, {format: FFprobeFormat, streams: FFprobeStream[], chapters: FFprobeChapter[] }>>({});
+  const [allFilesMeta, setAllFilesMeta] = useState<Record<string, { ffprobeMeta: FileFfprobeMeta, stats: FileStats }>>({});
   const [clearBatchFilesAfterConcat, setClearBatchFilesAfterConcat] = useState(false);
   const [enableReadFileMeta, setEnableReadFileMeta] = useState(false);
   const [uniqueSuffix, setUniqueSuffix] = useState(Date.now());
 
-  const firstPath = useMemo(() => {
-    if (paths.length === 0) return undefined;
-    return paths[0];
-  }, [paths]);
+  const firstPath = useMemo(() => paths[0], [paths]);
 
   const outputDir = getOutDir(customOutDir, firstPath);
 
   const generateFileNames = useCallback(async (template: string) => {
-    invariant(firstPath != null && fileFormat != null && outputDir != null);
+    invariant(fileFormat != null && outputDir != null);
 
-    return generateMergedFileNames({ template, filePaths: paths, fileFormat, outputDir, epochMs: uniqueSuffix });
-  }, [fileFormat, firstPath, generateMergedFileNames, outputDir, paths, uniqueSuffix]);
+    const sourceFiles = paths.map((path) => ({
+      path,
+      ...allFilesMeta[path],
+    }));
+
+    return generateMergedFileNames({ template, sourceFiles, fileFormat, outputDir, epochMs: uniqueSuffix });
+  }, [allFilesMeta, fileFormat, generateMergedFileNames, outputDir, paths, uniqueSuffix]);
 
   useEffect(() => {
     if (!isShown) {
-      setFileMeta(undefined);
+      setAllFilesMeta({});
     }
   }, [isShown, setDetectedFileFormat, setFileFormat]);
-
-  useEffect(() => {
-    if (!isShown) return undefined;
-
-    const abortController = new AbortController();
-
-    (async () => {
-      invariant(firstPath != null);
-      const fileMetaNew = await readFileMeta(firstPath);
-      const fileFormatNew = await getDefaultOutFormat({ filePath: firstPath, fileMeta: fileMetaNew });
-      if (abortController.signal.aborted) return;
-
-      setFileMeta(fileMetaNew);
-      setDetectedFileFormat(fileFormatNew);
-      if (outFormatLocked) {
-        setFileFormat(outFormatLocked);
-      } else {
-        setFileFormat(mapRecommendedDefaultFormat({ sourceFormat: fileFormatNew, streams: fileMetaNew.streams }).format);
-      }
-      setUniqueSuffix(Date.now());
-    })().catch(console.error);
-
-    return () => abortController.abort();
-  }, [firstPath, isShown, outFormatLocked, setDetectedFileFormat, setFileFormat, setMergedFileTemplate, simpleMode]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -118,16 +97,16 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
     return () => abortController.abort();
   }, [fileFormat, firstPath, generateFileNames, isShown, setMergedFileTemplate, simpleMode]);
 
-  const allFilesMeta = useMemo(() => {
+  const matchingFilesMeta = useMemo(() => {
     if (paths.length === 0) return undefined;
-    const filtered = paths.flatMap((path) => (allFilesMetaCache[path] ? [[path, allFilesMetaCache[path]!] as const] : []));
+    const filtered = paths.flatMap((path) => (allFilesMeta[path] ? [[path, allFilesMeta[path]] as const] : []));
     return filtered.length === paths.length ? filtered : undefined;
-  }, [allFilesMetaCache, paths]);
+  }, [allFilesMeta, paths]);
 
   const problemsByFile = useMemo(() => {
-    if (!allFilesMeta) return {};
-    const allFilesMetaExceptFirstFile = allFilesMeta.slice(1);
-    const [, firstFileMeta] = allFilesMeta[0]!;
+    if (!matchingFilesMeta) return {};
+    const allFilesMetaExceptFirstFile = matchingFilesMeta.slice(1);
+    const [, firstFileMeta] = matchingFilesMeta[0]!;
     const problems: Record<string, Problem[]> = {};
 
     function addProblem(path: string, error: Problem) {
@@ -135,9 +114,9 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
       problems[path]!.push(error);
     }
 
-    allFilesMetaExceptFirstFile.forEach(([path, { streams }]) => {
+    allFilesMetaExceptFirstFile.forEach(([path, { ffprobeMeta: { streams } }]) => {
       streams.forEach((stream, i) => {
-        const referenceStream = firstFileMeta.streams[i];
+        const referenceStream = firstFileMeta.ffprobeMeta.streams[i];
         if (!referenceStream) {
           addProblem(path, { type: 'extraneous', index: stream.index });
           return;
@@ -153,41 +132,75 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
       });
     });
     return problems;
-  }, [allFilesMeta]);
+  }, [matchingFilesMeta]);
 
   useEffect(() => {
-    if (!isShown || !enableReadFileMeta) return undefined;
+    if (!isShown) return undefined;
 
     const abortController = new AbortController();
 
+    invariant(firstPath != null);
+
     (async () => {
-      // eslint-disable-next-line no-restricted-syntax
-      for (const path of paths) {
-        if (abortController.signal.aborted) return;
-        if (!allFilesMetaCache[path]) {
-          // eslint-disable-next-line no-await-in-loop
-          const fileMetaNew = await readFileMeta(path);
-          setAllFilesMetaCache((existing) => ({ ...existing, [path]: fileMetaNew }));
-        }
+      const pathsToFetchMetaFrom = enableReadFileMeta ? paths : [firstPath];
+
+      const newMetaEntries = await pMap(pathsToFetchMetaFrom, async (path) => {
+        abortController.signal.throwIfAborted();
+        const stats = await readFileStats(path);
+        return [
+          path,
+          {
+            ffprobeMeta: await readFileFfprobeMeta(path),
+            stats: {
+              size: stats.size,
+              atime: stats.atimeMs,
+              mtime: stats.mtimeMs,
+              ctime: stats.ctimeMs,
+              birthtime: stats.birthtimeMs,
+            },
+          },
+        ] as const;
+      }, { concurrency: 1 });
+
+      const firstFileMeta = newMetaEntries[0]?.[1];
+      invariant(firstFileMeta);
+      const fileFormatNew = await getDefaultOutFormat({ filePath: firstPath, fileMeta: firstFileMeta.ffprobeMeta });
+
+      abortController.signal.throwIfAborted();
+
+      // state mutations:
+
+      setDetectedFileFormat(fileFormatNew);
+      if (outFormatLocked) {
+        setFileFormat(outFormatLocked);
+      } else {
+        setFileFormat(mapRecommendedDefaultFormat({ sourceFormat: fileFormatNew, streams: firstFileMeta.ffprobeMeta.streams }).format);
       }
-    })().catch(console.error);
+      setAllFilesMeta((existing) => ({ ...existing, ...Object.fromEntries(newMetaEntries) }));
+      setUniqueSuffix(Date.now());
+    })().catch((err) => {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      console.error(err);
+    });
 
     return () => abortController.abort();
-  }, [allFilesMetaCache, enableReadFileMeta, isShown, paths]);
+  }, [enableReadFileMeta, firstPath, isShown, outFormatLocked, paths, setDetectedFileFormat, setFileFormat]);
 
   const onConcatClick = useCallback(async () => {
-    invariant(fileFormat != null);
     invariant(firstPath != null);
+    invariant(fileFormat != null);
     invariant(outputDir != null);
+    const firstFileMeta = allFilesMeta[firstPath];
+    invariant(firstFileMeta != null);
 
-    const generatedFileNames = await generateMergedFileNames({ template: mergedFileTemplate, filePaths: paths, fileFormat, outputDir, epochMs: uniqueSuffix });
+    const generatedFileNames = await generateFileNames(mergedFileTemplate);
 
-    await onConcat({ paths, includeAllStreams, streams: fileMeta!.streams, fileFormat, clearBatchFilesAfterConcat, generatedFileNames });
-  }, [clearBatchFilesAfterConcat, fileFormat, fileMeta, firstPath, generateMergedFileNames, includeAllStreams, mergedFileTemplate, onConcat, outputDir, paths, uniqueSuffix]);
+    await onConcat({ paths, includeAllStreams, streams: firstFileMeta.ffprobeMeta.streams, fileFormat, clearBatchFilesAfterConcat, generatedFileNames });
+  }, [firstPath, fileFormat, outputDir, allFilesMeta, generateFileNames, mergedFileTemplate, onConcat, paths, includeAllStreams, clearBatchFilesAfterConcat]);
 
   const handleReadFileMetaCheckedChange = useCallback((checked: boolean) => {
     setEnableReadFileMeta(checked);
-    setAllFilesMetaCache({});
+    setAllFilesMeta({});
   }, []);
 
   return (
@@ -206,7 +219,7 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
 
                   <span>{basename(path)}</span>
 
-                  {allFilesMetaCache[path] ? (
+                  {allFilesMeta[path] ? (
                     problemsByFile[path] ? (
                       <Dialog.Root>
                         <Dialog.Trigger asChild>
@@ -264,7 +277,7 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
           )}
 
           <div style={{ minHeight: '2.7em' }}>
-            {enableReadFileMeta && (!allFilesMeta || Object.values(problemsByFile).length > 0) && (
+            {enableReadFileMeta && (!matchingFilesMeta || Object.values(problemsByFile).length > 0) && (
               <Alert text={t('A mismatch was detected in at least one file. You may proceed, but the resulting file might not be playable.')} />
             )}
             {!enableReadFileMeta && (

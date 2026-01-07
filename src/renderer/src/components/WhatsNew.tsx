@@ -11,6 +11,7 @@ import versionsJson from '../versions.json';
 import Button from './Button';
 
 import styles from './WhatsNew.module.css';
+import { compareReleasesUrl, getReleaseUrl } from '../../../common/constants';
 
 
 // see also generateVersions.mts
@@ -53,8 +54,8 @@ export default function WhatsNew() {
                 <div key={version} className={styles['version']}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1em' }}>
                     {!(isMasBuild && matchingVersions.length === 1) && <h2>v{version}</h2>}
-                    <Button onClick={() => shell.openExternal(`https://github.com/mifi/lossless-cut/releases/tag/v${version}`)}><FaFile style={{ verticalAlign: 'middle' }} /> {t('All release notes')}</Button>
-                    <Button onClick={() => shell.openExternal(`https://github.com/mifi/lossless-cut/compare/v${prevVersion}...v${version}`)}><FaCode style={{ verticalAlign: 'middle' }} /> {t('All code changes')}</Button>
+                    <Button onClick={() => shell.openExternal(getReleaseUrl(version))}><FaFile style={{ verticalAlign: 'middle' }} /> {t('All release notes')}</Button>
+                    <Button onClick={() => shell.openExternal(compareReleasesUrl(prevVersion, version))}><FaCode style={{ verticalAlign: 'middle' }} /> {t('All code changes')}</Button>
                   </div>
 
 

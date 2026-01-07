@@ -4,7 +4,7 @@ import http from 'node:http';
 import asyncHandler from 'express-async-handler';
 import assert from 'node:assert';
 
-import { homepage } from './constants.js';
+import { homepageUrl } from '../common/constants.js';
 import logger from './logger.js';
 
 
@@ -22,7 +22,7 @@ export default ({ port, onKeyboardAction }: {
 
   const apiRouter = express.Router();
 
-  app.get('/', (_req, res) => res.send(`See ${homepage}`));
+  app.get('/', (_req, res) => res.send(`See ${homepageUrl}`));
 
   app.use('/api', apiRouter);
 

@@ -4,7 +4,7 @@ import { AboutPanelOptionsOptions, app } from 'electron';
 import { appName, copyrightYear } from './common.js';
 import { isLinux } from './util.js';
 import isStoreBuild from './isStoreBuild.js';
-import { githubLink, homepage } from './constants.js';
+import { githubUrl, homepageUrl } from '../common/constants.js';
 
 
 // eslint-disable-next-line import/prefer-default-export
@@ -12,7 +12,7 @@ export function getAboutPanelOptions() {
   const appVersion = app.getVersion();
 
   const aboutPanelLines = [
-    isStoreBuild ? homepage : githubLink,
+    isStoreBuild ? homepageUrl : githubUrl,
     '',
     `Copyright © 2016-${copyrightYear} Mikael Finstad ❤️ 🇳🇴`,
   ];

@@ -344,7 +344,7 @@ export async function getDefaultOutFormat({ filePath, fileMeta: { format } }: { 
   return mapInputToOutputFormat(assumedFormat);
 }
 
-export async function readFileMeta(filePath: string) {
+export async function readFileFfprobeMeta(filePath: string) {
   try {
     const { stdout } = await runFfprobe([
       '-of', 'json', '-show_chapters', '-show_format', '-show_entries', 'stream', '-i', filePath, '-hide_banner',
@@ -378,8 +378,8 @@ export async function readFileMeta(filePath: string) {
   }
 }
 
-export type FileMeta = Awaited<ReturnType<typeof readFileMeta>>;
-export type FileStream = FileMeta['streams'][number];
+export type FileFfprobeMeta = Awaited<ReturnType<typeof readFileFfprobeMeta>>;
+export type FileStream = FileFfprobeMeta['streams'][number];
 
 async function renderThumbnail(filePath: string, timestamp: number, signal: AbortSignal) {
   const args = [
