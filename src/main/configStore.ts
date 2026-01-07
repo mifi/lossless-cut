@@ -384,6 +384,8 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
           if (k === 'plus') return ['shift', '='];
           if (k === 'command') return ['meta'];
           if (k === 'option') return ['alt'];
+          if (k === 'return') return ['enter'];
+          if (k === 'escape') return ['esc'];
           return [k];
         }).map((k) => {
           const mapped = map[k.toLowerCase()];
