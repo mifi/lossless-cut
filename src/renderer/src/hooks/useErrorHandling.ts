@@ -17,26 +17,19 @@ export default function useErrorHandling() {
   /**
    * Run an operation with error handling
    */
-  async function withErrorHandling(operation: () => Promise<void>, errorMsgOrFn?: string | ((err: unknown) => string)) {
+  async function withErrorHandling(operation: () => Promise<void>, errorMsg?: string) {
     try {
       await operation();
     } catch (err) {
       if (err instanceof DirectoryAccessDeclinedError || isAbortedError(err)) return;
 
       if (err instanceof UnsupportedFileError) {
-        handleError({ err: i18n.t('Unsupported file') });
+        console.error(err);
+        handleError({ title: errorMsg, err: i18n.t('Unsupported file') });
         return;
       }
 
-      let errorMsg: string | undefined;
-      if (typeof errorMsgOrFn === 'string') errorMsg = errorMsgOrFn;
-      if (typeof errorMsgOrFn === 'function') errorMsg = errorMsgOrFn(err);
-      if (errorMsg != null) {
-        console.error(errorMsg, err);
-        handleError({ err, title: errorMsg });
-      } else {
-        handleError({ err });
-      }
+      handleError({ title: errorMsg, err });
     }
   }
 
