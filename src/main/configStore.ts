@@ -98,9 +98,7 @@ const defaultKeyBindings: KeyBinding[] = [
 
 const defaults: Config = {
   version: 1,
-  lastAppVersion: app.getVersion() === '3.67.0' ? '3.64.0' : app.getVersion(),
-  // todo change it to this in next version:
-  // lastAppVersion: app.getVersion(),
+  lastAppVersion: app.getVersion(),
   captureFormat: 'jpeg',
   customOutDir: undefined,
   keyframeCut: true,
