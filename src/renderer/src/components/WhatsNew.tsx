@@ -14,7 +14,7 @@ import styles from './WhatsNew.module.css';
 import { compareReleasesUrl, getReleaseUrl } from '../../../common/constants';
 
 
-// see also generateVersions.mts
+// see also generateVersions.ts
 const versions: { version: string, highlightsMd?: string | undefined }[] = versionsJson;
 
 const remote = window.require('@electron/remote');

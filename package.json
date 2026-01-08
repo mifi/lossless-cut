@@ -23,13 +23,13 @@
     "pack-mas-dev": "yarn build && electron-builder --mac mas-dev -c.mas.provisioningProfile=LosslessCut_Dev.provisionprofile -c.mas.identity='Mikael Finstad (JH4PH8B3C8)'",
     "pack-win": "yarn build && electron-builder --win zip --x64",
     "postinstall": "electron-builder install-app-deps",
-    "version": "node script/postversion.mts && git add no.mifi.losslesscut.appdata.xml",
+    "version": "node script/postversion.ts && git add no.mifi.losslesscut.appdata.xml",
     "pack-linux": "yarn build && electron-builder --linux",
     "scan-i18n": "i18next-cli -c i18next.config.scan.ts extract",
-    "generate-icon": "mkdirp icon-build build-resources/appx && node script/generateIcon.mts",
+    "generate-icon": "mkdirp icon-build build-resources/appx && node script/generateIcon.ts",
     "generate-licenses": "yarn licenses generate-disclaimer -R > licenses.txt && echo '\n\nffmpeg is licensed under GPL v2+:\n\nhttp://www.gnu.org/licenses/old-licenses/gpl-2.0.html' >> licenses.txt",
-    "generate-docs": "node script/generateDocs.mts",
-    "check-licenses": "node script/checkLicenses.mts"
+    "generate-docs": "node script/generateDocs.ts",
+    "check-licenses": "node script/checkLicenses.ts"
   },
   "author": {
     "name": "Mikael Finstad",
