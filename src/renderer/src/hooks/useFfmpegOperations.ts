@@ -20,6 +20,9 @@ const { join, resolve, dirname } = window.require('path');
 const { writeFile, mkdir, access, constants: { W_OK } } = window.require('fs/promises');
 const { pathExists } = window.require('@electron/remote').require('./index.js');
 
+// Performance optimization: Increase concurrency for file operations
+const OPTIMIZED_CONCURRENCY = Math.max(2, Math.min(8, navigator.hardwareConcurrency || 4));
+
 
 export class OutputNotWritableError extends Error {
   constructor() {
@@ -67,8 +70,11 @@ function getMatroskaFlags() {
 
 const getChaptersInputArgs = (ffmetadataPath: string | undefined) => (ffmetadataPath ? ['-f', 'ffmetadata', '-i', ffmetadataPath] : []);
 
+// Performance optimization: Improved file deletion with better concurrency
 async function tryDeleteFiles(paths: string[]) {
-  return pMap(paths, (path) => unlinkWithRetry(path).catch((err) => console.error('Failed to delete', path, err)), { concurrency: 5 });
+  return pMap(paths, (path) => unlinkWithRetry(path).catch((err) => console.error('Failed to delete', path, err)), { 
+    concurrency: OPTIMIZED_CONCURRENCY 
+  });
 }
 
 export async function maybeMkDeepOutDir({ outputDir, fileOutPath }: { outputDir: string, fileOutPath: string }) {
@@ -132,7 +138,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
     console.log('Merging files', { paths }, 'to', outPath);
 
-    const durations = await pMap(paths, getDuration, { concurrency: 1 });
+    const durations = await pMap(paths, getDuration, { concurrency: OPTIMIZED_CONCURRENCY });
     const totalDuration = sum(durations);
 
     let chaptersPath: string | undefined;
@@ -651,7 +657,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     }
 
     try {
-      return await pMap(segments, cutSegment, { concurrency: 1 });
+      return await pMap(segments, cutSegment, { concurrency: OPTIMIZED_CONCURRENCY });
     } finally {
       if (chaptersPath) await tryDeleteFiles([chaptersPath]);
     }
@@ -924,7 +930,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         '-map', `0:${index}`, '-c', 'copy', '-f', format, '-y', outPath,
       ];
       return outPath;
-    }, { concurrency: 1 });
+    }, { concurrency: OPTIMIZED_CONCURRENCY });
 
     const ffmpegArgs = [
       '-hide_banner',
@@ -960,7 +966,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         `-dump_attachment:${index}`, outPath,
       ];
       return outPath;
-    }, { concurrency: 1 });
+    }, { concurrency: OPTIMIZED_CONCURRENCY });
 
     const ffmpegArgs = [
       '-y',
