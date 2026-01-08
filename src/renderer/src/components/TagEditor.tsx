@@ -1,10 +1,12 @@
-import { memo, useRef, useState, useMemo, useCallback, useEffect, FormEventHandler } from 'react';
+import type { FormEventHandler } from 'react';
+import { memo, useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
 import { motion } from 'framer-motion';
 import { FaCheck, FaEdit, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
 
-import { SegmentTags, segmentTagsSchema } from '../types';
+import type { SegmentTags } from '../types';
+import { segmentTagsSchema } from '../types';
 import CopyClipboardButton from './CopyClipboardButton';
 import { errorToast } from '../swal';
 import TextInput from './TextInput';

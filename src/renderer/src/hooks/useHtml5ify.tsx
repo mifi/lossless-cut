@@ -1,16 +1,18 @@
-import { useState, useCallback, ChangeEventHandler } from 'react';
+import type { ChangeEventHandler } from 'react';
+import { useState, useCallback } from 'react';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 
-import { Html5ifyMode } from '../../../common/types';
+import type { Html5ifyMode } from '../../../common/types';
 import { DirectoryAccessDeclinedError } from '../../errors';
 import getSwal from '../swal';
 import Checkbox from '../components/Checkbox';
 import { getSuffixedOutPath, html5dummySuffix, html5ifiedPrefix } from '../util';
-import { SetWorking } from './useLoading';
-import { WithErrorHandling } from './useErrorHandling';
-import { FfmpegOperations } from './useFfmpegOperations';
-import { ShowGenericDialog, useGenericDialogContext } from '../components/GenericDialog';
+import type { SetWorking } from './useLoading';
+import type { WithErrorHandling } from './useErrorHandling';
+import type { FfmpegOperations } from './useFfmpegOperations';
+import type { ShowGenericDialog } from '../components/GenericDialog';
+import { useGenericDialogContext } from '../components/GenericDialog';
 import * as Dialog from '../components/Dialog';
 import { ButtonRow } from '../components/Dialog';
 import { DialogButton } from '../components/Button';

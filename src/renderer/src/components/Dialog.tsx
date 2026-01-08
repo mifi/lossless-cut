@@ -1,5 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import styles from './Dialog.module.css';
 import { withClass } from './util';

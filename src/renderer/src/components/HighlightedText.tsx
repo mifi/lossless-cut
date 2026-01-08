@@ -1,4 +1,5 @@
-import { CSSProperties, HTMLAttributes, memo } from 'react';
+import type { CSSProperties, HTMLAttributes } from 'react';
+import { memo } from 'react';
 
 import { primaryTextColor } from '../colors';
 import styles from './HighlightedText.module.css';

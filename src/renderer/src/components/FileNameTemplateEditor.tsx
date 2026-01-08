@@ -1,4 +1,5 @@
-import { memo, useState, useEffect, useCallback, useRef, useMemo, ChangeEventHandler } from 'react';
+import type { ChangeEventHandler } from 'react';
+import { memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaCaretUp, FaEdit, FaExclamationTriangle, FaEye, FaFile, FaUndo } from 'react-icons/fa';
 
 import HighlightedText from './HighlightedText';
-import { segNumVariable, segSuffixVariable, GenerateOutFileNames, extVariable, segTagsVariable, segNumIntVariable, selectedSegNumVariable, selectedSegNumIntVariable, GeneratedOutFileNames } from '../util/outputNameTemplate';
+import type { GenerateOutFileNames, GeneratedOutFileNames } from '../util/outputNameTemplate';
+import { segNumVariable, segSuffixVariable, extVariable, segTagsVariable, segNumIntVariable, selectedSegNumVariable, selectedSegNumIntVariable } from '../util/outputNameTemplate';
 import useUserSettings from '../hooks/useUserSettings';
 import Switch from './Switch';
 import Select from './Select';

@@ -1,4 +1,5 @@
-import { memo, useState, useCallback, ChangeEventHandler } from 'react';
+import type { ChangeEventHandler } from 'react';
+import { memo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import styles from './ValueTuner.module.css';

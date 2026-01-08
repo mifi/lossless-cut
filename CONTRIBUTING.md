@@ -72,7 +72,7 @@ Before releasing, consider [Maintainence chores](#maintainence-chores) first.
 - `git merge stores` (in case there's an old unmerged stores hotfix)
 - **Prepare release notes** from commit history
 - Create a new file `versions/x.y.z.md` and write the most important highlights from the release notes, but **remove github issue #references**
-- `tsx script/generateVersions.mts && git add versions/*.md src/renderer/src/versions.json && git commit -m 'Update change log'`
+- `node script/generateVersions.mts && git add versions/*.md src/renderer/src/versions.json && git commit -m 'Update change log'`
 - *If Store-only hotfix release*
   - `git checkout stores`
   - `npm version patch`
@@ -155,12 +155,6 @@ Links:
 ### i18n
 ```bash
 yarn scan-i18n
-```
-
-### Generate license summary
-
-```bash
-npx license-checker --summary
 ```
 
 ### Regenerate licenses file

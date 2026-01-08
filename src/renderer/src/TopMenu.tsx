@@ -1,4 +1,5 @@
-import { CSSProperties, ReactNode, memo, useCallback, useEffect, useRef } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 import { IoIosSettings } from 'react-icons/io';
 import { FaFilter, FaList, FaLock, FaMoon, FaSun, FaTimes, FaUnlock } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';

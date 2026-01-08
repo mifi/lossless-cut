@@ -10,14 +10,15 @@ import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, 
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
-import { FFprobeStream } from '../../../common/ffprobe';
-import { AvoidNegativeTs, Html5ifyMode, PreserveMetadata } from '../../../common/types';
-import { AllFilesMeta, Chapter, CopyfileStreams, CustomTagsByFile, LiteFFprobeStream, ParamsByStreamId, SegmentToExport } from '../types';
-import { LossyMode } from '../../../main';
+import type { FFprobeStream } from '../../../common/ffprobe';
+import type { AvoidNegativeTs, Html5ifyMode, PreserveMetadata } from '../../../common/types';
+import type { AllFilesMeta, Chapter, CopyfileStreams, CustomTagsByFile, LiteFFprobeStream, ParamsByStreamId, SegmentToExport } from '../types';
+import type { LossyMode } from '../../../main';
 import { UserFacingError } from '../../errors';
 
 const { join, resolve, dirname } = window.require('path');
-const { writeFile, mkdir, access, constants: { F_OK, W_OK } } = window.require('fs/promises');
+const { writeFile, mkdir, access, constants: { W_OK } } = window.require('fs/promises');
+const { pathExists } = window.require('@electron/remote').require('./index.js');
 
 
 export class OutputNotWritableError extends Error {
@@ -68,15 +69,6 @@ const getChaptersInputArgs = (ffmetadataPath: string | undefined) => (ffmetadata
 
 async function tryDeleteFiles(paths: string[]) {
   return pMap(paths, (path) => unlinkWithRetry(path).catch((err) => console.error('Failed to delete', path, err)), { concurrency: 5 });
-}
-
-async function pathExists(path: string) {
-  try {
-    await access(path, F_OK);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 export async function maybeMkDeepOutDir({ outputDir, fileOutPath }: { outputDir: string, fileOutPath: string }) {

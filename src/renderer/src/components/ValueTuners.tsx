@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import ValueTuner from './ValueTuner';
 import useUserSettings from '../hooks/useUserSettings';
-import { TunerType } from '../types';
+import type { TunerType } from '../types';
 
 
 function ValueTuners({ type, onFinished }: { type: TunerType, onFinished: () => void }) {

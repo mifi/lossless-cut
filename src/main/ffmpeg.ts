@@ -1,14 +1,15 @@
 import { join } from 'node:path';
 import readline from 'node:readline';
 import stringToStream from 'string-to-stream';
-import { execa, Options as ExecaOptions, ResultPromise } from 'execa';
+import type { Options as ExecaOptions, ResultPromise } from 'execa';
+import { execa } from 'execa';
 import assert from 'node:assert';
-import { Readable } from 'node:stream';
+import type { Readable } from 'node:stream';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { app, clipboard, nativeImage } from 'electron';
 
 import { platform, arch, isWindows, isLinux } from './util.js';
-import { CaptureFormat, Waveform } from '../common/types.js';
+import type { CaptureFormat, Waveform } from '../common/types.js';
 import isDev from './isDev.js';
 import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';

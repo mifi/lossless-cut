@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { extractSubtitleTrackVtt } from '../ffmpeg';
-import { FFprobeStream } from '../../../common/ffprobe';
+import type { FFprobeStream } from '../../../common/ffprobe';
 
 
 export default () => {

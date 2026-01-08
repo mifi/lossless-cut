@@ -1,4 +1,5 @@
-import { memo, useRef, useMemo, useCallback, useEffect, useState, MutableRefObject, CSSProperties, WheelEventHandler, MouseEventHandler } from 'react';
+import type { MutableRefObject, CSSProperties, WheelEventHandler, MouseEventHandler } from 'react';
+import { memo, useRef, useMemo, useCallback, useEffect, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import debounce from 'lodash/debounce';
 import { useTranslation } from 'react-i18next';
@@ -14,10 +15,10 @@ import styles from './Timeline.module.css';
 
 
 import { timelineBackground, darkModeTransition } from './colors';
-import { Frame } from './ffmpeg';
-import { FormatTimecode, InverseCutSegment, OverviewWaveform, RenderableWaveform, WaveformSlice, StateSegment, Thumbnail } from './types';
+import type { Frame } from './ffmpeg';
+import type { FormatTimecode, InverseCutSegment, OverviewWaveform, RenderableWaveform, WaveformSlice, StateSegment, Thumbnail } from './types';
 import Button from './components/Button';
-import { UseSegments } from './hooks/useSegments';
+import type { UseSegments } from './hooks/useSegments';
 import { keyMap } from './hooks/useTimelineScroll';
 
 

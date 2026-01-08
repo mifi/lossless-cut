@@ -1,5 +1,6 @@
 import { useId } from 'react';
-import { Root, Indicator, CheckboxProps } from '@radix-ui/react-checkbox';
+import type { CheckboxProps } from '@radix-ui/react-checkbox';
+import { Root, Indicator } from '@radix-ui/react-checkbox';
 import { FaCheck } from 'react-icons/fa';
 
 import classes from './Checkbox.module.css';

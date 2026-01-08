@@ -1,9 +1,10 @@
-import { CSSProperties, useMemo } from 'react';
-import { FaStepForward } from 'react-icons/fa';
+import type { CSSProperties } from 'react';
+import { useMemo } from 'react';
+import type { FaStepForward } from 'react-icons/fa';
 
 import { useSegColors } from '../contexts';
 import useUserSettings from '../hooks/useUserSettings';
-import { SegmentColorIndex } from '../types';
+import type { SegmentColorIndex } from '../types';
 
 const SegmentCutpointButton = ({ currentCutSeg, side, Icon, onClick, title, style }: {
   currentCutSeg: SegmentColorIndex | undefined,

@@ -6,7 +6,7 @@ import isDev from '../isDev';
 import { saveLlcProject } from '../edlStore';
 import { mapSaveableSegments } from '../segments';
 import { getSuffixedOutPath } from '../util';
-import { StateSegment } from '../types';
+import type { StateSegment } from '../types';
 import { errorToast } from '../swal';
 import i18n from '../i18n';
 

@@ -2,6 +2,12 @@
   "extends": ["@tsconfig/strictest", "@tsconfig/node22/tsconfig.json"],
   "compilerOptions": {
     "noEmit": true,
+
+    // https://nodejs.org/api/typescript.html
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
   },
   "include": [
     "electron.vite.config.ts",

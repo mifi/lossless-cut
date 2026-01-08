@@ -6,6 +6,7 @@
   "version": "3.67.2",
   "main": "./out/main/index.js",
   "homepage": "./",
+  "type": "module",
   "scripts": {
     "clean": "rimraf dist out common-ts-dist main-ts-dist build-resources icon-build",
     "start": "electron-vite preview",
@@ -22,12 +23,13 @@
     "pack-mas-dev": "yarn build && electron-builder --mac mas-dev -c.mas.provisioningProfile=LosslessCut_Dev.provisionprofile -c.mas.identity='Mikael Finstad (JH4PH8B3C8)'",
     "pack-win": "yarn build && electron-builder --win zip --x64",
     "postinstall": "electron-builder install-app-deps",
-    "version": "tsx script/postversion.mts && git add no.mifi.losslesscut.appdata.xml",
+    "version": "node script/postversion.mts && git add no.mifi.losslesscut.appdata.xml",
     "pack-linux": "yarn build && electron-builder --linux",
     "scan-i18n": "i18next-cli -c i18next.config.scan.ts extract",
-    "generate-icon": "mkdirp icon-build build-resources/appx && tsx script/generateIcon.mts",
-    "generate-licenses": "yarn licenses generate-disclaimer > licenses.txt && echo '\n\nffmpeg is licensed under GPL v2+:\n\nhttp://www.gnu.org/licenses/old-licenses/gpl-2.0.html' >> licenses.txt",
-    "generate-docs": "tsx script/generateDocs.mts"
+    "generate-icon": "mkdirp icon-build build-resources/appx && node script/generateIcon.mts",
+    "generate-licenses": "yarn licenses generate-disclaimer -R > licenses.txt && echo '\n\nffmpeg is licensed under GPL v2+:\n\nhttp://www.gnu.org/licenses/old-licenses/gpl-2.0.html' >> licenses.txt",
+    "generate-docs": "node script/generateDocs.mts",
+    "check-licenses": "node script/checkLicenses.mts"
   },
   "author": {
     "name": "Mikael Finstad",
@@ -87,7 +89,7 @@
     "electron": "^38.3.0",
     "electron-builder": "26.0.12",
     "electron-devtools-installer": "^4.0.0",
-    "electron-vite": "^2.3.0",
+    "electron-vite": "^5.0.0",
     "eslint": "^8.2.0",
     "eslint-config-mifi": "^0.0.3",
     "eslint-plugin-import": "^2.25.3",
@@ -131,13 +133,12 @@
     "sweetalert2-react-content": "^5.0.7",
     "tiny-invariant": "^1.3.3",
     "ts-morph": "^27.0.2",
-    "tsx": "^4.7.1",
     "type-fest": "^4.23.0",
     "typescript": "^5.9.3",
     "use-debounce": "^5.1.0",
     "use-trace-update": "^1.3.0",
-    "vite": "^6.4.1",
-    "vitest": "^3.0.8"
+    "vite": "^7.3.0",
+    "vitest": "^4.0.16"
   },
   "dependencies": {
     "@electron/remote": "^2.1.3",
@@ -149,7 +150,6 @@
     "express": "^4.20.0",
     "express-async-handler": "^1.2.0",
     "file-type": "patch:file-type@npm%3A19.4.1#~/.yarn/patches/file-type-npm-19.4.1-d18086444c.patch",
-    "fs-extra": "^8.1.0",
     "i18next": "^25.6.1",
     "i18next-fs-backend": "^2.3.2",
     "json5": "^2.2.2",

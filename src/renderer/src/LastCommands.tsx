@@ -1,10 +1,11 @@
-import { Dispatch, memo, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DateTime } from 'luxon';
 import sortBy from 'lodash/sortBy.js';
 
 import CopyClipboardButton from './components/CopyClipboardButton';
-import { FfmpegCommandLog } from './types';
+import type { FfmpegCommandLog } from './types';
 import Button from './components/Button';
 import * as Dialog from './components/Dialog';
 

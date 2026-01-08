@@ -1,4 +1,5 @@
-import { ButtonHTMLAttributes, DetailedHTMLProps, forwardRef } from 'react';
+import type { ButtonHTMLAttributes, DetailedHTMLProps } from 'react';
+import { forwardRef } from 'react';
 
 import styles from './Button.module.css';
 import { primaryColor, primaryTextColor } from '../colors';

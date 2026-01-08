@@ -1,5 +1,6 @@
-import { ReactEventHandler, useCallback, useMemo, useRef, useState } from 'react';
-import { ChromiumHTMLVideoElement, PlaybackMode } from '../types';
+import type { ReactEventHandler } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import type { ChromiumHTMLVideoElement, PlaybackMode } from '../types';
 import { showPlaybackFailedMessage } from '../swal';
 
 export default ({ filePath }: { filePath: string | undefined }) => {

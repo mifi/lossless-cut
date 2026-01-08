@@ -1,5 +1,6 @@
+import type { AboutPanelOptionsOptions } from 'electron';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { AboutPanelOptionsOptions, app } from 'electron';
+import { app } from 'electron';
 
 import { appName, copyrightYear } from './common.js';
 import { isLinux } from './util.js';

@@ -1,15 +1,17 @@
-import { DragEventHandler, memo, useCallback, useMemo, useState } from 'react';
+import type { DragEventHandler } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { FaTimes, FaHatWizard, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import { AiOutlineMergeCells } from 'react-icons/ai';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay, UniqueIdentifier } from '@dnd-kit/core';
+import type { DragEndEvent, DragStartEvent, UniqueIdentifier } from '@dnd-kit/core';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
 import BatchFile from './BatchFile';
 import { controlsBackground, darkModeTransition, primaryColor } from '../colors';
-import { BatchFile as BatchFileType } from '../types';
+import type { BatchFile as BatchFileType } from '../types';
 import useUserSettings from '../hooks/useUserSettings';
 
 

@@ -1,5 +1,6 @@
+import type { BrowserWindow, MenuItem, MenuItemConstructorOptions } from 'electron';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import electron, { BrowserWindow, MenuItem, MenuItemConstructorOptions } from 'electron';
+import electron from 'electron';
 import { t } from 'i18next';
 
 import { homepageUrl, getReleaseUrl, licensesUrl, thanksUrl, usageUrl, faqUrl, troubleshootingUrl, featureRequestUrl } from '../common/constants.js';

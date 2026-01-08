@@ -1,4 +1,5 @@
-import { memo, Fragment, useEffect, useMemo, useCallback, useState, ReactNode, SetStateAction, Dispatch, useRef } from 'react';
+import type { ReactNode, SetStateAction, Dispatch } from 'react';
+import { memo, Fragment, useEffect, useMemo, useCallback, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaMouse, FaPlus, FaStepForward, FaStepBackward, FaUndo, FaTrash, FaSave, FaHammer } from 'react-icons/fa';
 import groupBy from 'lodash/groupBy';
@@ -10,8 +11,8 @@ import useUserSettings from '../hooks/useUserSettings';
 import SetCutpointButton from './SetCutpointButton';
 import SegmentCutpointButton from './SegmentCutpointButton';
 import { getModifier } from '../hooks/useTimelineScroll';
-import { KeyBinding, KeyboardAction, ModifierKey } from '../../../common/types';
-import { StateSegment } from '../types';
+import type { KeyBinding, KeyboardAction, ModifierKey } from '../../../common/types';
+import type { StateSegment } from '../types';
 import { allModifiers, altModifiers, controlModifiers, metaModifiers, shiftModifiers, splitKeyboardKeys } from '../util';
 import * as Dialog from './Dialog';
 import Warning from './Warning';

@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 
 import { DirectoryAccessDeclinedError, UnsupportedFileError } from '../../errors';
 import { isAbortedError } from '../util';
-import { GenericError } from '../components/ErrorDialog';
+import type { GenericError } from '../components/ErrorDialog';
 
 
 export default function useErrorHandling() {

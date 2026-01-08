@@ -1,18 +1,19 @@
 import pMap from 'p-map';
 import sortBy from 'lodash/sortBy';
 import i18n from 'i18next';
-import Timecode, { FRAMERATE } from 'smpte-timecode';
+import type { FRAMERATE } from 'smpte-timecode';
+import Timecode from 'smpte-timecode';
 import minBy from 'lodash/minBy';
 import invariant from 'tiny-invariant';
 
 import { pcmAudioCodecs, isMov } from './util/streams';
 import { isExecaError } from './util';
 import { isDurationValid } from './segments';
-import { FFprobeChapter, FFprobeFormat, FFprobeProbeResult, FFprobeStream } from '../../common/ffprobe';
+import type { FFprobeChapter, FFprobeFormat, FFprobeProbeResult, FFprobeStream } from '../../common/ffprobe';
 import { parseSrt, parseSrtToSegments } from './edlFormats';
 import { UnsupportedFileError, UserFacingError } from '../errors';
 
-const { ffmpeg, fileTypePromise } = window.require('@electron/remote').require('./index.js');
+const { ffmpeg, fileTypeFromFile } = window.require('@electron/remote').require('./index.js');
 
 const { renderWaveformPng, mapTimesToSegments, detectSceneChanges, captureFrames, captureFrameToFile, captureFrameToClipboard, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, getDuration, abortFfmpegs, runFfmpeg, runFfprobe, getFfmpegPath, setCustomFfPath } = ffmpeg;
 
@@ -267,7 +268,7 @@ async function determineSourceFileFormat(ffprobeFormatsStr: string | undefined, 
   // We need to test mp3 first because ffprobe seems to report the wrong format sometimes https://github.com/mifi/lossless-cut/issues/2129
   if (firstFfprobeFormat === 'mp3') {
     // file-type detects it correctly
-    const fileTypeResponse = await (await fileTypePromise).fileTypeFromFile(filePath);
+    const fileTypeResponse = await fileTypeFromFile(filePath);
     if (fileTypeResponse?.mime === 'audio/mpeg') {
       return 'mp2';
     }
@@ -286,7 +287,7 @@ async function determineSourceFileFormat(ffprobeFormatsStr: string | undefined, 
     return firstFfprobeFormat;
   }
 
-  const fileTypeResponse = await (await fileTypePromise).fileTypeFromFile(filePath);
+  const fileTypeResponse = await fileTypeFromFile(filePath);
   if (fileTypeResponse == null) {
     console.warn('file-type failed to detect format, defaulting to first FFprobe detected format', ffprobeFormats);
     return firstFfprobeFormat;

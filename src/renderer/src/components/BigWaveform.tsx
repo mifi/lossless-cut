@@ -1,7 +1,8 @@
-import { memo, useEffect, useState, useCallback, useRef, CSSProperties, MouseEventHandler, WheelEventHandler, useMemo } from 'react';
+import type { CSSProperties, MouseEventHandler, WheelEventHandler } from 'react';
+import { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 
 import { ffmpegExtractWindow } from '../util/constants';
-import { WaveformSlice } from '../types';
+import type { WaveformSlice } from '../types';
 import Spinner from './Spinner';
 
 

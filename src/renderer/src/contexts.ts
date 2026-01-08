@@ -1,12 +1,12 @@
 import React, { useContext } from 'react';
-import Color from 'color';
+import type Color from 'color';
 import invariant from 'tiny-invariant';
 
-import { UserSettingsRoot } from './hooks/useUserSettingsRoot';
-import { ExportMode, KeyboardLayoutMap, SegmentColorIndex } from './types';
+import type { UserSettingsRoot } from './hooks/useUserSettingsRoot';
+import type { ExportMode, KeyboardLayoutMap, SegmentColorIndex } from './types';
 import type useLoading from './hooks/useLoading';
-import { GenericError } from './components/ErrorDialog';
-import { ConfirmDialog, ShowGenericDialog } from './components/GenericDialog';
+import type { GenericError } from './components/ErrorDialog';
+import type { ConfirmDialog, ShowGenericDialog } from './components/GenericDialog';
 
 
 export type UserSettingsContextType = Omit<UserSettingsRoot, 'settings'> & UserSettingsRoot['settings'] & {

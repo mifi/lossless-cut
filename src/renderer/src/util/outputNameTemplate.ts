@@ -1,5 +1,5 @@
 import i18n from 'i18next';
-import { PlatformPath } from 'node:path';
+import type { PlatformPath } from 'node:path';
 import pMap from 'p-map';
 import max from 'lodash/max';
 import invariant from 'tiny-invariant';
@@ -9,10 +9,10 @@ import type { FileNameTemplateContext } from '../../../common/userTypes.ts';
 import { isMac, isWindows, hasDuplicates, filenamify, getOutFileExtension } from '../util';
 import isDev from '../isDev';
 import { getSegmentTags, formatSegNum, getGuaranteedSegments } from '../segments';
-import { FileStats, FormatTimecode, SegmentToExport } from '../types';
+import type { FileStats, FormatTimecode, SegmentToExport } from '../types';
 import safeishEval from '../worker/eval';
 import { UserFacingError } from '../../errors';
-import { FileFfprobeMeta } from '../ffmpeg';
+import type { FileFfprobeMeta } from '../ffmpeg';
 
 
 export const segNumVariable = 'SEG_NUM';

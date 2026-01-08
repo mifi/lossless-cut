@@ -1,4 +1,5 @@
-import { SelectHTMLAttributes, memo } from 'react';
+import type { SelectHTMLAttributes } from 'react';
+import { memo } from 'react';
 
 import styles from './Select.module.css';
 

@@ -33,6 +33,7 @@ jobs:
           yarn generate-docs
           git diff --quiet HEAD
           git reset --hard HEAD
+      - run: yarn check-licenses
       - name: Generate licenses
         run: |
           yarn generate-licenses

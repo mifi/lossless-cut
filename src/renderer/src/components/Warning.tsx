@@ -1,4 +1,5 @@
-import { DetailedHTMLProps, HTMLAttributes, useMemo } from 'react';
+import type { DetailedHTMLProps, HTMLAttributes } from 'react';
+import { useMemo } from 'react';
 import { warningColor } from '../colors';
 
 

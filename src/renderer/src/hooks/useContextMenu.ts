@@ -1,7 +1,8 @@
-import { RefObject, useEffect } from 'react';
+import type { RefObject } from 'react';
+import { useEffect } from 'react';
 
 import useNativeMenu from './useNativeMenu';
-import { ContextMenuTemplate } from '../types';
+import type { ContextMenuTemplate } from '../types';
 
 
 // https://github.com/transflow/use-electron-context-menu

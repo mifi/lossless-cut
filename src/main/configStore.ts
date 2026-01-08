@@ -2,13 +2,12 @@ import Store from 'electron-store';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import electron from 'electron';
 import { join, dirname } from 'node:path';
-import { pathExists } from 'fs-extra';
 import assert from 'node:assert';
 import { copyFile } from 'node:fs/promises';
 
-import { KeyBinding, Config } from '../common/types.js';
+import type { KeyBinding, Config } from '../common/types.js';
 import logger from './logger.js';
-import { isWindows } from './util.js';
+import { isWindows, pathExists } from './util.js';
 import { fallbackLng } from './i18nCommon.js';
 
 const { app } = electron;

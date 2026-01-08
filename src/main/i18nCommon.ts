@@ -3,9 +3,10 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { app } from 'electron';
 import { join } from 'node:path';
-import { InitOptions } from 'i18next';
+import type { InitOptions } from 'i18next';
 
-import { mapLang, SupportedLanguage } from '../common/i18n';
+import type { SupportedLanguage } from '../common/i18n';
+import { mapLang } from '../common/i18n';
 
 
 let customLocalesPath: string | undefined;

@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState, useCallback, useMemo, memo, CSSProperties, RefObject, ReactEventHandler, FocusEventHandler } from 'react';
+import type { CSSProperties, RefObject, ReactEventHandler, FocusEventHandler } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react';
 import invariant from 'tiny-invariant';
 import debounce from 'lodash/debounce.js';
 import { FaVideo } from 'react-icons/fa';
 
 import isDev from './isDev';
-import { ChromiumHTMLVideoElement } from './types';
-import { FFprobeStream } from '../../common/ffprobe';
+import type { ChromiumHTMLVideoElement } from './types';
+import type { FFprobeStream } from '../../common/ffprobe';
 import { getFrameDuration } from './util';
 
 const { compatPlayer: { createMediaSourceStream } } = window.require('@electron/remote').require('./index.js');

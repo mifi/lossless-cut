@@ -1,4 +1,4 @@
-import { HTMLAttributes } from 'react';
+import type { HTMLAttributes } from 'react';
 import { swalContainerWrapperId } from '../swal';
 
 export default function SwalContainer({ darkMode, ...props }: HTMLAttributes<HTMLDivElement> & { darkMode: boolean }) {

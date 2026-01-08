@@ -2,23 +2,23 @@ import i18n from 'i18next';
 import pMap from 'p-map';
 import prettyBytes from 'pretty-bytes';
 import sortBy from 'lodash/sortBy';
-import pRetry, { Options } from 'p-retry';
-import { ExecaError } from 'execa';
+import type { Options } from 'p-retry';
+import pRetry from 'p-retry';
+import type { ExecaError } from 'execa';
 import confetti from 'canvas-confetti';
 import invariant from 'tiny-invariant';
 
 import { ffmpegExtractWindow } from './util/constants';
 import { appName } from '../../main/common';
-import { Html5ifyMode } from '../../common/types';
+import type { Html5ifyMode } from '../../common/types';
 import { UserFacingError } from '../errors';
-import { FFprobeFormat } from '../../common/ffprobe';
+import type { FFprobeFormat } from '../../common/ffprobe';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
-const fsExtra = window.require('fs-extra');
-const { stat, lstat, readdir, utimes, unlink } = window.require('fs/promises');
+const { stat, lstat, readdir, utimes, unlink, open, access, constants: { R_OK, W_OK } } = window.require('fs/promises');
 const { ipcRenderer } = window.require('electron');
 const remote = window.require('@electron/remote');
-const { isWindows, isMac } = remote.require('./index.js');
+const { isWindows, isMac, pathExists } = remote.require('./index.js');
 
 const appVersion = remote.app.getVersion();
 const appPath = remote.app.getAppPath();
@@ -69,9 +69,9 @@ export function getSuffixedOutPath({ customOutDir, filePath, nameSuffix }: { cus
 
 export async function havePermissionToReadFile(filePath: string) {
   try {
-    const fd = await fsExtra.open(filePath, 'r');
+    const fd = await open(filePath, 'r');
     try {
-      await fsExtra.close(fd);
+      await fd.close();
     } catch (err) {
       console.error('Failed to close fd', err);
     }
@@ -84,7 +84,7 @@ export async function havePermissionToReadFile(filePath: string) {
 
 export async function checkDirWriteAccess(dirPath: string) {
   try {
-    await fsExtra.access(dirPath, fsExtra.constants.W_OK);
+    await access(dirPath, W_OK);
   } catch (err) {
     if (err instanceof Error && 'code' in err) {
       if (err.code === 'EPERM') return false; // Thrown on Mac (MAS build) when user has not yet allowed access
@@ -95,13 +95,9 @@ export async function checkDirWriteAccess(dirPath: string) {
   return true;
 }
 
-export async function pathExists(pathIn: string) {
-  return fsExtra.pathExists(pathIn);
-}
-
 export async function getPathReadAccessError(pathIn: string) {
   try {
-    await fsExtra.access(pathIn, fsExtra.constants.R_OK);
+    await access(pathIn, R_OK);
     return undefined;
   } catch (err) {
     return err instanceof Error && 'code' in err && typeof err.code === 'string' ? err.code : undefined;

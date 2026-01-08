@@ -4,7 +4,7 @@ import invariant from 'tiny-invariant';
 import sortBy from 'lodash/sortBy';
 
 import { renderThumbnails as ffmpegRenderThumbnails } from '../ffmpeg';
-import { Thumbnail } from '../types';
+import type { Thumbnail } from '../types';
 import { isDurationValid } from '../segments';
 import { isExecaError } from '../util';
 

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { KeyBinding, KeyboardAction } from '../../../common/types';
+import type { KeyBinding, KeyboardAction } from '../../../common/types';
 import { allModifiers, altModifiers, controlModifiers, metaModifiers, shiftModifiers } from '../util';
-import { KeyboardLayoutMap } from '../types';
+import type { KeyboardLayoutMap } from '../types';
 import isDev from '../isDev';
 
 

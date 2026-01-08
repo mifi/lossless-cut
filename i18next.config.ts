@@ -1,7 +1,8 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { defineConfig } from 'i18next-cli';
 
-import { langNames, mapLang, SupportedLanguage } from './src/common/i18n.js';
+import type { SupportedLanguage } from './src/common/i18n.js';
+import { langNames, mapLang } from './src/common/i18n.js';
 import configBase from './i18next.config.base.js';
 
 export default defineConfig({

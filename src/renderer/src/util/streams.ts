@@ -1,6 +1,6 @@
 import invariant from 'tiny-invariant';
-import { FFprobeStream, FFprobeStreamDisposition } from '../../../common/ffprobe';
-import { AllFilesMeta, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, LiteFFprobeStream } from '../types';
+import type { FFprobeStream, FFprobeStreamDisposition } from '../../../common/ffprobe';
+import type { AllFilesMeta, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, LiteFFprobeStream } from '../types';
 import type { FileStream } from '../ffmpeg';
 
 

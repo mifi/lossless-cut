@@ -1,4 +1,5 @@
-import { HTMLAttributes, useMemo } from 'react';
+import type { HTMLAttributes } from 'react';
+import { useMemo } from 'react';
 
 import { useAppContext } from '../contexts';
 import { getMetaKeyName } from '../util';

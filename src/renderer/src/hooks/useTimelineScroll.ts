@@ -1,8 +1,9 @@
-import { WheelEventHandler, useCallback } from 'react';
+import type { WheelEventHandler } from 'react';
+import { useCallback } from 'react';
 import { t } from 'i18next';
 
 import normalizeWheel from './normalizeWheel';
-import { ModifierKey } from '../../../common/types';
+import type { ModifierKey } from '../../../common/types';
 import { getMetaKeyName } from '../util';
 
 export const keyMap = {

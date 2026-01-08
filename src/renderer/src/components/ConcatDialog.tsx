@@ -1,4 +1,5 @@
-import { memo, useState, useCallback, useEffect, useMemo, CSSProperties, Dispatch, SetStateAction } from 'react';
+import type { CSSProperties, Dispatch, SetStateAction } from 'react';
+import { memo, useState, useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AiOutlineMergeCells } from 'react-icons/ai';
 import { FaQuestionCircle, FaExclamationTriangle, FaCog, FaCheck, FaNotEqual } from 'react-icons/fa';
@@ -7,19 +8,21 @@ import invariant from 'tiny-invariant';
 import pMap from 'p-map';
 
 import Checkbox from './Checkbox';
-import { readFileFfprobeMeta, getDefaultOutFormat, mapRecommendedDefaultFormat, FileFfprobeMeta } from '../ffmpeg';
+import type { FileFfprobeMeta } from '../ffmpeg';
+import { readFileFfprobeMeta, getDefaultOutFormat, mapRecommendedDefaultFormat } from '../ffmpeg';
 import OutputFormatSelect from './OutputFormatSelect';
 import useUserSettings from '../hooks/useUserSettings';
 import { isMov } from '../util/streams';
 import { getOutDir, readFileStats } from '../util';
-import { FFprobeStream } from '../../../common/ffprobe';
+import type { FFprobeStream } from '../../../common/ffprobe';
 import Button, { DialogButton } from './Button';
-import { defaultMergedFileTemplate, GeneratedOutFileNames, GenerateMergedOutFileNames } from '../util/outputNameTemplate';
+import type { GeneratedOutFileNames, GenerateMergedOutFileNames } from '../util/outputNameTemplate';
+import { defaultMergedFileTemplate } from '../util/outputNameTemplate';
 import { dangerColor, saveColor, warningColor } from '../colors';
 import * as Dialog from './Dialog';
 import FileNameTemplateEditor from './FileNameTemplateEditor';
 import HighlightedText from './HighlightedText';
-import { FileStats } from '../types';
+import type { FileStats } from '../types';
 
 const { basename } = window.require('path');
 

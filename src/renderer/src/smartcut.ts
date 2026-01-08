@@ -3,7 +3,7 @@ import i18n from 'i18next';
 import { getRealVideoStreams, getVideoTimebase } from './util/streams';
 
 import { readKeyframesAroundTime, findNextKeyframe, findKeyframeAtExactTime } from './ffmpeg';
-import { FFprobeStream } from '../../common/ffprobe';
+import type { FFprobeStream } from '../../common/ffprobe';
 import { UserFacingError } from '../errors';
 import { readFileSize } from './util';
 

@@ -1,10 +1,11 @@
-import { CSSProperties, memo, useMemo } from 'react';
+import type { CSSProperties } from 'react';
+import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { withBlur } from '../util';
 import useUserSettings from '../hooks/useUserSettings';
 import Select from './Select';
-import { ExportMode } from '../types';
+import type { ExportMode } from '../types';
 
 
 function ExportModeButton({ selectedSegments, style }: { selectedSegments: unknown[], style?: CSSProperties }) {

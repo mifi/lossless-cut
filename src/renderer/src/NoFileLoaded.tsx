@@ -1,13 +1,14 @@
 import { Fragment, memo, useMemo, useState } from 'react';
-import { motion, MotionStyle } from 'framer-motion';
+import type { MotionStyle } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { FaMouse } from 'react-icons/fa';
 import { useTranslation, Trans } from 'react-i18next';
 
 import SetCutpointButton from './components/SetCutpointButton';
 import SimpleModeButton from './components/SimpleModeButton';
 import useUserSettings from './hooks/useUserSettings';
-import { StateSegment } from './types';
-import { KeyBinding } from '../../common/types';
+import type { StateSegment } from './types';
+import type { KeyBinding } from '../../common/types';
 import { splitKeyboardKeys } from './util';
 import { getModifier } from './hooks/useTimelineScroll';
 import Kbd from './components/Kbd';

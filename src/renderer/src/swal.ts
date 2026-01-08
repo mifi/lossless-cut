@@ -1,6 +1,7 @@
 import SwalRaw from 'sweetalert2/dist/sweetalert2.js';
 import type { SweetAlertOptions } from 'sweetalert2';
-import withReactContent, { ReactSweetAlert, SweetAlert2 } from 'sweetalert2-react-content';
+import type { ReactSweetAlert, SweetAlert2 } from 'sweetalert2-react-content';
+import withReactContent from 'sweetalert2-react-content';
 
 import i18n from './i18n';
 import { emitter as animationsEmitter } from './animations';

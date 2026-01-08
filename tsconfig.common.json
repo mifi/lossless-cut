@@ -6,6 +6,12 @@
 
     "outDir": "common-ts-dist",
     "tsBuildInfoFile": "common-ts-dist/tsconfig.tsbuildinfo",
+
+    // https://nodejs.org/api/typescript.html
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
   },
   "include": [
     "src/common/**/*",

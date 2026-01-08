@@ -1,4 +1,5 @@
-import { memo, useState, useCallback, useRef, useEffect, ChangeEventHandler, ChangeEvent } from 'react';
+import type { ChangeEventHandler, ChangeEvent } from 'react';
+import { memo, useState, useCallback, useRef, useEffect } from 'react';
 import { MdSubtitles } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
@@ -6,7 +7,7 @@ import { motion } from 'framer-motion';
 import Select from './Select';
 import Switch from './Switch';
 import styles from './PlaybackStreamSelector.module.css';
-import { FFprobeStream } from '../../../common/ffprobe';
+import type { FFprobeStream } from '../../../common/ffprobe';
 
 
 function PlaybackStreamSelector({

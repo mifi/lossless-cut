@@ -1,4 +1,5 @@
-import { CSSProperties, memo } from 'react';
+import type { CSSProperties } from 'react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaBaby } from 'react-icons/fa';
 

@@ -1,7 +1,9 @@
-import { CSSProperties, memo, useMemo } from 'react';
+import type { CSSProperties } from 'react';
+import { memo, useMemo } from 'react';
 import i18n from 'i18next';
 
-import allOutFormats, { FfmpegFormat } from '../outFormats';
+import type { FfmpegFormat } from '../outFormats';
+import allOutFormats from '../outFormats';
 import { withBlur } from '../util';
 import Select from './Select';
 

@@ -1,4 +1,5 @@
-import { CSSProperties, Dispatch, ReactNode, SetStateAction, memo, useCallback, useMemo, useState } from 'react';
+import type { CSSProperties, Dispatch, ReactNode, SetStateAction } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { FaExclamationTriangle, FaInfoCircle, FaRegCheckCircle } from 'react-icons/fa';
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
@@ -18,15 +19,16 @@ import getSwal from '../swal';
 import { isMov as ffmpegIsMov } from '../util/streams';
 import useUserSettings from '../hooks/useUserSettings';
 import styles from './ExportConfirm.module.css';
-import { SegmentToExport } from '../types';
-import { defaultCutFileTemplate, defaultCutMergedFileTemplate, GenerateOutFileNames } from '../util/outputNameTemplate';
-import { FFprobeStream } from '../../../common/ffprobe';
-import { AvoidNegativeTs, PreserveMetadata } from '../../../common/types';
+import type { SegmentToExport } from '../types';
+import type { GenerateOutFileNames } from '../util/outputNameTemplate';
+import { defaultCutFileTemplate, defaultCutMergedFileTemplate } from '../util/outputNameTemplate';
+import type { FFprobeStream } from '../../../common/ffprobe';
+import type { AvoidNegativeTs, PreserveMetadata } from '../../../common/types';
 import TextInput from './TextInput';
-import { UseSegments } from '../hooks/useSegments';
+import type { UseSegments } from '../hooks/useSegments';
 import ExportSheet from './ExportSheet';
 import ToggleExportConfirm from './ToggleExportConfirm';
-import { LossyMode } from '../../../main';
+import type { LossyMode } from '../../../main';
 import AnimatedTr from './AnimatedTr';
 
 

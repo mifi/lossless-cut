@@ -1,4 +1,5 @@
-import { memo, useState, useMemo, useCallback, Dispatch, SetStateAction, CSSProperties, ReactNode, ChangeEventHandler, DragEventHandler } from 'react';
+import type { Dispatch, SetStateAction, CSSProperties, ReactNode, ChangeEventHandler, DragEventHandler } from 'react';
+import { memo, useState, useMemo, useCallback } from 'react';
 
 import { FaImage, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport, FaBook, FaInfoCircle, FaFilter, FaEye, FaEdit, FaTrash, FaSortNumericDown, FaSortNumericUp, FaHamburger, FaMap } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
@@ -10,12 +11,13 @@ import * as DropdownMenu from './components/DropdownMenu';
 import * as Dialog from './components/Dialog';
 import AutoExportToggler from './components/AutoExportToggler';
 import Select from './components/Select';
-import { FileStream, getStreamFps } from './ffmpeg';
+import type { FileStream } from './ffmpeg';
+import { getStreamFps } from './ffmpeg';
 import { deleteDispositionValue } from './util';
 import { getActiveDisposition, attachedPicDisposition, isGpsStream } from './util/streams';
 import TagEditor from './components/TagEditor';
-import { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../common/ffprobe';
-import { CustomTagsByFile, FilesMeta, FormatTimecode, ParamsByStreamId, StreamParams } from './types';
+import type { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../common/ffprobe';
+import type { CustomTagsByFile, FilesMeta, FormatTimecode, ParamsByStreamId, StreamParams } from './types';
 import Button, { DialogButton } from './components/Button';
 import Checkbox from './components/Checkbox';
 import styles from './StreamsSelector.module.css';

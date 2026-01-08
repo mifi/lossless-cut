@@ -1,4 +1,5 @@
-import React, { MouseEventHandler, ReactNode, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import type { MouseEventHandler, ReactNode } from 'react';
+import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
 import { FaCheckCircle, FaInfoCircle } from 'react-icons/fa';
@@ -7,7 +8,8 @@ import * as Dialog from './Dialog';
 import * as AlertDialog from './AlertDialog';
 import { DialogButton } from './Button';
 import { showItemInFolder } from '../util';
-import { CleanupChoice, CleanupChoicesType, ListItem, Notices, OutputIncorrectSeeHelpMenu, UnorderedList, Warnings } from '../dialogs';
+import type { CleanupChoice, CleanupChoicesType } from '../dialogs';
+import { ListItem, Notices, OutputIncorrectSeeHelpMenu, UnorderedList, Warnings } from '../dialogs';
 import Checkbox from './Checkbox';
 import { saveColor, warningColor } from '../colors';
 

@@ -3,10 +3,11 @@ import sortBy from 'lodash/sortBy';
 import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out this
 import { useTranslation } from 'react-i18next';
 
-import { readFramesAroundTime, findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime, Frame, readFrames } from '../ffmpeg';
-import { FFprobeStream } from '../../../common/ffprobe';
+import type { Frame } from '../ffmpeg';
+import { readFramesAroundTime, findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime, readFrames } from '../ffmpeg';
+import type { FFprobeStream } from '../../../common/ffprobe';
 import { getFrameCountRaw } from '../edlFormats';
-import { HandleError } from '../contexts';
+import type { HandleError } from '../contexts';
 
 
 const toObj = (map: Frame[]) => Object.fromEntries(map.map((frame) => [frame.time, frame]));

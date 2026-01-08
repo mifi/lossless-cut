@@ -1,6 +1,6 @@
 // Taken from: https://github.com/facebookarchive/fixed-data-table/blob/master/src/vendor_upstream/dom/normalizeWheel.js
 
-import { WheelEvent } from 'react';
+import type { WheelEvent } from 'react';
 
 /**
  * Copyright (c) 2015, Facebook, Inc.

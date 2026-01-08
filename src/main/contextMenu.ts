@@ -1,5 +1,6 @@
+import type { BrowserWindow } from 'electron';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { BrowserWindow, Menu } from 'electron';
+import { Menu } from 'electron';
 
 // https://github.com/electron/electron/issues/4068#issuecomment-274159726
 export default (window: BrowserWindow) => {

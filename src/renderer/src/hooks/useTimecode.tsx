@@ -1,12 +1,14 @@
-import { FormEventHandler, useCallback, useMemo, useState } from 'react';
+import type { FormEventHandler } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { FormatTimecode, ParseTimecode } from '../types';
+import type { FormatTimecode, ParseTimecode } from '../types';
 import { getFrameCountRaw } from '../edlFormats';
 import { getFrameDuration } from '../util';
-import { TimecodeFormat } from '../../../common/types';
+import type { TimecodeFormat } from '../../../common/types';
 import { formatDuration, parseDuration } from '../util/duration';
-import { ShowGenericDialog, useGenericDialogContext } from '../components/GenericDialog';
+import type { ShowGenericDialog } from '../components/GenericDialog';
+import { useGenericDialogContext } from '../components/GenericDialog';
 import * as Dialog from '../components/Dialog';
 import TextInput from '../components/TextInput';
 import { ButtonRow } from '../components/Dialog';

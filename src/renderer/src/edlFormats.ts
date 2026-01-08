@@ -11,7 +11,7 @@ import { z } from 'zod';
 
 import { formatDuration } from './util/duration';
 import { invertSegments, sortSegments } from './segments';
-import { GetFrameCount, SegmentBase, SegmentTags } from './types';
+import type { GetFrameCount, SegmentBase, SegmentTags } from './types';
 import parseCmx3600 from './cmx3600';
 import { UserFacingError } from '../errors';
 

@@ -1,4 +1,5 @@
-import { CSSProperties, ClipboardEvent, Dispatch, FormEvent, SetStateAction, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties, ClipboardEvent, Dispatch, FormEvent, SetStateAction } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
@@ -24,9 +25,9 @@ import { useSegColors } from './contexts';
 import { isExactDurationMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
 import { askForPlaybackRate, checkAppPath } from './dialogs';
-import { FormatTimecode, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
-import { WaveformMode } from '../../common/types';
-import { Frame } from './ffmpeg';
+import type { FormatTimecode, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
+import type { WaveformMode } from '../../common/types';
+import type { Frame } from './ffmpeg';
 
 const { clipboard } = window.require('electron');
 

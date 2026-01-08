@@ -1,4 +1,4 @@
-import { CSSProperties, DetailedHTMLProps, HTMLAttributes } from 'react';
+import type { CSSProperties, DetailedHTMLProps, HTMLAttributes } from 'react';
 
 export default function Truncated({ maxWidth, style, ...props }: DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> & { maxWidth: CSSProperties['maxWidth'] }) {
   return (

@@ -1,9 +1,9 @@
-import { CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import { FaHandPointUp } from 'react-icons/fa';
 
 import SegmentCutpointButton from './SegmentCutpointButton';
 import { mirrorTransform } from '../util';
-import { SegmentColorIndex } from '../types';
+import type { SegmentColorIndex } from '../types';
 
 // constant side because we are mirroring
 const SetCutpointButton = ({ currentCutSeg, side, title, onClick, style }: {

@@ -4,14 +4,14 @@ import invariant from 'tiny-invariant';
 import { Trans, useTranslation } from 'react-i18next';
 
 import { isStreamThumbnail, shouldCopyStreamByDefault } from '../util/streams';
-import StreamsSelector from '../StreamsSelector';
-import { FFprobeStream } from '../../../common/ffprobe';
-import { FilesMeta } from '../types';
+import type StreamsSelector from '../StreamsSelector';
+import type { FFprobeStream } from '../../../common/ffprobe';
+import type { FilesMeta } from '../types';
 import safeishEval from '../worker/eval';
 import i18n from '../i18n';
 import Action from '../components/Action';
 import ExpressionDialog from '../components/ExpressionDialog';
-import { ShowGenericDialog } from '../components/GenericDialog';
+import type { ShowGenericDialog } from '../components/GenericDialog';
 
 
 export default function useStreamsMeta({ mainStreams, externalFilesMeta, filePath, autoExportExtraStreams, showGenericDialog }: {

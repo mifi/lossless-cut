@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { FormEventHandler, forwardRef, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import type { FormEventHandler, ReactNode } from 'react';
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 
 import * as AlertDialog from './AlertDialog';
 import { DialogButton } from './Button';

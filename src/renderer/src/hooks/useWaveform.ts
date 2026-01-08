@@ -3,8 +3,8 @@ import sortBy from 'lodash/sortBy';
 import invariant from 'tiny-invariant';
 
 import { renderWaveformPng, safeCreateBlob } from '../ffmpeg';
-import { OverviewWaveform, WaveformSlice } from '../types';
-import { FFprobeStream } from '../../../common/ffprobe';
+import type { OverviewWaveform, WaveformSlice } from '../types';
+import type { FFprobeStream } from '../../../common/ffprobe';
 
 
 const maxWaveforms = 100;

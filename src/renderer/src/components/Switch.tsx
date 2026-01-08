@@ -1,4 +1,4 @@
-import { RefAttributes } from 'react';
+import type { RefAttributes } from 'react';
 import * as RadixSwitch from '@radix-ui/react-switch';
 
 import classes from './Switch.module.css';

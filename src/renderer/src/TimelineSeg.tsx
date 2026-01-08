@@ -1,11 +1,12 @@
 import { memo, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence, MotionStyle } from 'framer-motion';
+import type { MotionStyle } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FaSave, FaTrashAlt } from 'react-icons/fa';
-import Color from 'color';
+import type Color from 'color';
 
 import useUserSettings from './hooks/useUserSettings';
 import { useSegColors } from './contexts';
-import { FormatTimecode, StateSegment } from './types';
+import type { FormatTimecode, StateSegment } from './types';
 
 
 const markerButtonStyle: React.CSSProperties = { fontSize: 10, minWidth: 0, letterSpacing: '-.1em', color: 'white' };

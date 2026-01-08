@@ -1,4 +1,5 @@
-import { CSSProperties, ChangeEventHandler, TdHTMLAttributes, memo, useCallback, useMemo } from 'react';
+import type { CSSProperties, ChangeEventHandler, TdHTMLAttributes } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { FaYinYang, FaKeyboard, FaGlobe, FaBroom, FaCogs, FaHashtag, FaClock, FaFolder, FaFile, FaTimes } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
@@ -10,13 +11,16 @@ import Switch from './Switch';
 import useUserSettings from '../hooks/useUserSettings';
 import { askForFfPath } from '../dialogs';
 import { isMasBuild, isStoreBuild } from '../util';
-import { SupportedLanguage, langNames } from '../../../common/i18n';
-import { Config, ModifierKey, TimecodeFormat } from '../../../common/types.js';
+import type { SupportedLanguage } from '../../../common/i18n';
+import { langNames } from '../../../common/i18n';
+import type { Config, ModifierKey, TimecodeFormat } from '../../../common/types.js';
 import styles from './Settings.module.css';
-import SelectRaw, { SelectProps } from './Select';
-import ButtonRaw, { ButtonProps } from './Button';
+import type { SelectProps } from './Select';
+import SelectRaw from './Select';
+import type { ButtonProps } from './Button';
+import ButtonRaw from './Button';
 import { getModifierKeyNames } from '../hooks/useTimelineScroll';
-import { TunerType } from '../types';
+import type { TunerType } from '../types';
 import Truncated from './Truncated';
 import { dangerColor } from '../colors';
 
