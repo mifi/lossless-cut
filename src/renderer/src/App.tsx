@@ -111,12 +111,13 @@ import useErrorHandling from './hooks/useErrorHandling';
 import GenericDialog, { useDialog } from './components/GenericDialog';
 import useHtml5ify from './hooks/useHtml5ify';
 import WhatsNew from './components/WhatsNew';
+import mainApi from './mainApi.js';
 
 const electron = window.require('electron');
 const { lstat } = window.require('fs/promises');
 const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('path');
 
-const { focusWindow, hasDisabledNetworking, quitApp, pathToFileURL, setProgressBar, sendOsNotification, lossyMode, pathExists } = window.require('@electron/remote').require('./index.js');
+const { hasDisabledNetworking, pathToFileURL, lossyMode } = window.require('@electron/remote').require('./index.js');
 
 
 const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
@@ -200,7 +201,9 @@ function App() {
 
   useEffect(() => setDocumentTitle({ filePath, working: working?.text, progress }), [progress, filePath, working?.text]);
 
-  useEffect(() => setProgressBar(progress ?? -1), [progress]);
+  useEffect(() => {
+    mainApi.setProgressBar(progress ?? -1);
+  }, [progress]);
 
   useEffect(() => {
     ffmpegSetCustomFfPath(customFfPath);
@@ -248,7 +251,7 @@ function App() {
 
   const showOsNotification = useCallback((text: string) => {
     if (hideOsNotifications == null) {
-      sendOsNotification({ title: text });
+      mainApi.sendOsNotification({ title: text });
     }
   }, [hideOsNotifications]);
 
@@ -1339,7 +1342,7 @@ function App() {
 
   const loadMedia = useCallback(async ({ filePath: fp, projectPath }: { filePath: string, projectPath?: string | undefined }) => {
     async function tryOpenProjectPath(path: string) {
-      if (!(await pathExists(path))) return false;
+      if (!(await mainApi.pathExists(path))) return false;
       await loadEdlFile({ path, type: 'llc' });
       return true;
     }
@@ -1355,7 +1358,7 @@ function App() {
         const sameDirEdlFilePath = getEdlFilePath(fp);
         // MAS only allows fs.access (pathExists) if we don't have access to input dir yet, so check first if the file exists,
         // so we don't need to annoy the user by asking for permission if the project file doesn't exist
-        if (await pathExists(sameDirEdlFilePath)) {
+        if (await mainApi.pathExists(sameDirEdlFilePath)) {
           // Ok, the file exists. now we have to ask the user, because we need to read that file
           await ensureAccessToSourceDir(fp);
           // Ok, we got access from the user (or already have access), now read the project file
@@ -1523,7 +1526,7 @@ function App() {
       const mediaFilePath = pathJoin(dirname(path), mediaFileName);
 
       // Note: MAS only allows fs.stat (pathExists) if we don't have access to input dir yet
-      if (!(await pathExists(mediaFilePath))) {
+      if (!(await mainApi.pathExists(mediaFilePath))) {
         errorToast(i18n.t('The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}', { mediaFileName }));
         return;
       }
@@ -2063,7 +2066,7 @@ function App() {
       toggleMuted,
       copySegmentsToClipboard,
       reloadFile: () => setCacheBuster((v) => v + 1),
-      quit: () => quitApp(),
+      quit: () => mainApi.quitApp(),
       closeCurrentFile: () => { closeFileWithConfirm(); },
       exportYouTube,
       showStreamsSelector: handleShowStreamsSelectorClick,
@@ -2314,7 +2317,7 @@ function App() {
     if (!ev.dataTransfer) return;
     await withErrorHandling(async () => {
       const filePaths = [...ev.dataTransfer.files].map((f) => electron.webUtils.getPathForFile(f));
-      focusWindow();
+      await mainApi.focusWindow();
       batchLoadPaths(filePaths, true);
     });
   }, [batchLoadPaths, withErrorHandling]);
@@ -2325,7 +2328,7 @@ function App() {
     await withErrorHandling(async () => {
       const filePaths = [...ev.dataTransfer.files].map((f) => electron.webUtils.getPathForFile(f));
       if (filePaths.length !== 1) return;
-      focusWindow();
+      await mainApi.focusWindow();
       addStreamSourceFile(filePaths[0]!);
     });
   }, [addStreamSourceFile, withErrorHandling]);
@@ -2335,7 +2338,7 @@ function App() {
       ev.preventDefault();
       if (!ev.dataTransfer) return;
       const filePaths = [...ev.dataTransfer.files].map((f) => electron.webUtils.getPathForFile(f));
-      focusWindow();
+      await mainApi.focusWindow();
       userOpenFiles(filePaths);
     }
     const element = videoContainerRef.current;

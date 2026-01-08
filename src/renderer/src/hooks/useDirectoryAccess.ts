@@ -2,11 +2,15 @@ import { useCallback } from 'react';
 import i18n from 'i18next';
 import invariant from 'tiny-invariant';
 
-import { getOutDir, getFileDir, checkDirWriteAccess, dirExists, isMasBuild } from '../util';
+import { getOutDir, getFileDir, checkDirWriteAccess, isMasBuild } from '../util';
 import { askForOutDir, askForInputDir } from '../dialogs';
 import { errorToast } from '../swal';
 import { DirectoryAccessDeclinedError } from '../../errors';
+import mainApi from '../mainApi';
 // import isDev from '../isDev';
+
+
+const { lstat } = window.require('fs/promises');
 
 
 // MacOS App Store sandbox doesn't allow reading/writing anywhere,
@@ -60,7 +64,7 @@ export default function useDirectoryAccess({ setCustomOutDir }: { setCustomOutDi
 
     if (newCustomOutDir) {
       // Reset if working directory doesn't exist anymore
-      const customOutDirExists = await dirExists(newCustomOutDir);
+      const customOutDirExists = (await mainApi.pathExists(newCustomOutDir)) && (await lstat(newCustomOutDir)).isDirectory();
       if (!customOutDirExists) {
         setCustomOutDir(undefined);
         newCustomOutDir = undefined;

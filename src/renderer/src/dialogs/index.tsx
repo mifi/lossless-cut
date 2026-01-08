@@ -15,11 +15,11 @@ import type { FindKeyframeMode } from '../ffmpeg';
 import { dangerColor, primaryColor, warningColor } from '../colors';
 import getSwal from '../swal';
 import isDev from '../isDev';
+import mainApi from '../mainApi';
 
 const remote = window.require('@electron/remote');
 const { dialog } = remote;
 
-const { downloadMediaUrl } = remote.require('./index.js');
 
 // https://github.com/mifi/lossless-cut/issues/1495
 export const showOpenDialog = async ({
@@ -561,7 +561,7 @@ export async function promptDownloadMediaUrl(outPath: string) {
 
   if (!value) return false;
 
-  await downloadMediaUrl(value, outPath);
+  await mainApi.downloadMediaUrl(value, outPath);
   return true;
 }
 

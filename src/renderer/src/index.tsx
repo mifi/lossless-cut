@@ -27,7 +27,7 @@ import App from './App';
 import ErrorBoundary from './ErrorBoundary';
 import './i18n';
 
-import { RemoteApi } from '../../main';
+import { RemoteApiLegacy, RemoteRpcApi } from '../../main';
 
 import './main.css';
 import './swal2.scss';
@@ -35,7 +35,7 @@ import './swal2.scss';
 
 type TypedRemote = Omit<typeof Remote, 'require'> & {
   require: <T extends string>(module: T) => (
-    T extends './index.js' ? RemoteApi :
+    T extends './index.js' ? RemoteApiLegacy :
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any
   );
@@ -55,6 +55,7 @@ declare global {
       T extends 'cue-parser' ? typeof cueParser :
       never
     );
+    electron: RemoteRpcApi;
   }
   interface Navigator {
     keyboard: {

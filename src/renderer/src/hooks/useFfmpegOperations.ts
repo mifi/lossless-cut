@@ -15,10 +15,10 @@ import type { AvoidNegativeTs, Html5ifyMode, PreserveMetadata } from '../../../c
 import type { AllFilesMeta, Chapter, CopyfileStreams, CustomTagsByFile, LiteFFprobeStream, ParamsByStreamId, SegmentToExport } from '../types';
 import type { LossyMode } from '../../../main';
 import { UserFacingError } from '../../errors';
+import mainApi from '../mainApi';
 
 const { join, resolve, dirname } = window.require('path');
 const { writeFile, mkdir, access, constants: { W_OK } } = window.require('fs/promises');
-const { pathExists } = window.require('@electron/remote').require('./index.js');
 
 
 export class OutputNotWritableError extends Error {
@@ -94,7 +94,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   appendFfmpegCommandLog: (args: string[]) => void,
 }) {
   const shouldSkipExistingFile = useCallback(async (path: string) => {
-    const fileExists = await pathExists(path);
+    const fileExists = await mainApi.pathExists(path);
 
     // If output file exists, check that it is writable, so we can inform user if it's not (or else ffmpeg will fail with "Permission denied")
     // this seems to sometimes happen on Windows, not sure why.
@@ -917,7 +917,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     let streamArgs: string[] = [];
     const outPaths = await pMap(outStreams, async ({ index, codec, type, format: { format, ext } }) => {
       const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
-      if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
+      if (!enableOverwriteOutput && await mainApi.pathExists(outPath)) throw new RefuseOverwriteError();
 
       streamArgs = [
         ...streamArgs,
@@ -953,7 +953,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       const ext = codec || 'bin';
       const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
       invariant(outPath != null);
-      if (!enableOverwriteOutput && await pathExists(outPath)) throw new RefuseOverwriteError();
+      if (!enableOverwriteOutput && await mainApi.pathExists(outPath)) throw new RefuseOverwriteError();
 
       streamArgs = [
         ...streamArgs,

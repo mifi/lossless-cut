@@ -18,7 +18,7 @@ const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename 
 const { stat, lstat, readdir, utimes, unlink, open, access, constants: { R_OK, W_OK } } = window.require('fs/promises');
 const { ipcRenderer } = window.require('electron');
 const remote = window.require('@electron/remote');
-const { isWindows, isMac, pathExists } = remote.require('./index.js');
+const { isWindows, isMac } = remote.require('./index.js');
 
 const appVersion = remote.app.getVersion();
 const appPath = remote.app.getAppPath();
@@ -102,10 +102,6 @@ export async function getPathReadAccessError(pathIn: string) {
   } catch (err) {
     return err instanceof Error && 'code' in err && typeof err.code === 'string' ? err.code : undefined;
   }
-}
-
-export async function dirExists(dirPath: string) {
-  return (await pathExists(dirPath)) && (await lstat(dirPath)).isDirectory();
 }
 
 // export const testFailFsOperation = isDev;

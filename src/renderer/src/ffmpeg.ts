@@ -12,8 +12,9 @@ import { isDurationValid } from './segments';
 import type { FFprobeChapter, FFprobeFormat, FFprobeProbeResult, FFprobeStream } from '../../common/ffprobe';
 import { parseSrt, parseSrtToSegments } from './edlFormats';
 import { UnsupportedFileError, UserFacingError } from '../errors';
+import mainApi from './mainApi';
 
-const { ffmpeg, fileTypeFromFile } = window.require('@electron/remote').require('./index.js');
+const { ffmpeg } = window.require('@electron/remote').require('./index.js');
 
 const { renderWaveformPng, mapTimesToSegments, detectSceneChanges, captureFrames, captureFrameToFile, captureFrameToClipboard, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, getDuration, abortFfmpegs, runFfmpeg, runFfprobe, getFfmpegPath, setCustomFfPath } = ffmpeg;
 
@@ -268,7 +269,7 @@ async function determineSourceFileFormat(ffprobeFormatsStr: string | undefined, 
   // We need to test mp3 first because ffprobe seems to report the wrong format sometimes https://github.com/mifi/lossless-cut/issues/2129
   if (firstFfprobeFormat === 'mp3') {
     // file-type detects it correctly
-    const fileTypeResponse = await fileTypeFromFile(filePath);
+    const fileTypeResponse = await mainApi.fileTypeFromFile(filePath);
     if (fileTypeResponse?.mime === 'audio/mpeg') {
       return 'mp2';
     }
@@ -287,7 +288,7 @@ async function determineSourceFileFormat(ffprobeFormatsStr: string | undefined, 
     return firstFfprobeFormat;
   }
 
-  const fileTypeResponse = await fileTypeFromFile(filePath);
+  const fileTypeResponse = await mainApi.fileTypeFromFile(filePath);
   if (fileTypeResponse == null) {
     console.warn('file-type failed to detect format, defaulting to first FFprobe detected format', ffprobeFormats);
     return firstFfprobeFormat;

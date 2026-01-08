@@ -13,9 +13,10 @@ import { stat } from 'node:fs/promises';
 import assert from 'node:assert';
 import timers from 'node:timers/promises';
 import { z } from 'zod';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import electronUnhandled from 'electron-unhandled';
 import { fileTypeFromFile } from 'file-type/node';
+import type { Asyncify } from 'type-fest';
 
 import logger from './logger.js';
 import menu from './menu.js';
@@ -131,6 +132,7 @@ function createWindow() {
       nodeIntegration: true,
       // https://github.com/electron/electron/issues/5107
       webSecurity: !isDev,
+      preload: fileURLToPath(new URL('../preload/index.cjs', import.meta.url)),
     },
     backgroundColor: darkMode ? '#333' : '#fff',
     minWidth: 300,
@@ -399,6 +401,23 @@ function sendOsNotification(options: NotificationConstructorOptions) {
 }
 
 const remoteApi = {
+  pathExists,
+  downloadMediaUrl,
+  fileTypeFromFile,
+  focusWindow,
+  quitApp,
+  setProgressBar,
+  sendOsNotification,
+};
+
+export type RemoteApi = typeof remoteApi;
+
+export type RemoteRpcApi = {
+  [K in keyof RemoteApi]: Asyncify<RemoteApi[K]>;
+};
+
+// using @electron/remote
+const remoteApiLegacy = {
   ffmpeg,
   i18n: i18nCommon,
   compatPlayer,
@@ -408,27 +427,30 @@ const remoteApi = {
   isMac,
   platform,
   arch,
-  pathExists,
-  pathToFileURL,
-  downloadMediaUrl,
-  fileTypeFromFile,
   isDev,
   lossyMode,
-  focusWindow,
-  quitApp,
+  pathToFileURL,
   hasDisabledNetworking,
-  setProgressBar,
-  sendOsNotification,
 };
 
-export type RemoteApi = typeof remoteApi;
+export type RemoteApiLegacy = typeof remoteApiLegacy;
+
 
 // @ts-expect-error don't know how to type
-app.addListener('remote-require', (event: { returnValue: RemoteApi }, _webContents: unknown, moduleName: string) => {
+app.addListener('remote-require', (event: { returnValue: RemoteApiLegacy }, _webContents: unknown, moduleName: string) => {
   if (moduleName === './index.js') {
     // eslint-disable-next-line no-param-reassign
-    event.returnValue = remoteApi;
+    event.returnValue = remoteApiLegacy;
   }
+});
+
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ipcMain.handle('__electron_rpc__', async (_event, method: keyof RemoteApi, args: any[]) => {
+  const fn = remoteApi[method];
+  assert(fn, `Unknown API method: ${method}`);
+  // @ts-expect-error don't know how to type
+  return fn(...args);
 });
 
 // cannot top level await because app.whenReady will hang forever
