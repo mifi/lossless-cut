@@ -260,7 +260,7 @@
   "You need to open a media file first": "你需要先打开一个媒体文件",
   "Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, see the HELP page.": "已完成！注意：切割点可能不准确。在刪除源文件之前确保已使用播放器/编辑器测试过输出的文件。如果输出文件存在问题，查看“帮助”页面。",
   "Ask on file open": "打开文件时询问",
-  "Ask about what to do when opening a new file when another file is already already open?": "在已有文件打开的同时尝试打开新文件时询问",
+  "Ask about what to do when opening a new file when another file is already already open?": "当已经有文件打开时，询问打开一个新文件要进行什么操作",
   "Ask about chapters": "询问章节",
   "Ask about importing chapters from opened file?": "尝试从已打开文件导入章节时询问",
   "Experimental flag": "实验性标记",
