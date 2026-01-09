@@ -19,6 +19,7 @@ const safeLicenses: Record<string, true | string[]> = {
   Zlib: true,
   'Python-2.0': true,
   'BlueOak-1.0.0': true,
+  'MIT/X11': true,
 
   // Permissive licenses with some conditions
   'Apache-2.0': true,
@@ -41,7 +42,7 @@ const safeLicenses: Record<string, true | string[]> = {
   // Font licenses
   'OFL-1.1': true, // permissive
 
-  UNKNOWN: ['fast-shallow-equal', 'react-universal-interface'],
+  UNKNOWN: ['fast-shallow-equal', 'react-universal-interface', 'buffers'],
 };
 
 const unsafeLicenses = licensesJson.flatMap((l) => {
