@@ -141,6 +141,9 @@ jobs:
 
       - name: (MacOS) Upload artifacts
         if: startsWith(matrix.os, 'macos') && env.is_tag == 'false'
+        env:
+          ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
+          ACTIONS_RUNTIME_URL: ${{ env.ACTIONS_RUNTIME_URL }}
         run: |
           yarn upload-artifacts dist/LosslessCut-mac-arm64.dmg
           yarn upload-artifacts dist/LosslessCut-mac-x64.dmg
@@ -148,12 +151,18 @@ jobs:
 
       - name: (Windows) Upload artifacts
         if: startsWith(matrix.os, 'windows') && env.is_tag == 'false'
+        env:
+          ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
+          ACTIONS_RUNTIME_URL: ${{ env.ACTIONS_RUNTIME_URL }}
         run: |
           yarn upload-artifacts dist/LosslessCut-win-x64.7z
           yarn upload-artifacts --name screenshot-windows.jpeg screenshot.jpeg
 
-      - name: (Linu) Upload artifacts
+      - name: (Linux) Upload artifacts
         if: startsWith(matrix.os, 'ubuntu') && env.is_tag == 'false'
+        env:
+          ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
+          ACTIONS_RUNTIME_URL: ${{ env.ACTIONS_RUNTIME_URL }}
         run: |
           yarn upload-artifacts dist/LosslessCut-linux-arm64.tar.bz2
           yarn upload-artifacts dist/LosslessCut-linux-armv7l.tar.bz2
