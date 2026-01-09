@@ -5,6 +5,7 @@ module.exports = {
     'jsx-a11y/interactive-supports-focus': 0,
     'jsx-a11y/control-has-associated-label': 0,
     'react/no-unused-prop-types': 0,
+    'func-call-spacing': 0,
   },
 
   overrides: [
@@ -17,6 +18,7 @@ module.exports = {
       rules: {
         'no-console': 0,
         'import/no-extraneous-dependencies': 0,
+        'unicorn/prefer-global-this': 0,
       },
     },
     {
@@ -26,6 +28,8 @@ module.exports = {
       },
       rules: {
         'no-console': 0,
+        'import/no-extraneous-dependencies': 0,
+        'unicorn/prefer-global-this': 0,
       },
     },
     {
@@ -35,7 +39,7 @@ module.exports = {
           devDependencies: true,
           optionalDependencies: false,
         }],
-        "no-console": 0,
+        'no-console': 0,
       },
     },
   ],

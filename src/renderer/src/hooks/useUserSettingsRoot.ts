@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import i18n from 'i18next';
-import type { Transition } from 'framer-motion';
+import type { Transition } from 'motion/react';
 
 import type { Config } from '../../../common/types.js';
 
@@ -39,6 +39,7 @@ export default function useUserSettingsRoot() {
     // I think because Electron is proxying objects over the bridge
     const cloned: typeof rawVal = rawVal === undefined
       ? undefined
+      // eslint-disable-next-line unicorn/prefer-structured-clone
       : JSON.parse(JSON.stringify(rawVal));
 
     return cloned;

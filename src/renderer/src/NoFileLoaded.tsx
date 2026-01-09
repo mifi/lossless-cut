@@ -1,6 +1,6 @@
 import { Fragment, memo, useMemo, useState } from 'react';
-import type { MotionStyle } from 'framer-motion';
-import { motion } from 'framer-motion';
+import type { MotionStyle } from 'motion/react';
+import { motion } from 'motion/react';
 import { FaMouse } from 'react-icons/fa';
 import { useTranslation, Trans } from 'react-i18next';
 

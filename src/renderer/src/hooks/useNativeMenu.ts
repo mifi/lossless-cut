@@ -17,7 +17,7 @@ export default function useNativeMenu(
   const { x, y, onContext, onClose } = options;
 
   const openMenu = useCallback((e: MouseEvent) => {
-    // @ts-expect-error todo
+    // @ts-expect-error todo type this
     menu.popup({
       window: remote.getCurrentWindow(),
       x,

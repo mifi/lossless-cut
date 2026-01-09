@@ -67,12 +67,12 @@ Object.getOwnPropertyNames(myGlobal).forEach(function (prop) {
   }
 });
 
-// @ts-expect-error dunno
+// @ts-expect-error dunno how to type this
 // eslint-disable-next-line no-proto, prefer-arrow-callback, func-names
 Object.getOwnPropertyNames(myGlobal.__proto__).forEach(function (prop) {
   // eslint-disable-next-line no-prototype-builtins
   if (!wl.hasOwnProperty(prop)) {
-    // @ts-expect-error dunno
+    // @ts-expect-error dunno how to type this
     // eslint-disable-next-line no-proto
     Object.defineProperty(myGlobal.__proto__, prop, {
       // eslint-disable-next-line func-names, object-shorthand
@@ -120,7 +120,7 @@ Object.defineProperty(Array.prototype, 'join', {
   defined anyways, this will have no effect.
   Reason for blacklisting fetch: well, same as XHR.
 */
-// @ts-expect-error expected
+// @ts-expect-error dunno how to type this
 myGlobal.fetch = undefined;
 
 

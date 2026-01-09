@@ -614,7 +614,7 @@ export async function checkAppPath() {
     const mf = 'mi' + 'fi.no', ap = 'Los' + 'slessC' + 'ut';
     let payload: string | undefined;
     if (isWindowsStoreBuild || (isDev && forceCheckMs)) {
-      const appPathOrMock = isDev ? 'C:\\Program Files\\WindowsApps\\37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84' : appPath;
+      const appPathOrMock = isDev ? String.raw`C:\Program Files\WindowsApps\37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84` : appPath;
       const pathMatch = appPathOrMock.replaceAll('\\', '/').match(/Windows ?Apps\/([^/]+)/); // find the first component after WindowsApps
       // example pathMatch: 37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84
       if (!pathMatch) {

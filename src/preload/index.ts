@@ -1,6 +1,6 @@
 import type { RemoteRpcApi } from '../main/index.ts';
 
-// eslint-disable-next-line import/no-extraneous-dependencies, @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { ipcRenderer } = require('electron');
 
 const apiProxy = new Proxy(
@@ -15,6 +15,6 @@ const apiProxy = new Proxy(
 );
 
 // todo use contextBridge instead once we get rid of @electron/remote
-// @ts-expect-error untyped
+// @ts-expect-error we don't need to type this
 window.electron = apiProxy;
 // contextBridge.exposeInMainWorld('electron', apiProxy);

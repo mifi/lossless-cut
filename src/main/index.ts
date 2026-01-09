@@ -17,6 +17,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import electronUnhandled from 'electron-unhandled';
 import { fileTypeFromFile } from 'file-type/node';
 import type { Asyncify } from 'type-fest';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 
 import logger from './logger.js';
 import menu from './menu.js';
@@ -354,10 +356,8 @@ async function init() {
 
     if (isDev) {
       // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require,import/no-extraneous-dependencies
-      const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer');
-
       installExtension(REACT_DEVELOPER_TOOLS)
-        .then((name: string) => logger.info('Added Extension', name))
+        .then((extension) => logger.info('Added Extension', extension.name))
         .catch((err: unknown) => logger.error('Failed to add extension', err));
     }
 

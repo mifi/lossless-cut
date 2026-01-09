@@ -77,6 +77,8 @@ function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zo
       return () => window.cancelAnimationFrame(raf);
     }
 
+    // todo
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSmoothTime(undefined);
 
     return undefined;

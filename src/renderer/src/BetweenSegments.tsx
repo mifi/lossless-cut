@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { FaTrashAlt, FaSave } from 'react-icons/fa';
 
 import { saveColor } from './colors';

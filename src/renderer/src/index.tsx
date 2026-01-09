@@ -27,7 +27,7 @@ import App from './App';
 import ErrorBoundary from './ErrorBoundary';
 import './i18n';
 
-import { RemoteApiLegacy, RemoteRpcApi } from '../../main';
+import type { RemoteApiLegacy, RemoteRpcApi } from '../../main';
 
 import './main.css';
 import './swal2.scss';
@@ -59,7 +59,7 @@ declare global {
   }
   interface Navigator {
     keyboard: {
-      getLayoutMap(): Promise<KeyboardLayoutMap>;
+      getLayoutMap: () => Promise<KeyboardLayoutMap>;
     }
   }
 }

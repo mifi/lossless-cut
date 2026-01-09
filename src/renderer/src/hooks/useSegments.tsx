@@ -549,7 +549,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     safeSetCutSegments(newSegments);
     if (currentCutSeg != null) {
       const newCurrentSegIndex = newOrders.indexOf(currentCutSeg.segId);
-      if (newCurrentSegIndex >= 0 && newCurrentSegIndex < newSegments.length) setCurrentSegIndex(newCurrentSegIndex);
+      if (newCurrentSegIndex !== -1 && newCurrentSegIndex < newSegments.length) setCurrentSegIndex(newCurrentSegIndex);
     }
   }, [cutSegments, safeSetCutSegments, currentCutSeg, setCurrentSegIndex]);
 

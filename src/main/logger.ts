@@ -12,8 +12,8 @@ import type { TransformableInfo } from 'logform';
 // https://github.com/winstonjs/winston/issues/1427
 const combineMessageAndSplat = () => ({
   transform(info: TransformableInfo) {
-    // @ts-expect-error todo
     const { [Symbol.for('splat')]: args = [], message } = info;
+    // @ts-expect-error incorrect type
     // eslint-disable-next-line no-param-reassign
     info.message = util.format(message, ...args);
     return info;

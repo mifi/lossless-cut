@@ -2,7 +2,7 @@ import type { SetStateAction, Dispatch, MouseEventHandler, CSSProperties } from 
 import { memo, useMemo, useRef, useCallback, useState, useEffect } from 'react';
 import { FaYinYang, FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaRegCheckCircle, FaRegCircle, FaTimes } from 'react-icons/fa';
 import { AiOutlineSplitCells } from 'react-icons/ai';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useTranslation, Trans } from 'react-i18next';
 import type { DragEndEvent, DragStartEvent, UniqueIdentifier } from '@dnd-kit/core';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
@@ -507,7 +507,7 @@ function SegmentList({
   const onTagReset = useCallback((tag: string) => setEditingSegmentTags((tags) => {
     invariant(tags != null);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { [tag]: deleted, ...rest } = tags;
+    const { [tag]: _deleted, ...rest } = tags;
     return rest;
   }), [setEditingSegmentTags]);
 
@@ -608,7 +608,7 @@ function SegmentList({
 
   return (
     <>
-      <Dialog.Root open={editingSegmentTagsSegmentIndex != null} onOpenChange={onSegmentTagsCloseComplete}>
+      <Dialog.Root open={editingSegmentTagsSegmentIndex != null} onOpenChange={(open) => !open && onSegmentTagsCloseComplete()}>
         <Dialog.Portal>
           <Dialog.Overlay />
           <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>

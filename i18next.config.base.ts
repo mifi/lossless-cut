@@ -20,7 +20,7 @@ const configBase: Parameters<typeof defineConfig>[0] = {
     ],
     ignoredAttributes: ['data-testid', 'aria-label', 'role'],
 
-    // Keep in sync between i18next-parser.config.js and i18nCommon.js:
+    // Keep in sync between i18next.config.base.ts and i18nCommon.js:
     keySeparator: false,
     nsSeparator: false,
   },

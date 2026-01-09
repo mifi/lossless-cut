@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import type Color from 'color';
+import type { ColorInstance } from 'color';
 import invariant from 'tiny-invariant';
 
 import type { UserSettingsRoot } from './hooks/useUserSettingsRoot';
@@ -20,7 +20,7 @@ export type UserSettingsContextType = Omit<UserSettingsRoot, 'settings'> & UserS
 }
 
 export interface SegColorsContextType {
-  getSegColor: (seg: SegmentColorIndex | undefined) => Color,
+  getSegColor: (seg: SegmentColorIndex | undefined) => ColorInstance,
   nextSegColorIndex: number,
 }
 

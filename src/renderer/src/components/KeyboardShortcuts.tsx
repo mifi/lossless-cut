@@ -5,7 +5,7 @@ import { FaMouse, FaPlus, FaStepForward, FaStepBackward, FaUndo, FaTrash, FaSave
 import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
 import uniq from 'lodash/uniq';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 
 import useUserSettings from '../hooks/useUserSettings';
 import SetCutpointButton from './SetCutpointButton';
@@ -64,6 +64,8 @@ const CreateBinding = memo(({
 
   useEffect(() => {
     if (isShown) {
+      // todo
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setKeysDown([]);
     }
   }, [isShown]);

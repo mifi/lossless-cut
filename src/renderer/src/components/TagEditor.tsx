@@ -2,7 +2,7 @@ import type { FormEventHandler } from 'react';
 import { memo, useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { FaCheck, FaEdit, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
 
 import type { SegmentTags } from '../types';

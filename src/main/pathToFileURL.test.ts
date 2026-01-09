@@ -8,14 +8,14 @@ import { pathToFileURL } from 'node:url';
 if (process.platform === 'win32') {
   describe('file uri windows only', () => {
     test('converts path to file url', () => {
-      expect(pathToFileURL('C:\\Users\\sindresorhus\\dev\\te^st.jpg').href).toEqual('file:///C:/Users/sindresorhus/dev/te%5Est.jpg');
+      expect(pathToFileURL(String.raw`C:\Users\sindresorhus\dev\te^st.jpg`).href).toEqual('file:///C:/Users/sindresorhus/dev/te%5Est.jpg');
     });
   });
 } else {
   describe('file uri non-windows', () => {
     // https://github.com/mifi/lossless-cut/issues/1941
     test('file with backslash', () => {
-      expect(pathToFileURL('/has/back\\slash').href).toEqual('file:///has/back%5Cslash');
+      expect(pathToFileURL(String.raw`/has/back\slash`).href).toEqual('file:///has/back%5Cslash');
     });
   });
 }

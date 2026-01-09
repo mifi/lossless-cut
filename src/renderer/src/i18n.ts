@@ -15,7 +15,7 @@ i18n
   .use(Backend)
   .use({ type: 'languageDetector', async: false, detect: () => remote.app.getLocale() })
   .use(initReactI18next)
-  // See also i18next-parser.config.mjs
+  // See also i18next.config.base.ts
   .init({
     ...commonI18nOptions,
 

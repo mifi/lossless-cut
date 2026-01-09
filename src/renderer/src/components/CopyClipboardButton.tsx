@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { memo, useCallback } from 'react';
 import { FaClipboard } from 'react-icons/fa';
-import type { MotionStyle } from 'framer-motion';
-import { motion, useAnimation } from 'framer-motion';
+import type { MotionStyle } from 'motion/react';
+import { motion, useAnimation } from 'motion/react';
 import i18n from '../i18n';
 
 const electron = window.require('electron');

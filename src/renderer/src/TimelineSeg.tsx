@@ -1,8 +1,8 @@
 import { memo, useCallback, useMemo } from 'react';
-import type { MotionStyle } from 'framer-motion';
-import { motion, AnimatePresence } from 'framer-motion';
+import type { MotionStyle } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { FaSave, FaTrashAlt } from 'react-icons/fa';
-import type Color from 'color';
+import type { ColorInstance } from 'color';
 
 import useUserSettings from './hooks/useUserSettings';
 import { useSegColors } from './contexts';
@@ -16,7 +16,7 @@ function Marker({
 }: {
   seg: StateSegment,
   segNum: number,
-  color: Color,
+  color: ColorInstance,
   isActive: boolean,
   selected: boolean,
   onClick: () => void,
@@ -84,7 +84,7 @@ function Segment({
 }: {
   seg: Omit<StateSegment, 'end'> & { end: number },
   segNum: number,
-  color: Color,
+  color: ColorInstance,
   isActive: boolean,
   selected: boolean,
   onClick: () => void,

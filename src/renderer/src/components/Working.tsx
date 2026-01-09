@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import Lottie from 'react-lottie-player/dist/LottiePlayerLight';
 import { Trans } from 'react-i18next';
 

@@ -1,7 +1,7 @@
 import type { DragEventHandler } from 'react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { FaTimes, FaHatWizard, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import { AiOutlineMergeCells } from 'react-icons/ai';
 import type { DragEndEvent, DragStartEvent, UniqueIdentifier } from '@dnd-kit/core';

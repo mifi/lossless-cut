@@ -2,7 +2,7 @@ import type { CSSProperties, ReactEventHandler, FocusEventHandler, DragEventHand
 import { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { FaAngleLeft, FaRegTimesCircle } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
-import { AnimatePresence, MotionConfig } from 'framer-motion';
+import { AnimatePresence, MotionConfig } from 'motion/react';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { produce } from 'immer';
@@ -727,7 +727,7 @@ function App() {
           const firstSelectedSegment = selectedSegmentsWithoutMarkers[0];
           if (firstSelectedSegment != null) {
             const index = cutSegments.findIndex((segment) => segment.segId === firstSelectedSegment.segId);
-            if (index >= 0) setCurrentSegIndex(index);
+            if (index !== -1) setCurrentSegIndex(index);
             seekAbs(firstSelectedSegment.start);
           }
         } else if (currentCutSeg != null) {
@@ -762,7 +762,7 @@ function App() {
           const selectedSegmentsWithoutMarkers = filterNonMarkers(selectedSegments);
 
           const index = selectedSegmentsWithoutMarkers.findIndex((selectedSegment) => selectedSegment.segId === playingSegment.segId);
-          let newSelectedSegmentIndex = getNewJumpIndex(index >= 0 ? index : 0, 1);
+          let newSelectedSegmentIndex = getNewJumpIndex(index !== -1 ? index : 0, 1);
           if (newSelectedSegmentIndex > selectedSegmentsWithoutMarkers.length - 1) {
             // have reached end of last segment
             if (playbackModeRef.current === 'loop-selected-segments') newSelectedSegmentIndex = 0; // start over
@@ -803,7 +803,7 @@ function App() {
   const batchListRemoveFile = useCallback((path: string | undefined) => {
     setBatchFiles((existingBatch) => {
       const index = existingBatch.findIndex((existingFile) => existingFile.path === path);
-      if (index < 0) return existingBatch;
+      if (index === -1) return existingBatch;
       const newBatch = [...existingBatch];
       newBatch.splice(index, 1);
       const newItemAtIndex = newBatch[index];

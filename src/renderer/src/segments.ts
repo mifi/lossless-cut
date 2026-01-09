@@ -287,7 +287,7 @@ export function makeDurationSegments(segmentDuration: number, totalDuration: num
   const edl: { start: number, end: number }[] = [];
   for (let start = 0; start < totalDuration; start += segmentDuration) {
     const end = start + segmentDuration;
-    edl.push({ start, end: end >= totalDuration ? totalDuration : end });
+    edl.push({ start, end: Math.min(end, totalDuration) });
   }
   return edl;
 }

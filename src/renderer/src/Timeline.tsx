@@ -1,6 +1,6 @@
 import type { MutableRefObject, CSSProperties, WheelEventHandler, MouseEventHandler } from 'react';
 import { memo, useRef, useMemo, useCallback, useEffect, useState } from 'react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { motion, useMotionValue, useSpring } from 'motion/react';
 import debounce from 'lodash/debounce';
 import { useTranslation } from 'react-i18next';
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
@@ -191,6 +191,7 @@ function Timeline({
   const timeOfInterestPosPixels = useMemo(() => {
     // https://github.com/mifi/lossless-cut/issues/676
     const pos = calculateTimelinePos(relevantTime);
+    // eslint-disable-next-line react-hooks/refs
     if (pos != null && timelineScrollerRef.current) return pos * zoom * timelineScrollerRef.current!.offsetWidth;
     return undefined;
   }, [calculateTimelinePos, relevantTime, zoom]);

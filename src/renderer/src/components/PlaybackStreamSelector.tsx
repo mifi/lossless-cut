@@ -2,7 +2,7 @@ import type { ChangeEventHandler, ChangeEvent } from 'react';
 import { memo, useState, useCallback, useRef, useEffect } from 'react';
 import { MdSubtitles } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 import Select from './Select';
 import Switch from './Switch';

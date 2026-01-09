@@ -1,4 +1,4 @@
-import dataUriToBuffer from 'data-uri-to-buffer';
+import { dataUriToBuffer } from 'data-uri-to-buffer';
 import pMap from 'p-map';
 import { useCallback } from 'react';
 
@@ -116,13 +116,13 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatInputFileModified
     quality: number,
     video: HTMLVideoElement,
   }) => {
-    const buf = getFrameFromVideo(video, captureFormat, quality);
+    const dataUri = getFrameFromVideo(video, captureFormat, quality);
 
-    const ext = mime.extension(buf.type);
+    const ext = mime.extension(dataUri.type);
     const timecode = formatTimecode({ seconds: time, fileNameFriendly: true });
 
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `${timecode}.${ext}` });
-    await writeFile(outPath, buf);
+    await writeFile(outPath, new Uint8Array(dataUri.buffer));
 
     await transferTimestamps({ inPath: filePath, outPath, cutFrom: time, cutTo: time, duration: isDurationValid(fileDuration) ? fileDuration : undefined, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
     return outPath;

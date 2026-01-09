@@ -4,7 +4,7 @@ import { useDebounce } from 'use-debounce';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { IoIosHelpCircle } from 'react-icons/io';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { FaCaretUp, FaEdit, FaExclamationTriangle, FaEye, FaFile, FaUndo } from 'react-icons/fa';
 
 import HighlightedText from './HighlightedText';

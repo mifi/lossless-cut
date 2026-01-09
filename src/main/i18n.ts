@@ -11,7 +11,7 @@ import { commonI18nOptions, loadPath, addPath } from './i18nCommon.js';
 export default i18n
   .use(Backend)
   .use({ type: 'languageDetector', async: false, detect: () => app.getLocale() })
-  // See also i18next-parser.config.mjs
+  // See also i18next.config.base.ts
   .init({
     ...commonI18nOptions,
 

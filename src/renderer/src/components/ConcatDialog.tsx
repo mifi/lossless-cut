@@ -62,7 +62,7 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
   const [allFilesMeta, setAllFilesMeta] = useState<Record<string, { ffprobeMeta: FileFfprobeMeta, stats: FileStats }>>({});
   const [clearBatchFilesAfterConcat, setClearBatchFilesAfterConcat] = useState(false);
   const [enableReadFileMeta, setEnableReadFileMeta] = useState(false);
-  const [uniqueSuffix, setUniqueSuffix] = useState(Date.now());
+  const [uniqueSuffix, setUniqueSuffix] = useState(() => Date.now());
 
   const firstPath = useMemo(() => paths[0], [paths]);
 
@@ -81,6 +81,8 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
 
   useEffect(() => {
     if (!isShown) {
+      // todo
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAllFilesMeta({});
     }
   }, [isShown, setDetectedFileFormat, setFileFormat]);

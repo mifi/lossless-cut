@@ -1,6 +1,6 @@
 import type { CSSProperties, ClipboardEvent, Dispatch, FormEvent, SetStateAction } from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import { IoIosCamera, IoMdKey, IoMdSpeedometer } from 'react-icons/io';
@@ -91,6 +91,8 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
 
   // Clear manual overrides if upstream cut time has changed
   useEffect(() => {
+    // todo
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCutTimeManual(undefined);
     setError(false);
   }, [setCutTimeManual, currentCutSeg?.start, currentCutSeg?.end]);

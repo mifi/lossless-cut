@@ -1,5 +1,5 @@
-import type { HTMLMotionProps } from 'framer-motion';
-import { motion } from 'framer-motion';
+import type { HTMLMotionProps } from 'motion/react';
+import { motion } from 'motion/react';
 
 export default function AnimatedTr(props: HTMLMotionProps<'tr'>) {
   return (

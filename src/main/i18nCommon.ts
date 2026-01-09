@@ -29,7 +29,7 @@ export const commonI18nOptions: InitOptions = {
   // updateMissing: isDev,
   // saveMissingTo: 'all',
 
-  // Keep in sync between i18next-parser.config.js and i18nCommon.js:
+  // Keep in sync between i18next.config.base.ts and i18nCommon.ts:
   // TODO improve keys?
   // Maybe do something like this: https://stackoverflow.com/a/19405314/6519037
   keySeparator: false,
