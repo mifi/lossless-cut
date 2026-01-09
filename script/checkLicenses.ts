@@ -28,6 +28,7 @@ const safeLicenses: Record<string, true | string[]> = {
   'GPL-2.0-only': ['lossless-cut'],
   // Weak copyleft licenses: These allow linking with proprietary software under certain conditions, making them more flexible than strong copyleft licenses.
   'LGPL-3.0-only': true,
+  'LGPL-3.0-or-later': true,
   'MPL-2.0': true,
 
   // Special purpose licenses
@@ -36,6 +37,9 @@ const safeLicenses: Record<string, true | string[]> = {
   // not software licenses
   'CC-BY-3.0': ['spdx-exceptions'], // eslint-plugin-unicorn
   'CC-BY-4.0': ['caniuse-lite'],
+
+  // Font licenses
+  'OFL-1.1': true, // permissive
 
   UNKNOWN: ['fast-shallow-equal', 'react-universal-interface'],
 };
