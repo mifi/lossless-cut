@@ -258,7 +258,7 @@
   "Unable to playback rate right now": "Невозможно воспроизвести \"скорость темпа\" прямо сейчас",
   "Show": "Показать",
   "Failed to capture frame": "Не удалось захватить кадр",
-  "Screenshot captured to:": "Скриншот сделан в:",
+  "Screenshot captured to:": "Скриншот скопирован в:",
   "Done! Note: cutpoints may be inaccurate. Make sure you test the output files in your desired player/editor before you delete the source. If output does not look right, see the HELP page.": "Выполнено! Примечание: точки отсечения могут быть неточными. Убедитесь, что вы протестировали выходные файлы в желаемом проигрывателе / редакторе, прежде чем удалять источник. Если вывод выглядит неправильно, см. Страницу СПРАВКИ.",
   "Unprocessable streams were exported as separate files.": "Необработанные потоки были экспортированы как отдельные файлы.",
   "There is a known issue with cutting iPhone HEVC videos. The output file may not work in all players.": "Существует известная проблема при редактировании видеороликов HEVC для iPhone. Итоговый файл может не воспроизводиться во всех проигрывателях.",
@@ -672,7 +672,7 @@
   "Store project file (.llc) in the working directory or next to loaded media file?": "Хранить файл проекта (.llc) в рабочей папке или рядом с загруженным медиафайлом",
   "The size of the merged output file ({{outputFileTotalSize}}) differs from the total size of source files ({{sourceFilesTotalSize}}) by more than {{maxDiffPercent}}%. This could indicate that there was a problem during the merge.": "Размер объединённого итогового файла ({{outputFileTotalSize}}) отличается от общего размера исходных файлов ({{sourceFilesTotalSize}}) более чем на {{maxDiffPercent}}%. Это может указывать на то, что во время объединения возникла проблема.",
   "This allows you to specify custom FFmpeg and FFprobe binaries to use. Make sure the \"ffmpeg\" and \"ffprobe\" executables exist in the same directory, and then select the directory.": "Укажите путь к собственным исполняемым файлам FFmpeg и FFprobe для использования. Убедитесь, что исполняемые файлы \"ffmpeg\" и \"ffprobe\" находятся в одной папке, а затем выберите её.",
-  "This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).": "Этот диалог можно использовать для склеивания файлов последовательно, например, друг за другом:\n[file1][file2][file3]\nЕго нельзя использовать для объединения дорожек параллельно (например, добавления звуковой дорожки к видео).\nУбедитесь, что все файлы используют одинаковые кодеки и параметры кодека (количество кадров в секунду, разрешение и т.д.).",
+  "This dialog can be used to concatenate files in series, e.g. one after the other:\n[file1][file2][file3]\nIt can NOT be used for merging tracks in parallell (like adding an audio track to a video).\nMake sure all files are of the exact same codecs & codec parameters (fps, resolution etc).": "Этот диалог можно использовать для объединения файлов последовательно, например, друг за другом:\n[file1][file2][file3]\nЕго нельзя использовать для объединения дорожек параллельно (например, добавления звуковой дорожки к видео).\nУбедитесь, что все файлы используют одинаковые кодеки и параметры кодека (количество кадров в секунду, разрешение и т.д.).",
   "thumbnail": "миниатюра",
   "Try each of the following before merging again:": "Пытаться выполнить следующее, перед повторным слиянием:",
   "Using built-in ffmpeg": "Использовать встроенный FFmpeg",
@@ -1049,6 +1049,9 @@
   "N/A": "Н/Д",
   "Parameters": "Параметры",
   "Read more": "Подробнее",
-  "Screenshot captured clipboard": "Скриншот сохранен в буфер обмена",
-  "Track {{num}}": "Дорожка {{num}}"
+  "Screenshot captured clipboard": "Скриншот скопирован в буфер обмена",
+  "Track {{num}}": "Дорожка {{num}}",
+  "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> to set cutpoints": "<0></0> <2></2>, <4></4> <6></6> или <8><0><0></0></0></8>+<10></10> для установки точек разделения",
+  "Please send an email to <1>{{supportEmail}}</1> where you describe what you were doing.": "Пожалуйста, отправьте письмо на <1>{{supportEmail}}</1> с описанием того, что вы делали.",
+  "Unable to delete file": "Невозможно удалить файл"
 }
