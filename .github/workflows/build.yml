@@ -139,11 +139,17 @@ jobs:
         run: |
           node script/xcrunWrapper.ts dist/mas-universal/LosslessCut-mac-universal.pkg ${{ secrets.api_key_id }} ${{ secrets.api_key_issuer_id }} 1505323402 no.mifi.losslesscut-mac
 
+      # https://stackoverflow.com/questions/74774114/using-docker-buildx-github-action-cache-without-official-actions/77225313#77225313
+      - name: Expose actions cache variables
+        uses: actions/github-script@v6
+        with:
+          script: |
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN'])
+
       - name: (MacOS) Upload artifacts
         if: startsWith(matrix.os, 'macos') && env.is_tag == 'false'
         env:
           ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
-          ACTIONS_RUNTIME_URL: ${{ env.ACTIONS_RUNTIME_URL }}
         run: |
           yarn upload-artifacts dist/LosslessCut-mac-arm64.dmg
           yarn upload-artifacts dist/LosslessCut-mac-x64.dmg
@@ -153,7 +159,6 @@ jobs:
         if: startsWith(matrix.os, 'windows') && env.is_tag == 'false'
         env:
           ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
-          ACTIONS_RUNTIME_URL: ${{ env.ACTIONS_RUNTIME_URL }}
         run: |
           yarn upload-artifacts dist/LosslessCut-win-x64.7z
           yarn upload-artifacts --name screenshot-windows.jpeg screenshot.jpeg
@@ -162,7 +167,6 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu') && env.is_tag == 'false'
         env:
           ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
-          ACTIONS_RUNTIME_URL: ${{ env.ACTIONS_RUNTIME_URL }}
         run: |
           yarn upload-artifacts dist/LosslessCut-linux-arm64.tar.bz2
           yarn upload-artifacts dist/LosslessCut-linux-armv7l.tar.bz2
