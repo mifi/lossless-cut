@@ -346,7 +346,7 @@
   "Always open this dialog when opening multiple files": "Quando apri più file apri sempre questa finestra di dialogo",
   "An error has occurred.": "Si è verificato un errore.",
   "Ask on file open": "Chiedi con file aperto",
-  "Ask about what to do when opening a new file when another file is already already open?": "Cosa fare quando si apre un nuovo file e un altro file è già aperto",
+  "Ask about what to do when opening a new file when another file is already already open?": "Chiedi cosa fare quando si apre un nuovo file ed un altro file è già aperto",
   "At least one resulting file name is the same as the input path": "Almeno un nome di file risultante ha lo stesso percorso della sorgente",
   "At least one resulting file will have a too long path": "Almeno un file risultante avrà un percorso troppo lungo",
   "Cut at the nearest keyframe (not accurate time.) Equiv to": "Taglia al fotogramma chiave più vicino (durata non precisa). Equiv. a",
@@ -1018,5 +1018,8 @@
   "Parameters": "Parametri",
   "Read more": "Maggiori info",
   "Screenshot captured clipboard": "Schermata copiata negli appunti",
-  "Track {{num}}": "Traccia {{num}}"
+  "Track {{num}}": "Traccia {{num}}",
+  "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> to set cutpoints": "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> per impostare i punti di taglio",
+  "Please send an email to <1>{{supportEmail}}</1> where you describe what you were doing.": "Invia un'email a <1>{{supportEmail}}</1> dove descrivi cosa stavi facendo.",
+  "Unable to delete file": "Impossibile eliminare il file"
 }
