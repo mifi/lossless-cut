@@ -893,5 +893,8 @@
   "Parameters": "Paraméterek",
   "Read more": "További információk",
   "Screenshot captured clipboard": "Képernyőkép a vágólapra mentve",
-  "Track {{num}}": "Sáv {{num}}"
+  "Track {{num}}": "Sáv {{num}}",
+  "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> to set cutpoints": "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> a vágáspontok beállításához",
+  "Please send an email to <1>{{supportEmail}}</1> where you describe what you were doing.": "Kérjük, küldjön egy e-mailt a <1>{{supportEmail}}</1> címre, amelyben leírja, mit csinált éppen.",
+  "Unable to delete file": "A fájl törlése sikertelen"
 }
