@@ -140,32 +140,22 @@ jobs:
           node script/xcrunWrapper.ts dist/mas-universal/LosslessCut-mac-universal.pkg ${{ secrets.api_key_id }} ${{ secrets.api_key_issuer_id }} 1505323402 no.mifi.losslesscut-mac
 
       - name: (MacOS) Upload artifacts
-        uses: actions/upload-artifact@v4
         if: startsWith(matrix.os, 'macos') && env.is_tag == 'false'
-        with:
-          name: MacOS
-          path: |
-            dist/LosslessCut-mac-arm64.dmg
-            dist/LosslessCut-mac-x64.dmg
-            screenshot.jpeg
+        run: |
+          yarn upload-artifacts dist/LosslessCut-mac-arm64.dmg
+          yarn upload-artifacts dist/LosslessCut-mac-x64.dmg
+          yarn upload-artifacts --name screenshot-mac.jpeg screenshot.jpeg
 
       - name: (Windows) Upload artifacts
-        uses: actions/upload-artifact@v4
         if: startsWith(matrix.os, 'windows') && env.is_tag == 'false'
-        with:
-          name: Windows
-          path: |
-            dist/LosslessCut-win-x64.7z
-            screenshot.jpeg
+        run: |
+          yarn upload-artifacts dist/LosslessCut-win-x64.7z
+          yarn upload-artifacts --name screenshot-windows.jpeg screenshot.jpeg
 
-      - name: (Linux) Upload artifacts
-        uses: actions/upload-artifact@v4
+      - name: (Linu) Upload artifacts
         if: startsWith(matrix.os, 'ubuntu') && env.is_tag == 'false'
-        with:
-          name: Linux
-          path: |
-            dist/LosslessCut-linux-arm64.tar.bz2
-            dist/LosslessCut-linux-armv7l.tar.bz2
-            dist/LosslessCut-linux-x64.tar.bz2
-            screenshot.jpeg
-
+        run: |
+          yarn upload-artifacts dist/LosslessCut-linux-arm64.tar.bz2
+          yarn upload-artifacts dist/LosslessCut-linux-armv7l.tar.bz2
+          yarn upload-artifacts dist/LosslessCut-linux-x64.tar.bz2
+          yarn upload-artifacts --name screenshot-linux.jpeg screenshot.jpeg
