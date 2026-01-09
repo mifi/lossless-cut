@@ -46,7 +46,7 @@
   "Current setting": "Současné nastavení",
   "Settings": "Nastavení",
   "Ask on file open": "Ptát se při otevírání souboru",
-  "Ask about what to do when opening a new file when another file is already already open?": "Pokud je otevřen nějaký soubor, zobrazit dotaz při pokusu otevřít nový",
+  "Ask about what to do when opening a new file when another file is already already open?": "Zeptat se co se má stát, pokud je otevírán nový soubor a jiný soubor je otevřen",
   "Ask about chapters": "Ptát se na kapitoly",
   "Ask about importing chapters from opened file?": "Ptát se na import kapitol z otevřeného souboru",
   "Ask before closing": "Zeptat se před zavřením",
@@ -1061,5 +1061,8 @@
   "Parameters": "Parametry",
   "Read more": "Číst více",
   "Screenshot captured clipboard": "Snímek obrazovky vložen do schránky",
-  "Track {{num}}": "Stopa {{num}}"
+  "Track {{num}}": "Stopa {{num}}",
+  "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> to set cutpoints": "<0></0> <2></2>, <4></4> <6></6> nebo <8><0><0></0></0></8>+<10></10> pro nastavení bodů střihu",
+  "Please send an email to <1>{{supportEmail}}</1> where you describe what you were doing.": "Odešlete prosím e-mail na <1>{{supportEmail}}</1> a popište co jste konkrétně dělali.",
+  "Unable to delete file": "Nelze smazat soubor"
 }
