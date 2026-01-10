@@ -1028,5 +1028,8 @@
   "Parameters": "Parametreler",
   "Read more": "Daha fazla bilgi",
   "Screenshot captured clipboard": "Ekran görüntüsü panoya kopyalandı",
-  "Track {{num}}": "Parça {{num}}"
+  "Track {{num}}": "Parça {{num}}",
+  "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> to set cutpoints": "Kesim noktalarını ayarlamak için <0></0> <2></2>, <4></4> <6></6> veya <8><0><0></0></0></8>+<10></10>",
+  "Please send an email to <1>{{supportEmail}}</1> where you describe what you were doing.": "Lütfen <1>{{supportEmail}}</1> adresine, ne yaptığınızı açıklayan bir e-posta gönderin.",
+  "Unable to delete file": "Dosya silinemiyor"
 }
