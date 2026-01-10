@@ -219,7 +219,7 @@ export function tryMapChaptersToEdl(chapters: FFprobeChapter[]) {
 export async function createChaptersFromSegments({ segmentPaths, chapterNames }: { segmentPaths: string[], chapterNames?: (string | undefined)[] | undefined }) {
   if (!chapterNames) return undefined;
   try {
-    const durations = await pMap(segmentPaths, (segmentPath) => getDuration(segmentPath), { concurrency: 3 });
+    const durations = await pMap(segmentPaths, async (segmentPath) => (await getDuration(segmentPath)) ?? 0, { concurrency: 3 });
     let timeAt = 0;
     return durations.map((duration, i) => {
       const ret = { start: timeAt, end: timeAt + duration, name: chapterNames[i] };

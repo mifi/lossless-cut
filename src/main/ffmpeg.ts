@@ -10,9 +10,11 @@ import { app, clipboard, nativeImage } from 'electron';
 
 import { platform, arch, isWindows, isLinux } from './util.js';
 import type { CaptureFormat, Waveform } from '../common/types.js';
+import type { FFprobeFormat } from '../common/ffprobe.js';
 import isDev from './isDev.js';
 import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';
+import { parseFfprobeDuration } from '../common/util.js';
 
 // cannot use process.kill: https://github.com/sindresorhus/execa/issues/1177
 const runningFfmpegs = new Set<{
@@ -552,7 +554,7 @@ export async function captureFrameToFile({ timestamp, videoPath, outPath, qualit
 }
 
 
-async function readFormatData(filePath: string) {
+async function readFormatData(filePath: string): Promise<FFprobeFormat> {
   logger.info('readFormatData', filePath);
 
   const { stdout } = await runFfprobe([
@@ -562,7 +564,7 @@ async function readFormatData(filePath: string) {
 }
 
 export async function getDuration(filePath: string) {
-  return parseFloat((await readFormatData(filePath)).duration);
+  return parseFfprobeDuration((await readFormatData(filePath)).duration);
 }
 
 const enableLog = false;

@@ -7,7 +7,6 @@ import type { Html5ifyMode } from '../../../common/types';
 import { DirectoryAccessDeclinedError } from '../../errors';
 import getSwal from '../swal';
 import Checkbox from '../components/Checkbox';
-import { getSuffixedOutPath, html5dummySuffix, html5ifiedPrefix } from '../util';
 import type { SetWorking } from './useLoading';
 import type { WithErrorHandling } from './useErrorHandling';
 import type { FfmpegOperations } from './useFfmpegOperations';
@@ -18,7 +17,7 @@ import { ButtonRow } from '../components/Dialog';
 import { DialogButton } from '../components/Button';
 
 
-export default function useHtml5ify({ filePath, hasVideo, hasAudio, workingRef, setWorking, ensureWritableOutDir, customOutDir, batchFiles, enableAutoHtml5ify, setProgress, html5ify, html5ifyDummy, withErrorHandling, showGenericDialog }: {
+export default function useHtml5ify({ filePath, hasVideo, hasAudio, workingRef, setWorking, ensureWritableOutDir, customOutDir, batchFiles, enableAutoHtml5ify, setProgress, html5ify, withErrorHandling, showGenericDialog }: {
   filePath: string | undefined,
   hasVideo: boolean,
   hasAudio: boolean,
@@ -39,36 +38,17 @@ export default function useHtml5ify({ filePath, hasVideo, hasAudio, workingRef, 
   const [rememberConvertToSupportedFormat, setRememberConvertToSupportedFormat] = useState<Html5ifyMode>();
 
   const html5ifyAndLoad = useCallback(async (cod: string | undefined, fp: string, speed: Html5ifyMode, hv: boolean, ha: boolean) => {
-    const usesDummyVideo = speed === 'fastest';
-    console.log('html5ifyAndLoad', { speed, hasVideo: hv, hasAudio: ha, usesDummyVideo });
+    try {
+      setProgress(0);
+      const path = await html5ify({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: hv, onProgress: setProgress });
+      if (!path) return;
 
-    async function doHtml5ify() {
-      if (speed == null) return undefined;
-      if (speed === 'fastest') {
-        const path = getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${html5dummySuffix}.mkv` });
-        try {
-          setProgress(0);
-          await html5ifyDummy({ filePath: fp, outPath: path, onProgress: setProgress });
-        } finally {
-          setProgress(undefined);
-        }
-        return path;
-      }
-
-      try {
-        const shouldIncludeVideo = !usesDummyVideo && hv;
-        return await html5ify({ customOutDir: cod, filePath: fp, speed, hasAudio: ha, hasVideo: shouldIncludeVideo, onProgress: setProgress });
-      } finally {
-        setProgress(undefined);
-      }
+      setPreviewFilePath(path);
+      setUsingDummyVideo(speed === 'fastest');
+    } finally {
+      setProgress(undefined);
     }
-
-    const path = await doHtml5ify();
-    if (!path) return;
-
-    setPreviewFilePath(path);
-    setUsingDummyVideo(usesDummyVideo);
-  }, [html5ify, html5ifyDummy, setProgress]);
+  }, [html5ify, setProgress]);
 
   const askForHtml5ifySpeed = useCallback(async ({ allowedOptions, showRemember, initialOption }: {
     allowedOptions: Html5ifyMode[],
@@ -211,13 +191,10 @@ export default function useHtml5ify({ filePath, hasVideo, hasAudio, workingRef, 
 
     try {
       await withErrorHandling(async () => {
-        // eslint-disable-next-line no-restricted-syntax
         for (const path of filePaths) {
           try {
-            // eslint-disable-next-line no-await-in-loop
             const newCustomOutDir = await ensureWritableOutDir({ inputPath: path, outDir: customOutDir });
 
-            // eslint-disable-next-line no-await-in-loop
             await html5ify({ customOutDir: newCustomOutDir, filePath: path, speed, hasAudio: true, hasVideo: true, onProgress: setTotalProgress });
           } catch (err2) {
             if (err2 instanceof DirectoryAccessDeclinedError) return;

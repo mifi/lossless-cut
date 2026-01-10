@@ -256,7 +256,7 @@ export async function findExistingHtml5FriendlyFile(fp: string, cod: string | un
   };
 }
 
-export function getHtml5ifiedPath(cod: string | undefined, fp: string, type: Html5ifyMode) {
+export function getHtml5ifiedPath(cod: string | undefined, fp: string, type: Exclude<Html5ifyMode, 'fastest'>) {
   // See also inside ffmpegHtml5ify
   const ext = (isMac && ['slowest', 'slow', 'slow-audio'].includes(type)) ? 'mp4' : 'mkv';
   return getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${type}.${ext}` });

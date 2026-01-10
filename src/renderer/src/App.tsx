@@ -58,7 +58,7 @@ import {
   readFileFfprobeMeta, getDefaultOutFormat,
   setCustomFfPath as ffmpegSetCustomFfPath,
   isIphoneHevc, isProblematicAvc1, tryMapChaptersToEdl,
-  getDuration, getTimecodeFromStreams, createChaptersFromSegments,
+  getTimecodeFromStreams, createChaptersFromSegments,
   RefuseOverwriteError, extractSubtitleTrackToSegments,
   mapRecommendedDefaultFormat,
   getFfCommandLine,
@@ -95,6 +95,8 @@ import type { BatchFile, Chapter, CustomTagsByFile, EdlExportType, EdlFileType, 
 import { goToTimecodeDirectArgsSchema, openFilesActionArgsSchema } from './types';
 import type { CaptureFormat, KeyboardAction, ApiActionRequest } from '../../common/types.js';
 import type { FFprobeChapter, FFprobeStream } from '../../common/ffprobe.js';
+import { parseFfprobeDuration } from '../../common/util.js';
+
 import useLoading from './hooks/useLoading';
 import useVideo from './hooks/useVideo';
 import useTimecode from './hooks/useTimecode';
@@ -670,7 +672,7 @@ function App() {
   }, [videoRef, setCommandedTime, setPlaybackRate, setPreviewFilePath, setUsingDummyVideo, setPlaying, playingRef, setPlaybackMode, cutSegmentsHistory, setDetectedFileFormat, setCopyStreamIdsByFile, setThumbnails, setSubtitlesByStreamId, setOutputPlaybackRateState]);
 
 
-  const showUnsupportedFileMessage = useCallback(() => {
+  const showNotNativelySupportedMessage = useCallback(() => {
     showNotification({ timer: 13000, text: i18n.t('File is not natively supported. Preview playback may be slow and of low quality, but the final export will be lossless. You may convert the file from the menu for a better preview.') });
   }, [showNotification]);
 
@@ -1479,7 +1481,7 @@ function App() {
       if (existingHtml5FriendlyFile && !existingHtml5FriendlyFile.usingDummyVideo) {
         showPreviewFileLoadedMessage(basename(existingHtml5FriendlyFile.path));
       } else if (needsAutoHtml5ify) {
-        showUnsupportedFileMessage();
+        showNotNativelySupportedMessage();
       } else if (isAudioDefinitelyNotSupported(ffprobeMeta.streams)) {
         showNotification({ icon: 'info', text: i18n.t('The audio track is not supported while previewing. You can convert to a supported format from the menu') });
       } else if (!validDuration) {
@@ -1495,7 +1497,7 @@ function App() {
       resetState();
       throw err;
     }
-  }, [storeProjectInWorkingDir, setWorking, loadEdlFile, getEdlFilePath, enableAskForImportChapters, ensureAccessToSourceDir, loadCutSegments, autoLoadTimecode, enableNativeHevc, ensureWritableOutDir, customOutDir, resetState, clearSegColorCounter, setCopyStreamIdsForPath, setDetectedFileFormat, outFormatLocked, setUsingDummyVideo, setPreviewFilePath, html5ifyAndLoadWithPreferences, setFileFormat, showNotification, showPreviewFileLoadedMessage, showUnsupportedFileMessage]);
+  }, [storeProjectInWorkingDir, setWorking, loadEdlFile, getEdlFilePath, enableAskForImportChapters, ensureAccessToSourceDir, loadCutSegments, autoLoadTimecode, enableNativeHevc, ensureWritableOutDir, customOutDir, resetState, clearSegColorCounter, setCopyStreamIdsForPath, setDetectedFileFormat, outFormatLocked, setUsingDummyVideo, setPreviewFilePath, html5ifyAndLoadWithPreferences, setFileFormat, showNotification, showPreviewFileLoadedMessage, showNotNativelySupportedMessage]);
 
   const toggleLastCommands = useCallback(() => setLastCommandsVisible((val) => !val), []);
   const toggleSettings = useCallback(() => setSettingsVisible((val) => !val), []);
@@ -2177,7 +2179,7 @@ function App() {
           )
           || error.code === PIPELINE_ERROR_DECODE
         )
-        && !usingPreviewFile
+        && !usingPreviewFile // if we are already using preview file, we shouldn't try to do it again
         && filePath
         && !(error.code === MEDIA_ERR_SRC_NOT_SUPPORTED && error.message?.startsWith('DEMUXER_ERROR_COULD_NOT_PARSE'))
       ) {
@@ -2185,15 +2187,21 @@ function App() {
         try {
           setWorking({ text: i18n.t('Converting to supported format') });
 
-          console.log('Trying to create preview');
+          console.log('Trying to convert to supported format');
 
-          if (!isDurationValid(await getDuration(filePath))) throw new UserFacingError(i18n.t('Invalid duration'));
+          // A valid duration is needed to create a html5ified dummy (`fastest`).
+          if (!isDurationValid(parseFfprobeDuration(mainFileFormat?.duration))) {
+            throw new UserFacingError(i18n.t('Invalid duration'));
+          }
 
           if (hasVideo || hasAudio) {
             await html5ifyAndLoadWithPreferences(customOutDir, filePath, 'fastest', hasVideo, hasAudio);
-            showUnsupportedFileMessage();
+            showNotNativelySupportedMessage();
           }
         } catch (err) {
+          if (err instanceof UserFacingError) {
+            throw err;
+          }
           console.error(err);
           showPlaybackFailedMessage();
         } finally {
@@ -2205,7 +2213,7 @@ function App() {
     } catch (err) {
       toastError(err);
     }
-  }, [videoRef, fileUri, usingPreviewFile, filePath, workingRef, setWorking, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, showUnsupportedFileMessage]);
+  }, [videoRef, fileUri, usingPreviewFile, filePath, workingRef, setWorking, mainFileFormat?.duration, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, showNotNativelySupportedMessage]);
 
   const onVideoFocus = useCallback<FocusEventHandler<HTMLVideoElement>>((e) => {
     // prevent video element from stealing focus in fullscreen mode https://github.com/mifi/lossless-cut/issues/543#issuecomment-1868167775

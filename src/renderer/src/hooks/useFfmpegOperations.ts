@@ -5,7 +5,7 @@ import pMap from 'p-map';
 import invariant from 'tiny-invariant';
 import i18n from 'i18next';
 
-import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac } from '../util';
+import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { needsSmartCut, getCodecParams } from '../smartcut';
@@ -132,7 +132,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
     console.log('Merging files', { paths }, 'to', outPath);
 
-    const durations = await pMap(paths, getDuration, { concurrency: 1 });
+    const durations = await pMap(paths, async (path) => (await getDuration(path)) ?? 0, { concurrency: 1 });
     const totalDuration = sum(durations);
 
     let chaptersPath: string | undefined;
@@ -682,9 +682,50 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     await concatFiles({ paths: segmentPaths, outDir, outPath: mergedOutFilePath, metadataFromPath, outFormat, includeAllStreams: true, streams, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge });
   }, [concatFiles, filePath, shouldSkipExistingFile]);
 
-  const html5ify = useCallback(async ({ customOutDir, filePath: filePathArg, speed, hasAudio, hasVideo, onProgress }: {
-    customOutDir: string | undefined, filePath: string, speed: Html5ifyMode, hasAudio: boolean, hasVideo: boolean, onProgress: (p: number) => void,
+  // This is just used to load something into the player with correct duration,
+  // so that the user can seek and then we render frames using ffmpeg & MediaSource
+  const html5ifyDummy = useCallback(async ({ filePath: filePathArg, outPath, onProgress }: {
+    filePath: string,
+    outPath: string,
+    onProgress: (p: number) => void,
   }) => {
+    console.log('Making ffmpeg-assisted dummy file', { filePathArg, outPath });
+
+    const duration = await getDuration(filePathArg);
+
+    const ffmpegArgs = [
+      '-hide_banner',
+
+      // This is just a fast way of generating an empty dummy file
+      '-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',
+      '-t', String(duration),
+      '-acodec', 'flac',
+      '-y', outPath,
+    ];
+
+    appendFfmpegCommandLog(ffmpegArgs);
+    const result = await runFfmpegWithProgress({ ffmpegArgs, duration, onProgress });
+    logStdoutStderr(result);
+
+    await transferTimestamps({ inPath: filePathArg, outPath, duration, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
+  }, [appendFfmpegCommandLog, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
+
+  const html5ify = useCallback(async ({ customOutDir, filePath: filePathArg, speed, hasAudio, hasVideo, onProgress }: {
+    customOutDir: string | undefined,
+    filePath: string,
+    speed: Html5ifyMode,
+    hasAudio: boolean,
+    hasVideo: boolean,
+    onProgress: (p: number) => void,
+  }) => {
+    console.log('html5ifyAndLoad', { speed, hasVideo, hasAudio });
+
+    if (speed === 'fastest') {
+      const path = getSuffixedOutPath({ customOutDir, filePath: filePathArg, nameSuffix: `${html5ifiedPrefix}${html5dummySuffix}.mkv` });
+      await html5ifyDummy({ filePath: filePathArg, outPath: path, onProgress });
+      return path;
+    }
+
     const outPath = getHtml5ifiedPath(customOutDir, filePathArg, speed);
     invariant(outPath != null);
 
@@ -795,35 +836,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     invariant(outPath != null);
     await transferTimestamps({ inPath: filePathArg, outPath, duration, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
     return outPath;
-  }, [appendFfmpegCommandLog, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
-
-  // This is just used to load something into the player with correct duration,
-  // so that the user can seek and then we render frames using ffmpeg & MediaSource
-  const html5ifyDummy = useCallback(async ({ filePath: filePathArg, outPath, onProgress }: {
-    filePath: string,
-    outPath: string,
-    onProgress: (p: number) => void,
-  }) => {
-    console.log('Making ffmpeg-assisted dummy file', { filePathArg, outPath });
-
-    const duration = await getDuration(filePathArg);
-
-    const ffmpegArgs = [
-      '-hide_banner',
-
-      // This is just a fast way of generating an empty dummy file
-      '-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',
-      '-t', String(duration),
-      '-acodec', 'flac',
-      '-y', outPath,
-    ];
-
-    appendFfmpegCommandLog(ffmpegArgs);
-    const result = await runFfmpegWithProgress({ ffmpegArgs, duration, onProgress });
-    logStdoutStderr(result);
-
-    await transferTimestamps({ inPath: filePathArg, outPath, duration, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
-  }, [appendFfmpegCommandLog, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
+  }, [appendFfmpegCommandLog, html5ifyDummy, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   // https://stackoverflow.com/questions/34118013/how-to-determine-webm-duration-using-ffprobe
   const fixInvalidDuration = useCallback(async ({ fileFormat, customOutDir, onProgress }: {
