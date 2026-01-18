@@ -29,6 +29,8 @@ Please read the documentation before creating an issue. Thank you 🙏
   - **A:** In general I don't want to maintain more build systems, but I could be open to linking to externally maintained build systems.
 - **Q:** How to sync/shift audio/video tracks?
   - **A:** This is not natively supported but it can be done with a workaround, see [#216](https://github.com/mifi/lossless-cut/issues/216).
+- **Q:** How do I overwrite input file?
+  - **A:** That is forbidden by design, for [several reasons](https://github.com/mifi/lossless-cut/issues/2538#issuecomment-3476574283).
 
 ## Troubleshooting
 
