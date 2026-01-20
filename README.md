@@ -1,18 +1,4 @@
 <div align="center">
-	<a href="https://go.warp.dev/lossless-cut" target="_blank">
-		<sup>Special thanks to:</sup>
-		<br>
-		<img alt="Warp sponsorship" width="400" src="https://github.com/warpdotdev/brand-assets/blob/main/Github/Sponsor/Warp-Github-LG-02.png">
-		<br>
-		<h>Warp, built for coding with multiple AI agents</b>
-		<br>
-		<sup>Available for macOS, Linux and Windows</sup>
-	</a>
-</div>
-
-<br>
-
-<div align="center">
 	<br>
   <p><a href="https://mifi.no/losslesscut/"><img src="src/renderer/src/icon.svg" width="120" alt="LosslessCut" /></a></p>
   <p><b>LosslessCut</b></p>
