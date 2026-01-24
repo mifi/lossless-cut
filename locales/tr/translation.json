@@ -985,5 +985,6 @@
   "Success!": "Başarılı!",
   "System default": "Sistem öntanımlı değeri",
   "The audio track is not supported while previewing. You can convert to a supported format from the menu": "Ön izleme sırasında ses parçası desteklenmiyor. Menüden desteklenen bir biçime dönüştürebilirsiniz",
-  "Template error: {{error}}": "Şablon hatası: {{error}}"
+  "Template error: {{error}}": "Şablon hatası: {{error}}",
+  "Copyright": "Telif hakkı"
 }

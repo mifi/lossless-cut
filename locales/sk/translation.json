@@ -819,5 +819,6 @@
   "Generating full overview waveform, this may take a few minutes.": "Generovanie úplného prehľadu krivky môže trvať niekoľko minút.",
   "Note that this only applies when extracting multiple frames. When \"Frame number\" is selected, frame numbers are relative to the start of the segment (starting from 1).": "Všimnite si, že to platí len pri extrakcii viacerých snímok. Keď je vybraná možnosť \"Číslo snímky\", čísla snímok sú relatívne k začiatku segmentu (od 1).",
   "Divide timeline into a number of segments with an approximate byte size": "Rozdelenie časovej osi na niekoľko segmentov s približnou veľkosťou bajtov",
-  "Shift all end times": "Posunutie všetkých časov ukončenia"
+  "Shift all end times": "Posunutie všetkých časov ukončenia",
+  "Copyright": "Autorské práva"
 }

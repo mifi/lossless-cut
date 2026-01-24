@@ -1,6 +1,7 @@
 import type { AboutPanelOptionsOptions } from 'electron';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { app } from 'electron';
+import { t } from 'i18next';
 
 import { appName, copyrightYear } from './common.js';
 import { isLinux } from './util.js';
@@ -15,7 +16,7 @@ export function getAboutPanelOptions() {
   const aboutPanelLines = [
     isStoreBuild ? homepageUrl : githubUrl,
     '',
-    `Copyright © 2016-${copyrightYear} Mikael Finstad ❤️ 🇳🇴`,
+    `${t('Copyright')} © 2016-${copyrightYear} Mikael Finstad ❤️ 🇳🇴`,
   ];
 
   const aboutPanelOptions: AboutPanelOptionsOptions = {

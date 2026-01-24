@@ -74,5 +74,6 @@
   "Batch": "Kumpulan",
   "<0>If you're having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></0><1>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</1>": "<0>Jika Anda memiliki keluhan atau pertanyaan mengenai LosslessCut, silakan cek tautan di menu <1>Bantuan</1> terlebih dahulu. Jika Anda tidak dapat menemukan jawabannya, Anda dapat menanyakannya ke <3>Diskusi GitHub</3> atau di <5>Discord</5></0><1>Jika Anda menemukan kesalahan di LosslessCut, Anda dapat <1>melaporkan kesalahan </1>.</1>",
   "Are you sure you want to close the current file?": "Apakah Anda yakin ingin menutup berkas ini?",
-  "At least one resulting file name ends with a whitespace character or a dot, which is not allowed.": "Setidaknya satu nama berkas yang dihasilkan diakhiri dengan karakter spasi atau titik, yang mana tidak diperbolehkan."
+  "At least one resulting file name ends with a whitespace character or a dot, which is not allowed.": "Setidaknya satu nama berkas yang dihasilkan diakhiri dengan karakter spasi atau titik, yang mana tidak diperbolehkan.",
+  "Copyright": "Hak cipta"
 }

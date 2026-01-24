@@ -934,5 +934,6 @@
   "Remove current segment cutpoint": "刪除當前片段剪下點",
   "Enter a JavaScript expression which will be evaluated for each selected segment. Returned properties will be edited. <1>View available syntax.</1>": "輸入一個 JavaScript 表示式，將為每個選定片段計算此表示式。表示式返回的屬性將被編輯。<1>查看可用語法。</1>",
   "Fell back to default output file name": "回退到預設輸出檔案名稱",
-  "Remove cutpoint from segment {{segmentNumber}}": "從片段 {{segmentNumber}} 移除剪下點"
+  "Remove cutpoint from segment {{segmentNumber}}": "從片段 {{segmentNumber}} 移除剪下點",
+  "Copyright": "版權"
 }

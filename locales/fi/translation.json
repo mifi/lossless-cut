@@ -592,5 +592,6 @@
   "<0></0> to show advanced view": "<0></0> näyttää lisänäkymän",
   "<0></0> to show simple view": "<0></0> näyttää yksinkertaisen näkymän",
   "{{durationMsFormatted}} ms, {{frameCount}} frames": "{{durationMsFormatted}} ms, {{frameCount}} kuvaruutua",
-  "Abort": "Keskeytä"
+  "Abort": "Keskeytä",
+  "Copyright": "Tekijänoikeus"
 }

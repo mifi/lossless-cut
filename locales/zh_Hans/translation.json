@@ -1068,5 +1068,6 @@
   "Smart cut is not possible when FPS is unknown": "当帧率未知时，无法进行智能剪辑",
   "Some video files have incorrect codec tags which may cause problems playing back the video track in some players. On the flip side, fixing the codec tag will also cause problems in some players, so you might have to try both settings.": "有些视频文件的编解码器标签不正确，这可能会导致在某些播放器中播放视频轨道时出现问题。另一方面，修复编解码器标签也会在某些播放器中引发问题，因此你可能需要尝试这两种设置。",
   "What's new in LosslessCut?": "LosslessCut 有什么新功能 ？",
-  "Meta": "元数据"
+  "Meta": "元数据",
+  "Copyright": "版权"
 }

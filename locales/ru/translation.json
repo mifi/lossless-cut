@@ -1036,5 +1036,6 @@
   "Show advanced options": "Показать дополнительные параметры",
   "Smart cut is not possible when FPS is unknown": "Умная нарезка невозможна, если FPS неизвестен",
   "Some video files have incorrect codec tags which may cause problems playing back the video track in some players. On the flip side, fixing the codec tag will also cause problems in some players, so you might have to try both settings.": "Некоторые видеофайлы имеют неверные теги кодеков, что может вызвать проблемы с воспроизведением видеодорожки в некоторых проигрывателях. С другой стороны, исправление тега кодека также может вызвать проблемы в некоторых проигрывателях, поэтому вам, вероятно, придется попробовать обе настройки.",
-  "What's new in LosslessCut?": "Что нового в LosslessCut?"
+  "What's new in LosslessCut?": "Что нового в LosslessCut?",
+  "Copyright": "Авторское право"
 }

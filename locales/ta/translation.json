@@ -805,5 +805,6 @@
   "Center segments around start time": "தொடக்க நேரத்தில் மையப் பிரிவுகள்",
   "Exporting whole file without cutting, because there are no segments to export.": "வெட்டாமல் முழு கோப்பையும் ஏற்றுமதி செய்கிறது, ஏனென்றால் ஏற்றுமதிக்கு பிரிவுகள் இல்லை.",
   "Generating full overview waveform, this may take a few minutes.": "முழு கண்ணோட்டம் அலைவடிவத்தை உருவாக்குகிறது, இது சில நிமிடங்கள் ஆகலாம்.",
-  "Note that this only applies when extracting multiple frames. When \"Frame number\" is selected, frame numbers are relative to the start of the segment (starting from 1).": "பல பிரேம்களைப் பிரித்தெடுக்கும் போது மட்டுமே இது பொருந்தும் என்பதை நினைவில் கொள்க. \"பிரேம் எண்\" தேர்ந்தெடுக்கப்பட்டால், பிரேம் எண்கள் பிரிவின் தொடக்கத்துடன் தொடர்புடையவை (1 முதல் தொடங்கி)."
+  "Note that this only applies when extracting multiple frames. When \"Frame number\" is selected, frame numbers are relative to the start of the segment (starting from 1).": "பல பிரேம்களைப் பிரித்தெடுக்கும் போது மட்டுமே இது பொருந்தும் என்பதை நினைவில் கொள்க. \"பிரேம் எண்\" தேர்ந்தெடுக்கப்பட்டால், பிரேம் எண்கள் பிரிவின் தொடக்கத்துடன் தொடர்புடையவை (1 முதல் தொடங்கி).",
+  "Copyright": "பதிப்புரிமை"
 }

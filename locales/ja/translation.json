@@ -985,5 +985,6 @@
   "Read all keyframes": "すべてのキーフレームを読み込む",
   "Reading all keyframes": "全キーフレームを読込中",
   "Toggle all tracks": "すべてのトラックを切替",
-  "Toggle {{type}} tracks": "{{type}} トラックを切替"
+  "Toggle {{type}} tracks": "{{type}} トラックを切替",
+  "Copyright": "著作権"
 }

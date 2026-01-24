@@ -676,5 +676,6 @@
   "<0>If you&apos;re having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></0><1>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</1>": "<0>Če imate težave ali vprašanja o LosslessCut, najprej preverite povezave v meniju <1>Pomoč</1>. Če ne najdete nobene rešitve, lahko postavite vprašanje v <3>razpravah GitHub</3> ali <5>Neskladje.</5></0><1>Če menite, da ste našli napako v LosslessCut , lahko <1>prijavite napako</1>.</1>",
   "Common audio formats:": "Pogosti zvočni formati:",
   "All other formats:": "Vsi drugi formati:",
-  "Common subtitle formats:": "Pogosti formati podnapisov:"
+  "Common subtitle formats:": "Pogosti formati podnapisov:",
+  "Copyright": "Avtorske pravice"
 }

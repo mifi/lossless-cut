@@ -198,5 +198,6 @@
   "Merge!": "Slå samman!",
   "Select a different output <1>Format</1> (<3>matroska</3> and <5>mp4</5> support most codecs)": "Välj en annan utdata <1>Format</1> (<3>matroska</3> och <5>mp4</5> stöder de flesta codecs)",
   "Try one of the following before exporting again:": "Prova en av följande innan du exporterar igen:",
-  "Disable unnecessary <1>Tracks</1>": "Inaktivera onödiga <1>Spår</1>"
+  "Disable unnecessary <1>Tracks</1>": "Inaktivera onödiga <1>Spår</1>",
+  "Copyright": "Upphovsrätt"
 }

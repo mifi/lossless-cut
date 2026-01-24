@@ -1003,5 +1003,6 @@
   "Show advanced options": "Visualizza opzioni avanzate",
   "Smart cut is not possible when FPS is unknown": "Il taglio intelligente non è possibile quando l'FPS è sconosciuto",
   "Some video files have incorrect codec tags which may cause problems playing back the video track in some players. On the flip side, fixing the codec tag will also cause problems in some players, so you might have to try both settings.": "Alcuni file video hanno tag codec errati che potrebbero causare problemi nella riproduzione della traccia video in alcuni lettori. D'altro canto, anche la correzione del tag del codec causerà problemi in alcuni lettori, quindi potresti dover provare entrambe le impostazioni.",
-  "What's new in LosslessCut?": "Quali sono le novità in LosslessCut?"
+  "What's new in LosslessCut?": "Quali sono le novità in LosslessCut?",
+  "Copyright": "Copyright"
 }

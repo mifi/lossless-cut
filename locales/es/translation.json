@@ -906,5 +906,6 @@
   "Examples": "Ejemplos",
   "File name is too long and cannot be exported.": "El nombre del archivo es muy largo y no se puede exportar.",
   "Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.": "Ajustar los FPS de salida y cortar al mismo tiempo causará cortes incorrectos. Considera hacerlo en dos pasos separados.",
-  "Fell back to default output file name": "Se ha vuelto al nombre de archivo de salida predeterminado"
+  "Fell back to default output file name": "Se ha vuelto al nombre de archivo de salida predeterminado",
+  "Copyright": "Derechos de autor"
 }

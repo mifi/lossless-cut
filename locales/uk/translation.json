@@ -817,5 +817,6 @@
   "There is a known issue in FFmpeg with cutting FLAC files. The file will be re-encoded, which is still lossless, but the export may be slower.": "У FFmpeg існує відома проблема з нарізкою файлів FLAC. Файл буде перекодовано, також без втрат, але процес експорту може зайняти більше часу.",
   "This file contains an audio track that FFmpeg is unable to mux into the MP4 format, so MOV has been auto-selected as the default output format.": "Цей файл містить аудіодоріжку, яку FFmpeg не може вбудувати у формат MP4, тому MOV був вибраний як формат виводу за замовчуванням.",
   "Whether to preserve chapters from source file.": "Збереження розділів з оригінального файлу.",
-  "You are not allowed to write the output file. This probably means that the file already exists with the wrong permissions, or you don't have write permissions to the output folder.": "Ви не маєте прав на запис у файл виводу. Ймовірно, це означає, що файл уже існує з неправильними дозволами або у вас немає дозволів на запис у каталог виводу."
+  "You are not allowed to write the output file. This probably means that the file already exists with the wrong permissions, or you don't have write permissions to the output folder.": "Ви не маєте прав на запис у файл виводу. Ймовірно, це означає, що файл уже існує з неправильними дозволами або у вас немає дозволів на запис у каталог виводу.",
+  "Copyright": "Авторське право"
 }

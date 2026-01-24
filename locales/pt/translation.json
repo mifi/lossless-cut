@@ -687,5 +687,6 @@
   "The size of the merged output file ({{outputFileTotalSize}}) differs from the total size of source files ({{sourceFilesTotalSize}}) by more than {{maxDiffPercent}}%. This could indicate that there was a problem during the merge.": "O tamanho do ficheiro final mesclado ({{outputFileTotalSize}}) é {{maxDiffPercent}}% diferente do tamanho total dos ficheiros de origem ({{sourceFilesTotalSize}}). Pode ser um indicador de problemas durante a mesclagem.",
   "There is a known problem with this file type, and the output might not be playable. You can work around this problem by enabling the \"Experimental flag\" under Settings.": "Há um problema com este tipo de ficheiro e o ficheiro final pode não ser reproduzido. Pode contornar este problema ativando as opções experimentais nas Configurações.",
   "Tried to create too many segments (max {{maxSegmentsAllowed}}.)": "Tentativa de criar muitos segmentos (o máximo é {{maxSegmentsAllowed}}).",
-  "Unable to export unprocessable streams.": "Impossível exportar transmissões que não podem ser processadas."
+  "Unable to export unprocessable streams.": "Impossível exportar transmissões que não podem ser processadas.",
+  "Copyright": "Direitos autorais"
 }

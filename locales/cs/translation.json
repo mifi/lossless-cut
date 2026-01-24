@@ -1047,5 +1047,6 @@
   "Show advanced options": "Zobrazit pokročilé možnosti",
   "Smart cut is not possible when FPS is unknown": "Přesný střih není možný když je FPS neznámé",
   "Some video files have incorrect codec tags which may cause problems playing back the video track in some players. On the flip side, fixing the codec tag will also cause problems in some players, so you might have to try both settings.": "Některé video soubory mají nesprávné štítky kodeku, což může způsobit problémy při přehrávání videa v některých přehrávačích. Na druhou stranu, oprava štítku kodeku způsobí problémy v některých přehrávačích, takže možná budete muset vyzkoušet obě možnosti.",
-  "What's new in LosslessCut?": "Co je nového v LosslessCut?"
+  "What's new in LosslessCut?": "Co je nového v LosslessCut?",
+  "Copyright": "Autorská práva"
 }

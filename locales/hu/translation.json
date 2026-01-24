@@ -878,5 +878,6 @@
   "Show advanced options": "Speciális beállítások megjelenítése",
   "Smart cut is not possible when FPS is unknown": "Az intelligens vágás nem lehetséges, ha az FPS ismeretlen",
   "Some video files have incorrect codec tags which may cause problems playing back the video track in some players. On the flip side, fixing the codec tag will also cause problems in some players, so you might have to try both settings.": "Egyes videofájlok helytelen kodekcímkékkel rendelkeznek, ami problémákat okozhat a videosáv lejátszásában egyes lejátszókban. A másik oldalon a kodekcímke javítása is problémákat okoz egyes lejátszókban, ezért előfordulhat, hogy mindkét beállítást ki kell próbálnia.",
-  "What's new in LosslessCut?": "Milyen újdonságok vannak a LosslessCutban?"
+  "What's new in LosslessCut?": "Milyen újdonságok vannak a LosslessCutban?",
+  "Copyright": "Szerzői jog"
 }

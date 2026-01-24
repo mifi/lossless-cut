@@ -23,5 +23,6 @@
   "You have no write access to the directory of this file, please select a custom working dir": "Nu aveți drept de scriere în directorul acestui fișier, vă rog selectați un director în care puteți crea și edita",
   "Unable to save project file": "Nu se poate salva fișierul proiectului",
   "Muted preview (exported file will not be affected)": "Previzualizare fără sonor (fișierul exportat nu va fi afectat)",
-  "Unable to save your preferences. Try to disable any anti-virus": "Nu se pot salva setările efectuate. Încercați să dezactivați programele anti-virus"
+  "Unable to save your preferences. Try to disable any anti-virus": "Nu se pot salva setările efectuate. Încercați să dezactivați programele anti-virus",
+  "Copyright": "Drepturi de autor"
 }

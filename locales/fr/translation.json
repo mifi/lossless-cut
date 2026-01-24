@@ -899,5 +899,6 @@
   "Whether to preserve chapters from source file.": "Si vous souhaitez conserver les chapitres du fichier source.",
   "Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied": "Si vous souhaitez conserver les métadonnées du fichier source. Défaut: Global (métadonnées du fichier), par piste et par chapitre les métadonnées seront copiées. Non-global: Seules les métadonnées par piste et par chapitre seront copiées. None : Aucune métadonnée copiée.",
   "You are not allowed to write the output file. This probably means that the file already exists with the wrong permissions, or you don't have write permissions to the output folder.": "Vous n'êtes pas autorisé à écrire le fichier à exporter. Cela veut probablement dire que le fichier existe déjà avec les mauvaises permissions, ou que vous n'avez pas la permission d'écrire dans le dossier sélectionné pour exporter.",
-  "You can customize the file name of the merged file using special variables.": "Vous pouvez personnaliser le nom du fichier qui sera créé à partir des fichiers sélectionnés en utilisant des variables spéciales."
+  "You can customize the file name of the merged file using special variables.": "Vous pouvez personnaliser le nom du fichier qui sera créé à partir des fichiers sélectionnés en utilisant des variables spéciales.",
+  "Copyright": "Droits d'auteur"
 }
