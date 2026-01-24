@@ -251,6 +251,12 @@ export function mapRecommendedDefaultFormat({ streams, sourceFormat }: { streams
     return { format: 'mov', message: i18n.t('This file contains an audio track that FFmpeg is unable to mux into the MP4 format, so MOV has been auto-selected as the default output format.') };
   }
 
+  // FLV1 codec (used in SWF files) cannot be losslessly copied into MP4 containers
+  // Default to Matroska which supports a wider range of codecs
+  if (sourceFormat === 'swf' && streams.some((stream) => stream.codec_type === 'video' && stream.codec_name === 'flv1')) {
+    return { format: 'matroska', message: i18n.t('This file contains a video track in FLV1 format which FFmpeg is unable to copy into the MP4 format, so Matroska (MKV) has been auto-selected as the default output format.') };
+  }
+
   return { format: sourceFormat };
 }
 
