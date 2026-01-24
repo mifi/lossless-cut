@@ -32,7 +32,7 @@ import isStoreBuild from './isStoreBuild.js';
 import { getAboutPanelOptions } from './aboutPanel.js';
 import { checkNewVersion } from './updateChecker.js';
 import * as i18nCommon from './i18nCommon.js';
-import './i18n.js';
+import i18nInit from './i18n.js';
 import type { ApiActionRequest } from '../common/types.js';
 import * as ffmpeg from './ffmpeg.js';
 import * as compatPlayer from './compatPlayer.js';
@@ -57,9 +57,6 @@ if (isWindows) {
   // https://stackoverflow.com/a/65863174/6519037
   app.setAppUserModelId(app.name);
 }
-
-// https://www.electronjs.org/docs/latest/api/app#appsetaboutpaneloptionsoptions
-app.setAboutPanelOptions(getAboutPanelOptions());
 
 let filesToOpen: string[] = [];
 
@@ -246,6 +243,9 @@ const readyPromise = app.whenReady();
 async function init() {
   try {
     logger.info('LosslessCut version', app.getVersion(), { isDev });
+    await i18nInit;
+    // https://www.electronjs.org/docs/latest/api/app#appsetaboutpaneloptionsoptions
+    app.setAboutPanelOptions(getAboutPanelOptions());
     await configStore.init({ customConfigDir: argv['configDir'] });
     logger.info('Initialized config store');
 
