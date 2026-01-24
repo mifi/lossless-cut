@@ -43,7 +43,7 @@ export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, show
   return `${sign}${hoursPart}${minutesPadded}${delim}${secondsPadded}${fraction}`;
 }
 
-const exactDurationRegex = /^-?\d{2}:\d{2}:\d{2}.\d{3}$/;
+const exactDurationRegex = /^-?\d{2}:\d{2}:\d{2}\.\d{3}$/;
 const durationRegex = /^(-?)(?:(?:(\d+):)?(\d{1,2}):)?(\d+(?:[,.]\d+)?)$/;
 
 // todo adapt also to frame counts and frame fractions?
