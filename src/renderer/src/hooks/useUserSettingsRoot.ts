@@ -60,8 +60,9 @@ export default function useUserSettingsRoot() {
 
   // Validate customOutDir on mount - reset if it's not a valid directory
   // This prevents issues where customOutDir was set to a file path instead of a directory
-  // https://github.com/mifi/lossless-cut/issues/XXXX
   useEffect(() => {
+    let mounted = true;
+
     async function validateCustomOutDir() {
       if (customOutDir == null) return;
 
@@ -69,16 +70,20 @@ export default function useUserSettingsRoot() {
         const stat = await lstat(customOutDir);
         if (!stat.isDirectory()) {
           console.warn('customOutDir is not a directory, resetting:', customOutDir);
-          setCustomOutDir(undefined);
+          if (mounted) setCustomOutDir(undefined);
         }
       } catch (err) {
         // If we can't stat the path (doesn't exist, permission denied, etc.), reset it
         console.warn('customOutDir is invalid, resetting:', customOutDir, err);
-        setCustomOutDir(undefined);
+        if (mounted) setCustomOutDir(undefined);
       }
     }
 
     validateCustomOutDir();
+
+    return () => {
+      mounted = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
 
