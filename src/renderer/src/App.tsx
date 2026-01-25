@@ -46,6 +46,8 @@ import ConcatDialog from './components/ConcatDialog';
 import KeyboardShortcuts from './components/KeyboardShortcuts';
 import Working from './components/Working';
 import OutputFormatSelect from './components/OutputFormatSelect';
+import TimeRangeImport from './components/TimeRangeImport';
+import type { TimeRange } from './components/TimeRangeImport';
 import * as Dialog from './components/Dialog';
 
 import { loadMifiLink, runStartupCheck } from './mifi';
@@ -163,6 +165,7 @@ function App() {
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [tunerVisible, setTunerVisible] = useState<TunerType>();
   const [keyboardShortcutsVisible, setKeyboardShortcutsVisible] = useState(false);
+  const [timeRangeImportVisible, setTimeRangeImportVisible] = useState(false);
   const [mifiLink, setMifiLink] = useState<unknown>();
   const [alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles] = useState(false);
   const [editingSegmentTagsSegmentIndex, setEditingSegmentTagsSegmentIndex] = useState<number>();
@@ -1669,6 +1672,19 @@ function App() {
 
   const toggleKeyboardShortcuts = useCallback(() => setKeyboardShortcutsVisible((v) => !v), []);
 
+  const toggleTimeRangeImport = useCallback(() => setTimeRangeImportVisible((v) => !v), []);
+
+  const handleTimeRangeImport = useCallback((ranges: TimeRange[]) => {
+    if (!checkFileOpened()) return;
+
+    const segments = ranges.map((range) => ({
+      start: range.start,
+      end: range.end,
+    }));
+
+    loadCutSegments({ segments, append: false });
+  }, [checkFileOpened, loadCutSegments]);
+
   const tryFixInvalidDuration = useCallback(async () => {
     if (!checkFileOpened() || workingRef.current) return;
     try {
@@ -2433,6 +2449,7 @@ function App() {
                 setStreamsSelectorShown={setStreamsSelectorShown}
                 selectedSegments={segmentsOrInverse.selected}
                 toggleDarkMode={toggleDarkMode}
+                toggleTimeRangeImport={toggleTimeRangeImport}
               />
 
               <div style={{ flexGrow: 1, display: 'flex', overflowY: 'hidden' }}>
@@ -2739,6 +2756,8 @@ function App() {
               <ConcatDialog isShown={batchFiles.length > 0 && concatDialogOpen} onHide={() => setConcatDialogOpen(false)} paths={batchFilePaths} mergedFileTemplate={mergedFileTemplateOrDefault} generateMergedFileNames={generateMergedFileNames} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} fileFormat={fileFormat} setFileFormat={setFileFormat} detectedFileFormat={detectedFileFormat} setDetectedFileFormat={setDetectedFileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
 
               <KeyboardShortcuts isShown={keyboardShortcutsVisible} onHide={() => setKeyboardShortcutsVisible(false)} keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} getKeyboardAction={getKeyboardAction} />
+
+              <TimeRangeImport isShown={timeRangeImportVisible} onHide={() => setTimeRangeImportVisible(false)} onImport={handleTimeRangeImport} />
 
               {/* This should probably be last, so that it's always on top */}
               <AnimatePresence>
