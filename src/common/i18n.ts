@@ -198,7 +198,7 @@ export const langNames = {
   fr: 'Français',
   it: 'Italiano',
   nl: 'Nederlands',
-  // nb: 'Norsk (bokmål)',
+  nb: 'Norsk (bokmål)',
   nn: 'Norsk (nynorsk)',
   // sv: 'Svenska',
   pl: 'Polski',
