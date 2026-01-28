@@ -1,7 +1,6 @@
 import type { ChangeEventHandler } from 'react';
 import { memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
-import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { IoIosHelpCircle } from 'react-icons/io';
 import { motion, AnimatePresence } from 'motion/react';
@@ -228,7 +227,7 @@ function FileNameTemplateEditor(opts: {
               </div>
 
               <div style={{ fontSize: '.9em', color: 'var(--gray-11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
-                {`${i18n.t('Variables')}:`}
+                {`${t('Variables')}:`}
 
                 <IoIosHelpCircle fontSize="1.3em" color="var(--gray-12)" role="button" cursor="pointer" onClick={() => electron.shell.openExternal(exportedFileNameTemplateHelpUrl)} />
                 {availableVariables.map((variable) => (
@@ -265,14 +264,14 @@ function FileNameTemplateEditor(opts: {
               {generated.problems.sameAsInputFileNameWarning && (
                 <div style={{ marginBottom: '1em' }}>
                   <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.3em' }} color={warningColor} />
-                  {i18n.t('Output file name is the same as the source file name. This increases the risk of accidentally overwriting or deleting source files!')}
+                  {t('Output file name is the same as the source file name. This increases the risk of accidentally overwriting or deleting source files!')}
                 </div>
               )}
 
               {!shouldIgnoreMissingExtension && isMissingExtension && (
                 <div style={{ marginBottom: '1em' }}>
                   <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.3em' }} color={warningColor} />
-                  {i18n.t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVariableFormatted })}
+                  {t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVariableFormatted })}
                 </div>
               )}
             </>

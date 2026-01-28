@@ -228,7 +228,7 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
                     problemsByFile[path] ? (
                       <Dialog.Root>
                         <Dialog.Trigger asChild>
-                          <Button title={i18n.t('Mismatches detected')} style={{ color: warningColor, marginLeft: '1em' }}><FaExclamationTriangle /></Button>
+                          <Button title={t('Mismatches detected')} style={{ color: warningColor, marginLeft: '1em' }}><FaExclamationTriangle /></Button>
                         </Dialog.Trigger>
 
                         <Dialog.Portal>

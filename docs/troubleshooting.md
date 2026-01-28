@@ -134,6 +134,10 @@ A video’s rotation is just metadata stored in its file. A file can only have a
 
 When you use the Tracks panel to extract a single track as a file, e.g. a subtitle, a default format will be automatically chosen. For example for subtitle, it will output an `.mks`. If you want a different output format, you can instead disable all tracks except the single track you want to extract, then close the Tracks panel, the choose the output format, (e.g. `srt`) and then perform an export.
 
+## Translation is missing
+
+If some text in the UI is in English even though you've selected a different language, please first check that it has actually been translated in [Weblate](translation.md). If not, you can help contribute. If it is not, you may create an issue.
+
 # Still cannot find an answer?
 
 If any other problem please search for [existing issues](https://github.com/mifi/lossless-cut/issues) before you [ask a question](https://github.com/mifi/lossless-cut/discussions) here on GitHub. You can check the developer tools for any errors or clues. Menu: `Tools` -> `Toggle Developer Tools`.
