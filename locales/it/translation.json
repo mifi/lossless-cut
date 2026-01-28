@@ -1021,5 +1021,7 @@
   "Track {{num}}": "Traccia {{num}}",
   "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> to set cutpoints": "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> per impostare i punti di taglio",
   "Please send an email to <1>{{supportEmail}}</1> where you describe what you were doing.": "Invia un'email a <1>{{supportEmail}}</1> dove descrivi cosa stavi facendo.",
-  "Unable to delete file": "Impossibile eliminare il file"
+  "Unable to delete file": "Impossibile eliminare il file",
+  "{{appStoreType}} edition, based on GitHub v{{appVersion}}": "Edizione {{appStoreType}}, basato su GitHub v. {{appVersion}}",
+  "Copyright": "Copyright"
 }
