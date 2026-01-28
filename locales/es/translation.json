@@ -897,7 +897,7 @@
   "Toggle current segment selected": "Alternar segmento actual seleccionado",
   "Use + and - for relative seek": "Usar + y - para una búsqueda relativa",
   "Whether to preserve chapters from source file.": "Se deben conservar los capítulos del archivo fuente.",
-  "Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied": "Si se deben conservar los metadatos del archivo fuente. Valor predeterminado: Se copiarán metadatos globales (metadatos de archivo), por pista y por capítulo. No global: solo se copiarán los metadatos por pista y por capítulo. Ninguno: no se copiarán metadatos",
+  "Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied": "Si se deben conservar los metadatos del archivo fuente. Valor predeterminado: Se copiarán metadatos globales (metadatos de archivo), por pista y por capítulo. No global: solo se copiarán los metadatos por pista y por capítulo. Ninguno: no se copiarán metadatos.",
   "You are not allowed to write the output file. This probably means that the file already exists with the wrong permissions, or you don't have write permissions to the output folder.": "No se le permite escribir el archivo de salida. Esto probablemente significa que el archivo ya existe con los permisos incorrectos o que no tiene permisos de escritura en la carpeta de salida.",
   "You can customize the file name of the merged file using special variables.": "Puede personalizar el nombre del archivo combinado utilizando variables especiales.",
   "You might want to redact any sensitive information like paths.": "Es posible que desees eliminar la información confidencial, como rutas.",
@@ -906,5 +906,8 @@
   "Examples": "Ejemplos",
   "File name is too long and cannot be exported.": "El nombre del archivo es muy largo y no se puede exportar.",
   "Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.": "Ajustar los FPS de salida y cortar al mismo tiempo causará cortes incorrectos. Considera hacerlo en dos pasos separados.",
-  "Fell back to default output file name": "Se ha vuelto al nombre de archivo de salida predeterminado"
+  "Fell back to default output file name": "Se ha vuelto al nombre de archivo de salida predeterminado",
+  "\"{{property}}\" must be a number": "\"{{property}}\" debe ser un número",
+  "\"{{property}}\" must be a string": "\"{{property}}\" debe ser una cadena",
+  "\"{{property}}\" must be an object of strings": "\"{{property}}\" debe ser un objeto de cadenas"
 }
