@@ -138,6 +138,10 @@ When you use the Tracks panel to extract a single track as a file, e.g. a subtit
 
 If some text in the UI is in English even though you've selected a different language, please first check that it has actually been translated in [Weblate](translation.md). If not, you can help contribute. If it is not, you may create an issue.
 
+## Very large files progress stuck forever
+
+If merging, try to remux your files first to MP4, MOV or MKV. Does it happen with all sizes? All file types? Related: [#2594](https://github.com/mifi/lossless-cut/issues/2594), [#2704](https://github.com/mifi/lossless-cut/issues/2704)
+
 # Still cannot find an answer?
 
 If any other problem please search for [existing issues](https://github.com/mifi/lossless-cut/issues) before you [ask a question](https://github.com/mifi/lossless-cut/discussions) here on GitHub. You can check the developer tools for any errors or clues. Menu: `Tools` -> `Toggle Developer Tools`.
