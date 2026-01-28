@@ -818,7 +818,7 @@ function App() {
 
   const commonSettings = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { customOutDir: _customOutDir, keyBindings: _keyBindings, ...rest } = allUserSettings.settings;
+    const { keyBindings: _keyBindings, ...rest } = allUserSettings.settings;
     return rest;
   }, [allUserSettings]);
 
