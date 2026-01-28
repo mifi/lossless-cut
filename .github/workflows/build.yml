@@ -66,10 +66,10 @@ jobs:
 
       - name: (Linux) Install and login to Snapcraft
         uses: samuelmeuli/action-snapcraft@v2
-        if: startsWith(matrix.os, 'ubuntu')
+        if: runner.os == 'Linux'
       
       - name: Save provisioning profile
-        if: startsWith(matrix.os, 'macos')
+        if: runner.os == 'macOS'
         env:
           PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
         run: |
@@ -77,23 +77,23 @@ jobs:
 
       - name: (MacOS) Prepare Apple API key
         # Import Apple API key for uploading to Mac App Store and for notarization
-        if: startsWith(matrix.os, 'macos')
+        if: runner.os == 'macOS'
         run: |
           mkdir -p ~/.appstoreconnect/private_keys/
           echo '${{ secrets.api_key }}' > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
 
       - name: (MacOS) Download ffmpeg
-        if: startsWith(matrix.os, 'macos')
+        if: runner.os == 'macOS'
         run: |
           yarn download-ffmpeg-darwin-x64
           yarn download-ffmpeg-darwin-arm64
 
       - name: (Windows) Download ffmpeg
-        if: startsWith(matrix.os, 'windows')
+        if: runner.os == 'Windows'
         run: yarn download-ffmpeg-win32-x64
 
       - name: (Linux) Download ffmpeg
-        if: startsWith(matrix.os, 'ubuntu')
+        if: runner.os == 'Linux'
         run: yarn download-ffmpeg-linux-x64
 
       - name: Build/release Electron app
@@ -121,10 +121,10 @@ jobs:
           APPLE_API_ISSUER: ${{ secrets.api_key_issuer_id }}
 
       - run: node script/e2e.ts 'dist/mac-arm64/LosslessCut.app/Contents/MacOS/LosslessCut' 0:none screenshot.jpeg
-        if: startsWith(matrix.os, 'macos')
+        if: runner.os == 'macOS'
 
       - run: node script/e2e.ts 'dist\win-unpacked\LosslessCut.exe' desktop screenshot.jpeg
-        if: startsWith(matrix.os, 'windows')
+        if: runner.os == 'Windows'
 
       - run: |
           export DISPLAY=:0
@@ -132,10 +132,10 @@ jobs:
           sleep 5
           chmod +x dist/linux-unpacked/losslesscut
           node script/e2e.ts 'dist/linux-unpacked/losslesscut' ':0.0+0,0' screenshot.jpeg
-        if: startsWith(matrix.os, 'ubuntu')
+        if: runner.os == 'Linux'
 
       - name: (MacOS) Upload to Mac App Store
-        if: startsWith(matrix.os, 'macos') && env.is_tag == 'true'
+        if: runner.os == 'macOS' && env.is_tag == 'true'
         run: |
           node script/xcrunWrapper.ts dist/mas-universal/LosslessCut-mac-universal.pkg ${{ secrets.api_key_id }} ${{ secrets.api_key_issuer_id }} 1505323402 no.mifi.losslesscut-mac
 
@@ -148,7 +148,7 @@ jobs:
             core.exportVariable('ACTIONS_RESULTS_URL', process.env['ACTIONS_RESULTS_URL'])
 
       - name: (MacOS) Upload artifacts
-        if: startsWith(matrix.os, 'macos') && env.is_tag == 'false'
+        if: runner.os == 'macOS' && env.is_tag == 'false'
         env:
           ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
           ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
@@ -158,7 +158,7 @@ jobs:
           yarn upload-artifacts --name screenshot-mac.jpeg screenshot.jpeg
 
       - name: (Windows) Upload artifacts
-        if: startsWith(matrix.os, 'windows') && env.is_tag == 'false'
+        if: runner.os == 'Windows' && env.is_tag == 'false'
         env:
           ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
           ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
@@ -167,7 +167,7 @@ jobs:
           yarn upload-artifacts --name screenshot-windows.jpeg screenshot.jpeg
 
       - name: (Linux) Upload artifacts
-        if: startsWith(matrix.os, 'ubuntu') && env.is_tag == 'false'
+        if: runner.os == 'Linux' && env.is_tag == 'false'
         env:
           ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
           ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
