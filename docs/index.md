@@ -31,10 +31,12 @@ Please read the documentation before creating an issue. Thank you 🙏
   - **A:** This is not natively supported but it can be done with a workaround, see [#216](https://github.com/mifi/lossless-cut/issues/216).
 - **Q:** How do I overwrite input file?
   - **A:** That is forbidden by design, for [several reasons](https://github.com/mifi/lossless-cut/issues/2538#issuecomment-3476574283).
+- **Q:** Can LosslessCut remember more choices, selections, settings?
+  - **A:** Maybe, see [#371](https://github.com/mifi/lossless-cut/issues/371).
 
 ## Troubleshooting
 
-If you have a problem with the app or with a file, please see the [troubleshooting guide](troubleshooting.md).
+If you have a problem with the app or with a file, please see the [🤔 Troubleshooting, known issues and limitations](troubleshooting.md).
 
 ## Usage: Typical workflow
 
