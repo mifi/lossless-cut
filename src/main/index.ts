@@ -58,9 +58,6 @@ if (isWindows) {
   app.setAppUserModelId(app.name);
 }
 
-// https://www.electronjs.org/docs/latest/api/app#appsetaboutpaneloptionsoptions
-app.setAboutPanelOptions(getAboutPanelOptions());
-
 let filesToOpen: string[] = [];
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -197,6 +194,17 @@ function updateMenu() {
   menu({ app, mainWindow, newVersion, isStoreBuild });
 }
 
+async function changeLanguage(language: string | null) {
+  try {
+    await i18n.changeLanguage(language ?? undefined);
+    updateMenu();
+    // https://www.electronjs.org/docs/latest/api/app#appsetaboutpaneloptionsoptions
+    app.setAboutPanelOptions(getAboutPanelOptions());
+  } catch (err) {
+    logger.error('Failed to set language', err);
+  }
+}
+
 function openFilesEventually(paths: string[]) {
   if (rendererReady) openFiles(paths);
   else filesToOpen = paths;
@@ -250,6 +258,7 @@ async function init() {
     logger.info('Initialized config store');
 
     const allowMultipleInstances = configStore.get('allowMultipleInstances');
+    const language = configStore.get('language');
 
     if (!allowMultipleInstances && !safeRequestSingleInstanceLock({ argv: process.argv })) {
       logger.info('Found running instance, quitting');
@@ -307,9 +316,7 @@ async function init() {
       askBeforeClose = val;
     });
 
-    ipcMain.on('setLanguage', (_e, language) => {
-      i18n.changeLanguage(language).then(() => updateMenu()).catch((err) => logger.error('Failed to set language', err));
-    });
+    ipcMain.on('setLanguage', (_e, newLanguage) => changeLanguage(newLanguage));
 
     ipcMain.handle('tryTrashItem', async (_e, path) => {
       try {
@@ -362,7 +369,8 @@ async function init() {
     }
 
     createWindow();
-    updateMenu();
+    // will also updateMenu and set about panel options
+    await changeLanguage(language);
 
     const enableUpdateCheck = configStore.get('enableUpdateCheck');
 

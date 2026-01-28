@@ -1,6 +1,7 @@
 import type { AboutPanelOptionsOptions } from 'electron';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { app } from 'electron';
+import { t } from 'i18next';
 
 import { appName, copyrightYear } from './common.js';
 import { isLinux } from './util.js';
@@ -15,7 +16,7 @@ export function getAboutPanelOptions() {
   const aboutPanelLines = [
     isStoreBuild ? homepageUrl : githubUrl,
     '',
-    `Copyright © 2016-${copyrightYear} Mikael Finstad ❤️ 🇳🇴`,
+    `${t('Copyright')} © 2016-${copyrightYear} Mikael Finstad ❤️ 🇳🇴`,
   ];
 
   const aboutPanelOptions: AboutPanelOptionsOptions = {
@@ -30,7 +31,7 @@ export function getAboutPanelOptions() {
     aboutPanelOptions.applicationVersion = appVersion;
   } else if (isStoreBuild) {
     // https://github.com/mifi/lossless-cut/issues/1882
-    aboutPanelOptions.applicationVersion = `${process.windowsStore ? 'Microsoft Store' : 'App Store'} edition, based on GitHub v${appVersion}`;
+    aboutPanelOptions.applicationVersion = t('{{appStoreType}} edition, based on GitHub v{{appVersion}}', { appStoreType: process.windowsStore ? 'Microsoft Store' : 'App Store', appVersion });
   }
 
   return aboutPanelOptions;
