@@ -141,7 +141,10 @@ function runFfmpegProcess(args: readonly string[], customExecaOptions?: ExecaOpt
 }
 
 export async function runFfmpegConcat({ ffmpegArgs, concatTxt, totalDuration, onProgress }: {
-  ffmpegArgs: string[], concatTxt: string, totalDuration: number, onProgress: (a: number) => void
+  ffmpegArgs: string[],
+  concatTxt: string,
+  totalDuration: number,
+  onProgress: (a: number) => void,
 }) {
   const process = runFfmpegProcess(ffmpegArgs);
 
