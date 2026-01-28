@@ -17,6 +17,7 @@ import getSwal from '../swal';
 import isDev from '../isDev';
 import mainApi from '../mainApi';
 
+const { lstat } = window.require('fs/promises');
 const remote = window.require('@electron/remote');
 const { dialog } = remote;
 
@@ -76,7 +77,16 @@ export async function askForOutDir(defaultPath?: string | undefined) {
     message: i18n.t('Where do you want to save output files? Make sure there is enough free space in this folder'),
     buttonLabel: i18n.t('Select output folder'),
   });
-  return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
+  const [filePath] = filePaths;
+  if (!filePath || filePaths.length !== 1) {
+    return undefined;
+  }
+  // sanity check for directory. Don't trust showOpenDialog 100%, see https://github.com/mifi/lossless-cut/issues/2719
+  if (!(await lstat(filePath)).isDirectory()) {
+    console.warn('Selected output path is not a directory', filePath);
+    return undefined;
+  }
+  return filePath;
 }
 
 export async function askForFfPath(defaultPath?: string | undefined) {
