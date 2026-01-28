@@ -3,7 +3,6 @@ import { memo, useState, useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AiOutlineMergeCells } from 'react-icons/ai';
 import { FaQuestionCircle, FaExclamationTriangle, FaCog, FaCheck, FaNotEqual } from 'react-icons/fa';
-import i18n from 'i18next';
 import invariant from 'tiny-invariant';
 import pMap from 'p-map';
 
