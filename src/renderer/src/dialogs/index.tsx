@@ -8,7 +8,6 @@ import pMap from 'p-map';
 
 import { formatDuration } from '../util/duration';
 import { parseYouTube } from '../edlFormats';
-import CopyClipboardButton from '../components/CopyClipboardButton';
 import { appPath, isMac, isMasBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry } from '../util';
 import type { ParseTimecode } from '../types';
 import type { FindKeyframeMode } from '../ffmpeg';
@@ -19,6 +18,8 @@ import mainApi from '../mainApi';
 
 const { lstat } = window.require('fs/promises');
 const remote = window.require('@electron/remote');
+const electron = window.require('electron');
+const { clipboard } = electron;
 const { dialog } = remote;
 
 
@@ -471,13 +472,16 @@ export async function showConcatFailedDialog({ fileFormat }: { fileFormat: strin
 }
 
 export async function openYouTubeChaptersDialog(text: string) {
-  await getSwal().ReactSwal.fire({
+  const { isConfirmed } = await getSwal().ReactSwal.fire({
     showCloseButton: true,
+    showCancelButton: true,
     title: i18n.t('YouTube Chapters'),
+    confirmButtonText: i18n.t('Copy to clipboard'),
+    cancelButtonText: i18n.t('Close'),
     html: (
       <div style={{ textAlign: 'left', overflow: 'auto', maxHeight: 300, overflowY: 'auto' }}>
 
-        <p>{i18n.t('Copy to YouTube description/comment:')} <CopyClipboardButton text={text} /></p>
+        <p>{i18n.t('Copy to YouTube description/comment:')}</p>
 
         <div style={{ fontWeight: 600, fontSize: 12, whiteSpace: 'pre-wrap' }} contentEditable suppressContentEditableWarning>
           {text}
@@ -485,6 +489,10 @@ export async function openYouTubeChaptersDialog(text: string) {
       </div>
     ),
   });
+
+  if (isConfirmed) {
+    clipboard.writeText(text);
+  }
 }
 
 export async function labelSegmentDialog({ currentName, maxLength }: { currentName: string, maxLength: number }) {
