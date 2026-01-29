@@ -1,8 +1,8 @@
 # Batch processing ⏩
 
-I get a lot of questions about whether LosslessCut can help automate the **exact same operation on X number of files**. For example given a folder of 100 files, cut off 10 seconds from the beginning of every file, or split each file into 30 second files. LosslessCut was not designed to be a batch processing toolkit and generally cannot not do these things, however the good news is that often it's not very hard to automate with a simple script.
+I get a lot of questions about whether LosslessCut can help automate the **exact same operation on X number of files**. For example given a folder of 100 files, cut off 10 seconds from the beginning of every file, or split each file into 30 second files. LosslessCut was not designed to be a fully auomated batch processing toolkit and generally cannot not do these things, however the good news is that often it's not very hard to automate with a simple script.
 
-See also [#868](https://github.com/mifi/lossless-cut/issues/868).
+See also [#868](https://github.com/mifi/lossless-cut/issues/868) and see [recipes](recipes.md).
 
 ## Setup FFmpeg 📀
 

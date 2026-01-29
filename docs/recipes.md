@@ -2,6 +2,8 @@
 
 Here you can find many common use cases that can help you effectivize your workflow. 🏎️
 
+You can often bind actions to hotkeys to make it faster. ⌨️
+
 ## Export cut times as YouTube Chapters ▶️
 
 1. Export with Merge and "Create chapters from merged segments" enabled.
@@ -38,3 +40,30 @@ See also [#2631](https://github.com/mifi/lossless-cut/issues/2631).
 8. Once done exporting all, close the batch list.
 9. You will have a folder with all the ordered segments, now drag drop them into LosslessCut and sort by name in the batch list.
 10. Merge
+
+## Export all keyframes as images
+
+1. Tools -> Create segments from keyframes
+2. Right click on a segment in the segment list
+3. Edit segments by expression
+4. Convert segments to markers
+5. OK
+6. Right click on a segment in the segment list
+7. Extract frames from selected segments as image files
+
+See also [#2692](https://github.com/mifi/lossless-cut/issues/2692).
+
+## Efficient workflow for repeated single file operation
+
+If you need to e.g. always select certain tracks, then always select certain segments.
+
+1. Run ⌨️`toggleStripAll` to deselect all tracks
+2. *(Only once:)* Click "Filter tracks" (top left), enter the expression: `track.codec_type === 'video' || track.codec_type === 'audio'`
+3. Run ⌨️`toggleStripCurrentFilter` to select only audio and video tracks
+4. Run ⌨️`deselectAllSegments` to deselect all segments
+5. Run ⌨️`selectSegmentsByExpr`
+6. Paste the expression `segment.label === 'My label' && segment.duration < 5` (from your clipboard)
+7. Press <kbd>Enter</kbd>
+8. ⌨️`export`
+
+Now for every file you want to do this, you repeat the steps. See also [#2699](https://github.com/mifi/lossless-cut/discussions/2699).

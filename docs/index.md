@@ -34,6 +34,8 @@ Please read the documentation before creating an issue. Thank you 🙏
 - **Q:** Can LosslessCut remember more choices, selections, settings?
   - **A:** Maybe, see [#371](https://github.com/mifi/lossless-cut/issues/371).
 
+See also [📝 Recipe cookbook](recipes.md).
+
 ## Troubleshooting
 
 If you have a problem with the app or with a file, please see the [🤔 Troubleshooting, known issues and limitations](troubleshooting.md).
