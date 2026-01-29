@@ -97,21 +97,29 @@ function handleProgress(
   });
 }
 
-function getExecaOptions({ env, cancelSignal, ...rest }: ExecaOptions = {}) {
+function getExecaOptions<T extends ExecaOptions>({ env, cancelSignal, ...rest }: T) {
   // This is a ugly hack to please execa which expects cancelSignal to be a prototype of AbortSignal
   // however this gets lost during @electron/remote passing
   // https://github.com/sindresorhus/execa/blob/c8cff27a47b6e6f1cfbfec2bf7fa9dcd08cefed1/lib/terminate/cancel.js#L5
   if (cancelSignal != null) Object.setPrototypeOf(cancelSignal, new AbortController().signal);
 
-  const execaOptions: Pick<ExecaOptions, 'env'> & { encoding: 'buffer' } = {
+  const execaOptions: Pick<ExecaOptions, 'env'> = {
     ...(cancelSignal != null && { cancelSignal }),
     ...rest,
-    encoding: 'buffer' as const,
     env: {
       ...env,
       // https://github.com/mifi/lossless-cut/issues/1143#issuecomment-1500883489
       ...(isLinux && !isDev && !customFfPath && { LD_LIBRARY_PATH: process.resourcesPath }),
     },
+  };
+  return execaOptions as T;
+}
+
+function getExecaBufferOptions(opts: ExecaOptions = {}) {
+  const execaOptions: Pick<ExecaOptions, 'env'> & { encoding: 'buffer' } = {
+    ...getExecaOptions(opts),
+    ...opts,
+    encoding: 'buffer' as const,
   };
   return execaOptions;
 }
@@ -123,7 +131,7 @@ function runFfmpegProcess(args: readonly string[], customExecaOptions?: ExecaOpt
   if (logCli) logger.info(getFfCommandLine('ffmpeg', args));
 
   const abortController = new AbortController();
-  const process = execa(ffmpegPath, args, getExecaOptions({ ...customExecaOptions, cancelSignal: abortController.signal }));
+  const process = execa(ffmpegPath, args, getExecaBufferOptions({ ...customExecaOptions, cancelSignal: abortController.signal }));
 
   const wrapped = { process, abortController };
 
@@ -170,7 +178,7 @@ export async function runFfmpegWithProgress({ ffmpegArgs, duration, onProgress }
 export async function runFfprobe(args: readonly string[], { timeout = isDev ? 10000 : 30000, logCli = true } = {}) {
   const ffprobePath = getFfprobePath();
   if (logCli) logger.info(getFfCommandLine('ffprobe', args));
-  const ps = execa(ffprobePath, args, getExecaOptions());
+  const ps = execa(ffprobePath, args, getExecaBufferOptions());
   const timer = setTimeout(() => {
     logger.warn('killing timed out ffprobe');
     ps.kill();
@@ -573,7 +581,7 @@ export async function getDuration(filePath: string) {
 const enableLog = false;
 const encode = true;
 
-export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps, rotate }: {
+export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps, rotate, forceColorspace }: {
   path: string,
   videoStreamIndex?: number | undefined,
   audioStreamIndexes: number[],
@@ -581,34 +589,64 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
   size?: number | undefined,
   fps?: number | undefined,
   rotate: number | undefined,
+  forceColorspace?: boolean | undefined,
 }) {
   function getFilters() {
     const graph: string[] = [];
 
     if (videoStreamIndex != null) {
       const videoFilters: string[] = [];
-      if (fps != null) videoFilters.push(`fps=${fps}`);
-      const scaleFilterOptions: string[] = [];
-      if (size != null) scaleFilterOptions.push(`${size}:${size}:flags=lanczos:force_original_aspect_ratio=decrease:force_divisible_by=2`);
 
       // we need to reduce the color space to bt709 for compatibility with most OS'es and hardware combinations
       // especially because of this bug https://github.com/electron/electron/issues/47947
       // see also https://www.reddit.com/r/ffmpeg/comments/jlk2zn/how_to_encode_using_bt709/
-      scaleFilterOptions.push('in_color_matrix=auto:in_range=auto:out_color_matrix=bt709:out_range=tv');
-      if (scaleFilterOptions.length > 0) videoFilters.push(`scale=${scaleFilterOptions.join(':')}`);
 
-      // alternatively we could have used `tonemap=hable` instead, but it's slower because it's an additional separate filter.
-      // videoFilters.push('tonemap=hable');
-      // the best would be to use zscale, but it's not yet available in our ffmpeg build, and I think it's slower.
-      // https://gist.github.com/goyuix/033d35846b05733d77f568b754e7c3ea
-      // https://superuser.com/questions/1732301/convert-10bit-hdr-video-to-8bit-frames/1732684#1732684
+      const getScaleFilter = () => {
+        const scaleFilterOptions: string[] = [];
+
+        if (size != null) scaleFilterOptions.push(`${size}:${size}:flags=lanczos:force_original_aspect_ratio=decrease:force_divisible_by=2`);
+        scaleFilterOptions.push('in_color_matrix=auto:in_range=auto:out_color_matrix=bt709:out_range=tv');
+
+        if (scaleFilterOptions.length === 0) return [];
+        return [
+          // scale down first to reduce processing load
+          `scale=${scaleFilterOptions.join(':')}`,
+          'setparams=color_primaries=bt709:color_trc=bt709:colorspace=bt709',
+          // 'setparams=auto:tv:bt709:bt709:bt709:auto',
+        ];
+      };
 
       videoFilters.push(
-        // most compatible pixel format:
-        'format=yuv420p',
+        // Not sure but I think fps filter should be first to discard unneeded frames early (for performance)
+        ...(fps != null ? [`fps=${fps}`] : []),
 
-        // setparams is always needed when converting hdr to sdr:
-        'setparams=color_primaries=bt709:color_trc=bt709:colorspace=bt709',
+        // When dealing with certain PRORES 10 bit files, possibly due to invaid color space info (example fixture clipcanvas_14348_PRORES_HQ-every-frame-keyframe.mov)
+        // we need to ensure a correct colorspace first, or else the scale filter could fail with e.g.:
+        // [swscaler @ 0x999fb8000] Unsupported input (Operation not supported): fmt:yuv422p10le csp:bt709 prim:reserved trc:reserved -> fmt:yuv420p csp:bt709 prim:reserved trc:reserved
+        // https://www.reddit.com/r/ffmpeg/comments/1noakxm/swscaler_says_unsupported_input/
+        // https://www.reddit.com/r/ffmpeg/comments/1pfme4p/swscaler_unsupported_input_again/
+        // https://www.reddit.com/r/ffmpeg/comments/1j7k3vg/colorspace_issues_when_extracting_frames/
+        ...(forceColorspace ? ['colorspace=iall=bt709:all=bt709'] : []),
+
+        // After much testing, swscaler (scale filter) seems to be the fastest way to convert color spaces
+        ...getScaleFilter(),
+
+        // We could also have used zscale, but it needs ffmpeg built with zimg library and `--enable-libzimg`, *and* it seems slower than swscaler:
+        // 'zscale=matrix=bt709:primaries=bt709:transfer=bt709,format=yuv420p',
+        // scaling down first makes it slightly faster but it's still slower than swscaler:
+        // `zscale=w=min((iw/ih)*${size}\\,${size}):h=-2:matrix=bt709:primaries=bt709:transfer=bt709,format=yuv420p`,
+        // and zscale *also* fails if input color parameters are invalid:
+        // zscale code 3074: no path between colorspaces
+        // https://www.reddit.com/r/ffmpeg/comments/1j97o3q/yet_another_no_path_between_colorspaces_problem/
+        // this filter even if input color parameters are invalid, but it forces input to be interpreted as bt709:
+        // 'zscale=matrixin=bt709:primariesin=bt709:transferin=bt709:matrix=bt709:primaries=bt709:transfer=bt709',
+        // we could also have used `tonemap=hable` but it's also slow:
+        // 'tonemap=hable',
+        // https://gist.github.com/goyuix/033d35846b05733d77f568b754e7c3ea
+        // https://superuser.com/questions/1732301/convert-10bit-hdr-video-to-8bit-frames/1732684#1732684
+
+        // finally, convert to most compatible pixel format:
+        'format=yuv420p',
       );
 
       const videoFiltersStr = videoFilters.length > 0 ? videoFilters.join(',') : 'null';
@@ -641,12 +679,12 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
   // const videoEncodeArgs = ['h264_videotoolbox', '-b:v', '5M']
 
 
-  // https://stackoverflow.com/questions/16658873/how-to-minimize-the-delay-in-a-live-streaming-with-ffmpeg
-  // https://unix.stackexchange.com/questions/25372/turn-off-buffering-in-pipe
   const args = [
     '-hide_banner',
     ...(enableLog ? [] : ['-loglevel', 'error']),
 
+    // https://stackoverflow.com/questions/16658873/how-to-minimize-the-delay-in-a-live-streaming-with-ffmpeg
+    // https://unix.stackexchange.com/questions/25372/turn-off-buffering-in-pipe
     // https://stackoverflow.com/questions/30868854/flush-latency-issue-with-fragmented-mp4-creation-in-ffmpeg
     '-fflags', '+nobuffer+flush_packets+discardcorrupt',
     '-avioflags', 'direct',
@@ -692,7 +730,7 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
 
   logger.info(getFfCommandLine('ffmpeg', args));
 
-  return execa(getFfmpegPath(), args, getExecaOptions({ buffer: false, stderr: enableLog ? 'inherit' : 'pipe' }));
+  return execa(getFfmpegPath(), args, getExecaOptions({ buffer: { stdout: false, stderr: true }, encoding: 'utf8' }));
 }
 
 export async function downloadMediaUrl(url: string, outPath: string) {

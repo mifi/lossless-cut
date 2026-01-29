@@ -7,72 +7,119 @@ import { createMediaSourceProcess } from './ffmpeg.js';
 // eslint-disable-next-line import/prefer-default-export
 export function createMediaSourceStream(params: Parameters<typeof createMediaSourceProcess>[0]) {
   const abortController = new AbortController();
-  const { videoStreamIndex, audioStreamIndexes, seekTo } = params;
-  logger.info('Starting preview process', { videoStreamIndex, audioStreamIndexes, seekTo });
-  const process = createMediaSourceProcess(params);
 
-  // eslint-disable-next-line unicorn/prefer-add-event-listener
-  abortController.signal.onabort = () => {
-    logger.info('Aborting preview process', { videoStreamIndex, audioStreamIndexes, seekTo });
-    process.kill('SIGKILL');
-  };
+  const abort = () => abortController.abort();
 
-  const { stdout } = process;
+  async function attemptCreateProcess({ forceColorspace }: { forceColorspace?: boolean } = {}) {
+    const { videoStreamIndex, audioStreamIndexes, seekTo } = params;
 
-  stdout.pause();
+    logger.info('Starting preview process', { videoStreamIndex, audioStreamIndexes, seekTo });
+    const process = createMediaSourceProcess({ ...params, forceColorspace });
 
-  const readChunk = async () => new Promise<Buffer | null>((resolve, reject) => {
-    let cleanup: () => void;
-
-    const onClose = () => {
-      cleanup();
-      resolve(null);
+    // eslint-disable-next-line unicorn/prefer-add-event-listener
+    abortController.signal.onabort = () => {
+      logger.info('Aborting preview process', { videoStreamIndex, audioStreamIndexes, seekTo });
+      process.kill('SIGKILL');
     };
 
-    // poor man's backpressure handling: we only read one chunk at a time
-    const onData = (chunk: Buffer) => {
-      stdout.pause();
-      cleanup();
-      resolve(chunk);
-    };
-    const onError = (err: Error) => {
-      cleanup();
-      reject(err);
-    };
-    cleanup = () => {
-      stdout.off('data', onData);
-      stdout.off('error', onError);
-      stdout.off('close', onClose);
-    };
+    const { stdout } = process;
 
-    stdout.once('data', onData);
-    stdout.once('error', onError);
-    stdout.once('close', onClose);
+    logger.info('Waiting for first chunk');
 
-    stdout.resume();
-  });
+    let timeout: NodeJS.Timeout | undefined;
+    let firstChunk: Buffer | undefined;
 
-  function abort() {
-    abortController.abort();
-  }
-
-  let stderr = Buffer.alloc(0);
-  process.stderr?.on('data', (chunk) => {
-    stderr = Buffer.concat([stderr, chunk]);
-  });
-
-  (async () => {
     try {
-      await process;
+      await Promise.race([
+        new Promise<void>((resolve, reject) => {
+          stdout.once('data', (chunk) => {
+            stdout.pause();
+            firstChunk = chunk;
+            resolve();
+          });
+          timeout = setTimeout(() => {
+            reject(new Error('Timeout waiting for media source process to start outputting data'));
+          }, 10000);
+        }),
+        process,
+      ]);
     } catch (err) {
-      if (err instanceof ExecaError && err.isTerminated) {
+      process.kill('SIGKILL');
+      throw err;
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    logger.info('First chunk received');
+
+    const readChunk = async () => new Promise<Buffer | null>((resolve, reject) => {
+      if (firstChunk) {
+        logger.info('Client read first chunk');
+        resolve(firstChunk);
+        firstChunk = undefined;
         return;
       }
 
-      logger.warn(err instanceof Error ? err.message : String(err));
-      logger.warn(stderr.toString('utf8'));
-    }
-  })();
+      // eslint-disable-next-line no-shadow
+      let cleanup: () => void;
 
-  return { abort, readChunk };
+      const onClose = () => {
+        cleanup();
+        resolve(null);
+      };
+
+      // poor man's backpressure handling: we only read one chunk at a time
+      const onData = (chunk: Buffer) => {
+        stdout.pause();
+        cleanup();
+        resolve(chunk);
+      };
+      const onError = (err: Error) => {
+        cleanup();
+        reject(err);
+      };
+      cleanup = () => {
+        stdout.off('data', onData);
+        stdout.off('error', onError);
+        stdout.off('close', onClose);
+      };
+
+      stdout.once('data', onData);
+      stdout.once('error', onError);
+      stdout.once('close', onClose);
+
+      stdout.resume();
+    });
+
+    return readChunk;
+  }
+
+  return {
+    abort,
+    promise: (async () => {
+      try {
+        return await attemptCreateProcess();
+      } catch (err) {
+        if (abortController.signal.aborted) {
+          return undefined;
+        }
+        if (err instanceof ExecaError && /^\[swscaler[^\]]+\]\s+Unsupported input/gm.test((err as ExecaError<{ buffer: { stdout: false, stderr: true }, encoding: 'utf8' }>).stderr)) {
+          logger.warn('Media source process failed due to unsupported colorspace, retrying with forced colorspace conversion');
+
+          try {
+            return await attemptCreateProcess({ forceColorspace: true });
+          } catch (err2) {
+            if (abortController.signal.aborted) {
+              return undefined;
+            }
+            logger.warn('Media source process error', err2 instanceof Error ? err2.message : err2);
+            return undefined;
+          }
+        }
+
+        logger.warn('Media source process error', err instanceof Error ? err.message : err);
+        return undefined;
+      }
+    })(),
+  };
 }

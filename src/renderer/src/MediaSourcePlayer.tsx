@@ -30,7 +30,7 @@ async function startPlayback({ path, slaveVideo, masterVideo, videoStreamIndex, 
   let canPlay = false;
   let bufferEndTime: number | undefined;
   let bufferStartTime = seekTo;
-  let stream: ReturnType<typeof createMediaSourceStream> | undefined;
+  let mediaSourceProcess: ReturnType<typeof createMediaSourceStream> | undefined;
   let interval: NodeJS.Timeout | undefined;
   let interval2: NodeJS.Timeout | undefined;
   let objectUrl: string | undefined;
@@ -41,8 +41,8 @@ async function startPlayback({ path, slaveVideo, masterVideo, videoStreamIndex, 
     slaveVideo.pause();
     if (interval != null) clearInterval(interval);
     if (interval2 != null) clearInterval(interval2);
-    if (processChunkTimeout != null) clearInterval(processChunkTimeout);
-    stream?.abort();
+    if (processChunkTimeout != null) clearTimeout(processChunkTimeout);
+    mediaSourceProcess?.abort();
     if (objectUrl != null) URL.revokeObjectURL(objectUrl);
     slaveVideo.removeAttribute('src');
   });
@@ -88,6 +88,15 @@ async function startPlayback({ path, slaveVideo, masterVideo, videoStreamIndex, 
     throw new Error(`Unsupported MIME type or codec: ${mimeCodec}`);
   }
 
+  mediaSourceProcess = createMediaSourceStream({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps, rotate });
+  console.log('Waiting for media source process to emit first data...');
+  const readChunk = await mediaSourceProcess.promise;
+  if (readChunk == null) {
+    if (signal.aborted) return;
+    throw new Error('Media source process did not initialize');
+  }
+  console.log('Media source process emitted first data');
+
   const mediaSource = new MediaSource();
 
   // console.log(mediaSource.readyState); // closed
@@ -122,7 +131,7 @@ async function startPlayback({ path, slaveVideo, masterVideo, videoStreamIndex, 
 
   const processChunk = async () => {
     try {
-      const chunk = await stream!.readChunk();
+      const chunk = await readChunk();
       if (chunk == null) {
         console.log('End of stream');
         return;
@@ -219,8 +228,6 @@ async function startPlayback({ path, slaveVideo, masterVideo, videoStreamIndex, 
     // make sure we always process the next chunk
     processChunk();
   });
-
-  stream = createMediaSourceStream({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps, rotate });
 
   interval = setInterval(() => {
     if (!canPlay) return;
