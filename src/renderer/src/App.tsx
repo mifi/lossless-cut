@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactEventHandler, FocusEventHandler, DragEventHandler } from 'react';
 import { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { FaAngleLeft, FaRegTimesCircle } from 'react-icons/fa';
+import { FaRegTimesCircle } from 'react-icons/fa';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence, MotionConfig } from 'motion/react';
 import i18n from 'i18next';
@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { produce } from 'immer';
 import screenfull from 'screenfull';
 import type { IpcRendererEvent } from 'electron';
+import { IoMdMenu } from 'react-icons/io';
 
 import fromPairs from 'lodash/fromPairs';
 import sum from 'lodash/sum';
@@ -2514,7 +2515,7 @@ function App() {
                       )}
 
                       {!showRightBar && (
-                        <FaAngleLeft
+                        <IoMdMenu
                           title={t('Show sidebar')}
                           size={30}
                           role="button"
