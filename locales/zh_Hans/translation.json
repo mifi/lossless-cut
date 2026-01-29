@@ -1085,5 +1085,7 @@
   "<0></0> <2></2>, <4></4> <6></6> or <8><0>{{getModifier}}</0></8>+<11></11> to set cutpoints": "<0></0> <2></2>、 <4></4> <6></6> 或 <8><0>{{getModifier}}</0></8>+<11></11> 设置剪切点",
   "Please send an email to <1>{{supportEmail}}</1> where you describe what you were doing.": "请发送电子邮件给 <1>{{supportEmail}}</1> 并描述您的需求。",
   "Unable to delete file": "无法删除文件",
-  "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> to set cutpoints": "<0></0> <2></2>、 <4></4> <6></6> 或 <8><0><0></0></0></8>+<10></10> 设置剪切点"
+  "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> to set cutpoints": "<0></0> <2></2>、 <4></4> <6></6> 或 <8><0><0></0></0></8>+<10></10> 设置剪切点",
+  "{{appStoreType}} edition, based on GitHub v{{appVersion}}": "{{appStoreType}} 版本，基于 GitHub v{{appVersion}}",
+  "Copyright": "版权"
 }
