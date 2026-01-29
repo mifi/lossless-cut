@@ -15,6 +15,8 @@ import isDev from './isDev.js';
 import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';
 import { parseFfprobeDuration } from '../common/util.js';
+import { getFfmpegJpegQuality } from './ffmpegUtil.js';
+
 
 // cannot use process.kill: https://github.com/sindresorhus/execa/issues/1177
 const runningFfmpegs = new Set<{
@@ -453,13 +455,6 @@ export async function silenceDetect({ filePath, streamId, filterOptions, boundin
       '-filter:a', `silencedetect=${mapFilterOptions(filterOptions)}`,
     ],
   });
-}
-
-function getFfmpegJpegQuality(quality: number) {
-  // Normal range for JPEG is 2-31 with 31 being the worst quality.
-  const qMin = 2;
-  const qMax = 31;
-  return Math.min(Math.max(qMin, quality, Math.round((1 - quality) * (qMax - qMin) + qMin)), qMax);
 }
 
 function getQualityOpts({ captureFormat, quality }: { captureFormat: CaptureFormat, quality: number }) {
