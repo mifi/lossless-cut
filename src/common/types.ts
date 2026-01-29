@@ -19,6 +19,8 @@ export type PreserveMetadata = 'default' | 'nonglobal' | 'none'
 
 export type WaveformMode = 'big-waveform' | 'waveform';
 
+export type EnableImportChapters = 'always' | 'never' | 'ask'
+
 export interface Config {
   version: number,
   lastAppVersion: string,
@@ -34,7 +36,7 @@ export interface Config {
   autoExportExtraStreams: boolean,
   exportConfirmEnabled: boolean,
   askBeforeClose: boolean,
-  enableAskForImportChapters: boolean,
+  enableImportChapters: EnableImportChapters,
   enableAskForFileOpenAction: boolean,
   playbackVolume: number,
   autoSaveProjectFile: boolean,

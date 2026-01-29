@@ -10,7 +10,7 @@ import invariant from 'tiny-invariant';
 
 import { ffmpegExtractWindow } from './util/constants';
 import { appName } from '../../main/common';
-import type { Html5ifyMode } from '../../common/types';
+import type { EnableImportChapters, Html5ifyMode } from '../../common/types';
 import { UserFacingError } from '../errors';
 import type { FFprobeFormat } from '../../common/ffprobe';
 
@@ -419,6 +419,12 @@ export function getMetaKeyName() {
   if (isWindows) return i18n.t('⊞ Win');
   return i18n.t('Meta');
 }
+
+export const getEnableImportChaptersOptions = (): Record<EnableImportChapters, string> => ({
+  always: i18n.t('Always'),
+  ask: i18n.t('Ask'),
+  never: i18n.t('Never'),
+} as const);
 
 export const dialogButtonOrder = isWindows ? 'rtl' : 'ltr'; // use ltr for mac and linux, rtl for windows
 

@@ -80,8 +80,8 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ autoExportExtraStreams }), [autoExportExtraStreams]);
   const [askBeforeClose, setAskBeforeClose] = useState(safeGetConfigInitial('askBeforeClose'));
   useEffect(() => safeSetConfig({ askBeforeClose }), [askBeforeClose]);
-  const [enableAskForImportChapters, setEnableAskForImportChapters] = useState(safeGetConfigInitial('enableAskForImportChapters'));
-  useEffect(() => safeSetConfig({ enableAskForImportChapters }), [enableAskForImportChapters]);
+  const [enableImportChapters, setEnableImportChapters] = useState(safeGetConfigInitial('enableImportChapters'));
+  useEffect(() => safeSetConfig({ enableImportChapters }), [enableImportChapters]);
   const [enableAskForFileOpenAction, setEnableAskForFileOpenAction] = useState(safeGetConfigInitial('enableAskForFileOpenAction'));
   useEffect(() => safeSetConfig({ enableAskForFileOpenAction }), [enableAskForFileOpenAction]);
   const [playbackVolume, setPlaybackVolume] = useState(safeGetConfigInitial('playbackVolume'));
@@ -238,7 +238,7 @@ export default function useUserSettingsRoot() {
     invertCutSegments,
     autoExportExtraStreams,
     askBeforeClose,
-    enableAskForImportChapters,
+    enableImportChapters,
     enableAskForFileOpenAction,
     playbackVolume,
     autoSaveProjectFile,
@@ -313,7 +313,7 @@ export default function useUserSettingsRoot() {
     setInvertCutSegments,
     setAutoExportExtraStreams,
     setAskBeforeClose,
-    setEnableAskForImportChapters,
+    setEnableImportChapters,
     setEnableAskForFileOpenAction,
     setPlaybackVolume,
     setAutoSaveProjectFile,
