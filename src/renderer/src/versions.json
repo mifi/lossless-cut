@@ -17,5 +17,9 @@
   {
     "version": "3.67.2",
     "highlightsMd": "- Remove \"Fix video codec tag / ID\" option: **Codec tag will no longer be auto corrected**, as it turned out to cause problems with some files. Instead you can override codec tag for individual tracks in the \"tracks\" dialog\n- Add a `hevc_metadata=aud=insert` bitstream filter in the track editor\n- New action `generateOverviewWaveform` to generate a full waveform overview\n- Minor improvements and fixes\n"
+  },
+  {
+    "version": "3.68.0",
+    "highlightsMd": "- Changed: Invert scroll zoom direction\n- Changed: `toggleStripAll` action to not invert selection - instead actually toggle all on/off\n- New setting: When opening a new file, ask about import chapters: \"Always\", \"never\" or \"ask\"\n- Add \"Copy to clipboard and close\" button for YouTube chapters\n- Add new keyboard actions for existing functions\n  - `selectSegmentsByLabel`\n  - `selectSegmentsByExpr`\n  - `labelSelectedSegments`\n  - `mutateSegmentsByExpr`\n- Add new template variable `FILES` for all templates. It is a list of `SourceFile` objects.\n- Enable language Norsk Bokmål 🇳🇴\n- Bugfixes, improvements and dependency upgrades\n"
   }
 ]
