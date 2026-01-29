@@ -495,6 +495,10 @@ const KeyboardShortcuts = memo(({
         name: t('Select only this segment'),
         category: segmentsAndCutpointsCategory,
       },
+      toggleCurrentSegmentSelected: {
+        name: t('Toggle current segment selected'),
+        category: segmentsAndCutpointsCategory,
+      },
       deselectAllSegments: {
         name: t('Deselect all segments'),
         category: segmentsAndCutpointsCategory,
@@ -507,8 +511,16 @@ const KeyboardShortcuts = memo(({
         name: t('Select all markers'),
         category: segmentsAndCutpointsCategory,
       },
-      toggleCurrentSegmentSelected: {
-        name: t('Toggle current segment selected'),
+      selectSegmentsByLabel: {
+        name: t('Select segments by label'),
+        category: segmentsAndCutpointsCategory,
+      },
+      selectSegmentsByExpr: {
+        name: t('Select segments by expression'),
+        category: segmentsAndCutpointsCategory,
+      },
+      labelSelectedSegments: {
+        name: t('Label selected segments'),
         category: segmentsAndCutpointsCategory,
       },
       invertSelectedSegments: {
@@ -517,6 +529,10 @@ const KeyboardShortcuts = memo(({
       },
       removeSelectedSegments: {
         name: t('Remove selected segments'),
+        category: segmentsAndCutpointsCategory,
+      },
+      mutateSegmentsByExpr: {
+        name: t('Edit segments by expression'),
         category: segmentsAndCutpointsCategory,
       },
 
