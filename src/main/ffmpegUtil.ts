@@ -8,5 +8,7 @@ export function getFfmpegJpegQuality(quality: number) {
   // Normal range for JPEG is 2-31 with 31 being the worst quality.
   const qMin = 2;
   const qMax = 31;
-  return Math.min(Math.max(qMin, Math.round((1 - quality) * (qMax - qMin) + qMin)), qMax);
+  const scaled = Math.round((1 - quality) * (qMax - qMin) + qMin);
+  // now clamp:
+  return Math.min(Math.max(qMin, scaled), qMax);
 }
