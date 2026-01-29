@@ -3904,10 +3904,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash@npm:*, @types/lodash@npm:^4.17.21":
-  version: 4.17.21
-  resolution: "@types/lodash@npm:4.17.21"
-  checksum: 10/34920830a3bc82ba619cda05e606fef00c148a69b4f19f770645d2587ccdb8e42ef3ddfc174b7884c0c709fc0a1aeb48f7326da969bad12a1464a03efbbe414c
+"@types/lodash@npm:*, @types/lodash@npm:^4.17.23":
+  version: 4.17.23
+  resolution: "@types/lodash@npm:4.17.23"
+  checksum: 10/05935534a44aadef67c2158b2fb4a042a226970088106a40ddc67e4f063783149fe5cf02279d7dd4a1e72c98d9189b9430face659645dbf77270f8c4c3e387f5
   languageName: node
   linkType: hard
 
@@ -9224,10 +9224,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.15, lodash@npm:^4.17.21":
-  version: 4.17.21
-  resolution: "lodash@npm:4.17.21"
-  checksum: 10/c08619c038846ea6ac754abd6dd29d2568aa705feb69339e836dfa8d8b09abbb2f859371e86863eda41848221f9af43714491467b5b0299122431e202bb0c532
+"lodash@npm:^4.17.15, lodash@npm:^4.17.23":
+  version: 4.17.23
+  resolution: "lodash@npm:4.17.23"
+  checksum: 10/82504c88250f58da7a5a4289f57a4f759c44946c005dd232821c7688b5fcfbf4a6268f6a6cdde4b792c91edd2f3b5398c1d2a0998274432cff76def48735e233
   languageName: node
   linkType: hard
 
@@ -9311,7 +9311,7 @@ __metadata:
     "@types/eslint": "npm:^8.56.12"
     "@types/express": "npm:^5.0.6"
     "@types/leaflet": "npm:^1.9.21"
-    "@types/lodash": "npm:^4.17.21"
+    "@types/lodash": "npm:^4.17.23"
     "@types/lodash.debounce": "npm:^4.0.9"
     "@types/luxon": "npm:^3.7.1"
     "@types/mime-types": "npm:^3.0.1"
@@ -9360,7 +9360,7 @@ __metadata:
     json5: "npm:^2.2.3"
     ky: "npm:^1.14.2"
     leaflet: "npm:^1.9.4"
-    lodash: "npm:^4.17.21"
+    lodash: "npm:^4.17.23"
     lodash.debounce: "npm:^4.0.8"
     luxon: "npm:^3.7.2"
     mime-types: "npm:^3.0.2"
