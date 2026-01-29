@@ -136,7 +136,7 @@ export async function askForFileOpenAction(inputOptions: Record<string, string>)
 export async function showDiskFull() {
   await getSwal().Swal.fire({
     icon: 'error',
-    text: i18n.t('You ran out of space'),
+    text: i18n.t('The output location has no storage space remaining. Please free up some space and try again.'),
   });
 }
 
