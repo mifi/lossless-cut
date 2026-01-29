@@ -60,7 +60,6 @@ export default function useStreamsMeta({ mainStreams, externalFilesMeta, filePat
   const toggleCopyStreamIdsInternal = useCallback((path: string, streams: FFprobeStream[]) => {
     setCopyStreamIdsForPath(path, (old) => {
       const ret = { ...old };
-      // eslint-disable-next-line unicorn/no-array-callback-reference
       streams.forEach(({ index }) => {
         ret[index] = !ret[index];
       });
@@ -142,7 +141,16 @@ export default function useStreamsMeta({ mainStreams, externalFilesMeta, filePat
   const toggleStripSubtitle = useCallback(() => toggleStripCodecType('subtitle'), [toggleStripCodecType]);
   const toggleStripThumbnail = useCallback(() => toggleCopyStreamIds(filePath!, isStreamThumbnail), [filePath, toggleCopyStreamIds]);
   const toggleCopyAllStreamsForPath = useCallback((path: string) => toggleCopyStreamIds(path, () => true), [toggleCopyStreamIds]);
-  const toggleStripAll = useCallback(() => toggleCopyAllStreamsForPath(filePath!), [filePath, toggleCopyAllStreamsForPath]);
+  const toggleStripAll = useCallback(() => {
+    invariant(filePath != null);
+    setCopyStreamIdsForPath(filePath, (old) => {
+      const someSelected = mainStreams.some(({ index }) => old[index]);
+      return {
+        ...old,
+        ...Object.fromEntries(mainStreams.map(({ index }) => [index, !someSelected])),
+      };
+    });
+  }, [filePath, mainStreams, setCopyStreamIdsForPath]);
 
   const toggleCopyStreamId = useCallback((path: string, index: number) => {
     setCopyStreamIdsForPath(path, (old) => ({ ...old, [index]: !old[index] }));
