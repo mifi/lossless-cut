@@ -19,7 +19,7 @@
     "tsc": "tsc --build",
     "test": "vitest",
     "lint": "eslint --ext .js,.ts,.jsx,.tsx,.mjs,.mts .",
-    "check": "yarn dedupe --check && yarn tsc && yarn lint && yarn test run && yarn build && yarn check-licenses",
+    "check": "yarn tsc && yarn lint && yarn test run && yarn build && yarn check-licenses && yarn scan-i18n && yarn dedupe --check && yarn generate-docs",
     "pack-mac": "yarn build && electron-builder --mac dmg",
     "pack-mas-dev": "yarn build && electron-builder --mac mas-dev -c.mas.provisioningProfile=LosslessCut_Dev.provisionprofile -c.mas.identity='Mikael Finstad (JH4PH8B3C8)'",
     "pack-win": "yarn build && electron-builder --win zip --x64",
