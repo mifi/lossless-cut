@@ -84,7 +84,6 @@ Before releasing, consider [Maintainence chores](#maintainence-chores) first.
 ### Release built version
 
 - Open draft in github and add the prepared release notes
-- Add suffix `-DONT-USE-THIS-FILE` to `LosslessCut-mac-universal.pkg` and `LosslessCut-win-x64.appx`
 - *If GitHub release*
   - Release the draft
 - *If Store-only hotfix release*

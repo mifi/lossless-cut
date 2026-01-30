@@ -305,6 +305,7 @@
       ]
     },
     "mas": {
+      "artifactName": "${productName}-${os}-${arch}-DONT-USE-THIS-FILE.${ext}",
       "hardenedRuntime": false,
       "notarize": false,
       "entitlements": "entitlements.mas.plist",
@@ -425,6 +426,7 @@
       ]
     },
     "appx": {
+      "artifactName": "${productName}-${os}-${arch}-DONT-USE-THIS-FILE.${ext}",
       "applicationId": "LosslessCut",
       "identityName": "57275mifi.no.LosslessCut",
       "publisher": "CN=2C479316-22A8-4D63-BC38-F0FB9AB0B974",
