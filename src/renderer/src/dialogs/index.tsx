@@ -8,7 +8,7 @@ import pMap from 'p-map';
 
 import { formatDuration } from '../util/duration';
 import { parseYouTube } from '../edlFormats';
-import { appPath, isMac, isMasBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry } from '../util';
+import { appPath, isMasBuild, isStoreBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry } from '../util';
 import type { ParseTimecode } from '../types';
 import type { FindKeyframeMode } from '../ffmpeg';
 import { dangerColor, primaryColor, warningColor } from '../colors';
@@ -644,11 +644,11 @@ export async function checkAppPath() {
       if (pathSeg.startsWith(`57275${mf}.${ap}_`)) return;
       // this will report the path and may return a msg
       payload = `msstore-app-id:${pathSeg}`;
-      // also check non ms store fakes (different title:)
-    } else if (isMac || isWindows || (isDev && forceCheckTitle)) {
+      // also check all store fakes (different title:)
+    } else if (isStoreBuild || (isDev && forceCheckTitle)) {
       const { title } = document;
       if (!title.includes(ap)) {
-        payload = `app-title:${title}`;
+        payload = `store-app-title:${title}`;
       }
     }
 
