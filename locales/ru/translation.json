@@ -1053,5 +1053,7 @@
   "Track {{num}}": "Дорожка {{num}}",
   "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> to set cutpoints": "<0></0> <2></2>, <4></4> <6></6> или <8><0><0></0></0></8>+<10></10> для установки точек разделения",
   "Please send an email to <1>{{supportEmail}}</1> where you describe what you were doing.": "Пожалуйста, отправьте письмо на <1>{{supportEmail}}</1> с описанием того, что вы делали.",
-  "Unable to delete file": "Невозможно удалить файл"
+  "Unable to delete file": "Невозможно удалить файл",
+  "{{appStoreType}} edition, based on GitHub v{{appVersion}}": "{{appStoreType}} издание, основанное на GitHub v{{appVersion}}",
+  "Copyright": "Авторские права"
 }
