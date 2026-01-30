@@ -137,7 +137,7 @@ jobs:
       - name: (MacOS) Upload to Mac App Store
         if: runner.os == 'macOS' && env.is_tag == 'true'
         run: |
-          node script/xcrunWrapper.ts dist/mas-universal/LosslessCut-mac-universal.pkg ${{ secrets.api_key_id }} ${{ secrets.api_key_issuer_id }} 1505323402 no.mifi.losslesscut-mac
+          node script/xcrunWrapper.ts dist/mas-universal/LosslessCut-mac-universal-DONT-USE-THIS-FILE.pkg ${{ secrets.api_key_id }} ${{ secrets.api_key_issuer_id }} 1505323402 no.mifi.losslesscut-mac
 
       # https://stackoverflow.com/questions/74774114/using-docker-buildx-github-action-cache-without-official-actions/77225313#77225313
       - name: Expose actions cache variables
