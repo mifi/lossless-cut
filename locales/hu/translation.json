@@ -896,5 +896,11 @@
   "Track {{num}}": "Sáv {{num}}",
   "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> to set cutpoints": "<0></0> <2></2>, <4></4> <6></6> vagy <8><0><0></0></0></8>+<10></10> a vágáspontok beállításához",
   "Please send an email to <1>{{supportEmail}}</1> where you describe what you were doing.": "Kérjük, küldjön egy e-mailt a <1>{{supportEmail}}</1> címre, amelyben leírja, mit csinált éppen.",
-  "Unable to delete file": "A fájl nem törölhető"
+  "Unable to delete file": "A fájl nem törölhető",
+  "{{appStoreType}} edition, based on GitHub v{{appVersion}}": "{{appStoreType}} kiadás, a GitHub v{{appVersion}} alapján",
+  "Ask": "Kérdez",
+  "Copyright": "Szerzői jog",
+  "Import chapters to segments when opening file": "Fejezetek importálása szegmensekbe a fájl megnyitásakor",
+  "Language": "Nyelv",
+  "The output location has no storage space remaining. Please free up some space and try again.": "A kimeneti helyen nincs több szabad tárhely. Kérjük, szabadítson fel némi helyet, és próbálja újra."
 }
