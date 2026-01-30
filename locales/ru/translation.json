@@ -1055,5 +1055,9 @@
   "Please send an email to <1>{{supportEmail}}</1> where you describe what you were doing.": "Пожалуйста, отправьте письмо на <1>{{supportEmail}}</1> с описанием того, что вы делали.",
   "Unable to delete file": "Невозможно удалить файл",
   "{{appStoreType}} edition, based on GitHub v{{appVersion}}": "{{appStoreType}} издание, основанное на GitHub v{{appVersion}}",
-  "Copyright": "Авторские права"
+  "Copyright": "Авторские права",
+  "Ask": "Спрашивать",
+  "Import chapters to segments when opening file": "Импорт глав в сегменты при открытии файла",
+  "Language": "Язык",
+  "The output location has no storage space remaining. Please free up some space and try again.": "Недостаточно места для сохранения. Освободите место и повторите попытку."
 }
