@@ -1023,5 +1023,9 @@
   "Please send an email to <1>{{supportEmail}}</1> where you describe what you were doing.": "Invia un'email a <1>{{supportEmail}}</1> dove descrivi cosa stavi facendo.",
   "Unable to delete file": "Impossibile eliminare il file",
   "{{appStoreType}} edition, based on GitHub v{{appVersion}}": "Edizione {{appStoreType}}, basato su GitHub v. {{appVersion}}",
-  "Copyright": "Copyright"
+  "Copyright": "Copyright",
+  "Ask": "Chiedi",
+  "Import chapters to segments when opening file": "All'apertura del file importa capitoli in segmenti",
+  "Language": "Lingua",
+  "The output location has no storage space remaining. Please free up some space and try again.": "Il percorso destinazione non ha spazio di archiviazione rimanente. Libera spazio e riprova."
 }
