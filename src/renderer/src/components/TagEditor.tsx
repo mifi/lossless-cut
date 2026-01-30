@@ -38,7 +38,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
 
   const newTagKeyInputError = useMemo(() => !!newTagKeyInput && newTagKeyInput.includes('='), [newTagKeyInput]);
 
-  const mergedTags = useMemo(() => ({
+  const effectiveTags = useMemo(() => ({
     ...existingTags,
     ...customTags,
     ...(newTagKey && { [newTagKey]: '' }),
@@ -82,9 +82,9 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
       }
     } else {
       setEditingTag(tag);
-      setEditingTagVal(tag && String(mergedTags[tag]));
+      setEditingTagVal(tag && String(effectiveTags[tag]));
     }
-  }, [editingTag, editingTagVal, existingTags, mergedTags, newTagKey, onResetClick, saveTag, setEditingTag]);
+  }, [editingTag, editingTagVal, existingTags, effectiveTags, newTagKey, onResetClick, saveTag, setEditingTag]);
 
   const onSubmit = useCallback<FormEventHandler<HTMLFormElement>>((e) => {
     e.preventDefault();
@@ -98,12 +98,12 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
       return;
     }
 
-    if (!newTagKeyInput || newTagKeyInputError || Object.keys(mergedTags).includes(newTagKeyInput)) return;
+    if (!newTagKeyInput || newTagKeyInputError || Object.keys(effectiveTags).includes(newTagKeyInput)) return;
     setEditingTag(newTagKeyInput);
     setEditingTagVal('');
     setNewTagKey(newTagKeyInput);
     setNewTagKeyInput('');
-  }, [editingTag, mergedTags, newTagKey, newTagKeyInput, newTagKeyInputError, onEditClick, setEditingTag]);
+  }, [editingTag, effectiveTags, newTagKey, newTagKeyInput, newTagKeyInputError, onEditClick, setEditingTag]);
 
   const onAddSubmit = useCallback<FormEventHandler<HTMLFormElement>>((e) => {
     e.preventDefault();
@@ -114,13 +114,13 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
     ref.current?.focus();
   }, [editingTag]);
 
-  const canAdd = !newTagKey && (editingTag == null || mergedTags[editingTag] == null);
+  const canAdd = !newTagKey && (editingTag == null || effectiveTags[editingTag] == null);
 
   return (
     <>
-      <table style={{ marginBottom: '1em' }}>
+      <table style={{ marginBottom: '1em', width: '100%' }}>
         <tbody>
-          {Object.keys(mergedTags).map((tag) => {
+          {Object.keys(effectiveTags).map((tag) => {
             const editingThis = tag === editingTag;
             const Icon = editingThis ? FaCheck : FaEdit;
             const thisTagCustom = customTags[tag] != null;
@@ -137,17 +137,15 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
               >
                 <td style={{ paddingRight: '1em', color: thisTagNew ? activeColor : 'var(--gray-11)' }}>{tag}</td>
 
-                <td style={{ display: 'flex', alignItems: 'center' }}>
+                <td style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                   {editingThis ? (
                     <form style={{ display: 'inline' }} onSubmit={onSubmit}>
                       <TextInput ref={ref} placeholder={t('Enter value')} value={editingTagVal || ''} onChange={(e) => setEditingTagVal(e.target.value)} style={{ padding: '.4em', textTransform: editingTag === 'language' ? 'lowercase' : undefined }} />
                     </form>
                   ) : (
-                    <span style={{ padding: '.5em 0', color: thisTagCustom ? activeColor : 'var(--gray-11)', fontWeight: thisTagCustom ? 'bold' : undefined }}>{mergedTags[tag] ? String(mergedTags[tag]) : `<${t('empty')}>`}</span>
+                    <span style={{ padding: '.3em 0', color: thisTagCustom ? activeColor : 'var(--gray-11)', fontWeight: thisTagCustom ? 'bold' : undefined }}>{effectiveTags[tag] ? String(effectiveTags[tag]) : `<${t('empty')}>`}</span>
                   )}
-                  {(editingTag == null || editingThis) && (
-                    <Button title={t('Edit')} style={{ marginLeft: '.4em' }} onClick={() => onEditClick(tag)}><Icon style={{ fontSize: '.9em', padding: '.5em', verticalAlign: 'middle' }} /></Button>
-                  )}
+                  <Button disabled={editingTag != null && !editingThis} title={t('Edit')} style={{ marginLeft: '.4em' }} onClick={() => onEditClick(tag)}><Icon style={{ fontSize: '.9em', padding: '.5em', verticalAlign: 'middle' }} /></Button>
                   {editingThis && (
                     <Button title={thisTagNew ? t('Delete') : t('Reset')} onClick={onResetClick}>
                       {thisTagNew ? <FaTrash style={{ fontSize: '.9em', padding: '.5em', verticalAlign: 'middle' }} /> : <FaUndo style={{ fontSize: '.9em', padding: '.5em', verticalAlign: 'middle' }} />}
@@ -168,7 +166,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
       {newTagKeyInputError && <Warning>{t('Invalid character(s) found in key')}</Warning>}
 
       <div style={{ marginBottom: '1em' }}>
-        <CopyClipboardButton text={JSON.stringify(mergedTags, null, 2)} style={{ marginRight: '.3em', verticalAlign: 'middle' }}>
+        <CopyClipboardButton text={JSON.stringify(effectiveTags, null, 2)} style={{ marginRight: '.3em', verticalAlign: 'middle' }}>
           {({ onClick }) => <Button onClick={onClick} style={{ display: 'block' }}>{t('Copy to clipboard')}</Button>}
         </CopyClipboardButton>
 
