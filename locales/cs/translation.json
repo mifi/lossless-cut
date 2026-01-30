@@ -1064,5 +1064,8 @@
   "Track {{num}}": "Stopa {{num}}",
   "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> to set cutpoints": "<0></0> <2></2>, <4></4> <6></6> nebo <8><0><0></0></0></8>+<10></10> pro nastavení bodů střihu",
   "Please send an email to <1>{{supportEmail}}</1> where you describe what you were doing.": "Odešlete prosím e-mail na <1>{{supportEmail}}</1> a popište co jste konkrétně dělali.",
-  "Unable to delete file": "Nelze smazat soubor"
+  "Unable to delete file": "Nelze smazat soubor",
+  "{{appStoreType}} edition, based on GitHub v{{appVersion}}": "{{appStoreType}} edice, založeno na GitHub v{{appVersion}}",
+  "Ask": "Zeptat se",
+  "Copyright": "Copyright"
 }
