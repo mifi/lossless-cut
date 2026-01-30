@@ -1013,5 +1013,12 @@
   "The audio track is not supported while previewing. You can convert to a supported format from the menu": "A faixa de áudio não é suportada durante a pré-visualização. Você pode convertê-la para um formato compatível no menu",
   "Track {{num}}": "Faixa {{num}}",
   "Unable to delete file": "Não foi possível excluir o arquivo",
-  "What's new in LosslessCut?": "O que há de novo no LosslessCut?"
+  "What's new in LosslessCut?": "O que há de novo no LosslessCut?",
+  "{{appStoreType}} edition, based on GitHub v{{appVersion}}": "Edição {{appStoreType}}, baseada no GitHub v{{appVersion}}",
+  "Always": "Sempre",
+  "Ask": "Perguntar",
+  "Copyright": "Direitos autorais",
+  "Import chapters to segments when opening file": "Importar capítulos para segmentos ao abrir arquivo",
+  "Never": "Nunca",
+  "The output location has no storage space remaining. Please free up some space and try again.": "O local de saída não possui mais espaço de armazenamento disponível. Libere espaço e tente novamente."
 }
