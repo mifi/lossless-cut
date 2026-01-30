@@ -50,7 +50,7 @@ export async function needsSmartCut({ path, desiredCutFrom, videoStream }: {
 export async function getCodecParams({ path, fileDuration, streams }: {
   path: string,
   fileDuration: number | undefined,
-  streams: Pick<FFprobeStream, 'time_base' | 'codec_type' | 'disposition' | 'index' | 'bit_rate' | 'codec_name'>[],
+  streams: Pick<FFprobeStream, 'has_b_frames' | 'time_base' | 'codec_type' | 'disposition' | 'index' | 'bit_rate' | 'codec_name'>[],
 }) {
   const videoStreams = getRealVideoStreams(streams);
   if (videoStreams.length > 1) throw new Error('Can only smart cut video with exactly one video stream');
