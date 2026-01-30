@@ -1067,5 +1067,8 @@
   "Unable to delete file": "Nelze smazat soubor",
   "{{appStoreType}} edition, based on GitHub v{{appVersion}}": "{{appStoreType}} edice, založeno na GitHub v{{appVersion}}",
   "Ask": "Zeptat se",
-  "Copyright": "Copyright"
+  "Copyright": "Copyright",
+  "Import chapters to segments when opening file": "Importovat kapitoly na segmenty při otevírání souboru",
+  "Language": "Jazyk",
+  "The output location has no storage space remaining. Please free up some space and try again.": "V cílovém umístění nezbývá dostatek volného prostoru. Uvolněte prosím prostor a zkuste to znovu."
 }
