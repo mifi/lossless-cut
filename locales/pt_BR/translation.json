@@ -1020,5 +1020,6 @@
   "Copyright": "Direitos autorais",
   "Import chapters to segments when opening file": "Importar capítulos para segmentos ao abrir arquivo",
   "Never": "Nunca",
-  "The output location has no storage space remaining. Please free up some space and try again.": "O local de saída não possui mais espaço de armazenamento disponível. Libere espaço e tente novamente."
+  "The output location has no storage space remaining. Please free up some space and try again.": "O local de saída não possui mais espaço de armazenamento disponível. Libere espaço e tente novamente.",
+  "Language": "Idioma"
 }
