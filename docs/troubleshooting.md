@@ -140,7 +140,7 @@ If some text in the UI is in English even though you've selected a different lan
 
 ## Very large files progress stuck forever
 
-If merging, try to remux your files first to MP4, MOV or MKV. Does it happen with all sizes? All file types? Related: [#2594](https://github.com/mifi/lossless-cut/issues/2594), [#2704](https://github.com/mifi/lossless-cut/issues/2704)
+If merging, try to first remux your individual files to MP4, MOV or MKV. Does it happen with all sizes? All file types? It is a known issue that when merging or cutting large files (>10GB) the progress might first go to 100% (or close to it) and then apparently get stuck there. But in reality if you wait for a few minutes (some times even 10+ minutes) it will finish. This problem could often be worked around by turning "Enable MOV Faststart" in the "Export options" dialog. Related: [#2594](https://github.com/mifi/lossless-cut/issues/2594), [#2704](https://github.com/mifi/lossless-cut/issues/2704)
 
 # Still cannot find an answer?
 
