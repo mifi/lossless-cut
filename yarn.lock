@@ -7303,7 +7303,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-xml-parser@npm:^5.0.7, fast-xml-parser@npm:^5.3.3":
+"fast-xml-parser@npm:^5.0.7":
   version: 5.3.3
   resolution: "fast-xml-parser@npm:5.3.3"
   dependencies:
@@ -7311,6 +7311,17 @@ __metadata:
   bin:
     fxparser: src/cli/cli.js
   checksum: 10/84bc57dda635e8bc7fafca8645ddf927d40dedaeff7b83249db3361f7699e9c8a322a679b14beb8d9c5bce08de3b8a983b7bea62f1e624721b5f97187d80ff45
+  languageName: node
+  linkType: hard
+
+"fast-xml-parser@npm:^5.3.6":
+  version: 5.3.6
+  resolution: "fast-xml-parser@npm:5.3.6"
+  dependencies:
+    strnum: "npm:^2.1.2"
+  bin:
+    fxparser: src/cli/cli.js
+  checksum: 10/03527ab0bdf49d960fdc8f6088cd0715c052e06b68b39459da87b1a1fbb3439a855b2d83cbf3c400e983b8e668b396296b072a4dd5c63403cf1e618c9326b6df
   languageName: node
   linkType: hard
 
@@ -9350,7 +9361,7 @@ __metadata:
     execa: "npm:^9.6.1"
     express: "npm:^5.2.1"
     express-async-handler: "npm:^1.2.0"
-    fast-xml-parser: "npm:^5.3.3"
+    fast-xml-parser: "npm:^5.3.6"
     file-type: "npm:^21.3.0"
     i18next: "npm:^25.7.3"
     i18next-cli: "npm:^1.34.1"
@@ -12881,7 +12892,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strnum@npm:^2.1.0":
+"strnum@npm:^2.1.0, strnum@npm:^2.1.2":
   version: 2.1.2
   resolution: "strnum@npm:2.1.2"
   checksum: 10/7d894dff385e3a5c5b29c012cf0a7ea7962a92c6a299383c3d6db945ad2b6f3e770511356a9774dbd54444c56af1dc7c435dad6466c47293c48173274dd6c631
