@@ -239,7 +239,7 @@ export async function createChaptersFromOriginalFiles({ paths, createChapterForF
     let offset = 0;
     for (const path of paths) {
       const meta = await readFileFfprobeMeta(path);
-      const duration = (await getDuration(path)) ?? (meta.format?.duration != null ? parseFloat(meta.format.duration) : 0);
+      const duration = (await getDuration(path)) ?? 0;
       const chapters = meta.chapters ?? [];
       if (chapters.length > 0) {
         for (const ch of chapters) {
