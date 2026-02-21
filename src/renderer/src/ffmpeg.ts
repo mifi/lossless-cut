@@ -232,6 +232,35 @@ export async function createChaptersFromSegments({ segmentPaths, chapterNames }:
   }
 }
 
+export async function createChaptersFromOriginalFiles({ paths, createChapterForFilesWithoutChapters }: { paths: string[], createChapterForFilesWithoutChapters: boolean }) {
+  const { parse } = window.require('path') as { parse: (p: string) => { name: string } };
+  try {
+    const mergedChapters: { start: number, end: number, name: string | undefined }[] = [];
+    let offset = 0;
+    for (const path of paths) {
+      const meta = await readFileFfprobeMeta(path);
+      const duration = (await getDuration(path)) ?? (meta.format?.duration != null ? parseFloat(meta.format.duration) : 0);
+      const chapters = meta.chapters ?? [];
+      if (chapters.length > 0) {
+        for (const ch of chapters) {
+          mergedChapters.push({
+            start: offset + parseFloat(ch.start_time),
+            end: offset + parseFloat(ch.end_time),
+            name: ch.tags?.title ?? undefined,
+          });
+        }
+      } else if (createChapterForFilesWithoutChapters) {
+        mergedChapters.push({ start: offset, end: offset + duration, name: parse(path).name });
+      }
+      offset += duration;
+    }
+    return mergedChapters.length > 0 ? mergedChapters : undefined;
+  } catch (err) {
+    console.error('Failed to create chapters from original files', err);
+    return undefined;
+  }
+}
+
 /**
  * Some of the detected input formats are not the same as the muxer name used for encoding.
  * Therefore we have to map between detected input format and encode format
