@@ -7326,7 +7326,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-xml-parser@npm:^5.0.7, fast-xml-parser@npm:^5.3.3":
+"fast-xml-builder@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "fast-xml-builder@npm:1.0.0"
+  checksum: 10/06c04d80545e5c9f4d1d6cca00567b5cc09953a92c6328fa48cfb4d7f42630313b8c2bb62e9cb81accee7bb5e1c5312fcae06c3d20dbe52d969a5938233316da
+  languageName: node
+  linkType: hard
+
+"fast-xml-parser@npm:^5.0.7":
   version: 5.3.3
   resolution: "fast-xml-parser@npm:5.3.3"
   dependencies:
@@ -7334,6 +7341,18 @@ __metadata:
   bin:
     fxparser: src/cli/cli.js
   checksum: 10/84bc57dda635e8bc7fafca8645ddf927d40dedaeff7b83249db3361f7699e9c8a322a679b14beb8d9c5bce08de3b8a983b7bea62f1e624721b5f97187d80ff45
+  languageName: node
+  linkType: hard
+
+"fast-xml-parser@npm:^5.3.8":
+  version: 5.4.1
+  resolution: "fast-xml-parser@npm:5.4.1"
+  dependencies:
+    fast-xml-builder: "npm:^1.0.0"
+    strnum: "npm:^2.1.2"
+  bin:
+    fxparser: src/cli/cli.js
+  checksum: 10/2b40067c3ad3542ca197d1353bcb0416cd5db20d5c66d74ac176b99af6ff9bd55a6182d36856a2fd477c95b8fc1f07405475f1662a31185480130ba7076c702a
   languageName: node
   linkType: hard
 
@@ -9373,7 +9392,7 @@ __metadata:
     execa: "npm:^9.6.1"
     express: "npm:^5.2.1"
     express-async-handler: "npm:^1.2.0"
-    fast-xml-parser: "npm:^5.3.3"
+    fast-xml-parser: "npm:^5.3.8"
     file-type: "npm:^21.3.0"
     i18next: "npm:^25.7.3"
     i18next-cli: "npm:^1.34.1"
@@ -12922,7 +12941,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strnum@npm:^2.1.0":
+"strnum@npm:^2.1.0, strnum@npm:^2.1.2":
   version: 2.1.2
   resolution: "strnum@npm:2.1.2"
   checksum: 10/7d894dff385e3a5c5b29c012cf0a7ea7962a92c6a299383c3d6db945ad2b6f3e770511356a9774dbd54444c56af1dc7c435dad6466c47293c48173274dd6c631
