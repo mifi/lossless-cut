@@ -266,15 +266,6 @@ async function determineSourceFileFormat(ffprobeFormatsStr: string | undefined, 
 
   console.log('FFprobe detected format(s)', ffprobeFormatsStr);
 
-  // We need to test mp3 first because ffprobe seems to report the wrong format sometimes https://github.com/mifi/lossless-cut/issues/2129
-  if (firstFfprobeFormat === 'mp3') {
-    // file-type detects it correctly
-    const fileTypeResponse = await mainApi.fileTypeFromFile(filePath);
-    if (fileTypeResponse?.mime === 'audio/mpeg') {
-      return 'mp2';
-    }
-  }
-
   if (ffprobeFormats.length === 1) {
     return firstFfprobeFormat;
   }
