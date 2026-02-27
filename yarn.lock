@@ -9387,7 +9387,7 @@ __metadata:
     lodash.debounce: "npm:^4.0.8"
     luxon: "npm:^3.7.2"
     mime-types: "npm:^3.0.2"
-    mitt: "npm:^3.0.1"
+    mitt: "patch:mitt@npm%3A3.0.1#~/.yarn/patches/mitt-npm-3.0.1-ce290ffa77.patch"
     mkdirp: "npm:^3.0.1"
     morgan: "npm:^1.10.1"
     motion: "npm:^12.24.7"
@@ -10198,10 +10198,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mitt@npm:^3.0.1":
+"mitt@npm:3.0.1":
   version: 3.0.1
   resolution: "mitt@npm:3.0.1"
   checksum: 10/287c70d8e73ffc25624261a4989c783768aed95ecb60900f051d180cf83e311e3e59865bfd6e9d029cdb149dc20ba2f128a805e9429c5c4ce33b1416c65bbd14
+  languageName: node
+  linkType: hard
+
+"mitt@patch:mitt@npm%3A3.0.1#~/.yarn/patches/mitt-npm-3.0.1-ce290ffa77.patch":
+  version: 3.0.1
+  resolution: "mitt@patch:mitt@npm%3A3.0.1#~/.yarn/patches/mitt-npm-3.0.1-ce290ffa77.patch::version=3.0.1&hash=19c9d7"
+  checksum: 10/2d150dd003cf6e039fe54d18d276646c475c2b0ba6ae8bb4df446547c910ad080c71d1aa7ab484145ae2671bbb26dea5efbed2004d7852a93b9e127b7a0f0814
   languageName: node
   linkType: hard
 

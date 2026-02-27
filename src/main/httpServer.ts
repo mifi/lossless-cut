@@ -6,10 +6,13 @@ import assert from 'node:assert';
 
 import { homepageUrl } from '../common/constants.js';
 import logger from './logger.js';
+import type { AppEvent } from './index.js';
 
 
-export default ({ port, onKeyboardAction }: {
-  port: number, onKeyboardAction: (action: string, args: unknown[]) => Promise<void>,
+export default ({ port, onKeyboardAction, onAwaitAppEvent }: {
+  port: number,
+  onKeyboardAction: (action: string, args: unknown[]) => Promise<void>,
+  onAwaitAppEvent: (eventName: string, signal: AbortSignal) => Promise<AppEvent>,
 }) => {
   const app = express();
 
@@ -33,6 +36,15 @@ export default ({ port, onKeyboardAction }: {
     assert(action != null);
     await onKeyboardAction(action, [parameters]);
     res.end();
+  }));
+
+  apiRouter.post('/await-event/:eventName', express.json(), asyncHandler(async (req, res) => {
+    const { eventName } = req.params;
+    assert(eventName != null);
+    const abortController = new AbortController();
+    abortController.signal.addEventListener('abort', () => logger.info('await-event aborted', eventName));
+    req.on('close', () => abortController.abort());
+    res.json(await onAwaitAppEvent(eventName, abortController.signal));
   }));
 
   const server = http.createServer(app);

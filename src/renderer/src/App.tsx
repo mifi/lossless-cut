@@ -9,7 +9,6 @@ import { produce } from 'immer';
 import screenfull from 'screenfull';
 import type { IpcRendererEvent } from 'electron';
 import { IoMdMenu } from 'react-icons/io';
-
 import fromPairs from 'lodash/fromPairs';
 import sum from 'lodash/sum';
 import invariant from 'tiny-invariant';
@@ -115,6 +114,7 @@ import GenericDialog, { useDialog } from './components/GenericDialog';
 import useHtml5ify from './hooks/useHtml5ify';
 import WhatsNew from './components/WhatsNew';
 import mainApi from './mainApi.js';
+import type { AppEvent } from '../../main/index.js';
 
 const electron = window.require('electron');
 const { lstat } = window.require('fs/promises');
@@ -126,6 +126,10 @@ const { hasDisabledNetworking, pathToFileURL, lossyMode } = window.require('@ele
 const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
 // eslint-disable-next-line unicorn/prefer-top-level-await
 hevcPlaybackSupportedPromise.catch((err) => console.error(err));
+
+function emitEvent(appEvent: AppEvent) {
+  electron.ipcRenderer.send('appEvent', appEvent satisfies AppEvent);
+}
 
 function App() {
   const { t } = useTranslation();
@@ -220,7 +224,6 @@ function App() {
     i18n.changeLanguage(language ?? undefined).catch(console.error);
     electron.ipcRenderer.send('setLanguage', language);
   }, [language]);
-
 
   const isFileOpened = !!filePath;
 
@@ -1023,6 +1026,7 @@ function App() {
 
   const onExportConfirm = useCallback(async () => {
     invariant(filePath != null && outputDir != null);
+    emitEvent({ eventName: 'export-start', path: filePath });
 
     if (numStreamsToCopy === 0) {
       errorToast(i18n.t('No tracks selected for export'));
@@ -1174,7 +1178,9 @@ function App() {
       }
 
       // Note: this should be after cleanup, so we don't accidentally open two dialogs at the same time, leading to error *and* success dialog simultaneously https://github.com/mifi/lossless-cut/issues/2609
-      const revealPath = willMerge && mergedOutFilePath != null ? mergedOutFilePath : outFiles[0]!.path;
+      const exportedPaths = willMerge && mergedOutFilePath != null ? [mergedOutFilePath] : outFiles.map((f) => f.path);
+      const [revealPath] = exportedPaths;
+      invariant(revealPath != null);
       if (!hideAllNotifications) {
         showOsNotification(i18n.t('Export finished'));
         openCutFinishedDialog({ filePath: revealPath, warnings: [...warnings], notices: [...notices] });
@@ -1182,7 +1188,11 @@ function App() {
 
       setExportCount((c) => c + 1);
       setCurrentFileExportCount((c) => c + 1);
+
+      emitEvent({ eventName: 'export-complete', paths: exportedPaths });
     } catch (err) {
+      emitEvent({ eventName: 'export-complete' });
+
       if (isAbortedError(err)) return;
 
       showOsNotification(i18n.t('Failed to export'));
@@ -2245,7 +2255,7 @@ function App() {
   }, [checkFileOpened, detectedFps, fileDuration, loadCutSegments, withErrorHandling]);
 
   useEffect(() => {
-    const openFiles = (filePaths: string[]) => { userOpenFiles(filePaths.map((p) => resolvePathIfNeeded(p))); };
+    const openFiles = async (filePaths: string[]) => userOpenFiles(filePaths.map((p) => resolvePathIfNeeded(p)));
 
     async function actionWithCatch(fn: () => Promise<void>) {
       try {
@@ -2283,7 +2293,6 @@ function App() {
       // all main actions (no arguments):
       ...Object.entries(mainActions).map(([key, fn]) => [
         key,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         async () => {
           fn();
         },
