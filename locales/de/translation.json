@@ -1065,5 +1065,6 @@
   "Ask": "Nachfragen",
   "Import chapters to segments when opening file": "Kapitel beim Öffnen der Datei in Segmente importieren",
   "Language": "Sprache",
-  "The output location has no storage space remaining. Please free up some space and try again.": "Der Ausgabeort verfügt über keinen Speicherplatz mehr. Bitte schaffen Sie Speicherplatz und versuchen Sie es erneut."
+  "The output location has no storage space remaining. Please free up some space and try again.": "Der Ausgabeort verfügt über keinen Speicherplatz mehr. Bitte schaffen Sie Speicherplatz und versuchen Sie es erneut.",
+  "Copyright": "Copyright"
 }
