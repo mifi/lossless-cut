@@ -89,7 +89,7 @@
     "csv-stringify": "^6.6.0",
     "data-uri-to-buffer": "^6.0.2",
     "electron": "^38.7.2",
-    "electron-builder": "26.4.0",
+    "electron-builder": "26.6.0",
     "electron-vite": "^5.0.0",
     "eslint": "^8.57.1",
     "eslint-config-mifi": "^0.1.0",
