@@ -8,8 +8,12 @@ Please read the documentation before creating an issue. Thank you 🙏
   - **A:** First check the Keyboard shortcuts dialog. If you cannot find your shortcut there, [see this issue.](https://github.com/mifi/lossless-cut/issues/254)
 - **Q:** Can LosslessCut be automated using a CLI or API or do external post-processing?
   - **A:** While it was never designed for advanced batching/automation, it does have a [basic CLI and a HTTP API](cli.md). More info: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868).
+- **Q:** I cannot find a particular button or function.
+  - **A:** Click the "advanced view" (baby icon) in the bottom left to enable additional functionality.
+- **Q:** Where's the "Export options" dialog?
+  - **A:** After enabling "advanced view" click the icon next to the export button bottom to toggle whether to show this dialog before each export.
 - **Q:** How to *cut away* a middle part of a video?
-  - **A:** Enable "advanced view" and then click the Yin Yang symbol. It will invert the segments.
+  - **A:** Click the Yin Yang symbol ("advanced view"). It will invert the segments.
 - **Q** What's the difference between the app in the Apple/Microsoft App Store vs. GitHub releases?
   - **A** LosslessCut version in the App Stores is often a few versions behind the latest GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. The GitHub version will contain new, untested features and may contain some bugs (even in existing functionality). I consider the newest GitHub versions to be a public "beta" test. Then, once I'm sure that the new version works well, I will release it in the App Stores as well to give a frictionless as possible experience for customers. They have exactly the same in-app features, except for a few platform limitations: Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps run in a sandbox, and therefore need to prompt for output directory before allowing writing files.
 
