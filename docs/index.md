@@ -11,7 +11,7 @@ Please read the documentation before creating an issue. Thank you 🙏
 - **Q:** I cannot find a particular button or function.
   - **A:** Click the "advanced view" (baby icon) in the bottom left to enable additional functionality.
 - **Q:** Where's the "Export options" dialog?
-  - **A:** After enabling "advanced view" click the icon next to the export button bottom to toggle whether to show this dialog before each export.
+  - **A:** Click the icon next to the export button (bottom right, "advanced view") to toggle whether to show this dialog before each export.
 - **Q:** How to *cut away* a middle part of a video?
   - **A:** Click the Yin Yang symbol ("advanced view"). It will invert the segments.
 - **Q** What's the difference between the app in the Apple/Microsoft App Store vs. GitHub releases?
@@ -37,6 +37,8 @@ Please read the documentation before creating an issue. Thank you 🙏
   - **A:** That is forbidden by design, for [several reasons](https://github.com/mifi/lossless-cut/issues/2538#issuecomment-3476574283).
 - **Q:** Can LosslessCut remember more choices, selections, settings?
   - **A:** Maybe, see [#371](https://github.com/mifi/lossless-cut/issues/371).
+- **Q:** Does LosslessCut allow me to cut/merge multiple files in the same timeline?
+  - **A:** No, and I'm not sure if this will ever be implemented. Editing multiple files will have to be done in multiple steps. See [#976](https://github.com/mifi/lossless-cut/issues/976).
 
 See also [📝 Recipe cookbook](recipes.md).
 
