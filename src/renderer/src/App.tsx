@@ -175,7 +175,7 @@ function App() {
   const [mediaSourceQuality, setMediaSourceQuality] = useState(0);
   const [encBitrate, setEncBitrate] = useState<number | undefined>();
   const [exportCount, setExportCount] = useState(0);
-  const [maxKeyframes, setMaxKeyframes] = useState(1000);
+  const [maxKeyframes, setMaxKeyframes] = useState(10000);
 
   const incrementMediaSourceQuality = useCallback(() => setMediaSourceQuality((v) => (v + 1) % mediaSourceQualities.length), []);
 
