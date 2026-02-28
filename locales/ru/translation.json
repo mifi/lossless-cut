@@ -1059,5 +1059,8 @@
   "Ask": "Спрашивать",
   "Import chapters to segments when opening file": "Импорт глав в сегменты при открытии файла",
   "Language": "Язык",
-  "The output location has no storage space remaining. Please free up some space and try again.": "Недостаточно места для сохранения. Освободите место и повторите попытку."
+  "The output location has no storage space remaining. Please free up some space and try again.": "Недостаточно места для сохранения. Освободите место и повторите попытку.",
+  "A segment may result in an unexpectedly long output file length after exporting, because your video file doesn't have any keyframes near the start time of the segment you're trying to cut.": "После экспорта выбранного фрагмента может получиться неожиданно длинный выходной файл, поскольку в начале выбранного вами фрагмента видео отсутствует ключевой кадр.",
+  "Export options screen is disabled, and you will not see any important notices or warnings.": "Экран настроек экспорта отключен, и вы не увидите никаких важных уведомлений или предупреждений.",
+  "Learn more": "Узнать больше"
 }
