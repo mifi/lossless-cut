@@ -41,7 +41,7 @@ type ParameterDialogParameters = Record<string, string>;
 
 const offsetSegments = (segments: DefiniteSegmentBase[], offset: number) => segments.map((s) => ({ start: s.start + offset, end: s.end + offset }));
 
-function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta, seekAbs, activeVideoStreamIndex, activeAudioStreamIndexes, handleError, showGenericDialog }: {
+function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta, seekAbs, activeVideoStreamIndex, activeAudioStreamIndexes, handleError, showGenericDialog, simpleMode }: {
   filePath?: string | undefined,
   workingRef: MutableRefObject<boolean>,
   setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void,
@@ -63,6 +63,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   activeAudioStreamIndexes: Set<number>,
   handleError: HandleError,
   showGenericDialog: ShowGenericDialog,
+  simpleMode: boolean,
 }) {
   const { t } = useTranslation();
 
@@ -569,7 +570,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
       const initial = isInitialSegment(cutSegments);
 
-      const newSegment = createIndexedSegment({ segment: { start: suggestedStart }, incrementCount: !initial });
+      const suggestedEnd = simpleMode ? Math.min(suggestedStart + 10, fileDuration) : undefined;
+      const newSegment = createIndexedSegment({ segment: { start: suggestedStart, end: suggestedEnd }, incrementCount: !initial });
 
       // if initial segment, replace it instead
       const cutSegmentsNew = initial
@@ -581,7 +583,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     } catch (err) {
       console.error(err);
     }
-  }, [getRelevantTime, fileDuration, cutSegments, createIndexedSegment, safeSetCutSegments, setCurrentSegIndex]);
+  }, [getRelevantTime, fileDuration, cutSegments, simpleMode, createIndexedSegment, safeSetCutSegments]);
 
   const duplicateSegment = useCallback((segment: Pick<StateSegment, 'start' | 'end'> & Partial<Pick<StateSegment, 'name'>>) => {
     try {
