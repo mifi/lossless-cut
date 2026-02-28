@@ -30,6 +30,12 @@ import ExportSheet from './ExportSheet';
 import ToggleExportConfirm from './ToggleExportConfirm';
 import type { LossyMode } from '../../../main';
 import AnimatedTr from './AnimatedTr';
+import type { Frame } from '../ffmpeg';
+import type { FindNearestKeyframeTime } from '../hooks/useKeyframes';
+import { troubleshootingUrl } from '../../../common/constants';
+
+const remote = window.require('@electron/remote');
+const { shell } = remote;
 
 
 const noticeStyle: CSSProperties = { marginBottom: '.5em' };
@@ -63,12 +69,24 @@ function renderNoticeIcon(notice: { warning?: boolean | undefined } | undefined,
   );
 }
 
-function renderNotice(notice: { warning?: boolean | undefined, text: ReactNode } | undefined, { key, style }: { key?: string, style?: CSSProperties }) {
+interface Notice {
+  warning?: true,
+  text: ReactNode,
+}
+
+interface GenericNotice {
+  warning?: true,
+  text: string,
+  url?: string,
+}
+
+function renderNotice(notice: Notice | GenericNotice | undefined, { style }: { style?: CSSProperties }) {
   if (notice == null) return null;
   const { warning, text } = notice;
+  const url = 'url' in notice ? notice.url : undefined;
   return (
-    <div key={key} style={{ ...(warning ? warningStyle : infoStyle), gap: '0 .5em', ...style }}>
-      {renderNoticeIcon({ warning })} {text}
+    <div key={typeof notice.text === 'string' ? notice.text : undefined} style={{ ...(warning ? warningStyle : infoStyle), display: 'flex', alignItems: 'center', gap: '0 .5em', ...style }}>
+      {renderNoticeIcon({ warning }, { fontSize: '1em', flexShrink: 0 })} <span style={{ fontSize: '.9em' }}>{text}</span>{url != null && <IoIosHelpCircle style={{ cursor: 'pointer', fontSize: '1.5em', flexShrink: 0, color: primaryTextColor }} title={i18n.t('Learn more')} role="button" tabIndex={0} onClick={() => shell.openExternal(url)} />}
     </div>
   );
 }
@@ -100,6 +118,8 @@ function ExportConfirm({
   toggleSettings,
   outputPlaybackRate,
   lossyMode,
+  neighbouringKeyFrames,
+  findNearestKeyFrameTime,
 } : {
   areWeCutting: boolean,
   segmentsToExport: SegmentToExport[],
@@ -127,10 +147,12 @@ function ExportConfirm({
   toggleSettings: () => void,
   outputPlaybackRate: number,
   lossyMode: LossyMode | undefined,
+  neighbouringKeyFrames: Frame[],
+  findNearestKeyFrameTime: FindNearestKeyframeTime,
 }) {
   const { t } = useTranslation();
 
-  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate, simpleMode } = useUserSettings();
+  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate, simpleMode, keyframesEnabled } = useUserSettings();
 
   const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
 
@@ -146,8 +168,19 @@ function ExportConfirm({
   // some thumbnail streams (png,jpg etc) cannot always be cut correctly, so we warn if they try to.
   const areWeCuttingProblematicStreams = areWeCutting && mainCopiedThumbnailStreams.length > 0;
 
+  const haveSegmentWithProblematicKeyframe = useMemo(() => {
+    if (neighbouringKeyFrames.length === 0) return false;
+    return segmentsToExport.some(({ start, end }) => {
+      const previousKeyframeTime = findNearestKeyFrameTime({ time: start, direction: -1 }) ?? 0;
+      const segmentDuration = end - start;
+      const estimatedExportedSegmentDuration = end - previousKeyframeTime;
+      // if estimated actual output length of segment is more than 1.5 times the intended segment duration, then we consider it problematic and warn the user about it.
+      return estimatedExportedSegmentDuration > segmentDuration * 1.5;
+    });
+  }, [neighbouringKeyFrames.length, segmentsToExport, findNearestKeyFrameTime]);
+
   const notices = useMemo(() => {
-    const specific: Record<'exportMode' | 'problematicStreams' | 'movFastStart' | 'preserveMovData' | 'smartCut' | 'cutMode' | 'avoidNegativeTs' | 'overwriteOutput', { warning?: true, text: ReactNode } | undefined> = {
+    const specific: Record<'exportMode' | 'problematicStreams' | 'movFastStart' | 'preserveMovData' | 'smartCut' | 'cutMode' | 'avoidNegativeTs' | 'overwriteOutput', Notice | undefined> = {
       exportMode: effectiveExportMode === 'segments_to_chapters' ? { text: i18n.t('Segments to chapters mode is active, this means that the file will not be cut. Instead chapters will be created from the segments.') } : undefined,
       problematicStreams: areWeCuttingProblematicStreams ? { warning: true, text: <Trans>Warning: Cutting thumbnail tracks is known to cause problems. Consider disabling track {{ trackNumber: mainCopiedThumbnailStreams[0] ? mainCopiedThumbnailStreams[0].index + 1 : 0 }}.</Trans> } : undefined,
       movFastStart: isMov && isIpod && !movFastStart ? { warning: true, text: t('For the ipod format, it is recommended to activate this option') } : undefined,
@@ -169,18 +202,23 @@ function ExportConfirm({
       overwriteOutput: enableOverwriteOutput ? { text: t('Existing files will be overwritten without warning!') } : undefined,
     };
 
-    const generic: { warning?: true, text: string }[] = [];
+    const generic: GenericNotice[] = [];
 
     if ((effectiveExportMode === 'separate' || effectiveExportMode === 'merge' || effectiveExportMode === 'merge+separate') && !areWeCutting) {
       generic.push({ text: t('Exporting whole file without cutting, because there are no segments to export.') });
     }
 
-    // https://github.com/mifi/lossless-cut/issues/1809
-    if (areWeCutting && outFormat === 'flac') {
-      generic.push({ warning: true, text: t('There is a known issue in FFmpeg with cutting FLAC files. The file will be re-encoded, which is still lossless, but the export may be slower.') });
-    }
-    if (areWeCutting && outputPlaybackRate !== 1) {
-      generic.push({ warning: true, text: t('Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.') });
+    if (areWeCutting) {
+      // https://github.com/mifi/lossless-cut/issues/1809
+      if (outFormat === 'flac') {
+        generic.push({ text: t('There is a known issue in FFmpeg with cutting FLAC files. The file will be re-encoded, which is still lossless, but the export may be slower.') });
+      }
+      if (outputPlaybackRate !== 1) {
+        generic.push({ warning: true, text: t('Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.') });
+      }
+      if (keyframesEnabled && haveSegmentWithProblematicKeyframe) {
+        generic.push({ warning: true, text: t('A segment may result in an unexpectedly long output file length after exporting, because your video file doesn\'t have any keyframes near the start time of the segment you\'re trying to cut.'), url: troubleshootingUrl });
+      }
     }
 
     return {
@@ -188,7 +226,7 @@ function ExportConfirm({
       specific,
       totalNum: generic.filter((n) => n.warning).length + Object.values(specific).filter((n) => n != null && n.warning).length,
     };
-  }, [areWeCutting, areWeCuttingProblematicStreams, avoidNegativeTs, effectiveExportMode, enableOverwriteOutput, isEncoding, isIpod, isMov, keyframeCut, mainCopiedThumbnailStreams, movFastStart, needSmartCut, outFormat, outputPlaybackRate, preserveMovData, t, willMerge]);
+  }, [areWeCutting, areWeCuttingProblematicStreams, avoidNegativeTs, effectiveExportMode, enableOverwriteOutput, isEncoding, isIpod, isMov, keyframeCut, keyframesEnabled, mainCopiedThumbnailStreams, movFastStart, needSmartCut, outFormat, outputPlaybackRate, preserveMovData, haveSegmentWithProblematicKeyframe, t, willMerge]);
 
   const exportModeDescription = useMemo(() => ({
     segments_to_chapters: t('Don\'t cut the file, but instead export an unmodified original which has chapters generated from segments'),
@@ -308,9 +346,7 @@ function ExportConfirm({
         <tbody>
           <tr>
             <td colSpan={2}>
-              {notices.generic.map(({ warning, text }) => (
-                renderNotice({ warning, text }, { key: text })
-              ))}
+              {notices.generic.map((notice) => renderNotice(notice, {}))}
             </td>
             <td />
           </tr>
@@ -327,7 +363,7 @@ function ExportConfirm({
           <tr>
             <td>
               {segmentsOrInverse.selected.length > 1 ? t('Export mode for {{segments}} segments', { segments: segmentsOrInverse.selected.length }) : t('Export mode')}
-              {renderNotice(notices.specific['exportMode'], { style: { fontSize: '85%' } })}
+              {renderNotice(notices.specific['exportMode'], {})}
             </td>
             <td>
               <ExportModeButton selectedSegments={segmentsOrInverse.selected} style={{ height: '1.8em' }} />
@@ -352,7 +388,7 @@ function ExportConfirm({
           <tr>
             <td>
               <Trans>Input has {{ numStreamsTotal }} tracks</Trans>
-              {renderNotice(notices.specific['problematicStreams'], { style: { fontSize: '85%' } })}
+              {renderNotice(notices.specific['problematicStreams'], {})}
             </td>
             <td>
               <HighlightedText style={{ cursor: 'pointer' }} onClick={onShowStreamsSelectorClick}><Trans>Keeping {{ numStreamsToCopy }} tracks</Trans></HighlightedText>
@@ -397,7 +433,7 @@ function ExportConfirm({
           <tr>
             <td>
               {t('Overwrite existing files')}
-              {renderNotice(notices.specific['overwriteOutput'], { style: { fontSize: '85%' } })}
+              {renderNotice(notices.specific['overwriteOutput'], {})}
             </td>
             <td>
               <Switch checked={enableOverwriteOutput} onCheckedChange={setEnableOverwriteOutput} />
@@ -465,7 +501,7 @@ function ExportConfirm({
                     </td>
                     <td>
                       <Switch checked={movFastStart} onCheckedChange={toggleMovFastStart} />
-                      {renderNotice(notices.specific['movFastStart'], { style: { fontSize: '85%' } })}
+                      {renderNotice(notices.specific['movFastStart'], {})}
                     </td>
                     <td>
                       {renderNoticeIcon(notices.specific['movFastStart'], rightIconStyle) ?? <HelpIcon onClick={onMovFastStartHelpPress} />}
@@ -475,7 +511,7 @@ function ExportConfirm({
                   <AnimatedTr>
                     <td>
                       {t('Preserve all MP4/MOV metadata?')}
-                      {renderNotice(notices.specific['preserveMovData'], { style: { fontSize: '85%' } })}
+                      {renderNotice(notices.specific['preserveMovData'], {})}
                     </td>
                     <td>
                       <Switch checked={preserveMovData} onCheckedChange={togglePreserveMovData} />
@@ -548,7 +584,7 @@ function ExportConfirm({
                   <AnimatedTr>
                     <td>
                       {t('Smart cut (experimental):')}
-                      {renderNotice(notices.specific['smartCut'], { style: { fontSize: '85%' } })}
+                      {renderNotice(notices.specific['smartCut'], {})}
                     </td>
                     <td>
                       <Switch checked={enableSmartCut} onCheckedChange={() => setEnableSmartCut((v) => !v)} />
@@ -562,7 +598,7 @@ function ExportConfirm({
                     <AnimatedTr>
                       <td>
                         {t('Keyframe cut mode')}
-                        {renderNotice(notices.specific['cutMode'], { style: { fontSize: '85%' } })}
+                        {renderNotice(notices.specific['cutMode'], {})}
                       </td>
                       <td>
                         <Switch checked={keyframeCut} onCheckedChange={() => toggleKeyframeCut()} />
@@ -613,7 +649,7 @@ function ExportConfirm({
                 <AnimatedTr>
                   <td>
                     &quot;ffmpeg&quot; <code className="highlighted">avoid_negative_ts</code>
-                    {renderNotice(notices.specific['avoidNegativeTs'], { style: { fontSize: '85%' } })}
+                    {renderNotice(notices.specific['avoidNegativeTs'], {})}
                   </td>
                   <td>
                     <Select value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value as AvoidNegativeTs)} style={{ height: 20, marginLeft: 5 }}>
