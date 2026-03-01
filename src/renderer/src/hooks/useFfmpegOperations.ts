@@ -221,7 +221,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       const ffmpegCommandLine = getFfCommandLine('ffmpeg', ffmpegArgs);
 
-      const fullCommandLine = `echo -e "${concatTxt.replace(/\n/, String.raw`\n`)}" | ${ffmpegCommandLine}`;
+      const fullCommandLine = `echo -e "${concatTxt.replaceAll('\n', String.raw`\n`)}" | ${ffmpegCommandLine}`;
       console.log(fullCommandLine);
       appendLastCommandsLog(fullCommandLine);
 
