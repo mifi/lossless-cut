@@ -802,6 +802,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
             { name: i18n.t('Segment duration less than 5 seconds'), code: 'segment.duration < 5' },
             { name: i18n.t('Segment starts after 01:00'), code: 'segment.start > 60' },
             { name: i18n.t('Segment label (exact)'), code: "segment.label === 'My label'" },
+            { name: i18n.t('Segment label (starts with)'), code: "segment.label.startsWith('My lab')" },
             { name: i18n.t('Segment label (regexp)'), code: '/^My label/.test(segment.label)' },
             { name: i18n.t('Segment tag value'), code: "segment.tags.myTag === 'tag value'" },
             { name: i18n.t('Markers'), code: 'segment.end == null' },
