@@ -16,6 +16,8 @@ Please read the documentation before creating an issue. Thank you 🙏
   - **A:** Click the Yin Yang symbol ("advanced view"). It will invert the segments.
 - **Q** What's the difference between the app in the Apple/Microsoft App Store vs. GitHub releases?
   - **A** LosslessCut version in the App Stores is often a few versions behind the latest GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. The GitHub version will contain new, untested features and may contain some bugs (even in existing functionality). I consider the newest GitHub versions to be a public "beta" test. Then, once I'm sure that the new version works well, I will release it in the App Stores as well to give a frictionless as possible experience for customers. They have exactly the same in-app features, except for a few platform limitations: Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps run in a sandbox, and therefore need to prompt for output directory before allowing writing files.
+- **Q**: What are all these `.llc` files that get created?
+  - **A***: Their purpase is to save your segments so that when you exit/re-open LosslessCut you can continue where you left off. You can turn them off in app settings. See also [#2115](https://github.com/mifi/lossless-cut/issues/2115).
 
 ## Commonly requested features
 
