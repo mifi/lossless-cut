@@ -632,6 +632,7 @@
   "Segment mode: \"{{mode1}}\" will create segments bounding the black sections. \"{{mode2}}\" will create segments that start/stop at the center of each black section.": "Segment mode: \"{{mode1}}\" will create segments bounding the black sections. \"{{mode2}}\" will create segments that start/stop at the center of each black section.",
   "Segment mode: \"{{mode1}}\" will create segments bounding the silent sections. \"{{mode2}}\" will create segments that start/stop at the center of each silent section.": "Segment mode: \"{{mode1}}\" will create segments bounding the silent sections. \"{{mode2}}\" will create segments that start/stop at the center of each silent section.",
   "Segment start time must precede end time": "Segment start time must precede end time",
+  "Segment start to previous keyframe and end to next keyframe": "Segment start to previous keyframe and end to next keyframe",
   "Segment starts after 01:00": "Segment starts after 01:00",
   "Segment tag value": "Segment tag value",
   "Segment tags": "Segment tags",

@@ -521,7 +521,12 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
           const time = newSegment[key];
           invariant(filePath != null);
           if (time != null) {
-            const keyframe = await findKeyframeNearTime({ filePath, streamIndex: videoStream.index, time, mode });
+            const keyframe = await findKeyframeNearTime({
+              filePath,
+              streamIndex: videoStream.index,
+              time,
+              mode: mode === 'opposing' ? (key === 'start' ? 'before' : 'after') : mode,
+            });
             if (keyframe == null) throw new UserFacingError(i18n.t('Cannot find any keyframe within 60 seconds of frame {{time}}', { time }));
             newSegment[key] = keyframe;
           }

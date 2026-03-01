@@ -334,14 +334,15 @@ export async function askForAlignSegments() {
   const startOrEnd = await askForSegmentsStartOrEnd(i18n.t('Do you want to align the segment start or end timestamps to keyframes?'));
   if (startOrEnd == null) return undefined;
 
-  const { value: mode } = await getSwal().Swal.fire<FindKeyframeMode>({
+  const { value: mode } = await getSwal().Swal.fire<FindKeyframeMode | 'opposing'>({
     input: 'radio',
     showCancelButton: true,
     inputOptions: {
       nearest: i18n.t('Nearest keyframe'),
       before: i18n.t('Previous keyframe'),
       after: i18n.t('Next keyframe'),
-    } satisfies Record<FindKeyframeMode, unknown>,
+      opposing: i18n.t('Segment start to previous keyframe and end to next keyframe'),
+    } satisfies Record<FindKeyframeMode | 'opposing', unknown>,
     inputValue: 'before',
     text: i18n.t('Do you want to align segment times to the nearest, previous or next keyframe?'),
   });
