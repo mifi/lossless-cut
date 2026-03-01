@@ -96,7 +96,7 @@ const defaultKeyBindings: KeyBinding[] = [
 ];
 
 const defaults: Config = {
-  version: 1,
+  version: 2,
   lastAppVersion: app.getVersion(),
   captureFormat: 'jpeg',
   customOutDir: undefined,
@@ -261,16 +261,16 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
     set('cleanupChoices', { ...cleanupChoices, closeFile: true });
   }
 
-  const configVersion: number = store.get('version');
+  // const configVersion: number = store.get('version');
+
+  const keyBindings = (store.get('keyBindings') as KeyBinding[]).map(({ keys, action }) => ({ keysStr: keys, keys: keys.split('+'), action }));
 
   // todo remove after a while
-  if (configVersion === 1) {
+  if (keyBindings.some(({ keys }) => keys.some((k) => k.toLowerCase() === 'ctrl'))) {
     await tryBackupConfigFile(1, app.getVersion());
 
-    const keyBindings: KeyBinding[] = store.get('keyBindings');
-    const newBindings = keyBindings.map(({ keys: keysStr, action }) => {
+    const newBindings = keyBindings.map(({ keys: keysOrig, keysStr, action }) => {
       try {
-        const keysOrig = keysStr.split('+');
         assert(keysOrig.length > 0 && keysOrig.every((k) => k.length > 0), 'Invalid keys');
 
         const map: Record<string, string> = {
