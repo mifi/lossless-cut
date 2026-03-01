@@ -90,7 +90,9 @@ jobs:
 
       - name: (Windows) Download ffmpeg
         if: runner.os == 'Windows'
-        run: yarn download-ffmpeg-win32-x64
+        run: |
+          yarn download-ffmpeg-win32-x64
+          yarn download-ffmpeg-win32-arm64
 
       - name: (Linux) Download ffmpeg
         if: runner.os == 'Linux'
@@ -119,6 +121,15 @@ jobs:
           APPLE_API_KEY: ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
           APPLE_API_KEY_ID: ${{ secrets.api_key_id }}
           APPLE_API_ISSUER: ${{ secrets.api_key_issuer_id }}
+
+      - name: (Windows) Build Electron app (ARM64)
+        if: runner.os == 'Windows'
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          release: ${{ env.is_tag == 'true' }}
+          max_attempts: 1
+          args: --arm64 --win
 
       - run: node script/e2e.ts 'dist/mac-arm64/LosslessCut.app/Contents/MacOS/LosslessCut' 0:none screenshot.jpeg
         if: runner.os == 'macOS'
@@ -164,6 +175,7 @@ jobs:
           ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
         run: |
           yarn upload-artifacts dist/LosslessCut-win-x64.7z
+          yarn upload-artifacts dist/LosslessCut-win-arm64.7z
           yarn upload-artifacts --name screenshot-windows.jpeg screenshot.jpeg
 
       - name: (Linux) Upload artifacts
@@ -177,52 +189,3 @@ jobs:
           yarn upload-artifacts dist/LosslessCut-linux-x64.tar.bz2
           yarn upload-artifacts --name screenshot-linux.jpeg screenshot.jpeg
 
-  release-win-arm64:
-    runs-on: windows-latest
-    timeout-minutes: 60
-
-    env:
-      is_tag: ${{ startsWith(github.ref, 'refs/tags/v') }}
-
-    steps:
-        # Windows fix. See https://github.com/actions/checkout/issues/226
-      - run: git config --global core.autocrlf false
-
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: 'yarn'
-
-       # Because of timeout issue https://github.com/yarnpkg/yarn/issues/4890
-      - run: yarn install --immutable --network-timeout 1000000
-
-      - name: Download ffmpeg (Windows ARM64)
-        run: yarn download-ffmpeg-win32-arm64
-
-      - name: Build/release Electron app (Windows ARM64)
-        uses: samuelmeuli/action-electron-builder@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          release: ${{ env.is_tag == 'true' }}
-          max_attempts: 1
-          args: --arm64 --win
-
-      # e2e test skipped: x64 runner cannot execute ARM64 binaries
-
-      # https://stackoverflow.com/questions/74774114/using-docker-buildx-github-action-cache-without-official-actions/77225313#77225313
-      - name: Expose actions cache variables
-        uses: actions/github-script@v6
-        with:
-          script: |
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN'])
-            core.exportVariable('ACTIONS_RESULTS_URL', process.env['ACTIONS_RESULTS_URL'])
-
-      - name: Upload artifacts (Windows ARM64)
-        if: env.is_tag == 'false'
-        env:
-          ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
-          ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
-        run: |
-          yarn upload-artifacts dist/LosslessCut-win-arm64.7z
