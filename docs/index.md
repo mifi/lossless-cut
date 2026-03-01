@@ -50,7 +50,7 @@ If you have a problem with the app or with a file, please see the [🤔 Troubles
 
 - **Drag and drop** a video file into player or use <kbd>⌘</kbd>/<kbd>CTRL</kbd> + <kbd>O</kbd>.
 - <kbd>SPACE</kbd> to play/pause or <kbd>←</kbd> <kbd>→</kbd> <kbd>,</kbd> <kbd>.</kbd> or mouse/trackpad wheel to seek back/forth.
-- Set the start/end times of the current segment by first moving the timeline cursor and then pressing <kbd>I</kbd> to set start time and <kbd>O</kbd> to set end time.
+- Set the start/end times of the current segment by first moving the timeline cursor and then pressing <kbd>I</kbd> to set start time and <kbd>O</kbd> to set end time. You can also press hold <kbd>SHIFT</kbd> while dragging a segment with the mouse to move or resize it
 - <kbd>+</kbd> to create a new segment.
 - <kbd>B</kbd> to split the segment at the timeline cursor.
 - <kbd>BACKSPACE</kbd> to remove cutpoint/segment.
