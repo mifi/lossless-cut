@@ -40,9 +40,13 @@ export default ({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, custo
         if (!autoSaveProjectFile
           || !debouncedSaveOperation
           || debouncedSaveOperation.filePath == null
-          // Don't create llc file if no segments yet, or if initial segment:
+          // Don't create llc file if no segments yet
           || debouncedSaveOperation.cutSegments.length === 0
-          || debouncedSaveOperation.cutSegments[0]?.initial) return;
+          // or if initial segment (and not deselected): https://github.com/mifi/lossless-cut/issues/2745#issuecomment-3979480707
+          || (debouncedSaveOperation.cutSegments[0]?.initial && debouncedSaveOperation.cutSegments[0].selected)
+        ) {
+          return;
+        }
 
         if (lastSaveOperation.current && lastSaveOperation.current.projectFileSavePath === debouncedSaveOperation.projectFileSavePath && isEqual(mapSaveableSegments(lastSaveOperation.current.cutSegments), mapSaveableSegments(debouncedSaveOperation.cutSegments))) {
           console.log('Segments unchanged, skipping save');
