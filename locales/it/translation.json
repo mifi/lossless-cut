@@ -1027,5 +1027,10 @@
   "Ask": "Chiedi",
   "Import chapters to segments when opening file": "All'apertura del file importa capitoli in segmenti",
   "Language": "Lingua",
-  "The output location has no storage space remaining. Please free up some space and try again.": "Il percorso destinazione non ha spazio di archiviazione rimanente. Libera spazio e riprova."
+  "The output location has no storage space remaining. Please free up some space and try again.": "Il percorso destinazione non ha spazio di archiviazione rimanente. Libera spazio e riprova.",
+  "A segment may result in an unexpectedly long output file length after exporting, because your video file doesn't have any keyframes near the start time of the segment you're trying to cut.": "Un segmento potrebbe risultare in un file destinazione di lunghezza inaspettatamente lunga dopo l'esportazione, poiché il file video non dispone di fotogrammi chiave vicino al punto di inizio del segmento che stai tentando di tagliare.",
+  "Export options screen is disabled, and you will not see any important notices or warnings.": "La schermata delle opzioni di esportazione è disabilitata e non vedrai alcuna notifica/avviso importante.",
+  "Learn more": "Maggiori info",
+  "Segment label (starts with)": "Etichetta segmento (inizia con)",
+  "Segment start to previous keyframe and end to next keyframe": "Il segmento inizia con il fotogramma chiave precedente e termina con il fotogramma chiave successivo"
 }
