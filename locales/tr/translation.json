@@ -1037,5 +1037,10 @@
   "Copyright": "Telif hakkı",
   "Import chapters to segments when opening file": "Dosyayı açarken bölümleri parçalara aktarın",
   "Language": "Diller",
-  "The output location has no storage space remaining. Please free up some space and try again.": "Çıktı konumunda yeterli depolama alanı kalmadı. Lütfen biraz yer açıp tekrar deneyin."
+  "The output location has no storage space remaining. Please free up some space and try again.": "Çıktı konumunda yeterli depolama alanı kalmadı. Lütfen biraz yer açıp tekrar deneyin.",
+  "A segment may result in an unexpectedly long output file length after exporting, because your video file doesn't have any keyframes near the start time of the segment you're trying to cut.": "Bir parça, dışa aktarıldıktan sonra beklenmedik şekilde uzun bir çıktı dosyası uzunluğuna neden olabilir, çünkü video dosyanızda kesmeye çalıştığınız parçanın başlangıç zamanına yakın herhangi bir ana kare bulunmuyor.",
+  "Export options screen is disabled, and you will not see any important notices or warnings.": "Dışa aktarma seçenekleri ekranı devre dışı ve önemli bildirimler veya uyarılar görmeyeceksiniz.",
+  "Learn more": "Daha fazla bilgi edin",
+  "Segment label (starts with)": "Parça etiketi (ile başlar)",
+  "Segment start to previous keyframe and end to next keyframe": "Parça, önceki ana kareden başlar ve sonraki ana karede biter"
 }
