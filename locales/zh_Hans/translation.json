@@ -1091,5 +1091,8 @@
   "Import chapters to segments when opening file": "打开文件时将章节导入为片段",
   "Language": "语言",
   "The output location has no storage space remaining. Please free up some space and try again.": "输出位置没有剩余存储空间。请释放一些空间后再试。",
-  "Ask": "询问"
+  "Ask": "询问",
+  "A segment may result in an unexpectedly long output file length after exporting, because your video file doesn't have any keyframes near the start time of the segment you're trying to cut.": "在某个片段导出之后可能会意外出现长的输出文件，原因是您尝试切割的视频文件片段的开始时间周围没有任何关键帧。",
+  "Export options screen is disabled, and you will not see any important notices or warnings.": "已禁用导出选项屏幕，你将无法看到任何重要的通知或警告。",
+  "Learn more": "了解更多"
 }
