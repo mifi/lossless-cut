@@ -25,7 +25,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest, windows-11-arm]
 #        os: [windows-latest]
 
     steps:
@@ -47,6 +47,7 @@ jobs:
 
       # This global ffmpeg is used for screenshots (see below)
       - uses: FedericoCarboni/setup-ffmpeg@v3
+        if: matrix.os != 'windows-11-arm'
         with:
           ffmpeg-version: release
           # arm not yet supported on macos
@@ -60,6 +61,7 @@ jobs:
           github-token: ${{ github.server_url == 'https://github.com' && github.token || '' }}
 
       - run: ffmpeg -version
+        if: matrix.os != 'windows-11-arm'
 
        # Because of timeout issue https://github.com/yarnpkg/yarn/issues/4890
       - run: yarn install --immutable --network-timeout 1000000
@@ -88,9 +90,13 @@ jobs:
           yarn download-ffmpeg-darwin-x64
           yarn download-ffmpeg-darwin-arm64
 
-      - name: (Windows) Download ffmpeg
-        if: runner.os == 'Windows'
+      - name: (Windows x64) Download ffmpeg
+        if: matrix.os == 'windows-latest'
         run: yarn download-ffmpeg-win32-x64
+
+      - name: (Windows ARM64) Download ffmpeg
+        if: matrix.os == 'windows-11-arm'
+        run: yarn download-ffmpeg-win32-arm64
 
       - name: (Linux) Download ffmpeg
         if: runner.os == 'Linux'
@@ -120,11 +126,12 @@ jobs:
           APPLE_API_KEY_ID: ${{ secrets.api_key_id }}
           APPLE_API_ISSUER: ${{ secrets.api_key_issuer_id }}
 
+
       - run: node script/e2e.ts 'dist/mac-arm64/LosslessCut.app/Contents/MacOS/LosslessCut' 0:none screenshot.jpeg
         if: runner.os == 'macOS'
 
       - run: node script/e2e.ts 'dist\win-unpacked\LosslessCut.exe' desktop screenshot.jpeg
-        if: runner.os == 'Windows'
+        if: matrix.os == 'windows-latest'
 
       - run: |
           export DISPLAY=:0
@@ -163,8 +170,14 @@ jobs:
           ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
           ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
         run: |
-          yarn upload-artifacts dist/LosslessCut-win-x64.7z
-          yarn upload-artifacts --name screenshot-windows.jpeg screenshot.jpeg
+          yarn upload-artifacts dist/LosslessCut-win-${{ matrix.os == 'windows-11-arm' && 'arm64' || 'x64' }}.7z
+
+      - name: (Windows x64) Upload screenshot
+        if: matrix.os == 'windows-latest' && env.is_tag == 'false'
+        env:
+          ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
+          ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
+        run: yarn upload-artifacts --name screenshot-windows.jpeg screenshot.jpeg
 
       - name: (Linux) Upload artifacts
         if: runner.os == 'Linux' && env.is_tag == 'false'
@@ -176,3 +189,4 @@ jobs:
           yarn upload-artifacts dist/LosslessCut-linux-armv7l.tar.bz2
           yarn upload-artifacts dist/LosslessCut-linux-x64.tar.bz2
           yarn upload-artifacts --name screenshot-linux.jpeg screenshot.jpeg
+
