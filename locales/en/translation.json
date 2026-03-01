@@ -627,6 +627,7 @@
   "Segment duration less than 5 seconds": "Segment duration less than 5 seconds",
   "Segment label (exact)": "Segment label (exact)",
   "Segment label (regexp)": "Segment label (regexp)",
+  "Segment label (starts with)": "Segment label (starts with)",
   "Segment manipulation mouse modifier key": "Segment manipulation mouse modifier key",
   "Segment mode: \"{{mode1}}\" will create segments bounding the black sections. \"{{mode2}}\" will create segments that start/stop at the center of each black section.": "Segment mode: \"{{mode1}}\" will create segments bounding the black sections. \"{{mode2}}\" will create segments that start/stop at the center of each black section.",
   "Segment mode: \"{{mode1}}\" will create segments bounding the silent sections. \"{{mode2}}\" will create segments that start/stop at the center of each silent section.": "Segment mode: \"{{mode1}}\" will create segments bounding the silent sections. \"{{mode2}}\" will create segments that start/stop at the center of each silent section.",
