@@ -34,6 +34,14 @@ See [available settings](https://github.com/mifi/lossless-cut/blob/master/src/ma
 LosslessCut --settings-json '{captureFormat:"jpeg", "keyframeCut":true}'
 ```
 
+### Override FFmpeg/FFprobe path
+
+Overriding path to FFmpeg/FFprobe can be done in the UI, or with the following command:
+
+```bash
+LosslessCut --settings-json '{customFfPath:"/path/to/folder/containing/ffmpeg_and_ffprobe"}'
+```
+
 ## Other options
 
 - `--locales-path` Customise path to locales (useful for [translators](translation.md)).
