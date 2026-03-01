@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest, windows-11-arm]
 #        os: [windows-latest]
 
     steps:
@@ -48,6 +48,7 @@ jobs:
 
       # This global ffmpeg is used for screenshots (see below)
       - uses: FedericoCarboni/setup-ffmpeg@v3
+        if: matrix.os != 'windows-11-arm'
         with:
           ffmpeg-version: release
           # arm not yet supported on macos
@@ -61,6 +62,7 @@ jobs:
           github-token: ${{ github.server_url == 'https://github.com' && github.token || '' }}
 
       - run: ffmpeg -version
+        if: matrix.os != 'windows-11-arm'
 
        # Because of timeout issue https://github.com/yarnpkg/yarn/issues/4890
       - run: yarn install --immutable --network-timeout 1000000
@@ -89,9 +91,13 @@ jobs:
           yarn download-ffmpeg-darwin-x64
           yarn download-ffmpeg-darwin-arm64
 
-      - name: (Windows) Download ffmpeg
-        if: runner.os == 'Windows'
+      - name: (Windows x64) Download ffmpeg
+        if: matrix.os == 'windows-latest'
         run: yarn download-ffmpeg-win32-x64
+
+      - name: (Windows ARM64) Download ffmpeg
+        if: matrix.os == 'windows-11-arm'
+        run: yarn download-ffmpeg-win32-arm64
 
       - name: (Linux) Download ffmpeg
         if: runner.os == 'Linux'
@@ -126,7 +132,7 @@ jobs:
         if: runner.os == 'macOS'
 
       - run: node script/e2e.ts 'dist\win-unpacked\LosslessCut.exe' desktop screenshot.jpeg
-        if: runner.os == 'Windows'
+        if: matrix.os == 'windows-latest'
 
       - run: |
           export DISPLAY=:0
@@ -165,8 +171,14 @@ jobs:
           ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
           ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
         run: |
-          yarn upload-artifacts dist/LosslessCut-win-x64.7z
-          yarn upload-artifacts --name screenshot-windows.jpeg screenshot.jpeg
+          yarn upload-artifacts dist/LosslessCut-win-${{ matrix.os == 'windows-11-arm' && 'arm64' || 'x64' }}.7z
+
+      - name: (Windows x64) Upload screenshot
+        if: matrix.os == 'windows-latest' && env.is_tag == 'false'
+        env:
+          ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
+          ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
+        run: yarn upload-artifacts --name screenshot-windows.jpeg screenshot.jpeg
 
       - name: (Linux) Upload artifacts
         if: runner.os == 'Linux' && env.is_tag == 'false'
@@ -178,51 +190,4 @@ jobs:
           yarn upload-artifacts dist/LosslessCut-linux-armv7l.tar.bz2
           yarn upload-artifacts dist/LosslessCut-linux-x64.tar.bz2
           yarn upload-artifacts --name screenshot-linux.jpeg screenshot.jpeg
-
-  release-win-arm64:
-    runs-on: windows-11-arm
-    timeout-minutes: 60
-
-    env:
-      is_tag: ${{ startsWith(github.ref, 'refs/tags/v') }}
-
-    steps:
-        # Windows fix. See https://github.com/actions/checkout/issues/226
-      - run: git config --global core.autocrlf false
-
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: 'yarn'
-
-       # Because of timeout issue https://github.com/yarnpkg/yarn/issues/4890
-      - run: yarn install --immutable --network-timeout 1000000
-
-      - name: Download ffmpeg (Windows ARM64)
-        run: yarn download-ffmpeg-win32-arm64
-
-      - name: Build/release Electron app (Windows ARM64)
-        uses: samuelmeuli/action-electron-builder@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          release: ${{ env.is_tag == 'true' }}
-          max_attempts: 1
-
-      # https://stackoverflow.com/questions/74774114/using-docker-buildx-github-action-cache-without-official-actions/77225313#77225313
-      - name: Expose actions cache variables
-        uses: actions/github-script@v6
-        with:
-          script: |
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN'])
-            core.exportVariable('ACTIONS_RESULTS_URL', process.env['ACTIONS_RESULTS_URL'])
-
-      - name: Upload artifacts (Windows ARM64)
-        if: env.is_tag == 'false'
-        env:
-          ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
-          ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
-        run: |
-          yarn upload-artifacts dist/LosslessCut-win-arm64.7z
 

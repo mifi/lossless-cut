@@ -319,8 +319,18 @@
     },
     "win": {
       "target": [
-        "7z",
-        "appx"
+        {
+          "arch": "x64",
+          "target": "7z"
+        },
+        {
+          "arch": "x64",
+          "target": "appx"
+        },
+        {
+          "arch": "arm64",
+          "target": "7z"
+        }
       ],
       "extraResources": [
         {
@@ -472,6 +482,9 @@
         "removable-media"
       ]
     }
+  },
+  "resolutions": {
+    "icon-gen/sharp": "^0.34.5"
   },
   "packageManager": "yarn@4.11.0"
 }
