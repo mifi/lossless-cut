@@ -392,7 +392,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     // also exclude initial segment (will cause problems later on)
     const sortedSegments = sortSegments(filterNonMarkers(cutSegments).filter((seg) => !seg.initial));
 
-    return invertSegments(sortedSegments, true, true, fileDuration).map(({ segId, end, ...rest }) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return invertSegments(sortedSegments, true, true, fileDuration).map(({ segId, end, name: _ignored, ...rest }) => {
       // in order to please TS:
       invariant(segId != null && end != null);
       return {
@@ -429,7 +430,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       errorToast(i18n.t('Make sure you have no overlapping segments.'));
       return;
     }
-    const newInverseCutSegments = inverseSegmentsAndMarkers.map((segment) => createIndexedSegment({ segment, incrementCount: true }));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const newInverseCutSegments = inverseSegmentsAndMarkers.map(({ name: _ignored, ...segment }) => createIndexedSegment({ segment, incrementCount: true }));
     safeSetCutSegments((existing) => ([...existing, ...newInverseCutSegments]));
   }, [createIndexedSegment, fileDuration, selectedSegments, safeSetCutSegments]);
 
