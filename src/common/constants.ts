@@ -14,4 +14,5 @@ export const troubleshootingUrl = 'https://mifi.no/losslesscut/troubleshooting';
 export const exportedFileNameTemplateHelpUrl = 'https://mifi.no/losslesscut/file-name-template';
 export const selectSegmentByExpressionHelpUrl = 'https://mifi.no/losslesscut/select-segments-by-expression';
 export const editSegmentByExpressionHelpUrl = 'https://mifi.no/losslesscut/edit-segments-by-expression';
+export const changeEnabledStreamsExpressionHelpUrl = 'https://mifi.no/losslesscut/select-tracks-by-expression';
 export const supportEmail = 'losslesscut@mifi.no';
