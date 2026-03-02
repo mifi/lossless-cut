@@ -1094,5 +1094,7 @@
   "Ask": "询问",
   "A segment may result in an unexpectedly long output file length after exporting, because your video file doesn't have any keyframes near the start time of the segment you're trying to cut.": "在某个片段导出之后可能会意外出现长的输出文件，原因是您尝试切割的视频文件片段的开始时间周围没有任何关键帧。",
   "Export options screen is disabled, and you will not see any important notices or warnings.": "已禁用导出选项屏幕，你将无法看到任何重要的通知或警告。",
-  "Learn more": "了解更多"
+  "Learn more": "了解更多",
+  "Segment label (starts with)": "片段标签（开始处）",
+  "Segment start to previous keyframe and end to next keyframe": "从前一关键帧开始到下一关键帧的片段"
 }
