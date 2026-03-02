@@ -1066,5 +1066,10 @@
   "Import chapters to segments when opening file": "Kapitel beim Öffnen der Datei in Segmente importieren",
   "Language": "Sprache",
   "The output location has no storage space remaining. Please free up some space and try again.": "Der Ausgabeort verfügt über keinen Speicherplatz mehr. Bitte schaffen Sie Speicherplatz und versuchen Sie es erneut.",
-  "Copyright": "Copyright"
+  "Copyright": "Copyright",
+  "A segment may result in an unexpectedly long output file length after exporting, because your video file doesn't have any keyframes near the start time of the segment you're trying to cut.": "Ein Segment kann nach dem Export zu einer unerwartet langen Ausgabedatei führen, da Ihre Videodatei keine Keyframes in der Nähe der Startzeit des Segments enthält, das Sie ausschneiden möchten.",
+  "Export options screen is disabled, and you will not see any important notices or warnings.": "Der Bildschirm mit den Exportoptionen ist deaktiviert, und Sie werden keine wichtigen Hinweise oder Warnungen sehen.",
+  "Learn more": "Mehr erfahren",
+  "Segment label (starts with)": "Segmentbezeichnung (beginnt mit)",
+  "Segment start to previous keyframe and end to next keyframe": "Segmentbeginn zum vorherigen Keyframe und Segmentende zum nächsten Keyframe"
 }
