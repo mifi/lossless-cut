@@ -378,6 +378,35 @@ export async function readFileFfprobeMeta(filePath: string) {
 export type FileFfprobeMeta = Awaited<ReturnType<typeof readFileFfprobeMeta>>;
 export type FileStream = FileFfprobeMeta['streams'][number];
 
+export async function createChaptersFromOriginalFiles({ paths, createChapterForFilesWithoutChapters }: { paths: string[], createChapterForFilesWithoutChapters: boolean }) {
+  const { parse } = window.require('path') as { parse: (p: string) => { name: string } };
+  try {
+    const mergedChapters: { start: number, end: number, name: string | undefined }[] = [];
+    let offset = 0;
+    for (const path of paths) {
+      const meta = await readFileFfprobeMeta(path);
+      const duration = (await getDuration(path)) ?? 0;
+      const chapters = meta.chapters ?? [];
+      if (chapters.length > 0) {
+        for (const ch of chapters) {
+          mergedChapters.push({
+            start: offset + parseFloat(ch.start_time),
+            end: offset + parseFloat(ch.end_time),
+            name: ch.tags?.title ?? undefined,
+          });
+        }
+      } else if (createChapterForFilesWithoutChapters) {
+        mergedChapters.push({ start: offset, end: offset + duration, name: parse(path).name });
+      }
+      offset += duration;
+    }
+    return mergedChapters.length > 0 ? mergedChapters : undefined;
+  } catch (err) {
+    console.error('Failed to create chapters from original files', err);
+    return undefined;
+  }
+}
+
 async function renderThumbnail(filePath: string, timestamp: number, signal: AbortSignal) {
   const args = [
     '-ss', String(timestamp),
