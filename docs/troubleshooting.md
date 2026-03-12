@@ -66,6 +66,27 @@ If you cannot playback the output video file (even if you try to export the whol
 
 If the output file name has special characters that get replaced by underscore (`_`), try to turn off ["Sanitize"](https://github.com/mifi/lossless-cut/issues/889) in the "Output file names" editor in the "Export options" dialog. Note that this will cause special characters like `/` to be preserved. Some characters are not supported in some operating systems, so be careful. using `/` or `\` can be used to create a folder structure from your segments when exported.
 
+## Preview / playback problems
+
+If you have a problem playing back a particular file inside LosslessCut (**before cutting/modifying it**), please look at the following suggestions:
+
+### File not supported
+
+If you're getting a message saying that the file must be converted to a supported format, this means that LosslessCut's built-in player isn't able to play back that particular file. As a work-around LosslessCut has an FFmpeg-assisted software decoding playback which can be activated from the menu: *File* -> *Convert to supported format*.
+
+### Preview is completely black/blank, corrupted or just won't play back
+
+If you have a problem with the playback, this probably means that Chromium (which LosslessCut uses for playback) doesn't support your particular file (maybe it's 10-bit). [#2228](https://github.com/mifi/lossless-cut/discussions/2228), [#1767](https://github.com/mifi/lossless-cut/discussions/1767), [#2307](https://github.com/mifi/lossless-cut/issues/2307) [#2648](https://github.com/mifi/lossless-cut/issues/2648). 
+
+LosslessCut uses the same video player that is used by Chrome. You can try to open the file in Chrome and see if it shows the same problem there. If the file has the same problem in Chrome, it means **I cannot fix the problem**. However you can try:
+
+1. If H265/HEVC file, go to settings and disable or enable "Hardware HEVC decoding".
+2. Use FFmpeg-assisted software decoding playback by going to *File* -> *Convert to supported format*
+
+### Low quality / blurry playback
+
+Some formats or codecs are not natively supported by LosslessCut's built in player, and LosslessCut will automatically use FFmpeg-assisted software decoding to playback in a lower quality. For better playback you may convert these files to a different format from the menu: *File -> Convert to supported format*. Note that this will not affect the output from LosslessCut, it is only used for playback, see [#88](https://github.com/mifi/lossless-cut/issues/88).
+
 ## Linux specific issues
 
 - If the app crashes on startup or you get an error like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly...`, try to run it as `./lossless-cut --no-sandbox`. See [#258](https://github.com/mifi/lossless-cut/issues/258) and [#2614](https://github.com/mifi/lossless-cut/issues/2614)
@@ -81,30 +102,18 @@ If you have an issue with the Snap or Flatpak version of LosslessCut, please try
   - Try to run LosslessCut from the [command line](cli.md) with `--disable-gpu` and/or `--disable-features=VizDisplayCompositor` (see [#781](https://github.com/mifi/lossless-cut/issues/781))
   - Try [removing the AppContainer restrictions](https://github.com/mifi/lossless-cut/discussions/2043#discussioncomment-14909957) on LosslessCut.
   - Disable your anti-virus or whitelist LosslessCut. See [#18](https://github.com/mifi/lossless-cut/issues/18), [#1114](https://github.com/mifi/lossless-cut/issues/1114). 
-- How to uninstall LosslessCut?
-  - There is no installer. Just delete the folder. [More info](installation.md).
-- Preview is completely black/blank, corrupted or just won't play back?
-  - This probably means that Chromium (which LosslessCut uses for playback) doesn't support your particular file (maybe it's 10-bit). [#2228](https://github.com/mifi/lossless-cut/discussions/2228), [#1767](https://github.com/mifi/lossless-cut/discussions/1767), [#2307](https://github.com/mifi/lossless-cut/issues/2307).
-  1. If H265/HEVC file, go to settings and disable "Hardware HEVC decoding".
-  2. Use FFmpeg-assisted software decoding playback by going to *File* -> *Convert to supported format*
 - Video preview playback slow, stuttering, low FPS, flickering (NVIDIA)
   - See [#922](https://github.com/mifi/lossless-cut/issues/922) [#1904](https://github.com/mifi/lossless-cut/issues/1904) [#1915](https://github.com/mifi/lossless-cut/issues/1915) [#922](https://github.com/mifi/lossless-cut/issues/922) [#2083](https://github.com/mifi/lossless-cut/issues/2083) [#2556](https://github.com/mifi/lossless-cut/issues/2556)
 - Why no `.exe`/`.zip`/`.appx` downloads?
   - I decided to stop distributing exe/zip and instead just [7zip](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z), due to the [problems](https://github.com/mifi/lossless-cut/issues/1072#issuecomment-1066026323) that the (self-extracting) exe was causing and the large size of `.zip` files. `appx` is unsigned and [**does not work**](https://github.com/mifi/lossless-cut/issues/337).
 - I'm getting a `KERNEL32.dll` error
   - It's probably because you're running Windows 7, 8 or 8.1 which is [no longer supported.](https://github.com/mifi/lossless-cut/discussions/1476)
+- How to uninstall LosslessCut?
+  - There is no installer. Just delete the folder. [More info](installation.md).
 
 # Known limitations
 
 - Undo/redo segments doesn't work through the top menu. This is a [known issue](https://github.com/mifi/lossless-cut/issues/610) that I don't know how to fix. Please use the keyboard shortcuts instead (<kbd>CTRL</kbd>/<kbd>CMD</kbd>+<kbd>Z</kbd> and <kbd>CTRL</kbd>+<kbd>Y</kbd> / <kbd>CMD</kbd>+<kbd>SHIFT</kbd>+<kbd>Z</kbd>).
-
-## File not supported
-
-If you're getting a message saying that the file must be converted to a supported format, this means that LosslessCut's built-in player isn't able to play back that particular file. As a work-around LosslessCut has an FFmpeg-assisted software decoding playback which can be activated from the menu: *File -> Convert to supported format*.
-
-## Low quality / blurry playback
-
-Some formats or codecs are not natively supported by LosslessCut's built in player, and LosslessCut will automatically use FFmpeg-assisted software decoding to playback in a lower quality. For better playback you may convert these files to a different format from the menu: *File -> Convert to supported format*. Note that this will not affect the output from LosslessCut, it is only used for playback, see [#88](https://github.com/mifi/lossless-cut/issues/88).
 
 ## MPEG TS / MTS
 
