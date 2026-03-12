@@ -162,6 +162,7 @@ function App() {
   const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
 
   // State per application launch
+  const [ffmpegInfo, setFfmpegInfo] = useState<Awaited<ReturnType<typeof runStartupCheck>>>();
   const lastOpenedPathRef = useRef<string>();
   const [showRightBar, setShowRightBar] = useState(true);
   const [lastCommandsVisible, setLastCommandsVisible] = useState(false);
@@ -823,8 +824,8 @@ function App() {
   const commonSettings = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { keyBindings: _keyBindings, ...rest } = allUserSettings.settings;
-    return rest;
-  }, [allUserSettings]);
+    return { ...rest, ffmpegVersion: ffmpegInfo?.program_version.version };
+  }, [allUserSettings.settings, ffmpegInfo?.program_version.version]);
 
   const openSendReportDialogWithState = useCallback(async (err?: unknown) => {
     const state = {
@@ -2395,7 +2396,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    runStartupCheck({ onError: ({ title, message }) => setGenericError({ title, err: message }) });
+    (async () => {
+      setFfmpegInfo(await runStartupCheck({ onError: ({ title, message }) => setGenericError({ title, err: message }) }));
+    })();
   }, [customFfPath, setGenericError]);
 
   const appContext = useMemo<AppContextType>(() => ({

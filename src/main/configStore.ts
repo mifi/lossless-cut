@@ -265,6 +265,7 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
 
   const keyBindings = (store.get('keyBindings') as KeyBinding[]).map(({ keys, action }) => ({ keysStr: keys, keys: keys.split('+'), action }));
 
+  // assume that if there is one binding with ctrl, then it's the old format where keys were stored as strings like "Ctrl+Shift+S". We want to migrate to the new format where keys are stored as "ControlLeft+ShiftLeft+KeyS"
   // todo remove after a while
   if (keyBindings.some(({ keys }) => keys.some((k) => k.toLowerCase() === 'ctrl'))) {
     await tryBackupConfigFile(1, app.getVersion());

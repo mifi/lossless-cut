@@ -5,6 +5,7 @@ import type { FRAMERATE } from 'smpte-timecode';
 import Timecode from 'smpte-timecode';
 import minBy from 'lodash/minBy';
 import invariant from 'tiny-invariant';
+import z from 'zod';
 
 import { pcmAudioCodecs, isMov } from './util/streams';
 import { isExecaError } from './util';
@@ -554,9 +555,22 @@ export function getTimecodeFromStreams(streams: FFprobeStream[]) {
   return foundTimecode;
 }
 
+const ffprobeVersionSchema = z.object({
+  program_version: z.object({
+    version: z.string(),
+    // not sure if these are always present, so make them optional for now:
+    copyright: z.string().optional(),
+    compiler_ident: z.string().optional(),
+    configuration: z.string().optional(),
+  }),
+});
+
 export async function runFfmpegStartupCheck() {
   // will throw if exit code != 0
-  await runFfmpeg(['-hide_banner', '-f', 'lavfi', '-i', 'nullsrc=s=256x256:d=1', '-f', 'null', '-']);
+  const { stderr: ffmpegStderr } = await runFfmpeg(['-f', 'lavfi', '-i', 'nullsrc=s=256x256:d=1', '-f', 'null', '-']);
+  console.log('FFmpeg startup check output:', new TextDecoder().decode(ffmpegStderr));
+  const { stdout: ffprobeStout } = await runFfprobe(['-v', '0', '-of', 'json', '-show_program_version']);
+  return ffprobeVersionSchema.parse(JSON.parse(new TextDecoder().decode(ffprobeStout)));
 }
 
 // https://superuser.com/questions/543589/information-about-ffmpeg-command-line-options

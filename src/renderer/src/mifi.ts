@@ -20,7 +20,7 @@ export async function loadMifiLink() {
 
 export async function runStartupCheck({ onError }: { onError: (error: { title: string, message: string }) => void }) {
   try {
-    await runFfmpegStartupCheck();
+    return await runFfmpegStartupCheck();
   } catch (err) {
     if (err instanceof Error && !isMasBuild) {
       if ('code' in err && err.code === 'ENOENT') {
@@ -28,7 +28,7 @@ export async function runStartupCheck({ onError }: { onError: (error: { title: s
           title: i18n.t('Fatal: FFmpeg executable not found'),
           message: `${i18n.t('Make sure that the FFmpeg executable exists:')}\n\n${getFfmpegPath()}`,
         });
-        return;
+        return undefined;
       }
 
       if ('code' in err && typeof err.code === 'string' && ['EPERM', 'EACCES', 'ENOENT'].includes(err.code)) {
@@ -42,10 +42,11 @@ export async function runStartupCheck({ onError }: { onError: (error: { title: s
             i18n.t('Read more: {{url}}', { url: 'https://github.com/mifi/lossless-cut/issues/1114' }),
           ].join('\n'),
         });
-        return;
+        return undefined;
       }
     }
 
     openSendReportDialog({ message: i18n.t('FFmpeg is non-functional'), err });
+    return undefined;
   }
 }
