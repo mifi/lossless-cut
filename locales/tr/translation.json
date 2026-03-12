@@ -1042,5 +1042,7 @@
   "Export options screen is disabled, and you will not see any important notices or warnings.": "Dışa aktarma seçenekleri ekranı devre dışı ve önemli bildirimler veya uyarılar görmeyeceksiniz.",
   "Learn more": "Daha fazla bilgi edin",
   "Segment label (starts with)": "Parça etiketi (ile başlar)",
-  "Segment start to previous keyframe and end to next keyframe": "Parça, önceki ana kareden başlar ve sonraki ana karede biter"
+  "Segment start to previous keyframe and end to next keyframe": "Parça, önceki ana kareden başlar ve sonraki ana karede biter",
+  "Choose directory": "Dizin seç",
+  "Clear recents": "Son kullanılanları temizle"
 }
