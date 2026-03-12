@@ -1064,5 +1064,7 @@
   "Export options screen is disabled, and you will not see any important notices or warnings.": "Экран настроек экспорта отключен, и вы не увидите никаких важных уведомлений или предупреждений.",
   "Learn more": "Узнать больше",
   "Segment label (starts with)": "Название сегмента (начинается с)",
-  "Segment start to previous keyframe and end to next keyframe": "Начало сегмента – предыдущий ключевой кадр, конец сегмента – следующий ключевой кадр"
+  "Segment start to previous keyframe and end to next keyframe": "Начало сегмента – предыдущий ключевой кадр, конец сегмента – следующий ключевой кадр",
+  "Choose directory": "Выбрать папку",
+  "Clear recents": "Очистить недавние"
 }
