@@ -1032,5 +1032,7 @@
   "Export options screen is disabled, and you will not see any important notices or warnings.": "La schermata delle opzioni di esportazione è disabilitata e non vedrai alcuna notifica/avviso importante.",
   "Learn more": "Maggiori info",
   "Segment label (starts with)": "Etichetta segmento (inizia con)",
-  "Segment start to previous keyframe and end to next keyframe": "Il segmento inizia con il fotogramma chiave precedente e termina con il fotogramma chiave successivo"
+  "Segment start to previous keyframe and end to next keyframe": "Il segmento inizia con il fotogramma chiave precedente e termina con il fotogramma chiave successivo",
+  "Choose directory": "Scegli cartella",
+  "Clear recents": "Azzera recenti"
 }
