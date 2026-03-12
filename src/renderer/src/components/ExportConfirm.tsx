@@ -33,6 +33,7 @@ import AnimatedTr from './AnimatedTr';
 import type { Frame } from '../ffmpeg';
 import type { FindNearestKeyframeTime } from '../hooks/useKeyframes';
 import { troubleshootingUrl } from '../../../common/constants';
+import OutDirSelector from './OutDirSelector';
 
 const remote = window.require('@electron/remote');
 const { shell } = remote;
@@ -152,7 +153,7 @@ function ExportConfirm({
 }) {
   const { t } = useTranslation();
 
-  const { changeOutDir, keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate, simpleMode, keyframesEnabled } = useUserSettings();
+  const { keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate, simpleMode, keyframesEnabled } = useUserSettings();
 
   const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
 
@@ -403,7 +404,9 @@ function ExportConfirm({
               {t('Save output to path:')}
             </td>
             <td>
-              <HighlightedText role="button" onClick={changeOutDir} style={{ wordBreak: 'break-all', cursor: 'pointer' }}>{outputDir}</HighlightedText>
+              <OutDirSelector>
+                <HighlightedText role="button" style={{ wordBreak: 'break-all', cursor: 'pointer' }}>{outputDir}</HighlightedText>
+              </OutDirSelector>
             </td>
             <td />
           </tr>

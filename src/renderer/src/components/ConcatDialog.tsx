@@ -22,6 +22,7 @@ import * as Dialog from './Dialog';
 import FileNameTemplateEditor from './FileNameTemplateEditor';
 import HighlightedText from './HighlightedText';
 import type { FileStats } from '../types';
+import OutDirSelector from './OutDirSelector';
 
 const { basename } = window.require('path');
 
@@ -55,7 +56,7 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
   onOutputFormatUserChange: (newFormat: string) => void,
 }) {
   const { t } = useTranslation();
-  const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, customOutDir, simpleMode, setMergedFileTemplate, outFormatLocked, changeOutDir } = useUserSettings();
+  const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, customOutDir, simpleMode, setMergedFileTemplate, outFormatLocked } = useUserSettings();
 
   const [includeAllStreams, setIncludeAllStreams] = useState(false);
   const [allFilesMeta, setAllFilesMeta] = useState<Record<string, { ffprobeMeta: FileFfprobeMeta, stats: FileStats }>>({});
@@ -271,7 +272,9 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
 
           <div style={{ marginBottom: '1em' }}>
             {t('Save output to path:')}<br />
-            <HighlightedText role="button" onClick={changeOutDir} style={{ wordBreak: 'break-all', cursor: 'pointer' }}>{outputDir}</HighlightedText>
+            <OutDirSelector>
+              <HighlightedText role="button" style={{ wordBreak: 'break-all', cursor: 'pointer' }}>{outputDir}</HighlightedText>
+            </OutDirSelector>
           </div>
 
           {fileFormat != null && (

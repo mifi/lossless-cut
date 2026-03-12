@@ -23,6 +23,7 @@ import { getModifierKeyNames } from '../hooks/useTimelineScroll';
 import type { TunerType } from '../types';
 import Truncated from './Truncated';
 import { dangerColor } from '../colors';
+import OutDirSelector from './OutDirSelector.js';
 
 // eslint-disable-next-line react/jsx-props-no-spreading
 const Button = ({ style, ...props }: ButtonProps) => <ButtonRaw style={{ padding: '.5em .9em', ...style }} {...props} />;
@@ -62,7 +63,6 @@ function Settings({
   onKeyboardShortcutsDialogRequested,
   askForCleanupChoices,
   toggleStoreProjectInWorkingDir,
-  clearOutDir,
   showAdvancedSettings,
   setShowAdvancedSettings,
 }: {
@@ -70,13 +70,12 @@ function Settings({
   onKeyboardShortcutsDialogRequested: () => void,
   askForCleanupChoices: () => Promise<unknown>,
   toggleStoreProjectInWorkingDir: () => Promise<void>,
-  clearOutDir: () => Promise<void>,
   showAdvancedSettings: boolean,
   setShowAdvancedSettings: (v: boolean) => void,
 }) {
   const { t } = useTranslation();
 
-  const { customOutDir, changeOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableImportChapters, setEnableImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, hideOsNotifications, setHideOsNotifications, autoLoadTimecode, setAutoLoadTimecode, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, setMouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, setMouseWheelKeyframeSeekModifierKey, segmentMouseModifierKey, setSegmentMouseModifierKey, captureFrameMethod, setCaptureFrameMethod, captureFrameQuality, setCaptureFrameQuality, captureFrameFileNameFormat, setCaptureFrameFileNameFormat, enableNativeHevc, setEnableNativeHevc, enableUpdateCheck, setEnableUpdateCheck, allowMultipleInstances, setAllowMultipleInstances, preferStrongColors, setPreferStrongColors, treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, setTreatOutputFileModifiedTimeAsStart, exportConfirmEnabled, toggleExportConfirmEnabled, storeWindowBounds, setStoreWindowBounds, reducedMotion, setReducedMotion } = useUserSettings();
+  const { customOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableImportChapters, setEnableImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, hideOsNotifications, setHideOsNotifications, autoLoadTimecode, setAutoLoadTimecode, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, setMouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, setMouseWheelKeyframeSeekModifierKey, segmentMouseModifierKey, setSegmentMouseModifierKey, captureFrameMethod, setCaptureFrameMethod, captureFrameQuality, setCaptureFrameQuality, captureFrameFileNameFormat, setCaptureFrameFileNameFormat, enableNativeHevc, setEnableNativeHevc, enableUpdateCheck, setEnableUpdateCheck, allowMultipleInstances, setAllowMultipleInstances, preferStrongColors, setPreferStrongColors, treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, setTreatOutputFileModifiedTimeAsStart, exportConfirmEnabled, toggleExportConfirmEnabled, storeWindowBounds, setStoreWindowBounds, reducedMotion, setReducedMotion } = useUserSettings();
 
   const onLangChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
     const { value } = e.target;
@@ -248,15 +247,12 @@ function Settings({
           </KeyCell>
           <td>
             <Truncated maxWidth="15em">{customOutDir}</Truncated>
-            <Button onClick={changeOutDir}>
-              {customOutDir ? <FaFolder style={{ marginRight: '.3em', verticalAlign: 'middle' }} /> : <FaFile style={{ marginRight: '.3em', verticalAlign: 'middle' }} />}
-              {customOutDir ? t('Custom working directory') : t('Same directory as input file')}...
-            </Button>
-            {customOutDir && (
-              <Button onClick={clearOutDir} title={t('Clear')}>
-                <FaTimes />
+            <OutDirSelector>
+              <Button>
+                {customOutDir ? <FaFolder style={{ marginRight: '.3em', verticalAlign: 'middle' }} /> : <FaFile style={{ marginRight: '.3em', verticalAlign: 'middle' }} />}
+                {customOutDir ? t('Custom working directory') : t('Same directory as input file')}...
               </Button>
-            )}
+            </OutDirSelector>
           </td>
         </Row>
 

@@ -54,8 +54,10 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ lastAppVersion }), [lastAppVersion]);
   const [captureFormat, setCaptureFormat] = useState(safeGetConfigInitial('captureFormat'));
   useEffect(() => safeSetConfig({ captureFormat }), [captureFormat]);
-  const [customOutDir, setCustomOutDir] = useState(safeGetConfigInitial('customOutDir'));
-  useEffect(() => safeSetConfig({ customOutDir }), [customOutDir]);
+  const [recentCustomOutDirs, setRecentCustomOutDirs] = useState(safeGetConfigInitial('recentCustomOutDirs'));
+  useEffect(() => safeSetConfig({ recentCustomOutDirs }), [recentCustomOutDirs]);
+  const [enableCustomOutDir, setEnableCustomOutDir] = useState(safeGetConfigInitial('enableCustomOutDir'));
+  useEffect(() => safeSetConfig({ enableCustomOutDir }), [enableCustomOutDir]);
   const [keyframeCut, setKeyframeCut] = useState(safeGetConfigInitial('keyframeCut'));
   useEffect(() => safeSetConfig({ keyframeCut }), [keyframeCut]);
   const [preserveMetadata, setPreserveMetadata] = useState(safeGetConfigInitial('preserveMetadata'));
@@ -222,10 +224,27 @@ export default function useUserSettingsRoot() {
 
   const springAnimation = useMemo<Transition>(() => (prefersReducedMotion ? { duration: 0 } : mySpring), [prefersReducedMotion]);
 
+  const customOutDir = useMemo(() => (enableCustomOutDir ? recentCustomOutDirs[0] : undefined), [enableCustomOutDir, recentCustomOutDirs]);
+
+  const setCustomOutDir = useCallback((newDir: string | undefined) => {
+    if (newDir) {
+      setRecentCustomOutDirs((prev) => [
+        newDir,
+        ...prev.filter((d) => d !== newDir),
+      ].slice(0, 5)); // keep only the 5 most recent dirs
+      setEnableCustomOutDir(true);
+    } else {
+      setEnableCustomOutDir(false);
+    }
+  }, []);
+
+  // Note: settings are reported when reporting errors
+  // 🚨 Must be JSON-serializable!
   const settings = {
     lastAppVersion,
     captureFormat,
-    customOutDir,
+    recentCustomOutDirs,
+    enableCustomOutDir,
     keyframeCut,
     preserveMetadata,
     preserveMetadataOnMerge,
@@ -298,9 +317,14 @@ export default function useUserSettingsRoot() {
   return {
     settings,
 
+    springAnimation,
+    customOutDir,
+
+    // setters
     setLastAppVersion,
     setCaptureFormat,
     setCustomOutDir,
+    setRecentCustomOutDirs,
     setKeyframeCut,
     setPreserveMetadata,
     setPreserveMetadataOnMerge,
@@ -370,7 +394,6 @@ export default function useUserSettingsRoot() {
     setKeyframesEnabled,
     prefersReducedMotion,
     setReducedMotion,
-    springAnimation,
   };
 }
 

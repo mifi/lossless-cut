@@ -99,7 +99,8 @@ const defaults: Config = {
   version: 2,
   lastAppVersion: app.getVersion(),
   captureFormat: 'jpeg',
-  customOutDir: undefined,
+  enableCustomOutDir: false,
+  recentCustomOutDirs: [],
   keyframeCut: true,
   autoMerge: false,
   autoDeleteMergedSegments: true,
@@ -259,6 +260,14 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
   if (cleanupChoices != null && cleanupChoices.closeFile == null) {
     logger.info('Migrating cleanupChoices.closeFile');
     set('cleanupChoices', { ...cleanupChoices, closeFile: true });
+  }
+
+  const customOutDir = store.get('customOutDir'); // todo remove after a while
+  if (customOutDir != null) {
+    logger.info('Migrating customOutDir to recentCustomOutDirs');
+    store.delete('customOutDir');
+    set('recentCustomOutDirs', [customOutDir]);
+    set('enableCustomOutDir', customOutDir != null);
   }
 
   // const configVersion: number = store.get('version');

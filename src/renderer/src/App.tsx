@@ -185,8 +185,8 @@ function App() {
   const [selectedBatchFiles, setSelectedBatchFiles] = useState<string[]>([]);
 
   const allUserSettings = useUserSettingsRoot();
-  const { captureFormat, customOutDir, keyframeCut, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, autoExportExtraStreams, askBeforeClose, enableImportChapters, enableAskForFileOpenAction, playbackVolume, autoSaveProjectFile, wheelSensitivity, waveformHeight, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, hideOsNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, segmentsToChapters, simpleMode, cutFileTemplate, cutMergedFileTemplate, mergedFileTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, safeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, darkMode, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames, cutToAdjustmentFrames, waveformMode: waveformModePreference, thumbnailsEnabled, keyframesEnabled, reducedMotion } = allUserSettings.settings;
-  const { setCaptureFormat, setCustomOutDir, setKeyframeCut, setPlaybackVolume, setExportConfirmEnabled, setSimpleMode, setOutFormatLocked, setSafeOutputFileName, setKeyBindings, resetKeyBindings, setStoreProjectInWorkingDir, setCleanupChoices, toggleDarkMode, setWaveformMode, setThumbnailsEnabled, setKeyframesEnabled, prefersReducedMotion } = allUserSettings;
+  const { captureFormat, keyframeCut, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, autoExportExtraStreams, askBeforeClose, enableImportChapters, enableAskForFileOpenAction, playbackVolume, autoSaveProjectFile, wheelSensitivity, waveformHeight, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, hideOsNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, segmentsToChapters, simpleMode, cutFileTemplate, cutMergedFileTemplate, mergedFileTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, safeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, darkMode, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames, cutToAdjustmentFrames, waveformMode: waveformModePreference, thumbnailsEnabled, keyframesEnabled, reducedMotion } = allUserSettings.settings;
+  const { setCaptureFormat, setCustomOutDir, setKeyframeCut, setPlaybackVolume, setExportConfirmEnabled, setSimpleMode, setOutFormatLocked, setSafeOutputFileName, setKeyBindings, resetKeyBindings, setStoreProjectInWorkingDir, setCleanupChoices, toggleDarkMode, setWaveformMode, setThumbnailsEnabled, setKeyframesEnabled, prefersReducedMotion, customOutDir } = allUserSettings;
 
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(!simpleMode);
 
@@ -449,15 +449,7 @@ function App() {
     if (newOutDir) setCustomOutDir(newOutDir);
   }, [outputDir, setCustomOutDir]);
 
-  const clearOutDir = useCallback(async () => {
-    try {
-      await ensureWritableOutDir({ inputPath: filePath, outDir: undefined });
-      setCustomOutDir(undefined);
-    } catch (err) {
-      if (err instanceof DirectoryAccessDeclinedError) return;
-      throw err;
-    }
-  }, [ensureWritableOutDir, filePath, setCustomOutDir]);
+  const ensureWritableOutDirWithFilePath = useCallback(async ({ outDir }: { outDir: string | undefined }) => ensureWritableOutDir({ inputPath: filePath, outDir }), [ensureWritableOutDir, filePath]);
 
   const toggleStoreProjectInWorkingDir = useCallback(async () => {
     const newValue = !storeProjectInWorkingDir;
@@ -477,9 +469,9 @@ function App() {
     const { settings, ...rest } = allUserSettings;
 
     return {
-      ...settings, ...rest, toggleCaptureFormat, changeOutDir, toggleKeyframeCut, toggleExportConfirmEnabled, toggleSimpleMode, toggleSafeOutputFileName, effectiveExportMode,
+      ...settings, ...rest, toggleCaptureFormat, changeOutDir, toggleKeyframeCut, toggleExportConfirmEnabled, toggleSimpleMode, toggleSafeOutputFileName, effectiveExportMode, ensureWritableOutDirWithFilePath,
     };
-  }, [allUserSettings, changeOutDir, effectiveExportMode, toggleCaptureFormat, toggleExportConfirmEnabled, toggleKeyframeCut, toggleSafeOutputFileName, toggleSimpleMode]);
+  }, [allUserSettings, changeOutDir, effectiveExportMode, ensureWritableOutDirWithFilePath, toggleCaptureFormat, toggleExportConfirmEnabled, toggleKeyframeCut, toggleSafeOutputFileName, toggleSimpleMode]);
 
   const segColorsContext = useMemo<SegColorsContextType>(() => ({
     getSegColor: (seg: SegmentColorIndex | undefined) => {
@@ -2442,7 +2434,6 @@ function App() {
                 changeEnabledStreamsFilter={changeEnabledStreamsFilter}
                 applyEnabledStreamsFilter={applyEnabledStreamsFilter}
                 enabledStreamsFilter={enabledStreamsFilter}
-                clearOutDir={clearOutDir}
                 isCustomFormatSelected={isCustomFormatSelected}
                 renderOutFmt={renderOutFmt}
                 toggleSettings={toggleSettings}
@@ -2745,7 +2736,6 @@ function App() {
                       onKeyboardShortcutsDialogRequested={toggleKeyboardShortcuts}
                       askForCleanupChoices={askForCleanupChoices}
                       toggleStoreProjectInWorkingDir={toggleStoreProjectInWorkingDir}
-                      clearOutDir={clearOutDir}
                       showAdvancedSettings={showAdvancedSettings}
                       setShowAdvancedSettings={setShowAdvancedSettings}
                     />
