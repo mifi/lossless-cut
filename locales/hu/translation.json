@@ -907,5 +907,7 @@
   "Export options screen is disabled, and you will not see any important notices or warnings.": "Az exportálási beállítások képernyő le van tiltva, és nem jelennek meg fontos értesítések vagy figyelmeztetések.",
   "Learn more": "További információk",
   "Segment label (starts with)": "Szegmenscímke (ezzel kezdődik)",
-  "Segment start to previous keyframe and end to next keyframe": "A szegmens kezdete az előző kulcsképkockáig, vége pedig a következő kulcsképkockáig"
+  "Segment start to previous keyframe and end to next keyframe": "A szegmens kezdete az előző kulcsképkockáig, vége pedig a következő kulcsképkockáig",
+  "Choose directory": "Válasszon könyvtárat",
+  "Clear recents": "Legutóbbiak törlése"
 }
