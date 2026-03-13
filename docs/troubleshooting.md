@@ -54,10 +54,6 @@ Smart cut is experimental, so don't expect too much. But if you're having proble
 - If Smart cut gives you repeated (duplicate) segments, you can try to enable the Export Option "Shift all start times".
 - Sometimes it helps to convert (remux) your videos [to mp4 first](https://github.com/mifi/lossless-cut/discussions/1292#discussioncomment-10425084) (e.g. from mkv) using LosslessCut, before smart cutting them.
 
-## MP4/MOV extension
-
-MP4 and MOV are technically almost the same format. Sometimes files have the extension `.mp4` but are in reality the MOV format (and vice versa). MOV tends to be more lenient in which codecs it supports. FFmpeg has problems exporting some MP4 files as MP4, so MOV needs to be selected instead. Unfortunately I don't know any way to fix this. Sometimes certain players are not able to play back certain exported `.mov` files ([Adobe Premiere](https://github.com/mifi/lossless-cut/issues/1075#issuecomment-2327459890) 👀). You can try to rename the exported MOV file extension to `.mp4` and see if it helps. Or vice versa, rename an exported MP4 file to `.mov`.
-
 ## MP4/MOV playback exported file fails
 
 If you cannot playback the output video file (even if you try to export the whole file without performing any cuts at all), this could be due to FFmpeg applying the wrong output video codec tag (for example `hev1` vs `hvc1` for H265 video). You can try a different video player such as VLC. Or try to change the codec tag or enable the bitstream filter `hevc_metadata=aud=insert` for the particular track in the "tracks" dialog. See also [#2518](https://github.com/mifi/lossless-cut/issues/2518) and [#2626](https://github.com/mifi/lossless-cut/issues/2626).
@@ -65,6 +61,8 @@ If you cannot playback the output video file (even if you try to export the whol
 ## Output file name is missing characters (Chinese, accents etc)
 
 If the output file name has special characters that get replaced by underscore (`_`), try to turn off ["Sanitize"](https://github.com/mifi/lossless-cut/issues/889) in the "Output file names" editor in the "Export options" dialog. Note that this will cause special characters like `/` to be preserved. Some characters are not supported in some operating systems, so be careful. using `/` or `\` can be used to create a folder structure from your segments when exported.
+
+If your source file's name is so long that the output file name becomes truncated, you can also try the above suggestion.
 
 ## Preview / playback problems
 
@@ -113,7 +111,13 @@ If you have an issue with the Snap or Flatpak version of LosslessCut, please try
 
 # Known limitations
 
-- Undo/redo segments doesn't work through the top menu. This is a [known issue](https://github.com/mifi/lossless-cut/issues/610) that I don't know how to fix. Please use the keyboard shortcuts instead (<kbd>CTRL</kbd>/<kbd>CMD</kbd>+<kbd>Z</kbd> and <kbd>CTRL</kbd>+<kbd>Y</kbd> / <kbd>CMD</kbd>+<kbd>SHIFT</kbd>+<kbd>Z</kbd>).
+## Undo/redo
+
+Undo/redo segments doesn't work through the top menu. This is a [known issue](https://github.com/mifi/lossless-cut/issues/610) that I don't know how to fix. Please use the keyboard shortcuts instead (<kbd>CTRL</kbd>/<kbd>CMD</kbd>+<kbd>Z</kbd> and <kbd>CTRL</kbd>+<kbd>Y</kbd> / <kbd>CMD</kbd>+<kbd>SHIFT</kbd>+<kbd>Z</kbd>).
+
+## MP4/MOV extension
+
+MP4 and MOV are technically almost the same format. Sometimes files have the extension `.mp4` but are in reality the MOV format (and vice versa). MOV tends to be more lenient in which codecs it supports. FFmpeg has problems exporting some MP4 files as MP4, so MOV needs to be selected instead. Unfortunately I don't know any way to fix this. Sometimes certain players are not able to play back certain exported `.mov` files ([Adobe Premiere](https://github.com/mifi/lossless-cut/issues/1075#issuecomment-2327459890) 👀). You can try to rename the exported MOV file extension to `.mp4` and see if it helps. Or vice versa, rename an exported MP4 file to `.mov`.
 
 ## MPEG TS / MTS
 
