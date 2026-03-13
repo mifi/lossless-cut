@@ -78,6 +78,7 @@ import {
   shootConfetti,
   isMasBuild,
   readFileStats,
+  makeSourceFileAccessError,
 } from './util';
 import getSwal, { errorToast, showPlaybackFailedMessage } from './swal';
 import { adjustRate } from './util/rate-calculator';
@@ -918,7 +919,13 @@ function App() {
         chaptersFromSegments = await createChaptersFromSegments({ segmentPaths: paths, chapterNames });
       }
 
-      const inputSize = sum(await readFileSizes(paths));
+      let inputSize: number;
+      try {
+        inputSize = sum(await readFileSizes(paths));
+      } catch (err) {
+        console.warn('Unable to read input file sizes', err);
+        throw makeSourceFileAccessError();
+      }
 
       // console.log('merge', paths);
       const metadataFromPath = paths[0];
@@ -961,6 +968,11 @@ function App() {
 
       if (err instanceof OutputNotWritableError) {
         showOutputNotWritable();
+        return;
+      }
+
+      if (err instanceof UserFacingError) {
+        errorToast(err.message);
         return;
       }
 
@@ -1209,6 +1221,11 @@ function App() {
 
       if (err instanceof OutputNotWritableError) {
         showOutputNotWritable();
+        return;
+      }
+
+      if (err instanceof UserFacingError) {
+        errorToast(err.message);
         return;
       }
 

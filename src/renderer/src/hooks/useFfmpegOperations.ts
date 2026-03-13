@@ -5,7 +5,7 @@ import pMap from 'p-map';
 import invariant from 'tiny-invariant';
 import i18n from 'i18next';
 
-import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix } from '../util';
+import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix, assertFileExists } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { needsSmartCut, getCodecParams } from '../smartcut';
@@ -531,13 +531,16 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       return onTotalProgress((sum(Object.values(singleProgresses)) / segments.length));
     }
 
+    invariant(filePath != null);
+    await assertFileExists(filePath);
+
     const chaptersPath = await writeChaptersFfmetadata(outputDir, chapters);
 
     // This function will either call losslessCutSingle (if no smart cut enabled)
     // or if enabled, will first cut&encode the part before the next keyframe, trying to match the input file's codec params
     // then it will cut the part *from* the keyframe to "end", and concat them together and return the concated file
     // so that for the calling code it looks as if it's just a normal segment
-    async function cutSegment({ start: desiredCutFrom, end: cutTo }: { start: number, end: number }, i: number) {
+    const cutSegment = async ({ start: desiredCutFrom, end: cutTo }: { start: number, end: number }, i: number) => {
       const onProgress = (progress: number) => onSingleProgress(i, progress / 2);
       const onConcatProgress = (progress: number) => onSingleProgress(i, (1 + progress) / 2);
 
@@ -556,8 +559,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         return { path: finalOutPath, created: true };
       }
 
-      // we are probably encoding (smart cut or lossy mode)
-      invariant(filePath != null);
+      // we are probably encoding (`isEncoding`: true, smart cut or lossy mode)
 
       // smart cut only supports cutting main file (no externally added files)
       const { streams } = allFilesMeta[filePath]!;
@@ -651,7 +653,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       } finally {
         await tryDeleteFiles(smartCutSegmentsToConcat);
       }
-    }
+    };
 
     try {
       return await pMap(segments, cutSegment, { concurrency: 1 });

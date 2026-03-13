@@ -82,6 +82,17 @@ export async function havePermissionToReadFile(filePath: string) {
   return true;
 }
 
+export const makeSourceFileAccessError = () => new UserFacingError(i18n.t('Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.'));
+
+export async function assertFileExists(filePath: string) {
+  try {
+    await access(filePath, R_OK);
+  } catch (err) {
+    console.error(err);
+    throw makeSourceFileAccessError();
+  }
+}
+
 export async function checkDirWriteAccess(dirPath: string) {
   try {
     await access(dirPath, W_OK);

@@ -711,6 +711,7 @@
   "Some extra tracks have been discarded. You can change this option before merging.": "Some extra tracks have been discarded. You can change this option before merging.",
   "Something went wrong": "Something went wrong",
   "Sort items": "Sort items",
+  "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.",
   "Source file's time minus segment end cut time": "Source file's time minus segment end cut time",
   "Source file's time plus segment start cut time": "Source file's time plus segment start cut time",
   "Speed up playback": "Speed up playback",
