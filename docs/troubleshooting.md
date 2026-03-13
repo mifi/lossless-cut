@@ -22,7 +22,7 @@ Each segment's *start cut time* normally (but not always) will be "rounded" to t
 - You may try to enable the new "Smart cut" mode to allow cutting between keyframes. However it is very experimental and may not work for many files.
 - Currently, the only way to review the exported file (to check the actual cutpoints) is to run the export (possibly with only one segment enabled to speed up) and then manually check the output file. See also [#1887](https://github.com/mifi/lossless-cut/issues/1887)
 
-### Starts from wrong keyframe
+### Cut starts from wrong keyframe
 
 For some files, when you place segment start cutpoints at keyframes, and you export, it will instead cut from the keyframe **before** the keyframe that you wanted. This is because with some videos, ffmpeg struggles to find the nearest previous keyframe, see [#1216](https://github.com/mifi/lossless-cut/issues/1216). To workaround this, you can try to shift your segments' **start**-cutpoints forward by a few frames, so that ffmpeg correctly cuts from the *previous* keyframe. You can also enable the Export Option "Shift all start times" by +1, +2, +3 frames or so.
 
@@ -34,7 +34,7 @@ This will effectively shift all start times of segments by 6 frames (`6/30=0.2` 
 
 ## Cut file has same length as input
 
-If you cut a file, but the duration of the exported file is the same as input file's duration, try to disable all tracks except for the video track and see if that helps. Sometimes a file contains some tracks that LosslessCut is unable to cut. It will then leave them as is, while cutting the other tracks. This may lead to incorrect output duration. Try also changing `avoid_negative_ts` (in export options).
+If you cut a file, but the duration of the exported file is the same as input file's duration, try to disable all tracks except for the video track and export again. Sometimes a file contains some tracks that LosslessCut is unable to cut, and those tracks will be left as-is, while cutting only the other tracks. This may lead to incorrect output duration. Try also changing `avoid_negative_ts` (in export options). If your file has too few keyframes, and you are trying to cut a short segment, it might not cut at all. If you control the app or device that produces your source videos (like OBS Studio), try to reduce keyframe interval in the app's encoding options.
 
 If you are trying to cut a FLAC file but your output has the same duration as input, you might have run into [this ffmpeg limitation](https://github.com/mifi/lossless-cut/discussions/1320).
 
