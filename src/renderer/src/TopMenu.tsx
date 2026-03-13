@@ -17,7 +17,7 @@ import OutDirSelector from './components/OutDirSelector';
 const { stat } = window.require('fs/promises');
 const { webUtils } = window.require('electron');
 
-const outFmtStyle = { minWidth: 210, maxWidth: 320, width: 'auto' as const };
+const outFmtStyle = { flex: '1 1 210px', minWidth: 0, maxWidth: 320, width: '100%' as const };
 const exportModeStyle = { flexGrow: 0, flexBasis: 210, minWidth: 210 };
 
 function TopMenu({

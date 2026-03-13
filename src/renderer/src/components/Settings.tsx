@@ -29,7 +29,7 @@ import OutDirSelector from './OutDirSelector.js';
 const Button = ({ style, ...props }: ButtonProps) => <ButtonRaw style={{ padding: '.5em .9em', minWidth: '12.5em', maxWidth: '100%', justifyContent: 'center', whiteSpace: 'nowrap', ...style }} {...props} />;
 
 // eslint-disable-next-line react/jsx-props-no-spreading
-const Select = ({ style, ...props }: SelectProps) => <SelectRaw style={{ padding: '.5em 1.9em .5em .9em', minWidth: '12.5em', maxWidth: '20em', ...style }} {...props} />;
+const Select = ({ style, ...props }: SelectProps) => <SelectRaw style={{ padding: '.5em 1.9em .5em .9em', width: 'fit-content', minWidth: '12.5em', maxWidth: '20em', display: 'block', marginLeft: 'auto', ...style }} {...props} />;
 
 
 // eslint-disable-next-line react/jsx-props-no-spreading

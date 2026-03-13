@@ -1,35 +1,54 @@
+.container {
+  position: relative;
+  display: inline-block;
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 1 auto;
+}
+
 .select {
+  all: unset;
+  box-sizing: border-box;
   appearance: none;
   font: inherit;
   line-height: 1.2;
   font-size: 0.92rem;
   min-height: 2.5rem;
-  min-width: 10rem;
+  min-width: 0;
+  width: 100%;
   max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.6rem;
+  flex-shrink: 1;
   background: linear-gradient(180deg, var(--player-button-top), var(--player-button-bottom));
   color: var(--player-text-primary);
+  text-align: left;
   border-radius: 0.9rem;
   padding: 0 2.2rem 0 0.8rem;
   border: 1px solid var(--player-border-subtle);
   box-shadow: var(--player-shadow-button);
   white-space: nowrap;
+  cursor: pointer;
+  position: relative;
   transition:
     transform 140ms ease,
     border-color 140ms ease,
     background 140ms ease,
     box-shadow 140ms ease;
-
-  background-image: url("data:image/svg+xml;utf8,<svg fill='rgba(0,0,0,0.6)' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 0.45rem center;
-  background-size: 1.2rem 1.2rem;
 }
 
 .select:hover {
   transform: translateY(-1px);
   border-color: var(--player-border-strong);
-  background-image: url("data:image/svg+xml;utf8,<svg fill='rgba(0,0,0,0.72)' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
   background-color: transparent;
+}
+
+.select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .select:focus-visible {
@@ -37,10 +56,103 @@
   box-shadow: 0 0 0 2px var(--player-focus-ring), var(--player-shadow-button);
 }
 
-:global(.dark-theme) .select {
-  background-image: url("data:image/svg+xml;utf8,<svg fill='rgba(255,255,255,0.6)' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+.value {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-:global(.dark-theme) .select:hover {
-  background-image: url("data:image/svg+xml;utf8,<svg fill='rgba(255,255,255,0.82)' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+.icon {
+  position: absolute;
+  right: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.content {
+  font-size: 0.94rem;
+  color: var(--player-text-primary);
+  min-width: var(--radix-dropdown-menu-trigger-width);
+  max-width: min(26rem, calc(100vw - 2rem));
+  border: 1px solid var(--player-border-subtle);
+  background: var(--player-surface-glass);
+  border-radius: 1rem;
+  padding: 0.35rem;
+  backdrop-filter: blur(22px);
+  box-shadow: var(--player-shadow-elevated);
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.viewport {
+  max-height: min(24rem, calc(100vh - 2rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.groupLabel {
+  padding: 0.55rem 0.8rem 0.3rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  opacity: 0.72;
+  text-transform: uppercase;
+}
+
+.item {
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 0.8rem;
+  user-select: none;
+  outline: none;
+  transition: background 140ms ease, color 140ms ease, opacity 140ms ease;
+}
+
+.item[data-highlighted] {
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+}
+
+.item[data-disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.itemSelected {
+  background: rgba(34, 211, 238, 0.12);
+}
+
+.itemLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.check {
+  flex: 0 0 auto;
+  font-size: 0.8rem;
+}
+
+.separator {
+  height: 1px;
+  background-color: var(--player-border-subtle);
+  margin: 0.2rem 0.45rem;
+}
+
+.hiddenSelect {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
 }
