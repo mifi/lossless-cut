@@ -115,12 +115,13 @@ import useHtml5ify from './hooks/useHtml5ify';
 import WhatsNew from './components/WhatsNew';
 import mainApi from './mainApi.js';
 import type { AppEvent } from '../../main/index.js';
+import { appName } from '../../main/common.js';
 
 const electron = window.require('electron');
 const { lstat } = window.require('fs/promises');
 const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('path');
 
-const { hasDisabledNetworking, pathToFileURL, lossyMode } = window.require('@electron/remote').require('./index.js');
+const { hasDisabledNetworking, pathToFileURL, lossyMode, isLinux } = window.require('@electron/remote').require('./index.js');
 
 
 const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
@@ -258,7 +259,9 @@ function App() {
 
   const showOsNotification = useCallback((text: string) => {
     if (hideOsNotifications == null) {
-      mainApi.sendOsNotification({ title: text });
+      // on Linux app name is not shown in notification, see https://github.com/mifi/lossless-cut/issues/2794
+      if (isLinux) mainApi.sendOsNotification({ title: appName, body: text });
+      else mainApi.sendOsNotification({ title: text });
     }
   }, [hideOsNotifications]);
 
