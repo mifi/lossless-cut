@@ -909,5 +909,6 @@
   "Segment label (starts with)": "Szegmenscímke (ezzel kezdődik)",
   "Segment start to previous keyframe and end to next keyframe": "A szegmens kezdete az előző kulcsképkockáig, vége pedig a következő kulcsképkockáig",
   "Choose directory": "Válasszon könyvtárat",
-  "Clear recents": "Legutóbbiak törlése"
+  "Clear recents": "Legutóbbiak törlése",
+  "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "A forrásfájl már nem létezik, vagy nem érhető el. Kérjük, ellenőrizze, hogy még mindig az eredeti helyén van-e, és hogy rendelkezik-e hozzáférési engedéllyel."
 }
