@@ -1,9 +1,11 @@
 /* Keep in sync with Dialog.module.css */
 
 .AlertDialogOverlay {
-	background-color: var(--black-a9);
+	background-color: rgba(3, 6, 10, 0.55);
 	position: fixed;
 	inset: 0;
+  z-index: 80;
+  backdrop-filter: blur(18px);
 
 	&[data-state="open"] {
 		animation: overlayShow 500ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -15,13 +17,14 @@
 }
 
 :global(.dark-theme) .AlertDialogOverlay {
-	background-color: var(--black-a8);
+	background-color: rgba(2, 5, 9, 0.68);
 }
 
 .AlertDialogContent {
 	position: fixed;
 	top: 50%;
 	left: 50%;
+  z-index: 81;
 	transform: translate(-50%, -50%);
 	box-sizing: border-box;
 
@@ -30,13 +33,13 @@
 	max-width: 90vw;
 	max-height: 85vh;
 
-	border: .1em solid var(--black-a2);
-  background: var(--white-a11);
-  color: var(--gray-12);
-  backdrop-filter: blur(2em);
-  border-radius: .5em;
-  padding: 1.7em;
-  box-shadow: 0 0 1em .3em var(--black-a1);
+	border: 1px solid var(--player-border-subtle);
+  background: var(--player-surface-glass);
+  color: var(--player-text-primary);
+  backdrop-filter: blur(28px);
+  border-radius: 1.1em;
+  padding: 1.5em 1.7em;
+  box-shadow: var(--player-shadow-elevated);
 
 	&[data-state="open"] {
 		animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -48,9 +51,9 @@
 }
 
 :global(.dark-theme) .AlertDialogContent {
-  border: .1em solid var(--white-a3);
-  background: var(--black-a4);
-  box-shadow: 0 0 1em .3em var(--black-a2);
+  border: 1px solid var(--player-border-subtle);
+  background: var(--player-surface-glass);
+  box-shadow: var(--player-shadow-elevated);
 }
 
 .AlertDialogContent:focus {
@@ -60,14 +63,15 @@
 .AlertDialogTitle {
 	margin-top: 0;
 	margin-bottom: .5em;
-	font-weight: 500;
-	font-size: 1.3em;
-	padding-bottom: .3em;
-  border-bottom: .1em solid var(--black-a3);
+	font-weight: 600;
+	font-size: 1.18em;
+	padding-bottom: .65em;
+  border-bottom: 1px solid var(--player-border-subtle);
+  letter-spacing: .01em;
 }
 
 :global(.dark-theme) .AlertDialogTitle {
-  border-bottom: .1em solid var(--white-a4);
+  border-bottom: 1px solid var(--player-border-subtle);
 }
 
 .AlertDialogDescription {

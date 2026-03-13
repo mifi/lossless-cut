@@ -33,40 +33,52 @@ function ExportSheet({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className={styles['sheet']}
-            transition={{ duration: 0.3, ease: ['easeOut'] }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) onClosePress();
+            }}
+            transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className={styles['box']} style={{ width }}>
-              <h1 style={{ fontSize: '1.4em', marginTop: 0, marginBottom: '.5em' }}>{title}</h1>
+            {/* Keep export sheet motion snappy so opening from the bottom action bar feels immediate. */}
+            <motion.div
+              className={styles['box']}
+              style={{ width }}
+              initial={{ opacity: 0, y: 10, scale: 0.985 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 6, scale: 0.99 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <h1 className={styles['title']}>{title}</h1>
 
               <CloseButton type="submit" style={{ top: 0, right: 0 }} onClick={onClosePress} />
 
               {children}
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {visible && (
-          <div key="0" style={{ position: 'fixed', right: 0, bottom: 0, display: 'flex', alignItems: 'center', margin: 5 }}>
+          <div key="0" className={styles['footerDock']}>
             {renderBottom != null && (
               <motion.div
-                initial={{ opacity: 0, translateX: 50 }}
-                animate={{ opacity: 1, translateX: 0 }}
-                exit={{ opacity: 0, translateX: 50 }}
-                transition={{ duration: 0.4, ease: ['easeOut'] }}
-                style={{ display: 'flex', alignItems: 'flex-end', background: 'var(--gray-2)', borderRadius: '.5em', padding: '.3em' }}
+                initial={{ opacity: 0, translateX: 20, translateY: 4 }}
+                animate={{ opacity: 1, translateX: 0, translateY: 0 }}
+                exit={{ opacity: 0, translateX: 14, translateY: 2 }}
+                transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                className={styles['footerPanel']}
               >
                 {renderBottom?.()}
               </motion.div>
             )}
 
+            {/* Animate the primary export action separately so it stays visually anchored in the corner. */}
             <motion.div
               style={{ transformOrigin: 'bottom right' }}
-              initial={{ scale: 0.7, opacity: 1 }}
+              initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.7, opacity: 0 }}
-              transition={{ duration: 0.4, ease: ['easeOut'] }}
+              exit={{ scale: 0.94, opacity: 0 }}
+              transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
             >
               {renderButton()}
             </motion.div>

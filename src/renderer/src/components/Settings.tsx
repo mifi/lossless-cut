@@ -26,14 +26,16 @@ import { dangerColor } from '../colors';
 import OutDirSelector from './OutDirSelector.js';
 
 // eslint-disable-next-line react/jsx-props-no-spreading
-const Button = ({ style, ...props }: ButtonProps) => <ButtonRaw style={{ padding: '.5em .9em', ...style }} {...props} />;
+const Button = ({ style, ...props }: ButtonProps) => <ButtonRaw style={{ padding: '.5em .9em', minWidth: '12.5em', maxWidth: '100%', justifyContent: 'center', whiteSpace: 'nowrap', ...style }} {...props} />;
 
 // eslint-disable-next-line react/jsx-props-no-spreading
-const Select = ({ style, ...props }: SelectProps) => <SelectRaw style={{ padding: '.5em 1.9em .5em .9em', maxWidth: '15em', ...style }} {...props} />;
+const Select = ({ style, ...props }: SelectProps) => <SelectRaw style={{ padding: '.5em 1.9em .5em .9em', minWidth: '12.5em', maxWidth: '20em', ...style }} {...props} />;
 
 
 // eslint-disable-next-line react/jsx-props-no-spreading
-const KeyCell = (props: TdHTMLAttributes<HTMLTableCellElement>) => <td {...props} />;
+const KeyCell = ({ className, ...props }: TdHTMLAttributes<HTMLTableCellElement>) => <td className={[styles['keyCell'], ...(className ? [className] : [])].join(' ')} {...props} />;
+// eslint-disable-next-line react/jsx-props-no-spreading
+const ValueCell = ({ className, ...props }: TdHTMLAttributes<HTMLTableCellElement>) => <td className={[styles['valueCell'], ...(className ? [className] : [])].join(' ')} {...props} />;
 
 const Header = ({ title }: { title: string }) => (
   <Row className={styles['header']}>
@@ -56,7 +58,7 @@ function ModifierKeySetting({ text, value, setValue }: { text: string, value: Mo
     </Row>
   );
 }
-const detailsStyle: CSSProperties = { opacity: 0.75, fontSize: '.9em', marginTop: '.3em' };
+const detailsStyle: CSSProperties = {};
 
 function Settings({
   onTunerRequested,
@@ -115,43 +117,43 @@ function Settings({
       <thead>
         <tr className={styles['header']}>
           <th>{t('Setting')}</th>
-          <th style={{ maxWidth: '15em' }}>{t('Current setting')}</th>
+          <th>{t('Current setting')}</th>
         </tr>
       </thead>
 
       <tbody>
         <Row>
           <KeyCell><FaGlobe style={{ verticalAlign: 'middle', fontSize: '1.2em', marginRight: '.3em' }} /> App language</KeyCell>
-          <td>
+          <ValueCell>
             <Select value={language ?? ''} onChange={onLangChange} style={{ fontSize: '1em' }}>
               <option key="" value="">{t('System language')}</option>
               {Object.keys(langNames).map((lang) => <option key={lang} value={lang}>{langNames[lang as keyof typeof langNames]}</option>)}
             </Select>
-          </td>
+          </ValueCell>
         </Row>
 
         <Row>
           <KeyCell>
             {t('Show advanced settings')}
-            <div style={detailsStyle}>
+            <div className={styles['details']} style={detailsStyle}>
               {!showAdvancedSettings && t('Advanced settings are currently not visible.')}
             </div>
           </KeyCell>
-          <td>
+          <ValueCell>
             <Switch checked={showAdvancedSettings} onCheckedChange={setShowAdvancedSettings} />
-          </td>
+          </ValueCell>
         </Row>
 
         <Row>
           <KeyCell>
             {t('Show export options screen before exporting?')}
-            <div style={detailsStyle}>
+            <div className={styles['details']} style={detailsStyle}>
               {t('This gives you an overview of the export and allows you to customise more parameters before exporting, like changing the output file name.')}
             </div>
           </KeyCell>
-          <td>
+          <ValueCell>
             <Switch checked={exportConfirmEnabled} onCheckedChange={toggleExportConfirmEnabled} />
-          </td>
+          </ValueCell>
         </Row>
 
         {showAdvancedSettings && (
@@ -159,21 +161,23 @@ function Settings({
             <KeyCell>
               {t('Auto save project file?')}<br />
             </KeyCell>
-            <td>
+            <ValueCell>
               <Switch checked={autoSaveProjectFile} onCheckedChange={setAutoSaveProjectFile} />
-            </td>
+            </ValueCell>
           </Row>
         )}
 
         {showAdvancedSettings && (
           <Row>
             <KeyCell>{t('Store project file (.llc) in the working directory or next to loaded media file?')}</KeyCell>
-            <td>
-              <Button disabled={!autoSaveProjectFile} onClick={toggleStoreProjectInWorkingDir}>
-                {storeProjectInWorkingDir ? <FaFolder style={{ verticalAlign: 'middle', fontSize: '1.1em', marginRight: '.3em' }} /> : <FaFile style={{ verticalAlign: 'middle', fontSize: '1.1em', marginRight: '.3em' }} />}
-                {storeProjectInWorkingDir ? t('Store in working directory') : t('Store next to media file')}
-              </Button>
-            </td>
+            <ValueCell>
+              <div className={styles['controlStack']}>
+                <Button disabled={!autoSaveProjectFile} onClick={toggleStoreProjectInWorkingDir}>
+                  {storeProjectInWorkingDir ? <FaFolder style={{ verticalAlign: 'middle', fontSize: '1.1em', marginRight: '.3em' }} /> : <FaFile style={{ verticalAlign: 'middle', fontSize: '1.1em', marginRight: '.3em' }} />}
+                  {storeProjectInWorkingDir ? t('Store in working directory') : t('Store next to media file')}
+                </Button>
+              </div>
+            </ValueCell>
           </Row>
         )}
 
@@ -181,39 +185,41 @@ function Settings({
           <Row>
             <KeyCell>
               {t('Custom FFmpeg directory (experimental)')}<br />
-              <div style={detailsStyle}>
+              <div className={styles['details']} style={detailsStyle}>
                 {t('This allows you to specify custom FFmpeg and FFprobe binaries to use. Make sure the "ffmpeg" and "ffprobe" executables exist in the same directory, and then select the directory.')}
               </div>
             </KeyCell>
-            <td>
-              <Truncated maxWidth="15em">{customFfPath}</Truncated>
-              <Button onClick={changeCustomFfPath}>
-                <FaCogs style={{ verticalAlign: 'middle', marginRight: '.4em' }} />{customFfPath ? t('Using external ffmpeg') : t('Using built-in ffmpeg')}
-              </Button>
-              {customFfPath && (
-                <Button onClick={clearCustomFfPath} title={t('Clear')}>
-                  <FaTimes />
+            <ValueCell>
+              <div className={styles['controlStack']}>
+                <Truncated className={styles['truncate']} maxWidth="18em">{customFfPath}</Truncated>
+                <Button onClick={changeCustomFfPath}>
+                  <FaCogs style={{ verticalAlign: 'middle', marginRight: '.4em' }} />{customFfPath ? t('Using external ffmpeg') : t('Using built-in ffmpeg')}
                 </Button>
-              )}
-            </td>
+                {customFfPath && (
+                  <Button onClick={clearCustomFfPath} title={t('Clear')} style={{ minWidth: '2.6rem', width: '2.6rem', padding: '.5em' }}>
+                    <FaTimes />
+                  </Button>
+                )}
+              </div>
+            </ValueCell>
           </Row>
         )}
 
         {showAdvancedSettings && !isStoreBuild && (
           <Row>
             <KeyCell>{t('Check for updates on startup?')}</KeyCell>
-            <td>
+            <ValueCell>
               <Switch checked={enableUpdateCheck} onCheckedChange={setEnableUpdateCheck} />
-            </td>
+            </ValueCell>
           </Row>
         )}
 
         {showAdvancedSettings && (
           <Row>
             <KeyCell>{t('Allow multiple instances of LosslessCut to run concurrently? (experimental)')}</KeyCell>
-            <td>
+            <ValueCell>
               <Switch checked={allowMultipleInstances} onCheckedChange={setAllowMultipleInstances} />
-            </td>
+            </ValueCell>
           </Row>
         )}
 
@@ -223,7 +229,7 @@ function Settings({
         <Row>
           <KeyCell>
             {t('Choose cutting mode: Remove or keep selected segments from video when exporting?')}<br />
-            <div style={detailsStyle}>
+            <div className={styles['details']} style={detailsStyle}>
               {invertCutSegments ? (
                 <><b>{t('Remove')}</b>: {t('The video inside segments will be discarded, while the video surrounding them will be kept.')}</>
               ) : (
@@ -231,29 +237,31 @@ function Settings({
               )}
             </div>
           </KeyCell>
-          <td>
+          <ValueCell>
             <Button onClick={() => setInvertCutSegments((v) => !v)}>
               <FaYinYang style={{ verticalAlign: 'middle', marginRight: '.3em', color: invertCutSegments ? dangerColor : undefined }} /> {invertCutSegments ? t('Remove') : t('Keep')}
             </Button>
-          </td>
+          </ValueCell>
         </Row>
 
         <Row>
           <KeyCell>
             {t('Working directory')}<br />
-            <div style={detailsStyle}>
+            <div className={styles['details']} style={detailsStyle}>
               {t('This is where working files and exported files are stored.')}
             </div>
           </KeyCell>
-          <td>
-            <Truncated maxWidth="15em">{customOutDir}</Truncated>
-            <OutDirSelector>
-              <Button>
-                {customOutDir ? <FaFolder style={{ marginRight: '.3em', verticalAlign: 'middle' }} /> : <FaFile style={{ marginRight: '.3em', verticalAlign: 'middle' }} />}
-                {customOutDir ? t('Custom working directory') : t('Same directory as input file')}...
-              </Button>
-            </OutDirSelector>
-          </td>
+          <ValueCell>
+            <div className={styles['controlStack']}>
+              <Truncated className={styles['truncate']} maxWidth="18em">{customOutDir}</Truncated>
+              <OutDirSelector>
+                <Button>
+                  {customOutDir ? <FaFolder style={{ marginRight: '.3em', verticalAlign: 'middle' }} /> : <FaFile style={{ marginRight: '.3em', verticalAlign: 'middle' }} />}
+                  {customOutDir ? t('Custom working directory') : t('Same directory as input file')}...
+                </Button>
+              </OutDirSelector>
+            </div>
+          </ValueCell>
         </Row>
 
         {showAdvancedSettings && (
@@ -353,7 +361,7 @@ function Settings({
         <Row>
           <KeyCell>{t('Snapshot capture quality')}</KeyCell>
           <td>
-            <input type="range" min={1} max={1000} style={{ width: 200 }} value={Math.round(captureFrameQuality * 1000)} onChange={(e) => setCaptureFrameQuality(Math.max(Math.min(1, parseInt(e.target.value, 10) / 1000), 0))} /><br />
+            <input type="range" min={1} max={1000} style={{ width: '14rem' }} value={Math.round(captureFrameQuality * 1000)} onChange={(e) => setCaptureFrameQuality(Math.max(Math.min(1, parseInt(e.target.value, 10) / 1000), 0))} /><br />
             {Math.round(captureFrameQuality * 100)}%
           </td>
         </Row>
@@ -543,11 +551,13 @@ function Settings({
         {showAdvancedSettings && (
           <Row>
             <KeyCell>{t('Import chapters to segments when opening file')}</KeyCell>
-            <Select value={enableImportChapters} onChange={(e) => setEnableImportChapters(e.target.value as EnableImportChapters)}>
-              {Object.entries(getEnableImportChaptersOptions() satisfies Record<EnableImportChapters, string>).map(([key, name]) => (
-                <option key={key} value={key}>{name}</option>
-              ))}
-            </Select>
+            <ValueCell>
+              <Select value={enableImportChapters} onChange={(e) => setEnableImportChapters(e.target.value as EnableImportChapters)}>
+                {Object.entries(getEnableImportChaptersOptions() satisfies Record<EnableImportChapters, string>).map(([key, name]) => (
+                  <option key={key} value={key}>{name}</option>
+                ))}
+              </Select>
+            </ValueCell>
           </Row>
         )}
       </tbody>

@@ -7,7 +7,7 @@ import { DialogButton } from './Button';
 import TextInput from './TextInput';
 import { useGenericDialogContext } from './GenericDialog';
 import { ButtonRow } from './Dialog';
-import { dangerColor } from '../colors';
+import styles from './ExpressionDialog.module.css';
 
 
 interface Props {
@@ -52,34 +52,38 @@ const ExpressionDialog = forwardRef<HTMLDivElement, Props>(({ onSubmit, examples
 
   return (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    <AlertDialog.Content ref={ref as any} aria-describedby={undefined} style={{ width: '80vw' }}>
+    <AlertDialog.Content ref={ref as any} aria-describedby={undefined} className={styles['content']}>
       <AlertDialog.Title>{title}</AlertDialog.Title>
 
-      {description && <AlertDialog.Description>{description}</AlertDialog.Description>}
+      {description && <AlertDialog.Description className={styles['description']}>{description}</AlertDialog.Description>}
 
       {variables && (
-        <div style={{ marginBottom: '1em' }}>{t('Variables')}: {variables.map((v) => <code style={{ marginRight: '.3em' }} key={v} className="highlighted">{v}</code>)}</div>
+        <div className={styles['variables']}>{t('Variables')}: {variables.map((v) => <code key={v} className="highlighted">{v}</code>)}</div>
       )}
 
-      <div><b>{t('Examples')}:</b></div>
+      <div className={styles['examplesTitle']}>{t('Examples')}:</div>
 
-      {examples.map(({ name, code }) => (
-        <button key={code} type="button" onClick={() => onExampleClick(code)} className="link-button" style={{ display: 'block', marginBottom: '.1em' }}>
-          {name}
-        </button>
-      ))}
+      <div className={styles['examples']}>
+        {examples.map(({ name, code }) => (
+          <button key={code} type="button" onClick={() => onExampleClick(code)} className={styles['exampleButton']}>
+            {name}
+          </button>
+        ))}
+      </div>
 
-      <form onSubmit={handleSubmit}>
+      {/* Keep the expression input full-width and visually dominant; it is the only required action in this dialog. */}
+      <form className={styles['form']} onSubmit={handleSubmit}>
         <TextInput
           ref={valueRef}
           placeholder={t('Enter JavaScript expression')}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          style={{ margin: '1em 0', padding: '1em', width: '100%', boxSizing: 'border-box', fontFamily: 'monospace' }}
+          className={styles['input']}
+          style={{ padding: '0 1rem' }}
         />
 
         {error != null && (
-          <div style={{ color: dangerColor, fontWeight: 'bold' }}>
+          <div className={styles['error']}>
             {error}
           </div>
         )}

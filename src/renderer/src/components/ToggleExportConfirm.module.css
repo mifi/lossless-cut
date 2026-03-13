@@ -1,0 +1,88 @@
+.toggle {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 3rem;
+  padding: 0 0.95rem;
+  border-radius: 1rem;
+  border: 1px solid var(--player-border-subtle);
+  background: linear-gradient(180deg, var(--player-button-top), var(--player-button-bottom));
+  box-shadow: var(--player-shadow-button);
+  color: var(--player-text-muted);
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.toggle:hover {
+  transform: translateY(-1px);
+  border-color: var(--player-border-strong);
+  background: linear-gradient(180deg, var(--player-button-top-hover), var(--player-button-bottom-hover));
+  color: var(--player-text-primary);
+}
+
+.toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--player-focus-ring), var(--player-shadow-button);
+}
+
+.toggle[data-checked='true'] {
+  color: var(--player-text-primary);
+  border-color: var(--player-accent-border);
+  background:
+    linear-gradient(180deg, rgba(34, 211, 238, 0.14), rgba(34, 211, 238, 0.06)),
+    linear-gradient(180deg, var(--player-button-top), var(--player-button-bottom));
+}
+
+.icon {
+  font-size: 1.2rem;
+  color: var(--player-accent);
+  flex-shrink: 0;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: inherit;
+}
+
+.state {
+  display: none;
+}
+
+.check {
+  margin-left: 0.2rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  border: 1px solid var(--player-border-subtle);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  background: rgba(255, 255, 255, 0.04);
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+.toggle[data-checked='true'] .check {
+  color: white;
+  border-color: transparent;
+  background: linear-gradient(180deg, var(--player-accent), var(--player-accent-strong));
+}

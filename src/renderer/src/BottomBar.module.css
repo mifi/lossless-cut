@@ -1,0 +1,200 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem 1rem;
+  color: var(--player-text-primary);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.rowCenter {
+  justify-content: center;
+}
+
+.stretch {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sideTools {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.centerCluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex: 999 1 38rem;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.utilityGroup,
+.navGroup,
+.transportGroup,
+.metaGroup,
+.actionGroup {
+  min-width: 0;
+}
+
+.utilityGroup {
+  justify-content: flex-start;
+}
+
+.transportGroup {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.navGroup {
+  justify-content: center;
+}
+
+.actionGroup {
+  margin-left: auto;
+}
+
+.toolbarIcon {
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+.toolbarIconSm {
+  font-size: 0.92rem;
+}
+
+.transportIcon {
+  font-size: 1rem;
+}
+
+.cutInput {
+  width: 6.1rem;
+}
+
+.toggleLabel {
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.textButton {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  color: var(--player-text-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.textButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--player-focus-ring);
+  border-radius: 999px;
+}
+
+.zoomSelect {
+  min-width: 6.6rem;
+  height: 2.125rem;
+  padding: 0 2.1rem 0 0.8rem;
+  border-radius: 999px;
+  border-color: var(--player-border-subtle);
+  background-color: rgba(17, 20, 27, 0.06);
+  box-shadow: var(--player-shadow-button);
+  color: var(--player-text-primary);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.zoomSelect:hover {
+  filter: none;
+  border-color: var(--player-border-strong);
+  background-color: rgba(17, 20, 27, 0.1);
+}
+
+.captureFormatButton {
+  min-height: 2.125rem;
+  padding-left: 0.8rem;
+  padding-right: 0.8rem;
+  border-radius: 999px;
+  background-image: linear-gradient(180deg, var(--player-button-top), var(--player-button-bottom));
+  border: 1px solid var(--player-border-subtle);
+  outline: none;
+  box-shadow: var(--player-shadow-button);
+  color: var(--player-text-primary);
+  font-size: 0.76rem;
+}
+
+.captureFormatButton:hover {
+  filter: none;
+  border-color: var(--player-border-strong);
+  background-image: linear-gradient(180deg, var(--player-button-top-hover), var(--player-button-bottom-hover));
+}
+
+.captureFormatButton:focus-visible {
+  box-shadow: 0 0 0 2px var(--player-focus-ring), var(--player-shadow-button);
+}
+
+.exportWarning {
+  color: var(--player-danger);
+  font-size: 0.95rem;
+}
+
+.playAllIcon {
+  font-size: 0.85rem;
+}
+
+.statButton {
+  cursor: pointer;
+}
+
+.compactLabel {
+  font-size: 0.78rem;
+  color: var(--player-text-muted);
+}
+
+.cameraGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.heroActionButton {
+  min-width: 2.875rem;
+  height: 2.875rem;
+  border-radius: 1rem;
+}
+
+.heroExportButton {
+  min-height: 2.875rem;
+  border-radius: 1rem;
+  padding-left: 1.05rem;
+  padding-right: 1.05rem;
+}
+
+.invertedControl {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.toggleCaption {
+  font-size: 0.72rem;
+  color: var(--player-text-muted);
+  white-space: nowrap;
+}
+
+@media (max-width: 1180px) {
+  .actionGroup {
+    margin-left: 0;
+  }
+}

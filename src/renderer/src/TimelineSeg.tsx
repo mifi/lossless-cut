@@ -9,7 +9,7 @@ import { useSegColors } from './contexts';
 import type { FormatTimecode, StateSegment } from './types';
 
 
-const markerButtonStyle: React.CSSProperties = { fontSize: 10, minWidth: 0, letterSpacing: '-.1em', color: 'white' };
+const markerButtonStyle: React.CSSProperties = { fontSize: 10, minWidth: 0, letterSpacing: '-.08em', color: 'white', fontWeight: 700 };
 
 function Marker({
   seg, segNum, color, isActive, selected, onClick, getTimePercent, formatTimecode,
@@ -38,10 +38,10 @@ function Marker({
     top: 0,
     bottom: 0,
     left: getTimePercent(seg.start),
-    width: 2,
-    marginLeft: -1,
+    width: 3,
+    marginLeft: -1.5,
     overflow: 'visible',
-    backgroundColor: 'var(--gray-12)',
+    backgroundColor: 'var(--player-text-primary)',
   }), [getTimePercent, seg.start]);
 
   const borderColor = useMemo(() => {
@@ -53,7 +53,15 @@ function Marker({
   }, [darkMode, isActive]);
 
   const segNumStyle = useMemo<React.CSSProperties>(() => ({
-    borderRadius: '50%', backgroundColor: pinColor, width: 14, height: 14, marginLeft: -7, flexShrink: 0, textAlign: 'center', border: `1px solid ${borderColor}`,
+    borderRadius: '50%',
+    backgroundColor: pinColor,
+    width: 16,
+    height: 16,
+    marginLeft: -8,
+    flexShrink: 0,
+    textAlign: 'center',
+    border: `1px solid ${borderColor}`,
+    boxShadow: '0 10px 18px rgba(0,0,0,0.16)',
   }), [pinColor, borderColor]);
 
   return (
@@ -96,8 +104,8 @@ function Segment({
   const { name } = seg;
 
   const border = useMemo(() => {
-    const horizontalBorderWidth = '1px';
-    const verticalBorderWidth = '1.5px';
+      const horizontalBorderWidth = '1px';
+      const verticalBorderWidth = '2px';
 
     if (isActive) {
       const horizontalColor = darkMode ? color.desaturate(0.1).lightness(60) : color.desaturate(0.2).lightness(40);
@@ -116,12 +124,12 @@ function Segment({
 
   const backgroundColor = useMemo(() => {
     // we use both transparency and lightness, so that segments can be visible when overlapping
-    if (invertCutSegments || !selected) return darkMode ? color.desaturate(0.3).lightness(30).alpha(0.5).string() : color.desaturate(0.3).lightness(70).alpha(0.5).string();
-    if (isActive) return darkMode ? color.saturate(0.2).lightness(60).alpha(0.7).string() : color.saturate(0.2).lightness(40).alpha(0.8).string();
-    return darkMode ? color.desaturate(0.2).lightness(50).alpha(0.7).string() : color.lightness(35).alpha(0.6).string();
+    if (invertCutSegments || !selected) return darkMode ? color.desaturate(0.15).lightness(32).alpha(0.38).string() : color.desaturate(0.2).lightness(72).alpha(0.38).string();
+    if (isActive) return darkMode ? color.saturate(0.15).lightness(56).alpha(0.52).string() : color.saturate(0.12).lightness(42).alpha(0.54).string();
+    return darkMode ? color.desaturate(0.12).lightness(46).alpha(0.44).string() : color.lightness(44).alpha(0.46).string();
   }, [darkMode, invertCutSegments, isActive, color, selected]);
 
-  const vertBorderRadius = 5;
+  const vertBorderRadius = 8;
 
   const title = useMemo(() => {
     const parts = [
@@ -147,6 +155,7 @@ function Segment({
       boxSizing: 'border-box',
       color: 'white',
       overflow: 'hidden',
+      boxShadow: isActive ? '0 12px 22px rgba(0,0,0,0.18)' : '0 8px 18px rgba(0,0,0,0.1)',
 
       borderLeft: border.vertical,
       borderTopLeftRadius: vertBorderRadius,
@@ -159,7 +168,7 @@ function Segment({
       borderTop: border.horizontal,
       borderBottom: border.horizontal,
     };
-  }, [getTimePercent, seg.end, seg.start, border]);
+    }, [getTimePercent, seg.end, seg.start, border, isActive]);
 
   return (
     <motion.div
@@ -173,7 +182,7 @@ function Segment({
       onClick={onClick}
       title={title}
     >
-      <div style={{ alignSelf: 'flex-start', flexShrink: 0, fontSize: 10, minWidth: 0, letterSpacing: '-.1em' }}>{segNum + 1}</div>
+      <div style={{ alignSelf: 'flex-start', flexShrink: 0, fontSize: 10, minWidth: 0, letterSpacing: '-.08em', fontWeight: 700 }}>{segNum + 1}</div>
 
       <AnimatePresence>
         {invertCutSegments && (
@@ -200,7 +209,7 @@ function Segment({
 
       {name && <div style={{ flexBasis: 4, flexShrink: 1 }} />}
 
-      {name && <div style={{ flexShrink: 1, fontSize: 11, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap' }}>{name}</div>}
+      {name && <div style={{ flexShrink: 1, fontSize: 11, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap', fontWeight: 600 }}>{name}</div>}
 
       <div style={{ flexGrow: 1 }} />
     </motion.div>

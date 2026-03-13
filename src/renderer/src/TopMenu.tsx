@@ -8,7 +8,7 @@ import Button from './components/Button';
 import ExportModeButton from './components/ExportModeButton';
 
 import { withBlur } from './util';
-import { primaryTextColor, controlsBackground, darkModeTransition } from './colors';
+import { primaryTextColor } from './colors';
 import useUserSettings from './hooks/useUserSettings';
 import styles from './TopMenu.module.css';
 import OutDirSelector from './components/OutDirSelector';
@@ -17,8 +17,8 @@ import OutDirSelector from './components/OutDirSelector';
 const { stat } = window.require('fs/promises');
 const { webUtils } = window.require('electron');
 
-const outFmtStyle = { maxWidth: 100 };
-const exportModeStyle = { flexGrow: 0, flexBasis: 140 };
+const outFmtStyle = { minWidth: 210, maxWidth: 320, width: 'auto' as const };
+const exportModeStyle = { flexGrow: 0, flexBasis: 210, minWidth: 210 };
 
 function TopMenu({
   filePath,
@@ -62,7 +62,7 @@ function TopMenu({
   function renderFormatLock() {
     const Icon = outFormatLocked ? FaLock : FaUnlock;
     return (
-      <Button style={{ marginRight: '.7em' }}>
+      <Button className={styles['iconButton']} style={{ marginRight: '.2em' }}>
         <Icon onClick={onOutFormatLockedClick} title={t('Lock/unlock output format')} style={{ fontSize: '.8em', color: outFormatLocked ? primaryTextColor : undefined }} />
       </Button>
     );
@@ -87,7 +87,6 @@ function TopMenu({
   return (
     <div
       className={`no-user-select ${styles['wrapper']}`}
-      style={{ background: controlsBackground, transition: darkModeTransition, display: 'flex', alignItems: 'center', padding: '.3em .3em', gap: '.3em', justifyContent: 'space-between', flexWrap: 'wrap' }}
     >
       {filePath && (
         <>
@@ -116,7 +115,7 @@ function TopMenu({
         </>
       )}
 
-      <div style={{ flexGrow: 1 }} />
+      <div className={styles['spacer']} />
 
       <OutDirSelector>
         <Button
@@ -137,12 +136,12 @@ function TopMenu({
       )}
 
       {!simpleMode && (
-        <Button onClick={toggleDarkMode} title={t('Toggle dark mode')}>
+        <Button className={styles['iconButton']} onClick={toggleDarkMode} title={t('Toggle dark mode')}>
           <DarkMode style={{ verticalAlign: 'middle', fontSize: '.9em' }} />
         </Button>
       )}
 
-      <Button onClick={toggleSettings}>
+      <Button className={styles['iconButton']} onClick={toggleSettings}>
         <IoIosSettings style={{ fontSize: '1em', verticalAlign: 'bottom' }} />
       </Button>
     </div>

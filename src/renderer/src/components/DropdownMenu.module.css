@@ -1,14 +1,13 @@
 .DropdownMenuContent {
-	font-size: .9em;
-  color: var(--gray-12);
-	min-width: 10em;
-  border: .1em solid var(--gray-3);
-	background-color: var(--gray-1);
-	border-radius: .3em;
-	padding: .2em;
-	box-shadow:
-		0px 1em 3.8em -1em rgba(22, 23, 24, 0.35),
-		0px 1em 2em -1.5em rgba(22, 23, 24, 0.2);
+	font-size: 0.94rem;
+  color: var(--player-text-primary);
+	min-width: 12rem;
+  border: 1px solid var(--player-border-subtle);
+	background: var(--player-surface-glass);
+	border-radius: 1rem;
+	padding: 0.35rem;
+  backdrop-filter: blur(22px);
+	box-shadow: var(--player-shadow-elevated);
 	animation-duration: 400ms;
 	animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 	will-change: transform, opacity;
@@ -30,26 +29,31 @@
 	line-height: 1.2;
 	display: flex;
 	align-items: center;
-	padding: .5em .8em;
-  border-radius: .3em;
+	padding: 0.7rem 0.85rem;
+  border-radius: 0.8rem;
 	position: relative;
 	user-select: none;
 	outline: none;
+  transition: background 140ms ease, color 140ms ease;
 }
 .DropdownMenuItem[data-disabled],
 .DropdownMenuItem[data-highlighted] {
-  background-color: var(--gray-3);
+  background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
 }
 
 .DropdownMenuSeparator {
-	height: .1em;
-	background-color: var(--gray-3);
-	margin: .1em .5em;
+	height: 1px;
+	background-color: var(--player-border-subtle);
+	margin: 0.2rem 0.45rem;
 }
 
 .DropdownMenuArrow {
-	fill: var(--gray-3);
+	fill: rgba(17, 20, 27, 0.9);
+}
+
+:global(.dark-theme) .DropdownMenuArrow {
+	fill: rgba(10, 14, 20, 0.94);
 }
 
 @keyframes slideUpAndFade {

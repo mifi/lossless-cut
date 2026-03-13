@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactEventHandler, FocusEventHandler, DragEventHandler } from 'react';
 import { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { FaRegTimesCircle } from 'react-icons/fa';
-import { MdRotate90DegreesCcw } from 'react-icons/md';
+import { MdFullscreen, MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence, MotionConfig } from 'motion/react';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
@@ -2499,40 +2499,44 @@ function App() {
                   {bigWaveformEnabled && <BigWaveform waveforms={waveforms} relevantTime={relevantTime} playing={playing} fileDurationNonZero={fileDurationNonZero} zoom={zoomUnrounded} seekRel={seekRel} darkMode={darkMode} />}
 
                   {compatPlayerEnabled && (
-                    <div style={{ position: 'absolute', top: 0, right: 0, left: 0, marginTop: '1em', marginLeft: '1em', color: 'var(--gray-12)', opacity: 0.7, display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
-                      {isRotationSet ? (
-                        <>
-                          <MdRotate90DegreesCcw size={26} style={{ marginRight: 5 }} />
-                          {t('Rotation preview')}
-                        </>
-                      ) : (
-                        <>
-                          {t('FFmpeg-assisted playback')}
-                        </>
-                      )}
+                    <div className={styles['compatBadgeRow']}>
+                      <div className={styles['compatBadge']}>
+                        {isRotationSet && <MdRotate90DegreesCcw size={20} />}
 
-                      <div style={{ cursor: 'pointer', pointerEvents: 'initial', color: 'var(--gray-12)', opacity: 0.7, padding: '.2em', marginLeft: '.5em' }} role="button" onClick={() => incrementMediaSourceQuality()} title={t('Select playback quality')}>{mediaSourceQualities[mediaSourceQuality]}</div>
+                        <div className={styles['compatBadgeText']}>
+                          <span className={styles['compatBadgeEyebrow']}>{t('Playback mode')}</span>
+                          <span className={styles['compatBadgeLabel']}>{isRotationSet ? t('Rotation preview') : t('FFmpeg-assisted playback')}</span>
+                        </div>
 
-                      {!compatPlayerRequired && <FaRegTimesCircle role="button" style={{ cursor: 'pointer', pointerEvents: 'initial', verticalAlign: 'middle', padding: '.2em' }} onClick={handleHideCompatPlayerClick} />}
+                        <div className={styles['compatBadgeActions']}>
+                          <button className={styles['compatActionButton']} type="button" onClick={() => incrementMediaSourceQuality()} title={t('Select playback quality')}>{mediaSourceQualities[mediaSourceQuality]}</button>
+
+                          {!compatPlayerRequired && (
+                            <button className={[styles['compatActionButton'], styles['compatActionButtonQuiet']].join(' ')} type="button" onClick={handleHideCompatPlayerClick} title={t('Hide FFmpeg-assisted playback')}>
+                              <FaRegTimesCircle />
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   )}
 
                   {isFileOpened && (
-                    <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, marginBottom: 10, display: 'flex', alignItems: 'flex-end' }}>
+                    <div className={[styles['overlayDock'], 'no-user-select'].join(' ')}>
                       <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} onToggleMutedClick={toggleMuted} />
+
+                      <button className={[styles['compatActionButton'], styles['compatActionButtonQuiet']].join(' ')} type="button" title={t('Toggle fullscreen')} onClick={toggleFullscreenVideo}>
+                        <MdFullscreen size={19} />
+                      </button>
 
                       {shouldShowPlaybackStreamSelector && (
                         <PlaybackStreamSelector subtitleStreams={subtitleStreams} videoStreams={videoStreams} audioStreams={audioStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} activeVideoStreamIndex={activeVideoStreamIndex} activeAudioStreamIndexes={activeAudioStreamIndexes} onActiveSubtitleChange={onActiveSubtitleChange} onActiveVideoStreamChange={onActiveVideoStreamChange} onActiveAudioStreamsChange={onActiveAudioStreamsChange} />
                       )}
 
                       {!showRightBar && (
-                        <IoMdMenu
-                          title={t('Show sidebar')}
-                          size={30}
-                          role="button"
-                          style={{ marginRight: 10, color: 'var(--gray-12)', opacity: 0.7 }}
-                          onClick={toggleSegmentsList}
-                        />
+                        <button className={[styles['compatActionButton'], styles['compatActionButtonQuiet']].join(' ')} type="button" title={t('Show sidebar')} onClick={toggleSegmentsList}>
+                          <IoMdMenu size={19} />
+                        </button>
                       )}
                     </div>
                   )}
