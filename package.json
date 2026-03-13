@@ -330,6 +330,10 @@
         {
           "arch": "arm64",
           "target": "7z"
+        },
+        {
+          "arch": "arm64",
+          "target": "appx"
         }
       ],
       "extraResources": [
