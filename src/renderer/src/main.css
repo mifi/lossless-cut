@@ -59,6 +59,7 @@ body {
   --player-accent-shadow: 0 8px 18px rgba(14, 165, 233, 0.16);
   --player-accent-shadow-hover: 0 10px 22px rgba(14, 165, 233, 0.2);
   --player-icon-shadow: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.12));
+  --player-overlay-scrim: rgba(3, 6, 10, 0.55);
   --player-backdrop-filter: none;
   --player-backdrop-filter-strong: none;
   --player-chrome-glow: radial-gradient(circle at top center, rgba(34, 211, 238, 0.018), transparent 34%);
@@ -96,6 +97,7 @@ body {
   --player-accent-shadow: 0 16px 30px rgba(0, 0, 0, 0.32);
   --player-accent-shadow-hover: 0 18px 34px rgba(0, 0, 0, 0.34);
   --player-icon-shadow: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
+  --player-overlay-scrim: rgba(2, 5, 9, 0.68);
   --player-backdrop-filter: blur(18px);
   --player-backdrop-filter-strong: blur(24px);
   --player-chrome-glow: radial-gradient(circle at top center, rgba(34, 211, 238, 0.05), transparent 35%);
