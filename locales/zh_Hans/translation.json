@@ -1096,5 +1096,8 @@
   "Export options screen is disabled, and you will not see any important notices or warnings.": "已禁用导出选项屏幕，你将无法看到任何重要的通知或警告。",
   "Learn more": "了解更多",
   "Segment label (starts with)": "片段标签（开始处）",
-  "Segment start to previous keyframe and end to next keyframe": "从前一关键帧开始到下一关键帧的片段"
+  "Segment start to previous keyframe and end to next keyframe": "从前一关键帧开始到下一关键帧的片段",
+  "Choose directory": "选择目录",
+  "Clear recents": "清除近期记录",
+  "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "源文件已不存在或无法访问。请检查是否还在原始位置并且有访问权限。"
 }
