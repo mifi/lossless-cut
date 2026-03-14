@@ -1034,5 +1034,9 @@
   "Segment label (starts with)": "Etichetta segmento (inizia con)",
   "Segment start to previous keyframe and end to next keyframe": "Il segmento inizia con il fotogramma chiave precedente e termina con il fotogramma chiave successivo",
   "Choose directory": "Scegli cartella",
-  "Clear recents": "Azzera recenti"
+  "Clear recents": "Azzera recenti",
+  "Elapsed: {{seconds}} seconds": "Trascorsi: {{seconds}} secondi",
+  "Enable FFmpeg `-hwaccel auto` flag. This can improve performance segment auto detection and FFmpeg-assisted playback speed.": "Abilita il flag FFmpeg `-hwaccel auto`. Ciò può migliorare il rilevamento automatico del segmento prestazione e la velocità di riproduzione assistita da FFmpeg.",
+  "Other": "Altro",
+  "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "Il file sorgente non esiste più o non è accessibile. Verifica che sia ancora nella sua posizione originale e di avere l'autorizzazione per accedervi."
 }
