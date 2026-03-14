@@ -7,6 +7,8 @@ export interface KeyBinding {
   action: KeyboardAction,
 }
 
+export type FfmpegHwAccel = 'none' | 'auto' | 'vdpau' | 'dxva2' | 'd3d11va' | 'vaapi' | 'qsv' | 'videotoolbox';
+
 export type CaptureFormat = 'jpeg' | 'png' | 'webp';
 
 export type TimecodeFormat = 'timecodeWithDecimalFraction' | 'frameCount' | 'seconds' | 'timecodeWithFramesFraction';
@@ -100,6 +102,7 @@ export interface Config {
   thumbnailsEnabled: boolean,
   keyframesEnabled: boolean,
   reducedMotion: 'always' | 'never' | 'user',
+  ffmpegHwaccel: FfmpegHwAccel,
 }
 
 export interface Waveform {

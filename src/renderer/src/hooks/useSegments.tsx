@@ -31,6 +31,7 @@ import * as Dialog from '../components/Dialog';
 import { UserFacingError } from '../../errors';
 import { editSegmentByExpressionHelpUrl, selectSegmentByExpressionHelpUrl } from '../../../common/constants';
 import type { Segment as ScopeSegment } from '../../../common/userTypes';
+import type { FfmpegHwAccel } from '../../../common/types';
 
 const remote = window.require('@electron/remote');
 const { shell } = remote;
@@ -41,7 +42,7 @@ type ParameterDialogParameters = Record<string, string>;
 
 const offsetSegments = (segments: DefiniteSegmentBase[], offset: number) => segments.map((s) => ({ start: s.start + offset, end: s.end + offset }));
 
-function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta, seekAbs, activeVideoStreamIndex, activeAudioStreamIndexes, handleError, showGenericDialog, simpleMode }: {
+function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta, seekAbs, activeVideoStreamIndex, activeAudioStreamIndexes, handleError, showGenericDialog, simpleMode, ffmpegHwaccel }: {
   filePath?: string | undefined,
   workingRef: MutableRefObject<boolean>,
   setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void,
@@ -64,6 +65,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   handleError: HandleError,
   showGenericDialog: ShowGenericDialog,
   simpleMode: boolean,
+  ffmpegHwaccel: FfmpegHwAccel,
 }) {
   const { t } = useTranslation();
 
@@ -318,8 +320,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     setFfmpegParametersForDialog(dialogType, parameters);
     invariant(mode === '1' || mode === '2');
     invariant(filePath != null);
-    await detectSegments({ name: 'blackScenes', workingText: i18n.t('Detecting black scenes'), errorText: i18n.t('Failed to detect black scenes'), fn: async (onSegmentDetected) => blackDetect({ filePath, streamId: activeVideoStreamIndex, filterOptions, boundingMode: mode === '1', onProgress: setProgress, onSegmentDetected, from: start, to: end }) });
-  }, [currentCutSegOrWholeTimeline, deleteCurrentCutSeg, showParametersDialog, getFfmpegParameters, setFfmpegParametersForDialog, filePath, detectSegments, activeVideoStreamIndex, setProgress]);
+    await detectSegments({ name: 'blackScenes', workingText: i18n.t('Detecting black scenes'), errorText: i18n.t('Failed to detect black scenes'), fn: async (onSegmentDetected) => blackDetect({ filePath, streamId: activeVideoStreamIndex, filterOptions, boundingMode: mode === '1', onProgress: setProgress, onSegmentDetected, from: start, to: end, ffmpegHwaccel }) });
+  }, [currentCutSegOrWholeTimeline, deleteCurrentCutSeg, showParametersDialog, getFfmpegParameters, setFfmpegParametersForDialog, filePath, detectSegments, activeVideoStreamIndex, setProgress, ffmpegHwaccel]);
 
   const detectSilentScenes = useCallback(async () => {
     const { start, end } = currentCutSegOrWholeTimeline;
@@ -331,8 +333,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     const { mode, ...filterOptions } = parameters;
     invariant(mode === '1' || mode === '2');
     invariant(filePath != null);
-    await detectSegments({ name: 'silentScenes', workingText: i18n.t('Detecting silent scenes'), errorText: i18n.t('Failed to detect silent scenes'), fn: async (onSegmentDetected) => silenceDetect({ filePath, streamId: [...activeAudioStreamIndexes][0], filterOptions, boundingMode: mode === '1', onProgress: setProgress, onSegmentDetected, from: start, to: end }) });
-  }, [activeAudioStreamIndexes, currentCutSegOrWholeTimeline, deleteCurrentCutSeg, detectSegments, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress, showParametersDialog]);
+    await detectSegments({ name: 'silentScenes', workingText: i18n.t('Detecting silent scenes'), errorText: i18n.t('Failed to detect silent scenes'), fn: async (onSegmentDetected) => silenceDetect({ filePath, streamId: [...activeAudioStreamIndexes][0], filterOptions, boundingMode: mode === '1', onProgress: setProgress, onSegmentDetected, from: start, to: end, ffmpegHwaccel }) });
+  }, [activeAudioStreamIndexes, currentCutSegOrWholeTimeline, deleteCurrentCutSeg, detectSegments, ffmpegHwaccel, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress, showParametersDialog]);
 
   const detectSceneChanges = useCallback(async () => {
     const { start, end } = currentCutSegOrWholeTimeline;
@@ -345,8 +347,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     // eslint-disable-next-line prefer-destructuring
     const minChange = parameters['minChange'];
     invariant(minChange != null);
-    await detectSegments({ name: 'sceneChanges', workingText: i18n.t('Detecting scene changes'), errorText: i18n.t('Failed to detect scene changes'), fn: async (onSegmentDetected) => ffmpegDetectSceneChanges({ filePath, streamId: activeVideoStreamIndex, minChange, onProgress: setProgress, onSegmentDetected, from: start, to: end }) });
-  }, [activeVideoStreamIndex, currentCutSegOrWholeTimeline, deleteCurrentCutSeg, detectSegments, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress, showParametersDialog]);
+    await detectSegments({ name: 'sceneChanges', workingText: i18n.t('Detecting scene changes'), errorText: i18n.t('Failed to detect scene changes'), fn: async (onSegmentDetected) => ffmpegDetectSceneChanges({ filePath, streamId: activeVideoStreamIndex, minChange, onProgress: setProgress, onSegmentDetected, from: start, to: end, ffmpegHwaccel }) });
+  }, [activeVideoStreamIndex, currentCutSegOrWholeTimeline, deleteCurrentCutSeg, detectSegments, ffmpegHwaccel, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress, showParametersDialog]);
 
   const createSegmentsFromKeyframes = useCallback(async () => {
     const { start, end } = currentCutSegOrWholeTimeline;

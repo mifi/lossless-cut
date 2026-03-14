@@ -194,6 +194,8 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ keyframesEnabled }), [keyframesEnabled]);
   const [reducedMotion, setReducedMotion] = useState(safeGetConfigInitial('reducedMotion'));
   useEffect(() => safeSetConfig({ reducedMotion }), [reducedMotion]);
+  const [ffmpegHwaccel, setFfmpegHwaccel] = useState(safeGetConfigInitial('ffmpegHwaccel'));
+  useEffect(() => safeSetConfig({ ffmpegHwaccel }), [ffmpegHwaccel]);
 
 
   const resetKeyBindings = useCallback(() => {
@@ -312,6 +314,7 @@ export default function useUserSettingsRoot() {
     thumbnailsEnabled,
     keyframesEnabled,
     reducedMotion,
+    ffmpegHwaccel,
   };
 
   return {
@@ -394,6 +397,7 @@ export default function useUserSettingsRoot() {
     setKeyframesEnabled,
     prefersReducedMotion,
     setReducedMotion,
+    setFfmpegHwaccel,
   };
 }
 

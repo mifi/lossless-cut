@@ -1,8 +1,8 @@
 // ⚠️ These types are a the contract with the user, through the documentation.
+// ⚠️ JSDoc comments get converted to user documentation.
 // ‼️ DO NOT change these types without considering the user impact!
 // See https://github.com/mifi/lossless-cut/blob/master/expressions.md
 // https://github.com/mifi/lossless-cut/blob/master/docs.md#custom-exported-file-names
-// JSDoc comments get converted to user documentation.
 
 /**
  * Properties of a source file made available to the user in the export file name template.

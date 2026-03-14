@@ -171,6 +171,7 @@ const defaults: Config = {
   thumbnailsEnabled: false,
   keyframesEnabled: true,
   reducedMotion: 'user',
+  ffmpegHwaccel: 'none',
 };
 
 const configFileName = 'config.json'; // note: this is also hard-coded inside electron-store
