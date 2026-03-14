@@ -105,6 +105,7 @@ export interface WaveformSlice extends WaveformBase {
   to: number,
   duration: number,
   url?: string, // undefined while rendering
+  failed?: true, // if failed to render
 }
 
 export interface OverviewWaveform extends WaveformBase {
