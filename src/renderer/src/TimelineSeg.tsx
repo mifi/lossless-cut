@@ -155,7 +155,7 @@ function Segment({
       boxSizing: 'border-box',
       color: 'white',
       overflow: 'hidden',
-      boxShadow: isActive ? '0 12px 22px rgba(0,0,0,0.18)' : '0 8px 18px rgba(0,0,0,0.1)',
+      boxShadow: isActive ? '0 0 0 1px var(--player-accent-border), var(--player-shadow-button)' : 'var(--player-shadow-button)',
 
       borderLeft: border.vertical,
       borderTopLeftRadius: vertBorderRadius,

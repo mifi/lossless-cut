@@ -326,8 +326,9 @@ function BottomBar({
 
     return {
       background: `linear-gradient(90deg, ${gradientColors})`,
-      borderColor: 'rgba(255,255,255,0.08)',
+      borderWidth: 0,
       color: 'white',
+      boxShadow: 'var(--player-accent-shadow)',
     };
   }, [selectedSegments]);
 
@@ -521,18 +522,18 @@ function BottomBar({
                 <IoIosCamera className={styles['toolbarIcon']} />
               </PlayerIconButton>
 
-              {!simpleMode && <CaptureFormatButton className={styles['captureFormatButton']} />}
+              {!simpleMode && <CaptureFormatButton className={styles['captureFormatButton']} style={{ minHeight: '2.875rem', height: '2.875rem', paddingLeft: '0.95rem', paddingRight: '0.95rem', borderRadius: '1rem' }} />}
             </div>
           )}
 
           {isFileOpened && (
-            <PlayerPillButton className={styles['heroActionButton']} title={t('Play selected segments in order')} onClick={toggleLoopSelectedSegments} style={loopSelectedSegmentsButtonStyle}>
+            <PlayerPillButton className={styles['heroActionButton']} title={t('Play selected segments in order')} onClick={toggleLoopSelectedSegments} style={{ minWidth: '2.875rem', width: '2.875rem', height: '2.875rem', padding: 0, borderRadius: '1rem', ...loopSelectedSegmentsButtonStyle }}>
               <PlayPauseMode className={styles['playAllIcon']} />
             </PlayerPillButton>
           )}
 
           {(!simpleMode || !exportConfirmEnabled) && (
-            <PlayerPillButton active={exportConfirmEnabled} danger={!exportConfirmEnabled} title={t('Show export options screen before exporting?')} onClick={toggleExportConfirmEnabled}>
+            <PlayerPillButton className={styles['heroToggleButton']} active={exportConfirmEnabled} danger={!exportConfirmEnabled} title={t('Show export options screen before exporting?')} onClick={toggleExportConfirmEnabled} style={{ minWidth: '2.875rem', width: '2.875rem', height: '2.875rem', padding: 0, borderRadius: '1rem' }}>
               <MdEventNote className={styles['toolbarIconSm']} />
             </PlayerPillButton>
           )}

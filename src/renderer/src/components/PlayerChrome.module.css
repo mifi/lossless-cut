@@ -8,7 +8,7 @@
   border-radius: 1rem;
   background: var(--player-surface-elevated);
   box-shadow: var(--player-shadow-elevated);
-  backdrop-filter: blur(18px);
+  backdrop-filter: var(--player-backdrop-filter);
 }
 
 .surfaceGroupCompact {
@@ -42,6 +42,12 @@
     color 140ms ease,
     box-shadow 140ms ease,
     opacity 140ms ease;
+}
+
+.pillButton,
+.transportButton {
+  overflow: hidden;
+  background-clip: padding-box;
 }
 
 .iconButton:hover,
@@ -112,13 +118,14 @@
   border-radius: 1.1rem;
   color: white;
   background: linear-gradient(180deg, var(--player-accent), var(--player-accent-strong));
-  border-color: transparent;
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.32);
+  border: 0;
+  box-shadow: var(--player-accent-shadow);
 }
 
 .transportButton:hover {
   background: linear-gradient(180deg, var(--player-accent-hover), var(--player-accent));
   border-color: transparent;
+  box-shadow: var(--player-accent-shadow-hover);
 }
 
 .segmentBadge {
@@ -164,7 +171,7 @@
 
 .pillButton[data-accent='true'] {
   color: white;
-  border-color: transparent;
+  border: 0;
   background: linear-gradient(180deg, var(--player-accent-soft), var(--player-accent));
 }
 
@@ -260,7 +267,7 @@
   border: 1px solid var(--player-border-subtle);
   background: var(--player-surface-glass);
   box-shadow: var(--player-shadow-elevated);
-  backdrop-filter: blur(18px);
+  backdrop-filter: var(--player-backdrop-filter);
   color: var(--player-text-primary);
 }
 

@@ -5,7 +5,7 @@
   flex-wrap: wrap;
   padding: 0.75rem 0.85rem;
   background:
-    radial-gradient(circle at top center, rgba(34, 211, 238, 0.05), transparent 35%),
+    var(--player-chrome-glow),
     var(--player-surface);
   border-bottom: 1px solid var(--player-border-subtle);
 }
@@ -15,7 +15,7 @@
   min-height: 2.3rem;
   border-radius: 0.9rem;
   border-color: var(--player-border-subtle);
-  background-color: rgba(17, 20, 27, 0.06);
+  background: linear-gradient(180deg, var(--player-button-top), var(--player-button-bottom));
   color: var(--player-text-primary);
   box-shadow: var(--player-shadow-button);
 }
@@ -24,7 +24,7 @@
 .wrapper select:hover {
   filter: none;
   border-color: var(--player-border-strong);
-  background-color: rgba(17, 20, 27, 0.1);
+  background: linear-gradient(180deg, var(--player-button-top-hover), var(--player-button-bottom-hover));
 }
 
 .wrapper button:focus-visible,

@@ -33,9 +33,9 @@ body {
 }
 
 :root {
-  --player-surface: linear-gradient(180deg, rgba(247, 249, 252, 0.98), rgba(238, 242, 248, 0.98));
-  --player-surface-elevated: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(240, 244, 251, 0.84));
-  --player-surface-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(240, 244, 251, 0.76));
+  --player-surface: linear-gradient(180deg, rgb(247 249 252), rgb(238 242 248));
+  --player-surface-elevated: linear-gradient(180deg, rgb(255 255 255), rgb(244 247 251));
+  --player-surface-glass: linear-gradient(180deg, rgb(255 255 255), rgb(243 247 251));
   --player-border-subtle: rgba(32, 38, 47, 0.12);
   --player-border-strong: rgba(32, 38, 47, 0.2);
   --player-accent: var(--cyan-9);
@@ -54,8 +54,19 @@ body {
   --player-button-bottom: rgba(236, 240, 247, 0.92);
   --player-button-top-hover: rgba(255, 255, 255, 0.98);
   --player-button-bottom-hover: rgba(231, 237, 246, 0.96);
-  --player-shadow-elevated: 0 22px 38px rgba(15, 23, 42, 0.12), 0 6px 18px rgba(15, 23, 42, 0.08);
-  --player-shadow-button: 0 10px 18px rgba(15, 23, 42, 0.1);
+  --player-shadow-elevated: 0 8px 18px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.03);
+  --player-shadow-button: 0 3px 8px rgba(15, 23, 42, 0.045);
+  --player-accent-shadow: 0 8px 18px rgba(14, 165, 233, 0.16);
+  --player-accent-shadow-hover: 0 10px 22px rgba(14, 165, 233, 0.2);
+  --player-icon-shadow: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.12));
+  --player-backdrop-filter: none;
+  --player-backdrop-filter-strong: none;
+  --player-chrome-glow: radial-gradient(circle at top center, rgba(34, 211, 238, 0.018), transparent 34%);
+  --player-thumbnail-border: rgba(32, 38, 47, 0.14);
+  --player-timeline-cursor: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.35));
+  --player-timeline-cursor-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+  --player-timeline-commanded: linear-gradient(180deg, rgba(14, 165, 233, 0.18), rgba(14, 165, 233, 0.92), rgba(14, 165, 233, 0.18));
+  --player-timeline-commanded-shadow: 0 0 0 1px rgba(14, 165, 233, 0.22);
 }
 
 .dark-theme {
@@ -82,6 +93,17 @@ body {
   --player-button-bottom-hover: rgba(22, 26, 34, 0.96);
   --player-shadow-elevated: 0 24px 38px rgba(0, 0, 0, 0.35), 0 10px 18px rgba(0, 0, 0, 0.25);
   --player-shadow-button: 0 14px 22px rgba(0, 0, 0, 0.28);
+  --player-accent-shadow: 0 16px 30px rgba(0, 0, 0, 0.32);
+  --player-accent-shadow-hover: 0 18px 34px rgba(0, 0, 0, 0.34);
+  --player-icon-shadow: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
+  --player-backdrop-filter: blur(18px);
+  --player-backdrop-filter-strong: blur(24px);
+  --player-chrome-glow: radial-gradient(circle at top center, rgba(34, 211, 238, 0.05), transparent 35%);
+  --player-thumbnail-border: rgba(255, 255, 255, 0.24);
+  --player-timeline-cursor: linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.25));
+  --player-timeline-cursor-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 0 14px rgba(255, 255, 255, 0.16);
+  --player-timeline-commanded: linear-gradient(180deg, rgba(34, 211, 238, 0.15), rgba(34, 211, 238, 0.9), rgba(34, 211, 238, 0.15));
+  --player-timeline-commanded-shadow: 0 0 0 1px rgba(34, 211, 238, 0.15), 0 0 14px rgba(34, 211, 238, 0.16);
 }
 
 /* https://github.com/electron/electron/issues/2538 */
@@ -141,7 +163,7 @@ code.highlighted {
   background: var(--player-surface-glass);
   color: var(--player-text-primary);
   box-shadow: var(--player-shadow-elevated);
-  backdrop-filter: blur(24px);
+  backdrop-filter: var(--player-backdrop-filter-strong);
 }
 
 #swal2-container-wrapper .swal2-title {
@@ -209,7 +231,7 @@ code.highlighted {
   background: var(--player-surface-glass) !important;
   color: var(--player-text-primary) !important;
   box-shadow: var(--player-shadow-elevated);
-  backdrop-filter: blur(24px);
+  backdrop-filter: var(--player-backdrop-filter-strong);
 }
 
 #swal2-container-wrapper .swal2-toast .swal2-title,

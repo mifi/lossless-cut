@@ -9,30 +9,29 @@
   cursor: pointer;
   color: white;
   border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 0;
   padding: 0 1.05rem;
   font-size: 0.9rem;
   font-weight: 700;
   letter-spacing: 0.01em;
   white-space: nowrap;
-  box-shadow:
-    0 18px 30px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+  background-clip: padding-box;
+  box-shadow: var(--player-accent-shadow);
   transition:
     transform 140ms ease,
-    filter 140ms ease,
+    background 140ms ease,
     box-shadow 140ms ease;
 }
 
 .exportButton:hover {
   transform: translateY(-1px);
-  filter: brightness(1.03);
-  box-shadow:
-    0 22px 34px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--player-accent-shadow-hover);
 }
 
 .exportButton:focus-visible {
   outline: none;
   box-shadow:
     0 0 0 2px var(--player-focus-ring),
-    0 18px 30px rgba(0, 0, 0, 0.28);
+    var(--player-accent-shadow);
 }

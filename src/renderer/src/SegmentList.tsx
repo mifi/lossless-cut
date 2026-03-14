@@ -41,8 +41,8 @@ const buttonBaseStyle: CSSProperties = {
   cursor: 'pointer',
   userSelect: 'none',
   padding: 0,
-  border: '1px solid rgba(255,255,255,0.08)',
-  boxShadow: 'var(--player-shadow-button), inset 0 1px 0 rgba(255,255,255,0.045)',
+  border: '1px solid var(--player-border-subtle)',
+  boxShadow: 'var(--player-shadow-button)',
 };
 
 const buttonIconWrapStyle: CSSProperties = {
@@ -55,15 +55,14 @@ const buttonIconWrapStyle: CSSProperties = {
 };
 
 const buttonIconStyle: CSSProperties = {
-  color: 'var(--player-text-primary)',
-  filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18))',
+  filter: 'var(--player-icon-shadow)',
   display: 'block',
   flexShrink: 0,
   pointerEvents: 'none',
 };
 
-const disabledButtonStyle = { color: 'var(--player-text-muted)', backgroundColor: 'rgba(17, 20, 27, 0.18)' };
-const neutralButtonColor = 'rgba(255,255,255,0.08)';
+const disabledButtonStyle = { color: 'var(--player-text-muted)', backgroundColor: 'var(--player-surface-elevated)' };
+const neutralButtonColor = 'var(--player-surface-elevated)';
 
 // eslint-disable-next-line react/display-name
 const Segment = memo(({
@@ -262,7 +261,7 @@ const Segment = memo(({
       background: 'var(--player-surface-elevated)',
       border: `1px solid ${isActive ? 'var(--player-accent-border)' : 'var(--player-border-subtle)'}`,
       borderRadius: 16,
-      boxShadow: isActive ? '0 18px 28px rgba(0,0,0,0.16)' : '0 12px 20px rgba(0,0,0,0.08)',
+      boxShadow: isActive ? '0 0 0 1px var(--player-accent-border), var(--player-shadow-button)' : 'var(--player-shadow-button)',
       opacity: !selected && !invertCutSegments ? 0.7 : undefined,
     };
   }, [invertCutSegments, isActive, selected, sortable.isDragging, sortable.transform, sortable.transition]);
@@ -297,7 +296,7 @@ const Segment = memo(({
 
       {'name' in seg && seg.name && <span style={{ fontSize: '.75em', color: primaryTextColor, marginRight: '.3em' }}>{seg.name}</span>}
       {Object.entries(tags).map(([name, value]) => (
-        <span style={{ fontSize: '.7em', backgroundColor: 'rgba(34, 211, 238, 0.12)', color: 'var(--player-text-primary)', borderRadius: '999px', padding: '.18em .5em', marginRight: '.2em', border: '1px solid var(--player-border-subtle)' }} key={name}>{name}:<b>{value}</b></span>
+        <span style={{ fontSize: '.7em', backgroundColor: 'var(--player-accent-soft)', color: 'var(--player-text-primary)', borderRadius: '999px', padding: '.18em .5em', marginRight: '.2em', border: '1px solid var(--player-border-subtle)' }} key={name}>{name}:<b>{value}</b></span>
       ))}
 
       {duration != null && (
@@ -464,24 +463,28 @@ function SegmentList({
   }, [cutSegments.length, t, updateSegOrder]);
 
   function renderFooter() {
+    const footerIconSize = 15;
+
     const getFooterButtonStyle = (color?: string, disabled?: boolean) => {
       if (disabled) {
         return {
           ...buttonBaseStyle,
-          ...buttonIconStyle,
           ...disabledButtonStyle,
-          background: 'linear-gradient(180deg, rgba(45, 52, 67, 0.9), rgba(18, 22, 31, 0.92))',
-          border: '1px solid rgba(255,255,255,0.06)',
+          background: 'linear-gradient(180deg, var(--player-button-top), var(--player-button-bottom))',
+          border: '1px solid var(--player-border-subtle)',
           boxShadow: 'var(--player-shadow-button)',
+          color: 'var(--player-text-muted)',
+          cursor: 'not-allowed',
         } satisfies CSSProperties;
       }
 
       const tint = color ?? neutralButtonColor;
       return {
         ...buttonBaseStyle,
-        ...buttonIconStyle,
-        background: `linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.012)), ${tint}`,
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: tint,
+        border: '1px solid var(--player-border-subtle)',
+        // Only tinted segment buttons should force white icons; neutral chrome buttons should follow the theme text color.
+        color: color != null && color !== neutralButtonColor ? 'white' : 'var(--player-text-primary)',
       } satisfies CSSProperties;
     };
 
@@ -501,7 +504,8 @@ function SegmentList({
       <div
         role="button"
         title={title}
-        onClick={onClick}
+        onClick={disabled ? undefined : onClick}
+        aria-disabled={disabled}
         style={getFooterButtonStyle(color, disabled)}
       >
         <span style={buttonIconWrapStyle}>{icon}</span>
@@ -510,14 +514,14 @@ function SegmentList({
 
     return (
       <>
-        <div style={{ padding: '12px 12px 10px', borderBottom: '1px solid var(--player-border-subtle)', background: 'rgba(255,255,255,0.02)' }}>
+        <div style={{ padding: '12px 12px 10px', borderBottom: '1px solid var(--player-border-subtle)', background: 'var(--player-surface-elevated)' }}>
           {/* Keep segment actions in a single chrome group so the sidebar footer matches the player controls. */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 5, borderRadius: 16, border: '1px solid var(--player-border-subtle)', background: 'linear-gradient(180deg, rgba(17, 22, 31, 0.94), rgba(10, 13, 19, 0.94))', boxShadow: '0 20px 34px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255,255,255,0.04)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 5, borderRadius: 16, border: '1px solid var(--player-border-subtle)', background: 'var(--player-surface)', boxShadow: 'var(--player-shadow-button)' }}>
             {renderFooterAction({
               title: t('Add segment'),
               onClick: addSegment,
               color: nextSegmentColor,
-              icon: <FaPlus size={16} style={buttonIconStyle} />,
+              icon: <FaPlus size={footerIconSize} style={buttonIconStyle} />,
             })}
 
             {renderFooterAction({
@@ -525,7 +529,7 @@ function SegmentList({
               onClick: () => removeSegment(currentSegIndex),
               color: currentSegColor,
               disabled: cutSegments.length === 0,
-              icon: <FaMinus size={16} style={buttonIconStyle} />,
+              icon: <FaMinus size={footerIconSize} style={buttonIconStyle} />,
             })}
 
             {!invertCutSegments && !simpleMode && (
@@ -535,7 +539,7 @@ function SegmentList({
                   onClick: () => onReorderSegs(currentSegIndex),
                   color: currentSegColor,
                   disabled: cutSegments.length < 2,
-                  icon: <FaSortNumericDown size={13} style={buttonIconStyle} />,
+                  icon: <FaSortNumericDown size={footerIconSize} style={buttonIconStyle} />,
                 })}
 
                 {renderFooterAction({
@@ -543,7 +547,7 @@ function SegmentList({
                   onClick: () => onLabelSegment(currentSegIndex),
                   color: currentSegColor,
                   disabled: cutSegments.length === 0,
-                  icon: <FaTag size={13} style={buttonIconStyle} />,
+                  icon: <FaTag size={footerIconSize} style={buttonIconStyle} />,
                 })}
               </>
             )}
@@ -553,7 +557,7 @@ function SegmentList({
               onClick: splitCurrentSegment,
               color: segAtCursorColor,
               disabled: firstSegmentAtCursor == null,
-              icon: <AiOutlineSplitCells size={15} style={buttonIconStyle} />,
+              icon: <AiOutlineSplitCells size={footerIconSize} style={buttonIconStyle} />,
             })}
 
             {!invertCutSegments && renderFooterAction({
@@ -561,12 +565,12 @@ function SegmentList({
               onClick: onInvertSelectedSegments,
               color: neutralButtonColor,
               disabled: cutSegments.length === 0,
-              icon: <FaRegCheckCircle size={15} style={buttonIconStyle} />,
+              icon: <FaRegCheckCircle size={footerIconSize} style={buttonIconStyle} />,
             })}
           </div>
         </div>
 
-        <div style={{ padding: '11px 14px 13px', boxSizing: 'border-box', borderBottom: '1px solid var(--player-border-subtle)', borderTop: '1px solid rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '.82em', color: 'var(--player-text-primary)', background: 'linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015))' }}>
+        <div style={{ padding: '11px 14px 13px', boxSizing: 'border-box', borderBottom: '1px solid var(--player-border-subtle)', borderTop: '1px solid var(--player-border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '.82em', color: 'var(--player-text-primary)', background: 'var(--player-surface)' }}>
           <div style={{ color: 'var(--player-text-muted)', fontWeight: 600 }}>{t('Segments total:')}</div>
           <div style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 700, letterSpacing: '0.01em' }}>{formatTimecode({ seconds: segmentsTotal })}</div>
         </div>
@@ -717,7 +721,7 @@ function SegmentList({
 
           <FaTimes
             title={t('Close sidebar')}
-            style={{ fontSize: '1.1em', verticalAlign: 'middle', color: 'var(--player-text-muted)', cursor: 'pointer', padding: '.55em', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--player-border-subtle)' }}
+            style={{ fontSize: '1.1em', verticalAlign: 'middle', color: 'var(--player-text-muted)', cursor: 'pointer', padding: '.55em', borderRadius: 12, background: 'var(--player-surface-elevated)', border: '1px solid var(--player-border-subtle)' }}
             role="button"
             onClick={toggleSegmentsList}
           />

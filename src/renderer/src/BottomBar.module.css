@@ -122,16 +122,17 @@
 }
 
 .captureFormatButton {
-  min-height: 2.125rem;
-  padding-left: 0.8rem;
-  padding-right: 0.8rem;
-  border-radius: 999px;
+  min-height: 2.875rem;
+  height: 2.875rem;
+  padding-left: 0.95rem;
+  padding-right: 0.95rem;
+  border-radius: 1rem;
   background-image: linear-gradient(180deg, var(--player-button-top), var(--player-button-bottom));
   border: 1px solid var(--player-border-subtle);
   outline: none;
   box-shadow: var(--player-shadow-button);
   color: var(--player-text-primary);
-  font-size: 0.76rem;
+  font-size: 0.8rem;
 }
 
 .captureFormatButton:hover {
@@ -179,6 +180,14 @@
   border-radius: 1rem;
   padding-left: 1.05rem;
   padding-right: 1.05rem;
+}
+
+.heroToggleButton {
+  width: 2.875rem;
+  min-width: 2.875rem;
+  height: 2.875rem;
+  padding: 0;
+  border-radius: 1rem;
 }
 
 .invertedControl {
