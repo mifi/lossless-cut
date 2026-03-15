@@ -1071,5 +1071,11 @@
   "Export options screen is disabled, and you will not see any important notices or warnings.": "Der Bildschirm mit den Exportoptionen ist deaktiviert, und Sie werden keine wichtigen Hinweise oder Warnungen sehen.",
   "Learn more": "Mehr erfahren",
   "Segment label (starts with)": "Segmentbezeichnung (beginnt mit)",
-  "Segment start to previous keyframe and end to next keyframe": "Segmentbeginn zum vorherigen Keyframe und Segmentende zum nächsten Keyframe"
+  "Segment start to previous keyframe and end to next keyframe": "Segmentbeginn zum vorherigen Keyframe und Segmentende zum nächsten Keyframe",
+  "Choose directory": "Verzeichnis auswählen",
+  "Clear recents": "Letzte Einträge entfernen",
+  "Elapsed: {{seconds}} seconds": "Verstrichen: {{seconds}} Sekunden",
+  "Enable FFmpeg `-hwaccel auto` flag. This can improve performance segment auto detection and FFmpeg-assisted playback speed.": "Aktivieren Sie das FFmpeg-Flag `-hwaccel auto`. Dies kann die automatische Segmenterkennung und die Wiedergabegeschwindigkeit bei der FFmpeg-gestützten Wiedergabe verbessern.",
+  "Other": "Andere",
+  "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "Die Quelldatei existiert nicht mehr oder ist nicht zugänglich. Bitte überprüfen Sie, ob sie sich noch an ihrem ursprünglichen Speicherort befindet und ob Sie über die erforderlichen Zugriffsrechte verfügen."
 }
