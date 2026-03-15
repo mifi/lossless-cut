@@ -1029,5 +1029,8 @@
   "Segment start to previous keyframe and end to next keyframe": "O segmento começa no quadro-chave anterior e termina no próximo quadro-chave",
   "Choose directory": "Escolha a pasta",
   "Clear recents": "Limpar arquivos recentes",
-  "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "O arquivo de origem não existe mais ou não está acessível. Verifique se ele ainda está no local original e se você possui permissão para acessá-lo."
+  "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "O arquivo de origem não existe mais ou não está acessível. Verifique se ele ainda está no local original e se você possui permissão para acessá-lo.",
+  "Elapsed: {{seconds}} seconds": "Decorrido: {{seconds}} segundos",
+  "Enable FFmpeg `-hwaccel auto` flag. This can improve performance segment auto detection and FFmpeg-assisted playback speed.": "Ative a opção `-hwaccel auto` do FFmpeg. Isso pode melhorar o desempenho da detecção automática de segmentos e a velocidade de reprodução assistida pelo FFmpeg.",
+  "Other": "Outro"
 }
