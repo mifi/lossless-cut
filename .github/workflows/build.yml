@@ -4,8 +4,8 @@ on:
   push:
     tags:
       - 'v*'
-  schedule:
-    - cron: '0 10 * * *'
+  # schedule:
+  #   - cron: '0 10 * * *'
   workflow_dispatch:
     inputs:
       tmate_enabled:
@@ -25,8 +25,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest, windows-11-arm]
-#        os: [windows-latest]
+        os: [ ubuntu-latest, windows-latest]
 
     steps:
       - name: Setup tmate session

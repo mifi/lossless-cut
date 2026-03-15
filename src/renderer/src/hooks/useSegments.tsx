@@ -8,8 +8,7 @@ import sortBy from 'lodash/sortBy';
 import { Trans, useTranslation } from 'react-i18next';
 import { FaLink } from 'react-icons/fa';
 
-import TextInput from '../components/TextInput';
-import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToSegments, findKeyframeNearTime } from '../ffmpeg';
+import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToSegments, findKeyframeNearTime, getStreamFps } from '../ffmpeg';
 import { getFileSize, shuffleArray } from '../util';
 import { errorToast } from '../swal';
 import { createNumSegments as createNumSegmentsDialog, createFixedByteSixedSegments as createFixedByteSixedSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, askForSegmentDuration, toastError } from '../dialogs';
@@ -516,25 +515,50 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       if (response == null) return;
       setWorking({ text: i18n.t('Aligning segments to keyframes') });
       const { mode, startOrEnd } = response;
+
+      if (filePath == null) throw new Error();
+      const frameTime = 1 / (getStreamFps(videoStream) || 1000);
+
       await modifySelectedSegmentTimes(async (segment) => {
         const newSegment = { ...segment };
 
-        const align = async (key: 'start' | 'end') => {
+        async function align(key: string) {
           const time = newSegment[key];
           invariant(filePath != null);
           if (time != null) {
-            const keyframe = await findKeyframeNearTime({
-              filePath,
-              streamIndex: videoStream.index,
-              time,
-              mode: mode === 'opposing' ? (key === 'start' ? 'before' : 'after') : mode,
-            });
-            if (keyframe == null) throw new UserFacingError(i18n.t('Cannot find any keyframe within 60 seconds of frame {{time}}', { time }));
+            let keyframe = await findKeyframeNearTime({ filePath, streamIndex: videoStream.index, time, mode });
+            if (keyframe === undefined) {
+              if (mode !== 'keyframeCutFix') {
+                throw new UserFacingError(i18n.t('Cannot find any keyframe within 60 seconds of frame {{time}}', { time }));
+              }
+              keyframe = fileDuration;
+              console.log(2,time,keyframe);
+            }
             newSegment[key] = keyframe;
           }
-        };
-        if (startOrEnd.includes('start')) await align('start');
-        if (startOrEnd.includes('end')) await align('end');
+        }
+        if (startOrEnd.includes('start')) {
+          if (mode === 'keyframeCutFix') {
+            newSegment.start += frameTime * 0.3;
+          }
+          await align('start');
+          if (mode === 'keyframeCutFix') {
+            newSegment.start -= frameTime * 0.7;
+          }
+        }
+        if (startOrEnd.includes('end')) {
+          await align('end');
+          if (mode === 'keyframeCutFix' && newSegment.end !== fileDuration) {
+            newSegment.end -= frameTime * 0.3;
+          }
+        }
+        if (startOrEnd.includes('start')) {
+          newSegment.start = Math.min(newSegment.start, newSegment.end - frameTime * 0.99); // don't know how ffmpeg interprets cuts between frames
+        } else {
+          newSegment.end = Math.max(newSegment.start + frameTime * 0.99, newSegment.end);
+        }
+
+
         return newSegment;
       });
     } catch (err) {
@@ -542,7 +566,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     } finally {
       setWorking(undefined);
     }
-  }, [videoStream, workingRef, setWorking, modifySelectedSegmentTimes, filePath, handleError]);
+  }, [filePath, videoStream, modifySelectedSegmentTimes, setWorking, workingRef, fileDuration, handleError]);
 
   const updateSegOrder = useCallback((index: number, newOrder: number) => {
     if (newOrder > cutSegments.length - 1 || newOrder < 0) return;

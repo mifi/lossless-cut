@@ -1,3 +1,7 @@
+Releases: https://github.com/ac615223s5/lossless-cut/releases
+Forked from https://github.com/mifi/lossless-cut/
+
+
 <div align="center">
 	<br>
   <p><a href="https://mifi.no/losslesscut/"><img src="src/renderer/src/icon.svg" width="120" alt="LosslessCut" /></a></p>
