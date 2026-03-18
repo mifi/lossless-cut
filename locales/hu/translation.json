@@ -910,5 +910,8 @@
   "Segment start to previous keyframe and end to next keyframe": "A szegmens kezdete az előző kulcsképkockáig, vége pedig a következő kulcsképkockáig",
   "Choose directory": "Válasszon könyvtárat",
   "Clear recents": "Legutóbbiak törlése",
-  "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "A forrásfájl már nem létezik, vagy nem érhető el. Kérjük, ellenőrizze, hogy még mindig az eredeti helyén van-e, és hogy rendelkezik-e hozzáférési engedéllyel."
+  "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "A forrásfájl már nem létezik, vagy nem érhető el. Kérjük, ellenőrizze, hogy még mindig az eredeti helyén van-e, és hogy rendelkezik-e hozzáférési engedéllyel.",
+  "Elapsed: {{seconds}} seconds": "Eltelt idő: {{seconds}} másodperc",
+  "Enable FFmpeg `-hwaccel auto` flag. This can improve performance segment auto detection and FFmpeg-assisted playback speed.": "Engedélyezze az FFmpeg `-hwaccel auto` jelzőt. Ez javíthatja a szegmens automatikus felismerését és az FFmpeg által támogatott lejátszási sebességet.",
+  "Other": "Egyéb"
 }
