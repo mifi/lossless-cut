@@ -1070,5 +1070,16 @@
   "Copyright": "Copyright",
   "Import chapters to segments when opening file": "Importovat kapitoly na segmenty při otevírání souboru",
   "Language": "Jazyk",
-  "The output location has no storage space remaining. Please free up some space and try again.": "V cílovém umístění nezbývá dostatek volného prostoru. Uvolněte prosím prostor a zkuste to znovu."
+  "The output location has no storage space remaining. Please free up some space and try again.": "V cílovém umístění nezbývá dostatek volného prostoru. Uvolněte prosím prostor a zkuste to znovu.",
+  "A segment may result in an unexpectedly long output file length after exporting, because your video file doesn't have any keyframes near the start time of the segment you're trying to cut.": "Segment může mít za následek nečekaně dlouhý výstupní soubor po exportu, protože váš video soubor nemá žádné klíčové snímky v blízkosti začátku segmentu, který se snaží stříhat.",
+  "Choose directory": "Vyberte adresář",
+  "Clear recents": "Odebrat nedávné",
+  "Elapsed: {{seconds}} seconds": "Uplynulo: {{sekunds}} sekund",
+  "Enable FFmpeg `-hwaccel auto` flag. This can improve performance segment auto detection and FFmpeg-assisted playback speed.": "Zapněte FFmpeg příznak `-hwaccel auto`. Může vylepšit výkon automatického rozpoznání segmentů a rychlost přehrávání s asistencí FFmpeg.",
+  "Export options screen is disabled, and you will not see any important notices or warnings.": "Okno vlastností exportu je vypnuto a neuvidíte žádná důležitá upozornění nebo varování.",
+  "Learn more": "Více informací",
+  "Other": "Jiné",
+  "Segment label (starts with)": "Jmenovka segmentu (začíná)",
+  "Segment start to previous keyframe and end to next keyframe": "Začátek segmentu na předchozí klíčový snímek a konec na další klíčový snímek",
+  "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "Zdrojový soubor již neexistuje nebo není dostupný. Zkontrolujte, že se nachází v původním umístění a že máte povolení k němu přistupovat."
 }
