@@ -7242,15 +7242,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-type@npm:^21.3.1":
-  version: 21.3.1
-  resolution: "file-type@npm:21.3.1"
+"file-type@npm:^21.3.2":
+  version: 21.3.3
+  resolution: "file-type@npm:21.3.3"
   dependencies:
     "@tokenizer/inflate": "npm:^0.4.1"
     strtok3: "npm:^10.3.4"
     token-types: "npm:^6.1.1"
     uint8array-extras: "npm:^1.4.0"
-  checksum: 10/0f99d4fa85184ea635cdccdfa677c7838bff790cdffde7fa9ec9f52e94fa8c0e7b6c2eeeb3f6a3d6dcc0a036192c13a8ec7008bdcef374e745ae0d64a162ad33
+  checksum: 10/7a900a89b7e9f65cfff4d489bc4ad9311d749dd3bae3da753b681dbd1d4bf5fff204c0fa78e620076ccbbc1225f0e25330cd5653342bc78bf6b272015153ea23
   languageName: node
   linkType: hard
 
@@ -9201,7 +9201,7 @@ __metadata:
     express: "npm:^5.2.1"
     express-async-handler: "npm:^1.2.0"
     fast-xml-parser: "npm:^5.4.1"
-    file-type: "npm:^21.3.1"
+    file-type: "npm:^21.3.2"
     i18next: "npm:^25.7.3"
     i18next-cli: "npm:^1.34.1"
     i18next-fs-backend: "npm:^2.6.1"

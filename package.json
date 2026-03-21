@@ -148,7 +148,7 @@
     "execa": "^9.6.1",
     "express": "^5.2.1",
     "express-async-handler": "^1.2.0",
-    "file-type": "^21.3.1",
+    "file-type": "^21.3.2",
     "i18next": "^25.7.3",
     "i18next-fs-backend": "^2.6.1",
     "json5": "^2.2.3",
