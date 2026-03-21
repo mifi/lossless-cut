@@ -481,6 +481,7 @@
       ]
     },
     "snap": {
+      "base": "core22",
       "plugs": [
         "default",
         "removable-media"
