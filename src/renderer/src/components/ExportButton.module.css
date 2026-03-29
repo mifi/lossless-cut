@@ -1,14 +1,37 @@
 .exportButton {
   all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.875rem;
   cursor: pointer;
   color: white;
-  border-radius: .3em;
-  padding-bottom: .1em;
-  padding-left: .4em;
-  padding-right: .4em;
+  border-radius: 1rem;
+  border: 0;
+  padding: 0 1.05rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   white-space: nowrap;
+  overflow: hidden;
+  background-clip: padding-box;
+  box-shadow: var(--player-accent-shadow);
+  transition:
+    transform 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease;
 }
 
-.exportButton:focus {
-  outline: .1em solid white;
+.exportButton:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--player-accent-shadow-hover);
+}
+
+.exportButton:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--player-focus-ring),
+    var(--player-accent-shadow);
 }

@@ -1,15 +1,152 @@
-.table {
-  font-size: .8em;
-  width: 100%;
-  border-collapse: collapse;
+.fileCard {
+  margin-bottom: 1.35rem;
+  padding: 0.85rem 0;
+  overflow-x: auto;
+}
 
-  th {
-    padding-bottom: .3em;
+.fileHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--player-border-subtle);
+}
+
+.fileName {
+  word-break: break-all;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--player-text-primary);
+}
+
+.spacer {
+  flex-grow: 1;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem;
+  border-radius: 1rem;
+  border: 1px solid var(--player-border-subtle);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.toolbar :global(button) {
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0 0.85rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.94rem;
+}
+
+.table thead th {
+  padding: 0 0.45rem 0.7rem;
+  text-align: left;
+  color: var(--player-text-muted);
+  font-size: 0.79rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--player-border-subtle);
+}
+
+.table tbody td {
+  vertical-align: middle;
+  padding: 0.6rem 0.45rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--player-text-primary);
+  line-height: 1.35;
+}
+
+.table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.streamToggleCell {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.streamIndex {
+  display: inline-block;
+  min-width: 1.4rem;
+  font-weight: 600;
+}
+
+.streamInfoCell,
+.streamTitleCell,
+.streamLangCell {
+  max-width: 12rem;
+}
+
+.streamInfoCell,
+.streamTitleCell,
+.streamLangCell,
+.codecCell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tableControlCell {
+  min-width: 11rem;
+}
+
+.menuCell {
+  text-align: right;
+  width: 4.25rem;
+  vertical-align: middle;
+}
+
+.footerActions {
+  margin: 1rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.actionText {
+  color: var(--player-text-primary);
+  font-size: 0.94rem;
+}
+
+.subtleText {
+  color: var(--player-text-muted);
+  font-size: 0.92rem;
+}
+
+.ctaButton {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 2.7rem;
+  border-radius: 1rem;
+  padding: 0 1.15rem;
+}
+
+@media (max-width: 980px) {
+  .fileHeader {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
-  th, td {
-    vertical-align: top;
-    padding-left: .2em;
-    padding-right: .2em;
+  .spacer {
+    display: none;
   }
 }

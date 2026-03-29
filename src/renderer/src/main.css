@@ -32,6 +32,82 @@ body {
   background: black;
 }
 
+:root {
+  --player-surface: linear-gradient(180deg, rgb(247 249 252), rgb(238 242 248));
+  --player-surface-elevated: linear-gradient(180deg, rgb(255 255 255), rgb(244 247 251));
+  --player-surface-glass: linear-gradient(180deg, rgb(255 255 255), rgb(243 247 251));
+  --player-border-subtle: rgba(32, 38, 47, 0.12);
+  --player-border-strong: rgba(32, 38, 47, 0.2);
+  --player-accent: var(--cyan-9);
+  --player-accent-hover: var(--cyan-10);
+  --player-accent-strong: var(--cyan-11);
+  --player-accent-soft: rgba(14, 165, 233, 0.18);
+  --player-accent-border: rgba(14, 165, 233, 0.34);
+  --player-text-primary: var(--gray-12);
+  --player-text-muted: rgba(39, 47, 58, 0.72);
+  --player-focus-ring: rgba(14, 165, 233, 0.34);
+  --player-danger: var(--red-10);
+  --player-timeline-base: linear-gradient(180deg, rgba(225, 231, 240, 0.96), rgba(214, 221, 232, 0.96));
+  --player-timeline-segment-active: rgba(14, 165, 233, 0.22);
+  --player-timeline-segment-idle: rgba(59, 130, 246, 0.12);
+  --player-button-top: rgba(255, 255, 255, 0.94);
+  --player-button-bottom: rgba(236, 240, 247, 0.92);
+  --player-button-top-hover: rgba(255, 255, 255, 0.98);
+  --player-button-bottom-hover: rgba(231, 237, 246, 0.96);
+  --player-shadow-elevated: 0 8px 18px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.03);
+  --player-shadow-button: 0 3px 8px rgba(15, 23, 42, 0.045);
+  --player-accent-shadow: 0 8px 18px rgba(14, 165, 233, 0.16);
+  --player-accent-shadow-hover: 0 10px 22px rgba(14, 165, 233, 0.2);
+  --player-icon-shadow: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.12));
+  --player-overlay-scrim: rgba(3, 6, 10, 0.55);
+  --player-backdrop-filter: none;
+  --player-backdrop-filter-strong: none;
+  --player-chrome-glow: radial-gradient(circle at top center, rgba(34, 211, 238, 0.018), transparent 34%);
+  --player-thumbnail-border: rgba(32, 38, 47, 0.14);
+  --player-timeline-cursor: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.35));
+  --player-timeline-cursor-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+  --player-timeline-commanded: linear-gradient(180deg, rgba(14, 165, 233, 0.18), rgba(14, 165, 233, 0.92), rgba(14, 165, 233, 0.18));
+  --player-timeline-commanded-shadow: 0 0 0 1px rgba(14, 165, 233, 0.22);
+}
+
+.dark-theme {
+  --player-surface: linear-gradient(180deg, rgba(14, 17, 23, 0.98), rgba(9, 11, 15, 0.98));
+  --player-surface-elevated: linear-gradient(180deg, rgba(25, 29, 37, 0.94), rgba(14, 17, 23, 0.94));
+  --player-surface-glass: linear-gradient(180deg, rgba(17, 20, 27, 0.82), rgba(9, 11, 16, 0.78));
+  --player-border-subtle: rgba(255, 255, 255, 0.08);
+  --player-border-strong: rgba(255, 255, 255, 0.14);
+  --player-accent: var(--cyan-8);
+  --player-accent-hover: var(--cyan-9);
+  --player-accent-strong: var(--cyan-11);
+  --player-accent-soft: rgba(34, 211, 238, 0.16);
+  --player-accent-border: rgba(34, 211, 238, 0.3);
+  --player-text-primary: rgba(244, 248, 252, 0.98);
+  --player-text-muted: rgba(201, 209, 219, 0.72);
+  --player-focus-ring: rgba(34, 211, 238, 0.34);
+  --player-danger: #ff7f88;
+  --player-timeline-base: linear-gradient(180deg, rgba(8, 11, 15, 0.96), rgba(14, 18, 24, 0.96));
+  --player-timeline-segment-active: rgba(34, 211, 238, 0.2);
+  --player-timeline-segment-idle: rgba(255, 255, 255, 0.08);
+  --player-button-top: rgba(40, 46, 57, 0.96);
+  --player-button-bottom: rgba(18, 22, 29, 0.94);
+  --player-button-top-hover: rgba(47, 54, 67, 0.98);
+  --player-button-bottom-hover: rgba(22, 26, 34, 0.96);
+  --player-shadow-elevated: 0 24px 38px rgba(0, 0, 0, 0.35), 0 10px 18px rgba(0, 0, 0, 0.25);
+  --player-shadow-button: 0 14px 22px rgba(0, 0, 0, 0.28);
+  --player-accent-shadow: 0 16px 30px rgba(0, 0, 0, 0.32);
+  --player-accent-shadow-hover: 0 18px 34px rgba(0, 0, 0, 0.34);
+  --player-icon-shadow: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
+  --player-overlay-scrim: rgba(2, 5, 9, 0.68);
+  --player-backdrop-filter: blur(18px);
+  --player-backdrop-filter-strong: blur(24px);
+  --player-chrome-glow: radial-gradient(circle at top center, rgba(34, 211, 238, 0.05), transparent 35%);
+  --player-thumbnail-border: rgba(255, 255, 255, 0.24);
+  --player-timeline-cursor: linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.25));
+  --player-timeline-cursor-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 0 14px rgba(255, 255, 255, 0.16);
+  --player-timeline-commanded: linear-gradient(180deg, rgba(34, 211, 238, 0.15), rgba(34, 211, 238, 0.9), rgba(34, 211, 238, 0.15));
+  --player-timeline-commanded-shadow: 0 0 0 1px rgba(34, 211, 238, 0.15), 0 0 14px rgba(34, 211, 238, 0.16);
+}
+
 /* https://github.com/electron/electron/issues/2538 */
 .no-user-select :not(input):not(textarea),
 :not(input):not(textarea)::after,
@@ -81,6 +157,92 @@ code.highlighted {
   /* !important is important: https://github.com/mifi/lossless-cut/issues/541#issuecomment-750003650 */
   align-items: flex-start !important;
   text-align: left;
+}
+
+#swal2-container-wrapper .swal2-popup {
+  border-radius: 1.25rem;
+  border: 1px solid var(--player-border-subtle);
+  background: var(--player-surface-glass);
+  color: var(--player-text-primary);
+  box-shadow: var(--player-shadow-elevated);
+  backdrop-filter: var(--player-backdrop-filter-strong);
+}
+
+#swal2-container-wrapper .swal2-title {
+  color: var(--player-text-primary);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+#swal2-container-wrapper .swal2-html-container {
+  color: var(--player-text-primary);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+#swal2-container-wrapper .swal2-input,
+#swal2-container-wrapper .swal2-textarea,
+#swal2-container-wrapper .swal2-select {
+  min-height: 2.75rem;
+  border-radius: 0.95rem;
+  border: 1px solid var(--player-border-subtle);
+  background: linear-gradient(180deg, var(--player-button-top), var(--player-button-bottom));
+  color: var(--player-text-primary);
+  box-shadow: var(--player-shadow-button);
+}
+
+#swal2-container-wrapper .swal2-input:focus,
+#swal2-container-wrapper .swal2-textarea:focus,
+#swal2-container-wrapper .swal2-select:focus {
+  border-color: var(--player-border-strong);
+  box-shadow: 0 0 0 2px var(--player-focus-ring), var(--player-shadow-button);
+}
+
+#swal2-container-wrapper .swal2-actions {
+  gap: 0.65rem;
+}
+
+#swal2-container-wrapper .swal2-styled {
+  min-height: 2.7rem;
+  margin: 0;
+  border-radius: 0.9rem;
+  border: 1px solid var(--player-border-subtle);
+  box-shadow: var(--player-shadow-button);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0 1.25rem;
+}
+
+#swal2-container-wrapper .swal2-confirm {
+  border-color: transparent !important;
+  background: linear-gradient(180deg, var(--player-accent), var(--player-accent-strong)) !important;
+  color: white !important;
+}
+
+#swal2-container-wrapper .swal2-cancel,
+#swal2-container-wrapper .swal2-deny {
+  background: linear-gradient(180deg, var(--player-button-top), var(--player-button-bottom)) !important;
+  color: var(--player-text-primary) !important;
+}
+
+#swal2-container-wrapper .swal2-toast {
+  width: min(54rem, calc(100vw - 2rem)) !important;
+  border-radius: 1rem;
+  border: 1px solid var(--player-border-subtle);
+  background: var(--player-surface-glass) !important;
+  color: var(--player-text-primary) !important;
+  box-shadow: var(--player-shadow-elevated);
+  backdrop-filter: var(--player-backdrop-filter-strong);
+}
+
+#swal2-container-wrapper .swal2-toast .swal2-title,
+#swal2-container-wrapper .swal2-toast .swal2-html-container {
+  color: var(--player-text-primary) !important;
+}
+
+#swal2-container-wrapper .swal2-timer-progress-bar {
+  background: linear-gradient(90deg, var(--player-accent), var(--player-accent-strong));
 }
 
 .segment-list-entry .selected {

@@ -1,27 +1,32 @@
 .close-button {
   all: unset;
   position: absolute;
-  padding: .5em;
-  margin: .2em;
+  padding: 0.55rem;
+  margin: 0.45rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-radius: 100%;
-  font-size: 1.3em;
-
-  border: .1em solid transparent;
-  color: var(--gray-12);
-  background-color: none;
-  transition: background-color 0.2s ease-in-out;
+  border-radius: 999px;
+  font-size: 1.1rem;
+  border: 1px solid var(--player-border-subtle);
+  color: var(--player-text-primary);
+  background: linear-gradient(180deg, var(--player-button-top), var(--player-button-bottom));
+  box-shadow: var(--player-shadow-button);
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
 }
 
 .close-button svg {
-  transition: transform 0.2s ease-in-out;
+  transition: transform 140ms ease-in-out;
 }
 
 .close-button:hover {
-  background-color: var(--gray-4);
+  transform: translateY(-1px);
+  border-color: var(--player-border-strong);
 }
 
 /* need to rotate the inner svg because https://github.com/mifi/lossless-cut/issues/2606#issuecomment-3512693358 */
@@ -30,5 +35,5 @@
 }
 
 .close-button:focus {
-  border: .1em solid var(--gray-4);
+  box-shadow: 0 0 0 2px var(--player-focus-ring), var(--player-shadow-button);
 }
