@@ -922,5 +922,11 @@
   "Segment label (starts with)": "Názov segmentu (začína na)",
   "Segment start to previous keyframe and end to next keyframe": "Segment začína predchádzajúcim kľúčovým snímkom a končí nasledujúcim kľúčovým snímkom",
   "The output location has no storage space remaining. Please free up some space and try again.": "V umiestnení výstupu nie je dostatok voľného miesta. Uvoľnite miesto a skúste to znova.",
-  "Unable to delete file": "Nie je možné odstrániť súbor"
+  "Unable to delete file": "Nie je možné odstrániť súbor",
+  "Choose directory": "Vyberte adresár",
+  "Clear recents": "Vymazať nedávne položky",
+  "Elapsed: {{seconds}} seconds": "Uplynulo: {{seconds}} sekúnd",
+  "Enable FFmpeg `-hwaccel auto` flag. This can improve performance segment auto detection and FFmpeg-assisted playback speed.": "Zapnite vo FFmpeg príkaz `-hwaccel auto`. Týmto krokom môžete zlepšiť automatickú detekciu segmentov a rýchlosť prehrávania s podporou FFmpeg.",
+  "Other": "Iné",
+  "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "Súbor už neexistuje alebo nie je dostupný. Skontrolujte, či sa stále nachádza na pôvodnom mieste a či máte oprávnenie na prístup k nemu."
 }
