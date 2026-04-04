@@ -50,6 +50,7 @@ export interface Config {
   preserveChapters: boolean,
   preserveMetadata: PreserveMetadata,
   preserveMetadataOnMerge: boolean,
+  keepOriginalChaptersOnMerge: boolean,
   preserveMovData: boolean,
   movFastStart: boolean,
   avoidNegativeTs: AvoidNegativeTs,
