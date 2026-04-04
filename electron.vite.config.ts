@@ -7,14 +7,12 @@ export default defineConfig({
     build: {
       // https://electron-vite.org/guide/dev#dependencies-vs-devdependencies
       // For the main process and preload, the best practice is to externalize dependencies and only bundle our own code.
-      externalizeDeps: true,
       target: 'node22.18',
       sourcemap: true,
     },
   },
   preload: {
     build: {
-      externalizeDeps: true,
       target: 'node22.18',
       sourcemap: true,
       rollupOptions: {

@@ -31,6 +31,7 @@ import * as Dialog from '../components/Dialog';
 import { UserFacingError } from '../../errors';
 import { editSegmentByExpressionHelpUrl, selectSegmentByExpressionHelpUrl } from '../../../common/constants';
 import type { Segment as ScopeSegment } from '../../../common/userTypes';
+import type { FfmpegHwAccel } from '../../../common/types';
 
 const remote = window.require('@electron/remote');
 const { shell } = remote;
@@ -41,7 +42,7 @@ type ParameterDialogParameters = Record<string, string>;
 
 const offsetSegments = (segments: DefiniteSegmentBase[], offset: number) => segments.map((s) => ({ start: s.start + offset, end: s.end + offset }));
 
-function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta, seekAbs, activeVideoStreamIndex, activeAudioStreamIndexes, handleError, showGenericDialog }: {
+function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta, seekAbs, activeVideoStreamIndex, activeAudioStreamIndexes, handleError, showGenericDialog, simpleMode, ffmpegHwaccel }: {
   filePath?: string | undefined,
   workingRef: MutableRefObject<boolean>,
   setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void,
@@ -63,6 +64,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   activeAudioStreamIndexes: Set<number>,
   handleError: HandleError,
   showGenericDialog: ShowGenericDialog,
+  simpleMode: boolean,
+  ffmpegHwaccel: FfmpegHwAccel,
 }) {
   const { t } = useTranslation();
 
@@ -317,8 +320,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     setFfmpegParametersForDialog(dialogType, parameters);
     invariant(mode === '1' || mode === '2');
     invariant(filePath != null);
-    await detectSegments({ name: 'blackScenes', workingText: i18n.t('Detecting black scenes'), errorText: i18n.t('Failed to detect black scenes'), fn: async (onSegmentDetected) => blackDetect({ filePath, streamId: activeVideoStreamIndex, filterOptions, boundingMode: mode === '1', onProgress: setProgress, onSegmentDetected, from: start, to: end }) });
-  }, [currentCutSegOrWholeTimeline, deleteCurrentCutSeg, showParametersDialog, getFfmpegParameters, setFfmpegParametersForDialog, filePath, detectSegments, activeVideoStreamIndex, setProgress]);
+    await detectSegments({ name: 'blackScenes', workingText: i18n.t('Detecting black scenes'), errorText: i18n.t('Failed to detect black scenes'), fn: async (onSegmentDetected) => blackDetect({ filePath, streamId: activeVideoStreamIndex, filterOptions, boundingMode: mode === '1', onProgress: setProgress, onSegmentDetected, from: start, to: end, ffmpegHwaccel }) });
+  }, [currentCutSegOrWholeTimeline, deleteCurrentCutSeg, showParametersDialog, getFfmpegParameters, setFfmpegParametersForDialog, filePath, detectSegments, activeVideoStreamIndex, setProgress, ffmpegHwaccel]);
 
   const detectSilentScenes = useCallback(async () => {
     const { start, end } = currentCutSegOrWholeTimeline;
@@ -330,8 +333,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     const { mode, ...filterOptions } = parameters;
     invariant(mode === '1' || mode === '2');
     invariant(filePath != null);
-    await detectSegments({ name: 'silentScenes', workingText: i18n.t('Detecting silent scenes'), errorText: i18n.t('Failed to detect silent scenes'), fn: async (onSegmentDetected) => silenceDetect({ filePath, streamId: [...activeAudioStreamIndexes][0], filterOptions, boundingMode: mode === '1', onProgress: setProgress, onSegmentDetected, from: start, to: end }) });
-  }, [activeAudioStreamIndexes, currentCutSegOrWholeTimeline, deleteCurrentCutSeg, detectSegments, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress, showParametersDialog]);
+    await detectSegments({ name: 'silentScenes', workingText: i18n.t('Detecting silent scenes'), errorText: i18n.t('Failed to detect silent scenes'), fn: async (onSegmentDetected) => silenceDetect({ filePath, streamId: [...activeAudioStreamIndexes][0], filterOptions, boundingMode: mode === '1', onProgress: setProgress, onSegmentDetected, from: start, to: end, ffmpegHwaccel }) });
+  }, [activeAudioStreamIndexes, currentCutSegOrWholeTimeline, deleteCurrentCutSeg, detectSegments, ffmpegHwaccel, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress, showParametersDialog]);
 
   const detectSceneChanges = useCallback(async () => {
     const { start, end } = currentCutSegOrWholeTimeline;
@@ -344,8 +347,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     // eslint-disable-next-line prefer-destructuring
     const minChange = parameters['minChange'];
     invariant(minChange != null);
-    await detectSegments({ name: 'sceneChanges', workingText: i18n.t('Detecting scene changes'), errorText: i18n.t('Failed to detect scene changes'), fn: async (onSegmentDetected) => ffmpegDetectSceneChanges({ filePath, streamId: activeVideoStreamIndex, minChange, onProgress: setProgress, onSegmentDetected, from: start, to: end }) });
-  }, [activeVideoStreamIndex, currentCutSegOrWholeTimeline, deleteCurrentCutSeg, detectSegments, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress, showParametersDialog]);
+    await detectSegments({ name: 'sceneChanges', workingText: i18n.t('Detecting scene changes'), errorText: i18n.t('Failed to detect scene changes'), fn: async (onSegmentDetected) => ffmpegDetectSceneChanges({ filePath, streamId: activeVideoStreamIndex, minChange, onProgress: setProgress, onSegmentDetected, from: start, to: end, ffmpegHwaccel }) });
+  }, [activeVideoStreamIndex, currentCutSegOrWholeTimeline, deleteCurrentCutSeg, detectSegments, ffmpegHwaccel, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress, showParametersDialog]);
 
   const createSegmentsFromKeyframes = useCallback(async () => {
     const { start, end } = currentCutSegOrWholeTimeline;
@@ -391,7 +394,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     // also exclude initial segment (will cause problems later on)
     const sortedSegments = sortSegments(filterNonMarkers(cutSegments).filter((seg) => !seg.initial));
 
-    return invertSegments(sortedSegments, true, true, fileDuration).map(({ segId, end, ...rest }) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return invertSegments(sortedSegments, true, true, fileDuration).map(({ segId, end, name: _ignored, ...rest }) => {
       // in order to please TS:
       invariant(segId != null && end != null);
       return {
@@ -428,7 +432,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       errorToast(i18n.t('Make sure you have no overlapping segments.'));
       return;
     }
-    const newInverseCutSegments = inverseSegmentsAndMarkers.map((segment) => createIndexedSegment({ segment, incrementCount: true }));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const newInverseCutSegments = inverseSegmentsAndMarkers.map(({ name: _ignored, ...segment }) => createIndexedSegment({ segment, incrementCount: true }));
     safeSetCutSegments((existing) => ([...existing, ...newInverseCutSegments]));
   }, [createIndexedSegment, fileDuration, selectedSegments, safeSetCutSegments]);
 
@@ -518,7 +523,12 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
           const time = newSegment[key];
           invariant(filePath != null);
           if (time != null) {
-            const keyframe = await findKeyframeNearTime({ filePath, streamIndex: videoStream.index, time, mode });
+            const keyframe = await findKeyframeNearTime({
+              filePath,
+              streamIndex: videoStream.index,
+              time,
+              mode: mode === 'opposing' ? (key === 'start' ? 'before' : 'after') : mode,
+            });
             if (keyframe == null) throw new UserFacingError(i18n.t('Cannot find any keyframe within 60 seconds of frame {{time}}', { time }));
             newSegment[key] = keyframe;
           }
@@ -569,7 +579,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
       const initial = isInitialSegment(cutSegments);
 
-      const newSegment = createIndexedSegment({ segment: { start: suggestedStart }, incrementCount: !initial });
+      const suggestedEnd = simpleMode ? Math.min(suggestedStart + 10, fileDuration) : undefined;
+      const newSegment = createIndexedSegment({ segment: { start: suggestedStart, end: suggestedEnd }, incrementCount: !initial });
 
       // if initial segment, replace it instead
       const cutSegmentsNew = initial
@@ -581,7 +592,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     } catch (err) {
       console.error(err);
     }
-  }, [getRelevantTime, fileDuration, cutSegments, createIndexedSegment, safeSetCutSegments, setCurrentSegIndex]);
+  }, [getRelevantTime, fileDuration, cutSegments, simpleMode, createIndexedSegment, safeSetCutSegments]);
 
   const duplicateSegment = useCallback((segment: Pick<StateSegment, 'start' | 'end'> & Partial<Pick<StateSegment, 'name'>>) => {
     try {
@@ -800,6 +811,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
             { name: i18n.t('Segment duration less than 5 seconds'), code: 'segment.duration < 5' },
             { name: i18n.t('Segment starts after 01:00'), code: 'segment.start > 60' },
             { name: i18n.t('Segment label (exact)'), code: "segment.label === 'My label'" },
+            { name: i18n.t('Segment label (starts with)'), code: "segment.label.startsWith('My lab')" },
             { name: i18n.t('Segment label (regexp)'), code: '/^My label/.test(segment.label)' },
             { name: i18n.t('Segment tag value'), code: "segment.tags.myTag === 'tag value'" },
             { name: i18n.t('Markers'), code: 'segment.end == null' },

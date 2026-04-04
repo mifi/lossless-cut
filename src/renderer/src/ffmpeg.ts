@@ -5,6 +5,7 @@ import type { FRAMERATE } from 'smpte-timecode';
 import Timecode from 'smpte-timecode';
 import minBy from 'lodash/minBy';
 import invariant from 'tiny-invariant';
+import z from 'zod';
 
 import { pcmAudioCodecs, isMov } from './util/streams';
 import { isExecaError } from './util';
@@ -72,15 +73,19 @@ export interface Frame {
 }
 
 export async function readFrames({ filePath, from, to, streamIndex }: {
-  filePath: string, from?: number | undefined, to?: number | undefined, streamIndex: number,
+  filePath: string,
+  from?: number | undefined,
+  to?: number | undefined,
+  streamIndex: number,
 }) {
   const intervalsArgs = from != null && to != null ? ['-read_intervals', `${from}%${to}`] : [];
   const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', String(streamIndex), '-show_entries', 'packet=pts_time,flags', '-of', 'json', filePath], { logCli: false });
+  const createdAt = new Date();
   const packetsFiltered: Frame[] = (JSON.parse(new TextDecoder().decode(stdout)).packets as { flags: string, pts_time: string }[])
     .map((p) => ({
       keyframe: p.flags[0] === 'K',
       time: parseFloat(p.pts_time),
-      createdAt: new Date(),
+      createdAt,
     }))
     .filter((p) => !Number.isNaN(p.time));
 
@@ -265,15 +270,6 @@ async function determineSourceFileFormat(ffprobeFormatsStr: string | undefined, 
   }
 
   console.log('FFprobe detected format(s)', ffprobeFormatsStr);
-
-  // We need to test mp3 first because ffprobe seems to report the wrong format sometimes https://github.com/mifi/lossless-cut/issues/2129
-  if (firstFfprobeFormat === 'mp3') {
-    // file-type detects it correctly
-    const fileTypeResponse = await mainApi.fileTypeFromFile(filePath);
-    if (fileTypeResponse?.mime === 'audio/mpeg') {
-      return 'mp2';
-    }
-  }
 
   if (ffprobeFormats.length === 1) {
     return firstFfprobeFormat;
@@ -588,9 +584,22 @@ export function getTimecodeFromStreams(streams: FFprobeStream[]) {
   return foundTimecode;
 }
 
+const ffprobeVersionSchema = z.object({
+  program_version: z.object({
+    version: z.string(),
+    // not sure if these are always present, so make them optional for now:
+    copyright: z.string().optional(),
+    compiler_ident: z.string().optional(),
+    configuration: z.string().optional(),
+  }),
+});
+
 export async function runFfmpegStartupCheck() {
   // will throw if exit code != 0
-  await runFfmpeg(['-hide_banner', '-f', 'lavfi', '-i', 'nullsrc=s=256x256:d=1', '-f', 'null', '-']);
+  const { stderr: ffmpegStderr } = await runFfmpeg(['-f', 'lavfi', '-i', 'nullsrc=s=256x256:d=1', '-f', 'null', '-']);
+  console.log('FFmpeg startup check output:', new TextDecoder().decode(ffmpegStderr));
+  const { stdout: ffprobeStout } = await runFfprobe(['-v', '0', '-of', 'json', '-show_program_version']);
+  return ffprobeVersionSchema.parse(JSON.parse(new TextDecoder().decode(ffprobeStout)));
 }
 
 // https://superuser.com/questions/543589/information-about-ffmpeg-command-line-options

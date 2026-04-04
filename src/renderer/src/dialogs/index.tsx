@@ -8,7 +8,7 @@ import pMap from 'p-map';
 
 import { formatDuration } from '../util/duration';
 import { parseYouTube } from '../edlFormats';
-import { appPath, isMac, isMasBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry } from '../util';
+import { appPath, isMasBuild, isStoreBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry } from '../util';
 import type { ParseTimecode } from '../types';
 import type { FindKeyframeMode } from '../ffmpeg';
 import { dangerColor, primaryColor, warningColor } from '../colors';
@@ -334,14 +334,15 @@ export async function askForAlignSegments() {
   const startOrEnd = await askForSegmentsStartOrEnd(i18n.t('Do you want to align the segment start or end timestamps to keyframes?'));
   if (startOrEnd == null) return undefined;
 
-  const { value: mode } = await getSwal().Swal.fire<FindKeyframeMode>({
+  const { value: mode } = await getSwal().Swal.fire<FindKeyframeMode | 'opposing'>({
     input: 'radio',
     showCancelButton: true,
     inputOptions: {
       nearest: i18n.t('Nearest keyframe'),
       before: i18n.t('Previous keyframe'),
       after: i18n.t('Next keyframe'),
-    } satisfies Record<FindKeyframeMode, unknown>,
+      opposing: i18n.t('Segment start to previous keyframe and end to next keyframe'),
+    } satisfies Record<FindKeyframeMode | 'opposing', unknown>,
     inputValue: 'before',
     text: i18n.t('Do you want to align segment times to the nearest, previous or next keyframe?'),
   });
@@ -644,11 +645,11 @@ export async function checkAppPath() {
       if (pathSeg.startsWith(`57275${mf}.${ap}_`)) return;
       // this will report the path and may return a msg
       payload = `msstore-app-id:${pathSeg}`;
-      // also check non ms store fakes (different title:)
-    } else if (isMac || isWindows || (isDev && forceCheckTitle)) {
+      // also check all store fakes (different title:)
+    } else if (isStoreBuild || (isDev && forceCheckTitle)) {
       const { title } = document;
       if (!title.includes(ap)) {
-        payload = `app-title:${title}`;
+        payload = `store-app-title:${title}`;
       }
     }
 

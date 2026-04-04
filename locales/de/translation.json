@@ -1060,5 +1060,10 @@
   "Screenshot captured clipboard": "Bildschirmaufnahme in die Zwischenablage kopiert",
   "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> to set cutpoints": "<0></0> <2></2>, <4></4> <6></6> oder <8><0><0></0></0></8>+<10></10>, um Schnittpunkte festzulegen",
   "Please send an email to <1>{{supportEmail}}</1> where you describe what you were doing.": "Bitte senden Sie eine E-Mail an <1>{{supportEmail}}</1>, in der Sie beschreiben, was Sie gerade gemacht haben.",
-  "Unable to delete file": "Datei kann nicht gelöscht werden"
+  "Unable to delete file": "Datei kann nicht gelöscht werden",
+  "{{appStoreType}} edition, based on GitHub v{{appVersion}}": "{{appStoreType}} Edition, basierend auf GitHub v{{appVersion}}",
+  "Ask": "Nachfragen",
+  "Import chapters to segments when opening file": "Kapitel beim Öffnen der Datei in Segmente importieren",
+  "Language": "Sprache",
+  "The output location has no storage space remaining. Please free up some space and try again.": "Der Ausgabeort verfügt über keinen Speicherplatz mehr. Bitte schaffen Sie Speicherplatz und versuchen Sie es erneut."
 }

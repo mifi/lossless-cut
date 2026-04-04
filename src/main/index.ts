@@ -19,6 +19,7 @@ import { fileTypeFromFile } from 'file-type/node';
 import type { Asyncify } from 'type-fest';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+import mitt from 'mitt';
 
 import logger from './logger.js';
 import menu from './menu.js';
@@ -79,12 +80,40 @@ async function sendApiAction(action: string, args?: unknown[]) {
     const id = apiActionRequestsId;
     apiActionRequestsId += 1;
     mainWindow!.webContents.send('apiAction', { id, action, args } satisfies ApiActionRequest);
-    await new Promise<void>((resolve) => {
-      apiActionRequests.set(id, resolve);
-    });
+    await new Promise<void>((resolve) => apiActionRequests.set(id, resolve));
   } catch (err) {
     logger.error('sendApiAction', err);
   }
+}
+
+export type AppEvent = {
+  eventName: 'export-complete',
+  paths?: string[],
+} | {
+  eventName: 'export-start',
+  path: string,
+}
+
+const appEventEmitter = mitt<{ appEvent: AppEvent }>();
+
+ipcMain.on('appEvent', (_e, appEvent: AppEvent) => {
+  appEventEmitter.emit('appEvent', appEvent);
+});
+
+async function onAwaitAppEvent(awaitEventName: string, signal: AbortSignal) {
+  return new Promise<AppEvent>((resolve, reject) => {
+    const handler = (appEvent: AppEvent) => {
+      if (appEvent.eventName === awaitEventName) {
+        appEventEmitter.off('appEvent', handler);
+        resolve(appEvent);
+      }
+    };
+    appEventEmitter.on('appEvent', handler);
+    signal.addEventListener('abort', () => {
+      appEventEmitter.off('appEvent', handler);
+      reject(new Error('Aborted'));
+    });
+  });
 }
 
 // https://github.com/electron/electron/issues/526#issuecomment-563010533
@@ -283,8 +312,8 @@ async function init() {
 
       logger.info('second-instance', argv2);
 
-      if (argv2._ && argv2._.length > 0) openFilesEventually(argv2._.map(String));
-      else if (argv2['keyboardAction']) sendApiAction(argv2['keyboardAction']);
+      if (argv2['keyboardAction']) sendApiAction(argv2['keyboardAction'], argv2._.map((arg) => JSON.parse(String(arg))));
+      else if (argv2._ && argv2._.length > 0) openFilesEventually(argv2._.map(String));
     });
 
     // Quit when all windows are closed.
@@ -355,7 +384,7 @@ async function init() {
 
     if (httpApi != null) {
       const port = typeof httpApi === 'number' ? httpApi : 8080;
-      const { startHttpServer } = HttpServer({ port, onKeyboardAction: sendApiAction });
+      const { startHttpServer } = HttpServer({ port, onKeyboardAction: sendApiAction, onAwaitAppEvent });
       await startHttpServer();
       logger.info('HTTP API listening on port', port);
     }
@@ -451,7 +480,6 @@ app.addListener('remote-require', (event: { returnValue: RemoteApiLegacy }, _web
     event.returnValue = remoteApiLegacy;
   }
 });
-
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ipcMain.handle('__electron_rpc__', async (_event, method: keyof RemoteApi, args: any[]) => {

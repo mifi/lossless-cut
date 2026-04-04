@@ -23,6 +23,7 @@ yarn download-ffmpeg-darwin-x64
 yarn download-ffmpeg-darwin-arm64
 yarn download-ffmpeg-linux-x64
 yarn download-ffmpeg-win32-x64
+yarn download-ffmpeg-win32-arm64
 ```
 
 For Windows, you may have to install [7z](https://www.7-zip.org/download.html), and then put the 7z folder in your `PATH`.

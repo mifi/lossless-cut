@@ -5,17 +5,18 @@ import pMap from 'p-map';
 import invariant from 'tiny-invariant';
 import i18n from 'i18next';
 
-import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix } from '../util';
+import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix, assertFileExists } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
 import type { FFprobeStream } from '../../../common/ffprobe';
-import type { AvoidNegativeTs, Html5ifyMode, PreserveMetadata } from '../../../common/types';
+import type { AvoidNegativeTs, FfmpegHwAccel, Html5ifyMode, PreserveMetadata } from '../../../common/types';
 import type { AllFilesMeta, Chapter, CopyfileStreams, CustomTagsByFile, LiteFFprobeStream, ParamsByStreamId, SegmentToExport } from '../types';
 import type { LossyMode } from '../../../main';
 import { UserFacingError } from '../../errors';
 import mainApi from '../mainApi';
+import { getHwaccelArgs } from '../../../common/util';
 
 const { join, resolve, dirname } = window.require('path');
 const { writeFile, mkdir, access, constants: { W_OK } } = window.require('fs/promises');
@@ -79,7 +80,7 @@ export async function maybeMkDeepOutDir({ outputDir, fileOutPath }: { outputDir:
 }
 
 
-function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, encCustomBitrate, appendFfmpegCommandLog }: {
+function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, encCustomBitrate, appendFfmpegCommandLog, ffmpegHwaccel }: {
   filePath: string | undefined,
   treatInputFileModifiedTimeAsStart: boolean,
   treatOutputFileModifiedTimeAsStart: boolean | null | undefined,
@@ -92,6 +93,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   appendLastCommandsLog: (a: string) => void,
   encCustomBitrate: number | undefined,
   appendFfmpegCommandLog: (args: string[]) => void,
+  ffmpegHwaccel: FfmpegHwAccel,
 }) {
   const shouldSkipExistingFile = useCallback(async (path: string) => {
     const fileExists = await mainApi.pathExists(path);
@@ -221,7 +223,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       const ffmpegCommandLine = getFfCommandLine('ffmpeg', ffmpegArgs);
 
-      const fullCommandLine = `echo -e "${concatTxt.replace(/\n/, String.raw`\n`)}" | ${ffmpegCommandLine}`;
+      const fullCommandLine = `echo -e "${concatTxt.replaceAll('\n', String.raw`\n`)}" | ${ffmpegCommandLine}`;
       console.log(fullCommandLine);
       appendLastCommandsLog(fullCommandLine);
 
@@ -531,13 +533,16 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       return onTotalProgress((sum(Object.values(singleProgresses)) / segments.length));
     }
 
+    invariant(filePath != null);
+    await assertFileExists(filePath);
+
     const chaptersPath = await writeChaptersFfmetadata(outputDir, chapters);
 
     // This function will either call losslessCutSingle (if no smart cut enabled)
     // or if enabled, will first cut&encode the part before the next keyframe, trying to match the input file's codec params
     // then it will cut the part *from* the keyframe to "end", and concat them together and return the concated file
     // so that for the calling code it looks as if it's just a normal segment
-    async function cutSegment({ start: desiredCutFrom, end: cutTo }: { start: number, end: number }, i: number) {
+    const cutSegment = async ({ start: desiredCutFrom, end: cutTo }: { start: number, end: number }, i: number) => {
       const onProgress = (progress: number) => onSingleProgress(i, progress / 2);
       const onConcatProgress = (progress: number) => onSingleProgress(i, (1 + progress) / 2);
 
@@ -556,8 +561,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         return { path: finalOutPath, created: true };
       }
 
-      // we are probably encoding (smart cut or lossy mode)
-      invariant(filePath != null);
+      // we are probably encoding (`isEncoding`: true, smart cut or lossy mode)
 
       // smart cut only supports cutting main file (no externally added files)
       const { streams } = allFilesMeta[filePath]!;
@@ -651,7 +655,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       } finally {
         await tryDeleteFiles(smartCutSegmentsToConcat);
       }
-    }
+    };
 
     try {
       return await pMap(segments, cutSegment, { concurrency: 1 });
@@ -732,14 +736,14 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const outPath = getHtml5ifiedPath(customOutDir, filePathArg, speed);
     invariant(outPath != null);
 
-    let audio: string | undefined;
+    let audio: 'hq' | 'lq' | 'copy' | undefined;
     if (hasAudio) {
       if (speed === 'slowest') audio = 'hq';
       else if (['slow-audio', 'fast-audio'].includes(speed)) audio = 'lq';
       else if (['fast-audio-remux'].includes(speed)) audio = 'copy';
     }
 
-    let video: string | undefined;
+    let video: 'hq' | 'lq' | 'copy' | undefined;
     if (hasVideo) {
       if (speed === 'slowest') video = 'hq';
       else if (['slow-audio', 'slow'].includes(speed)) video = 'lq';
@@ -822,6 +826,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
     const ffmpegArgs = [
       '-hide_banner',
+      ...((video === 'lq' || video === 'hq') ? getHwaccelArgs(ffmpegHwaccel) : []),
 
       '-i', filePathArg,
       ...videoArgs,
@@ -839,7 +844,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     invariant(outPath != null);
     await transferTimestamps({ inPath: filePathArg, outPath, duration, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
     return outPath;
-  }, [appendFfmpegCommandLog, html5ifyDummy, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
+  }, [appendFfmpegCommandLog, ffmpegHwaccel, html5ifyDummy, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   // https://stackoverflow.com/questions/34118013/how-to-determine-webm-duration-using-ffprobe
   const fixInvalidDuration = useCallback(async ({ fileFormat, customOutDir, onProgress }: {

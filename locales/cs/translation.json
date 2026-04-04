@@ -291,8 +291,8 @@
   "Unable to playback this file. Try to convert to supported format from the menu": "Soubor nelze přehrát. Zkuste jej převést do podporovaného formátu pomocí menu.",
   "File not natively supported. Preview may have no audio or low quality. The final export will however be lossless with audio. You may convert it from the menu for a better preview with audio.": "Typ souboru není podporován. Náhled může mít nízkou kvalitu nebo chybějící zvuk. Export však bude bezztrátový a se zvukem. Pro lepší náhled se zvukem můžete soubor převést (v menu Soubor).",
   "Will now cut at the exact position, but may leave an empty portion at the beginning of the file. You may have to set the cutpoint a few frames before the next keyframe to achieve a precise cut": "Střih bue proveden přesně v místě kurzoru, kvůli tomu může vzniknout na začátku souboru prázdné místo. Abyste dosáhli lepšího výsledku, bude možná potřeba umístit střih pár snímků před následující klíčový snímek.",
-  "Keyframe cut disabled": "Sřih podle klíčových snímků: NE",
-  "Keyframe cut enabled": "Střih podle klíčových snímků: ANO",
+  "Keyframe cut disabled": "Sřih podle úplných snímků vypnut",
+  "Keyframe cut enabled": "Střih podle klíčových snímků zapnut",
   "Will now cut at the nearest keyframe before the desired start cutpoint. This is recommended for most files.": "Sřih bude proveden v místě nejbližšího klíčového snímku před zvoleným místem střihu. Doporučená volba pro většinu případů.",
   "Failed to merge files. Make sure they are all of the exact same codecs": "Nepovedlo se spojit soubory. Ujistěte se, jestli všechny používají stejný kodek",
   "Files merged!": "Soubory spojeny!",
@@ -1064,5 +1064,11 @@
   "Track {{num}}": "Stopa {{num}}",
   "<0></0> <2></2>, <4></4> <6></6> or <8><0><0></0></0></8>+<10></10> to set cutpoints": "<0></0> <2></2>, <4></4> <6></6> nebo <8><0><0></0></0></8>+<10></10> pro nastavení bodů střihu",
   "Please send an email to <1>{{supportEmail}}</1> where you describe what you were doing.": "Odešlete prosím e-mail na <1>{{supportEmail}}</1> a popište co jste konkrétně dělali.",
-  "Unable to delete file": "Nelze smazat soubor"
+  "Unable to delete file": "Nelze smazat soubor",
+  "{{appStoreType}} edition, based on GitHub v{{appVersion}}": "{{appStoreType}} edice, založeno na GitHub v{{appVersion}}",
+  "Ask": "Zeptat se",
+  "Copyright": "Copyright",
+  "Import chapters to segments when opening file": "Importovat kapitoly na segmenty při otevírání souboru",
+  "Language": "Jazyk",
+  "The output location has no storage space remaining. Please free up some space and try again.": "V cílovém umístění nezbývá dostatek volného prostoru. Uvolněte prosím prostor a zkuste to znovu."
 }

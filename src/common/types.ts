@@ -7,6 +7,8 @@ export interface KeyBinding {
   action: KeyboardAction,
 }
 
+export type FfmpegHwAccel = 'none' | 'auto' | 'vdpau' | 'dxva2' | 'd3d11va' | 'vaapi' | 'qsv' | 'videotoolbox';
+
 export type CaptureFormat = 'jpeg' | 'png' | 'webp';
 
 export type TimecodeFormat = 'timecodeWithDecimalFraction' | 'frameCount' | 'seconds' | 'timecodeWithFramesFraction';
@@ -25,7 +27,8 @@ export interface Config {
   version: number,
   lastAppVersion: string,
   captureFormat: CaptureFormat,
-  customOutDir: string | undefined,
+  enableCustomOutDir: boolean,
+  recentCustomOutDirs: string[],
   keyframeCut: boolean,
   autoMerge: boolean,
   autoDeleteMergedSegments: boolean,
@@ -100,6 +103,7 @@ export interface Config {
   thumbnailsEnabled: boolean,
   keyframesEnabled: boolean,
   reducedMotion: 'always' | 'never' | 'user',
+  ffmpegHwaccel: FfmpegHwAccel,
 }
 
 export interface Waveform {

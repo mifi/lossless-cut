@@ -22,7 +22,7 @@ Each segment's *start cut time* normally (but not always) will be "rounded" to t
 - You may try to enable the new "Smart cut" mode to allow cutting between keyframes. However it is very experimental and may not work for many files.
 - Currently, the only way to review the exported file (to check the actual cutpoints) is to run the export (possibly with only one segment enabled to speed up) and then manually check the output file. See also [#1887](https://github.com/mifi/lossless-cut/issues/1887)
 
-### Starts from wrong keyframe
+### Cut starts from wrong keyframe
 
 For some files, when you place segment start cutpoints at keyframes, and you export, it will instead cut from the keyframe **before** the keyframe that you wanted. This is because with some videos, ffmpeg struggles to find the nearest previous keyframe, see [#1216](https://github.com/mifi/lossless-cut/issues/1216). To workaround this, you can try to shift your segments' **start**-cutpoints forward by a few frames, so that ffmpeg correctly cuts from the *previous* keyframe. You can also enable the Export Option "Shift all start times" by +1, +2, +3 frames or so.
 
@@ -34,7 +34,7 @@ This will effectively shift all start times of segments by 6 frames (`6/30=0.2` 
 
 ## Cut file has same length as input
 
-If you cut a file, but the duration of the exported file is the same as input file's duration, try to disable all tracks except for the video track and see if that helps. Sometimes a file contains some tracks that LosslessCut is unable to cut. It will then leave them as is, while cutting the other tracks. This may lead to incorrect output duration. Try also changing `avoid_negative_ts` (in export options).
+If you cut a file, but the duration of the exported file is the same as input file's duration, try to disable all tracks except for the video track and export again. Sometimes a file contains some tracks that LosslessCut is unable to cut, and those tracks will be left as-is, while cutting only the other tracks. This may lead to incorrect output duration. Try also changing `avoid_negative_ts` (in export options). If your file has too few keyframes, and you are trying to cut a short segment, it might not cut at all. If you control the app or device that produces your source videos (like OBS Studio), try to reduce keyframe interval in the app's encoding options.
 
 If you are trying to cut a FLAC file but your output has the same duration as input, you might have run into [this ffmpeg limitation](https://github.com/mifi/lossless-cut/discussions/1320).
 
@@ -54,10 +54,6 @@ Smart cut is experimental, so don't expect too much. But if you're having proble
 - If Smart cut gives you repeated (duplicate) segments, you can try to enable the Export Option "Shift all start times".
 - Sometimes it helps to convert (remux) your videos [to mp4 first](https://github.com/mifi/lossless-cut/discussions/1292#discussioncomment-10425084) (e.g. from mkv) using LosslessCut, before smart cutting them.
 
-## MP4/MOV extension
-
-MP4 and MOV are technically almost the same format. Sometimes files have the extension `.mp4` but are in reality the MOV format (and vice versa). MOV tends to be more lenient in which codecs it supports. FFmpeg has problems exporting some MP4 files as MP4, so MOV needs to be selected instead. Unfortunately I don't know any way to fix this. Sometimes certain players are not able to play back certain exported `.mov` files ([Adobe Premiere](https://github.com/mifi/lossless-cut/issues/1075#issuecomment-2327459890) 👀). You can try to rename the exported MOV file extension to `.mp4` and see if it helps. Or vice versa, rename an exported MP4 file to `.mov`.
-
 ## MP4/MOV playback exported file fails
 
 If you cannot playback the output video file (even if you try to export the whole file without performing any cuts at all), this could be due to FFmpeg applying the wrong output video codec tag (for example `hev1` vs `hvc1` for H265 video). You can try a different video player such as VLC. Or try to change the codec tag or enable the bitstream filter `hevc_metadata=aud=insert` for the particular track in the "tracks" dialog. See also [#2518](https://github.com/mifi/lossless-cut/issues/2518) and [#2626](https://github.com/mifi/lossless-cut/issues/2626).
@@ -65,6 +61,29 @@ If you cannot playback the output video file (even if you try to export the whol
 ## Output file name is missing characters (Chinese, accents etc)
 
 If the output file name has special characters that get replaced by underscore (`_`), try to turn off ["Sanitize"](https://github.com/mifi/lossless-cut/issues/889) in the "Output file names" editor in the "Export options" dialog. Note that this will cause special characters like `/` to be preserved. Some characters are not supported in some operating systems, so be careful. using `/` or `\` can be used to create a folder structure from your segments when exported.
+
+If your source file's name is so long that the output file name becomes truncated, you can also try the above suggestion.
+
+## Preview / playback problems
+
+If you have a problem playing back a particular file inside LosslessCut (**before cutting/modifying it**), please look at the following suggestions:
+
+### File not supported
+
+If you're getting a message saying that the file must be converted to a supported format, this means that LosslessCut's built-in player isn't able to play back that particular file. As a work-around LosslessCut has an FFmpeg-assisted software decoding playback which can be activated from the menu: *File* -> *Convert to supported format*.
+
+### Preview is completely black/blank, corrupted or just won't play back
+
+If you have a problem with the playback, this probably means that Chromium (which LosslessCut uses for playback) doesn't support your particular file (maybe it's 10-bit). [#2228](https://github.com/mifi/lossless-cut/discussions/2228), [#1767](https://github.com/mifi/lossless-cut/discussions/1767), [#2307](https://github.com/mifi/lossless-cut/issues/2307) [#2648](https://github.com/mifi/lossless-cut/issues/2648). 
+
+LosslessCut uses the same video player that is used by Chrome. You can try to open the file in Chrome and see if it shows the same problem there. If the file has the same problem in Chrome, it means **I cannot fix the problem**. However you can try:
+
+1. If H265/HEVC file, go to settings and disable or enable "Hardware HEVC decoding".
+2. Use FFmpeg-assisted software decoding playback by going to *File* -> *Convert to supported format*
+
+### Low quality / blurry playback
+
+Some formats or codecs are not natively supported by LosslessCut's built in player, and LosslessCut will automatically use FFmpeg-assisted software decoding to playback in a lower quality. For better playback you may convert these files to a different format from the menu: *File -> Convert to supported format*. Note that this will not affect the output from LosslessCut, it is only used for playback, see [#88](https://github.com/mifi/lossless-cut/issues/88).
 
 ## Linux specific issues
 
@@ -81,30 +100,24 @@ If you have an issue with the Snap or Flatpak version of LosslessCut, please try
   - Try to run LosslessCut from the [command line](cli.md) with `--disable-gpu` and/or `--disable-features=VizDisplayCompositor` (see [#781](https://github.com/mifi/lossless-cut/issues/781))
   - Try [removing the AppContainer restrictions](https://github.com/mifi/lossless-cut/discussions/2043#discussioncomment-14909957) on LosslessCut.
   - Disable your anti-virus or whitelist LosslessCut. See [#18](https://github.com/mifi/lossless-cut/issues/18), [#1114](https://github.com/mifi/lossless-cut/issues/1114). 
-- How to uninstall LosslessCut?
-  - There is no installer. Just delete the folder. [More info](installation.md).
-- Preview is completely black/blank, corrupted or just won't play back?
-  - This probably means that Chromium (which LosslessCut uses for playback) doesn't support your particular file (maybe it's 10-bit). [#2228](https://github.com/mifi/lossless-cut/discussions/2228), [#1767](https://github.com/mifi/lossless-cut/discussions/1767), [#2307](https://github.com/mifi/lossless-cut/issues/2307).
-  1. If H265/HEVC file, go to settings and disable "Hardware HEVC decoding".
-  2. Use FFmpeg-assisted software decoding playback by going to *File* -> *Convert to supported format*
 - Video preview playback slow, stuttering, low FPS, flickering (NVIDIA)
   - See [#922](https://github.com/mifi/lossless-cut/issues/922) [#1904](https://github.com/mifi/lossless-cut/issues/1904) [#1915](https://github.com/mifi/lossless-cut/issues/1915) [#922](https://github.com/mifi/lossless-cut/issues/922) [#2083](https://github.com/mifi/lossless-cut/issues/2083) [#2556](https://github.com/mifi/lossless-cut/issues/2556)
 - Why no `.exe`/`.zip`/`.appx` downloads?
   - I decided to stop distributing exe/zip and instead just [7zip](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z), due to the [problems](https://github.com/mifi/lossless-cut/issues/1072#issuecomment-1066026323) that the (self-extracting) exe was causing and the large size of `.zip` files. `appx` is unsigned and [**does not work**](https://github.com/mifi/lossless-cut/issues/337).
 - I'm getting a `KERNEL32.dll` error
   - It's probably because you're running Windows 7, 8 or 8.1 which is [no longer supported.](https://github.com/mifi/lossless-cut/discussions/1476)
+- How to uninstall LosslessCut?
+  - There is no installer. Just delete the folder. [More info](installation.md).
 
 # Known limitations
 
-- Undo/redo segments doesn't work through the top menu. This is a [known issue](https://github.com/mifi/lossless-cut/issues/610) that I don't know how to fix. Please use the keyboard shortcuts instead (<kbd>CTRL</kbd>/<kbd>CMD</kbd>+<kbd>Z</kbd> and <kbd>CTRL</kbd>+<kbd>Y</kbd> / <kbd>CMD</kbd>+<kbd>SHIFT</kbd>+<kbd>Z</kbd>).
+## Undo/redo
 
-## File not supported
+Undo/redo segments doesn't work through the top menu. This is a [known issue](https://github.com/mifi/lossless-cut/issues/610) that I don't know how to fix. Please use the keyboard shortcuts instead (<kbd>CTRL</kbd>/<kbd>CMD</kbd>+<kbd>Z</kbd> and <kbd>CTRL</kbd>+<kbd>Y</kbd> / <kbd>CMD</kbd>+<kbd>SHIFT</kbd>+<kbd>Z</kbd>).
 
-If you're getting a message saying that the file must be converted to a supported format, this means that LosslessCut's built-in player isn't able to play back that particular file. As a work-around LosslessCut has an FFmpeg-assisted software decoding playback which can be activated from the menu: *File -> Convert to supported format*.
+## MP4/MOV extension
 
-## Low quality / blurry playback
-
-Some formats or codecs are not natively supported by LosslessCut's built in player, and LosslessCut will automatically use FFmpeg-assisted software decoding to playback in a lower quality. For better playback you may convert these files to a different format from the menu: *File -> Convert to supported format*. Note that this will not affect the output from LosslessCut, it is only used for playback, see [#88](https://github.com/mifi/lossless-cut/issues/88).
+MP4 and MOV are technically almost the same format. Sometimes files have the extension `.mp4` but are in reality the MOV format (and vice versa). MOV tends to be more lenient in which codecs it supports. FFmpeg has problems exporting some MP4 files as MP4, so MOV needs to be selected instead. Unfortunately I don't know any way to fix this. Sometimes certain players are not able to play back certain exported `.mov` files ([Adobe Premiere](https://github.com/mifi/lossless-cut/issues/1075#issuecomment-2327459890) 👀). You can try to rename the exported MOV file extension to `.mp4` and see if it helps. Or vice versa, rename an exported MP4 file to `.mov`.
 
 ## MPEG TS / MTS
 

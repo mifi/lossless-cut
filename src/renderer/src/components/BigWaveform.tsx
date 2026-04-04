@@ -1,9 +1,11 @@
 import type { CSSProperties, MouseEventHandler, WheelEventHandler } from 'react';
 import { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { FaExclamationCircle } from 'react-icons/fa';
 
 import { ffmpegExtractWindow } from '../util/constants';
 import type { WaveformSlice } from '../types';
 import Spinner from './Spinner';
+import isDev from '../isDev';
 
 
 function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zoom, seekRel, darkMode }: {
@@ -108,18 +110,18 @@ function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zo
           width: widthPercent,
           left: leftPercent,
           borderLeft: waveform.from === 0 ? '1px solid var(--gray-11)' : undefined,
-          borderRight: waveform.to >= fileDurationNonZero ? '1px solid var(--gray-11)' : undefined,
+          borderRight: waveform.to >= fileDurationNonZero || isDev ? '1px solid var(--gray-11)' : undefined,
           filter: darkMode ? undefined : 'invert(1)',
         };
 
-        if (waveform.url == null) {
+        if (waveform.url == null || waveform.failed) {
           return (
             <div
               key={`${waveform.from}-${waveform.to}`}
               draggable={false}
               style={{ ...style, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
-              <Spinner />
+              {waveform.failed ? <FaExclamationCircle color="var(--red-11)" /> : <Spinner />}
             </div>
           );
         }

@@ -35,7 +35,6 @@ export default ({ filePath, relevantTime, fileDuration, waveformEnabled, audioSt
   }, [filePath, audioStream, setWaveforms]);
 
   const waveformStartTime = Math.floor(relevantTime / ffmpegExtractWindow) * ffmpegExtractWindow;
-  const safeExtractDuration = fileDuration != null ? Math.min(waveformStartTime + ffmpegExtractWindow, fileDuration) - waveformStartTime : undefined;
 
   const waveformStartTimeRef = useRef(waveformStartTime);
 
@@ -47,7 +46,7 @@ export default ({ filePath, relevantTime, fileDuration, waveformEnabled, audioSt
     let aborted = false;
 
     (async () => {
-      if (!filePath || safeExtractDuration == null || !audioStream || !waveformEnabled) {
+      if (!filePath || fileDuration == null || !audioStream || !waveformEnabled) {
         return;
       }
 
@@ -59,8 +58,10 @@ export default ({ filePath, relevantTime, fileDuration, waveformEnabled, audioSt
         ];
 
         for (const time of times) {
+          const safeExtractDuration = Math.min(time + ffmpegExtractWindow, fileDuration) - time;
+
           const alreadyHaveWaveformAtTime = (waveformsRef.current ?? []).some((waveform) => waveform.from === time);
-          if (!alreadyHaveWaveformAtTime) {
+          if (!alreadyHaveWaveformAtTime && time < fileDuration) {
             try {
               const promise = renderWaveformPng({ filePath, start: time, duration: safeExtractDuration, color, streamIndex: audioStream.index, timeout: 10000 });
 
@@ -87,18 +88,20 @@ export default ({ filePath, relevantTime, fileDuration, waveformEnabled, audioSt
                 return;
               }
 
-              setWaveforms((currentWaveforms) => currentWaveforms.map((w) => {
-                if (w.from !== time) {
-                  return w;
-                }
-
-                return {
+              setWaveforms((currentWaveforms) => currentWaveforms.map((w) => (
+                w.from === time ? {
                   ...w,
                   url: URL.createObjectURL(safeCreateBlob(buffer, { type: 'image/png' })),
-                };
-              }));
+                } : w
+              )));
             } catch (err) {
               console.error('Failed to render waveform', err);
+              setWaveforms((currentWaveforms) => currentWaveforms.map((w) => (
+                w.from === time ? {
+                  ...w,
+                  failed: true,
+                } : w
+              )));
             }
           }
         }
@@ -111,7 +114,7 @@ export default ({ filePath, relevantTime, fileDuration, waveformEnabled, audioSt
     return () => {
       aborted = true;
     };
-  }, [audioStream, ffmpegExtractWindow, filePath, safeExtractDuration, waveformEnabled]);
+  }, [audioStream, ffmpegExtractWindow, fileDuration, filePath, waveformEnabled]);
 
   const lastWaveformsRef = useRef<WaveformSlice[]>([]);
   useEffect(() => {

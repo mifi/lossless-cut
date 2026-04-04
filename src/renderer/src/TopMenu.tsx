@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { memo, useCallback, useEffect, useRef } from 'react';
 import { IoIosSettings } from 'react-icons/io';
-import { FaFilter, FaList, FaLock, FaMoon, FaSun, FaTimes, FaUnlock } from 'react-icons/fa';
+import { FaFilter, FaList, FaLock, FaMoon, FaSun, FaUnlock } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import Button from './components/Button';
 
@@ -11,6 +11,7 @@ import { withBlur } from './util';
 import { primaryTextColor, controlsBackground, darkModeTransition } from './colors';
 import useUserSettings from './hooks/useUserSettings';
 import styles from './TopMenu.module.css';
+import OutDirSelector from './components/OutDirSelector';
 
 
 const { stat } = window.require('fs/promises');
@@ -32,7 +33,6 @@ function TopMenu({
   toggleSettings,
   selectedSegments,
   isCustomFormatSelected,
-  clearOutDir,
   toggleDarkMode,
 }: {
   filePath: string | undefined,
@@ -47,11 +47,10 @@ function TopMenu({
   toggleSettings: () => void,
   selectedSegments: unknown[],
   isCustomFormatSelected: boolean,
-  clearOutDir: () => void,
   toggleDarkMode: () => void,
 }) {
   const { t } = useTranslation();
-  const { customOutDir, changeOutDir, setCustomOutDir, simpleMode, outFormatLocked, setOutFormatLocked, darkMode } = useUserSettings();
+  const { customOutDir, setCustomOutDir, simpleMode, outFormatLocked, setOutFormatLocked, darkMode } = useUserSettings();
   const workingDirButtonRef = useRef<HTMLButtonElement>(null);
 
   const DarkMode = darkMode ? FaSun : FaMoon;
@@ -119,25 +118,15 @@ function TopMenu({
 
       <div style={{ flexGrow: 1 }} />
 
-      {showClearWorkingDirButton && (
+      <OutDirSelector>
         <Button
-          onClick={withBlur(clearOutDir)}
-          title={t('Clear working directory')}
+          ref={workingDirButtonRef}
+          title={customOutDir}
+          style={{ paddingLeft: showClearWorkingDirButton ? '.4em' : undefined }}
         >
-          <FaTimes
-            style={{ fontSize: '.9em', verticalAlign: 'middle' }}
-          />
+          {customOutDir ? t('Working dir set') : t('Working dir unset')}
         </Button>
-      )}
-
-      <Button
-        ref={workingDirButtonRef}
-        onClick={withBlur(changeOutDir)}
-        title={customOutDir}
-        style={{ paddingLeft: showClearWorkingDirButton ? '.4em' : undefined }}
-      >
-        {customOutDir ? t('Working dir set') : t('Working dir unset')}
-      </Button>
+      </OutDirSelector>
 
       {renderOutFmt(outFmtStyle)}
 

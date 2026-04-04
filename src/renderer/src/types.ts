@@ -17,6 +17,9 @@ export type OpenFilesActionArgs = z.infer<typeof openFilesActionArgsSchema>
 export const goToTimecodeDirectArgsSchema = z.tuple([z.object({ time: z.string() })]);
 export type GoToTimecodeDirectArgs = z.infer<typeof goToTimecodeDirectArgsSchema>
 
+export const awaitEventArgsSchema = z.tuple([z.object({ eventName: z.string() })]);
+export type AwaitEventArgs = z.infer<typeof awaitEventArgsSchema>;
+
 export const segmentTagsSchema = z.record(z.string(), z.string());
 
 export type SegmentTags = z.infer<typeof segmentTagsSchema>
@@ -102,6 +105,7 @@ export interface WaveformSlice extends WaveformBase {
   to: number,
   duration: number,
   url?: string, // undefined while rendering
+  failed?: true, // if failed to render
 }
 
 export interface OverviewWaveform extends WaveformBase {

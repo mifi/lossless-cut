@@ -8,14 +8,20 @@ Please read the documentation before creating an issue. Thank you 🙏
   - **A:** First check the Keyboard shortcuts dialog. If you cannot find your shortcut there, [see this issue.](https://github.com/mifi/lossless-cut/issues/254)
 - **Q:** Can LosslessCut be automated using a CLI or API or do external post-processing?
   - **A:** While it was never designed for advanced batching/automation, it does have a [basic CLI and a HTTP API](cli.md). More info: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868).
+- **Q:** I cannot find a particular button or function.
+  - **A:** Click the "advanced view" (baby icon) in the bottom left to enable additional functionality.
+- **Q:** Where's the "Export options" dialog?
+  - **A:** Click the icon next to the export button (bottom right, "advanced view") to toggle whether to show this dialog before each export.
 - **Q:** How to *cut away* a middle part of a video?
-  - **A:** Enable "advanced view" and then click the Yin Yang symbol. It will invert the segments.
+  - **A:** Click the Yin Yang symbol ("advanced view"). It will invert the segments.
 - **Q** What's the difference between the app in the Apple/Microsoft App Store vs. GitHub releases?
   - **A** LosslessCut version in the App Stores is often a few versions behind the latest GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. The GitHub version will contain new, untested features and may contain some bugs (even in existing functionality). I consider the newest GitHub versions to be a public "beta" test. Then, once I'm sure that the new version works well, I will release it in the App Stores as well to give a frictionless as possible experience for customers. They have exactly the same in-app features, except for a few platform limitations: Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps run in a sandbox, and therefore need to prompt for output directory before allowing writing files.
+- **Q**: What are all these `.llc` files that get created?
+  - **A***: Their purpase is to save your segments so that when you exit/re-open LosslessCut you can continue where you left off. You can turn them off in app settings. See also [#2115](https://github.com/mifi/lossless-cut/issues/2115).
 
 ## Commonly requested features
 
-- **Q:** Can LosslessCut **crop, resize, stretch, mirror/flip, overlay text/images, watermark, blur, redact, reduce quality/re-encode, create GIF, slideshow, burn subtitles, color grading, fade/transition between video clips, fade/combine/mix/merge audio tracks, mute audio channels or change audio volume**?
+- **Q:** Can LosslessCut **crop, resize, stretch, mirror/flip, reverse, overlay text/images, watermark, blur, redact, reduce quality/re-encode, create GIF, slideshow, burn subtitles, color grading, fade/transition between video clips, fade/combine/mix/merge audio tracks, mute audio channels or change audio volume**?
   - **A:** No, these are all lossy operations (meaning you *have* to re-encode the file), but in the future I may start to implement such features. [See #372](https://github.com/mifi/lossless-cut/issues/372). Related: [#643](https://github.com/mifi/lossless-cut/issues/643).
 - **Q:** When will you implement feature X?
   - **A:** I have limited time and I have a lot of projects to work on, so I cannot promise any timeline. I will usually prioritize the issues with the most likes, [see here for a list of the most popular issues](https://github.com/mifi/lossless-cut/issues/691).
@@ -33,6 +39,8 @@ Please read the documentation before creating an issue. Thank you 🙏
   - **A:** That is forbidden by design, for [several reasons](https://github.com/mifi/lossless-cut/issues/2538#issuecomment-3476574283).
 - **Q:** Can LosslessCut remember more choices, selections, settings?
   - **A:** Maybe, see [#371](https://github.com/mifi/lossless-cut/issues/371).
+- **Q:** Does LosslessCut allow me to cut/merge multiple files in the same timeline?
+  - **A:** No, and I'm not sure if this will ever be implemented. Editing multiple files will have to be done in multiple steps. See [#976](https://github.com/mifi/lossless-cut/issues/976).
 
 See also [📝 Recipe cookbook](recipes.md).
 
@@ -44,7 +52,7 @@ If you have a problem with the app or with a file, please see the [🤔 Troubles
 
 - **Drag and drop** a video file into player or use <kbd>⌘</kbd>/<kbd>CTRL</kbd> + <kbd>O</kbd>.
 - <kbd>SPACE</kbd> to play/pause or <kbd>←</kbd> <kbd>→</kbd> <kbd>,</kbd> <kbd>.</kbd> or mouse/trackpad wheel to seek back/forth.
-- Set the start/end times of the current segment by first moving the timeline cursor and then pressing <kbd>I</kbd> to set start time and <kbd>O</kbd> to set end time.
+- Set the start/end times of the current segment by first moving the timeline cursor and then pressing <kbd>I</kbd> to set start time and <kbd>O</kbd> to set end time. You can also press hold <kbd>SHIFT</kbd> while dragging a segment with the mouse to move or resize it
 - <kbd>+</kbd> to create a new segment.
 - <kbd>B</kbd> to split the segment at the timeline cursor.
 - <kbd>BACKSPACE</kbd> to remove cutpoint/segment.

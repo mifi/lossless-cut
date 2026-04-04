@@ -21,3 +21,7 @@ See more examples in-app.
 You can also use JavaScript expressions when referring to variables inside `${}` in output file name templates, e.g. `${FILENAME.toLowerCase()}`.
 
 See also [Export file name template](file-name-template.md).
+
+## Select tracks by expression
+
+For available variables, open the *Tracks* dialog, then for the respective track, open *Track info* and you will see all available variables which you can use in your filter.

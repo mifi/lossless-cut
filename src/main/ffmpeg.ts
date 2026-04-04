@@ -9,12 +9,12 @@ import type { Readable } from 'node:stream';
 import { app, clipboard, nativeImage } from 'electron';
 
 import { platform, arch, isWindows, isLinux } from './util.js';
-import type { CaptureFormat, Waveform } from '../common/types.js';
+import type { CaptureFormat, FfmpegHwAccel, Waveform } from '../common/types.js';
 import type { FFprobeFormat } from '../common/ffprobe.js';
 import isDev from './isDev.js';
 import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';
-import { parseFfprobeDuration } from '../common/util.js';
+import { getHwaccelArgs, parseFfprobeDuration } from '../common/util.js';
 import { getFfmpegJpegQuality } from './ffmpegUtil.js';
 
 
@@ -283,7 +283,7 @@ interface DetectedSegment {
 }
 
 // https://stackoverflow.com/questions/35675529/using-ffmpeg-how-to-do-a-scene-change-detection-with-timecode
-export async function detectSceneChanges({ filePath, streamId, minChange, onProgress, onSegmentDetected, from, to }: {
+export async function detectSceneChanges({ filePath, streamId, minChange, onProgress, onSegmentDetected, from, to, ffmpegHwaccel }: {
   filePath: string,
   streamId: number | undefined
   minChange: number | string,
@@ -291,9 +291,11 @@ export async function detectSceneChanges({ filePath, streamId, minChange, onProg
   onSegmentDetected: (p: DetectedSegment) => void,
   from: number,
   to: number,
+  ffmpegHwaccel: FfmpegHwAccel,
 }) {
   const args = [
     '-hide_banner',
+    ...getHwaccelArgs(ffmpegHwaccel),
     ...getInputSeekArgs({ filePath, from, to }),
     '-map', streamId != null ? `0:${streamId}` : 'v:0',
     '-filter:v', `select='gt(scene,${minChange})',metadata=print:file=-:direct=1`, // direct=1 to flush stdout immediately
@@ -326,7 +328,7 @@ export async function detectSceneChanges({ filePath, streamId, minChange, onProg
   return { ffmpegArgs: args };
 }
 
-async function detectIntervals({ filePath, customArgs, onProgress, onSegmentDetected, from, to, matchLineTokens, boundingMode }: {
+async function detectIntervals({ filePath, customArgs, onProgress, onSegmentDetected, from, to, matchLineTokens, boundingMode, ffmpegHwaccel }: {
   filePath: string,
   customArgs: string[],
   onProgress: (p: number) => void,
@@ -335,9 +337,11 @@ async function detectIntervals({ filePath, customArgs, onProgress, onSegmentDete
   to: number,
   matchLineTokens: (line: string) => DetectedSegment | undefined,
   boundingMode: boolean,
+  ffmpegHwaccel: FfmpegHwAccel,
 }) {
   const args = [
     '-hide_banner',
+    ...getHwaccelArgs(ffmpegHwaccel),
     ...getInputSeekArgs({ filePath, from, to }),
     ...customArgs,
     '-f', 'null', '-',
@@ -377,7 +381,7 @@ async function detectIntervals({ filePath, customArgs, onProgress, onSegmentDete
 
 const mapFilterOptions = (options: Record<string, string>) => Object.entries(options).map(([key, value]) => `${key}=${value}`).join(':');
 
-export async function blackDetect({ filePath, streamId, filterOptions, boundingMode, onProgress, onSegmentDetected, from, to }: {
+export async function blackDetect({ streamId, filterOptions, ...rest }: {
   filePath: string,
   streamId: number | undefined,
   filterOptions: Record<string, string>,
@@ -386,14 +390,10 @@ export async function blackDetect({ filePath, streamId, filterOptions, boundingM
   onSegmentDetected: (p: DetectedSegment) => void,
   from: number,
   to: number,
+  ffmpegHwaccel: FfmpegHwAccel,
 }) {
   return detectIntervals({
-    filePath,
-    onProgress,
-    onSegmentDetected,
-    from,
-    to,
-    boundingMode,
+    ...rest,
     matchLineTokens: (line) => {
       // eslint-disable-next-line unicorn/better-regex
       const match = line.match(/^[blackdetect\s*@\s*0x[0-9a-f]+] black_start:([\d\\.]+) black_end:([\d\\.]+) black_duration:[\d\\.]+/);
@@ -417,7 +417,7 @@ export async function blackDetect({ filePath, streamId, filterOptions, boundingM
   });
 }
 
-export async function silenceDetect({ filePath, streamId, filterOptions, boundingMode, onProgress, onSegmentDetected, from, to }: {
+export async function silenceDetect({ streamId, filterOptions, ...rest }: {
   filePath: string,
   streamId: number | undefined,
   filterOptions: Record<string, string>,
@@ -425,14 +425,10 @@ export async function silenceDetect({ filePath, streamId, filterOptions, boundin
   onProgress: (p: number) => void,
   onSegmentDetected: (p: DetectedSegment) => void,
   from: number, to: number,
+  ffmpegHwaccel: FfmpegHwAccel,
 }) {
   return detectIntervals({
-    filePath,
-    onProgress,
-    onSegmentDetected,
-    from,
-    to,
-    boundingMode,
+    ...rest,
     matchLineTokens: (line) => {
       // eslint-disable-next-line unicorn/better-regex
       const match = line.match(/^[silencedetect\s*@\s*0x[0-9a-f]+] silence_end: ([\d\\.]+)[|\s]+silence_duration: ([\d\\.]+)/);
@@ -576,7 +572,7 @@ export async function getDuration(filePath: string) {
 const enableLog = false;
 const encode = true;
 
-export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps, rotate, forceColorspace }: {
+export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps, rotate, forceColorspace, ffmpegHwaccel }: {
   path: string,
   videoStreamIndex?: number | undefined,
   audioStreamIndexes: number[],
@@ -585,6 +581,7 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
   fps?: number | undefined,
   rotate: number | undefined,
   forceColorspace?: boolean | undefined,
+  ffmpegHwaccel: FfmpegHwAccel,
 }) {
   function getFilters() {
     const graph: string[] = [];
@@ -677,6 +674,7 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
   const args = [
     '-hide_banner',
     ...(enableLog ? [] : ['-loglevel', 'error']),
+    ...getHwaccelArgs(ffmpegHwaccel),
 
     // https://stackoverflow.com/questions/16658873/how-to-minimize-the-delay-in-a-live-streaming-with-ffmpeg
     // https://unix.stackexchange.com/questions/25372/turn-off-buffering-in-pipe

@@ -108,4 +108,6 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
   };
 }
 
+export type FindNearestKeyframeTime = ReturnType<typeof useKeyframes>['findNearestKeyFrameTime'];
+
 export default useKeyframes;

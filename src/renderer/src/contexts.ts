@@ -17,6 +17,7 @@ export type UserSettingsContextType = Omit<UserSettingsRoot, 'settings'> & UserS
   toggleSimpleMode: () => void,
   toggleSafeOutputFileName: () => void,
   effectiveExportMode: ExportMode,
+  ensureWritableOutDirWithFilePath: ({ outDir }: { outDir: string | undefined }) => Promise<string | undefined>,
 }
 
 export interface SegColorsContextType {
