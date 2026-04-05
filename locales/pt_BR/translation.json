@@ -1021,5 +1021,16 @@
   "Import chapters to segments when opening file": "Importar capítulos para segmentos ao abrir arquivo",
   "Never": "Nunca",
   "The output location has no storage space remaining. Please free up some space and try again.": "O local de saída não possui mais espaço de armazenamento disponível. Libere espaço e tente novamente.",
-  "Language": "Idioma"
+  "Language": "Idioma",
+  "A segment may result in an unexpectedly long output file length after exporting, because your video file doesn't have any keyframes near the start time of the segment you're trying to cut.": "Um segmento pode resultar em um arquivo de saída inesperadamente longo após a exportação, porque seu arquivo de vídeo não possui quadros-chave próximos ao início do segmento que você está tentando cortar.",
+  "Export options screen is disabled, and you will not see any important notices or warnings.": "A tela de opções de exportação está desativada e você não verá nenhum aviso ou alerta importante.",
+  "Learn more": "Saiba mais",
+  "Segment label (starts with)": "Rótulo do segmento (começa com)",
+  "Segment start to previous keyframe and end to next keyframe": "O segmento começa no quadro-chave anterior e termina no próximo quadro-chave",
+  "Choose directory": "Escolha a pasta",
+  "Clear recents": "Limpar arquivos recentes",
+  "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "O arquivo de origem não existe mais ou não está acessível. Verifique se ele ainda está no local original e se você possui permissão para acessá-lo.",
+  "Elapsed: {{seconds}} seconds": "Decorrido: {{seconds}} segundos",
+  "Enable FFmpeg `-hwaccel auto` flag. This can improve performance segment auto detection and FFmpeg-assisted playback speed.": "Ative a opção `-hwaccel auto` do FFmpeg. Isso pode melhorar o desempenho da detecção automática de segmentos e a velocidade de reprodução assistida pelo FFmpeg.",
+  "Other": "Outro"
 }

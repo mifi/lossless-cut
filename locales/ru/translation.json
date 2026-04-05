@@ -1059,5 +1059,16 @@
   "Ask": "Спрашивать",
   "Import chapters to segments when opening file": "Импорт глав в сегменты при открытии файла",
   "Language": "Язык",
-  "The output location has no storage space remaining. Please free up some space and try again.": "Недостаточно места для сохранения. Освободите место и повторите попытку."
+  "The output location has no storage space remaining. Please free up some space and try again.": "Недостаточно места для сохранения. Освободите место и повторите попытку.",
+  "A segment may result in an unexpectedly long output file length after exporting, because your video file doesn't have any keyframes near the start time of the segment you're trying to cut.": "После экспорта выбранного фрагмента может получиться неожиданно длинный выходной файл, поскольку в начале выбранного вами фрагмента видео отсутствует ключевой кадр.",
+  "Export options screen is disabled, and you will not see any important notices or warnings.": "Экран настроек экспорта отключен, и вы не увидите никаких важных уведомлений или предупреждений.",
+  "Learn more": "Узнать больше",
+  "Segment label (starts with)": "Название сегмента (начинается с)",
+  "Segment start to previous keyframe and end to next keyframe": "Начало сегмента – предыдущий ключевой кадр, конец сегмента – следующий ключевой кадр",
+  "Choose directory": "Выбрать папку",
+  "Clear recents": "Очистить недавние",
+  "Elapsed: {{seconds}} seconds": "Прошло: {{seconds}} сек.",
+  "Enable FFmpeg `-hwaccel auto` flag. This can improve performance segment auto detection and FFmpeg-assisted playback speed.": "Включить флаг `-hwaccel auto` в FFmpeg. Это может улучшить производительность, автоматическое определение сегментов и скорость воспроизведения с использованием FFmpeg.",
+  "Other": "Другое",
+  "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "Исходный файл больше не существует или недоступен. Пожалуйста, убедитесь, что он находится в исходном месте и что у вас есть разрешение на доступ к нему."
 }

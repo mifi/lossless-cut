@@ -902,5 +902,16 @@
   "Copyright": "Szerzői jog",
   "Import chapters to segments when opening file": "Fejezetek importálása szegmensekbe a fájl megnyitásakor",
   "Language": "Nyelv",
-  "The output location has no storage space remaining. Please free up some space and try again.": "A kimeneti helyen nincs több szabad tárhely. Kérjük, szabadítson fel némi helyet, és próbálja újra."
+  "The output location has no storage space remaining. Please free up some space and try again.": "A kimeneti helyen nincs több szabad tárhely. Kérjük, szabadítson fel némi helyet, és próbálja újra.",
+  "A segment may result in an unexpectedly long output file length after exporting, because your video file doesn't have any keyframes near the start time of the segment you're trying to cut.": "Egy szegmens váratlanul hosszú kimeneti fájlhosszt eredményezhet az exportálás után, mivel a videofájlban nincsenek kulcsképkockák a vágni kívánt szegmens kezdési időpontja közelében.",
+  "Export options screen is disabled, and you will not see any important notices or warnings.": "Az exportálási beállítások képernyő le van tiltva, és nem jelennek meg fontos értesítések vagy figyelmeztetések.",
+  "Learn more": "További információk",
+  "Segment label (starts with)": "Szegmenscímke (ezzel kezdődik)",
+  "Segment start to previous keyframe and end to next keyframe": "A szegmens kezdete az előző kulcsképkockáig, vége pedig a következő kulcsképkockáig",
+  "Choose directory": "Válasszon könyvtárat",
+  "Clear recents": "Legutóbbiak törlése",
+  "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "A forrásfájl már nem létezik, vagy nem érhető el. Kérjük, ellenőrizze, hogy még mindig az eredeti helyén van-e, és hogy rendelkezik-e hozzáférési engedéllyel.",
+  "Elapsed: {{seconds}} seconds": "Eltelt idő: {{seconds}} másodperc",
+  "Enable FFmpeg `-hwaccel auto` flag. This can improve performance segment auto detection and FFmpeg-assisted playback speed.": "Engedélyezze az FFmpeg `-hwaccel auto` jelzőt. Ez javíthatja a szegmens automatikus felismerését és az FFmpeg által támogatott lejátszási sebességet.",
+  "Other": "Egyéb"
 }
