@@ -7159,7 +7159,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-xml-parser@npm:^5.0.7, fast-xml-parser@npm:^5.4.1":
+"fast-xml-builder@npm:^1.1.4":
+  version: 1.1.4
+  resolution: "fast-xml-builder@npm:1.1.4"
+  dependencies:
+    path-expression-matcher: "npm:^1.1.3"
+  checksum: 10/32937866aaf5a90e69d1f4ee6e15e875248d5b5d2afd70277e9e8323074de4980cef24575a591b8e43c29f405d5f12377b3bad3842dc412b0c5c17a3eaee4b6b
+  languageName: node
+  linkType: hard
+
+"fast-xml-parser@npm:^5.0.7":
   version: 5.4.1
   resolution: "fast-xml-parser@npm:5.4.1"
   dependencies:
@@ -7168,6 +7177,19 @@ __metadata:
   bin:
     fxparser: src/cli/cli.js
   checksum: 10/2b40067c3ad3542ca197d1353bcb0416cd5db20d5c66d74ac176b99af6ff9bd55a6182d36856a2fd477c95b8fc1f07405475f1662a31185480130ba7076c702a
+  languageName: node
+  linkType: hard
+
+"fast-xml-parser@npm:^5.5.7":
+  version: 5.5.10
+  resolution: "fast-xml-parser@npm:5.5.10"
+  dependencies:
+    fast-xml-builder: "npm:^1.1.4"
+    path-expression-matcher: "npm:^1.2.1"
+    strnum: "npm:^2.2.2"
+  bin:
+    fxparser: src/cli/cli.js
+  checksum: 10/ac48edff66e5cad1c5f978a9edc2f081edc36abf74a745a3df83acaf35a7603ca561c5be9a0c0c0184095bfd06c6c7f75afb6e3bc81e6ff0cb3544b3886fa4c6
   languageName: node
   linkType: hard
 
@@ -9200,7 +9222,7 @@ __metadata:
     execa: "npm:^9.6.1"
     express: "npm:^5.2.1"
     express-async-handler: "npm:^1.2.0"
-    fast-xml-parser: "npm:^5.4.1"
+    fast-xml-parser: "npm:^5.5.7"
     file-type: "npm:^21.3.2"
     i18next: "npm:^25.7.3"
     i18next-cli: "npm:^1.34.1"
@@ -10725,6 +10747,13 @@ __metadata:
   version: 4.0.0
   resolution: "path-exists@npm:4.0.0"
   checksum: 10/505807199dfb7c50737b057dd8d351b82c033029ab94cb10a657609e00c1bc53b951cfdbccab8de04c5584d5eff31128ce6afd3db79281874a5ef2adbba55ed1
+  languageName: node
+  linkType: hard
+
+"path-expression-matcher@npm:^1.1.3, path-expression-matcher@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "path-expression-matcher@npm:1.2.1"
+  checksum: 10/2ef295fc82c0aed1efbf78b022ac38517e677c6cb06d7819872e2a3e789cdc7064164a5876aaff22358c49dce7c59157c77ef587dbd8a998e1d71cb44f15d707
   languageName: node
   linkType: hard
 
@@ -12684,6 +12713,13 @@ __metadata:
   version: 2.1.2
   resolution: "strnum@npm:2.1.2"
   checksum: 10/7d894dff385e3a5c5b29c012cf0a7ea7962a92c6a299383c3d6db945ad2b6f3e770511356a9774dbd54444c56af1dc7c435dad6466c47293c48173274dd6c631
+  languageName: node
+  linkType: hard
+
+"strnum@npm:^2.2.2":
+  version: 2.2.2
+  resolution: "strnum@npm:2.2.2"
+  checksum: 10/c55813cfded750dc84556b4881ffc7cee91382ff15a48f1fba0ff7a678e1640ed96ca40806fbd55724940fd7d51cf752469b2d862e196e4adefb6c7d5d9cd73b
   languageName: node
   linkType: hard
 
