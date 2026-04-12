@@ -91,8 +91,10 @@ import type { GenerateMergedOutFileNamesParams, GeneratedOutFileNames } from './
 import { generateCutFileNames as generateCutFileNamesRaw, generateCutMergedFileNames as generateCutMergedFileNamesRaw, generateMergedFileNames as generateMergedFileNamesRaw, defaultCutFileTemplate, defaultCutMergedFileTemplate, defaultMergedFileTemplate } from './util/outputNameTemplate';
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 import BigWaveform from './components/BigWaveform';
+import CropOverlay from './components/CropOverlay';
+import CropControls from './components/CropControls';
 
-import type { BatchFile, Chapter, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, FileStats, ParamsByStreamId, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment, TunerType } from './types';
+import type { BatchFile, Chapter, CropRect, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, FileStats, ParamsByStreamId, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment, TunerType } from './types';
 import { goToTimecodeDirectArgsSchema, openFilesActionArgsSchema } from './types';
 import type { CaptureFormat, KeyboardAction, ApiActionRequest } from '../../common/types.js';
 import type { FFprobeChapter, FFprobeStream } from '../../common/ffprobe.js';
@@ -345,7 +347,7 @@ function App() {
   }, [isFileOpened]);
 
   const {
-    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, labelSegment, splitCurrentSegment, focusSegmentAtCursor, selectSegmentsAtCursor, createNumSegments, createFixedDurationSegments, createFixedByteSizedSegments, createRandomSegments, getSegEstimatedSize, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, inverseCutSegments, clearSegments, clearSegColorCounter, loadCutSegments, setCutTime, setCurrentSegIndex, labelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, selectSegmentsByLabel, selectSegmentsByExpr, selectAllMarkers, mutateSegmentsByExpr, toggleSegmentSelected, selectOnlySegment, selectedSegments, segmentsOrInverse, segmentsToExport, duplicateCurrentSegment, duplicateSegment, updateSegAtIndex, findSegmentsAtCursor, maybeCreateFullLengthSegment, currentCutSegOrWholeTimeline, segColorCounter,
+    cutSegments, cutSegmentsHistory, createSegmentsFromKeyframes, shuffleSegments, detectBlackScenes, detectSilentScenes, detectSceneChanges, removeSegment, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, shiftAllSegmentTimes, alignSegmentTimesToKeyframes, updateSegOrder, updateSegOrders, reorderSegsByStartTime, addSegment, setCutStart, setCutEnd, labelSegment, splitCurrentSegment, focusSegmentAtCursor, selectSegmentsAtCursor, createNumSegments, createFixedDurationSegments, createFixedByteSizedSegments, createRandomSegments, getSegEstimatedSize, haveInvalidSegs, currentSegIndexSafe, currentCutSeg, inverseCutSegments, clearSegments, clearSegColorCounter, loadCutSegments, setCutTime, setCurrentSegIndex, labelSelectedSegments, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, selectSegmentsByLabel, selectSegmentsByExpr, selectAllMarkers, mutateSegmentsByExpr, toggleSegmentSelected, selectOnlySegment, selectedSegments, segmentsOrInverse, segmentsToExport, duplicateCurrentSegment, duplicateSegment, updateSegAtIndex, findSegmentsAtCursor, maybeCreateFullLengthSegment, currentCutSegOrWholeTimeline, segColorCounter, setCropForSegment, setCropForAllSegments,
   } = useSegments({ filePath, workingRef, setWorking, setProgress, videoStream: activeVideoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta: mainFileMeta?.ffprobeMeta, seekAbs, activeVideoStreamIndex, activeAudioStreamIndexes, handleError, showGenericDialog, simpleMode, ffmpegHwaccel });
 
   const { getEdlFilePath, projectFileSavePath, getProjectFileSavePath } = useSegmentsAutoSave({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, customOutDir, cutSegments });
@@ -413,6 +415,46 @@ function App() {
     const supportsRotation = !isMatroska(fileFormat);
     if (!supportsRotation) showNotification({ text: i18n.t('Lossless rotation might not work with this file format. You may try changing to MP4') });
   }, [fileFormat, showNotification]);
+
+  const [cropModeActive, setCropModeActive] = useState(false);
+
+  const sourceVideoResolution = useMemo(() => {
+    if (activeVideoStream?.width != null && activeVideoStream?.height != null) {
+      return { width: activeVideoStream.width, height: activeVideoStream.height };
+    }
+    return undefined;
+  }, [activeVideoStream]);
+
+  const currentSegCrop = currentCutSeg?.crop;
+
+  const toggleCropMode = useCallback(() => {
+    setCropModeActive((v) => {
+      if (!v && currentCutSeg && !currentCutSeg.crop && sourceVideoResolution) {
+        // Initialize crop to full source resolution when activating crop mode
+        setCropForSegment(currentCutSeg.segId, { x: 0, y: 0, w: sourceVideoResolution.width, h: sourceVideoResolution.height });
+      }
+      return !v;
+    });
+  }, [currentCutSeg, sourceVideoResolution, setCropForSegment]);
+
+  const handleCropChange = useCallback((crop: CropRect) => {
+    if (currentCutSeg) {
+      setCropForSegment(currentCutSeg.segId, crop);
+    }
+  }, [currentCutSeg, setCropForSegment]);
+
+  const handleCropReset = useCallback(() => {
+    if (currentCutSeg) {
+      setCropForSegment(currentCutSeg.segId, undefined);
+    }
+    setCropModeActive(false);
+  }, [currentCutSeg, setCropForSegment]);
+
+  const handleCropApplyToAll = useCallback(() => {
+    if (currentSegCrop) {
+      setCropForAllSegments(currentSegCrop);
+    }
+  }, [currentSegCrop, setCropForAllSegments]);
 
   const { ensureWritableOutDir, ensureAccessToSourceDir } = useDirectoryAccess({ setCustomOutDir });
 
@@ -1111,6 +1153,7 @@ function App() {
         paramsByStreamId,
         chapters: chaptersToAdd,
         detectedFps,
+        sourceVideoResolution,
       });
 
       let mergedOutFilePath: string | undefined;
@@ -1234,7 +1277,7 @@ function App() {
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [filePath, numStreamsToCopy, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, cutFileTemplateOrDefault, generateCutFileNames, cutMultiple, outputDir, customOutDir, fileFormat, fileDuration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, segmentsToExport, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormat, mainStreams, exportExtraStreams, areWeCutting, simpleMode, prefersReducedMotion, cleanupChoices, hideAllNotifications, segmentsOrInverse.selected, t, cutMergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateCutMergedFileNames, concatCutSegments, autoDeleteMergedSegments, tryDeleteFiles, nonCopiedExtraStreams, extractStreams, askForCleanupChoices, cleanupFiles, showOsNotification, openCutFinishedDialog, handleExportFailed]);
+  }, [filePath, numStreamsToCopy, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, cutFileTemplateOrDefault, generateCutFileNames, cutMultiple, outputDir, customOutDir, fileFormat, fileDuration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, segmentsToExport, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormat, mainStreams, exportExtraStreams, areWeCutting, simpleMode, prefersReducedMotion, cleanupChoices, hideAllNotifications, segmentsOrInverse.selected, t, cutMergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateCutMergedFileNames, concatCutSegments, autoDeleteMergedSegments, tryDeleteFiles, nonCopiedExtraStreams, extractStreams, askForCleanupChoices, cleanupFiles, showOsNotification, openCutFinishedDialog, handleExportFailed, sourceVideoResolution]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath) return;
@@ -2515,6 +2558,52 @@ function App() {
 
                   {bigWaveformEnabled && <BigWaveform waveforms={waveforms} relevantTime={relevantTime} playing={playing} fileDurationNonZero={fileDurationNonZero} zoom={zoomUnrounded} seekRel={seekRel} darkMode={darkMode} />}
 
+                  {cropModeActive && currentSegCrop && sourceVideoResolution && (
+                    <CropOverlay
+                      crop={currentSegCrop}
+                      sourceVideoResolution={sourceVideoResolution}
+                      videoContainerRect={videoContainerRef.current?.getBoundingClientRect()}
+                      videoElementRect={(() => {
+                        const el = videoRef.current;
+                        if (!el || !sourceVideoResolution) return undefined;
+                        const containerRect = videoContainerRef.current?.getBoundingClientRect();
+                        if (!containerRect) return undefined;
+                        // Compute the actual rendered video area (accounting for object-fit: contain)
+                        const containerAR = containerRect.width / containerRect.height;
+                        const videoAR = sourceVideoResolution.width / sourceVideoResolution.height;
+                        let renderW: number;
+                        let renderH: number;
+                        if (videoAR > containerAR) {
+                          renderW = containerRect.width;
+                          renderH = containerRect.width / videoAR;
+                        } else {
+                          renderH = containerRect.height;
+                          renderW = containerRect.height * videoAR;
+                        }
+                        return {
+                          left: (containerRect.width - renderW) / 2,
+                          top: (containerRect.height - renderH) / 2,
+                          width: renderW,
+                          height: renderH,
+                        };
+                      })()}
+                      onCropChange={handleCropChange}
+                    />
+                  )}
+
+                  {cropModeActive && currentSegCrop && sourceVideoResolution && (
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 10, backgroundColor: 'rgba(0,0,0,0.6)' }}>
+                      <CropControls
+                        crop={currentSegCrop}
+                        sourceVideoResolution={sourceVideoResolution}
+                        onCropChange={handleCropChange}
+                        onReset={handleCropReset}
+                        onApplyToAll={handleCropApplyToAll}
+                        segmentCount={cutSegments.length}
+                      />
+                    </div>
+                  )}
+
                   {compatPlayerEnabled && (
                     <div style={{ position: 'absolute', top: 0, right: 0, left: 0, marginTop: '1em', marginLeft: '1em', color: 'var(--gray-12)', opacity: 0.7, display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
                       {isRotationSet ? (
@@ -2650,6 +2739,9 @@ function App() {
                   rotation={rotation}
                   areWeCutting={areWeCutting}
                   increaseRotation={increaseRotation}
+                  cropModeActive={cropModeActive}
+                  toggleCropMode={toggleCropMode}
+                  currentSegCrop={currentSegCrop}
                   cleanupFilesDialog={cleanupFilesDialog}
                   captureSnapshot={captureSnapshot}
                   onExportPress={onExportPress}

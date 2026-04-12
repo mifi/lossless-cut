@@ -1,7 +1,7 @@
 import type { CSSProperties, ClipboardEvent, Dispatch, FormEvent, SetStateAction } from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { MdRotate90DegreesCcw } from 'react-icons/md';
+import { MdRotate90DegreesCcw, MdCrop } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import { IoIosCamera, IoMdKey, IoMdSpeedometer } from 'react-icons/io';
 import { FaYinYang, FaTrashAlt, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey, FaExclamationTriangle } from 'react-icons/fa';
@@ -25,7 +25,7 @@ import { useSegColors } from './contexts';
 import { isExactDurationMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
 import { askForPlaybackRate, checkAppPath } from './dialogs';
-import type { FormatTimecode, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
+import type { CropRect, FormatTimecode, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
 import type { WaveformMode } from '../../common/types';
 import type { Frame } from './ffmpeg';
 
@@ -249,7 +249,7 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
 
 function BottomBar({
   zoom, setZoom, timelineToggleComfortZoom,
-  isRotationSet, rotation, areWeCutting, increaseRotation, cleanupFilesDialog,
+  isRotationSet, rotation, areWeCutting, increaseRotation, cropModeActive, toggleCropMode, currentSegCrop, cleanupFilesDialog,
   captureSnapshot, onExportPress, segmentsToExport, hasVideo,
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,
   setCurrentSegIndex,
@@ -269,6 +269,9 @@ function BottomBar({
   rotation: number,
   areWeCutting: boolean,
   increaseRotation: () => void,
+  cropModeActive: boolean,
+  toggleCropMode: () => void,
+  currentSegCrop: CropRect | undefined,
   cleanupFilesDialog: () => void,
   captureSnapshot: () => void,
   onExportPress: () => void,
@@ -574,6 +577,15 @@ function BottomBar({
               title={`${t('Set output rotation. Current: ')} ${isRotationSet ? rotationStr : t('Don\'t modify')}`}
             />
             <span style={{ textAlign: 'right', display: 'inline-block', fontSize: '.8em', marginLeft: '.1em' }}>{isRotationSet && rotationStr}</span>
+          </div>
+        )}
+
+        {isFileOpened && !simpleMode && hasVideo && (
+          <div onClick={toggleCropMode} role="button" title={t('Crop')}>
+            <MdCrop
+              style={{ fontSize: '1.3em', verticalAlign: 'middle', color: (cropModeActive || currentSegCrop) ? primaryTextColor : undefined }}
+            />
+            {currentSegCrop && <span style={{ fontSize: '.7em', marginLeft: '.1em' }}>{currentSegCrop.w}&times;{currentSegCrop.h}</span>}
           </div>
         )}
 

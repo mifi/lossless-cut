@@ -24,6 +24,15 @@ export const segmentTagsSchema = z.record(z.string(), z.string());
 
 export type SegmentTags = z.infer<typeof segmentTagsSchema>
 
+export const cropRectSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+  w: z.number(),
+  h: z.number(),
+});
+
+export type CropRect = z.infer<typeof cropRectSchema>;
+
 export type EditingSegmentTags = Record<string, SegmentTags>
 
 // todo remove some time in the future
@@ -47,6 +56,7 @@ export const llcProjectV2Schema = z.object({
     name: z.string(),
     tags: segmentTagsSchema.optional(),
     selected: z.boolean().optional(),
+    crop: cropRectSchema.optional(),
   }).array(),
 });
 
@@ -71,6 +81,7 @@ export interface StateSegment extends SegmentBase, SegmentColorIndex {
   name: string;
   segId: string;
   tags?: SegmentTags | undefined;
+  crop?: CropRect | undefined;
   initial?: true,
   selected: boolean,
 }
@@ -79,6 +90,7 @@ export interface SegmentToExport extends DefiniteSegmentBase {
   originalIndex: number,
   name?: string | undefined;
   tags?: SegmentTags | undefined;
+  crop?: CropRect | undefined;
 }
 
 export interface InverseCutSegment extends DefiniteSegmentBase {

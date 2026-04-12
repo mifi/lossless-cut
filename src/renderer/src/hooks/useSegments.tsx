@@ -17,7 +17,7 @@ import { createSegment, sortSegments, invertSegments, combineOverlappingSegments
 import type { FfmpegDialog } from '../ffmpegParameters';
 import { parameters as allFfmpegParameters, getHint, getLabel } from '../ffmpegParameters';
 import { maxSegmentsAllowed } from '../util/constants';
-import type { DefiniteSegmentBase, ParseTimecode, SegmentBase, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
+import type { CropRect, DefiniteSegmentBase, ParseTimecode, SegmentBase, SegmentToExport, StateSegment, UpdateSegAtIndex } from '../types';
 import { segmentTagsSchema } from '../types';
 import safeishEval from '../worker/eval';
 import type { FFprobeFormat, FFprobeStream } from '../../../common/ffprobe';
@@ -973,6 +973,17 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     toggleSegmentSelected(currentCutSeg);
   }, [currentCutSeg, toggleSegmentSelected]);
 
+  const setCropForSegment = useCallback((segId: string, crop: CropRect | undefined) => {
+    setCutSegments((existing) => existing.map((segment) => {
+      if (segment.segId !== segId) return segment;
+      return { ...segment, crop };
+    }));
+  }, [setCutSegments]);
+
+  const setCropForAllSegments = useCallback((crop: CropRect | undefined) => {
+    setCutSegments((existing) => existing.map((segment) => ({ ...segment, crop })));
+  }, [setCutSegments]);
+
   return {
     cutSegments,
     cutSegmentsHistory,
@@ -1037,6 +1048,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     findSegmentsAtCursor,
     currentCutSegOrWholeTimeline,
     segColorCounter,
+    setCropForSegment,
+    setCropForAllSegments,
   };
 }
 
