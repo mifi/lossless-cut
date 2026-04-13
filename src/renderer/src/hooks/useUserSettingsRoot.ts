@@ -60,6 +60,8 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ enableCustomOutDir }), [enableCustomOutDir]);
   const [keyframeCut, setKeyframeCut] = useState(safeGetConfigInitial('keyframeCut'));
   useEffect(() => safeSetConfig({ keyframeCut }), [keyframeCut]);
+  const [autoKeyframeCutFix, setAutoKeyframeCutFix] = useState(safeGetConfigInitial('autoKeyframeCutFix'));
+  useEffect(() => safeSetConfig({ autoKeyframeCutFix }), [autoKeyframeCutFix]);
   const [preserveMetadata, setPreserveMetadata] = useState(safeGetConfigInitial('preserveMetadata'));
   useEffect(() => safeSetConfig({ preserveMetadata }), [preserveMetadata]);
   const [preserveMetadataOnMerge, setPreserveMetadataOnMerge] = useState(safeGetConfigInitial('preserveMetadataOnMerge'));
@@ -248,6 +250,7 @@ export default function useUserSettingsRoot() {
     recentCustomOutDirs,
     enableCustomOutDir,
     keyframeCut,
+    autoKeyframeCutFix,
     preserveMetadata,
     preserveMetadataOnMerge,
     preserveMovData,
@@ -329,6 +332,7 @@ export default function useUserSettingsRoot() {
     setCustomOutDir,
     setRecentCustomOutDirs,
     setKeyframeCut,
+    setAutoKeyframeCutFix,
     setPreserveMetadata,
     setPreserveMetadataOnMerge,
     setPreserveMovData,

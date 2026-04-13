@@ -6,7 +6,7 @@ import invariant from 'tiny-invariant';
 import i18n from 'i18next';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix, assertFileExists } from '../util';
-import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
+import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg, findKeyframeNearTime, getStreamFps } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
@@ -80,7 +80,7 @@ export async function maybeMkDeepOutDir({ outputDir, fileOutPath }: { outputDir:
 }
 
 
-function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, encCustomBitrate, appendFfmpegCommandLog, ffmpegHwaccel }: {
+function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, autoKeyframeCutFix, appendLastCommandsLog, encCustomBitrate, appendFfmpegCommandLog, ffmpegHwaccel }: {
   filePath: string | undefined,
   treatInputFileModifiedTimeAsStart: boolean,
   treatOutputFileModifiedTimeAsStart: boolean | null | undefined,
@@ -90,6 +90,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   outputPlaybackRate: number,
   cutFromAdjustmentFrames: number,
   cutToAdjustmentFrames: number,
+  autoKeyframeCutFix: boolean,
   appendLastCommandsLog: (a: string) => void,
   encCustomBitrate: number | undefined,
   appendFfmpegCommandLog: (args: string[]) => void,
@@ -496,7 +497,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   }, [appendFfmpegCommandLog, filePath]);
 
   const cutMultiple = useCallback(async ({
-    outputDir, customOutDir, segments: segmentsIn, cutFileNames, fileDuration, rotation, detectedFps, onProgress: onTotalProgress, keyframeCut, copyFileStreams, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, chapters,
+    outputDir, customOutDir, segments: segmentsIn, cutFileNames, fileDuration, rotation, detectedFps, onProgress: onTotalProgress, keyframeCut, copyFileStreams, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, chapters, autoKeyframeCutFix,
   }: {
     outputDir: string,
     customOutDir: string | undefined,
@@ -521,11 +522,49 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     customTagsByFile: CustomTagsByFile,
     paramsByStreamId: ParamsByStreamId,
     chapters: Chapter[] | undefined,
+    autoKeyframeCutFix: boolean,
   }) => {
     console.log('customTagsByFile', customTagsByFile);
     console.log('paramsByStreamId', paramsByStreamId);
 
-    const segments = getGuaranteedSegments(segmentsIn, fileDuration);
+    let segments = getGuaranteedSegments(segmentsIn, fileDuration);
+
+    // Auto-align segment start times to keyframes if enabled
+    console.log('autoKeyframeCutFix:', autoKeyframeCutFix, 'filePath:', filePath);
+    if (autoKeyframeCutFix && filePath) {
+      const { streams } = allFilesMeta[filePath]!;
+      const videoStream = streams.find((s) => s.codec_type === 'video');
+      console.log('videoStream:', videoStream);
+      if (videoStream) {
+        const frameTime = 1 / (getStreamFps(videoStream as FFprobeStream) || 1000);
+        console.log('Before alignment - segments:', segments.map(s => ({ start: s.start, end: s.end })));
+        const alignedSegments = await pMap(segments, async (segment) => {
+          const newSegment = { ...segment };
+          // Find keyframe near start time using keyframeCutFix mode (next keyframe)
+          let keyframe = await findKeyframeNearTime({ filePath, streamIndex: videoStream.index, time: segment.start, mode: 'keyframeCutFix' });
+          console.log('Initial keyframe search for', segment.start, '->', keyframe);
+          if (keyframe === undefined) {
+            keyframe = fileDuration;
+          }
+          // Apply keyframeCutFix adjustments: +0.3 frames, find keyframe, -0.7 frames
+          const adjustedTime = segment.start + frameTime * 0.3;
+          keyframe = await findKeyframeNearTime({ filePath, streamIndex: videoStream.index, time: adjustedTime, mode: 'keyframeCutFix' });
+          console.log('Adjusted keyframe search for', adjustedTime, '->', keyframe);
+          if (keyframe === undefined) {
+            keyframe = fileDuration;
+          }
+          newSegment.start = keyframe - frameTime * 0.7;
+          console.log('New segment start:', newSegment.start);
+          // Ensure segment is valid
+          if (newSegment.end != null) {
+            newSegment.start = Math.min(newSegment.start, newSegment.end - frameTime * 0.99);
+          }
+          return newSegment;
+        }, { concurrency: 1 });
+        console.log('After alignment - segments:', alignedSegments.map(s => ({ start: s.start, end: s.end })));
+        segments = alignedSegments;
+      }
+    }
 
     const singleProgresses: Record<number, number> = {};
     function onSingleProgress(id: number, singleProgress: number) {

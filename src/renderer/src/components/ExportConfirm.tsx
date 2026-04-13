@@ -153,7 +153,7 @@ function ExportConfirm({
 }) {
   const { t } = useTranslation();
 
-  const { keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate, simpleMode, keyframesEnabled } = useUserSettings();
+  const { keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate, simpleMode, keyframesEnabled, autoKeyframeCutFix, setAutoKeyframeCutFix } = useUserSettings();
 
   const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
 
@@ -162,6 +162,7 @@ function ExportConfirm({
   const toggleMovFastStart = useCallback(() => setMovFastStart((val) => !val), [setMovFastStart]);
   const toggleSegmentsToChapters = useCallback(() => setSegmentsToChapters((v) => !v), [setSegmentsToChapters]);
   const togglePreserveMetadataOnMerge = useCallback(() => setPreserveMetadataOnMerge((v) => !v), [setPreserveMetadataOnMerge]);
+  const toggleAutoKeyframeCutFix = useCallback(() => setAutoKeyframeCutFix((val) => !val), [setAutoKeyframeCutFix]);
 
   const isMov = ffmpegIsMov(outFormat);
   const isIpod = outFormat === 'ipod';
@@ -304,6 +305,10 @@ function ExportConfirm({
 
   const onCutFromAdjustmentFramesHelpPress = useCallback(() => {
     showHelpText({ text: i18n.t('This option allows you to shift all segment start times forward by one or more frames before cutting. This can be useful if the output video starts from the wrong (preceding) keyframe.') });
+  }, [showHelpText]);
+
+  const onAutoKeyframeCutFixHelpPress = useCallback(() => {
+    showHelpText({ text: i18n.t('Automatically align segment start times to keyframes before export. This ensures clean cuts without re-encoding by finding the actual keyframes in the video file.') });
   }, [showHelpText]);
 
   const onFfmpegExperimentalHelpPress = useCallback(() => {
@@ -492,6 +497,17 @@ function ExportConfirm({
                       <ShiftTimes values={adjustCutToValues} num={cutToAdjustmentFrames} setNum={setCutToAdjustmentFrames} />
                     </td>
                     <td />
+                  </AnimatedTr>
+                  <AnimatedTr>
+                    <td>
+                      {t('Auto keyframe cut fix')}
+                    </td>
+                    <td>
+                      <Switch checked={autoKeyframeCutFix} onCheckedChange={toggleAutoKeyframeCutFix} />
+                    </td>
+                    <td>
+                      <HelpIcon onClick={onAutoKeyframeCutFixHelpPress} />
+                    </td>
                   </AnimatedTr>
                 </>
               )}

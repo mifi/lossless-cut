@@ -102,6 +102,7 @@ const defaults: Config = {
   enableCustomOutDir: false,
   recentCustomOutDirs: [],
   keyframeCut: true,
+  autoKeyframeCutFix: false,
   autoMerge: false,
   autoDeleteMergedSegments: true,
   segmentsToChaptersOnly: false,
