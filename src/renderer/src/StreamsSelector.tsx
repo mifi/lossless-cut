@@ -128,6 +128,91 @@ function StreamParametersEditor({ stream, streamParams, updateStreamParams }: {
     );
   }
 
+  if (stream.codec_type === 'video' && (stream.codec_name === 'h264' || stream.codec_name === 'hevc')) {
+    const currentCrop = streamParams.bsfCrop ?? { left: 0, right: 0, top: 0, bottom: 0 };
+
+    const updateCrop = (field: 'left' | 'right' | 'top' | 'bottom', value: string) => {
+      const parsed = parseInt(value, 10);
+      const val = Number.isNaN(parsed) || parsed < 0 ? 0 : parsed;
+      updateStreamParams((params) => {
+        // eslint-disable-next-line no-param-reassign
+        params.bsfCrop = { ...currentCrop, [field]: val };
+      });
+    };
+
+    ui.push(
+      <div key="bsfCrop" style={{ marginBottom: '.8em' }}>
+        <div style={{ fontWeight: 'bold', marginBottom: '.3em' }}>
+          {t('Lossless crop ({{codec}} metadata)', { codec: stream.codec_name.toUpperCase() })}
+        </div>
+        <div style={{ fontSize: '.85em', color: 'var(--gray-11)', marginBottom: '.4em' }}>
+          {t('Crop pixels from each edge without re-encoding. Works in most players except VLC (known bug).')}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.3em' }}>
+          <KeyValue name={t('Left')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.left)} onChange={(e) => updateCrop('left', e.target.value)} />} />
+          <KeyValue name={t('Right')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.right)} onChange={(e) => updateCrop('right', e.target.value)} />} />
+          <KeyValue name={t('Top')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.top)} onChange={(e) => updateCrop('top', e.target.value)} />} />
+          <KeyValue name={t('Bottom')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.bottom)} onChange={(e) => updateCrop('bottom', e.target.value)} />} />
+        </div>
+      </div>,
+    );
+
+    const currentAr = streamParams.bsfAspectRatio ?? { num: 0, den: 0 };
+
+    const updateAr = (field: 'num' | 'den', value: string) => {
+      const parsed = parseInt(value, 10);
+      const val = Number.isNaN(parsed) || parsed < 0 ? 0 : parsed;
+      updateStreamParams((params) => {
+        // eslint-disable-next-line no-param-reassign
+        params.bsfAspectRatio = { ...currentAr, [field]: val };
+      });
+    };
+
+    ui.push(
+      <div key="bsfAspectRatio" style={{ marginBottom: '.8em' }}>
+        <div style={{ fontWeight: 'bold', marginBottom: '.3em' }}>
+          {t('Lossless aspect ratio (SAR)')}
+        </div>
+        <div style={{ fontSize: '.85em', color: 'var(--gray-11)', marginBottom: '.4em' }}>
+          {t('Change the sample aspect ratio without re-encoding. Set both to 0 to keep original.')}
+        </div>
+        <div style={{ display: 'flex', gap: '.5em', alignItems: 'center' }}>
+          <TextInput type="number" min="0" style={{ width: '4em' }} placeholder="W" value={currentAr.num > 0 ? String(currentAr.num) : ''} onChange={(e) => updateAr('num', e.target.value)} />
+          <span>:</span>
+          <TextInput type="number" min="0" style={{ width: '4em' }} placeholder="H" value={currentAr.den > 0 ? String(currentAr.den) : ''} onChange={(e) => updateAr('den', e.target.value)} />
+        </div>
+      </div>,
+    );
+  } else if (stream.codec_type === 'video') {
+    // Non-H264/HEVC video streams: only container-level aspect ratio
+    const currentAr = streamParams.bsfAspectRatio ?? { num: 0, den: 0 };
+
+    const updateAr = (field: 'num' | 'den', value: string) => {
+      const parsed = parseInt(value, 10);
+      const val = Number.isNaN(parsed) || parsed < 0 ? 0 : parsed;
+      updateStreamParams((params) => {
+        // eslint-disable-next-line no-param-reassign
+        params.bsfAspectRatio = { ...currentAr, [field]: val };
+      });
+    };
+
+    ui.push(
+      <div key="bsfAspectRatioContainer" style={{ marginBottom: '.8em' }}>
+        <div style={{ fontWeight: 'bold', marginBottom: '.3em' }}>
+          {t('Display aspect ratio (container-level)')}
+        </div>
+        <div style={{ fontSize: '.85em', color: 'var(--gray-11)', marginBottom: '.4em' }}>
+          {t('Change the display aspect ratio at the container level without re-encoding.')}
+        </div>
+        <div style={{ display: 'flex', gap: '.5em', alignItems: 'center' }}>
+          <TextInput type="number" min="0" style={{ width: '4em' }} placeholder="W" value={currentAr.num > 0 ? String(currentAr.num) : ''} onChange={(e) => updateAr('num', e.target.value)} />
+          <span>:</span>
+          <TextInput type="number" min="0" style={{ width: '4em' }} placeholder="H" value={currentAr.den > 0 ? String(currentAr.den) : ''} onChange={(e) => updateAr('den', e.target.value)} />
+        </div>
+      </div>,
+    );
+  }
+
   if (stream.codec_type === 'video' || stream.codec_type === 'audio') {
     ui.push(
       <KeyValue

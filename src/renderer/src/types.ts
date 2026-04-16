@@ -163,6 +163,18 @@ export type AllFilesMeta = Record<string, {
 
 export type CustomTagsByFile = Record<string, Record<string, string>>;
 
+export interface BsfCropParams {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
+export interface BsfAspectRatioParams {
+  num: number;
+  den: number;
+}
+
 export interface StreamParams {
   customTags?: Record<string, string>,
   disposition?: string,
@@ -170,6 +182,8 @@ export interface StreamParams {
   bsfHevcMp4toannexb?: boolean,
   bsfHevcAudInsert?: boolean,
   tag?: string | undefined,
+  bsfCrop?: BsfCropParams | undefined,
+  bsfAspectRatio?: BsfAspectRatioParams | undefined,
 }
 export type ParamsByStreamId = Map<string, Map<number, StreamParams>>;
 

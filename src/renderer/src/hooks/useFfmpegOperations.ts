@@ -347,6 +347,43 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
             if (streamParams.bsfHevcMp4toannexb) bitstreamFilters.push('hevc_mp4toannexb');
             if (streamParams.bsfHevcAudInsert) bitstreamFilters.push('hevc_metadata=aud=insert');
 
+            // Lossless crop via codec bitstream metadata (#643)
+            if (streamParams.bsfCrop) {
+              const { left, right, top, bottom } = streamParams.bsfCrop;
+              const hasCrop = left > 0 || right > 0 || top > 0 || bottom > 0;
+              if (hasCrop) {
+                // Look up codec_name from allFilesMeta to determine the correct bitstream filter
+                const fileStreams = allFilesMeta[fileId]?.streams;
+                const streamInfo = fileStreams?.find((s) => s.index === streamId);
+                const codecName = streamInfo?.codec_name;
+
+                if (codecName === 'h264') {
+                  bitstreamFilters.push(`h264_metadata=crop_left=${left}:crop_right=${right}:crop_top=${top}:crop_bottom=${bottom}`);
+                } else if (codecName === 'hevc') {
+                  bitstreamFilters.push(`hevc_metadata=crop_left=${left}:crop_right=${right}:crop_top=${top}:crop_bottom=${bottom}`);
+                }
+              }
+            }
+
+            // Lossless aspect ratio (SAR) via codec bitstream metadata (#643)
+            if (streamParams.bsfAspectRatio) {
+              const { num, den } = streamParams.bsfAspectRatio;
+              if (num > 0 && den > 0) {
+                const fileStreams = allFilesMeta[fileId]?.streams;
+                const streamInfo = fileStreams?.find((s) => s.index === streamId);
+                const codecName = streamInfo?.codec_name;
+
+                if (codecName === 'h264') {
+                  bitstreamFilters.push(`h264_metadata=sample_aspect_ratio=${num}/${den}`);
+                } else if (codecName === 'hevc') {
+                  bitstreamFilters.push(`hevc_metadata=sample_aspect_ratio=${num}/${den}`);
+                } else {
+                  // For non-H264/HEVC codecs, use container-level -aspect flag
+                  ret.push('-aspect', `${num}:${den}`);
+                }
+              }
+            }
+
             if (bitstreamFilters.length > 0) {
               ret.push(`-bsf:${outputIndex}`, bitstreamFilters.join(','));
             }
