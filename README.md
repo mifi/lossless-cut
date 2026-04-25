@@ -4,7 +4,7 @@ Forked from https://github.com/mifi/lossless-cut/
 
 <div align="center">
 	<br>
-  <p><a href="https://mifi.no/losslesscut/"><img src="src/renderer/src/icon.svg" width="120" alt="LosslessCut" /></a></p>
+  <p><a href="https://losslesscut.app/"><img src="src/renderer/src/icon.svg" width="120" alt="LosslessCut" /></a></p>
   <p><b>LosslessCut</b></p>
   The swiss army knife of lossless video/audio editing
 	<br>
@@ -134,6 +134,7 @@ LosslessCut uses the Chromium browser's HTML5 video player, and not all formats/
 
 ## Documentation
 
+- Official website: [LosslessCut.app](https://losslesscut.app)
 - **[Getting started, FAQ and usage documentation](docs/index.md)**
 - [Troubleshooting and known issues and limitations](docs/troubleshooting.md)
 - [Contributing](CONTRIBUTING.md)
