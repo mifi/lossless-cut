@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { FaImage } from 'react-icons/fa';
 
 import useUserSettings from '../hooks/useUserSettings';
+import useActionTitle from '../hooks/useActionTitle';
 import { withBlur } from '../util';
 import Button from './Button';
 
@@ -10,9 +11,10 @@ import Button from './Button';
 function CaptureFormatButton({ showIcon = false, ...props }: { showIcon?: boolean } & Parameters<typeof Button>[0]) {
   const { t } = useTranslation();
   const { captureFormat, toggleCaptureFormat } = useUserSettings();
+  const actionTitle = useActionTitle();
   return (
     <Button
-      title={t('Capture frame format')}
+      title={actionTitle(t('Capture frame format'), 'toggleCaptureFormat')}
       onClick={withBlur(toggleCaptureFormat)}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}

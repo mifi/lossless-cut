@@ -3,6 +3,8 @@ import { memo, useState, useCallback, useRef, useEffect } from 'react';
 import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
+import useActionTitle from '../hooks/useActionTitle';
+
 
 function VolumeControl({ playbackVolume, setPlaybackVolume, onToggleMutedClick }: {
   playbackVolume: number,
@@ -12,6 +14,7 @@ function VolumeControl({ playbackVolume, setPlaybackVolume, onToggleMutedClick }
   const [volumeControlVisible, setVolumeControlVisible] = useState(false);
   const timeoutRef = useRef<number>();
   const { t } = useTranslation();
+  const actionTitle = useActionTitle();
 
   useEffect(() => {
     const clear = () => clearTimeout(timeoutRef.current);
@@ -49,7 +52,7 @@ function VolumeControl({ playbackVolume, setPlaybackVolume, onToggleMutedClick }
       )}
 
       <VolumeIcon
-        title={t('Mute preview? (will not affect output)')}
+        title={actionTitle(t('Mute preview? (will not affect output)'), 'toggleMuted')}
         size={30}
         role="button"
         style={{ margin: '0 7px', color: 'var(--gray-12)', opacity: 0.7 }}
