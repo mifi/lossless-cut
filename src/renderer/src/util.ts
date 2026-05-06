@@ -15,7 +15,9 @@ import { UserFacingError } from '../errors';
 import type { FFprobeFormat } from '../../common/ffprobe';
 
 const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
-const { stat, lstat, readdir, utimes, unlink, open, access, constants: { R_OK, W_OK } } = window.require('fs/promises');
+export { join, resolve, dirname };
+const { stat, lstat, readdir, utimes, unlink, open, writeFile, mkdir, access, constants: { R_OK, W_OK } } = window.require('fs/promises');
+export { writeFile, mkdir, access, W_OK };
 const { ipcRenderer } = window.require('electron');
 const remote = window.require('@electron/remote');
 const { isWindows, isMac } = remote.require('./index.js');
