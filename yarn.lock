@@ -7153,9 +7153,11 @@ __metadata:
   linkType: hard
 
 "fast-xml-builder@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "fast-xml-builder@npm:1.0.0"
-  checksum: 10/06c04d80545e5c9f4d1d6cca00567b5cc09953a92c6328fa48cfb4d7f42630313b8c2bb62e9cb81accee7bb5e1c5312fcae06c3d20dbe52d969a5938233316da
+  version: 1.1.9
+  resolution: "fast-xml-builder@npm:1.1.9"
+  dependencies:
+    path-expression-matcher: "npm:^1.1.3"
+  checksum: 10/44ef553aec4581b0fcc1b21bfd285aa9224eeb507620220228a9dd3dfd495068daaaf408b4cf9fd67354df558888680121c9d099229fdfd9672982531623781b
   languageName: node
   linkType: hard
 
@@ -10725,6 +10727,13 @@ __metadata:
   version: 4.0.0
   resolution: "path-exists@npm:4.0.0"
   checksum: 10/505807199dfb7c50737b057dd8d351b82c033029ab94cb10a657609e00c1bc53b951cfdbccab8de04c5584d5eff31128ce6afd3db79281874a5ef2adbba55ed1
+  languageName: node
+  linkType: hard
+
+"path-expression-matcher@npm:^1.1.3":
+  version: 1.5.0
+  resolution: "path-expression-matcher@npm:1.5.0"
+  checksum: 10/28303bb9ee6831e6df14c10cd3f3f7b2d7c8d7f788d8bdb7440136fd696064c82a3e264999a0764d28e39f698275fc03a5493bec93c57ef4a22566280367dd64
   languageName: node
   linkType: hard
 
