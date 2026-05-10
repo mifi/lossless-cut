@@ -150,7 +150,7 @@
     "express-async-handler": "^1.2.0",
     "file-type": "^21.3.2",
     "i18next": "^25.7.3",
-    "i18next-fs-backend": "^2.6.1",
+    "i18next-fs-backend": "^2.6.4",
     "json5": "^2.2.3",
     "lodash.debounce": "^4.0.8",
     "mime-types": "^3.0.2",
