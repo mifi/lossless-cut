@@ -189,6 +189,13 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     });
   }, [editingFile, editingStreamId, updateStreamParams]);
 
+  const tagInfo = useMemo(() => ({
+    language: {
+      description: t('The language tag (ISO 639-2 code). For example "eng" for English. This is used by some players to select the appropriate audio/subtitle track based on the user\'s language preferences.'),
+      url: 'https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes',
+    },
+  }), [t]);
+
   return (
     <Dialog.Root open={editingStream != null} onOpenChange={(v) => v === false && setEditingStream(undefined)}>
       <Dialog.Portal>
@@ -201,7 +208,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
 
           <h2>Tags</h2>
 
-          <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} />
+          <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} />
 
           <Dialog.ButtonRow>
             <Dialog.Close asChild>

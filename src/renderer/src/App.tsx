@@ -13,6 +13,7 @@ import fromPairs from 'lodash/fromPairs';
 import sum from 'lodash/sum';
 import invariant from 'tiny-invariant';
 import type { SweetAlertOptions } from 'sweetalert2';
+import { Theme } from '@radix-ui/themes';
 
 import useTimelineScroll from './hooks/useTimelineScroll';
 import useUserSettingsRoot from './hooks/useUserSettingsRoot';
@@ -2443,348 +2444,350 @@ function App() {
   const rootStyle = useMemo<CSSProperties>(() => ({ ...baseColorStyle, display: 'flex', flexDirection: 'column', height: '100vh', transition: darkModeTransition }), [baseColorStyle]);
 
   return (
-    <MotionConfig reducedMotion={reducedMotion}>
-      <AppContext.Provider value={appContext}>
-        <SegColorsContext.Provider value={segColorsContext}>
-          <UserSettingsContext.Provider value={userSettingsContext}>
-            <div className={rootClass} style={rootStyle} id="app-root">
-              <TopMenu
-                filePath={filePath}
-                fileFormat={fileFormat}
-                changeEnabledStreamsFilter={changeEnabledStreamsFilter}
-                applyEnabledStreamsFilter={applyEnabledStreamsFilter}
-                enabledStreamsFilter={enabledStreamsFilter}
-                isCustomFormatSelected={isCustomFormatSelected}
-                renderOutFmt={renderOutFmt}
-                toggleSettings={toggleSettings}
-                numStreamsToCopy={numStreamsToCopy}
-                numStreamsTotal={numStreamsTotal}
-                setStreamsSelectorShown={setStreamsSelectorShown}
-                selectedSegments={segmentsOrInverse.selected}
-                toggleDarkMode={toggleDarkMode}
-              />
-
-              <div style={{ flexGrow: 1, display: 'flex', overflowY: 'hidden' }}>
-                <AnimatePresence>
-                  {showLeftBar && (
-                    <BatchFilesList
-                      selectedBatchFiles={selectedBatchFiles}
-                      filePath={filePath}
-                      width={leftBarWidth}
-                      batchFiles={batchFiles}
-                      setBatchFiles={setBatchFiles}
-                      onBatchFileSelect={onBatchFileSelect}
-                      batchListRemoveFile={batchListRemoveFile}
-                      closeBatch={closeBatch}
-                      onMergeFilesClick={concatBatch}
-                      onBatchConvertToSupportedFormatClick={convertFormatBatch}
-                      onDrop={handleBatchFilesDrop}
-                    />
-                  )}
-                </AnimatePresence>
-
-                {/* Middle part (also shown in fullscreen): */}
-                <div style={{ position: 'relative', flexGrow: 1, overflow: 'hidden' }} ref={videoContainerRef}>
-                  {!isFileOpened && <NoFileLoaded mifiLink={mifiLink} currentCutSeg={currentCutSeg} onClick={openFilesDialog} darkMode={darkMode} keyBindingByAction={keyBindingByAction} />}
-
-                  <div className="no-user-select" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, visibility: !isFileOpened || !hasVideo || bigWaveformEnabled ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
-                    {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-                    <video
-                      className={styles['video']}
-                      tabIndex={-1}
-                      muted={playbackVolume === 0 || compatPlayerEnabled}
-                      ref={videoRef}
-                      style={videoStyle}
-                      src={fileUri}
-                      onPlay={onStartPlaying}
-                      onPause={onStopPlaying}
-                      onAbort={onVideoAbort}
-                      onDurationChange={onDurationChange}
-                      onTimeUpdate={onTimeUpdate}
-                      onError={onVideoError}
-                      onClick={onVideoClick}
-                      onDoubleClick={toggleFullscreenVideo}
-                      onFocusCapture={onVideoFocus}
-                      onSeeked={onSeeked}
-                    >
-                      {renderSubtitles()}
-                    </video>
-
-                    {filePath != null && compatPlayerEnabled && <MediaSourcePlayer rotate={effectiveRotation} filePath={filePath} videoStream={activeVideoStream} audioStreams={activeAudioStreams} masterVideoRef={videoRef} mediaSourceQuality={mediaSourceQuality} ffmpegHwaccel={ffmpegHwaccel} />}
-                  </div>
-
-                  {bigWaveformEnabled && <BigWaveform waveforms={waveforms} relevantTime={relevantTime} playing={playing} fileDurationNonZero={fileDurationNonZero} zoom={zoomUnrounded} seekRel={seekRel} darkMode={darkMode} />}
-
-                  {compatPlayerEnabled && (
-                    <div style={{ position: 'absolute', top: 0, right: 0, left: 0, marginTop: '1em', marginLeft: '1em', color: 'var(--gray-12)', opacity: 0.7, display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
-                      {isRotationSet ? (
-                        <>
-                          <MdRotate90DegreesCcw size={26} style={{ marginRight: 5 }} />
-                          {t('Rotation preview')}
-                        </>
-                      ) : (
-                        <>
-                          {t('FFmpeg-assisted playback')}
-                        </>
-                      )}
-
-                      <div style={{ cursor: 'pointer', pointerEvents: 'initial', color: 'var(--gray-12)', opacity: 0.7, padding: '.2em', marginLeft: '.5em' }} role="button" onClick={() => incrementMediaSourceQuality()} title={t('Select playback quality')}>{mediaSourceQualities[mediaSourceQuality]}</div>
-
-                      {!compatPlayerRequired && <FaRegTimesCircle role="button" style={{ cursor: 'pointer', pointerEvents: 'initial', verticalAlign: 'middle', padding: '.2em' }} onClick={handleHideCompatPlayerClick} />}
-                    </div>
-                  )}
-
-                  {isFileOpened && (
-                    <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, marginBottom: 10, display: 'flex', alignItems: 'flex-end' }}>
-                      <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} onToggleMutedClick={toggleMuted} />
-
-                      {shouldShowPlaybackStreamSelector && (
-                        <PlaybackStreamSelector subtitleStreams={subtitleStreams} videoStreams={videoStreams} audioStreams={audioStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} activeVideoStreamIndex={activeVideoStreamIndex} activeAudioStreamIndexes={activeAudioStreamIndexes} onActiveSubtitleChange={onActiveSubtitleChange} onActiveVideoStreamChange={onActiveVideoStreamChange} onActiveAudioStreamsChange={onActiveAudioStreamsChange} />
-                      )}
-
-                      {!showRightBar && (
-                        <IoMdMenu
-                          title={t('Show sidebar')}
-                          size={30}
-                          role="button"
-                          style={{ marginRight: 10, color: 'var(--gray-12)', opacity: 0.7 }}
-                          onClick={toggleSegmentsList}
-                        />
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <AnimatePresence>
-                  {showRightBar && isFileOpened && filePath != null && (
-                    <SegmentList
-                      width={rightBarWidth}
-                      currentSegIndex={currentSegIndexSafe}
-                      cutSegments={cutSegments}
-                      inverseCutSegments={inverseCutSegments}
-                      getFrameCount={getFrameCount}
-                      formatTimecode={formatTimecode}
-                      onSegClick={setCurrentSegIndex}
-                      updateSegOrder={updateSegOrder}
-                      updateSegOrders={updateSegOrders}
-                      onLabelSegment={labelSegment}
-                      currentCutSeg={currentCutSeg}
-                      firstSegmentAtCursor={firstSegmentAtCursor}
-                      addSegment={addSegment}
-                      onDuplicateSegmentClick={duplicateSegment}
-                      removeSegment={removeSegment}
-                      onRemoveSelected={removeSelectedSegments}
-                      toggleSegmentsList={toggleSegmentsList}
-                      splitCurrentSegment={splitCurrentSegment}
-                      selectedSegments={segmentsOrInverse.selected}
-                      onSelectSingleSegment={selectOnlySegment}
-                      onToggleSegmentSelected={toggleSegmentSelected}
-                      onDeselectAllSegments={deselectAllSegments}
-                      onSelectAllSegments={selectAllSegments}
-                      onInvertSelectedSegments={invertSelectedSegments}
-                      onExtractSegmentsFramesAsImages={extractSegmentsFramesAsImages}
-                      onExtractSelectedSegmentsFramesAsImages={extractSelectedSegmentsFramesAsImages}
-                      jumpSegStart={jumpSegStart}
-                      jumpSegEnd={jumpSegEnd}
-                      onSelectSegmentsByLabel={selectSegmentsByLabel}
-                      onSelectSegmentsByExpr={selectSegmentsByExpr}
-                      onSelectAllMarkers={selectAllMarkers}
-                      onMutateSegmentsByExpr={mutateSegmentsByExpr}
-                      onLabelSelectedSegments={labelSelectedSegments}
-                      updateSegAtIndex={updateSegAtIndex}
-                      editingSegmentTags={editingSegmentTags}
-                      editingSegmentTagsSegmentIndex={editingSegmentTagsSegmentIndex}
-                      setEditingSegmentTags={setEditingSegmentTags}
-                      setEditingSegmentTagsSegmentIndex={setEditingSegmentTagsSegmentIndex}
-                      onEditSegmentTags={onEditSegmentTags}
-                      getSegEstimatedSize={getSegEstimatedSize}
-                    />
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="no-user-select" style={bottomStyle}>
-                <Timeline
-                  shouldShowKeyframes={shouldShowKeyframes}
-                  waveforms={waveforms}
-                  overviewWaveform={overviewWaveform}
-                  shouldShowWaveform={shouldShowWaveform}
-                  waveformEnabled={waveformEnabled}
-                  waveformHeight={waveformHeight}
-                  showThumbnails={showThumbnails}
-                  neighbouringKeyFrames={neighbouringKeyFrames}
-                  thumbnails={thumbnailsSorted}
-                  playerTime={playerTime}
-                  commandedTime={commandedTime}
-                  relevantTime={relevantTime}
-                  commandedTimeRef={commandedTimeRef}
-                  startTimeOffset={startTimeOffset}
-                  zoom={zoom}
-                  seekAbs={seekAbs}
-                  fileDurationNonZero={fileDurationNonZero}
-                  cutSegments={cutSegments}
-                  setCurrentSegIndex={setCurrentSegIndex}
-                  currentSegIndexSafe={currentSegIndexSafe}
-                  currentCutSeg={currentCutSeg}
-                  inverseCutSegments={inverseCutSegments}
-                  formatTimecode={formatTimecode}
-                  formatTimeAndFrames={formatTimeAndFrames}
-                  zoomWindowStartTime={zoomWindowStartTime}
-                  zoomWindowEndTime={zoomWindowEndTime}
-                  onZoomWindowStartTimeChange={setZoomWindowStartTime}
-                  onGenerateOverviewWaveformClick={generateOverviewWaveform}
-                  playing={playing}
-                  isFileOpened={isFileOpened}
-                  onWheel={onTimelineWheel}
-                  goToTimecode={goToTimecode}
-                  darkMode={darkMode}
-                  setCutTime={setCutTime}
+    <Theme appearance={darkMode ? 'dark' : 'light'} accentColor="cyan">
+      <MotionConfig reducedMotion={reducedMotion}>
+        <AppContext.Provider value={appContext}>
+          <SegColorsContext.Provider value={segColorsContext}>
+            <UserSettingsContext.Provider value={userSettingsContext}>
+              <div className={rootClass} style={rootStyle} id="app-root">
+                <TopMenu
+                  filePath={filePath}
+                  fileFormat={fileFormat}
+                  changeEnabledStreamsFilter={changeEnabledStreamsFilter}
+                  applyEnabledStreamsFilter={applyEnabledStreamsFilter}
+                  enabledStreamsFilter={enabledStreamsFilter}
+                  isCustomFormatSelected={isCustomFormatSelected}
+                  renderOutFmt={renderOutFmt}
+                  toggleSettings={toggleSettings}
+                  numStreamsToCopy={numStreamsToCopy}
+                  numStreamsTotal={numStreamsTotal}
+                  setStreamsSelectorShown={setStreamsSelectorShown}
+                  selectedSegments={segmentsOrInverse.selected}
+                  toggleDarkMode={toggleDarkMode}
                 />
 
-                <BottomBar
-                  zoom={zoom}
-                  setZoom={zoomAbs}
-                  timelineToggleComfortZoom={timelineToggleComfortZoom}
-                  hasVideo={hasVideo}
-                  isRotationSet={isRotationSet}
-                  rotation={rotation}
-                  areWeCutting={areWeCutting}
-                  increaseRotation={increaseRotation}
-                  cleanupFilesDialog={cleanupFilesDialog}
-                  captureSnapshot={captureSnapshot}
-                  onExportPress={onExportPress}
-                  segmentsToExport={segmentsToExport}
-                  seekAbs={seekAbs}
-                  currentSegIndexSafe={currentSegIndexSafe}
-                  cutSegments={cutSegments}
-                  currentCutSeg={currentCutSeg}
-                  selectedSegments={selectedSegments}
-                  setCutStart={setCutStart}
-                  setCutEnd={setCutEnd}
-                  setCurrentSegIndex={setCurrentSegIndex}
-                  jumpCutEnd={jumpCutEnd}
-                  jumpCutStart={jumpCutStart}
-                  jumpTimelineStart={jumpTimelineStart}
-                  jumpTimelineEnd={jumpTimelineEnd}
-                  startTimeOffset={startTimeOffset}
-                  setCutTime={setCutTime}
-                  playing={playing}
-                  shortStep={shortStep}
-                  seekClosestKeyframe={seekClosestKeyframe}
-                  togglePlay={togglePlay}
-                  showThumbnails={showThumbnails}
-                  toggleShowThumbnails={toggleShowThumbnails}
-                  toggleWaveformMode={toggleWaveformMode}
-                  waveformMode={waveformMode}
-                  hasAudio={hasAudio}
-                  keyframesEnabled={keyframesEnabled}
-                  toggleShowKeyframes={toggleShowKeyframes}
-                  detectedFps={detectedFps}
-                  toggleLoopSelectedSegments={toggleLoopSelectedSegments}
-                  isFileOpened={isFileOpened}
-                  darkMode={darkMode}
-                  outputPlaybackRate={outputPlaybackRate}
-                  setOutputPlaybackRate={setOutputPlaybackRate}
-                  formatTimecode={formatTimecode}
-                  parseTimecode={parseTimecode}
-                  playbackRate={playbackRate}
-                  currentFrame={currentFrame}
-                  playbackMode={playbackMode}
-                />
-              </div>
-
-              {tunerVisible != null && <ValueTuners type={tunerVisible} onFinished={() => setTunerVisible(undefined)} />}
-
-              {/* Dialogs */}
-
-              <ExportConfirm areWeCutting={areWeCutting} segmentsOrInverse={segmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmOpen} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} cutFileTemplate={cutFileTemplateOrDefault} cutMergedFileTemplate={cutMergedFileTemplateOrDefault} generateCutFileNames={generateCutFileNames} generateCutMergedFileNames={generateCutMergedFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} needSmartCut={needSmartCut} isEncoding={isEncoding} encBitrate={encBitrate} setEncBitrate={setEncBitrate} toggleSettings={toggleSettings} outputPlaybackRate={outputPlaybackRate} lossyMode={lossyMode} neighbouringKeyFrames={neighbouringKeyFrames} findNearestKeyFrameTime={findNearestKeyFrameTime} />
-
-              <Dialog.Root open={streamsSelectorShown} onOpenChange={setStreamsSelectorShown}>
-                <Dialog.Portal>
-                  <Dialog.Overlay />
-                  <Dialog.Content style={{ width: '80em' }}>
-                    <Dialog.Title>{t('Tracks')}</Dialog.Title>
-                    <Dialog.Description>{t('Click to select which tracks to keep when exporting:')}</Dialog.Description>
-
-                    {mainStreams && filePath != null && (
-                      <StreamsSelector
-                        mainFilePath={filePath}
-                        mainFileFormat={mainFileFormat}
-                        mainFileChapters={mainFileChapters}
-                        allFilesMeta={allFilesMeta}
-                        externalFilesMeta={externalFilesMeta}
-                        setExternalFilesMeta={setExternalFilesMeta}
-                        showAddStreamSourceDialog={showIncludeExternalStreamsDialog}
-                        mainFileStreams={mainStreams}
-                        isCopyingStreamId={isCopyingStreamId}
-                        toggleCopyStreamId={toggleCopyStreamId}
-                        setCopyStreamIdsForPath={setCopyStreamIdsForPath}
-                        onExtractAllStreamsPress={extractAllStreams}
-                        onExtractStreamPress={extractSingleStream}
-                        shortestFlag={shortestFlag}
-                        setShortestFlag={setShortestFlag}
-                        nonCopiedExtraStreams={nonCopiedExtraStreams}
-                        customTagsByFile={customTagsByFile}
-                        setCustomTagsByFile={setCustomTagsByFile}
-                        paramsByStreamId={paramsByStreamId}
-                        updateStreamParams={updateStreamParams}
-                        formatTimecode={formatTimecode}
-                        loadSubtitleTrackToSegments={loadSubtitleTrackToSegments}
-                        toggleCopyStreamIds={toggleCopyStreamIds}
-                        changeEnabledStreamsFilter={changeEnabledStreamsFilter}
-                        toggleCopyAllStreamsForPath={toggleCopyAllStreamsForPath}
-                        onStreamSourceFileDrop={handleStreamSourceFileDrop}
+                <div style={{ flexGrow: 1, display: 'flex', overflowY: 'hidden' }}>
+                  <AnimatePresence>
+                    {showLeftBar && (
+                      <BatchFilesList
+                        selectedBatchFiles={selectedBatchFiles}
+                        filePath={filePath}
+                        width={leftBarWidth}
+                        batchFiles={batchFiles}
+                        setBatchFiles={setBatchFiles}
+                        onBatchFileSelect={onBatchFileSelect}
+                        batchListRemoveFile={batchListRemoveFile}
+                        closeBatch={closeBatch}
+                        onMergeFilesClick={concatBatch}
+                        onBatchConvertToSupportedFormatClick={convertFormatBatch}
+                        onDrop={handleBatchFilesDrop}
                       />
                     )}
+                  </AnimatePresence>
 
-                    <Dialog.CloseButton />
-                  </Dialog.Content>
-                </Dialog.Portal>
-              </Dialog.Root>
+                  {/* Middle part (also shown in fullscreen): */}
+                  <div style={{ position: 'relative', flexGrow: 1, overflow: 'hidden' }} ref={videoContainerRef}>
+                    {!isFileOpened && <NoFileLoaded mifiLink={mifiLink} currentCutSeg={currentCutSeg} onClick={openFilesDialog} darkMode={darkMode} keyBindingByAction={keyBindingByAction} />}
 
-              <LastCommands visible={lastCommandsVisible} onTogglePress={toggleLastCommands} ffmpegCommandLog={ffmpegCommandLog} setFfmpegCommandLog={setFfmpegCommandLog} />
+                    <div className="no-user-select" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, visibility: !isFileOpened || !hasVideo || bigWaveformEnabled ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
+                      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                      <video
+                        className={styles['video']}
+                        tabIndex={-1}
+                        muted={playbackVolume === 0 || compatPlayerEnabled}
+                        ref={videoRef}
+                        style={videoStyle}
+                        src={fileUri}
+                        onPlay={onStartPlaying}
+                        onPause={onStopPlaying}
+                        onAbort={onVideoAbort}
+                        onDurationChange={onDurationChange}
+                        onTimeUpdate={onTimeUpdate}
+                        onError={onVideoError}
+                        onClick={onVideoClick}
+                        onDoubleClick={toggleFullscreenVideo}
+                        onFocusCapture={onVideoFocus}
+                        onSeeked={onSeeked}
+                      >
+                        {renderSubtitles()}
+                      </video>
 
-              <Dialog.Root open={settingsVisible} onOpenChange={toggleSettings}>
-                <Dialog.Portal>
-                  <Dialog.Overlay />
-                  <Dialog.Content style={{ width: '60em' }}>
-                    <Dialog.Title>{t('Settings')}</Dialog.Title>
-                    <Dialog.Description>{t('Hover mouse over buttons in the main interface to see which function they have')}</Dialog.Description>
+                      {filePath != null && compatPlayerEnabled && <MediaSourcePlayer rotate={effectiveRotation} filePath={filePath} videoStream={activeVideoStream} audioStreams={activeAudioStreams} masterVideoRef={videoRef} mediaSourceQuality={mediaSourceQuality} ffmpegHwaccel={ffmpegHwaccel} />}
+                    </div>
 
-                    <Settings
-                      onTunerRequested={onTunerRequested}
-                      onKeyboardShortcutsDialogRequested={toggleKeyboardShortcuts}
-                      askForCleanupChoices={askForCleanupChoices}
-                      toggleStoreProjectInWorkingDir={toggleStoreProjectInWorkingDir}
-                      showAdvancedSettings={showAdvancedSettings}
-                      setShowAdvancedSettings={setShowAdvancedSettings}
-                    />
-                    <Dialog.CloseButton />
-                  </Dialog.Content>
-                </Dialog.Portal>
-              </Dialog.Root>
+                    {bigWaveformEnabled && <BigWaveform waveforms={waveforms} relevantTime={relevantTime} playing={playing} fileDurationNonZero={fileDurationNonZero} zoom={zoomUnrounded} seekRel={seekRel} darkMode={darkMode} />}
 
-              <ConcatDialog isShown={batchFiles.length > 0 && concatDialogOpen} onHide={() => setConcatDialogOpen(false)} paths={batchFilePaths} mergedFileTemplate={mergedFileTemplateOrDefault} generateMergedFileNames={generateMergedFileNames} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} fileFormat={fileFormat} setFileFormat={setFileFormat} detectedFileFormat={detectedFileFormat} setDetectedFileFormat={setDetectedFileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
+                    {compatPlayerEnabled && (
+                      <div style={{ position: 'absolute', top: 0, right: 0, left: 0, marginTop: '1em', marginLeft: '1em', color: 'var(--gray-12)', opacity: 0.7, display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
+                        {isRotationSet ? (
+                          <>
+                            <MdRotate90DegreesCcw size={26} style={{ marginRight: 5 }} />
+                            {t('Rotation preview')}
+                          </>
+                        ) : (
+                          <>
+                            {t('FFmpeg-assisted playback')}
+                          </>
+                        )}
 
-              <KeyboardShortcuts isShown={keyboardShortcutsVisible} onHide={() => setKeyboardShortcutsVisible(false)} keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} getKeyboardAction={getKeyboardAction} />
+                        <div style={{ cursor: 'pointer', pointerEvents: 'initial', color: 'var(--gray-12)', opacity: 0.7, padding: '.2em', marginLeft: '.5em' }} role="button" onClick={() => incrementMediaSourceQuality()} title={t('Select playback quality')}>{mediaSourceQualities[mediaSourceQuality]}</div>
 
-              {/* This should probably be last, so that it's always on top */}
-              <AnimatePresence>
-                {working && <Working text={working.text} progress={progress} onAbortClick={abortWorking} />}
-              </AnimatePresence>
+                        {!compatPlayerRequired && <FaRegTimesCircle role="button" style={{ cursor: 'pointer', pointerEvents: 'initial', verticalAlign: 'middle', padding: '.2em' }} onClick={handleHideCompatPlayerClick} />}
+                      </div>
+                    )}
 
-              <GenericDialog dialog={genericDialog} onOpenChange={(open) => !open && closeGenericDialog()} />
+                    {isFileOpened && (
+                      <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, marginBottom: 10, display: 'flex', alignItems: 'flex-end' }}>
+                        <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} onToggleMutedClick={toggleMuted} />
 
-              <WhatsNew />
+                        {shouldShowPlaybackStreamSelector && (
+                          <PlaybackStreamSelector subtitleStreams={subtitleStreams} videoStreams={videoStreams} audioStreams={audioStreams} activeSubtitleStreamIndex={activeSubtitleStreamIndex} activeVideoStreamIndex={activeVideoStreamIndex} activeAudioStreamIndexes={activeAudioStreamIndexes} onActiveSubtitleChange={onActiveSubtitleChange} onActiveVideoStreamChange={onActiveVideoStreamChange} onActiveAudioStreamsChange={onActiveAudioStreamsChange} />
+                        )}
 
-              <ErrorDialog error={genericError} onOpenChange={(open) => !open && setGenericError(undefined)} />
-            </div>
+                        {!showRightBar && (
+                          <IoMdMenu
+                            title={t('Show sidebar')}
+                            size={30}
+                            role="button"
+                            style={{ marginRight: 10, color: 'var(--gray-12)', opacity: 0.7 }}
+                            onClick={toggleSegmentsList}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
 
-            <SwalContainer darkMode={darkMode} style={baseColorStyle} />
-          </UserSettingsContext.Provider>
-        </SegColorsContext.Provider>
-      </AppContext.Provider>
-    </MotionConfig>
+                  <AnimatePresence>
+                    {showRightBar && isFileOpened && filePath != null && (
+                      <SegmentList
+                        width={rightBarWidth}
+                        currentSegIndex={currentSegIndexSafe}
+                        cutSegments={cutSegments}
+                        inverseCutSegments={inverseCutSegments}
+                        getFrameCount={getFrameCount}
+                        formatTimecode={formatTimecode}
+                        onSegClick={setCurrentSegIndex}
+                        updateSegOrder={updateSegOrder}
+                        updateSegOrders={updateSegOrders}
+                        onLabelSegment={labelSegment}
+                        currentCutSeg={currentCutSeg}
+                        firstSegmentAtCursor={firstSegmentAtCursor}
+                        addSegment={addSegment}
+                        onDuplicateSegmentClick={duplicateSegment}
+                        removeSegment={removeSegment}
+                        onRemoveSelected={removeSelectedSegments}
+                        toggleSegmentsList={toggleSegmentsList}
+                        splitCurrentSegment={splitCurrentSegment}
+                        selectedSegments={segmentsOrInverse.selected}
+                        onSelectSingleSegment={selectOnlySegment}
+                        onToggleSegmentSelected={toggleSegmentSelected}
+                        onDeselectAllSegments={deselectAllSegments}
+                        onSelectAllSegments={selectAllSegments}
+                        onInvertSelectedSegments={invertSelectedSegments}
+                        onExtractSegmentsFramesAsImages={extractSegmentsFramesAsImages}
+                        onExtractSelectedSegmentsFramesAsImages={extractSelectedSegmentsFramesAsImages}
+                        jumpSegStart={jumpSegStart}
+                        jumpSegEnd={jumpSegEnd}
+                        onSelectSegmentsByLabel={selectSegmentsByLabel}
+                        onSelectSegmentsByExpr={selectSegmentsByExpr}
+                        onSelectAllMarkers={selectAllMarkers}
+                        onMutateSegmentsByExpr={mutateSegmentsByExpr}
+                        onLabelSelectedSegments={labelSelectedSegments}
+                        updateSegAtIndex={updateSegAtIndex}
+                        editingSegmentTags={editingSegmentTags}
+                        editingSegmentTagsSegmentIndex={editingSegmentTagsSegmentIndex}
+                        setEditingSegmentTags={setEditingSegmentTags}
+                        setEditingSegmentTagsSegmentIndex={setEditingSegmentTagsSegmentIndex}
+                        onEditSegmentTags={onEditSegmentTags}
+                        getSegEstimatedSize={getSegEstimatedSize}
+                      />
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <div className="no-user-select" style={bottomStyle}>
+                  <Timeline
+                    shouldShowKeyframes={shouldShowKeyframes}
+                    waveforms={waveforms}
+                    overviewWaveform={overviewWaveform}
+                    shouldShowWaveform={shouldShowWaveform}
+                    waveformEnabled={waveformEnabled}
+                    waveformHeight={waveformHeight}
+                    showThumbnails={showThumbnails}
+                    neighbouringKeyFrames={neighbouringKeyFrames}
+                    thumbnails={thumbnailsSorted}
+                    playerTime={playerTime}
+                    commandedTime={commandedTime}
+                    relevantTime={relevantTime}
+                    commandedTimeRef={commandedTimeRef}
+                    startTimeOffset={startTimeOffset}
+                    zoom={zoom}
+                    seekAbs={seekAbs}
+                    fileDurationNonZero={fileDurationNonZero}
+                    cutSegments={cutSegments}
+                    setCurrentSegIndex={setCurrentSegIndex}
+                    currentSegIndexSafe={currentSegIndexSafe}
+                    currentCutSeg={currentCutSeg}
+                    inverseCutSegments={inverseCutSegments}
+                    formatTimecode={formatTimecode}
+                    formatTimeAndFrames={formatTimeAndFrames}
+                    zoomWindowStartTime={zoomWindowStartTime}
+                    zoomWindowEndTime={zoomWindowEndTime}
+                    onZoomWindowStartTimeChange={setZoomWindowStartTime}
+                    onGenerateOverviewWaveformClick={generateOverviewWaveform}
+                    playing={playing}
+                    isFileOpened={isFileOpened}
+                    onWheel={onTimelineWheel}
+                    goToTimecode={goToTimecode}
+                    darkMode={darkMode}
+                    setCutTime={setCutTime}
+                  />
+
+                  <BottomBar
+                    zoom={zoom}
+                    setZoom={zoomAbs}
+                    timelineToggleComfortZoom={timelineToggleComfortZoom}
+                    hasVideo={hasVideo}
+                    isRotationSet={isRotationSet}
+                    rotation={rotation}
+                    areWeCutting={areWeCutting}
+                    increaseRotation={increaseRotation}
+                    cleanupFilesDialog={cleanupFilesDialog}
+                    captureSnapshot={captureSnapshot}
+                    onExportPress={onExportPress}
+                    segmentsToExport={segmentsToExport}
+                    seekAbs={seekAbs}
+                    currentSegIndexSafe={currentSegIndexSafe}
+                    cutSegments={cutSegments}
+                    currentCutSeg={currentCutSeg}
+                    selectedSegments={selectedSegments}
+                    setCutStart={setCutStart}
+                    setCutEnd={setCutEnd}
+                    setCurrentSegIndex={setCurrentSegIndex}
+                    jumpCutEnd={jumpCutEnd}
+                    jumpCutStart={jumpCutStart}
+                    jumpTimelineStart={jumpTimelineStart}
+                    jumpTimelineEnd={jumpTimelineEnd}
+                    startTimeOffset={startTimeOffset}
+                    setCutTime={setCutTime}
+                    playing={playing}
+                    shortStep={shortStep}
+                    seekClosestKeyframe={seekClosestKeyframe}
+                    togglePlay={togglePlay}
+                    showThumbnails={showThumbnails}
+                    toggleShowThumbnails={toggleShowThumbnails}
+                    toggleWaveformMode={toggleWaveformMode}
+                    waveformMode={waveformMode}
+                    hasAudio={hasAudio}
+                    keyframesEnabled={keyframesEnabled}
+                    toggleShowKeyframes={toggleShowKeyframes}
+                    detectedFps={detectedFps}
+                    toggleLoopSelectedSegments={toggleLoopSelectedSegments}
+                    isFileOpened={isFileOpened}
+                    darkMode={darkMode}
+                    outputPlaybackRate={outputPlaybackRate}
+                    setOutputPlaybackRate={setOutputPlaybackRate}
+                    formatTimecode={formatTimecode}
+                    parseTimecode={parseTimecode}
+                    playbackRate={playbackRate}
+                    currentFrame={currentFrame}
+                    playbackMode={playbackMode}
+                  />
+                </div>
+
+                {tunerVisible != null && <ValueTuners type={tunerVisible} onFinished={() => setTunerVisible(undefined)} />}
+
+                {/* Dialogs */}
+
+                <ExportConfirm areWeCutting={areWeCutting} segmentsOrInverse={segmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmOpen} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} cutFileTemplate={cutFileTemplateOrDefault} cutMergedFileTemplate={cutMergedFileTemplateOrDefault} generateCutFileNames={generateCutFileNames} generateCutMergedFileNames={generateCutMergedFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} needSmartCut={needSmartCut} isEncoding={isEncoding} encBitrate={encBitrate} setEncBitrate={setEncBitrate} toggleSettings={toggleSettings} outputPlaybackRate={outputPlaybackRate} lossyMode={lossyMode} neighbouringKeyFrames={neighbouringKeyFrames} findNearestKeyFrameTime={findNearestKeyFrameTime} />
+
+                <Dialog.Root open={streamsSelectorShown} onOpenChange={setStreamsSelectorShown}>
+                  <Dialog.Portal>
+                    <Dialog.Overlay />
+                    <Dialog.Content style={{ width: '80em' }}>
+                      <Dialog.Title>{t('Tracks')}</Dialog.Title>
+                      <Dialog.Description>{t('Click to select which tracks to keep when exporting:')}</Dialog.Description>
+
+                      {mainStreams && filePath != null && (
+                        <StreamsSelector
+                          mainFilePath={filePath}
+                          mainFileFormat={mainFileFormat}
+                          mainFileChapters={mainFileChapters}
+                          allFilesMeta={allFilesMeta}
+                          externalFilesMeta={externalFilesMeta}
+                          setExternalFilesMeta={setExternalFilesMeta}
+                          showAddStreamSourceDialog={showIncludeExternalStreamsDialog}
+                          mainFileStreams={mainStreams}
+                          isCopyingStreamId={isCopyingStreamId}
+                          toggleCopyStreamId={toggleCopyStreamId}
+                          setCopyStreamIdsForPath={setCopyStreamIdsForPath}
+                          onExtractAllStreamsPress={extractAllStreams}
+                          onExtractStreamPress={extractSingleStream}
+                          shortestFlag={shortestFlag}
+                          setShortestFlag={setShortestFlag}
+                          nonCopiedExtraStreams={nonCopiedExtraStreams}
+                          customTagsByFile={customTagsByFile}
+                          setCustomTagsByFile={setCustomTagsByFile}
+                          paramsByStreamId={paramsByStreamId}
+                          updateStreamParams={updateStreamParams}
+                          formatTimecode={formatTimecode}
+                          loadSubtitleTrackToSegments={loadSubtitleTrackToSegments}
+                          toggleCopyStreamIds={toggleCopyStreamIds}
+                          changeEnabledStreamsFilter={changeEnabledStreamsFilter}
+                          toggleCopyAllStreamsForPath={toggleCopyAllStreamsForPath}
+                          onStreamSourceFileDrop={handleStreamSourceFileDrop}
+                        />
+                      )}
+
+                      <Dialog.CloseButton />
+                    </Dialog.Content>
+                  </Dialog.Portal>
+                </Dialog.Root>
+
+                <LastCommands visible={lastCommandsVisible} onTogglePress={toggleLastCommands} ffmpegCommandLog={ffmpegCommandLog} setFfmpegCommandLog={setFfmpegCommandLog} />
+
+                <Dialog.Root open={settingsVisible} onOpenChange={toggleSettings}>
+                  <Dialog.Portal>
+                    <Dialog.Overlay />
+                    <Dialog.Content style={{ width: '60em' }}>
+                      <Dialog.Title>{t('Settings')}</Dialog.Title>
+                      <Dialog.Description>{t('Hover mouse over buttons in the main interface to see which function they have')}</Dialog.Description>
+
+                      <Settings
+                        onTunerRequested={onTunerRequested}
+                        onKeyboardShortcutsDialogRequested={toggleKeyboardShortcuts}
+                        askForCleanupChoices={askForCleanupChoices}
+                        toggleStoreProjectInWorkingDir={toggleStoreProjectInWorkingDir}
+                        showAdvancedSettings={showAdvancedSettings}
+                        setShowAdvancedSettings={setShowAdvancedSettings}
+                      />
+                      <Dialog.CloseButton />
+                    </Dialog.Content>
+                  </Dialog.Portal>
+                </Dialog.Root>
+
+                <ConcatDialog isShown={batchFiles.length > 0 && concatDialogOpen} onHide={() => setConcatDialogOpen(false)} paths={batchFilePaths} mergedFileTemplate={mergedFileTemplateOrDefault} generateMergedFileNames={generateMergedFileNames} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} fileFormat={fileFormat} setFileFormat={setFileFormat} detectedFileFormat={detectedFileFormat} setDetectedFileFormat={setDetectedFileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
+
+                <KeyboardShortcuts isShown={keyboardShortcutsVisible} onHide={() => setKeyboardShortcutsVisible(false)} keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} getKeyboardAction={getKeyboardAction} />
+
+                {/* This should probably be last, so that it's always on top */}
+                <AnimatePresence>
+                  {working && <Working text={working.text} progress={progress} onAbortClick={abortWorking} />}
+                </AnimatePresence>
+
+                <GenericDialog dialog={genericDialog} onOpenChange={(open) => !open && closeGenericDialog()} />
+
+                <WhatsNew />
+
+                <ErrorDialog error={genericError} onOpenChange={(open) => !open && setGenericError(undefined)} />
+              </div>
+
+              <SwalContainer darkMode={darkMode} style={baseColorStyle} />
+            </UserSettingsContext.Provider>
+          </SegColorsContext.Provider>
+        </AppContext.Provider>
+      </MotionConfig>
+    </Theme>
   );
 }
 

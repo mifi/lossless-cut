@@ -3,7 +3,8 @@ import { memo, useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
 import { motion } from 'motion/react';
-import { FaCheck, FaEdit, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
+import { FaCheck, FaEdit, FaInfo, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
+import { IconButton, Tooltip } from '@radix-ui/themes';
 
 import type { SegmentTags } from '../types';
 import { segmentTagsSchema } from '../types';
@@ -15,12 +16,14 @@ import Warning from './Warning';
 
 
 const { clipboard } = window.require('electron');
+const remote = window.require('@electron/remote');
+const { shell } = remote;
 
 const activeColor = 'var(--gray-12)';
 
 const emptyObject = {};
 
-function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editingTag, setEditingTag, onTagsChange, onTagReset, addTagTitle }: {
+function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editingTag, setEditingTag, onTagsChange, onTagReset, addTagTitle, tagInfo }: {
   existingTags?: SegmentTags,
   customTags?: SegmentTags | undefined,
   editingTag: string | undefined,
@@ -28,6 +31,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   onTagsChange: (keyValues: Record<string, string>) => void,
   onTagReset: (tag: string) => void,
   addTagTitle: string,
+  tagInfo?: Record<string, { description: string, url?: string }>,
 }) {
   const { t } = useTranslation();
   const ref = useRef<HTMLInputElement>(null);
@@ -149,6 +153,11 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
                     <Button title={thisTagNew ? t('Delete') : t('Reset')} onClick={onResetClick}>
                       {thisTagNew ? <FaTrash style={{ fontSize: '.9em', padding: '.5em', verticalAlign: 'middle' }} /> : <FaUndo style={{ fontSize: '.9em', padding: '.5em', verticalAlign: 'middle' }} />}
                     </Button>
+                  )}
+                  {tagInfo?.[tag] && (
+                    <Tooltip content={tagInfo[tag].description}>
+                      <IconButton size="1" style={{ marginLeft: '.5em', cursor: tagInfo[tag]?.url ? 'pointer' : undefined }} onClick={() => tagInfo[tag]?.url && shell.openExternal(tagInfo[tag].url)}><FaInfo /></IconButton>
+                    </Tooltip>
                   )}
                 </td>
               </motion.tr>

@@ -57,6 +57,7 @@
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-switch": "^1.2.6",
+    "@radix-ui/themes": "^3.3.0",
     "@tanstack/react-virtual": "3.13.18",
     "@tsconfig/node22": "^22.0.5",
     "@tsconfig/strictest": "^2.0.8",
