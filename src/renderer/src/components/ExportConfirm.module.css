@@ -1,20 +1,226 @@
-table.options {
+.sectionPanel {
+  margin-top: 0.95rem;
+  padding: 0.95rem 0.95rem 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1.2rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.options {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.45rem;
+}
+
+.options td {
+  padding: 0.35rem 0;
+  vertical-align: middle;
+}
+
+.options td:first-child {
+  color: var(--player-text-primary);
+  font-weight: 500;
+  font-size: 0.96rem;
+  line-height: 1.4;
+  padding-right: 0.65rem;
+}
+
+.options td:nth-child(2) {
+  text-align: right;
+  font-size: 0.95rem;
+  font-weight: 500;
+  width: 17rem;
+}
+
+.options td:last-child {
+  text-align: left;
+  width: 1.55rem;
+  padding-left: 0.28rem;
+}
+
+.sectionTitle {
+  margin: 1.35rem 0 0.35rem;
+  color: var(--player-text-primary);
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: 0.015em;
+  text-transform: uppercase;
+}
+
+.sectionIntro {
+  padding-top: 0.05rem;
+  color: var(--player-text-muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  margin-top: 0.32rem;
+  padding: 0.48rem 0.68rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(34, 211, 238, 0.14);
+  background: rgba(34, 211, 238, 0.06);
+  color: var(--player-text-primary);
+  font-size: 0.84rem;
+  line-height: 1.35;
+  max-width: 30rem;
+}
+
+.noticeWarning {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.16);
+}
+
+.noticeText {
+  flex: 1 1 auto;
+}
+
+.helpIcon {
+  cursor: pointer;
+  color: var(--player-text-muted);
+  vertical-align: middle;
+  font-size: 1.15rem;
+  opacity: 0.8;
+  margin-left: 0;
+  transition: color 140ms ease, transform 140ms ease;
+}
+
+.helpIcon:hover {
+  color: var(--player-text-primary);
+  transform: translateY(-1px);
+}
+
+.selectCompact {
+  height: 2.25rem;
+  min-width: 13.5rem;
+  padding-left: 0.7rem;
+  padding-right: 2rem;
+  font-size: 0.9rem;
+  border-radius: 0.85rem;
+}
+
+.rightIcon {
+  font-size: 1.1rem;
+  vertical-align: middle;
+}
+
+.selectedSegmentsRow {
+  color: var(--player-text-muted);
+  font-size: 0.86rem;
+  margin-top: 0.15rem;
+}
+
+.valueStack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.55rem;
+  width: min(100%, 17rem);
+}
+
+.switchRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  width: 100%;
+  margin-left: auto;
+}
+
+.labelCell {
+  color: var(--player-text-primary);
+  vertical-align: top;
+}
+
+.valueCell {
+  text-align: right;
+  vertical-align: middle;
+}
+
+.valueCell > * {
+  margin-left: auto;
+}
+
+.valueCellInner {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.valueCellCompact {
+  justify-content: flex-start;
+}
+
+.filenameCell {
+  vertical-align: top;
+}
+
+.inlineControl {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
   width: 100%;
 }
 
-table.options td:nth-child(2) {
-  text-align: right;
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 2.75rem;
 }
 
-table.options td:last-child {
-  text-align: center;
-  width: 1.7em;
+.metaText {
+  color: var(--player-text-muted);
+  font-size: 0.86rem;
+  line-height: 1.35;
 }
 
-table.options td {
-  padding: .5em 0em;
+.settingsButton {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.9rem;
+  border: 1px solid var(--player-border-subtle);
+  background: linear-gradient(180deg, var(--player-button-top), var(--player-button-bottom));
+  color: var(--player-text-primary);
+  box-shadow: var(--player-shadow-button);
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease;
 }
 
-table.options td {
-  vertical-align: top;
+.settingsButton:hover {
+  transform: translateY(-1px);
+  border-color: var(--player-border-strong);
+  background: linear-gradient(180deg, var(--player-button-top-hover), var(--player-button-bottom-hover));
+}
+
+.settingsButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--player-focus-ring), var(--player-shadow-button);
+}
+
+.outPath {
+  display: inline-block;
+  max-width: 26rem;
+  word-break: break-word;
+}
+
+.bottomDock {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.2rem;
 }

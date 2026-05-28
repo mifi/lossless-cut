@@ -1,11 +1,55 @@
-.wrapper button, .wrapper select {
-  background-color: var(--gray-1);
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 0.85rem;
+  background:
+    var(--player-chrome-glow),
+    var(--player-surface);
+  border-bottom: 1px solid var(--player-border-subtle);
+}
+
+.wrapper button,
+.wrapper select {
+  min-height: 2.3rem;
+  border-radius: 0.9rem;
+  border-color: var(--player-border-subtle);
+  background: linear-gradient(180deg, var(--player-button-top), var(--player-button-bottom));
+  color: var(--player-text-primary);
+  box-shadow: var(--player-shadow-button);
+}
+
+.wrapper button:hover,
+.wrapper select:hover {
+  filter: none;
+  border-color: var(--player-border-strong);
+  background: linear-gradient(180deg, var(--player-button-top-hover), var(--player-button-bottom-hover));
+}
+
+.wrapper button:focus-visible,
+.wrapper select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--player-focus-ring), var(--player-shadow-button);
 }
 
 .wrapper button {
-  padding: .3em .3em;
+  padding: 0 0.9rem;
 }
 
 .wrapper select {
-  padding: .3em 1.4em .3em .3em;
+  padding: 0 2rem 0 0.8rem;
+}
+
+.spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.iconButton {
+  min-width: 2.3rem;
+  padding: 0 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }

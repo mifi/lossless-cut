@@ -3,6 +3,8 @@ import { memo, useState, useCallback, useRef, useEffect } from 'react';
 import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
+import { PlayerIconButton, PlayerOverlayColumn, PlayerOverlayPopover, PlayerStat, playerChromeStyles } from './PlayerChrome';
+
 
 function VolumeControl({ playbackVolume, setPlaybackVolume, onToggleMutedClick }: {
   playbackVolume: number,
@@ -38,23 +40,30 @@ function VolumeControl({ playbackVolume, setPlaybackVolume, onToggleMutedClick }
   return (
     <>
       {volumeControlVisible && (
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={playbackVolume * 100}
-          style={{ height: 30 }}
-          onChange={onVolumeChange}
-        />
+        <PlayerOverlayPopover>
+          <PlayerOverlayColumn>
+            <span className={playerChromeStyles['statLabel']}>{t('Preview volume')}</span>
+            <input
+              className={playerChromeStyles['range']}
+              type="range"
+              min={0}
+              max={100}
+              value={playbackVolume * 100}
+              onChange={onVolumeChange}
+            />
+          </PlayerOverlayColumn>
+
+          <PlayerStat label={t('Level')} value={`${Math.round(playbackVolume * 100)}%`} />
+        </PlayerOverlayPopover>
       )}
 
-      <VolumeIcon
+      <PlayerIconButton
         title={t('Mute preview? (will not affect output)')}
-        size={30}
-        role="button"
-        style={{ margin: '0 7px', color: 'var(--gray-12)', opacity: 0.7 }}
+        active={volumeControlVisible || playbackVolume === 0}
         onClick={onVolumeIconClick}
-      />
+      >
+        <VolumeIcon size={18} />
+      </PlayerIconButton>
     </>
   );
 }

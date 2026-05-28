@@ -13,7 +13,7 @@ import HighlightedText from './HighlightedText';
 import Select from './Select';
 import Switch from './Switch';
 
-import { primaryTextColor, warningColor } from '../colors';
+import { warningColor } from '../colors';
 import { withBlur } from '../util';
 import getSwal from '../swal';
 import { isMov as ffmpegIsMov } from '../util/streams';
@@ -39,23 +39,18 @@ const remote = window.require('@electron/remote');
 const { shell } = remote;
 
 
-const noticeStyle: CSSProperties = { marginBottom: '.5em' };
-const infoStyle: CSSProperties = { ...noticeStyle, color: primaryTextColor };
-const warningStyle: CSSProperties = { ...noticeStyle, color: warningColor };
-
-const rightIconStyle: CSSProperties = { fontSize: '1.2em', verticalAlign: 'middle' };
-
 const adjustCutFromValues = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const adjustCutToValues = [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const rightIconStyle: CSSProperties = { fontSize: '1.1rem', verticalAlign: 'middle' };
 
 const HelpIcon = ({ onClick, style }: { onClick: () => void, style?: CSSProperties }) => (
-  <IoIosHelpCircle role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', color: primaryTextColor, verticalAlign: 'middle', fontSize: '1.5em', ...style }} />
+  <IoIosHelpCircle role="button" className={styles['helpIcon']} onClick={withBlur(onClick)} style={style} />
 );
 
 function ShiftTimes({ values, num, setNum }: { values: number[], num: number, setNum: (n: number) => void }) {
   const { t } = useTranslation();
   return (
-    <Select value={num} onChange={(e) => setNum(Number(e.target.value))} style={{ height: 20, marginLeft: 5 }}>
+    <Select value={num} onChange={(e) => setNum(Number(e.target.value))} className={styles['selectCompact']}>
       {values.map((v) => <option key={v} value={v}>{t('{{numFrames}} frames', { numFrames: v >= 0 ? `+${v}` : v, count: v })}</option>)}
     </Select>
   );
@@ -86,8 +81,10 @@ function renderNotice(notice: Notice | GenericNotice | undefined, { style }: { s
   const { warning, text } = notice;
   const url = 'url' in notice ? notice.url : undefined;
   return (
-    <div key={typeof notice.text === 'string' ? notice.text : undefined} style={{ ...(warning ? warningStyle : infoStyle), display: 'flex', alignItems: 'center', gap: '0 .5em', ...style }}>
-      {renderNoticeIcon({ warning }, { fontSize: '1em', flexShrink: 0 })} <span style={{ fontSize: '.9em' }}>{text}</span>{url != null && <IoIosHelpCircle style={{ cursor: 'pointer', fontSize: '1.5em', flexShrink: 0, color: primaryTextColor }} title={i18n.t('Learn more')} role="button" tabIndex={0} onClick={() => shell.openExternal(url)} />}
+    <div key={typeof notice.text === 'string' ? notice.text : undefined} className={`${styles['notice']} ${warning ? styles['noticeWarning'] : ''}`} style={style}>
+      {renderNoticeIcon({ warning }, { fontSize: '1em', flexShrink: 0 })}
+      <span className={styles['noticeText']}>{text}</span>
+      {url != null && <IoIosHelpCircle className={styles['helpIcon']} style={{ flexShrink: 0 }} title={i18n.t('Learn more')} role="button" tabIndex={0} onClick={() => shell.openExternal(url)} />}
     </div>
   );
 }
@@ -332,22 +329,20 @@ function ExportConfirm({
         <ExportButton segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={withBlur(() => onExportConfirm())} style={{ fontSize: '1.3em' }} />
       )}
       renderBottom={() => (
-        <>
-          <ToggleExportConfirm size="1.5em" />
-          <div style={{ fontSize: '.8em', marginLeft: '.4em', marginRight: '.5em', maxWidth: '8.5em', lineHeight: '100%', color: exportConfirmEnabled ? 'var(--gray-12)' : 'var(--gray-11)', cursor: 'pointer' }} role="button" onClick={toggleExportConfirmEnabled}>
-            {t('Show this page before exporting?')}
-          </div>
+        <div className={styles['bottomDock']}>
+          <ToggleExportConfirm size="1.35em" />
           {notices.totalNum > 0 && (
-            renderNoticeIcon({ warning: true }, { fontSize: '1.5em', marginRight: '.5em' })
+            renderNoticeIcon({ warning: true }, { fontSize: '1.25rem' })
           )}
-        </>
+        </div>
       )}
     >
-      <table className={styles['options']}>
-        <tbody>
+      <div className={styles['sectionPanel']}>
+        <table className={styles['options']}>
+          <tbody>
           <tr>
             <td colSpan={2}>
-              {notices.generic.map((notice) => renderNotice(notice, {}))}
+              {notices.generic.map((notice) => renderNotice(notice, { style: { width: '100%', maxWidth: 'none' } }))}
             </td>
             <td />
           </tr>
@@ -355,19 +350,21 @@ function ExportConfirm({
           {segmentsOrInverse.selected.length !== segmentsOrInverse.all.length && (
             <tr>
               <td colSpan={2}>
-                <FaRegCheckCircle size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: segmentsOrInverse.selected.length, nonFilteredSegments: segmentsOrInverse.all.length })}
+                <div className={styles['selectedSegmentsRow']}><FaRegCheckCircle size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: segmentsOrInverse.selected.length, nonFilteredSegments: segmentsOrInverse.all.length })}</div>
               </td>
               <td />
             </tr>
           )}
 
           <tr>
-            <td>
+            <td className={styles['labelCell']}>
               {segmentsOrInverse.selected.length > 1 ? t('Export mode for {{segments}} segments', { segments: segmentsOrInverse.selected.length }) : t('Export mode')}
               {renderNotice(notices.specific['exportMode'], {})}
             </td>
-            <td>
-              <ExportModeButton selectedSegments={segmentsOrInverse.selected} style={{ height: '1.8em' }} />
+            <td className={styles['valueCell']}>
+              <div className={styles['inlineControl']}>
+                <ExportModeButton selectedSegments={segmentsOrInverse.selected} style={{ minWidth: '13.5rem' }} />
+              </div>
             </td>
             <td>
               {renderNoticeIcon(notices.specific['exportMode'], rightIconStyle) ?? <HelpIcon onClick={onExportModeHelpPress} />}
@@ -375,11 +372,13 @@ function ExportConfirm({
           </tr>
 
           <tr>
-            <td>
+            <td className={styles['labelCell']}>
               {t('Output container format:')}
             </td>
-            <td>
-              {renderOutFmt({ height: '1.8em', maxWidth: 150 })}
+            <td className={styles['valueCell']}>
+              <div className={styles['inlineControl']}>
+                {renderOutFmt({ minWidth: '13.5rem', maxWidth: '20rem', width: '100%' })}
+              </div>
             </td>
             <td>
               <HelpIcon onClick={onOutFmtHelpPress} />
@@ -387,12 +386,14 @@ function ExportConfirm({
           </tr>
 
           <tr>
-            <td>
+            <td className={styles['labelCell']}>
               <Trans>Input has {{ numStreamsTotal }} tracks</Trans>
               {renderNotice(notices.specific['problematicStreams'], {})}
             </td>
-            <td>
-              <HighlightedText style={{ cursor: 'pointer' }} onClick={onShowStreamsSelectorClick}><Trans>Keeping {{ numStreamsToCopy }} tracks</Trans></HighlightedText>
+            <td className={styles['valueCell']}>
+              <div className={styles['inlineControl']}>
+                <HighlightedText style={{ cursor: 'pointer' }} onClick={onShowStreamsSelectorClick}><Trans>Keeping {{ numStreamsToCopy }} tracks</Trans></HighlightedText>
+              </div>
             </td>
             <td>
               {renderNoticeIcon(notices.specific['problematicStreams'], rightIconStyle) ?? <HelpIcon onClick={onTracksHelpPress} />}
@@ -400,13 +401,15 @@ function ExportConfirm({
           </tr>
 
           <tr>
-            <td>
+            <td className={styles['labelCell']}>
               {t('Save output to path:')}
             </td>
-            <td>
-              <OutDirSelector>
-                <HighlightedText role="button" style={{ wordBreak: 'break-all', cursor: 'pointer' }}>{outputDir}</HighlightedText>
-              </OutDirSelector>
+            <td className={`${styles['valueCell']} ${styles['filenameCell']}`}>
+              <div className={styles['inlineControl']}>
+                <OutDirSelector>
+                  <HighlightedText role="button" style={{ cursor: 'pointer', maxWidth: '20rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outputDir}</HighlightedText>
+                </OutDirSelector>
+              </div>
             </td>
             <td />
           </tr>
@@ -434,39 +437,42 @@ function ExportConfirm({
           )}
 
           <tr>
-            <td>
+            <td className={styles['labelCell']}>
               {t('Overwrite existing files')}
               {renderNotice(notices.specific['overwriteOutput'], {})}
             </td>
-            <td>
-              <Switch checked={enableOverwriteOutput} onCheckedChange={setEnableOverwriteOutput} />
+            <td className={styles['valueCell']}>
+              <div className={styles['switchRow']}>
+                <Switch checked={enableOverwriteOutput} onCheckedChange={setEnableOverwriteOutput} />
+              </div>
             </td>
             <td>
               {renderNoticeIcon(notices.specific['overwriteOutput'], rightIconStyle) ?? <HelpIcon onClick={() => showHelpText({ text: t('Overwrite files when exporting, if a file with the same name as the output file name exists?') })} />}
             </td>
           </tr>
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
 
-      <h3 style={{ marginBottom: '.5em' }}>{t('Advanced options')}</h3>
+      <h3 className={styles['sectionTitle']}>{t('Advanced options')}</h3>
 
-      <table className={styles['options']}>
-        <tbody>
+      <div className={styles['sectionPanel']}>
+        <table className={styles['options']}>
+          <tbody>
           <tr>
-            <td style={{ paddingTop: '.5em', color: 'var(--gray-11)', fontSize: '.9em' }} colSpan={2}>
+            <td className={styles['sectionIntro']} colSpan={2}>
               {t('Depending on your specific file/player, you may have to try different options for best results.')}
             </td>
             <td />
           </tr>
 
           <tr>
-            <td>
-              {t('Show advanced options')}
+            <td colSpan={3}>
+              <div className={styles['toggleRow']}>
+                <div className={styles['labelCell']}>{t('Show advanced options')}</div>
+                <div className={`${styles['valueCellInner']} ${styles['valueCellCompact']}`}><Switch checked={showAdvanced} onCheckedChange={setShowAdvanced} /></div>
+              </div>
             </td>
-            <td>
-              <Switch checked={showAdvanced} onCheckedChange={setShowAdvanced} />
-            </td>
-            <td />
           </tr>
 
           {showAdvanced && (
@@ -474,10 +480,10 @@ function ExportConfirm({
               {areWeCutting && (
                 <>
                   <AnimatedTr>
-                    <td>
+                    <td className={styles['labelCell']}>
                       {t('Shift all start times')}
                     </td>
-                    <td>
+                    <td className={styles['valueCell']}>
                       <ShiftTimes values={adjustCutFromValues} num={cutFromAdjustmentFrames} setNum={setCutFromAdjustmentFrames} />
                     </td>
                     <td>
@@ -485,10 +491,10 @@ function ExportConfirm({
                     </td>
                   </AnimatedTr>
                   <AnimatedTr>
-                    <td>
+                    <td className={styles['labelCell']}>
                       {t('Shift all end times')}
                     </td>
-                    <td>
+                    <td className={styles['valueCell']}>
                       <ShiftTimes values={adjustCutToValues} num={cutToAdjustmentFrames} setNum={setCutToAdjustmentFrames} />
                     </td>
                     <td />
@@ -499,12 +505,14 @@ function ExportConfirm({
               {isMov && (
                 <>
                   <AnimatedTr>
-                    <td>
+                    <td className={styles['labelCell']}>
                       {t('Enable MOV Faststart?')}
                     </td>
-                    <td>
-                      <Switch checked={movFastStart} onCheckedChange={toggleMovFastStart} />
-                      {renderNotice(notices.specific['movFastStart'], {})}
+                    <td className={styles['valueCell']}>
+                      <div className={styles['valueStack']}>
+                        <div className={styles['switchRow']}><Switch checked={movFastStart} onCheckedChange={toggleMovFastStart} /></div>
+                        {renderNotice(notices.specific['movFastStart'], {})}
+                      </div>
                     </td>
                     <td>
                       {renderNoticeIcon(notices.specific['movFastStart'], rightIconStyle) ?? <HelpIcon onClick={onMovFastStartHelpPress} />}
@@ -512,12 +520,12 @@ function ExportConfirm({
                   </AnimatedTr>
 
                   <AnimatedTr>
-                    <td>
+                    <td className={styles['labelCell']}>
                       {t('Preserve all MP4/MOV metadata?')}
                       {renderNotice(notices.specific['preserveMovData'], {})}
                     </td>
-                    <td>
-                      <Switch checked={preserveMovData} onCheckedChange={togglePreserveMovData} />
+                    <td className={styles['valueCell']}>
+                      <div className={styles['switchRow']}><Switch checked={preserveMovData} onCheckedChange={togglePreserveMovData} /></div>
                     </td>
                     <td>
                       {renderNoticeIcon(notices.specific['preserveMovData'], rightIconStyle) ?? <HelpIcon onClick={onPreserveMovDataHelpPress} />}
@@ -527,11 +535,11 @@ function ExportConfirm({
               )}
 
               <AnimatedTr>
-                <td>
+                <td className={styles['labelCell']}>
                   {t('Preserve chapters')}
                 </td>
-                <td>
-                  <Switch checked={preserveChapters} onCheckedChange={togglePreserveChapters} />
+                <td className={styles['valueCell']}>
+                  <div className={styles['switchRow']}><Switch checked={preserveChapters} onCheckedChange={togglePreserveChapters} /></div>
                 </td>
                 <td>
                   <HelpIcon onClick={onPreserveChaptersPress} />
@@ -539,11 +547,11 @@ function ExportConfirm({
               </AnimatedTr>
 
               <AnimatedTr>
-                <td>
+                <td className={styles['labelCell']}>
                   {t('Preserve metadata')}
                 </td>
-                <td>
-                  <Select value={preserveMetadata} onChange={(e) => setPreserveMetadata(e.target.value as PreserveMetadata)} style={{ height: 20, marginLeft: 5 }}>
+                <td className={styles['valueCell']}>
+                  <Select value={preserveMetadata} onChange={(e) => setPreserveMetadata(e.target.value as PreserveMetadata)} className={styles['selectCompact']}>
                     <option value={'default' satisfies PreserveMetadata}>{t('Default')}</option>
                     <option value={'none' satisfies PreserveMetadata}>{t('None')}</option>
                     <option value={'nonglobal' satisfies PreserveMetadata}>{t('Non-global')}</option>
@@ -557,11 +565,11 @@ function ExportConfirm({
               {willMerge && (
                 <>
                   <AnimatedTr>
-                    <td>
+                    <td className={styles['labelCell']}>
                       {t('Create chapters from merged segments? (slow)')}
                     </td>
-                    <td>
-                      <Switch checked={segmentsToChapters} onCheckedChange={toggleSegmentsToChapters} />
+                    <td className={styles['valueCell']}>
+                      <div className={styles['switchRow']}><Switch checked={segmentsToChapters} onCheckedChange={toggleSegmentsToChapters} /></div>
                     </td>
                     <td>
                       <HelpIcon onClick={onSegmentsToChaptersHelpPress} />
@@ -569,11 +577,11 @@ function ExportConfirm({
                   </AnimatedTr>
 
                   <AnimatedTr>
-                    <td>
+                    <td className={styles['labelCell']}>
                       {t('Preserve original metadata when merging? (slow)')}
                     </td>
-                    <td>
-                      <Switch checked={preserveMetadataOnMerge} onCheckedChange={togglePreserveMetadataOnMerge} />
+                    <td className={styles['valueCell']}>
+                      <div className={styles['switchRow']}><Switch checked={preserveMetadataOnMerge} onCheckedChange={togglePreserveMetadataOnMerge} /></div>
                     </td>
                     <td>
                       <HelpIcon onClick={onPreserveMetadataOnMergeHelpPress} />
@@ -585,12 +593,12 @@ function ExportConfirm({
               {areWeCutting && (
                 <>
                   <AnimatedTr>
-                    <td>
+                    <td className={styles['labelCell']}>
                       {t('Smart cut (experimental):')}
                       {renderNotice(notices.specific['smartCut'], {})}
                     </td>
-                    <td>
-                      <Switch checked={enableSmartCut} onCheckedChange={() => setEnableSmartCut((v) => !v)} />
+                    <td className={styles['valueCell']}>
+                      <div className={styles['switchRow']}><Switch checked={enableSmartCut} onCheckedChange={() => setEnableSmartCut((v) => !v)} /></div>
                     </td>
                     <td>
                       {renderNoticeIcon(notices.specific['smartCut'], rightIconStyle) ?? <HelpIcon onClick={onSmartCutHelpPress} />}
@@ -599,12 +607,12 @@ function ExportConfirm({
 
                   {!isEncoding && (
                     <AnimatedTr>
-                      <td>
+                      <td className={styles['labelCell']}>
                         {t('Keyframe cut mode')}
                         {renderNotice(notices.specific['cutMode'], {})}
                       </td>
-                      <td>
-                        <Switch checked={keyframeCut} onCheckedChange={() => toggleKeyframeCut()} />
+                      <td className={styles['valueCell']}>
+                        <div className={styles['switchRow']}><Switch checked={keyframeCut} onCheckedChange={() => toggleKeyframeCut()} /></div>
                       </td>
                       <td>
                         {renderNoticeIcon(notices.specific['cutMode'], rightIconStyle) ?? <HelpIcon onClick={onKeyframeCutHelpPress} />}
@@ -617,11 +625,11 @@ function ExportConfirm({
 
               {isEncoding && (
                 <AnimatedTr>
-                  <td>
+                  <td className={styles['labelCell']}>
                     {t('Smart cut auto detect bitrate')}
                   </td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                  <td className={styles['valueCell']}>
+                    <div className={styles['switchRow']}>
                       {encBitrate != null && (
                         <>
                           <TextInput value={encBitrate} onChange={handleEncBitrateChange} style={{ width: '4em', flexGrow: 0, marginRight: '.3em' }} />
@@ -637,12 +645,14 @@ function ExportConfirm({
 
               {lossyMode != null && (
                 <AnimatedTr>
-                  <td>
+                  <td className={styles['labelCell']}>
                     {t('Lossy mode')}
                   </td>
-                  <td>
-                    <Switch disabled checked={lossyMode != null} />
-                    <div>{lossyMode.videoEncoder}</div>
+                  <td className={styles['valueCell']}>
+                    <div className={styles['valueStack']}>
+                      <div className={styles['switchRow']}><Switch disabled checked={lossyMode != null} /></div>
+                      <div className={styles['metaText']}>{lossyMode.videoEncoder}</div>
+                    </div>
                   </td>
                   <td />
                 </AnimatedTr>
@@ -650,12 +660,12 @@ function ExportConfirm({
 
               {!isEncoding && (
                 <AnimatedTr>
-                  <td>
+                  <td className={styles['labelCell']}>
                     &quot;ffmpeg&quot; <code className="highlighted">avoid_negative_ts</code>
                     {renderNotice(notices.specific['avoidNegativeTs'], {})}
                   </td>
-                  <td>
-                    <Select value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value as AvoidNegativeTs)} style={{ height: 20, marginLeft: 5 }}>
+                  <td className={styles['valueCell']}>
+                    <Select value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value as AvoidNegativeTs)} className={styles['selectCompact']}>
                       <option value={'auto' satisfies AvoidNegativeTs}>auto</option>
                       <option value={'make_zero' satisfies AvoidNegativeTs}>make_zero</option>
                       <option value={'make_non_negative' satisfies AvoidNegativeTs}>make_non_negative</option>
@@ -669,11 +679,11 @@ function ExportConfirm({
               )}
 
               <AnimatedTr>
-                <td>
+                <td className={styles['labelCell']}>
                   {t('"ffmpeg" experimental flag')}
                 </td>
-                <td>
-                  <Switch checked={ffmpegExperimental} onCheckedChange={setFfmpegExperimental} />
+                <td className={styles['valueCell']}>
+                  <div className={styles['switchRow']}><Switch checked={ffmpegExperimental} onCheckedChange={setFfmpegExperimental} /></div>
                 </td>
                 <td>
                   <HelpIcon onClick={onFfmpegExperimentalHelpPress} />
@@ -681,18 +691,21 @@ function ExportConfirm({
               </AnimatedTr>
 
               <AnimatedTr>
-                <td>
+                <td className={styles['labelCell']}>
                   {t('More settings')}
                 </td>
-                <td>
-                  <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ marginLeft: 5 }} />
+                <td className={styles['valueCell']}>
+                  <button type="button" className={styles['settingsButton']} onClick={toggleSettings} title={t('More settings')}>
+                    <IoIosSettings size={22} />
+                  </button>
                 </td>
                 <td />
               </AnimatedTr>
             </>
           )}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </ExportSheet>
   );
 }

@@ -12,6 +12,7 @@ import type { KeyBinding } from '../../common/types';
 import { splitKeyboardKeys } from './util';
 import { getModifier } from './hooks/useTimelineScroll';
 import Kbd from './components/Kbd';
+import styles from './NoFileLoaded.module.css';
 
 const electron = window.require('electron');
 
@@ -26,21 +27,7 @@ function Keys({ keys }: { keys: string | undefined }) {
 }
 
 const dropzoneStyle: MotionStyle = {
-  position: 'absolute',
-  left: 0,
-  right: 0,
-  top: 0,
-  bottom: 0,
-  color: 'var(--gray-12)',
-  margin: '2em',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  whiteSpace: 'nowrap',
-  borderWidth: '.7em',
-  borderStyle: 'dashed',
-  borderColor: 'var(--gray-3)',
+  borderColor: 'rgba(255, 255, 255, 0.12)',
 };
 
 function NoFileLoaded({ mifiLink, currentCutSeg, onClick, darkMode, keyBindingByAction }: {
@@ -58,39 +45,44 @@ function NoFileLoaded({ mifiLink, currentCutSeg, onClick, darkMode, keyBindingBy
 
   return (
     <motion.div
-      className="no-user-select"
+      className={['no-user-select', styles['dropzone']].join(' ')}
       style={dropzoneStyle}
-      animate={{ borderColor: dragging ? 'var(--gray-9)' : 'var(--gray-3)' }}
+      animate={{ borderColor: dragging ? 'var(--player-accent-border)' : 'rgba(255, 255, 255, 0.12)' }}
       onDragOver={() => setDragging(true)}
       onDragLeave={() => setDragging(false)}
       role="button"
       onClick={onClick}
     >
-      <div style={{ fontSize: '1.7em', textTransform: 'uppercase', color: 'var(--gray-11)', marginBottom: '.1em' }}>{t('DROP FILE(S)')}</div>
+      <div className={styles['inner']}>
+        <div className={styles['title']}>{t('DROP FILE(S)')}</div>
 
-      <div style={{ fontSize: '1.3em', color: 'var(--gray-11)', marginBottom: '.1em' }}>
-        <Trans>See <b>Help</b> menu for help</Trans>
-      </div>
-
-      <div style={{ fontSize: '1.3em', color: 'var(--gray-11)' }}>
-        <Trans><SetCutpointButton currentCutSeg={currentCutSegOrDefault} side="start" style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSegOrDefault} side="end" style={{ verticalAlign: 'middle' }} />, <Keys keys={keyBindingByAction['setCutStart']?.keys} /> <Keys keys={keyBindingByAction['setCutEnd']?.keys} /> or <span><kbd style={{ marginRight: '.1em' }}>{getModifier(segmentMouseModifierKey)}</kbd></span>+<FaMouse style={{ marginRight: '.1em', verticalAlign: 'middle' }} /> to set cutpoints</Trans>
-      </div>
-
-      <div style={{ fontSize: '1.3em', color: 'var(--gray-11)' }} role="button" onClick={(e) => e.stopPropagation()}>
-        {simpleMode ? (
-          <Trans><SimpleModeButton style={{ verticalAlign: 'middle' }} /> to show advanced view</Trans>
-        ) : (
-          <Trans><SimpleModeButton style={{ verticalAlign: 'middle' }} /> to show simple view</Trans>
-        )}
-      </div>
-
-      {mifiLink && typeof mifiLink === 'object' && 'loadUrl' in mifiLink && typeof mifiLink.loadUrl === 'string' && mifiLink.loadUrl ? (
-        <div style={{ position: 'relative', margin: '.3em', width: '24em', height: '8em' }}>
-          <iframe src={`${mifiLink.loadUrl}#dark=${darkMode ? 'true' : 'false'}`} title="iframe" style={{ background: 'rgba(0,0,0,0)', border: 'none', pointerEvents: 'none', width: '100%', height: '100%', position: 'absolute', colorScheme: 'initial' }} />
-          {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus */}
-          <div style={{ width: '100%', height: '100%', position: 'absolute', cursor: 'pointer' }} role="button" onClick={(e) => { e.stopPropagation(); if ('targetUrl' in mifiLink && typeof mifiLink.targetUrl === 'string') electron.shell.openExternal(mifiLink.targetUrl); }} />
+        <div className={styles['subtitle']}>
+          <Trans>See <b>Help</b> menu for help</Trans>
         </div>
-      ) : undefined}
+
+        <div className={styles['hintCard']}>
+          <div className={styles['hintLabel']}>{t('Quick start')}</div>
+          <div className={styles['hintRow']}>
+            <Trans><SetCutpointButton currentCutSeg={currentCutSegOrDefault} side="start" style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSegOrDefault} side="end" style={{ verticalAlign: 'middle' }} />, <Keys keys={keyBindingByAction['setCutStart']?.keys} /> <Keys keys={keyBindingByAction['setCutEnd']?.keys} /> or <span><kbd style={{ marginRight: '.1em' }}>{getModifier(segmentMouseModifierKey)}</kbd></span>+<FaMouse style={{ marginRight: '.1em', verticalAlign: 'middle' }} /> to set cutpoints</Trans>
+          </div>
+
+          <div className={styles['simpleMode']} role="button" onClick={(e) => e.stopPropagation()}>
+            {simpleMode ? (
+              <Trans><SimpleModeButton style={{ verticalAlign: 'middle' }} /> to show advanced view</Trans>
+            ) : (
+              <Trans><SimpleModeButton style={{ verticalAlign: 'middle' }} /> to show simple view</Trans>
+            )}
+          </div>
+        </div>
+
+        {mifiLink && typeof mifiLink === 'object' && 'loadUrl' in mifiLink && typeof mifiLink.loadUrl === 'string' && mifiLink.loadUrl ? (
+          <div className={styles['promo']}>
+            <iframe src={`${mifiLink.loadUrl}#dark=${darkMode ? 'true' : 'false'}`} title="iframe" className={styles['promoFrame']} />
+            {/* Keep the promo clickable without letting the embedded content steal pointer events. */}
+            <div className={styles['promoClickTarget']} role="button" onClick={(e) => { e.stopPropagation(); if ('targetUrl' in mifiLink && typeof mifiLink.targetUrl === 'string') electron.shell.openExternal(mifiLink.targetUrl); }} />
+          </div>
+        ) : undefined}
+      </div>
     </motion.div>
   );
 }

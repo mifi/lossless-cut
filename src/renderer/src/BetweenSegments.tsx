@@ -25,6 +25,7 @@ function BetweenSegments({ start, end, fileDurationNonZero, invertCutSegments }:
         display: 'flex',
         alignItems: 'center',
         pointerEvents: 'none',
+        opacity: 0.9,
       }}
       initial={{
         left,
@@ -37,16 +38,16 @@ function BetweenSegments({ start, end, fileDurationNonZero, invertCutSegments }:
       layout={!prefersReducedMotion}
       transition={springAnimation}
     >
-      <div style={{ flexGrow: 1, borderBottom: '1px dashed var(--gray-10)', marginLeft: 5, marginRight: 5 }} />
+      <div style={{ flexGrow: 1, borderBottom: '1px dashed var(--player-text-muted)', marginLeft: 6, marginRight: 6 }} />
       {/* https://github.com/mifi/lossless-cut/issues/2157 */}
       {effectiveExportMode !== 'segments_to_chapters' && (
         <>
           {invertCutSegments ? (
-            <FaSave style={{ color: saveColor }} />
+            <FaSave style={{ color: saveColor, filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.12))' }} />
           ) : (
-            <FaTrashAlt style={{ color: 'var(--gray-10)' }} />
+            <FaTrashAlt style={{ color: 'var(--player-text-muted)', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.12))' }} />
           )}
-          <div style={{ flexGrow: 1, borderBottom: '1px dashed var(--gray-10)', marginLeft: 5, marginRight: 5 }} />
+          <div style={{ flexGrow: 1, borderBottom: '1px dashed var(--player-text-muted)', marginLeft: 6, marginRight: 6 }} />
         </>
       )}
     </motion.div>

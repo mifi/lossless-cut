@@ -6,6 +6,7 @@ import { motion } from 'motion/react';
 
 import Select from './Select';
 import Switch from './Switch';
+import { PlayerIconButton, PlayerOverlayPopover } from './PlayerChrome';
 import styles from './PlaybackStreamSelector.module.css';
 import type { FFprobeStream } from '../../../common/ffprobe';
 
@@ -68,12 +69,14 @@ function PlaybackStreamSelector({
   return (
     <>
       {controlVisible && (
-        <motion.div className={styles['wrapper']} initial={{ opacity: 0, transform: 'translateX(100%)' }} animate={{ opacity: 1, transform: 'translateX(0%)' }}>
+        <PlayerOverlayPopover>
+          <motion.div className={styles['panel']} initial={{ opacity: 0, transform: 'translateX(100%)' }} animate={{ opacity: 1, transform: 'translateX(0%)' }}>
           {subtitleStreams.length > 0 && (
-            <div style={{ margin: '0 .5em' }}>
-              <div style={{ marginBottom: '.3em' }}>{t('Subtitle')}</div>
+            <div className={styles['section']}>
+              <div className={styles['sectionTitle']}>{t('Subtitle')}</div>
 
               <Select
+                className={styles['select']}
                 value={activeSubtitleStreamIndex ?? ''}
                 onChange={onActiveSubtitleChange2}
                 onMouseMove={resetTimer}
@@ -87,10 +90,11 @@ function PlaybackStreamSelector({
           )}
 
           {videoStreams.length > 0 && (
-            <div style={{ margin: '0 .5em' }}>
-              <div style={{ marginBottom: '.3em' }}>{t('Video track')}</div>
+            <div className={styles['section']}>
+              <div className={styles['sectionTitle']}>{t('Video track')}</div>
 
               <Select
+                className={styles['select']}
                 value={activeVideoStreamIndex ?? ''}
                 onChange={onActiveVideoStreamChange2}
                 onMouseMove={resetTimer}
@@ -104,33 +108,34 @@ function PlaybackStreamSelector({
           )}
 
           {audioStreams.length > 0 && (
-            <div style={{ margin: '0 .5em' }}>
-              <div style={{ marginBottom: '.3em' }}>{t('Audio track')}</div>
+            <div className={styles['section']}>
+              <div className={styles['sectionTitle']}>{t('Audio track')}</div>
 
-              {audioStreams.map((audioStream, i) => (
-                <div key={audioStream.index}>
+              <div className={styles['audioList']}>
+                {audioStreams.map((audioStream, i) => (
+                  <div key={audioStream.index} className={styles['audioRow']}>
                   <Switch
-                    style={{ verticalAlign: 'middle', marginRight: '.4em' }}
+                    style={{ verticalAlign: 'middle' }}
                     checked={activeAudioStreamIndexes.has(audioStream.index)}
                     onClick={(e) => e.currentTarget.blur()}
                     onCheckedChange={(checked) => handleActiveAudioStreamsChange(audioStream.index, checked)}
                   />
-                  <span style={{ verticalAlign: 'middle', marginRight: '.1em' }}>
-                    #{i + 1} <span style={{ opacity: 0.5 }}>(id {audioStream.index + 1}) {audioStream.codec_name} {audioStream.tags?.language}</span>
+                  <span className={styles['audioMeta']}>
+                    <span>#{i + 1}</span>
+                    <span className={styles['audioHint']}>(id {audioStream.index + 1}) {audioStream.codec_name} {audioStream.tags?.language}</span>
                   </span>
                 </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
-        </motion.div>
+          </motion.div>
+        </PlayerOverlayPopover>
       )}
 
-      <MdSubtitles
-        size={30}
-        role="button"
-        style={{ margin: '0 7px', color: 'var(--gray-12)', opacity: 0.7 }}
-        onClick={onIconClick}
-      />
+      <PlayerIconButton title={t('Subtitle')} active={controlVisible} onClick={onIconClick}>
+        <MdSubtitles size={18} />
+      </PlayerIconButton>
     </>
   );
 }

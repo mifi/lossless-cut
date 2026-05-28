@@ -5,6 +5,7 @@ import type { FaStepForward } from 'react-icons/fa';
 import { useSegColors } from '../contexts';
 import useUserSettings from '../hooks/useUserSettings';
 import type { SegmentColorIndex } from '../types';
+import { PlayerIconButton } from './PlayerChrome';
 
 const SegmentCutpointButton = ({ currentCutSeg, side, Icon, onClick, title, style }: {
   currentCutSeg: SegmentColorIndex | undefined,
@@ -19,17 +20,28 @@ const SegmentCutpointButton = ({ currentCutSeg, side, Icon, onClick, title, styl
   const segColor = useMemo(() => getSegColor(currentCutSeg), [currentCutSeg, getSegColor]);
 
   const start = side === 'start';
-  const border = `3px solid ${segColor.desaturate(0.6).lightness(darkMode ? 45 : 35).string()}`;
-  const backgroundColor = segColor.desaturate(0.6).lightness(darkMode ? 35 : 55).string();
+  const borderColor = segColor.desaturate(0.45).lightness(darkMode ? 55 : 40).string();
+  const backgroundColor = segColor.desaturate(0.45).lightness(darkMode ? 34 : 58).string();
+  const topColor = segColor.desaturate(0.3).lightness(darkMode ? 45 : 68).string();
 
   return (
-    <Icon
-      size={13}
+    <PlayerIconButton
       title={title as string}
-      role="button"
-      style={{ flexShrink: 0, color: 'white', padding: start ? '4px 4px 4px 2px' : '4px 2px 4px 4px', borderLeft: start ? border : undefined, borderRight: !start ? border : undefined, background: backgroundColor, borderRadius: 6, ...style }}
+      aria-label={title}
+      style={{
+        flexShrink: 0,
+        color: 'white',
+        minWidth: '2.45rem',
+        height: '2.45rem',
+        padding: start ? '0 0.75rem 0 0.6rem' : '0 0.6rem 0 0.75rem',
+        borderColor,
+        background: `linear-gradient(180deg, ${topColor}, ${backgroundColor})`,
+        ...style,
+      }}
       onClick={onClick}
-    />
+    >
+      <Icon size={13} />
+    </PlayerIconButton>
   );
 };
 

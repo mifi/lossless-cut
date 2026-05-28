@@ -4,29 +4,58 @@
   right: 0;
   top: 0;
   bottom: 0;
-  background: var(--white-a9);
-  color: var(--gray-12);
-  backdrop-filter: blur(30px);
+  background: rgba(3, 6, 10, 0.55);
+  color: var(--player-text-primary);
+  backdrop-filter: blur(24px);
   overflow-y: scroll;
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  z-index: 30;
 }
 
 :global(.dark-theme) .sheet {
-  background: var(--black-a9);
+  background: rgba(2, 5, 9, 0.72);
 }
 
 .box {
-  margin: 15px 15px 50px 15px;
-  border-radius: 10px;
-  padding: 10px 20px;
+  margin: 18px 18px 56px 18px;
+  border-radius: 22px;
+  padding: 18px 24px;
   min-height: 500px;
   position: relative;
   max-width: 100%;
-  background: var(--white-a11);
+  background: var(--player-surface-glass);
+  border: 1px solid var(--player-border-subtle);
+  box-shadow: var(--player-shadow-elevated);
 }
 
 :global(.dark-theme) .box {
-  background: var(--black-a11);
+  background: var(--player-surface-glass);
+}
+
+.title {
+  margin: 0 3rem 0.8rem 0;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--player-border-subtle);
+  color: var(--player-text-primary);
+  font-size: 1.28rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.footerDock {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0.6rem;
+  z-index: 31;
+}
+
+.footerPanel {
+  display: flex;
+  align-items: flex-end;
 }

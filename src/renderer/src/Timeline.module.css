@@ -9,10 +9,15 @@
   pointer-events: none;
 }
 .time {
-  background: rgba(0,0,0,0.4);
-  border-radius: 3px;
-  padding: 2px 4px;
-  color: rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  padding: 0.38rem 0.75rem;
+  border: 1px solid var(--player-border-subtle);
+  background: var(--player-surface-glass);
+  box-shadow: var(--player-shadow-elevated);
+  color: var(--player-text-primary);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  backdrop-filter: var(--player-backdrop-filter);
   transition: opacity 0.2s;
 }
 
@@ -26,4 +31,95 @@
   background: repeating-linear-gradient(45deg, var(--c), var(--c) 1px, transparent 1.5px, transparent 4.4px);
   background-size: 50% 100%;
   animation: background-animation 3s linear infinite;
+}
+
+.root {
+  position: relative;
+  border-top: 1px solid var(--player-border-subtle);
+  border-bottom: 1px solid var(--player-border-subtle);
+  background:
+    var(--player-chrome-glow),
+    var(--player-surface);
+}
+
+.scroller {
+  overflow-x: scroll;
+  overflow-y: hidden;
+  padding: 0.85rem 0.8rem 0.95rem;
+}
+
+.waveforms {
+  position: relative;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.thumbnailStrip {
+  position: relative;
+  margin-bottom: 0.45rem;
+}
+
+.thumbnail {
+  position: absolute;
+  box-sizing: border-box;
+  object-fit: cover;
+  border: 1px solid var(--player-thumbnail-border);
+  border-radius: 0.9rem;
+  box-shadow: var(--player-shadow-button);
+  pointer-events: none;
+}
+
+.timelineWrapper {
+  position: relative;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: var(--player-timeline-base);
+  border: 1px solid var(--player-border-subtle);
+  box-shadow: var(--player-shadow-button);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.keyframe {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.18));
+  pointer-events: none;
+}
+
+.currentTime {
+  position: absolute;
+  bottom: 0;
+  top: 0;
+  width: 2px;
+  background: var(--player-timeline-cursor);
+  box-shadow: var(--player-timeline-cursor-shadow);
+  pointer-events: none;
+}
+
+.commandedLine {
+  position: absolute;
+  bottom: 0;
+  top: 0;
+  width: 2px;
+  background: var(--player-timeline-commanded);
+  box-shadow: var(--player-timeline-commanded-shadow);
+  pointer-events: none;
+}
+
+.commandedCaret {
+  position: absolute;
+  color: var(--player-accent-strong);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.overviewPrompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  color: var(--player-text-muted);
 }

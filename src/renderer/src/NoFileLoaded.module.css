@@ -1,0 +1,125 @@
+.dropzone {
+  position: absolute;
+  inset: 0;
+  margin: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 1.6rem;
+  background:
+    radial-gradient(circle at top center, rgba(34, 211, 238, 0.08), transparent 38%),
+    rgba(6, 10, 16, 0.32);
+  color: var(--player-text-primary);
+  backdrop-filter: blur(18px);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  max-width: 44rem;
+  padding: 2.2rem 1.5rem;
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  color: var(--player-text-primary);
+  font-size: clamp(1.9rem, 3.2vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  color: var(--player-text-muted);
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.hintCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  width: min(100%, 38rem);
+  padding: 1rem 1.15rem;
+  border-radius: 1.25rem;
+  border: 1px solid var(--player-border-subtle);
+  background: var(--player-surface-glass);
+  box-shadow: var(--player-shadow-elevated);
+}
+
+.hintLabel {
+  color: var(--player-text-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hintRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  color: var(--player-text-primary);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.hintRow kbd {
+  margin: 0 0.05rem;
+}
+
+.simpleMode {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--player-text-muted);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.promo {
+  position: relative;
+  margin-top: 0.2rem;
+  width: 24rem;
+  height: 8rem;
+}
+
+.promoFrame,
+.promoClickTarget {
+  position: absolute;
+  inset: 0;
+}
+
+.promoFrame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  pointer-events: none;
+  color-scheme: initial;
+}
+
+.promoClickTarget {
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .dropzone {
+    margin: 1rem;
+  }
+
+  .inner {
+    padding: 1.6rem 1rem;
+  }
+
+  .promo {
+    width: min(100%, 22rem);
+  }
+}

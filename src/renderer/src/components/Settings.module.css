@@ -1,27 +1,128 @@
-.settings td {
-  vertical-align: top;
+.settings {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.settings td:first-child, .settings th:first-child {
-  padding: 1em 1em 1em 0;
-}
-.settings td:nth-child(2), .settings th:nth-child(2) {
-  padding: 1em 0 1em 0;
-  width: 15em;
+.settings tbody tr:not(.header):hover td {
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .settings th {
   text-align: left;
 }
 
+.settings td,
+.settings th {
+  vertical-align: top;
+}
+
+.settings td:first-child,
+.settings th:first-child {
+  padding: 1rem 1.4rem 1rem 0;
+}
+
+.settings td:nth-child(2),
+.settings th:nth-child(2) {
+  padding: 1rem 0;
+  width: 20.5rem;
+}
+
+.settings th:nth-child(2) {
+  text-align: right;
+}
+
+.settings tbody tr:not(.header) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 .settings tr.header {
-  border-bottom: .1em solid var(--black-a3);
+  border-bottom: 1px solid var(--player-border-subtle);
 }
 
-:global(.dark-theme) .settings tr.header {
-  border-bottom: .1em solid var(--white-a4);
+.header th {
+  padding-top: 1.35rem;
+  padding-bottom: 0.8rem;
+  color: var(--player-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-.settings {
-  border-collapse: collapse;
+.keyCell {
+  color: var(--player-text-primary);
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.valueCell {
+  text-align: right;
+}
+
+.settings tbody td:nth-child(2) {
+  text-align: right;
+  vertical-align: middle;
+}
+
+.settings tbody td:nth-child(2) > * {
+  margin-left: auto;
+}
+
+.settings tbody td:nth-child(2) input[type='range'] {
+  width: min(14rem, 100%);
+}
+
+.controlStack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.55rem;
+  width: min(100%, 20.5rem);
+}
+
+.details {
+  margin-top: 0.38rem;
+  color: var(--player-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  font-weight: 400;
+}
+
+.truncate {
+  max-width: 20.5rem;
+}
+
+@media (max-width: 900px) {
+  .settings,
+  .settings tbody,
+  .settings tr,
+  .settings td,
+  .settings th {
+    display: block;
+    width: 100%;
+  }
+
+  .settings td:first-child,
+  .settings th:first-child,
+  .settings td:nth-child(2),
+  .settings th:nth-child(2) {
+    padding-right: 0;
+    padding-left: 0;
+    width: 100%;
+  }
+
+  .valueCell {
+    text-align: left;
+    padding-top: 0;
+  }
+
+  .settings tbody td:nth-child(2) > * {
+    margin-left: 0;
+  }
+
+  .controlStack {
+    align-items: flex-start;
+    width: 100%;
+  }
 }

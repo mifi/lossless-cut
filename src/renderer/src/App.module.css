@@ -11,3 +11,104 @@ video.video::cue {
 video.video::-webkit-media-text-track-display {
   overflow: visible !important;
 }
+
+.overlayDock {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-right: 0.9rem;
+  margin-bottom: 0.9rem;
+}
+
+.compatBadgeRow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  padding: 0.9rem;
+  display: flex;
+  justify-content: flex-start;
+  pointer-events: none;
+}
+
+.compatBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 1rem;
+  border: 1px solid var(--player-border-subtle);
+  background: var(--player-surface-glass);
+  box-shadow: var(--player-shadow-elevated);
+  backdrop-filter: blur(18px);
+  color: var(--player-text-primary);
+}
+
+.compatBadgeText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.compatBadgeEyebrow {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--player-text-muted);
+}
+
+.compatBadgeLabel {
+  font-size: 0.82rem;
+  color: var(--player-text-primary);
+}
+
+.compatBadgeActions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  pointer-events: auto;
+}
+
+.compatActionButton {
+  all: unset;
+  box-sizing: border-box;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0 0.8rem;
+  border-radius: 0.875rem;
+  border: 1px solid var(--player-border-subtle);
+  background: linear-gradient(180deg, var(--player-button-top), var(--player-button-bottom));
+  box-shadow: var(--player-shadow-button);
+  color: var(--player-text-primary);
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.compatActionButton:hover {
+  transform: translateY(-1px);
+  border-color: var(--player-border-strong);
+  background: linear-gradient(180deg, var(--player-button-top-hover), var(--player-button-bottom-hover));
+}
+
+.compatActionButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--player-focus-ring), var(--player-shadow-button);
+}
+
+.compatActionButtonQuiet {
+  min-width: 2.5rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -38,7 +38,7 @@ function initSwal(reducedMotion = false) {
   toast = Swal.mixin({
     ...commonSwalOptions,
     toast: true,
-    width: '50vw',
+    width: 'min(54rem, calc(100vw - 2rem))',
     position: 'top',
     showConfirmButton: false,
     showCloseButton: true,

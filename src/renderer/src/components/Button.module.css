@@ -1,16 +1,28 @@
 .button {
-  appearance: none;
+  all: unset;
+  box-sizing: border-box;
   font: inherit;
   line-height: 1.2;
-  font-size: .8em;
-  background-color: var(--gray-3);
-  color: var(--gray-12);
-  border-radius: .3em;
-  padding: 0 .5em;
-  outline: .05em solid var(--gray-8);
-  border: .05em solid var(--gray-7);
+  font-size: 0.92rem;
+  min-height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  gap: 0.45rem;
+  background: linear-gradient(180deg, var(--player-button-top), var(--player-button-bottom));
+  color: var(--player-text-primary);
+  border-radius: 0.9rem;
+  padding: 0 0.9rem;
+  border: 1px solid var(--player-border-subtle);
+  box-shadow: var(--player-shadow-button);
   cursor: pointer;
-  outline-offset: 0;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease,
+    opacity 140ms ease;
 }
 
 .button:disabled {
@@ -18,10 +30,28 @@
   cursor: not-allowed;
 }
 
-.button:focus {
-  outline: .1em solid var(--gray-12);
+.button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--player-focus-ring), var(--player-shadow-button);
 }
 
 .button:hover {
-  filter: brightness(1.2);
+  transform: translateY(-1px);
+  border-color: var(--player-border-strong);
+  background: linear-gradient(180deg, var(--player-button-top-hover), var(--player-button-bottom-hover));
+}
+
+.dialogButton {
+  min-width: 8.5rem;
+  padding: 0 1.2rem;
+}
+
+.dialogButtonPrimary {
+  color: white;
+  border-color: transparent;
+  background: linear-gradient(180deg, var(--player-accent), var(--player-accent-strong));
+}
+
+.dialogButtonPrimary:hover {
+  background: linear-gradient(180deg, var(--player-accent-hover), var(--player-accent));
 }

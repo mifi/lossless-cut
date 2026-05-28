@@ -14,7 +14,6 @@ import useUserSettings from './hooks/useUserSettings';
 import styles from './Timeline.module.css';
 
 
-import { timelineBackground, darkModeTransition } from './colors';
 import type { Frame } from './ffmpeg';
 import type { FormatTimecode, InverseCutSegment, OverviewWaveform, RenderableWaveform, WaveformSlice, StateSegment, Thumbnail } from './types';
 import Button from './components/Button';
@@ -23,8 +22,6 @@ import { keyMap } from './hooks/useTimelineScroll';
 
 
 type CalculateTimelinePercent = (time: number) => string | undefined;
-
-const currentTimeWidth = 1;
 
 // eslint-disable-next-line react/display-name
 const Waveform = memo(({ waveform, calculateTimelinePercent, fileDurationNonZero, darkMode }: {
@@ -60,7 +57,7 @@ const Waveforms = memo(({ calculateTimelinePercent, fileDurationNonZero, wavefor
   darkMode: boolean,
   height: number,
 }) => (
-  <div style={{ height, width: `${zoom * 100}%`, position: 'relative' }}>
+  <div className={styles['waveforms']} style={{ height, width: `${zoom * 100}%` }}>
     {zoom === 1 && overviewWaveform != null ? (
       <Waveform waveform={overviewWaveform} calculateTimelinePercent={calculateTimelinePercent} fileDurationNonZero={fileDurationNonZero} darkMode={darkMode} />
     ) : waveforms.map((waveform) => (
@@ -71,18 +68,17 @@ const Waveforms = memo(({ calculateTimelinePercent, fileDurationNonZero, wavefor
 
 // eslint-disable-next-line react/display-name
 const CommandedTime = memo(({ commandedTimePercent }: { commandedTimePercent: string }) => {
-  const color = 'var(--gray-12)';
   const commonStyle: CSSProperties = { left: commandedTimePercent, position: 'absolute', pointerEvents: 'none' };
   return (
     <>
-      <FaCaretDown style={{ ...commonStyle, top: 0, color, fontSize: 14, marginLeft: -7, marginTop: -6 }} />
-      <div style={{ ...commonStyle, bottom: 0, top: 0, backgroundColor: color, width: currentTimeWidth }} />
-      <FaCaretUp style={{ ...commonStyle, bottom: 0, color, fontSize: 14, marginLeft: -7, marginBottom: -5 }} />
+      <FaCaretDown className={styles['commandedCaret']} style={{ ...commonStyle, top: 0, marginLeft: -7, marginTop: -6 }} />
+      <div className={styles['commandedLine']} style={commonStyle} />
+      <FaCaretUp className={styles['commandedCaret']} style={{ ...commonStyle, bottom: 0, marginLeft: -7, marginBottom: -5 }} />
     </>
   );
 });
 
-const timelineHeight = 36;
+const timelineHeight = 40;
 
 const timeWrapperStyle: CSSProperties = { height: timelineHeight };
 
@@ -396,22 +392,21 @@ function Timeline({
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/mouse-events-have-key-events
     <div
-      style={{ position: 'relative', borderTop: '1px solid var(--gray-7)', borderBottom: '1px solid var(--gray-7)' }}
+      className={styles['root']}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
       onMouseOut={onMouseOut}
     >
       {(waveformEnabled && !shouldShowWaveform) && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: timelineHeight, bottom: timelineHeight, left: 0, right: 0, color: 'var(--gray-11)' }}>
+        <div className={styles['overviewPrompt']} style={{ height: timelineHeight, bottom: timelineHeight, left: 0, right: 0 }}>
           {t('Zoom in more to view waveform')}
           <Button onClick={onGenerateOverviewWaveformClick2} style={{ marginLeft: '.5em' }}>{t('Load overview')}</Button>
         </div>
       )}
 
       <div
-        style={{ overflowX: 'scroll', overflowY: 'hidden' }}
-        className="hide-scrollbar"
+        className={[styles['scroller'], 'hide-scrollbar'].join(' ')}
         onWheel={onWheel}
         onScroll={onTimelineScroll}
         ref={timelineScrollerRef}
@@ -429,21 +424,22 @@ function Timeline({
         )}
 
         {showThumbnails && (
-          <div style={{ height: 60, width: `${zoom * 100}%`, position: 'relative', marginBottom: 3 }}>
+          <div className={styles['thumbnailStrip']} style={{ height: 68, width: `${zoom * 100}%` }}>
             {thumbnails.map((thumbnail, i) => {
               const leftPercent = (thumbnail.time / fileDurationNonZero) * 100;
               const nextThumbnail = thumbnails[i + 1];
               const nextThumbTime = nextThumbnail ? nextThumbnail.time : fileDurationNonZero;
               const maxWidthPercent = ((nextThumbTime - thumbnail.time) / fileDurationNonZero) * 100 * 0.9;
               return (
-                <img key={thumbnail.url} src={thumbnail.url} alt="" style={{ position: 'absolute', left: `${leftPercent}%`, height: '100%', boxSizing: 'border-box', maxWidth: `${maxWidthPercent}%`, objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.5)', borderBottomRightRadius: 15, borderTopLeftRadius: 15, borderTopRightRadius: 15, pointerEvents: 'none' }} />
+                <img key={thumbnail.url} className={styles['thumbnail']} src={thumbnail.url} alt="" style={{ left: `${leftPercent}%`, height: '100%', maxWidth: `${maxWidthPercent}%` }} />
               );
             })}
           </div>
         )}
 
         <div
-          style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative', backgroundColor: timelineBackground, transition: darkModeTransition }}
+          className={styles['timelineWrapper']}
+          style={{ height: timelineHeight, width: `${zoom * 100}%` }}
           ref={timelineWrapperRef}
         >
           {inverseCutSegments.map((seg) => (
@@ -475,11 +471,11 @@ function Timeline({
           })}
 
           {shouldShowKeyframes && !areKeyframesTooClose && keyFramesInZoomWindow.map((f) => (
-            <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / fileDurationNonZero) * 100}%`, marginLeft: -1, width: 1, background: 'var(--gray-10)', pointerEvents: 'none' }} />
+            <div key={f.time} className={styles['keyframe']} style={{ left: `${(f.time / fileDurationNonZero) * 100}%`, marginLeft: -1 }} />
           ))}
 
           {currentTimePercent !== undefined && (
-            <motion.div transition={springAnimation} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, backgroundColor: 'var(--gray-12)', width: currentTimeWidth, pointerEvents: 'none' }} />
+            <motion.div className={styles['currentTime']} transition={springAnimation} animate={{ left: currentTimePercent }} />
           )}
           {commandedTimePercent !== undefined && (
             <CommandedTime commandedTimePercent={commandedTimePercent} />

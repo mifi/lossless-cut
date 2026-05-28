@@ -1,0 +1,70 @@
+.content {
+  width: min(84rem, 92vw);
+}
+
+.description {
+  max-width: 78rem;
+  color: var(--player-text-primary);
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+.variables {
+  margin: 1rem 0 0.85rem;
+  color: var(--player-text-muted);
+  font-size: 0.9rem;
+}
+
+.variables code {
+  margin-right: 0.35rem;
+}
+
+.examplesTitle {
+  margin: 0.9rem 0 0.5rem;
+  color: var(--player-text-primary);
+  font-size: 0.96rem;
+  font-weight: 700;
+}
+
+.examples {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.exampleButton {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  color: var(--player-text-primary);
+  font-size: 0.94rem;
+  line-height: 1.35;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.22);
+  text-underline-offset: 0.18em;
+}
+
+.exampleButton:hover {
+  text-decoration-color: var(--player-accent);
+}
+
+.form {
+  margin-top: 0.6rem;
+}
+
+.input {
+  margin: 0.4rem 0 0;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.error {
+  margin-top: 0.75rem;
+  color: var(--player-danger);
+  font-weight: 700;
+}

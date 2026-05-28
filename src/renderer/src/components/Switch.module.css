@@ -1,36 +1,36 @@
 .SwitchRoot {
   all: unset;
-  width: 42px;
-  height: 25px;
-  background-color: var(--gray-9);
+  width: 50px;
+  height: 30px;
+  background: linear-gradient(180deg, rgba(61, 69, 83, 0.98), rgba(30, 36, 46, 0.98));
   border-radius: 9999px;
   position: relative;
-  box-shadow: 0 0 0 2px var(--black-a5);
+  border: 1px solid var(--player-border-subtle);
+  box-shadow: var(--player-shadow-button);
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  transition: box-shadow 140ms ease, border-color 140ms ease, background 140ms ease;
 }
-.SwitchRoot:focus {
-  box-shadow: 0 0 0 2px var(--gray-11);
+.SwitchRoot:focus-visible {
+  box-shadow: 0 0 0 2px var(--player-focus-ring), var(--player-shadow-button);
 }
 .SwitchRoot[data-state='checked'] {
-  background-color: var(--cyan-9);
-}
-.SwitchRoot[data-state='checked']:focus {
-  box-shadow: 0 0 0 2px var(--cyan-11);
+  border-color: var(--player-accent-border);
+  background: linear-gradient(180deg, var(--player-accent), var(--player-accent-strong));
 }
 
 .SwitchThumb {
   display: block;
-  width: 21px;
-  height: 21px;
-  background-color: white;
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.96);
   border-radius: 9999px;
-  box-shadow: 0 2px 2px rgba(0,0,0,0.2);
-  transition: transform 100ms;
-  transform: translateX(2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+  transition: transform 120ms ease;
+  transform: translateX(3px);
   will-change: transform;
 }
 .SwitchThumb[data-state='checked'] {
-  transform: translateX(19px);
+  transform: translateX(21px);
 }
 .SwitchRoot:disabled {
   opacity: .5;

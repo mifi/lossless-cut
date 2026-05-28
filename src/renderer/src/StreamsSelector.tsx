@@ -291,23 +291,23 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
 
   return (
     <tr style={{ opacity: copyStream ? undefined : 0.4 }}>
-      <td style={{ whiteSpace: 'nowrap' }}>
+      <td className={styles['streamToggleCell']}>
         <Button style={{ marginRight: '.5em', color: copyStream ? '#52BD95' : '#D14343' }} title={`${t('Click to toggle track inclusion when exporting')} (type ${codecTypeHuman})`} onClick={onClick}>
           <Icon style={{ verticalAlign: 'middle', fontSize: '1.5em', padding: '.1em' }} />
         </Button>
-        <span style={{ verticalAlign: 'middle', width: '.15em', textAlign: 'center' }}>{stream.index + 1}</span>
+        <span className={styles['streamIndex']}>{stream.index + 1}</span>
       </td>
-      <td style={{ maxWidth: '3em', overflow: 'hidden' }} title={stream.codec_name}>{stream.codec_name} {codecTag}</td>
+      <td className={styles['codecCell']} title={stream.codec_name}>{stream.codec_name} {codecTag}</td>
       <td>
         {duration != null && !Number.isNaN(duration) && `${formatTimecode({ seconds: duration, shorten: true })}`}
         {stream.nb_frames != null ? <span> {stream.nb_frames}f</span> : null}
       </td>
       <td>{!Number.isNaN(bitrate) && (stream.codec_type === 'audio' ? `${Math.round(bitrate / 1000)} kbps` : prettyBytes(bitrate, { bits: true }))}</td>
-      <td style={{ maxWidth: '2.5em', wordBreak: 'break-word' }} title={title}>{title}</td>
-      <td style={{ maxWidth: '2.5em', overflow: 'hidden' }} title={effectiveLanguage}>{effectiveLanguage}</td>
-      <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
-      <td>
-        <Select style={{ width: '6em' }} value={effectiveDisposition || unchangedDispositionValue} onChange={onDispositionChange}>
+      <td className={styles['streamTitleCell']} title={title}>{title}</td>
+      <td className={styles['streamLangCell']} title={effectiveLanguage}>{effectiveLanguage}</td>
+      <td className={styles['streamInfoCell']}>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
+      <td className={styles['tableControlCell']}>
+        <Select style={{ width: '100%' }} value={effectiveDisposition || unchangedDispositionValue} onChange={onDispositionChange}>
           <option value="" disabled>{t('Disposition')}</option>
           <option value={unchangedDispositionValue}>{t('Unchanged')}</option>
           <option value={deleteDispositionValue}>{t('Remove')}</option>
@@ -318,7 +318,7 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
         </Select>
       </td>
 
-      <td style={{ textAlign: 'right', fontSize: '1.1em' }}>
+      <td className={styles['menuCell']} style={{ fontSize: '1.1em' }}>
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <Button><FaHamburger style={{ verticalAlign: 'middle', padding: '.4em' }} /></Button>
@@ -407,12 +407,13 @@ function FileHeading({ path, format, chapters, onTrashClick, onEditClick, toggle
   const { t } = useTranslation();
 
   return (
-    <div style={{ display: 'flex', marginBottom: '.2em', borderBottom: '1px solid var(--gray-7)' }}>
-      <div title={path} style={{ wordBreak: 'break-all', marginRight: '1em', fontWeight: 'bold' }}>{path.replace(/.*\/([^/]+)$/, '$1')}</div>
+    <div className={styles['fileHeader']}>
+      <div title={path} className={styles['fileName']}>{path.replace(/.*\/([^/]+)$/, '$1')}</div>
 
-      <div style={{ flexGrow: 1 }} />
+      <div className={styles['spacer']} />
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.2em', fontSize: '1.3em', marginBottom: '.2em' }}>
+      {/* Keep file-level actions visually grouped so they read as toolbar actions, not table columns. */}
+      <div className={styles['toolbar']}>
         {chapters && chapters.length > 0 && (
           <Json5Dialog title={t('Chapters')} json={chapters}>
             <Button title={t('Chapters')}><FaBook style={{ verticalAlign: 'middle' }} /></Button>
@@ -435,7 +436,7 @@ function FileHeading({ path, format, chapters, onTrashClick, onEditClick, toggle
 function Thead() {
   const { t } = useTranslation();
   return (
-    <thead style={{ color: 'var(--gray-12)', textAlign: 'left', fontSize: '.9em' }}>
+    <thead>
       <tr>
         <th>{t('Keep?')}</th>
         <th>{t('Codec')}</th>
@@ -451,7 +452,7 @@ function Thead() {
   );
 }
 
-const fileStyle: CSSProperties = { marginBottom: '2em', padding: '.5em 0', overflowX: 'auto' };
+const fileStyle: CSSProperties = {};
 
 
 function StreamsSelector({
@@ -509,7 +510,7 @@ function StreamsSelector({
 
   return (
     <>
-      <div style={fileStyle} onDrop={onStreamSourceFileDrop}>
+      <div className={styles['fileCard']} style={fileStyle} onDrop={onStreamSourceFileDrop}>
         {/* We only support editing main file metadata for now */}
         <FileHeading path={mainFilePath} format={mainFileFormat} chapters={mainFileChapters} onEditClick={() => setEditingFile(mainFilePath)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(mainFilePath)} onExtractAllStreamsPress={onExtractAllStreamsPress} changeEnabledStreamsFilter={changeEnabledStreamsFilter} />
         <table className={styles['table']}>
@@ -538,7 +539,7 @@ function StreamsSelector({
       </div>
 
       {externalFilesEntries.map(([path, { streams: externalFileStreams, format }]) => (
-        <div key={path} style={fileStyle}>
+        <div key={path} className={styles['fileCard']} style={fileStyle}>
           <FileHeading path={path} format={format} onTrashClick={() => removeFile(path)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(path)} />
 
           <table className={styles['table']}>
@@ -564,22 +565,22 @@ function StreamsSelector({
         </div>
       ))}
 
-      <div style={{ margin: '1em 0' }}>
-        <Button style={{ marginBottom: '1em', padding: '0.3em 1em' }} onClick={showAddStreamSourceDialog}>
+      <div className={styles['footerActions']}>
+        <Button className={styles['ctaButton']} style={{ marginBottom: '1em' }} onClick={showAddStreamSourceDialog}>
           <FaFileImport style={{ verticalAlign: 'middle', marginRight: '.5em' }} /> {t('Include more tracks from other file')}
         </Button>
 
         {nonCopiedExtraStreams.length > 0 && (
-          <div style={{ marginBottom: '1em' }}>
-            <span style={{ marginRight: 10 }}>{t('Discard or extract unprocessable tracks to separate files?')}</span>
+          <div className={styles['actionRow']}>
+            <span className={styles['actionText']}>{t('Discard or extract unprocessable tracks to separate files?')}</span>
             <AutoExportToggler />
           </div>
         )}
 
         {externalFilesEntries.length > 0 && (
-          <div style={{ marginBottom: '1em' }}>
-            <div style={{ marginBottom: '.5em' }}>{t('When tracks have different lengths, do you want to make the output file as long as the longest or the shortest track?')}</div>
-            <Button style={{ padding: '0.3em 1em' }} onClick={() => setShortestFlag((value) => !value)}>
+          <div>
+            <div className={styles['subtleText']} style={{ marginBottom: '.6em' }}>{t('When tracks have different lengths, do you want to make the output file as long as the longest or the shortest track?')}</div>
+            <Button className={styles['ctaButton']} onClick={() => setShortestFlag((value) => !value)}>
               {shortestFlag ? <><FaSortNumericDown style={{ verticalAlign: 'middle', marginRight: '.5em' }} />{t('Shortest')}</> : <><FaSortNumericUp style={{ verticalAlign: 'middle', marginRight: '.5em' }} />{t('Longest')}</>}
             </Button>
           </div>
