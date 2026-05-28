@@ -89,6 +89,10 @@ LosslessCut uses the same video player that is used by Chrome. You can try to op
 
 Some formats or codecs are not natively supported by LosslessCut's built in player, and LosslessCut will automatically use FFmpeg-assisted software decoding to playback in a lower quality. For better playback you may convert these files to a different format from the menu: *File -> Convert to supported format*. Note that this will not affect the output from LosslessCut, it is only used for playback, see [#88](https://github.com/mifi/lossless-cut/issues/88).
 
+### Auto convert to supported format on certain timestamp
+
+If LosslessCut automatically tries to convert your file into a supported format when you start playing/seeking and reach a certain timestamp, see issue [#2893](https://github.com/mifi/lossless-cut/issues/2893).
+
 ## Linux specific issues
 
 - If the app crashes on startup or you get an error like `FATAL:setuid_sandbox_host.cc(157)] The SUID sandbox helper binary was found, but is not configured correctly...`, try to run it as `./lossless-cut --no-sandbox`. See [#258](https://github.com/mifi/lossless-cut/issues/258) and [#2614](https://github.com/mifi/lossless-cut/issues/2614)
