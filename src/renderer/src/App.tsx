@@ -1903,8 +1903,8 @@ function App() {
     setConcatDialogOpen(true);
   }, [batchFiles.length, openFilesDialog]);
 
-  const togglePlaySelectedSegments = useCallback(() => togglePlay({ resetPlaybackRate: true, requestPlaybackMode: 'play-selected-segments' }), [togglePlay]);
-  const toggleLoopSelectedSegments = useCallback(() => togglePlay({ resetPlaybackRate: true, requestPlaybackMode: 'loop-selected-segments' }), [togglePlay]);
+  const togglePlaySelectedSegments = useCallback(() => togglePlay({ resetPlaybackRate: false, requestPlaybackMode: 'play-selected-segments' }), [togglePlay]);
+  const toggleLoopSelectedSegments = useCallback(() => togglePlay({ resetPlaybackRate: false, requestPlaybackMode: 'loop-selected-segments' }), [togglePlay]);
 
   const copySegmentsToClipboard = useCallback(async () => {
     if (!isFileOpened || selectedSegments.length === 0) return;

@@ -394,6 +394,8 @@ function SegmentList({
 
   const sortableList = useMemo(() => segmentsOrInverse.map((seg) => ({ id: seg.segId, seg })), [segmentsOrInverse]);
 
+  const isOnlyMarkers = useMemo(() => segmentsOrInverse.length > 0 && segmentsOrInverse.every((seg) => seg.end == null), [segmentsOrInverse]);
+
   function getHeader() {
     if (segmentsOrInverse.length === 0) {
       if (invertCutSegments) {
@@ -404,7 +406,7 @@ function SegmentList({
       return t('No segments to export.');
     }
 
-    if (segmentsOrInverse.every((s) => s.end == null)) {
+    if (isOnlyMarkers) {
       return t('Markers:');
     }
     return t('Segments to export:');
@@ -680,6 +682,12 @@ function SegmentList({
             {draggingSeg ? renderSegment({ seg: draggingSeg.seg, index: sortableList.indexOf(draggingSeg), dragging: true }) : null}
           </DragOverlay>
         </DndContext>
+
+        {isOnlyMarkers && (
+          <div style={{ padding: '1em .7em', color: 'var(--gray-11)', fontSize: '.85em' }}>
+            {t('Markers are segments without an end time and will not be exported. Convert markers to segments by setting their end time.')}
+          </div>
+        )}
 
         {renderFooter()}
       </motion.div>

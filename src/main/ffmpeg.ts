@@ -41,11 +41,13 @@ function escapeCliArg(arg: string) {
   return /[^\w-]/.test(arg) ? `'${String(arg).replaceAll("'", '\'"\'"\'')}'` : arg;
 }
 
-export function getFfCommandLine(cmd: string, args: readonly string[]) {
+export type FfCommand = 'ffmpeg' | 'ffprobe';
+
+export function getFfCommandLine(cmd: FfCommand, args: readonly string[]) {
   return `${cmd} ${args.map((arg) => escapeCliArg(arg)).join(' ')}`;
 }
 
-function getFfPath(cmd: string) {
+function getFfPath(cmd: FfCommand) {
   const exeName = isWindows ? `${cmd}.exe` : cmd;
 
   if (customFfPath) return join(customFfPath, exeName);
@@ -55,10 +57,12 @@ function getFfPath(cmd: string) {
   }
 
   // local dev
-  const components = ['ffmpeg', `${platform}-${arch}`];
-  if (isWindows || isLinux) components.push('lib');
-  components.push(exeName);
-  return join(...components);
+  return join(
+    'ffmpeg',
+    `${platform}-${arch}`,
+    ...(isWindows || isLinux ? ['lib'] : []),
+    exeName,
+  );
 }
 
 const getFfprobePath = () => getFfPath('ffprobe');
