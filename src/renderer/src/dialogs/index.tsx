@@ -223,7 +223,12 @@ export async function askForSegmentDuration({ totalDuration, inputPlaceholder, p
       const segmentDuration = parseTimecode(v);
       if (segmentDuration != null) {
         const numSegments = Math.ceil(totalDuration / segmentDuration);
-        if (segmentDuration > 0 && segmentDuration < totalDuration && numSegments <= maxSegments) return null;
+        if (segmentDuration > 0 && numSegments <= maxSegments) {
+          if (segmentDuration < totalDuration) {
+            return null;
+          }
+          return i18n.t('Value must be shorter than total duration ({{totalDuration}})', { totalDuration: formatDuration({ seconds: totalDuration, shorten: true }) });
+        }
       }
       return i18n.t('Please input a valid duration. Example: {{example}}', { example: inputPlaceholder });
     },
