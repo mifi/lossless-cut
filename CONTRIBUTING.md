@@ -28,11 +28,29 @@ yarn download-ffmpeg-win32-arm64
 
 For Windows, you may have to install [7z](https://www.7-zip.org/download.html), and then put the 7z folder in your `PATH`.
 
-### Running
+### Run app in development mode
 
 ```bash
 yarn dev
 ```
+
+### Run all code checks and tests
+
+Run linting, code style, types, tests etc with the following command:
+
+```bash
+yarn check
+```
+
+Most of these checks are automatically run in GitHub Actions.
+
+### Other scripts
+
+See [package.json](./package.json) "scripts" section.
+
+### Contributing code
+
+To contribute code, use [pull requests](https://github.com/mifi/lossless-cut/pulls). If you would like to contribute a lot of code, please first create an issue to check the viability of your change.
 
 ## `mas-dev` (Mac App Store) local build
 
