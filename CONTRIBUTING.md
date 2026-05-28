@@ -1,6 +1,6 @@
 # Contributing
 
-## [Translations](docs/translation.md)
+## [Translations / i18n](docs/translation.md)
 
 ## Development environment setup
 
@@ -127,14 +127,6 @@ Before releasing, consider [Maintainence chores](#maintainence-chores) first.
 
 For per-platform build/signing setup, see [this article](https://mifi.no/blog/automated-electron-build-with-release-to-mac-app-store-microsoft-store-snapcraft/).
 
-## Weblate
-
-`yarn scan-i18n` to get the newest English strings and push so Weblate gets them.
-
-Find the [latest PR](https://github.com/mifi/lossless-cut/pulls) from Weblate and **rebase+merge** it.
-
-**Warning:** Do not squash and merge (see [here why](docs/translation.md#weblate))!
-
 ## Minimum OS version
 
 See [requirements](docs/requirements.md).
@@ -170,10 +162,13 @@ Links:
 - `@electron/remote`
 - `package.json` / `yarn.lock`
 
-### i18n
-```bash
-yarn scan-i18n
-```
+### i18n strings / Weblate
+
+Run `yarn scan-i18n` to get the newest English strings and push so Weblate gets them.
+
+Find the [latest PR](https://github.com/mifi/lossless-cut/pulls) from Weblate and **rebase+merge** it.
+
+**Warning:** Do not squash and merge (see [here why](docs/translation.md#weblate))!
 
 ### Regenerate licenses file
 

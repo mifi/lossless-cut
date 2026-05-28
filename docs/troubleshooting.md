@@ -24,13 +24,17 @@ Each segment's *start cut time* normally (but not always) will be "rounded" to t
 
 ### Cut starts from wrong keyframe
 
-For some files, when you place segment start cutpoints at keyframes, and you export, it will instead cut from the keyframe **before** the keyframe that you wanted. This is because with some videos, ffmpeg struggles to find the nearest previous keyframe, see [#1216](https://github.com/mifi/lossless-cut/issues/1216). To workaround this, you can try to shift your segments' **start**-cutpoints forward by a few frames, so that ffmpeg correctly cuts from the *previous* keyframe. You can also enable the Export Option "Shift all start times" by +1, +2, +3 frames or so.
+For some files, when you place segment start cutpoints at keyframes, and you export, it will instead cut from the keyframe **before** the keyframe that you wanted. This is because with some videos, FFMpeg struggles to find the nearest previous keyframe, see [#1216](https://github.com/mifi/lossless-cut/issues/1216). To workaround this, you can try to shift your segments' **start**-cutpoints forward by a few frames, so that ffmpeg correctly cuts from the *previous* keyframe.
 
 - Menu: "Edit" -> "Segments" -> "Shift all segments on timeline"
 - Enter `00:00:00.200` (or a larger value if it doesn't help)
 - When asked about Start or End timestamps, Select **Start**
 
-This will effectively shift all start times of segments by 6 frames (`6/30=0.2` for 30fps video).
+This will effectively shift all start times of segments by 6 frames (`6/30=0.2` for 30fps video). Alternatively, to always shift start times, you can enable the Export Option "Shift all start times" by +1, +2, +3 frames or so.
+
+## Start cut is ignored
+
+Check whether your video has enough keyframes before your cutpoint. You can see keyframes on the timeline as vertical lines. You may have to zoom in to see them. If there are no keyframes, then it is most likely not possible to cut your file at the desired cutpoints losslessly. You can try to enable the Smart Cut mode, alternatively you may try to disable "keyframe cut" mode. See also (#2864)(https://github.com/mifi/lossless-cut/issues/2864).
 
 ## Cut file has same length as input
 
