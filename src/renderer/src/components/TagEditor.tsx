@@ -65,8 +65,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   const saveTag = useCallback(() => {
     invariant(editingTag != null);
     invariant(editingTagVal != null);
-    const editingValTransformed = editingTag === 'language' ? editingTagVal.toLowerCase() : editingTagVal;
-    onTagsChange({ [editingTag]: editingValTransformed });
+    onTagsChange({ [editingTag]: editingTagVal });
     setEditingTag(undefined);
   }, [editingTag, editingTagVal, onTagsChange, setEditingTag]);
 
@@ -140,7 +139,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
                 <td style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                   {editingThis ? (
                     <form style={{ display: 'inline' }} onSubmit={onSubmit}>
-                      <TextInput ref={ref} placeholder={t('Enter value')} value={editingTagVal || ''} onChange={(e) => setEditingTagVal(e.target.value)} style={{ padding: '.4em', textTransform: editingTag === 'language' ? 'lowercase' : undefined }} />
+                      <TextInput ref={ref} placeholder={t('Enter value')} value={editingTagVal || ''} onChange={(e) => setEditingTagVal(e.target.value)} style={{ padding: '.4em' }} />
                     </form>
                   ) : (
                     <span style={{ padding: '.3em 0', color: thisTagCustom ? activeColor : 'var(--gray-11)', fontWeight: thisTagCustom ? 'bold' : undefined }}>{effectiveTags[tag] ? String(effectiveTags[tag]) : `<${t('empty')}>`}</span>

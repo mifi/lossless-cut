@@ -175,7 +175,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
       if (params.customTags == null) params.customTags = {};
       const tags = params.customTags;
       Object.entries(keyValues).forEach(([tag, value]) => {
-        tags[tag] = value;
+        tags[tag] = tag === 'language' ? value.toLowerCase() : value;
       });
     });
   }, [editingFile, editingStreamId, updateStreamParams]);
