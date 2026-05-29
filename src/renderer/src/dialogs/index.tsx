@@ -99,10 +99,12 @@ export async function askForFfPath(defaultPath?: string | undefined) {
   return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
 }
 
-export async function askForFileOpenAction(inputOptions: Record<string, string>) {
-  let value: string | undefined;
+export type OpenFileResponse = 'open' | 'project' | 'tracks' | 'subtitles' | 'addToBatch' | 'mergeWithCurrentFile';
 
-  function onClick(key?: string) {
+export async function askForFileOpenAction(inputOptions: [OpenFileResponse, string][]) {
+  let value: OpenFileResponse | undefined;
+
+  function onClick(key?: OpenFileResponse) {
     value = key;
     getSwal().Swal.close();
   }
@@ -112,7 +114,7 @@ export async function askForFileOpenAction(inputOptions: Record<string, string>)
       <div style={{ textAlign: 'left' }}>
         <div style={{ marginBottom: '1em' }}>{i18n.t('You opened a new file. What do you want to do?')}</div>
 
-        {Object.entries(inputOptions).map(([key, text]) => (
+        {inputOptions.map(([key, text]) => (
           <button type="button" key={key} onClick={() => onClick(key)} className="button-unstyled" style={{ display: 'block', marginBottom: '.5em' }}>
             <FaArrowRight style={{ color: 'var(--gray-10)', verticalAlign: 'middle' }} /> {text}
           </button>
