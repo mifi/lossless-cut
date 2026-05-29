@@ -14,7 +14,7 @@ import type { FFprobeFormat } from '../common/ffprobe.js';
 import isDev from './isDev.js';
 import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';
-import { getHwaccelArgs, parseFfprobeDuration } from '../common/util.js';
+import { formatFfmpegTime, getHwaccelArgs, parseFfprobeDuration } from '../common/util.js';
 import { getFfmpegJpegQuality } from './ffmpegUtil.js';
 
 
@@ -260,9 +260,9 @@ export async function renderWaveformPng({ filePath, start, duration, resample, c
 }
 
 const getInputSeekArgs = ({ filePath, from, to }: { filePath: string, from?: number | undefined, to?: number | undefined }) => [
-  ...(from != null ? ['-ss', from.toFixed(5)] : []),
+  ...(from != null ? ['-ss', formatFfmpegTime(from)] : []),
   '-i', filePath,
-  ...(from != null && to != null ? ['-t', (to - from).toFixed(5)] : []),
+  ...(from != null && to != null ? ['-t', formatFfmpegTime(to - from)] : []),
 ];
 
 export function mapTimesToSegments(times: number[], includeLast: boolean) {

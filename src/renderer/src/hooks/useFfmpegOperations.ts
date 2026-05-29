@@ -16,7 +16,7 @@ import { deleteDispositionValue, type AllFilesMeta, type Chapter, type CopyfileS
 import type { LossyMode } from '../../../main';
 import { UserFacingError } from '../../errors';
 import mainApi from '../mainApi';
-import { getHwaccelArgs } from '../../../common/util';
+import { formatFfmpegTime, getHwaccelArgs } from '../../../common/util';
 
 const { join, resolve, dirname } = window.require('path');
 const { writeFile, mkdir, access, constants: { W_OK } } = window.require('fs/promises');
@@ -278,8 +278,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     if (detectedFps != null) cutDuration = Math.max(cutDuration, frameDuration); // ensure at least one frame duration
 
     // Don't cut if no need: https://github.com/mifi/lossless-cut/issues/50
-    const cutFromArgs = cuttingStart ? ['-ss', cutFromWithAdjustment.toFixed(5)] : [];
-    const cutToArgs = cuttingEnd ? ['-t', cutDuration.toFixed(5)] : [];
+    const cutFromArgs = cuttingStart ? ['-ss', formatFfmpegTime(cutFromWithAdjustment)] : [];
+    const cutToArgs = cuttingEnd ? ['-t', formatFfmpegTime(cutDuration)] : [];
 
     const copyFileStreamsFiltered = copyFileStreams.filter(({ streamIds }) => streamIds.length > 0);
 
@@ -480,10 +480,10 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       // No progress if we set loglevel warning :(
       // '-loglevel', 'warning',
 
-      '-ss', cutFrom.toFixed(5), // if we don't -ss before -i, seeking will be slow for long files, see https://github.com/mifi/lossless-cut/issues/126#issuecomment-1135451043
+      '-ss', formatFfmpegTime(cutFrom), // if we don't -ss before -i, seeking will be slow for long files, see https://github.com/mifi/lossless-cut/issues/126#issuecomment-1135451043
       '-i', filePath,
       '-ss', '0', // If we don't do this, the output seems to start with an empty black after merging with the encoded part
-      '-t', (cutTo - cutFrom).toFixed(5),
+      '-t', formatFfmpegTime(cutTo - cutFrom),
 
       ...mapStreamsArgs,
 
