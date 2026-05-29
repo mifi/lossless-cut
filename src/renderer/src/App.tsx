@@ -202,7 +202,7 @@ function App() {
 
   const { working, setWorking, workingRef, abortWorking } = useLoading();
   const { videoRef, videoContainerRef, playbackRate, setPlaybackRate, outputPlaybackRate, setOutputPlaybackRate, commandedTime, seekAbs, playingRef, getRelevantTime, setPlaying, onSeeked, relevantTime, onStartPlaying, setCommandedTime, setOutputPlaybackRateState, commandedTimeRef, onStopPlaying, onVideoAbort, playerTime, setPlayerTime, playbackMode, setPlaybackMode, playbackModeRef, playing, play, pause, seekRel } = useVideo({ filePath });
-  const { timecodePlaceholder, formatTimecode, formatTimeAndFrames, parseTimecode, getFrameCount, promptTimecode } = useTimecode({ detectedFps, timecodeFormat, showGenericDialog });
+  const { timecodePlaceholder, formatTimecode, parseTimecode, getFrameCount, promptTimecode } = useTimecode({ detectedFps, timecodeFormat, showGenericDialog });
   const { loadSubtitle, subtitlesByStreamId, setSubtitlesByStreamId } = useSubtitles();
 
   const fileDurationNonZero = isDurationValid(fileDuration) ? fileDuration : 1;
@@ -230,6 +230,10 @@ function App() {
   }, [language]);
 
   const isFileOpened = !!filePath;
+
+  const [hoveringTime, setHoveringTime] = useState<number>();
+
+  const displayTime = (hoveringTime != null && isFileOpened && !playing ? hoveringTime : relevantTime) + startTimeOffset;
 
   const onOutputFormatUserChange = useCallback((newFormat: string) => {
     setFileFormat(newFormat);
@@ -2605,7 +2609,7 @@ function App() {
                   </AnimatePresence>
                 </div>
 
-                <div className="no-user-select" style={bottomStyle}>
+                <div style={bottomStyle}>
                   <Timeline
                     shouldShowKeyframes={shouldShowKeyframes}
                     waveforms={waveforms}
@@ -2630,7 +2634,6 @@ function App() {
                     currentCutSeg={currentCutSeg}
                     inverseCutSegments={inverseCutSegments}
                     formatTimecode={formatTimecode}
-                    formatTimeAndFrames={formatTimeAndFrames}
                     zoomWindowStartTime={zoomWindowStartTime}
                     zoomWindowEndTime={zoomWindowEndTime}
                     onZoomWindowStartTimeChange={setZoomWindowStartTime}
@@ -2641,6 +2644,7 @@ function App() {
                     goToTimecode={goToTimecode}
                     darkMode={darkMode}
                     setCutTime={setCutTime}
+                    setHoveringTime={setHoveringTime}
                   />
 
                   <BottomBar
@@ -2692,6 +2696,9 @@ function App() {
                     playbackRate={playbackRate}
                     currentFrame={currentFrame}
                     playbackMode={playbackMode}
+                    displayTime={displayTime}
+                    fileDurationNonZero={fileDurationNonZero}
+                    getFrameCount={getFrameCount}
                   />
                 </div>
 
