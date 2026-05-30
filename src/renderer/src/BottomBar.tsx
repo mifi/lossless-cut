@@ -388,7 +388,7 @@ function BottomBar({
 
   const playbackRateRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    playbackRateRef.current?.animate([{ transform: 'scale(1.7)', color: 'var(--gray-12)' }, {}], { duration: 200 });
+    playbackRateRef.current?.animate([{ transform: 'scale(2)', color: 'var(--gray-12)', backgroundColor: playbackRate === 1 ? 'var(--cyan-10)' : (playbackRate < 1 ? 'var(--yellow-8)' : 'var(--orange-10)') }, {}], { duration: 200 });
   }, [playbackRate]);
 
   function renderJumpCutpointButton(direction: number) {
@@ -570,7 +570,7 @@ function BottomBar({
               ))}
             </Select>
 
-            <div ref={playbackRateRef} title={t('Playback rate')} style={{ color: 'var(--gray-11)', fontSize: '.7em' }}>{playbackRate.toFixed(1)}</div>
+            <div ref={playbackRateRef} title={t('Playback rate')} style={{ color: 'var(--gray-11)', fontSize: '.7em', borderRadius: '.5em' }}>{playbackRate.toFixed(1)}</div>
 
             <div style={{ whiteSpace: 'nowrap' }}>
               <IoMdSpeedometer title={t('Change FPS')} style={{ fontSize: '1.3em', verticalAlign: 'middle' }} role="button" onClick={handleChangePlaybackRateClick} />
