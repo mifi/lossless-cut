@@ -1532,10 +1532,11 @@ function App() {
   const toggleSettings = useCallback(() => setSettingsVisible((val) => !val), []);
 
   const seekClosestKeyframe = useCallback((direction: number) => {
-    const time = findNearestKeyFrameTime({ time: getRelevantTime(), direction });
+    const sigma = detectedFps ? (1 / detectedFps) : 0.1; // because we don't want it to find the keyframe we're currently at.
+    const time = findNearestKeyFrameTime({ time: getRelevantTime() + direction * sigma, direction });
     if (time == null) return;
     seekAbs(time);
-  }, [findNearestKeyFrameTime, getRelevantTime, seekAbs]);
+  }, [detectedFps, findNearestKeyFrameTime, getRelevantTime, seekAbs]);
 
   const onTimelineWheel = useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, invertTimelineScroll, zoomRel, seekRel, shortStep, seekClosestKeyframe });
 

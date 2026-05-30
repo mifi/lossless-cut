@@ -170,11 +170,12 @@ function ExportConfirm({
   const areWeCuttingProblematicStreams = areWeCutting && mainCopiedThumbnailStreams.length > 0;
 
   const haveSegmentWithProblematicKeyframe = useMemo(() => {
-    if (neighbouringKeyFrames.length === 0) return false;
+    if (neighbouringKeyFrames.length === 0) return false; // we don't know
     return segmentsToExport.some(({ start, end }) => {
-      const previousKeyframeTime = findNearestKeyFrameTime({ time: start, direction: -1 }) ?? 0;
+      const nearestPreviousKeyframeTime = findNearestKeyFrameTime({ time: start, direction: -1 }) ?? 0;
+      console.log({start,end,nearestPreviousKeyframeTime})
       const segmentDuration = end - start;
-      const estimatedExportedSegmentDuration = end - previousKeyframeTime;
+      const estimatedExportedSegmentDuration = end - nearestPreviousKeyframeTime;
       // if estimated actual output length of segment is more than 1.5 times the intended segment duration, then we consider it problematic and warn the user about it.
       return estimatedExportedSegmentDuration > segmentDuration * 1.5;
     });

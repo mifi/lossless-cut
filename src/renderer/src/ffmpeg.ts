@@ -191,9 +191,8 @@ export function getSafeCutTime(frames: Frame[], cutTime: number, nextMode: boole
   return frames[index - 1]!.time;
 }
 
-export function findNearestKeyFrameTime({ frames, time, direction, fps }: { frames: Frame[], time: number, direction: number, fps: number | undefined }) {
-  const sigma = fps ? (1 / fps) : 0.1;
-  const keyframes = frames.filter((f) => f.keyframe && (direction > 0 ? f.time > time + sigma : f.time < time - sigma));
+export function findNearestKeyFrameTime({ frames, time, direction }: { frames: Frame[], time: number, direction: number }) {
+  const keyframes = frames.filter((f) => f.keyframe && (direction > 0 ? f.time >= time : f.time <= time));
   if (keyframes.length === 0) return undefined;
   const nearestKeyFrame = sortBy(keyframes, (keyframe) => (direction > 0 ? keyframe.time - time : time - keyframe.time))[0];
   if (!nearestKeyFrame) return undefined;
