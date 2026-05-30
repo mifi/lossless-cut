@@ -14,6 +14,7 @@ import type { FFprobeChapter, FFprobeFormat, FFprobeProbeResult, FFprobeStream }
 import { parseSrt, parseSrtToSegments } from './edlFormats';
 import { UnsupportedFileError, UserFacingError } from '../errors';
 import mainApi from './mainApi';
+import { parseFfprobeDuration } from '../../common/util';
 
 const { ffmpeg } = window.require('@electron/remote').require('./index.js');
 
@@ -220,22 +221,6 @@ export function tryMapChaptersToEdl(chapters: FFprobeChapter[]) {
   }
 }
 
-export async function createChaptersFromSegments({ segmentPaths, chapterNames }: { segmentPaths: string[], chapterNames?: (string | undefined)[] | undefined }) {
-  if (!chapterNames) return undefined;
-  try {
-    const durations = await pMap(segmentPaths, async (segmentPath) => (await getDuration(segmentPath)) ?? 0, { concurrency: 3 });
-    let timeAt = 0;
-    return durations.map((duration, i) => {
-      const ret = { start: timeAt, end: timeAt + duration, name: chapterNames[i] };
-      timeAt += duration;
-      return ret;
-    });
-  } catch (err) {
-    console.error('Failed to create chapters from segments', err);
-    return undefined;
-  }
-}
-
 /**
  * Some of the detected input formats are not the same as the muxer name used for encoding.
  * Therefore we have to map between detected input format and encode format
@@ -377,35 +362,6 @@ export async function readFileFfprobeMeta(filePath: string) {
 
 export type FileFfprobeMeta = Awaited<ReturnType<typeof readFileFfprobeMeta>>;
 export type FileStream = FileFfprobeMeta['streams'][number];
-
-export async function createChaptersFromOriginalFiles({ paths, createChapterForFilesWithoutChapters }: { paths: string[], createChapterForFilesWithoutChapters: boolean }) {
-  const { parse } = window.require('path') as { parse: (p: string) => { name: string } };
-  try {
-    const mergedChapters: { start: number, end: number, name: string | undefined }[] = [];
-    let offset = 0;
-    for (const path of paths) {
-      const meta = await readFileFfprobeMeta(path);
-      const duration = (await getDuration(path)) ?? 0;
-      const chapters = meta.chapters ?? [];
-      if (chapters.length > 0) {
-        for (const ch of chapters) {
-          mergedChapters.push({
-            start: offset + parseFloat(ch.start_time),
-            end: offset + parseFloat(ch.end_time),
-            name: ch.tags?.title ?? undefined,
-          });
-        }
-      } else if (createChapterForFilesWithoutChapters) {
-        mergedChapters.push({ start: offset, end: offset + duration, name: parse(path).name });
-      }
-      offset += duration;
-    }
-    return mergedChapters.length > 0 ? mergedChapters : undefined;
-  } catch (err) {
-    console.error('Failed to create chapters from original files', err);
-    return undefined;
-  }
-}
 
 async function renderThumbnail(filePath: string, timestamp: number, signal: AbortSignal) {
   const args = [
@@ -605,3 +561,49 @@ export async function runFfmpegStartupCheck() {
 export const getExperimentalArgs = (ffmpegExperimental: boolean) => (ffmpegExperimental ? ['-strict', 'experimental'] : []);
 
 export const getVideoTimescaleArgs = (videoTimebase: number | undefined) => (videoTimebase != null ? ['-video_track_timescale', String(videoTimebase)] : []);
+
+export async function createChaptersFromSegments({ paths, defaultChapterNames, useFileChapters }: {
+  paths: string[],
+  defaultChapterNames?: (string | undefined)[] | undefined,
+  useFileChapters?: boolean,
+}) {
+  if (defaultChapterNames == null) return undefined;
+
+  try {
+    const filesMeta = await pMap(paths, async (path) => readFileFfprobeMeta(path), { concurrency: 3 });
+
+    let timeAt = 0;
+
+    return filesMeta.flatMap((meta, i) => {
+      const duration = parseFfprobeDuration(meta.format.duration) ?? 0;
+
+      try {
+        // if the file has chapters, use it (but only when not cutting)
+        if (useFileChapters && meta.chapters.length > 0) {
+          return meta.chapters.map((ch) => {
+            const start = parseFloat(ch.start_time);
+            const end = parseFloat(ch.end_time);
+            invariant(!Number.isNaN(start) && !Number.isNaN(end));
+            return {
+              start: timeAt + start,
+              end: timeAt + start,
+              name: ch.tags.title,
+            };
+          });
+        }
+
+        // if no chapters, or if cutting, then create one chapter for the whole file with the default name
+        return [{
+          start: timeAt,
+          end: timeAt + duration,
+          name: defaultChapterNames[i],
+        }];
+      } finally {
+        timeAt += duration;
+      }
+    });
+  } catch (err) {
+    console.error('Failed to create chapters', err);
+    return undefined;
+  }
+}

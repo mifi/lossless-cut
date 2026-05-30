@@ -688,7 +688,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
     if (await shouldSkipExistingFile(mergedOutFilePath)) return;
 
-    const chapters = await createChaptersFromSegments({ segmentPaths, chapterNames });
+    const chapters = await createChaptersFromSegments({ paths: segmentPaths, defaultChapterNames: chapterNames });
 
     const metadataFromPath = segmentPaths[0];
     invariant(metadataFromPath != null);

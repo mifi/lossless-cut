@@ -122,7 +122,6 @@ const defaults: Config = {
   preserveChapters: true,
   preserveMetadata: 'default',
   preserveMetadataOnMerge: false,
-  keepOriginalChaptersOnMerge: false,
   preserveMovData: false,
   movFastStart: true,
   avoidNegativeTs: 'make_zero',
