@@ -173,7 +173,6 @@ function ExportConfirm({
     if (neighbouringKeyFrames.length === 0) return false; // we don't know
     return segmentsToExport.some(({ start, end }) => {
       const nearestPreviousKeyframeTime = findNearestKeyFrameTime({ time: start, direction: -1 }) ?? 0;
-      console.log({start,end,nearestPreviousKeyframeTime})
       const segmentDuration = end - start;
       const estimatedExportedSegmentDuration = end - nearestPreviousKeyframeTime;
       // if estimated actual output length of segment is more than 1.5 times the intended segment duration, then we consider it problematic and warn the user about it.
