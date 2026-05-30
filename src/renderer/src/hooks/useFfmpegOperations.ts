@@ -355,30 +355,31 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
             if (streamParams.bsfHevcMp4toannexb) bitstreamFilters.push('hevc_mp4toannexb');
             if (streamParams.bsfHevcAudInsert) bitstreamFilters.push('hevc_metadata=aud=insert');
 
+            const getFileStreams = () => allFilesMeta[fileId]?.streams;
+            const getStream = () => getFileStreams()?.find((s) => s.index === streamId);
+
             // Lossless crop via codec bitstream metadata (#643)
-            if (streamParams.bsfCrop) {
-              const { left, right, top, bottom } = streamParams.bsfCrop;
-              const hasCrop = left > 0 || right > 0 || top > 0 || bottom > 0;
-              if (hasCrop) {
+            if (streamParams.crop) {
+              const { left, right, top, bottom } = streamParams.crop;
+              if (left > 0 || right > 0 || top > 0 || bottom > 0) {
                 // Look up codec_name from allFilesMeta to determine the correct bitstream filter
-                const fileStreams = allFilesMeta[fileId]?.streams;
-                const streamInfo = fileStreams?.find((s) => s.index === streamId);
+                const streamInfo = getStream();
                 const codecName = streamInfo?.codec_name;
 
+                const cropParams = `crop_left=${left}:crop_right=${right}:crop_top=${top}:crop_bottom=${bottom}`;
                 if (codecName === 'h264') {
-                  bitstreamFilters.push(`h264_metadata=crop_left=${left}:crop_right=${right}:crop_top=${top}:crop_bottom=${bottom}`);
+                  bitstreamFilters.push(`h264_metadata=${cropParams}`);
                 } else if (codecName === 'hevc') {
-                  bitstreamFilters.push(`hevc_metadata=crop_left=${left}:crop_right=${right}:crop_top=${top}:crop_bottom=${bottom}`);
+                  bitstreamFilters.push(`hevc_metadata=${cropParams}`);
                 }
               }
             }
 
             // Lossless aspect ratio (SAR) via codec bitstream metadata (#643)
-            if (streamParams.bsfAspectRatio) {
-              const { num, den } = streamParams.bsfAspectRatio;
+            if (streamParams.aspectRatio) {
+              const { num, den } = streamParams.aspectRatio;
               if (num > 0 && den > 0) {
-                const fileStreams = allFilesMeta[fileId]?.streams;
-                const streamInfo = fileStreams?.find((s) => s.index === streamId);
+                const streamInfo = getStream();
                 const codecName = streamInfo?.codec_name;
 
                 if (codecName === 'h264') {

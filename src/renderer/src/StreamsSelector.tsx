@@ -6,6 +6,7 @@ import { GoFileBinary } from 'react-icons/go';
 import { MdSubtitles } from 'react-icons/md';
 import { useTranslation, Trans } from 'react-i18next';
 import prettyBytes from 'pretty-bytes';
+import { Tabs } from '@radix-ui/themes';
 
 import * as DropdownMenu from './components/DropdownMenu';
 import * as Dialog from './components/Dialog';
@@ -77,7 +78,7 @@ function getStreamEffectiveDisposition(paramsByStreamId: ParamsByStreamId, fileI
 }
 
 
-function KeyValue({ name, value }: { name: string, value: ReactNode }) {
+function KeyValue({ name, value }: { name: ReactNode, value: ReactNode }) {
   return (
     <div style={{ display: 'flex', gap: '1em', marginBottom: '.3em', justifyContent: 'space-between' }}>
       <div>{name}</div>
@@ -86,148 +87,73 @@ function KeyValue({ name, value }: { name: string, value: ReactNode }) {
   );
 }
 
-function StreamParametersEditor({ stream, streamParams, updateStreamParams }: {
+function AspectEditor({ stream, streamParams, updateStreamParams }: {
   stream: FFprobeStream,
   streamParams: StreamParams,
   updateStreamParams: (setter: (a: StreamParams) => void) => void,
 }) {
   const { t } = useTranslation();
 
-  const ui: ReactNode[] = [];
+  const currentAr = streamParams.aspectRatio ?? { num: 0, den: 0 };
 
-  // https://github.com/mifi/lossless-cut/issues/1680#issuecomment-1682915193
-  if (stream.codec_name === 'h264') {
-    ui.push(
-      <KeyValue
-        key="bsfH264Mp4toannexb"
-        name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'h264_mp4toannexb' })}
-        // eslint-disable-next-line no-param-reassign
-        value={<Switch checked={!!streamParams.bsfH264Mp4toannexb} onCheckedChange={(checked) => updateStreamParams((params) => { params.bsfH264Mp4toannexb = checked === true; })} />}
-      />,
-    );
-  }
-  if (stream.codec_name === 'hevc') {
-    ui.push(
-      <KeyValue
-        key="bsfHevcMp4toannexb"
-        name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_mp4toannexb' })}
-        // eslint-disable-next-line no-param-reassign
-        value={<Switch checked={!!streamParams.bsfH264Mp4toannexb} onCheckedChange={(checked) => updateStreamParams((params) => { params.bsfHevcMp4toannexb = checked === true; })} />}
-      />,
+  const updateAr = (field: 'num' | 'den', value: string) => {
+    const parsed = parseInt(value, 10);
+    const val = Number.isNaN(parsed) || parsed < 0 ? 0 : parsed;
+    updateStreamParams((params) => {
+      // eslint-disable-next-line no-param-reassign
+      params.aspectRatio = { ...currentAr, [field]: val };
+    });
+  };
 
-      <KeyValue
-        key="bsfHbsfHevcAudInsertevcMp4toannexb"
-        name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_metadata=aud=insert' })}
-        // eslint-disable-next-line no-param-reassign
-        value={<Switch checked={!!streamParams.bsfHevcAudInsert} onCheckedChange={(checked) => updateStreamParams((params) => { params.bsfHevcAudInsert = checked === true; })} />}
-      />,
-    );
-  }
+  const isSar = stream.codec_name === 'h264' || stream.codec_name === 'hevc';
 
-  if (stream.codec_type === 'video' && (stream.codec_name === 'h264' || stream.codec_name === 'hevc')) {
-    const currentCrop = streamParams.bsfCrop ?? { left: 0, right: 0, top: 0, bottom: 0 };
+  return (
+    <>
+      <div style={{ fontSize: '.85em', color: 'var(--gray-11)', marginBottom: '.4em' }}>
+        {isSar ? t('Losslessly change the sample aspect ratio (SAR) of this track with a bitstream filter.') : t('Losslessly change the display aspect ratio of this track at the container level.')}
+        {' '}
+        {t('Note that this is not supported in all video players.')}
+      </div>
+      <KeyValue name={t('Width')} value={<TextInput type="number" min="0" style={{ width: '5em' }} placeholder="W" value={currentAr.num > 0 ? String(currentAr.num) : ''} onChange={(e) => updateAr('num', e.target.value)} />} />
+      <KeyValue name={t('Height')} value={<TextInput type="number" min="0" style={{ width: '5em' }} placeholder="H" value={currentAr.den > 0 ? String(currentAr.den) : ''} onChange={(e) => updateAr('den', e.target.value)} />} />
+    </>
+  );
+}
 
-    const updateCrop = (field: 'left' | 'right' | 'top' | 'bottom', value: string) => {
-      const parsed = parseInt(value, 10);
-      const val = Number.isNaN(parsed) || parsed < 0 ? 0 : parsed;
-      updateStreamParams((params) => {
-        // eslint-disable-next-line no-param-reassign
-        params.bsfCrop = { ...currentCrop, [field]: val };
-      });
-    };
+function CropEditor({ stream, streamParams, updateStreamParams }: {
+  stream: FFprobeStream,
+  streamParams: StreamParams,
+  updateStreamParams: (setter: (a: StreamParams) => void) => void,
+}) {
+  const { t } = useTranslation();
 
-    ui.push(
-      <div key="bsfCrop" style={{ marginBottom: '.8em' }}>
-        <div style={{ fontWeight: 'bold', marginBottom: '.3em' }}>
-          {t('Lossless crop ({{codec}} metadata)', { codec: stream.codec_name.toUpperCase() })}
-        </div>
-        <div style={{ fontSize: '.85em', color: 'var(--gray-11)', marginBottom: '.4em' }}>
-          {t('Crop pixels from each edge without re-encoding. Works in most players except VLC (known bug).')}
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.3em' }}>
-          <KeyValue name={t('Left')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.left)} onChange={(e) => updateCrop('left', e.target.value)} />} />
-          <KeyValue name={t('Right')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.right)} onChange={(e) => updateCrop('right', e.target.value)} />} />
-          <KeyValue name={t('Top')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.top)} onChange={(e) => updateCrop('top', e.target.value)} />} />
-          <KeyValue name={t('Bottom')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.bottom)} onChange={(e) => updateCrop('bottom', e.target.value)} />} />
-        </div>
-      </div>,
-    );
+  const currentCrop = streamParams.crop ?? { left: 0, right: 0, top: 0, bottom: 0 };
 
-    const currentAr = streamParams.bsfAspectRatio ?? { num: 0, den: 0 };
+  const updateCrop = (field: 'left' | 'right' | 'top' | 'bottom', value: string) => {
+    const parsed = parseInt(value, 10);
+    const val = Number.isNaN(parsed) || parsed < 0 ? 0 : parsed;
+    updateStreamParams((params) => {
+      // eslint-disable-next-line no-param-reassign
+      params.crop = { ...currentCrop, [field]: val };
+    });
+  };
 
-    const updateAr = (field: 'num' | 'den', value: string) => {
-      const parsed = parseInt(value, 10);
-      const val = Number.isNaN(parsed) || parsed < 0 ? 0 : parsed;
-      updateStreamParams((params) => {
-        // eslint-disable-next-line no-param-reassign
-        params.bsfAspectRatio = { ...currentAr, [field]: val };
-      });
-    };
-
-    ui.push(
-      <div key="bsfAspectRatio" style={{ marginBottom: '.8em' }}>
-        <div style={{ fontWeight: 'bold', marginBottom: '.3em' }}>
-          {t('Lossless aspect ratio (SAR)')}
-        </div>
-        <div style={{ fontSize: '.85em', color: 'var(--gray-11)', marginBottom: '.4em' }}>
-          {t('Change the sample aspect ratio without re-encoding. Set both to 0 to keep original.')}
-        </div>
-        <div style={{ display: 'flex', gap: '.5em', alignItems: 'center' }}>
-          <TextInput type="number" min="0" style={{ width: '4em' }} placeholder="W" value={currentAr.num > 0 ? String(currentAr.num) : ''} onChange={(e) => updateAr('num', e.target.value)} />
-          <span>:</span>
-          <TextInput type="number" min="0" style={{ width: '4em' }} placeholder="H" value={currentAr.den > 0 ? String(currentAr.den) : ''} onChange={(e) => updateAr('den', e.target.value)} />
-        </div>
-      </div>,
-    );
-  } else if (stream.codec_type === 'video') {
-    // Non-H264/HEVC video streams: only container-level aspect ratio
-    const currentAr = streamParams.bsfAspectRatio ?? { num: 0, den: 0 };
-
-    const updateAr = (field: 'num' | 'den', value: string) => {
-      const parsed = parseInt(value, 10);
-      const val = Number.isNaN(parsed) || parsed < 0 ? 0 : parsed;
-      updateStreamParams((params) => {
-        // eslint-disable-next-line no-param-reassign
-        params.bsfAspectRatio = { ...currentAr, [field]: val };
-      });
-    };
-
-    ui.push(
-      <div key="bsfAspectRatioContainer" style={{ marginBottom: '.8em' }}>
-        <div style={{ fontWeight: 'bold', marginBottom: '.3em' }}>
-          {t('Display aspect ratio (container-level)')}
-        </div>
-        <div style={{ fontSize: '.85em', color: 'var(--gray-11)', marginBottom: '.4em' }}>
-          {t('Change the display aspect ratio at the container level without re-encoding.')}
-        </div>
-        <div style={{ display: 'flex', gap: '.5em', alignItems: 'center' }}>
-          <TextInput type="number" min="0" style={{ width: '4em' }} placeholder="W" value={currentAr.num > 0 ? String(currentAr.num) : ''} onChange={(e) => updateAr('num', e.target.value)} />
-          <span>:</span>
-          <TextInput type="number" min="0" style={{ width: '4em' }} placeholder="H" value={currentAr.den > 0 ? String(currentAr.den) : ''} onChange={(e) => updateAr('den', e.target.value)} />
-        </div>
-      </div>,
-    );
-  }
-
-  if (stream.codec_type === 'video' || stream.codec_type === 'audio') {
-    ui.push(
-      <KeyValue
-        key="codecTag"
-        name={t('Codec tag')}
-        // eslint-disable-next-line no-param-reassign
-        value={<TextInput placeholder={t('Default')} value={streamParams.tag ?? ''} onChange={(e) => updateStreamParams((params) => { params.tag = e.target.value.trim() === '' ? undefined : e.target.value; })} />}
-      />,
-    );
-  }
-
-  if (ui.length === 0) {
+  if (!(stream.codec_name === 'h264' || stream.codec_name === 'hevc')) {
     return null;
   }
 
   return (
-    <div style={{ marginBottom: '1em' }}>
-      {ui}
-    </div>
+    <>
+      <div style={{ fontSize: '.85em', color: 'var(--gray-11)', marginBottom: '.4em' }}>
+        {t('Losslessly crop pixels from each edge.')}
+        {' '}
+        {t('Note that this is not supported in all video players.')}
+      </div>
+      <KeyValue name={t('Left')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.left)} onChange={(e) => updateCrop('left', e.target.value)} />} />
+      <KeyValue name={t('Right')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.right)} onChange={(e) => updateCrop('right', e.target.value)} />} />
+      <KeyValue name={t('Top')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.top)} onChange={(e) => updateCrop('top', e.target.value)} />} />
+      <KeyValue name={t('Bottom')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.bottom)} onChange={(e) => updateCrop('bottom', e.target.value)} />} />
+    </>
   );
 }
 
@@ -277,6 +203,8 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     },
   }), [t]);
 
+  const updateCurrentStreamParams = (setter: (a: StreamParams) => void) => updateStreamParams(editingFile, editingStreamId, setter);
+
   return (
     <Dialog.Root open={editingStream != null} onOpenChange={(v) => v === false && setEditingStream(undefined)}>
       <Dialog.Portal>
@@ -284,12 +212,71 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
         <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
           <Dialog.Title>{t('Edit track {{trackNum}} metadata', { trackNum: editingStream && (editingStream.index + 1) })}</Dialog.Title>
 
-          <h2>{t('Parameters')}</h2>
-          {editingStream != null && <StreamParametersEditor stream={editingStream} streamParams={streamParams} updateStreamParams={(setter) => updateStreamParams(editingFile, editingStreamId, setter)} />}
+          <Tabs.Root defaultValue="tags" style={{ minHeight: '20em' }}>
+            <Tabs.List>
+              <Tabs.Trigger value="tags">{t('Tags')}</Tabs.Trigger>
+              {editingStream?.codec_type === 'video' && (
+                <>
+                  <Tabs.Trigger value="crop">{t('Crop')}</Tabs.Trigger>
+                  <Tabs.Trigger value="aspectratio">{t('Aspect ratio')}</Tabs.Trigger>
+                </>
+              )}
+              <Tabs.Trigger value="parameters">{t('Parameters')}</Tabs.Trigger>
+            </Tabs.List>
 
-          <h2>Tags</h2>
+            <div style={{ marginTop: '.5em' }}>
+              <Tabs.Content value="tags">
+                <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} />
+              </Tabs.Content>
 
-          <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} />
+              {editingStream != null && (
+                <>
+                  <Tabs.Content value="crop">
+                    <CropEditor stream={editingStream} streamParams={streamParams} updateStreamParams={updateCurrentStreamParams} />
+                  </Tabs.Content>
+
+                  <Tabs.Content value="aspectratio">
+                    <AspectEditor stream={editingStream} streamParams={streamParams} updateStreamParams={updateCurrentStreamParams} />
+                  </Tabs.Content>
+
+                  <Tabs.Content value="parameters">
+                    {/* https://github.com/mifi/lossless-cut/issues/1680#issuecomment-1682915193 */}
+                    {editingStream.codec_name === 'h264' && (
+                      <KeyValue
+                        name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'h264_mp4toannexb' })}
+                        // eslint-disable-next-line no-param-reassign
+                        value={<Switch checked={!!streamParams.bsfH264Mp4toannexb} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfH264Mp4toannexb = checked === true; })} />}
+                      />
+                    )}
+
+                    {editingStream.codec_name === 'hevc' && (
+                      <>
+                        <KeyValue
+                          name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_mp4toannexb' })}
+                          // eslint-disable-next-line no-param-reassign
+                          value={<Switch checked={!!streamParams.bsfH264Mp4toannexb} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfHevcMp4toannexb = checked === true; })} />}
+                        />
+
+                        <KeyValue
+                          name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_metadata=aud=insert' })}
+                          // eslint-disable-next-line no-param-reassign
+                          value={<Switch checked={!!streamParams.bsfHevcAudInsert} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfHevcAudInsert = checked === true; })} />}
+                        />
+                      </>
+                    )}
+
+                    {(editingStream.codec_type === 'video' || editingStream.codec_type === 'audio') && (
+                      <KeyValue
+                        name={t('Codec tag')}
+                        // eslint-disable-next-line no-param-reassign
+                        value={<TextInput placeholder={t('Default')} value={streamParams.tag ?? ''} onChange={(e) => updateCurrentStreamParams((params) => { params.tag = e.target.value.trim() === '' ? undefined : e.target.value; })} />}
+                      />
+                    )}
+                  </Tabs.Content>
+                </>
+              )}
+            </div>
+          </Tabs.Root>
 
           <Dialog.ButtonRow>
             <Dialog.Close asChild>

@@ -188,8 +188,8 @@ export interface StreamParams {
   bsfHevcMp4toannexb?: boolean,
   bsfHevcAudInsert?: boolean,
   tag?: string | undefined,
-  bsfCrop?: BsfCropParams | undefined,
-  bsfAspectRatio?: BsfAspectRatioParams | undefined,
+  crop?: BsfCropParams | undefined,
+  aspectRatio?: BsfAspectRatioParams | undefined,
 }
 export type ParamsByStreamId = Map<string, Map<number, StreamParams>>;
 
