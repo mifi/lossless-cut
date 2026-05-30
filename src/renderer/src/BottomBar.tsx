@@ -42,7 +42,8 @@ const timeWrapperStyle: CSSProperties = {
   alignItems: 'center',
   position: 'absolute',
   inset: 0,
-  marginLeft: '1em',
+  marginLeft: '1.5em',
+  pointerEvents: 'none',
 };
 
 // eslint-disable-next-line react/display-name
@@ -419,8 +420,6 @@ function BottomBar({
 
   const currentCutSegOrDefault = useMemo(() => currentCutSeg ?? { segColorIndex: 0 }, [currentCutSeg]);
 
-  const displayTimePercent = useMemo(() => `${Math.round((displayTime / fileDurationNonZero) * 100)}%`, [displayTime, fileDurationNonZero]);
-
   const displayTimeFrameCount = useMemo(() => getFrameCount(displayTime), [displayTime, getFrameCount]);
 
   return (
@@ -596,10 +595,12 @@ function BottomBar({
         <div style={{ flexGrow: 1 }} />
 
         <div style={timeWrapperStyle}>
-          <div style={{ fontFamily: 'monospace', letterSpacing: '-0.08em' }}>
+          <div style={{ fontFamily: 'monospace', letterSpacing: '-0.08em', pointerEvents: 'auto' }}>
             {formatTimecode({ seconds: displayTime })}
-            <span style={{ display: 'inline-block', minWidth: '3em', marginLeft: '.5em' }}><span style={{ opacity: 0.5, userSelect: 'none' }}>f</span>{displayTimeFrameCount ?? 0}</span>
-            {isZoomed && ` ${displayTimePercent}`}
+            <span style={{ display: 'inline-block', minWidth: '3.5em', marginLeft: '.5em' }}>
+              {displayTimeFrameCount ?? 0}<span style={{ opacity: 0.5, userSelect: 'none' }}>f</span>
+              {isZoomed && <span style={{ marginLeft: '.5em' }}>{Math.round((displayTime / fileDurationNonZero) * 100)}<span style={{ opacity: 0.5, userSelect: 'none' }}>%</span></span>}
+            </span>
           </div>
         </div>
 
