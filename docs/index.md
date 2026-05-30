@@ -6,6 +6,8 @@ Please read the documentation before creating an issue. Thank you 🙏
 
 - **Q:** Is there a keyboard shortcut to do X?
   - **A:** First check the Keyboard shortcuts dialog. If you cannot find your shortcut there, [see this issue.](https://github.com/mifi/lossless-cut/issues/254)
+- **Q:** How can I import multiple files into my project and edit them together?
+  - **A:** LosslessCut is not a [non-linear editor](https://github.com/mifi/lossless-cut/issues/976) (like Adobe Premiere) and it is not a linear editor (like Avidemux) - it is something in-between. You create segments on the timeline and the segments represent which portions of video will be exported. If you want more advanced workflows, you have to do it in multiple separate operations.
 - **Q:** Can LosslessCut be automated using a CLI or API or do external post-processing?
   - **A:** While it was never designed for advanced batching/automation, it does have a [basic CLI and a HTTP API](cli.md). More info: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868).
 - **Q:** I cannot find a particular button or function.

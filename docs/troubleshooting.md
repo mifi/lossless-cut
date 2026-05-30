@@ -14,23 +14,25 @@ If the video exports successfully without any error from LosslessCut, but it doe
 
 ## Cutting times are not accurate
 
-Each segment's *start cut time* normally (but not always) will be "rounded" to the nearest **previous** keyframe. This means that you often have to move the **start cut time** to **few frames after** the desired keyframe.
+Each segment's *start cut time* will normally (but not always) be "rounded" to the nearest **previous** keyframe. This means that you often have to move the **start cut time** to **few frames after** the desired keyframe.
 - Lossless cutting is not an exact science. For some files, it just works. For others, you may need to trial and error to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
 - Your mileage may vary when it comes to *Keyframe cut mode*. Most common video files need *Keyframe cut* enabled, but you may need to try both values. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. In `ffmpeg`, *Keyframe cut* corresponds to `-ss` *before* `-i`.
 - Try to change `avoid_negative_ts` (in export options).
 - Try also to set the **start**-cutpoint a few frames **before or after** the nearest keyframe (may also solve audio sync issues).
-- You may try to enable the new "Smart cut" mode to allow cutting between keyframes. However it is very experimental and may not work for many files.
+- You may try to enable the experimental "Smart cut" mode to allow cutting between keyframes. However it will not work for many files.
 - Currently, the only way to review the exported file (to check the actual cutpoints) is to run the export (possibly with only one segment enabled to speed up) and then manually check the output file. See also [#1887](https://github.com/mifi/lossless-cut/issues/1887)
 
 ### Cut starts from wrong keyframe
 
-For some files, when you place segment start cutpoints at keyframes, and you export, it will instead cut from the keyframe **before** the keyframe that you wanted. This is because with some videos, FFMpeg struggles to find the nearest previous keyframe, see [#1216](https://github.com/mifi/lossless-cut/issues/1216). To workaround this, you can try to shift your segments' **start**-cutpoints forward by a few frames, so that ffmpeg correctly cuts from the *previous* keyframe.
+For some files, when you place segment start cutpoints at keyframes, and you export, it will instead cut from the keyframe **before** the keyframe that you wanted. This is because with some videos, FFmpeg struggles to find the nearest previous keyframe, see [#1216](https://github.com/mifi/lossless-cut/issues/1216). To workaround this, you can try to shift your segments' **start**-cutpoints forward by a few frames, so that ffmpeg correctly cuts from the *previous* keyframe.
 
 - Menu: "Edit" -> "Segments" -> "Shift all segments on timeline"
 - Enter `00:00:00.200` (or a larger value if it doesn't help)
 - When asked about Start or End timestamps, Select **Start**
 
 This will effectively shift all start times of segments by 6 frames (`6/30=0.2` for 30fps video). Alternatively, to always shift start times, you can enable the Export Option "Shift all start times" by +1, +2, +3 frames or so.
+
+In some videos (like VP9 from `yt-dlp`), some start keyframes are being ignored if LosslessCut output format is set to Matroska. A workaround is to set it to MP4 instead. See [#2804](https://github.com/mifi/lossless-cut/issues/2804).
 
 ## Start cut is ignored
 
