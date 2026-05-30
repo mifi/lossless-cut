@@ -9,7 +9,7 @@ import type { Readable } from 'node:stream';
 import { app, clipboard, nativeImage } from 'electron';
 
 import { platform, arch, isWindows, isLinux } from './util.js';
-import type { CaptureFormat, FfmpegHwAccel, Waveform } from '../common/types.js';
+import type { CaptureFormat, FfmpegHwAccel } from '../common/types.js';
 import type { FFprobeFormat } from '../common/ffprobe.js';
 import isDev from './isDev.js';
 import logger from './logger.js';
@@ -194,6 +194,10 @@ export async function runFfprobe(args: readonly string[], { timeout = isDev ? 10
   } finally {
     clearTimeout(timer);
   }
+}
+
+export interface Waveform {
+  buffer: Buffer,
 }
 
 export async function renderWaveformPng({ filePath, start, duration, resample, color, streamIndex, timeout }: {

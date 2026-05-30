@@ -532,6 +532,8 @@ function SegmentList({
     },
   }));
 
+  // todo https://github.com/TanStack/virtual/issues/1119
+  // eslint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
     count: sortableList.length,
     gap: 7,

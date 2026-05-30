@@ -616,6 +616,7 @@ function App() {
 
   useEffect(() => {
     // Reset the user preference when we go from not having compat player to having it
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (compatPlayerEnabled) setHideCompatPlayer(false);
   }, [compatPlayerEnabled]);
 

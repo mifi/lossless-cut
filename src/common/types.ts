@@ -105,10 +105,6 @@ export interface Config {
   ffmpegHwaccel: FfmpegHwAccel,
 }
 
-export interface Waveform {
-  buffer: Buffer,
-}
-
 export interface ApiActionRequest {
   id: number
   action: string

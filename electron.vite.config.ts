@@ -7,13 +7,13 @@ export default defineConfig({
     build: {
       // https://electron-vite.org/guide/dev#dependencies-vs-devdependencies
       // For the main process and preload, the best practice is to externalize dependencies and only bundle our own code.
-      target: 'node22.18',
+      target: 'node24.15',
       sourcemap: true,
     },
   },
   preload: {
     build: {
-      target: 'node22.18',
+      target: 'node24.15',
       sourcemap: true,
       rollupOptions: {
         output: {
@@ -25,7 +25,7 @@ export default defineConfig({
   renderer: {
     plugins: [react()],
     build: {
-      target: 'chrome140',
+      target: 'chrome148',
       sourcemap: true,
       chunkSizeWarningLimit: 3e6,
     },

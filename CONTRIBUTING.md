@@ -11,6 +11,7 @@ Make sure you have at least Node v16. The app uses ffmpeg from PATH when develop
 git clone https://github.com/mifi/lossless-cut.git
 cd lossless-cut
 yarn
+yarn install-electron
 ```
 
 Note: `yarn` may take some time to complete.
