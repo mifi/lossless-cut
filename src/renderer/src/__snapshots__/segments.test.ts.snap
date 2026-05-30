@@ -1,7 +1,53 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`combineOverlappingSegments 1`] = `
+exports[`combineOverlappingSegments > adjacent 1`] = `
 [
+  {
+    "end": 2,
+    "start": 1,
+  },
+  {
+    "end": 3,
+    "start": 2,
+  },
+  {
+    "end": 4,
+    "start": 3,
+  },
+]
+`;
+
+exports[`combineOverlappingSegments > non touching 1`] = `
+[
+  {
+    "end": 2,
+    "start": 1,
+  },
+  {
+    "end": 4,
+    "start": 3,
+  },
+]
+`;
+
+exports[`combineOverlappingSegments > overlapping and non overlapping 1`] = `
+[
+  {
+    "end": 3,
+    "start": 1,
+  },
+  {
+    "end": 5,
+    "start": 4,
+  },
+]
+`;
+
+exports[`combineOverlappingSegments > various 1`] = `
+[
+  {
+    "start": 0,
+  },
   {
     "end": 87,
     "start": 0,
@@ -11,8 +57,15 @@ exports[`combineOverlappingSegments 1`] = `
     "start": 229,
   },
   {
-    "end": 1487,
+    "end": 1101,
     "start": 838,
+  },
+  {
+    "end": 1487,
+    "start": 1101,
+  },
+  {
+    "start": 1487,
   },
   {
     "end": 1831,

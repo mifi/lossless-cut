@@ -129,8 +129,8 @@ export function combineOverlappingSegments<T extends SegmentBase>(existingSegmen
 
     const currentSegmentEndOrStart = currentSegment.end ?? currentSegment.start;
 
-    // Check if the current segment overlaps or is adjacent to the next segment
-    if (currentSegmentEndOrStart >= nextSegment.start) {
+    // Check if the current segment overlaps with the next segment
+    if (currentSegmentEndOrStart > nextSegment.start) {
       currentSegment = {
         ...currentSegment,
         end: Math.max(currentSegmentEndOrStart, nextSegment.end ?? nextSegment.start),
