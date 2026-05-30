@@ -293,50 +293,6 @@ async function askForSegmentsStartOrEnd(text: string) {
   return value === 'both' ? ['start', 'end'] as const : [value as 'start' | 'end'] as const;
 }
 
-export async function askForShiftSegments({ inputPlaceholder, parseTimecode }: {
-  inputPlaceholder: string,
-  parseTimecode: ParseTimecode,
-}) {
-  function parseValue(value: string) {
-    let parseableValue = value;
-    let sign = 1;
-    if (parseableValue[0] === '-') {
-      parseableValue = parseableValue.slice(1);
-      sign = -1;
-    }
-    const duration = parseTimecode(parseableValue);
-    if (duration != null && duration > 0) {
-      return duration * sign;
-    }
-    return undefined;
-  }
-
-  const { value } = await getSwal().Swal.fire<string>({
-    input: 'text',
-    showCancelButton: true,
-    inputValue: inputPlaceholder,
-    text: i18n.t('Shift all segments on the timeline by this amount. Negative values will be shifted back, while positive value will be shifted forward in time.'),
-    inputValidator: (v) => {
-      const parsed = parseValue(v);
-      if (parsed == null) return i18n.t('Please input a valid duration. Example: {{example}}', { example: inputPlaceholder });
-      return null;
-    },
-  });
-
-  if (value == null) return undefined;
-  const parsed = parseValue(value);
-  invariant(parsed != null);
-
-  const startOrEnd = await askForSegmentsStartOrEnd(i18n.t('Do you want to shift the start or end timestamp by {{time}}?', { time: formatDuration({ seconds: parsed, shorten: true }) }));
-  if (startOrEnd == null) return undefined;
-
-  return {
-    shiftAmount: parsed,
-    shiftKeys: startOrEnd,
-  };
-}
-
-
 export async function askForAlignSegments() {
   const startOrEnd = await askForSegmentsStartOrEnd(i18n.t('Do you want to align the segment start or end timestamps to keyframes?'));
   if (startOrEnd == null) return undefined;

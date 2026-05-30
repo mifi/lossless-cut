@@ -1,8 +1,9 @@
-import type { MouseEventHandler, ReactNode } from 'react';
+import type { FormEventHandler, MouseEventHandler, ReactNode } from 'react';
 import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
 import { FaCheckCircle, FaInfoCircle } from 'react-icons/fa';
+import { TextField } from '@radix-ui/themes';
 
 import * as Dialog from './Dialog';
 import * as AlertDialog from './AlertDialog';
@@ -298,6 +299,83 @@ export function useDialog() {
     });
   }
 
+  const openShiftSegmentsDialog = useCallback(({ inputPlaceholder, parseTimecode }: {
+    inputPlaceholder: string,
+    parseTimecode: (s: string) => number | undefined,
+  }) => new Promise<{ startShift?: number, endShift?: number } | undefined>((resolve) => {
+    function ShiftDialog() {
+      const { onOpenChange } = useGenericDialogContext();
+      const [startValue, setStartValue] = useState('');
+      const [endValue, setEndValue] = useState('');
+
+      const parseValue = useCallback((value: string) => {
+        let parseableValue = value.trim();
+        if (!parseableValue) return undefined;
+        let sign = 1;
+        if (parseableValue[0] === '-') {
+          sign = -1;
+          parseableValue = parseableValue.slice(1);
+        }
+
+        const duration = parseTimecode(parseableValue);
+        invariant(duration != null);
+        if (duration === 0) return undefined;
+        return duration * sign;
+      }, []);
+
+      const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>((e) => {
+        e.preventDefault();
+        try {
+          const start = parseValue(startValue);
+          const end = parseValue(endValue);
+          // require at least one of them to be set
+          invariant(start != null || end != null);
+          const out: { startShift?: number, endShift?: number } = {};
+          if (start != null) out.startShift = start;
+          if (end != null) out.endShift = end;
+          resolve(out);
+          onOpenChange(false);
+        } catch (err) {
+          console.warn(err);
+        }
+      }, [parseValue, startValue, endValue, onOpenChange]);
+
+      return (
+        <Dialog.Content aria-describedby={undefined} style={{ width: '50vw' }}>
+          <Dialog.Title>{t('Shift segments')}</Dialog.Title>
+
+          <Dialog.Description>{t('Shift all segments on the timeline by this amount. Negative values will be shifted back, while positive value will be shifted forward in time.')}</Dialog.Description>
+
+          <form onSubmit={handleSubmit}>
+            {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+            <label style={{ display: 'block', marginBottom: '.3em' }}>
+              {t('Shift start by')}<br />
+              <TextField.Root value={startValue} placeholder={inputPlaceholder} onChange={(e) => setStartValue(e.target.value)} />
+            </label>
+            {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+            <label style={{ display: 'block', marginBottom: '.3em' }}>
+              {t('Shift end by')}<br />
+              <TextField.Root value={endValue} placeholder={inputPlaceholder} onChange={(e) => setEndValue(e.target.value)} />
+            </label>
+
+            <Dialog.ButtonRow>
+              <Dialog.Close asChild>
+                <DialogButton>{t('Cancel')}</DialogButton>
+              </Dialog.Close>
+
+              <DialogButton type="submit" primary>{t('Confirm')}</DialogButton>
+            </Dialog.ButtonRow>
+          </form>
+        </Dialog.Content>
+      );
+    }
+
+    showGenericDialog({
+      render: () => <ShiftDialog />,
+      onClose: () => resolve(undefined),
+    });
+  }), [showGenericDialog, t]);
+
   return {
     genericDialog,
     closeGenericDialog,
@@ -307,6 +385,7 @@ export function useDialog() {
     openCutFinishedDialog,
     openConcatFinishedDialog,
     openCleanupFilesDialog,
+    openShiftSegmentsDialog,
   };
 }
 
