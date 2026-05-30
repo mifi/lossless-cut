@@ -197,10 +197,18 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
   return args;
 }
 
+export type AllFilesStreamMeta = Record<string, Pick<AllFilesMeta[string], 'streams'>>;
+
+export const getStreamById = ({ allFilesMeta, streamId, path }: {
+  allFilesMeta: AllFilesStreamMeta,
+  streamId: number,
+  path: string,
+}) => allFilesMeta?.[path]?.streams.find((s) => s.index === streamId);
+
 export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, copyFileStreams, manuallyCopyDisposition, getVideoArgs, needFlac }: {
   startIndex?: number,
   outFormat: string | undefined,
-  allFilesMeta: Record<string, Pick<AllFilesMeta[string], 'streams'>>,
+  allFilesMeta: AllFilesStreamMeta,
   copyFileStreams: CopyfileStreams,
   manuallyCopyDisposition?: boolean,
   getVideoArgs?: GetVideoArgsFn,
@@ -211,9 +219,9 @@ export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, cop
 
   copyFileStreams.forEach(({ streamIds, path }, fileIndex) => {
     streamIds.forEach((streamId) => {
-      const { streams } = allFilesMeta[path]!;
-      const stream = streams.find((s) => s.index === streamId);
+      const stream = getStreamById({ allFilesMeta, streamId, path });
       invariant(stream != null);
+
       args = [
         ...args,
         '-map', `${fileIndex}:${streamId}`,

@@ -54,16 +54,6 @@ export default ({ detectedFps, timecodeFormat, showGenericDialog }: {
     return parseDuration(val);
   }, [detectedFps, frameCountToDuration, timecodeFormat]);
 
-  const formatTimeAndFrames = useCallback((seconds: number) => {
-    const frameCount = getFrameCount(seconds);
-
-    const timeStr = timecodeFormat === 'timecodeWithFramesFraction'
-      ? formatDuration({ seconds, fps: detectedFps })
-      : formatDuration({ seconds });
-
-    return `${timeStr} (${frameCount ?? '0'})`;
-  }, [detectedFps, timecodeFormat, getFrameCount]);
-
   const promptTimecode = useCallback(async ({ initialValue, title, description, inputPlaceholder, allowRelative = false }: {
     initialValue?: string | undefined,
     title: string,
@@ -141,7 +131,6 @@ export default ({ detectedFps, timecodeFormat, showGenericDialog }: {
   return {
     parseTimecode,
     formatTimecode,
-    formatTimeAndFrames,
     timecodePlaceholder,
     getFrameCount,
     promptTimecode,

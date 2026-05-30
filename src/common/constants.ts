@@ -1,4 +1,4 @@
-export const homepageUrl = 'https://mifi.no/losslesscut/';
+export const homepageUrl = 'https://losslesscut.app/';
 export const githubUrl = 'https://github.com/mifi/lossless-cut/';
 export const getReleaseUrl = (version: string) => `https://github.com/mifi/lossless-cut/releases/tag/v${version}`;
 export const compareReleasesUrl = (fromVersion: string, toVersion: string) => `https://github.com/mifi/lossless-cut/compare/v${fromVersion}...v${toVersion}`;

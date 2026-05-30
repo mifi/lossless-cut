@@ -12,7 +12,7 @@ import TextInput from '../components/TextInput';
 import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToSegments, findKeyframeNearTime } from '../ffmpeg';
 import { getFileSize, shuffleArray } from '../util';
 import { errorToast } from '../swal';
-import { createNumSegments as createNumSegmentsDialog, createFixedByteSixedSegments as createFixedByteSixedSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, askForSegmentDuration, toastError } from '../dialogs';
+import { createNumSegments as createNumSegmentsDialog, createFixedByteSixedSegments as createFixedByteSixedSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForAlignSegments, selectSegmentsByLabelDialog, askForSegmentDuration, toastError } from '../dialogs';
 import { createSegment, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, addSegmentColorIndex, filterNonMarkers, makeDurationSegments, isInitialSegment } from '../segments';
 import type { FfmpegDialog } from '../ffmpegParameters';
 import { parameters as allFfmpegParameters, getHint, getLabel } from '../ffmpegParameters';
@@ -495,20 +495,6 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     safeSetCutSegments(newSegments, fileDuration);
   }, [cutSegments, fileDuration, safeSetCutSegments]);
 
-  const shiftAllSegmentTimes = useCallback(async () => {
-    const shift = await askForShiftSegments({ inputPlaceholder: timecodePlaceholder, parseTimecode });
-    if (shift == null) return;
-
-    const { shiftAmount, shiftKeys } = shift;
-    await modifySelectedSegmentTimes((segment) => {
-      const newSegment = { ...segment };
-      shiftKeys.forEach((key) => {
-        if (newSegment[key] != null) newSegment[key] += shiftAmount;
-      });
-      return newSegment;
-    });
-  }, [modifySelectedSegmentTimes, parseTimecode, timecodePlaceholder]);
-
   const alignSegmentTimesToKeyframes = useCallback(async () => {
     if (!videoStream || workingRef.current) return;
     try {
@@ -986,7 +972,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     fillSegmentsGaps,
     combineOverlappingSegments,
     combineSelectedSegments,
-    shiftAllSegmentTimes,
+    modifySelectedSegmentTimes,
     alignSegmentTimesToKeyframes,
     updateSegOrder,
     updateSegOrders,

@@ -273,9 +273,6 @@ export function getHtml5ifiedPath(cod: string | undefined, fp: string, type: Exc
   return getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${type}.${ext}` });
 }
 
-
-export const deleteDispositionValue = 'llc_disposition_remove';
-
 export const mirrorTransform = 'matrix(-1, 0, 0, 1, 0, 0)';
 
 // todo this is not a correct assumption
