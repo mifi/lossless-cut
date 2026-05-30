@@ -13,11 +13,10 @@ import AutoExportToggler from './components/AutoExportToggler';
 import Select from './components/Select';
 import type { FileStream } from './ffmpeg';
 import { getStreamFps } from './ffmpeg';
-import { deleteDispositionValue } from './util';
 import { getActiveDisposition, attachedPicDisposition, isGpsStream } from './util/streams';
 import TagEditor from './components/TagEditor';
 import type { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../common/ffprobe';
-import type { CustomTagsByFile, FilesMeta, FormatTimecode, ParamsByStreamId, StreamParams } from './types';
+import { contentDispositionOptionsSchema, deleteDispositionValue, dispositionOptions, type ContentDispositionOptions, type CustomTagsByFile, type FilesMeta, type FormatTimecode, type ParamsByStreamId, type StreamParams } from './types';
 import Button, { DialogButton } from './components/Button';
 import styles from './StreamsSelector.module.css';
 import Json5Dialog from './components/Json5Dialog';
@@ -25,9 +24,6 @@ import GpsMap from './components/GpsMap';
 import TextInput from './components/TextInput';
 import Switch from './components/Switch';
 
-
-const dispositionOptions = ['default', 'dub', 'original', 'comment', 'lyrics', 'karaoke', 'forced', 'hearing_impaired', 'visual_impaired', 'clean_effects', 'attached_pic', 'captions', 'descriptions', 'dependent', 'metadata'];
-const unchangedDispositionValue = 'llc_disposition_unchanged';
 
 type UpdateStreamParams = (fileId: string, streamId: number, setter: (a: StreamParams) => void) => void;
 
@@ -175,7 +171,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
       if (params.customTags == null) params.customTags = {};
       const tags = params.customTags;
       Object.entries(keyValues).forEach(([tag, value]) => {
-        tags[tag] = value;
+        tags[tag] = tag === 'language' ? value.toLowerCase() : value;
       });
     });
   }, [editingFile, editingStreamId, updateStreamParams]);
@@ -189,6 +185,13 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     });
   }, [editingFile, editingStreamId, updateStreamParams]);
 
+  const tagInfo = useMemo(() => ({
+    language: {
+      description: t('The language tag (ISO 639-2 code). For example "eng" for English. This is used by some players to select the appropriate audio/subtitle track based on the user\'s language preferences.'),
+      url: 'https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes',
+    },
+  }), [t]);
+
   return (
     <Dialog.Root open={editingStream != null} onOpenChange={(v) => v === false && setEditingStream(undefined)}>
       <Dialog.Portal>
@@ -201,7 +204,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
 
           <h2>Tags</h2>
 
-          <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} />
+          <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} />
 
           <Dialog.ButtonRow>
             <Dialog.Close asChild>
@@ -215,6 +218,8 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     </Dialog.Root>
   );
 });
+
+const unchangedDispositionValue = 'llc_disposition_unchanged';
 
 // eslint-disable-next-line react/display-name
 const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress, paramsByStreamId, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments }: {
@@ -270,9 +275,10 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
   const onClick = () => onToggle && onToggle(stream.index);
 
   const onDispositionChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
-    let newDisposition: string;
-    if (dispositionOptions.includes(e.target.value)) {
-      newDisposition = e.target.value;
+    let newDisposition: ContentDispositionOptions | 'llc_disposition_remove' | undefined;
+    const dispositionParsed = contentDispositionOptionsSchema.safeParse(e.target.value);
+    if (dispositionParsed.success) {
+      newDisposition = dispositionParsed.data;
     } else if (e.target.value === deleteDispositionValue) {
       newDisposition = deleteDispositionValue; // needs a separate value (not a real disposition)
     } // else unchanged (undefined)

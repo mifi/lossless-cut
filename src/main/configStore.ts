@@ -26,8 +26,8 @@ const defaultKeyBindings: KeyBinding[] = [
   { keys: 'Comma', action: 'seekPreviousFrame' },
   { keys: 'Period', action: 'seekNextFrame' },
   { keys: 'KeyC', action: 'captureSnapshot' },
-  { keys: 'ControlLeft+KeyC', action: 'copySegmentsToClipboard' },
-  { keys: 'MetaLeft+KeyC', action: 'copySegmentsToClipboard' },
+  { keys: 'ControlLeft+AltLeft+KeyC', action: 'copySegmentsToClipboard' },
+  { keys: 'MetaLeft+AltLeft+KeyC', action: 'copySegmentsToClipboard' },
   { keys: 'ShiftLeft+KeyC', action: 'captureSnapshotToClipboard' },
 
   { keys: 'KeyI', action: 'setCutStart' },

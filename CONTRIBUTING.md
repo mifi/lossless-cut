@@ -1,6 +1,6 @@
 # Contributing
 
-## [Translations](docs/translation.md)
+## [Translations / i18n](docs/translation.md)
 
 ## Development environment setup
 
@@ -28,11 +28,29 @@ yarn download-ffmpeg-win32-arm64
 
 For Windows, you may have to install [7z](https://www.7-zip.org/download.html), and then put the 7z folder in your `PATH`.
 
-### Running
+### Run app in development mode
 
 ```bash
 yarn dev
 ```
+
+### Run all code checks and tests
+
+Run linting, code style, types, tests etc with the following command:
+
+```bash
+yarn check
+```
+
+Most of these checks are automatically run in GitHub Actions.
+
+### Other scripts
+
+See [package.json](./package.json) "scripts" section.
+
+### Contributing code
+
+To contribute code, use [pull requests](https://github.com/mifi/lossless-cut/pulls). If you would like to contribute a lot of code, please first create an issue to check the viability of your change.
 
 ## `mas-dev` (Mac App Store) local build
 
@@ -109,14 +127,6 @@ Before releasing, consider [Maintainence chores](#maintainence-chores) first.
 
 For per-platform build/signing setup, see [this article](https://mifi.no/blog/automated-electron-build-with-release-to-mac-app-store-microsoft-store-snapcraft/).
 
-## Weblate
-
-`yarn scan-i18n` to get the newest English strings and push so Weblate gets them.
-
-Find the [latest PR](https://github.com/mifi/lossless-cut/pulls) from Weblate and **rebase+merge** it.
-
-**Warning:** Do not squash and merge (see [here why](docs/translation.md#weblate))!
-
 ## Minimum OS version
 
 See [requirements](docs/requirements.md).
@@ -152,10 +162,13 @@ Links:
 - `@electron/remote`
 - `package.json` / `yarn.lock`
 
-### i18n
-```bash
-yarn scan-i18n
-```
+### i18n strings / Weblate
+
+Run `yarn scan-i18n` to get the newest English strings and push so Weblate gets them.
+
+Find the [latest PR](https://github.com/mifi/lossless-cut/pulls) from Weblate and **rebase+merge** it.
+
+**Warning:** Do not squash and merge (see [here why](docs/translation.md#weblate))!
 
 ### Regenerate licenses file
 
