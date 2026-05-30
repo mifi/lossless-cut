@@ -918,11 +918,9 @@ function App() {
       invariant(fileName != null);
       const outPath = getOutPath({ customOutDir, filePath: firstPath, fileName });
 
-      let chaptersFromSegments: Awaited<ReturnType<typeof createChaptersFromSegments>>;
-      if (segmentsToChapters) {
-        const chapterNames = paths.map((path) => parsePath(path).name);
-        chaptersFromSegments = await createChaptersFromSegments({ segmentPaths: paths, chapterNames });
-      }
+      const chaptersFromSegments = segmentsToChapters
+        ? await createChaptersFromSegments({ paths, defaultChapterNames: paths.map((path) => parsePath(path).name), useFileChapters: true })
+        : undefined;
 
       let inputSize: number;
       try {
