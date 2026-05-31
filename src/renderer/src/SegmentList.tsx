@@ -15,6 +15,7 @@ import prettyBytes from 'pretty-bytes';
 
 import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
+import useActionTitle from './hooks/useActionTitle';
 import { saveColor, controlsBackground, primaryTextColor, darkModeTransition } from './colors';
 import { useSegColors } from './contexts';
 import { getSegmentTags } from './segments';
@@ -382,6 +383,7 @@ function SegmentList({
   const [draggingId, setDraggingId] = useState<UniqueIdentifier | undefined>();
 
   const { invertCutSegments, simpleMode, darkMode, springAnimation } = useUserSettings();
+  const actionTitle = useActionTitle();
 
   const getButtonColor = useCallback((seg: SegmentColorIndex | undefined, next?: boolean) => getSegColor(seg ? { segColorIndex: next ? seg.segColorIndex + 1 : seg.segColorIndex } : undefined).desaturate(0.3).lightness(darkMode ? 45 : 55).string(), [darkMode, getSegColor]);
   const currentSegColor = useMemo(() => getButtonColor(currentCutSeg), [currentCutSeg, getButtonColor]);
@@ -440,7 +442,7 @@ function SegmentList({
             size={24}
             style={{ ...buttonBaseStyle, background: nextSegmentColor }}
             role="button"
-            title={t('Add segment')}
+            title={actionTitle(t('Add segment'), 'addSegment')}
             onClick={addSegment}
           />
 
@@ -448,7 +450,7 @@ function SegmentList({
             size={24}
             style={{ ...buttonBaseStyle, ...(cutSegments.length > 0 ? { backgroundColor: currentSegColor } : disabledButtonStyle) }}
             role="button"
-            title={t('Remove cutpoint from segment {{segmentNumber}}', { segmentNumber: currentSegIndex + 1 })}
+            title={actionTitle(t('Remove cutpoint from segment {{segmentNumber}}', { segmentNumber: currentSegIndex + 1 }), 'removeCurrentCutpoint')}
             onClick={() => removeSegment(currentSegIndex)}
           />
 
@@ -456,7 +458,7 @@ function SegmentList({
             <>
               <FaSortNumericDown
                 size={16}
-                title={t('Change segment order')}
+                title={actionTitle(t('Change segment order'), 'reorderSegsByStartTime')}
                 role="button"
                 style={{ ...buttonBaseStyle, padding: 4, ...(cutSegments.length >= 2 ? { backgroundColor: currentSegColor } : disabledButtonStyle) }}
                 onClick={() => onReorderSegs(currentSegIndex)}
@@ -464,7 +466,7 @@ function SegmentList({
 
               <FaTag
                 size={16}
-                title={t('Label segment')}
+                title={actionTitle(t('Label segment'), 'labelCurrentSegment')}
                 role="button"
                 style={{ ...buttonBaseStyle, padding: 4, ...(cutSegments.length > 0 ? { backgroundColor: currentSegColor } : disabledButtonStyle) }}
                 onClick={() => onLabelSegment(currentSegIndex)}
@@ -474,7 +476,7 @@ function SegmentList({
 
           <AiOutlineSplitCells
             size={22}
-            title={t('Split segment at cursor')}
+            title={actionTitle(t('Split segment at cursor'), 'splitCurrentSegment')}
             role="button"
             style={{ ...buttonBaseStyle, padding: 1, ...(firstSegmentAtCursor ? { backgroundColor: segAtCursorColor } : disabledButtonStyle) }}
             onClick={splitCurrentSegment}
@@ -483,7 +485,7 @@ function SegmentList({
           {!invertCutSegments && (
             <FaRegCheckCircle
               size={22}
-              title={t('Invert segment selection')}
+              title={actionTitle(t('Invert segment selection'), 'invertSelectedSegments')}
               role="button"
               style={{ ...buttonBaseStyle, padding: 1, ...(cutSegments.length > 0 ? { backgroundColor: neutralButtonColor } : disabledButtonStyle) }}
               onClick={onInvertSelectedSegments}
@@ -643,7 +645,7 @@ function SegmentList({
           <span style={{ fontSize: '.8em' }}>{getHeader()}</span>
 
           <FaTimes
-            title={t('Close sidebar')}
+            title={actionTitle(t('Close sidebar'), 'toggleSegmentsList')}
             style={{ fontSize: '1.1em', verticalAlign: 'middle', color: 'var(--gray-11)', cursor: 'pointer', padding: '.2em .3em' }}
             role="button"
             onClick={toggleSegmentsList}

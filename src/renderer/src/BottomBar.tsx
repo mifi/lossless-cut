@@ -24,6 +24,7 @@ import { getSegColor as getSegColorRaw } from './util/colors';
 import { useSegColors } from './contexts';
 import { isExactDurationMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
+import useActionTitle from './hooks/useActionTitle';
 import { askForPlaybackRate, checkAppPath } from './dialogs';
 import type { FormatTimecode, GetFrameCount, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
 import type { WaveformMode } from '../../common/types';
@@ -374,6 +375,7 @@ function BottomBar({
   }), [currentFrame]);
 
   const { invertCutSegments, setInvertCutSegments, simpleMode, toggleSimpleMode, exportConfirmEnabled } = useUserSettings();
+  const actionTitle = useActionTitle();
 
   const rotationStr = `${rotation}°`;
 
@@ -432,7 +434,7 @@ function BottomBar({
                 <GiSoundWaves
                   style={{ fontSize: '1.6em', padding: '0 .1em', color: waveformMode != null ? primaryTextColor : undefined }}
                   role="button"
-                  title={t('Show waveform')}
+                  title={actionTitle(t('Show waveform'), 'toggleWaveformMode')}
                   onClick={() => toggleWaveformMode()}
                 />
               )}
@@ -441,14 +443,14 @@ function BottomBar({
                   <FaImages
                     style={{ fontSize: '1.1em', padding: '0 .2em', color: showThumbnails ? primaryTextColor : undefined }}
                     role="button"
-                    title={t('Show thumbnails')}
+                    title={actionTitle(t('Show thumbnails'), 'toggleShowThumbnails')}
                     onClick={toggleShowThumbnails}
                   />
 
                   <FaKey
                     style={{ fontSize: '1em', padding: '0 .2em', color: keyframesEnabled ? primaryTextColor : undefined }}
                     role="button"
-                    title={t('Show keyframes')}
+                    title={actionTitle(t('Show keyframes'), 'toggleShowKeyframes')}
                     onClick={toggleShowKeyframes}
                   />
                 </>
@@ -464,18 +466,18 @@ function BottomBar({
             <FaStepBackward
               size={16}
               style={{ flexShrink: 0 }}
-              title={t('Jump to start of video')}
+              title={actionTitle(t('Jump to start of video'), 'jumpTimelineStart')}
               role="button"
               onClick={jumpTimelineStart}
             />
 
             {renderJumpCutpointButton(-1)}
 
-            <SegmentCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} onClick={jumpCutStart} title={t('Jump to current segment\'s start time')} style={{ marginRight: 5 }} />
+            <SegmentCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} onClick={jumpCutStart} title={actionTitle(t('Jump to current segment\'s start time'), 'jumpCutStart')} style={{ marginRight: 5 }} />
           </>
         )}
 
-        <SetCutpointButton currentCutSeg={currentCutSegOrDefault} side="start" onClick={setCutStart} title={t('Start current segment at current time')} style={{ marginRight: 5 }} />
+        <SetCutpointButton currentCutSeg={currentCutSegOrDefault} side="start" onClick={setCutStart} title={actionTitle(t('Start current segment at current time'), 'setCutStart')} style={{ marginRight: 5 }} />
 
         {!simpleMode && <CutTimeInput disabled={!isFileOpened} darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentCutSeg?.start} setCutTime={setCutTime} isStart formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
 
@@ -483,7 +485,7 @@ function BottomBar({
           <IoMdKey
             size={25}
             role="button"
-            title={t('Seek previous keyframe')}
+            title={actionTitle(t('Seek previous keyframe'), 'seekBackwardsKeyframe')}
             style={{ flexShrink: 0, marginRight: 2, transform: mirrorTransform, ...keyframeStyle }}
             onClick={() => seekClosestKeyframe(-1)}
           />
@@ -494,12 +496,12 @@ function BottomBar({
             style={{ flexShrink: 0, marginLeft: -6, marginRight: -4 }}
             size={28}
             role="button"
-            title={t('One frame back')}
+            title={actionTitle(t('One frame back'), 'seekPreviousFrame')}
             onClick={() => shortStep(-1)}
           />
         )}
 
-        <div role="button" onClick={() => togglePlay()} style={{ ...playStyle, margin: '.1em .1em 0 .2em', background: primaryColor }}>
+        <div title={actionTitle(t('Play/pause'), 'togglePlayResetSpeed')} role="button" onClick={() => togglePlay()} style={{ ...playStyle, margin: '.1em .1em 0 .2em', background: primaryColor }}>
           <PlayPause style={{ fontSize: '.9em' }} />
         </div>
 
@@ -508,7 +510,7 @@ function BottomBar({
             style={{ flexShrink: 0, marginRight: -6, marginLeft: -4 }}
             size={28}
             role="button"
-            title={t('One frame forward')}
+            title={actionTitle(t('One frame forward'), 'seekNextFrame')}
             onClick={() => shortStep(1)}
           />
         )}
@@ -518,25 +520,25 @@ function BottomBar({
             style={{ flexShrink: 0, marginLeft: 2, ...keyframeStyle }}
             size={25}
             role="button"
-            title={t('Seek next keyframe')}
+            title={actionTitle(t('Seek next keyframe'), 'seekForwardsKeyframe')}
             onClick={() => seekClosestKeyframe(1)}
           />
         )}
 
         {!simpleMode && <CutTimeInput disabled={!isFileOpened} darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentCutSeg?.end} setCutTime={setCutTime} formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
 
-        <SetCutpointButton currentCutSeg={currentCutSeg} side="end" onClick={setCutEnd} title={t('End current segment at current time')} style={{ marginLeft: 5 }} />
+        <SetCutpointButton currentCutSeg={currentCutSeg} side="end" onClick={setCutEnd} title={actionTitle(t('End current segment at current time'), 'setCutEnd')} style={{ marginLeft: 5 }} />
 
         {!simpleMode && (
           <>
-            <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} onClick={jumpCutEnd} title={t('Jump to current segment\'s end time')} style={{ marginLeft: 5 }} />
+            <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} onClick={jumpCutEnd} title={actionTitle(t('Jump to current segment\'s end time'), 'jumpCutEnd')} style={{ marginLeft: 5 }} />
 
             {renderJumpCutpointButton(1)}
 
             <FaStepForward
               size={16}
               style={{ flexShrink: 0 }}
-              title={t('Jump to end of video')}
+              title={actionTitle(t('Jump to end of video'), 'jumpTimelineEnd')}
               role="button"
               onClick={jumpTimelineEnd}
             />
@@ -586,7 +588,7 @@ function BottomBar({
           <div onClick={increaseRotation} role="button" style={{ whiteSpace: 'nowrap' }}>
             <MdRotate90DegreesCcw
               style={{ fontSize: '1.3em', verticalAlign: 'middle', color: isRotationSet ? primaryTextColor : undefined }}
-              title={`${t('Set output rotation. Current: ')} ${isRotationSet ? rotationStr : t('Don\'t modify')}`}
+              title={actionTitle(`${t('Set output rotation. Current: ')} ${isRotationSet ? rotationStr : t('Don\'t modify')}`, 'increaseRotation')}
             />
             <span style={{ textAlign: 'right', display: 'inline-block', fontSize: '.8em', marginLeft: '.1em' }}>{isRotationSet && rotationStr}</span>
           </div>
@@ -606,7 +608,7 @@ function BottomBar({
 
         {!simpleMode && isFileOpened && (
           <FaTrashAlt
-            title={t('Close file and clean up')}
+            title={actionTitle(t('Close file and clean up'), 'cleanupFilesDialog')}
             style={{ fontSize: '1em', color: dangerColor }}
             onClick={cleanupFilesDialog}
             role="button"
@@ -618,7 +620,7 @@ function BottomBar({
             <IoIosCamera
               role="button"
               style={{ fontSize: '1.9em', verticalAlign: 'middle' }}
-              title={t('Capture frame')}
+              title={actionTitle(t('Capture frame'), 'captureSnapshot')}
               onClick={captureSnapshot}
             />
 
@@ -627,7 +629,7 @@ function BottomBar({
         )}
 
         {isFileOpened && (
-          <div role="button" onClick={toggleLoopSelectedSegments} title={t('Play selected segments in order')} style={loopSelectedSegmentsButtonStyle}>
+          <div role="button" onClick={toggleLoopSelectedSegments} title={actionTitle(t('Play selected segments in order'), 'toggleLoopSelectedSegments')} style={loopSelectedSegmentsButtonStyle}>
             <PlayPauseMode />
           </div>
         )}
