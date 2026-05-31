@@ -35,8 +35,7 @@ import type { FindNearestKeyframeTime } from '../hooks/useKeyframes';
 import { troubleshootingUrl } from '../../../common/constants';
 import OutDirSelector from './OutDirSelector';
 
-const remote = window.require('@electron/remote');
-const { shell } = remote;
+const { shell } = window.require('@electron/remote');
 
 
 const noticeStyle: CSSProperties = { marginBottom: '.5em' };

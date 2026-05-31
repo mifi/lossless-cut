@@ -10,7 +10,7 @@ import type { FormatTimecode } from '../types';
 import type { CaptureFormat } from '../../../common/types';
 
 const mime = window.require('mime-types');
-const { rename, readdir, writeFile } = window.require('fs/promises');
+const { rename, readdir, writeFile } = window.require('node:fs/promises');
 
 
 function getFrameFromVideo(video: HTMLVideoElement, format: CaptureFormat, quality: number) {

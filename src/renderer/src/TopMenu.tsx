@@ -15,7 +15,7 @@ import styles from './TopMenu.module.css';
 import OutDirSelector from './components/OutDirSelector';
 
 
-const { stat } = window.require('fs/promises');
+const { stat } = window.require('node:fs/promises');
 const { webUtils } = window.require('electron');
 
 const outFmtStyle = { maxWidth: 100 };

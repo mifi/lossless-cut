@@ -445,6 +445,8 @@ const remoteApi = {
   quitApp,
   setProgressBar,
   sendOsNotification,
+  writeClipboardText: (text: string) => electron.clipboard.writeText(text),
+  readClipboardText: () => electron.clipboard.readText(),
 };
 
 export type RemoteApi = typeof remoteApi;

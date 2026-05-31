@@ -29,8 +29,7 @@ import { askForPlaybackRate, checkAppPath } from './dialogs';
 import type { FormatTimecode, GetFrameCount, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
 import type { WaveformMode } from '../../common/types';
 import type { Frame } from './ffmpeg';
-
-const { clipboard } = window.require('electron');
+import mainApi from './mainApi';
 
 
 const zoomOptions = Array.from({ length: 13 }).fill(undefined).map((_unused, z) => 2 ** z);
@@ -202,8 +201,8 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
     }
   }, [parseAndSetCutTime]);
 
-  const handleContextMenu = useCallback(() => {
-    const text = clipboard.readText();
+  const handleContextMenu = useCallback(async () => {
+    const text = await mainApi.readClipboardText();
     if (text) {
       try {
         setCutTimeManual(text);

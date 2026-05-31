@@ -13,11 +13,10 @@ import { errorToast } from '../swal';
 import TextInput from './TextInput';
 import Button from './Button';
 import Warning from './Warning';
+import mainApi from '../mainApi';
 
 
-const { clipboard } = window.require('electron');
-const remote = window.require('@electron/remote');
-const { shell } = remote;
+const { shell } = window.require('@electron/remote');
 
 const activeColor = 'var(--gray-12)';
 
@@ -56,7 +55,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   }, [editingTag, onTagReset, setEditingTag]);
 
   const onPasteClick = useCallback(async () => {
-    const text = clipboard.readText();
+    const text = await mainApi.readClipboardText();
     try {
       const json = JSON.parse(text);
       const newTags = segmentTagsSchema.parse(json);

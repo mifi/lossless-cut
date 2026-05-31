@@ -1,10 +1,9 @@
-import type { Menu as MenuType, MenuItemConstructorOptions, MenuItem } from 'electron';
+import type { MenuItemConstructorOptions, MenuItem } from 'electron';
 import { useCallback, useMemo } from 'react';
 
 // TODO pull out?
-const remote = window.require('@electron/remote');
+const { getCurrentWindow, Menu } = window.require('@electron/remote');
 // eslint-disable-next-line prefer-destructuring
-const Menu: typeof MenuType = remote.Menu;
 
 // https://github.com/transflow/use-electron-context-menu
 // https://www.electronjs.org/docs/latest/api/menu-item
@@ -19,7 +18,7 @@ export default function useNativeMenu(
   const openMenu = useCallback((e: MouseEvent) => {
     // @ts-expect-error todo type this
     menu.popup({
-      window: remote.getCurrentWindow(),
+      window: getCurrentWindow(),
       x,
       y,
       callback: onClose,

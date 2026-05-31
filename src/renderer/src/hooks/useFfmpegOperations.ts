@@ -18,8 +18,8 @@ import { UserFacingError } from '../../errors';
 import mainApi from '../mainApi';
 import { formatFfmpegNumber, getHwaccelArgs } from '../../../common/util';
 
-const { join, resolve, dirname } = window.require('path');
-const { writeFile, mkdir, access, constants: { W_OK } } = window.require('fs/promises');
+const { join, resolve, dirname } = window.require('node:path');
+const { writeFile, mkdir, access, constants: { W_OK } } = window.require('node:fs/promises');
 
 
 export class OutputNotWritableError extends Error {

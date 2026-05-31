@@ -122,10 +122,9 @@ import mainApi from './mainApi.js';
 import type { AppEvent } from '../../main/index.js';
 import { appName } from '../../main/common.js';
 
-const electron = window.require('electron');
-const { lstat } = window.require('fs/promises');
-const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('path');
-
+const { ipcRenderer, webUtils } = window.require('electron');
+const { lstat } = window.require('node:fs/promises');
+const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('node:path');
 const { hasDisabledNetworking, pathToFileURL, lossyMode, isLinux } = window.require('@electron/remote').require('./index.js');
 
 
@@ -134,7 +133,7 @@ const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
 hevcPlaybackSupportedPromise.catch((err) => console.error(err));
 
 function emitEvent(appEvent: AppEvent) {
-  electron.ipcRenderer.send('appEvent', appEvent satisfies AppEvent);
+  ipcRenderer.send('appEvent', appEvent satisfies AppEvent);
 }
 
 function App() {
@@ -229,7 +228,7 @@ function App() {
 
   useEffect(() => {
     i18n.changeLanguage(language ?? undefined).catch(console.error);
-    electron.ipcRenderer.send('setLanguage', language);
+    ipcRenderer.send('setLanguage', language);
   }, [language]);
 
   const isFileOpened = !!filePath;
@@ -1957,7 +1956,7 @@ function App() {
 
   const copySegmentsToClipboard = useCallback(async () => {
     if (!isFileOpened || selectedSegments.length === 0) return;
-    electron.clipboard.writeText(formatTsvHuman(selectedSegments));
+    mainApi.writeClipboardText(formatTsvHuman(selectedSegments));
   }, [isFileOpened, selectedSegments]);
 
   const showIncludeExternalStreamsDialog = useCallback(async () => {
@@ -2200,11 +2199,11 @@ function App() {
     // eslint-disable-next-line unicorn/prefer-add-event-listener
     document.ondragend = dragPreventer;
 
-    electron.ipcRenderer.send('renderer-ready');
+    ipcRenderer.send('renderer-ready');
   }, []);
 
   useEffect(() => {
-    electron.ipcRenderer.send('setAskBeforeClose', askBeforeClose && isFileOpened);
+    ipcRenderer.send('setAskBeforeClose', askBeforeClose && isFileOpened);
   }, [askBeforeClose, isFileOpened]);
 
   const extractSingleStream = useCallback(async (index: number) => {
@@ -2390,12 +2389,12 @@ function App() {
       (_event: IpcRendererEvent, ...args: Parameters<typeof fn>) => actionWithCatch(() => fn(...args)),
     ] as const);
 
-    ipcActions.forEach(([key, action]) => electron.ipcRenderer.on(key, action));
-    electron.ipcRenderer.on('apiAction', tryApiAction);
+    ipcActions.forEach(([key, action]) => ipcRenderer.on(key, action));
+    ipcRenderer.on('apiAction', tryApiAction);
 
     return () => {
-      ipcActions.forEach(([key, action]) => electron.ipcRenderer.off(key, action));
-      electron.ipcRenderer.off('apiAction', tryApiAction);
+      ipcActions.forEach(([key, action]) => ipcRenderer.off(key, action));
+      ipcRenderer.off('apiAction', tryApiAction);
     };
   }, [checkFileOpened, customOutDir, detectedFps, filePath, getFrameCount, getKeyboardAction, goToTimecodeDirect, handleError, importEdlFile, loadCutSegments, mainActions, promptDownloadMediaUrlWrapper, selectedSegments, toggleKeyboardShortcuts, tryExportEdlFile, userOpenFiles]);
 
@@ -2403,7 +2402,7 @@ function App() {
     ev.preventDefault();
     if (!ev.dataTransfer) return;
     await withErrorHandling(async () => {
-      const filePaths = [...ev.dataTransfer.files].map((f) => electron.webUtils.getPathForFile(f));
+      const filePaths = [...ev.dataTransfer.files].map((f) => webUtils.getPathForFile(f));
       await mainApi.focusWindow();
       batchLoadPaths(filePaths, true);
     });
@@ -2413,7 +2412,7 @@ function App() {
     ev.preventDefault();
     if (!ev.dataTransfer) return;
     await withErrorHandling(async () => {
-      const filePaths = [...ev.dataTransfer.files].map((f) => electron.webUtils.getPathForFile(f));
+      const filePaths = [...ev.dataTransfer.files].map((f) => webUtils.getPathForFile(f));
       if (filePaths.length !== 1) return;
       await mainApi.focusWindow();
       addStreamSourceFile(filePaths[0]!);
@@ -2424,7 +2423,7 @@ function App() {
     async function onDrop(ev: DragEvent) {
       ev.preventDefault();
       if (!ev.dataTransfer) return;
-      const filePaths = [...ev.dataTransfer.files].map((f) => electron.webUtils.getPathForFile(f));
+      const filePaths = [...ev.dataTransfer.files].map((f) => webUtils.getPathForFile(f));
       await mainApi.focusWindow();
       userOpenFiles(filePaths);
     }

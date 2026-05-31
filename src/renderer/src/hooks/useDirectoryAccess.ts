@@ -10,7 +10,7 @@ import mainApi from '../mainApi';
 // import isDev from '../isDev';
 
 
-const { lstat } = window.require('fs/promises');
+const { lstat } = window.require('node:fs/promises');
 
 
 // MacOS App Store sandbox doesn't allow reading/writing anywhere,

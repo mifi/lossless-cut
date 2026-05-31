@@ -17,8 +17,7 @@ import { compareReleasesUrl, getReleaseUrl } from '../../../common/constants';
 // see also generateVersions.ts
 const versions: { version: string, highlightsMd?: string | undefined }[] = versionsJson;
 
-const remote = window.require('@electron/remote');
-const { shell } = remote;
+const { shell } = window.require('@electron/remote');
 
 export default function WhatsNew() {
   const { t } = useTranslation();

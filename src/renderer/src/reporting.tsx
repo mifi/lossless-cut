@@ -6,10 +6,8 @@ import { isStoreBuild, isMasBuild, isWindowsStoreBuild, isExecaError, appVersion
 import getSwal from './swal';
 import { discussionsUrl, githubUrl, publicBugReportUrl, supportEmail } from '../../common/constants';
 
-const electron = window.require('electron');
-
 const remote = window.require('@electron/remote');
-
+const { shell } = remote;
 const { platform, arch } = remote.require('./index.js');
 
 
@@ -22,14 +20,14 @@ export function openSendReportDialog({ err, message, state }: {
 }) {
   const reportInstructions = isStoreBuild
     ? (
-      <p><Trans>Please send an email to <span className="link-button" role="button" onClick={() => electron.shell.openExternal(`mailto:${supportEmail}`)}>{supportEmail}</span> where you describe what you were doing.</Trans></p>
+      <p><Trans>Please send an email to <span className="link-button" role="button" onClick={() => shell.openExternal(`mailto:${supportEmail}`)}>{supportEmail}</span> where you describe what you were doing.</Trans></p>
     ) : (
       <Trans>
         <p>
-          If you&apos;re having a problem or question about LosslessCut, please first check the links in the <b>Help</b> menu. If you cannot find any resolution, you may ask a question in <span className="link-button" role="button" onClick={() => electron.shell.openExternal(discussionsUrl)}>GitHub discussions</span> or on <span className="link-button" role="button" onClick={() => electron.shell.openExternal(githubUrl)}>Discord.</span>
+          If you&apos;re having a problem or question about LosslessCut, please first check the links in the <b>Help</b> menu. If you cannot find any resolution, you may ask a question in <span className="link-button" role="button" onClick={() => shell.openExternal(discussionsUrl)}>GitHub discussions</span> or on <span className="link-button" role="button" onClick={() => shell.openExternal(githubUrl)}>Discord.</span>
         </p>
         <p>
-          If you believe that you found a bug in LosslessCut, you may <span className="link-button" role="button" onClick={() => electron.shell.openExternal(publicBugReportUrl)}>report a bug</span>.
+          If you believe that you found a bug in LosslessCut, you may <span className="link-button" role="button" onClick={() => shell.openExternal(publicBugReportUrl)}>report a bug</span>.
         </p>
       </Trans>
     );

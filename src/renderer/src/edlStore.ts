@@ -11,9 +11,9 @@ import { llcProjectV1Schema, llcProjectV2Schema } from './types';
 import { mapSaveableSegments } from './segments';
 import isDev from './isDev';
 
-const { readFile, writeFile } = window.require('fs/promises');
+const { readFile, writeFile } = window.require('node:fs/promises');
 const cueParser = window.require('cue-parser');
-const { basename } = window.require('path');
+const { basename } = window.require('node:path');
 
 const { dialog } = window.require('@electron/remote');
 

@@ -16,11 +16,8 @@ import getSwal from '../swal';
 import isDev from '../isDev';
 import mainApi from '../mainApi';
 
-const { lstat } = window.require('fs/promises');
-const remote = window.require('@electron/remote');
-const electron = window.require('electron');
-const { clipboard } = electron;
-const { dialog } = remote;
+const { lstat } = window.require('node:fs/promises');
+const { dialog } = window.require('@electron/remote');
 
 
 // https://github.com/mifi/lossless-cut/issues/1495
@@ -455,7 +452,7 @@ export async function openYouTubeChaptersDialog(text: string) {
   });
 
   if (isConfirmed) {
-    clipboard.writeText(text);
+    mainApi.writeClipboardText(text);
   }
 }
 

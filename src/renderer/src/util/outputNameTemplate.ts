@@ -26,7 +26,7 @@ export const segTagsVariable = 'SEG_TAGS';
 // I don't remember why I set it to 200, but on Windows max length seems to be 256, on MacOS it seems to be 255.
 export const maxFileNameLength = 250;
 
-const { parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, basename }: PlatformPath = window.require('path');
+const { parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, basename }: PlatformPath = window.require('node:path');
 
 
 export interface GeneratedOutFileNames {

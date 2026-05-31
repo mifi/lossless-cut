@@ -14,14 +14,15 @@ import type { EnableImportChapters, Html5ifyMode } from '../../common/types';
 import { UserFacingError } from '../errors';
 import type { FFprobeFormat } from '../../common/ffprobe';
 
-const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
-const { stat, lstat, readdir, utimes, unlink, open, access, constants: { R_OK, W_OK } } = window.require('fs/promises');
-const { ipcRenderer } = window.require('electron');
+const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('node:path');
+const { stat, lstat, readdir, utimes, unlink, open, access, constants: { R_OK, W_OK } } = window.require('node:fs/promises');
 const remote = window.require('@electron/remote');
+const { app } = remote;
 const { isWindows, isMac } = remote.require('./index.js');
+const { ipcRenderer } = window.require('electron');
 
-const appVersion = remote.app.getVersion();
-const appPath = remote.app.getAppPath();
+const appVersion = app.getVersion();
+const appPath = app.getAppPath();
 
 export { isWindows, isMac, appVersion, appPath };
 

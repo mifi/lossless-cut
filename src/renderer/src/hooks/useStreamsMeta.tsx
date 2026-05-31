@@ -14,8 +14,7 @@ import ExpressionDialog from '../components/ExpressionDialog';
 import type { ShowGenericDialog } from '../components/GenericDialog';
 import { changeEnabledStreamsExpressionHelpUrl } from '../../../common/constants';
 
-const remote = window.require('@electron/remote');
-const { shell } = remote;
+const { shell } = window.require('@electron/remote');
 
 
 export default function useStreamsMeta({ mainStreams, externalFilesMeta, filePath, autoExportExtraStreams, showGenericDialog }: {

@@ -34,8 +34,8 @@ import type { Segment as ScopeSegment } from '../../../common/userTypes';
 import type { FfmpegHwAccel } from '../../../common/types';
 
 const remote = window.require('@electron/remote');
-const { shell } = remote;
 const { ffmpeg: { blackDetect, silenceDetect } } = remote.require('./index.js');
+const { shell } = remote;
 
 
 type ParameterDialogParameters = Record<string, string>;

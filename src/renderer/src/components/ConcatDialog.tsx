@@ -26,7 +26,7 @@ import type { FileStats } from '../types';
 import OutDirSelector from './OutDirSelector';
 import { parseRatio } from '../../../common/util';
 
-const { basename } = window.require('path');
+const { basename } = window.require('node:path');
 
 
 const rowStyle: CSSProperties = {
