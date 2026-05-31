@@ -501,7 +501,7 @@ function BottomBar({
           />
         )}
 
-        <div role="button" onClick={() => togglePlay()} style={{ ...playStyle, margin: '.1em .1em 0 .2em', background: primaryColor }}>
+        <div title={actionTitle(t('Play/pause'), 'togglePlayResetSpeed')} role="button" onClick={() => togglePlay()} style={{ ...playStyle, margin: '.1em .1em 0 .2em', background: primaryColor }}>
           <PlayPause style={{ fontSize: '.9em' }} />
         </div>
 

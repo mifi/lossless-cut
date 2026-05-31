@@ -518,8 +518,12 @@ const keyCodeToDisplayName: Record<string, string> = {
 };
 
 export function getKeyDisplayName(code: string, keyboardLayoutMap: Map<string, string> | undefined): string | undefined {
-  if (code === 'MetaLeft' || code === 'MetaRight') return getMetaKeyName();
-  if (keyboardLayoutMap == null) return undefined;
+  if (code === 'MetaLeft' || code === 'MetaRight') {
+    return getMetaKeyName();
+  }
+  if (keyboardLayoutMap == null) {
+    return undefined;
+  }
   return keyboardLayoutMap.get(code) ?? keyCodeToDisplayName[code] ?? code;
 }
 

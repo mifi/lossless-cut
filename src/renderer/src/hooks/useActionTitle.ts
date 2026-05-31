@@ -11,7 +11,7 @@ export default function useActionTitle() {
   const { keyBindings } = useUserSettings();
 
   const keyBindingByAction = useMemo(
-    () => Object.fromEntries(keyBindings.map((binding) => [binding.action, binding])) as Partial<Record<KeyboardAction, { keys: string }>>,
+    () => Object.fromEntries(keyBindings.map((binding) => [binding.action, binding])),
     [keyBindings],
   );
 
