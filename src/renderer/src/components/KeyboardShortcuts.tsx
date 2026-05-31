@@ -613,6 +613,10 @@ const KeyboardShortcuts = memo(({
         name: t('Fix incorrect duration'),
         category: outputCategory,
       },
+      decimate: {
+        name: t('Decimate video'),
+        category: outputCategory,
+      },
 
       // batchFilesCategory
       batchPreviousFile: {

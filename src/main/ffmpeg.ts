@@ -14,7 +14,7 @@ import type { FFprobeFormat } from '../common/ffprobe.js';
 import isDev from './isDev.js';
 import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';
-import { formatFfmpegTime, getHwaccelArgs, parseFfprobeDuration } from '../common/util.js';
+import { formatFfmpegNumber, getHwaccelArgs, parseFfprobeDuration } from '../common/util.js';
 import { getFfmpegJpegQuality } from './ffmpegUtil.js';
 
 
@@ -264,9 +264,9 @@ export async function renderWaveformPng({ filePath, start, duration, resample, c
 }
 
 const getInputSeekArgs = ({ filePath, from, to }: { filePath: string, from?: number | undefined, to?: number | undefined }) => [
-  ...(from != null ? ['-ss', formatFfmpegTime(from)] : []),
+  ...(from != null ? ['-ss', formatFfmpegNumber(from)] : []),
   '-i', filePath,
-  ...(from != null && to != null ? ['-t', formatFfmpegTime(to - from)] : []),
+  ...(from != null && to != null ? ['-t', formatFfmpegNumber(to - from)] : []),
 ];
 
 export function mapTimesToSegments(times: number[], includeLast: boolean) {
@@ -748,5 +748,5 @@ export async function downloadMediaUrl(url: string, outPath: string) {
   await runFfmpegProcess(args);
 }
 
-// Don't pass complex objects over the bridge (the process), so just convert it to a promise
+// Don't pass complex objects (execa decorated promise) over the bridge (the process). Instead convert it to a normal promise
 export const runFfmpeg = async (...args: Parameters<typeof runFfmpegProcess>) => runFfmpegProcess(...args);

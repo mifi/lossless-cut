@@ -16,7 +16,7 @@ import { deleteDispositionValue, type AllFilesMeta, type Chapter, type CopyfileS
 import type { LossyMode } from '../../../main';
 import { UserFacingError } from '../../errors';
 import mainApi from '../mainApi';
-import { formatFfmpegTime, getHwaccelArgs } from '../../../common/util';
+import { formatFfmpegNumber, getHwaccelArgs } from '../../../common/util';
 
 const { join, resolve, dirname } = window.require('path');
 const { writeFile, mkdir, access, constants: { W_OK } } = window.require('fs/promises');
@@ -278,8 +278,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     if (detectedFps != null) cutDuration = Math.max(cutDuration, frameDuration); // ensure at least one frame duration
 
     // Don't cut if no need: https://github.com/mifi/lossless-cut/issues/50
-    const cutFromArgs = cuttingStart ? ['-ss', formatFfmpegTime(cutFromWithAdjustment)] : [];
-    const cutToArgs = cuttingEnd ? ['-t', formatFfmpegTime(cutDuration)] : [];
+    const cutFromArgs = cuttingStart ? ['-ss', formatFfmpegNumber(cutFromWithAdjustment)] : [];
+    const cutToArgs = cuttingEnd ? ['-t', formatFfmpegNumber(cutDuration)] : [];
 
     const copyFileStreamsFiltered = copyFileStreams.filter(({ streamIds }) => streamIds.length > 0);
 
@@ -518,10 +518,10 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       // No progress if we set loglevel warning :(
       // '-loglevel', 'warning',
 
-      '-ss', formatFfmpegTime(cutFrom), // if we don't -ss before -i, seeking will be slow for long files, see https://github.com/mifi/lossless-cut/issues/126#issuecomment-1135451043
+      '-ss', formatFfmpegNumber(cutFrom), // if we don't -ss before -i, seeking will be slow for long files, see https://github.com/mifi/lossless-cut/issues/126#issuecomment-1135451043
       '-i', filePath,
       '-ss', '0', // If we don't do this, the output seems to start with an empty black after merging with the encoded part
-      '-t', formatFfmpegTime(cutTo - cutFrom),
+      '-t', formatFfmpegNumber(cutTo - cutFrom),
 
       ...mapStreamsArgs,
 
@@ -893,19 +893,15 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   }, [appendFfmpegCommandLog, ffmpegHwaccel, html5ifyDummy, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   // https://stackoverflow.com/questions/34118013/how-to-determine-webm-duration-using-ffprobe
-  const fixInvalidDuration = useCallback(async ({ fileFormat, customOutDir, onProgress }: {
-    fileFormat: string,
-    customOutDir?: string | undefined,
+  const fixInvalidDuration = useCallback(async ({ filePath: filePathArg, outPath, onProgress }: {
+    filePath: string,
+    outPath: string,
     onProgress: (a: number) => void,
   }) => {
-    invariant(filePath != null);
-    const ext = getOutFileExtension({ outFormat: fileFormat, filePath });
-    const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `reformatted${ext}` });
-
     const ffmpegArgs = [
       '-hide_banner',
 
-      '-i', filePath,
+      '-i', filePathArg,
 
       // https://github.com/mifi/lossless-cut/issues/1415
       '-map_metadata', '0',
@@ -920,10 +916,36 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const result = await runFfmpegWithProgress({ ffmpegArgs, onProgress });
     logStdoutStderr(result);
 
-    await transferTimestamps({ inPath: filePath, outPath, duration: undefined, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
+    return outPath;
+  }, [appendFfmpegCommandLog]);
+
+  // https://github.com/mifi/lossless-cut/issues/2111
+  const decimate = useCallback(async ({ filePath: filePathArg, outPath, n, fps }: {
+    n: number,
+    fps: number,
+    filePath: string,
+    outPath: string,
+  }) => {
+    const ffmpegArgs = [
+      '-hide_banner',
+
+      // '-discard', 'nokey', // doesn't seem to work with hevc, so use noise=drop=not(key) instead
+      // https://chatgpt.com/share/6a1c3be1-1064-83ec-b5c1-fa91ddf3cde8
+      '-i', filePathArg,
+      '-map', 'v:0',
+      '-c', 'copy',
+      '-bsf:v', `noise=drop=not(key),noise=drop='mod(n\\,${formatFfmpegNumber(n)})',setts=ts='N/${formatFfmpegNumber(fps)}/TB_OUT'`,
+      '-an',
+      '-ignore_unknown',
+      '-y', outPath,
+    ];
+
+    appendFfmpegCommandLog(ffmpegArgs);
+    const result = await runFfmpeg(ffmpegArgs);
+    logStdoutStderr(result);
 
     return outPath;
-  }, [appendFfmpegCommandLog, filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
+  }, [appendFfmpegCommandLog]);
 
   function getPreferredCodecFormat(stream: LiteFFprobeStream) {
     const map = {
@@ -1069,7 +1091,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   }, [extractAttachmentStreams, extractNonAttachmentStreams, filePath]);
 
   return {
-    cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, concatCutSegments, extractStreams, tryDeleteFiles,
+    cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, decimate, concatCutSegments, extractStreams, tryDeleteFiles,
   };
 }
 

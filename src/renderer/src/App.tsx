@@ -80,6 +80,9 @@ import {
   isMasBuild,
   readFileStats,
   makeSourceFileAccessError,
+  transferTimestamps,
+  getOutFileExtension,
+  getSuffixedOutPath,
 } from './util';
 import getSwal, { errorToast, showPlaybackFailedMessage } from './swal';
 import { adjustRate } from './util/rate-calculator';
@@ -195,7 +198,7 @@ function App() {
 
   const { withErrorHandling, handleError, genericError, setGenericError } = useErrorHandling();
 
-  const { showGenericDialog, genericDialog, closeGenericDialog, confirmDialog, openExportFinishedDialog, openCutFinishedDialog, openConcatFinishedDialog, openCleanupFilesDialog, openShiftSegmentsDialog } = useDialog();
+  const { showGenericDialog, genericDialog, closeGenericDialog, confirmDialog, openExportFinishedDialog, openCutFinishedDialog, openConcatFinishedDialog, openCleanupFilesDialog, openShiftSegmentsDialog, openDecimateDialog } = useDialog();
 
   // Note that each action may be multiple key bindings and this will only be the first binding for each action
   const keyBindingByAction = useMemo(() => Object.fromEntries(keyBindings.map((binding) => [binding.action, binding])), [keyBindings]);
@@ -590,7 +593,7 @@ function App() {
   const isEncoding = needSmartCut || lossyMode != null;
 
   const {
-    concatFiles, html5ifyDummy, cutMultiple, concatCutSegments, html5ify, fixInvalidDuration, extractStreams, tryDeleteFiles,
+    concatFiles, html5ifyDummy, cutMultiple, concatCutSegments, html5ify, fixInvalidDuration, decimate, extractStreams, tryDeleteFiles,
   } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, encCustomBitrate: encBitrate, appendFfmpegCommandLog, ffmpegHwaccel });
 
   const { previewFilePath, setPreviewFilePath, usingDummyVideo, setUsingDummyVideo, userHtml5ifyCurrentFile, convertFormatBatch, html5ifyAndLoadWithPreferences } = useHtml5ify({
@@ -1715,23 +1718,47 @@ function App() {
 
   const toggleKeyboardShortcuts = useCallback(() => setKeyboardShortcutsVisible((v) => !v), []);
 
-  const tryFixInvalidDuration = useCallback(async () => {
+  const runAndReloadFile = useCallback(async ({ operation, loadingText, errorText = i18n.t('The operation failed'), nameSuffix }: { operation: (params: { filePath: string, outPath: string }) => Promise<string>, loadingText: string, errorText?: string, nameSuffix: string }) => {
     if (!checkFileOpened() || workingRef.current) return;
     try {
-      setWorking({ text: i18n.t('Fixing file duration') });
+      setWorking({ text: loadingText });
       setProgress(0);
       await withErrorHandling(async () => {
         invariant(fileFormat != null);
-        const path = await fixInvalidDuration({ fileFormat, customOutDir, onProgress: setProgress });
-        showNotification({ icon: 'info', text: i18n.t('Duration has been fixed') });
+        invariant(filePath != null);
+        const ext = getOutFileExtension({ outFormat: fileFormat, filePath });
+        const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `${nameSuffix}${ext}` });
+        const newPath = await operation({ filePath, outPath });
+        await transferTimestamps({ inPath: filePath, outPath, duration: undefined, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
 
-        await loadMedia({ filePath: path });
-      }, i18n.t('Failed to fix file duration'));
+        await loadMedia({ filePath: newPath });
+      }, errorText);
     } finally {
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [checkFileOpened, customOutDir, fileFormat, fixInvalidDuration, loadMedia, setWorking, showNotification, withErrorHandling, workingRef]);
+  }, [checkFileOpened, customOutDir, fileFormat, filePath, loadMedia, setWorking, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, withErrorHandling, workingRef]);
+
+  const tryFixInvalidDuration = useCallback(async () => runAndReloadFile({
+    operation: async ({ filePath: fp, outPath }) => {
+      const path = await fixInvalidDuration({ filePath: fp, outPath, onProgress: setProgress });
+      showNotification({ icon: 'info', text: i18n.t('Duration has been fixed') });
+      return path;
+    },
+    loadingText: i18n.t('Fixing file duration'),
+    nameSuffix: 'reformatted',
+  }), [fixInvalidDuration, runAndReloadFile, showNotification]);
+
+  const tryDecimate = useCallback(async () => {
+    if (!checkFileOpened()) return;
+    const params = await openDecimateDialog();
+    if (params == null) return;
+    await runAndReloadFile({
+      operation: async ({ filePath: fp, outPath }) => decimate({ filePath: fp, outPath, ...params }),
+      loadingText: i18n.t('Decimating video'),
+      nameSuffix: 'decimated',
+    });
+  }, [checkFileOpened, decimate, openDecimateDialog, runAndReloadFile]);
 
   const addStreamSourceFile = useCallback(async (path: string) => {
     if (allFilesMeta[path]) return undefined; // Already added?
@@ -2108,6 +2135,7 @@ function App() {
       invertSelectedSegments,
       removeSelectedSegments,
       fixInvalidDuration: tryFixInvalidDuration,
+      decimate: tryDecimate,
       shiftAllSegmentTimes,
       increaseVolume: () => setPlaybackVolume((val) => Math.min(1, val + 0.07)),
       decreaseVolume: () => setPlaybackVolume((val) => Math.max(0, val - 0.07)),
@@ -2146,7 +2174,7 @@ function App() {
     };
 
     return ret;
-  }, [togglePlaySelectedSegments, toggleLoopSelectedSegments, pause, timelineToggleComfortZoom, captureSnapshot, captureSnapshotAsCoverArt, captureSnapshotToClipboard, setCutStart, setCutEnd, cleanupFilesDialog, splitCurrentSegment, focusSegmentAtCursor, selectSegmentsAtCursor, increaseRotation, jumpCutStart, jumpCutEnd, jumpTimelineStart, jumpTimelineEnd, batchOpenSelectedFile, closeBatch, addSegment, duplicateCurrentSegment, toggleLastCommands, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, reorderSegsByStartTime, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, createFixedDurationSegments, createNumSegments, createFixedByteSizedSegments, createRandomSegments, alignSegmentTimesToKeyframes, shuffleSegments, clearSegments, toggleSegmentsList, toggleStreamsSelector, extractAllStreams, convertFormatBatch, concatBatch, toggleCaptureFormat, toggleStripAudio, toggleStripVideo, toggleStripSubtitle, toggleStripThumbnail, toggleStripAll, toggleDarkMode, askStartTimeOffset, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, editCurrentSegmentTags, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, tryFixInvalidDuration, shiftAllSegmentTimes, toggleMuted, copySegmentsToClipboard, handleShowStreamsSelectorClick, openFilesDialog, openDirDialog, toggleSettings, detectBlackScenes, detectSilentScenes, detectSceneChanges, readAllKeyframes, createSegmentsFromKeyframes, toggleWaveformMode, toggleShowThumbnails, toggleShowKeyframes, showIncludeExternalStreamsDialog, toggleFullscreenVideo, selectAllMarkers, selectSegmentsByLabel, selectSegmentsByExpr, labelSelectedSegments, mutateSegmentsByExpr, toggleKeyboardShortcuts, generateOverviewWaveform, checkFileOpened, cutSegments, seekRel, keyboardSeekAccFactor, togglePlay, play, userChangePlaybackRate, goToTimecode, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, seekRelPercent, seekClosestKeyframe, shortStep, jumpSeg, zoomRel, batchFileJump, removeSegment, currentSegIndexSafe, cutSegmentsHistory, labelSegment, onExportPress, userHtml5ifyCurrentFile, toggleKeyframeCut, applyEnabledStreamsFilter, setPlaybackVolume, commandedTimeRef, closeFileWithConfirm, openSendReportDialogWithState]);
+  }, [togglePlaySelectedSegments, toggleLoopSelectedSegments, pause, timelineToggleComfortZoom, captureSnapshot, captureSnapshotAsCoverArt, captureSnapshotToClipboard, setCutStart, setCutEnd, cleanupFilesDialog, splitCurrentSegment, focusSegmentAtCursor, selectSegmentsAtCursor, increaseRotation, jumpCutStart, jumpCutEnd, jumpTimelineStart, jumpTimelineEnd, batchOpenSelectedFile, closeBatch, addSegment, duplicateCurrentSegment, toggleLastCommands, extractCurrentSegmentFramesAsImages, extractSelectedSegmentsFramesAsImages, reorderSegsByStartTime, invertAllSegments, fillSegmentsGaps, combineOverlappingSegments, combineSelectedSegments, createFixedDurationSegments, createNumSegments, createFixedByteSizedSegments, createRandomSegments, alignSegmentTimesToKeyframes, shuffleSegments, clearSegments, toggleSegmentsList, toggleStreamsSelector, extractAllStreams, convertFormatBatch, concatBatch, toggleCaptureFormat, toggleStripAudio, toggleStripVideo, toggleStripSubtitle, toggleStripThumbnail, toggleStripAll, toggleDarkMode, askStartTimeOffset, deselectAllSegments, selectAllSegments, selectOnlyCurrentSegment, editCurrentSegmentTags, toggleCurrentSegmentSelected, invertSelectedSegments, removeSelectedSegments, tryFixInvalidDuration, tryDecimate, shiftAllSegmentTimes, toggleMuted, copySegmentsToClipboard, handleShowStreamsSelectorClick, openFilesDialog, openDirDialog, toggleSettings, detectBlackScenes, detectSilentScenes, detectSceneChanges, readAllKeyframes, createSegmentsFromKeyframes, toggleWaveformMode, toggleShowThumbnails, toggleShowKeyframes, showIncludeExternalStreamsDialog, toggleFullscreenVideo, selectAllMarkers, selectSegmentsByLabel, selectSegmentsByExpr, labelSelectedSegments, mutateSegmentsByExpr, toggleKeyboardShortcuts, generateOverviewWaveform, checkFileOpened, cutSegments, seekRel, keyboardSeekAccFactor, togglePlay, play, userChangePlaybackRate, goToTimecode, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, seekRelPercent, seekClosestKeyframe, shortStep, jumpSeg, zoomRel, batchFileJump, removeSegment, currentSegIndexSafe, cutSegmentsHistory, labelSegment, onExportPress, userHtml5ifyCurrentFile, toggleKeyframeCut, applyEnabledStreamsFilter, setPlaybackVolume, commandedTimeRef, closeFileWithConfirm, openSendReportDialogWithState]);
 
   const getKeyboardAction = useCallback((action: MainKeyboardAction) => mainActions[action], [mainActions]);
 
