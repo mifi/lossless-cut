@@ -1062,5 +1062,11 @@
   "Top": "Alto",
   "Track": "Traccia",
   "Value must be shorter than total duration ({{totalDuration}})": "Il valore deve essere inferiore alla durata totale ({{totalDuration}})",
-  "Width": "Larghezza"
+  "Width": "Larghezza",
+  "Decimate allows you to losslessly extract only the keyframes from a video, discarding all non-keyframes. You can also optionally drop some of the keyframes. This can dramatically speed up playback and is useful for shortening long videos with little motion, such as creating time-lapse videos.": "Decima ti consente senza perdita di dati di estrarre da un video solo i fotogrammi chiave, scartando tutti i fotogrammi non chiave. Facoltativamente puoi anche eliminare alcuni fotogrammi chiave. Ciò può velocizzare notevolmente la riproduzione ed è utile per abbreviare video lunghi con poco movimento, ad esempio creando video time-lapse.",
+  "Decimate video": "Decima video",
+  "Decimating video": "Decimazione video",
+  "Keep every nth keyframe. Use the value \"1\" to keep all keyframes": "Mantieni ogni ennesimo fotogramma chiave - usa il valore \"1\" per mantenere tutti i fotogrammi chiave",
+  "Output video frame rate (frames per second)": "Frequenza fotogrammi video in uscita (fotogrammi al secondo)",
+  "The operation failed": "L'operazione è fallita"
 }
