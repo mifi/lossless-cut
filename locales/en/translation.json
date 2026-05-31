@@ -260,6 +260,7 @@
   "Exit": "Exit",
   "Expand segments +5 sec": "Expand segments +5 sec",
   "Expected": "Expected",
+  "Experimental keyframe cut": "Experimental keyframe cut",
   "Export": "Export",
   "Export {{ num }} segments": "Export {{ num }} segments",
   "Export each segment to a separate file": "Export each segment to a separate file",

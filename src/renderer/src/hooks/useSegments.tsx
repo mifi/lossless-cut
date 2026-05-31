@@ -512,29 +512,33 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
           const time = newSegment[key];
           invariant(filePath != null);
           if (time != null) {
-            let keyframe = await findKeyframeNearTime({ filePath, streamIndex: videoStream.index, time, mode: mode === 'opposing' ? (key === 'start' ? 'before' : 'after') : mode });
-            if (keyframe === undefined) {
-              if (mode !== 'keyframeCutFix') {
-                throw new UserFacingError(i18n.t('Cannot find any keyframe within 60 seconds of frame {{time}}', { time }));
-              }
+            let keyframe = await findKeyframeNearTime({
+              filePath,
+              streamIndex: videoStream.index,
+              time,
+              mode: mode === 'opposing' ? (key === 'start' ? 'before' : 'after') : mode,
+            });
+            if (mode === 'experimental' && keyframe == null) {
               keyframe = fileDuration;
-              console.log(2,time,keyframe);
+            }
+            if (keyframe == null) {
+              throw new UserFacingError(i18n.t('Cannot find any keyframe within 60 seconds of frame {{time}}', { time }));
             }
             newSegment[key] = keyframe;
           }
         }
         if (startOrEnd.includes('start')) {
-          if (mode === 'keyframeCutFix') {
+          if (mode === 'experimental') {
             newSegment.start += frameTime * 0.3;
           }
           await align('start');
-          if (mode === 'keyframeCutFix') {
+          if (mode === 'experimental') {
             newSegment.start -= frameTime * 0.7;
           }
         }
         if (startOrEnd.includes('end')) {
           await align('end');
-          if (mode === 'keyframeCutFix' && newSegment.end !== fileDuration) {
+          if (mode === 'experimental' && newSegment.end !== fileDuration) {
             newSegment.end -= frameTime * 0.3;
           }
         }
