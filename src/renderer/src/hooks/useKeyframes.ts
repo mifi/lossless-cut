@@ -42,8 +42,9 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
     return map;
   }, [detectedFps, neighbouringKeyFrames]);
 
-  const findNearestKeyFrameTime = useCallback(({ time, direction }: { time: number, direction: number }) => ffmpegFindNearestKeyFrameTime({ frames: neighbouringKeyFrames, time, direction, fps: detectedFps }), [neighbouringKeyFrames, detectedFps]);
+  const findNearestKeyFrameTime = useCallback(({ time, direction }: { time: number, direction: number }) => ffmpegFindNearestKeyFrameTime({ frames: neighbouringKeyFrames, time, direction }), [neighbouringKeyFrames]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setNeighbouringKeyFrames({}), [filePath, videoStream]);
 
   useDebounceOld(() => {

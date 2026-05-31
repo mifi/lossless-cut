@@ -22,6 +22,8 @@ import '@fontsource/open-sans/700-italic.css';
 import '@fontsource/open-sans/800.css';
 import '@fontsource/open-sans/800-italic.css';
 
+import '@radix-ui/themes/styles.css';
+
 import type { KeyboardLayoutMap } from './types';
 import App from './App';
 import ErrorBoundary from './ErrorBoundary';

@@ -6,6 +6,8 @@ Please read the documentation before creating an issue. Thank you 🙏
 
 - **Q:** Is there a keyboard shortcut to do X?
   - **A:** First check the Keyboard shortcuts dialog. If you cannot find your shortcut there, [see this issue.](https://github.com/mifi/lossless-cut/issues/254)
+- **Q:** How can I import multiple files into my project and edit them together?
+  - **A:** LosslessCut is not a [non-linear editor](https://github.com/mifi/lossless-cut/issues/976) (like Adobe Premiere) and it is not a linear editor (like Avidemux) - it is something in-between. You create segments on the timeline and the segments represent which portions of video will be exported. If you want more advanced workflows, you have to do it in multiple separate operations.
 - **Q:** Can LosslessCut be automated using a CLI or API or do external post-processing?
   - **A:** While it was never designed for advanced batching/automation, it does have a [basic CLI and a HTTP API](cli.md). More info: [#980](https://github.com/mifi/lossless-cut/issues/980) [#868](https://github.com/mifi/lossless-cut/issues/868).
 - **Q:** I cannot find a particular button or function.
@@ -17,7 +19,7 @@ Please read the documentation before creating an issue. Thank you 🙏
 - **Q** What's the difference between the app in the Apple/Microsoft App Store vs. GitHub releases?
   - **A** LosslessCut version in the App Stores is often a few versions behind the latest GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. The GitHub version will contain new, untested features and may contain some bugs (even in existing functionality). I consider the newest GitHub versions to be a public "beta" test. Then, once I'm sure that the new version works well, I will release it in the App Stores as well to give a frictionless as possible experience for customers. They have exactly the same in-app features, except for a few platform limitations: Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps run in a sandbox, and therefore need to prompt for output directory before allowing writing files.
 - **Q**: What are all these `.llc` files that get created?
-  - **A***: Their purpase is to save your segments so that when you exit/re-open LosslessCut you can continue where you left off. You can turn them off in app settings. See also [#2115](https://github.com/mifi/lossless-cut/issues/2115).
+  - **A***: Their purpose is to save your segments so that when you exit/re-open LosslessCut you can continue where you left off. You can turn them off in app settings. See also [#2115](https://github.com/mifi/lossless-cut/issues/2115).
 
 ## Commonly requested features
 
@@ -53,7 +55,7 @@ If you have a problem with the app or with a file, please see the [🤔 Troubles
 - **Drag and drop** a video file into player or use <kbd>⌘</kbd>/<kbd>CTRL</kbd> + <kbd>O</kbd>.
 - <kbd>SPACE</kbd> to play/pause or <kbd>←</kbd> <kbd>→</kbd> <kbd>,</kbd> <kbd>.</kbd> or mouse/trackpad wheel to seek back/forth.
 - Set the start/end times of the current segment by first moving the timeline cursor and then pressing <kbd>I</kbd> to set start time and <kbd>O</kbd> to set end time. You can also press hold <kbd>SHIFT</kbd> while dragging a segment with the mouse to move or resize it
-- <kbd>+</kbd> to create a new segment.
+- <kbd>+</kbd> to create another marker and repeat the previous step to convert it into a segment.
 - <kbd>B</kbd> to split the segment at the timeline cursor.
 - <kbd>BACKSPACE</kbd> to remove cutpoint/segment.
 - If you create segments without an end time, it is a [marker](#markers) instead of a segment.

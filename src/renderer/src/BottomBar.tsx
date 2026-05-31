@@ -26,7 +26,7 @@ import { isExactDurationMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
 import useActionTitle from './hooks/useActionTitle';
 import { askForPlaybackRate, checkAppPath } from './dialogs';
-import type { FormatTimecode, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
+import type { FormatTimecode, GetFrameCount, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
 import type { WaveformMode } from '../../common/types';
 import type { Frame } from './ffmpeg';
 
@@ -36,6 +36,16 @@ const { clipboard } = window.require('electron');
 const zoomOptions = Array.from({ length: 13 }).fill(undefined).map((_unused, z) => 2 ** z);
 
 const leftRightWidth = 100;
+
+const timeWrapperStyle: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  position: 'absolute',
+  inset: 0,
+  marginLeft: '1.5em',
+  pointerEvents: 'none',
+};
 
 // eslint-disable-next-line react/display-name
 const InvertCutModeButton = memo(({ invertCutSegments, setInvertCutSegments }: { invertCutSegments: boolean, setInvertCutSegments: Dispatch<SetStateAction<boolean>> }) => {
@@ -219,8 +229,9 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
     marginLeft: isStart ? 0 : 5,
     marginRight: isStart ? 5 : 0,
     boxSizing: 'border-box',
-    fontFamily: 'inherit',
-    width: 90,
+    fontFamily: 'monospace',
+    letterSpacing: '-.05em',
+    width: 94,
     outline: 'none',
     color: error ? dangerColor : (isCutTimeManualSet() ? 'var(--gray-12)' : 'var(--gray-11)'),
   }), [border, error, isCutTimeManualSet, isStart]);
@@ -261,7 +272,7 @@ function BottomBar({
   toggleShowThumbnails, toggleWaveformMode, waveformMode, showThumbnails,
   outputPlaybackRate, setOutputPlaybackRate,
   formatTimecode, parseTimecode, playbackRate,
-  currentFrame, playbackMode,
+  currentFrame, playbackMode, displayTime, fileDurationNonZero, getFrameCount,
 }: {
   zoom: number,
   setZoom: (fn: (z: number) => number) => void,
@@ -311,9 +322,14 @@ function BottomBar({
   playbackRate: number,
   currentFrame: Frame | undefined,
   playbackMode: PlaybackMode | undefined,
+  displayTime: number,
+  fileDurationNonZero: number,
+  getFrameCount: GetFrameCount,
 }) {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
+
+  const isZoomed = zoom > 1;
 
   const playStyle = useMemo<CSSProperties>(() => ({
     paddingLeft: playing ? 0 : '.1em',
@@ -374,7 +390,7 @@ function BottomBar({
 
   const playbackRateRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    playbackRateRef.current?.animate([{ transform: 'scale(1.7)', color: 'var(--gray-12)' }, {}], { duration: 200 });
+    playbackRateRef.current?.animate([{ transform: 'scale(2)', color: 'var(--gray-12)', backgroundColor: playbackRate === 1 ? 'var(--cyan-10)' : (playbackRate < 1 ? 'var(--yellow-8)' : 'var(--orange-10)') }, {}], { duration: 200 });
   }, [playbackRate]);
 
   function renderJumpCutpointButton(direction: number) {
@@ -406,9 +422,11 @@ function BottomBar({
 
   const currentCutSegOrDefault = useMemo(() => currentCutSeg ?? { segColorIndex: 0 }, [currentCutSeg]);
 
+  const displayTimeFrameCount = useMemo(() => getFrameCount(displayTime), [displayTime, getFrameCount]);
+
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: isFileOpened ? 1 : 0.5 }}>
+      <div className="no-user-select" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: isFileOpened ? 1 : 0.5 }}>
         <div style={{ display: 'flex', alignItems: 'center', flexBasis: leftRightWidth }}>
           {!simpleMode && (
             <>
@@ -532,10 +550,7 @@ function BottomBar({
         <div style={{ flexBasis: leftRightWidth }} />
       </div>
 
-      <div
-        className="no-user-select"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.1em .3em', gap: '.5em', height: '2em' }}
-      >
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.1em .3em', gap: '.5em', height: '2em' }}>
         <InvertCutModeButton invertCutSegments={invertCutSegments} setInvertCutSegments={setInvertCutSegments} />
 
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -557,9 +572,9 @@ function BottomBar({
               ))}
             </Select>
 
-            <div ref={playbackRateRef} title={t('Playback rate')} style={{ color: 'var(--gray-11)', fontSize: '.7em' }}>{playbackRate.toFixed(1)}</div>
+            <div ref={playbackRateRef} title={t('Playback rate')} style={{ color: 'var(--gray-11)', fontSize: '.7em', borderRadius: '.5em' }}>{playbackRate.toFixed(1)}</div>
 
-            <div>
+            <div style={{ whiteSpace: 'nowrap' }}>
               <IoMdSpeedometer title={t('Change FPS')} style={{ fontSize: '1.3em', verticalAlign: 'middle' }} role="button" onClick={handleChangePlaybackRateClick} />
 
               {detectedFps != null && (
@@ -570,7 +585,7 @@ function BottomBar({
         )}
 
         {isFileOpened && !simpleMode && hasVideo && (
-          <div onClick={increaseRotation} role="button">
+          <div onClick={increaseRotation} role="button" style={{ whiteSpace: 'nowrap' }}>
             <MdRotate90DegreesCcw
               style={{ fontSize: '1.3em', verticalAlign: 'middle', color: isRotationSet ? primaryTextColor : undefined }}
               title={actionTitle(`${t('Set output rotation. Current: ')} ${isRotationSet ? rotationStr : t('Don\'t modify')}`, 'increaseRotation')}
@@ -580,6 +595,16 @@ function BottomBar({
         )}
 
         <div style={{ flexGrow: 1 }} />
+
+        <div style={timeWrapperStyle}>
+          <div style={{ fontFamily: 'monospace', letterSpacing: '-0.08em', pointerEvents: 'auto' }}>
+            {formatTimecode({ seconds: displayTime })}
+            <span style={{ display: 'inline-block', minWidth: '3.5em', marginLeft: '.5em' }}>
+              {displayTimeFrameCount ?? 0}<span style={{ opacity: 0.5, userSelect: 'none' }}>f</span>
+              {isZoomed && <span style={{ marginLeft: '.5em' }}>{Math.round((displayTime / fileDurationNonZero) * 100)}<span style={{ opacity: 0.5, userSelect: 'none' }}>%</span></span>}
+            </span>
+          </div>
+        </div>
 
         {!simpleMode && isFileOpened && (
           <FaTrashAlt
@@ -591,7 +616,7 @@ function BottomBar({
         )}
 
         {hasVideo && (
-          <div>
+          <div style={{ whiteSpace: 'nowrap' }}>
             <IoIosCamera
               role="button"
               style={{ fontSize: '1.9em', verticalAlign: 'middle' }}

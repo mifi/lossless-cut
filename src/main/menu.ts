@@ -201,6 +201,12 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
             mainWindow.webContents.send('fixInvalidDuration');
           },
         },
+        {
+          label: esc(t('Decimate video')),
+          click() {
+            mainWindow.webContents.send('decimate');
+          },
+        },
         { type: 'separator' },
 
         { type: 'separator' },

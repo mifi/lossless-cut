@@ -5,18 +5,18 @@ import pMap from 'p-map';
 import invariant from 'tiny-invariant';
 import i18n from 'i18next';
 
-import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, deleteDispositionValue, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix, assertFileExists } from '../util';
+import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix, assertFileExists } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
 import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
 import type { FFprobeStream } from '../../../common/ffprobe';
 import type { AvoidNegativeTs, FfmpegHwAccel, Html5ifyMode, PreserveMetadata } from '../../../common/types';
-import type { AllFilesMeta, Chapter, CopyfileStreams, CustomTagsByFile, LiteFFprobeStream, ParamsByStreamId, SegmentToExport } from '../types';
+import { deleteDispositionValue, type AllFilesMeta, type Chapter, type CopyfileStreams, type CustomTagsByFile, type LiteFFprobeStream, type ParamsByStreamId, type SegmentToExport } from '../types';
 import type { LossyMode } from '../../../main';
 import { UserFacingError } from '../../errors';
 import mainApi from '../mainApi';
-import { getHwaccelArgs } from '../../../common/util';
+import { formatFfmpegNumber, getHwaccelArgs } from '../../../common/util';
 
 const { join, resolve, dirname } = window.require('path');
 const { writeFile, mkdir, access, constants: { W_OK } } = window.require('fs/promises');
@@ -278,8 +278,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     if (detectedFps != null) cutDuration = Math.max(cutDuration, frameDuration); // ensure at least one frame duration
 
     // Don't cut if no need: https://github.com/mifi/lossless-cut/issues/50
-    const cutFromArgs = cuttingStart ? ['-ss', cutFromWithAdjustment.toFixed(5)] : [];
-    const cutToArgs = cuttingEnd ? ['-t', cutDuration.toFixed(5)] : [];
+    const cutFromArgs = cuttingStart ? ['-ss', formatFfmpegNumber(cutFromWithAdjustment)] : [];
+    const cutToArgs = cuttingEnd ? ['-t', formatFfmpegNumber(cutDuration)] : [];
 
     const copyFileStreamsFiltered = copyFileStreams.filter(({ streamIds }) => streamIds.length > 0);
 
@@ -289,7 +289,15 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     // If cutting multiple files, `-ss` must be before `-i`, regardless of `ssBeforeInput` choice
     // and it seems that `-t` must be after `-i` #896
     const inputFilesArgs = copyFileStreamsFiltered.length > 1
-      ? flatMap(copyFileStreamsFiltered, ({ path }) => [...cutFromArgs, '-i', path, ...cutToArgs])
+      ? flatMap(copyFileStreamsFiltered, ({ streamIds, path }) => {
+        // don't "cut"/seek cover art or images attached by users, see https://github.com/mifi/lossless-cut/issues/2884
+        const streamParams = streamIds.map((streamId) => paramsByStreamId.get(path)?.get(streamId));
+        if (streamIds.length === 1 && streamParams[0]?.disposition === 'attached_pic') {
+          return ['-i', path];
+        }
+
+        return [...cutFromArgs, '-i', path, ...cutToArgs];
+      })
       : [
         ...(ssBeforeInput ? cutFromArgs : []),
         '-i', copyFileStreamsFiltered[0]!.path,
@@ -346,6 +354,44 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
             if (streamParams.bsfH264Mp4toannexb) bitstreamFilters.push('h264_mp4toannexb');
             if (streamParams.bsfHevcMp4toannexb) bitstreamFilters.push('hevc_mp4toannexb');
             if (streamParams.bsfHevcAudInsert) bitstreamFilters.push('hevc_metadata=aud=insert');
+
+            const getFileStreams = () => allFilesMeta[fileId]?.streams;
+            const getStream = () => getFileStreams()?.find((s) => s.index === streamId);
+
+            // Lossless crop via codec bitstream metadata (#643)
+            if (streamParams.crop) {
+              const { left, right, top, bottom } = streamParams.crop;
+              if (left > 0 || right > 0 || top > 0 || bottom > 0) {
+                // Look up codec_name from allFilesMeta to determine the correct bitstream filter
+                const streamInfo = getStream();
+                const codecName = streamInfo?.codec_name;
+
+                const cropParams = `crop_left=${left}:crop_right=${right}:crop_top=${top}:crop_bottom=${bottom}`;
+                if (codecName === 'h264') {
+                  bitstreamFilters.push(`h264_metadata=${cropParams}`);
+                } else if (codecName === 'hevc') {
+                  bitstreamFilters.push(`hevc_metadata=${cropParams}`);
+                }
+              }
+            }
+
+            // Lossless aspect ratio (SAR) via codec bitstream metadata (#643)
+            if (streamParams.aspectRatio) {
+              const { num, den } = streamParams.aspectRatio;
+              if (num > 0 && den > 0) {
+                const streamInfo = getStream();
+                const codecName = streamInfo?.codec_name;
+
+                if (codecName === 'h264') {
+                  bitstreamFilters.push(`h264_metadata=sample_aspect_ratio=${num}/${den}`);
+                } else if (codecName === 'hevc') {
+                  bitstreamFilters.push(`hevc_metadata=sample_aspect_ratio=${num}/${den}`);
+                } else {
+                  // For non-H264/HEVC codecs, use container-level -aspect flag
+                  ret.push('-aspect', `${num}:${den}`);
+                }
+              }
+            }
 
             if (bitstreamFilters.length > 0) {
               ret.push(`-bsf:${outputIndex}`, bitstreamFilters.join(','));
@@ -472,10 +518,10 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       // No progress if we set loglevel warning :(
       // '-loglevel', 'warning',
 
-      '-ss', cutFrom.toFixed(5), // if we don't -ss before -i, seeking will be slow for long files, see https://github.com/mifi/lossless-cut/issues/126#issuecomment-1135451043
+      '-ss', formatFfmpegNumber(cutFrom), // if we don't -ss before -i, seeking will be slow for long files, see https://github.com/mifi/lossless-cut/issues/126#issuecomment-1135451043
       '-i', filePath,
       '-ss', '0', // If we don't do this, the output seems to start with an empty black after merging with the encoded part
-      '-t', (cutTo - cutFrom).toFixed(5),
+      '-t', formatFfmpegNumber(cutTo - cutFrom),
 
       ...mapStreamsArgs,
 
@@ -680,7 +726,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
     if (await shouldSkipExistingFile(mergedOutFilePath)) return;
 
-    const chapters = await createChaptersFromSegments({ segmentPaths, chapterNames });
+    const chapters = await createChaptersFromSegments({ paths: segmentPaths, defaultChapterNames: chapterNames });
 
     const metadataFromPath = segmentPaths[0];
     invariant(metadataFromPath != null);
@@ -847,19 +893,15 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   }, [appendFfmpegCommandLog, ffmpegHwaccel, html5ifyDummy, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   // https://stackoverflow.com/questions/34118013/how-to-determine-webm-duration-using-ffprobe
-  const fixInvalidDuration = useCallback(async ({ fileFormat, customOutDir, onProgress }: {
-    fileFormat: string,
-    customOutDir?: string | undefined,
+  const fixInvalidDuration = useCallback(async ({ filePath: filePathArg, outPath, onProgress }: {
+    filePath: string,
+    outPath: string,
     onProgress: (a: number) => void,
   }) => {
-    invariant(filePath != null);
-    const ext = getOutFileExtension({ outFormat: fileFormat, filePath });
-    const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `reformatted${ext}` });
-
     const ffmpegArgs = [
       '-hide_banner',
 
-      '-i', filePath,
+      '-i', filePathArg,
 
       // https://github.com/mifi/lossless-cut/issues/1415
       '-map_metadata', '0',
@@ -874,10 +916,36 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const result = await runFfmpegWithProgress({ ffmpegArgs, onProgress });
     logStdoutStderr(result);
 
-    await transferTimestamps({ inPath: filePath, outPath, duration: undefined, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
+    return outPath;
+  }, [appendFfmpegCommandLog]);
+
+  // https://github.com/mifi/lossless-cut/issues/2111
+  const decimate = useCallback(async ({ filePath: filePathArg, outPath, n, fps }: {
+    n: number,
+    fps: number,
+    filePath: string,
+    outPath: string,
+  }) => {
+    const ffmpegArgs = [
+      '-hide_banner',
+
+      // '-discard', 'nokey', // doesn't seem to work with hevc, so use noise=drop=not(key) instead
+      // https://chatgpt.com/share/6a1c3be1-1064-83ec-b5c1-fa91ddf3cde8
+      '-i', filePathArg,
+      '-map', 'v:0',
+      '-c', 'copy',
+      '-bsf:v', `noise=drop=not(key),noise=drop='mod(n\\,${formatFfmpegNumber(n)})',setts=ts='N/${formatFfmpegNumber(fps)}/TB_OUT'`,
+      '-an',
+      '-ignore_unknown',
+      '-y', outPath,
+    ];
+
+    appendFfmpegCommandLog(ffmpegArgs);
+    const result = await runFfmpeg(ffmpegArgs);
+    logStdoutStderr(result);
 
     return outPath;
-  }, [appendFfmpegCommandLog, filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
+  }, [appendFfmpegCommandLog]);
 
   function getPreferredCodecFormat(stream: LiteFFprobeStream) {
     const map = {
@@ -1023,7 +1091,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   }, [extractAttachmentStreams, extractNonAttachmentStreams, filePath]);
 
   return {
-    cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, concatCutSegments, extractStreams, tryDeleteFiles,
+    cutMultiple, concatFiles, html5ify, html5ifyDummy, fixInvalidDuration, decimate, concatCutSegments, extractStreams, tryDeleteFiles,
   };
 }
 

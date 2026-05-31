@@ -14,23 +14,29 @@ If the video exports successfully without any error from LosslessCut, but it doe
 
 ## Cutting times are not accurate
 
-Each segment's *start cut time* normally (but not always) will be "rounded" to the nearest **previous** keyframe. This means that you often have to move the **start cut time** to **few frames after** the desired keyframe.
+Each segment's *start cut time* will normally (but not always) be "rounded" to the nearest **previous** keyframe. This means that you often have to move the **start cut time** to **few frames after** the desired keyframe.
 - Lossless cutting is not an exact science. For some files, it just works. For others, you may need to trial and error to get the best cut. See [#330](https://github.com/mifi/lossless-cut/issues/330)
 - Your mileage may vary when it comes to *Keyframe cut mode*. Most common video files need *Keyframe cut* enabled, but you may need to try both values. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. In `ffmpeg`, *Keyframe cut* corresponds to `-ss` *before* `-i`.
 - Try to change `avoid_negative_ts` (in export options).
 - Try also to set the **start**-cutpoint a few frames **before or after** the nearest keyframe (may also solve audio sync issues).
-- You may try to enable the new "Smart cut" mode to allow cutting between keyframes. However it is very experimental and may not work for many files.
+- You may try to enable the experimental "Smart cut" mode to allow cutting between keyframes. However it will not work for many files.
 - Currently, the only way to review the exported file (to check the actual cutpoints) is to run the export (possibly with only one segment enabled to speed up) and then manually check the output file. See also [#1887](https://github.com/mifi/lossless-cut/issues/1887)
 
 ### Cut starts from wrong keyframe
 
-For some files, when you place segment start cutpoints at keyframes, and you export, it will instead cut from the keyframe **before** the keyframe that you wanted. This is because with some videos, ffmpeg struggles to find the nearest previous keyframe, see [#1216](https://github.com/mifi/lossless-cut/issues/1216). To workaround this, you can try to shift your segments' **start**-cutpoints forward by a few frames, so that ffmpeg correctly cuts from the *previous* keyframe. You can also enable the Export Option "Shift all start times" by +1, +2, +3 frames or so.
+For some files, when you place segment start cutpoints at keyframes, and you export, it will instead cut from the keyframe **before** the keyframe that you wanted. This is because with some videos, FFmpeg struggles to find the nearest previous keyframe, see [#1216](https://github.com/mifi/lossless-cut/issues/1216). To workaround this, you can try to shift your segments' **start**-cutpoints forward by a few frames, so that ffmpeg correctly cuts from the *previous* keyframe.
 
 - Menu: "Edit" -> "Segments" -> "Shift all segments on timeline"
 - Enter `00:00:00.200` (or a larger value if it doesn't help)
 - When asked about Start or End timestamps, Select **Start**
 
-This will effectively shift all start times of segments by 6 frames (`6/30=0.2` for 30fps video).
+This will effectively shift all start times of segments by 6 frames (`6/30=0.2` for 30fps video). Alternatively, to always shift start times, you can enable the Export Option "Shift all start times" by +1, +2, +3 frames or so.
+
+In some videos (like VP9 from `yt-dlp`), some start keyframes are being ignored if LosslessCut output format is set to Matroska. A workaround is to set it to MP4 instead. See [#2804](https://github.com/mifi/lossless-cut/issues/2804).
+
+## Start cut is ignored
+
+Check whether your video has enough keyframes before your cutpoint. You can see keyframes on the timeline as vertical lines. You may have to zoom in to see them. If there are no keyframes, then it is most likely not possible to cut your file at the desired cutpoints losslessly. You can try to enable the Smart Cut mode, alternatively you may try to disable "keyframe cut" mode. See also (#2864)(https://github.com/mifi/lossless-cut/issues/2864).
 
 ## Cut file has same length as input
 
@@ -84,6 +90,10 @@ LosslessCut uses the same video player that is used by Chrome. You can try to op
 ### Low quality / blurry playback
 
 Some formats or codecs are not natively supported by LosslessCut's built in player, and LosslessCut will automatically use FFmpeg-assisted software decoding to playback in a lower quality. For better playback you may convert these files to a different format from the menu: *File -> Convert to supported format*. Note that this will not affect the output from LosslessCut, it is only used for playback, see [#88](https://github.com/mifi/lossless-cut/issues/88).
+
+### Auto convert to supported format on certain timestamp
+
+If LosslessCut automatically tries to convert your file into a supported format when you start playing/seeking and reach a certain timestamp, see issue [#2893](https://github.com/mifi/lossless-cut/issues/2893).
 
 ## Linux specific issues
 

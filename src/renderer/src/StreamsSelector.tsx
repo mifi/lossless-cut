@@ -6,6 +6,7 @@ import { GoFileBinary } from 'react-icons/go';
 import { MdSubtitles } from 'react-icons/md';
 import { useTranslation, Trans } from 'react-i18next';
 import prettyBytes from 'pretty-bytes';
+import { Tabs } from '@radix-ui/themes';
 
 import * as DropdownMenu from './components/DropdownMenu';
 import * as Dialog from './components/Dialog';
@@ -13,11 +14,10 @@ import AutoExportToggler from './components/AutoExportToggler';
 import Select from './components/Select';
 import type { FileStream } from './ffmpeg';
 import { getStreamFps } from './ffmpeg';
-import { deleteDispositionValue } from './util';
 import { getActiveDisposition, attachedPicDisposition, isGpsStream } from './util/streams';
 import TagEditor from './components/TagEditor';
 import type { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../common/ffprobe';
-import type { CustomTagsByFile, FilesMeta, FormatTimecode, ParamsByStreamId, StreamParams } from './types';
+import { contentDispositionOptionsSchema, deleteDispositionValue, dispositionOptions, type ContentDispositionOptions, type CustomTagsByFile, type FilesMeta, type FormatTimecode, type ParamsByStreamId, type StreamParams } from './types';
 import Button, { DialogButton } from './components/Button';
 import styles from './StreamsSelector.module.css';
 import Json5Dialog from './components/Json5Dialog';
@@ -25,9 +25,6 @@ import GpsMap from './components/GpsMap';
 import TextInput from './components/TextInput';
 import Switch from './components/Switch';
 
-
-const dispositionOptions = ['default', 'dub', 'original', 'comment', 'lyrics', 'karaoke', 'forced', 'hearing_impaired', 'visual_impaired', 'clean_effects', 'attached_pic', 'captions', 'descriptions', 'dependent', 'metadata'];
-const unchangedDispositionValue = 'llc_disposition_unchanged';
 
 type UpdateStreamParams = (fileId: string, streamId: number, setter: (a: StreamParams) => void) => void;
 
@@ -81,7 +78,7 @@ function getStreamEffectiveDisposition(paramsByStreamId: ParamsByStreamId, fileI
 }
 
 
-function KeyValue({ name, value }: { name: string, value: ReactNode }) {
+function KeyValue({ name, value }: { name: ReactNode, value: ReactNode }) {
   return (
     <div style={{ display: 'flex', gap: '1em', marginBottom: '.3em', justifyContent: 'space-between' }}>
       <div>{name}</div>
@@ -90,63 +87,73 @@ function KeyValue({ name, value }: { name: string, value: ReactNode }) {
   );
 }
 
-function StreamParametersEditor({ stream, streamParams, updateStreamParams }: {
+function AspectEditor({ stream, streamParams, updateStreamParams }: {
   stream: FFprobeStream,
   streamParams: StreamParams,
   updateStreamParams: (setter: (a: StreamParams) => void) => void,
 }) {
   const { t } = useTranslation();
 
-  const ui: ReactNode[] = [];
+  const currentAr = streamParams.aspectRatio ?? { num: 0, den: 0 };
 
-  // https://github.com/mifi/lossless-cut/issues/1680#issuecomment-1682915193
-  if (stream.codec_name === 'h264') {
-    ui.push(
-      <KeyValue
-        key="bsfH264Mp4toannexb"
-        name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'h264_mp4toannexb' })}
-        // eslint-disable-next-line no-param-reassign
-        value={<Switch checked={!!streamParams.bsfH264Mp4toannexb} onCheckedChange={(checked) => updateStreamParams((params) => { params.bsfH264Mp4toannexb = checked === true; })} />}
-      />,
-    );
-  }
-  if (stream.codec_name === 'hevc') {
-    ui.push(
-      <KeyValue
-        key="bsfHevcMp4toannexb"
-        name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_mp4toannexb' })}
-        // eslint-disable-next-line no-param-reassign
-        value={<Switch checked={!!streamParams.bsfH264Mp4toannexb} onCheckedChange={(checked) => updateStreamParams((params) => { params.bsfHevcMp4toannexb = checked === true; })} />}
-      />,
+  const updateAr = (field: 'num' | 'den', value: string) => {
+    const parsed = parseInt(value, 10);
+    const val = Number.isNaN(parsed) || parsed < 0 ? 0 : parsed;
+    updateStreamParams((params) => {
+      // eslint-disable-next-line no-param-reassign
+      params.aspectRatio = { ...currentAr, [field]: val };
+    });
+  };
 
-      <KeyValue
-        key="bsfHbsfHevcAudInsertevcMp4toannexb"
-        name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_metadata=aud=insert' })}
-        // eslint-disable-next-line no-param-reassign
-        value={<Switch checked={!!streamParams.bsfHevcAudInsert} onCheckedChange={(checked) => updateStreamParams((params) => { params.bsfHevcAudInsert = checked === true; })} />}
-      />,
-    );
-  }
+  const isSar = stream.codec_name === 'h264' || stream.codec_name === 'hevc';
 
-  if (stream.codec_type === 'video' || stream.codec_type === 'audio') {
-    ui.push(
-      <KeyValue
-        key="codecTag"
-        name={t('Codec tag')}
-        // eslint-disable-next-line no-param-reassign
-        value={<TextInput placeholder={t('Default')} value={streamParams.tag ?? ''} onChange={(e) => updateStreamParams((params) => { params.tag = e.target.value.trim() === '' ? undefined : e.target.value; })} />}
-      />,
-    );
-  }
+  return (
+    <>
+      <div style={{ fontSize: '.85em', color: 'var(--gray-11)', marginBottom: '.4em' }}>
+        {isSar ? t('Losslessly change the sample aspect ratio (SAR) of this track with a bitstream filter.') : t('Losslessly change the display aspect ratio of this track at the container level.')}
+        {' '}
+        {t('Note that this is not supported in all video players.')}
+      </div>
+      <KeyValue name={t('Width')} value={<TextInput type="number" min="0" style={{ width: '5em' }} placeholder="W" value={currentAr.num > 0 ? String(currentAr.num) : ''} onChange={(e) => updateAr('num', e.target.value)} />} />
+      <KeyValue name={t('Height')} value={<TextInput type="number" min="0" style={{ width: '5em' }} placeholder="H" value={currentAr.den > 0 ? String(currentAr.den) : ''} onChange={(e) => updateAr('den', e.target.value)} />} />
+    </>
+  );
+}
 
-  if (ui.length === 0) {
+function CropEditor({ stream, streamParams, updateStreamParams }: {
+  stream: FFprobeStream,
+  streamParams: StreamParams,
+  updateStreamParams: (setter: (a: StreamParams) => void) => void,
+}) {
+  const { t } = useTranslation();
+
+  const currentCrop = streamParams.crop ?? { left: 0, right: 0, top: 0, bottom: 0 };
+
+  const updateCrop = (field: 'left' | 'right' | 'top' | 'bottom', value: string) => {
+    const parsed = parseInt(value, 10);
+    const val = Number.isNaN(parsed) || parsed < 0 ? 0 : parsed;
+    updateStreamParams((params) => {
+      // eslint-disable-next-line no-param-reassign
+      params.crop = { ...currentCrop, [field]: val };
+    });
+  };
+
+  if (!(stream.codec_name === 'h264' || stream.codec_name === 'hevc')) {
     return null;
   }
 
   return (
-    <div style={{ marginBottom: '1em' }}>
-      {ui}
-    </div>
+    <>
+      <div style={{ fontSize: '.85em', color: 'var(--gray-11)', marginBottom: '.4em' }}>
+        {t('Losslessly crop pixels from each edge.')}
+        {' '}
+        {t('Note that this is not supported in all video players.')}
+      </div>
+      <KeyValue name={t('Left')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.left)} onChange={(e) => updateCrop('left', e.target.value)} />} />
+      <KeyValue name={t('Right')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.right)} onChange={(e) => updateCrop('right', e.target.value)} />} />
+      <KeyValue name={t('Top')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.top)} onChange={(e) => updateCrop('top', e.target.value)} />} />
+      <KeyValue name={t('Bottom')} value={<TextInput type="number" min="0" step="2" style={{ width: '5em' }} value={String(currentCrop.bottom)} onChange={(e) => updateCrop('bottom', e.target.value)} />} />
+    </>
   );
 }
 
@@ -175,7 +182,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
       if (params.customTags == null) params.customTags = {};
       const tags = params.customTags;
       Object.entries(keyValues).forEach(([tag, value]) => {
-        tags[tag] = value;
+        tags[tag] = tag === 'language' ? value.toLowerCase() : value;
       });
     });
   }, [editingFile, editingStreamId, updateStreamParams]);
@@ -189,6 +196,15 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     });
   }, [editingFile, editingStreamId, updateStreamParams]);
 
+  const tagInfo = useMemo(() => ({
+    language: {
+      description: t('The language tag (ISO 639-2 code). For example "eng" for English. This is used by some players to select the appropriate audio/subtitle track based on the user\'s language preferences.'),
+      url: 'https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes',
+    },
+  }), [t]);
+
+  const updateCurrentStreamParams = (setter: (a: StreamParams) => void) => updateStreamParams(editingFile, editingStreamId, setter);
+
   return (
     <Dialog.Root open={editingStream != null} onOpenChange={(v) => v === false && setEditingStream(undefined)}>
       <Dialog.Portal>
@@ -196,12 +212,71 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
         <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
           <Dialog.Title>{t('Edit track {{trackNum}} metadata', { trackNum: editingStream && (editingStream.index + 1) })}</Dialog.Title>
 
-          <h2>{t('Parameters')}</h2>
-          {editingStream != null && <StreamParametersEditor stream={editingStream} streamParams={streamParams} updateStreamParams={(setter) => updateStreamParams(editingFile, editingStreamId, setter)} />}
+          <Tabs.Root defaultValue="tags" style={{ minHeight: '20em' }}>
+            <Tabs.List>
+              <Tabs.Trigger value="tags">{t('Tags')}</Tabs.Trigger>
+              {editingStream?.codec_type === 'video' && (
+                <>
+                  <Tabs.Trigger value="crop">{t('Crop')}</Tabs.Trigger>
+                  <Tabs.Trigger value="aspectratio">{t('Aspect ratio')}</Tabs.Trigger>
+                </>
+              )}
+              <Tabs.Trigger value="parameters">{t('Parameters')}</Tabs.Trigger>
+            </Tabs.List>
 
-          <h2>Tags</h2>
+            <div style={{ marginTop: '.5em' }}>
+              <Tabs.Content value="tags">
+                <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} />
+              </Tabs.Content>
 
-          <TagEditor existingTags={existingTags} customTags={customTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add metadata')} />
+              {editingStream != null && (
+                <>
+                  <Tabs.Content value="crop">
+                    <CropEditor stream={editingStream} streamParams={streamParams} updateStreamParams={updateCurrentStreamParams} />
+                  </Tabs.Content>
+
+                  <Tabs.Content value="aspectratio">
+                    <AspectEditor stream={editingStream} streamParams={streamParams} updateStreamParams={updateCurrentStreamParams} />
+                  </Tabs.Content>
+
+                  <Tabs.Content value="parameters">
+                    {/* https://github.com/mifi/lossless-cut/issues/1680#issuecomment-1682915193 */}
+                    {editingStream.codec_name === 'h264' && (
+                      <KeyValue
+                        name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'h264_mp4toannexb' })}
+                        // eslint-disable-next-line no-param-reassign
+                        value={<Switch checked={!!streamParams.bsfH264Mp4toannexb} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfH264Mp4toannexb = checked === true; })} />}
+                      />
+                    )}
+
+                    {editingStream.codec_name === 'hevc' && (
+                      <>
+                        <KeyValue
+                          name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_mp4toannexb' })}
+                          // eslint-disable-next-line no-param-reassign
+                          value={<Switch checked={!!streamParams.bsfH264Mp4toannexb} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfHevcMp4toannexb = checked === true; })} />}
+                        />
+
+                        <KeyValue
+                          name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_metadata=aud=insert' })}
+                          // eslint-disable-next-line no-param-reassign
+                          value={<Switch checked={!!streamParams.bsfHevcAudInsert} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfHevcAudInsert = checked === true; })} />}
+                        />
+                      </>
+                    )}
+
+                    {(editingStream.codec_type === 'video' || editingStream.codec_type === 'audio') && (
+                      <KeyValue
+                        name={t('Codec tag')}
+                        // eslint-disable-next-line no-param-reassign
+                        value={<TextInput placeholder={t('Default')} value={streamParams.tag ?? ''} onChange={(e) => updateCurrentStreamParams((params) => { params.tag = e.target.value.trim() === '' ? undefined : e.target.value; })} />}
+                      />
+                    )}
+                  </Tabs.Content>
+                </>
+              )}
+            </div>
+          </Tabs.Root>
 
           <Dialog.ButtonRow>
             <Dialog.Close asChild>
@@ -215,6 +290,8 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     </Dialog.Root>
   );
 });
+
+const unchangedDispositionValue = 'llc_disposition_unchanged';
 
 // eslint-disable-next-line react/display-name
 const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStream, fileDuration, setEditingStream, onExtractStreamPress, paramsByStreamId, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments }: {
@@ -270,9 +347,10 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
   const onClick = () => onToggle && onToggle(stream.index);
 
   const onDispositionChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
-    let newDisposition: string;
-    if (dispositionOptions.includes(e.target.value)) {
-      newDisposition = e.target.value;
+    let newDisposition: ContentDispositionOptions | 'llc_disposition_remove' | undefined;
+    const dispositionParsed = contentDispositionOptionsSchema.safeParse(e.target.value);
+    if (dispositionParsed.success) {
+      newDisposition = dispositionParsed.data;
     } else if (e.target.value === deleteDispositionValue) {
       newDisposition = deleteDispositionValue; // needs a separate value (not a real disposition)
     } // else unchanged (undefined)

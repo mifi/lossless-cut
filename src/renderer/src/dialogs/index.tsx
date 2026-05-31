@@ -99,10 +99,12 @@ export async function askForFfPath(defaultPath?: string | undefined) {
   return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
 }
 
-export async function askForFileOpenAction(inputOptions: Record<string, string>) {
-  let value: string | undefined;
+export type OpenFileResponse = 'open' | 'project' | 'tracks' | 'subtitles' | 'addToBatch' | 'mergeWithCurrentFile';
 
-  function onClick(key?: string) {
+export async function askForFileOpenAction(inputOptions: [OpenFileResponse, string][]) {
+  let value: OpenFileResponse | undefined;
+
+  function onClick(key?: OpenFileResponse) {
     value = key;
     getSwal().Swal.close();
   }
@@ -112,7 +114,7 @@ export async function askForFileOpenAction(inputOptions: Record<string, string>)
       <div style={{ textAlign: 'left' }}>
         <div style={{ marginBottom: '1em' }}>{i18n.t('You opened a new file. What do you want to do?')}</div>
 
-        {Object.entries(inputOptions).map(([key, text]) => (
+        {inputOptions.map(([key, text]) => (
           <button type="button" key={key} onClick={() => onClick(key)} className="button-unstyled" style={{ display: 'block', marginBottom: '.5em' }}>
             <FaArrowRight style={{ color: 'var(--gray-10)', verticalAlign: 'middle' }} /> {text}
           </button>
@@ -223,7 +225,12 @@ export async function askForSegmentDuration({ totalDuration, inputPlaceholder, p
       const segmentDuration = parseTimecode(v);
       if (segmentDuration != null) {
         const numSegments = Math.ceil(totalDuration / segmentDuration);
-        if (segmentDuration > 0 && segmentDuration < totalDuration && numSegments <= maxSegments) return null;
+        if (segmentDuration > 0 && numSegments <= maxSegments) {
+          if (segmentDuration < totalDuration) {
+            return null;
+          }
+          return i18n.t('Value must be shorter than total duration ({{totalDuration}})', { totalDuration: formatDuration({ seconds: totalDuration, shorten: true }) });
+        }
       }
       return i18n.t('Please input a valid duration. Example: {{example}}', { example: inputPlaceholder });
     },
@@ -285,50 +292,6 @@ async function askForSegmentsStartOrEnd(text: string) {
 
   return value === 'both' ? ['start', 'end'] as const : [value as 'start' | 'end'] as const;
 }
-
-export async function askForShiftSegments({ inputPlaceholder, parseTimecode }: {
-  inputPlaceholder: string,
-  parseTimecode: ParseTimecode,
-}) {
-  function parseValue(value: string) {
-    let parseableValue = value;
-    let sign = 1;
-    if (parseableValue[0] === '-') {
-      parseableValue = parseableValue.slice(1);
-      sign = -1;
-    }
-    const duration = parseTimecode(parseableValue);
-    if (duration != null && duration > 0) {
-      return duration * sign;
-    }
-    return undefined;
-  }
-
-  const { value } = await getSwal().Swal.fire<string>({
-    input: 'text',
-    showCancelButton: true,
-    inputValue: inputPlaceholder,
-    text: i18n.t('Shift all segments on the timeline by this amount. Negative values will be shifted back, while positive value will be shifted forward in time.'),
-    inputValidator: (v) => {
-      const parsed = parseValue(v);
-      if (parsed == null) return i18n.t('Please input a valid duration. Example: {{example}}', { example: inputPlaceholder });
-      return null;
-    },
-  });
-
-  if (value == null) return undefined;
-  const parsed = parseValue(value);
-  invariant(parsed != null);
-
-  const startOrEnd = await askForSegmentsStartOrEnd(i18n.t('Do you want to shift the start or end timestamp by {{time}}?', { time: formatDuration({ seconds: parsed, shorten: true }) }));
-  if (startOrEnd == null) return undefined;
-
-  return {
-    shiftAmount: parsed,
-    shiftKeys: startOrEnd,
-  };
-}
-
 
 export async function askForAlignSegments() {
   const startOrEnd = await askForSegmentsStartOrEnd(i18n.t('Do you want to align the segment start or end timestamps to keyframes?'));

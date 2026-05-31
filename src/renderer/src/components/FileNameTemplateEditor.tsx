@@ -52,10 +52,12 @@ function FileNameTemplateEditor(opts: {
   useEffect(() => {
     // if an important message appears, make sure we don't auto-close after it's resolved
     // https://github.com/mifi/lossless-cut/issues/2567
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (haveImportantMessage) setOpen(true);
   }, [haveImportantMessage]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setText(templateIn);
   }, [templateIn]);
 
