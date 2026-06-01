@@ -1068,5 +1068,11 @@
   "Decimating video": "Decimazione video",
   "Keep every nth keyframe. Use the value \"1\" to keep all keyframes": "Mantieni ogni ennesimo fotogramma chiave - usa il valore \"1\" per mantenere tutti i fotogrammi chiave",
   "Output video frame rate (frames per second)": "Frequenza fotogrammi video in uscita (fotogrammi al secondo)",
-  "The operation failed": "L'operazione è fallita"
+  "The operation failed": "L'operazione è fallita",
+  "deleted": "eliminato",
+  "Metadata": "Metadati",
+  "Offset": "Offset",
+  "Shift by seconds": "Sposta di secondi",
+  "Shift the timestamps of all tracks in this file by a specified number of seconds, relative to other files. Positive values will delay the file's tracks, negative will advance it.": "Sposta in questo file i timestamp di tutte le tracce di un numero di secondi specificato, rispetto ad altri file. I valori positivi ritarderanno le tracce del file, quelli negativi lo faranno avanzare.",
+  "This is hardcoded by FFmpeg and cannot be changed.": "Questo è codificato da FFmpeg e non può essere modificato."
 }
