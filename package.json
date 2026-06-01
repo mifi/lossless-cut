@@ -2,7 +2,7 @@
   "name": "lossless-cut",
   "productName": "LosslessCut",
   "description": "The swiss army knife of lossless video/audio editing",
-  "copyright": "Copyright © 2021 ${author}",
+  "copyright": "Copyright © 2026 ${author}",
   "version": "3.68.1",
   "main": "./out/main/index.js",
   "homepage": "./",

@@ -191,4 +191,4 @@ https://github.com/mifi/lossless-cut/security/dependabot
 
 ## Other
 
-- Update `copyrightYear`
+- Update `copyrightYear` variable and [package.json](./package.json) `copyright`
