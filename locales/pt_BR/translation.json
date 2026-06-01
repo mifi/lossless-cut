@@ -1060,5 +1060,13 @@
   "Decimate allows you to losslessly extract only the keyframes from a video, discarding all non-keyframes. You can also optionally drop some of the keyframes. This can dramatically speed up playback and is useful for shortening long videos with little motion, such as creating time-lapse videos.": "A função Decimate permite extrair sem perdas apenas os quadros-chave de um vídeo, descartando todos os quadros não-chave. Você também pode opcionalmente eliminar alguns dos quadros-chave. Isso pode acelerar drasticamente a reprodução e é útil para encurtar vídeos longos com pouco movimento, como a criação de vídeos com lapso de tempo.",
   "Keep every nth keyframe. Use the value \"1\" to keep all keyframes": "Mantenha cada quadro-chave nth. Use o valor \"1\" para manter todos os quadros-chave",
   "Output video frame rate (frames per second)": "Taxa de quadros do vídeo de saída (quadros por segundo)",
-  "The operation failed": "A operação falhou"
+  "The operation failed": "A operação falhou",
+  "Decimate video": "Dizimar vídeo",
+  "Decimating video": "Dizimando vídeo",
+  "deleted": "excluído",
+  "Metadata": "Metadados",
+  "Offset": "Deslocamento",
+  "Shift by seconds": "Deslocar por segundos",
+  "Shift the timestamps of all tracks in this file by a specified number of seconds, relative to other files. Positive values will delay the file's tracks, negative will advance it.": "Desloca a data/hora de todas as faixas deste arquivo por um número específico de segundos, em relação a outros arquivos. Valores positivos atrasam as faixas do arquivo, enquanto valores negativos as adiantam.",
+  "This is hardcoded by FFmpeg and cannot be changed.": "Isso é definido pelo FFmpeg e não pode ser alterado."
 }
