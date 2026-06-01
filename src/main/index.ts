@@ -38,6 +38,7 @@ import type { ApiActionRequest } from '../common/types.js';
 import * as ffmpeg from './ffmpeg.js';
 import * as compatPlayer from './compatPlayer.js';
 import { downloadMediaUrl } from './ffmpeg.js';
+import { hasDisabledNetworking, setDisableNetworking } from './networking.js';
 
 
 electronUnhandled({ showDialog: true, logger: (err) => logger.error('electron-unhandled', err) });
@@ -68,7 +69,6 @@ let mainWindow: BrowserWindow | null;
 let askBeforeClose = false;
 let rendererReady = false;
 let newVersion: string | undefined;
-let disableNetworking: boolean;
 
 const openFiles = (paths: string[]) => mainWindow!.webContents.send('openFiles', paths);
 
@@ -218,9 +218,17 @@ function createWindow() {
   mainWindow.on('move', debouncedSaveWindowState);
 }
 
+async function openExternal(url: string) {
+  if (hasDisabledNetworking()) {
+    logger.warn('openExternal blocked because networking is disabled', url);
+    return;
+  }
+  await shell.openExternal(url);
+}
+
 function updateMenu() {
   assert(mainWindow);
-  menu({ app, mainWindow, newVersion, isStoreBuild });
+  menu({ app, mainWindow, newVersion, isStoreBuild, openExternal });
 }
 
 async function changeLanguage(language: string | null) {
@@ -370,7 +378,7 @@ async function init() {
     if (filesToOpen.length === 0) filesToOpen = argv._.map(String);
     const { settingsJson } = argv;
 
-    ({ disableNetworking } = argv);
+    setDisableNetworking(argv['disableNetworking']);
 
     if (settingsJson != null) {
       logger.info('initializing settings', settingsJson);
@@ -403,7 +411,7 @@ async function init() {
 
     const enableUpdateCheck = configStore.get('enableUpdateCheck');
 
-    if (!disableNetworking && enableUpdateCheck && !isStoreBuild) {
+    if (!hasDisabledNetworking() && enableUpdateCheck && !isStoreBuild) {
       newVersion = await checkNewVersion();
       // newVersion = '1.2.3';
       if (newVersion) updateMenu();
@@ -426,8 +434,6 @@ function quitApp() {
   timers.setTimeout(1000).then(() => electron.app.quit());
 }
 
-const hasDisabledNetworking = () => !!disableNetworking;
-
 const setProgressBar = (v: number) => mainWindow?.setProgressBar(v);
 
 function sendOsNotification(options: NotificationConstructorOptions) {
@@ -447,6 +453,7 @@ const remoteApi = {
   sendOsNotification,
   writeClipboardText: (text: string) => electron.clipboard.writeText(text),
   readClipboardText: () => electron.clipboard.readText(),
+  openExternal,
 };
 
 export type RemoteApi = typeof remoteApi;

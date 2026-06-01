@@ -14,8 +14,6 @@ import Warning from './Warning';
 import mainApi from '../mainApi';
 
 
-const { shell } = window.require('@electron/remote');
-
 const activeColor = 'var(--gray-12)';
 
 const emptyObject = {};
@@ -171,7 +169,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
 
                   {tagInfo?.[tag] && !editingThis && (
                     <Tooltip content={tagInfo[tag].description}>
-                      <IconButton size="1" variant="ghost" color="gray" style={{ cursor: tagInfo[tag]?.url ? 'pointer' : undefined }} onClick={() => tagInfo[tag]?.url && shell.openExternal(tagInfo[tag].url)}><FaInfo /></IconButton>
+                      <IconButton size="1" variant="ghost" color="gray" style={{ cursor: tagInfo[tag]?.url ? 'pointer' : undefined }} onClick={() => tagInfo[tag]?.url && mainApi.openExternal(tagInfo[tag].url)}><FaInfo /></IconButton>
                     </Tooltip>
                   )}
 

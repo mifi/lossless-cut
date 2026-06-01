@@ -16,6 +16,7 @@ import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';
 import { formatFfmpegNumber, getHwaccelArgs, parseFfprobeDuration } from '../common/util.js';
 import { getFfmpegJpegQuality } from './ffmpegUtil.js';
+import { throwIfDisabledNetworking } from './networking.js';
 
 
 // cannot use process.kill: https://github.com/sindresorhus/execa/issues/1177
@@ -735,6 +736,8 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
 }
 
 export async function downloadMediaUrl(url: string, outPath: string) {
+  throwIfDisabledNetworking();
+
   // User agent taken from https://techblog.willshouse.com/2012/01/03/most-common-user-agents/
   const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
   const args = [

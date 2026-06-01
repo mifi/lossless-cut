@@ -34,8 +34,7 @@ import type { Frame } from '../ffmpeg';
 import type { FindNearestKeyframeTime } from '../hooks/useKeyframes';
 import { troubleshootingUrl } from '../../../common/constants';
 import OutDirSelector from './OutDirSelector';
-
-const { shell } = window.require('@electron/remote');
+import mainApi from '../mainApi';
 
 
 const noticeStyle: CSSProperties = { marginBottom: '.5em' };
@@ -107,7 +106,7 @@ function renderGenericNotice(notice: GenericNotice) {
         <Notice notice={notice} />
       </td>
       <td>
-        {url != null && <IoIosHelpCircle style={{ cursor: 'pointer', fontSize: '1.5em', flexShrink: 0, color: primaryTextColor }} title={i18n.t('Learn more')} role="button" tabIndex={0} onClick={() => shell.openExternal(url)} />}
+        {url != null && <IoIosHelpCircle style={{ cursor: 'pointer', fontSize: '1.5em', flexShrink: 0, color: primaryTextColor }} title={i18n.t('Learn more')} role="button" tabIndex={0} onClick={() => mainApi.openExternal(url)} />}
       </td>
     </tr>
   );

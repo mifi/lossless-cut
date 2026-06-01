@@ -12,8 +12,7 @@ import type { KeyBinding } from '../../common/types';
 import { splitKeyboardKeys } from './util';
 import { getModifier } from './hooks/useTimelineScroll';
 import Kbd from './components/Kbd';
-
-const { shell } = window.require('@electron/remote');
+import mainApi from './mainApi';
 
 
 function Keys({ keys }: { keys: string | undefined }) {
@@ -89,7 +88,7 @@ function NoFileLoaded({ mifiLink, currentCutSeg, onClick, darkMode, keyBindingBy
         <div style={{ position: 'relative', margin: '.3em', width: '24em', height: '8em' }}>
           <iframe src={`${mifiLink.loadUrl}#dark=${darkMode ? 'true' : 'false'}`} title="iframe" style={{ background: 'rgba(0,0,0,0)', border: 'none', pointerEvents: 'none', width: '100%', height: '100%', position: 'absolute', colorScheme: 'initial' }} />
           {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus */}
-          <div style={{ width: '100%', height: '100%', position: 'absolute', cursor: 'pointer' }} title={t('Open link in browser')} role="button" onClick={(e) => { e.stopPropagation(); if ('targetUrl' in mifiLink && typeof mifiLink.targetUrl === 'string') shell.openExternal(mifiLink.targetUrl); }} />
+          <div style={{ width: '100%', height: '100%', position: 'absolute', cursor: 'pointer' }} title={t('Open link in browser')} role="button" onClick={(e) => { e.stopPropagation(); if ('targetUrl' in mifiLink && typeof mifiLink.targetUrl === 'string') mainApi.openExternal(mifiLink.targetUrl); }} />
         </div>
       ) : undefined}
     </motion.div>
