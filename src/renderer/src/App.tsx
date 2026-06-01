@@ -96,7 +96,7 @@ import { generateCutFileNames as generateCutFileNamesRaw, generateCutMergedFileN
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 import BigWaveform from './components/BigWaveform';
 
-import type { BatchFile, Chapter, CustomTagsByFile, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, FileStats, ParamsByStreamId, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment, TunerType } from './types';
+import type { BatchFile, Chapter, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, FileStats, ParamsByFile, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment, TunerType } from './types';
 import { goToTimecodeDirectArgsSchema, openFilesActionArgsSchema } from './types';
 import type { CaptureFormat, KeyboardAction, ApiActionRequest } from '../../common/types.js';
 import type { FFprobeChapter, FFprobeStream } from '../../common/ffprobe.js';
@@ -147,8 +147,7 @@ function App() {
   const [filePath, setFilePath] = useState<string>();
   const [fileDuration, setFileDuration] = useState<number>();
   const [externalFilesMeta, setExternalFilesMeta] = useState<FilesMeta>({});
-  const [customTagsByFile, setCustomTagsByFile] = useState<CustomTagsByFile>({});
-  const [paramsByStreamId, setParamsByStreamId] = useState<ParamsByStreamId>(new Map());
+  const [paramsByFile, setParamsByFile] = useState<ParamsByFile>(new Map());
   const [detectedFps, setDetectedFps] = useState<number>();
   const [mainFileMeta, setMainFileMeta] = useState<{ ffprobeMeta: FileFfprobeMeta, stats: FileStats }>();
   const [streamsSelectorShown, setStreamsSelectorShown] = useState(false);
@@ -660,8 +659,7 @@ function App() {
     setStartTimeOffset(0);
     setFilePath(undefined);
     setExternalFilesMeta({});
-    setCustomTagsByFile({});
-    setParamsByStreamId(new Map());
+    setParamsByFile(new Map());
     setDetectedFps(undefined);
     setMainFileMeta(undefined);
     setCopyStreamIdsByFile({});
@@ -1113,8 +1111,7 @@ function App() {
         preserveChapters,
         movFastStart,
         avoidNegativeTs,
-        customTagsByFile,
-        paramsByStreamId,
+        paramsByFile,
         chapters: chaptersToAdd,
         detectedFps,
       });
@@ -1240,7 +1237,7 @@ function App() {
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [filePath, numStreamsToCopy, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, cutFileTemplateOrDefault, generateCutFileNames, cutMultiple, outputDir, customOutDir, fileFormat, fileDuration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, segmentsToExport, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, customTagsByFile, paramsByStreamId, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormat, mainStreams, exportExtraStreams, areWeCutting, simpleMode, prefersReducedMotion, cleanupChoices, hideAllNotifications, segmentsOrInverse.selected, t, cutMergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateCutMergedFileNames, concatCutSegments, autoDeleteMergedSegments, tryDeleteFiles, nonCopiedExtraStreams, extractStreams, askForCleanupChoices, cleanupFiles, showOsNotification, openCutFinishedDialog, handleExportFailed]);
+  }, [filePath, numStreamsToCopy, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, cutFileTemplateOrDefault, generateCutFileNames, cutMultiple, outputDir, customOutDir, fileFormat, fileDuration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, segmentsToExport, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, paramsByFile, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormat, mainStreams, exportExtraStreams, areWeCutting, simpleMode, prefersReducedMotion, cleanupChoices, hideAllNotifications, segmentsOrInverse.selected, t, cutMergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateCutMergedFileNames, concatCutSegments, autoDeleteMergedSegments, tryDeleteFiles, nonCopiedExtraStreams, extractStreams, askForCleanupChoices, cleanupFiles, showOsNotification, openCutFinishedDialog, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath) return;
@@ -1768,16 +1765,16 @@ function App() {
     return fileMeta;
   }, [allFilesMeta, setCopyStreamIdsForPath]);
 
-  const updateStreamParams = useCallback<Parameters<typeof StreamsSelector>[0]['updateStreamParams']>((fileId, streamId, setter) => setParamsByStreamId(produce((draft) => {
-    if (!draft.has(fileId)) draft.set(fileId, new Map());
+  const updateStreamParams = useCallback<Parameters<typeof StreamsSelector>[0]['updateStreamParams']>((fileId, streamId, setter) => setParamsByFile(produce((draft) => {
+    if (!draft.has(fileId)) draft.set(fileId, { metadata: {}, paramsByStream: new Map() });
     const fileMap = draft.get(fileId);
     invariant(fileMap != null);
-    if (!fileMap.has(streamId)) fileMap.set(streamId, {});
+    if (!fileMap.paramsByStream.has(streamId)) fileMap.paramsByStream.set(streamId, { metadata: {} });
 
-    const params = fileMap.get(streamId);
+    const params = fileMap.paramsByStream.get(streamId);
     invariant(params != null);
     setter(params);
-  })), [setParamsByStreamId]);
+  })), [setParamsByFile]);
 
   const captureSnapshotAsCoverArt = useCallback(async () => {
     if (!filePath) return;
@@ -2778,9 +2775,8 @@ function App() {
                           shortestFlag={shortestFlag}
                           setShortestFlag={setShortestFlag}
                           nonCopiedExtraStreams={nonCopiedExtraStreams}
-                          customTagsByFile={customTagsByFile}
-                          setCustomTagsByFile={setCustomTagsByFile}
-                          paramsByStreamId={paramsByStreamId}
+                          paramsByFile={paramsByFile}
+                          setParamsByFile={setParamsByFile}
                           updateStreamParams={updateStreamParams}
                           formatTimecode={formatTimecode}
                           loadSubtitleTrackToSegments={loadSubtitleTrackToSegments}
