@@ -1056,5 +1056,9 @@
   "Top": "Superior",
   "Track": "Faixa",
   "Value must be shorter than total duration ({{totalDuration}})": "O valor deve ser menor que a duração total ({{totalDuration}})",
-  "Width": "Largura"
+  "Width": "Largura",
+  "Decimate allows you to losslessly extract only the keyframes from a video, discarding all non-keyframes. You can also optionally drop some of the keyframes. This can dramatically speed up playback and is useful for shortening long videos with little motion, such as creating time-lapse videos.": "A função Decimate permite extrair sem perdas apenas os quadros-chave de um vídeo, descartando todos os quadros não-chave. Você também pode opcionalmente eliminar alguns dos quadros-chave. Isso pode acelerar drasticamente a reprodução e é útil para encurtar vídeos longos com pouco movimento, como a criação de vídeos com lapso de tempo.",
+  "Keep every nth keyframe. Use the value \"1\" to keep all keyframes": "Mantenha cada quadro-chave nth. Use o valor \"1\" para manter todos os quadros-chave",
+  "Output video frame rate (frames per second)": "Taxa de quadros do vídeo de saída (quadros por segundo)",
+  "The operation failed": "A operação falhou"
 }
