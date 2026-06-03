@@ -931,6 +931,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const ffmpegArgs = [
       '-hide_banner',
 
+      // https://stackoverflow.com/questions/73710657/remove-all-non-keyframes-from-h-264-avc-video-without-re-encoding
+      // https://stackoverflow.com/questions/67088473/remove-all-non-key-frames-from-video-without-re-encoding
       // '-discard', 'nokey', // doesn't seem to work with hevc, so use noise=drop=not(key) instead
       // https://chatgpt.com/share/6a1c3be1-1064-83ec-b5c1-fa91ddf3cde8
       '-i', filePathArg,

@@ -51,7 +51,7 @@ See [package.json](./package.json) "scripts" section.
 
 ### Contributing code
 
-To contribute code, use [pull requests](https://github.com/mifi/lossless-cut/pulls). If you would like to contribute a lot of code, please first create an issue to check the viability of your change.
+To contribute code, use [pull requests](https://github.com/mifi/lossless-cut/pulls). If you would like to contribute a lot of code, please first create an issue to check the viability of your change - the larger the PR you submit, the less likely that it will be merged.
 
 ## `mas-dev` (Mac App Store) local build
 
