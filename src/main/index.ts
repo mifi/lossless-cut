@@ -15,7 +15,7 @@ import timers from 'node:timers/promises';
 import { z } from 'zod';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import electronUnhandled from 'electron-unhandled';
-import { fileTypeFromFile } from 'file-type/node';
+import { fileTypeFromFile } from 'file-type';
 import type { Asyncify } from 'type-fest';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';

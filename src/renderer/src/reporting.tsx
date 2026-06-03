@@ -20,7 +20,10 @@ export function openSendReportDialog({ err, message, state }: {
 }) {
   const reportInstructions = isStoreBuild
     ? (
-      <p><Trans>Please send an email to <span className="link-button" role="button" onClick={() => mainApi.openExternal(`mailto:${supportEmail}`)}>{supportEmail}</span> where you describe what you were doing.</Trans></p>
+      <>
+        <p>{i18n.t('Please send us an email where you describe what you were doing.')}</p>
+        <p><span className="link-button" role="button" onClick={() => mainApi.openExternal(`mailto:${supportEmail}`)}>{supportEmail}</span></p>
+      </>
     ) : (
       <Trans>
         <p>
