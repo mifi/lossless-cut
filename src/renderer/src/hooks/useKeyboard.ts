@@ -88,12 +88,12 @@ export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfi
 
 
   // optimization to prevent re-binding all the time:
-  const onKeyDownRef = useRef<(a: KeyEventParams) => void>();
+  const onKeyDownRef = useRef<(a: KeyEventParams) => void>(undefined);
   useEffect(() => {
     onKeyDownRef.current = onKeyDown2;
   }, [onKeyDown2]);
 
-  const onKeyUpRef = useRef<(a: KeyEventParams) => void>();
+  const onKeyUpRef = useRef<(a: KeyEventParams) => void>(undefined);
   useEffect(() => {
     onKeyUpRef.current = onKeyUp2;
   }, [onKeyUp2]);

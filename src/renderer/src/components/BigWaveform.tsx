@@ -28,7 +28,7 @@ function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zo
 
   const smoothTime = smoothTimeRaw ?? relevantTime;
 
-  const mouseDownRef = useRef<{ relevantTime: number, x: number }>();
+  const mouseDownRef = useRef<{ relevantTime: number, x: number }>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const getRect = useCallback(() => containerRef.current!.getBoundingClientRect(), []);

@@ -149,7 +149,7 @@ function ExportConfirm({
   onClosePress: () => void,
   onExportConfirm: () => void,
   outFormat: string | undefined,
-  renderOutFmt: (style: CSSProperties) => JSX.Element,
+  renderOutFmt: (style: CSSProperties) => ReactNode,
   outputDir: string | undefined,
   numStreamsTotal: number,
   numStreamsToCopy: number,

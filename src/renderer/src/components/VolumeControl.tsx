@@ -12,7 +12,7 @@ function VolumeControl({ playbackVolume, setPlaybackVolume, onToggleMutedClick }
   onToggleMutedClick: () => void,
 }) {
   const [volumeControlVisible, setVolumeControlVisible] = useState(false);
-  const timeoutRef = useRef<number>();
+  const timeoutRef = useRef<number>(undefined);
   const { t } = useTranslation();
   const actionTitle = useActionTitle();
 

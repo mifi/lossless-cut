@@ -167,7 +167,7 @@ function App() {
 
   // State per application launch
   const [ffmpegInfo, setFfmpegInfo] = useState<Awaited<ReturnType<typeof runStartupCheck>>>();
-  const lastOpenedPathRef = useRef<string>();
+  const lastOpenedPathRef = useRef<string>(undefined);
   const [showRightBar, setShowRightBar] = useState(true);
   const [lastCommandsVisible, setLastCommandsVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
@@ -372,7 +372,7 @@ function App() {
   const segmentsAtCursor = useMemo(() => findSegmentsAtCursor(commandedTime).map((index) => cutSegments[index]), [commandedTime, cutSegments, findSegmentsAtCursor]);
   const firstSegmentAtCursor = useMemo(() => segmentsAtCursor[0], [segmentsAtCursor]);
 
-  const segmentAtCursorRef = useRef<StateSegment>();
+  const segmentAtCursorRef = useRef<StateSegment>(undefined);
   useEffect(() => {
     segmentAtCursorRef.current = firstSegmentAtCursor;
   }, [firstSegmentAtCursor]);

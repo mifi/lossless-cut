@@ -32,7 +32,7 @@ function PlaybackStreamSelector({
   onActiveAudioStreamsChange: (a: Set<number>) => void,
 }) {
   const [controlVisible, setControlVisible] = useState(false);
-  const timeoutRef = useRef<number>();
+  const timeoutRef = useRef<number>(undefined);
 
   const { t } = useTranslation();
 

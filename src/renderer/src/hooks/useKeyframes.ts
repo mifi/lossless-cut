@@ -27,7 +27,7 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
 }) {
   const { t } = useTranslation();
 
-  const readingKeyframesPromise = useRef<Promise<unknown>>();
+  const readingKeyframesPromise = useRef<Promise<unknown>>(undefined);
   const [neighbouringKeyFramesMap, setNeighbouringKeyFrames] = useState<Record<string, Frame>>({});
 
   const neighbouringKeyFrames = useMemo(() => Object.values(neighbouringKeyFramesMap), [neighbouringKeyFramesMap]);

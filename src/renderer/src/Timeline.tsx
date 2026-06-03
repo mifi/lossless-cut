@@ -158,7 +158,7 @@ function Timeline({
 
   const timelineScrollerRef = useRef<HTMLDivElement>(null);
   const timelineScrollerSkipEventRef = useRef<boolean>(false);
-  const timelineScrollerSkipEventDebounce = useRef<() => void>();
+  const timelineScrollerSkipEventDebounce = useRef<() => void>(undefined);
   const timelineWrapperRef = useRef<HTMLDivElement>(null);
 
   const isZoomed = zoom > 1;
@@ -278,7 +278,7 @@ function Timeline({
     return (relX / target.offsetWidth) * fileDurationNonZero;
   }, [fileDurationNonZero]);
 
-  const mouseDownRef = useRef<unknown>();
+  const mouseDownRef = useRef<unknown>(undefined);
 
   useEffect(() => {
     setHoveringTime(undefined);
@@ -290,7 +290,7 @@ function Timeline({
     currentCutSegRef.current = currentCutSeg;
   }, [currentCutSeg]);
 
-  const resizingSegmentRef = useRef<{ operation: 'start' | 'end' | 'move', offset?: number } | undefined>();
+  const resizingSegmentRef = useRef<{ operation: 'start' | 'end' | 'move', offset?: number } | undefined>(undefined);
 
   const onMouseDown = useCallback<MouseEventHandler<HTMLElement>>((e) => {
     if (e.nativeEvent.buttons !== 1) return; // not primary button
