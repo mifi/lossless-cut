@@ -90,7 +90,7 @@ Before releasing, consider [Maintainence chores](#maintainence-chores) first.
 
 - `git checkout master`
 - `git merge stores` (in case there's an old unmerged stores hotfix)
-- **Manually prepare release notes** from [commit history](https://github.com/mifi/lossless-cut/commits/master/) since last version.
+- **Manually prepare release notes** from commit history (use `node script/getCommits.ts` to assist)
 - Create a new file `versions/x.y.z.md` and write the most important highlights from the release notes, but **remove github issue #references**
 - `node script/generateVersions.ts && git add versions/*.md src/renderer/src/versions.json && git commit -m 'Update change log'`
 - *If Store-only hotfix release*
@@ -140,11 +140,7 @@ How to check the value:
 yarn pack-mas-dev
 cat dist/mas-dev-arm64/LosslessCut.app/Contents/Info.plist
 ```
-
-```xml
-<key>LSMinimumSystemVersion</key>
-<string>10.13</string>
-```
+Look for the key `LSMinimumSystemVersion`.
 
 `LSMinimumSystemVersion` can be overridden in `electron-builder` by [`mac.minimumSystemVersion`](https://www.electron.build/configuration/mac.html)
 
@@ -157,11 +153,22 @@ Links:
 
 ## Maintainence chores
 
-### Keep dependencies up to date
-- FFmpeg: [ffmpeg-build-script](https://github.com/mifi/ffmpeg-build-script), [ffmpeg-builds](https://github.com/mifi/ffmpeg-builds) and [package.json](./package.json) download scripts.
+### Upgrade FFmpeg
+
+- [ffmpeg-build-script](https://github.com/mifi/ffmpeg-build-script)
+- [ffmpeg-builds](https://github.com/mifi/ffmpeg-builds)
+- [package.json](./package.json) download scripts.
+
+### Upgrade Electron
+
 - `electron` and upgrade [electron.vite.config.ts](./electron.vite.config.ts) `target`s.
 - `@electron/remote`
-- `package.json` / `yarn.lock`
+
+### Keep dependencies up to date
+
+```bash
+yarn upgrade-interactive
+```
 
 ### i18n strings / Weblate
 
