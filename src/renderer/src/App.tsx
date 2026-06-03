@@ -626,7 +626,7 @@ function App() {
   const usingPreviewFile = !!previewFilePath;
   const effectiveFilePath = previewFilePath || filePath;
   const fileUri = useMemo(() => {
-    if (!effectiveFilePath) return ''; // Setting video src="" prevents memory leak in chromium
+    if (!effectiveFilePath) return undefined;
     const uri = pathToFileURL(effectiveFilePath).href;
     // https://github.com/mifi/lossless-cut/issues/1674
     if (cacheBuster !== 0) {
