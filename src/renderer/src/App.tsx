@@ -1397,7 +1397,7 @@ function App() {
 
     async function tryFindAndLoadProjectFile({ chapters, cod }: { chapters: FFprobeChapter[], cod: string | undefined }) {
       try {
-        // First try to open from from working dir
+        // First try to open from working dir
         if (await tryOpenProjectPath(getEdlFilePath(fp, cod))) return;
 
         // then try to open project from source file dir
@@ -1572,7 +1572,7 @@ function App() {
 
       const mediaFilePath = pathJoin(dirname(path), mediaFileName);
 
-      // Note: MAS only allows fs.stat (pathExists) if we don't have access to input dir yet
+      // Note: MAS doesn't allow anything else than fs.access before the user has granted our app access to input dir
       if (!(await mainApi.pathExists(mediaFilePath))) {
         errorToast(i18n.t('The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}', { mediaFileName }));
         return;

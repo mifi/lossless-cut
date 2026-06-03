@@ -439,6 +439,8 @@ const setProgressBar = (v: number) => mainWindow?.setProgressBar(v);
 function sendOsNotification(options: NotificationConstructorOptions) {
   if (!Notification.isSupported()) return;
   const notification = new Notification(options);
+  // Note: For notifications on macOS, your application will need to be code-signed in order for notification events to emit correctly. This requirement stems from the underlying UNNotification API provided by Apple. Unsigned binaries will emit a `failed` event when notification APIs are called.
+  // https://www.electronjs.org/docs/latest/tutorial/notifications#macos
   notification.on('failed', (_e, error) => logger.warn('Notification failed', error));
   notification.show();
 }
