@@ -1068,5 +1068,7 @@
   "Offset": "Deslocamento",
   "Shift by seconds": "Deslocar por segundos",
   "Shift the timestamps of all tracks in this file by a specified number of seconds, relative to other files. Positive values will delay the file's tracks, negative will advance it.": "Desloca a data/hora de todas as faixas deste arquivo por um número específico de segundos, em relação a outros arquivos. Valores positivos atrasam as faixas do arquivo, enquanto valores negativos as adiantam.",
-  "This is hardcoded by FFmpeg and cannot be changed.": "Isso é definido pelo FFmpeg e não pode ser alterado."
+  "This is hardcoded by FFmpeg and cannot be changed.": "Isso é definido pelo FFmpeg e não pode ser alterado.",
+  "<p>If you're having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></p><p>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</p>": "<p>Se você estiver tendo algum problema ou dúvida sobre o LosslessCut, primeiro verifique os links no<1>Help</1> menu. Se você não conseguir encontrar nenhuma solução, você pode fazer uma pergunta nas <3>discussões no GitHub</3> ou no <5>Discord.</5></p><p>Se você acredita que encontrou um bug no LosslessCut, você pode <1>reportar um bug</1>.</p>",
+  "Please send us an email where you describe what you were doing.": "Por favor, envie-nos um e-mail onde você descreve o que estava fazendo."
 }
