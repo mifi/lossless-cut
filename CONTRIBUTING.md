@@ -115,6 +115,7 @@ Before releasing, consider [Maintainence chores](#maintainence-chores) first.
   - `git checkout master`
   - `git merge stores`
 - Bump [snap version](https://snapcraft.io/losslesscut/releases)
+- Copy paste release notes and post to discord & twitter and re-tweet
 
 ### After releasing existing GitHub version in Stores
 
