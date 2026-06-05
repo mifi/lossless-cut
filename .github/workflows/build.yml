@@ -47,7 +47,7 @@ jobs:
 
       # This global ffmpeg is used for screenshots (see below)
       - uses: FedericoCarboni/setup-ffmpeg@v3
-        if: matrix.os != 'windows-11-arm'
+        if: matrix.os != 'windows-11-arm' && env.is_tag == 'false'
         with:
           ffmpeg-version: release
           # arm not yet supported on macos
@@ -128,10 +128,10 @@ jobs:
 
 
       - run: node script/e2e.ts 'dist/mac-arm64/LosslessCut.app/Contents/MacOS/LosslessCut' 0:none screenshot.jpeg
-        if: runner.os == 'macOS'
+        if: runner.os == 'macOS' && env.is_tag == 'false'
 
       - run: node script/e2e.ts 'dist\win-unpacked\LosslessCut.exe' desktop screenshot.jpeg
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-latest' && env.is_tag == 'false'
 
       - run: |
           export DISPLAY=:0
@@ -139,7 +139,7 @@ jobs:
           sleep 5
           chmod +x dist/linux-unpacked/losslesscut
           node script/e2e.ts 'dist/linux-unpacked/losslesscut' ':0.0+0,0' screenshot.jpeg
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && env.is_tag == 'false'
 
       - name: (MacOS) Upload to Mac App Store
         if: runner.os == 'macOS' && env.is_tag == 'true'
