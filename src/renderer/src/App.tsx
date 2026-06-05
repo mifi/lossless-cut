@@ -625,17 +625,35 @@ function App() {
 
   const usingPreviewFile = !!previewFilePath;
   const effectiveFilePath = previewFilePath || filePath;
-  const fileUri = useMemo(() => {
+  useEffect(() => {
     if (!effectiveFilePath) return undefined;
-    const uri = pathToFileURL(effectiveFilePath).href;
-    // https://github.com/mifi/lossless-cut/issues/1674
-    if (cacheBuster !== 0) {
-      const qs = new URLSearchParams();
-      qs.set('t', String(cacheBuster));
-      return `${uri}?${qs.toString()}`;
+    const url = (() => {
+      const baseUrl = pathToFileURL(effectiveFilePath).href;
+      // https://github.com/mifi/lossless-cut/issues/1674
+      if (cacheBuster !== 0) {
+        const qs = new URLSearchParams();
+        qs.set('t', String(cacheBuster));
+        return `${baseUrl}?${qs.toString()}`;
+      }
+      return baseUrl;
+    })();
+
+    const video = videoRef.current;
+    if (video) {
+      video.src = url;
     }
-    return uri;
-  }, [cacheBuster, effectiveFilePath]);
+
+    return () => {
+      // Apparently this is the correct way to unload a video
+      // See commit 260603f613632850c301f72f0fca267b06b688a0
+      // and https://github.com/mifi/lossless-cut/issues/2907
+      if (video) {
+        video.pause();
+        video.removeAttribute('src'); // empty source
+        video.load();
+      }
+    };
+  }, [cacheBuster, effectiveFilePath, videoRef]);
 
   const resetState = useCallback(() => {
     console.log('State reset');
@@ -2234,7 +2252,6 @@ function App() {
   const onVideoError = useCallback(async () => {
     const error = videoRef.current?.error;
     if (!error) return;
-    if (!fileUri) return; // Probably MEDIA_ELEMENT_ERROR: Empty src attribute
 
     console.error('onVideoError', error.message, error.code);
 
@@ -2289,7 +2306,7 @@ function App() {
     } catch (err) {
       toastError(err);
     }
-  }, [videoRef, fileUri, usingPreviewFile, filePath, workingRef, setWorking, mainFileFormat?.duration, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, showNotNativelySupportedMessage]);
+  }, [videoRef, usingPreviewFile, filePath, workingRef, setWorking, mainFileFormat?.duration, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, showNotNativelySupportedMessage]);
 
   const onVideoFocus = useCallback<FocusEventHandler<HTMLVideoElement>>((e) => {
     // prevent video element from stealing focus in fullscreen mode https://github.com/mifi/lossless-cut/issues/543#issuecomment-1868167775
@@ -2543,7 +2560,6 @@ function App() {
                         muted={playbackVolume === 0 || compatPlayerEnabled}
                         ref={videoRef}
                         style={videoStyle}
-                        src={fileUri}
                         onPlay={onStartPlaying}
                         onPause={onStopPlaying}
                         onAbort={onVideoAbort}
