@@ -4381,6 +4381,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/js-cookie@npm:^3":
+  version: 3.0.6
+  resolution: "@types/js-cookie@npm:3.0.6"
+  checksum: 10/272d551687547445cb210213c73e72e0e5d58ad73e2e444a65d688b8ff9425529779ee0cd6492aaa1f070161916d4254ef2b1a76d64179100437f60749d094ef
+  languageName: node
+  linkType: hard
+
 "@types/json-schema@npm:*":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
@@ -9379,6 +9386,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"js-cookie@npm:3.0.7":
+  version: 3.0.7
+  resolution: "js-cookie@npm:3.0.7"
+  checksum: 10/c0542acd416806182baaaecaae9a1dd7754b48699589c5c3a088495cee9fc2e44f81e66567b6e76e16d29c469655fdc9cd948edb2cfd9ece446f8817b9046ce9
+  languageName: node
+  linkType: hard
+
 "js-cookie@npm:^2.2.1":
   version: 2.2.1
   resolution: "js-cookie@npm:2.2.1"
@@ -9881,6 +9895,7 @@ __metadata:
     "@types/css-modules": "npm:^1.0.5"
     "@types/eslint": "npm:^8.56.12"
     "@types/express": "npm:^5.0.6"
+    "@types/js-cookie": "npm:^3"
     "@types/leaflet": "npm:^1.9.21"
     "@types/lodash": "npm:^4.17.24"
     "@types/lodash.debounce": "npm:^4.0.9"
@@ -9928,6 +9943,7 @@ __metadata:
     i18next-fs-backend: "npm:^2.6.6"
     icon-gen: "npm:^5.0.0"
     immer: "npm:^11.1.8"
+    js-cookie: "npm:3.0.7"
     json5: "npm:^2.2.3"
     ky: "npm:^2.0.2"
     leaflet: "npm:^1.9.4"
